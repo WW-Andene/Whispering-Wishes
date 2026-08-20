@@ -3,6 +3,7 @@
   "setIncome": "Set a daily Astrite income to estimate days to goal.",
   "estimated": "Estimated: {{date}}",
   "costNote": "≈ ${{cost}} via top-up at best rate (~60 Astrite/$1)",
+  "astrite": "Astrite",
   "astriteNeeded": "Astrite Needed",
   "daysToGoal": "Days to Goal",
 

@@ -167,6 +167,7 @@
     "teamSelectorAria": "Sélecteur d'équipe",
     "removeResonatorTitle": "Retirer le Résonateur",
     "removeResonatorMessage": "Retirer {{name}} de l'équipe ?",
+    "thisResonator": "ce Résonateur",
     "removeResonatorConfirm": "Retirer",
     "noSavedLoadouts": "Aucune composition enregistrée",
     "loadoutLoaded": "Composition « {{name}} » chargée !",

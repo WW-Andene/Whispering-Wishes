@@ -13,6 +13,7 @@ import EchoSelector from './EchoSelector.jsx';
 import DamageCalculator from './DamageCalculator.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useSessionState } from '../../hooks/useSessionState.js';
+import { t, formatNumber } from '../../utils/i18n.js';
 
 function TeamsTab({
   state,
@@ -292,7 +293,7 @@ function TeamsTab({
 
               const removeFromSlot = async (slotIdx) => {
                 const charName = teamSlots[slotIdx];
-                if (await confirm?.({ title: 'Remove Resonator', message: `Remove ${charName || 'this Resonator'} from the team?`, confirmLabel: 'Remove', destructive: true })) {
+                if (await confirm?.({ title: t('teams.tab.removeResonatorTitle'), message: t('teams.tab.removeResonatorMessage', { name: charName || t('teams.tab.thisResonator') }), confirmLabel: t('teams.tab.removeResonatorConfirm'), destructive: true })) {
                   dispatch({ type: 'CLEAR_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: slotIdx });
                   // Clean up orphaned equipment entry to prevent localStorage bloat
                   if (charName) {
@@ -423,11 +424,11 @@ function TeamsTab({
                               const a = document.createElement('a'); a.href = url; a.download = 'ww-teams.json';
                               document.body.appendChild(a); a.click(); document.body.removeChild(a);
                               setTimeout(() => URL.revokeObjectURL(url), 100);
-                              toast?.addToast?.('Teams exported!', 'success');
-                            } catch { toast?.addToast?.('Export failed', 'error'); }
+                              toast?.addToast?.(t('teams.tab.exportSuccess'), 'success');
+                            } catch { toast?.addToast?.(t('teams.tab.exportFailed'), 'error'); }
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
-                          aria-label="Export team loadouts"
+                          aria-label={t('teams.tab.exportAria')}
                         >
                           <Download size={12} />
                         </button>
@@ -440,17 +441,17 @@ function TeamsTab({
                               reader.onload = (ev) => {
                                 try {
                                   const data = JSON.parse(ev.target.result);
-                                  if (!data.teams || !Array.isArray(data.teams)) throw new Error('Invalid format');
-                                  if (data.teams.length !== 5) throw new Error(`Expected 5 teams, got ${data.teams.length}`);
+                                  if (!data.teams || !Array.isArray(data.teams)) throw new Error(t('teams.tab.invalidFormat'));
+                                  if (data.teams.length !== 5) throw new Error(t('teams.tab.expectedTeams', { count: data.teams.length }));
                                   // Issue #102: Validate team structure before importing
                                   for (let i = 0; i < data.teams.length; i++) {
-                                    const t = data.teams[i];
-                                    if (!t || typeof t !== 'object') throw new Error(`Team ${i + 1} is not a valid object`);
-                                    if (!Array.isArray(t.slots)) throw new Error(`Team ${i + 1} is missing slots array`);
-                                    if (t.name !== undefined && typeof t.name !== 'string') throw new Error(`Team ${i + 1} has invalid name`);
-                                    for (let j = 0; j < t.slots.length; j++) {
-                                      if (t.slots[j] !== null && t.slots[j] !== '' && typeof t.slots[j] !== 'string') {
-                                        throw new Error(`Team ${i + 1}, slot ${j + 1} has invalid value`);
+                                    const tm = data.teams[i];
+                                    if (!tm || typeof tm !== 'object') throw new Error(t('teams.tab.teamNotObject', { index: i + 1 }));
+                                    if (!Array.isArray(tm.slots)) throw new Error(t('teams.tab.teamMissingSlots', { index: i + 1 }));
+                                    if (tm.name !== undefined && typeof tm.name !== 'string') throw new Error(t('teams.tab.teamInvalidName', { index: i + 1 }));
+                                    for (let j = 0; j < tm.slots.length; j++) {
+                                      if (tm.slots[j] !== null && tm.slots[j] !== '' && typeof tm.slots[j] !== 'string') {
+                                        throw new Error(t('teams.tab.slotInvalidValue', { team: i + 1, slot: j + 1 }));
                                       }
                                     }
                                   }
@@ -459,15 +460,15 @@ function TeamsTab({
                                     setTeamEquipment(data.equipment);
                                     try { localStorage.setItem('ww-team-equipment', JSON.stringify(data.equipment)); } catch {}
                                   }
-                                  toast?.addToast?.('Teams imported!', 'success');
-                                } catch (err) { toast?.addToast?.('Invalid file: ' + err.message, 'error'); }
+                                  toast?.addToast?.(t('teams.tab.importSuccess'), 'success');
+                                } catch (err) { toast?.addToast?.(t('teams.tab.invalidFile', { message: err.message }), 'error'); }
                               };
                               reader.readAsText(file);
                             };
                             input.click();
                           }}
                           className="kuro-btn kuro-btn-sm kuro-btn-primary text-sm px-2 py-1.5 whitespace-nowrap"
-                          aria-label="Import team loadouts"
+                          aria-label={t('teams.tab.importAria')}
                         >
                           <Upload size={12} />
                         </button>
@@ -485,19 +486,19 @@ function TeamsTab({
                                 const weapName = (eq?.weapon) || d?.bestWeapon || 'None';
                                 return `${name} (${weapName})`;
                               });
-                              const lines = [`Team: ${team.name || 'Team ' + (state.activeTeamIndex + 1)}`];
+                              const lines = [t('teams.tab.shareLabel', { name: team.name || t('teams.tab.defaultTeamName', { index: state.activeTeamIndex + 1 }) })];
                               lines.push(charParts.join(' | '));
                               if (stats) {
-                                lines.push(`Raw: ${stats.rawDps.toLocaleString('en-US')}/s | Full: ${stats.realDps.toLocaleString('en-US')}/s | Perfect: ${stats.perfectDps.toLocaleString('en-US')}/s`);
+                                lines.push(t('teams.tab.shareStats', { raw: formatNumber(stats.rawDps), full: formatNumber(stats.realDps), perfect: formatNumber(stats.perfectDps) }));
                               }
                               const text = lines.join('\n');
                               navigator.clipboard.writeText(text);
-                              toast?.addToast?.('Team copied!', 'success');
+                              toast?.addToast?.(t('teams.tab.copySuccess'), 'success');
                               haptic.light();
-                            } catch { toast?.addToast?.('Share failed', 'error'); }
+                            } catch { toast?.addToast?.(t('teams.tab.shareFailed'), 'error'); }
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
-                          aria-label="Copy team build to clipboard"
+                          aria-label={t('teams.tab.copyAria')}
                         >
                           <Share2 size={12} />
                         </button>

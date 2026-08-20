@@ -15,11 +15,12 @@ import { EchoImage } from '../components/EchoImage.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 import MonsterCard from '../components/MonsterCard.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { t } from '../../utils/i18n.js';
 
 const ECHO_COST_COLORS = {
-  4: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', label: '4 Cost' },
-  3: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50', label: '3 Cost' },
-  1: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50', label: '1 Cost' },
+  4: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', labelKey: 'cost4' },
+  3: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50', labelKey: 'cost3' },
+  1: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50', labelKey: 'cost1' },
 };
 const ECHO_BUFF_COLORS = {
   'Glacio DMG':  { bg: 'bg-cyan-500/10',    text: 'text-cyan-400',    border: 'border-cyan-500/25' },
@@ -64,7 +65,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
   ).map(([cname]) => cname);
 
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} echo details`} centered>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.echoDetail.echoDetailsAria', { name })} centered>
       <div
         className="kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border"
         style={borderColor ? { borderColor: `${borderColor}80` } : {}}
@@ -89,12 +90,12 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
             }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close echo details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.echoDetail.closeAria')}>
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className={`kuro-badge ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{costColors.label}</span>
+              <span className={`kuro-badge ${costColors.bg} ${costColors.text} border ${costColors.border}`}>{t(`modals.echoDetail.${costColors.labelKey}`)}</span>
               {/* Element badges from echo skill element(s) */}
               {(() => {
                 const elements = [];
@@ -134,7 +135,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
           <div className="flex items-center gap-2 flex-wrap">
             {data.dmg > 0 && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
-                <span className="text-sm text-gray-400">DMG</span>
+                <span className="text-sm text-gray-400">{t('modals.echoDetail.dmg')}</span>
                 <span className="text-base font-bold text-red-400">{data.dmg}%</span>
               </div>
             )}
@@ -160,14 +161,14 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
               misleading for e.g. a Common-rank mob like Smiter). */}
           {data.enemyStats && (
             <div>
-              <div className="text-sm text-red-400 uppercase tracking-wider mb-2 font-semibold">Enemy Stats</div>
+              <div className="text-sm text-red-400 uppercase tracking-wider mb-2 font-semibold">{t('modals.echoDetail.enemyStats')}</div>
               <MonsterCard name={name} rank={data.rank} iconUrl={data.monsterIconUrl || data.iconUrl} enemyStats={data.enemyStats} compact showLevelControl />
             </div>
           )}
 
           {/* 4. Sonata Sets */}
           <div className="kuro-detail-box">
-            <div className="kuro-section-label mb-2">Sonata Set Bonuses</div>
+            <div className="kuro-section-label mb-2">{t('modals.echoDetail.sonataSetBonuses')}</div>
             <div className="space-y-2">
               {(data.sets || []).map(setName => {
                 const setData = ECHO_SETS[setName];
@@ -181,12 +182,12 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
                     </div>
                     {setData ? (
                       <div className="space-y-0.5">
-                        {setData.p2 && <div className="text-sm text-gray-400"><span className="text-gray-500">2pc:</span> {setData.p2}</div>}
-                        {setData.p3 && <div className="text-sm text-gray-400"><span className="text-gray-500">3pc:</span> {setData.p3}</div>}
-                        {setData.p5 && <div className="text-sm text-gray-400"><span className="text-gray-500">5pc:</span> {setData.p5}</div>}
+                        {setData.p2 && <div className="text-sm text-gray-400"><span className="text-gray-500">{t('modals.echoDetail.piece2')}</span> {setData.p2}</div>}
+                        {setData.p3 && <div className="text-sm text-gray-400"><span className="text-gray-500">{t('modals.echoDetail.piece3')}</span> {setData.p3}</div>}
+                        {setData.p5 && <div className="text-sm text-gray-400"><span className="text-gray-500">{t('modals.echoDetail.piece5')}</span> {setData.p5}</div>}
                       </div>
                     ) : (
-                      <div className="text-sm text-gray-500 italic">Set data not available</div>
+                      <div className="text-sm text-gray-500 italic">{t('modals.echoDetail.setDataNotAvailable')}</div>
                     )}
                   </div>
                 );
@@ -235,7 +236,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
             };
             return (
               <div className="kuro-detail-box">
-                <div className="kuro-section-label mb-1">Skill</div>
+                <div className="kuro-section-label mb-1">{t('modals.echoDetail.skill')}</div>
                 <p className="text-base leading-relaxed">{formatSkillText(allSkillText)}</p>
               </div>
             );
@@ -243,28 +244,28 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
 
           {/* 6. Main Stats */}
           <div className="kuro-detail-box">
-            <div className="kuro-section-label mb-2">Possible Main Stats</div>
+            <div className="kuro-section-label mb-2">{t('modals.echoDetail.possibleMainStats')}</div>
             <div className="flex flex-wrap gap-1">
-              {cost === 4 && ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen'].map(s => (
+              {cost === 4 && t('modals.echoDetail.mainStatsCost4').map(s => (
                 <span key={s} className="kuro-badge kuro-badge-yellow">{s}</span>
               ))}
-              {cost === 3 && ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen'].map(s => (
+              {cost === 3 && t('modals.echoDetail.mainStatsCost3').map(s => (
                 <span key={s} className="kuro-badge kuro-badge-purple">{s}</span>
               ))}
-              {cost === 1 && ['ATK%', 'HP%', 'DEF%'].map(s => (
+              {cost === 1 && t('modals.echoDetail.mainStatsCost1').map(s => (
                 <span key={s} className="kuro-badge kuro-badge-cyan">{s}</span>
               ))}
             </div>
             <div className="text-sm text-gray-500 mt-1">
-              Secondary: {cost === 1 ? 'Flat HP' : 'Flat ATK'}
+              {t('modals.echoDetail.secondary', { stat: cost === 1 ? t('modals.echoDetail.flatHp') : t('modals.echoDetail.flatAtk') })}
             </div>
           </div>
 
           {/* 7. Substats */}
           <div className="kuro-detail-box">
-            <div className="kuro-section-label mb-2">Possible Substats</div>
+            <div className="kuro-section-label mb-2">{t('modals.echoDetail.possibleSubstats')}</div>
             <div className="flex flex-wrap gap-1">
-              {['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'].map(s => (
+              {t('modals.echoDetail.substatsList').map(s => (
                 <span key={s} className="kuro-badge kuro-badge-neutral">{s}</span>
               ))}
             </div>
@@ -273,7 +274,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
           {/* 8. Recommended For */}
           {usedBy.length > 0 && (
             <div>
-              <div className="kuro-section-label mb-1.5">Recommended For</div>
+              <div className="kuro-section-label mb-1.5">{t('modals.echoDetail.recommendedFor')}</div>
               <div className="flex flex-wrap gap-2">
                 {usedBy.map(charName => {
                   const charImg = DEFAULT_COLLECTION_IMAGES[charName];

@@ -285,26 +285,26 @@ function PlannerTab({
             <CardHeader action={<>
               <CountdownTimer endDate={bannerEndDate} compact />
               <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.banner ? '' : 'rotate-180'}`} />
-            </>}>By Banner End</CardHeader>
+            </>}>{t('planner.byBannerEnd')}</CardHeader>
           </div>
           {!collapsed.banner && (
             <CardBody className="space-y-2">
-              <div className="text-gray-400 text-sm">v{activeBanners.version} P{activeBanners.phase} — {planData.daysLeft} day{planData.daysLeft !== 1 ? 's' : ''} left</div>
+              <div className="text-gray-400 text-sm">{t('planner.versionPhase', { version: activeBanners.version, phase: activeBanners.phase, days: planData.daysLeft, plural: planData.daysLeft !== 1 ? 's' : '' })}</div>
               <div className="grid grid-cols-3 gap-2">
                 <div className="kuro-stat p-2 flex flex-col items-center justify-center text-center">
-                  <div className="text-yellow-400 kuro-number text-2xl">{planData.convenesByEnd.toLocaleString('en-US')}</div>
-                  <div className="text-gray-400 text-sm">Total Convenes</div>
+                  <div className="text-yellow-400 kuro-number text-2xl">{formatNumber(planData.convenesByEnd)}</div>
+                  <div className="text-gray-400 text-sm">{t('planner.totalConvenes')}</div>
                 </div>
                 <div className="kuro-stat p-2 flex flex-col items-center justify-center text-center">
-                  <div className="text-yellow-400 kuro-number text-2xl">{Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
-                  <div className="text-gray-400 text-sm">Earned</div>
+                  <div className="text-yellow-400 kuro-number text-2xl">{formatNumber(Math.floor(planData.incomeByEnd / ASTRITE_PER_PULL))}</div>
+                  <div className="text-gray-400 text-sm">{t('planner.earned')}</div>
                 </div>
                 <div className="kuro-stat p-2 flex flex-col items-center justify-center text-center">
-                  <div className="text-yellow-400 kuro-number text-2xl">{planData.totalAstriteByEnd.toLocaleString('en-US')}</div>
-                  <div className="text-gray-400 text-sm">{(+state.calc.lunite || 0) > 0 ? 'Total (A+L)' : 'Astrite'}</div>
+                  <div className="text-yellow-400 kuro-number text-2xl">{formatNumber(planData.totalAstriteByEnd)}</div>
+                  <div className="text-gray-400 text-sm">{(+state.calc.lunite || 0) > 0 ? t('planner.totalAL') : t('planner.astrite')}</div>
                 </div>
               </div>
-              <div className="text-gray-400 text-sm text-center">{(+state.calc.astrite || 0).toLocaleString('en-US')} current{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString('en-US')}L` : ''} + {planData.incomeByEnd.toLocaleString('en-US')} earned</div>
+              <div className="text-gray-400 text-sm text-center">{t('planner.currentEarnedSummary', { current: formatNumber(+state.calc.astrite || 0), luniteSuffix: (+state.calc.lunite || 0) > 0 ? t('planner.luniteSuffixText', { lunite: formatNumber(+state.calc.lunite || 0) }) : '', earned: formatNumber(planData.incomeByEnd) })}</div>
             </CardBody>
           )}
         </Card>
@@ -316,28 +316,28 @@ function PlannerTab({
           <CardHeader action={<>
             <span className="text-gray-400 text-sm">{planData.goalProgress.toFixed(0)}%</span>
             <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.goal ? '' : 'rotate-180'}`} />
-          </>}>Goal Progress</CardHeader>
+          </>}>{t('planner.goalProgressTitle')}</CardHeader>
         </div>
         {!collapsed.goal && (
         <CardBody className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="kuro-label">Base Convenes (per copy)</label>
+              <label className="kuro-label">{t('planner.baseConvenes')}</label>
               <KuroSelect
                 value={state.planner.goalPulls}
                 onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalPulls', value: +v })}
                 options={[
-                  { value: HARD_PITY, label: `${HARD_PITY} (Hard Pity)` },
-                  { value: HARD_PITY * 2, label: `${HARD_PITY * 2} (Guaranteed)` },
-                  { value: 240, label: '240 (Char + Signature)' },
+                  { value: HARD_PITY, label: t('planner.hardPityLabel', { n: HARD_PITY }) },
+                  { value: HARD_PITY * 2, label: t('planner.guaranteedLabel', { n: HARD_PITY * 2 }) },
+                  { value: 240, label: t('planner.charSignatureLabel') },
                 ]}
                 className="w-full"
-                ariaLabel="Base Convenes per copy"
+                ariaLabel={t('planner.baseConvenes')}
                 small
               />
             </div>
             <div>
-              <label className="kuro-label">Multiplier</label>
+              <label className="kuro-label">{t('planner.multiplier')}</label>
               <KuroSelect
                 value={state.planner.goalModifier}
                 onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalModifier', value: +v })}
@@ -347,33 +347,33 @@ function PlannerTab({
                   { value: 3, label: '×3' },
                 ]}
                 className="w-full"
-                ariaLabel="Copies multiplier"
+                ariaLabel={t('planner.multiplier')}
                 small
               />
             </div>
           </div>
           <div className="p-2 bg-white/5 rounded-lg text-sm text-gray-400 text-center">
-            Using Calculator: <span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> copies
+            {t('planner.usingCalculator')}<span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> {t('planner.copiesLabel')}
           </div>
           <div className="text-sm text-gray-500 text-center py-1">
-            <span title="How many Convenes needed for one copy (e.g. 80 at hard pity, 160 if guaranteed)" className="underline decoration-dotted cursor-help">Base Convenes</span>
+            <span title={t('planner.baseConvenesTooltip')} className="underline decoration-dotted cursor-help">{t('planner.baseConvenes')}</span>
             {' × '}
-            <span title="Optional multiplier to plan for multiple goal sets at once" className="underline decoration-dotted cursor-help">Multiplier</span>
+            <span title={t('planner.multiplierTooltip')} className="underline decoration-dotted cursor-help">{t('planner.multiplier')}</span>
             {' × '}
-            <span title="Number of copies of the selected banner target (from Calculator)" className="underline decoration-dotted cursor-help">Copies</span>
+            <span title={t('planner.copiesTooltip')} className="underline decoration-dotted cursor-help">{t('planner.copiesLabel')}</span>
             {' = '}
             <span className="text-gray-400">{state.planner.goalPulls} × {state.planner.goalModifier} × {planData.goalCopies} = {planData.targetPulls}</span>
           </div>
           <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
             <div className="flex justify-between text-md mb-2">
-              <span className="text-gray-400">Target</span>
-              <span className="text-gray-100 font-bold">{planData.targetPulls} Convenes ({planData.targetAstrite.toLocaleString('en-US')} Astrite)</span>
+              <span className="text-gray-400">{t('planner.target')}</span>
+              <span className="text-gray-100 font-bold">{t('planner.targetSummary', { pulls: planData.targetPulls, astrite: formatNumber(planData.targetAstrite) })}</span>
             </div>
-            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }} role="progressbar" aria-valuenow={planData.goalProgress} aria-valuemin={0} aria-valuemax={100} aria-label={`Goal progress: ${planData.goalProgress.toFixed(1)}%`}>
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-stat)' }} role="progressbar" aria-valuenow={planData.goalProgress} aria-valuemin={0} aria-valuemax={100} aria-label={t('planner.goalProgressAriaLabel', { pct: planData.goalProgress.toFixed(1) })}>
               <div className={`h-full transition-[width] duration-300 ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
             </div>
             <div className="flex justify-between text-sm mt-1">
-              <span className="text-gray-400">{Math.floor(planData.currentAstrite / ASTRITE_PER_PULL)} / {planData.targetPulls} Convenes</span>
+              <span className="text-gray-400">{t('planner.convenesProgress', { current: Math.floor(planData.currentAstrite / ASTRITE_PER_PULL), target: planData.targetPulls })}</span>
               <span className="text-gray-100">{planData.goalProgress.toFixed(1)}%</span>
             </div>
           </div>
@@ -381,36 +381,35 @@ function PlannerTab({
           <div className="grid grid-cols-2 gap-2">
             <div className="kuro-stat p-2.5 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probNow >= 80 ? 'text-emerald-400' : planData.probNow >= 50 ? 'text-yellow-400' : planData.probNow >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probNow.toFixed(1)}%</div>
-              <div className="text-gray-500 text-xs">Chance now ({planData.availablePulls} pulls)</div>
+              <div className="text-gray-500 text-xs">{t('planner.chanceNow', { pulls: planData.availablePulls })}</div>
             </div>
             <div className="kuro-stat p-2.5 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probByEnd >= 80 ? 'text-emerald-400' : planData.probByEnd >= 50 ? 'text-yellow-400' : planData.probByEnd >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probByEnd.toFixed(1)}%</div>
-              <div className="text-gray-500 text-xs">Chance by banner end ({planData.pullsByEnd} pulls)</div>
+              <div className="text-gray-500 text-xs">{t('planner.chanceByEnd', { pulls: planData.pullsByEnd })}</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
-              <div className="text-yellow-400 kuro-number text-2xl">{planData.goalNeeded.toLocaleString('en-US')}</div>
-              <div className="text-gray-400 text-sm">Astrite Needed</div>
+              <div className="text-yellow-400 kuro-number text-2xl">{formatNumber(planData.goalNeeded)}</div>
+              <div className="text-gray-400 text-sm">{t('planner.astriteNeeded')}</div>
             </div>
             <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
-              <div className="text-yellow-400 kuro-number text-2xl">{planData.goalDaysNeeded === Infinity ? '∞' : planData.goalDaysNeeded.toLocaleString('en-US')}</div>
-              <div className="text-gray-400 text-sm">Days to Goal</div>
+              <div className="text-yellow-400 kuro-number text-2xl">{planData.goalDaysNeeded === Infinity ? t('planner.infinitySymbol') : formatNumber(planData.goalDaysNeeded)}</div>
+              <div className="text-gray-400 text-sm">{t('planner.daysToGoal')}</div>
             </div>
           </div>
           {planData.goalDaysNeeded === Infinity && dailyIncome === 0 && (
             <div className="p-2 bg-white/5 rounded-lg text-center">
-              <span className="text-gray-500 text-sm">Set a daily Astrite income to estimate days to goal.</span>
+              <span className="text-gray-500 text-sm">{t('planner.setIncome')}</span>
             </div>
           )}
           {planData.goalDaysNeeded !== Infinity && planData.goalDaysNeeded > 0 && (
             <div className="p-2 bg-white/5 rounded-lg text-center">
-              <span className="text-gray-400 text-sm">Estimated: </span>
-              <span className="text-yellow-400 text-base font-medium">{new Date(Date.now() + planData.goalDaysNeeded * 86400000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+              <span className="text-yellow-400 text-base font-medium">{t('planner.estimated', { date: formatDate(new Date(Date.now() + planData.goalDaysNeeded * 86400000), { month: 'long', day: 'numeric', year: 'numeric' }) })}</span>
             </div>
           )}
           {planData.goalNeeded >= 16000 && (
-            <p className="text-gray-500 text-sm text-center mt-1">≈ ${Math.ceil(planData.goalNeeded / 60).toLocaleString('en-US')} via top-up at best rate (~60 Astrite/$1)</p>
+            <p className="text-gray-500 text-sm text-center mt-1">{t('planner.costNote', { cost: formatNumber(Math.ceil(planData.goalNeeded / 60)) })}</p>
           )}
         </CardBody>
         )}
@@ -422,22 +421,22 @@ function PlannerTab({
           <CardHeader action={<>
             {state.bookmarks.length > 0 && <span className="text-cyan-400 text-sm">{state.bookmarks.length}</span>}
             <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.saved ? '' : 'rotate-180'}`} />
-          </>}>Saved States</CardHeader>
+          </>}>{t('planner.savedStates')}</CardHeader>
         </div>
         {!collapsed.saved && (
         <CardBody className="space-y-2">
           {state.bookmarks.length === 0 ? (
-            <p className="kuro-empty-state text-gray-400 text-base text-center py-4">No saved states yet — head to the Calculator and tap Save to bookmark a configuration.</p>
+            <p className="kuro-empty-state text-gray-400 text-base text-center py-4">{t('planner.noBookmarks')}</p>
           ) : state.bookmarks.map(b => (
             <div key={b.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg">
               <div>
                 <div className="text-gray-200 text-base font-medium">{b.name}</div>
-                <div className="text-gray-400 text-sm">{b.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {b.selectedBanner === 'char' ? 'Resonator' : b.selectedBanner === 'weap' ? 'Weapon' : 'Both'} • {b.astrite || 0} Astrite{b.lustrous ? ` • ${b.lustrous} Lustrous` : ''}</div>
+                <div className="text-gray-400 text-sm">{b.bannerCategory === 'featured' ? t('planner.featuredLabel') : t('planner.standardLabel')} {b.selectedBanner === 'char' ? t('planner.resonatorLabel') : b.selectedBanner === 'weap' ? t('planner.weaponLabel') : t('planner.bothLabel')} • {t('planner.astriteSuffix', { n: formatNumber(b.astrite || 0) })}{b.lustrous ? t('planner.lustrousSuffix', { n: formatNumber(b.lustrous) }) : ''}</div>
                 <div className="text-gray-400 text-sm">P{b.charPity}/{b.weapPity}{b.charGuaranteed ? '(G)' : ''} • Std P{b.stdCharPity}/{b.stdWeapPity} • ×{b.charCopies}/{b.weapCopies}</div>
               </div>
               <div className="flex gap-1">
-                <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={`Load bookmark: ${b.name}`} className="px-3 py-1.5 text-sm bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[44px]">Load</button>
-                <button onClick={async () => { if (await confirm({ title: 'Delete bookmark', message: `Delete bookmark "${b.name}"?`, confirmLabel: 'Delete', destructive: true })) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={`Delete bookmark: ${b.name}`} className="px-2.5 py-1.5 text-sm bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
+                <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={t('planner.loadAriaLabel', { name: b.name })} className="px-3 py-1.5 text-sm bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[44px]">{t('planner.loadLabel')}</button>
+                <button onClick={async () => { if (await confirm({ title: t('planner.deleteBookmarkTitle'), message: t('planner.deleteBookmarkMessage', { name: b.name }), confirmLabel: t('planner.deleteLabel'), destructive: true })) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={t('planner.deleteAriaLabel', { name: b.name })} className="px-2.5 py-1.5 text-sm bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
               </div>
             </div>
           ))}
@@ -448,15 +447,15 @@ function PlannerTab({
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('farm')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('farm'); } }} aria-expanded={!collapsed.farm}>
           <CardHeader action={<>
-            {farmTargetsState.length > 0 && <span className="text-orange-400 text-sm">{farmTargetsState.length} target{farmTargetsState.length > 1 ? 's' : ''}</span>}
+            {farmTargetsState.length > 0 && <span className="text-orange-400 text-sm">{t('planner.targetsCount', { count: farmTargetsState.length, plural: farmTargetsState.length > 1 ? 's' : '' })}</span>}
             <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.farm ? '' : 'rotate-180'}`} />
-          </>}>Farming Planner</CardHeader>
+          </>}>{t('planner.farmingPlanner')}</CardHeader>
         </div>
         {!collapsed.farm && (
           <CardBody className="space-y-3">
             {/* Add Resonator button */}
             <button onClick={() => { setFarmPickerOpen(true); setFarmSearch(''); }} className="kuro-btn w-full active-gold" style={{ padding: '10px' }}>
-              <Plus size={14} className="inline mr-1.5" />Add Resonator
+              <Plus size={14} className="inline mr-1.5" />{t('planner.addResonator')}
             </button>
 
             {/* Resonator picker modal */}
@@ -464,12 +463,12 @@ function PlannerTab({
               <FocusTrapModal isOpen onClose={() => setFarmPickerOpen(false)} className="" onClick={() => setFarmPickerOpen(false)} centered>
                 <div className="kuro-card w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]">
-                    <h3 className="text-white text-xl font-semibold">Select Resonator</h3>
-                    <button onClick={() => setFarmPickerOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close"><X size={16} /></button>
+                    <h3 className="text-white text-xl font-semibold">{t('planner.selectResonator')}</h3>
+                    <button onClick={() => setFarmPickerOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('planner.closeLabel')}><X size={16} /></button>
                   </div>
                   <div className="p-3 border-b border-[var(--border-subtle)]">
                     <div className="relative">
-                      <input type="text" value={farmSearch} onChange={e => setFarmSearch(e.target.value)} placeholder="Search resonators…" className="kuro-input w-full pl-8 text-base" aria-label="Search resonators" autoFocus />
+                      <input type="text" value={farmSearch} onChange={e => setFarmSearch(e.target.value)} placeholder={t('planner.searchResonators')} className="kuro-input w-full pl-8 text-base" aria-label={t('planner.searchResonatorsAria')} autoFocus />
                       <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
                     </div>
                   </div>
@@ -558,12 +557,12 @@ function PlannerTab({
                     </div>
                     <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))}
                       className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-black/50 text-white/70 hover:text-white flex items-center justify-center transition-opacity btn-icon-square"
-                      aria-label={`Remove ${t.name}`}><X size={12} /></button>
+                      aria-label={t('planner.removeCharAria', { name: t.name })}><X size={12} /></button>
                   </div>
 
                   {/* ── Toggle buttons ── */}
                   <div className="flex gap-1.5">
-                    {[['ascension', 'Ascension'], ['skills', 'Forte'], ['weapon', 'Weapon']].map(([key, label]) => (
+                    {[['ascension', t('planner.ascension')], ['skills', t('planner.forte')], ['weapon', t('planner.weapon')]].map(([key, label]) => (
                       <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${t[key] ? 'active-emerald' : ''}`} style={{ padding: '8px' }}>{t[key] ? '✓ ' : ''}{label}</button>
                     ))}
                   </div>

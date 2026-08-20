@@ -14,6 +14,7 @@ import { ACHIEVEMENT_SERIES, ACHIEVEMENTS, ALL_ACHIEVEMENT_CATEGORIES, ALL_ACHIE
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
+import { t, formatNumber, getPluralForm } from '../../utils/i18n.js';
 
 const STORAGE_KEY = 'ww-achievements-done';
 const SET_CODEC = {
@@ -89,17 +90,17 @@ function AchievementsTool({ onClose }) {
     return { doneCount, total: ids.length, donePts, pts };
   }, [done]);
 
-  const versionOptions = [{ value: 'all', label: 'All Versions' }, ...ALL_ACHIEVEMENT_VERSIONS.map(v => ({ value: v, label: `v${v}` }))];
-  const categoryOptions = [{ value: 'all', label: 'All Series' }, ...ALL_ACHIEVEMENT_CATEGORIES.map(c => ({ value: c, label: c }))];
+  const versionOptions = [{ value: 'all', label: t('analytics.achievements.allVersions') }, ...ALL_ACHIEVEMENT_VERSIONS.map(v => ({ value: v, label: t('analytics.achievements.versionShort', { version: v }) }))];
+  const categoryOptions = [{ value: 'all', label: t('analytics.achievements.allSeries') }, ...ALL_ACHIEVEMENT_CATEGORIES.map(c => ({ value: c, label: c }))];
   const completionOptions = [
-    { value: 'all', label: 'All' },
-    { value: 'complete', label: 'Completed' },
-    { value: 'incomplete', label: 'Not Completed' },
+    { value: 'all', label: t('analytics.achievements.all') },
+    { value: 'complete', label: t('analytics.achievements.completed') },
+    { value: 'incomplete', label: t('analytics.achievements.notCompleted') },
   ];
   const hiddenOptions = [
-    { value: 'all', label: 'All (Caché: Tous)' },
-    { value: 'hidden', label: 'Hidden only' },
-    { value: 'visible', label: 'Visible only' },
+    { value: 'all', label: t('analytics.achievements.hiddenAll') },
+    { value: 'hidden', label: t('analytics.achievements.hiddenOnly') },
+    { value: 'visible', label: t('analytics.achievements.visibleOnly') },
   ];
 
   // Série filter here operates at the category level (Exploration/Journey/etc.) for the
@@ -116,7 +117,7 @@ function AchievementsTool({ onClose }) {
       <div key={id} className="flex items-start gap-3 p-2.5 rounded-lg border transition-colors" style={{ borderColor: isDone ? 'rgba(74,222,128,0.35)' : 'var(--border-medium)', background: isDone ? 'rgba(74,222,128,0.06)' : 'rgba(15,20,28,0.25)' }}>
         <button
           onClick={() => toggleDone(id)}
-          aria-label={isDone ? `Mark "${a.name}" as not completed` : `Mark "${a.name}" as completed`}
+          aria-label={isDone ? t('analytics.achievements.markUndone', { name: a.name }) : t('analytics.achievements.markDone', { name: a.name })}
           aria-pressed={isDone}
           className="mt-0.5 w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors"
           style={{ borderColor: isDone ? '#4ade80' : 'var(--border-medium)', background: isDone ? '#4ade80' : 'transparent' }}
@@ -127,13 +128,13 @@ function AchievementsTool({ onClose }) {
           <div className="flex items-center justify-between gap-2">
             <span className="font-medium text-sm flex items-center gap-1.5" style={{ color: isDone ? '#4ade80' : 'inherit' }}>
               {a.name}
-              {a.hidden && <EyeOff size={11} className="text-gray-500 flex-shrink-0" aria-label="Hidden achievement" />}
+              {a.hidden && <EyeOff size={11} className="text-gray-500 flex-shrink-0" aria-label={t('analytics.achievements.hiddenAchievement')} />}
             </span>
-            <span className="text-xs text-yellow-400/80 flex-shrink-0">{a.points} pts</span>
+            <span className="text-xs text-yellow-400/80 flex-shrink-0">{t('analytics.achievements.points', { n: formatNumber(a.points) })}</span>
           </div>
           <p className="text-xs text-gray-400 mt-0.5">{a.desc}</p>
           {isFiltering && (
-            <p className="text-[10px] text-gray-500 mt-1">{s?.name} · v{a.version}</p>
+            <p className="text-[10px] text-gray-500 mt-1">{s?.name} · {t('analytics.achievements.versionShort', { version: a.version })}</p>
           )}
         </div>
       </div>
@@ -143,16 +144,16 @@ function AchievementsTool({ onClose }) {
   return (
     <Card>
       <CardHeader action={
-        <button onClick={onClose} aria-label="Close Achievements" className="text-gray-400 hover:text-gray-200 transition-colors">
+        <button onClick={onClose} aria-label={t('analytics.achievements.closeAria')} className="text-gray-400 hover:text-gray-200 transition-colors">
           <X size={16} />
         </button>
       }>
-        <Award size={14} className="text-yellow-400 inline-block mr-1.5 -mt-0.5" /> Achievements
+        <Award size={14} className="text-yellow-400 inline-block mr-1.5 -mt-0.5" /> {t('analytics.achievements.title')}
       </CardHeader>
       <CardBody className="space-y-3">
         <div className="flex items-center justify-between text-sm bg-black/20 rounded-lg p-2.5">
-          <span className="text-gray-300">Progress <strong>{done.size}</strong> / {totalCount}</span>
-          <span className="text-gray-300">Rewards <strong className="text-yellow-400">{earnedPoints}</strong> / {totalPoints}</span>
+          <span className="text-gray-300">{t('analytics.achievements.progress')} <strong>{formatNumber(done.size)}</strong> / {formatNumber(totalCount)}</span>
+          <span className="text-gray-300">{t('analytics.achievements.rewards')} <strong className="text-yellow-400">{formatNumber(earnedPoints)}</strong> / {formatNumber(totalPoints)}</span>
         </div>
 
         <div className="relative">
@@ -161,28 +162,28 @@ function AchievementsTool({ onClose }) {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search achievements..."
-            aria-label="Search achievements"
+            placeholder={t('analytics.achievements.searchPlaceholder')}
+            aria-label={t('analytics.achievements.searchAria')}
             className="w-full pl-8 pr-3 py-2 text-sm rounded-lg bg-black/25 border border-[var(--border-medium)] focus:outline-none focus:border-yellow-400/50 text-gray-200 placeholder-gray-500"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <KuroSelect ariaLabel="Version filter" small value={versionFilter} onChange={setVersionFilter} options={versionOptions} />
-          <KuroSelect ariaLabel="Série filter" small value={categoryFilter} onChange={(v) => { setCategoryFilter(v); setSeriesFilter('all'); }} options={categoryOptions} />
-          <KuroSelect ariaLabel="Completion filter" small value={completionFilter} onChange={setCompletionFilter} options={completionOptions} />
-          <KuroSelect ariaLabel="Caché (hidden) filter" small value={hiddenFilter} onChange={setHiddenFilter} options={hiddenOptions} />
+          <KuroSelect ariaLabel={t('analytics.achievements.versionFilterAria')} small value={versionFilter} onChange={setVersionFilter} options={versionOptions} />
+          <KuroSelect ariaLabel={t('analytics.achievements.seriesFilterAria')} small value={categoryFilter} onChange={(v) => { setCategoryFilter(v); setSeriesFilter('all'); }} options={categoryOptions} />
+          <KuroSelect ariaLabel={t('analytics.achievements.completionFilterAria')} small value={completionFilter} onChange={setCompletionFilter} options={completionOptions} />
+          <KuroSelect ariaLabel={t('analytics.achievements.hiddenFilterAria')} small value={hiddenFilter} onChange={setHiddenFilter} options={hiddenOptions} />
         </div>
 
         {/* Flat filtered results (search active, or any filter narrowed beyond "pick a series") */}
         {isFiltering ? (
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-400">{filteredIds.length} result{filteredIds.length === 1 ? '' : 's'}</span>
-              <button onClick={() => { setSearch(''); setVersionFilter('all'); setCategoryFilter('all'); setSeriesFilter('all'); setCompletionFilter('all'); setHiddenFilter('all'); }} className="text-xs text-yellow-400/80 hover:text-yellow-400">Clear filters</button>
+              <span className="text-xs text-gray-400">{t(`analytics.achievements.resultCount${getPluralForm(filteredIds.length) === 'one' ? 'One' : 'Other'}`, { n: formatNumber(filteredIds.length) })}</span>
+              <button onClick={() => { setSearch(''); setVersionFilter('all'); setCategoryFilter('all'); setSeriesFilter('all'); setCompletionFilter('all'); setHiddenFilter('all'); }} className="text-xs text-yellow-400/80 hover:text-yellow-400">{t('analytics.achievements.clearFilters')}</button>
             </div>
             {filteredIds.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-6">No achievements match.</p>
+              <p className="text-sm text-gray-500 text-center py-6">{t('analytics.achievements.noMatch')}</p>
             ) : (
               <div className="space-y-1.5 max-h-[60vh] overflow-y-auto pr-1">
                 {filteredIds.map(renderAchievementRow)}

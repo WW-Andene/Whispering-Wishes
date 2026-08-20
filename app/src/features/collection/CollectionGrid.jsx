@@ -124,8 +124,8 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
         onPointerDown={(e) => e.stopPropagation()}
         onPointerUp={(e) => e.stopPropagation()}
         onClick={(e) => { e.stopPropagation(); onSetProfilePic(name); }}
-        title={isProfilePic ? 'Current profile picture' : 'Set as profile picture'}
-        aria-label={isProfilePic ? 'Current profile picture' : `Set ${name} as profile picture`}
+        title={isProfilePic ? t('collection.grid.currentProfilePicTitle') : t('collection.grid.setProfilePic')}
+        aria-label={isProfilePic ? t('collection.grid.currentProfilePicTitle') : t('collection.grid.setProfilePicAria', { name })}
       >
         <Crown size={14} />
       </button>
@@ -160,10 +160,10 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
     <div className="text-center py-8">
-      <div className="text-gray-400 text-md mb-2">No {dataType === 'echo' ? 'echoes' : dataType === 'weapon' ? 'weapons' : 'characters'} found</div>
-      <p className="text-gray-600 text-sm mb-3">Try adjusting your filters or clearing them</p>
+      <div className="text-gray-400 text-md mb-2">{t('collection.grid.noneFound', { type: dataType === 'echo' ? t('collection.grid.typeEchoes') : dataType === 'weapon' ? t('collection.grid.typeWeapons') : t('collection.grid.typeCharacters') })}</div>
+      <p className="text-gray-600 text-sm mb-3">{t('collection.grid.tryAdjusting')}</p>
       {hasActiveFilters && onClearFilters && (
-        <button onClick={onClearFilters} className="kuro-btn text-sm px-3 py-1.5 active-gold">Clear Filters</button>
+        <button onClick={onClearFilters} className="kuro-btn text-sm px-3 py-1.5 active-gold">{t('collection.grid.clearFilters')}</button>
       )}
     </div>
   );
@@ -175,7 +175,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
   const canCollapse = collapsible && items.length > collapsedCount;
   return (
     <>
-      <div className="text-sm text-gray-400 mb-2 text-right">{ownedCount}/{items.length} shown{hasActiveFilters ? ` (${totalCount} total)` : ''}</div>
+      <div className="text-sm text-gray-400 mb-2 text-right">{t('collection.grid.shownCount', { owned: ownedCount, shown: items.length })}{hasActiveFilters ? t('collection.grid.totalSuffix', { total: totalCount }) : ''}</div>
       <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
         {showItems.map(([name, count]) => {
           const imgUrl = collectionImages[name];
@@ -212,7 +212,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
           onClick={() => setExpanded(prev => !prev)}
           className="kuro-btn kuro-btn-sm w-full mt-2 flex items-center justify-center gap-1"
         >
-          {expanded ? 'Show Less' : `Show All (${items.length})`}
+          {expanded ? t('collection.grid.showLess') : t('collection.grid.showAll', { count: items.length })}
         </button>
       )}
     </>

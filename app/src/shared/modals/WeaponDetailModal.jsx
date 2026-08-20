@@ -115,14 +115,14 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
 
           {/* 3. Passive */}
           <div className={`p-3 rounded-xl border ${colors.border}`} style={{ background: 'rgba(255,255,255,0.03)' }}>
-            <div className="kuro-section-label mb-1">Passive</div>
+            <div className="kuro-section-label mb-1">{t('modals.weaponDetail.passive')}</div>
             <div className={`text-base font-medium ${colors.text}`}>{data.passive}</div>
           </div>
 
           {/* 4. Refinement Scaling */}
           {data.pv && Object.keys(data.pv).length > 0 && (
             <div className="kuro-detail-box">
-              <div className="kuro-section-label mb-2">Refinement Scaling</div>
+              <div className="kuro-section-label mb-2">{t('modals.weaponDetail.refinementScaling')}</div>
               <div className="grid grid-cols-5 gap-1">
                 {WEAPON_REFINE_SCALE.map((scale, i) => (
                   <div key={i} className={`text-center p-1.5 rounded ${i === 0 ? 'bg-yellow-500/10 border border-yellow-500/20' : 'bg-white/5 border border-[var(--border-medium)]'}`}>
@@ -147,7 +147,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
             return (
               <div>
                 <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-                  <Swords size={14} className="text-orange-400" /> Ascension Materials
+                  <Swords size={14} className="text-orange-400" /> {t('modals.weaponDetail.ascensionMaterials')}
                 </h3>
                 <div className="grid grid-cols-2 gap-1.5">
                   {forgeryTiers && <>
@@ -166,7 +166,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
           {/* 6. EXP Materials */}
           <div>
             <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-              <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
+              <TrendingUp size={14} className="text-cyan-400" /> {t('modals.weaponDetail.expMaterials')}
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
               {Object.entries(data.rarity === 5 ? WEAPON_EXP_COSTS_5 : WEAPON_EXP_COSTS_4).filter(([, qty]) => qty > 0).map(([mat, qty]) => (

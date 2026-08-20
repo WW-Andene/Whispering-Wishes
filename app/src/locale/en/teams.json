@@ -167,6 +167,7 @@
     "teamSelectorAria": "Team selector",
     "removeResonatorTitle": "Remove Resonator",
     "removeResonatorMessage": "Remove {{name}} from the team?",
+    "thisResonator": "this Resonator",
     "removeResonatorConfirm": "Remove",
     "noSavedLoadouts": "No saved loadouts",
     "loadoutLoaded": "Loadout \"{{name}}\" loaded!",

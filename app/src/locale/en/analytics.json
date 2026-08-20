@@ -158,7 +158,7 @@
     "won5050": "Won 50/50",
     "lost5050": "Lost 50/50",
     "avgPity": "Avg. Pity",
-    "winRate": "50/50 Win Rate: {{rate}}%"
+    "winRatePrefix": "50/50 Win Rate:"
   },
   "totalObtained": {
     "title": "Total Obtained",

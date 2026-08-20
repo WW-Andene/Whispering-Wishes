@@ -9,6 +9,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { t } from '../../utils/i18n.js';
 
 export function IconFiltersPopover({
   panelRef,
@@ -42,7 +43,7 @@ export function IconFiltersPopover({
       ref={panelRef}
       className="map-filters-popover"
       role="dialog"
-      aria-label="Icon filters"
+      aria-label={t('map.header.iconFilters')}
       onClick={(e) => e.stopPropagation()}
       style={{ top: `${top}px`, maxHeight }}
     >
@@ -53,16 +54,16 @@ export function IconFiltersPopover({
               type="button"
               className="kuro-btn kuro-btn-sm kuro-btn-icon"
               onClick={onClose}
-              aria-label="Close"
+              aria-label={t('map.wip.close')}
             >✕</button>
           }
         >
-          Icon filters
+          {t('map.header.iconFilters')}
         </CardHeader>
         <CardBody className="map-filters-body">
           {cats.length === 0 ? (
             <div className="zone-selector-empty">
-              No icons placed yet. Add icons from the editor panel.
+              {t('map.legend.noIconsPlaced')}
             </div>
           ) : (
             <div className="map-filters-list">
@@ -76,7 +77,7 @@ export function IconFiltersPopover({
                       className={`kuro-btn kuro-btn-sm zone-selector-item ${catOff ? '' : 'is-current'}`}
                       onClick={() => toggleIconFilter(cat)}
                       aria-pressed={!catOff}
-                      title={catOff ? `Show ${cat}` : `Hide ${cat}`}
+                      title={catOff ? t('map.legend.show', { name: cat }) : t('map.legend.hide', { name: cat })}
                     >
                       <span className="zone-selector-caret">{catOff ? '▢' : '▣'}</span>
                       <span className="zone-selector-name">{cat}</span>
@@ -98,8 +99,8 @@ export function IconFiltersPopover({
                           aria-pressed={!effectiveOff}
                           disabled={catOff}
                           title={catOff
-                            ? `Parent category "${cat}" is hidden`
-                            : (subOff ? `Show ${sub}` : `Hide ${sub}`)}
+                            ? t('map.legend.parentHidden', { name: cat })
+                            : (subOff ? t('map.legend.show', { name: sub }) : t('map.legend.hide', { name: sub }))}
                           style={{ paddingLeft: 'calc(var(--space-md, 12px) + var(--space-sm, 8px))' }}
                         >
                           <span className="zone-selector-caret">{effectiveOff ? '▢' : '▣'}</span>

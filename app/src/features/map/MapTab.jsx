@@ -17,6 +17,7 @@ import { useOfflineTiles } from './useOfflineTiles.js';
 import { OfflineDownloadsPopover } from './OfflineDownloadsPopover.jsx';
 import { ZonesPopover } from './ZonesPopover.jsx';
 import { IconFiltersPopover } from './IconFiltersPopover.jsx';
+import { t } from '../../utils/i18n.js';
 
 const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
 
@@ -2776,9 +2777,9 @@ export default function MapTab({ navPadding = 80 }) {
           <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between" data-sheet-header>
             <div className="flex items-center gap-2">
               <Construction size={16} className="text-yellow-400" />
-              <h3 className="text-white font-semibold text-lg">Map — Work in Progress</h3>
+              <h3 className="text-white font-semibold text-lg">{t('map.wip.title')}</h3>
             </div>
-            <button onClick={dismissWipNotice} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close">
+            <button onClick={dismissWipNotice} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('map.wip.close')}>
               <X size={16} />
             </button>
           </div>
@@ -2793,11 +2794,11 @@ export default function MapTab({ navPadding = 80 }) {
             />
           </div>
           <div className="p-4 space-y-3 text-sm text-gray-300 leading-relaxed">
-            <p>This tab is still under active development. Some zones, icons, or overlays may be incomplete, misplaced, or missing entirely.</p>
-            <p>I apologize for the inconvenience and appreciate your patience while I continue improving it.</p>
+            <p>{t('map.wip.body1')}</p>
+            <p>{t('map.wip.body2')}</p>
           </div>
           <div className="px-4 pb-4">
-            <button onClick={dismissWipNotice} className="kuro-btn w-full">Got it</button>
+            <button onClick={dismissWipNotice} className="kuro-btn w-full">{t('map.wip.gotIt')}</button>
           </div>
         </div>
       </FocusTrapModal>
@@ -2828,9 +2829,9 @@ export default function MapTab({ navPadding = 80 }) {
                       type="button"
                       className={`kuro-btn kuro-btn-sm kuro-btn-icon ${zonesOpen ? 'is-active' : ''}`}
                       onClick={(e) => { e.stopPropagation(); setZonesOpen(v => { if (!v) { setDownloadsOpen(false); setFiltersOpen(false); } return !v; }); }}
-                      aria-label="Regions"
+                      aria-label={t('map.header.regions')}
                       aria-expanded={zonesOpen}
-                      title="Regions"
+                      title={t('map.header.regions')}
                     >
                       <MapIcon size={14} />
                     </button>
@@ -2839,9 +2840,9 @@ export default function MapTab({ navPadding = 80 }) {
                       type="button"
                       className={`kuro-btn kuro-btn-sm kuro-btn-icon ${filtersOpen ? 'is-active' : ''}`}
                       onClick={(e) => { e.stopPropagation(); setFiltersOpen(v => { if (!v) { setZonesOpen(false); setDownloadsOpen(false); } return !v; }); }}
-                      aria-label="Icon filters"
+                      aria-label={t('map.header.iconFilters')}
                       aria-expanded={filtersOpen}
-                      title="Icon filters"
+                      title={t('map.header.iconFilters')}
                     >
                       <Hexagon size={14} />
                     </button>
@@ -2850,16 +2851,16 @@ export default function MapTab({ navPadding = 80 }) {
                       type="button"
                       className={`kuro-btn kuro-btn-sm kuro-btn-icon ${downloadsOpen ? 'is-active' : ''}`}
                       onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => { if (!v) { setZonesOpen(false); setFiltersOpen(false); } return !v; }); }}
-                      aria-label="Offline downloads"
+                      aria-label={t('map.header.offlineDownloads')}
                       aria-expanded={downloadsOpen}
-                      title="Offline downloads"
+                      title={t('map.header.offlineDownloads')}
                     >
                       <Settings size={14} />
                     </button>
                   </>
                 }
               >
-                Interactive Map
+                {t('map.header.title')}
               </CardHeader>
             </div>
 

@@ -644,8 +644,8 @@ function ProfileTab({
                       <Eye size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-base font-medium">Color-Blind Mode</div>
-                      <div className="text-gray-400 text-sm">Adds patterns to element colors</div>
+                      <div className="text-white text-base font-medium">{t('profile.display.colorBlindMode')}</div>
+                      <div className="text-gray-400 text-sm">{t('profile.display.colorBlindModeDesc')}</div>
                     </div>
                   </div>
                   <button
@@ -654,7 +654,7 @@ function ProfileTab({
                     style={{ background: visualSettings.colorBlindMode ? '#14b8a6' : 'var(--bg-btn)' }}
                     role="switch"
                     aria-checked={visualSettings.colorBlindMode}
-                    aria-label="Toggle color-blind mode"
+                    aria-label={t('profile.display.toggleColorBlind')}
                   >
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.colorBlindMode ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
@@ -667,8 +667,8 @@ function ProfileTab({
                       <ChevronDown size={16} className="-rotate-90" />
                     </div>
                     <div>
-                      <div className="text-white text-base font-medium">Swipe Navigation</div>
-                      <div className="text-gray-400 text-sm">Swipe left/right to switch tabs</div>
+                      <div className="text-white text-base font-medium">{t('profile.display.swipeNavigation')}</div>
+                      <div className="text-gray-400 text-sm">{t('profile.display.swipeNavigationDesc')}</div>
                     </div>
                   </div>
                   {/* AUDIT-FIX M22: OLED-aware toggle track */}
@@ -678,13 +678,13 @@ function ProfileTab({
                     style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.swipeNavigation}
-                    aria-label="Toggle swipe navigation"
+                    aria-label={t('profile.display.toggleSwipe')}
                   >
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
-                  <p className="text-cyan-300 text-base text-center">Swipe left or right on content area to navigate</p>
+                  <p className="text-cyan-300 text-base text-center">{t('profile.display.swipeActive')}</p>
                 )}
 
                 {/* Animations Toggle — 3-state: off < on < full */}
@@ -694,8 +694,8 @@ function ProfileTab({
                       <Sparkles size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-base font-medium">Animations</div>
-                      <div className="text-gray-400 text-sm">Background effects, transitions & glow</div>
+                      <div className="text-white text-base font-medium">{t('profile.display.animations')}</div>
+                      <div className="text-gray-400 text-sm">{t('profile.display.animationsDesc')}</div>
                     </div>
                   </div>
                   <button
@@ -707,8 +707,8 @@ function ProfileTab({
                     style={{ background: visualSettings.animationsEnabled === 'off' ? 'var(--bg-btn)' : visualSettings.animationsEnabled === 'on' ? '#a855f7' : '#d946ef' }}
                     role="switch"
                     aria-checked={visualSettings.animationsEnabled !== 'off'}
-                    aria-label={`Animations: ${visualSettings.animationsEnabled.toUpperCase()} — click to switch to ${visualSettings.animationsEnabled === 'off' ? 'ON' : visualSettings.animationsEnabled === 'on' ? 'FULL' : 'OFF'}`}
-                    title={`Currently: ${visualSettings.animationsEnabled.toUpperCase()}. Click to cycle.`}
+                    aria-label={t('profile.display.animationsAriaLabel', { current: visualSettings.animationsEnabled.toUpperCase(), next: visualSettings.animationsEnabled === 'off' ? 'ON' : visualSettings.animationsEnabled === 'on' ? 'FULL' : 'OFF' })}
+                    title={t('profile.display.animationsTitle', { current: visualSettings.animationsEnabled.toUpperCase() })}
                   >
                     <span className="absolute inset-0 flex items-center justify-center text-sm font-bold tracking-wide text-white/80 pointer-events-none select-none">
                       {visualSettings.animationsEnabled === 'off' ? 'OFF' : visualSettings.animationsEnabled === 'on' ? 'ON' : 'FULL'}
@@ -717,13 +717,13 @@ function ProfileTab({
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
-                  <p className="text-gray-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Off - No animation at all</p>
+                  <p className="text-gray-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>{t('profile.display.animationsOff')}</p>
                 )}
                 {visualSettings.animationsEnabled === 'on' && (
-                  <p className="text-purple-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>On - All animation</p>
+                  <p className="text-purple-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>{t('profile.display.animationsOn')}</p>
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
-                  <p className="text-fuchsia-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>Full - Spine activated</p>
+                  <p className="text-fuchsia-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>{t('profile.display.animationsFull')}</p>
                 )}
 
                 {/* Background Picker */}
@@ -754,17 +754,17 @@ function ProfileTab({
                         <Sparkles size={16} />
                       </div>
                       <div>
-                        <div className="text-white text-base font-medium">Backgrounds</div>
-                        <div className="text-gray-400 text-sm">Set images for header, navigation, and background independently</div>
+                        <div className="text-white text-base font-medium">{t('profile.display.backgrounds')}</div>
+                        <div className="text-gray-400 text-sm">{t('profile.display.backgroundsDesc')}</div>
                       </div>
                     </div>
 
                     {/* Target buttons with previews */}
                     <div className="flex gap-1.5 mb-3">
                       {[
-                        { key: 'header', label: 'Header', settingKey: 'headerBg' },
-                        { key: 'navigation', label: 'Navigation', settingKey: 'navBg' },
-                        { key: 'background', label: 'Background', settingKey: 'appBg' },
+                        { key: 'header', label: t('profile.display.targetHeader'), settingKey: 'headerBg' },
+                        { key: 'navigation', label: t('profile.display.targetNavigation'), settingKey: 'navBg' },
+                        { key: 'background', label: t('profile.display.targetBackground'), settingKey: 'appBg' },
                       ].map(t => {
                         const bg = visualSettings[t.settingKey];
                         return (
@@ -782,7 +782,7 @@ function ProfileTab({
                     <div className="flex gap-1.5 mb-3">
                       {['resonators', 'version', 'others', ...(bgTarget === 'background' ? ['animated'] : [])].map(c => (
                         <button key={c} onClick={() => setBgCategory(c)} className={`kuro-btn flex-1 text-sm ${bgCategory === c ? 'active-cyan' : ''}`}>
-                          {c === 'resonators' ? 'Resonators' : c === 'version' ? 'Version' : c === 'others' ? 'Others' : c === 'animated' ? 'Animated' : 'Custom'}
+                          {c === 'resonators' ? t('profile.display.categoryResonators') : c === 'version' ? t('profile.display.categoryVersion') : c === 'others' ? t('profile.display.categoryOthers') : c === 'animated' ? t('profile.display.categoryAnimated') : t('profile.display.categoryCustom')}
                         </button>
                       ))}
                     </div>
@@ -790,7 +790,7 @@ function ProfileTab({
                     {/* Clear current target */}
                     {currentBg && (
                       <button onClick={() => saveVisualSettings({ ...visualSettings, [targetKey]: null })} className="kuro-btn w-full text-sm mb-2 text-red-400 border-red-500/20 hover:bg-red-500/10">
-                        Clear {bgTarget} image
+                        {t('profile.display.clearImage', { target: bgTarget })}
                       </button>
                     )}
 
@@ -853,10 +853,10 @@ function ProfileTab({
                         <div className="col-span-full">
                           <div className="grid grid-cols-4 gap-1.5">
                             {[
-                              { id: 'none', label: 'None', color: 'text-gray-400' },
-                              { id: 'resonance', label: 'Resonance', color: 'text-blue-400' },
-                              { id: 'reflect', label: 'Reflect', color: 'text-purple-400' },
-                              { id: 'honour', label: 'Honour', color: 'text-amber-400' },
+                              { id: 'none', label: t('profile.display.customNone'), color: 'text-gray-400' },
+                              { id: 'resonance', label: t('profile.display.customResonance'), color: 'text-blue-400' },
+                              { id: 'reflect', label: t('profile.display.customReflect'), color: 'text-purple-400' },
+                              { id: 'honour', label: t('profile.display.customHonour'), color: 'text-amber-400' },
                             ].map(bg => {
                               const isActive = visualSettings.bgStyle === bg.id;
                               return (
@@ -871,7 +871,7 @@ function ProfileTab({
                           {visualSettings.bgStyle !== 'none' && (
                             <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
                               <div className="flex items-center gap-3">
-                                <div className="text-gray-500 text-sm font-medium w-[56px] shrink-0">Resolution</div>
+                                <div className="text-gray-500 text-sm font-medium w-[56px] shrink-0">{t('profile.display.resolution')}</div>
                                 <div className="flex gap-1 flex-1">
                                   {[25, 50, 100, 200].map(res => {
                                     const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
@@ -885,7 +885,7 @@ function ProfileTab({
                                 </div>
                               </div>
                               <div className="flex items-center gap-3">
-                                <div className="text-gray-500 text-sm font-medium w-[56px] shrink-0">FPS</div>
+                                <div className="text-gray-500 text-sm font-medium w-[56px] shrink-0">{t('profile.display.fps')}</div>
                                 <div className="flex gap-1 flex-1">
                                   {[15, 30, 45, 60].map(fps => {
                                     const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
@@ -914,12 +914,12 @@ function ProfileTab({
                       <Sparkles size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-base font-medium">Accent Theme</div>
-                      <div className="text-gray-400 text-sm">Changes accent colors across the app</div>
+                      <div className="text-white text-base font-medium">{t('profile.display.accentTheme')}</div>
+                      <div className="text-gray-400 text-sm">{t('profile.display.accentThemeDesc')}</div>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
-                    <button onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })} className={`kuro-btn text-sm ${visualSettings.theme === 'default' ? 'active-gold' : ''}`}>Default</button>
+                    <button onClick={() => saveVisualSettings({ ...visualSettings, theme: 'default' })} className={`kuro-btn text-sm ${visualSettings.theme === 'default' ? 'active-gold' : ''}`}>{t('profile.display.default')}</button>
                     {['Spectro', 'Glacio', 'Fusion', 'Electro', 'Aero', 'Havoc'].map(el => (
                       <button key={el} onClick={() => saveVisualSettings({ ...visualSettings, theme: el })} className={`kuro-btn text-sm`} style={visualSettings.theme === el ? { borderColor: getElementColor(el), background: getElementBg(el), color: getElementColor(el), boxShadow: `0 0 8px ${getElementColor(el)}40` } : undefined}>
                         {el}
@@ -936,23 +936,23 @@ function ProfileTab({
                         <Download size={16} />
                       </div>
                       <div>
-                        <div className="text-white text-base font-medium">Install App</div>
-                        <div className="text-gray-400 text-sm">Add to home screen for offline use</div>
+                        <div className="text-white text-base font-medium">{t('profile.display.installApp')}</div>
+                        <div className="text-gray-400 text-sm">{t('profile.display.installAppDesc')}</div>
                       </div>
                     </div>
                     <button
                       onClick={async () => {
                         const accepted = await pwa.promptInstall();
-                        if (accepted) toast?.addToast?.('App installed successfully!', 'success');
+                        if (accepted) toast?.addToast?.(t('profile.display.installSuccess'), 'success');
                       }}
                       className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-base font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
                     >
-                      Install
+                      {t('profile.display.install')}
                     </button>
                   </div>
                 )}
                 {pwa?.isInstalled && (
-                  <p className="text-emerald-400 text-sm text-center">✓ App is installed on your device</p>
+                  <p className="text-emerald-400 text-sm text-center">✓ {t('profile.display.installed')}</p>
                 )}
               </CardBody>
             </Card>
@@ -965,11 +965,11 @@ function ProfileTab({
 
             {state.profile.importedAt && (
               <Card>
-                <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear history', message: 'Clear all imported Convene history and collection ownership data?\nThis cannot be undone.', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_PROFILE' }); try { localStorage.removeItem('ww-owned-chars'); localStorage.removeItem('ww-manual-counts'); } catch {} toast?.addToast?.('Profile and collection data cleared!', 'info'); } }} className="text-red-400 text-sm hover:text-red-300 transition-colors" aria-label="Clear all imported Convene history">Clear</button>}>Import Info</CardHeader>
+                <CardHeader action={<button onClick={async () => { if (await confirm({ title: t('profile.importInfo.clearTitle'), message: t('profile.importInfo.clearMessage'), confirmLabel: t('profile.importInfo.clearConfirm'), destructive: true })) { dispatch({ type: 'CLEAR_PROFILE' }); try { localStorage.removeItem('ww-owned-chars'); localStorage.removeItem('ww-manual-counts'); } catch {} toast?.addToast?.(t('profile.importInfo.clearedToast'), 'info'); } }} className="text-red-400 text-sm hover:text-red-300 transition-colors" aria-label={t('profile.importInfo.clearAria')}>{t('profile.importInfo.clear')}</button>}>{t('profile.importInfo.title')}</CardHeader>
                 <CardBody>
-                  {state.profile.uid && <div className="flex justify-between text-base mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
-                  <div className="flex justify-between text-base"><span className="text-gray-400">Imported</span><span className="text-gray-300">{formatDate(new Date(state.profile.importedAt))}</span></div>
-                  <p className="text-gray-400 text-sm mt-2">View detailed stats in the Stats tab</p>
+                  {state.profile.uid && <div className="flex justify-between text-base mb-2"><span className="text-gray-400">{t('profile.importInfo.uid')}</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
+                  <div className="flex justify-between text-base"><span className="text-gray-400">{t('profile.importInfo.imported')}</span><span className="text-gray-300">{formatDate(new Date(state.profile.importedAt))}</span></div>
+                  <p className="text-gray-400 text-sm mt-2">{t('profile.importInfo.viewStatsHint')}</p>
                 </CardBody>
               </Card>
             )}
@@ -980,7 +980,7 @@ function ProfileTab({
 
             {/* ── Cloud Backup ──────────────────────────────────── */}
             <Card>
-              <CardHeader>Cloud Backup</CardHeader>
+              <CardHeader>{t('profile.backup.title')}</CardHeader>
               <CardBody className="space-y-3">
                 {googleUser ? (
                   <>
@@ -988,9 +988,9 @@ function ProfileTab({
                       {googleUser.photoUrl ? <img src={googleUser.photoUrl} alt="" className="w-8 h-8 rounded-full" referrerPolicy="no-referrer" onError={e => { e.target.style.display = 'none'; }} /> : <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 text-base font-bold">{(googleUser.displayName || 'U')[0]}</div>}
                       <div className="flex-1 min-w-0">
                         <div style={{ color: 'var(--text-heading)', fontSize: 'var(--font-base)', fontWeight: 600 }} className="truncate">{googleUser.displayName}</div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }} className="truncate">{googleUser.email || 'Cloud Backup linked'}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }} className="truncate">{googleUser.email || t('profile.backup.cloudBackupLinked')}</div>
                       </div>
-                      <button onClick={handleGoogleSignOut} className="kuro-btn active-red text-sm px-2 py-1 flex-shrink-0">Sign out</button>
+                      <button onClick={handleGoogleSignOut} className="kuro-btn active-red text-sm px-2 py-1 flex-shrink-0">{t('profile.backup.signOut')}</button>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <button
@@ -998,17 +998,17 @@ function ProfileTab({
                         disabled={cloudBackupStatus === 'saving'}
                         className="kuro-btn py-2 text-base flex items-center justify-center gap-1 active-emerald"
                       >
-                        {cloudBackupStatus === 'saving' ? 'Saving...' : '↑ Backup'}
+                        {cloudBackupStatus === 'saving' ? t('profile.backup.saving') : `↑ ${t('profile.backup.backup')}`}
                       </button>
                       <button
                         onClick={handleCloudRestore}
                         disabled={cloudBackupStatus === 'loading'}
                         className="kuro-btn py-2 text-base flex items-center justify-center gap-1 active-gold"
                       >
-                        {cloudBackupStatus === 'loading' ? 'Loading...' : '↓ Restore'}
+                        {cloudBackupStatus === 'loading' ? t('profile.backup.loading') : `↓ ${t('profile.backup.restore')}`}
                       </button>
                     </div>
-                    {cloudBackupStatus === 'done' && <div className="text-center" style={{ color: 'var(--accent-green)', fontSize: 'var(--font-sm)' }}>Done!</div>}
+                    {cloudBackupStatus === 'done' && <div className="text-center" style={{ color: 'var(--accent-green)', fontSize: 'var(--font-sm)' }}>{t('profile.backup.done')}</div>}
                   </>
                 ) : (
                   <button
@@ -1016,20 +1016,20 @@ function ProfileTab({
                     className="kuro-btn w-full py-2.5 flex items-center justify-center gap-2 text-base"
                   >
                     <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                    Sign in with Google
+                    {t('profile.backup.signInGoogle')}
                   </button>
                 )}
-                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', textAlign: 'center' }}>Sync your Convene history across devices</p>
+                <p style={{ color: 'var(--text-disabled)', fontSize: 'var(--font-sm)', textAlign: 'center' }}>{t('profile.backup.syncHint')}</p>
               </CardBody>
             </Card>
 
             <Card>
               <CardBody className="space-y-2">
                 <button onClick={handleExport} className="kuro-btn w-full py-2 flex items-center justify-center gap-1">
-                  <Download size={14} /> Export Backup
+                  <Download size={14} /> {t('profile.export.exportBackup')}
                 </button>
                 <div className="border-t border-red-900/30 mt-4 pt-3">
-                  <button onClick={async () => { if (await confirm({ title: 'Reset all data', message: `Are you sure you want to reset ALL data?${googleUser ? '\nThis includes your cloud backup.' : ''}\nThis cannot be undone.`, confirmLabel: 'Reset', destructive: true })) {
+                  <button onClick={async () => { if (await confirm({ title: t('profile.export.resetTitle'), message: t('profile.export.resetMessage', { cloudNote: googleUser ? t('profile.export.resetCloudNote') : '' }), confirmLabel: t('profile.export.resetConfirm'), destructive: true })) {
                     haptic.warning();
                     dispatch({ type: 'RESET' });
                     clearAllAuxKeys();
@@ -1038,9 +1038,9 @@ function ProfileTab({
                     // Delete cloud backup if signed in (await before sign-out to preserve auth token)
                     if (handleCloudDelete) await handleCloudDelete();
                     if (handleGoogleSignOut) handleGoogleSignOut();
-                    toast?.addToast?.('All data reset!', 'info');
+                    toast?.addToast?.(t('profile.export.resetDone'), 'info');
                   } }} className="kuro-btn w-full py-2 active-red">
-                    Reset All Data
+                    {t('profile.export.resetAllData')}
                   </button>
                 </div>
               </CardBody>

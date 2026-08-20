@@ -12,6 +12,7 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { t } from '../../utils/i18n.js';
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
@@ -30,14 +31,14 @@ export default function IdCardModal({
   const { getImageFraming } = useImageFramingContext();
   if (!showIdCard) return null;
   return (
-      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="" onClick={() => setShowIdCard(false)} ariaLabel="Resonator ID Card" centered>
+      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="" onClick={() => setShowIdCard(false)} ariaLabel={t('profile.idCard.ariaLabel')} centered>
           <div className="w-full overflow-y-auto rounded-2xl" style={{ maxWidth: '420px', maxHeight: '90vh', aspectRatio: '9/16' }} onClick={(e) => e.stopPropagation()}>
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
               <div className="kuro-card-inner">
                 {/* Header */}
                 <div className="kuro-header">
-                  <span className="text-gray-100 font-bold text-base flex items-center gap-2"><Crown size={14} className="text-yellow-400" /> RESONATOR ID</span>
+                  <span className="text-gray-100 font-bold text-base flex items-center gap-2"><Crown size={14} className="text-yellow-400" /> {t('profile.idCard.header')}</span>
                   <span className="text-gray-500 text-sm">Whispering Wishes</span>
                 </div>
 

@@ -3,6 +3,7 @@
   "setIncome": "Définissez un revenu quotidien d'Astrite pour estimer le nombre de jours restants.",
   "estimated": "Estimation : {{date}}",
   "costNote": "≈ {{cost}} $ via un rechargement au meilleur taux (~60 Astrite/1 $)",
+  "astrite": "Astrite",
   "astriteNeeded": "Astrite nécessaire",
   "daysToGoal": "Jours restants",
 

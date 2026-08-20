@@ -158,7 +158,7 @@
     "won5050": "50/50 gagnés",
     "lost5050": "50/50 perdus",
     "avgPity": "Pitié moy.",
-    "winRate": "Taux de victoire 50/50 : {{rate}} %"
+    "winRatePrefix": "Taux de victoire 50/50 :"
   },
   "totalObtained": {
     "title": "Total obtenu",

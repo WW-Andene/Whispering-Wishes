@@ -712,17 +712,17 @@ function AnalyticsTab({
                 {trophies && trophies.list.length === 0 && (
                   <Card>
                     <CardHeader>
-                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies</span>
+                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> {t('analytics.trophies.title')}</span>
                     </CardHeader>
                     <CardBody>
-                      <p className="kuro-empty-state text-gray-400 text-base text-center py-4">Import more Convene history in the Profile tab to unlock achievements</p>
+                      <p className="kuro-empty-state text-gray-400 text-base text-center py-4">{t('analytics.trophies.emptyImportPrompt')}</p>
                     </CardBody>
                   </Card>
                 )}
                 {trophies && trophies.list.length > 0 && (
                   <Card>
-                    <CardHeader action={<span className="text-gray-500 text-sm">{trophies.list.length} earned</span>}>
-                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> Trophies <span className="text-gray-500 font-normal text-sm">({trophies.list.length})</span></span>
+                    <CardHeader action={<span className="text-gray-500 text-sm">{t('analytics.trophies.earned', { n: formatNumber(trophies.list.length) })}</span>}>
+                      <span className="flex items-center gap-1.5"><Trophy size={14} className="text-yellow-400" /> {t('analytics.trophies.title')} <span className="text-gray-500 font-normal text-sm">({formatNumber(trophies.list.length)})</span></span>
                     </CardHeader>
                     <CardBody>
                       {(() => {
@@ -735,7 +735,7 @@ function AnalyticsTab({
                             <div
                               key={trophy.id}
                               className="relative p-2.5 rounded-lg text-center transition-all active:scale-95 cursor-pointer"
-                              role="button" tabIndex={0} aria-label={`Trophy: ${trophy.name}`}
+                              role="button" tabIndex={0} aria-label={t('analytics.trophies.trophyAria', { name: trophy.name })}
                               onClick={(e) => { e.stopPropagation(); setSelectedTrophy(trophy.id); }}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTrophy(trophy.id); } }}
                               style={{
@@ -763,35 +763,35 @@ function AnalyticsTab({
                       {/* Trophy Description Modal */}
                       {(() => {
                         if (!selectedTrophy) return null;
-                        const t = trophies.list.find(tr => tr.id === selectedTrophy);
-                        if (!t) return null;
-                        const Icon = TROPHY_ICON_MAP[t.icon] || Star;
+                        const trophyObj = trophies.list.find(tr => tr.id === selectedTrophy);
+                        if (!trophyObj) return null;
+                        const Icon = TROPHY_ICON_MAP[trophyObj.icon] || Star;
                         return (
-                          <FocusTrapModal isOpen={true} onClose={() => setSelectedTrophy(null)} className="" onClick={() => setSelectedTrophy(null)} ariaLabel={`Trophy: ${t.name}`} centered>
+                          <FocusTrapModal isOpen={true} onClose={() => setSelectedTrophy(null)} className="" onClick={() => setSelectedTrophy(null)} ariaLabel={t('analytics.trophies.trophyAria', { name: trophyObj.name })} centered>
                             <div
                               className="relative mx-6 p-5 rounded-xl text-center max-w-xs w-full"
                               onClick={(e) => e.stopPropagation()}
                               style={{
                                 background: `linear-gradient(145deg, #1a1a2e, #0d0d1a)`,
-                                border: `2px solid ${t.color}60`,
-                                boxShadow: `0 0 40px ${t.color}25, 0 0 80px ${t.color}10, inset 0 0 30px ${t.color}08`
+                                border: `2px solid ${trophyObj.color}60`,
+                                boxShadow: `0 0 40px ${trophyObj.color}25, 0 0 80px ${trophyObj.color}10, inset 0 0 30px ${trophyObj.color}08`
                               }}
                             >
-                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label="Close trophy">
+                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label={t('analytics.trophies.closeAria')}>
                                 <X size={14} />
                               </button>
-                              <div 
+                              <div
                                 className="w-14 h-14 mx-auto mb-3 rounded-full flex items-center justify-center"
                                 style={{
-                                  background: `linear-gradient(135deg, ${t.color}35, ${t.color}15)`,
-                                  boxShadow: `0 0 25px ${t.color}50, 0 0 50px ${t.color}20`
+                                  background: `linear-gradient(135deg, ${trophyObj.color}35, ${trophyObj.color}15)`,
+                                  boxShadow: `0 0 25px ${trophyObj.color}50, 0 0 50px ${trophyObj.color}20`
                                 }}
                               >
-                                <Icon size={28} style={{ color: t.color }} />
+                                <Icon size={28} style={{ color: trophyObj.color }} />
                               </div>
-                              <div className="text-xl font-bold mb-2" style={{ color: t.color }}>{t.name}</div>
-                              <div className="text-base text-gray-300 leading-relaxed italic">{t.desc}</div>
-                              <div className="mt-3 text-sm text-gray-400">tap outside or ✕ to close</div>
+                              <div className="text-xl font-bold mb-2" style={{ color: trophyObj.color }}>{trophyObj.name}</div>
+                              <div className="text-base text-gray-300 leading-relaxed italic">{trophyObj.desc}</div>
+                              <div className="mt-3 text-sm text-gray-400">{t('analytics.trophies.closeHint')}</div>
                             </div>
                           </FocusTrapModal>
                         );
@@ -801,9 +801,9 @@ function AnalyticsTab({
                       {trophies.stats.currentStreak.type && (
                         <div className="mt-3 pt-3 border-t border-[var(--border-medium)]">
                           <div className="flex items-center justify-between">
-                            <span className="text-gray-400 text-sm">Current 50/50 Streak</span>
+                            <span className="text-gray-400 text-sm">{t('analytics.trophies.currentStreak')}</span>
                             <span className={`text-xl font-bold ${trophies.stats.currentStreak.type === 'win' ? 'text-emerald-400' : 'text-red-400'}`}>
-                              {trophies.stats.currentStreak.count}× {trophies.stats.currentStreak.type === 'win' ? '✓ Won' : '✗ Lost'}
+                              {trophies.stats.currentStreak.count}× {trophies.stats.currentStreak.type === 'win' ? t('analytics.trophies.won') : t('analytics.trophies.lost')}
                             </span>
                           </div>
                         </div>
@@ -818,43 +818,43 @@ function AnalyticsTab({
                 <ConveneHistoryChart statsTabData={statsTabData} />
                 {/* Overall Stats */}
                 <Card>
-                  <CardHeader><BarChart3 size={14} /> Overall Statistics</CardHeader>
+                  <CardHeader><BarChart3 size={14} /> {t('analytics.overall.title')}</CardHeader>
                   <CardBody>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{formatNumber(overallStats.totalPulls)}</div><div className="text-gray-400 text-sm">Total Convenes</div></div>
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{formatNumber(overallStats.totalAstrite)}</div><div className="text-gray-400 text-sm">Astrite Spent (in-game)</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold kuro-number">{formatNumber(overallStats.totalPulls)}</div><div className="text-gray-400 text-sm">{t('analytics.overall.totalConvenes')}</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold kuro-number">{formatNumber(overallStats.totalAstrite)}</div><div className="text-gray-400 text-sm">{t('analytics.overall.astriteSpent')}</div></div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-xl kuro-number">{overallStats.won5050}</div><div className="text-gray-400 text-sm">Won 50/50</div></div>
-                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-xl kuro-number">{overallStats.lost5050}</div><div className="text-gray-400 text-sm">Lost 50/50</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-xl kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-sm">Avg. Pity</div></div>
+                      <div className="kuro-stat kuro-stat-emerald p-2 text-center"><div className="text-emerald-400 font-bold text-xl kuro-number">{formatNumber(overallStats.won5050)}</div><div className="text-gray-400 text-sm">{t('analytics.overall.won5050')}</div></div>
+                      <div className="kuro-stat kuro-stat-red p-2 text-center"><div className="text-red-400 font-bold text-xl kuro-number">{formatNumber(overallStats.lost5050)}</div><div className="text-gray-400 text-sm">{t('analytics.overall.lost5050')}</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-xl kuro-number">{overallStats.avgPity}</div><div className="text-gray-400 text-sm">{t('analytics.overall.avgPity')}</div></div>
                     </div>
-                    {overallStats.winRate != null && <div className="text-center text-base text-gray-400 mt-2">50/50 Win Rate: <span className="text-emerald-400 font-bold text-xl kuro-number">{overallStats.winRate}%</span></div>}
+                    {overallStats.winRate != null && <div className="text-center text-base text-gray-400 mt-2">{t('analytics.overall.winRatePrefix')} <span className="text-emerald-400 font-bold text-xl kuro-number">{overallStats.winRate}%</span></div>}
                   </CardBody>
                 </Card>
 
                 {/* Total Obtained */}
                 <Card>
-                  <CardHeader>Total Obtained</CardHeader>
+                  <CardHeader>{t('analytics.totalObtained.title')}</CardHeader>
                   <CardBody>
                     {(() => {
                       const { totalObtained } = statsTabData;
                       return (<>
-                    <p className="text-gray-400 text-sm mb-1.5">Resonators</p>
+                    <p className="text-gray-400 text-sm mb-1.5">{t('analytics.totalObtained.resonators')}</p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{totalObtained.res5}</div><div className="text-gray-400 text-sm">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-xl kuro-number">{totalObtained.res4}</div><div className="text-gray-400 text-sm">4★</div></div>
-                    </div>
-                    
-                    <p className="text-gray-400 text-sm mb-1.5">Weapons</p>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{totalObtained.wep5}</div><div className="text-gray-400 text-sm">5★</div></div>
-                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-xl kuro-number">{totalObtained.wep4}</div><div className="text-gray-400 text-sm">4★</div></div>
-                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-xl kuro-number">{totalObtained.wep3}</div><div className="text-gray-400 text-sm">3★</div></div>
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{formatNumber(totalObtained.res5)}</div><div className="text-gray-400 text-sm">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-xl kuro-number">{formatNumber(totalObtained.res4)}</div><div className="text-gray-400 text-sm">4★</div></div>
                     </div>
 
-                    <p className="text-gray-400 text-sm mb-1.5 mt-3">Total</p>
-                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-xl kuro-number">{totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3}</div><div className="text-gray-400 text-sm">All Items</div></div>
+                    <p className="text-gray-400 text-sm mb-1.5">{t('analytics.totalObtained.weapons')}</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="kuro-stat kuro-stat-gold p-2 text-center"><div className="text-yellow-400 font-bold text-xl kuro-number">{formatNumber(totalObtained.wep5)}</div><div className="text-gray-400 text-sm">5★</div></div>
+                      <div className="kuro-stat kuro-stat-purple p-2 text-center"><div className="text-purple-400 font-bold text-xl kuro-number">{formatNumber(totalObtained.wep4)}</div><div className="text-gray-400 text-sm">4★</div></div>
+                      <div className="kuro-stat p-2 text-center"><div className="text-blue-400 font-bold text-xl kuro-number">{formatNumber(totalObtained.wep3)}</div><div className="text-gray-400 text-sm">3★</div></div>
+                    </div>
+
+                    <p className="text-gray-400 text-sm mb-1.5 mt-3">{t('analytics.totalObtained.total')}</p>
+                    <div className="kuro-stat p-2 text-center"><div className="text-white font-bold text-xl kuro-number">{formatNumber(totalObtained.res5 + totalObtained.res4 + totalObtained.wep5 + totalObtained.wep4 + totalObtained.wep3)}</div><div className="text-gray-400 text-sm">{t('analytics.totalObtained.allItems')}</div></div>
                       </>);
                     })()}
                   </CardBody>
@@ -862,13 +862,13 @@ function AnalyticsTab({
 
                 {/* Per-Banner Stats */}
                 <Card className="stats-full-width">
-                  <CardHeader>Per-Banner Breakdown</CardHeader>
+                  <CardHeader>{t('analytics.perBanner.title')}</CardHeader>
                   <CardBody className="space-y-2">
                     {[
-                      { name: 'Featured Resonator', key: 'featured', color: 'yellow' },
-                      { name: 'Featured Weapon', key: 'weapon', color: 'pink' },
-                      { name: 'Standard Resonator', key: 'standardChar', color: 'cyan' },
-                      { name: 'Standard Weapon', key: 'standardWeap', color: 'cyan' },
+                      { name: t('analytics.perBanner.bannerNames.featuredResonator'), key: 'featured', color: 'yellow' },
+                      { name: t('analytics.perBanner.bannerNames.featuredWeapon'), key: 'weapon', color: 'pink' },
+                      { name: t('analytics.perBanner.bannerNames.standardResonator'), key: 'standardChar', color: 'cyan' },
+                      { name: t('analytics.perBanner.bannerNames.standardWeapon'), key: 'standardWeap', color: 'cyan' },
                     ].filter(b => (state.profile[b.key]?.history || []).length > 0).map(banner => {
                       const hist = state.profile[banner.key]?.history || [];
                       const pity = state.profile[banner.key]?.pity5 ?? 0;
@@ -877,12 +877,12 @@ function AnalyticsTab({
                         <div key={banner.name} className="p-2 bg-white/5 rounded-lg">
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-base font-medium" style={{color: colorHex}}>{banner.name}</span>
-                            <span className="text-gray-400 text-sm">{hist.length} Convenes</span>
+                            <span className="text-gray-400 text-sm">{t('analytics.perBanner.convenes', { n: formatNumber(hist.length) })}</span>
                           </div>
                           <div className="flex gap-2 text-sm">
-                            <span className="text-yellow-400">{hist.filter(p => p.rarity === 5).length} 5★</span>
-                            <span className="text-purple-400">{hist.filter(p => p.rarity === 4).length} 4★</span>
-                            <span className="text-gray-400">Pity: {pity}/{HARD_PITY}</span>
+                            <span className="text-yellow-400">{formatNumber(hist.filter(p => p.rarity === 5).length)} 5★</span>
+                            <span className="text-purple-400">{formatNumber(hist.filter(p => p.rarity === 4).length)} 4★</span>
+                            <span className="text-gray-400">{t('analytics.perBanner.pity', { pity: formatNumber(pity), hardPity: formatNumber(HARD_PITY) })}</span>
                           </div>
                         </div>
                       );

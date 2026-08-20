@@ -1,1 +1,21 @@
-{}
+{
+  "wip": {
+    "title": "Carte — En cours de développement",
+    "close": "Fermer",
+    "body1": "Cet onglet est encore en développement actif. Certaines régions, icônes ou superpositions peuvent être incomplètes, mal placées ou totalement absentes.",
+    "body2": "Je m'excuse pour la gêne occasionnée et vous remercie de votre patience pendant que je continue à l'améliorer.",
+    "gotIt": "Compris"
+  },
+  "header": {
+    "title": "Carte interactive",
+    "regions": "Régions",
+    "iconFilters": "Filtres d'icônes",
+    "offlineDownloads": "Téléchargements hors ligne"
+  },
+  "legend": {
+    "noIconsPlaced": "Aucune icône placée pour le moment. Ajoutez des icônes depuis le panneau d'édition.",
+    "show": "Afficher {{name}}",
+    "hide": "Masquer {{name}}",
+    "parentHidden": "La catégorie parente « {{name}} » est masquée"
+  }
+}

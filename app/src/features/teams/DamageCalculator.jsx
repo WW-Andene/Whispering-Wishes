@@ -126,14 +126,14 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 }}
                 disabled={members.length === 0}
                 className="action-btn flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-yellow-400/80 hover:text-yellow-300 hover:bg-yellow-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                aria-label="Full Auto Build: auto-equip every member of this team at once"
-                title="Full Auto Build: auto-equip every member of this team at once"
+                aria-label={t('teams.damageCalc.fullAutoBuildAria')}
+                title={t('teams.damageCalc.fullAutoBuildAria')}
               >
-                <Sparkles size={12} /> Full Auto Build
+                <Sparkles size={12} /> {t('teams.damageCalc.fullAutoBuild')}
               </button>
               <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${overviewCollapsed ? '' : 'rotate-180'}`} />
             </div>
-          }><Zap size={14} className="text-yellow-400" /> Team Overview</CardHeader>
+          }><Zap size={14} className="text-yellow-400" /> {t('teams.damageCalc.teamOverview')}</CardHeader>
         </div>
         {!overviewCollapsed && (
         <CardBody>
@@ -178,7 +178,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     {/* Auto Equip button */}
                     <button
                       className="kuro-btn text-sm px-2 py-1 flex-shrink-0 self-start"
-                      aria-label={`Auto equip best build for ${m.name}`}
+                      aria-label={t('teams.damageCalc.autoEquipAria', { name: m.name })}
                       onClick={() => {
                         const result = computeAutoEquipEntry(m.name, teamEquipment, state.activeTeamIndex, members.map(mem => mem.name), activeTeamData.mainDpsOverride);
                         if (!result) return;
@@ -186,7 +186,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         haptic.success();
                       }}
                     >
-                      <Zap size={10} className="inline mr-0.5" />Auto Equip
+                      <Zap size={10} className="inline mr-0.5" />{t('teams.damageCalc.autoEquip')}
                     </button>
                     {/* Reset Equipment button */}
                     {(() => {
@@ -196,9 +196,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       return (
                         <button
                           className="kuro-btn text-sm px-2 py-1 flex-shrink-0 self-start text-gray-500 hover:text-red-400"
-                          aria-label={`Reset equipment for ${m.name}`}
+                          aria-label={t('teams.damageCalc.resetAria', { name: m.name })}
                           onClick={async () => {
-                            if (await confirm?.({ title: 'Reset Equipment', message: `Clear all equipment for ${m.name}?`, confirmLabel: 'Reset', destructive: true })) {
+                            if (await confirm?.({ title: t('teams.damageCalc.resetTitle'), message: t('teams.damageCalc.resetMessage', { name: m.name }), confirmLabel: t('teams.damageCalc.resetConfirm'), destructive: true })) {
                               setTeamEquipment(prev => {
                                 const n = { ...prev };
                                 n[reqKey] = { weapon: null, echoes: [null, null, null, null, null], sequence: prev[reqKey]?.sequence || 0, refinement: 1, echoSet: '', echoSet2: '', echoPreset: 'default' };
@@ -208,7 +208,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             }
                           }}
                         >
-                          <X size={10} className="inline mr-0.5" />Reset
+                          <X size={10} className="inline mr-0.5" />{t('teams.damageCalc.reset')}
                         </button>
                       );
                     })()}
@@ -216,12 +216,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
                   {/* ── Section 2: Base Stats ── */}
                   <div>
-                    <div className="kuro-label">Base Stats (Lv.90)</div>
+                    <div className="kuro-label">{t('teams.damageCalc.baseStats')}</div>
                     <div className="flex flex-wrap gap-1">
-                      <span className="kuro-badge kuro-badge-neutral">HP {(m.d.baseHp || 0).toLocaleString('en-US')}</span>
+                      <span className="kuro-badge kuro-badge-neutral">HP {formatNumber(m.d.baseHp || 0)}</span>
                       <span className="kuro-badge kuro-badge-neutral">ATK {m.charAtk}</span>
-                      <span className="kuro-badge kuro-badge-neutral">DEF {(m.d.baseDef || 0).toLocaleString('en-US')}</span>
-                      <span className="kuro-badge kuro-badge-amber">+Weapon {m.weapAtk}</span>
+                      <span className="kuro-badge kuro-badge-neutral">DEF {formatNumber(m.d.baseDef || 0)}</span>
+                      <span className="kuro-badge kuro-badge-amber">{t('teams.damageCalc.weaponPrefix', { value: m.weapAtk })}</span>
                     </div>
                   </div>
 
@@ -235,7 +235,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       <div className="space-y-2">
                         {/* Equipment grid + Weapon info */}
                         <div>
-                          <div className="kuro-label">Equipment</div>
+                          <div className="kuro-label">{t('teams.damageCalc.equipment')}</div>
                           <div className="flex items-start gap-2">
                             <div className="grid grid-cols-3 gap-1 flex-shrink-0">
                               {/* Weapon slot */}
@@ -245,7 +245,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                   onOpenWeaponSelector(state.activeTeamIndex, m.name);
                                   haptic.light();
                                 }}
-                                title={eq.weapon || 'Select weapon'}
+                                title={eq.weapon || t('teams.damageCalc.selectWeapon')}
                               >
                                 {equippedWeap && collectionImages[eq.weapon] ? (
                                   <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-cover rounded-lg" onError={hideOnError} />
@@ -257,7 +257,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 ) : (
                                   <>
                                     <Sword size={14} className="text-gray-500" />
-                                    <span className="text-sm text-gray-500">Weapon</span>
+                                    <span className="text-sm text-gray-500">{t('teams.damageCalc.weapon')}</span>
                                   </>
                                 )}
                               </div>
@@ -272,7 +272,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 return (
                                   <div key={ei}
                                     className={`${slotStyle} ${echoName ? `border-${costColor}-500/40 bg-${costColor}-500/8` : 'border-dashed border-white/15 hover:border-' + costColor + '-500/40'}`}
-                                    title={echoName || `Select ${costLabel} echo`}
+                                    title={echoName || t('teams.damageCalc.selectEcho', { cost: costLabel })}
                                     onClick={() => {
                                       if (echoName) {
                                         onOpenEchoStatPanel(state.activeTeamIndex, m.name, ei, echoName);
@@ -308,7 +308,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 </div>
                               ) : m.d.bestWeapon ? (
                                 <div className="text-sm space-y-0.5">
-                                  <div><span className="text-gray-500">Rec: </span><span className="text-yellow-400/50">{m.d.bestWeapon}</span></div>
+                                  <div><span className="text-gray-500">{t('teams.damageCalc.recommended')}</span><span className="text-yellow-400/50">{m.d.bestWeapon}</span></div>
                                   {m.d.bestEchoes && <div className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</div>}
                                 </div>
                               ) : null}
@@ -328,12 +328,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 const currentActiveSet = eq.echoSet || (activeSets[0]?.[0] || '');
                                 return (
                                   <div className="text-sm mt-1 space-y-0.5">
-                                    <div className="text-cyan-400/70">{equipped.length}/5 echoes</div>
+                                    <div className="text-cyan-400/70">{t('teams.damageCalc.echoCount', { count: equipped.length })}</div>
                                     {activeSets.length > 0 ? activeSets.map(([setName, count]) => {
                                       const isForced = eq.echoSet === setName;
                                       return (
                                         <div key={setName} className={`text-gray-500 inline-flex items-center gap-1 ${allDetectedSets.length > 1 ? 'cursor-pointer hover:text-white' : ''}`}
-                                          title={allDetectedSets.length > 1 ? 'Click to set as active echo set' : ''}
+                                          title={allDetectedSets.length > 1 ? t('teams.damageCalc.setActiveTitle') : ''}
                                           onClick={allDetectedSets.length > 1 ? () => {
                                             const eqk = state.activeTeamIndex + ':' + m.name;
                                             setTeamEquipment(prev => {
@@ -349,7 +349,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                         </div>
                                       );
                                     }) : allDetectedSets.length > 0 ? (
-                                      <div className="text-gray-600 text-2xs">No set bonus (need 2+ matching)</div>
+                                      <div className="text-gray-600 text-2xs">{t('teams.damageCalc.noSetBonus')}</div>
                                     ) : null}
                                   </div>
                                 );
@@ -361,12 +361,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         {/* Echo Preset (available for all characters including main DPS) */}
                         {(
                           <div>
-                            <div className="kuro-micro-label">Echo Preset</div>
+                            <div className="kuro-micro-label">{t('teams.damageCalc.echoPreset')}</div>
                             <div className="flex gap-0.5">
                               {[
-                                { value: 'default', label: 'ATK/Crit', color: 'yellow' },
-                                { value: 'er', label: 'ER Focus', color: 'cyan' },
-                                { value: 'support', label: 'Support', color: 'blue' },
+                                { value: 'default', label: t('teams.damageCalc.presetDefault'), color: 'yellow' },
+                                { value: 'er', label: t('teams.damageCalc.presetEr'), color: 'cyan' },
+                                { value: 'support', label: t('teams.damageCalc.presetSupport'), color: 'blue' },
                               ].map(opt => {
                                 const currentPreset = eq.echoPreset || 'default';
                                 const isActive = currentPreset === opt.value;
@@ -408,13 +408,13 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <details className="group" open>
                           <summary className="kuro-label cursor-pointer hover:text-gray-200 transition-colors select-none !flex !flex-row items-center gap-1 list-none [&::-webkit-details-marker]:hidden" style={{ display: 'flex', flexDirection: 'row', marginBottom: 0 }}>
                             <ChevronDown size={10} className="transform group-open:rotate-180 transition-transform flex-shrink-0" />
-                            <span>Sequence · Refinement</span>
+                            <span>{t('teams.damageCalc.sequenceRefinement')}</span>
                           </summary>
                         <div className="kuro-detail-box mt-1 space-y-2">
-                          <div className="flex" role="group" aria-label={`${m.name} sequence and refinement`} style={{ gap: 'var(--card-padding)' }}>
+                          <div className="flex" role="group" aria-label={t('teams.damageCalc.sequenceRefinementAria', { name: m.name })} style={{ gap: 'var(--card-padding)' }}>
                             <div className="flex-[7] min-w-0 space-y-0.5">
-                              <div className="kuro-micro-label">Sequence</div>
-                              <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} resonance sequence level`}>
+                              <div className="kuro-micro-label">{t('teams.damageCalc.sequence')}</div>
+                              <div className="flex gap-0.5" role="radiogroup" aria-label={t('teams.damageCalc.sequenceAria', { name: m.name })}>
                                 {[0,1,2,3,4,5,6].map(s => {
                                   const isActive = (eq.sequence || 0) === s;
                                   return (
@@ -436,8 +436,8 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                               </div>
                             </div>
                             <div className="flex-[5] min-w-0 space-y-0.5">
-                              <div className="kuro-micro-label">Refinement</div>
-                              <div className="flex gap-0.5" role="radiogroup" aria-label={`${m.name} weapon refinement level`}>
+                              <div className="kuro-micro-label">{t('teams.damageCalc.refinement')}</div>
+                              <div className="flex gap-0.5" role="radiogroup" aria-label={t('teams.damageCalc.refinementAria', { name: m.name })}>
                                 {[1,2,3,4,5].map(r => {
                                   const isActive = (eq.refinement || 1) === r;
                                   return (
@@ -469,7 +469,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   <div className="flex flex-wrap gap-x-4 gap-y-1.5">
                     {/* Damage Focus */}
                     <div className="min-w-0">
-                      <div className="kuro-label">Damage Focus</div>
+                      <div className="kuro-label">{t('teams.damageCalc.damageFocus')}</div>
                       <div className="flex flex-wrap gap-1">
                         <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
@@ -501,7 +501,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         {m.d.statScaling && (
                           <span className="kuro-badge kuro-badge-violet inline-flex items-center gap-1">
                             {getStatIcon(m.d.statScaling) && <img src={getStatIcon(m.d.statScaling)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                            {m.d.statScaling} Scaling
+                            {t('teams.damageCalc.scaling', { stat: m.d.statScaling })}
                           </span>
                         )}
                       </div>
@@ -509,7 +509,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     {/* Buffs */}
                     {m.d.buffs?.length > 0 && (
                       <div className="min-w-0">
-                        <div className="kuro-label">Buffs</div>
+                        <div className="kuro-label">{t('teams.damageCalc.buffs')}</div>
                         <div className="flex flex-wrap gap-1">
                           {m.d.buffs.map((b, bi) => (
                             <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>
@@ -520,7 +520,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     {/* Debuffs */}
                     {m.d.debuffs?.length > 0 && (
                       <div className="min-w-0">
-                        <div className="kuro-label">Debuffs</div>
+                        <div className="kuro-label">{t('teams.damageCalc.debuffs')}</div>
                         <div className="flex flex-wrap gap-1">
                           {m.d.debuffs.map((db, di) => (
                             <span key={di} className="kuro-badge kuro-badge-red">{db}</span>
@@ -533,9 +533,9 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   {/* ── Section 5: Damage Stats (Main DPS only) ── */}
                   {isMain && (
                     <div>
-                      <div className="kuro-label" title="Includes active team buff modifiers">Damage Stats</div>
+                      <div className="kuro-label" title={t('teams.damageCalc.damageStatsTooltip')}>{t('teams.damageCalc.damageStats')}</div>
                       <div className="flex flex-wrap gap-1">
-                        <span className="kuro-badge kuro-badge-yellow">Eff.{mainDps.scaling !== 'ATK' ? mainDps.scaling : 'ATK'} {effAtk.toLocaleString('en-US')}</span>
+                        <span className="kuro-badge kuro-badge-yellow">Eff.{mainDps.scaling !== 'ATK' ? mainDps.scaling : 'ATK'} {formatNumber(effAtk)}</span>
                         <span className="kuro-badge kuro-badge-cyan">CR {cr.toFixed(1)}%</span>
                         <span className="kuro-badge kuro-badge-cyan">CD {cd.toFixed(1)}%</span>
                         <span className="kuro-badge font-medium"
@@ -561,7 +561,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             {/* Aggregated buffs/debuffs — values appended to existing tags */}
             {allBuffs.length > 0 && (
               <div>
-                <div className="kuro-label">Team Buffs</div>
+                <div className="kuro-label">{t('teams.damageCalc.teamBuffs')}</div>
                 <div className="flex flex-wrap gap-1">
                   {allBuffs.map((b, i) => (
                     <span key={i} className="kuro-badge kuro-badge-emerald">
@@ -580,7 +580,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             )}
             {(allDebuffs.length > 0 || defShred > 0 || resShred > 0 || defIgnore > 0) && (
               <div>
-                <div className="kuro-label">Enemy Debuffs</div>
+                <div className="kuro-label">{t('teams.damageCalc.enemyDebuffs')}</div>
                 <div className="flex flex-wrap gap-1">
                   {allDebuffs.map((b, i) => (
                     <span key={i} className="kuro-badge kuro-badge-red">
@@ -597,32 +597,32 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             {/* DPS Tiers */}
             <div className="grid grid-cols-2 gap-2">
               <div className="kuro-stat kuro-stat-cyan p-2 text-center col-span-2">
-                <div className="text-gray-400 text-sm">Team DPS</div>
-                <div className="text-2xl font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{teamDps.toLocaleString('en-US')}/s</div>
-                <div className="text-gray-500 text-sm">skills + echoes + DOTs + reactions</div>
+                <div className="text-gray-400 text-sm">{t('teams.damageCalc.teamDps')}</div>
+                <div className="text-2xl font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{formatNumber(teamDps)}/s</div>
+                <div className="text-gray-500 text-sm">{t('teams.damageCalc.teamDpsDetail')}</div>
               </div>
               {enemyEcho && teamDps > 0 && (() => {
                 const targetHp = getEnemyStatsAtLevel(enemyEcho, enemyLevel)?.hp;
                 return targetHp > 0 && (
                   <div className="kuro-stat p-2 text-center col-span-2">
-                    <div className="text-gray-400 text-sm">Time to Kill</div>
+                    <div className="text-gray-400 text-sm">{t('teams.damageCalc.timeToKill')}</div>
                     <div className="text-lg font-bold text-white kuro-number">{(targetHp / teamDps).toFixed(1)}s</div>
                     <div className="text-gray-500 text-sm">
-                      {enemyEcho} Lv.{enemyLevel} HP {targetHp.toLocaleString('en-US')} ÷ Team DPS
-                      {rotTime > 0 && <> · {(targetHp / teamDps / rotTime).toFixed(1)} rotation cycles</>}
+                      {t('teams.damageCalc.timeToKillDetail', { enemy: enemyEcho, level: enemyLevel, hp: formatNumber(targetHp) })}
+                      {rotTime > 0 && <>{t('teams.damageCalc.rotationCycles', { value: (targetHp / teamDps / rotTime).toFixed(1) })}</>}
                     </div>
                   </div>
                 );
               })()}
               <div className="kuro-stat kuro-stat-emerald p-2 text-center">
-                <div className="text-gray-400 text-sm">Solo DPS</div>
-                <div className="text-lg font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{soloDps.toLocaleString('en-US')}/s</div>
-                <div className="text-gray-500 text-sm">no team buffs</div>
+                <div className="text-gray-400 text-sm">{t('teams.damageCalc.soloDps')}</div>
+                <div className="text-lg font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{formatNumber(soloDps)}/s</div>
+                <div className="text-gray-500 text-sm">{t('teams.damageCalc.soloDpsDetail')}</div>
               </div>
               <div className={`kuro-stat ${synergyUplift >= 80 ? 'kuro-stat-emerald' : synergyUplift >= 40 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
-                <div className="text-gray-400 text-sm">Synergy Uplift</div>
+                <div className="text-gray-400 text-sm">{t('teams.damageCalc.synergyUplift')}</div>
                 <div className={`text-lg font-bold kuro-number ${synergyUplift >= 80 ? 'text-emerald-400 synergy-high' : synergyUplift >= 40 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergyUplift >= 80 ? 'rgba(34,197,94,0.5)' : synergyUplift >= 40 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>+{synergyUplift}%</div>
-                <div className="text-gray-500 text-sm">team vs solo gain</div>
+                <div className="text-gray-500 text-sm">{t('teams.damageCalc.synergyUpliftDetail')}</div>
               </div>
             </div>
 
@@ -630,11 +630,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
             {/* Damage Source Breakdown */}
             {dmgSources && (dmgSources.echo > 0 || dmgSources.dot > 0) && (
               <div className="mt-2 p-2 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
-                <div className="text-gray-500 text-sm">Damage Sources</div>
+                <div className="text-gray-500 text-sm">{t('teams.damageCalc.damageSources')}</div>
                 {[
-                  { label: 'Rotation', pct: dmgSources.rotation, color: '#06b6d4' },
-                  ...(dmgSources.echo > 0 ? [{ label: 'Echo Skill', pct: dmgSources.echo, color: '#eab308' }] : []),
-                  ...(dmgSources.dot > 0 ? [{ label: 'DOT / Reactions', pct: dmgSources.dot, color: '#a855f7' }] : []),
+                  { label: t('teams.damageCalc.sourceRotation'), pct: dmgSources.rotation, color: '#06b6d4' },
+                  ...(dmgSources.echo > 0 ? [{ label: t('teams.damageCalc.sourceEcho'), pct: dmgSources.echo, color: '#eab308' }] : []),
+                  ...(dmgSources.dot > 0 ? [{ label: t('teams.damageCalc.sourceDot'), pct: dmgSources.dot, color: '#a855f7' }] : []),
                 ].map(s => (
                   <div key={s.label} className="flex items-center gap-2">
                     <span className="text-sm text-gray-300 w-24 truncate font-medium">{s.label}</span>
@@ -649,7 +649,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
             {memberDps && (
               <div className="mt-2 p-2 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
-                <div className="text-gray-500 text-sm mb-1">Damage Distribution</div>
+                <div className="text-gray-500 text-sm mb-1">{t('teams.damageCalc.damageDistribution')}</div>
                 {memberDps.map(m => {
                   const mData = members.find(mem => mem.name === m.name);
                   const elColor = mData ? getElementColor(mData.d.element) : '#67e8f9';
@@ -676,7 +676,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                 ))}
               </div>
             )}
-            <p className="text-sm text-gray-500 text-center mt-1">Team DPS: full rotation including skills, echoes, DOTs, reactions. Solo DPS: equipment only, no team buffs. Synergy Uplift: actual % DPS gained from team composition.</p>
+            <p className="text-sm text-gray-500 text-center mt-1">{t('teams.damageCalc.footerNote')}</p>
           </div>
         </CardBody>
         )}
@@ -686,7 +686,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       <RotationTimeline rotationTimeline={rotationTimeline} />
       {members.some(m => (m.seqLevel || 0) > 0) && (
         <p className="text-2xs text-gray-500 -mt-2 px-1">
-          Resonance Chain bonuses are included in the DPS number above but apply directly to stats — they don't have an on-field window, so they aren't drawn as bars on the timeline.
+          {t('teams.damageCalc.resonanceChainNote')}
         </p>
       )}
 
