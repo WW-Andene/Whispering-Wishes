@@ -404,7 +404,7 @@ export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
 // Rupture/Hack response skills per wiki) with no generic formula published — this stays a generic
 // stack/boost approximation driven entirely by CHAR_BUFF_TABLE[name].tuneBreak fields; accuracy
 // depends on those per-character values being filled in correctly (tracked separately).
-export function calcTuneBreakDmg(members, rotTime, defMult, resMult) {
+export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycleFactors) {
   const tbMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
   if (!tbMembers.length) return { dmg: 0, deepenMult: 1 };
   let totalBoost = 0;
@@ -424,12 +424,23 @@ export function calcTuneBreakDmg(members, rotTime, defMult, resMult) {
   let deepenMult = 1;
   const mornyeMem = tbMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.interferedDmgAmp);
   if (mornyeMem) {
-    const amp = CHAR_BUFF_TABLE[mornyeMem.name].tuneBreak.interferedDmgAmp;
+    // interferedDmgAmp is the CAP (e.g. Mornye: up to 40% at 260%+ ER), not a flat value — the wiki-
+    // documented rate is 0.25% amp per 1% Energy Regen over 100%. Scale by her real equipped ER
+    // (from calcEnergyCycles) instead of always applying the max, which overstated DPS for any
+    // non-ER-built Mornye.
+    const ampCap = CHAR_BUFF_TABLE[mornyeMem.name].tuneBreak.interferedDmgAmp;
+    const totalER = energyCycleFactors?.[mornyeMem.name]?.totalER ?? (100 + ampCap / 0.25);
+    const amp = Math.min(ampCap, Math.max(0, totalER - 100) * 0.25);
     deepenMult *= 1 + (amp / 100) * Math.min(1, (8 * breaksPerRot) / rotTime);
   }
   const maxStrain = Math.max(...tbMembers.map(m => CHAR_BUFF_TABLE[m.name].tuneBreak.maxStrainStacks || 0));
   if (maxStrain > 0 && totalBoost > 0) {
-    const strainPct = maxStrain * totalBoost * 0.12;
+    // Read each character's own strainDmgPerStack rather than assuming the 0.12 every current
+    // Tune Strain character happens to share — a future character with a different rate would
+    // otherwise silently get the wrong value.
+    const strainRateMember = tbMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.strainDmgPerStack != null);
+    const strainDmgPerStack = strainRateMember ? CHAR_BUFF_TABLE[strainRateMember.name].tuneBreak.strainDmgPerStack : 0.12;
+    const strainPct = maxStrain * totalBoost * strainDmgPerStack;
     deepenMult *= 1 + (strainPct / 100) * Math.min(1, (8 * breaksPerRot) / rotTime);
   }
   return { dmg, deepenMult };

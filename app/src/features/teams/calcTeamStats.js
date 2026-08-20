@@ -147,6 +147,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
       const sKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
       let rStatPct = 0, rCr = 5, rCd = 150, rElem = 0, rSkillDmg = 0;
+      let rBasicDmg = 0, rHeavyDmg = 0, rLibDmg = 0, rEchoDmg = 0, rCoordDmg = 0;
       if (m.weapSubstat === 'Crit Rate') rCr += parseFloat(m.weapSubVal) || 0;
       if (m.weapSubstat === 'Crit DMG') rCd += parseFloat(m.weapSubVal) || 0;
       if (m.weapSubstat === sKey) rStatPct += parseFloat(m.weapSubVal) || 0;
@@ -160,13 +161,17 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         else if (m.scaling === 'DEF') rStatPct += (wp.defPct || 0);
         rElem += (wp.elemDmg || 0); rSkillDmg += (wp.skillDmg || 0);
         rCr += (wp.critRate || 0); rCd += (wp.critDmg || 0);
+        rBasicDmg += (wp.basicDmg || 0); rHeavyDmg += (wp.heavyDmg || 0);
+        rLibDmg += (wp.libDmg || 0); rEchoDmg += (wp.echoDmg || 0);
+        rCoordDmg += (wp.coordDmg || 0);
       }
       // Apply echo set + echo stats using shared utility (was 50 lines of duplicated logic)
-      const rStats = { atkPct: rStatPct, cr: rCr, cd: rCd, elemDmg: rElem, skillDmg: rSkillDmg, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, coordDmg: 0, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
+      const rStats = { atkPct: rStatPct, cr: rCr, cd: rCd, elemDmg: rElem, skillDmg: rSkillDmg, basicDmg: rBasicDmg, heavyDmg: rHeavyDmg, libDmg: rLibDmg, echoDmg: rEchoDmg, coordDmg: rCoordDmg, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
       applyFullEchoSet(rStats, m.echoSet, m.echoSet2, m.d.element, m.scaling);
       const eqKey = teamIdx + ':' + m.name;
       applyEchoStats(rStats, teamEquipment[eqKey]?.echoes, m.d.element, m.scaling, { atk: m.totalBaseAtk, hp: m.d.baseHp, def: m.d.baseDef });
       if (m.d.element && elCounts[m.d.element] >= 2) rStats.elemDmg += 10;
+      routeTypeBonuses(rStats, m.d.dmgFocus || []);
       const rEff = m.baseStat * (1 + rStats.atkPct / 100);
       const rAvgCrit = calcAvgCrit(rStats.cr, rStats.cd);
       const rDmgBonus = 1 + (rStats.elemDmg + rStats.skillDmg) / 100;
@@ -368,6 +373,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           else if (b.stat === 'critRate') cr += b.value;
           else if (b.stat === 'critDmg') cd += b.value;
           else if (b.stat === 'defIgnore') defIgnore += b.value;
+          else if (b.stat === 'deepen') deepen += b.value;
         });
       }
 
@@ -502,16 +508,17 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const erosionResult = calcErosionDmg(mems, rotTime, defMult, erosionResMult);
     const fusionBurstResult = calcFusionBurstDmg(mems, rotTime, defMult, fusionBurstResMult);
     const electroFlareResult = calcElectroFlareDmg(mems, rotTime, defMult, electroFlareResMult);
-    const tuneBreakResult = calcTuneBreakDmg(mems, rotTime, defMult, resMult);
+    // ── Energy cycle awareness (from calcEngine) ── computed before calcTuneBreakDmg so Mornye's
+    // Interfered Marker amp can scale off real equipped ER instead of always assuming max ER.
+    const energyCycleFactors = calcEnergyCycles(mems, teamEquipment, teamIdx);
+
+    const tuneBreakResult = calcTuneBreakDmg(mems, rotTime, defMult, resMult, energyCycleFactors);
     dotDmgPerRotation += frazzleResult.dmg + erosionResult.dmg + fusionBurstResult.dmg + electroFlareResult.dmg + tuneBreakResult.dmg;
     const hasFrazzle = frazzleResult.active;
     const hasErosion = erosionResult.active;
     const hasFusionBurst = fusionBurstResult.active;
     const hasElectroFlare = electroFlareResult.active;
     const tuneBreakDeepenMult = tuneBreakResult.deepenMult;
-
-    // ── Energy cycle awareness (from calcEngine) ──
-    const energyCycleFactors = calcEnergyCycles(mems, teamEquipment, teamIdx);
 
     let totalRotDmg = 0;
     const memberDmgArr = [];
@@ -637,7 +644,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
             sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
           }
           (obt.libBuffs || []).forEach(b => {
-            if (b.target === 'team') {
+            if (b.target === 'team' || b.target === 'next') {
               const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
               const val = b.value * uptime;
               if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
