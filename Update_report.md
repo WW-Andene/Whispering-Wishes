@@ -1,5 +1,79 @@
 # Whispering Wishes — Content Refresh Audit Report
 
+## 2026-08-20 session — v3.6 confirmed live, Qingxiao/Jingran upgraded from placeholder to real kit data
+
+**Confirmed:** nanoka.cc's version selector now reads "Version 3.6 (365) (latest) (live) (current)" —
+v3.6 genuinely shipped today, not still in beta. Both Qingxiao (character/1413) and Jingran
+(character/1212) have full nanoka.cc kit pages (skills, Forte mechanics, Resonance Chain, damage
+tables) despite Jingran's own fandom wiki page still being flagged "upcoming content" — he's
+confirmed releasing in the 3.6-p2 banner (~Sept 10, per the app's existing BANNER_HISTORY), not
+live day-one like Qingxiao (who released today, confirmed via her own fandom infobox: "Release
+Date: August 20, 2026", convene "Wind of Transcendence" 2026-08-20 – 2026-09-10).
+
+**What was actually missing on entry to this session:** a prior session had already built out
+Qingxiao and Jingran's `CHARACTER_DATA` entries (base stats, rotation data, buff table, skill
+multipliers, resonance chain multipliers, real signature weapons) far beyond a bare placeholder —
+the two genuine gaps were (1) ascension/skill material *names*, both still literally
+`'Unconfirmed (releases 3.6, ...)'`, and (2) Jingran's Resonance Chain *node names*, entirely
+missing from `CHAIN_NODE_NAMES`.
+
+**Fixed this session:**
+- **Materials** — confirmed via `wutheringwaves.fandom.com`'s own Ascension Materials / Forte
+  tables for both characters (their pages are live even though Jingran hasn't banner-released):
+  - Qingxiao: `ascension: { boss: "Forged Empyrean's Sigh", common: 'Autopuppet Kernel', specialty: 'Blade Blossom' }`, `skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' }`
+  - Jingran: `ascension: { boss: "Forged Empyrean's Sigh", common: 'Whisperin Core', specialty: 'Cloudperch Seed' }`, `skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'Carved Crystal' }`
+  - All families except one already existed in `COMMON_MAT_TIERS`/`FORGERY_MAT_TIERS`/`MATERIAL_IMAGES`
+    from earlier sessions' material passes. The one new material — **Forged Empyrean's Sigh** (the
+    boss-drop both characters share) — had no icon source; added to `MATERIAL_IMAGES` via a new local
+    `MATERIAL_PLACEHOLDER_IMAGE` constant in `data/materialData.js`, matching the existing
+    placeholder-art convention (kept separate from `banners.js`'s own `PLACEHOLDER_IMAGE` to avoid
+    coupling the two leaf data modules, per that convention's own stated rationale).
+- **Jingran's Resonance Chain node names** — sourced from nanoka.cc (fandom's own page literally says
+  "Jingran doesn't have any Sequence Nodes yet"): `Yin and Yang in Harmony, the Ultimate Law of Being`
+  / `A Solitary Lantern, Across Lands Shade-Trodden` / `World's Course Shifts, Each to Their Rightful
+  Paths` / `Where Reality Meets Illusion, Where Living Meet Dead` / `Ends Return to Beginnings, Truth
+  of Life Laid Bare` / `As Favors and Feuds Fade, New Stories Await`.
+- **`CURRENT_BANNERS`/`BANNER_HISTORY` v3.6-p1 correction** — `featured4Stars` for both Qingxiao and
+  Denia's banner cards was an unconfirmed carry-over guess (`Baizhi/Mortefi/Lumi`); fandom's own
+  convene table names the real trio as **Baizhi/Yangyang/Sanhua**. Fixed in both places. Also removed
+  the stale `predicted: true` flag from the `v3.6-p1` `BANNER_HISTORY` entry — it's confirmed live
+  now, not a Game8 estimate anymore.
+- **Test suite fix (pre-existing, unrelated to the above):** `data-integrity.test.js`'s "every
+  character has base stats" test unconditionally asserted `baseDef > 0` for every character. Jingran's
+  kit genuinely fixes his combat DEF to 0 (his "Nether to Light" passive: *"Jingran's DEF is fixed at
+  0"* — confirmed identically on both nanoka.cc and fandom), so this was a real conflict between a
+  test assumption and a correctly-modeled zero value, not a data bug. Fixed the test to explicitly
+  allow Jingran's confirmed real `baseDef: 0` instead of leaving the suite red or falsifying the data
+  with a fake nonzero value.
+
+**Verified, not re-fetched (already correct from a prior pass):** Qingxiao's base stats (HP 10300 /
+ATK 463 / DEF 1112 / maxEnergy 125), specialty material (Blade Blossom), signature weapon (Glint of
+Clouds, real Sword stats/passive already in `WEAPON_DATA`), skills/Forte description, and
+`CHAR_BUFF_TABLE`/`SKILL_MULTIPLIERS`/`RESONANCE_CHAIN_DATA` rows for both characters — all
+cross-checked against this session's own nanoka.cc kit pulls and found accurate.
+
+**Confirmed as genuine gaps, not fetch failures — left as explicitly-marked "Unconfirmed":**
+- **Jingran's `bestEchoes`/`teams`** — no community build guide exists yet; he isn't banner-live
+  (confirmed 3.6-p2, ~Sept 10). Fandom's own wiki still says "not featured in any Event Convene."
+- **`TIER_DATA` for both characters** — Prydwen's tier-list page, re-fetched this session, is still
+  headed "Wuthering Waves Tier List (**3.4** Patch)" and its character grid renders with no resolvable
+  text names (image/tooltip-only cells) — neither confirms nor lets us safely infer either character's
+  placement. Correctly left with no `TIER_DATA` row for either, same as the prior session's stance.
+- **Version 3.7** — checked nanoka.cc's own version selector for anything past 3.6 (`?version=3.7`
+  redirects to the same 3.6 roster, no new names) — nothing genuinely confirmed exists yet. No
+  placeholder/upcoming entries added, per this session's explicit instruction not to fabricate.
+
+**Source access note:** Game8 (`game8.co/games/Wuthering-Waves/archives/452489`) returned a hard
+CloudFront 403 this session (`"The request could not be satisfied... Request blocked"`) even via the
+same browser-fingerprint technique that reliably works on prydwen.gg and fandom — could not be routed
+around. Not needed in the end: nanoka.cc + fandom together fully covered this session's scope.
+
+**Tests/build:** Full suite now **612/612 passing** (up from 96 in the earlier audit — the app's test
+suite has grown substantially across sessions since this report was first written), production build
+succeeds clean.
+
+---
+
 **Date of audit:** 2026-08-14
 **App's last data version:** 3.3 (partial — only banner stubs for Denia/Hiyuki)
 **Live game version:** 3.5 ("Blade of Past Resounds, Lingering Dream Hymns" — July 10 to August 19, 2026)

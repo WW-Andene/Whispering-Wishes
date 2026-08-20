@@ -11,12 +11,13 @@ import { RELEASE_ORDER, CHARACTER_DATA } from './characters.js';
 const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
 
 // [SECTION:BANNERS]
-// v3.6 Phase 1 — Qingxiao debut + Denia rerun, August 20 - September 10, 2026. Dates/lineup/art
-// carried over from BANNER_HISTORY's v3.6-p1 entry below (Game8 archive 453303, 21-day-cycle
-// estimate — marked `predicted: true` there since Kuro hasn't officially confirmed this phase yet).
-// title/element/weaponType pulled from CHARACTER_DATA (audited IDENTITY_DATA); featured4Stars carried
-// over from the prior v3.5 banner's set (Baizhi/Mortefi/Lumi, Variation/Endless Collapse/Relativistic
-// Jet) as the best available guess — not separately confirmed for this phase.
+// v3.6 Phase 1 — Qingxiao debut + Denia rerun, August 20 - September 10, 2026. CONFIRMED LIVE
+// 2026-08-20 (today) — nanoka.cc shows "Version 3.6 (365) (latest) (live) (current)" and
+// wutheringwaves.fandom.com's own Qingxiao infobox lists "Release Date: August 20, 2026" plus the
+// exact convene: "Wind of Transcendence" (2026-08-20 – 2026-09-10, 3.6), featured resonators
+// Qingxiao + Baizhi/Yangyang/Sanhua as 4★s — used to fix featured4Stars below (previously an
+// unconfirmed carry-over guess of Baizhi/Mortefi/Lumi). title/element/weaponType pulled from
+// CHARACTER_DATA (audited IDENTITY_DATA).
 const CURRENT_BANNERS = {
   version: '3.6', phase: 1, // Game version (not app version)
   // Aug 20, 10:00 CEST (UTC+2) = 08:00 UTC -> Sep 10, 10:00 CEST (UTC+2) = 08:00 UTC
@@ -36,8 +37,8 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/21kQ66xr/Drawn-Edges.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'qingxiao', name: 'Qingxiao', title: 'Heart Sword', element: 'Aero', weaponType: 'Sword', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg' }, // no individual splash art yet — new debut, using the combined convene banner
-    { id: 'denia', name: 'Denia', title: 'Bubbles of Nihility', element: 'Fusion', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg', imagePosition: '50% 31%' }, // real splash art (same asset as BANNER_HISTORY v3.3-p2 / CHARACTER_THEMES.denia)
+    { id: 'qingxiao', name: 'Qingxiao', title: 'Heart Sword', element: 'Aero', weaponType: 'Sword', isNew: true, featured4Stars: ['Baizhi', 'Yangyang', 'Sanhua'], imageUrl: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg' }, // no individual splash art yet — new debut, using the combined convene banner
+    { id: 'denia', name: 'Denia', title: 'Bubbles of Nihility', element: 'Fusion', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Baizhi', 'Yangyang', 'Sanhua'], imageUrl: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg', imagePosition: '50% 31%' }, // real splash art (same asset as BANNER_HISTORY v3.3-p2 / CHARACTER_THEMES.denia)
   ],
   weapons: [
     { id: 'glint-of-clouds', name: 'Glint of Clouds', type: 'Sword', forCharacter: 'Qingxiao', element: 'Aero', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/C3Gz8y18/Glint-Of-Cloud-Banner.jpg' },
@@ -79,7 +80,9 @@ const BANNER_HISTORY = [
   // the real official wide banner art (user-supplied, already hosted on ibb.co).
   // weaponBannerArt added 2026-08-18: real official Featured Weapon Convene banner for Glint of Clouds
   // (Qingxiao's signature Sword), user-supplied.
-  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg', weaponBannerArt: 'https://i.ibb.co/C3Gz8y18/Glint-Of-Cloud-Banner.jpg', predicted: true },
+  // predicted flag removed 2026-08-20: confirmed live via fandom's own infobox ("Wind of
+  // Transcendence" convene, 2026-08-20 – 2026-09-10, 3.6) — no longer a Game8 estimate.
+  { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg', weaponBannerArt: 'https://i.ibb.co/C3Gz8y18/Glint-Of-Cloud-Banner.jpg' },
   // Version 3.5 — confirmed live via wuwatracker.com/fr/timeline (user-clarified 2026-08-14). p2 is
   // the current banner (Suisui + Aemeath rerun). p1 was Yangyang: Xuanling + Luuk Herssen + Lynae
   // (rerun). A separate "Starpath/Tideforge Reverbs" special selector Convene also runs continuously

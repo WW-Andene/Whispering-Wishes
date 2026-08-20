@@ -151,3 +151,43 @@ All 10 steps of the implementation plan are now complete or explicitly resolved 
 ```
 
 Character portraits/art assets are the practical bottleneck across almost every step — worth confirming those exist or can be sourced before committing to a start date on step 2.
+
+---
+
+## 11. v3.6 launch pass — ✅ DONE (2026-08-20 session)
+
+**Main work:** Confirmed v3.6 is genuinely live (nanoka.cc version selector: "3.6 (365) (latest)
+(live) (current)") and closed the two real remaining gaps in Qingxiao/Jingran's `CHARACTER_DATA`
+entries (which a prior session had already built out well past placeholder level — base stats,
+rotation data, buff table, skill multipliers, resonance chain multipliers, and real signature
+weapons were all already correct): their ascension/skill-material *names* (both were still the
+literal string `'Unconfirmed (releases 3.6, ...)'`) and Jingran's Resonance Chain node names
+(missing from `CHAIN_NODE_NAMES` entirely). See `Update_report.md`'s 2026-08-20 entry for full
+source citations and exact values.
+
+**Connected work — completed:**
+- Added one new material, **Forged Empyrean's Sigh** (the boss-drop material both characters
+  share), to `MATERIAL_IMAGES` via a new `MATERIAL_PLACEHOLDER_IMAGE` constant in
+  `data/materialData.js` — every other material family both characters need already existed from
+  earlier sessions' material passes.
+- Fixed `CURRENT_BANNERS`/`BANNER_HISTORY`'s v3.6-p1 `featured4Stars` (was an unconfirmed
+  Baizhi/Mortefi/Lumi carry-over guess; real trio per fandom's own convene table is
+  Baizhi/Yangyang/Sanhua) and removed the now-stale `predicted: true` flag on that entry.
+- Fixed a pre-existing, unrelated test bug: `data-integrity.test.js` unconditionally required
+  `baseDef > 0` for every character, which conflicted with Jingran's genuinely kit-fixed `baseDef: 0`
+  (confirmed on both nanoka.cc and fandom — his passive literally fixes his DEF to 0). Added an
+  explicit, commented exception rather than falsifying his data with a fake nonzero DEF.
+- Full test suite (**612/612**, up from 96 at the time of the original audit) and production build
+  both pass.
+
+**Confirmed still out of scope / genuine gaps, not oversights:**
+- Jingran's `bestEchoes`/`teams` — no community build guide exists yet; he isn't live in any banner
+  as of 2026-08-20 (confirmed for 3.6-p2, ~Sept 10).
+- `TIER_DATA` rows for Qingxiao/Jingran — Prydwen's tier-list page is still headed "3.4 Patch" and
+  its grid has no resolvable character names in this pass's fetch; can't safely infer placement.
+- Version 3.7 — checked nanoka.cc for anything beyond 3.6; nothing exists yet. No speculative
+  entries added.
+- Game8 (`archives/452489`) returned a hard CloudFront 403 all session, unlike prydwen.gg/fandom
+  which both worked fine with the same browser-fingerprint technique — not blocking since nanoka.cc
+  + fandom fully covered this session's scope, but flagged in case a future session needs Game8
+  specifically (e.g. for banner-history cross-checks Game8 previously provided).

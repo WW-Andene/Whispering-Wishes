@@ -697,11 +697,13 @@ const CHARACTER_DATA = {
   'Qingxiao': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
     desc: 'Paragon of Mengzhou. On-field Aero DPS who builds Qin Heart and Sword Cadence through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for empowered combos, scaling off Tune Strain - Interfered stacks and her own Mindlock stacks.',
     skills: ['Strings to Steel', 'Severing Note', 'Billows Beneath Heaven', 'Tonality Shift'],
-    // specialty confirmed 2026-08-18 via fandom's own File:Blade_Blossom.png/Item Infobox ("Ascension
-    // Material (Mengzhou)", the specialty-material tier for her home city) — boss/common materials
-    // still have no dedicated wiki page or uploaded icon this close to her 2026-08-20 release.
-    ascension: { boss: 'Unconfirmed (releases 3.6, Aug 20 2026)', common: 'Unconfirmed (releases 3.6, Aug 20 2026)', specialty: 'Blade Blossom' },
-    skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, Aug 20 2026)', forgery: 'Unconfirmed (releases 3.6, Aug 20 2026)' },
+    // Confirmed 2026-08-20 (v3.6 now live) via wutheringwaves.fandom.com's own Ascension
+    // Materials/Forte tables: boss drop Forged Empyrean's Sigh, common Autopuppet Kernel (Land of
+    // Xuanfang family, already in COMMON_MAT_TIERS), specialty Blade Blossom.
+    ascension: { boss: "Forged Empyrean's Sigh", common: 'Autopuppet Kernel', specialty: 'Blade Blossom' },
+    // weeklyDrop We Who Question, forgery Polarizer family (Broken Wing/Monowing/Polywing/Layered
+    // Wing Polarizer) — both confirmed same source.
+    skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' },
     bestEchoes: ['Heart of Evil\'s Purge 5pc'], bestWeapon: 'Glint of Clouds',
     // weaponAlts added 2026-08-18 from ww.nanoka.cc's own pre-release "Recommended Weapons" ranking
     // (character/1413, datamined ahead of release — Prydwen has no build guide published yet):
@@ -716,13 +718,20 @@ const CHARACTER_DATA = {
     // Dates corrected 2026-08-18: Jingran releases in the v3.6-p2 banner (~2026-09-10, per BANNER_HISTORY),
     // not Aug 20 (that's Qingxiao's v3.6-p1 date) — fandom's own infobox leaves releaseDate blank/commented
     // ("2026-09-??"), so no exact day is confirmed yet.
-    ascension: { boss: 'Unconfirmed (releases 3.6, ~Sept 2026)', common: 'Unconfirmed (releases 3.6, ~Sept 2026)', specialty: 'Unconfirmed (releases 3.6, ~Sept 2026)' },
-    skillMaterials: { weeklyDrop: 'Unconfirmed (releases 3.6, ~Sept 2026)', forgery: 'Unconfirmed (releases 3.6, ~Sept 2026)' },
-    // bestWeapon confirmed real via nanoka.cc: Thousandfold Deliverance (Broadblade, 413 ATK / +72.2% HP, "Hark, Spirits and Stars").
-    // No community build guide exists yet (unreleased, and he isn't even datamined into nanoka.cc's own
-    // character list yet unlike Qingxiao) — bestEchoes/teams/weaponAlts remain unconfirmed.
-    bestEchoes: ['Unconfirmed (releases 3.6, ~Sept 2026)'], bestWeapon: 'Thousandfold Deliverance',
-    teams: ['Unconfirmed (releases 3.6, ~Sept 2026)'] },
+    // Confirmed 2026-08-20 via wutheringwaves.fandom.com's own Ascension Materials/Forte tables
+    // (page now live, marked "upcoming content" since Jingran himself hasn't banner-released yet —
+    // his kit/materials are shown regardless): boss drop Forged Empyrean's Sigh (shared with
+    // Qingxiao), common Whisperin Core, specialty Cloudperch Seed.
+    ascension: { boss: "Forged Empyrean's Sigh", common: 'Whisperin Core', specialty: 'Cloudperch Seed' },
+    // weeklyDrop Skyward Glazed Heart, forgery Carved Crystal family — both confirmed same source.
+    skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'Carved Crystal' },
+    // bestWeapon confirmed real via nanoka.cc: Thousandfold Deliverance (Broadblade, 412 ATK / +72.2% HP, "Hark, Spirits and Stars").
+    // No community build guide exists yet — fandom's own wiki still flags him "upcoming content" and
+    // "not featured in any Event Convene" as of 2026-08-20 (he's confirmed for the 3.6-p2 banner,
+    // ~Sept 10, per BANNER_HISTORY, not live day-one like Qingxiao) — bestEchoes/teams/weaponAlts
+    // remain genuinely unconfirmed, not guessed.
+    bestEchoes: ['Unconfirmed (releases 3.6-p2, ~Sept 2026)'], bestWeapon: 'Thousandfold Deliverance',
+    teams: ['Unconfirmed (releases 3.6-p2, ~Sept 2026)'] },
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Aero sub-DPS who deals off-field Aero DMG via Coordinated Attacks triggered by his mist clone summon.',
@@ -5855,6 +5864,10 @@ const CHAIN_NODE_NAMES = {
   // (verified via direct MediaWiki titles queries, all "missing"), a genuine pre-release gap 2 days
   // ahead of her release, not a fetch failure.
   'Qingxiao': { s1: 'Like Clouds That Meet and Drift Apart', s2: 'Like Petals That Fall Without a Sound', s3: 'Dreams Fade, Sword Abides', s4: 'Wherever the Road Leads, Side by Side', s5: 'Cold Steel That Longs to Warm the Snow', s6: 'Cleanse This Tarnished Age, Till All Runs Clear' },
+  // Jingran's node names confirmed 2026-08-20 via ww.nanoka.cc (character/1212, now live with v3.6) —
+  // fandom's own page still has no Sequence Node table populated ("Jingran doesn't have any Sequence
+  // Nodes yet"), so nanoka is the sole source here, same as Qingxiao's pre-release pass.
+  'Jingran': { s1: 'Yin and Yang in Harmony, the Ultimate Law of Being', s2: 'A Solitary Lantern, Across Lands Shade-Trodden', s3: "World's Course Shifts, Each to Their Rightful Paths", s4: 'Where Reality Meets Illusion, Where Living Meet Dead', s5: 'Ends Return to Beginnings, Truth of Life Laid Bare', s6: 'As Favors and Feuds Fade, New Stories Await' },
 };
 
 // Release order for sorting (based on first banner appearance)
