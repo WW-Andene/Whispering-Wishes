@@ -11,6 +11,7 @@ import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 const WEAPON_RARITY_COLORS = {
   5: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
@@ -19,7 +20,8 @@ const WEAPON_RARITY_COLORS = {
   2: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/50' },
   1: { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/50' },
 };
-const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
+const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionData }) => {
+  const { framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const data = WEAPON_DATA[name];
   if (!data) return null;
 
@@ -29,6 +31,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
   };
 
   const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
+  const f = infoFraming || { x: 0, y: 0, zoom: 100 };
 
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} weapon details`} centered>
@@ -38,10 +41,20 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, collectionData }) => {
       >
        <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header */}
-        <div className={`relative h-40 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''}`} style={{ contain: 'paint' }} data-sheet-header>
+        <div className={`relative h-40 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''} ${framingMode ? ' cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? ' ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+          onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
+        >
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+          {framingMode && editingImage === `info-${name}` && (
+            <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+              <span className="text-black text-sm">✓</span>
+            </div>
+          )}
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} />
+            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} style={{
+              transform: `translateY(-50%) scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
+              transformOrigin: 'center',
+            }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close weapon details">
