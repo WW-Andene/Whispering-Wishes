@@ -9,6 +9,7 @@ import { haptic, getSetIcon, getElementIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import MonsterCard from '../../shared/components/MonsterCard.jsx';
+import { t } from '../../utils/i18n.js';
 
 // Every echo-dropping enemy the app tracks (1-cost commons through 4-cost bosses) is a legitimate
 // fight target — HP/ATK/DEF/RES/stagger data covers all 181 of them (see echoes.js), not just the
@@ -68,17 +69,17 @@ export default function EnemyEchoSelectorModal({
       <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
           <div>
-            <h3 className="text-white font-semibold text-xl">Select Target Enemy</h3>
-            <p className="text-gray-400 text-sm">All {ALL_TARGETABLE_ECHOES.length} tracked enemies — filter by Rank, Set, or Type</p>
+            <h3 className="text-white font-semibold text-xl">{t('teams.enemyEcho.title')}</h3>
+            <p className="text-gray-400 text-sm">{t('teams.enemyEcho.subtitle', { count: ALL_TARGETABLE_ECHOES.length })}</p>
           </div>
-          <button onClick={onClose} className="modal-close-btn p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close"><X size={16} /></button>
+          <button onClick={onClose} className="modal-close-btn p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.enemyEcho.closeAria')}><X size={16} /></button>
         </div>
 
         {/* Search + Filters */}
         <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search enemies…" className="kuro-input w-full text-base" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t('teams.enemyEcho.searchPlaceholder')} className="kuro-input w-full text-base" />
           <div className="flex items-center gap-2 px-0.5">
-            <span className="text-gray-400 text-sm shrink-0">Enemy Lv.</span>
+            <span className="text-gray-400 text-sm shrink-0">{t('teams.enemyEcho.enemyLevel')}</span>
             <input
               type="range" min={1} max={120} value={enemyLevel ?? 90}
               onChange={e => setEnemyLevel?.(Number(e.target.value))}
@@ -95,7 +96,7 @@ export default function EnemyEchoSelectorModal({
           <div className="flex gap-1.5">
             <KuroSelect value={rankFilter ?? 'all'} onChange={v => setRankFilter?.(v)} small
               options={[
-                { value: 'all', label: 'All Ranks' },
+                { value: 'all', label: t('teams.enemyEcho.allRanks') },
                 ...RANKS.map(r => ({ value: r, label: r })),
               ]}
               className="flex-1 text-sm" />
@@ -103,7 +104,7 @@ export default function EnemyEchoSelectorModal({
           <div className="flex gap-1.5">
             <KuroSelect value={setFilter} onChange={v => setSetFilter(v)} small
               options={[
-                { value: 'all', label: 'All Sets' },
+                { value: 'all', label: t('teams.enemyEcho.allSets') },
                 ...ALL_ECHO_SONATA_SETS.map(s => ({
                   value: s,
                   label: <span className="inline-flex items-center gap-1.5"><img src={getSetIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
@@ -112,7 +113,7 @@ export default function EnemyEchoSelectorModal({
               className="flex-1 text-sm" />
             <KuroSelect value={buffFilter} onChange={v => setBuffFilter(v)} small
               options={[
-                { value: 'all', label: 'All Types' },
+                { value: 'all', label: t('teams.enemyEcho.allTypes') },
                 ...ALL_ECHO_BUFF_TYPES.map(b => {
                   const icon = getElementIcon(b.replace(/ DMG$/, ''));
                   return {
@@ -131,7 +132,7 @@ export default function EnemyEchoSelectorModal({
           <div className="px-2 pt-2">
             <button onClick={() => { setEnemyEcho(''); onClose(); haptic.light(); }}
               className="kuro-btn text-sm w-full text-center text-gray-400">
-              Clear target (use default level-only scaling)
+              {t('teams.enemyEcho.clearTarget')}
             </button>
           </div>
         )}

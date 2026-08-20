@@ -77,7 +77,7 @@
   "consent": {
     "title": "Leaderboard - Data Sharing Notice",
     "intro": "By submitting your score, the following data will be sent to a shared database and displayed publicly:",
-    "playerId": "Your player ID ({{id}})",
+    "playerIdPrefix": "Your player ID",
     "stats": "Average pity, total Convenes, 50/50 win/loss stats",
     "owned": "Your owned 5★ characters and weapons",
     "pseudonymous": "This data is pseudonymous (linked to a hashed game UID or random ID, not your real identity).",
@@ -137,7 +137,8 @@
     "wonAria": "Won 50/50",
     "lostAria": "Lost 50/50",
     "guaranteedAria": "Guaranteed",
-    "guaranteedTitle": "Guaranteed - pity carried over from a previous lost 50/50"
+    "guaranteedTitle": "Guaranteed - pity carried over from a previous lost 50/50",
+    "beginnerBanner": "Beginner"
   },
   "trophies": {
     "title": "Trophies",

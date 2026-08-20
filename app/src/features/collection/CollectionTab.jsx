@@ -371,20 +371,20 @@ function CollectionTab({
             return (
               <Card><CardBody>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-white text-base font-medium">Collection Progress</span>
+                  <span className="text-white text-base font-medium">{t('collection.progress.title')}</span>
                   <span className="text-yellow-400 text-xl font-bold kuro-number">{pct}%</span>
                 </div>
                 <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                   <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300 progress-fill" style={{width: `${pct}%`}} />
                 </div>
                 <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-sm">
-                  <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">5★ Resonator</div></div>
-                  <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">4★ Resonator</div></div>
-                  <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">5★ Weapon</div></div>
-                  <div><div className="text-purple-400 font-bold">{ownedWeaps4}<span className="text-gray-500 font-normal">/{ALL_4STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">4★ Weapon</div></div>
-                  <div><div className="text-blue-400 font-bold">{ownedWeaps3}<span className="text-gray-500 font-normal">/{ALL_3STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">3★ Weapon</div></div>
-                  <div><div className="text-green-400 font-bold">{ownedWeaps2}<span className="text-gray-500 font-normal">/{ALL_2STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">2★ Weapon</div></div>
-                  <div><div className="text-gray-400 font-bold">{ownedWeaps1}<span className="text-gray-500 font-normal">/{ALL_1STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">1★ Weapon</div></div>
+                  <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.resonator5')}</div></div>
+                  <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.resonator4')}</div></div>
+                  <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.weapon5')}</div></div>
+                  <div><div className="text-purple-400 font-bold">{ownedWeaps4}<span className="text-gray-500 font-normal">/{ALL_4STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.weapon4')}</div></div>
+                  <div><div className="text-blue-400 font-bold">{ownedWeaps3}<span className="text-gray-500 font-normal">/{ALL_3STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.weapon3')}</div></div>
+                  <div><div className="text-green-400 font-bold">{ownedWeaps2}<span className="text-gray-500 font-normal">/{ALL_2STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.weapon2')}</div></div>
+                  <div><div className="text-gray-400 font-bold">{ownedWeaps1}<span className="text-gray-500 font-normal">/{ALL_1STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.weapon1')}</div></div>
                 </div>
               </CardBody></Card>
             );
@@ -399,13 +399,13 @@ function CollectionTab({
                 type="text"
                 value={collectionSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="Search by name, DPS, Electro, Broadblade…"
+                placeholder={t('collection.search.placeholder')}
                 className="kuro-input w-full pl-8 text-base"
-                aria-label="Search collection by keyword"
+                aria-label={t('collection.search.ariaLabel')}
               />
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
               {collectionSearch && (
-                <button onClick={() => handleSearchChange('')} className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white transition-colors" aria-label="Clear search">
+                <button onClick={() => handleSearchChange('')} className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white transition-colors" aria-label={t('collection.search.clear')}>
                   <X size={14} />
                 </button>
               )}
@@ -420,29 +420,29 @@ function CollectionTab({
                     <button
                       onClick={() => setCollectionView('items')}
                       className={`kuro-btn flex-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
-                      title="Resonators"
-                      aria-label="View Resonators"
+                      title={t('collection.view.resonators')}
+                      aria-label={t('collection.view.viewResonators')}
                       aria-pressed={collectionView === 'items'}
                     >
-                      <Crown size={12} className="inline mr-1" />Resonators
+                      <Crown size={12} className="inline mr-1" />{t('collection.view.resonators')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('weapons'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
-                      title="Weapons"
-                      aria-label="View weapons"
+                      title={t('collection.view.weapons')}
+                      aria-label={t('collection.view.viewWeapons')}
                       aria-pressed={collectionView === 'weapons'}
                     >
-                      <Sword size={12} className="inline mr-1" />Weapons
+                      <Sword size={12} className="inline mr-1" />{t('collection.view.weapons')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('echoes'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
                       className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
-                      title="Echoes"
-                      aria-label="View echoes"
+                      title={t('collection.view.echoes')}
+                      aria-label={t('collection.view.viewEchoes')}
                       aria-pressed={collectionView === 'echoes'}
                     >
-                      <Sparkles size={12} className="inline mr-1" />Echoes
+                      <Sparkles size={12} className="inline mr-1" />{t('collection.view.echoes')}
                     </button>
                   </div>
                 </CardBody>
@@ -454,11 +454,11 @@ function CollectionTab({
                 <div className="flex items-center justify-between mb-2 px-1">
                   <div className="flex items-center gap-1.5">
                     <span className="kuro-badge kuro-badge-yellow font-medium" style={{ borderRadius: 'var(--radius-pill)' }}>
-                      Filters active
+                      {t('collection.filters.active')}
                     </span>
                   </div>
                   <button onClick={clearCollectionFilters} className="text-sm text-gray-400 hover:text-white underline">
-                    Clear all
+                    {t('collection.filters.clearAll')}
                   </button>
                 </div>
               )}
@@ -470,31 +470,31 @@ function CollectionTab({
                     value={collectionWeaponFilter}
                     onChange={setCollectionWeaponFilter}
                     options={[
-                      { value: 'all', label: 'All Types' },
-                      ...['Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(t => ({
-                        value: t,
-                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(t)} alt="" width={14} height={14} className="shrink-0" /> {t}</span>,
+                      { value: 'all', label: t('collection.filters.allTypes') },
+                      ...['Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(wt => ({
+                        value: wt,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(wt)} alt="" width={14} height={14} className="shrink-0" /> {wt}</span>,
                       })),
                     ]}
-                    ariaLabel="Filter by weapon type"
+                    ariaLabel={t('collection.filters.byWeaponType')}
                   />
                   <KuroSelect
                     value={collectionElementFilter}
                     onChange={setCollectionElementFilter}
                     options={[
-                      { value: 'all', label: 'All Elements' },
+                      { value: 'all', label: t('collection.filters.allElements') },
                       ...['Aero', 'Glacio', 'Electro', 'Fusion', 'Spectro', 'Havoc'].map(el => ({
                         value: el,
                         label: <span className="inline-flex items-center gap-1.5"><img src={getElementIcon(el)} alt="" width={14} height={14} className="shrink-0" /> {el}</span>,
                       })),
                     ]}
-                    ariaLabel="Filter by element"
+                    ariaLabel={t('collection.filters.byElement')}
                   />
                   <KuroSelect
                     value={collectionStatFilter}
                     onChange={setCollectionStatFilter}
                     options={[
-                      { value: 'all', label: 'Stat Scaling' },
+                      { value: 'all', label: t('collection.filters.statScaling') },
                       ...[
                         ['ATK', 'ATK%'], ['HP', 'HP%'], ['DEF', 'DEF%'],
                         ['Crit Rate', 'Crit Rate'], ['Crit DMG', 'Crit DMG'], ['Energy Regen', 'Energy Regen'],
@@ -503,41 +503,41 @@ function CollectionTab({
                         label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon(val)} alt="" width={14} height={14} className="shrink-0" /> {text}</span>,
                       })),
                     ]}
-                    ariaLabel="Filter by stat scaling"
+                    ariaLabel={t('collection.filters.byStatScaling')}
                   />
                   <KuroSelect
                     value={collectionDamageFilter}
                     onChange={setCollectionDamageFilter}
                     options={[
-                      { value: 'all', label: 'All Damage' },
+                      { value: 'all', label: t('collection.filters.allDamage') },
                       ...[
-                        ['Basic ATK', 'Basic Attack Damage'], ['Heavy ATK', 'Heavy Attack Damage'],
-                        ['Skill', 'Resonance Skill Damage'], ['Liberation', 'Resonance Liberation Damage'],
-                        ['Echo', 'Echo Skill Damage'], ['Coordinated', 'Coordinated Attack'],
+                        ['Basic ATK', t('collection.damage.basicAtk')], ['Heavy ATK', t('collection.damage.heavyAtk')],
+                        ['Skill', t('collection.damage.skill')], ['Liberation', t('collection.damage.liberation')],
+                        ['Echo', t('collection.damage.echo')], ['Coordinated', t('collection.damage.coordinated')],
                       ].map(([val, tag]) => ({
                         value: val,
-                        label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon(tag)} alt="" width={14} height={14} className="shrink-0" /> {val}</span>,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon(val)} alt="" width={14} height={14} className="shrink-0" /> {tag}</span>,
                       })),
                     ]}
-                    ariaLabel="Filter by damage type"
+                    ariaLabel={t('collection.filters.byDamageType')}
                   />
                   <KuroSelect
                     value={collectionRoleFilter}
                     onChange={setCollectionRoleFilter}
                     options={[
-                      { value: 'all', label: 'All Roles' },
-                      { value: 'Main DPS', label: 'Main DPS' },
-                      { value: 'Sub DPS', label: 'Sub DPS' },
-                      { value: 'Support', label: 'Support' },
-                      { value: 'Healer', label: 'Healer' },
+                      { value: 'all', label: t('collection.filters.allRoles') },
+                      { value: 'Main DPS', label: t('collection.filters.mainDps') },
+                      { value: 'Sub DPS', label: t('collection.filters.subDps') },
+                      { value: 'Support', label: t('collection.filters.support') },
+                      { value: 'Healer', label: t('collection.filters.healer') },
                     ]}
-                    ariaLabel="Filter by role"
+                    ariaLabel={t('collection.filters.byRole')}
                   />
                   <KuroSelect
                     value={collectionCombatRoleFilter}
                     onChange={setCollectionCombatRoleFilter}
                     options={[
-                      { value: 'all', label: 'All Combat Roles' },
+                      { value: 'all', label: t('collection.filters.allCombatRoles') },
                       ...allCombatRoleTags.map(tag => {
                         const icon = getCombatRoleIcon(tag);
                         return {
@@ -546,13 +546,13 @@ function CollectionTab({
                         };
                       }),
                     ]}
-                    ariaLabel="Filter by combat role"
+                    ariaLabel={t('collection.filters.byCombatRole')}
                   />
                   <KuroSelect
                     value={collectionRegionFilter}
                     onChange={setCollectionRegionFilter}
                     options={[
-                      { value: 'all', label: 'All Regions' },
+                      { value: 'all', label: t('collection.filters.allRegions') },
                       ...['Huanglong', 'Rinascita', 'Black Shores', 'Lahai-Roi', 'Night City'].map(r => ({
                         value: r,
                         // Night City has no REGION_ICONS entry yet (no sourced emblem) — guard so it falls
@@ -561,13 +561,13 @@ function CollectionTab({
                         label: <span className="inline-flex items-center gap-1.5">{getRegionIcon(r) && <img src={getRegionIcon(r)} alt="" width={14} height={14} className="shrink-0" />} {r}</span>,
                       })),
                     ]}
-                    ariaLabel="Filter by region"
+                    ariaLabel={t('collection.filters.byRegion')}
                   />
                   <KuroSelect
                     value={collectionTierFilter}
                     onChange={setCollectionTierFilter}
                     options={[
-                      { value: 'all', label: 'All Tiers' },
+                      { value: 'all', label: t('collection.filters.allTiers') },
                       { value: 'T0', label: 'T0' },
                       { value: 'T0.5', label: 'T0.5' },
                       { value: 'T1', label: 'T1' },
@@ -576,17 +576,17 @@ function CollectionTab({
                       { value: 'T3', label: 'T3' },
                       { value: 'T4', label: 'T4' },
                     ]}
-                    ariaLabel="Filter by tier"
+                    ariaLabel={t('collection.filters.byTier')}
                   />
                   <KuroSelect
                     value={collectionOwnedFilter}
                     onChange={setCollectionOwnedFilter}
                     options={[
-                      { value: 'all', label: 'Ownership' },
-                      { value: 'owned', label: 'Owned' },
-                      { value: 'not-owned', label: 'Not Owned' },
+                      { value: 'all', label: t('collection.filters.ownership') },
+                      { value: 'owned', label: t('collection.filters.owned') },
+                      { value: 'not-owned', label: t('collection.filters.notOwned') },
                     ]}
-                    ariaLabel="Filter by owned status"
+                    ariaLabel={t('collection.filters.byOwnedStatus')}
                   />
                 </>)}
 
@@ -596,25 +596,25 @@ function CollectionTab({
                     value={weaponsTypeFilter}
                     onChange={setWeaponsTypeFilter}
                     options={[
-                      { value: 'all', label: 'All Types' },
-                      ...['Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(t => ({
-                        value: t,
-                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(t)} alt="" width={14} height={14} className="shrink-0" /> {t}</span>,
+                      { value: 'all', label: t('collection.filters.allTypes') },
+                      ...['Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(wt => ({
+                        value: wt,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(wt)} alt="" width={14} height={14} className="shrink-0" /> {wt}</span>,
                       })),
                     ]}
-                    ariaLabel="Filter by weapon type"
+                    ariaLabel={t('collection.filters.byWeaponType')}
                   />
                   <KuroSelect
                     value={weaponsStatFilter}
                     onChange={setWeaponsStatFilter}
                     options={[
-                      { value: 'all', label: 'All Sub-stats' },
+                      { value: 'all', label: t('collection.filters.allSubstats') },
                       ...['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen'].map(s => ({
                         value: s,
                         label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
                       })),
                     ]}
-                    ariaLabel="Filter by sub-stat"
+                    ariaLabel={t('collection.filters.bySubstat')}
                   />
                 </>)}
 
@@ -624,19 +624,19 @@ function CollectionTab({
                     value={collectionEchoSetFilter}
                     onChange={setCollectionEchoSetFilter}
                     options={[
-                      { value: 'all', label: 'All Sets' },
+                      { value: 'all', label: t('collection.filters.allSets') },
                       ...ALL_ECHO_SONATA_SETS.map(s => ({
                         value: s,
                         label: <span className="inline-flex items-center gap-1.5"><img src={getSetIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
                       })),
                     ]}
-                    ariaLabel="Filter by sonata set"
+                    ariaLabel={t('collection.filters.bySonataSet')}
                   />
                   <KuroSelect
                     value={collectionEchoBuffFilter}
                     onChange={setCollectionEchoBuffFilter}
                     options={[
-                      { value: 'all', label: 'All Buffs' },
+                      { value: 'all', label: t('collection.filters.allBuffs') },
                       ...ALL_ECHO_BUFF_TYPES.map(b => {
                         const icon = getElementIcon(b.replace(/ DMG$/, ''));
                         return {
@@ -647,7 +647,7 @@ function CollectionTab({
                         };
                       }),
                     ]}
-                    ariaLabel="Filter by buff type"
+                    ariaLabel={t('collection.filters.byBuffType')}
                   />
                 </>)}
 
@@ -660,16 +660,16 @@ function CollectionTab({
                 <button
                   onClick={refreshImages}
                   className="kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-gray-400 hover:text-emerald-400 transition-all"
-                  title="Refresh images if they don't load"
-                  aria-label="Refresh images"
+                  title={t('collection.sort.refresh')}
+                  aria-label={t('collection.sort.refreshAria')}
                 >
                   <RefreshCcw size={12} />
                 </button>
                 <button
                   onClick={() => setCollectionSort('copies')}
                   className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-base font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
-                  title="Sort by copies"
-                  aria-label="Sort by copies"
+                  title={t('collection.sort.byCopies')}
+                  aria-label={t('collection.sort.byCopies')}
                   aria-pressed={collectionSort === 'copies'}
                 >
                   #
@@ -677,8 +677,8 @@ function CollectionTab({
                 <button
                   onClick={() => setCollectionSort('release')}
                   className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
-                  title="Sort by release date"
-                  aria-label="Sort by release date"
+                  title={t('collection.sort.byRelease')}
+                  aria-label={t('collection.sort.byRelease')}
                   aria-pressed={collectionSort === 'release'}
                 >
                   <Calendar size={12} />
@@ -687,8 +687,8 @@ function CollectionTab({
                   <button
                     onClick={() => setCollectionSort(prev => prev === 'name' ? 'nameDesc' : 'name')}
                     className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-sm font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
-                    title={collectionSort === 'nameDesc' ? 'Sort Z-A' : 'Sort A-Z'}
-                    aria-label={collectionSort === 'nameDesc' ? 'Sorted Z to A, click for A to Z' : 'Sort alphabetically'}
+                    title={collectionSort === 'nameDesc' ? t('collection.sort.za') : t('collection.sort.az')}
+                    aria-label={collectionSort === 'nameDesc' ? t('collection.sort.sortedZA') : t('collection.sort.sortAlpha')}
                     aria-pressed={collectionSort === 'name' || collectionSort === 'nameDesc'}
                   >
                     {collectionSort === 'nameDesc' ? 'A↑' : 'A↓'}
@@ -702,7 +702,7 @@ function CollectionTab({
           {/* 4-Cost Echoes */}
           <Card>
             <CardHeader>
-              <span className="text-yellow-400">4</span> Cost Echoes
+              <span className="text-yellow-400">4</span> {t('collection.sections.costEchoes')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -723,7 +723,7 @@ function CollectionTab({
           {/* 3-Cost Echoes */}
           <Card>
             <CardHeader>
-              <span className="text-purple-400">3</span> Cost Echoes
+              <span className="text-purple-400">3</span> {t('collection.sections.costEchoes')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -744,7 +744,7 @@ function CollectionTab({
           {/* 1-Cost Echoes */}
           <Card>
             <CardHeader>
-              <span className="text-cyan-400">1</span> Cost Echoes
+              <span className="text-cyan-400">1</span> {t('collection.sections.costEchoes')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -767,7 +767,7 @@ function CollectionTab({
           {/* 5★ Resonators */}
           <Card>
             <CardHeader>
-              <span className="text-yellow-400">★★★★★</span> Resonators
+              <span className="text-yellow-400">★★★★★</span> {t('collection.sections.resonators')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -791,7 +791,7 @@ function CollectionTab({
           {/* 4★ Resonators */}
           <Card>
             <CardHeader>
-              <span className="text-purple-400">★★★★</span> Resonators
+              <span className="text-purple-400">★★★★</span> {t('collection.sections.resonators')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -817,7 +817,7 @@ function CollectionTab({
           {/* 5★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-yellow-400">★★★★★</span> Weapons
+              <span className="text-yellow-400">★★★★★</span> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -839,7 +839,7 @@ function CollectionTab({
           {/* 4★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-purple-400">★★★★</span> Weapons
+              <span className="text-purple-400">★★★★</span> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -861,7 +861,7 @@ function CollectionTab({
           {/* 3★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-blue-400">★★★</span> Weapons
+              <span className="text-blue-400">★★★</span> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -883,7 +883,7 @@ function CollectionTab({
           {/* 2★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-green-400">★★</span> Weapons
+              <span className="text-green-400">★★</span> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -905,7 +905,7 @@ function CollectionTab({
           {/* 1★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-gray-400">★</span> Weapons
+              <span className="text-gray-400">★</span> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -939,7 +939,7 @@ function CollectionTab({
         <button
           className="kuro-btn w-10 h-10 flex items-center justify-center text-lg font-bold text-red-400 hover:bg-red-500/20"
           onClick={() => adjustManualCount(counterWidget.name, counterWidget.isCharacter, -1)}
-          aria-label="Remove 1 copy"
+          aria-label={t('collection.widget.removeOne')}
         >−</button>
         <div className="text-center min-w-[44px] px-1">
           <div className="text-white text-base font-bold kuro-number">{manualCounts[counterWidget.name] || 0}</div>
@@ -948,7 +948,7 @@ function CollectionTab({
         <button
           className="kuro-btn w-10 h-10 flex items-center justify-center text-lg font-bold text-emerald-400 hover:bg-emerald-500/20"
           onClick={() => adjustManualCount(counterWidget.name, counterWidget.isCharacter, +1)}
-          aria-label="Add 1 copy"
+          aria-label={t('collection.widget.addOne')}
         >+</button>
       </div>
     )}

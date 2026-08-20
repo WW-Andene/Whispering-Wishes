@@ -477,17 +477,17 @@ function ProfileTab({
 
             {/* E2-FP3: Resonator Profile moved above Server Region (identity first) */}
             <Card>
-              <CardHeader><User size={14} className="text-cyan-400" /> Resonator Profile</CardHeader>
+              <CardHeader><User size={14} className="text-cyan-400" /> {t('profile.resonator.title')}</CardHeader>
               <CardBody className="space-y-3">
                 {/* Username */}
                 <div>
-                  <label htmlFor="profile-display-name" className="text-gray-400 text-sm block mb-2">Display Name</label>
+                  <label htmlFor="profile-display-name" className="text-gray-400 text-sm block mb-2">{t('profile.resonator.displayName')}</label>
                   <input
                     id="profile-display-name"
                     type="text"
                     value={state.profile.username}
                     onChange={e => dispatch({ type: 'SET_USERNAME', value: e.target.value.slice(0, MAX_USERNAME_LENGTH) })}
-                    placeholder="Enter your name…"
+                    placeholder={t('profile.resonator.displayNamePlaceholder')}
                     maxLength={MAX_USERNAME_LENGTH}
                     className="kuro-input w-full"
                   />
@@ -497,7 +497,7 @@ function ProfileTab({
 
                 {/* Profile Picture — current selection */}
                 <div>
-                  <label className="text-gray-400 text-sm block mb-2">Profile Picture</label>
+                  <label className="text-gray-400 text-sm block mb-2">{t('profile.resonator.profilePicture')}</label>
                   <div className="flex items-center gap-3">
                     <div className={`w-14 h-14 rounded-lg flex-shrink-0 kuro-avatar-frame kuro-shadow-card-deep${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`}>
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
@@ -508,13 +508,13 @@ function ProfileTab({
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-gray-200 text-base truncate">{state.profile.profilePic || 'Default icon'}</p>
-                      <p className="text-gray-400 text-sm mt-0.5">Tap the <Crown size={12} className="inline text-yellow-400" /> icon on any owned card in the Collection tab</p>
+                      <p className="text-gray-200 text-base truncate">{state.profile.profilePic || t('profile.resonator.defaultIcon')}</p>
+                      <p className="text-gray-400 text-sm mt-0.5">{t('profile.resonator.profilePicHint')} <Crown size={12} className="inline text-yellow-400" /></p>
                       {state.profile.profilePic && (
                         <button
                           onClick={() => dispatch({ type: 'SET_PROFILE_PIC', value: '' })}
                           className="text-red-400/70 text-sm hover:text-red-400 mt-0.5"
-                        >Reset to default</button>
+                        >{t('profile.resonator.resetToDefault')}</button>
                       )}
                     </div>
                   </div>
@@ -525,21 +525,21 @@ function ProfileTab({
                   onClick={() => setShowIdCard(true)}
                   className="kuro-btn kuro-btn-hero w-full text-base flex items-center justify-center gap-2"
                 >
-                  <Award size={14} /> View Resonator ID Card
+                  <Award size={14} /> {t('profile.resonator.viewIdCard')}
                 </button>
               </CardBody>
             </Card>
 
             {/* Server Region */}
             <Card>
-              <CardHeader>Server Region</CardHeader>
+              <CardHeader>{t('profile.server.title')}</CardHeader>
               <CardBody>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
                   {Object.keys(SERVERS).map(s => (
                     <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn min-h-[44px] py-2 text-sm font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
                   ))}
                 </div>
-                <p className="text-gray-400 text-sm mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>Reset: 4:00 AM (UTC{getServerOffset(state.server) >= 0 ? '+' : ''}{getServerOffset(state.server)})</p>
+                <p className="text-gray-400 text-sm mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>{t('profile.server.reset', { time: '4:00 AM', offset: `${getServerOffset(state.server) >= 0 ? '+' : ''}${getServerOffset(state.server)}` })}</p>
               </CardBody>
             </Card>
 
@@ -585,7 +585,7 @@ function ProfileTab({
             <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             {/* Display Settings */}
             <Card>
-              <CardHeader><Settings size={14} className="text-gray-400" /> Display Settings</CardHeader>
+              <CardHeader><Settings size={14} className="text-gray-400" /> {t('profile.display.title')}</CardHeader>
               <CardBody className="space-y-3">
                 {/* OLED Mode Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
@@ -594,8 +594,8 @@ function ProfileTab({
                       <Monitor size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-base font-medium">OLED Mode</div>
-                      <div className="text-gray-400 text-sm">True black (#000) for OLED screens</div>
+                      <div className="text-white text-base font-medium">{t('profile.display.oledMode')}</div>
+                      <div className="text-gray-400 text-sm">{t('profile.display.oledModeDesc')}</div>
                     </div>
                   </div>
                   {/* AUDIT-FIX M22: OLED-aware toggle track */}
@@ -605,13 +605,13 @@ function ProfileTab({
                     style={{ background: visualSettings.oledMode ? '#fff' : 'var(--bg-btn)' }}
                     role="switch"
                     aria-checked={visualSettings.oledMode}
-                    aria-label="Toggle OLED mode"
+                    aria-label={t('profile.display.toggleOled')}
                   >
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.oledMode ? 'left-[32px] bg-black' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.oledMode && (
-                  <p className="text-emerald-400 text-sm text-center">OLED mode active. Saves battery on OLED displays</p>
+                  <p className="text-emerald-400 text-sm text-center">{t('profile.display.oledActive')}</p>
                 )}
 
                 {/* Dyslexic Font Toggle */}
@@ -621,8 +621,8 @@ function ProfileTab({
                       <Type size={16} />
                     </div>
                     <div>
-                      <div className="text-white text-base font-medium">Accessibility Font</div>
-                      <div className="text-gray-400 text-sm">OpenDyslexic - easier to read</div>
+                      <div className="text-white text-base font-medium">{t('profile.display.accessibilityFont')}</div>
+                      <div className="text-gray-400 text-sm">{t('profile.display.accessibilityFontDesc')}</div>
                     </div>
                   </div>
                   <button
@@ -631,7 +631,7 @@ function ProfileTab({
                     style={{ background: visualSettings.dyslexicFont ? '#f59e0b' : 'var(--bg-btn)' }}
                     role="switch"
                     aria-checked={visualSettings.dyslexicFont}
-                    aria-label="Toggle dyslexia font"
+                    aria-label={t('profile.display.toggleDyslexic')}
                   >
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.dyslexicFont ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>

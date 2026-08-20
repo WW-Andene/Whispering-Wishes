@@ -28,6 +28,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { AstriteCalendar } from './AstriteCalendar.jsx';
+import { t, formatNumber, formatDate } from '../../utils/i18n.js';
 
 
 // [SECTION:PLANNER] ── PlannerTab main component ─────────────────────────────
@@ -80,13 +81,13 @@ function PlannerTab({
     let goalCopies = 1;
     let goalBannerLabel = '';
     if (isFeatured) {
-      if (isChar) { goalCopies = Math.max(1, state.calc.charCopies || 1); goalBannerLabel = 'Featured Resonator'; }
-      else if (isWeap) { goalCopies = Math.max(1, state.calc.weapCopies || 1); goalBannerLabel = 'Featured Weapon'; }
-      else { goalCopies = Math.max(1, state.calc.charCopies || 1, state.calc.weapCopies || 1); goalBannerLabel = 'Featured Both'; }
+      if (isChar) { goalCopies = Math.max(1, state.calc.charCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.resonatorLabel')}`; }
+      else if (isWeap) { goalCopies = Math.max(1, state.calc.weapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.weaponLabel')}`; }
+      else { goalCopies = Math.max(1, state.calc.charCopies || 1, state.calc.weapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.bothLabel')}`; }
     } else {
-      if (isChar) { goalCopies = Math.max(1, state.calc.stdCharCopies || 1); goalBannerLabel = 'Standard Resonator'; }
-      else if (isWeap) { goalCopies = Math.max(1, state.calc.stdWeapCopies || 1); goalBannerLabel = 'Standard Weapon'; }
-      else { goalCopies = Math.max(1, state.calc.stdCharCopies || 1, state.calc.stdWeapCopies || 1); goalBannerLabel = 'Standard Both'; }
+      if (isChar) { goalCopies = Math.max(1, state.calc.stdCharCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.resonatorLabel')}`; }
+      else if (isWeap) { goalCopies = Math.max(1, state.calc.stdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.weaponLabel')}`; }
+      else { goalCopies = Math.max(1, state.calc.stdCharCopies || 1, state.calc.stdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.bothLabel')}`; }
     }
     const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
     const targetAstrite = targetPulls * ASTRITE_PER_PULL;
@@ -131,7 +132,7 @@ function PlannerTab({
       {/* ── 1. Calendar ────────────────────────────────────────────────────── */}
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('calendar')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('calendar'); } }} aria-expanded={!collapsed.calendar}>
-          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.calendar ? '' : 'rotate-180'}`} />}><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Astrite Calendar</CardHeader>
+          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.calendar ? '' : 'rotate-180'}`} />}><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />{t('planner.astriteCalendar')}</CardHeader>
         </div>
         {!collapsed.calendar && (
           <CardBody className="space-y-3">
@@ -146,21 +147,21 @@ function PlannerTab({
           <CardHeader action={<>
             <span className="text-yellow-400 kuro-number text-base font-bold">{dailyIncome}/day</span>
             <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.daily ? '' : 'rotate-180'}`} />
-          </>}><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Daily Income</CardHeader>
+          </>}><Calendar size={14} className="inline mr-1.5 -mt-0.5 text-yellow-400" />{t('planner.dailyIncomeTitle')}</CardHeader>
         </div>
         {!collapsed.daily && (
           <CardBody className="space-y-3">
             <div>
-              <label className="kuro-label" title="Includes Commissions, Dailies, etc.">Daily Astrite</label>
-              <input type="number" value={state.planner.dailyAstrite} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: Math.max(0, Math.floor(+e.target.value || 0)) })} className="kuro-input w-full" aria-label="Daily Astrite income" />
-              <div className="text-gray-500 text-sm mt-1">Avg. daily Astrite from commissions + dailies</div>
+              <label className="kuro-label" title={t('planner.dailyAstriteTooltip')}>{t('planner.dailyAstriteLabel')}</label>
+              <input type="number" value={state.planner.dailyAstrite} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: Math.max(0, Math.floor(+e.target.value || 0)) })} className="kuro-input w-full" aria-label={t('planner.dailyAstriteAriaLabel')} />
+              <div className="text-gray-500 text-sm mt-1">{t('planner.dailyAstriteHint')}</div>
             </div>
             <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
               <div className="flex justify-between items-center">
-                <span className="text-yellow-400 text-md font-medium">Total</span>
-                <span className="text-yellow-400 font-bold kuro-number text-lg">{dailyIncome} Astrite</span>
+                <span className="text-yellow-400 text-md font-medium">{t('planner.total')}</span>
+                <span className="text-yellow-400 font-bold kuro-number text-lg">{t('planner.astriteSuffix', { n: formatNumber(dailyIncome) })}</span>
               </div>
-              <div className="text-gray-400 text-sm mt-1">≈ <span className="kuro-number">{(dailyIncome / ASTRITE_PER_PULL).toFixed(2)}</span> Convenes/day • <span className="kuro-number">{Math.floor(dailyIncome * 30 / ASTRITE_PER_PULL)}</span> Convenes/month</div>
+              <div className="text-gray-400 text-sm mt-1">{t('planner.perDaySummary', { convenes: (dailyIncome / ASTRITE_PER_PULL).toFixed(2), monthly: formatNumber(Math.floor(dailyIncome * 30 / ASTRITE_PER_PULL)) })}</div>
             </div>
           </CardBody>
         )}
@@ -170,47 +171,47 @@ function PlannerTab({
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setShowIncomePanel(!showIncomePanel)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowIncomePanel(!showIncomePanel); } }} aria-expanded={showIncomePanel}>
           <CardHeader action={<>
-            {state.planner.addedIncome.length > 0 && <span className="text-emerald-400 text-sm">{state.planner.addedIncome.length} added</span>}
+            {state.planner.addedIncome.length > 0 && <span className="text-emerald-400 text-sm">{t('planner.addedCount', { count: state.planner.addedIncome.length })}</span>}
             <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${showIncomePanel ? 'rotate-180' : ''}`} />
-          </>}>Purchases</CardHeader>
+          </>}>{t('planner.purchases')}</CardHeader>
         </div>
         {showIncomePanel && (
           <CardBody className="space-y-2">
-            <div className="kuro-label">Subscriptions</div>
-            <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} aria-pressed={state.planner.luniteActive} aria-label={`Lunite Subscription: ${state.planner.luniteActive ? 'active' : 'inactive'}`} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
+            <div className="kuro-label">{t('planner.subscriptions')}</div>
+            <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} aria-pressed={state.planner.luniteActive} aria-label={t('planner.luniteSubAriaLabel', { status: state.planner.luniteActive ? t('planner.luniteSubActive') : t('planner.luniteSubInactive') })} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
                   <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteActive ? { background: 'var(--bg-btn)' } : undefined}>
                     {state.planner.luniteActive && <Check size={10} />}
                   </span>
                   <div>
-                    <div className={`text-base font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>Lunite Subscription</div>
-                    <div className="text-gray-300 text-sm">{SUBSCRIPTIONS.lunite.daily} Astrite/day × {SUBSCRIPTIONS.lunite.duration}d + 300 Lunite</div>
+                    <div className={`text-base font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>{t('planner.luniteSubTitle')}</div>
+                    <div className="text-gray-300 text-sm">{t('planner.luniteSubDesc', { daily: SUBSCRIPTIONS.lunite.daily, duration: SUBSCRIPTIONS.lunite.duration })}</div>
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className="text-emerald-400 text-base">${SUBSCRIPTIONS.lunite.price}/mo</span>
-                  {state.planner.luniteActive && <div className="text-emerald-400 text-sm">+90/day</div>}
+                  <span className="text-emerald-400 text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price })}</span>
+                  {state.planner.luniteActive && <div className="text-emerald-400 text-sm">{t('planner.plusPerDay')}</div>}
                 </div>
               </div>
             </button>
-            <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, lunite: SUBSCRIPTIONS.weekly.lunite || 0, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(`Added ${SUBSCRIPTIONS.weekly.name}`, 'success'); }} className="kuro-btn w-full text-left">
+            <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, lunite: SUBSCRIPTIONS.weekly.lunite || 0, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(t('planner.addedToast', { name: SUBSCRIPTIONS.weekly.name }), 'success'); }} className="kuro-btn w-full text-left">
               <div className="flex items-center justify-between w-full">
                 <div><div className="text-gray-200 text-base font-medium">{SUBSCRIPTIONS.weekly.name}</div><div className="text-gray-300 text-sm">{SUBSCRIPTIONS.weekly.desc}</div></div>
                 <div className="flex items-center gap-1"><span className="text-emerald-400 text-base">${SUBSCRIPTIONS.weekly.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
               </div>
             </button>
             {Object.entries(SUBSCRIPTIONS).filter(([k]) => k === 'bpInsider' || k === 'bpConnoisseur').map(([k, s]) => (
-              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
+              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: s.radiant || 0, lustrous: s.lustrous || 0, label: s.name, price: s.price } }); toast?.addToast?.(t('planner.addedToast', { name: s.name }), 'success'); }} className="kuro-btn w-full text-left">
                 <div className="flex items-center justify-between w-full">
                   <div><div className="text-gray-200 text-base font-medium">{s.name}</div><div className="text-gray-300 text-sm">{s.desc}</div></div>
                   <div className="flex items-center gap-1"><span className="text-emerald-400 text-base">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
                 </div>
               </button>
             ))}
-            <div className="kuro-label mt-3">Direct Top-Ups</div>
+            <div className="kuro-label mt-3">{t('planner.directTopUps')}</div>
             {Object.entries(SUBSCRIPTIONS).filter(([k]) => k.startsWith('directTop')).map(([k, s]) => (
-              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(`Added ${s.name}`, 'success'); }} className="kuro-btn w-full text-left">
+              <button key={k} onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: s.astrite || 0, lunite: s.lunite || 0, radiant: 0, lustrous: 0, label: s.name, price: s.price } }); toast?.addToast?.(t('planner.addedToast', { name: s.name }), 'success'); }} className="kuro-btn w-full text-left">
                 <div className="flex items-center justify-between w-full">
                   <div><div className="text-gray-200 text-base font-medium">{s.name}</div><div className="text-gray-300 text-sm">{s.desc}</div></div>
                   <div className="flex items-center gap-1"><span className="text-emerald-400 text-base">${s.price.toFixed(2)}</span><Plus size={12} className="text-yellow-400" /></div>
@@ -219,7 +220,7 @@ function PlannerTab({
             ))}
             {state.planner.addedIncome.length > 0 && (
               <>
-                <div className="kuro-label mt-3">Added</div>
+                <div className="kuro-label mt-3">{t('planner.added')}</div>
                 {state.planner.addedIncome.map(i => (
                   <div key={i.id} className="flex items-center justify-between p-2 bg-white/5 rounded-lg text-base">
                     <span className="text-gray-200">{i.label}</span>
@@ -228,15 +229,15 @@ function PlannerTab({
                       {i.lunite > 0 && <span className="text-cyan-400">+{i.lunite}L</span>}
                       {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}R</span>}
                       {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}L</span>}
-                      <button onClick={async () => { if (await confirm({ title: 'Remove purchase', message: `Remove "${i.label}"?`, confirmLabel: 'Remove', destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={`Remove: ${i.label}`}><Minus size={12} /></button>
+                      <button onClick={async () => { if (await confirm({ title: t('planner.removePurchaseTitle'), message: t('planner.removePurchaseMessage', { name: i.label }), confirmLabel: t('planner.removeLabel'), destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={t('planner.removeAriaLabel', { name: i.label })}><Minus size={12} /></button>
                     </div>
                   </div>
                 ))}
                 <div className="pt-2 border-t border-[var(--border-medium)] flex justify-between text-base">
-                  <span className="text-gray-400">Total Spent</span>
+                  <span className="text-gray-400">{t('planner.totalSpent')}</span>
                   <span className="text-emerald-400 font-bold">${state.planner.addedIncome.reduce((s, i) => s + (+i.price || 0), 0).toFixed(2)}</span>
                 </div>
-                <button onClick={async () => { if (await confirm({ title: 'Clear all purchases', message: 'Remove all added purchases?', confirmLabel: 'Clear all', destructive: true })) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-sm hover:text-red-300 transition-colors w-full text-center py-1">Clear All</button>
+                <button onClick={async () => { if (await confirm({ title: t('planner.clearAllTitle'), message: t('planner.clearAllMessage'), confirmLabel: t('planner.clearAllConfirm'), destructive: true })) dispatch({ type: 'CLEAR_ALL_INCOME' }); }} className="text-red-400 text-sm hover:text-red-300 transition-colors w-full text-center py-1">{t('planner.clearAllButton')}</button>
               </>
             )}
           </CardBody>
@@ -246,31 +247,31 @@ function PlannerTab({
       {/* ── 4. Income Projections ──────────────────────────────────────────── */}
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('proj')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('proj'); } }} aria-expanded={!collapsed.proj}>
-          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.proj ? '' : 'rotate-180'}`} />}>Income Projections</CardHeader>
+          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.proj ? '' : 'rotate-180'}`} />}>{t('planner.incomeProjections')}</CardHeader>
         </div>
         {!collapsed.proj && (
           <CardBody>
             {dailyIncome === 0 ? (
               <div className="p-4 text-center rounded-lg" style={{ background: 'var(--bg-stat)' }}>
-                <div className="text-gray-400 text-md mb-1">No daily income set</div>
-                <div className="text-gray-400 text-base">Set your Daily Astrite income above.</div>
+                <div className="text-gray-400 text-md mb-1">{t('planner.noIncomeSet')}</div>
+                <div className="text-gray-400 text-base">{t('planner.setIncomeAbove')}</div>
               </div>
             ) : (
             <div className="grid grid-cols-3 gap-2">
               {[7, 30, 90].map(days => (
                 <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
-                  <div className="text-gray-400 text-sm mb-1">{days === 30 ? 'Monthly' : `${days} Days`}</div>
-                  <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-4xl' : 'text-2xl'}`}>{Math.floor(dailyIncome * days / ASTRITE_PER_PULL).toLocaleString('en-US')}</div>
-                  <div className="text-gray-400 text-sm">Convenes</div>
-                  <div className="text-gray-400 text-sm">{(dailyIncome * days).toLocaleString('en-US')} Astrite</div>
+                  <div className="text-gray-400 text-sm mb-1">{days === 30 ? t('planner.monthly') : t('planner.daysLabel', { days })}</div>
+                  <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-4xl' : 'text-2xl'}`}>{formatNumber(Math.floor(dailyIncome * days / ASTRITE_PER_PULL))}</div>
+                  <div className="text-gray-400 text-sm">{t('planner.convenes')}</div>
+                  <div className="text-gray-400 text-sm">{t('planner.astriteSuffix', { n: formatNumber(dailyIncome * days) })}</div>
                 </div>
               ))}
             </div>
             )}
             {state.planner.luniteActive && (
               <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
-                <span className="text-emerald-400 text-base">Monthly Sub: </span>
-                <span className="text-emerald-400 font-bold text-base">${SUBSCRIPTIONS.lunite.price}/mo</span>
+                <span className="text-emerald-400 text-base">{t('planner.monthlySub')}</span>
+                <span className="text-emerald-400 font-bold text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price })}</span>
               </div>
             )}
           </CardBody>

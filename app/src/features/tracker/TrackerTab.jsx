@@ -323,7 +323,7 @@ function TrackerTab({
                         )
                       : BANNER_HISTORY;
                     return filtered.length === 0
-                      ? <div className="text-center text-gray-400 text-base py-6">No banners match &ldquo;{bannerHistorySearch.trim()}&rdquo;</div>
+                      ? <div className="text-center text-gray-400 text-base py-6">{t('tracker.noBannersMatch', { query: bannerHistorySearch.trim() })}</div>
                       : filtered.map(b => (
                     <div key={`bhm-${b.version}-${b.phase}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
                       {b.bannerArt && <img src={b.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ objectPosition: b.bannerArt === PLACEHOLDER_IMAGE ? 'center 15%' : undefined, maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}

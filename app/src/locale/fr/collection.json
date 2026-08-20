@@ -94,7 +94,7 @@
     "totalSuffix": " ({{total}} au total)",
     "showLess": "Afficher moins",
     "showAll": "Tout afficher ({{count}})",
-    "ownedLabel": "{{name}}, possédé",
+    "ownedSuffix": ", possédé",
     "notOwnedLabel": ", non possédé",
     "currentProfilePic": ", photo de profil actuelle",
     "newLabel": ", nouveau",

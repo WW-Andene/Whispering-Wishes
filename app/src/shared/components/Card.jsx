@@ -5,6 +5,7 @@
 
 import React, { memo, useRef, useEffect } from 'react';
 import { haptic } from '../../utils/helpers.js';
+import { t } from '../../utils/i18n.js';
 
 const Card = memo(({ children, className = '', style = {} }) => <div className={`kuro-card ${className}`} style={style}><div className="kuro-card-inner">{children}</div></div>);
 Card.displayName = 'Card';
@@ -56,7 +57,7 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId, accentColor 
       aria-selected={active}
       aria-controls={tabId ? `tabpanel-${tabId}` : undefined}
       tabIndex={active ? 0 : -1}
-      aria-label={`${text || 'Navigation'} tab`}
+      aria-label={`${text || t('app.navigationFallback')} tab`}
       className={`relative flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 text-sm font-medium transition-all duration-300 whitespace-nowrap group active:scale-[0.97] ${active && !accent ? 'text-yellow-400' : !active ? 'text-gray-500 hover:text-gray-300' : ''}`}
       style={active && accent ? { color: accent } : undefined}
     >

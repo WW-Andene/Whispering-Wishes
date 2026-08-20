@@ -224,7 +224,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           })()}
 
           <div className="kuro-detail-box space-y-2">
-            <div className="kuro-section-label">Combat Profile</div>
+            <div className="kuro-section-label">{t('modals.characterDetail.combatProfile')}</div>
             {/* data.combatRoles (when audited) is the authoritative, iconed tag list straight from the
                 character's own infobox. Once a character has been audited into it, it's the sole source
                 for "what does this kit do" — the old plain-text, iconless data.role badge and dmgFocus
@@ -240,7 +240,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   <div className="flex flex-wrap gap-1.5">
                     <span className={`kuro-badge font-medium border ${colors.border} ${colors.text} inline-flex items-center gap-1`} style={{ background: 'rgba(255,255,255,0.05)' }}>
                       {getElementIcon(data.element) && <img src={getElementIcon(data.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                      {data.element} DMG
+                      {t('modals.characterDetail.elementDmg', { element: data.element })}
                     </span>
                     <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
                       {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
@@ -250,7 +250,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   </div>
                   {!audited && data.dmgFocus?.length > 0 && (
                     <div>
-                      <div className="text-sm text-gray-400 mb-1">Damage Focus</div>
+                      <div className="text-sm text-gray-400 mb-1">{t('modals.characterDetail.damageFocus')}</div>
                       <div className="flex flex-wrap gap-1">
                         {data.dmgFocus.map((df, i) => <span key={i} className="kuro-badge kuro-badge-amber">{df}</span>)}
                       </div>
@@ -258,7 +258,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   )}
                   {audited && (
                     <div>
-                      <div className="text-sm text-gray-400 mb-1">Combat Role</div>
+                      <div className="text-sm text-gray-400 mb-1">{t('modals.characterDetail.combatRole')}</div>
                       <div className="flex flex-wrap gap-1.5">
                         {data.combatRoles.map((tag) => {
                           const icon = getCombatRoleIcon(tag);
@@ -277,11 +277,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             })()}
             {data.statScaling && (
               <div>
-                <div className="text-sm text-gray-400 mb-1">Stat Scaling</div>
+                <div className="text-sm text-gray-400 mb-1">{t('modals.characterDetail.statScaling')}</div>
                 <div className="flex flex-wrap gap-1">
                   <span className="kuro-badge kuro-badge-violet inline-flex items-center gap-1">
                     {getStatIcon(data.statScaling) && <img src={getStatIcon(data.statScaling)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                    {data.statScaling} Scaling
+                    {t('modals.characterDetail.scalingBadge', { stat: data.statScaling })}
                   </span>
                 </div>
               </div>
@@ -291,40 +291,40 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* Quick action — view in teams */}
           {onViewInTeams && (
             <button onClick={onViewInTeams} className="kuro-btn w-full flex items-center justify-center gap-1.5">
-              <Users size={12} /> View in Team Builder
+              <Users size={12} /> {t('modals.characterDetail.viewInTeamBuilder')}
             </button>
           )}
 
           {/* Stats — Base Stats (Lv.90) */}
           {data.baseAtk && (
             <div className="kuro-detail-box">
-              <div className="kuro-section-label mb-2">Base Stats (Lv.90)</div>
+              <div className="kuro-section-label mb-2">{t('modals.characterDetail.baseStats')}</div>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
                     {getStatIcon('HP') && <img src={getStatIcon('HP')} alt="" className="w-3 h-3" onError={hideOnError} />}
-                    HP
+                    {t('modals.characterDetail.statHp')}
                   </div>
-                  <div className="text-xl font-bold text-white kuro-number">{(data.baseHp || 0).toLocaleString('en-US')}</div>
+                  <div className="text-xl font-bold text-white kuro-number">{formatNumber(data.baseHp || 0)}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
                     {getStatIcon('ATK') && <img src={getStatIcon('ATK')} alt="" className="w-3 h-3" onError={hideOnError} />}
-                    ATK
+                    {t('modals.characterDetail.statAtk')}
                   </div>
-                  <div className="text-xl font-bold text-white kuro-number">{data.baseAtk}</div>
+                  <div className="text-xl font-bold text-white kuro-number">{formatNumber(data.baseAtk)}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
                     {getStatIcon('DEF') && <img src={getStatIcon('DEF')} alt="" className="w-3 h-3" onError={hideOnError} />}
-                    DEF
+                    {t('modals.characterDetail.statDef')}
                   </div>
-                  <div className="text-xl font-bold text-white kuro-number">{(data.baseDef || 0).toLocaleString('en-US')}</div>
+                  <div className="text-xl font-bold text-white kuro-number">{formatNumber(data.baseDef || 0)}</div>
                 </div>
                 <div className="p-2 rounded-lg bg-black/20">
                   <div className="text-sm text-gray-500 flex items-center justify-center gap-1">
                     {getStatIcon('Energy Regen') && <img src={getStatIcon('Energy Regen')} alt="" className="w-3 h-3" onError={hideOnError} />}
-                    Energy
+                    {t('modals.characterDetail.statEnergy')}
                   </div>
                   <div className="text-xl font-bold text-white kuro-number">{data.maxEnergy || '?'}</div>
                 </div>
@@ -335,8 +335,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* Skills with Multipliers */}
           <div>
             <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-              <Zap size={14} className={colors.text} /> Skills
-              <span className="text-sm text-gray-500 font-normal ml-auto">Lv.10 - Scaling: ({data.statScaling || 'ATK'}%)</span>
+              <Zap size={14} className={colors.text} /> {t('modals.characterDetail.skills')}
+              <span className="text-sm text-gray-500 font-normal ml-auto">{t('modals.characterDetail.skillsScaling', { stat: data.statScaling || 'ATK' })}</span>
             </h3>
             {SKILL_MULTIPLIERS[name] ? (
               <div className="space-y-0.5">
@@ -377,31 +377,14 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* Resonance Chain (S1-S6) */}
           {RESONANCE_CHAIN_DATA[name] && (
             <div className="kuro-detail-box">
-              <div className="kuro-section-label mb-2">Resonance Chain</div>
+              <div className="kuro-section-label mb-2">{t('modals.characterDetail.resonanceChain')}</div>
               <div className="space-y-1.5">
                 {[1,2,3,4,5,6].map(s => {
                   const lvl = RESONANCE_CHAIN_DATA[name]['s' + s];
                   if (!lvl) return null;
                   const unlocked = ownedCopies >= s + 1; // S1 needs 2 copies, S2 needs 3, etc.
                   const stats = Object.entries(lvl).map(([k, v]) => {
-                    const labels = {
-                      atkPct: 'ATK%',
-                      critRate: 'Crit Rate',
-                      critDmg: 'Crit DMG',
-                      elemDmg: 'Elem DMG',
-                      skillDmg: 'Skill DMG',
-                      basicDmg: 'Basic DMG',
-                      heavyDmg: 'Heavy DMG',
-                      libDmg: 'Lib DMG',
-                      echoDmg: 'Echo DMG',
-                      deepen: 'Deepen',
-                      defIgnore: 'DEF Ignore',
-                      defShred: 'DEF Shred',
-                      resShred: 'RES Shred',
-                      totalMult: 'Total Mult',
-                      allDmg: 'All DMG',
-                      coordDmg: 'Coord DMG',
-                    };
+                    const labels = t('modals.characterDetail.chainStatLabels');
                     return (labels[k] || k) + ' +' + v + '%';
                   }).join(', ');
                   const nodeIcon = CHAIN_NODE_ICONS[name]?.['s' + s];
@@ -432,10 +415,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* Buff/Debuff — CHAR_BUFF_TABLE note plus the short buff/debuff tag lists */}
           {(CHAR_BUFF_TABLE[name]?.note || data.buffs?.length > 0 || data.debuffs?.length > 0) && (
             <div className="kuro-detail-box space-y-2">
-              <div className="kuro-section-label">Buff / Debuff</div>
+              <div className="kuro-section-label">{t('modals.characterDetail.buffDebuff')}</div>
               {data.buffs?.length > 0 && (
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Buffs</div>
+                  <div className="text-sm text-gray-400 mb-1">{t('modals.characterDetail.buffs')}</div>
                   <div className="flex flex-wrap gap-1">
                     {data.buffs.map((b, i) => <span key={i} className="kuro-badge kuro-badge-emerald">{b}</span>)}
                   </div>
@@ -443,7 +426,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               )}
               {data.debuffs?.length > 0 && (
                 <div>
-                  <div className="text-sm text-gray-400 mb-1">Debuffs</div>
+                  <div className="text-sm text-gray-400 mb-1">{t('modals.characterDetail.debuffs')}</div>
                   <div className="flex flex-wrap gap-1">
                     {data.debuffs.map((db, i) => <span key={i} className="kuro-badge kuro-badge-red">{db}</span>)}
                   </div>
@@ -459,7 +442,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {CHARACTER_ROTATIONS[name] && (
             <div>
               <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-                <RotateCw size={14} className={colors.text} /> Standard Rotation
+                <RotateCw size={14} className={colors.text} /> {t('modals.characterDetail.standardRotation')}
               </h3>
               <div className="space-y-0.5">
                 {CHARACTER_ROTATIONS[name].map((step, i) => {
@@ -498,7 +481,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* BUILD GUIDE SECTION */}
           <div className="space-y-1">
             <h3 className="text-white font-semibold text-xl flex items-center gap-2">
-              <Target size={14} className={colors.text} /> Build Guide
+              <Target size={14} className={colors.text} /> {t('modals.characterDetail.buildGuide')}
             </h3>
           </div>
 
@@ -508,8 +491,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           return (
           <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? `bg-gradient-to-r ${colors.bg} from-transparent` : 'bg-white/[0.02]'}`} style={!hasWeapon ? { opacity: 0.55 } : undefined}>
             <div className="flex items-center justify-between mb-2">
-              <div className="kuro-section-label">Recommended Weapon</div>
-              {!hasWeapon && <span className="text-2xs text-gray-600 uppercase tracking-wider">Not Owned</span>}
+              <div className="kuro-section-label">{t('modals.characterDetail.recommendedWeapon')}</div>
+              {!hasWeapon && <span className="text-2xs text-gray-600 uppercase tracking-wider">{t('modals.characterDetail.notOwned')}</span>}
             </div>
             <div className="flex items-center gap-3">
               {weaponImg && (
@@ -521,7 +504,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 <div className={`text-xl font-bold ${hasWeapon ? 'text-yellow-400' : 'text-gray-500'}`}>{data.bestWeapon}</div>
                 {weaponData && (
                   <>
-                    <div className="text-gray-400 text-sm mt-0.5">{weaponData.type} • {weaponData.baseAtk ? `${weaponData.baseAtk} Base ATK` : ''}{weaponData.baseAtk && weaponData.stat ? ' • ' : ''}{weaponData.stat}{weaponData.subStatValue ? ` ${weaponData.subStatValue}` : ''}</div>
+                    <div className="text-gray-400 text-sm mt-0.5">{weaponData.type} • {weaponData.baseAtk ? t('modals.characterDetail.baseAtkValue', { value: weaponData.baseAtk }) : ''}{weaponData.baseAtk && weaponData.stat ? ' • ' : ''}{weaponData.stat}{weaponData.subStatValue ? ` ${weaponData.subStatValue}` : ''}</div>
                     <div className="text-gray-400 text-sm mt-1 leading-relaxed">{weaponData.passive}</div>
                   </>
                 )}
@@ -537,7 +520,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               can be several per tier. */}
           {data.weaponAlts && (
           <div className="kuro-detail-box">
-            <div className="kuro-section-label mb-2">Alternative Weapons</div>
+            <div className="kuro-section-label mb-2">{t('modals.characterDetail.alternativeWeapons')}</div>
             <div className="space-y-3">
               {[['5★', data.weaponAlts.alt5], ['4★', data.weaponAlts.alt4], ['3★', data.weaponAlts.alt3]].filter(([, list]) => list?.length).map(([tier, list]) => (
                 <div key={tier}>
@@ -559,7 +542,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <div className={`text-sm font-semibold truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{w}{!owned && ' (Not Owned)'}</div>
+                            <div className={`text-sm font-semibold truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{w}{!owned && ` (${t('modals.characterDetail.notOwned')})`}</div>
                             {wd && <div className="text-xs text-gray-500 truncate">{wd.type} • {wd.stat}{wd.subStatValue ? ` ${wd.subStatValue}` : ''}</div>}
                           </div>
                         </div>
@@ -598,7 +581,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             const showBuildLabels = rows.length > 1;
             return (
           <div className="kuro-detail-box">
-            <div className="kuro-section-label mb-2">Recommended Echoes</div>
+            <div className="kuro-section-label mb-2">{t('modals.characterDetail.recommendedEchoes')}</div>
             <div className="space-y-4">
               {rows.map((row, idx) => {
                 const main = row.main ? splitLabel(row.main) : null;
@@ -612,7 +595,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   <div key={idx} className="space-y-2">
                     {showBuildLabels && (
                       <div className="text-gray-500 text-xs font-semibold uppercase tracking-wide">
-                        Build {idx + 1}{buildLabel ? ` — ${buildLabel}` : ''}
+                        {t('modals.characterDetail.buildN', { n: idx + 1 })}{buildLabel ? ` — ${buildLabel}` : ''}
                       </div>
                     )}
                     {main && (
@@ -622,7 +605,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                         </div>
                         <div>
                           <div className="text-cyan-400 text-base font-bold">{main.text}</div>
-                          <div className="text-gray-400 text-sm">Main Echo</div>
+                          <div className="text-gray-400 text-sm">{t('modals.characterDetail.mainEcho')}</div>
                         </div>
                       </div>
                     )}
@@ -641,7 +624,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                         </div>
                         <div>
                           <div className="text-purple-400 text-base font-bold">{setParts.join(' + ')}</div>
-                          <div className="text-gray-400 text-sm">{setParts.length > 1 ? 'Mixed Echo Set' : 'Echo Set'}</div>
+                          <div className="text-gray-400 text-sm">{setParts.length > 1 ? t('modals.characterDetail.mixedEchoSet') : t('modals.characterDetail.echoSet')}</div>
                         </div>
                       </div>
                     )}
@@ -656,7 +639,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* Team Suggestions - with avatars */}
           <div>
             <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-              <Swords size={14} className="text-pink-400" /> Team Comps
+              <Swords size={14} className="text-pink-400" /> {t('modals.characterDetail.teamComps')}
             </h3>
             <div className="space-y-2">
               {(data.teams || []).map((team, i) => {
@@ -702,7 +685,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* Ascension Materials (Lv 1→90) */}
           <div>
             <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-              <TrendingUp size={14} className="text-emerald-400" /> Ascension Materials
+              <TrendingUp size={14} className="text-emerald-400" /> {t('modals.characterDetail.ascensionMaterials')}
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
               {data.ascension ? <>
@@ -712,7 +695,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={RESONATOR_ASCENSION_COSTS.commonT3} />
                   <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={RESONATOR_ASCENSION_COSTS.commonT4} />
                 </>}
-              </> : <div className="text-gray-500 text-sm col-span-2">No ascension data</div>}
+              </> : <div className="text-gray-500 text-sm col-span-2">{t('modals.characterDetail.noAscensionData')}</div>}
             </div>
           </div>
 
@@ -720,7 +703,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {data.skillMaterials && (
             <div>
               <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-                <Zap size={14} className="text-purple-400" /> Skill Materials
+                <Zap size={14} className="text-purple-400" /> {t('modals.characterDetail.skillMaterials')}
               </h3>
               <div className="grid grid-cols-2 gap-1.5">
                 <MaterialItem name={data.skillMaterials.weeklyDrop} qty={SKILL_UPGRADE_COSTS.weeklyDrop} />
@@ -739,7 +722,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* EXP Materials */}
           <div>
             <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-              <TrendingUp size={14} className="text-cyan-400" /> EXP Materials
+              <TrendingUp size={14} className="text-cyan-400" /> {t('modals.characterDetail.expMaterials')}
             </h3>
             <div className="grid grid-cols-2 gap-1.5">
               {Object.entries(RESONATOR_EXP_COSTS).filter(([, qty]) => qty > 0).map(([mat, qty]) => (

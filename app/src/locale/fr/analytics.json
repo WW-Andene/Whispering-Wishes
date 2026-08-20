@@ -77,7 +77,7 @@
   "consent": {
     "title": "Classement - Avis de partage de données",
     "intro": "En soumettant votre score, les données suivantes seront envoyées à une base de données partagée et affichées publiquement :",
-    "playerId": "Votre ID joueur ({{id}})",
+    "playerIdPrefix": "Votre ID joueur",
     "stats": "Pitié moyenne, total de convocations, statistiques de victoires/défaites 50/50",
     "owned": "Vos personnages et armes 5★ possédés",
     "pseudonymous": "Ces données sont pseudonymes (liées à un UID de jeu haché ou un ID aléatoire, pas à votre identité réelle).",
@@ -137,7 +137,8 @@
     "wonAria": "50/50 gagné",
     "lostAria": "50/50 perdu",
     "guaranteedAria": "Garanti",
-    "guaranteedTitle": "Garanti - la pitié a été reportée d'un précédent 50/50 perdu"
+    "guaranteedTitle": "Garanti - la pitié a été reportée d'un précédent 50/50 perdu",
+    "beginnerBanner": "Débutant"
   },
   "trophies": {
     "title": "Trophées",

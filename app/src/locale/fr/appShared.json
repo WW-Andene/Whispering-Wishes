@@ -39,6 +39,7 @@
   "appTagline": "Wuthering Waves - Compagnon",
   "profile": "Profil",
   "mainNavigation": "Navigation principale",
+  "navigationFallback": "Navigation",
   "tabActive": "Onglet {{tab}} actif",
   "navTracker": "Suivi",
   "navEvents": "Événements",

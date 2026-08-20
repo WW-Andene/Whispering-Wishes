@@ -16,6 +16,7 @@ import { computeAutoEquipEntry } from './autoEquip.js';
 import { RotationGuideCard } from './RotationGuideCard.jsx';
 import { EnemyTargetCard, EnemyTargetModal } from './EnemyTargetSection.jsx';
 import { calcTeamStats as calcTeamStatsImpl } from './calcTeamStats.js';
+import { t, formatNumber } from '../../utils/i18n.js';
 
 const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,
@@ -48,7 +49,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   useImperativeHandle(ref, () => ({ calcTeamStats }), [calcTeamStats]);
 
   // Memoize active team stats
-  const activeTeamData = state.teams?.[state.activeTeamIndex] || state.teams?.[0] || { name: 'Team 1', slots: [null, null, null] };
+  const activeTeamData = state.teams?.[state.activeTeamIndex] || state.teams?.[0] || { name: t('teams.damageCalc.defaultTeamName'), slots: [null, null, null] };
   const activeTeamStats = useMemo(() =>
     calcTeamStats(activeTeamData.slots, state.activeTeamIndex, activeTeamData.mainDpsOverride),
     [calcTeamStats, activeTeamData.slots, state.activeTeamIndex, activeTeamData.mainDpsOverride]
@@ -90,7 +91,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       {enemyTargetCard}
       <Card><CardBody className="text-center py-6">
         <Users size={24} className="mx-auto mb-2 text-gray-500" />
-        <p className="text-gray-400 text-sm">Add Resonators to your team to see damage analysis</p>
+        <p className="text-gray-400 text-sm">{t('teams.damageCalc.emptyState')}</p>
       </CardBody></Card>
       {enemyTargetModal}
     </>

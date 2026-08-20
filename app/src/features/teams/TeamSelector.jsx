@@ -6,6 +6,7 @@ import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { t } from '../../utils/i18n.js';
 
 export default function TeamSelector({
   teamSelectorOpen,
@@ -52,10 +53,10 @@ export default function TeamSelector({
                         {/* Modal Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                           <div>
-                            <h3 className="text-white text-xl font-semibold">Select Resonator</h3>
-                            <p className="text-gray-500 text-sm">Slot {teamSelectorSlot + 1} • {activeTeam.name}</p>
+                            <h3 className="text-white text-xl font-semibold">{t('teams.selector.title')}</h3>
+                            <p className="text-gray-500 text-sm">{t('teams.selector.subtitle', { slot: teamSelectorSlot + 1, team: activeTeam.name })}</p>
                           </div>
-                          <button onClick={() => setTeamSelectorOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close resonator selector">
+                          <button onClick={() => setTeamSelectorOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.selector.closeAria')}>
                             <X size={16} />
                           </button>
                         </div>
@@ -68,9 +69,9 @@ export default function TeamSelector({
                               type="text"
                               value={teamSearch}
                               onChange={(e) => setTeamSearch(e.target.value)}
-                              placeholder="Search resonators…"
+                              placeholder={t('teams.selector.searchPlaceholder')}
                               className="kuro-input w-full pl-8 text-base"
-                              aria-label="Search resonators"
+                              aria-label={t('teams.selector.searchAria')}
                               autoFocus
                             />
                             <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
@@ -80,7 +81,7 @@ export default function TeamSelector({
                               value={teamElementFilter}
                               onChange={setTeamElementFilter}
                               options={[
-                                { value: 'all', label: 'All Elements' },
+                                { value: 'all', label: t('teams.selector.allElements') },
                                 ...['Aero', 'Glacio', 'Electro', 'Fusion', 'Spectro', 'Havoc'].map(el => ({
                                   value: el,
                                   label: <span className="inline-flex items-center gap-1.5"><img src={getElementIcon(el)} alt="" width={14} height={14} className="shrink-0" /> {el}</span>,
@@ -93,7 +94,7 @@ export default function TeamSelector({
                               value={teamRarityFilter}
                               onChange={setTeamRarityFilter}
                               options={[
-                                { value: 'all', label: 'All Rarity' },
+                                { value: 'all', label: t('teams.selector.allRarity') },
                                 { value: '5', label: '5★' },
                                 { value: '4', label: '4★' },
                               ]}
@@ -104,11 +105,11 @@ export default function TeamSelector({
                               value={teamRoleFilter}
                               onChange={setTeamRoleFilter}
                               options={[
-                                { value: 'all', label: 'All Roles' },
-                                { value: 'Main DPS', label: 'Main DPS' },
-                                { value: 'Sub DPS', label: 'Sub DPS' },
-                                { value: 'Support', label: 'Support' },
-                                { value: 'Healer', label: 'Healer' },
+                                { value: 'all', label: t('teams.selector.allRoles') },
+                                { value: 'Main DPS', label: t('teams.selector.roleMainDps') },
+                                { value: 'Sub DPS', label: t('teams.selector.roleSubDps') },
+                                { value: 'Support', label: t('teams.selector.roleSupport') },
+                                { value: 'Healer', label: t('teams.selector.roleHealer') },
                               ]}
                               ariaLabel="Filter by role"
                               small
@@ -117,7 +118,7 @@ export default function TeamSelector({
                               value={teamCombatRoleFilter}
                               onChange={setTeamCombatRoleFilter}
                               options={[
-                                { value: 'all', label: 'All Combat Roles' },
+                                { value: 'all', label: t('teams.selector.allCombatRoles') },
                                 ...allCombatRoleTags.map(tag => ({
                                   value: tag,
                                   label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon(tag)} alt="" width={14} height={14} className="shrink-0" /> {tag}</span>,
@@ -130,7 +131,7 @@ export default function TeamSelector({
                               value={teamRegionFilter}
                               onChange={setTeamRegionFilter}
                               options={[
-                                { value: 'all', label: 'All Regions' },
+                                { value: 'all', label: t('teams.selector.allRegions') },
                                 ...['Huanglong', 'Rinascita', 'Black Shores', 'Lahai-Roi', 'Night City'].map(r => ({
                                   value: r,
                                   // Night City has no REGION_ICONS entry yet (no sourced emblem) — guard so it
@@ -145,7 +146,7 @@ export default function TeamSelector({
                               value={teamDmgFilter}
                               onChange={setTeamDmgFilter}
                               options={[
-                                { value: 'all', label: 'Damage Focus' },
+                                { value: 'all', label: t('teams.selector.damageFocus') },
                                 ...[
                                   ['Basic ATK', 'Basic Attack Damage'], ['Heavy ATK', 'Heavy Attack Damage'],
                                   ['Skill', 'Resonance Skill Damage'], ['Liberation', 'Resonance Liberation Damage'],
@@ -162,7 +163,7 @@ export default function TeamSelector({
                               value={teamBuffFilter}
                               onChange={setTeamBuffFilter}
                               options={[
-                                { value: 'all', label: 'All Buffs' },
+                                { value: 'all', label: t('teams.selector.allBuffs') },
                                 ...[
                                   ['Heal', Heart], ['Coordinated ATK', Swords],
                                   ['ATK Buff', TrendingUp], ['Crit', Target], ['DMG', Flame, 'DMG Buff'],
@@ -178,7 +179,7 @@ export default function TeamSelector({
                               value={teamDebuffFilter}
                               onChange={setTeamDebuffFilter}
                               options={[
-                                { value: 'all', label: 'All Debuffs' },
+                                { value: 'all', label: t('teams.selector.allDebuffs') },
                                 ...[
                                   ['Frazzle', Flame], ['Erosion', Droplets], ['Off-Tune', Music2],
                                   ['DEF Shred', ShieldOff], ['RES Shred', ShieldAlert],
@@ -195,7 +196,7 @@ export default function TeamSelector({
                           {recommendedNames.size > 0 && (
                             <div className="flex items-center gap-1.5 text-sm text-orange-400">
                               <Star size={10} className="text-orange-400" fill="currentColor" />
-                              <span>Orange glow = recommended teammate</span>
+                              <span>{t('teams.selector.recommendedHint')}</span>
                             </div>
                           )}
                         </div>
@@ -282,7 +283,7 @@ export default function TeamSelector({
                           {filteredChars.length === 0 && (
                             <div className="text-center py-8">
                               <Search size={24} className="mx-auto mb-2 text-gray-600" />
-                              <p className="text-gray-400 text-base">No resonators match</p>
+                              <p className="text-gray-400 text-base">{t('teams.selector.noMatch')}</p>
                             </div>
                           )}
                         </div>

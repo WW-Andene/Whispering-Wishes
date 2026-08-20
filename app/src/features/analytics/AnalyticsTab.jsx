@@ -19,7 +19,7 @@ import { ALL_CHARACTERS } from '../../data/characters.js';
 import { getMergedHistories } from '../../core/storageKeys.js';
 import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
 import { calculateLuckRating } from '../../utils/helpers.js';
-import { t, formatNumber, getPluralForm } from '../../utils/i18n.js';
+import { t, formatNumber, formatDate, getPluralForm } from '../../utils/i18n.js';
 import { storageAvailable } from '../../core/storage.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
@@ -29,6 +29,17 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal, useFocusTrap } from '../../shared/components/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
+
+// Pull-log banner tag → translation key. The underlying `p.banner` values are
+// English data-comparison strings (set in statsTabData below) — only the
+// on-screen label is translated.
+const PULL_BANNER_LABEL_KEYS = {
+  Featured: 'analytics.perBanner.bannerNames.featuredResonator',
+  Weapon: 'analytics.perBanner.bannerNames.featuredWeapon',
+  'Standard Resonator': 'analytics.perBanner.bannerNames.standardResonator',
+  'Standard Weapon': 'analytics.perBanner.bannerNames.standardWeapon',
+  Beginner: 'analytics.pullLog.beginnerBanner',
+};
 
 function AnalyticsTab({
   state,
@@ -407,17 +418,17 @@ function AnalyticsTab({
                             <div className="h-full rounded-full transition-[width] duration-300 progress-fill" style={{width: `${luckRating.percentile}%`, background: `linear-gradient(90deg, ${luckRating.color}40, ${luckRating.color})`}} />
                           </div>
                           <div className="flex items-baseline justify-between">
-                            <span className="text-gray-400 text-sm">Avg Pity</span>
+                            <span className="text-gray-400 text-sm">{t('analytics.luck.avgPity')}</span>
                             <span className="text-gray-200 text-base font-medium">{overallStats?.avgPity}</span>
                           </div>
                           <p className="text-sm text-center" style={{color: `${luckRating.color}90`}}>
-                            {luckRating.percentile >= 80 ? `Luckier than ${luckRating.percentile}% of players — incredible!`
-                              : luckRating.percentile >= 60 ? `Luckier than ${luckRating.percentile}% of players — above average!`
-                              : luckRating.percentile >= 40 ? `Around average luck (${luckRating.percentile}th percentile)`
-                              : `Unluckier than most — keep tracking to see your trends`}
+                            {luckRating.percentile >= 80 ? t('analytics.luck.percentileHigh', { percentile: luckRating.percentile })
+                              : luckRating.percentile >= 60 ? t('analytics.luck.percentileGood', { percentile: luckRating.percentile })
+                              : luckRating.percentile >= 40 ? t('analytics.luck.percentileAverage', { percentile: luckRating.percentile })
+                              : t('analytics.luck.percentileLow')}
                           </p>
                           {/* AUDIT-FIX H12: gray-600→gray-500 for WCAG AA contrast */}
-                          <p className="text-sm text-gray-500 text-center mt-1">Based on your avg pity vs. theoretical mean (53.0), adjusted for sample size</p>
+                          <p className="text-sm text-gray-500 text-center mt-1">{t('analytics.luck.basedOn')}</p>
                         </div>
                       </div>
                     </CardBody>
@@ -425,46 +436,46 @@ function AnalyticsTab({
                 )}
                 
                 {/* P13-FIX: MEDIUM-4 — Accessible consent modal (replaces window.confirm) */}
-                <FocusTrapModal isOpen={showConsentModal} onClose={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} className="" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} ariaLabel="Leaderboard consent" centered>
+                <FocusTrapModal isOpen={showConsentModal} onClose={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} className="" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} ariaLabel={t('analytics.consent.ariaLabel')} centered>
                   <div className="kuro-card w-full max-w-sm" onClick={e => e.stopPropagation()}>
                     <div className="kuro-card-inner p-5 space-y-4 rounded-2xl">
-                      <h3 className="text-white font-semibold text-xl">Leaderboard - Data Sharing Notice</h3>
+                      <h3 className="text-white font-semibold text-xl">{t('analytics.consent.title')}</h3>
                       <div className="text-gray-300 text-base space-y-2">
-                        <p>By submitting your score, the following data will be sent to a shared database and displayed publicly:</p>
+                        <p>{t('analytics.consent.intro')}</p>
                         <ul className="list-disc pl-4 space-y-1 text-gray-400">
-                          <li>Your player ID (<span className="text-cyan-400 font-mono">{effectiveLeaderboardId}</span>)</li>
-                          <li>Average pity, total Convenes, 50/50 win/loss stats</li>
-                          <li>Your owned 5★ characters and weapons</li>
+                          <li>{t('analytics.consent.playerIdPrefix')} (<span className="text-cyan-400 font-mono">{effectiveLeaderboardId}</span>)</li>
+                          <li>{t('analytics.consent.stats')}</li>
+                          <li>{t('analytics.consent.owned')}</li>
                         </ul>
-                        <p className="text-gray-500">This data is pseudonymous (linked to a hashed game UID or random ID, not your real identity).</p>
+                        <p className="text-gray-500">{t('analytics.consent.pseudonymous')}</p>
                       </div>
                       <div className="flex gap-3 pt-1">
-                        <button className="kuro-btn flex-1" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }}>Decline</button>
-                        <button className="kuro-btn flex-1 active-gold" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(true); }}>I Consent</button>
+                        <button className="kuro-btn flex-1" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }}>{t('analytics.consent.decline')}</button>
+                        <button className="kuro-btn flex-1 active-gold" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(true); }}>{t('analytics.consent.accept')}</button>
                       </div>
                     </div>
                   </div>
                 </FocusTrapModal>
 
                 {/* Luck Leaderboard Modal */}
-                <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="" onClick={() => setShowLeaderboard(false)} ariaLabel="Community leaderboard" centered>
+                <FocusTrapModal isOpen={showLeaderboard} onClose={() => setShowLeaderboard(false)} className="" onClick={() => setShowLeaderboard(false)} ariaLabel={t('analytics.leaderboard.ariaLabel')} centered>
                     <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                       <div className="px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                         <div className="flex items-center justify-between mb-3">
                           <div>
-                            <h3 className="text-white font-semibold text-xl">Community</h3>
-                            <p className="text-gray-400 text-sm">Leaderboard & stats</p>
+                            <h3 className="text-white font-semibold text-xl">{t('analytics.leaderboard.title')}</h3>
+                            <p className="text-gray-400 text-sm">{t('analytics.leaderboard.subtitle')}</p>
                           </div>
-                          <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close leaderboard">
+                          <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('analytics.leaderboard.closeAria')}>
                             <X size={16} />
                           </button>
                         </div>
-                        <div className="flex gap-1" role="tablist" aria-label="Leaderboard view">
+                        <div className="flex gap-1" role="tablist" aria-label={t('analytics.leaderboard.tablistAria')}>
                           <button onClick={() => setLeaderboardTab('rankings')} role="tab" aria-selected={leaderboardTab === 'rankings'} className={`flex-1 text-sm font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'rankings' ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
-                            Rankings
+                            {t('analytics.leaderboard.rankings')}
                           </button>
                           <button onClick={() => setLeaderboardTab('popular')} role="tab" aria-selected={leaderboardTab === 'popular'} className={`flex-1 text-sm font-medium py-1.5 rounded-lg transition-all ${leaderboardTab === 'popular' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' : 'text-gray-500 hover:text-gray-300'}`}>
-                            Most Convened
+                            {t('analytics.leaderboard.mostConvened')}
                           </button>
                         </div>
                       </div>
@@ -472,7 +483,7 @@ function AnalyticsTab({
                         {leaderboardTab === 'rankings' ? (
                           <>
                             {leaderboardLoading ? (
-                              <div className="space-y-2 py-2" aria-label="Loading leaderboard">
+                              <div className="space-y-2 py-2" aria-label={t('analytics.leaderboard.loadingAria')}>
                                 {[...Array(6)].map((_, i) => (
                                   <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5">
                                     <div className="kuro-skeleton kuro-skeleton-circle w-[28px] h-[28px] flex-shrink-0" />
@@ -486,8 +497,8 @@ function AnalyticsTab({
                               </div>
                             ) : leaderboardData.length === 0 ? (
                               <div className="kuro-empty-state text-center py-8">
-                                <div className="text-gray-400 text-md mb-2">{leaderboardError ? 'Failed to load leaderboard' : 'No signals received'}</div>
-                                <div className="text-gray-500 text-sm">{leaderboardError ? 'Check your connection and try again' : 'Be the first to transmit'}</div>
+                                <div className="text-gray-400 text-md mb-2">{leaderboardError ? t('analytics.leaderboard.loadFailed') : t('analytics.leaderboard.noSignals')}</div>
+                                <div className="text-gray-500 text-sm">{leaderboardError ? t('analytics.leaderboard.checkConnection') : t('analytics.leaderboard.beFirst')}</div>
                               </div>
                             ) : (
                               leaderboardData.map((entry, i) => {
@@ -513,17 +524,17 @@ function AnalyticsTab({
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-2">
                                         <span className={`text-base font-medium truncate ${isYou ? 'text-cyan-400' : 'text-gray-200'}`}>
-                                          {isYou ? (entry.id?.slice(0, 4) + '*** (You)') : (entry.id?.slice(0, 4) + '***')}
+                                          {isYou ? (entry.id?.slice(0, 4) + t('analytics.leaderboard.youSuffix')) : (entry.id?.slice(0, 4) + '***')}
                                         </span>
-                                        {isYou && <span className="kuro-badge kuro-badge-cyan">YOU</span>}
+                                        {isYou && <span className="kuro-badge kuro-badge-cyan">{t('analytics.leaderboard.you')}</span>}
                                       </div>
-                                      <div className="text-sm text-gray-500">{entry.pulls} five-stars</div>
+                                      <div className="text-sm text-gray-500">{t('analytics.leaderboard.fiveStars', { n: formatNumber(entry.pulls) })}</div>
                                     </div>
                                     <div className="text-right flex-shrink-0">
                                       <div className={`text-xl font-bold ${entry.avgPity <= 45 ? 'text-emerald-400' : entry.avgPity <= 55 ? 'text-yellow-400' : 'text-red-400'}`}>
                                         {entry.avgPity.toFixed(1)}
                                       </div>
-                                      <div className="text-sm text-gray-400">avg pity</div>
+                                      <div className="text-sm text-gray-400">{t('analytics.leaderboard.avgPityLabel')}</div>
                                     </div>
                                   </div>
                                 );
@@ -533,7 +544,7 @@ function AnalyticsTab({
                         ) : (
                           <>
                             {!communityPulls ? (
-                              <div className="space-y-1.5 py-2" aria-label="Loading community data">
+                              <div className="space-y-1.5 py-2" aria-label={t('analytics.leaderboard.loadingCommunityAria')}>
                                 <div className="kuro-skeleton kuro-skeleton-text mx-auto mb-2" style={{ width: '40%' }} />
                                 <div className="kuro-skeleton kuro-skeleton-text w-24 mb-1.5" style={{ height: '8px' }} />
                                 {[...Array(5)].map((_, i) => (
@@ -549,10 +560,10 @@ function AnalyticsTab({
                               </div>
                             ) : (
                               <>
-                                <p className="text-gray-400 text-sm text-center mb-1">{communityPulls.playerCount} player{communityPulls.playerCount !== 1 ? 's' : ''} reporting</p>
+                                <p className="text-gray-400 text-sm text-center mb-1">{t(`analytics.leaderboard.playersReporting${getPluralForm(communityPulls.playerCount) === 'one' ? 'One' : 'Other'}`, { n: formatNumber(communityPulls.playerCount) })}</p>
                                 {communityPulls.chars.length > 0 && (
                                   <>
-                                    <p className="text-sm text-yellow-400/80 font-semibold uppercase tracking-wider mb-1">★ Resonators</p>
+                                    <p className="text-sm text-yellow-400/80 font-semibold uppercase tracking-wider mb-1">{t('analytics.leaderboard.resonators')}</p>
                                     {communityPulls.chars.slice(0, 10).map(([name, count], i) => {
                                       const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
                                       const imgUrl = collectionImages[name] || '';
@@ -576,7 +587,7 @@ function AnalyticsTab({
                                 )}
                                 {communityPulls.weaps.length > 0 && (
                                   <>
-                                    <p className="text-sm text-cyan-400/80 font-semibold uppercase tracking-wider mt-3 mb-1">★ Weapons</p>
+                                    <p className="text-sm text-cyan-400/80 font-semibold uppercase tracking-wider mt-3 mb-1">{t('analytics.leaderboard.weapons')}</p>
                                     {communityPulls.weaps.slice(0, 10).map(([name, count], i) => {
                                       const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
                                       const imgUrl = collectionImages[name] || '';
@@ -607,33 +618,33 @@ function AnalyticsTab({
                       {communityStats && leaderboardTab === 'rankings' && (
                         <div className="px-4 py-3 border-t border-[var(--border-medium)] space-y-2">
                           <p className="text-sm text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                            <BarChart3 size={10} /> Community Stats
-                            <span className="text-gray-500 font-normal">• {communityStats.totalPlayers} players</span>
+                            <BarChart3 size={10} /> {t('analytics.leaderboard.communityStats')}
+                            <span className="text-gray-500 font-normal">{t('analytics.leaderboard.playersCount', { n: formatNumber(communityStats.totalPlayers) })}</span>
                           </p>
                           <div className="grid grid-cols-3 gap-1.5">
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-yellow-400 font-bold text-base">{communityStats.avgPityAll}</div>
-                              <div className="text-gray-400 text-sm">Global Avg Pity</div>
+                              <div className="text-gray-400 text-sm">{t('analytics.leaderboard.globalAvgPity')}</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-emerald-400 font-bold text-base">{communityStats.globalWinRate != null ? `${communityStats.globalWinRate}%` : '—'}</div>
-                              <div className="text-gray-400 text-sm">50/50 Win Rate</div>
+                              <div className="text-gray-400 text-sm">{t('analytics.leaderboard.winRate5050')}</div>
                             </div>
                             <div className="bg-white/5 rounded-lg p-2 text-center">
                               <div className="text-cyan-400 font-bold text-base">{communityStats.totalFiveStars}</div>
-                              <div className="text-gray-400 text-sm">Total 5★</div>
+                              <div className="text-gray-400 text-sm">{t('analytics.leaderboard.total5Star')}</div>
                             </div>
                           </div>
                           {communityStats.totalPullsAll > 0 && (
                             <div className="flex justify-between text-sm">
-                              <span className="text-gray-500">{formatNumber(communityStats.totalPullsAll)} total Convenes tracked</span>
-                              <span className="text-gray-500">{communityStats.totalWon}W / {communityStats.totalLost}L</span>
+                              <span className="text-gray-500">{t('analytics.leaderboard.totalConvenesTracked', { n: formatNumber(communityStats.totalPullsAll) })}</span>
+                              <span className="text-gray-500">{t('analytics.leaderboard.winLoss', { won: formatNumber(communityStats.totalWon), lost: formatNumber(communityStats.totalLost) })}</span>
                             </div>
                           )}
                           {communityStats.luckiest && communityStats.unluckiest && communityStats.totalPlayers >= 2 && (
                             <div className="flex justify-between text-sm gap-2">
-                              <span className="text-emerald-500/70 flex items-center gap-0.5"><Clover size={10} /> Luckiest: {communityStats.luckiest.avgPity.toFixed(1)}</span>
-                              <span className="text-red-500/70 flex items-center gap-0.5"><TrendingDown size={10} /> Unluckiest: {communityStats.unluckiest.avgPity.toFixed(1)}</span>
+                              <span className="text-emerald-500/70 flex items-center gap-0.5"><Clover size={10} /> {t('analytics.leaderboard.luckiest', { pity: communityStats.luckiest.avgPity.toFixed(1) })}</span>
+                              <span className="text-red-500/70 flex items-center gap-0.5"><TrendingDown size={10} /> {t('analytics.leaderboard.unluckiest', { pity: communityStats.unluckiest.avgPity.toFixed(1) })}</span>
                             </div>
                           )}
                         </div>
@@ -642,20 +653,20 @@ function AnalyticsTab({
                         {effectiveLeaderboardId && overallStats?.avgPity && overallStats.avgPity !== '—' ? (
                           <>
                             <div className="flex items-center justify-between text-sm">
-                              <span className="text-gray-400">Your ID: <span className="text-cyan-400 font-mono">{state.profile.uid ? (state.profile.uid.slice(0, 4) + '***') : effectiveLeaderboardId}</span>{state.profile.uid && <span className="text-gray-500 ml-1">(UID)</span>}</span>
-                              <span className="text-gray-400">Your Avg: <span className="text-white font-bold">{overallStats.avgPity}</span></span>
+                              <span className="text-gray-400">{t('analytics.leaderboard.yourId')} <span className="text-cyan-400 font-mono">{state.profile.uid ? (state.profile.uid.slice(0, 4) + '***') : effectiveLeaderboardId}</span>{state.profile.uid && <span className="text-gray-500 ml-1">{t('analytics.leaderboard.uidTag')}</span>}</span>
+                              <span className="text-gray-400">{t('analytics.leaderboard.yourAvg')} <span className="text-white font-bold">{overallStats.avgPity}</span></span>
                             </div>
                             <button
                               onClick={submitToLeaderboard}
                               disabled={leaderboardSubmitting || rateLimitCooldown > 0}
                               className={`w-full kuro-btn active-cyan py-2 text-base font-medium ${leaderboardSubmitting || rateLimitCooldown > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
-                              {leaderboardSubmitting ? 'Submitting…' : rateLimitCooldown > 0 ? `Wait ${rateLimitCooldown}s…` : 'Submit My Score'}
+                              {leaderboardSubmitting ? t('analytics.leaderboard.submitting') : rateLimitCooldown > 0 ? t('analytics.leaderboard.waitSeconds', { seconds: rateLimitCooldown }) : t('analytics.leaderboard.submitScore')}
                             </button>
-                            <p className="text-gray-400 text-sm text-center">Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard</p>
+                            <p className="text-gray-400 text-sm text-center">{t('analytics.leaderboard.shareNotice')}</p>
                           </>
                         ) : (
-                          <p className="text-gray-500 text-sm text-center">Import convene history to participate</p>
+                          <p className="text-gray-500 text-sm text-center">{t('analytics.leaderboard.importToParticipate')}</p>
                         )}
                       </div>
                     </div>
@@ -663,11 +674,11 @@ function AnalyticsTab({
 
                 {/* 5★ Pull Log — moved above Trophies for user workflow priority */}
                 <Card>
-                  <CardHeader>5★ Convene Log</CardHeader>
+                  <CardHeader>{t('analytics.pullLog.title')}</CardHeader>
                   <CardBody>
                     {(() => {
                       const fiveStars = statsTabData.pullLogFiveStars;
-                      if (fiveStars.length === 0) return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-base">Awaiting 5★ signal resonance</p><p className="text-gray-500 text-sm mt-1">Import Convene history in Profile to see your 5★ pull log</p></div>;
+                      if (fiveStars.length === 0) return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-base">{t('analytics.pullLog.awaitingSignal')}</p><p className="text-gray-500 text-sm mt-1">{t('analytics.pullLog.importPrompt')}</p></div>;
                       return (
                         <div className="space-y-1 max-h-60 overflow-y-auto kuro-scroll">
                           {fiveStars.map((p, i) => {
@@ -679,14 +690,14 @@ function AnalyticsTab({
                                 <div className="flex items-center gap-2 min-w-0">
                                   {imgUrl && <img src={imgUrl} alt={p.name} className="w-[22px] h-[22px] rounded object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                   <span className="text-yellow-400 font-medium truncate">{p.name}</span>
-                                  <span className="text-gray-500 flex-shrink-0">{p.banner}</span>
-                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-base font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label="Won 50/50">✓ W</span>}
-                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-base font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label="Lost 50/50">✗ L</span>}
-                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-amber-400 text-base font-bold px-1.5 py-0.5 rounded bg-amber-500/20 flex-shrink-0" title="Guaranteed - pity carried over from a previous lost 50/50" aria-label="Guaranteed">G</span>}
+                                  <span className="text-gray-500 flex-shrink-0">{PULL_BANNER_LABEL_KEYS[p.banner] ? t(PULL_BANNER_LABEL_KEYS[p.banner]) : p.banner}</span>
+                                  {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-base font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label={t('analytics.pullLog.wonAria')}>✓ W</span>}
+                                  {p.banner === 'Featured' && p.won5050 === false && <span className="text-red-400 text-base font-bold px-1.5 py-0.5 rounded bg-red-500/20 flex-shrink-0" aria-label={t('analytics.pullLog.lostAria')}>✗ L</span>}
+                                  {p.banner === 'Featured' && p.won5050 === null && <span className="text-amber-400 text-base font-bold px-1.5 py-0.5 rounded bg-amber-500/20 flex-shrink-0" title={t('analytics.pullLog.guaranteedTitle')} aria-label={t('analytics.pullLog.guaranteedAria')}>G</span>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                   <span className={`font-bold kuro-number ${pityTextColor}`}>{p.pity ?? '?'}</span>
-                                  {p.timestamp && <span className="text-gray-400 text-base">{new Date(p.timestamp).toLocaleDateString('en-US', {month:'short', day:'numeric'})}</span>}
+                                  {p.timestamp && <span className="text-gray-400 text-base">{formatDate(new Date(p.timestamp), {month:'short', day:'numeric'})}</span>}
                                 </div>
                               </div>
                             );

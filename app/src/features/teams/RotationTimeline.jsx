@@ -4,6 +4,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { t } from '../../utils/i18n.js';
 
 const ELEMENT_COLORS = {
   Glacio: '#06b6d4', Fusion: '#f97316', Electro: '#a855f7',
@@ -101,7 +102,7 @@ export default function RotationTimeline({ rotationTimeline }) {
 
   return (
     <Card>
-      <CardHeader>Rotation ({totalTime}s)</CardHeader>
+      <CardHeader>{t('teams.rotation.header', { time: totalTime })}</CardHeader>
       <CardBody>
         {/* All percentage-based — no fixed width, no scroll, fits any container */}
         <div style={{ position: 'relative' }}>
@@ -153,10 +154,10 @@ export default function RotationTimeline({ rotationTimeline }) {
         {ordered.some(r => r.buffKind === 'echo') && (
           <div className="flex items-center gap-3 mt-3 pt-2 border-t border-white/5">
             <span className="text-2xs text-gray-500 flex items-center gap-1">
-              <span className="inline-block w-3 h-[6px] rounded-sm border border-white/30 bg-white/15" /> ↳ Char/Set/Weapon
+              <span className="inline-block w-3 h-[6px] rounded-sm border border-white/30 bg-white/15" /> {t('teams.rotation.legendChar')}
             </span>
             <span className="text-2xs text-gray-500 flex items-center gap-1">
-              <span className="inline-block w-3 h-[6px] rounded-sm border border-dashed border-white/25 bg-white/10" /> ◆ Echo Skill
+              <span className="inline-block w-3 h-[6px] rounded-sm border border-dashed border-white/25 bg-white/10" /> {t('teams.rotation.legendEcho')}
             </span>
           </div>
         )}

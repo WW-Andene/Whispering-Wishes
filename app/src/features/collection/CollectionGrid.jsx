@@ -11,6 +11,7 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { SpinePlayer, getSpineId } from '../../shared/components/SpinePlayer.jsx';
 
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { t } from '../../utils/i18n.js';
 
 // Long-press detection hook (500ms hold)
 function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
@@ -66,7 +67,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     type="button"
     className={cardClassName}
     style={{ height: 'var(--height-card-sm)', contain: 'paint', textAlign: 'center', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
-    aria-label={`${name}${owned ? `, owned${count > 1 ? ` ×${count}` : ''}` : ', not owned'}${isProfilePic ? ', current profile picture' : ''}${isNew ? ', new' : ''}`}
+    aria-label={`${name}${owned ? `${t('collection.grid.ownedSuffix')}${count > 1 ? ` ×${count}` : ''}` : t('collection.grid.notOwnedLabel')}${isProfilePic ? t('collection.grid.currentProfilePic') : ''}${isNew ? t('collection.grid.newLabel') : ''}`}
     {...longPressHandlers}
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
@@ -113,7 +114,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />
     )}
     {isNew && (
-      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-sm font-bold tracking-wider uppercase bg-yellow-500 text-black kuro-shadow-glow-gold" style={{textShadow: 'none'}}>New</div>
+      <div className="absolute top-1.5 left-1.5 z-20 px-1.5 py-0.5 rounded-full text-sm font-bold tracking-wider uppercase bg-yellow-500 text-black kuro-shadow-glow-gold" style={{textShadow: 'none'}}>{t('collection.grid.newBadge')}</div>
     )}
     {/* Profile pic setter — top-right corner */}
     {!framingMode && onSetProfilePic && (

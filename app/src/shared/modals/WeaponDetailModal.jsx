@@ -12,6 +12,7 @@ import { getWeaponTypeIcon, getStatIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { t, formatNumber } from '../../utils/i18n.js';
 
 const WEAPON_RARITY_COLORS = {
   5: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
@@ -34,7 +35,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
   const f = infoFraming || { x: 0, y: 0, zoom: 100 };
 
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} weapon details`} centered>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.weaponDetail.weaponDetailsAria', { name })} centered>
       <div
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border ${colors.border}`}
         onClick={e => e.stopPropagation()}
@@ -57,7 +58,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
             }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close weapon details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.weaponDetail.closeAria')}>
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -81,8 +82,8 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
             {data.baseAtk && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
                 {getStatIcon('ATK') && <img src={getStatIcon('ATK')} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                <span className="text-sm text-gray-400">ATK</span>
-                <span className="text-base font-bold text-red-400">{data.baseAtk}</span>
+                <span className="text-sm text-gray-400">{t('modals.weaponDetail.statAtk')}</span>
+                <span className="text-base font-bold text-red-400">{formatNumber(data.baseAtk)}</span>
               </div>
             )}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">

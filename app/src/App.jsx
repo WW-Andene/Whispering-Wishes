@@ -955,7 +955,7 @@ function WhisperingWishesInner() {
 
       {/* P12-FIX: Skip to content link for keyboard users (Step 11 audit - MEDIUM-6n) */}
       <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-yellow-500 focus:text-black focus:rounded-lg focus:font-bold focus:text-md">
-        Skip to content
+        {t('app.skipToContent')}
       </a>
       
       {/* Offline banner handled by PWAProvider */}
@@ -1058,20 +1058,20 @@ function WhisperingWishesInner() {
           </div>
         )}
         <div className="tab-indicator" />
-        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> Tracker</TabButton>
-        <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> Events</TabButton>
-        <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><Map size={18} /> Map</TabButton>
-        <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={18} /> Plan</TabButton>
-        <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> Calc</TabButton>
-        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={18} /> Stats</TabButton>
-        <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={18} /> Teams</TabButton>
-        <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> Collection</TabButton>
+        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={18} /> {t('app.navTracker')}</TabButton>
+        <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={18} /> {t('app.navEvents')}</TabButton>
+        <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><Map size={18} /> {t('app.navMap')}</TabButton>
+        <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={18} /> {t('app.navPlan')}</TabButton>
+        <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={18} /> {t('app.navCalc')}</TabButton>
+        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={18} /> {t('app.navStats')}</TabButton>
+        <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={18} /> {t('app.navTeams')}</TabButton>
+        <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> {t('app.navCollection')}</TabButton>
       </nav>
 
       <main id="main-content" key={`main-${visualSettings.colorBlindMode ? 'cb' : 'std'}`} className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 space-y-3 w-full" style={{ paddingTop: headerPadding, paddingBottom: navPadding }} role="main">
         {/* Screen reader announcement for tab changes */}
         <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
-          {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} tab active
+          {t('app.tabActive', { tab: activeTab.charAt(0).toUpperCase() + activeTab.slice(1) })}
         </div>
         
         {/* [SECTION:TAB-TRACKER] */}
@@ -1318,8 +1318,8 @@ function WhisperingWishesInner() {
         <div className="ad-slot">160×600</div>
         <div className="ad-margin-footer">
           <p className="text-gray-600 text-2xs leading-relaxed">
-            {`v${APP_VERSION}`} • u/WW_Andene<br/>Not affiliated with Kuro Games<br/>
-            <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-600 hover:text-yellow-400 transition-colors">Contact</a>
+            {`v${APP_VERSION}`} • u/WW_Andene<br/>{t('app.notAffiliated')}<br/>
+            <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-600 hover:text-yellow-400 transition-colors">{t('app.contact')}</a>
           </p>
         </div>
       </div>
