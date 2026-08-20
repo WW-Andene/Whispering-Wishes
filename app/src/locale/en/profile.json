@@ -1,4 +1,38 @@
 {
+  "importGuide": {
+    "step": {
+      "openConvene": {
+        "pre": "Open Wuthering Waves, go to",
+        "convene": "Convene",
+        "history": "History",
+        "viewDetails": "View Details"
+      },
+      "pasteImport": {
+        "pre": "Paste it in the",
+        "urlField": "URL field",
+        "mid": "below and click",
+        "import": "Import"
+      }
+    },
+    "pc": {
+      "title": "PC",
+      "step2": { "pre": "Open", "powershell": "PowerShell", "post": "and paste this command:" },
+      "step4": { "pre": "The URL is", "autoCopied": "automatically copied", "post": "to your clipboard" },
+      "footer": "This script only reads game logs. It does not modify anything."
+    },
+    "android": {
+      "title": "Android (11+)",
+      "step2": { "pre": "Copy the", "fullUrl": "full URL", "post": "from the in-game browser address bar" },
+      "footer": "The URL expires after a few minutes. Use it quickly."
+    },
+    "ps5": {
+      "title": "PS5",
+      "step2": { "pre": "Press", "options": "Options", "pageInfo": "Page Information", "post": "to see the URL" },
+      "step3": { "pre": "Use the", "cameraScan": "camera scan", "post": "below to capture the URL from your screen" },
+      "step4": { "pre": "Or enter the", "idsManually": "IDs manually", "post": "from the URL" },
+      "footer": "The URL expires after some time. Use it as soon as possible."
+    }
+  },
   "resonator": {
     "title": "Resonator Profile",
     "displayName": "Display Name",

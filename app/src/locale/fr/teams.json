@@ -117,6 +117,17 @@
     "legendChar": "↳ Perso/Set/Arme",
     "legendEcho": "◆ Compétence d'Écho"
   },
+  "rotationGuide": {
+    "title": "Guide de rotation",
+    "onField": "sur le terrain {{duration}}s",
+    "mainDps": "DPS principal",
+    "skillSequence": "Séquence de compétences — à exécuter dans cet ordre",
+    "noInstructions": "Aucune instruction vérifiée pour cette étape pour le moment.",
+    "inheritsFromTeam": "Hérite de l'équipe",
+    "ownKit": "Kit propre",
+    "handsOffToNext": "Transmet au suivant",
+    "loopBack": "retour à {{name}}, répété toutes les {{time}}s"
+  },
   "enemyEcho": {
     "title": "Sélectionner l'ennemi cible",
     "subtitle": "Les {{count}} ennemis suivis — filtrer par rang, set ou type",

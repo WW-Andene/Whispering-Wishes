@@ -117,6 +117,17 @@
     "legendChar": "↳ Char/Set/Weapon",
     "legendEcho": "◆ Echo Skill"
   },
+  "rotationGuide": {
+    "title": "Rotation Guide",
+    "onField": "on-field {{duration}}s",
+    "mainDps": "Main DPS",
+    "skillSequence": "Skill sequence — perform in this order",
+    "noInstructions": "No verified how-to instructions for this step yet.",
+    "inheritsFromTeam": "Inherits from team",
+    "ownKit": "Own kit",
+    "handsOffToNext": "Hands off to next",
+    "loopBack": "loop back to {{name}}, repeat every {{time}}s"
+  },
   "enemyEcho": {
     "title": "Select Target Enemy",
     "subtitle": "All {{count}} tracked enemies — filter by Rank, Set, or Type",

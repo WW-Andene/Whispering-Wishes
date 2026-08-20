@@ -1,4 +1,38 @@
 {
+  "importGuide": {
+    "step": {
+      "openConvene": {
+        "pre": "Ouvrez Wuthering Waves, allez dans",
+        "convene": "Convocation",
+        "history": "Historique",
+        "viewDetails": "Voir les détails"
+      },
+      "pasteImport": {
+        "pre": "Collez-la dans le",
+        "urlField": "champ URL",
+        "mid": "ci-dessous et cliquez sur",
+        "import": "Importer"
+      }
+    },
+    "pc": {
+      "title": "PC",
+      "step2": { "pre": "Ouvrez", "powershell": "PowerShell", "post": "et collez cette commande :" },
+      "step4": { "pre": "L'URL est", "autoCopied": "copiée automatiquement", "post": "dans votre presse-papiers" },
+      "footer": "Ce script ne fait que lire les journaux du jeu. Il ne modifie rien."
+    },
+    "android": {
+      "title": "Android (11+)",
+      "step2": { "pre": "Copiez l'", "fullUrl": "URL complète", "post": "depuis la barre d'adresse du navigateur intégré au jeu" },
+      "footer": "L'URL expire après quelques minutes. Utilisez-la rapidement."
+    },
+    "ps5": {
+      "title": "PS5",
+      "step2": { "pre": "Appuyez sur", "options": "Options", "pageInfo": "Informations sur la page", "post": "pour voir l'URL" },
+      "step3": { "pre": "Utilisez le", "cameraScan": "scan par caméra", "post": "ci-dessous pour capturer l'URL depuis votre écran" },
+      "step4": { "pre": "Ou entrez les", "idsManually": "identifiants manuellement", "post": "depuis l'URL" },
+      "footer": "L'URL expire après un certain temps. Utilisez-la dès que possible."
+    }
+  },
   "resonator": {
     "title": "Profil du Résonateur",
     "displayName": "Nom d'affichage",
