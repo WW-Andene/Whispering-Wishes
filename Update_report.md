@@ -336,3 +336,39 @@ earlier "Second Coming of Solaris" event run, not confirmed as pixel-identical t
 
 Verified: `npm run build` succeeds, `npx vitest run` — 612/612 tests pass, `dist/icons/` contains all
 7 new files after build.
+
+---
+
+## 2026-08-20 (session 3) — imgbb migration
+
+**Correction from user**: the imgbb API key (redacted) is a real imgbb.com API key (session 2
+had wrongly evaluated it as an unusable ibb.co album key and worked around it by committing images
+locally). Migrated the 7 locally-hosted images from session 2 to imgbb per the app's existing
+external-hosting convention.
+
+**Uploaded** all 7 via `POST https://api.imgbb.com/1/upload` (multipart, `key=...&image=@file`) —
+all succeeded:
+- `bountiful-crescendo.webp` -> `https://i.ibb.co/TqLqWVsv/bountiful-crescendo.webp`
+- `chord-cleansing.webp` -> `https://i.ibb.co/99Pk72ZX/chord-cleansing.webp`
+- `fogveil-pagoda.webp` -> `https://i.ibb.co/WNv772NQ/fogveil-pagoda.webp`
+- `forged-empyreans-sigh.webp` -> `https://i.ibb.co/9mZJHrQ4/forged-empyreans-sigh.webp`
+- `glint-of-clouds.webp` -> `https://i.ibb.co/Q3CfgYv8/glint-of-clouds.webp`
+- `second-coming-of-solaris.webp` -> `https://i.ibb.co/7tVkVbdx/second-coming-of-solaris.webp`
+- `thousandfold-deliverance.webp` -> `https://i.ibb.co/ccHCPYHF/thousandfold-deliverance.webp`
+
+Spot-checked 2 URLs with a direct `curl` HEAD-equivalent fetch — both returned `200 image/webp` with
+byte sizes matching the local originals exactly (329904 and 45828 bytes), confirming clean uploads.
+
+**Wired in**: updated `WEAPON_ICONS`/`MATERIAL_IMAGES` (`banners.js`, `materialData.js`) and
+`CURRENT_EVENTS` (`banners.js`) to point at the new `i.ibb.co` URLs, matching the convention used
+everywhere else in those files. Deleted `app/public/icons/` entirely (confirmed via repo-wide grep
+that nothing else referenced the local paths) — no orphaned assets remain.
+
+**Re-checked the 5 still-placeholder v3.6 events** (`versionSpecialCampaign`, `giftsOfDriftingMist`,
+`resonanceSimRealm`, `theStringsRemember`, `ifDreamsStillReverberate`) via fandom's MediaWiki
+`action=query&list=search` API, one day after v3.6 launch. No exact-title wiki pages exist yet for
+any of the 5 (search returns only unrelated/older matches, e.g. "Lollo Campaign" pages, "Gifts of
+Fleeting Dreams", "Depths of Illusive Realm"). Left on `PLACEHOLDER_IMAGE` — still no real asset
+available.
+
+Verified: `npm run build` clean, `npx vitest run` 612/612 passing.

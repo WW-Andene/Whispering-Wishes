@@ -227,3 +227,16 @@ today, wiki likely hasn't caught up on event-specific art for these five).
 
 Verified: `npm run build` clean, `npx vitest run` 612/612 passing, `dist/icons/` populated correctly
 after build.
+
+---
+
+## 2026-08-20 (session 3) — imgbb migration
+
+**Task**: migrate the 7 images session 2 committed locally (`app/public/icons/`) to imgbb, now that
+a real imgbb API key (the imgbb API key (redacted)) is confirmed available, matching the
+external-hosting convention used elsewhere in `banners.js`/`materialData.js`.
+
+**Done**: uploaded all 7 to imgbb via its REST API, rewired `WEAPON_ICONS`, `MATERIAL_IMAGES`, and
+`CURRENT_EVENTS` to the new `i.ibb.co` URLs, deleted the now-orphaned `app/public/icons/` directory,
+re-verified the 5 remaining placeholder v3.6 events still have no dedicated wiki art one day after
+launch (none found). 612/612 tests pass, production build clean.
