@@ -34,7 +34,7 @@
     "backToSeries": "Retour aux séries"
   },
   "history": {
-    "title": "Historique des convocations",
+    "title": "Historique des Conviers",
     "banners": {
       "all": "Toutes",
       "featured": "Vedette",
@@ -50,9 +50,9 @@
     },
     "noDataFilter": "Aucune donnée pour ce filtre. Essayez un autre type de bannière ou une autre période.",
     "noDataCombination": "Aucune donnée pour cette combinaison. Essayez un autre filtre ou une autre période.",
-    "srSummary": "Graphique de l'historique des convocations montrant l'activité dans le temps. Points de données : {{points}}.",
-    "srDataPoint": "{{label}} : {{count}} convocations",
-    "tooltipConvenes": "{{label}} : {{count}} convocations",
+    "srSummary": "Graphique de l'historique des Conviers montrant l'activité dans le temps. Points de données : {{points}}.",
+    "srDataPoint": "{{label}} : {{count}} Conviers",
+    "tooltipConvenes": "{{label}} : {{count}} Conviers",
     "pageRange": "{{start}}-{{end}} sur {{total}}"
   },
   "achievementsCard": {
@@ -60,7 +60,7 @@
   },
   "empty": {
     "awaitingSignal": "En attente de données",
-    "importPrompt": "Importez votre historique de convocations pour initialiser l'analyse de chance, le suivi de pitié et les statistiques de convocation.",
+    "importPrompt": "Importez votre historique de Conviers pour initialiser l'analyse de chance, le suivi de pitié et les statistiques de Convier.",
     "openProfile": "Ouvrir Profil pour importer"
   },
   "luck": {
@@ -78,7 +78,7 @@
     "title": "Classement - Avis de partage de données",
     "intro": "En soumettant votre score, les données suivantes seront envoyées à une base de données partagée et affichées publiquement :",
     "playerIdPrefix": "Votre ID joueur",
-    "stats": "Pitié moyenne, total de convocations, statistiques de victoires/défaites 50/50",
+    "stats": "Pitié moyenne, total de Conviers, statistiques de victoires/défaites 50/50",
     "owned": "Vos personnages et armes 5★ possédés",
     "pseudonymous": "Ces données sont pseudonymes (liées à un UID de jeu haché ou un ID aléatoire, pas à votre identité réelle).",
     "decline": "Refuser",
@@ -117,7 +117,7 @@
     "globalAvgPity": "Pitié moy. globale",
     "winRate5050": "Taux de victoire 50/50",
     "total5Star": "Total 5★",
-    "totalConvenesTracked": "{{n}} convocations totales suivies",
+    "totalConvenesTracked": "{{n}} Conviers totaux suivis",
     "winLoss": "{{won}}V / {{lost}}D",
     "luckiest": "Plus chanceux : {{pity}}",
     "unluckiest": "Moins chanceux : {{pity}}",
@@ -127,13 +127,13 @@
     "submitting": "Envoi…",
     "waitSeconds": "Attendez {{seconds}}s…",
     "submitScore": "Soumettre mon score",
-    "shareNotice": "Pseudonyme • Votre ID, votre pitié moyenne et vos statistiques de convocation sont partagés publiquement sur le classement",
-    "importToParticipate": "Importez votre historique de convocations pour participer"
+    "shareNotice": "Pseudonyme • Votre ID, votre pitié moyenne et vos statistiques de Convier sont partagés publiquement sur le classement",
+    "importToParticipate": "Importez votre historique de Conviers pour participer"
   },
   "pullLog": {
-    "title": "Journal des convocations 5★",
+    "title": "Journal des Conviers 5★",
     "awaitingSignal": "En attente de résonance 5★",
-    "importPrompt": "Importez votre historique de convocations dans Profil pour voir votre journal de tirages 5★",
+    "importPrompt": "Importez votre historique de Conviers dans Profil pour voir votre journal de tirages 5★",
     "wonAria": "50/50 gagné",
     "lostAria": "50/50 perdu",
     "guaranteedAria": "Garanti",
@@ -143,7 +143,7 @@
   "trophies": {
     "title": "Trophées",
     "earned": "{{n}} obtenus",
-    "emptyImportPrompt": "Importez plus d'historique de convocations dans l'onglet Profil pour débloquer des trophées",
+    "emptyImportPrompt": "Importez plus d'historique de Conviers dans l'onglet Profil pour débloquer des trophées",
     "trophyAria": "Trophée : {{name}}",
     "closeAria": "Fermer le trophée",
     "closeHint": "touchez à l'extérieur ou ✕ pour fermer",
@@ -153,7 +153,7 @@
   },
   "overall": {
     "title": "Statistiques globales",
-    "totalConvenes": "Total convocations",
+    "totalConvenes": "Total Conviers",
     "astriteSpent": "Astrite dépensé (en jeu)",
     "won5050": "50/50 gagnés",
     "lost5050": "50/50 perdus",
@@ -169,7 +169,7 @@
   },
   "perBanner": {
     "title": "Répartition par bannière",
-    "convenes": "{{n}} convocations",
+    "convenes": "{{n}} Conviers",
     "pity": "Pitié : {{pity}}/{{hardPity}}",
     "bannerNames": {
       "featuredResonator": "Résonateur vedette",

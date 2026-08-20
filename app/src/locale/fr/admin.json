@@ -22,7 +22,7 @@
   "collectionTab": {
     "title": "Images de la collection",
     "desc": "La plupart des résonateurs ont des images intégrées. Utilisez des URLs personnalisées pour remplacer ou compléter celles manquantes.",
-    "importPrompt": "Importez des données de convocation pour peupler vos archives",
+    "importPrompt": "Importez des données de Convier pour peupler vos archives",
     "goToImport": "Aller à l'import",
     "usingDefault": "(utilise la valeur par défaut)",
     "noDefault": "{{name}} (aucune valeur par défaut)",
@@ -52,7 +52,7 @@
     "awaitingRegistration": "En attente d'enregistrement d'opérateurs",
     "avg": "Moy :",
     "fiveStar": "5★ :",
-    "convenes": "Convocations :",
+    "convenes": "Conviers :",
     "winLoss": "50/50 :",
     "privacyTitle": "Confidentialité",
     "privacyOpenSessions": "Sessions ouvertes = chaque onglet/navigateur ouvert visitant l'application. Suivi via un signal anonyme. Juste un identifiant de session aléatoire et un horodatage. Aucun UID, aucune information sur l'appareil, aucune IP, aucune donnée personnelle stockée. Les sessions expirent après 2 minutes d'inactivité.",
