@@ -184,7 +184,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === mainStatKey) atkPct += parseFloat(mainDps.weapSubVal) || 0;
-    if (mainDps.weapSubstat === 'Energy Regen') atkPct += 8;
 
     let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0, wpCoordDmg = 0;
     if (mainDps.weapon) {
