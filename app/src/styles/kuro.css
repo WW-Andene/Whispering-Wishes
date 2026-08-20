@@ -748,13 +748,18 @@
     .theme-rainbow .kuro-card::before {
       content: '';
       position: absolute;
-      inset: -1px;
+      inset: -2px;
       z-index: 6;
       border-radius: inherit;
       pointer-events: none;
-      padding: 1px;
+      /* 3px ring (was 1px) — a 1px ring rotating through adjacent pastel
+         hues was technically animating but visually imperceptible: too thin
+         to register motion, and neighboring stops were too close in hue to
+         read as "moving" frame to frame. Thicker ring + higher-saturation,
+         higher-contrast stops + a faster cycle make the rotation obvious. */
+      padding: 3px;
       background: conic-gradient(from var(--rainbow-angle),
-        #ffb3c1, #ffd8a8, #fff3a0, #c3f0a8, #a8e6d8, #a8d8ff, #c9b3ff, #f0b3e8, #ffb3c1);
+        #ff3d6e, #ff9f1c, #ffe74c, #4ade80, #22d3ee, #3b82f6, #a855f7, #ec4899, #ff3d6e);
       -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
       -webkit-mask-clip: content-box, border-box;
       -webkit-mask-composite: xor;
@@ -769,7 +774,7 @@
        the ring is still visible — just static — matching the reduced-motion
        fallback the rest of the app uses. */
     .theme-rainbow-animated .kuro-card::before {
-      animation: rainbow-angle-spin 4s linear infinite;
+      animation: rainbow-angle-spin 2.5s linear infinite;
     }
 
     @keyframes rainbow-angle-spin {
