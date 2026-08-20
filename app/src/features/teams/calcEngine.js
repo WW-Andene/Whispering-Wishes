@@ -41,7 +41,18 @@ export const FUSION_TRAIL_MULT = 3.0;      // Fusion Trail damage multiplier
 export const FLARE_TICK_INTERVAL = 4;      // Electro Flare tick interval (seconds)
 export const FLARE_STACK_MULT = 0.12;      // DMG multiplier per Flare stack
 export const TUNE_BREAK_BASE_DMG = 5000;   // Base Tune Break damage
-export const ER_THRESHOLD_STANDARD = 125;  // ER threshold for standard characters
+// ER breakpoints — how much Energy Regen a character actually needs for full Liberation uptime.
+// Community consensus (endgame ER-breakpoint guides, corroborated across multiple independent
+// sources) differentiates this by ROLE, not just energy cost: an on-field Main DPS builds energy
+// continuously from their own Basic/Heavy Attacks all rotation, so ~100-110% is typically enough;
+// a Sub-DPS/off-field character spends most of the rotation NOT generating their own on-field
+// energy, so needs more (~120-130%); a dedicated Support/buffer swapping in only briefly needs the
+// most (~130-150%). The previous flat ER_THRESHOLD_STANDARD (125% for every non-175-cost role
+// alike) ignored that split — same as this file's off-field fieldRatio/onField modeling already
+// applies for raw damage, just not carried over to the ER-breakpoint estimate.
+export const ER_THRESHOLD_MAIN_DPS = 110;  // on-field Main DPS: builds energy every hit, needs less
+export const ER_THRESHOLD_SUB_DPS = 130;   // off-field Sub-DPS: less passive energy gen, needs more
+export const ER_THRESHOLD_STANDARD = 140;  // Support/other roles below the 175-cost healer cutoff
 export const ER_THRESHOLD_HEALER = 140;    // ER threshold for 175-cost healers
 
 // Echo main stat values by cost tier
@@ -472,7 +483,10 @@ export function calcEnergyCycles(members, teamEquipment, teamIdx) {
       (esb.buffs || []).forEach(b => { if (b.stat === 'energyRegen') totalER += b.value; });
     }
     const energyCost = m.d.maxEnergy || 125;
-    const erThreshold = energyCost >= 175 ? ER_THRESHOLD_HEALER : ER_THRESHOLD_STANDARD;
+    const erThreshold = energyCost >= 175 ? ER_THRESHOLD_HEALER
+      : m.d.role === 'Main DPS' ? ER_THRESHOLD_MAIN_DPS
+      : m.d.role === 'Sub DPS' ? ER_THRESHOLD_SUB_DPS
+      : ER_THRESHOLD_STANDARD;
     factors[m.name] = {
       totalER,
       libUptime: totalER >= erThreshold ? 1.0 : Math.max(0.6, totalER / erThreshold),
