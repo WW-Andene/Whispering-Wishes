@@ -571,7 +571,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === mainStatKey) atkPct += parseFloat(mainDps.weapSubVal) || 0;
 
-    let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0, wpCoordDmg = 0;
+    let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0, wpCoordDmg = 0, wpSkillDmg = 0;
     if (mainDps.weapon) {
       const mainRefLevel = (teamEquipment[teamIdx + ':' + mainDps.name])?.refinement || 1;
       const mainRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[mainRefLevel - 1] || 1 : 1;
@@ -580,7 +580,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       if (mainDps.scaling === 'ATK') atkPct += (wp.atkPct || 0);
       else if (mainDps.scaling === 'HP') atkPct += (wp.hpPct || 0);
       else if (mainDps.scaling === 'DEF') atkPct += (wp.defPct || 0);
-      elemDmg += (wp.elemDmg || 0); skillDmg += (wp.skillDmg || 0);
+      elemDmg += (wp.elemDmg || 0); wpSkillDmg += (wp.skillDmg || 0);
       cr += (wp.critRate || 0); cd += (wp.critDmg || 0);
       defIgnore += gateWeaponDefIgnore(mainDps.weapName, wp.defIgnore || 0); resShred += (wp.resShred || 0);
       wpBasicDmg = (wp.basicDmg || 0); wpHeavyDmg = (wp.heavyDmg || 0);
@@ -593,7 +593,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const setStats = createStats();
       applyFullEchoSet(setStats, mainDps.echoSet, mainDps.echoSet2, mainDps.d.element, mainDps.scaling);
       atkPct += setStats.atkPct; cr += setStats.cr - BASE_CRIT_RATE; cd += setStats.cd - BASE_CRIT_DMG;
-      elemDmg += setStats.elemDmg; skillDmg += setStats.skillDmg;
+      elemDmg += setStats.elemDmg; wpSkillDmg += setStats.skillDmg;
       wpBasicDmg += setStats.basicDmg; wpHeavyDmg += setStats.heavyDmg;
       wpLibDmg += setStats.libDmg; wpEchoDmg += setStats.echoDmg;
     }
@@ -662,7 +662,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           if (b.stat === mainEl + 'Dmg') elemDmg += val;
           else if (b.stat === 'allDmg') elemDmg += val;
           else if (b.stat === 'atkPct') atkPct += val;
-          else if (b.stat === 'skillDmg') skillDmg += val;
+          else if (b.stat === 'skillDmg') wpSkillDmg += val;
           else if (b.stat === 'basicDmg') wpBasicDmg += val;
           else if (b.stat === 'heavyDmg') wpHeavyDmg += val;
           else if (b.stat === 'libDmg') wpLibDmg += val;
@@ -675,7 +675,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     }
 
     const dpsFocus = mainDps.d.dmgFocus || [];
-    let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg;
+    let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg, mainSkillDmg = wpSkillDmg;
     mems.forEach(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
       if (!bt) return;
@@ -783,10 +783,32 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
 
     // DMG Bonus layer: weapon + echo self-bonuses (NOT outro amplify)
     basicDmg += echoBasicDmg; heavyDmg += echoHeavyDmg; libDmg += echoLibDmg;
-    skillDmg += echoSkillDmg;
+    mainSkillDmg += echoSkillDmg;
+
+    // Apply resonance chain bonuses (using shared utility) — moved ahead of the type-routing step
+    // below (was previously applied AFTER it): basicDmg/heavyDmg/libDmg/echoDmg/skillDmg contributions
+    // from a character's own Resonance Chain (e.g. Qingxiao's S2 "+40% Heavy ATK DMG", S5 "+100% Skill
+    // DMG") were being added to these variables only after routeTypeBonuses had already consumed them
+    // into the final dmgBonus figure — calcDmgBonus() never reads basicDmg/heavyDmg/libDmg/echoDmg
+    // again afterward, so those contributions were silently discarded for every character whose chain
+    // grants one of these 5 stat types (100 such entries across the roster). Moving this block ahead
+    // means it now correctly feeds the same pre-routing pools everything else here uses.
+    let seqTotalMultBonus = 0;
+    const seqStats = { atkPct: 0, cr: 0, cd: 0, elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
+    mems.forEach(m => {
+      const isMain = m.name === mainDps.name;
+      const bonus = applyResonanceChain(seqStats, m.name, m.seqLevel, isMain);
+      if (isMain) seqTotalMultBonus += bonus;
+    });
+    atkPct += seqStats.atkPct; cr += seqStats.cr; cd += seqStats.cd;
+    elemDmg += seqStats.elemDmg; mainSkillDmg += seqStats.skillDmg;
+    basicDmg += seqStats.basicDmg; heavyDmg += seqStats.heavyDmg;
+    libDmg += seqStats.libDmg; echoDmg += seqStats.echoDmg;
+    deepen += seqStats.deepen; defShred += seqStats.defShred;
+    resShred += seqStats.resShred; defIgnore += seqStats.defIgnore;
 
     // Route type-specific DMG Bonus into skillDmg based on character's damage focus
-    { const typeStats = { skillDmg: 0, basicDmg, heavyDmg, libDmg, echoDmg, coordDmg };
+    { const typeStats = { skillDmg: mainSkillDmg, basicDmg, heavyDmg, libDmg, echoDmg, coordDmg };
       routeTypeBonuses(typeStats, dpsFocus);
       skillDmg += typeStats.skillDmg; }
 
@@ -806,7 +828,13 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         if (e.elem && e.elem !== mainDpsEl) return;
         if (e.stat === 'atkPct') atkPct += mainDps.scaling === 'ATK' ? e.value : e.value * 0.25;
         else if (e.stat === 'elemDmg') elemDmg += e.value;
-        else if (e.stat === 'libDmg') libDmg += e.value;
+        // Was `libDmg += e.value` — but this forEach runs after the type-routing step above has
+        // already spent `libDmg` into the final `skillDmg` figure; a further addition to `libDmg`
+        // here was silently discarded (calcDmgBonus never reads it again), same dead-write bug as the
+        // resonance chain fix above, just for TEAM_SET_BUFFS' one 'Flaming Clawprint' libDmg entry.
+        // Added directly to the already-routed `skillDmg`, gated by the same Liberation-focus check
+        // routeTypeBonuses would have applied.
+        else if (e.stat === 'libDmg' && dpsFocus.includes('Liberation')) skillDmg += e.value;
       });
       // 3pc set team contribution from sub-DPS (wearer benefits, no direct team buff)
       // 2pc bonus from hybrid secondary set applied to wearer only (handled in sub-DPS calc)
@@ -855,21 +883,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         }
       }
     });
-
-    // Apply resonance chain bonuses (using shared utility)
-    let seqTotalMultBonus = 0;
-    const seqStats = { atkPct: 0, cr: 0, cd: 0, elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
-    mems.forEach(m => {
-      const isMain = m.name === mainDps.name;
-      const bonus = applyResonanceChain(seqStats, m.name, m.seqLevel, isMain);
-      if (isMain) seqTotalMultBonus += bonus;
-    });
-    atkPct += seqStats.atkPct; cr += seqStats.cr; cd += seqStats.cd;
-    elemDmg += seqStats.elemDmg; skillDmg += seqStats.skillDmg;
-    basicDmg += seqStats.basicDmg; heavyDmg += seqStats.heavyDmg;
-    libDmg += seqStats.libDmg; echoDmg += seqStats.echoDmg;
-    deepen += seqStats.deepen; defShred += seqStats.defShred;
-    resShred += seqStats.resShred; defIgnore += seqStats.defIgnore;
 
     const effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
     const avgCrit = calcAvgCrit(cr, cd);
@@ -1095,8 +1108,11 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         if (m.weapSubstat === sStatKey) sAtkPct += parseFloat(m.weapSubVal) || 0;
         const sEffAtk = mBase * (1 + sAtkPct / 100);
         const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
-        let sTypeDmg = sSkillDmg;
         const sFocus = m.d.dmgFocus || [];
+        // Same dmgFocus gate as the main DPS fix above (routeTypeBonuses) — a sub-DPS without
+        // 'Skill' in their own focus shouldn't get full credit for a literal Resonance Skill DMG%
+        // contribution (weapon passive, echo set) as if it always applies to their damage.
+        let sTypeDmg = sFocus.includes('Skill') ? sSkillDmg : 0;
         if (sFocus.includes('Basic ATK')) sTypeDmg += sBasicDmg;
         if (sFocus.includes('Heavy ATK')) sTypeDmg += sHeavyDmg;
         if (sFocus.includes('Liberation')) sTypeDmg += sLibDmg;

@@ -778,3 +778,56 @@ enforced, session 10) and searched `echoes.js` for the same "stacks x" pattern f
 full audit; flagged as lower-priority than the `skillDmg` gating gap above.
 
 Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 14) — Fixed the skillDmg gating gap + a bigger bug it led to
+
+**User's directive**: correct the flagged `skillDmg` gating issue using the most factual/accurate data
+available. Investigated properly rather than patching blind.
+
+**Confirmed the root cause**: `routeTypeBonuses()` (`calcEngine.js`) correctly gates `basicDmg`/
+`heavyDmg`/`libDmg`/`echoDmg`/`coordDmg` behind the character's actual `dmgFocus` before they count
+toward `dmgBonus` — but `skillDmg` (literal "Resonance Skill DMG%" from weapon passives, echo sets,
+self-buffs) was added directly and unconditionally, with no focus gate at all, anywhere in
+`calcTeamStats.js`. Confirmed `'Skill'` is a real, actively-used `dmgFocus` tag (20+ characters), and
+found the team-suggestion scoring heuristic elsewhere in the same file *already* gates `skillDmg` by
+`dpsFocus.includes('Skill')` (`calcTeamStats.js:1265` pre-fix) — solid evidence this was a genuine
+oversight in the real damage math, not an intentional simplification.
+
+**Fixed**: added a `wpSkillDmg`/`mainSkillDmg` raw-pool accumulator (mirroring the existing pattern
+already used for the other 5 types) at every site that was writing directly into `skillDmg` — weapon
+`pv`, echo set bonuses, main DPS self-buffs, echo active-skill buffs — then added one gating line to
+`routeTypeBonuses()` itself (`if (!dpsFocus.includes('Skill')) stats.skillDmg = 0;`) so the fix applies
+consistently everywhere the shared function is called. Fixed the sub-DPS damage tier's own manually-
+inlined duplicate of the same logic the same way.
+
+**Found something much bigger while wiring this in**: the "Apply resonance chain bonuses" block was
+positioned *after* `routeTypeBonuses` had already run and "spent" `basicDmg`/`heavyDmg`/`libDmg`/
+`echoDmg`/`skillDmg` into the final `dmgBonus` figure — `calcDmgBonus()` never reads those 4 variables
+again after that point, so a chain bonus of one of these 5 types (e.g. Qingxiao's own S2 "+40% Heavy
+ATK DMG", S5 "+100% Skill DMG") was silently discarded, not applied at all. Counted **100 such entries
+across the roster's `RESONANCE_CHAIN_DATA`** — this wasn't a 1-2-character edge case, it affected
+sequence-level scaling broadly. Fixed by moving the resonance-chain block to run *before* the routing
+step, feeding the same pre-routing pools as everything else. Found and fixed one more small instance
+of the identical dead-write pattern: `TEAM_SET_BUFFS`' one `libDmg`-granting entry (Flaming Clawprint)
+was also positioned after routing; gated and re-added directly instead.
+
+**Verified concretely, not just "tests pass"**: ran Qingxiao (S2=`heavyDmg:40`, her actual focus; S5=
+`skillDmg:100`, NOT her focus) through S0→S6 before/after. Before: S1→S2 showed **zero** DPS change
+(the dead-code bug — her 40% Heavy ATK DMG chain bonus literally did nothing), S5 showed an inflated
+jump from over-crediting `skillDmg` she doesn't focus. After: S2 now correctly *increases* DPS (chain
+investment finally matters), S5 correctly *decreases* from the old inflated number (no longer given
+credit for a damage type she doesn't use). Both directions individually validated, not just a net
+number. Re-ran the weapon-ranking audit from last session: disagreements dropped **10 → 8** (Calcharo
+and Hiyuki now correctly match their declared best weapon — both were previously losing specifically
+to `skillDmg`-heavy weapons they don't benefit from). 100-team before/after: median 0%, mean -0.26%,
+bounded range (-4.1% to +4.4%) — most random S0 teams unaffected (as expected — the sequence-level fix
+only shows up with sequence invested), small and explicable where it does move. 500-team stress test:
+0 crashes, 0 invalid output on `teamDps` and every `memberDps` entry.
+
+**Remaining 8 weapon disagreements**: not yet root-caused with the same rigor as the shield-gating and
+skillDmg fixes — could be genuine other bugs, stale static `bestWeapon` data, or legitimate real-world
+factors this app's simplified model doesn't capture. Left alone rather than guess.
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
