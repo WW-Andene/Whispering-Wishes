@@ -5,7 +5,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCcw, Calendar } from 'lucide-react';
-import { EVENTS } from '../../data/banners.js';
+import { getLocalizedEvents } from '../../data/banners.js';
 import { getServerOffset } from '../../data/constants.js';
 import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -13,9 +13,9 @@ import { EventCard } from './EventCard.jsx';
 import { getActiveBanners } from '../../shared/components/bannerUtils.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
-import { t, formatNumber } from '../../utils/i18n.js';
+import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
-const EVENT_ENTRIES = Object.entries(EVENTS);
+const LOCALIZED_EVENT_ENTRIES = Object.entries(getLocalizedEvents(getLocale()));
 
 function EventsTab({
   state,
@@ -33,7 +33,7 @@ function EventsTab({
   // entries would otherwise accumulate in localStorage forever. Runs once per
   // mount to clear any keys no longer in the current EVENTS map.
   useEffect(() => {
-    const validKeys = new Set(EVENT_ENTRIES.map(([key]) => key));
+    const validKeys = new Set(LOCALIZED_EVENT_ENTRIES.map(([key]) => key));
     const staleKeys = Object.keys(state.eventStatus || {}).filter(k => !validKeys.has(k));
     staleKeys.forEach(key => dispatch({ type: 'SET_EVENT_STATUS', eventKey: key, status: null }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,15 +42,15 @@ function EventsTab({
   // L1-FIX: Memoize event progress stats (was 60+ array iterations per render)
   const progressStats = useMemo(() => {
     // Weekly rewards: daily recurring (×7) + weekly recurring sources
-    const totalAstrite = EVENT_ENTRIES.reduce((sum, [, ev]) => {
+    const totalAstrite = LOCALIZED_EVENT_ENTRIES.reduce((sum, [, ev]) => {
       const val = parseInt(ev.rewards, 10) || 0;
       if (!val) return sum;
       if (ev.dailyReset) return sum + val * 7;
       if (ev.weeklyReset) return sum + val;
       return sum;
     }, 0);
-    const doneKeys = EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'done');
-    const skippedKeys = EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'skipped');
+    const doneKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'done');
+    const skippedKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'skipped');
     const earnedAstrite = doneKeys.reduce((sum, [, ev]) => {
       const val = parseInt(ev.rewards, 10) || 0;
       if (!val) return sum;
@@ -66,8 +66,8 @@ function EventsTab({
       return sum;
     }, 0);
     const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
-    const pendingCount = EVENT_ENTRIES.length - doneKeys.length - skippedKeys.length;
-    return { totalAstrite, earnedAstrite, skippedAstrite, hasProgress, doneCount: doneKeys.length, skippedCount: skippedKeys.length, pendingCount, totalCount: EVENT_ENTRIES.length };
+    const pendingCount = LOCALIZED_EVENT_ENTRIES.length - doneKeys.length - skippedKeys.length;
+    return { totalAstrite, earnedAstrite, skippedAstrite, hasProgress, doneCount: doneKeys.length, skippedCount: skippedKeys.length, pendingCount, totalCount: LOCALIZED_EVENT_ENTRIES.length };
   }, [state.eventStatus]);
 
   // L1-FIX: Memoize active/expired event split
@@ -94,8 +94,8 @@ function EventsTab({
       return !isNaN(endMs) && endMs <= Date.now();
     };
     return {
-      active: EVENT_ENTRIES.filter(([, ev]) => !isEventExpired(ev)),
-      expired: EVENT_ENTRIES.filter(([, ev]) => isEventExpired(ev)),
+      active: LOCALIZED_EVENT_ENTRIES.filter(([, ev]) => !isEventExpired(ev)),
+      expired: LOCALIZED_EVENT_ENTRIES.filter(([, ev]) => isEventExpired(ev)),
       eventImageMap: imgMap,
     };
   }, [activeBanners, state.server]);
@@ -180,7 +180,7 @@ function EventsTab({
       </Card>
 
       <div className="space-y-3 event-grid">
-        {EVENT_ENTRIES.length === 0 ? (
+        {LOCALIZED_EVENT_ENTRIES.length === 0 ? (
           <div className="kuro-empty-state text-center py-8">
             <Calendar size={24} className="mx-auto mb-2 opacity-50" />
             {t('events.noEvents')}

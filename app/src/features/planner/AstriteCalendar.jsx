@@ -7,8 +7,10 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, GanttChart, X } from 'lucide-react';
 import { ASTRITE_PER_PULL } from '../../data/constants.js';
-import { EVENTS, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES } from '../../data/banners.js';
-import { t, formatNumber, formatDate } from '../../utils/i18n.js';
+import { getLocalizedEvents, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES } from '../../data/banners.js';
+import { t, formatNumber, formatDate, getLocale } from '../../utils/i18n.js';
+
+const EVENTS = getLocalizedEvents(getLocale());
 
 // 9 colors — one per meaning. Raw hex required because values are used in JS string
 // interpolation (e.g. `${color}40` for alpha) where CSS var() would be invalid.

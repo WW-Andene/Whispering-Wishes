@@ -1099,6 +1099,37 @@ function preloadBannerHistoryArt() {
   }
 }
 
+import { CURRENT_BANNER_TITLES_FR, EVENTS_FR } from './banners.fr.js';
+
+// Locale-aware CURRENT_BANNERS: only the display-only `title` fields on
+// characters/weapons are swapped; every other field (names, dates, art URLs,
+// standard banner arrays) is shared and returned as-is.
+export function getLocalizedCurrentBanners(locale) {
+  if (locale !== 'fr') return CURRENT_BANNERS;
+  const translateTitle = (entry) => ({
+    ...entry,
+    ...(CURRENT_BANNER_TITLES_FR[entry.title] ? { title: CURRENT_BANNER_TITLES_FR[entry.title] } : {}),
+  });
+  return {
+    ...CURRENT_BANNERS,
+    characters: CURRENT_BANNERS.characters.map(translateTitle),
+    weapons: CURRENT_BANNERS.weapons.map(translateTitle),
+  };
+}
+
+// Locale-aware EVENTS: only name/subtitle/description are swapped.
+// resetType/rewards/color/gradient/accentColor are intentionally left as-is
+// (see banners.fr.js header for why).
+export function getLocalizedEvents(locale) {
+  if (locale !== 'fr') return EVENTS;
+  const out = {};
+  for (const [key, base] of Object.entries(EVENTS)) {
+    const fr = EVENTS_FR[key];
+    out[key] = { ...base, ...(fr ? { name: fr.name, subtitle: fr.subtitle, description: fr.description } : {}) };
+  }
+  return out;
+}
+
 export {
   PLACEHOLDER_IMAGE,
   CURRENT_BANNERS,
