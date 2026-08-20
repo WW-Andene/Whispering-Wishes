@@ -82,6 +82,7 @@ import {
 import { silentCatch } from './utils/silentCatch.js';
 import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storageKeys.js';
 import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
+import { t, formatDate } from './utils/i18n.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -100,7 +101,7 @@ function WhisperingWishesInner() {
   const dispatch = useCallback((action) => {
     rawDispatch(action);
     if (UNDOABLE_ACTIONS.has(action.type)) {
-      toast?.addToast?.('Action completed', 'info', 5000, () => rawDispatch({ type: 'UNDO' }));
+      toast?.addToast?.(t('app.actionCompleted'), 'info', 5000, () => rawDispatch({ type: 'UNDO' }));
     }
   }, [rawDispatch, toast]);
   const [storageLoaded, setStorageLoaded] = useState(false);
@@ -165,7 +166,7 @@ function WhisperingWishesInner() {
   // Validate server name - surface warning if corrupted
   useEffect(() => {
     if (state.server && !SERVERS[state.server]) {
-      toast?.addToast?.(`Unknown server "${state.server}". Defaulting to Europe. Please update in Settings.`, 'warning');
+      toast?.addToast?.(t('app.unknownServer', { server: state.server }), 'warning');
       dispatch({ type: 'SET_SERVER', server: 'Europe' });
     }
   }, [state.server, toast]);
@@ -233,7 +234,7 @@ function WhisperingWishesInner() {
     if (savedState) {
       dispatch({ type: 'LOAD_STATE', state: savedState });
       if (savedState.profile.importedAt) {
-        toast?.addToast?.('Data restored', 'success');
+        toast?.addToast?.(t('app.dataRestored'), 'success');
       }
       // For existing users: check if they've explicitly dismissed onboarding
       // Parse raw data to check original settings, not merged with initialState
@@ -266,7 +267,7 @@ function WhisperingWishesInner() {
         saveFailCountRef.current++;
         // Only show toast on first failure (avoid spamming on every state change)
         if (saveFailCountRef.current === 1) {
-          toast?.addToast?.('Storage full. Data may not be saved. Try clearing old Convene history.', 'error');
+          toast?.addToast?.(t('app.storageFull'), 'error');
         }
       } else {
         saveFailCountRef.current = 0;
@@ -291,8 +292,8 @@ function WhisperingWishesInner() {
 
   // Listen for storage warning events (dispatched by saveToStorage at 80% capacity)
   useEffect(() => {
-    const onWarning = () => toastRef.current?.addToast?.('Storage nearly full — consider exporting a backup', 'warning');
-    const onError = () => toastRef.current?.addToast?.('Storage full — data may not be saved', 'error');
+    const onWarning = () => toastRef.current?.addToast?.(t('app.storageNearlyFull'), 'warning');
+    const onError = () => toastRef.current?.addToast?.(t('app.storageFullShort'), 'error');
     window.addEventListener('ww-storage-warning', onWarning);
     window.addEventListener('ww-storage-error', onError);
     return () => { window.removeEventListener('ww-storage-warning', onWarning); window.removeEventListener('ww-storage-error', onError); };
@@ -342,7 +343,7 @@ function WhisperingWishesInner() {
           // Remember what we just applied so a subsequent identical-payload
           // storage event doesn't re-toast.
           lastAppliedSignature = e.newValue;
-          toastRef.current?.addToast?.('Data synced from another tab', 'info');
+          toastRef.current?.addToast?.(t('app.dataSyncedTab'), 'info');
         } catch (err) {
           console.warn('Cross-tab sync failed:', err);
         }
@@ -488,10 +489,10 @@ function WhisperingWishesInner() {
   const handleSetProfilePic = useCallback((name) => {
     if (state.profile.profilePic === name) {
       dispatch({ type: 'SET_PROFILE_PIC', value: '' });
-      toast?.addToast?.('Profile picture removed', 'info');
+      toast?.addToast?.(t('app.profilePicRemoved'), 'info');
     } else {
       dispatch({ type: 'SET_PROFILE_PIC', value: name });
-      toast?.addToast?.(`Profile picture set to ${name}`, 'success');
+      toast?.addToast?.(t('app.profilePicSet', { name }), 'success');
     }
   }, [state.profile.profilePic, toast]);
 
@@ -547,16 +548,16 @@ function WhisperingWishesInner() {
     try {
       // P10-FIX: Check raw string size before parsing to prevent expansion attacks (Step 6 audit)
       if (jsonString.length > MAX_IMPORT_SIZE_MB * 1024 * 1024) {
-        throw new Error(`Import data too large (${(jsonString.length / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`);
+        throw new Error(t('app.importTooLarge', { size: (jsonString.length / 1024 / 1024).toFixed(1), max: MAX_IMPORT_SIZE_MB }));
       }
       const data = JSON.parse(jsonString);
       if (typeof data !== 'object' || data === null) {
-        throw new Error('Invalid data format - expected a JSON object');
+        throw new Error(t('app.invalidDataFormat'));
       }
 
       // FIX #1: Detect own backup format (has 'state' key from handleExport)
       if (data.state && typeof data.state === 'object' && data.state.profile) {
-        const doRestore = await confirm?.({ title: 'Restore full backup?', message: 'This will replace ALL current data (Convenes, teams, settings) with the backup. Continue?', confirmLabel: 'Restore', destructive: true });
+        const doRestore = await confirm?.({ title: t('app.confirmRestoreBackupTitle'), message: t('app.confirmRestoreBackupMessage'), confirmLabel: t('app.confirmRestoreBackupConfirmLabel'), destructive: true });
         if (!doRestore) return;
         dispatch({ type: 'LOAD_STATE', state: data.state });
         // Restore auxiliary data (visual settings, team equipment, etc.)
@@ -593,16 +594,16 @@ function WhisperingWishesInner() {
             }
           } catch {}
         }
-        toast?.addToast?.(`Backup restored! (v${data.version || '?'}, ${data.timestamp ? new Date(data.timestamp).toLocaleDateString() : 'unknown date'})`, 'success');
+        toast?.addToast?.(t('app.backupRestoredVersion', { version: data.version || '?', date: data.timestamp ? formatDate(new Date(data.timestamp)) : t('app.backupRestoredVersionUnknown') }), 'success');
         return true;
       }
 
       const pulls = data.pulls || data.conveneHistory || data.history || [];
       if (!Array.isArray(pulls)) {
-        throw new Error('Invalid data -"pulls" must be an array');
+        throw new Error(t('app.invalidPullsFormat'));
       }
       if (pulls.length === 0) {
-        throw new Error('No Convene data found in import. If this is a backup file, it should contain a "state" key.');
+        throw new Error(t('app.noConveneDataFound'));
       }
 
       // Store diagnostic log if available (from direct API fetch) for admin panel
@@ -617,7 +618,7 @@ function WhisperingWishesInner() {
       const importUid = data.uid || data.playerId || '';
       const existingUid = stateRef.current.profile.uid || '';
       if (importUid && existingUid && importUid !== existingUid) {
-        const proceed = await confirm?.({ title: 'Different account detected', message: `This data is from UID ${importUid.slice(0, 6)}... but your current account is ${existingUid.slice(0, 6)}... Import will merge both accounts' history. Continue?`, confirmLabel: 'Merge', destructive: true });
+        const proceed = await confirm?.({ title: t('app.differentAccountTitle'), message: t('app.differentAccountMessage', { importUid: importUid.slice(0, 6), existingUid: existingUid.slice(0, 6) }), confirmLabel: t('app.differentAccountConfirmLabel'), destructive: true });
         if (!proceed) return;
       }
       
@@ -649,7 +650,7 @@ function WhisperingWishesInner() {
       const skippedCount = pulls.length - validPulls.length;
 
       if (validPulls.length === 0) {
-        throw new Error('No valid Convene entries found. Check data format.');
+        throw new Error(t('app.noValidConveneEntries'));
       }
       
       // Auto-save pre-import backup (mirrors restore flow) so users can recover if import corrupts data
@@ -788,13 +789,13 @@ function WhisperingWishesInner() {
       const sw = pulls.filter(p => (p.cardPoolType ?? p.gachaType) === PERM_WEAP).length;
       const bc = pulls.filter(p => [5, 6, 7, 8].includes(p.cardPoolType ?? p.gachaType)).length;
       const parts = [];
-      if (fc) parts.push(`${fc} char`);
-      if (wc) parts.push(`${wc} weap`);
-      if (sc + sw) parts.push(`${sc + sw} std`);
-      if (bc) parts.push(`${bc} beg`);
-      
-      const skippedNote = skippedCount > 0 ? ` (${skippedCount} invalid entries skipped)` : '';
-      toast?.addToast?.(`Imported ${totalImported} Convenes! (${parts.join(', ')})${skippedNote}`, 'success');
+      if (fc) parts.push(t('app.importedCharPart', { count: fc }));
+      if (wc) parts.push(t('app.importedWeapPart', { count: wc }));
+      if (sc + sw) parts.push(t('app.importedStdPart', { count: sc + sw }));
+      if (bc) parts.push(t('app.importedBegPart', { count: bc }));
+
+      const skippedNote = skippedCount > 0 ? t('app.skippedEntriesNote', { count: skippedCount }) : '';
+      toast?.addToast?.(t('app.importedConvenes', { count: totalImported, parts: parts.join(', '), skippedNote }), 'success');
       
       // P12-FIX: Check storage capacity after import (Step 14 audit - LOW-10a)
       if (storageAvailable) {
@@ -802,7 +803,7 @@ function WhisperingWishesInner() {
           const stored = localStorage.getItem(STORAGE_KEY) || '';
           const currentSize = typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(stored).length : stored.length * 2;
           if (currentSize > STORAGE_WARNING_THRESHOLD) {
-            toast?.addToast?.(`Storage at ${(currentSize / 1024 / 1024).toFixed(1)}MB of ~5MB. Consider exporting a backup.`, 'warning');
+            toast?.addToast?.(t('app.storageNearCapacity', { size: (currentSize / 1024 / 1024).toFixed(1) }), 'warning');
           }
         } catch {}
       }
@@ -811,8 +812,8 @@ function WhisperingWishesInner() {
     } catch (err) {
       // F4-01: Show user-friendly message; hide raw JS errors (TypeError, ReferenceError)
       const isUserError = err instanceof SyntaxError || err.message?.startsWith?.('Import') || err.message?.startsWith?.('Invalid') || err.message?.startsWith?.('No ');
-      const msg = isUserError ? err.message : 'Could not process this file. Please check the format and try again.';
-      toast?.addToast?.('Import failed: ' + msg, 'error');
+      const msg = isUserError ? err.message : t('app.importGenericError');
+      toast?.addToast?.(t('app.importFailed', { message: msg }), 'error');
       return false;
     } finally {
       importInFlightRef.current = false;
@@ -976,15 +977,15 @@ function WhisperingWishesInner() {
               <div className="relative group cursor-pointer" onClick={async () => {
                 if (pwa?.canInstall) {
                   const accepted = await pwa.promptInstall();
-                  if (accepted) toast?.addToast?.('App installed successfully!', 'success');
+                  if (accepted) toast?.addToast?.(t('app.appInstalledSuccess'), 'success');
                 } else if (pwa?.isInstalled) {
-                  toast?.addToast?.('App is already installed', 'success');
+                  toast?.addToast?.(t('app.appAlreadyInstalled'), 'success');
                 } else {
                   pwa?.showInstallGuide?.();
                 }
-              }} title={pwa?.canInstall ? 'Install App' : pwa?.isInstalled ? 'App installed' : 'Add to home screen'}>
+              }} title={pwa?.canInstall ? t('app.installApp') : pwa?.isInstalled ? t('app.appInstalled') : t('app.addToHomeScreen')}>
                 <div className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden group-hover:scale-[1.02] transition-transform">
-                  <img src={HEADER_ICON} alt="Whispering Wishes logo" style={{ width: 80, height: 80, transform: 'scale(1.0)' }} className="object-cover" />
+                  <img src={HEADER_ICON} alt={t('app.logoAlt')} style={{ width: 80, height: 80, transform: 'scale(1.0)' }} className="object-cover" />
                 </div>
                 {visualSettings.animationsEnabled !== 'off' && (
                   <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
@@ -1009,11 +1010,11 @@ function WhisperingWishesInner() {
               </div>
               <div className="flex flex-col justify-center min-h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-base) var(--space-md)' } : undefined}>
                 <h1 className="text-white font-semibold text-xl tracking-wide leading-tight">Whispering Wishes</h1>
-                <p className="text-sm tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>Wuthering Waves - Companion</p>
+                <p className="text-sm tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>{t('app.appTagline')}</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button onClick={() => setActiveTab('profile')} aria-label="Profile" title="Profile" className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: 'var(--radius-md)' }}>
+              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: 'var(--radius-md)' }}>
                 {state.profile.profilePic && collectionImages[state.profile.profilePic]
                   ? (() => {
                       const pf = getImageFraming(`collection-${state.profile.profilePic}`);
@@ -1040,7 +1041,7 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-evenly overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label="Main navigation" onKeyDown={(e) => {
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-evenly overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
           const tabs = ['tracker','events','map','planner','calculator','analytics','teams','gathering'];
           const idx = tabs.indexOf(activeTab);
           let newTab;

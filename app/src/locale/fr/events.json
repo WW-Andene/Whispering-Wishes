@@ -1,1 +1,17 @@
-{}
+{
+  "refreshTimers": "Actualiser les minuteurs",
+  "bannerRefreshed": "Données de bannière actualisées !",
+  "server": "Serveur : {{server}}",
+  "title": "Événements et réinitialisations",
+  "weeklyProgress": "Progression hebdomadaire",
+  "weeklyRewards": "Récompenses hebdomadaires",
+  "astrite": "Astrite",
+  "done": "terminé(s)",
+  "completed": "Terminé",
+  "pending": "En attente",
+  "skipped": "Ignoré",
+  "noEvents": "Aucun événement suivi actuellement",
+  "noEventsHint": "Les événements apparaîtront automatiquement à chaque mise à jour de version",
+  "expired": "Expiré",
+  "resetTimesFooter": "Heures de réinitialisation basées sur le serveur {{server}} (UTC{{offset}})"
+}

@@ -1,1 +1,110 @@
-{}
+{
+  "importPromptPre": "Importez votre historique de Convocation dans l'onglet",
+  "importPromptTab": "Profil",
+  "importPromptPost": "pour suivre vos possessions !",
+  "dismiss": "Ignorer",
+  "progress": {
+    "title": "Progression de la collection",
+    "resonator5": "Résonateur 5★",
+    "resonator4": "Résonateur 4★",
+    "weapon5": "Arme 5★",
+    "weapon4": "Arme 4★",
+    "weapon3": "Arme 3★",
+    "weapon2": "Arme 2★",
+    "weapon1": "Arme 1★"
+  },
+  "search": {
+    "placeholder": "Rechercher par nom, DPS, Electro, Lame large…",
+    "ariaLabel": "Rechercher dans la collection par mot-clé",
+    "clear": "Effacer la recherche"
+  },
+  "view": {
+    "resonators": "Résonateurs",
+    "viewResonators": "Voir les Résonateurs",
+    "weapons": "Armes",
+    "viewWeapons": "Voir les armes",
+    "echoes": "Échos",
+    "viewEchoes": "Voir les échos"
+  },
+  "filters": {
+    "active": "Filtres actifs",
+    "clearAll": "Tout effacer",
+    "allTypes": "Tous les types",
+    "allElements": "Tous les éléments",
+    "byWeaponType": "Filtrer par type d'arme",
+    "byElement": "Filtrer par élément",
+    "statScaling": "Statistique clé",
+    "byStatScaling": "Filtrer par statistique clé",
+    "allDamage": "Tous les dégâts",
+    "byDamageType": "Filtrer par type de dégâts",
+    "allRoles": "Tous les rôles",
+    "mainDps": "DPS principal",
+    "subDps": "DPS secondaire",
+    "support": "Soutien",
+    "healer": "Soigneur",
+    "byRole": "Filtrer par rôle",
+    "allCombatRoles": "Tous les rôles de combat",
+    "byCombatRole": "Filtrer par rôle de combat",
+    "allRegions": "Toutes les régions",
+    "byRegion": "Filtrer par région",
+    "allTiers": "Tous les tiers",
+    "byTier": "Filtrer par tier",
+    "ownership": "Possession",
+    "owned": "Possédé",
+    "notOwned": "Non possédé",
+    "byOwnedStatus": "Filtrer par statut de possession",
+    "allSubstats": "Toutes les sous-statistiques",
+    "bySubstat": "Filtrer par sous-statistique",
+    "allSets": "Tous les sets",
+    "bySonataSet": "Filtrer par set de sonate",
+    "allBuffs": "Tous les bonus",
+    "byBuffType": "Filtrer par type de bonus"
+  },
+  "damage": {
+    "basicAtk": "Dégâts d'attaque de base",
+    "heavyAtk": "Dégâts d'attaque lourde",
+    "skill": "Dégâts de compétence de résonance",
+    "liberation": "Dégâts de libération de résonance",
+    "echo": "Dégâts de compétence d'écho",
+    "coordinated": "Attaque coordonnée"
+  },
+  "sort": {
+    "refresh": "Actualiser les images si elles ne se chargent pas",
+    "refreshAria": "Actualiser les images",
+    "byCopies": "Trier par exemplaires",
+    "byRelease": "Trier par date de sortie",
+    "az": "Trier A-Z",
+    "za": "Trier Z-A",
+    "sortedZA": "Trié de Z à A, cliquez pour A à Z",
+    "sortAlpha": "Trier par ordre alphabétique"
+  },
+  "sections": {
+    "costEchoes": "Échos de coût",
+    "resonators": "Résonateurs",
+    "weapons": "Armes"
+  },
+  "grid": {
+    "noneFound": "Aucun {{type}} trouvé",
+    "typeEchoes": "écho",
+    "typeWeapons": "arme",
+    "typeCharacters": "personnage",
+    "tryAdjusting": "Essayez d'ajuster vos filtres ou de les effacer",
+    "clearFilters": "Effacer les filtres",
+    "shownCount": "{{owned}}/{{shown}} affiché(s)",
+    "totalSuffix": " ({{total}} au total)",
+    "showLess": "Afficher moins",
+    "showAll": "Tout afficher ({{count}})",
+    "ownedLabel": "{{name}}, possédé",
+    "notOwnedLabel": ", non possédé",
+    "currentProfilePic": ", photo de profil actuelle",
+    "newLabel": ", nouveau",
+    "newBadge": "Nouveau",
+    "currentProfilePicTitle": "Photo de profil actuelle",
+    "setProfilePic": "Définir comme photo de profil",
+    "setProfilePicAria": "Définir {{name}} comme photo de profil"
+  },
+  "widget": {
+    "removeOne": "Retirer 1 exemplaire",
+    "addOne": "Ajouter 1 exemplaire"
+  }
+}

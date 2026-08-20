@@ -20,6 +20,7 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from './CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon, getCombatRoleIcon } from '../../utils/helpers.js';
+import { t } from '../../utils/i18n.js';
 
 function CollectionTab({
   state,
@@ -345,10 +346,10 @@ function CollectionTab({
             <div className="flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 content-layer">
               <button onClick={() => setActiveTab('profile')} className="flex items-center gap-2.5 flex-1 min-w-0 hover:opacity-80 transition-opacity">
                 <Upload size={14} className="text-cyan-400 flex-shrink-0" />
-                <span className="text-cyan-300/90 text-sm">Import your Convene history in the <strong>Profile</strong> tab to track ownership!</span>
+                <span className="text-cyan-300/90 text-sm">{t('collection.importPromptPre')} <strong>{t('collection.importPromptTab')}</strong> {t('collection.importPromptPost')}</span>
                 <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
               </button>
-              <button onClick={() => setDismissedImport(true)} className="kuro-btn kuro-btn-sm flex-shrink-0 p-1.5" aria-label="Dismiss"><X size={14} /></button>
+              <button onClick={() => setDismissedImport(true)} className="kuro-btn kuro-btn-sm flex-shrink-0 p-1.5" aria-label={t('collection.dismiss')}><X size={14} /></button>
             </div>
           )}
           {/* Overall Collection Summary */}

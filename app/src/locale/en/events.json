@@ -1,1 +1,17 @@
-{}
+{
+  "refreshTimers": "Refresh Timers",
+  "bannerRefreshed": "Banner data refreshed!",
+  "server": "Server: {{server}}",
+  "title": "Events & Resets",
+  "weeklyProgress": "Weekly Progress",
+  "weeklyRewards": "Weekly Rewards",
+  "astrite": "Astrite",
+  "done": "done",
+  "completed": "Completed",
+  "pending": "Pending",
+  "skipped": "Skipped",
+  "noEvents": "No events currently tracked",
+  "noEventsHint": "Events will appear automatically each version update",
+  "expired": "Expired",
+  "resetTimesFooter": "Reset times based on {{server}} server (UTC{{offset}})"
+}

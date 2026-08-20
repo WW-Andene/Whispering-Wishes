@@ -1,1 +1,180 @@
-{}
+{
+  "achievements": {
+    "open": "Ouvrir",
+    "openAria": "Ouvrir le suivi des trophées",
+    "title": "Trophées",
+    "description": "Suivez plus de 1200 trophées du jeu — cherchez par nom, filtrez par version ou série, et cochez ce que vous avez complété.",
+    "closeAria": "Fermer les trophées",
+    "progress": "Progression",
+    "rewards": "Récompenses",
+    "searchPlaceholder": "Rechercher des trophées...",
+    "searchAria": "Rechercher des trophées",
+    "versionFilterAria": "Filtre de version",
+    "seriesFilterAria": "Filtre de série",
+    "completionFilterAria": "Filtre de complétion",
+    "hiddenFilterAria": "Filtre caché",
+    "allVersions": "Toutes les versions",
+    "versionLabel": "v{{version}}",
+    "allSeries": "Toutes les séries",
+    "all": "Tous",
+    "completed": "Complétés",
+    "notCompleted": "Non complétés",
+    "hiddenAll": "Tous (Caché : Tous)",
+    "hiddenOnly": "Cachés uniquement",
+    "visibleOnly": "Visibles uniquement",
+    "hiddenAchievement": "Trophée caché",
+    "markDone": "Marquer « {{name}} » comme complété",
+    "markUndone": "Marquer « {{name}} » comme non complété",
+    "points": "{{n}} pts",
+    "versionShort": "v{{version}}",
+    "resultCountOne": "{{n}} résultat",
+    "resultCountOther": "{{n}} résultats",
+    "clearFilters": "Effacer les filtres",
+    "noMatch": "Aucun trophée ne correspond.",
+    "backToSeries": "Retour aux séries"
+  },
+  "history": {
+    "title": "Historique des convocations",
+    "banners": {
+      "all": "Toutes",
+      "featured": "Vedette",
+      "weapon": "Arme",
+      "stdChar": "Résonateur standard",
+      "stdWeap": "Arme standard"
+    },
+    "ranges": {
+      "daily": "Journalier",
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuel",
+      "yearly": "Annuel"
+    },
+    "noDataFilter": "Aucune donnée pour ce filtre. Essayez un autre type de bannière ou une autre période.",
+    "noDataCombination": "Aucune donnée pour cette combinaison. Essayez un autre filtre ou une autre période.",
+    "srSummary": "Graphique de l'historique des convocations montrant l'activité dans le temps. Points de données : {{points}}.",
+    "srDataPoint": "{{label}} : {{count}} convocations",
+    "tooltipConvenes": "{{label}} : {{count}} convocations",
+    "pageRange": "{{start}}-{{end}} sur {{total}}"
+  },
+  "achievementsCard": {
+    "openAria": "Ouvrir le suivi des trophées"
+  },
+  "empty": {
+    "awaitingSignal": "En attente de données",
+    "importPrompt": "Importez votre historique de convocations pour initialiser l'analyse de chance, le suivi de pitié et les statistiques de convocation.",
+    "openProfile": "Ouvrir Profil pour importer"
+  },
+  "luck": {
+    "title": "Indice de chance",
+    "leaderboardAria": "Ouvrir le classement communautaire",
+    "leaderboardLink": "Classement",
+    "avgPity": "Pitié moy.",
+    "percentileHigh": "Plus chanceux que {{percentile}} % des joueurs — incroyable !",
+    "percentileGood": "Plus chanceux que {{percentile}} % des joueurs — au-dessus de la moyenne !",
+    "percentileAverage": "Chance dans la moyenne ({{percentile}}e percentile)",
+    "percentileLow": "Moins chanceux que la plupart — continuez à suivre vos tendances",
+    "basedOn": "Basé sur votre pitié moyenne par rapport à la moyenne théorique (53,0), ajustée selon la taille de l'échantillon"
+  },
+  "consent": {
+    "title": "Classement - Avis de partage de données",
+    "intro": "En soumettant votre score, les données suivantes seront envoyées à une base de données partagée et affichées publiquement :",
+    "playerId": "Votre ID joueur ({{id}})",
+    "stats": "Pitié moyenne, total de convocations, statistiques de victoires/défaites 50/50",
+    "owned": "Vos personnages et armes 5★ possédés",
+    "pseudonymous": "Ces données sont pseudonymes (liées à un UID de jeu haché ou un ID aléatoire, pas à votre identité réelle).",
+    "decline": "Refuser",
+    "accept": "J'accepte",
+    "ariaLabel": "Consentement au classement"
+  },
+  "toast": {
+    "pleaseWait": "Veuillez patienter quelques secondes avant de soumettre à nouveau",
+    "submitted": "Score soumis au classement !",
+    "failedSubmit": "Échec de la soumission : {{error}}"
+  },
+  "leaderboard": {
+    "ariaLabel": "Classement communautaire",
+    "title": "Communauté",
+    "subtitle": "Classement et statistiques",
+    "closeAria": "Fermer le classement",
+    "tablistAria": "Vue du classement",
+    "rankings": "Classement",
+    "mostConvened": "Les plus convoqués",
+    "loadingAria": "Chargement du classement",
+    "loadFailed": "Échec du chargement du classement",
+    "noSignals": "Aucun signal reçu",
+    "checkConnection": "Vérifiez votre connexion et réessayez",
+    "beFirst": "Soyez le premier à transmettre",
+    "you": "VOUS",
+    "youSuffix": "*** (Vous)",
+    "fiveStars": "{{n}} cinq étoiles",
+    "avgPityLabel": "pitié moy.",
+    "loadingCommunityAria": "Chargement des données communautaires",
+    "playersReportingOne": "{{n}} joueur a transmis des données",
+    "playersReportingOther": "{{n}} joueurs ont transmis des données",
+    "resonators": "★ Résonateurs",
+    "weapons": "★ Armes",
+    "communityStats": "Statistiques communautaires",
+    "playersCount": "• {{n}} joueurs",
+    "globalAvgPity": "Pitié moy. globale",
+    "winRate5050": "Taux de victoire 50/50",
+    "total5Star": "Total 5★",
+    "totalConvenesTracked": "{{n}} convocations totales suivies",
+    "winLoss": "{{won}}V / {{lost}}D",
+    "luckiest": "Plus chanceux : {{pity}}",
+    "unluckiest": "Moins chanceux : {{pity}}",
+    "yourId": "Votre ID :",
+    "uidTag": "(UID)",
+    "yourAvg": "Votre moy. :",
+    "submitting": "Envoi…",
+    "waitSeconds": "Attendez {{seconds}}s…",
+    "submitScore": "Soumettre mon score",
+    "shareNotice": "Pseudonyme • Votre ID, votre pitié moyenne et vos statistiques de convocation sont partagés publiquement sur le classement",
+    "importToParticipate": "Importez votre historique de convocations pour participer"
+  },
+  "pullLog": {
+    "title": "Journal des convocations 5★",
+    "awaitingSignal": "En attente de résonance 5★",
+    "importPrompt": "Importez votre historique de convocations dans Profil pour voir votre journal de tirages 5★",
+    "wonAria": "50/50 gagné",
+    "lostAria": "50/50 perdu",
+    "guaranteedAria": "Garanti",
+    "guaranteedTitle": "Garanti - la pitié a été reportée d'un précédent 50/50 perdu"
+  },
+  "trophies": {
+    "title": "Trophées",
+    "earned": "{{n}} obtenus",
+    "emptyImportPrompt": "Importez plus d'historique de convocations dans l'onglet Profil pour débloquer des trophées",
+    "trophyAria": "Trophée : {{name}}",
+    "closeAria": "Fermer le trophée",
+    "closeHint": "touchez à l'extérieur ou ✕ pour fermer",
+    "currentStreak": "Série 50/50 actuelle",
+    "won": "✓ Gagné",
+    "lost": "✗ Perdu"
+  },
+  "overall": {
+    "title": "Statistiques globales",
+    "totalConvenes": "Total convocations",
+    "astriteSpent": "Astrite dépensé (en jeu)",
+    "won5050": "50/50 gagnés",
+    "lost5050": "50/50 perdus",
+    "avgPity": "Pitié moy.",
+    "winRate": "Taux de victoire 50/50 : {{rate}} %"
+  },
+  "totalObtained": {
+    "title": "Total obtenu",
+    "resonators": "Résonateurs",
+    "weapons": "Armes",
+    "total": "Total",
+    "allItems": "Tous les objets"
+  },
+  "perBanner": {
+    "title": "Répartition par bannière",
+    "convenes": "{{n}} convocations",
+    "pity": "Pitié : {{pity}}/{{hardPity}}",
+    "bannerNames": {
+      "featuredResonator": "Résonateur vedette",
+      "featuredWeapon": "Arme vedette",
+      "standardResonator": "Résonateur standard",
+      "standardWeapon": "Arme standard"
+    }
+  }
+}

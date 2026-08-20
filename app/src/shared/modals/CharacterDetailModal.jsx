@@ -16,6 +16,7 @@ import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { t, formatNumber } from '../../utils/i18n.js';
 
 // Shared element color maps
 const DETAIL_ELEMENT_COLORS = {
@@ -62,7 +63,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
   const spineId = isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
   
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={`${name} Resonator details`} centered>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.characterDetail.resonatorDetailsAria', { name })} centered>
       <div
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border ${colors.border}`}
         onClick={e => e.stopPropagation()}
@@ -107,7 +108,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label="Close Resonator details">
+          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -142,17 +143,17 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
                 {data.birthday && (
                   <>
-                    <span className="text-gray-500">Birthday</span>
+                    <span className="text-gray-500">{t('modals.characterDetail.birthday')}</span>
                     <span className="text-gray-300">{(() => {
                       const [m, d] = data.birthday.split('-');
-                      const months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      const months = t('modals.characterDetail.months');
                       return `${months[parseInt(m, 10)]} ${parseInt(d, 10)}`;
                     })()}</span>
                   </>
                 )}
                 {data.birthplace && (
                   <>
-                    <span className="text-gray-500">Birthplace</span>
+                    <span className="text-gray-500">{t('modals.characterDetail.birthplace')}</span>
                     <span className="text-gray-300 inline-flex items-center gap-1">
                       {getRegionIcon(data.birthplace) && <img src={getRegionIcon(data.birthplace)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                       {data.birthplace}
@@ -161,7 +162,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 )}
                 {data.region && (
                   <>
-                    <span className="text-gray-500">Region</span>
+                    <span className="text-gray-500">{t('modals.characterDetail.region')}</span>
                     <span className="text-gray-300 inline-flex items-center gap-1">
                       {getRegionIcon(data.region) && <img src={getRegionIcon(data.region)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                       {data.region}
@@ -170,7 +171,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 )}
                 {data.organization && (
                   <>
-                    <span className="text-gray-500">Organization</span>
+                    <span className="text-gray-500">{t('modals.characterDetail.organization')}</span>
                     <span className="text-gray-300 inline-flex items-center gap-1">
                       {getFactionIcon(data.organization) && <img src={getFactionIcon(data.organization)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                       {data.organization}
@@ -179,7 +180,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 )}
                 {data.voiceActor && (
                   <>
-                    <span className="text-gray-500">Voice Actor{typeof data.voiceActor !== 'string' ? 's' : ''}</span>
+                    <span className="text-gray-500">{typeof data.voiceActor !== 'string' ? t('modals.characterDetail.voiceActors') : t('modals.characterDetail.voiceActor')}</span>
                     <span className="text-gray-300">
                       {typeof data.voiceActor === 'string' ? data.voiceActor : (
                         Object.entries({ en: 'EN', jp: 'JP', cn: 'CN', kr: 'KR' })
@@ -203,9 +204,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               data.tier.toa === 'T2' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
               'bg-gray-500/20 text-gray-300 border border-gray-500/40'
             }`}>
-              <span className="text-sm text-gray-400">ToA</span> {data.tier.toa}
+              <span className="text-sm text-gray-400">{t('modals.characterDetail.tierToa')}</span> {data.tier.toa}
               <span className="text-gray-600 mx-0.5">|</span>
-              <span className="text-sm text-gray-400">WW</span> {data.tier.ww}
+              <span className="text-sm text-gray-400">{t('modals.characterDetail.tierWw')}</span> {data.tier.ww}
             </div>
           )}
 

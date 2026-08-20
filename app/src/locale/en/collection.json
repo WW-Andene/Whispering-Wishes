@@ -1,1 +1,110 @@
-{}
+{
+  "importPromptPre": "Import your Convene history in the",
+  "importPromptTab": "Profile",
+  "importPromptPost": "tab to track ownership!",
+  "dismiss": "Dismiss",
+  "progress": {
+    "title": "Collection Progress",
+    "resonator5": "5★ Resonator",
+    "resonator4": "4★ Resonator",
+    "weapon5": "5★ Weapon",
+    "weapon4": "4★ Weapon",
+    "weapon3": "3★ Weapon",
+    "weapon2": "2★ Weapon",
+    "weapon1": "1★ Weapon"
+  },
+  "search": {
+    "placeholder": "Search by name, DPS, Electro, Broadblade…",
+    "ariaLabel": "Search collection by keyword",
+    "clear": "Clear search"
+  },
+  "view": {
+    "resonators": "Resonators",
+    "viewResonators": "View Resonators",
+    "weapons": "Weapons",
+    "viewWeapons": "View weapons",
+    "echoes": "Echoes",
+    "viewEchoes": "View echoes"
+  },
+  "filters": {
+    "active": "Filters active",
+    "clearAll": "Clear all",
+    "allTypes": "All Types",
+    "allElements": "All Elements",
+    "byWeaponType": "Filter by weapon type",
+    "byElement": "Filter by element",
+    "statScaling": "Stat Scaling",
+    "byStatScaling": "Filter by stat scaling",
+    "allDamage": "All Damage",
+    "byDamageType": "Filter by damage type",
+    "allRoles": "All Roles",
+    "mainDps": "Main DPS",
+    "subDps": "Sub DPS",
+    "support": "Support",
+    "healer": "Healer",
+    "byRole": "Filter by role",
+    "allCombatRoles": "All Combat Roles",
+    "byCombatRole": "Filter by combat role",
+    "allRegions": "All Regions",
+    "byRegion": "Filter by region",
+    "allTiers": "All Tiers",
+    "byTier": "Filter by tier",
+    "ownership": "Ownership",
+    "owned": "Owned",
+    "notOwned": "Not Owned",
+    "byOwnedStatus": "Filter by owned status",
+    "allSubstats": "All Sub-stats",
+    "bySubstat": "Filter by sub-stat",
+    "allSets": "All Sets",
+    "bySonataSet": "Filter by sonata set",
+    "allBuffs": "All Buffs",
+    "byBuffType": "Filter by buff type"
+  },
+  "damage": {
+    "basicAtk": "Basic Attack Damage",
+    "heavyAtk": "Heavy Attack Damage",
+    "skill": "Resonance Skill Damage",
+    "liberation": "Resonance Liberation Damage",
+    "echo": "Echo Skill Damage",
+    "coordinated": "Coordinated Attack"
+  },
+  "sort": {
+    "refresh": "Refresh images if they don't load",
+    "refreshAria": "Refresh images",
+    "byCopies": "Sort by copies",
+    "byRelease": "Sort by release date",
+    "az": "Sort A-Z",
+    "za": "Sort Z-A",
+    "sortedZA": "Sorted Z to A, click for A to Z",
+    "sortAlpha": "Sort alphabetically"
+  },
+  "sections": {
+    "costEchoes": "Cost Echoes",
+    "resonators": "Resonators",
+    "weapons": "Weapons"
+  },
+  "grid": {
+    "noneFound": "No {{type}} found",
+    "typeEchoes": "echoes",
+    "typeWeapons": "weapons",
+    "typeCharacters": "characters",
+    "tryAdjusting": "Try adjusting your filters or clearing them",
+    "clearFilters": "Clear Filters",
+    "shownCount": "{{owned}}/{{shown}} shown",
+    "totalSuffix": " ({{total}} total)",
+    "showLess": "Show Less",
+    "showAll": "Show All ({{count}})",
+    "ownedLabel": "{{name}}, owned",
+    "notOwnedLabel": ", not owned",
+    "currentProfilePic": ", current profile picture",
+    "newLabel": ", new",
+    "newBadge": "New",
+    "currentProfilePicTitle": "Current profile picture",
+    "setProfilePic": "Set as profile picture",
+    "setProfilePicAria": "Set {{name}} as profile picture"
+  },
+  "widget": {
+    "removeOne": "Remove 1 copy",
+    "addOne": "Add 1 copy"
+  }
+}

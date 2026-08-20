@@ -19,7 +19,7 @@ import { ALL_CHARACTERS } from '../../data/characters.js';
 import { getMergedHistories } from '../../core/storageKeys.js';
 import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
 import { calculateLuckRating } from '../../utils/helpers.js';
-import { formatNumber } from '../../utils/i18n.js';
+import { t, formatNumber, getPluralForm } from '../../utils/i18n.js';
 import { storageAvailable } from '../../core/storage.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
@@ -256,7 +256,7 @@ function AnalyticsTab({
     if (!effectiveLeaderboardId || !overallStats?.avgPity || overallStats.avgPity === '—') return;
     if (submittingRef.current) return;
     if (!checkFirebaseRateLimit('leaderboard-submit')) {
-      toast?.addToast?.('Please wait a few seconds before submitting again', 'warning');
+      toast?.addToast?.(t('analytics.toast.pleaseWait'), 'warning');
       // Start visual cooldown countdown (5 seconds to match FIREBASE_WRITE_COOLDOWN_MS)
       if (!rateLimitTimerRef.current) {
         setRateLimitCooldown(5);
@@ -332,12 +332,12 @@ function AnalyticsTab({
           await firebaseFetch(`community-pulls/${userLeaderboardId}`, authToken, { method: 'DELETE' });
         } catch { /* best-effort cleanup */ }
       }
-      toast?.addToast?.('Score submitted to leaderboard!', 'success');
+      toast?.addToast?.(t('analytics.toast.submitted'), 'success');
       loadLeaderboard();
       loadCommunityPulls();
     } catch (e) {
       console.error('Submit error:', e);
-      toast?.addToast?.('Failed to submit: ' + e.message, 'error');
+      toast?.addToast?.(t('analytics.toast.failedSubmit', { error: e.message }), 'error');
     } finally {
       submittingRef.current = false;
       setLeaderboardSubmitting(false);
@@ -363,11 +363,11 @@ function AnalyticsTab({
                 <AchievementsTool onClose={() => setShowAchievements(false)} />
               ) : (
                 <Card>
-                  <CardHeader action={<button onClick={() => setShowAchievements(true)} className="text-yellow-400 text-sm flex items-center gap-1 hover:text-yellow-300 transition-colors" aria-label="Open achievements tracker"><Award size={12} /> Open</button>}>
-                    <Award size={14} className="text-yellow-400 inline-block mr-1.5 -mt-0.5" /> Achievements
+                  <CardHeader action={<button onClick={() => setShowAchievements(true)} className="text-yellow-400 text-sm flex items-center gap-1 hover:text-yellow-300 transition-colors" aria-label={t('analytics.achievements.openAria')}><Award size={12} /> {t('analytics.achievements.open')}</button>}>
+                    <Award size={14} className="text-yellow-400 inline-block mr-1.5 -mt-0.5" /> {t('analytics.achievements.title')}
                   </CardHeader>
                   <CardBody>
-                    <p className="text-gray-400 text-sm">Track all 1200+ in-game Trophies — search by name, filter by version or série, and check off what you've completed.</p>
+                    <p className="text-gray-400 text-sm">{t('analytics.achievements.description')}</p>
                   </CardBody>
                 </Card>
               )
@@ -377,9 +377,9 @@ function AnalyticsTab({
               <Card>
                 <CardBody className="kuro-empty-state text-center py-8">
                   <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
-                  <p className="text-gray-300 text-md font-medium">Awaiting signal data</p>
-                  <p className="text-gray-400 text-base mt-1 mb-3">Import your Convene history to initialize luck analysis, pity tracking, and Convene analytics.</p>
-                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-base px-4 py-2">Open Profile to import</button>
+                  <p className="text-gray-300 text-md font-medium">{t('analytics.empty.awaitingSignal')}</p>
+                  <p className="text-gray-400 text-base mt-1 mb-3">{t('analytics.empty.importPrompt')}</p>
+                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-base px-4 py-2">{t('analytics.empty.openProfile')}</button>
                 </CardBody>
               </Card>
             ) : !overallStats?.totalPulls ? (
@@ -393,7 +393,7 @@ function AnalyticsTab({
                 {/* Success Rate Card */}
                 {luckRating && (
                   <Card>
-                    <CardHeader action={FIREBASE_AVAILABLE ? <button onClick={() => setShowLeaderboard(true)} className="text-cyan-400 text-sm flex items-center gap-1 hover:text-cyan-300 transition-colors" aria-label="Open community leaderboard"><TrendingUp size={12} /> Leaderboard</button> : null}>Luck Rating</CardHeader>
+                    <CardHeader action={FIREBASE_AVAILABLE ? <button onClick={() => setShowLeaderboard(true)} className="text-cyan-400 text-sm flex items-center gap-1 hover:text-cyan-300 transition-colors" aria-label={t('analytics.luck.leaderboardAria')}><TrendingUp size={12} /> {t('analytics.luck.leaderboardLink')}</button> : null}>{t('analytics.luck.title')}</CardHeader>
                     <CardBody>
                       <div className="flex items-center gap-4">
                         <div className="luck-badge rounded-xl p-[2px] flex-shrink-0" style={{'--badge-color': luckRating.color, '--badge-speed': '12s'}}>

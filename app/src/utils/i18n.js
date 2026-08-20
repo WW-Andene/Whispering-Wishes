@@ -45,6 +45,7 @@ import enProfile from '../locale/en/profile.json';
 import enModals from '../locale/en/modals.json';
 import enAdmin from '../locale/en/admin.json';
 import enApp2 from '../locale/en/app2.json';
+import enAppShared from '../locale/en/appShared.json';
 
 import frApp from '../locale/fr/app.json';
 import frTabs from '../locale/fr/tabs.json';
@@ -63,9 +64,10 @@ import frProfile from '../locale/fr/profile.json';
 import frModals from '../locale/fr/modals.json';
 import frAdmin from '../locale/fr/admin.json';
 import frApp2 from '../locale/fr/app2.json';
+import frAppShared from '../locale/fr/appShared.json';
 
 const en = {
-  app: { ...enApp, ...enApp2 },
+  app: { ...enApp, ...enApp2, ...enAppShared },
   tabs: enTabs,
   onboarding: enOnboarding,
   tracker: enTracker,
@@ -84,7 +86,7 @@ const en = {
 };
 
 const fr = {
-  app: { ...frApp, ...frApp2 },
+  app: { ...frApp, ...frApp2, ...frAppShared },
   tabs: frTabs,
   onboarding: frOnboarding,
   tracker: frTracker,

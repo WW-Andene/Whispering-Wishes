@@ -1,1 +1,180 @@
-{}
+{
+  "achievements": {
+    "open": "Open",
+    "openAria": "Open achievements tracker",
+    "title": "Achievements",
+    "description": "Track all 1200+ in-game Trophies — search by name, filter by version or série, and check off what you've completed.",
+    "closeAria": "Close Achievements",
+    "progress": "Progress",
+    "rewards": "Rewards",
+    "searchPlaceholder": "Search achievements...",
+    "searchAria": "Search achievements",
+    "versionFilterAria": "Version filter",
+    "seriesFilterAria": "Série filter",
+    "completionFilterAria": "Completion filter",
+    "hiddenFilterAria": "Caché (hidden) filter",
+    "allVersions": "All Versions",
+    "versionLabel": "v{{version}}",
+    "allSeries": "All Series",
+    "all": "All",
+    "completed": "Completed",
+    "notCompleted": "Not Completed",
+    "hiddenAll": "All (Caché: Tous)",
+    "hiddenOnly": "Hidden only",
+    "visibleOnly": "Visible only",
+    "hiddenAchievement": "Hidden achievement",
+    "markDone": "Mark \"{{name}}\" as completed",
+    "markUndone": "Mark \"{{name}}\" as not completed",
+    "points": "{{n}} pts",
+    "versionShort": "v{{version}}",
+    "resultCountOne": "{{n}} result",
+    "resultCountOther": "{{n}} results",
+    "clearFilters": "Clear filters",
+    "noMatch": "No achievements match.",
+    "backToSeries": "Back to Séries"
+  },
+  "history": {
+    "title": "Convene History",
+    "banners": {
+      "all": "All",
+      "featured": "Featured",
+      "weapon": "Weapon",
+      "stdChar": "Standard Resonator",
+      "stdWeap": "Standard Weapon"
+    },
+    "ranges": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+    "noDataFilter": "No data for this filter. Try a different banner type or time range.",
+    "noDataCombination": "No data for this combination. Try a different filter or time range.",
+    "srSummary": "Convene history chart showing activity over time. Data points: {{points}}.",
+    "srDataPoint": "{{label}}: {{count}} Convenes",
+    "tooltipConvenes": "{{label}}: {{count}} Convenes",
+    "pageRange": "{{start}}-{{end}} of {{total}}"
+  },
+  "achievementsCard": {
+    "openAria": "Open achievements tracker"
+  },
+  "empty": {
+    "awaitingSignal": "Awaiting signal data",
+    "importPrompt": "Import your Convene history to initialize luck analysis, pity tracking, and Convene analytics.",
+    "openProfile": "Open Profile to import"
+  },
+  "luck": {
+    "title": "Luck Rating",
+    "leaderboardAria": "Open community leaderboard",
+    "leaderboardLink": "Leaderboard",
+    "avgPity": "Avg Pity",
+    "percentileHigh": "Luckier than {{percentile}}% of players — incredible!",
+    "percentileGood": "Luckier than {{percentile}}% of players — above average!",
+    "percentileAverage": "Around average luck ({{percentile}}th percentile)",
+    "percentileLow": "Unluckier than most — keep tracking to see your trends",
+    "basedOn": "Based on your avg pity vs. theoretical mean (53.0), adjusted for sample size"
+  },
+  "consent": {
+    "title": "Leaderboard - Data Sharing Notice",
+    "intro": "By submitting your score, the following data will be sent to a shared database and displayed publicly:",
+    "playerId": "Your player ID ({{id}})",
+    "stats": "Average pity, total Convenes, 50/50 win/loss stats",
+    "owned": "Your owned 5★ characters and weapons",
+    "pseudonymous": "This data is pseudonymous (linked to a hashed game UID or random ID, not your real identity).",
+    "decline": "Decline",
+    "accept": "I Consent",
+    "ariaLabel": "Leaderboard consent"
+  },
+  "toast": {
+    "pleaseWait": "Please wait a few seconds before submitting again",
+    "submitted": "Score submitted to leaderboard!",
+    "failedSubmit": "Failed to submit: {{error}}"
+  },
+  "leaderboard": {
+    "ariaLabel": "Community leaderboard",
+    "title": "Community",
+    "subtitle": "Leaderboard & stats",
+    "closeAria": "Close leaderboard",
+    "tablistAria": "Leaderboard view",
+    "rankings": "Rankings",
+    "mostConvened": "Most Convened",
+    "loadingAria": "Loading leaderboard",
+    "loadFailed": "Failed to load leaderboard",
+    "noSignals": "No signals received",
+    "checkConnection": "Check your connection and try again",
+    "beFirst": "Be the first to transmit",
+    "you": "YOU",
+    "youSuffix": "*** (You)",
+    "fiveStars": "{{n}} five-stars",
+    "avgPityLabel": "avg pity",
+    "loadingCommunityAria": "Loading community data",
+    "playersReportingOne": "{{n}} player reporting",
+    "playersReportingOther": "{{n}} players reporting",
+    "resonators": "★ Resonators",
+    "weapons": "★ Weapons",
+    "communityStats": "Community Stats",
+    "playersCount": "• {{n}} players",
+    "globalAvgPity": "Global Avg Pity",
+    "winRate5050": "50/50 Win Rate",
+    "total5Star": "Total 5★",
+    "totalConvenesTracked": "{{n}} total Convenes tracked",
+    "winLoss": "{{won}}W / {{lost}}L",
+    "luckiest": "Luckiest: {{pity}}",
+    "unluckiest": "Unluckiest: {{pity}}",
+    "yourId": "Your ID:",
+    "uidTag": "(UID)",
+    "yourAvg": "Your Avg:",
+    "submitting": "Submitting…",
+    "waitSeconds": "Wait {{seconds}}s…",
+    "submitScore": "Submit My Score",
+    "shareNotice": "Pseudonymous • Your ID, avg pity & Convene stats are shared publicly on the leaderboard",
+    "importToParticipate": "Import convene history to participate"
+  },
+  "pullLog": {
+    "title": "5★ Convene Log",
+    "awaitingSignal": "Awaiting 5★ signal resonance",
+    "importPrompt": "Import Convene history in Profile to see your 5★ pull log",
+    "wonAria": "Won 50/50",
+    "lostAria": "Lost 50/50",
+    "guaranteedAria": "Guaranteed",
+    "guaranteedTitle": "Guaranteed - pity carried over from a previous lost 50/50"
+  },
+  "trophies": {
+    "title": "Trophies",
+    "earned": "{{n}} earned",
+    "emptyImportPrompt": "Import more Convene history in the Profile tab to unlock achievements",
+    "trophyAria": "Trophy: {{name}}",
+    "closeAria": "Close trophy",
+    "closeHint": "tap outside or ✕ to close",
+    "currentStreak": "Current 50/50 Streak",
+    "won": "✓ Won",
+    "lost": "✗ Lost"
+  },
+  "overall": {
+    "title": "Overall Statistics",
+    "totalConvenes": "Total Convenes",
+    "astriteSpent": "Astrite Spent (in-game)",
+    "won5050": "Won 50/50",
+    "lost5050": "Lost 50/50",
+    "avgPity": "Avg. Pity",
+    "winRate": "50/50 Win Rate: {{rate}}%"
+  },
+  "totalObtained": {
+    "title": "Total Obtained",
+    "resonators": "Resonators",
+    "weapons": "Weapons",
+    "total": "Total",
+    "allItems": "All Items"
+  },
+  "perBanner": {
+    "title": "Per-Banner Breakdown",
+    "convenes": "{{n}} Convenes",
+    "pity": "Pity: {{pity}}/{{hardPity}}",
+    "bannerNames": {
+      "featuredResonator": "Featured Resonator",
+      "featuredWeapon": "Featured Weapon",
+      "standardResonator": "Standard Resonator",
+      "standardWeapon": "Standard Weapon"
+    }
+  }
+}
