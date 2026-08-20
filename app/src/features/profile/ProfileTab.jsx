@@ -236,13 +236,13 @@ function ProfileTab({
           });
         } else {
           setActivePlayersCount(0);
-          setPresenceError('No presence data in Firebase. Check that heartbeat writes are succeeding.');
+          setPresenceError(t('admin.players.noPresenceData'));
         }
       } else {
         const errText = await res.text().catch(() => '');
-        setPresenceError(`Read failed (${res.status}). Add "presence" read/write rule in Firebase.${errText ? ' — ' + errText.slice(0, 80) : ''}`);
+        setPresenceError(t('admin.players.readFailed', { status: res.status, detail: errText ? ' — ' + errText.slice(0, 80) : '' }));
       }
-    } catch (e) { setPresenceError(`Fetch error: ${e.message}`); }
+    } catch (e) { setPresenceError(t('admin.players.fetchError', { message: e.message })); }
   }, [getFirebaseAuth, firebaseFetch]);
 
   const fetchAdminPlayerList = useCallback(async () => {

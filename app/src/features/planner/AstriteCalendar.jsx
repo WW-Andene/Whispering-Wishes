@@ -95,7 +95,7 @@ const getActiveEvents = (date) => {
   for (const pp of PIONEER_PODCAST_HISTORY) {
     if (date >= new Date(pp.startDate) && date <= new Date(pp.endDate)) {
       const color = EVENT_COLORS.pioneerPodcast;
-      if (color) result.push({ key: `pp-${pp.version}`, name: `Pioneer Podcast v${pp.version}`, astrite: pp.rewards, color });
+      if (color) result.push({ key: `pp-${pp.version}`, name: t('planner.calendar.pioneerPodcastVersion', { version: pp.version }), astrite: pp.rewards, color });
       break;
     }
   }
@@ -212,9 +212,9 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const bEnd = Math.min(cal.daysInMonth - 1, Math.floor((bannerEnd - monthStart) / 86400000));
       if (bEnd >= bStart) {
         const daysLeft = Math.max(0, Math.ceil((bannerEnd - today) / 86400000));
-        const endLabel = bannerEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const startLabel = bannerStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel, startLabel, legendGroup: 'banner', description: `Current banner phase — ${activeBanners?.version || '?'} Phase ${activeBanners?.phase || '?'}` });
+        const endLabel = formatDate(bannerEnd, { month: 'short', day: 'numeric' });
+        const startLabel = formatDate(bannerStart, { month: 'short', day: 'numeric' });
+        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel, startLabel, legendGroup: 'banner', description: t('planner.calendar.currentBannerPhase', { version: activeBanners?.version || '?', phase: activeBanners?.phase || '?' }) });
       }
     }
 
@@ -231,9 +231,9 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       if (pEnd >= pStart) {
         const ended = bhEnd < today;
         const label = `v${bh.version} P${bh.phase}`;
-        const endLabel = bhEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const endLabel = formatDate(bhEnd, { month: 'short', day: 'numeric' });
         const charNames = bh.characters?.slice(0, 2).join(', ') || '';
-        bars.push({ key: bh.id, label: `${label}${charNames ? ` — ${charNames}` : ''}`, color: BANNER_COLOR, start: pStart, end: pEnd, astrite: 0, ended, endLabel, pastBanner: true, legendGroup: 'banner', description: `v${bh.version} Phase ${bh.phase}: ${bh.characters?.join(', ') || 'N/A'}` });
+        bars.push({ key: bh.id, label: `${label}${charNames ? ` — ${charNames}` : ''}`, color: BANNER_COLOR, start: pStart, end: pEnd, astrite: 0, ended, endLabel, pastBanner: true, legendGroup: 'banner', description: t('planner.calendar.bannerPhaseDescription', { version: bh.version, phase: bh.phase, characters: bh.characters?.join(', ') || 'N/A' }) });
         pastBannerCount++;
       }
     }
@@ -246,8 +246,8 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const eStart = Math.max(0, Math.floor((clampedStart - monthStart) / 86400000));
       const eEnd = Math.min(cal.daysInMonth - 1, Math.floor((cEnd - monthStart) / 86400000));
       if (eEnd >= eStart) {
-        const endLabel = cEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const startLabel = clampedStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const endLabel = formatDate(cEnd, { month: 'short', day: 'numeric' });
+        const startLabel = formatDate(clampedStart, { month: 'short', day: 'numeric' });
         const daysLeft = ended ? undefined : Math.max(0, Math.ceil((cEnd - today) / 86400000));
         bars.push({ key, label, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft, ...extra });
       }
@@ -279,7 +279,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         segments.push({ start: segStart, end: segEnd, isCurrent: todayIdx >= segStart && todayIdx <= segEnd });
       }
       if (mondays.length === 0) segments.push({ start: 0, end: cal.daysInMonth - 1 });
-      bars.push({ key, label: ev.name, color, astrite, weekly: true, segments, legendGroup: key, description: `${ev.name} — ${ev.description || ev.subtitle}. Rewards: ${ev.rewards}` });
+      bars.push({ key, label: ev.name, color, astrite, weekly: true, segments, legendGroup: key, description: t('planner.calendar.eventDescription', { name: ev.name, desc: ev.description || ev.subtitle, rewards: ev.rewards }) });
     }
 
     // 28-day cycling events (ToA, Whimpering Wastes) — compute all cycles
@@ -295,7 +295,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const cEnd = new Date(baseEnd.getTime() + c * cycleMs);
         const cStart = new Date(cEnd.getTime() - cycleMs);
         if (introduced && cStart < introduced) continue;
-        addBar(c === 0 ? key : `${key}-c${c}`, ev.name, color, cStart, cEnd, astrite, { legendGroup: key, description: `${ev.name} — ${ev.description}. ${ev.resetType} cycle. Rewards: ${ev.rewards}` });
+        addBar(c === 0 ? key : `${key}-c${c}`, ev.name, color, cStart, cEnd, astrite, { legendGroup: key, description: t('planner.calendar.eventDescriptionCycle', { name: ev.name, desc: ev.description, resetType: ev.resetType, rewards: ev.rewards }) });
       }
     }
 
@@ -306,26 +306,26 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const color = EVENT_COLORS[key];
       if (!color) continue;
       const astrite = parseInt(ev.rewards, 10) || 0;
-      addBar(key, ev.name, color, new Date(ev.currentStart), new Date(ev.currentEnd), astrite, { legendGroup: 'matrix', description: `${ev.name} — ${ev.description}. Rewards: ${ev.rewards}` });
+      addBar(key, ev.name, color, new Date(ev.currentStart), new Date(ev.currentEnd), astrite, { legendGroup: 'matrix', description: t('planner.calendar.eventDescription', { name: ev.name, desc: ev.description, rewards: ev.rewards }) });
     }
 
     // Pioneer Podcast — full history, one bar per version
     for (const pp of PIONEER_PODCAST_HISTORY) {
       const color = EVENT_COLORS.pioneerPodcast;
       if (!color) continue;
-      addBar(`pp-${pp.version}`, `Pioneer Podcast v${pp.version}`, color, new Date(pp.startDate), new Date(pp.endDate), pp.rewards, { legendGroup: 'pioneerPodcast', description: `Pioneer Podcast — version ${pp.version} limited-time event. Rewards: ${pp.rewards} Astrite` });
+      addBar(`pp-${pp.version}`, t('planner.calendar.pioneerPodcastVersion', { version: pp.version }), color, new Date(pp.startDate), new Date(pp.endDate), pp.rewards, { legendGroup: 'pioneerPodcast', description: t('planner.calendar.pioneerPodcastDescription', { version: pp.version, rewards: pp.rewards }) });
     }
 
     // Doubled Pawns Matrix: Pilot — predecessor to Endstate Matrix (v3.0–v3.1), same color as Matrix
     for (const dp of DOUBLED_PAWNS_MATRIX_HISTORY) {
       const color = EVENT_COLORS.endstateMatrix;
-      addBar(`dpm-${dp.version}`, `Doubled Pawns Matrix v${dp.version}`, color, new Date(dp.startDate), new Date(dp.endDate), dp.rewards, { legendGroup: 'matrix', description: `Doubled Pawns Matrix: Pilot — v${dp.version} recurring boss rush (replaced by Endstate Matrix in v3.2). Rewards: ${dp.rewards} Astrite` });
+      addBar(`dpm-${dp.version}`, t('planner.calendar.doubledPawnsMatrixLabel', { version: dp.version }), color, new Date(dp.startDate), new Date(dp.endDate), dp.rewards, { legendGroup: 'matrix', description: t('planner.calendar.doubledPawnsDescription', { version: dp.version, rewards: dp.rewards }) });
     }
 
     // Tactical Hologram — permanent challenges, show when new arenas were introduced
     for (const th of TACTICAL_HOLOGRAM_HISTORY) {
       const color = EVENT_COLORS.tacticalHologram;
-      addBar(`th-${th.version}`, `Tactical Hologram: ${th.name}`, color, new Date(th.startDate), new Date(th.endDate), 0, { legendGroup: 'tacticalHologram', description: `Tactical Hologram: ${th.name} — permanent combat challenge introduced in v${th.version}` });
+      addBar(`th-${th.version}`, t('planner.calendar.tacticalHologramLabel', { name: th.name }), color, new Date(th.startDate), new Date(th.endDate), 0, { legendGroup: 'tacticalHologram', description: t('planner.calendar.tacticalHologramDescription', { name: th.name, version: th.version }) });
     }
 
     // Version-scoped events without explicit start (Pioneer Podcast already handled above)
@@ -338,7 +338,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const astrite = parseInt(ev.rewards, 10) || 0;
       // Show for current version only
       const versionStart = BANNER_HISTORY.length > 0 ? new Date(BANNER_HISTORY[0].startDate) : monthStart;
-      addBar(key, ev.name, color, versionStart, new Date(ev.currentEnd), astrite, { legendGroup: key, description: `${ev.name} — ${ev.description}. Rewards: ${ev.rewards}` });
+      addBar(key, ev.name, color, versionStart, new Date(ev.currentEnd), astrite, { legendGroup: key, description: t('planner.calendar.eventDescription', { name: ev.name, desc: ev.description, rewards: ev.rewards }) });
     }
     return bars;
   }, [cal, bannerEndDate, activeBanners]);
@@ -443,15 +443,15 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
             {/* U6-10: Empty state when past day has no events and no note */}
             {sel.isPast && selEvents.length === 0 && !sel.note && (
-              <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', textAlign: 'center', padding: 'var(--space-sm) 0' }}>No events on this day</div>
+              <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', textAlign: 'center', padding: 'var(--space-sm) 0' }}>{t('planner.calendar.noEventsDay')}</div>
             )}
 
             {/* U6-02: Hide note input for past days (read-only view) */}
             {!sel.isPast && (
               <div>
                 <div className="flex gap-2">
-                  <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder="Add a note…" className="kuro-input kuro-input-sm flex-1" maxLength={100} aria-label="Calendar day note" />
-                  <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: 'var(--font-sm)', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? 'Update' : 'Save'}</button>
+                  <input type="text" value={noteInput} onChange={e => setNoteInput(e.target.value.slice(0, 100))} onKeyDown={e => { if (e.key === 'Enter') saveNote(); }} placeholder={t('planner.calendar.addNotePlaceholder')} className="kuro-input kuro-input-sm flex-1" maxLength={100} aria-label={t('planner.calendar.noteAriaLabel')} />
+                  <button onClick={saveNote} disabled={!noteInput.trim()} className={`kuro-btn ${noteInput.trim() ? 'active-gold' : ''}`} style={{ fontSize: 'var(--font-sm)', padding: '4px 12px', opacity: noteInput.trim() ? 1 : 0.4 }}>{sel.note ? t('planner.calendar.update') : t('planner.calendar.save')}</button>
                 </div>
                 {noteInput.length > 70 && <div style={{ fontSize: 'var(--font-2xs)', color: noteInput.length >= 100 ? '#ef4444' : 'var(--text-disabled)', textAlign: 'right', marginTop: '2px' }}>{noteInput.length}/100</div>}
               </div>
@@ -461,7 +461,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               <div className="flex items-center gap-2" style={{ marginTop: 'var(--space-sm)', padding: 'var(--space-sm) var(--space-md)', borderRadius: 'var(--radius-md)', background: 'var(--bg-stat)' }}>
                 <span className="flex-1" style={{ fontSize: 'var(--font-base)', lineHeight: '1.4', color: 'var(--text-body)' }}>{sel.note}</span>
                 {/* U6-08: Full read-only on past days — no delete button */}
-                {!sel.isPast && <button onClick={deleteNote} className="flex-shrink-0 flex items-center justify-center bg-red-500/80 text-white opacity-60 hover:opacity-100 transition-opacity" style={{ width: 'var(--space-xl)', height: 'var(--space-xl)', borderRadius: 'var(--radius-sm)' }} aria-label="Delete note"><X size={12} /></button>}
+                {!sel.isPast && <button onClick={deleteNote} className="flex-shrink-0 flex items-center justify-center bg-red-500/80 text-white opacity-60 hover:opacity-100 transition-opacity" style={{ width: 'var(--space-xl)', height: 'var(--space-xl)', borderRadius: 'var(--radius-sm)' }} aria-label={t('planner.calendar.deleteNoteAria')}><X size={12} /></button>}
               </div>
             )}
           </div>
@@ -469,16 +469,16 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
         {dailyIncome > 0 && (
           <div className="text-center" style={{ fontSize: 'var(--font-sm)', color: 'var(--text-muted)' }}>
-            <span className="text-yellow-400 kuro-number font-bold">{dailyIncome.toLocaleString('en-US')}</span> Astrite/day
+            <span className="text-yellow-400 kuro-number font-bold">{formatNumber(dailyIncome)}</span> {t('planner.calendar.astritePerDay')}
             <span style={{ margin: '0 8px' }}>&middot;</span>
-            <span className="text-yellow-400 kuro-number font-bold">{Math.floor(dailyIncome / ASTRITE_PER_PULL * cal.daysInMonth)}</span> Convenes/month
+            <span className="text-yellow-400 kuro-number font-bold">{formatNumber(Math.floor(dailyIncome / ASTRITE_PER_PULL * cal.daysInMonth))}</span> {t('planner.calendar.convenesPerMonth')}
           </div>
         )}
 
         {/* ── VIEW 2: Chronology ────────────────────────────────────────────── */}
 
         <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 'var(--space-md)' }}>
-          <div style={{ fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}><GanttChart size={12} className="inline mr-1.5 -mt-0.5 text-yellow-400" />Chronology</div>
+          <div style={{ fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--text-heading)', marginBottom: 'var(--space-sm)' }}><GanttChart size={12} className="inline mr-1.5 -mt-0.5 text-yellow-400" />{t('planner.calendar.chronology')}</div>
 
           {/* V5-02: Day scale header — show 1st, every 5th, and last for readability */}
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cal.daysInMonth}, 1fr)`, marginBottom: '4px' }}>
@@ -503,7 +503,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               return null;
             })()}
             {chronoBars.map((bar) => {
-              const tooltipText = `${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} Astrite` : ''}${bar.startLabel && bar.endLabel ? ` — ${bar.startLabel} → ${bar.endLabel}` : bar.endLabel ? ` — ends ${bar.endLabel}` : ''}${bar.daysLeft != null ? ` (${bar.daysLeft}d left)` : ''}${bar.weekly ? ' (resets weekly Mon)' : ''}${bar.ended ? ' (ended)' : ''}`;
+              const tooltipText = `${bar.label}${bar.astrite > 0 ? ` — +${bar.astrite} ${t('planner.astrite')}` : ''}${bar.startLabel && bar.endLabel ? ` — ${bar.startLabel} → ${bar.endLabel}` : bar.endLabel ? ` — ${t('planner.calendar.endedDate', { date: bar.endLabel })}` : ''}${bar.daysLeft != null ? ` (${t('planner.calendar.daysLeftSuffix', { n: bar.daysLeft })})` : ''}${bar.weekly ? ` (${t('planner.calendar.resetsWeeklyMon')})` : ''}${bar.ended ? ` (${t('planner.calendar.ended')})` : ''}`;
               const handleBarClick = () => setSelectedBar(prev => prev?.key === bar.key ? null : bar);
 
               // Weekly events: render segmented bars showing Mon-Sun reset boundaries
@@ -549,16 +549,16 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     opacity: bar.pastBanner ? 0.45 : bar.ended ? 0.6 : 1,
                   }}>
                     <span style={{ fontSize: 'var(--font-sm)', color: bar.color, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>{bar.label}</span>
-                    {bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-2xs)', color: bar.color, opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>{bar.endLabel ? `ended ${bar.endLabel}` : 'ended'}</span>}
+                    {bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-2xs)', color: bar.color, opacity: 0.6, marginLeft: '4px', flexShrink: 0 }}>{bar.endLabel ? t('planner.calendar.endedDate', { date: bar.endLabel }) : t('planner.calendar.ended')}</span>}
                     {bar.astrite > 0 && !bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-sm)', color: bar.color, opacity: 0.7, marginLeft: '4px', flexShrink: 0 }}>+{bar.astrite}</span>}
                     {bar.endLabel && !bar.ended && <span className="kuro-number" style={{ fontSize: 'var(--font-2xs)', color: bar.color, opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.startLabel ? `${bar.startLabel}→` : '→'}{bar.endLabel}</span>}
-                    {bar.daysLeft != null && <span className="kuro-number" style={{ fontSize: 'var(--font-sm)', color: bar.color, opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{bar.daysLeft}d</span>}
+                    {bar.daysLeft != null && <span className="kuro-number" style={{ fontSize: 'var(--font-sm)', color: bar.color, opacity: 0.5, marginLeft: '4px', flexShrink: 0 }}>{t('planner.calendar.daysLeftShort', { n: bar.daysLeft })}</span>}
                   </div>
                 </div>
               );
             })}
             {chronoBars.length === 0 && (
-              <div className="text-center py-2" style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)' }}>No active events this month</div>
+              <div className="text-center py-2" style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)' }}>{t('planner.calendar.noActiveEvents')}</div>
             )}
           </div>
 
@@ -569,10 +569,10 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               {selectedBar.description && <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>{selectedBar.description}</div>}
               <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', marginTop: '4px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                 {selectedBar.startLabel && <span>{selectedBar.startLabel} → {selectedBar.endLabel}</span>}
-                {selectedBar.astrite > 0 && <span className="text-yellow-400">+{selectedBar.astrite} Astrite</span>}
-                {selectedBar.daysLeft != null && <span>{selectedBar.daysLeft} days left</span>}
-                {selectedBar.ended && <span>Ended</span>}
-                {selectedBar.weekly && <span>Resets weekly (Monday)</span>}
+                {selectedBar.astrite > 0 && <span className="text-yellow-400">{t('planner.astriteSuffix', { n: `+${selectedBar.astrite}` })}</span>}
+                {selectedBar.daysLeft != null && <span>{t('planner.calendar.daysLeftSuffix', { n: selectedBar.daysLeft })}</span>}
+                {selectedBar.ended && <span>{t('planner.calendar.endedLabel')}</span>}
+                {selectedBar.weekly && <span>{t('planner.calendar.resetsWeekly')}</span>}
               </div>
             </div>
           )}
@@ -591,7 +591,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                     ? <span style={{ display: 'inline-flex', gap: '1px' }}><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /></span>
                     : <span style={{ width: '16px', height: '4px', borderRadius: 'var(--radius-micro)', background: color, display: 'inline-block' }} />
                   }
-                  {LEGEND_LABELS[group] || group}
+                  {getLegendLabel(group)}
                 </span>
               ));
             })()}

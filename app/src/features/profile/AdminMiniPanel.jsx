@@ -15,6 +15,7 @@ import { SPINE_CHARACTERS } from '../../shared/components/SpinePlayer.jsx';
 import { useSpineTuning, getAllSpineTuning } from '../../hooks/useSpineTuning.js';
 import { getSpineBudgetSnapshot } from '../../hooks/useSpineBudget.js';
 import { PRERENDERED_IDLE } from '../../shared/spinePrerenderManifest.js';
+import { t } from '../../utils/i18n.js';
 
 // Each tuning slot corresponds to a rendering surface on the app. The tuning
 // key SpinePlayer uses is `${characterId}#${context}` (the `card` context is
@@ -22,9 +23,9 @@ import { PRERENDERED_IDLE } from '../../shared/spinePrerenderManifest.js';
 // applying). Keep this list in sync with the `context` prop passed at each
 // SpinePlayer call site.
 const SPINE_CONTEXTS = [
-  { value: 'card',   label: 'Card' },    // CollectionGrid
-  { value: 'detail', label: 'Detail' },  // CharacterDetailModal header
-  { value: 'echo',   label: 'Echo' },    // EchoDetailModal "Recommended For"
+  { value: 'card',   label: () => t('admin.mini.spineContextCard') },    // CollectionGrid
+  { value: 'detail', label: () => t('admin.mini.spineContextDetail') },  // CharacterDetailModal header
+  { value: 'echo',   label: () => t('admin.mini.spineContextEcho') },    // EchoDetailModal "Recommended For"
 ];
 
 // Sort sprite entries the way the Collection tab lists them: 5★ then 4★,
@@ -111,7 +112,7 @@ function SpineTuningSection() {
   );
   return (
     <div className="p-2 bg-pink-500/10 border border-pink-500/30 rounded-lg space-y-1.5">
-      <div className="text-pink-400 text-sm font-medium">Spine Tuning</div>
+      <div className="text-pink-400 text-sm font-medium">{t('admin.mini.spineTuning')}</div>
       <SpineBudgetReadout />
       <select
         value={selected}
@@ -139,7 +140,7 @@ function SpineTuningSection() {
                 : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'
             }`}
           >
-            {c.label}
+            {c.label()}
           </button>
         ))}
       </div>
@@ -152,17 +153,17 @@ function SpineTuningSection() {
           className="flex-1 py-1 rounded text-2xs bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30"
           title={`Clear ${context} tuning overrides for ${SPINE_CHARACTERS[selected].name}`}
         >
-          Reset {SPINE_CHARACTERS[selected].name} ({context})
+          {t('admin.mini.resetCharContext', { name: SPINE_CHARACTERS[selected].name, context })}
         </button>
         <button
           onClick={() => {
             const json = JSON.stringify(getAllSpineTuning(), null, 2);
             if (navigator.clipboard?.writeText) navigator.clipboard.writeText(json);
-            else window.prompt('Copy tuning JSON:', json);
+            else window.prompt(t('admin.mini.copyFramingPrompt'), json);
           }}
           className="flex-1 py-1 rounded text-2xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30"
         >
-          <ClipboardList size={10} className="inline mr-1" /> Export
+          <ClipboardList size={10} className="inline mr-1" /> {t('admin.mini.export')}
         </button>
       </div>
     </div>
@@ -188,18 +189,18 @@ export default function AdminMiniPanel({
       className={`fixed z-[10010] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md kuro-shadow-admin ${getMiniPanelPositionClasses()}`}
     >
       <div className="sticky top-0 bg-cyan-900/40 border-b border-cyan-500/30 p-2.5 flex items-center justify-between">
-        <span className="text-cyan-300 text-sm font-bold flex items-center gap-1.5"><Settings size={14} /> Visual Settings</span>
+        <span className="text-cyan-300 text-sm font-bold flex items-center gap-1.5"><Settings size={14} /> {t('admin.mini.visualSettings')}</span>
         <div className="flex gap-1">
           <div className="flex gap-0.5 mr-1">
-            <button onClick={() => saveMiniPanelPosition('top-left')} aria-label="Move to top-left" className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'top-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↖</button>
-            <button onClick={() => saveMiniPanelPosition('top-right')} aria-label="Move to top-right" className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'top-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↗</button>
-            <button onClick={() => saveMiniPanelPosition('bottom-left')} aria-label="Move to bottom-left" className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'bottom-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↙</button>
-            <button onClick={() => saveMiniPanelPosition('bottom-right')} aria-label="Move to bottom-right" className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'bottom-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↘</button>
+            <button onClick={() => saveMiniPanelPosition('top-left')} aria-label={t('admin.mini.moveTopLeft')} className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'top-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↖</button>
+            <button onClick={() => saveMiniPanelPosition('top-right')} aria-label={t('admin.mini.moveTopRight')} className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'top-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↗</button>
+            <button onClick={() => saveMiniPanelPosition('bottom-left')} aria-label={t('admin.mini.moveBottomLeft')} className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'bottom-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↙</button>
+            <button onClick={() => saveMiniPanelPosition('bottom-right')} aria-label={t('admin.mini.moveBottomRight')} className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'bottom-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↘</button>
           </div>
-          <button onClick={() => setAdminMiniMode(false)} className="text-cyan-400 hover:text-white p-1 rounded hover:bg-white/20 bg-white/10 transition-colors" title="Expand" aria-label="Expand to full panel">
+          <button onClick={() => setAdminMiniMode(false)} className="text-cyan-400 hover:text-white p-1 rounded hover:bg-white/20 bg-white/10 transition-colors" title={t('admin.mini.expand')} aria-label={t('admin.mini.expandAria')}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
           </button>
-          <button onClick={() => { setShowAdminPanel(false); setAdminMiniMode(false); setFramingMode(false); setEditingImage(null); }} className="text-red-400 hover:text-white p-1 rounded hover:bg-red-500/30 bg-red-500/20 transition-colors" title="Close" aria-label="Close image framing panel">
+          <button onClick={() => { setShowAdminPanel(false); setAdminMiniMode(false); setFramingMode(false); setEditingImage(null); }} className="text-red-400 hover:text-white p-1 rounded hover:bg-red-500/30 bg-red-500/20 transition-colors" title={t('admin.mini.close')} aria-label={t('admin.mini.closeAria')}>
             <X size={12} />
           </button>
         </div>
@@ -214,38 +215,38 @@ export default function AdminMiniPanel({
           onClick={() => { setFramingMode(!framingMode); if (framingMode) setEditingImage(null); }}
           className={`w-full py-2 rounded text-sm font-medium border transition-all ${framingMode ? 'bg-emerald-500/30 text-emerald-400 border-emerald-500/50' : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'}`}
         >
-          {framingMode ? '✓ Framing Mode ON' : '⊞ Enable Framing Mode'}
+          {framingMode ? t('admin.mini.framingModeOn') : t('admin.mini.framingModeEnable')}
         </button>
 
         {/* Framing Controls */}
         {framingMode && editingImage && (
           <div className="p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
             <div className="text-emerald-400 text-sm font-medium mb-2 truncate">
-              Editing: {editingImage.replace('collection-', '').replace('team-', 'Team: ')}
+              {t('admin.mini.editing', { name: editingImage.replace('collection-', '').replace('team-', 'Team: ') })}
             </div>
             <div className="grid grid-cols-3 gap-1 mb-2">
               <div />
-              <button onClick={() => updateEditingFraming({ y: getImageFraming(editingImage).y + 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Move image up">▲</button>
+              <button onClick={() => updateEditingFraming({ y: getImageFraming(editingImage).y + 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.moveUp')}>▲</button>
               <div />
-              <button onClick={() => updateEditingFraming({ x: getImageFraming(editingImage).x + 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Move image left">◀</button>
-              <button onClick={resetEditingFraming} className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded text-red-400 text-2xs" aria-label="Reset framing">Reset</button>
-              <button onClick={() => updateEditingFraming({ x: getImageFraming(editingImage).x - 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Move image right">▶</button>
+              <button onClick={() => updateEditingFraming({ x: getImageFraming(editingImage).x + 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.moveLeft')}>◀</button>
+              <button onClick={resetEditingFraming} className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded text-red-400 text-2xs" aria-label={t('admin.mini.resetAria')}>{t('admin.mini.reset')}</button>
+              <button onClick={() => updateEditingFraming({ x: getImageFraming(editingImage).x - 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.moveRight')}>▶</button>
               <div />
-              <button onClick={() => updateEditingFraming({ y: getImageFraming(editingImage).y - 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Move image down">▼</button>
+              <button onClick={() => updateEditingFraming({ y: getImageFraming(editingImage).y - 2 })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.moveDown')}>▼</button>
               <div />
             </div>
             <div className="flex gap-1 justify-center items-center">
-              <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom - 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Zoom out">−</button>
+              <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom - 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.zoomOut')}>−</button>
               <span className="px-2 py-1 text-white text-base min-w-[50px] text-center">{getImageFraming(editingImage).zoom}%</span>
-              <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom + 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Zoom in">+</button>
+              <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom + 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.zoomIn')}>+</button>
             </div>
-            <div className="text-center text-gray-500 text-2xs mt-2">Tap another image to edit it</div>
+            <div className="text-center text-gray-500 text-2xs mt-2">{t('admin.mini.tapAnotherImage')}</div>
           </div>
         )}
 
         {framingMode && !editingImage && (
           <div className="p-2 bg-white/5 border border-[var(--border-medium)] rounded-lg text-center">
-            <div className="text-gray-400 text-sm">Tap any character image to frame it (Collection, Teams, or Detail modal)</div>
+            <div className="text-gray-400 text-sm">{t('admin.mini.tapAnyImage')}</div>
           </div>
         )}
 
@@ -256,25 +257,25 @@ export default function AdminMiniPanel({
           return (
             <div className="p-2 bg-orange-500/10 border border-orange-500/30 rounded-lg">
               <div className="text-orange-400 text-sm font-medium mb-2 truncate">
-                Info Panel: {detailModal.name}
+                {t('admin.mini.infoPanel', { name: detailModal.name })}
               </div>
               <div className="grid grid-cols-3 gap-1 mb-2">
                 <div />
-                <button onClick={() => saveImageFraming(infoKey, { ...infoF, y: Math.max(-100, Math.min(100, infoF.y + 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Move info image up">▲</button>
+                <button onClick={() => saveImageFraming(infoKey, { ...infoF, y: Math.max(-100, Math.min(100, infoF.y + 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.moveInfoUp')}>▲</button>
                 <div />
-                <button onClick={() => saveImageFraming(infoKey, { ...infoF, x: Math.max(-100, Math.min(100, infoF.x + 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Move info image left">◀</button>
-                <button onClick={() => saveImageFraming(infoKey, { x: 0, y: 0, zoom: 100 })} className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded text-red-400 text-2xs" aria-label="Reset info framing">Reset</button>
-                <button onClick={() => saveImageFraming(infoKey, { ...infoF, x: Math.max(-100, Math.min(100, infoF.x - 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Move info image right">▶</button>
+                <button onClick={() => saveImageFraming(infoKey, { ...infoF, x: Math.max(-100, Math.min(100, infoF.x + 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.moveInfoLeft')}>◀</button>
+                <button onClick={() => saveImageFraming(infoKey, { x: 0, y: 0, zoom: 100 })} className="p-2 bg-red-500/20 hover:bg-red-500/30 rounded text-red-400 text-2xs" aria-label={t('admin.mini.resetInfoAria')}>{t('admin.mini.reset')}</button>
+                <button onClick={() => saveImageFraming(infoKey, { ...infoF, x: Math.max(-100, Math.min(100, infoF.x - 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.moveInfoRight')}>▶</button>
                 <div />
-                <button onClick={() => saveImageFraming(infoKey, { ...infoF, y: Math.max(-100, Math.min(100, infoF.y - 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Move info image down">▼</button>
+                <button onClick={() => saveImageFraming(infoKey, { ...infoF, y: Math.max(-100, Math.min(100, infoF.y - 2)) })} className="p-2 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.moveInfoDown')}>▼</button>
                 <div />
               </div>
               <div className="flex gap-1 justify-center items-center">
-                <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.max(100, infoF.zoom - 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Zoom out">−</button>
+                <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.max(100, infoF.zoom - 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.zoomOut')}>−</button>
                 <span className="px-2 py-1 text-white text-base min-w-[50px] text-center">{infoF.zoom}%</span>
-                <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.min(300, infoF.zoom + 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label="Zoom in">+</button>
+                <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.min(300, infoF.zoom + 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.zoomIn')}>+</button>
               </div>
-              <div className="text-center text-gray-500 text-2xs mt-2">Adjusts the character info panel header image</div>
+              <div className="text-center text-gray-500 text-2xs mt-2">{t('admin.mini.infoPanelHint')}</div>
             </div>
           );
         })()}
@@ -286,17 +287,17 @@ export default function AdminMiniPanel({
               const json = JSON.stringify(imageFraming);
               if (navigator.clipboard?.writeText) {
                 navigator.clipboard.writeText(json).then(
-                  () => toast?.addToast?.('Framing data copied to clipboard!', 'success'),
-                  () => { window.prompt('Copy this framing data:', json); }
+                  () => toast?.addToast?.(t('admin.mini.framingCopied'), 'success'),
+                  () => { window.prompt(t('admin.mini.copyFramingPrompt'), json); }
                 );
               } else {
-                window.prompt('Copy this framing data:', json);
+                window.prompt(t('admin.mini.copyFramingPrompt'), json);
               }
             }}
             className="w-full py-2 rounded text-sm font-medium border transition-all bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20"
           >
             <ClipboardList size={10} className="inline mr-1" />
-            Export Framing Data ({Object.keys(imageFraming).length} images)
+            {t('admin.mini.exportFramingData', { count: Object.keys(imageFraming).length })}
           </button>
         )}
 
@@ -305,14 +306,14 @@ export default function AdminMiniPanel({
           onClick={() => { setBgFramingMode(!bgFramingMode); if (bgFramingMode) setEditingBgTarget(null); }}
           className={`w-full py-2 rounded text-sm font-medium border transition-all ${bgFramingMode ? 'bg-cyan-500/30 text-cyan-400 border-cyan-500/50' : 'bg-white/5 text-gray-400 border-[var(--border-medium)] hover:bg-white/10'}`}
         >
-          {bgFramingMode ? '✓ Background Mode ON' : '◐ Enable Background Mode'}
+          {bgFramingMode ? t('admin.mini.backgroundModeOn') : t('admin.mini.backgroundModeEnable')}
         </button>
 
         {/* Background Position Controls */}
         {bgFramingMode && editingBgTarget && (
           <div className="p-2 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
             <div className="text-cyan-400 text-sm font-medium mb-2">
-              Editing: {editingBgTarget === 'header' ? 'Header' : editingBgTarget === 'nav' ? 'Navigation' : 'Background'}
+              {t('admin.mini.editingBg', { target: editingBgTarget === 'header' ? t('admin.mini.editingBgHeader') : editingBgTarget === 'nav' ? t('admin.mini.editingBgNav') : t('admin.mini.editingBgOther') })}
             </div>
             <div className="text-gray-400 text-2xs mb-2 font-mono text-center">{getBgPositionLabel()}</div>
             <div className="grid grid-cols-3 gap-1 w-24 mx-auto mb-2">
@@ -330,7 +331,7 @@ export default function AdminMiniPanel({
               <button onClick={() => updateBgPosition(0, 2)} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95">▼</button>
               <div />
             </div>
-            <p className="text-gray-500 text-2xs text-center">Tap header, nav, or background to switch</p>
+            <p className="text-gray-500 text-2xs text-center">{t('admin.mini.switchHint')}</p>
           </div>
         )}
 
@@ -341,27 +342,27 @@ export default function AdminMiniPanel({
               const json = exportBgPositions();
               if (navigator.clipboard?.writeText) {
                 navigator.clipboard.writeText(json).then(
-                  () => toast?.addToast?.('Background positions copied!', 'success'),
-                  () => { window.prompt('Copy this data:', json); }
+                  () => toast?.addToast?.(t('admin.mini.bgPositionsCopied'), 'success'),
+                  () => { window.prompt(t('admin.mini.copyDataPrompt'), json); }
                 );
               } else {
-                window.prompt('Copy this data:', json);
+                window.prompt(t('admin.mini.copyDataPrompt'), json);
               }
             }}
             className="w-full py-2 rounded text-sm font-medium border transition-all bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20"
           >
             <ClipboardList size={10} className="inline mr-1" />
-            Export BG Positions
+            {t('admin.mini.exportBgPositions')}
           </button>
         )}
 
         {!framingMode && !bgFramingMode && (
           <>
             <button
-              onClick={async () => { if (await confirm({ title: 'Reset settings', message: 'Reset all visual settings to defaults?', confirmLabel: 'Reset', destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
+              onClick={async () => { if (await confirm({ title: t('admin.mini.resetSettingsTitle'), message: t('admin.mini.resetSettingsMessage'), confirmLabel: t('admin.mini.resetSettingsConfirm'), destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }}
               className="w-full py-1.5 rounded text-sm bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30"
             >
-              ↻ Reset All to Defaults
+              {t('admin.mini.resetAllDefaults')}
             </button>
             {VISUAL_SLIDER_CONFIGS.map((cfg) => (
               <VisualSliderGroup
@@ -377,7 +378,7 @@ export default function AdminMiniPanel({
         <Card>
           <CardBody className="text-center">
             <p className="text-gray-500 text-sm">
-              {`Whispering Wishes v${APP_VERSION}`} • by u/WW_Andene • Not affiliated with Kuro Games • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">Contact</a>
+              {t('admin.mini.footer', { version: APP_VERSION })} • <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-500 hover:text-yellow-400 transition-colors">{t('admin.mini.contact')}</a>
             </p>
           </CardBody>
         </Card>

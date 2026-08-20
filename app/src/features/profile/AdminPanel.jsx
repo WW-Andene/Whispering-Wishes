@@ -15,6 +15,7 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { ALLOWED_IMAGE_HOSTS } from '../../shared/constants/appConstants.js';
+import { t } from '../../utils/i18n.js';
 
 // ── Extracted tab components ─────────────────────────────────────────────────
 import AdminBannersTab from './AdminBannersTab.jsx';
@@ -64,7 +65,7 @@ function EchoBgRemover({ toast, adminHash }) {
     setProgress(p => ({ ...p, done: batchResults.length, current: '' }));
     setStatus(abortRef.current ? 'idle' : 'done');
     const ok = batchResults.filter(r => r.ok).length;
-    toast?.addToast?.(`Done! ${ok}/${total} backgrounds removed.`, ok === total ? 'success' : 'warning');
+    toast?.addToast?.(t('admin.echoBg.doneToast', { ok, total }), ok === total ? 'success' : 'warning');
   };
 
   const downloadAll = () => {
@@ -80,24 +81,23 @@ function EchoBgRemover({ toast, adminHash }) {
         document.body.removeChild(a);
       }, i * 300);
     });
-    toast?.addToast?.(`Downloading ${ok.length} images...`, 'info');
+    toast?.addToast?.(t('admin.echoBg.downloadingToast', { count: ok.length }), 'info');
   };
 
   return (
     <div className="space-y-3">
       <div className="bg-pink-500/10 border border-pink-500/30 rounded-lg p-3">
-        <p className="text-pink-400 text-base font-medium mb-1">Echo Background Removal</p>
+        <p className="text-pink-400 text-base font-medium mb-1">{t('admin.echoBg.title')}</p>
         <p className="text-gray-400 text-sm">
-          Removes backgrounds from all {allEchoes.length} echo images using HuggingFace AI (BRIA-RMBG-1.4).
-          Requires HF_API_KEY + ADMIN_HASH in Vercel env vars. Download results as PNGs and re-upload to ibb.co.
+          {t('admin.echoBg.desc', { count: allEchoes.length })}
         </p>
       </div>
       <div className="flex gap-2">
         <button onClick={runBatch} disabled={status === 'running'} className={`kuro-btn flex-1 text-base py-2 ${status === 'running' ? 'opacity-50' : 'active-pink'}`}>
-          {status === 'running' ? `Processing ${progress.done}/${progress.total}...` : status === 'done' ? 'Run Again' : `Remove BG (${allEchoes.length} images)`}
+          {status === 'running' ? t('admin.echoBg.processing', { done: progress.done, total: progress.total }) : status === 'done' ? t('admin.echoBg.runAgain') : t('admin.echoBg.removeBg', { count: allEchoes.length })}
         </button>
         {status === 'running' && (
-          <button onClick={() => { abortRef.current = true; }} className="kuro-btn text-base py-2 text-red-400 border-red-500/30">Stop</button>
+          <button onClick={() => { abortRef.current = true; }} className="kuro-btn text-base py-2 text-red-400 border-red-500/30">{t('admin.echoBg.stop')}</button>
         )}
       </div>
       {status === 'running' && (
@@ -105,15 +105,15 @@ function EchoBgRemover({ toast, adminHash }) {
           <div className="h-2 rounded-full overflow-hidden bg-white/5">
             <div className="h-full bg-pink-500 transition-all duration-300 rounded-full" style={{ width: `${(progress.done / progress.total) * 100}%` }} />
           </div>
-          <p className="text-gray-400 text-sm mt-1 truncate">Processing: {progress.current}</p>
+          <p className="text-gray-400 text-sm mt-1 truncate">{t('admin.echoBg.processingLabel', { name: progress.current })}</p>
         </div>
       )}
       {results.length > 0 && (
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <p className="text-gray-400 text-sm">{results.filter(r => r.ok).length} succeeded, {results.filter(r => !r.ok).length} failed</p>
+            <p className="text-gray-400 text-sm">{t('admin.echoBg.succeededFailed', { ok: results.filter(r => r.ok).length, failed: results.filter(r => !r.ok).length })}</p>
             {results.some(r => r.ok) && (
-              <button onClick={downloadAll} className="kuro-btn text-sm px-3 py-1 active-emerald">Download All PNGs</button>
+              <button onClick={downloadAll} className="kuro-btn text-sm px-3 py-1 active-emerald">{t('admin.echoBg.downloadAllPngs')}</button>
             )}
           </div>
           <div className="max-h-48 overflow-y-auto space-y-1">
@@ -121,7 +121,7 @@ function EchoBgRemover({ toast, adminHash }) {
               <div key={r.name} className={`kuro-badge ${r.ok ? 'kuro-badge-emerald' : 'kuro-badge-red'}`}>
                 <span>{r.ok ? '✓' : '✗'}</span>
                 <span className="flex-1 truncate">{r.name}</span>
-                {r.ok && r.resultUrl && (<a href={r.resultUrl} download={`${r.name}-nobg.png`} className="text-cyan-400 underline">Save</a>)}
+                {r.ok && r.resultUrl && (<a href={r.resultUrl} download={`${r.name}-nobg.png`} className="text-cyan-400 underline">{t('admin.echoBg.save')}</a>)}
                 {!r.ok && <span className="text-gray-500 truncate">{r.error}</span>}
               </div>
             ))}
@@ -165,13 +165,13 @@ export default function AdminPanel({
   if (!showAdminPanel) return null;
 
   const ADMIN_TABS = [
-    { key: 'banners', label: 'Banners', active: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' },
-    { key: 'collection', label: 'Collection', active: 'bg-purple-500/10 text-purple-400 border border-purple-500/30' },
-    { key: 'visuals', label: 'Visual Settings', active: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' },
-    { key: 'trophies', label: 'Trophies', active: 'bg-amber-500/10 text-amber-400 border border-amber-500/30' },
-    { key: 'players', label: <><span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />Players</>, active: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
-    { key: 'echobg', label: 'Echo BG', active: 'bg-pink-500/10 text-pink-400 border border-pink-500/30' },
-    { key: 'diag', label: 'Import Log', active: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
+    { key: 'banners', label: t('admin.tabs.banners'), active: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30' },
+    { key: 'collection', label: t('admin.tabs.collection'), active: 'bg-purple-500/10 text-purple-400 border border-purple-500/30' },
+    { key: 'visuals', label: t('admin.tabs.visuals'), active: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30' },
+    { key: 'trophies', label: t('admin.tabs.trophies'), active: 'bg-amber-500/10 text-amber-400 border border-amber-500/30' },
+    { key: 'players', label: <><span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />{t('admin.tabs.players')}</>, active: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
+    { key: 'echobg', label: t('admin.tabs.echobg'), active: 'bg-pink-500/10 text-pink-400 border border-pink-500/30' },
+    { key: 'diag', label: t('admin.tabs.diag'), active: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
   ];
 
   return (
@@ -180,35 +180,35 @@ export default function AdminPanel({
       <FocusTrapModal isOpen={showAdminPanel && !adminMiniMode} onClose={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="" onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} ariaLabel="Admin panel" centered>
           <div className="kuro-card w-full max-w-2xl max-h-[90vh]" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
-            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close admin panel"><X size={16} /></button>}>
-              <span className="flex items-center gap-2"><Settings size={16} /> Admin Panel</span>
+            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('admin.panel.closeAria')}><X size={16} /></button>}>
+              <span className="flex items-center gap-2"><Settings size={16} /> {t('admin.panel.title')}</span>
             </CardHeader>
             <div className="kuro-body space-y-3" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
               {!adminUnlocked ? (
                 <div className="space-y-3">
                   <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 text-center">
-                    <p className="text-yellow-400 text-md font-medium">Admin Access Required</p>
-                    <p className="text-gray-400 text-sm mt-1">Enter admin password to continue</p>
+                    <p className="text-yellow-400 text-md font-medium">{t('admin.panel.accessRequired')}</p>
+                    <p className="text-gray-400 text-sm mt-1">{t('admin.panel.enterPassword')}</p>
                   </div>
                   <div className="flex gap-2">
                     <input
                       type="password"
-                      placeholder="Enter password"
+                      placeholder={t('admin.panel.passwordPlaceholder')}
                       value={adminPassword}
                       onChange={(e) => setAdminPassword(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && verifyAdminPassword()}
                       className="kuro-input flex-1 text-md"
-                      aria-label="Admin password"
+                      aria-label={t('admin.panel.passwordAria')}
                       aria-invalid={adminLockedUntil > Date.now() ? true : undefined}
                       aria-describedby={adminLockedUntil > Date.now() ? 'admin-lockout-msg' : undefined}
                     />
-                    <button onClick={verifyAdminPassword} className="kuro-btn px-4" aria-label="Unlock admin panel">Unlock</button>
+                    <button onClick={verifyAdminPassword} className="kuro-btn px-4" aria-label={t('admin.panel.unlockAria')}>{t('admin.panel.unlock')}</button>
                   </div>
                 </div>
               ) : (
                 <>
                   <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 text-center">
-                    <p className="text-emerald-400 text-base">Admin Panel Unlocked</p>
+                    <p className="text-emerald-400 text-base">{t('admin.panel.unlocked')}</p>
                   </div>
 
                   {/* Tab Switcher */}
@@ -239,8 +239,8 @@ export default function AdminPanel({
                   {adminTab === 'collection' && (
                     <div className="space-y-4">
                       <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3">
-                        <h3 className="text-purple-400 text-md font-medium mb-3">Collection Images</h3>
-                        <p className="text-gray-400 text-sm mb-3">Most resonators have built-in images. Use custom URLs to override or fill in missing ones.</p>
+                        <h3 className="text-purple-400 text-md font-medium mb-3">{t('admin.collectionTab.title')}</h3>
+                        <p className="text-gray-400 text-sm mb-3">{t('admin.collectionTab.desc')}</p>
                         {(() => {
                           const allHistory = [
                             ...state.profile.featured.history,
@@ -250,7 +250,7 @@ export default function AdminPanel({
                           ];
                           const uniqueNames = [...new Set(allHistory.filter(p => p.rarity >= 4 && p.name).map(p => p.name))].sort();
                           if (uniqueNames.length === 0) {
-                            return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-base">Import Convene data to populate your archive</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-sm mt-2 px-3 py-1.5">Go to Import</button></div>;
+                            return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-base">{t('admin.collectionTab.importPrompt')}</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-sm mt-2 px-3 py-1.5">{t('admin.collectionTab.goToImport')}</button></div>;
                           }
                           return (
                             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
@@ -260,12 +260,12 @@ export default function AdminPanel({
                                 const displayUrl = collectionImages[name];
                                 return (
                                   <div key={name} className="flex items-center gap-2">
-                                    <span className={`text-sm w-32 truncate ${hasDefault ? 'text-gray-300' : 'text-yellow-400'}`} title={hasDefault ? name : `${name} (no default)`}>
+                                    <span className={`text-sm w-32 truncate ${hasDefault ? 'text-gray-300' : 'text-yellow-400'}`} title={hasDefault ? name : t('admin.collectionTab.noDefault', { name })}>
                                       {name} {!hasDefault && '⚠'}
                                     </span>
                                     <input
                                       type="text"
-                                      placeholder={hasDefault ? "(using default)" : "https://i.ibb.co/..."}
+                                      placeholder={hasDefault ? t('admin.collectionTab.usingDefault') : "https://i.ibb.co/..."}
                                       value={hasCustom || ''}
                                       onChange={(e) => {
                                         const val = e.target.value.trim();
@@ -293,10 +293,10 @@ export default function AdminPanel({
                       </div>
                       <div className="flex gap-2">
                         <button
-                          onClick={async () => { if (await confirm({ title: 'Clear overrides', message: 'Clear all custom image overrides?', confirmLabel: 'Clear', destructive: true })) saveCollectionImages({}); }}
+                          onClick={async () => { if (await confirm({ title: t('admin.collectionTab.clearOverridesTitle'), message: t('admin.collectionTab.clearOverridesMessage'), confirmLabel: t('admin.collectionTab.clearOverridesConfirm'), destructive: true })) saveCollectionImages({}); }}
                           className="flex-1 px-4 py-2 bg-red-500/20 border border-red-500/30 text-red-400 rounded text-base hover:bg-red-500/30"
                         >
-                          Clear Custom Overrides
+                          {t('admin.collectionTab.clearOverrides')}
                         </button>
                       </div>
                     </div>
@@ -317,8 +317,8 @@ export default function AdminPanel({
                         </React.Fragment>
                       ))}
                       <div className="flex gap-2">
-                        <button onClick={() => setAdminMiniMode(true)} className="flex-1 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded text-base hover:bg-emerald-500/30">🗗 Mini Window</button>
-                        <button onClick={async () => { if (await confirm({ title: 'Reset settings', message: 'Reset all visual settings to defaults?', confirmLabel: 'Reset', destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }} className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-base hover:bg-neutral-600">Reset to Defaults</button>
+                        <button onClick={() => setAdminMiniMode(true)} className="flex-1 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded text-base hover:bg-emerald-500/30">{t('admin.visualsTab.miniWindow')}</button>
+                        <button onClick={async () => { if (await confirm({ title: t('admin.visualsTab.resetTitle'), message: t('admin.visualsTab.resetMessage'), confirmLabel: t('admin.visualsTab.resetConfirm'), destructive: true })) saveVisualSettings(DEFAULT_VISUAL_SETTINGS); }} className="flex-1 px-4 py-2 bg-neutral-700 text-gray-300 rounded text-base hover:bg-neutral-600">{t('admin.visualsTab.resetDefaults')}</button>
                       </div>
                     </div>
                   )}
@@ -346,11 +346,11 @@ export default function AdminPanel({
                     try { diag = JSON.parse(localStorage.getItem('ww-import-diagnostic')); } catch {}
                     return (
                       <div className="space-y-3">
-                        <div className="text-base text-gray-400">Last import diagnostic{diag?.timestamp ? ` — ${new Date(diag.timestamp).toLocaleString()}` : ''}</div>
+                        <div className="text-base text-gray-400">{t('admin.diag.lastImport')}{diag?.timestamp ? ` — ${new Date(diag.timestamp).toLocaleString()}` : ''}</div>
                         {diag?.log ? (
                           <pre className="text-sm font-mono text-emerald-400 bg-black/40 p-3 rounded-lg whitespace-pre-wrap overflow-auto max-h-[40vh]">{diag.log}</pre>
                         ) : (
-                          <div className="text-gray-400 text-base text-center py-4">No diagnostic log yet. Run a direct API import to generate one.</div>
+                          <div className="text-gray-400 text-base text-center py-4">{t('admin.diag.noLog')}</div>
                         )}
                         {diag && (
                           <button onClick={() => {
@@ -361,7 +361,7 @@ export default function AdminPanel({
                             a.download = `ww-import-diagnostic-${new Date().toISOString().slice(0,10)}.json`;
                             document.body.appendChild(a); a.click(); document.body.removeChild(a);
                             setTimeout(() => URL.revokeObjectURL(url), 100);
-                          }} className="kuro-btn w-full text-base">Download Diagnostic Log</button>
+                          }} className="kuro-btn w-full text-base">{t('admin.diag.download')}</button>
                         )}
                       </div>
                     );
