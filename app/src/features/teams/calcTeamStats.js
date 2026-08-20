@@ -137,6 +137,370 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // applying their hardcoded cap — same fix already applied to Mornye's Tune Break amp.
     const energyCycleFactors = calcEnergyCycles(mems, teamEquipment, teamIdx);
 
+    const rotationTimeline = (() => {
+      // ── Smart rotation ordering based on WuWa swap mechanics ──
+      // Rule 1: Main DPS goes LAST (receives all buffs in DPS window)
+      // Rule 2: Characters with team-wide outro buffs go FIRST (persist through swaps)
+      // Rule 3: Characters with next-only outro buffs go immediately BEFORE the DPS
+      //         (next-only buffs vanish when recipient swaps out, so only the last one reaches DPS)
+      // Rule 4: If multiple next-only buffers, the one with higher total value goes last (closer to DPS)
+      const dpsChar = mems.find(m => m.name === mainDps.name);
+      const supports = mems.filter(m => m.name !== mainDps.name);
+
+      // Classify supports by outro buff type
+      const hasTeamOutro = (m) => {
+        const bt = CHAR_BUFF_TABLE[m.name];
+        if (!bt) return false;
+        // Team-wide outro buffs persist through swaps (Verina, Shorekeeper, Baizhi, Mornye)
+        return (bt.outroBuffs || []).some(b => b.target === 'team');
+      };
+      const nextOutroValue = (m) => {
+        const bt = CHAR_BUFF_TABLE[m.name];
+        if (!bt) return 0;
+        return (bt.outroBuffs || []).filter(b => b.target === 'next' || b.target === 'enemy' || b.target === 'ally').reduce((s, b) => s + b.value, 0);
+      };
+
+      // Sort: team-wide outro first, then by next-outro value ascending (strongest last = closest to DPS)
+      // — this is the FALLBACK order (also the tie-break/first candidate below), not the final word.
+      supports.sort((a, b) => {
+        const aTeam = hasTeamOutro(a) ? 0 : 1;
+        const bTeam = hasTeamOutro(b) ? 0 : 1;
+        if (aTeam !== bTeam) return aTeam - bTeam; // team-wide outro goes first
+        return nextOutroValue(a) - nextOutroValue(b); // stronger next-outro goes last (closer to DPS)
+      });
+
+      // ── Order search — referring to real buff/debuff durations, not just target-type heuristics ──
+      // The sort above only classifies buffs by target ('team' vs 'next') and static value; it never
+      // checks whether a buff's actual timed duration is long enough to survive the gap until the DPS
+      // window actually opens. With supports.length <= 3 (this app's team size cap), brute-forcing
+      // every permutation and scoring each by how much buff value-time from non-DPS members actually
+      // lands inside the DPS's own on-field window (using each buff's real `duration` field from
+      // CHAR_BUFF_TABLE/echo/weapon data — the same numbers the `inherits` badge below already reads)
+      // is cheap (<=6 orderings) and gives a genuinely duration-grounded pick instead of a fixed rule.
+      // This only reorders whole per-character blocks for DISPLAY (this closure runs after teamDps/
+      // grandTotal are already final above) — it cannot change the real DPS number, only which
+      // ordering the Rotation Guide presents as the swap sequence.
+      function permutations(arr) {
+        if (arr.length <= 1) return [arr];
+        const out = [];
+        for (let i = 0; i < arr.length; i++) {
+          const rest = [...arr.slice(0, i), ...arr.slice(i + 1)];
+          for (const p of permutations(rest)) out.push([arr[i], ...p]);
+        }
+        return out;
+      }
+
+      // Calculate raw on-field times, then scale proportionally if total exceeds rotTime — same for
+      // every candidate order (durations don't depend on sequence), computed once up front.
+      const onFieldOf = (m) => m.d.onField ?? (m.name === mainDps.name ? 15 : 5);
+      const totalRaw = mems.reduce((s, m) => s + onFieldOf(m), 0);
+      const scale = totalRaw > rotTime ? rotTime / totalRaw : 1;
+
+      // Builds the timeline + buff list for one candidate ordering of [...supports, dpsChar].
+      function buildForOrder(orderedMems) {
+      const timeline = [];
+      const buffs = [];
+      let t = 0;
+      orderedMems.forEach((m) => {
+        const isMain = m.name === mainDps.name;
+        const onField = Math.round(onFieldOf(m) * scale * 10) / 10; // scale + round to 0.1s
+        timeline.push({ name: m.name, element: m.d.element, role: m.d.role, start: t, duration: onField });
+        const bt = CHAR_BUFF_TABLE[m.name];
+        if (bt) {
+          (bt.outroBuffs || []).forEach(b => {
+            if (b.target === 'next' || b.target === 'enemy' || b.target === 'ally') {
+              const dur = b.duration || 14;
+              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t + onField, duration: dur });
+            }
+          });
+          (bt.libBuffs || []).forEach(b => {
+            if (b.target === 'team') {
+              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25 });
+            }
+          });
+          // CHAR_BUFF_TABLE uses duration: 99 or 999 as sentinels for "conditional passive, no
+          // natural decay" (e.g. a Crit DMG bonus active in a stance, or on a periodic proc) — never
+          // a literal 99/999-second timer. The real durations used anywhere in the table top out at
+          // 30s, so >=90 is an unambiguous sentinel check. Rendered literally these blew the whole
+          // chart's time scale out to ~100-1000s, squashing every real segment/buff into an
+          // unreadable sliver. Since these are self-target and only matter while the character is
+          // actually dealing damage, the correct display window is their own on-field time, same as
+          // the default for an unspecified duration.
+          //
+          // Self-only clamp (fixed 2026-08-20): a selfBuff/weaponBuff's `target` field already says
+          // who it can help — 'self' (or unset, same default calcEngine.js itself uses) means it
+          // physically cannot outlive its owner's own on-field window, no matter what explicit
+          // `duration` the source data carries (some run longer than the owner's own onField, e.g.
+          // Qingxiao's 30s Mindlock DMG bonus vs. her 17s onField — real durations describing how
+          // long the EFFECT would persist if she stayed on field, not a promise she stays that long
+          // in THIS team's block). Before this fix, that longer duration bled into whatever teammate
+          // came on-field right after, showing up as a false "inherits" badge for a buff that target:
+          // 'self' says can never apply to them. Only a buff explicitly marked target: 'team' (a real,
+          // if rare, case — e.g. Rover: Electro's Overshock ATK buff) is allowed to actually cross the
+          // block boundary into the next segment.
+          (bt.selfBuffs || []).forEach(b => {
+            const isSelfOnly = !b.target || b.target === 'self';
+            const rawDur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            const dur = isSelfOnly ? Math.min(rawDur, onField) : rawDur;
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
+          });
+          (bt.weaponBuffs || []).forEach(b => {
+            const isSelfOnly = !b.target || b.target === 'self';
+            const rawDur = (!b.duration || b.duration >= 90) ? onField : b.duration;
+            const dur = isSelfOnly ? Math.min(rawDur, onField) : rawDur;
+            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
+          });
+        }
+
+        // ── Hardcoded team-wide echo-set bonuses (TEAM_SET_BUFFS) — only counted in the DPS math
+        // from non-main members' worn sets, so only render them from those same members here. ──
+        if (!isMain) {
+          (TEAM_SET_BUFFS[m.echoSetName] || []).forEach(e => {
+            if (e.elem && e.elem !== (mainDps.d.element || '').toLowerCase()) return;
+            buffs.push({ source: m.echoSetName, owner: m.name, stat: e.stat, value: e.value, start: 0, duration: rotTime });
+          });
+        }
+
+        // ── Weapon "team value" (tv) passive — team-wide buff added straight to the stat
+        // totals in the DPS math; render it the same way here so it isn't invisible. ──
+        if (!isMain && m.weapon?.tv) {
+          const tvRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
+          const tvRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[tvRefLevel - 1] || 1 : 1;
+          const wt = m.weapon.tv;
+          const tvDur = wt.duration || 15;
+          Object.entries(wt).forEach(([stat, val]) => {
+            if (stat === 'duration' || typeof val !== 'number') return;
+            buffs.push({ source: m.weapName, owner: m.name, stat, value: Math.round(val * tvRefScale * 10) / 10, start: t, duration: tvDur });
+          });
+        }
+
+        // ── Echo set p5 timed buffs ──
+        if (m.echoSet) {
+          const setName = m.echoSetName;
+          const p5 = m.echoSet.p5 || '';
+          const p5v = m.echoSet.p5val || {};
+          // Outro-triggered echo set buffs (fire when character swaps out)
+          if (p5.includes('Outro')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              if (stat === 'outroDmg') return; // raw damage, not a buff
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t + onField, duration: 14 });
+            });
+          }
+          // Intro-triggered echo set buffs (fire when character swaps in)
+          else if (p5.includes('Intro')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField });
+            });
+          }
+          // Liberation-triggered echo set buffs
+          else if (p5.includes('Liberation') || p5.includes('Lib')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: 35 });
+            });
+          }
+          // Heal-triggered team buffs
+          else if (p5.includes('Heal') && p5v.teamAtk) {
+            buffs.push({ source: `${setName}`, owner: m.name, stat: 'atkPct', value: p5v.teamAtk, start: t, duration: 20 });
+          }
+          // On-field stacking buffs (active during field time only)
+          else if (p5.includes('max x') || p5.includes('stack')) {
+            Object.entries(p5v).forEach(([stat, val]) => {
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField });
+            });
+          }
+        }
+
+        // ── Weapon passive timed buffs ──
+        if (m.weapon?.pv) {
+          const wpn = m.weapon;
+          const passive = wpn.passive || '';
+          // Weapons with on-hit/on-skill stacking buffs — active during field time
+          if (passive.includes('stack') || passive.includes('grant') || passive.includes('use')) {
+            Object.entries(wpn.pv).forEach(([stat, val]) => {
+              buffs.push({ source: m.weapName, owner: m.name, stat, value: val, start: t, duration: onField });
+            });
+          }
+        }
+
+        // ── 4-cost echo active skill buffs ──
+        // Gated to mirror exactly what the DPS math counts (see the two ECHO_SKILL_BUFFS
+        // consumption sites above): a 'self' buff is only ever added to the stat totals for
+        // the main DPS's own echo; 'team'/'next' buffs are only added from non-main members.
+        // Rendering anything outside that would show a bar the DPS number never actually used.
+        const esbCountedForMath = m.mainEchoName && (() => {
+          const t = ECHO_SKILL_BUFFS[m.mainEchoName]?.target || 'self';
+          return isMain ? t === 'self' : (t === 'team' || t === 'next');
+        })();
+        if (m.mainEchoName && esbCountedForMath) {
+          const esb = ECHO_SKILL_BUFFS[m.mainEchoName];
+          if (esb) {
+            const echoLabel = m.mainEchoName.length > 18 ? m.mainEchoName.split(/[:\s-]+/).slice(0, 2).join(' ') : m.mainEchoName;
+            const target = esb.target || 'self';
+            if (target === 'next') {
+              // Outro-triggered echo buff → fires when character swaps out, applies to next
+              esb.buffs.forEach(b => {
+                if (esb.condition && !m.name.includes(esb.condition)) return;
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t + onField, duration: esb.duration || 15, type: 'echo' });
+              });
+            } else if (target === 'team') {
+              // Team-wide buff → active during field time, persists for duration
+              esb.buffs.forEach(b => {
+                if (esb.condition && !m.name.includes(esb.condition)) return;
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: esb.duration || 15, type: 'echo' });
+              });
+            } else if (esb.passive) {
+              // Passive main-slot buff → always active during field time
+              esb.buffs.forEach(b => {
+                if (esb.condition && !m.name.includes(esb.condition)) return;
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: onField, type: 'echo' });
+              });
+            } else {
+              // Standard active skill buff → used during field time
+              esb.buffs.forEach(b => {
+                if (esb.condition && !m.name.includes(esb.condition)) return;
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: Math.min(esb.duration || 15, onField + 5), type: 'echo' });
+              });
+            }
+          }
+        }
+
+        t += onField;
+      });
+      return { timeline, buffs };
+      }
+
+      // Candidate orderings: every permutation of supports (dpsChar always last — Rule 1 is not up
+      // for debate, only which support leads/trails is). Capped at 3! = 6 candidates since team size
+      // maxes at 3 (≤2 supports); if that cap is ever raised, falls back to just the heuristic order
+      // above rather than a factorial blowup.
+      const candidateOrders = (supports.length <= 3 ? permutations(supports) : [supports])
+        .map(perm => dpsChar ? [...perm, dpsChar] : [...perm]);
+
+      // Score = total buff value-time from non-DPS members that's actually still active (per its real
+      // `duration`) when the DPS's own on-field window starts — i.e. how much of what this ordering
+      // hands off actually reaches the damage dealer, not just "did we tag it 'next' vs 'team'".
+      function scoreOrder(timeline, buffs) {
+        const dpsSeg = timeline.find(s => s.name === mainDps.name);
+        if (!dpsSeg) return 0;
+        return buffs.reduce((sum, b) => {
+          const owner = b.owner || b.source;
+          if (owner === mainDps.name) return sum; // only cross-character handoffs count
+          const stillActive = b.start <= dpsSeg.start + 0.05 && b.start + b.duration > dpsSeg.start + 0.05;
+          return stillActive ? sum + Math.abs(b.value || 0) : sum;
+        }, 0);
+      }
+
+      let best = null;
+      candidateOrders.forEach((order, idx) => {
+        const built = buildForOrder(order);
+        const score = scoreOrder(built.timeline, built.buffs);
+        // idx 0 is always the original heuristic order (permutations()'s first result preserves input
+        // order) — strictly-greater comparison means ties keep that heuristic pick, so behavior is
+        // unchanged whenever duration data doesn't actually favor a different sequence.
+        if (!best || score > best.score) best = { ...built, score, order };
+      });
+      const { timeline, buffs } = best;
+
+      // ── Rotation blocks — Prydwen-style: one self-contained block per character (what THEY do
+      // on field, independent of the rest of the team), plus what it hands off to / inherits from
+      // its neighbors in the sequence, so the whole team rotation reads as a chain of blocks rather
+      // than one flat, undifferentiated buff dump. One block per on-field window, in the order
+      // actually computed above. ──
+      const fmtBuff = (b) => `+${b.value}% ${STAT_LABELS_FULL[b.stat] || b.stat}${b.duration ? ` (${b.duration}s)` : ''}`;
+      const steps = timeline.map((seg, i) => {
+        const isDps = seg.name === mainDps.name;
+        const reason = isDps
+          ? 'Main DPS — comes on-field last to receive every buff stacked up before it'
+          : hasTeamOutro(mems.find(m => m.name === seg.name))
+            ? 'Team-wide buff persists through swaps — goes first so it covers the whole rotation'
+            : nextOutroValue(mems.find(m => m.name === seg.name)) > 0
+              ? 'Buff only reaches whoever swaps in next — placed right before the DPS window'
+              : 'Sub-DPS / utility window';
+        const own = buffs.filter(b => (b.owner || b.source) === seg.name);
+        // Self: fires and is fully spent during this character's own on-field window (Liberation,
+        // selfBuffs, weapon/echo passives while they're the one attacking).
+        const selfActive = [...new Set(
+          own.filter(b => b.start < seg.start + seg.duration - 0.05).map(fmtBuff)
+        )];
+        // Hands off: starts at/after they leave the field — this is the block's outbound link to
+        // whichever block comes next (outro buffs, echo outro procs).
+        const handsOff = [...new Set(
+          own.filter(b => b.start >= seg.start + seg.duration - 0.05).map(fmtBuff)
+        )];
+        // Inherits: buffs from an earlier block still active when this one starts — the block's
+        // inbound link, i.e. how it adapts to whatever the team set up before it.
+        const inherits = [...new Set(
+          buffs.filter(b => (b.owner || b.source) !== seg.name && b.start <= seg.start + 0.05 && b.start + b.duration > seg.start + 0.05)
+            .map(fmtBuff)
+        )];
+        // Verified skill-by-skill sequence from Prydwen.gg's "Standard Rotation" guides — real
+        // combat data, not derived from CHAR_BUFF_TABLE like the rest of this block. CHARACTER_ROTATIONS
+        // (type/skill/note per step, 56 of 58 characters) is the richer, actively-maintained dataset —
+        // prefer it over the older CHARACTER_DATA[name].rotation plain-string array, which only exists
+        // for ~10 legacy entries and lacks per-step notes/type tagging. Both are normalized to the same
+        // {type, skill, note} shape so the rendering below doesn't need to know which source it got.
+        const richSequence = CHARACTER_ROTATIONS[seg.name];
+        const legacySequence = CHARACTER_DATA[seg.name]?.rotation;
+        const skillSequence = richSequence || (legacySequence ? legacySequence.map(s => ({ type: 'Step', skill: s })) : null);
+        return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, selfActive, handsOff, inherits, skillSequence };
+      });
+
+      return { segments: timeline, buffs, totalTime: rotTime, steps };
+    })();
+
+    // ── Overlap-based uptime for cross-character buffs reaching the main DPS ──
+    // Every cross-character buff uptime below used to be `min(1, duration / rotTime)` — averaged
+    // against the WHOLE rotation, not against when the main DPS is actually on field receiving it.
+    // rotationTimeline (just computed above) already has the real, ordered start/duration for every
+    // member's block — the exact same positions the Rotation Guide displays — so the mechanically
+    // correct fraction is how much of a buff's [start, start+duration) window actually overlaps the
+    // DPS's own [dpsSeg.start, dpsSeg.start+dpsSeg.duration) window, not a share of the whole cycle.
+    // A quantitative audit (200 random teams) found this matters a lot: 76.5% of cross-character
+    // buffs shift by more than 2 uptime points under this correction, and 43.5% collapse to exactly
+    // zero — buffs the old formula credited as partially helping the DPS, that in the app's own
+    // computed rotation ordering never overlap the DPS's window at all.
+    const rotSegByName = {};
+    (rotationTimeline?.segments || []).forEach(s => { rotSegByName[s.name] = s; });
+    const dpsSeg = rotSegByName[mainDps.name] || null;
+    // General form — recipientSeg defaults to the main DPS, but the same fix applies to any other
+    // team member receiving a cross-character buff (the sub-DPS damage tier below uses this with the
+    // sub-DPS's own segment as recipient, since off-field members get a real segment here too).
+    function overlapUptimeForSeg(recipientSeg, start, duration) {
+      if (!recipientSeg || !(duration > 0)) return 0;
+      const overlapStart = Math.max(start, recipientSeg.start);
+      const overlapEnd = Math.min(start + duration, recipientSeg.start + recipientSeg.duration);
+      const overlap = Math.max(0, overlapEnd - overlapStart);
+      return recipientSeg.duration > 0 ? Math.min(1, overlap / recipientSeg.duration) : 0;
+    }
+    function overlapUptime(start, duration) {
+      return overlapUptimeForSeg(dpsSeg, start, duration);
+    }
+    // Buff timing conventions — must mirror the rotationTimeline closure above exactly, since that's
+    // the source of truth this correction reads positions from: Outro-triggered buffs start when the
+    // owner swaps OUT (ownerSeg.start + ownerSeg.duration); Liberation/weapon/echo "team"-target buffs
+    // start when the owner's own block begins (ownerSeg.start).
+    const outroStart = (ownerName) => { const s = rotSegByName[ownerName]; return s ? s.start + s.duration : 0; };
+    const blockStart = (ownerName) => { const s = rotSegByName[ownerName]; return s ? s.start : 0; };
+
+    // ── Shield-gated weapon DEF Ignore ──
+    // Thunderflare Dominion (Augusta signature, passive name "Thunderblaze Eminence") and Moongazer's
+    // Sigil (Iuno signature, passive name "Plenilune Radiance") both encode their DEF Ignore stat as
+    // "Gaining a Shield -> ... ignores 7.2% DEF (stacks x5)" — pv.defIgnore: 36 is that fully-stacked
+    // MAXIMUM, pre-multiplied, same convention as every other "stacks x" weapon passive in this file.
+    // But unlike a self-triggered stack (built from the wearer's own Basic ATK/Resonance Skill, always
+    // reachable while they're attacking), gaining a Shield needs an actual shield source — either the
+    // wearer's own kit (both weapons' signature owners, Augusta/Iuno, self-shield) or a teammate's.
+    // Applying it unconditionally overcredits every OTHER wielder with 36% DEF Ignore they have no way
+    // to trigger. Found via a diagnostic comparing this app's own engine against its static `bestWeapon`
+    // data: it ranked Iuno's signature above Xiangli Yao's own signature for Xiangli Yao specifically
+    // because of this exact unconditional 36% DEF Ignore, in a team with no shield source at all.
+    const SHIELD_GATED_WEAPONS = new Set(['Thunderflare Dominion', "Moongazer's Sigil"]);
+    const teamHasShield = mems.some(m => (CHARACTER_DATA[m.name]?.buffs || []).includes('Shield'));
+    function gateWeaponDefIgnore(weaponName, rawDefIgnore) {
+      if (!weaponName || !SHIELD_GATED_WEAPONS.has(weaponName)) return rawDefIgnore;
+      return teamHasShield ? rawDefIgnore : 0;
+    }
+
     // ── RAW TIER: equipment-only stats, no team buffs ──
     const rawMainOnField = Math.min(mainDps.d.onField || 15, rawRotTime * 0.8); // DPS gets at most 80% of rotation
     const rawOffFieldTime = Math.max(0, rawRotTime - rawMainOnField);
@@ -207,7 +571,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === mainStatKey) atkPct += parseFloat(mainDps.weapSubVal) || 0;
 
-    let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0, wpCoordDmg = 0;
+    let wpBasicDmg = 0, wpHeavyDmg = 0, wpLibDmg = 0, wpEchoDmg = 0, wpCoordDmg = 0, wpSkillDmg = 0;
     if (mainDps.weapon) {
       const mainRefLevel = (teamEquipment[teamIdx + ':' + mainDps.name])?.refinement || 1;
       const mainRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[mainRefLevel - 1] || 1 : 1;
@@ -216,9 +580,9 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       if (mainDps.scaling === 'ATK') atkPct += (wp.atkPct || 0);
       else if (mainDps.scaling === 'HP') atkPct += (wp.hpPct || 0);
       else if (mainDps.scaling === 'DEF') atkPct += (wp.defPct || 0);
-      elemDmg += (wp.elemDmg || 0); skillDmg += (wp.skillDmg || 0);
+      elemDmg += (wp.elemDmg || 0); wpSkillDmg += (wp.skillDmg || 0);
       cr += (wp.critRate || 0); cd += (wp.critDmg || 0);
-      defIgnore += (wp.defIgnore || 0); resShred += (wp.resShred || 0);
+      defIgnore += gateWeaponDefIgnore(mainDps.weapName, wp.defIgnore || 0); resShred += (wp.resShred || 0);
       wpBasicDmg = (wp.basicDmg || 0); wpHeavyDmg = (wp.heavyDmg || 0);
       wpLibDmg = (wp.libDmg || 0); wpEchoDmg = (wp.echoDmg || 0);
       wpCoordDmg = (wp.coordDmg || 0);
@@ -229,7 +593,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const setStats = createStats();
       applyFullEchoSet(setStats, mainDps.echoSet, mainDps.echoSet2, mainDps.d.element, mainDps.scaling);
       atkPct += setStats.atkPct; cr += setStats.cr - BASE_CRIT_RATE; cd += setStats.cd - BASE_CRIT_DMG;
-      elemDmg += setStats.elemDmg; skillDmg += setStats.skillDmg;
+      elemDmg += setStats.elemDmg; wpSkillDmg += setStats.skillDmg;
       wpBasicDmg += setStats.basicDmg; wpHeavyDmg += setStats.heavyDmg;
       wpLibDmg += setStats.libDmg; wpEchoDmg += setStats.echoDmg;
     }
@@ -287,14 +651,18 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     if (mainDps.mainEchoName) {
       const mainEsb = ECHO_SKILL_BUFFS[mainDps.mainEchoName];
       if (mainEsb && (mainEsb.target || 'self') === 'self' && (!mainEsb.condition || mainDps.name.includes(mainEsb.condition))) {
-        const esbUp = mainEsb.passive ? 1 : Math.min(1, (mainEsb.duration || 15) / rotTime);
+        // Self-targeted — only matters while the DPS is actually on field, so the right denominator
+        // is their own on-field window (dpsSeg.duration), not the whole rotation. Same dilution bug
+        // as the cross-character sites above, just self-scoped: a 15s proc buff on a DPS with a 17s
+        // on-field window is ~88% uptime during their own combo, not ~37% of a 40s full rotation.
+        const esbUp = mainEsb.passive ? 1 : (dpsSeg?.duration > 0 ? Math.min(1, (mainEsb.duration || 15) / dpsSeg.duration) : Math.min(1, (mainEsb.duration || 15) / rotTime));
         mainEsb.buffs.forEach(b => {
           const val = b.value * esbUp;
           const mainEl = (mainDps.d.element || '').toLowerCase();
           if (b.stat === mainEl + 'Dmg') elemDmg += val;
           else if (b.stat === 'allDmg') elemDmg += val;
           else if (b.stat === 'atkPct') atkPct += val;
-          else if (b.stat === 'skillDmg') skillDmg += val;
+          else if (b.stat === 'skillDmg') wpSkillDmg += val;
           else if (b.stat === 'basicDmg') wpBasicDmg += val;
           else if (b.stat === 'heavyDmg') wpHeavyDmg += val;
           else if (b.stat === 'libDmg') wpLibDmg += val;
@@ -307,14 +675,13 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     }
 
     const dpsFocus = mainDps.d.dmgFocus || [];
-    let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg;
+    let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg, mainSkillDmg = wpSkillDmg;
     mems.forEach(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
       if (!bt) return;
       const isMain = m.name === mainDps.name;
 
       if (!isMain) {
-        const teamRotTime = rotTime;
         // WuWa outro buffs are "DMG Amplification" — a SEPARATE multiplicative layer
         // from self DMG Bonus. Route element/skill/type Amp buffs to `amplify`.
         // 'ally' (Rover: Electro's Outro) means the same thing as 'next' — the incoming
@@ -322,7 +689,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         // or it silently never applies to anyone.
         (bt.outroBuffs || []).forEach(b => {
           if (b.target === 'next' || b.target === 'enemy' || b.target === 'ally') {
-            const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
+            const uptime = overlapUptime(outroStart(m.name), b.duration || 14);
             const val = b.value * uptime;
             if (b.stat === 'atkPct') {
               if (mainDps.scaling === 'ATK') atkPct += val;
@@ -355,20 +722,19 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       // nextAtk only from a non-main member swapping the main DPS in via their Outro.
       const p5v = m.echoSet?.p5val;
       if (p5v?.teamAtk) {
-        const uptime = Math.min(1, 20 / rotTime);
+        const uptime = overlapUptime(blockStart(m.name), 20);
         const val = p5v.teamAtk * uptime;
         atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
       }
       if (!isMain && p5v?.nextAtk) {
-        const uptime = Math.min(1, 14 / rotTime);
+        const uptime = overlapUptime(outroStart(m.name), 14);
         const val = p5v.nextAtk * uptime;
         atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
       }
 
       (bt.libBuffs || []).forEach(b => {
         if (b.target === 'team' || (!isMain && b.target === 'next')) {
-          const teamRotTime = rotTime;
-          const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
+          const uptime = overlapUptime(blockStart(m.name), b.duration || 25);
           const val = b.value * uptime;
           if (b.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
           else if (b.stat === 'allDmg') elemDmg += val;
@@ -417,10 +783,32 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
 
     // DMG Bonus layer: weapon + echo self-bonuses (NOT outro amplify)
     basicDmg += echoBasicDmg; heavyDmg += echoHeavyDmg; libDmg += echoLibDmg;
-    skillDmg += echoSkillDmg;
+    mainSkillDmg += echoSkillDmg;
+
+    // Apply resonance chain bonuses (using shared utility) — moved ahead of the type-routing step
+    // below (was previously applied AFTER it): basicDmg/heavyDmg/libDmg/echoDmg/skillDmg contributions
+    // from a character's own Resonance Chain (e.g. Qingxiao's S2 "+40% Heavy ATK DMG", S5 "+100% Skill
+    // DMG") were being added to these variables only after routeTypeBonuses had already consumed them
+    // into the final dmgBonus figure — calcDmgBonus() never reads basicDmg/heavyDmg/libDmg/echoDmg
+    // again afterward, so those contributions were silently discarded for every character whose chain
+    // grants one of these 5 stat types (100 such entries across the roster). Moving this block ahead
+    // means it now correctly feeds the same pre-routing pools everything else here uses.
+    let seqTotalMultBonus = 0;
+    const seqStats = { atkPct: 0, cr: 0, cd: 0, elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
+    mems.forEach(m => {
+      const isMain = m.name === mainDps.name;
+      const bonus = applyResonanceChain(seqStats, m.name, m.seqLevel, isMain);
+      if (isMain) seqTotalMultBonus += bonus;
+    });
+    atkPct += seqStats.atkPct; cr += seqStats.cr; cd += seqStats.cd;
+    elemDmg += seqStats.elemDmg; mainSkillDmg += seqStats.skillDmg;
+    basicDmg += seqStats.basicDmg; heavyDmg += seqStats.heavyDmg;
+    libDmg += seqStats.libDmg; echoDmg += seqStats.echoDmg;
+    deepen += seqStats.deepen; defShred += seqStats.defShred;
+    resShred += seqStats.resShred; defIgnore += seqStats.defIgnore;
 
     // Route type-specific DMG Bonus into skillDmg based on character's damage focus
-    { const typeStats = { skillDmg: 0, basicDmg, heavyDmg, libDmg, echoDmg, coordDmg };
+    { const typeStats = { skillDmg: mainSkillDmg, basicDmg, heavyDmg, libDmg, echoDmg, coordDmg };
       routeTypeBonuses(typeStats, dpsFocus);
       skillDmg += typeStats.skillDmg; }
 
@@ -440,15 +828,20 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         if (e.elem && e.elem !== mainDpsEl) return;
         if (e.stat === 'atkPct') atkPct += mainDps.scaling === 'ATK' ? e.value : e.value * 0.25;
         else if (e.stat === 'elemDmg') elemDmg += e.value;
-        else if (e.stat === 'libDmg') libDmg += e.value;
+        // Was `libDmg += e.value` — but this forEach runs after the type-routing step above has
+        // already spent `libDmg` into the final `skillDmg` figure; a further addition to `libDmg`
+        // here was silently discarded (calcDmgBonus never reads it again), same dead-write bug as the
+        // resonance chain fix above, just for TEAM_SET_BUFFS' one 'Flaming Clawprint' libDmg entry.
+        // Added directly to the already-routed `skillDmg`, gated by the same Liberation-focus check
+        // routeTypeBonuses would have applied.
+        else if (e.stat === 'libDmg' && dpsFocus.includes('Liberation')) skillDmg += e.value;
       });
       // 3pc set team contribution from sub-DPS (wearer benefits, no direct team buff)
       // 2pc bonus from hybrid secondary set applied to wearer only (handled in sub-DPS calc)
       const bt = CHAR_BUFF_TABLE[m.name];
       (bt?.weaponBuffs || []).forEach(wb => {
         if (wb.target !== 'team') return;
-        const teamRotTime = rotTime;
-        const uptime = Math.min(1, (wb.duration || 10) / teamRotTime);
+        const uptime = overlapUptime(blockStart(m.name), wb.duration || 10);
         const val = wb.value * uptime;
         if (wb.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
         else if (wb.stat === 'critRate') cr += val;
@@ -459,8 +852,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         const tvRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
         const tvRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[tvRefLevel - 1] || 1 : 1;
         const wt = m.weapon.tv;
-        const teamRotTime = rotTime;
-        const uptime = Math.min(1, (wt.duration || 15) / teamRotTime);
+        const uptime = overlapUptime(blockStart(m.name), wt.duration || 15);
         if (wt.atkPct) atkPct += wt.atkPct * tvRefScale * uptime;
         if (wt.elemDmg) elemDmg += wt.elemDmg * tvRefScale * uptime;
         if (wt.critRate) cr += wt.critRate * tvRefScale * uptime;
@@ -471,7 +863,10 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         const esb = ECHO_SKILL_BUFFS[m.mainEchoName];
         if (esb) {
           const target = esb.target || 'self';
-          const esbUptime = esb.passive ? 1 : Math.min(1, (esb.duration || 15) / rotTime);
+          // 'next' is an outro-triggered handoff (starts when the owner swaps out); 'team' is active
+          // from the owner's own on-field start — same distinction the rotationTimeline closure above
+          // already makes for these two target types, now applied to the real uptime too.
+          const esbUptime = esb.passive ? 1 : overlapUptime(target === 'next' ? outroStart(m.name) : blockStart(m.name), esb.duration || 15);
           if ((target === 'team' || target === 'next') && (!esb.condition || m.name.includes(esb.condition))) {
             esb.buffs.forEach(b => {
               const val = b.value * esbUptime;
@@ -488,21 +883,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         }
       }
     });
-
-    // Apply resonance chain bonuses (using shared utility)
-    let seqTotalMultBonus = 0;
-    const seqStats = { atkPct: 0, cr: 0, cd: 0, elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
-    mems.forEach(m => {
-      const isMain = m.name === mainDps.name;
-      const bonus = applyResonanceChain(seqStats, m.name, m.seqLevel, isMain);
-      if (isMain) seqTotalMultBonus += bonus;
-    });
-    atkPct += seqStats.atkPct; cr += seqStats.cr; cd += seqStats.cd;
-    elemDmg += seqStats.elemDmg; skillDmg += seqStats.skillDmg;
-    basicDmg += seqStats.basicDmg; heavyDmg += seqStats.heavyDmg;
-    libDmg += seqStats.libDmg; echoDmg += seqStats.echoDmg;
-    deepen += seqStats.deepen; defShred += seqStats.defShred;
-    resShred += seqStats.resShred; defIgnore += seqStats.defIgnore;
 
     const effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
     const avgCrit = calcAvgCrit(cr, cd);
@@ -595,7 +975,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0, sAmplify = 0;
         let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sCoordDmg = 0, sDefIgnore = 0;
         let sDefShred = 0, sResShred = 0;
-        const teamRotTime = rotTime;
+        const sSeg = rotSegByName[m.name] || null;
         // An unbuilt sub-DPS (no echoes equipped) gets no fabricated "recommended build" stats here —
         // a real player with empty echo slots has zero bonus stats, same as an unequipped Main DPS
         // already correctly shows. A previous version injected a hardcoded preset stat block (e.g.
@@ -619,7 +999,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
               // (the last support before DPS) does NOT reach the off-field sub-DPS who already left.
               // Approximate: off-field chars get 60% effective value from outro buffs (snapshot discount).
               const snapshotFactor = isOffField ? 0.6 : 1.0;
-              const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
+              const uptime = overlapUptimeForSeg(sSeg, outroStart(other.name), b.duration || 14);
               const val = b.value * uptime * snapshotFactor;
               if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
               else if (b.stat === 'allDmg' || b.stat === 'elemDmg') sAmplify += val;
@@ -638,18 +1018,18 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           // Sonata set p5 team/next ATK% buffs (see the same fix on the main-tier computation above).
           const oP5v = other.echoSet?.p5val;
           if (oP5v?.teamAtk) {
-            const uptime = Math.min(1, 20 / teamRotTime);
+            const uptime = overlapUptimeForSeg(sSeg, blockStart(other.name), 20);
             const val = oP5v.teamAtk * uptime * (isOffField ? 0.6 : 1.0);
             sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
           }
           if (oP5v?.nextAtk) {
-            const uptime = Math.min(1, 14 / teamRotTime);
+            const uptime = overlapUptimeForSeg(sSeg, outroStart(other.name), 14);
             const val = oP5v.nextAtk * uptime * (isOffField ? 0.6 : 1.0);
             sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
           }
           (obt.libBuffs || []).forEach(b => {
             if (b.target === 'team' || b.target === 'next') {
-              const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
+              const uptime = overlapUptimeForSeg(sSeg, blockStart(other.name), b.duration || 25);
               const val = b.value * uptime;
               if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
               else if (b.stat === 'allDmg') sElem += val;
@@ -706,7 +1086,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           sBasicDmg += (swp.basicDmg || 0); sHeavyDmg += (swp.heavyDmg || 0);
           sLibDmg += (swp.libDmg || 0); sEchoDmg += (swp.echoDmg || 0);
           sCoordDmg += (swp.coordDmg || 0);
-          sDefIgnore += (swp.defIgnore || 0); sResShred += (swp.resShred || 0);
+          sDefIgnore += gateWeaponDefIgnore(m.weapName, swp.defIgnore || 0); sResShred += (swp.resShred || 0);
         }
         // Apply sub-DPS echo set + echo stats (using shared utility)
         {
@@ -728,8 +1108,11 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         if (m.weapSubstat === sStatKey) sAtkPct += parseFloat(m.weapSubVal) || 0;
         const sEffAtk = mBase * (1 + sAtkPct / 100);
         const sAvgCrit = 1 + (Math.min(sCr, 100) / 100) * (sCd / 100 - 1);
-        let sTypeDmg = sSkillDmg;
         const sFocus = m.d.dmgFocus || [];
+        // Same dmgFocus gate as the main DPS fix above (routeTypeBonuses) — a sub-DPS without
+        // 'Skill' in their own focus shouldn't get full credit for a literal Resonance Skill DMG%
+        // contribution (weapon passive, echo set) as if it always applies to their damage.
+        let sTypeDmg = sFocus.includes('Skill') ? sSkillDmg : 0;
         if (sFocus.includes('Basic ATK')) sTypeDmg += sBasicDmg;
         if (sFocus.includes('Heavy ATK')) sTypeDmg += sHeavyDmg;
         if (sFocus.includes('Liberation')) sTypeDmg += sLibDmg;
@@ -932,243 +1315,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     }
     const dotDps = Math.round(dotDmgPerRotation / rotTime);
 
-    const rotationTimeline = (() => {
-      const buffs = [];
-      // ── Smart rotation ordering based on WuWa swap mechanics ──
-      // Rule 1: Main DPS goes LAST (receives all buffs in DPS window)
-      // Rule 2: Characters with team-wide outro buffs go FIRST (persist through swaps)
-      // Rule 3: Characters with next-only outro buffs go immediately BEFORE the DPS
-      //         (next-only buffs vanish when recipient swaps out, so only the last one reaches DPS)
-      // Rule 4: If multiple next-only buffers, the one with higher total value goes last (closer to DPS)
-      const dpsChar = mems.find(m => m.name === mainDps.name);
-      const supports = mems.filter(m => m.name !== mainDps.name);
-
-      // Classify supports by outro buff type
-      const hasTeamOutro = (m) => {
-        const bt = CHAR_BUFF_TABLE[m.name];
-        if (!bt) return false;
-        // Team-wide outro buffs persist through swaps (Verina, Shorekeeper, Baizhi, Mornye)
-        return (bt.outroBuffs || []).some(b => b.target === 'team');
-      };
-      const nextOutroValue = (m) => {
-        const bt = CHAR_BUFF_TABLE[m.name];
-        if (!bt) return 0;
-        return (bt.outroBuffs || []).filter(b => b.target === 'next' || b.target === 'enemy' || b.target === 'ally').reduce((s, b) => s + b.value, 0);
-      };
-
-      // Sort: team-wide outro first, then by next-outro value ascending (strongest last = closest to DPS)
-      supports.sort((a, b) => {
-        const aTeam = hasTeamOutro(a) ? 0 : 1;
-        const bTeam = hasTeamOutro(b) ? 0 : 1;
-        if (aTeam !== bTeam) return aTeam - bTeam; // team-wide outro goes first
-        return nextOutroValue(a) - nextOutroValue(b); // stronger next-outro goes last (closer to DPS)
-      });
-      const ordered = dpsChar ? [...supports, dpsChar] : [...mems];
-      // Calculate raw on-field times, then scale proportionally if total exceeds rotTime
-      const raw = ordered.map(m => ({
-        m, onField: m.d.onField ?? (m.name === mainDps.name ? 15 : 5),
-      }));
-      const totalRaw = raw.reduce((s, r) => s + r.onField, 0);
-      const scale = totalRaw > rotTime ? rotTime / totalRaw : 1;
-
-      const timeline = [];
-      let t = 0;
-      raw.forEach(({ m, onField: rawField }) => {
-        const isMain = m.name === mainDps.name;
-        const onField = Math.round(rawField * scale * 10) / 10; // scale + round to 0.1s
-        timeline.push({ name: m.name, element: m.d.element, role: m.d.role, start: t, duration: onField });
-        const bt = CHAR_BUFF_TABLE[m.name];
-        if (bt) {
-          (bt.outroBuffs || []).forEach(b => {
-            if (b.target === 'next' || b.target === 'enemy' || b.target === 'ally') {
-              const dur = b.duration || 14;
-              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t + onField, duration: dur });
-            }
-          });
-          (bt.libBuffs || []).forEach(b => {
-            if (b.target === 'team') {
-              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25 });
-            }
-          });
-          // CHAR_BUFF_TABLE uses duration: 99 or 999 as sentinels for "conditional passive, no
-          // natural decay" (e.g. a Crit DMG bonus active in a stance, or on a periodic proc) — never
-          // a literal 99/999-second timer. The real durations used anywhere in the table top out at
-          // 30s, so >=90 is an unambiguous sentinel check. Rendered literally these blew the whole
-          // chart's time scale out to ~100-1000s, squashing every real segment/buff into an
-          // unreadable sliver. Since these are self-target and only matter while the character is
-          // actually dealing damage, the correct display window is their own on-field time, same as
-          // the default for an unspecified duration.
-          (bt.selfBuffs || []).forEach(b => {
-            const dur = (!b.duration || b.duration >= 90) ? onField : b.duration;
-            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
-          });
-          (bt.weaponBuffs || []).forEach(b => {
-            const dur = (!b.duration || b.duration >= 90) ? onField : b.duration;
-            buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: dur });
-          });
-        }
-
-        // ── Hardcoded team-wide echo-set bonuses (TEAM_SET_BUFFS) — only counted in the DPS math
-        // from non-main members' worn sets, so only render them from those same members here. ──
-        if (!isMain) {
-          (TEAM_SET_BUFFS[m.echoSetName] || []).forEach(e => {
-            if (e.elem && e.elem !== (mainDps.d.element || '').toLowerCase()) return;
-            buffs.push({ source: m.echoSetName, owner: m.name, stat: e.stat, value: e.value, start: 0, duration: rotTime });
-          });
-        }
-
-        // ── Weapon "team value" (tv) passive — team-wide buff added straight to the stat
-        // totals in the DPS math; render it the same way here so it isn't invisible. ──
-        if (!isMain && m.weapon?.tv) {
-          const tvRefLevel = (teamEquipment[teamIdx + ':' + m.name])?.refinement || 1;
-          const tvRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[tvRefLevel - 1] || 1 : 1;
-          const wt = m.weapon.tv;
-          const tvDur = wt.duration || 15;
-          Object.entries(wt).forEach(([stat, val]) => {
-            if (stat === 'duration' || typeof val !== 'number') return;
-            buffs.push({ source: m.weapName, owner: m.name, stat, value: Math.round(val * tvRefScale * 10) / 10, start: t, duration: tvDur });
-          });
-        }
-
-        // ── Echo set p5 timed buffs ──
-        if (m.echoSet) {
-          const setName = m.echoSetName;
-          const p5 = m.echoSet.p5 || '';
-          const p5v = m.echoSet.p5val || {};
-          // Outro-triggered echo set buffs (fire when character swaps out)
-          if (p5.includes('Outro')) {
-            Object.entries(p5v).forEach(([stat, val]) => {
-              if (stat === 'outroDmg') return; // raw damage, not a buff
-              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t + onField, duration: 14 });
-            });
-          }
-          // Intro-triggered echo set buffs (fire when character swaps in)
-          else if (p5.includes('Intro')) {
-            Object.entries(p5v).forEach(([stat, val]) => {
-              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField });
-            });
-          }
-          // Liberation-triggered echo set buffs
-          else if (p5.includes('Liberation') || p5.includes('Lib')) {
-            Object.entries(p5v).forEach(([stat, val]) => {
-              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: 35 });
-            });
-          }
-          // Heal-triggered team buffs
-          else if (p5.includes('Heal') && p5v.teamAtk) {
-            buffs.push({ source: `${setName}`, owner: m.name, stat: 'atkPct', value: p5v.teamAtk, start: t, duration: 20 });
-          }
-          // On-field stacking buffs (active during field time only)
-          else if (p5.includes('max x') || p5.includes('stack')) {
-            Object.entries(p5v).forEach(([stat, val]) => {
-              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField });
-            });
-          }
-        }
-
-        // ── Weapon passive timed buffs ──
-        if (m.weapon?.pv) {
-          const wpn = m.weapon;
-          const passive = wpn.passive || '';
-          // Weapons with on-hit/on-skill stacking buffs — active during field time
-          if (passive.includes('stack') || passive.includes('grant') || passive.includes('use')) {
-            Object.entries(wpn.pv).forEach(([stat, val]) => {
-              buffs.push({ source: m.weapName, owner: m.name, stat, value: val, start: t, duration: onField });
-            });
-          }
-        }
-
-        // ── 4-cost echo active skill buffs ──
-        // Gated to mirror exactly what the DPS math counts (see the two ECHO_SKILL_BUFFS
-        // consumption sites above): a 'self' buff is only ever added to the stat totals for
-        // the main DPS's own echo; 'team'/'next' buffs are only added from non-main members.
-        // Rendering anything outside that would show a bar the DPS number never actually used.
-        const esbCountedForMath = m.mainEchoName && (() => {
-          const t = ECHO_SKILL_BUFFS[m.mainEchoName]?.target || 'self';
-          return isMain ? t === 'self' : (t === 'team' || t === 'next');
-        })();
-        if (m.mainEchoName && esbCountedForMath) {
-          const esb = ECHO_SKILL_BUFFS[m.mainEchoName];
-          if (esb) {
-            const echoLabel = m.mainEchoName.length > 18 ? m.mainEchoName.split(/[:\s-]+/).slice(0, 2).join(' ') : m.mainEchoName;
-            const target = esb.target || 'self';
-            if (target === 'next') {
-              // Outro-triggered echo buff → fires when character swaps out, applies to next
-              esb.buffs.forEach(b => {
-                if (esb.condition && !m.name.includes(esb.condition)) return;
-                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t + onField, duration: esb.duration || 15, type: 'echo' });
-              });
-            } else if (target === 'team') {
-              // Team-wide buff → active during field time, persists for duration
-              esb.buffs.forEach(b => {
-                if (esb.condition && !m.name.includes(esb.condition)) return;
-                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: esb.duration || 15, type: 'echo' });
-              });
-            } else if (esb.passive) {
-              // Passive main-slot buff → always active during field time
-              esb.buffs.forEach(b => {
-                if (esb.condition && !m.name.includes(esb.condition)) return;
-                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: onField, type: 'echo' });
-              });
-            } else {
-              // Standard active skill buff → used during field time
-              esb.buffs.forEach(b => {
-                if (esb.condition && !m.name.includes(esb.condition)) return;
-                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: Math.min(esb.duration || 15, onField + 5), type: 'echo' });
-              });
-            }
-          }
-        }
-
-        t += onField;
-      });
-
-      // ── Rotation blocks — Prydwen-style: one self-contained block per character (what THEY do
-      // on field, independent of the rest of the team), plus what it hands off to / inherits from
-      // its neighbors in the sequence, so the whole team rotation reads as a chain of blocks rather
-      // than one flat, undifferentiated buff dump. One block per on-field window, in the order
-      // actually computed above. ──
-      const fmtBuff = (b) => `+${b.value}% ${STAT_LABELS_FULL[b.stat] || b.stat}${b.duration ? ` (${b.duration}s)` : ''}`;
-      const steps = timeline.map((seg, i) => {
-        const isDps = seg.name === mainDps.name;
-        const reason = isDps
-          ? 'Main DPS — comes on-field last to receive every buff stacked up before it'
-          : hasTeamOutro(mems.find(m => m.name === seg.name))
-            ? 'Team-wide buff persists through swaps — goes first so it covers the whole rotation'
-            : nextOutroValue(mems.find(m => m.name === seg.name)) > 0
-              ? 'Buff only reaches whoever swaps in next — placed right before the DPS window'
-              : 'Sub-DPS / utility window';
-        const own = buffs.filter(b => (b.owner || b.source) === seg.name);
-        // Self: fires and is fully spent during this character's own on-field window (Liberation,
-        // selfBuffs, weapon/echo passives while they're the one attacking).
-        const selfActive = [...new Set(
-          own.filter(b => b.start < seg.start + seg.duration - 0.05).map(fmtBuff)
-        )];
-        // Hands off: starts at/after they leave the field — this is the block's outbound link to
-        // whichever block comes next (outro buffs, echo outro procs).
-        const handsOff = [...new Set(
-          own.filter(b => b.start >= seg.start + seg.duration - 0.05).map(fmtBuff)
-        )];
-        // Inherits: buffs from an earlier block still active when this one starts — the block's
-        // inbound link, i.e. how it adapts to whatever the team set up before it.
-        const inherits = [...new Set(
-          buffs.filter(b => (b.owner || b.source) !== seg.name && b.start <= seg.start + 0.05 && b.start + b.duration > seg.start + 0.05)
-            .map(fmtBuff)
-        )];
-        // Verified skill-by-skill sequence from Prydwen.gg's "Standard Rotation" guides — real
-        // combat data, not derived from CHAR_BUFF_TABLE like the rest of this block. CHARACTER_ROTATIONS
-        // (type/skill/note per step, 56 of 58 characters) is the richer, actively-maintained dataset —
-        // prefer it over the older CHARACTER_DATA[name].rotation plain-string array, which only exists
-        // for ~10 legacy entries and lacks per-step notes/type tagging. Both are normalized to the same
-        // {type, skill, note} shape so the rendering below doesn't need to know which source it got.
-        const richSequence = CHARACTER_ROTATIONS[seg.name];
-        const legacySequence = CHARACTER_DATA[seg.name]?.rotation;
-        const skillSequence = richSequence || (legacySequence ? legacySequence.map(s => ({ type: 'Step', skill: s })) : null);
-        return { order: i + 1, name: seg.name, role: seg.role, element: seg.element, duration: seg.duration, isDps, reason, selfActive, handsOff, inherits, skillSequence };
-      });
-
-      return { segments: timeline, buffs, totalTime: rotTime, steps };
-    })();
 
     // Add energy warnings
     mems.forEach(m => {

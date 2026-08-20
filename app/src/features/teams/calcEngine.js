@@ -309,6 +309,14 @@ export function countTeamElements(members) {
 // still got 30% of that buff bled into skillDmg unconditionally — every other type (Basic/Heavy) is
 // correctly zeroed out in that same "defined focus, not this type" case.
 export function routeTypeBonuses(stats, dpsFocus) {
+  // stats.skillDmg arrives holding whatever literal "Resonance Skill DMG%" contributions were
+  // accumulated before this call (weapon passive, echo set, self-buffs, resonance chain — the same
+  // "raw pool, gated on the way in" pattern basicDmg/heavyDmg/libDmg/echoDmg/coordDmg already use
+  // below). Unlike those siblings it was never actually gated by dpsFocus — a character with no
+  // 'Skill' in their focus (e.g. a pure Heavy ATK/Liberation DPS) still got full credit for a
+  // Resonance-Skill-specific bonus as if it applied to their whole rotation. Zero it here first, same
+  // "defined focus, not this type" rule as every other type.
+  if (!dpsFocus.includes('Skill')) stats.skillDmg = 0;
   if (dpsFocus.includes('Basic ATK')) stats.skillDmg += stats.basicDmg;
   else if (stats.basicDmg > 0 && !dpsFocus.length) stats.skillDmg += stats.basicDmg * 0.5;
   if (dpsFocus.includes('Heavy ATK')) stats.skillDmg += stats.heavyDmg;

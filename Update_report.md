@@ -429,3 +429,405 @@ Fleeting Dreams", "Depths of Illusive Realm"). Left on `PLACEHOLDER_IMAGE` — s
 available.
 
 Verified: `npm run build` clean, `npx vitest run` 612/612 passing.
+
+---
+
+## 2026-08-20 (session 5) — Qingxiao skill/R.Chain icons sourced; game8 confirmed still blocked
+
+**Picked up the dead end logged in session 4.** DV's browser tools (`mcp__DV__web_fetch` with
+`jsRender`) are working again this session. Used the same anti-bot technique the user described
+(real Chrome/Windows UA, `referer: google.com`, `waitUntil: load` + an 8s wait so any JS challenge
+has time to finish) to render `ww.nanoka.cc/character/1413`. The rendered page's raw HTML exposed
+the game's own CDN paths on `static.nanoka.cc` — `SkillIcon/SkillIconQingxiao/SP_IconQingxiao{B1,C1,
+D1,D2,QTE,T,Y}.webp` for the 7 skill-slot icons and `Image/IconDevice/T_IconDevice_QingxiaoM{1-6}_UI.webp`
+for the 6 R.Chain node icons. That CDN has no JS challenge of its own, so all 13 fetched cleanly with
+a plain `curl` once the exact filenames were known.
+
+**Letter convention** (B=Basic ATK, C=Resonance Skill, D=Forte Circuit [2 icons, matching Qingxiao's
+2 Forte-state moves], QTE=Resonance Liberation, T=Intro, Y=Outro) inferred from nanoka's site-wide
+skill-icon-atlas ordering, not from filenames alone — cross-checked against the kit text already in
+`SKILL_MULTIPLIERS['Qingxiao']` (confirmed correct visually: B1 is a sword-attack icon, QTE is the
+liberation-style dramatic burst icon, T/Y are the intro/outro insignia style icons used elsewhere).
+
+Uploaded all 13 to imgbb (`ibb.co/album/pnZXD3`) and wired them into `app/src/data/characters.js`:
+- `SKILL_ICONS['Qingxiao']` — 9 skill-name-substring keys covering all `SKILL_MULTIPLIERS['Qingxiao']`
+  move names, sharing icons across combo variants (e.g. Plunging Attack/Sword Glide reuse Basic ATK).
+- `CHAIN_NODE_ICONS['Qingxiao']` — s1-s6, in the game's own M1-M6 order (matches the existing
+  `CHAIN_NODE_NAMES['Qingxiao']` s1-s6 order already sourced from the same nanoka page).
+
+**Event placeholders ("remaining events")**: re-attempted game8.co (archives/453303 banner,
+archives/453473 event) with the same browser-signature technique — still returns `ERROR: The
+request could not be satisfied` (CloudFront/WAF block), both with `waitUntil: load` and a stealth
+retry. Fandom's MediaWiki search (re-checked) still has no pages for the 5 events left on
+`PLACEHOLDER_IMAGE` (`versionSpecialCampaign`, `giftsOfDriftingMist`, `resonanceSimRealm`,
+`theStringsRemember`, `ifDreamsStillReverberate`) or `CURRENT_BANNERS.eventBannerImage`. Left as-is
+— did not fabricate art. game8 access remains the open blocker for a future session to retry.
+
+Verified: `npm install` (deps weren't present this session), `npx vitest run` — 612/612 passing,
+`npm run build` (from `app/`) succeeds clean.
+
+---
+
+## 2026-08-20 (session 6) — Fixed event durations using wuwatracker.com's real timeline chronology
+
+**User correction**: the character-rotation pairing in `BANNER_HISTORY` is NOT "Qingxiao + Jingran"
+running together — it's "Qingxiao → Jingran" (and Denia → Hiyuki, Mornye standalone), i.e. each
+named banner runs its own 20-day slot and is followed by the next one when it ends. Checked
+`BANNER_HISTORY` (`v3.6-p1`: Qingxiao+Denia, Aug 20 → Sep 10; `v3.6-p2`: Jingran+Hiyuki+Mornye,
+Sep 10 → Sep 30) against `wuwatracker.com/fr/timeline` (rendered via DV's `web_fetch` with the
+user's documented bypass — Chrome UA, google.com referer, 8s wait — now working) and confirmed this
+sequencing was already correct: "Wind of Transcendence - Qingxiao Banner" (20d) is immediately
+followed in the same lane by "Where Santu Beckons - Jingran Banner" (20d), same pattern for the
+weapon banners and for Denia→Hiyuki; Mornye has no phase-1 predecessor (new lane starting Sep 10),
+matching `v3.6-p2.characters` exactly. No change needed there.
+
+**What the timeline did catch**: 4 of the still-guessed v3.6 event `currentEnd` dates in `EVENTS`
+were all set to the phase boundary (2026-09-10) as a fallback, but the timeline shows real, differing
+per-event durations counted from the Aug 20 phase-1 start:
+- `resonanceSimRealm`: 5d → **2026-08-25** (was guessed at the full 21-day phase span)
+- `secondComingOfSolaris`: 12d → **2026-09-01**
+- `theStringsRemember`: 20d → **2026-09-09** (1 day short of the phase boundary, not exactly on it)
+- `ifDreamsStillReverberate`: 26d → **2026-09-15** (runs 5 days *past* the phase-1/phase-2 boundary
+  — the one event that outlasts the boundary rather than ending early)
+
+`versionSpecialCampaign` and `giftsOfDriftingMist` timeline durations ("1mo") are consistent with the
+existing Sep 10 guess, left unchanged. `fogveilPagoda`'s exact duration wasn't legible in the scraped
+timeline text (absolutely-positioned bar, label extracted but its duration badge wasn't in DOM read
+order near it) — left unchanged rather than guess.
+
+Verified: `npx vitest run` — 612/612 passing.
+
+---
+
+## 2026-08-20 (session 7) — Detail Modal rotation: badge parity + fill the last 2-character gap
+
+**User observation**: the Team tab's Rotation Guide (`RotationGuideCard.jsx`) reads as more developed
+than the Collection detail modal's own "Standard Rotation" section — worth checking whether that's a
+real gap or just team-context info that can't exist per-character.
+
+**Findings**:
+1. The Team tab's richer bits (`reason`, `inheritsFromTeam`, `ownKit`, `handsOffToNext`) are computed
+   per-team-composition in `calcTeamStats.js` from the actual buff timeline of whichever characters are
+   slotted together — they're not static per-character data and genuinely can't exist in a solo detail
+   modal (there's no "team" to inherit from/hand off to outside Teams).
+2. What *could* carry over 1:1: the Team tab's skill-sequence chips use `stepStyle()` (from
+   `RotationTimeline.jsx`) — full spelled-out labels ("Resonance Skill", "Heavy Attack", etc.) instead
+   of the modal's old plain `step.type` text. Wired `CharacterDetailModal.jsx` to use the same
+   `stepStyle()` badge, so every character's solo rotation now reads with the identical vocabulary as
+   the Team tab's guide.
+3. **The real gap**: `CHARACTER_ROTATIONS` — the actual per-character step data both views read from —
+   was missing exactly 2 of 58 characters: **Qingxiao and Jingran** (confirmed by diffing every
+   `CHARACTER_DATA` key against `CHARACTER_ROTATIONS` keys). Their detail modals silently rendered no
+   rotation section at all (`localizedRotation` falsy → early return), while every other character had
+   one.
+
+**Fixed**: added `CHARACTER_ROTATIONS['Qingxiao']` — sourced from `prydwen.gg/wuthering-waves/
+characters/qingxiao`'s "Gameplay and teams" tab (now live, last updated 20/Aug/2026), fetched via
+DV's `web_fetch` with the user's documented bypass technique. Prydwen's own step list uses a generic
+"Heavy:" prefix for every held-Basic-Attack chain (including her mid-air ones); renamed each step to
+its real skill name/type from `SKILL_MULTIPLIERS['Qingxiao']` so it matches this table's existing
+convention, keeping Prydwen's exact step order.
+
+**Jingran — still not fixed, left out on purpose**: his own Prydwen page has no Kit/Review/Rotation
+content yet ("Jingran rotation information aren't available yet"), and `wutheringwaves.fandom.com/
+wiki/Jingran/Combat` returned nothing renderable either — consistent with him not being live until the
+v3.6-p2 banner (~Sep 10, per `BANNER_HISTORY`). No fabricated rotation added; `CHARACTER_ROTATIONS`
+is now 57 of 58, with Jingran the one legitimate remaining gap until his kit is actually published.
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 8) — Actually brought Team tab's rotation depth into the detail modal
+
+**User pushback (correctly)**: the previous session's fix was too narrow — it only changed badge
+styling and filled a data gap for one character, not the actual thing asked for (bring the Team tab's
+richer rotation explanation — reason/inherits/own-kit/hands-off — into the detail modal, for all
+characters). The user then pointed out the key insight: every character already gets exactly this
+"solo" version for free in the Team tab today, just by building a team with only that one character
+slotted — `calcTeamStats(slots, ...)`'s only hard requirement is `mems.length` non-zero, no minimum
+team size.
+
+**Implemented generically, not per-character**: `CharacterDetailModal.jsx` now calls the same
+`calcTeamStats` the Team tab uses, with a team of just the one character being viewed
+(`calcTeamStats([name, null, null], 0, null, {}, '', 90)` — empty `teamEquipment` falls back to
+`bestWeapon`/`bestEchoes`, the same "preview" defaults Team tab itself uses before you've equipped
+anything). This computes real `selfActive`/`handsOff` buff blocks — own-kit buffs and what a follow-up
+teammate would inherit from an Outro/skill — from the actual buff timeline, not hand-authored text, so
+it covers all 58 characters at once with zero per-character authoring.
+
+Two things deliberately left out of the solo view: `reason` (its copy assumes a team exists — "comes
+on-field last to receive every buff stacked up before it" reads wrong with no teammates) and
+`inherits` (always empty with 1 member, nothing to show). Kept the modal's own richer per-step
+rendering (skill icon, DMG% from `SKILL_MULTIPLIERS`, locale-aware notes via
+`getLocalizedCharacterRotations`) rather than swapping in Team tab's plainer chip-only version —
+overrode the computed timeline's `skillSequence` back to the localized rotation so French notes aren't
+lost (`calcTeamStats` itself sources from the raw English-only `CHARACTER_ROTATIONS`, a pre-existing
+gap in the Team tab too, not something this introduces).
+
+**Verified for all 58 characters**, not just spot-checked: wrote a throwaway script calling
+`calcTeamStats([name, null, null], ...)` for every `CHARACTER_DATA` key — 58/58 computed without
+error, all 58 produced non-empty `selfActive`/`handsOff` output (0 silently-empty solo rotations).
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 9) — Answered "can buff/debuff duration drive real interleaving?": partially yes
+
+**User's follow-up question after the rotation-interleaving audit**: can skill/buff/debuff *duration*
+data (already in the codebase) be used to construct rotation ordering, even without per-hit timing?
+
+**What it can't do**: per-hit cross-character interleaving (the toy example: `Hiyuki1 < Lucilla1-2-3 <
+Hiyuki3-4`) needs each *step's* cast/action duration, which doesn't exist anywhere in this data —
+`CHAR_BUFF_TABLE`/echo/weapon *buff* durations describe how long an *effect* lingers, not how long
+*performing* a step takes. Only 63 of 475 `CHARACTER_ROTATIONS` steps even carry a `duration` field
+(mostly Liberation/Outro, for buff purposes), so there's no timing skeleton to interleave against —
+building it would mean fabricating numbers no source publishes.
+
+**What it CAN do — and does now**: the whole-character-block *ordering* itself. The previous ordering
+was a fixed 2-key sort (team-wide-outro-first, strongest-next-outro-closest-to-DPS) that only looked
+at buff *target type*, never checked whether a buff's actual timed `duration` survives the real gap
+until the DPS's on-field window opens. Replaced it in `calcTeamStats.js`'s `rotationTimeline` closure
+with a brute-force search over every permutation of the (≤2) supports — cheap, since team size caps at
+3 — scoring each candidate by how much cross-character buff *value-time* is still active (per its real
+`duration` field, the same numbers the `inherits` badge already reads) when the DPS's segment starts.
+Ties keep the original heuristic order (permutation index 0), so nothing changes unless duration data
+actually favors a different sequence.
+
+**Verified safe**: this closure runs after `teamDps`/`grandTotal` are already finalized earlier in
+`calcTeamStats` — it only feeds the display-only Rotation Guide, never the real DPS number. Ran 60
+seeded-random 3-character teams through both the pre-change and post-change code: **0 `teamDps`
+differences** (proves zero risk to the actual calculator), **8/60 teams got a different, now
+duration-optimized swap order** (proves the search isn't a no-op). Also stress-tested 300 fully random
+team comps — 0 crashes, all finite DPS.
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 10) — Order/mechanic-gating audit found and fixed a real cross-character leak
+
+**User's follow-up**: many buffs/debuffs are gated by order-of-action or mechanic state (Forte gauge,
+stacks) — can the app compute that? Traced every read of the `condition` field in `calcEngine.js`/
+`calcTeamStats.js`: it's mechanically enforced in exactly 2 narrow cases (element-name match for
+`elemDmg` buffs, character-name-substring match for echo buffs). Everywhere else `condition` is
+free-text documentation of an assumption already pre-baked into the buff's flat `value`/`duration` by
+whoever sourced it (e.g. Qingxiao's "+49% Resonance Skill DMG, 30s, condition: up to 15 Mindlock
+stacks" — the 49%/30s are a pre-averaged estimate, not a live stack simulation). Building a real Forte-
+gauge/stack-count state machine would need a new machine-readable trigger schema and per-step gauge-
+gain numbers that don't exist in `CHARACTER_ROTATIONS` for most steps — genuine data-model work, not
+buildable from what's already sourced without fabricating numbers no site publishes.
+
+**But auditing that surfaced a real, fixable bug**, using data already in the file: `bt.selfBuffs`/
+`bt.weaponBuffs` already carry a `target` field ('self' vs 'team', same field `calcEngine.js` itself
+reads elsewhere) — but the display-only `rotationTimeline` closure in `calcTeamStats.js` wasn't reading
+it. It pushed every selfBuff/weaponBuff with the buff's own explicit `duration`, with no cap tied to
+the owner's actual on-field window. Wrote a throwaway audit script comparing every `selfBuffs`/
+`weaponBuffs` entry's duration against its owner's `onField` from `ROTATION_DATA` — found **9 real
+cases** where a `target: 'self'` buff's duration exceeds the owner's on-field time (e.g. Qingxiao's
+Mindlock DMG bonus: 30s duration vs. her own 17s on-field window; Lucilla's Resonance Chain 1 Crit
+Rate: 10s vs. 5s). Since block boundaries sit exactly at `t + onField`, any self-buff duration longer
+than that bled into whatever teammate's block started right after — showing up as a false "inherits"
+badge for a buff their own `target: 'self'` tag says can never reach them.
+
+**Fixed**: `selfBuffs`/`weaponBuffs` now clamp to `min(duration, onField)` when `target` is 'self' or
+unset (matching the same default `calcEngine.js` already uses), but pass through uncapped when
+explicitly `target: 'team'` (a real, if rare, case — e.g. Rover: Electro's Overshock ATK buff, meant to
+help teammates). This also organically fixes the duration-based ordering search from last session,
+which was scoring candidate orders using this same `buffs` array — it can no longer credit an
+impossible self-buff leak toward a "better" ordering.
+
+**Verified**: constructed 2 targeted cases (Qingxiao in Denia/Mornye/Qingxiao; Lucilla in Lucilla/
+Zhezhi/Camellya) and confirmed the previously-leaking self-buffs no longer appear in the following
+teammate's `inherits` list. Ran the same 100-seeded-team before/after `teamDps` comparison as last
+session: **0 differences** (this is a display-only closure, doesn't touch the real DPS math which
+reads `bt.selfBuffs` from a separate, untouched code path).
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 11) — Implemented overlap-based uptime for the main DPS calc
+
+**User's directive**: "Accuracy and improvement. What can be factually computed and reliable" — i.e.
+build the rotTime→onField reproration for real, but only what's provably grounded, not guessed.
+
+**Built a diagnostic first, per the scoping promise from last session**: compared `min(1, duration/
+rotTime)` (old) against the geometrically correct `overlap(buffWindow, dpsWindow)/dpsWindow` (new)
+across 200 random 3-character teams, using the real ordered segment positions `rotationTimeline`
+already computes and displays. Result: **76.5% of cross-character buffs shift by more than 2 uptime
+points, 43.5% collapse to exactly zero** — buffs the old formula credited as partially helping the
+DPS that, by the app's own already-computed and already-displayed rotation ordering, never actually
+overlap the DPS's on-field window at all. This isn't an approximation-quality judgment call — both
+windows are already known, real, computed facts; the old formula just wasn't using them.
+
+**Implemented**: relocated the `rotationTimeline` computation (order search + real segment positions)
+from the end of `calcTeamStats` to right after `rotTime` is defined — a pure move, verified zero DPS
+impact on its own (100-team before/after: 0 diffs). Added an `overlapUptime(start, duration)` helper
+reading `rotationTimeline.segments`, and replaced the main DPS calc's cross-character uptime sites
+(outro 'next'/'ally'/'enemy' buffs, Sonata p5 teamAtk/nextAtk, libBuffs 'team'/'next', weaponBuffs
+'team', weapon `tv` passive, echo-skill 'team'/'next' buffs — 7 sites) to use it, with buff start times
+matching the exact convention `rotationTimeline` itself already uses (Outro-triggered → owner's swap-
+out time; Liberation/passive/team-target → owner's block start).
+
+**Scope boundary, stated plainly**: this fixes the sites feeding the **main DPS's** own `teamDps`
+number. A parallel, separately-coded sub-DPS damage block (`calcTeamStats.js` — computes damage for
+non-main members too, via `sAtkPct`/`sElem`/etc.) has the *same* `duration/rotTime` pattern at 2 more
+sites and was NOT touched this session — same fix, same principle, just out of scope for today's pass;
+flagged here as the next piece of this same thread. Also left `mainEsb`'s self-targeted echo uptime
+(a different bug shape — self-buff scoped to `rotTime` instead of the owner's own on-field time, not
+validated with the same rigor this session) untouched.
+
+**Verified the real impact, not just direction**: 100-team before/after `teamDps` comparison — median
+**+2.8%**, mean **+4.1%**, range **-7.1% to +19.6%**. Bounded and directionally explicable (the
+ordering search already picks whichever order maximizes buff-reach, so a mean upward skew relative to
+the old blind rotTime-average is expected, not random noise) — not a blowup. Stress-tested 500 fully
+random teams: 0 crashes, 0 NaN/negative `teamDps`.
+
+Verified: `npx vitest run` — 612/612 passing (no test asserts a specific `teamDps` value — this file has
+zero existing test coverage of `calcTeamStats`'s numeric output, confirmed by grep; the before/after
+scripts above are the actual safety net here, not the test suite), `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 12) — Closed out the two deferred pieces from the overlap-uptime fix
+
+**User pushed back on leaving them deferred**: "Why don't you do those?" — fair, since both were the
+same already-validated fix shape, just applied to 2 more spots. Finished both.
+
+**1. `mainEsb` self-targeted echo uptime** (`calcTeamStats.js`, main DPS's own echo skill buff): was
+`min(1, duration/rotTime)` — diluting a self-only buff against the WHOLE rotation, even though it only
+ever matters while the DPS is on field. Now `min(1, duration/dpsSeg.duration)` — the DPS's own real
+on-field window from `rotationTimeline`. This one moves uptime UP relative to before (a 15s buff vs a
+17s on-field window is ~88%, not ~37% of a 40s full rotation) — the mirror case of the cross-character
+fix.
+
+**2. Sub-DPS damage tier**: found this is a fully parallel, separately-coded damage computation for
+every non-main team member (not just the headline DPS) — confirms the app does model more-than-one
+character's damage, contrary to how narrow last session's "why only DPS" framing suggested. It had the
+exact same `duration/rotTime` pattern at 4 sites (outro buffs, Sonata p5 teamAtk/nextAtk, lib buffs)
+computing what a sub-DPS receives from teammates. Generalized `overlapUptime` into
+`overlapUptimeForSeg(recipientSeg, start, duration)` and wired these 4 sites to the sub-DPS's own
+segment (`rotSegByName[m.name]` — off-field/Coordinated-ATK members get a real, if short, segment
+here too) instead of the DPS-only shorthand. Left the existing "snapshot factor" 0.6 discount for
+off-field Coordinated ATK characters untouched — that's a distinct, separately-reasoned approximation
+for proc-snapshot semantics, not the same bug.
+
+**Verified**: 500-team stress test — 0 crashes, 0 NaN/negative on both `teamDps` and every
+`memberDps` entry (checked per-member this time, not just the headline number). 100-team before/after:
+teamDps median **-3.8%**, mean **-6.1%**, one outlier at **-35%** (`Baizhi+Mortefi+Taoqi`). Traced the
+outlier: Baizhi (a pure healer) has no real "Main DPS" role in that comp, so `mainDps` fell back to
+Mortefi, and Baizhi's own huge pseudo-damage number (an existing, separate artifact of running every
+character — including healers — through the sub-DPS damage formula, which isn't really meant to score
+non-damage roles) got its received-buff uptime correctly shrunk to her real 3s on-field segment. Not a
+bug this fix introduced — it's this fix legitimately correcting a number that was already
+questionable for the reason flagged 2 sessions ago (no dedicated healer/support scoring model exists).
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 13) — Audited weapons/echoes for the same bug class; fixed one, found a bigger one
+
+**User's question**: why has everything focused on DPS/sub-DPS — what about weapons and echoes?
+
+**Real finding**: `CHARACTER_DATA[name].bestWeapon`/`.weaponAlts` are static, hand-authored strings
+sourced from external guides — never validated against this app's own (now materially more accurate)
+calculator. Built a diagnostic: for every 5★ Main DPS with `weaponAlts` data, ran their default team
+through `calcTeamStats` once per candidate weapon (declared best + every listed alt) and checked
+whether the app's own engine agrees the declared "best" actually scores highest. **11 of 24 characters
+disagreed.**
+
+**Root-caused one concretely, not just flagged it**: Xiangli Yao's own signature (Verity's Handle) lost
+to Iuno's signature (Moongazer's Sigil) in the app's engine. Moongazer's Sigil's passive text: "Gaining
+a Shield → Liberation DMG ignores 7.2% DEF (**stacks x5**, ...)" — `pv.defIgnore: 36` is that fully-
+stacked maximum, applied completely unconditionally by `applyWeaponPv`/the raw `.pv` read-sites, with
+zero check for whether the wielder can actually gain a Shield at all. Xiangli Yao's own default team
+(`Xiangli Yao + Lynae + Mornye`) has no Shield source anywhere — same bug class as the self-buff leak
+and outro-uptime dilution from earlier sessions (a real, checkable condition in the source text, never
+read by the code), just in the weapon layer instead of the character-buff layer. The same pattern
+exists on exactly one other weapon (Thunderflare Dominion / Augusta's signature, identical "Gaining a
+Shield" defIgnore:36).
+
+**Fixed**: added a small `gateWeaponDefIgnore()` check in `calcTeamStats.js`, applied at both DEF
+Ignore accumulation sites (main DPS + sub-DPS tiers) — zeroes these 2 weapons' `defIgnore` unless the
+team actually contains a member whose kit tags include `'Shield'` (reusing the existing `buffs` tag
+array already in `CHARACTER_DATA`, no new schema). Verified: Xiangli Yao's own signature now correctly
+wins (7617 vs 6934 for Moongazer's Sigil, down from Moongazer's Sigil incorrectly winning 8222 vs
+7617). Re-ran the full audit: disagreements dropped **11 → 10**. 500-team stress test: 0 crashes/
+invalid output.
+
+**Found something bigger, deliberately NOT touched this session**: of the remaining 10 disagreements,
+several (Jiyan, Calcharo, Augusta) lose specifically to weapons with a large `skillDmg` passive value
+(e.g. "Ages of Harvest": `skillDmg: 48`) despite none of these 3 characters having 'Skill' in their
+`dmgFocus`. Traced why: `routeTypeBonuses()` in `calcEngine.js` correctly gates `basicDmg`/`heavyDmg`/
+`libDmg`/`echoDmg`/`coordDmg` behind the character's actual `dmgFocus` before they count — but a
+weapon's raw `skillDmg` contribution is added directly to the `dmgBonus` formula with **no dmgFocus
+gate at all**, anywhere in `calcTeamStats.js`. This isn't a 2-weapon, easily-scoped fix like the
+shield-gating one — `skillDmg` feeds `dmgBonus = 1 + (elemDmg + skillDmg)/100`, a core formula used by
+every single team calculation in the app, and I don't yet know whether this ungated treatment is a
+genuine oversight or a deliberate simplification (e.g. a catch-all bucket for damage types that don't
+cleanly map to basic/heavy/lib/echo/coord). Fixing it blind risks a much larger, harder-to-verify
+regression than anything touched so far this session. Flagged here as a real, evidenced next step —
+not fixed, on purpose, pending its own diagnostic-first pass the way the DPS reproration got one.
+
+**Echoes**: spot-checked `ECHO_SKILL_BUFFS`' `condition` field usage (already confirmed correctly
+enforced, session 10) and searched `echoes.js` for the same "stacks x" pattern found in weapons — only
+5 hits, none obviously gated behind an unchecked external condition the way the 2 weapons were. Not a
+full audit; flagged as lower-priority than the `skillDmg` gating gap above.
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 14) — Fixed the skillDmg gating gap + a bigger bug it led to
+
+**User's directive**: correct the flagged `skillDmg` gating issue using the most factual/accurate data
+available. Investigated properly rather than patching blind.
+
+**Confirmed the root cause**: `routeTypeBonuses()` (`calcEngine.js`) correctly gates `basicDmg`/
+`heavyDmg`/`libDmg`/`echoDmg`/`coordDmg` behind the character's actual `dmgFocus` before they count
+toward `dmgBonus` — but `skillDmg` (literal "Resonance Skill DMG%" from weapon passives, echo sets,
+self-buffs) was added directly and unconditionally, with no focus gate at all, anywhere in
+`calcTeamStats.js`. Confirmed `'Skill'` is a real, actively-used `dmgFocus` tag (20+ characters), and
+found the team-suggestion scoring heuristic elsewhere in the same file *already* gates `skillDmg` by
+`dpsFocus.includes('Skill')` (`calcTeamStats.js:1265` pre-fix) — solid evidence this was a genuine
+oversight in the real damage math, not an intentional simplification.
+
+**Fixed**: added a `wpSkillDmg`/`mainSkillDmg` raw-pool accumulator (mirroring the existing pattern
+already used for the other 5 types) at every site that was writing directly into `skillDmg` — weapon
+`pv`, echo set bonuses, main DPS self-buffs, echo active-skill buffs — then added one gating line to
+`routeTypeBonuses()` itself (`if (!dpsFocus.includes('Skill')) stats.skillDmg = 0;`) so the fix applies
+consistently everywhere the shared function is called. Fixed the sub-DPS damage tier's own manually-
+inlined duplicate of the same logic the same way.
+
+**Found something much bigger while wiring this in**: the "Apply resonance chain bonuses" block was
+positioned *after* `routeTypeBonuses` had already run and "spent" `basicDmg`/`heavyDmg`/`libDmg`/
+`echoDmg`/`skillDmg` into the final `dmgBonus` figure — `calcDmgBonus()` never reads those 4 variables
+again after that point, so a chain bonus of one of these 5 types (e.g. Qingxiao's own S2 "+40% Heavy
+ATK DMG", S5 "+100% Skill DMG") was silently discarded, not applied at all. Counted **100 such entries
+across the roster's `RESONANCE_CHAIN_DATA`** — this wasn't a 1-2-character edge case, it affected
+sequence-level scaling broadly. Fixed by moving the resonance-chain block to run *before* the routing
+step, feeding the same pre-routing pools as everything else. Found and fixed one more small instance
+of the identical dead-write pattern: `TEAM_SET_BUFFS`' one `libDmg`-granting entry (Flaming Clawprint)
+was also positioned after routing; gated and re-added directly instead.
+
+**Verified concretely, not just "tests pass"**: ran Qingxiao (S2=`heavyDmg:40`, her actual focus; S5=
+`skillDmg:100`, NOT her focus) through S0→S6 before/after. Before: S1→S2 showed **zero** DPS change
+(the dead-code bug — her 40% Heavy ATK DMG chain bonus literally did nothing), S5 showed an inflated
+jump from over-crediting `skillDmg` she doesn't focus. After: S2 now correctly *increases* DPS (chain
+investment finally matters), S5 correctly *decreases* from the old inflated number (no longer given
+credit for a damage type she doesn't use). Both directions individually validated, not just a net
+number. Re-ran the weapon-ranking audit from last session: disagreements dropped **10 → 8** (Calcharo
+and Hiyuki now correctly match their declared best weapon — both were previously losing specifically
+to `skillDmg`-heavy weapons they don't benefit from). 100-team before/after: median 0%, mean -0.26%,
+bounded range (-4.1% to +4.4%) — most random S0 teams unaffected (as expected — the sequence-level fix
+only shows up with sequence invested), small and explicable where it does move. 500-team stress test:
+0 crashes, 0 invalid output on `teamDps` and every `memberDps` entry.
+
+**Remaining 8 weapon disagreements**: not yet root-caused with the same rigor as the shield-gating and
+skillDmg fixes — could be genuine other bugs, stale static `bestWeapon` data, or legitimate real-world
+factors this app's simplified model doesn't capture. Left alone rather than guess.
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.

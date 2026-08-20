@@ -11,6 +11,8 @@ import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
+import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
+import { calcTeamStats } from '../../features/teams/calcTeamStats.js';
 import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getSetIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
@@ -41,6 +43,27 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
   const weaponData = bestWeapon ? (getLocalizedWeaponData(getLocale())[bestWeapon] || WEAPON_DATA[bestWeapon]) : null;
   const localizedBuffNote = getLocalizedCharBuffTable(getLocale())[name]?.note || CHAR_BUFF_TABLE[name]?.note;
   const localizedRotation = getLocalizedCharacterRotations(getLocale())[name] || CHARACTER_ROTATIONS[name];
+  // Solo Rotation Guide — reuses the Team tab's own calcTeamStats/RotationGuideCard, fed a team of
+  // just this one character (teamEquipment: {} → falls back to bestWeapon/bestEchoes, same "preview"
+  // defaults the Team tab itself uses before you've equipped anything). This is what actually made the
+  // Team tab's rotation read as "more developed" than this modal's own plain step list: `reason`/
+  // `inheritsFromTeam`/`ownKit`/`handsOffToNext` are computed from the buff timeline, not hand-authored
+  // per character — so building it here generically covers all 58 characters at once, no per-character
+  // authoring needed, same as Team tab gets it "for free" from calcTeamStats. One inbound override:
+  // calcTeamStats sources skillSequence from the raw (English-only) CHARACTER_ROTATIONS, but this
+  // modal already has locale-aware notes via getLocalizedCharacterRotations — swapped back in below so
+  // French users don't lose notes they already had.
+  const soloRotationTimeline = React.useMemo(() => {
+    try {
+      const stats = calcTeamStats([name, null, null], 0, null, {}, '', 90);
+      const timeline = stats?.rotationTimeline;
+      if (!timeline?.steps?.length) return null;
+      if (localizedRotation) timeline.steps[0].skillSequence = localizedRotation;
+      return timeline;
+    } catch {
+      return null;
+    }
+  }, [name, localizedRotation]);
   const localizedChainNodeNames = getLocalizedChainNodeNames(getLocale());
   const weaponImg = bestWeapon ? DEFAULT_COLLECTION_IMAGES[bestWeapon] : null;
 
@@ -450,11 +473,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </h3>
               <div className="space-y-0.5">
                 {localizedRotation.map((step, i) => {
-                  const typeColors = {
-                    'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
-                    'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
-                    'Forte': 'text-purple-300', 'Intro': 'text-green-300', 'Outro': 'text-pink-300',
-                  };
+                  // Same full-word, color-coded badge as the Team tab's Rotation Guide (RotationGuideCard's
+                  // skillSequence chips) — spells out "Resonance Skill"/"Heavy Attack"/etc. instead of the
+                  // short raw step.type, so a step reads the same whether it's seen here (solo, per-character)
+                  // or team-composed in Teams.
+                  const sty = stepStyle(step.type);
                   // Look up this step's DMG from SKILL_MULTIPLIERS — single source of truth, same [type, name] tags
                   // used above, so Team tab can resolve the same step against the same table later.
                   const row = (SKILL_MULTIPLIERS[name] || []).find(([t, n]) => t === step.type && n.includes(step.skill));
@@ -466,7 +489,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                       {stepIcon && <img src={stepIcon} alt="" className="w-4 h-4 rounded shrink-0 mt-0.5" onError={hideOnError} />}
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-baseline gap-x-1.5">
-                          <span className={`text-sm font-medium shrink-0 ${typeColors[step.type] || 'text-gray-400'}`}>{step.type}</span>
+                          <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border shrink-0 ${sty.cls}`}>{sty.label}</span>
                           <span className="text-sm text-white font-semibold break-words">{step.skill}</span>
                           {dmg && <span className={`text-sm font-semibold break-words ${colors.text}`}>{dmg}</span>}
                           {step.duration != null && (
@@ -479,6 +502,35 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   );
                 })}
               </div>
+              {/* Own Kit / Hands Off — same buff blocks the Team tab's Rotation Guide shows, computed
+                  by feeding this one character alone into calcTeamStats (see soloRotationTimeline
+                  above). `reason` and `inheritsFromTeam` are skipped here: with no teammates in a
+                  solo team, inherits is always empty and reason's copy ("comes on-field last to
+                  receive every buff stacked up before it") assumes a team that isn't there. */}
+              {(() => {
+                const solo = soloRotationTimeline?.steps?.[0];
+                if (!solo || (solo.selfActive.length === 0 && solo.handsOff.length === 0)) return null;
+                return (
+                  <div className="mt-2 space-y-2">
+                    {solo.selfActive.length > 0 && (
+                      <div>
+                        <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">{t('teams.rotationGuide.ownKit')}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {solo.selfActive.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-violet">{b}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {solo.handsOff.length > 0 && (
+                      <div>
+                        <div className="text-2xs text-emerald-400/70 uppercase tracking-wide mb-1">↑ {t('teams.rotationGuide.handsOffToNext')}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {solo.handsOff.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
