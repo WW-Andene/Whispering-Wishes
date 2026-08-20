@@ -5916,7 +5916,7 @@ const STANDARD_5STAR_CHARACTERS = new Set(['Calcharo', 'Encore', 'Jianxin', 'Lin
 // [SECTION:LOCALIZATION] — locale-aware overlay for characters.fr.js.
 // English data above is the single source of truth; this merges in
 // translated `desc` bio text only, keyed by the same character names.
-import { CHARACTER_DESC_FR, CHARACTER_TITLE_FR, CHAR_BUFF_NOTE_FR, CHARACTER_ROTATION_NOTE_FR } from './characters.fr.js';
+import { CHARACTER_DESC_FR, CHARACTER_TITLE_FR, CHAR_BUFF_NOTE_FR, CHARACTER_ROTATION_NOTE_FR, CHAIN_NODE_NAMES_FR } from './characters.fr.js';
 
 /** @param {string} locale */
 export function getLocalizedCharacterData(locale) {
@@ -5941,6 +5941,18 @@ export function getLocalizedCharBuffTable(locale) {
   for (const [name, base] of Object.entries(CHAR_BUFF_TABLE)) {
     const note = CHAR_BUFF_NOTE_FR[name];
     out[name] = note ? { ...base, note } : base;
+  }
+  return out;
+}
+
+// CHAIN_NODE_NAMES: per-character S1-S6 Resonance Chain sequence-node titles,
+// display-only (rendered in CharacterDetailModal.jsx's Resonance Chain grid).
+export function getLocalizedChainNodeNames(locale) {
+  if (locale !== 'fr') return CHAIN_NODE_NAMES;
+  const out = {};
+  for (const [name, base] of Object.entries(CHAIN_NODE_NAMES)) {
+    const fr = CHAIN_NODE_NAMES_FR[name];
+    out[name] = fr || base;
   }
   return out;
 }

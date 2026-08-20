@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
@@ -41,6 +41,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
   const weaponData = bestWeapon ? (getLocalizedWeaponData(getLocale())[bestWeapon] || WEAPON_DATA[bestWeapon]) : null;
   const localizedBuffNote = getLocalizedCharBuffTable(getLocale())[name]?.note || CHAR_BUFF_TABLE[name]?.note;
   const localizedRotation = getLocalizedCharacterRotations(getLocale())[name] || CHARACTER_ROTATIONS[name];
+  const localizedChainNodeNames = getLocalizedChainNodeNames(getLocale());
   const weaponImg = bestWeapon ? DEFAULT_COLLECTION_IMAGES[bestWeapon] : null;
 
   // Ownership helpers for greyed-out completion indicators
@@ -391,7 +392,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     return (labels[k] || k) + ' +' + v + '%';
                   }).join(', ');
                   const nodeIcon = CHAIN_NODE_ICONS[name]?.['s' + s];
-                  const nodeName = CHAIN_NODE_NAMES[name]?.['s' + s];
+                  const nodeName = localizedChainNodeNames[name]?.['s' + s];
                   const tierBorder = !unlocked ? 'border-gray-500/30' : s <= 2 ? 'border-yellow-500/25' : s <= 4 ? 'border-purple-500/25' : 'border-red-500/25';
                   const tierText = !unlocked ? 'text-gray-400' : s <= 2 ? 'text-yellow-400' : s <= 4 ? 'text-purple-400' : 'text-red-400';
                   return (
