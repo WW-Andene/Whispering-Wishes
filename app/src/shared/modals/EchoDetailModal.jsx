@@ -7,8 +7,7 @@ import React from 'react';
 import { User, Star, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
-import { ECHO_DATA, ECHO_SETS, getLocalizedEchoSets } from '../../data/echoes.js';
-import { translateBuffFr } from '../../data/echoes.fr.js';
+import { ECHO_DATA, ECHO_SETS, getLocalizedEchoSets, getLocalizedEchoData } from '../../data/echoes.js';
 import { ELEMENT_COLORS, getElementColor, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor, getSetIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
@@ -38,7 +37,8 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
   const { framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const isFullAnim = visualSettings?.animationsEnabled === 'full';
   const f = infoFraming || { x: 0, y: 0, zoom: 100 };
-  const data = ECHO_DATA[name];
+  const raw = ECHO_DATA[name]; // English source — used for all color/key lookups
+  const data = getLocalizedEchoData(getLocale())[name] || raw; // display text only (desc/buff)
   const ownsChar = (n) => {
     if (!collectionData) return true;
     return (collectionData.chars5Counts?.[n] || 0) + (collectionData.chars4Counts?.[n] || 0) > 0;
@@ -46,11 +46,11 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
   if (!data) return null;
 
   const costColors = ECHO_COST_COLORS[cost] || ECHO_COST_COLORS[4];
-  const buffColors = ECHO_BUFF_COLORS[data.buff] || { bg: 'bg-white/10', text: 'text-gray-300', border: 'border-[var(--border-medium)]' };
+  const buffColors = ECHO_BUFF_COLORS[raw.buff] || { bg: 'bg-white/10', text: 'text-gray-300', border: 'border-[var(--border-medium)]' };
 
   // Get element-based colors for gradient header and border
   const setColors = getEchoSetColors(name);
-  const primaryBuffColor = getBuffElementColor(Array.isArray(data.buff) ? data.buff[0] : data.buff);
+  const primaryBuffColor = getBuffElementColor(Array.isArray(raw.buff) ? raw.buff[0] : raw.buff);
   const headerGradient = setColors.length >= 2
     ? `linear-gradient(135deg, ${setColors[0]}25 0%, ${setColors[1]}25 ${setColors.length >= 3 ? '50%' : '100%'}${setColors.length >= 3 ? `, ${setColors[2]}25 100%` : ''})`
     : setColors.length === 1
@@ -105,7 +105,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
                 const elNames = ['Glacio', 'Fusion', 'Electro', 'Aero', 'Spectro', 'Havoc'];
                 if (data.desc) {
                   elNames.forEach(el => {
-                    if (!elements.includes(el) && new RegExp(el + '\\s*DMG', 'i').test(data.desc)) {
+                    if (!elements.includes(el) && new RegExp(el + '\\s*(?:DMG|DGT)', 'i').test(data.desc)) {
                       elements.push(el);
                     }
                   });
@@ -121,9 +121,10 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
                   ) : null;
                 });
               })()}
-              {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => {
+              {(Array.isArray(raw.buff) ? raw.buff : [raw.buff]).map((b, i) => {
                 const bc = ECHO_BUFF_COLORS[b] || buffColors;
-                return <span key={b} className={`kuro-badge ${bc.bg} ${bc.text} border ${bc.border}`}>{getLocale() === 'fr' ? translateBuffFr(b) : b}</span>;
+                const label = Array.isArray(data.buff) ? data.buff[i] : data.buff;
+                return <span key={b} className={`kuro-badge ${bc.bg} ${bc.text} border ${bc.border}`}>{label}</span>;
               })}
             </div>
             <h2 className="text-2xl font-semibold text-white">{name}</h2>
@@ -206,7 +207,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
               const result = [];
               // Group 1: full element DMG phrase (colored by element)
               // Group 2-4: number-only white highlights (%, s, x)
-              const regex = /(\d+(?:\.\d+)?%?\s*(?:Glacio|Fusion|Electro|Aero|Spectro|Havoc|Physical)\s*DMG)|([+-]?\d+(?:\.\d+)?%)|(\d+s)|(CD:\s*\d+s)|(x\d+)/gi;
+              const regex = /(\d+(?:\.\d+)?%?\s*(?:Glacio|Fusion|Electro|Aero|Spectro|Havoc|Physical)\s*(?:DMG|DGT))|([+-]?\d+(?:[.,]\d+)?\s?%)|(\d+\s?s)|(CD:\s*\d+s)|(x\d+)/gi;
               let lastIndex = 0;
               let match;
               while ((match = regex.exec(text)) !== null) {

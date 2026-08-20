@@ -737,7 +737,7 @@ const ALL_ECHO_BUFF_TYPES = [...new Set(Object.values(ECHO_DATA).flatMap(e => Ar
 // [SECTION:LOCALIZATION] — locale-aware overlays for echoes.fr.js.
 // English data above is the single source of truth for numbers/mechanics;
 // these merge in translated *text* fields only, keyed by the same names.
-import { ECHO_SETS_FR, translateBuffFr } from './echoes.fr.js';
+import { ECHO_SETS_FR, ECHO_DATA_FR, translateBuffFr } from './echoes.fr.js';
 
 /** @param {string} locale */
 export function getLocalizedEchoSets(locale) {
@@ -754,7 +754,8 @@ export function getLocalizedEchoData(locale) {
   if (locale !== 'fr') return ECHO_DATA;
   const out = {};
   for (const [name, base] of Object.entries(ECHO_DATA)) {
-    out[name] = { ...base, buff: translateBuffFr(base.buff) };
+    const fr = ECHO_DATA_FR[name];
+    out[name] = { ...base, buff: translateBuffFr(base.buff), ...(fr?.desc ? { desc: fr.desc } : {}) };
   }
   return out;
 }
