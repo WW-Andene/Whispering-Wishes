@@ -645,3 +645,46 @@ session: **0 differences** (this is a display-only closure, doesn't touch the re
 reads `bt.selfBuffs` from a separate, untouched code path).
 
 Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 11) — Implemented overlap-based uptime for the main DPS calc
+
+**User's directive**: "Accuracy and improvement. What can be factually computed and reliable" — i.e.
+build the rotTime→onField reproration for real, but only what's provably grounded, not guessed.
+
+**Built a diagnostic first, per the scoping promise from last session**: compared `min(1, duration/
+rotTime)` (old) against the geometrically correct `overlap(buffWindow, dpsWindow)/dpsWindow` (new)
+across 200 random 3-character teams, using the real ordered segment positions `rotationTimeline`
+already computes and displays. Result: **76.5% of cross-character buffs shift by more than 2 uptime
+points, 43.5% collapse to exactly zero** — buffs the old formula credited as partially helping the
+DPS that, by the app's own already-computed and already-displayed rotation ordering, never actually
+overlap the DPS's on-field window at all. This isn't an approximation-quality judgment call — both
+windows are already known, real, computed facts; the old formula just wasn't using them.
+
+**Implemented**: relocated the `rotationTimeline` computation (order search + real segment positions)
+from the end of `calcTeamStats` to right after `rotTime` is defined — a pure move, verified zero DPS
+impact on its own (100-team before/after: 0 diffs). Added an `overlapUptime(start, duration)` helper
+reading `rotationTimeline.segments`, and replaced the main DPS calc's cross-character uptime sites
+(outro 'next'/'ally'/'enemy' buffs, Sonata p5 teamAtk/nextAtk, libBuffs 'team'/'next', weaponBuffs
+'team', weapon `tv` passive, echo-skill 'team'/'next' buffs — 7 sites) to use it, with buff start times
+matching the exact convention `rotationTimeline` itself already uses (Outro-triggered → owner's swap-
+out time; Liberation/passive/team-target → owner's block start).
+
+**Scope boundary, stated plainly**: this fixes the sites feeding the **main DPS's** own `teamDps`
+number. A parallel, separately-coded sub-DPS damage block (`calcTeamStats.js` — computes damage for
+non-main members too, via `sAtkPct`/`sElem`/etc.) has the *same* `duration/rotTime` pattern at 2 more
+sites and was NOT touched this session — same fix, same principle, just out of scope for today's pass;
+flagged here as the next piece of this same thread. Also left `mainEsb`'s self-targeted echo uptime
+(a different bug shape — self-buff scoped to `rotTime` instead of the owner's own on-field time, not
+validated with the same rigor this session) untouched.
+
+**Verified the real impact, not just direction**: 100-team before/after `teamDps` comparison — median
+**+2.8%**, mean **+4.1%**, range **-7.1% to +19.6%**. Bounded and directionally explicable (the
+ordering search already picks whichever order maximizes buff-reach, so a mean upward skew relative to
+the old blind rotTime-average is expected, not random noise) — not a blowup. Stress-tested 500 fully
+random teams: 0 crashes, 0 NaN/negative `teamDps`.
+
+Verified: `npx vitest run` — 612/612 passing (no test asserts a specific `teamDps` value — this file has
+zero existing test coverage of `calcTeamStats`'s numeric output, confirmed by grep; the before/after
+scripts above are the actual safety net here, not the test suite), `npm run build` succeeds clean.
