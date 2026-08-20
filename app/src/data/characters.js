@@ -5913,6 +5913,22 @@ const ALL_CHARACTERS = new Set([...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS
 // Standard 5★ characters (Tidal Chorus / 50-50 loss pool) — update when new standard chars are added
 const STANDARD_5STAR_CHARACTERS = new Set(['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina']);
 
+// [SECTION:LOCALIZATION] — locale-aware overlay for characters.fr.js.
+// English data above is the single source of truth; this merges in
+// translated `desc` bio text only, keyed by the same character names.
+import { CHARACTER_DESC_FR } from './characters.fr.js';
+
+/** @param {string} locale */
+export function getLocalizedCharacterData(locale) {
+  if (locale !== 'fr') return CHARACTER_DATA;
+  const out = {};
+  for (const [name, base] of Object.entries(CHARACTER_DATA)) {
+    const fr = CHARACTER_DESC_FR[name];
+    out[name] = { ...base, ...(fr ? { desc: fr } : {}) };
+  }
+  return out;
+}
+
 export {
   CHARACTER_DATA,
   CHAR_BUFF_TABLE,

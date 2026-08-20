@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData } from '../../data/characters.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
@@ -212,9 +212,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* Personal Description & Combat Profile — lore blurb + gameplay role/playstyle summary */}
           {data.desc && (() => {
-            const dot = data.desc.indexOf('. ');
-            const lore = dot > 0 ? data.desc.slice(0, dot + 1) : null;
-            const gameplay = dot > 0 ? data.desc.slice(dot + 2) : data.desc;
+            const localizedDesc = getLocalizedCharacterData(getLocale())[name]?.desc || data.desc;
+            const dot = localizedDesc.indexOf('. ');
+            const lore = dot > 0 ? localizedDesc.slice(0, dot + 1) : null;
+            const gameplay = dot > 0 ? localizedDesc.slice(dot + 2) : localizedDesc;
             return (
               <div className="text-md space-y-1">
                 {lore && <p className="text-gray-400 italic leading-relaxed">{lore}</p>}
