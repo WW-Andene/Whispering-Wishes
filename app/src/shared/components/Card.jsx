@@ -18,7 +18,10 @@ CardBody.displayName = 'CardBody';
 const TabButton = memo(({ active, onClick, children, tabRef, tabId, accentColor }) => {
   const childArray = React.Children.toArray(children);
   const icon = childArray.find(child => React.isValidElement(child));
-  const text = childArray.find(child => typeof child === 'string')?.trim();
+  // Skip whitespace-only text nodes (e.g. the literal " " JSX keeps as its own
+  // child between an icon and a `{t('...')}` expression) so we don't pick that
+  // up instead of the actual label.
+  const text = childArray.find(child => typeof child === 'string' && child.trim() !== '')?.trim();
   const btnRef = useRef(null);
   const accent = accentColor || null;
 

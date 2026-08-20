@@ -91,9 +91,13 @@ const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
 
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
-  // Subscribing here (the app root) makes setAppLocale() re-render the whole
-  // tree, not just whichever component happens to call useAppLocale().
-  useAppLocale();
+  // Several tabs are wrapped in React.memo with custom comparators that don't
+  // look at locale at all (e.g. TrackerTab only re-renders on profile/server/
+  // banners/visualSettings/themeAccent changes), so merely re-rendering the
+  // root wouldn't actually re-render them when the language changes. appLocale
+  // is folded into the <main> key below to force a clean remount of every tab
+  // instead, guaranteeing the new language actually shows up everywhere.
+  const appLocale = useAppLocale();
 
   const toast = useToast();
   const confirm = useConfirm();
@@ -1071,7 +1075,7 @@ function WhisperingWishesInner() {
         <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={18} /> {t('app.navCollection')}</TabButton>
       </nav>
 
-      <main id="main-content" key={`main-${visualSettings.colorBlindMode ? 'cb' : 'std'}`} className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 space-y-3 w-full" style={{ paddingTop: headerPadding, paddingBottom: navPadding }} role="main">
+      <main id="main-content" key={`main-${visualSettings.colorBlindMode ? 'cb' : 'std'}-${appLocale}`} className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 space-y-3 w-full" style={{ paddingTop: headerPadding, paddingBottom: navPadding }} role="main">
         {/* Screen reader announcement for tab changes */}
         <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
           {t('app.tabActive', { tab: activeTab.charAt(0).toUpperCase() + activeTab.slice(1) })}

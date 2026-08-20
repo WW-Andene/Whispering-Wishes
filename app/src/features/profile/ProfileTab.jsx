@@ -557,13 +557,13 @@ function ProfileTab({
                       <div className="text-gray-400 text-sm">{t('app.languageDesc')}</div>
                     </div>
                   </div>
-                  <div className="flex gap-1.5" role="radiogroup" aria-label={t('app.language')}>
+                  <div className="flex flex-col gap-1.5" role="radiogroup" aria-label={t('app.language')}>
                     <button
                       type="button"
                       onClick={() => { haptic?.(); setAppLocale('en'); }}
                       role="radio"
                       aria-checked={appLocale === 'en'}
-                      className={`kuro-btn flex-1 text-sm ${appLocale === 'en' ? 'active-gold' : ''}`}
+                      className={`kuro-btn w-full text-sm ${appLocale === 'en' ? 'active-gold' : ''}`}
                     >
                       {t('app.languageEnglish')}
                     </button>
@@ -572,7 +572,7 @@ function ProfileTab({
                       onClick={() => { haptic?.(); setAppLocale('fr'); }}
                       role="radio"
                       aria-checked={appLocale === 'fr'}
-                      className={`kuro-btn flex-1 text-sm ${appLocale === 'fr' ? 'active-gold' : ''}`}
+                      className={`kuro-btn w-full text-sm ${appLocale === 'fr' ? 'active-gold' : ''}`}
                     >
                       {t('app.languageFrench')}
                     </button>
