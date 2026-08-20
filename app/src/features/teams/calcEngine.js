@@ -594,7 +594,13 @@ export function uptimeScaledUplift(stat, value, buffDuration, onFieldOrRotTime) 
 // were calibrated against the old score range) — 1% real DPS uplift ≈ 2.5 composition-score points.
 const UPLIFT_TO_SCORE = 2.5;
 
-export function scoreTeamComposition(members, ownedWeaps = new Set()) {
+// dpsOverride: an explicit headline-DPS pick for THIS hypothetical/candidate team — mirrors the
+// crown (mainDpsOverride) the player can set on a real built team in calcTeamStats.js. Without it,
+// this function could only ever recognize a statically role-tagged 'Main DPS' member as the team's
+// carry, so any candidate team built around a Sub DPS (or other off-role character) run as a
+// realistic/overused hypercarry — a genuinely common way these are actually played — scored with NO
+// DPS-power component at all, understating it versus a canonical Main-DPS-led team of equal quality.
+export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverride) {
   let score = 0;
   const roles = members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
   const tags = [];
@@ -614,7 +620,12 @@ export function scoreTeamComposition(members, ownedWeaps = new Set()) {
   if (hasMain) score += 15; if (hasHeal || hasSupp) score += 10; if (hasSub) score += 8;
   if (hasMain && (hasHeal || hasSupp) && hasSub) { score += 15; tags.push('Balanced'); }
   // DPS power + buff synergy
-  const mainDps = members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
+  const roleMainDps = members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
+  const mainDps = (dpsOverride && members.includes(dpsOverride)) ? dpsOverride : roleMainDps;
+  // Flag any team whose actual carry isn't the statically role-tagged 'Main DPS' — an off-role
+  // hypercarry (e.g. a Sub DPS run solo) is a real, often overused way these are actually played,
+  // not a mistake, so it's surfaced as a tag rather than hidden or penalized.
+  if (mainDps && mainDps !== roleMainDps) tags.push('Hypercarry');
   if (mainDps) {
     // Main DPS totalMult currently spans ~2200 (Lingyang) to 3800 (Aemeath) across the roster.
     // Min-max normalize against that observed range so the top of the meta still differentiates

@@ -103,13 +103,23 @@ function TeamsTab({
     ]);
     // scoreTeam moved to calcEngine.js as scoreTeamComposition — shared with the character
     // selector's recommendation ranking below so the two can't drift from each other again.
-    const scoreTeam = (members) => scoreTeamComposition(members, ownedWeaps);
+    // dpsOverride threads through to scoreTeamComposition so a candidate team built around an
+    // off-role hypercarry pick still gets scored WITH its real DPS-power component instead of
+    // silently finding no 'Main DPS'-tagged member and skipping that whole part of the score.
+    const scoreTeam = (members, dpsOverride) => scoreTeamComposition(members, ownedWeaps, dpsOverride);
 
     // ═══ SECTION 1: Build custom teams from YOUR owned characters ═══
     const customTeams = [];
     const ownedArr = [...ownedNames].filter(n => CHARACTER_DATA[n]);
-    const ownedDps = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Main DPS');
+    const ownedMainDps = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Main DPS');
     const ownedSub = ownedArr.filter(n => CHARACTER_DATA[n].role === 'Sub DPS');
+    // Realistic/overused hypercarry pool: any Sub DPS with real damage output (totalMult > 0) can
+    // also be suggested as the headline carry of its own team — a genuinely common way many Sub DPS
+    // characters get played, not just paired off-field with a canonical Main DPS. Kept separate from
+    // ownedMainDps so partner-candidate pools below (ownedSub) still exclude whichever one is
+    // currently standing in as "the dps" for a given candidate team (see `s !== dps` filters).
+    const ownedHypercarry = ownedSub.filter(n => (CHARACTER_DATA[n]?.totalMult || 0) > 0);
+    const ownedDps = [...ownedMainDps, ...ownedHypercarry];
     // 'Healer'/'Support' exact-match would silently exclude compound-role characters like Chisa/Suisui
     // ('Support/Healer') from the candidate pool entirely — use substring-aware role helpers instead.
     const ownedHeal = ownedArr.filter(n => isHealerRole(CHARACTER_DATA[n].role) || isSupportRole(CHARACTER_DATA[n].role));
@@ -160,8 +170,8 @@ function TeamsTab({
           const key = [...members].sort().join('|');
           if (customSeen.has(key)) continue;
           customSeen.add(key);
-          const { score, tags } = scoreTeam(members);
-          customTeams.push({ text: members.join(' + '), members, score, tags, ownedCount: 3, allOwned: true, custom: true });
+          const { score, tags } = scoreTeam(members, dps);
+          customTeams.push({ text: members.join(' + '), members, score, tags, ownedCount: 3, allOwned: true, custom: true, dpsOverride: dps });
         }
       }
     }
@@ -225,13 +235,18 @@ function TeamsTab({
               const activeTeam = state.teams[state.activeTeamIndex] || state.teams[0];
               const teamSlots = activeTeam.slots;
               // Shared by the per-suggestion click handler and the Shuffle button below — loads a
-              // suggestion's members into the active team's slots and clears any stale headline-DPS
-              // override left over from whatever this team used to contain.
+              // suggestion's members into the active team's slots. Most suggestions clear any stale
+              // headline-DPS override left over from whatever this team used to contain and let
+              // auto-detect find the (statically role-tagged) Main DPS as usual. A hypercarry
+              // suggestion (an off-role Sub DPS built around as the real carry) instead explicitly
+              // sets the crown to that character — auto-detect has no role tag to go on for these and
+              // would otherwise just guess the highest totalMult member, which isn't guaranteed to be
+              // the one this specific suggestion was actually built and scored around.
               const applySuggestion = (s) => {
                 s.members.slice(0, 3).forEach((m, idx) => {
                   dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: idx, character: m });
                 });
-                dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: null });
+                dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: s.dpsOverride || null });
                 haptic.success();
               };
               // Re-rolls WHICH curated teams are displayed in the suggestions list (a fresh random
