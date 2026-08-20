@@ -705,37 +705,57 @@
       50% { opacity: 1; }
     }
 
-    /* Rainbow accent theme — white-ish, shimmering RGB star. Hue is a registered
-       custom property so browsers can smoothly interpolate it in a keyframe;
-       every glow/border/shimmer color derives from it via hsla(var(--rainbow-hue), ...). */
-    @property --rainbow-hue {
-      syntax: '<number>';
-      inherits: true;
-      initial-value: 280;
-    }
-
+    /* Rainbow accent theme — RGB "PC RAM" lighting effect.
+       Rebuilt to NOT depend on browser support for animating registered custom
+       properties (@property). Instead: every .kuro-card gets a solid conic-
+       gradient ring drawn in its own ::before (mask-clipped to a ring shape,
+       exactly like a border), and the whole ring is hue-shifted with
+       `filter: hue-rotate()`. Animating `filter` is universally supported and
+       is the same primitive already used by `.rainbow-swatch.animated` below —
+       so if that swatch spins, this spins too. No custom-property interpolation
+       anywhere in this feature. */
     .theme-rainbow {
-      --rainbow-hue: 280;
-      --shimmer-color: hsla(var(--rainbow-hue), 90%, 85%, 0.55);
-      --shimmer-color-bright: hsla(var(--rainbow-hue), 95%, 92%, 0.85);
-      --card-outline: hsla(var(--rainbow-hue), 85%, 85%, 0.12);
-      --card-outline-hover: hsla(var(--rainbow-hue), 85%, 85%, 0.22);
-      --card-glow: hsla(var(--rainbow-hue), 90%, 80%, 0.4);
-      --card-inset: hsla(var(--rainbow-hue), 85%, 85%, 0.15);
-      --card-inset-hover: hsla(var(--rainbow-hue), 85%, 85%, 0.25);
+      --border-default: rgba(255, 255, 255, 0.16);
+      --border-hover: rgba(255, 255, 255, 0.28);
+      --border-bright: rgba(255, 255, 255, 0.35);
+      --shimmer-color: rgba(255, 255, 255, 0.55);
+      --shimmer-color-bright: rgba(255, 255, 255, 0.85);
     }
 
-    /* Only animate the hue when the app's Animations setting is on/full.
+    .theme-rainbow .kuro-card {
+      position: relative;
+    }
+
+    .theme-rainbow .kuro-card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      z-index: 6;
+      border-radius: inherit;
+      pointer-events: none;
+      padding: 1px;
+      background: conic-gradient(from 0deg,
+        #ffb3c1, #ffd8a8, #fff3a0, #c3f0a8, #a8e6d8, #a8d8ff, #c9b3ff, #f0b3e8, #ffb3c1);
+      -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+      -webkit-mask-clip: content-box, border-box;
+      -webkit-mask-composite: xor;
+      mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+      mask-clip: content-box, border-box;
+      mask-composite: exclude;
+    }
+
+    /* Only animate when the app's Animations setting is on/full.
        .theme-rainbow-animated is toggled alongside .theme-rainbow in JS
-       (useThemeAccent) based on visualSettings.animationsEnabled, since
-       .no-animations lives on a different element than <html>. */
-    .theme-rainbow-animated {
-      animation: rainbow-hue-cycle 8s linear infinite;
+       (useThemeAccent) based on visualSettings.animationsEnabled. Without it,
+       the ring is still visible — just static — matching the reduced-motion
+       fallback the rest of the app uses. */
+    .theme-rainbow-animated .kuro-card::before {
+      animation: rainbow-hue-rotate 4s linear infinite;
     }
 
-    @keyframes rainbow-hue-cycle {
-      from { --rainbow-hue: 0; }
-      to   { --rainbow-hue: 360; }
+    @keyframes rainbow-hue-rotate {
+      from { filter: hue-rotate(0deg); }
+      to   { filter: hue-rotate(360deg); }
     }
 
     /* Small preview swatch used by the accent-theme picker's Rainbow option */
