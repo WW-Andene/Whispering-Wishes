@@ -724,8 +724,21 @@
       --border-default: rgba(255, 255, 255, 0.16);
       --border-hover: rgba(255, 255, 255, 0.28);
       --border-bright: rgba(255, 255, 255, 0.35);
-      --shimmer-color: rgba(255, 255, 255, 0.55);
-      --shimmer-color-bright: rgba(255, 255, 255, 0.85);
+      /* Chromatic (not white) so hue-rotate below has something to animate */
+      --shimmer-color: rgba(255, 140, 170, 0.55);
+      --shimmer-color-bright: rgba(255, 140, 170, 0.85);
+    }
+
+    /* Shimmer bar cycles through the rainbow palette too, in sync with the
+       ring. Only touches .kuro-card::after (the thin top shimmer line) —
+       no effect on card backgrounds. */
+    .theme-rainbow-animated .kuro-card::after {
+      animation: shimmer 3s ease-in-out infinite, rainbow-shimmer-hue 3s linear infinite;
+    }
+
+    @keyframes rainbow-shimmer-hue {
+      from { filter: hue-rotate(0deg); }
+      to   { filter: hue-rotate(360deg); }
     }
 
     .theme-rainbow .kuro-card {
