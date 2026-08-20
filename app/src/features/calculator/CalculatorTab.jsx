@@ -23,6 +23,7 @@ import { Crown, Swords, Sword, Star, Diamond, RefreshCcw, BookmarkPlus, X, Spark
 
 import { MAX_BOOKMARK_NAME_LENGTH } from '../../shared/constants/appConstants.js';
 import { useConfirm } from '../../providers/ConfirmProvider.jsx';
+import { t, formatNumber } from '../../utils/i18n.js';
 const CALC_DEFER_MS = 150;
 
 function CalculatorTab({ state, dispatch }) {
@@ -164,64 +165,64 @@ function CalculatorTab({ state, dispatch }) {
 
             {/* Banner Selection */}
             <Card>
-              <CardHeader action={<div className="flex gap-2"><button onClick={async () => { if (await confirm?.({ title: 'Reset Calculator', message: 'Reset all calculator fields to defaults?', confirmLabel: 'Reset', destructive: true })) { dispatch({ type: 'SET_CALC', field: '__reset', value: true }); haptic.light(); } }} className="text-gray-500 text-sm flex items-center gap-1 hover:text-red-400 transition-colors" aria-label="Reset calculator"><RefreshCcw size={12} />Reset</button><button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-sm flex items-center gap-1 hover:text-purple-300 transition-colors" aria-label="Save current state as bookmark"><BookmarkPlus size={12} />Save</button></div>}>Banner Selection</CardHeader>
+              <CardHeader action={<div className="flex gap-2"><button onClick={async () => { if (await confirm?.({ title: t('calculator.resetTitle'), message: t('calculator.resetMessage'), confirmLabel: t('calculator.resetConfirm'), destructive: true })) { dispatch({ type: 'SET_CALC', field: '__reset', value: true }); haptic.light(); } }} className="text-gray-500 text-sm flex items-center gap-1 hover:text-red-400 transition-colors" aria-label={t('calculator.resetAria')}><RefreshCcw size={12} />{t('calculator.resetConfirm')}</button><button onClick={() => setShowBookmarkModal(true)} className="text-purple-400 text-sm flex items-center gap-1 hover:text-purple-300 transition-colors" aria-label={t('calculator.saveAria')}><BookmarkPlus size={12} />{t('calculator.saveLabel')}</button></div>}>{t('calculator.bannerSelection')}</CardHeader>
               <CardBody className="space-y-3">
                   {/* Featured Banners */}
                   <div className="space-y-2">
-                    <div className="kuro-label" id="featured-convene-label">Featured Convene</div>
-                    <div className="text-gray-400 text-sm -mt-1">Limited-time banner</div>
+                    <div className="kuro-label" id="featured-convene-label">{t('calculator.featuredConvene')}</div>
+                    <div className="text-gray-400 text-sm -mt-1">{t('calculator.limitedTimeBanner')}</div>
                     <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="featured-convene-label">
                       <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'char'); setCalc('forging', ''); setCalc('lustrous', ''); }} aria-pressed={state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'char'} className={`kuro-btn ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'char' ? 'active-gold' : ''}`}>
-                        <Crown size={16} className="mx-auto mb-1.5" />Resonator
+                        <Crown size={16} className="mx-auto mb-1.5" />{t('calculator.resonator')}
                       </button>
                       <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'weap'); setCalc('radiant', ''); setCalc('lustrous', ''); }} aria-pressed={state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap'} className={`kuro-btn ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap' ? 'active-pink' : ''}`}>
-                        <Swords size={16} className="mx-auto mb-1.5" />Weapon
+                        <Swords size={16} className="mx-auto mb-1.5" />{t('calculator.weapon')}
                       </button>
                     </div>
                     <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'both'); setCalc('lustrous', ''); }} aria-pressed={state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'both'} className={`kuro-btn w-full ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'both' ? 'active-emerald' : ''}`}>
-                      <RefreshCcw size={14} className="inline mr-1.5" />Both Featured
+                      <RefreshCcw size={14} className="inline mr-1.5" />{t('calculator.bothFeatured')}
                     </button>
                   </div>
 
                   {/* Standard Banners */}
                   <div className="space-y-2">
-                    <div className="kuro-label" id="standard-convene-label">Standard Convene</div>
-                    <div className="text-gray-400 text-sm -mt-1">Permanent banner</div>
+                    <div className="kuro-label" id="standard-convene-label">{t('calculator.standardConvene')}</div>
+                    <div className="text-gray-400 text-sm -mt-1">{t('calculator.permanentBanner')}</div>
                     <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="standard-convene-label">
                       <button onClick={() => { setCalc('bannerCategory', 'standard'); setCalc('selectedBanner', 'char'); setCalc('radiant', ''); setCalc('forging', ''); }} aria-pressed={state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'char'} className={`kuro-btn ${state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'char' ? 'active-cyan' : ''}`}>
-                        <Star size={16} className="mx-auto mb-1.5" />Resonator
+                        <Star size={16} className="mx-auto mb-1.5" />{t('calculator.resonator')}
                       </button>
                       <button onClick={() => { setCalc('bannerCategory', 'standard'); setCalc('selectedBanner', 'weap'); setCalc('radiant', ''); setCalc('forging', ''); }} aria-pressed={state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'weap'} className={`kuro-btn ${state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'weap' ? 'active-cyan' : ''}`}>
-                        <Sword size={16} className="mx-auto mb-1.5 rotate-45" />Weapon
+                        <Sword size={16} className="mx-auto mb-1.5 rotate-45" />{t('calculator.weapon')}
                       </button>
                     </div>
                     <button onClick={() => { setCalc('bannerCategory', 'standard'); setCalc('selectedBanner', 'both'); setCalc('radiant', ''); setCalc('forging', ''); }} aria-pressed={state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'both'} className={`kuro-btn w-full ${state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'both' ? 'active-emerald' : ''}`}>
-                      <RefreshCcw size={14} className="inline mr-1.5" />Both Standard
+                      <RefreshCcw size={14} className="inline mr-1.5" />{t('calculator.bothStandard')}
                     </button>
                   </div>
 
                   {/* 50/50 Toggle */}
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                     <div className="pb-1.5">
-                    <button onClick={() => { const newVal = !state.calc.charGuaranteed; setCalc('charGuaranteed', newVal); setCalc('charGuaranteedManual', newVal); }} aria-pressed={state.calc.charGuaranteed} aria-label={state.calc.charGuaranteed ? 'Guaranteed next 5-star: on' : '50/50 active: off'} className={`kuro-btn w-full ${state.calc.charGuaranteed ? 'active-emerald' : 'active-gold'}`}>
-                      {state.calc.charGuaranteed ? '✓ Guaranteed (100%)' : '⚠ 50/50 Active'}
+                    <button onClick={() => { const newVal = !state.calc.charGuaranteed; setCalc('charGuaranteed', newVal); setCalc('charGuaranteedManual', newVal); }} aria-pressed={state.calc.charGuaranteed} aria-label={state.calc.charGuaranteed ? t('calculator.guaranteedNext5starAria') : t('calculator.fiftyFiftyActiveAria')} className={`kuro-btn w-full ${state.calc.charGuaranteed ? 'active-emerald' : 'active-gold'}`}>
+                      {state.calc.charGuaranteed ? t('calculator.guaranteed') : t('calculator.5050active')}
                     </button>
                     </div>
                   )}
                   {state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap' && (
-                    <p className="text-gray-400 text-sm text-center">Weapon banners do not have a guaranteed pity system.</p>
+                    <p className="text-gray-400 text-sm text-center">{t('calculator.weaponNoGuaranteed')}</p>
                   )}
               </CardBody>
             </Card>
 
             {/* Pity Counter */}
             <Card>
-              <CardHeader>Pity Counter</CardHeader>
+              <CardHeader>{t('calculator.pityCounter')}</CardHeader>
               <CardBody className="space-y-3">
                   {/* Featured Character Pity */}
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                     <PityCounterInput
-                      label="Featured Resonator" pity={state.calc.charPity} onPityChange={v => setCalc('charPity', v)}
+                      label={t('calculator.featuredResonatorLabel')} pity={state.calc.charPity} onPityChange={v => setCalc('charPity', v)}
                       copies={state.calc.charCopies} maxCopies={7} onCopiesChange={v => setCalc('charCopies', v)}
                       fourStarCopies={state.calc.char4StarCopies} maxFourStar={21} onFourStarChange={v => setCalc('char4StarCopies', v)}
                       color="#edaf18" softColor="#fb923c" softGlow="rgba(251,146,60,0.5)" sliderClass="" softPityClass="kuro-soft-pity" SoftPityIcon={Sparkles} ariaPrefix="Featured Resonator"
@@ -231,7 +232,7 @@ function CalculatorTab({ state, dispatch }) {
                   {/* Featured Weapon Pity - Pink to match weapon banners */}
                   {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                     <PityCounterInput
-                      label="Featured Weapon" pity={state.calc.weapPity} onPityChange={v => setCalc('weapPity', v)}
+                      label={t('calculator.featuredWeaponLabel')} pity={state.calc.weapPity} onPityChange={v => setCalc('weapPity', v)}
                       copies={state.calc.weapCopies} maxCopies={5} onCopiesChange={v => setCalc('weapCopies', v)}
                       fourStarCopies={state.calc.weap4StarCopies} maxFourStar={15} onFourStarChange={v => setCalc('weap4StarCopies', v)}
                       color="#f9a8d4" softColor="#ec4899" softGlow="rgba(236,72,153,0.5)" sliderClass="pink" softPityClass="kuro-soft-pity-pink" SoftPityIcon={Swords} ariaPrefix="Weapon"
@@ -241,7 +242,7 @@ function CalculatorTab({ state, dispatch }) {
                   {/* Standard Resonator Pity */}
                   {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                     <PityCounterInput
-                      label="Standard Resonator" pity={state.calc.stdCharPity} onPityChange={v => setCalc('stdCharPity', v)}
+                      label={t('calculator.standardResonatorLabel')} pity={state.calc.stdCharPity} onPityChange={v => setCalc('stdCharPity', v)}
                       copies={state.calc.stdCharCopies} maxCopies={7} onCopiesChange={v => setCalc('stdCharCopies', v)}
                       fourStarCopies={state.calc.stdChar4StarCopies} maxFourStar={21} onFourStarChange={v => setCalc('stdChar4StarCopies', v)}
                       color="#22d3ee" softColor="#67e8f9" softGlow="rgba(103,232,249,0.5)" sliderClass="cyan" softPityClass="kuro-soft-pity-cyan" SoftPityIcon={Star} ariaPrefix="Standard Resonator"
@@ -251,7 +252,7 @@ function CalculatorTab({ state, dispatch }) {
                   {/* Standard Weapon Pity */}
                   {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                     <PityCounterInput
-                      label="Standard Weapon" pity={state.calc.stdWeapPity} onPityChange={v => setCalc('stdWeapPity', v)}
+                      label={t('calculator.standardWeaponLabel')} pity={state.calc.stdWeapPity} onPityChange={v => setCalc('stdWeapPity', v)}
                       copies={state.calc.stdWeapCopies} maxCopies={5} onCopiesChange={v => setCalc('stdWeapCopies', v)}
                       fourStarCopies={state.calc.stdWeap4StarCopies} maxFourStar={15} onFourStarChange={v => setCalc('stdWeap4StarCopies', v)}
                       color="#22d3ee" softColor="#67e8f9" softGlow="rgba(103,232,249,0.5)" sliderClass="cyan" softPityClass="kuro-soft-pity-cyan" SoftPityIcon={Sword} ariaPrefix="Standard Weapon"
@@ -262,33 +263,33 @@ function CalculatorTab({ state, dispatch }) {
 
             {/* Resources */}
             <Card>
-              <CardHeader>Resources</CardHeader>
+              <CardHeader>{t('calculator.resources')}</CardHeader>
               <CardBody className="space-y-3">
                   <div>
-                    <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-yellow-400" />Astrite</label>
-                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('astrite', clamped); }} className="kuro-input" placeholder="e.g. 1600" aria-label="Astrite amount" />
-                    <span className="text-gray-600 text-sm">Max {MAX_ASTRITE.toLocaleString('en-US')}</span>
+                    <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-yellow-400" />{t('calculator.astrite')}</label>
+                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('astrite', clamped); }} className="kuro-input" placeholder={t('calculator.astritePlaceholder')} aria-label={t('calculator.astriteAmountAria')} />
+                    <span className="text-gray-600 text-sm">{t('calculator.maxHint', { max: formatNumber(MAX_ASTRITE) })}</span>
                     <div className="flex gap-1 mt-2 flex-wrap">
-                      {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-gold" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Astrite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-yellow-600 ml-0.5 text-sm">({tip.split(' ')[0]})</span></button>
+                      {[[ASTRITE_PER_PULL,t('calculator.convenePlural1')], [ASTRITE_PER_PULL*5,t('calculator.convenesN', { n: 5 })], [ASTRITE_PER_PULL*10,t('calculator.convenesN', { n: 10 })], [ASTRITE_PER_PULL*20,t('calculator.convenesN', { n: 20 })]].map(([amt, tip]) => (
+                        <button key={amt} onClick={() => setCalc('astrite', String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-gold" title={tip} aria-label={t('calculator.addAstriteAria', { amt: formatNumber(amt), tip })}>+{formatNumber(amt)}<span className="text-yellow-600 ml-0.5 text-sm">({tip.split(' ')[0]})</span></button>
                       ))}
-                      <button onClick={() => setCalc('astrite', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Astrite">Clear</button>
+                      <button onClick={() => setCalc('astrite', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label={t('calculator.clearAstriteAria')}>{t('calculator.clearLabel')}</button>
                     </div>
                   </div>
                   <div>
-                    <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-cyan-400" />Lunite <span className="text-gray-500 font-normal">(converts to Astrite 1:1)</span></label>
-                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('lunite', clamped); }} className="kuro-input" placeholder="0" aria-label="Lunite amount" />
+                    <label className="kuro-label"><Diamond size={12} className="inline -mt-0.5 mr-1 text-cyan-400" />{t('calculator.lunite')} <span className="text-gray-500 font-normal">{t('calculator.luniteConvertHint')}</span></label>
+                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('lunite', clamped); }} className="kuro-input" placeholder="0" aria-label={t('calculator.luniteAmountAria')} />
                     <div className="flex gap-1 mt-2 flex-wrap">
-                      {[[ASTRITE_PER_PULL,'1 Convene'], [ASTRITE_PER_PULL*5,'5 Convenes'], [ASTRITE_PER_PULL*10,'10 Convenes'], [ASTRITE_PER_PULL*20,'20 Convenes']].map(([amt, tip]) => (
-                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-cyan" title={tip} aria-label={`Add ${amt.toLocaleString('en-US')} Lunite (${tip})`}>+{amt.toLocaleString('en-US')}<span className="text-cyan-600 ml-0.5 text-sm">({tip.split(' ')[0]})</span></button>
+                      {[[ASTRITE_PER_PULL,t('calculator.convenePlural1')], [ASTRITE_PER_PULL*5,t('calculator.convenesN', { n: 5 })], [ASTRITE_PER_PULL*10,t('calculator.convenesN', { n: 10 })], [ASTRITE_PER_PULL*20,t('calculator.convenesN', { n: 20 })]].map(([amt, tip]) => (
+                        <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-cyan" title={tip} aria-label={t('calculator.addLuniteAria', { amt: formatNumber(amt), tip })}>+{formatNumber(amt)}<span className="text-cyan-600 ml-0.5 text-sm">({tip.split(' ')[0]})</span></button>
                       ))}
-                      <button onClick={() => setCalc('lunite', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Lunite">Clear</button>
+                      <button onClick={() => setCalc('lunite', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label={t('calculator.clearLuniteAria')}>{t('calculator.clearLabel')}</button>
                     </div>
                   </div>
                   {(() => {
                     const combined = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
                     const totalConvenes = Math.floor(combined / ASTRITE_PER_PULL);
-                    return <p className="text-gray-400 text-sm">= {totalConvenes.toLocaleString('en-US')} Convenes from {(+state.calc.astrite || 0).toLocaleString('en-US')} Astrite{(+state.calc.lunite || 0) > 0 ? ` + ${(+state.calc.lunite || 0).toLocaleString('en-US')} Lunite` : ''}{totalConvenes > MAX_CALC_PULLS ? <span className="text-yellow-500"> (calc capped at {MAX_CALC_PULLS.toLocaleString('en-US')})</span> : ''}</p>;
+                    return <p className="text-gray-400 text-sm">{t('calculator.convenesFromSummary', { convenes: formatNumber(totalConvenes), astrite: formatNumber(+state.calc.astrite || 0), luniteSuffix: (+state.calc.lunite || 0) > 0 ? t('calculator.luniteAddendum', { lunite: formatNumber(+state.calc.lunite || 0) }) : '' })}{totalConvenes > MAX_CALC_PULLS ? <span className="text-yellow-500">{t('calculator.calcCappedSuffix', { max: formatNumber(MAX_CALC_PULLS) })}</span> : ''}</p>;
                   })()}
 
                   {/* Featured banner resources */}
@@ -296,25 +297,25 @@ function CalculatorTab({ state, dispatch }) {
                     <div className="grid grid-cols-2 gap-2">
                       {(state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div>
-                          <label className="text-base mb-2 block font-medium text-yellow-400">Radiant Tides</label>
-                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Radiant Tides" />
+                          <label className="text-base mb-2 block font-medium text-yellow-400">{t('calculator.radiantTides')}</label>
+                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.radiantTides')} />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={`Add ${amt} Radiant Tide${amt > 1 ? 's' : ''}`} className="kuro-btn kuro-btn-sm active-gold">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={t('calculator.addRadiantAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-gold">+{amt}</button>
                             ))}
-                            <button onClick={() => setCalc('radiant', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Radiant Tides">Clear</button>
+                            <button onClick={() => setCalc('radiant', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label={t('calculator.clearRadiantAria')}>{t('calculator.clearLabel')}</button>
                           </div>
                         </div>
                       )}
                       {(state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div>
-                          <label className="text-base mb-2 block font-medium text-pink-400">Forging Tides</label>
-                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Forging Tides" />
+                          <label className="text-base mb-2 block font-medium text-pink-400">{t('calculator.forgingTides')}</label>
+                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.forgingTides')} />
                           <div className="flex gap-1 mt-1.5">
                             {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={`Add ${amt} Forging Tide${amt > 1 ? 's' : ''}`} className="kuro-btn kuro-btn-sm active-pink">+{amt}</button>
+                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={t('calculator.addForgingAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-pink">+{amt}</button>
                             ))}
-                            <button onClick={() => setCalc('forging', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Forging Tides">Clear</button>
+                            <button onClick={() => setCalc('forging', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label={t('calculator.clearForgingAria')}>{t('calculator.clearLabel')}</button>
                           </div>
                         </div>
                       )}
@@ -324,13 +325,13 @@ function CalculatorTab({ state, dispatch }) {
                   {/* Standard banner resources */}
                   {state.calc.bannerCategory === 'standard' && (
                     <div>
-                      <label className="text-base mb-2 block font-medium text-cyan-400">Lustrous Tides</label>
-                      <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label="Lustrous Tides" />
+                      <label className="text-base mb-2 block font-medium text-cyan-400">{t('calculator.lustrousTides')}</label>
+                      <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.lustrousTides')} />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
-                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={`Add ${amt} Lustrous Tide${amt > 1 ? 's' : ''}`} className="kuro-btn kuro-btn-sm active-cyan">+{amt}</button>
+                          <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={t('calculator.addLustrousAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-cyan">+{amt}</button>
                         ))}
-                        <button onClick={() => setCalc('lustrous', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label="Clear Lustrous Tides">Clear</button>
+                        <button onClick={() => setCalc('lustrous', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" aria-label={t('calculator.clearLustrousAria')}>{t('calculator.clearLabel')}</button>
                       </div>
                     </div>
                   )}
@@ -341,14 +342,14 @@ function CalculatorTab({ state, dispatch }) {
                     const currentPriority = state.calc[priorityKey] ?? 50;
                     return (
                     <div>
-                      <div className="kuro-label">Astrite Priority{state.calc.bannerCategory === 'standard' ? ' (Standard)' : ''}</div>
+                      <div className="kuro-label">{t('calculator.astritePriority')}{state.calc.bannerCategory === 'standard' ? t('calculator.astritePriorityStandard') : ''}</div>
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-1.5">
                           <Crown size={12} style={{ color: currentPriority >= 50 ? '#edaf18' : '#6b7280' }} />
-                          <span className="text-base font-medium" style={{ color: currentPriority >= 50 ? '#edaf18' : '#6b7280' }}>Resonator {currentPriority}%</span>
+                          <span className="text-base font-medium" style={{ color: currentPriority >= 50 ? '#edaf18' : '#6b7280' }}>{t('calculator.resonatorPercent', { pct: currentPriority })}</span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className="text-base font-medium" style={{ color: currentPriority <= 50 ? '#ec4899' : '#6b7280' }}>Weapon {100 - currentPriority}%</span>
+                          <span className="text-base font-medium" style={{ color: currentPriority <= 50 ? '#ec4899' : '#6b7280' }}>{t('calculator.weaponPercent', { pct: 100 - currentPriority })}</span>
                           <Swords size={12} style={{ color: currentPriority <= 50 ? '#ec4899' : '#6b7280' }} />
                         </div>
                       </div>
@@ -356,7 +357,7 @@ function CalculatorTab({ state, dispatch }) {
                         type="range" min="0" max="100" step="5" value={currentPriority}
                         onChange={e => setCalc(priorityKey, +e.target.value)}
                         className="kuro-slider priority-slider w-full"
-                        aria-label={`Astrite allocation: ${currentPriority}% Resonator, ${100 - currentPriority}% Weapon`}
+                        aria-label={t('calculator.allocAriaLabel', { char: currentPriority, weap: 100 - currentPriority })}
                         style={{ background: `linear-gradient(to right, #edaf18 0%, #edaf18 ${currentPriority}%, #ec4899 ${currentPriority}%, #ec4899 100%)` }}
                       />
                       {currentPriority !== 50 && (
@@ -364,7 +365,7 @@ function CalculatorTab({ state, dispatch }) {
                           onClick={() => setCalc(priorityKey, 50)}
                           className="kuro-btn w-full mt-2 text-base"
                         >
-                          <RefreshCcw size={12} className="inline mr-1.5" />Reset to 50/50
+                          <RefreshCcw size={12} className="inline mr-1.5" />{t('calculator.resetTo5050')}
                         </button>
                       )}
                     </div>
@@ -376,30 +377,30 @@ function CalculatorTab({ state, dispatch }) {
                     <div className="flex justify-around items-center">
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-yellow-400 kuro-number text-2xl">{charPulls.toLocaleString('en-US')}</div>
-                          <div className="text-gray-400 text-sm">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-sm">({astriteAllocation.charAstritePulls.toLocaleString('en-US')} + {(+state.calc.radiant || 0).toLocaleString('en-US')} tides)</div>}
+                          <div className="text-yellow-400 kuro-number text-2xl">{formatNumber(charPulls)}</div>
+                          <div className="text-gray-400 text-sm">{t('calculator.resonatorConvenes')}</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-sm">{t('calculator.tidesSuffix', { n: formatNumber(astriteAllocation.charAstritePulls), extra: formatNumber(+state.calc.radiant || 0) })}</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-pink-400 kuro-number text-2xl">{weapPulls.toLocaleString('en-US')}</div>
-                          <div className="text-gray-400 text-sm">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-sm">({astriteAllocation.weapAstritePulls.toLocaleString('en-US')} + {(+state.calc.forging || 0).toLocaleString('en-US')} tides)</div>}
+                          <div className="text-pink-400 kuro-number text-2xl">{formatNumber(weapPulls)}</div>
+                          <div className="text-gray-400 text-sm">{t('calculator.weaponConvenes')}</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-sm">{t('calculator.tidesSuffix', { n: formatNumber(astriteAllocation.weapAstritePulls), extra: formatNumber(+state.calc.forging || 0) })}</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-cyan-400 kuro-number text-2xl">{stdCharPulls.toLocaleString('en-US')}</div>
-                          <div className="text-gray-400 text-sm">Resonator Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-sm">({astriteAllocation.stdCharAstrite.toLocaleString('en-US')} + {astriteAllocation.stdCharLustrous.toLocaleString('en-US')} tides)</div>}
+                          <div className="text-cyan-400 kuro-number text-2xl">{formatNumber(stdCharPulls)}</div>
+                          <div className="text-gray-400 text-sm">{t('calculator.resonatorConvenes')}</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-sm">{t('calculator.tidesSuffix', { n: formatNumber(astriteAllocation.stdCharAstrite), extra: formatNumber(astriteAllocation.stdCharLustrous) })}</div>}
                         </div>
                       )}
                       {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div className="text-center">
-                          <div className="text-cyan-400 kuro-number text-2xl">{stdWeapPulls.toLocaleString('en-US')}</div>
-                          <div className="text-gray-400 text-sm">Weapon Convenes</div>
-                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-sm">({astriteAllocation.stdWeapAstrite.toLocaleString('en-US')} + {astriteAllocation.stdWeapLustrous.toLocaleString('en-US')} tides)</div>}
+                          <div className="text-cyan-400 kuro-number text-2xl">{formatNumber(stdWeapPulls)}</div>
+                          <div className="text-gray-400 text-sm">{t('calculator.weaponConvenes')}</div>
+                          {state.calc.selectedBanner === 'both' && <div className="text-gray-400 text-sm">{t('calculator.tidesSuffix', { n: formatNumber(astriteAllocation.stdWeapAstrite), extra: formatNumber(astriteAllocation.stdWeapLustrous) })}</div>}
                         </div>
                       )}
                     </div>
@@ -411,61 +412,61 @@ function CalculatorTab({ state, dispatch }) {
             {isCalcPending && (
               <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-1" aria-live="polite">
                 <span className="inline-block w-2 h-2 rounded-full bg-yellow-400/60 animate-pulse" />
-                Calculating…
+                {t('calculator.calculating')}
               </div>
             )}
             <div aria-live="polite" aria-atomic="false" className={`banner-grid space-y-3 lg:space-y-0 transition-opacity ${isCalcPending ? 'opacity-50 animate-pulse' : 'opacity-100'}`}>
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && charStats && (
-              <CalcResultsCard title="Featured Resonator Results" stats={charStats} accentStatClass="kuro-stat-gold" copies={state.calc.charCopies} isFeatured={true} />
+              <CalcResultsCard title={t('calculator.featuredResonatorResults')} stats={charStats} accentStatClass="kuro-stat-gold" copies={state.calc.charCopies} isFeatured={true} />
             )}
 
             {state.calc.bannerCategory === 'featured' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && weapStats && (
-              <CalcResultsCard title="Featured Weapon Results" stats={weapStats} accentStatClass="kuro-stat-pink" copies={state.calc.weapCopies} isFeatured={true} />
+              <CalcResultsCard title={t('calculator.featuredWeaponResults')} stats={weapStats} accentStatClass="kuro-stat-pink" copies={state.calc.weapCopies} isFeatured={true} />
             )}
 
             {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && stdCharStats && (
-              <CalcResultsCard title="Standard Resonator Results" stats={stdCharStats} accentStatClass="kuro-stat-cyan" copies={state.calc.stdCharCopies} isFeatured={false} />
+              <CalcResultsCard title={t('calculator.standardResonatorResults')} stats={stdCharStats} accentStatClass="kuro-stat-cyan" copies={state.calc.stdCharCopies} isFeatured={false} />
             )}
 
             {state.calc.bannerCategory === 'standard' && (state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && stdWeapStats && (
-              <CalcResultsCard title="Standard Weapon Results" stats={stdWeapStats} accentStatClass="kuro-stat-cyan" copies={state.calc.stdWeapCopies} isFeatured={false} />
+              <CalcResultsCard title={t('calculator.standardWeaponResults')} stats={stdWeapStats} accentStatClass="kuro-stat-cyan" copies={state.calc.stdWeapCopies} isFeatured={false} />
             )}
             </div>
 
             {/* Combined Analysis */}
             {state.calc.selectedBanner === 'both' && combined && (
               <Card>
-                <CardHeader>Combined Analysis</CardHeader>
+                <CardHeader>{t('calculator.combinedAnalysis')}</CardHeader>
                 <CardBody>
                     <p className="text-gray-400 text-sm mb-2 text-center">
-                      Chance of getting <span className="text-yellow-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.charCopies : state.calc.stdCharCopies}× Resonator</span> AND <span className="text-pink-300 font-semibold">{state.calc.bannerCategory === 'featured' ? state.calc.weapCopies : state.calc.stdWeapCopies}× Weapon</span> with your current resources
+                      {t('calculator.chanceOfGetting')}<span className="text-yellow-300 font-semibold">{t('calculator.resonatorTimes', { n: state.calc.bannerCategory === 'featured' ? state.calc.charCopies : state.calc.stdCharCopies })}</span>{t('calculator.andConnector')}<span className="text-pink-300 font-semibold">{t('calculator.weaponTimes', { n: state.calc.bannerCategory === 'featured' ? state.calc.weapCopies : state.calc.stdWeapCopies })}</span>{t('calculator.withResources')}
                     </p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="kuro-stat kuro-stat-emerald">
                         <div className="text-3xl kuro-number text-emerald-400 font-extrabold">{combined.both}%</div>
-                        <div className="text-gray-400 text-sm mt-1">Get Both</div>
+                        <div className="text-gray-400 text-sm mt-1">{t('calculator.getBoth')}</div>
                       </div>
                       <div className="kuro-stat kuro-stat-gold kuro-stat-hero">
                         <div className="text-yellow-400 text-3xl kuro-number font-extrabold">{combined.atLeastOne}%</div>
-                        <div className="text-gray-400 text-sm mt-1">At Least One</div>
+                        <div className="text-gray-400 text-sm mt-1">{t('calculator.atLeastOne')}</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-center text-sm">
                       <div className={`kuro-stat ${state.calc.bannerCategory === 'featured' ? 'kuro-stat-gold' : 'kuro-stat-cyan'}`}>
                         <span className={`kuro-number ${state.calc.bannerCategory === 'featured' ? 'text-yellow-400' : 'text-cyan-400'}`}>{combined.charOnly}%</span>
-                        <div className="text-gray-400 mt-0.5">Char Only</div>
+                        <div className="text-gray-400 mt-0.5">{t('calculator.charOnly')}</div>
                       </div>
                       <div className={`kuro-stat ${state.calc.bannerCategory === 'featured' ? 'kuro-stat-pink' : 'kuro-stat-cyan'}`}>
                         <span className={`kuro-number ${state.calc.bannerCategory === 'featured' ? 'text-pink-400' : 'text-cyan-400'}`}>{combined.weapOnly}%</span>
-                        <div className="text-gray-400 mt-0.5">Weap Only</div>
+                        <div className="text-gray-400 mt-0.5">{t('calculator.weapOnly')}</div>
                       </div>
                       <div className="kuro-stat kuro-stat-red">
                         <span className="text-red-400 kuro-number">{combined.neither}%</span>
-                        <div className="text-gray-400 mt-0.5">Neither</div>
+                        <div className="text-gray-400 mt-0.5">{t('calculator.neither')}</div>
                       </div>
                     </div>
                     <div className="mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
-                      <p className="text-emerald-400/80 text-sm">✓ Astrite split: {astriteAllocation.charPercent}% Resonator / {astriteAllocation.weapPercent}% Weapon</p>
+                      <p className="text-emerald-400/80 text-sm">{t('calculator.astriteSplit', { char: astriteAllocation.charPercent, weap: astriteAllocation.weapPercent })}</p>
                     </div>
                 </CardBody>
               </Card>
@@ -475,19 +476,19 @@ function CalculatorTab({ state, dispatch }) {
           </div>
 
       {/* Bookmark Modal */}
-      <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="" onClick={() => setShowBookmarkModal(false)} ariaLabel="Save bookmark" centered>
+      <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="" onClick={() => setShowBookmarkModal(false)} ariaLabel={t('calculator.saveCurrentState')} centered>
           <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label="Close bookmark modal"><X size={16} /></button>}>Save Current State</CardHeader>
+            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('calculator.closeBookmarkModalAria')}><X size={16} /></button>}>{t('calculator.saveCurrentState')}</CardHeader>
             <CardBody className="space-y-3">
-              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || `Save ${(state.bookmarks?.length || 0) + 1}` }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder="Enter name…" maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label="Bookmark name" />
+              <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || t('calculator.defaultBookmarkName', { n: (state.bookmarks?.length || 0) + 1 }) }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder={t('calculator.bookmarkNamePlaceholder')} maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label={t('calculator.bookmarkNameAria')} />
               <div className="text-gray-300 text-sm">
-                <p>Banner: {state.calc.bannerCategory === 'featured' ? 'Featured' : 'Standard'} {state.calc.selectedBanner === 'char' ? 'Resonator' : state.calc.selectedBanner === 'weap' ? 'Weapon' : 'Both'}</p>
-                <p>Astrite: {(+state.calc.astrite || 0).toLocaleString('en-US')} • Radiant: {state.calc.radiant || 0} • Forging: {state.calc.forging || 0} • Lustrous: {state.calc.lustrous || 0}</p>
-                <p>Resonator Pity: {state.calc.charPity}{state.calc.charGuaranteed ? ' (G)' : ''} • Weapon Pity: {state.calc.weapPity}</p>
-                <p>Standard Resonator Pity: {state.calc.stdCharPity} • Standard Weapon Pity: {state.calc.stdWeapPity}</p>
-                <p>Copies: Resonator x{state.calc.charCopies} • Weapon x{state.calc.weapCopies} • Standard Resonator x{state.calc.stdCharCopies} • Standard Weapon x{state.calc.stdWeapCopies}</p>
+                <p>{t('calculator.bookmarkBannerLine', { category: state.calc.bannerCategory === 'featured' ? t('planner.featuredLabel') : t('planner.standardLabel'), type: state.calc.selectedBanner === 'char' ? t('planner.resonatorLabel') : state.calc.selectedBanner === 'weap' ? t('planner.weaponLabel') : t('planner.bothLabel') })}</p>
+                <p>{t('calculator.bookmarkAstriteLine', { astrite: formatNumber(+state.calc.astrite || 0), radiant: state.calc.radiant || 0, forging: state.calc.forging || 0, lustrous: state.calc.lustrous || 0 })}</p>
+                <p>{t('calculator.bookmarkPityLine', { charPity: state.calc.charPity, guaranteed: state.calc.charGuaranteed ? t('calculator.bookmarkGuaranteedSuffix') : '', weapPity: state.calc.weapPity })}</p>
+                <p>{t('calculator.bookmarkStdPityLine', { stdCharPity: state.calc.stdCharPity, stdWeapPity: state.calc.stdWeapPity })}</p>
+                <p>{t('calculator.bookmarkCopiesLine', { charCopies: state.calc.charCopies, weapCopies: state.calc.weapCopies, stdCharCopies: state.calc.stdCharCopies, stdWeapCopies: state.calc.stdWeapCopies })}</p>
               </div>
-              <button onClick={() => { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || `Save ${(state.bookmarks?.length || 0) + 1}` }); setBookmarkName(''); setShowBookmarkModal(false); }} className="kuro-btn w-full active-purple">Save Bookmark</button>
+              <button onClick={() => { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || t('calculator.defaultBookmarkName', { n: (state.bookmarks?.length || 0) + 1 }) }); setBookmarkName(''); setShowBookmarkModal(false); }} className="kuro-btn w-full active-purple">{t('calculator.saveBookmarkButton')}</button>
             </CardBody>
           </Card>
       </FocusTrapModal>
