@@ -11,6 +11,7 @@ import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
+import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
 import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getSetIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
@@ -450,11 +451,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               </h3>
               <div className="space-y-0.5">
                 {localizedRotation.map((step, i) => {
-                  const typeColors = {
-                    'Basic ATK': 'text-gray-300', 'Mid-air': 'text-gray-300', 'Heavy ATK': 'text-orange-300',
-                    'Charged ATK': 'text-orange-300', 'Skill': 'text-cyan-300', 'Liberation': 'text-yellow-300',
-                    'Forte': 'text-purple-300', 'Intro': 'text-green-300', 'Outro': 'text-pink-300',
-                  };
+                  // Same full-word, color-coded badge as the Team tab's Rotation Guide (RotationGuideCard's
+                  // skillSequence chips) — spells out "Resonance Skill"/"Heavy Attack"/etc. instead of the
+                  // short raw step.type, so a step reads the same whether it's seen here (solo, per-character)
+                  // or team-composed in Teams.
+                  const sty = stepStyle(step.type);
                   // Look up this step's DMG from SKILL_MULTIPLIERS — single source of truth, same [type, name] tags
                   // used above, so Team tab can resolve the same step against the same table later.
                   const row = (SKILL_MULTIPLIERS[name] || []).find(([t, n]) => t === step.type && n.includes(step.skill));
@@ -466,7 +467,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                       {stepIcon && <img src={stepIcon} alt="" className="w-4 h-4 rounded shrink-0 mt-0.5" onError={hideOnError} />}
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-baseline gap-x-1.5">
-                          <span className={`text-sm font-medium shrink-0 ${typeColors[step.type] || 'text-gray-400'}`}>{step.type}</span>
+                          <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border shrink-0 ${sty.cls}`}>{sty.label}</span>
                           <span className="text-sm text-white font-semibold break-words">{step.skill}</span>
                           {dmg && <span className={`text-sm font-semibold break-words ${colors.text}`}>{dmg}</span>}
                           {step.duration != null && (

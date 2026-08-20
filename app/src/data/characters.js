@@ -4123,6 +4123,25 @@ const CHARACTER_ROTATIONS = {
     { type: 'Echo', skill: 'Impermanence Heron', note: 'Use your Echo skill right after Overshock — this cancels its ending animation — then swap out immediately.' },
     { type: 'Outro', skill: 'Rumbling Thunders', duration: 20, note: 'Triggers automatically on swap, but the buff it grants disappears the instant the incoming character swaps out again — so have them land a Negative Status hit quickly to consume it for +25% All DMG Amp.' },
   ],
+  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Qingxiao (2026-08-20,
+  // Chrome UA + google.com referer + jsRender, same technique as the rest of this file's Prydwen
+  // pulls). Fills the gap flagged in the 2026-08-20 (session 4) Update_report.md entry — she was one
+  // of only 2 of 58 characters (with Jingran) missing an entry here. Prydwen's own step list uses a
+  // generic "Heavy:" prefix for held-Basic-Attack chains (including the mid-air ones); renamed to the
+  // real skill names/types from SKILL_MULTIPLIERS['Qingxiao'] and the kit text so it reads consistently
+  // with every other entry in this table. Order preserved exactly as Prydwen lists it.
+  'Qingxiao': [
+    { type: 'Intro', skill: 'Tonality Shift', note: 'Swap in — fires automatically, deals Aero DMG, and grants 30 points of Sword Cadence plus Resonant Chime.' },
+    { type: 'Mid-air', skill: 'Mid-air Attack - Stringblade Stage 1-3', note: "Qingxiao mostly fights airborne — hold Basic Attack while in the air for this 3-hit combo, building Qin Heart/Sword Cadence toward her Heavy Attack." },
+    { type: 'Basic ATK', skill: 'Basic Attack - Stringblade Stage 3-4', note: 'Landing from Mid-air Attack Stage 3 auto-chains into this if you keep holding/tapping Basic Attack — same combo, continued on the ground.' },
+    { type: 'Skill', skill: 'Severing Note: Judgement', note: 'Press Skill once — deals Aero DMG and grants 45 points of Qin Heart, pushing her toward a full Forte gauge.' },
+    { type: 'Heavy ATK', skill: 'Heavy Attack - Stringblade', note: 'Once Qin Heart and Sword Cadence are both full, hold Basic Attack for this — consumes both gauges and sends her into the Ephemeral Transcendence state.' },
+    { type: 'Forte', skill: 'Basic Attack - Ephemeral Transcendence Stage 1-4', note: 'While in Ephemeral Transcendence, hold/tap Basic Attack for this enhanced 4-hit combo — builds Heart Sword Intent toward the finisher.' },
+    { type: 'Forte', skill: "Heavy Attack - Heaven's Reckoning: Ephemeral Transcendence", note: 'Once Heart Sword Intent is full, hold Basic Attack for this — her single hardest-hitting move, consumes all Heart Sword Intent and ends Ephemeral Transcendence.' },
+    { type: 'Liberation', skill: 'Billows Beneath Heaven', note: "Press Liberation — best saved for last so her signature weapon's passive (or any pre-Ultimate buffs) are fully stacked before it fires." },
+    { type: 'Echo', skill: 'Use Echo', note: "Swap-cancel your Echo skill right after the Liberation lands, just before swapping out for the Outro." },
+    { type: 'Outro', skill: 'Lingering Song', note: 'Swap out to trigger this automatically — deals Aero DMG equal to 800% of her ATK.' },
+  ],
 };
 
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator

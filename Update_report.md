@@ -496,3 +496,42 @@ timeline text (absolutely-positioned bar, label extracted but its duration badge
 order near it) — left unchanged rather than guess.
 
 Verified: `npx vitest run` — 612/612 passing.
+
+---
+
+## 2026-08-20 (session 7) — Detail Modal rotation: badge parity + fill the last 2-character gap
+
+**User observation**: the Team tab's Rotation Guide (`RotationGuideCard.jsx`) reads as more developed
+than the Collection detail modal's own "Standard Rotation" section — worth checking whether that's a
+real gap or just team-context info that can't exist per-character.
+
+**Findings**:
+1. The Team tab's richer bits (`reason`, `inheritsFromTeam`, `ownKit`, `handsOffToNext`) are computed
+   per-team-composition in `calcTeamStats.js` from the actual buff timeline of whichever characters are
+   slotted together — they're not static per-character data and genuinely can't exist in a solo detail
+   modal (there's no "team" to inherit from/hand off to outside Teams).
+2. What *could* carry over 1:1: the Team tab's skill-sequence chips use `stepStyle()` (from
+   `RotationTimeline.jsx`) — full spelled-out labels ("Resonance Skill", "Heavy Attack", etc.) instead
+   of the modal's old plain `step.type` text. Wired `CharacterDetailModal.jsx` to use the same
+   `stepStyle()` badge, so every character's solo rotation now reads with the identical vocabulary as
+   the Team tab's guide.
+3. **The real gap**: `CHARACTER_ROTATIONS` — the actual per-character step data both views read from —
+   was missing exactly 2 of 58 characters: **Qingxiao and Jingran** (confirmed by diffing every
+   `CHARACTER_DATA` key against `CHARACTER_ROTATIONS` keys). Their detail modals silently rendered no
+   rotation section at all (`localizedRotation` falsy → early return), while every other character had
+   one.
+
+**Fixed**: added `CHARACTER_ROTATIONS['Qingxiao']` — sourced from `prydwen.gg/wuthering-waves/
+characters/qingxiao`'s "Gameplay and teams" tab (now live, last updated 20/Aug/2026), fetched via
+DV's `web_fetch` with the user's documented bypass technique. Prydwen's own step list uses a generic
+"Heavy:" prefix for every held-Basic-Attack chain (including her mid-air ones); renamed each step to
+its real skill name/type from `SKILL_MULTIPLIERS['Qingxiao']` so it matches this table's existing
+convention, keeping Prydwen's exact step order.
+
+**Jingran — still not fixed, left out on purpose**: his own Prydwen page has no Kit/Review/Rotation
+content yet ("Jingran rotation information aren't available yet"), and `wutheringwaves.fandom.com/
+wiki/Jingran/Combat` returned nothing renderable either — consistent with him not being live until the
+v3.6-p2 banner (~Sep 10, per `BANNER_HISTORY`). No fabricated rotation added; `CHARACTER_ROTATIONS`
+is now 57 of 58, with Jingran the one legitimate remaining gap until his kit is actually published.
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
