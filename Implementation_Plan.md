@@ -191,3 +191,39 @@ source citations and exact values.
   which both worked fine with the same browser-fingerprint technique — not blocking since nanoka.cc
   + fandom fully covered this session's scope, but flagged in case a future session needs Game8
   specifically (e.g. for banner-history cross-checks Game8 previously provided).
+
+---
+
+## 2026-08-20 (session 2) — Missing-art placeholder fix
+
+**Task**: source real art for characters/weapons/materials still on the text-fallback placeholder,
+via wutheringwaves.fandom.com, re-host, and wire in.
+
+**What actually happened**: inventory showed the character-level gap from the original task
+description (Rebecca, Lucilla, Lucy, Rover: Electro, Yangyang: Xuanling, Suisui, Denia, Hiyuki,
+Qingxiao, Jingran) was already closed by earlier sessions — all have real ibb.co URLs in
+`DEFAULT_COLLECTION_IMAGES`/`CHARACTER_THEMES`. Remaining real gap: 2 weapon icons, 1 material icon,
+9 event banners (12 items total in `WEAPON_ICONS`/`MATERIAL_IMAGES`/`CURRENT_EVENTS`).
+
+**Sourcing**: fandom's MediaWiki `api.php` (search + imageinfo) bypasses the Cloudflare block that
+kills plain page fetches. Found/downloaded real assets for 7 of the 12: `Glint of Clouds`,
+`Thousandfold Deliverance`, `Forged Empyrean's Sigh`, `bountifulCrescendo`, `fogveilPagoda`,
+`chordCleansing`, `secondComingOfSolaris`.
+
+**Hosting decision — deviated from the imgbb instruction**: no `IMGBB_API_KEY` exists in this
+environment, and imgbb has no stable anonymous/keyless upload API (its web upload form is
+session/CSRF-gated). Rather than fabricate a workaround or block entirely, re-hosted the 7 images
+locally under `app/public/icons/` (same pattern as the existing `app/public/portraits/` and
+`app/public/map-icons/` local-asset folders) and referenced them by same-origin path. This is
+covered by the CSP's default `'self'` `img-src` with zero config changes, and is arguably more
+robust than another third-party hotlink dependency. If a real `IMGBB_API_KEY` becomes available
+later, `agent/lib/images.js`'s `uploadToImgbb()` is already wired for it and these could be migrated
+to match the ibb.co convention used everywhere else, but there's no functional need to.
+
+**Remaining gap** (still `PLACEHOLDER_IMAGE`, no real asset found on fandom as of today):
+`versionSpecialCampaign`, `giftsOfDriftingMist`, `resonanceSimRealm`, `theStringsRemember`,
+`ifDreamsStillReverberate` — all v3.6 events with no dedicated wiki File: page yet (game launched
+today, wiki likely hasn't caught up on event-specific art for these five).
+
+Verified: `npm run build` clean, `npx vitest run` 612/612 passing, `dist/icons/` populated correctly
+after build.

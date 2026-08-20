@@ -287,3 +287,52 @@ Two entire new regions are absent from the app's map data:
 6. **Weapons + echoes** tied to all of the above.
 7. **New region map data** (Somnoire: Night City, Land of Xuanfang) if the app's map feature should reflect current content.
 8. **Wait for Aug 20** before touching Qingxiao/Jingran — build them once 3.6 is actually live, not off beta datamines.
+
+---
+
+## 9. 2026-08-20 — Missing-art placeholder fix (fandom sourcing + local rehost)
+
+Ran a fresh inventory of every `PLACEHOLDER_IMAGE`/`MATERIAL_PLACEHOLDER_IMAGE` reference across
+`app/src/data/*.js`. Finding: **almost all of the characters named in the original placeholder-art
+gap (Rebecca, Lucilla, Lucy, Rover: Electro, Yangyang: Xuanling, Suisui, Denia, Hiyuki, Qingxiao,
+Jingran and their signature weapons) already have real ibb.co-hosted sprite/banner art** wired in
+from prior sessions — that part of the original complaint is stale. The actual remaining gap was
+much smaller:
+
+- 2 weapon icons: **Glint of Clouds** (Qingxiao's Sword), **Thousandfold Deliverance** (Jingran's
+  Broadblade) — `WEAPON_ICONS` in `banners.js`
+- 1 material icon: **Forged Empyrean's Sigh** (Qingxiao/Jingran's shared v3.6 boss-drop ascension
+  material) — `MATERIAL_IMAGES` in `materialData.js`
+- 9 v3.6 event banner images in `CURRENT_EVENTS` (`banners.js`)
+
+**Sourcing**: fetched wutheringwaves.fandom.com via its MediaWiki `api.php` (`action=query`,
+`list=search` + `prop=imageinfo`), which bypasses the site's Cloudflare challenge that blocks plain
+HTTP fetches of wiki pages. Found and downloaded real game assets for all 3 weapon/material icons
+and 4 of the 9 events (Bountiful Crescendo, Fogveil Pagoda, Chord Cleansing, Second Coming of
+Solaris). The other 5 events (Version Special Campaign, Gifts of Drifting Mist, Resonance Sim Realm,
+The Strings Remember, If Dreams Still Reverberate) have no dedicated wiki file yet — likely too new
+(v3.6 launched today) for the wiki to have uploaded dedicated art — so they remain on
+`PLACEHOLDER_IMAGE`.
+
+**Hosting**: no `IMGBB_API_KEY` is set anywhere in this environment (checked env vars, `agent/lib/`,
+`.env.example` files — only an example placeholder exists), and imgbb's anonymous web-upload flow is
+session/CSRF-gated, not a stable scriptable public endpoint, so it wasn't used. Instead, the 7
+sourced images were committed directly into the repo under `app/public/icons/` and referenced by
+same-origin path (`/icons/glint-of-clouds.webp`, etc.) — this matches the app's existing local-asset
+convention (`app/public/portraits/`, `app/public/map-icons/`) and is covered by the CSP's default
+`'self'` `img-src` without needing any external allowlist change. All downloaded files are actually
+WebP regardless of their fandom filename extension (confirmed via `file`).
+
+**Wired in**: `Glint of Clouds`, `Thousandfold Deliverance` (`WEAPON_ICONS`), `Forged Empyrean's
+Sigh` (`MATERIAL_IMAGES`), `bountifulCrescendo`, `fogveilPagoda`, `chordCleansing`,
+`secondComingOfSolaris` (`CURRENT_EVENTS`) — 7 of the 12 gap items closed with real fandom art.
+
+**Still placeholder** (`PLACEHOLDER_IMAGE`, honest gap — no real asset found): `versionSpecialCampaign`,
+`giftsOfDriftingMist`, `resonanceSimRealm`, `theStringsRemember`, `ifDreamsStillReverberate`.
+
+**Caveat**: `secondComingOfSolaris`'s art (`File:Second_Coming_of_Solaris_(Ultra).jpg`) is from an
+earlier "Second Coming of Solaris" event run, not confirmed as pixel-identical to this v3.6
+"Coded Deception" sub-event — used as the best real-asset match, flagged in-code.
+
+Verified: `npm run build` succeeds, `npx vitest run` — 612/612 tests pass, `dist/icons/` contains all
+7 new files after build.

@@ -334,7 +334,7 @@ const EVENTS = {
     currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: '/icons/bountiful-crescendo.webp', // real event art, sourced 2026-08-20 from fandom's File:Bountiful_Crescendo.jpg (recurring material double-drop event, generic art reused across versions)
   },
   resonanceSimRealm: {
     name: 'Resonance Sim Realm',
@@ -358,7 +358,11 @@ const EVENTS = {
     currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
-    imageUrl: PLACEHOLDER_IMAGE,
+    // real art, sourced 2026-08-20 from fandom's File:Second_Coming_of_Solaris_(Ultra).jpg — the
+    // wiki page is for an earlier "Second Coming of Solaris" iteration, not the confirmed
+    // "Coded Deception" v3.6 sub-title art; kept as the best real-asset match found, not a
+    // guaranteed exact match for this specific event run.
+    imageUrl: '/icons/second-coming-of-solaris.webp',
   },
   theStringsRemember: {
     name: 'The Strings Remember',
@@ -394,7 +398,7 @@ const EVENTS = {
     currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: '/icons/fogveil-pagoda.webp', // real event art, sourced 2026-08-20 from fandom's File:Fogveil_Pagoda.png
   },
   chordCleansing: {
     name: 'Chord Cleansing',
@@ -406,7 +410,7 @@ const EVENTS = {
     currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: '/icons/chord-cleansing.webp', // real event art, sourced 2026-08-20 from fandom's File:Chord_Cleansing.jpg (recurring echo double-drop event, generic art reused across versions)
   },
 };
 
@@ -520,9 +524,13 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Frostburn': 'https://i.ibb.co/29mMcRy/Frostburn-sprite.webp',
   'Forged Dwarf Star': 'https://i.ibb.co/FLf2rmCB/Forged-Dwarf-Start.webp',
   "Firstlight's Herald": 'https://i.ibb.co/PvkzS83F/First-s-Light-Herald-sprite.webp',
-  // v3.6 weapons — no real art asset sourced yet, using shared placeholder
-  'Glint of Clouds': PLACEHOLDER_IMAGE,
-  'Thousandfold Deliverance': PLACEHOLDER_IMAGE,
+  // v3.6 weapons — real icons sourced 2026-08-20 from fandom's own File:Weapon_Glint_of_Clouds.png
+  // / File:Weapon_Thousandfold_Deliverance.png via the MediaWiki API (bypasses Cloudflare). No
+  // imgbb API key is available in this environment (IMGBB_API_KEY unset, no anonymous-upload path
+  // that's reliably scriptable), so these are hosted locally under app/public/icons/ instead —
+  // same-origin, already covered by the CSP's default 'self' img-src, no external re-host needed.
+  'Glint of Clouds': '/icons/glint-of-clouds.webp',
+  'Thousandfold Deliverance': '/icons/thousandfold-deliverance.webp',
   // 4★ Weapons
   'Overture': 'https://i.ibb.co/nMXdhNTW/Overture.png',
   "Ocean's Gift": 'https://i.ibb.co/rfk6Fgwx/Oceans-Gift.png',

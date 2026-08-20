@@ -81,9 +81,12 @@ const MATERIAL_IMAGES = {
   'Truth in Lies': 'https://i.ibb.co/H93NgjR/Item-Truth-in-Lies.webp',
   // Qingxiao & Jingran's shared v3.6 boss-drop ascension material, confirmed via
   // wutheringwaves.fandom.com (both characters' Ascension Materials tables list "46 Forged
-  // Empyrean's Sigh"). No licensed icon source available yet — using the same PLACEHOLDER_IMAGE
-  // convention as banners.js until real art is sourced.
-  "Forged Empyrean's Sigh": MATERIAL_PLACEHOLDER_IMAGE,
+  // Empyrean's Sigh"). Real icon sourced 2026-08-20 from fandom's own
+  // File:Item_Forged_Empyrean's_Sigh.png via the MediaWiki API (bypasses Cloudflare). No imgbb
+  // API key is available in this environment, so this is hosted locally under app/public/icons/
+  // instead of re-hosted on ibb.co — same-origin, already covered by the CSP's default 'self'
+  // img-src.
+  "Forged Empyrean's Sigh": '/icons/forged-empyreans-sigh.webp',
   // === Common Enemy Drops (HF = tier 3, FF = tier 4) ===
   // Whisperin Core family
   'HF-Whisperin Core': 'https://i.ibb.co/5XdgF3vt/Item-HF-Whisperin-Core.webp',
