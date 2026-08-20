@@ -343,7 +343,11 @@ const EVENTS = {
     resetType: 'Limited-time',
     color: 'red',
     currentStart: '2026-08-20T08:00:00Z',
-    currentEnd: '2026-09-10T01:59:59Z',
+    // end date fixed 2026-08-20 (session 6): wuwatracker.com/fr/timeline's chronology (rendered via
+    // DV's JS-capable web_fetch, same anti-bot technique as the character icon sourcing) shows this
+    // event running 5d from the Aug 20 v3.6-p1 start, not the full phase-1 span this file previously
+    // guessed for every un-audited event.
+    currentEnd: '2026-08-25T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
     accentColor: 'red',
     imageUrl: PLACEHOLDER_IMAGE,
@@ -355,7 +359,9 @@ const EVENTS = {
     resetType: 'Limited-time',
     color: 'cyan',
     currentStart: '2026-08-20T08:00:00Z',
-    currentEnd: '2026-09-10T01:59:59Z',
+    // end date fixed 2026-08-20 (session 6): wuwatracker.com/fr/timeline shows this running 12d from
+    // the Aug 20 start, not the full phase-1 span.
+    currentEnd: '2026-09-01T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
     // real art, sourced 2026-08-20 from fandom's File:Second_Coming_of_Solaris_(Ultra).jpg — the
@@ -371,7 +377,9 @@ const EVENTS = {
     resetType: 'Limited-time',
     color: 'purple',
     currentStart: '2026-08-20T08:00:00Z',
-    currentEnd: '2026-09-10T01:59:59Z',
+    // end date fixed 2026-08-20 (session 6): wuwatracker.com/fr/timeline shows this running 20d from
+    // the Aug 20 start (ends 1 day before the phase-1 -> phase-2 boundary, not exactly on it).
+    currentEnd: '2026-09-09T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
     imageUrl: PLACEHOLDER_IMAGE,
@@ -383,7 +391,10 @@ const EVENTS = {
     resetType: 'Limited-time',
     color: 'orange',
     currentStart: '2026-08-20T08:00:00Z',
-    currentEnd: '2026-09-10T01:59:59Z',
+    // end date fixed 2026-08-20 (session 6): wuwatracker.com/fr/timeline shows this running 26d from
+    // the Aug 20 start — it actually outlasts the phase-1 -> phase-2 boundary (Sep 10) by 5 days,
+    // the opposite direction from every other event this file had guessed at the phase boundary.
+    currentEnd: '2026-09-15T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
     imageUrl: PLACEHOLDER_IMAGE,

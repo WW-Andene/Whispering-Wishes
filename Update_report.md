@@ -465,3 +465,34 @@ retry. Fandom's MediaWiki search (re-checked) still has no pages for the 5 event
 
 Verified: `npm install` (deps weren't present this session), `npx vitest run` — 612/612 passing,
 `npm run build` (from `app/`) succeeds clean.
+
+---
+
+## 2026-08-20 (session 6) — Fixed event durations using wuwatracker.com's real timeline chronology
+
+**User correction**: the character-rotation pairing in `BANNER_HISTORY` is NOT "Qingxiao + Jingran"
+running together — it's "Qingxiao → Jingran" (and Denia → Hiyuki, Mornye standalone), i.e. each
+named banner runs its own 20-day slot and is followed by the next one when it ends. Checked
+`BANNER_HISTORY` (`v3.6-p1`: Qingxiao+Denia, Aug 20 → Sep 10; `v3.6-p2`: Jingran+Hiyuki+Mornye,
+Sep 10 → Sep 30) against `wuwatracker.com/fr/timeline` (rendered via DV's `web_fetch` with the
+user's documented bypass — Chrome UA, google.com referer, 8s wait — now working) and confirmed this
+sequencing was already correct: "Wind of Transcendence - Qingxiao Banner" (20d) is immediately
+followed in the same lane by "Where Santu Beckons - Jingran Banner" (20d), same pattern for the
+weapon banners and for Denia→Hiyuki; Mornye has no phase-1 predecessor (new lane starting Sep 10),
+matching `v3.6-p2.characters` exactly. No change needed there.
+
+**What the timeline did catch**: 4 of the still-guessed v3.6 event `currentEnd` dates in `EVENTS`
+were all set to the phase boundary (2026-09-10) as a fallback, but the timeline shows real, differing
+per-event durations counted from the Aug 20 phase-1 start:
+- `resonanceSimRealm`: 5d → **2026-08-25** (was guessed at the full 21-day phase span)
+- `secondComingOfSolaris`: 12d → **2026-09-01**
+- `theStringsRemember`: 20d → **2026-09-09** (1 day short of the phase boundary, not exactly on it)
+- `ifDreamsStillReverberate`: 26d → **2026-09-15** (runs 5 days *past* the phase-1/phase-2 boundary
+  — the one event that outlasts the boundary rather than ending early)
+
+`versionSpecialCampaign` and `giftsOfDriftingMist` timeline durations ("1mo") are consistent with the
+existing Sep 10 guess, left unchanged. `fogveilPagoda`'s exact duration wasn't legible in the scraped
+timeline text (absolutely-positioned bar, label extracted but its duration badge wasn't in DOM read
+order near it) — left unchanged rather than guess.
+
+Verified: `npx vitest run` — 612/612 passing.
