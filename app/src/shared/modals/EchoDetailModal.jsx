@@ -7,7 +7,8 @@ import React from 'react';
 import { User, Star, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
-import { ECHO_DATA, ECHO_SETS } from '../../data/echoes.js';
+import { ECHO_DATA, ECHO_SETS, getLocalizedEchoSets } from '../../data/echoes.js';
+import { translateBuffFr } from '../../data/echoes.fr.js';
 import { ELEMENT_COLORS, getElementColor, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor, getSetIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
@@ -15,7 +16,7 @@ import { EchoImage } from '../components/EchoImage.jsx';
 import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
 import MonsterCard from '../components/MonsterCard.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { t } from '../../utils/i18n.js';
+import { t, getLocale } from '../../utils/i18n.js';
 
 const ECHO_COST_COLORS = {
   4: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', labelKey: 'cost4' },
@@ -122,7 +123,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
               })()}
               {(Array.isArray(data.buff) ? data.buff : [data.buff]).map(b => {
                 const bc = ECHO_BUFF_COLORS[b] || buffColors;
-                return <span key={b} className={`kuro-badge ${bc.bg} ${bc.text} border ${bc.border}`}>{b}</span>;
+                return <span key={b} className={`kuro-badge ${bc.bg} ${bc.text} border ${bc.border}`}>{getLocale() === 'fr' ? translateBuffFr(b) : b}</span>;
               })}
             </div>
             <h2 className="text-2xl font-semibold text-white">{name}</h2>
@@ -171,7 +172,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
             <div className="kuro-section-label mb-2">{t('modals.echoDetail.sonataSetBonuses')}</div>
             <div className="space-y-2">
               {(data.sets || []).map(setName => {
-                const setData = ECHO_SETS[setName];
+                const setData = getLocalizedEchoSets(getLocale())[setName];
                 const setColor = getSetElementColor(setName);
                 const setIcon = getSetIcon(setName);
                 return (

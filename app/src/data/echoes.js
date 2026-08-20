@@ -734,6 +734,31 @@ export function getEnemyStaggerStatsAtLevel(name, level) {
 const ALL_ECHO_SONATA_SETS = [...new Set(Object.values(ECHO_DATA).flatMap(e => e.sets))].sort();
 const ALL_ECHO_BUFF_TYPES = [...new Set(Object.values(ECHO_DATA).flatMap(e => Array.isArray(e.buff) ? e.buff : [e.buff]))].sort();
 
+// [SECTION:LOCALIZATION] — locale-aware overlays for echoes.fr.js.
+// English data above is the single source of truth for numbers/mechanics;
+// these merge in translated *text* fields only, keyed by the same names.
+import { ECHO_SETS_FR, translateBuffFr } from './echoes.fr.js';
+
+/** @param {string} locale */
+export function getLocalizedEchoSets(locale) {
+  if (locale !== 'fr') return ECHO_SETS;
+  const out = {};
+  for (const [name, base] of Object.entries(ECHO_SETS)) {
+    out[name] = { ...base, ...(ECHO_SETS_FR[name] || {}) };
+  }
+  return out;
+}
+
+/** @param {string} locale */
+export function getLocalizedEchoData(locale) {
+  if (locale !== 'fr') return ECHO_DATA;
+  const out = {};
+  for (const [name, base] of Object.entries(ECHO_DATA)) {
+    out[name] = { ...base, buff: translateBuffFr(base.buff) };
+  }
+  return out;
+}
+
 // [SECTION:WEAPON_DATA]
 
 export { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, ECHO_SKILL_BUFFS, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES };
