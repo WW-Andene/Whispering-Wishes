@@ -364,6 +364,63 @@ byte sizes matching the local originals exactly (329904 and 45828 bytes), confir
 everywhere else in those files. Deleted `app/public/icons/` entirely (confirmed via repo-wide grep
 that nothing else referenced the local paths) — no orphaned assets remain.
 
+---
+
+## 2026-08-20 (session 4) — Qingxiao skill/Resonance Chain icons: sourcing dead end
+
+**User report** (in French): "You forgot the skill/ability icons and Resonance chain icons for
+Qingxiao."
+
+**Confirmed the gap is real**: `app/src/data/characters.js` has two icon lookup tables —
+`SKILL_ICONS` (keyed by character name, sub-keyed by skill-name substrings matched via
+`getSkillIcon()`) and `CHAIN_NODE_ICONS` (keyed by character name, `s1`–`s6`). Both are populated
+for every audited character up through `Suisui`, but **neither has a `'Qingxiao'` entry at all** —
+confirmed by grepping both object literals directly (not just `PLACEHOLDER_IMAGE` markers this
+time; the keys are simply absent, so `CharacterDetailModal.jsx`'s `getSkillIcon(name, skillName)`
+and `CHAIN_NODE_ICONS[name]?.['s'+s]` both silently return `null`/`undefined` for him — no broken
+image tag, just nothing rendered). `Jingran` has the same gap but he isn't live yet (~Sept 10) so
+wasn't the reported complaint. Exact skill names needed (from `SKILL_MULTIPLIERS['Qingxiao']`):
+Basic ATK (`Stringblade Stage 1-4`, `Stringblade`), 2 Skill entries (`Severing Note: Judgement`,
+`Severing Note: Ascendant`), Forte (`Heaven's Reckoning: Ephemeral Transcendence`), Liberation
+(`Billows Beneath Heaven`), Intro (`Tonality Shift`), Outro (`Lingering Song`). Chain node names are
+already present in `CHAIN_NODE_NAMES['Qingxiao']` (sourced nanoka.cc pre-release, 2026-08-18) —
+just needed matching icon URLs.
+
+**Sourcing attempt — dead end, confirmed via direct checks, not assumed**:
+- Fandom's MediaWiki API (`action=query&titles=Qingxiao&prop=images`, and the same on
+  `Qingxiao/Gallery`) lists every image actually uploaded for his page: portraits, splash art,
+  element/rarity/element icons, teaser thumbnails. **Zero `Skill_*.png` or
+  `Sequence_Node_*.png` files exist for him** — confirmed by title search for each exact skill/node
+  name (`Severing Note`, `Ephemeral Transcendence`, `Billows Beneath Heaven`, `Tonality Shift`,
+  `Lingering Song`, `Stringblade`, and 2 of his 6 chain-node names) — all return zero File: hits.
+  The wiki genuinely hasn't uploaded per-skill/per-node art yet, one day after his live launch —
+  consistent with the same freshness gap already noted for his event banners in session 2/3.
+- `ww.nanoka.cc/character/1413` (used successfully for his kit *text* in earlier sessions) is a
+  SvelteKit SPA — its HTML shell is 3KB with all content fetched client-side by JS; plain `curl`
+  gets nothing, and no static `/api/*` or `/_next/data`-style JSON endpoint was found in its bundled
+  JS. Rendering it requires a JS-capable fetch.
+- DV's browser tools are still down this session: `mcp__DV__dv_status` and
+  `mcp__DV__web_fetch` both fail immediately with `Bad Request: missing or invalid Mcp-Session-Id
+  header` — the same persistent failure a prior session already flagged. `WebFetch` (the built-in
+  tool) got an HTTP 403 from nanoka.cc directly.
+
+**Decision**: did not wire in anything. There is no real art available for Qingxiao's skill/chain
+icons from either usable source this session — fabricating filler icons (e.g. reusing a generic
+weapon icon for all 5 unique skill slots, or reusing another character's chain nodes) would be
+worse than the current silent-gap state, and would misrepresent sourcing rigor the rest of this
+data file follows. `SKILL_ICONS['Qingxiao']` and `CHAIN_NODE_ICONS['Qingxiao']` remain unset.
+
+**Verified no regression**: `npx vitest run` — 606/612 passing, 6 pre-existing failures confined to
+`SpinePlayer.jsx`/`BannerCard.jsx` (unrelated to character data, present before this session's
+investigation began — no data file was touched). `npm run build` (from `app/`) succeeds clean.
+
+**Recommendation for a future session**: retry once either (a) DV's browser tools recover (session
+ID header issue gets fixed upstream) so `ww.nanoka.cc/character/1413` can be rendered and its
+skill/chain icon `<img>` srcs read directly, or (b) fandom's wiki editors catch up and upload
+`Skill_*`/`Sequence_Node_*` files for Qingxiao (likely within the next few days, based on how other
+recent 5★s were covered). A same-day check-in with the MediaWiki `action=query&prop=images` calls
+used above is cheap and should be the first move next time.
+
 **Re-checked the 5 still-placeholder v3.6 events** (`versionSpecialCampaign`, `giftsOfDriftingMist`,
 `resonanceSimRealm`, `theStringsRemember`, `ifDreamsStillReverberate`) via fandom's MediaWiki
 `action=query&list=search` API, one day after v3.6 launch. No exact-title wiki pages exist yet for
