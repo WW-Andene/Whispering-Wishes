@@ -462,12 +462,18 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const rotSegByName = {};
     (rotationTimeline?.segments || []).forEach(s => { rotSegByName[s.name] = s; });
     const dpsSeg = rotSegByName[mainDps.name] || null;
-    function overlapUptime(start, duration) {
-      if (!dpsSeg || !(duration > 0)) return 0;
-      const overlapStart = Math.max(start, dpsSeg.start);
-      const overlapEnd = Math.min(start + duration, dpsSeg.start + dpsSeg.duration);
+    // General form — recipientSeg defaults to the main DPS, but the same fix applies to any other
+    // team member receiving a cross-character buff (the sub-DPS damage tier below uses this with the
+    // sub-DPS's own segment as recipient, since off-field members get a real segment here too).
+    function overlapUptimeForSeg(recipientSeg, start, duration) {
+      if (!recipientSeg || !(duration > 0)) return 0;
+      const overlapStart = Math.max(start, recipientSeg.start);
+      const overlapEnd = Math.min(start + duration, recipientSeg.start + recipientSeg.duration);
       const overlap = Math.max(0, overlapEnd - overlapStart);
-      return dpsSeg.duration > 0 ? Math.min(1, overlap / dpsSeg.duration) : 0;
+      return recipientSeg.duration > 0 ? Math.min(1, overlap / recipientSeg.duration) : 0;
+    }
+    function overlapUptime(start, duration) {
+      return overlapUptimeForSeg(dpsSeg, start, duration);
     }
     // Buff timing conventions — must mirror the rotationTimeline closure above exactly, since that's
     // the source of truth this correction reads positions from: Outro-triggered buffs start when the
@@ -626,7 +632,11 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     if (mainDps.mainEchoName) {
       const mainEsb = ECHO_SKILL_BUFFS[mainDps.mainEchoName];
       if (mainEsb && (mainEsb.target || 'self') === 'self' && (!mainEsb.condition || mainDps.name.includes(mainEsb.condition))) {
-        const esbUp = mainEsb.passive ? 1 : Math.min(1, (mainEsb.duration || 15) / rotTime);
+        // Self-targeted — only matters while the DPS is actually on field, so the right denominator
+        // is their own on-field window (dpsSeg.duration), not the whole rotation. Same dilution bug
+        // as the cross-character sites above, just self-scoped: a 15s proc buff on a DPS with a 17s
+        // on-field window is ~88% uptime during their own combo, not ~37% of a 40s full rotation.
+        const esbUp = mainEsb.passive ? 1 : (dpsSeg?.duration > 0 ? Math.min(1, (mainEsb.duration || 15) / dpsSeg.duration) : Math.min(1, (mainEsb.duration || 15) / rotTime));
         mainEsb.buffs.forEach(b => {
           const val = b.value * esbUp;
           const mainEl = (mainDps.d.element || '').toLowerCase();
@@ -933,7 +943,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0, sAmplify = 0;
         let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sCoordDmg = 0, sDefIgnore = 0;
         let sDefShred = 0, sResShred = 0;
-        const teamRotTime = rotTime;
+        const sSeg = rotSegByName[m.name] || null;
         // An unbuilt sub-DPS (no echoes equipped) gets no fabricated "recommended build" stats here —
         // a real player with empty echo slots has zero bonus stats, same as an unequipped Main DPS
         // already correctly shows. A previous version injected a hardcoded preset stat block (e.g.
@@ -957,7 +967,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
               // (the last support before DPS) does NOT reach the off-field sub-DPS who already left.
               // Approximate: off-field chars get 60% effective value from outro buffs (snapshot discount).
               const snapshotFactor = isOffField ? 0.6 : 1.0;
-              const uptime = Math.min(1, (b.duration || 14) / teamRotTime);
+              const uptime = overlapUptimeForSeg(sSeg, outroStart(other.name), b.duration || 14);
               const val = b.value * uptime * snapshotFactor;
               if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
               else if (b.stat === 'allDmg' || b.stat === 'elemDmg') sAmplify += val;
@@ -976,18 +986,18 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           // Sonata set p5 team/next ATK% buffs (see the same fix on the main-tier computation above).
           const oP5v = other.echoSet?.p5val;
           if (oP5v?.teamAtk) {
-            const uptime = Math.min(1, 20 / teamRotTime);
+            const uptime = overlapUptimeForSeg(sSeg, blockStart(other.name), 20);
             const val = oP5v.teamAtk * uptime * (isOffField ? 0.6 : 1.0);
             sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
           }
           if (oP5v?.nextAtk) {
-            const uptime = Math.min(1, 14 / teamRotTime);
+            const uptime = overlapUptimeForSeg(sSeg, outroStart(other.name), 14);
             const val = oP5v.nextAtk * uptime * (isOffField ? 0.6 : 1.0);
             sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
           }
           (obt.libBuffs || []).forEach(b => {
             if (b.target === 'team' || b.target === 'next') {
-              const uptime = Math.min(1, (b.duration || 25) / teamRotTime);
+              const uptime = overlapUptimeForSeg(sSeg, blockStart(other.name), b.duration || 25);
               const val = b.value * uptime;
               if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
               else if (b.stat === 'allDmg') sElem += val;

@@ -688,3 +688,40 @@ random teams: 0 crashes, 0 NaN/negative `teamDps`.
 Verified: `npx vitest run` — 612/612 passing (no test asserts a specific `teamDps` value — this file has
 zero existing test coverage of `calcTeamStats`'s numeric output, confirmed by grep; the before/after
 scripts above are the actual safety net here, not the test suite), `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 12) — Closed out the two deferred pieces from the overlap-uptime fix
+
+**User pushed back on leaving them deferred**: "Why don't you do those?" — fair, since both were the
+same already-validated fix shape, just applied to 2 more spots. Finished both.
+
+**1. `mainEsb` self-targeted echo uptime** (`calcTeamStats.js`, main DPS's own echo skill buff): was
+`min(1, duration/rotTime)` — diluting a self-only buff against the WHOLE rotation, even though it only
+ever matters while the DPS is on field. Now `min(1, duration/dpsSeg.duration)` — the DPS's own real
+on-field window from `rotationTimeline`. This one moves uptime UP relative to before (a 15s buff vs a
+17s on-field window is ~88%, not ~37% of a 40s full rotation) — the mirror case of the cross-character
+fix.
+
+**2. Sub-DPS damage tier**: found this is a fully parallel, separately-coded damage computation for
+every non-main team member (not just the headline DPS) — confirms the app does model more-than-one
+character's damage, contrary to how narrow last session's "why only DPS" framing suggested. It had the
+exact same `duration/rotTime` pattern at 4 sites (outro buffs, Sonata p5 teamAtk/nextAtk, lib buffs)
+computing what a sub-DPS receives from teammates. Generalized `overlapUptime` into
+`overlapUptimeForSeg(recipientSeg, start, duration)` and wired these 4 sites to the sub-DPS's own
+segment (`rotSegByName[m.name]` — off-field/Coordinated-ATK members get a real, if short, segment
+here too) instead of the DPS-only shorthand. Left the existing "snapshot factor" 0.6 discount for
+off-field Coordinated ATK characters untouched — that's a distinct, separately-reasoned approximation
+for proc-snapshot semantics, not the same bug.
+
+**Verified**: 500-team stress test — 0 crashes, 0 NaN/negative on both `teamDps` and every
+`memberDps` entry (checked per-member this time, not just the headline number). 100-team before/after:
+teamDps median **-3.8%**, mean **-6.1%**, one outlier at **-35%** (`Baizhi+Mortefi+Taoqi`). Traced the
+outlier: Baizhi (a pure healer) has no real "Main DPS" role in that comp, so `mainDps` fell back to
+Mortefi, and Baizhi's own huge pseudo-damage number (an existing, separate artifact of running every
+character — including healers — through the sub-DPS damage formula, which isn't really meant to score
+non-damage roles) got its received-buff uptime correctly shrunk to her real 3s on-field segment. Not a
+bug this fix introduced — it's this fix legitimately correcting a number that was already
+questionable for the reason flagged 2 sessions ago (no dedicated healer/support scoring model exists).
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
