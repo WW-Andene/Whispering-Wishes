@@ -706,14 +706,20 @@
     }
 
     /* Rainbow accent theme — RGB "PC RAM" lighting effect.
-       Rebuilt to NOT depend on browser support for animating registered custom
-       properties (@property). Instead: every .kuro-card gets a solid conic-
-       gradient ring drawn in its own ::before (mask-clipped to a ring shape,
-       exactly like a border), and the whole ring is hue-shifted with
-       `filter: hue-rotate()`. Animating `filter` is universally supported and
-       is the same primitive already used by `.rainbow-swatch.animated` below —
-       so if that swatch spins, this spins too. No custom-property interpolation
-       anywhere in this feature. */
+       Every .kuro-card gets a solid conic-gradient ring drawn in its own
+       ::before (mask-clipped to a ring shape, exactly like a border), and the
+       gradient's start angle is driven by a registered custom property
+       (--rainbow-angle) so it can be smoothly animated with @property —
+       the colors visibly travel around the ring rather than just recoloring
+       in place. @property has been baseline-supported in every evergreen
+       browser since 2024; browsers that somehow lack it just see a static
+       (unanimated) ring, which matches the reduced-motion fallback anyway. */
+    @property --rainbow-angle {
+      syntax: '<angle>';
+      inherits: false;
+      initial-value: 0deg;
+    }
+
     .theme-rainbow {
       --border-default: rgba(255, 255, 255, 0.16);
       --border-hover: rgba(255, 255, 255, 0.28);
@@ -734,7 +740,7 @@
       border-radius: inherit;
       pointer-events: none;
       padding: 1px;
-      background: conic-gradient(from 0deg,
+      background: conic-gradient(from var(--rainbow-angle),
         #ffb3c1, #ffd8a8, #fff3a0, #c3f0a8, #a8e6d8, #a8d8ff, #c9b3ff, #f0b3e8, #ffb3c1);
       -webkit-mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
       -webkit-mask-clip: content-box, border-box;
@@ -750,25 +756,21 @@
        the ring is still visible — just static — matching the reduced-motion
        fallback the rest of the app uses. */
     .theme-rainbow-animated .kuro-card::before {
-      animation: rainbow-hue-rotate 4s linear infinite;
+      animation: rainbow-angle-spin 4s linear infinite;
     }
 
-    @keyframes rainbow-hue-rotate {
-      from { filter: hue-rotate(0deg); }
-      to   { filter: hue-rotate(360deg); }
+    @keyframes rainbow-angle-spin {
+      from { --rainbow-angle: 0deg; }
+      to   { --rainbow-angle: 360deg; }
     }
 
     /* Small preview swatch used by the accent-theme picker's Rainbow option */
     .rainbow-swatch {
-      background: conic-gradient(from 0deg,
+      background: conic-gradient(from var(--rainbow-angle, 0deg),
         #fff5f5, #ffe4e6, #fef3c7, #ecfccb, #d1fae5, #cffafe, #e0e7ff, #fae8ff, #fff5f5);
     }
     .rainbow-swatch.animated {
-      animation: rainbow-swatch-spin 6s linear infinite;
-    }
-    @keyframes rainbow-swatch-spin {
-      from { filter: hue-rotate(0deg); }
-      to   { filter: hue-rotate(360deg); }
+      animation: rainbow-angle-spin 6s linear infinite;
     }
 
     .kuro-card-inner {
