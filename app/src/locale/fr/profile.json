@@ -90,6 +90,7 @@
     "accentTheme": "Thème d'accent",
     "accentThemeDesc": "Change les couleurs d'accent dans toute l'application",
     "default": "Défaut",
+    "rainbow": "Arc-en-ciel",
     "installApp": "Installer l'application",
     "installAppDesc": "Ajouter à l'écran d'accueil pour une utilisation hors ligne",
     "install": "Installer",

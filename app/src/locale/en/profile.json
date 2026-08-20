@@ -90,6 +90,7 @@
     "accentTheme": "Accent Theme",
     "accentThemeDesc": "Changes accent colors across the app",
     "default": "Default",
+    "rainbow": "Rainbow",
     "installApp": "Install App",
     "installAppDesc": "Add to home screen for offline use",
     "install": "Install",

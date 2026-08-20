@@ -704,7 +704,53 @@
       0%, 100% { opacity: 0.6; }
       50% { opacity: 1; }
     }
-    
+
+    /* Rainbow accent theme — white-ish, shimmering RGB star. Hue is a registered
+       custom property so browsers can smoothly interpolate it in a keyframe;
+       every glow/border/shimmer color derives from it via hsla(var(--rainbow-hue), ...). */
+    @property --rainbow-hue {
+      syntax: '<number>';
+      inherits: true;
+      initial-value: 280;
+    }
+
+    .theme-rainbow {
+      --rainbow-hue: 280;
+      --shimmer-color: hsla(var(--rainbow-hue), 90%, 85%, 0.55);
+      --shimmer-color-bright: hsla(var(--rainbow-hue), 95%, 92%, 0.85);
+      --card-outline: hsla(var(--rainbow-hue), 85%, 85%, 0.12);
+      --card-outline-hover: hsla(var(--rainbow-hue), 85%, 85%, 0.22);
+      --card-glow: hsla(var(--rainbow-hue), 90%, 80%, 0.4);
+      --card-inset: hsla(var(--rainbow-hue), 85%, 85%, 0.15);
+      --card-inset-hover: hsla(var(--rainbow-hue), 85%, 85%, 0.25);
+    }
+
+    /* Only animate the hue when the app's Animations setting is on/full.
+       .theme-rainbow-animated is toggled alongside .theme-rainbow in JS
+       (useThemeAccent) based on visualSettings.animationsEnabled, since
+       .no-animations lives on a different element than <html>. */
+    .theme-rainbow-animated {
+      animation: rainbow-hue-cycle 8s linear infinite;
+    }
+
+    @keyframes rainbow-hue-cycle {
+      from { --rainbow-hue: 0; }
+      to   { --rainbow-hue: 360; }
+    }
+
+    /* Small preview swatch used by the accent-theme picker's Rainbow option */
+    .rainbow-swatch {
+      background: conic-gradient(from 0deg,
+        #fff5f5, #ffe4e6, #fef3c7, #ecfccb, #d1fae5, #cffafe, #e0e7ff, #fae8ff, #fff5f5);
+    }
+    .rainbow-swatch.animated {
+      animation: rainbow-swatch-spin 6s linear infinite;
+    }
+    @keyframes rainbow-swatch-spin {
+      from { filter: hue-rotate(0deg); }
+      to   { filter: hue-rotate(360deg); }
+    }
+
     .kuro-card-inner {
       position: relative;
       overflow: hidden;

@@ -910,7 +910,10 @@ function ProfileTab({
                 {/* Accent Theme — element-based */}
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center`} style={{ background: visualSettings.theme !== 'default' ? getElementBg(visualSettings.theme) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(visualSettings.theme) : '#9ca3af' }}>
+                    <div
+                      className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.theme === 'rainbow' ? `rainbow-swatch ${visualSettings.animationsEnabled !== 'off' ? 'animated' : ''}` : ''}`}
+                      style={visualSettings.theme === 'rainbow' ? { color: '#1f2937' } : { background: visualSettings.theme !== 'default' ? getElementBg(visualSettings.theme) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(visualSettings.theme) : '#9ca3af' }}
+                    >
                       <Sparkles size={16} />
                     </div>
                     <div>
@@ -925,6 +928,14 @@ function ProfileTab({
                         {el}
                       </button>
                     ))}
+                    <button
+                      onClick={() => saveVisualSettings({ ...visualSettings, theme: 'rainbow' })}
+                      className="kuro-btn text-sm flex items-center gap-1.5"
+                      style={visualSettings.theme === 'rainbow' ? { borderColor: 'rgba(255,255,255,0.5)', boxShadow: '0 0 8px rgba(255,255,255,0.3)' } : undefined}
+                    >
+                      <span className={`rainbow-swatch inline-block w-3 h-3 rounded-full ${visualSettings.animationsEnabled !== 'off' ? 'animated' : ''}`} aria-hidden="true" />
+                      {t('profile.display.rainbow')}
+                    </button>
                   </div>
                 </div>
 
