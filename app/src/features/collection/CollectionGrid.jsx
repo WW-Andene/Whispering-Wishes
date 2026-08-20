@@ -73,10 +73,10 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
     {imgUrl ? (
       <div className="absolute inset-0 collection-img-wrap" style={{
-        maskImage: (isEcho && noBgProcess) ? undefined
+        maskImage: (isEcho && noBgProcess) ? 'radial-gradient(ellipse 90% 88% at center, black 88%, transparent 100%)'
           : isEcho ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
-        WebkitMaskImage: (isEcho && noBgProcess) ? undefined
+        WebkitMaskImage: (isEcho && noBgProcess) ? 'radial-gradient(ellipse 90% 88% at center, black 88%, transparent 100%)'
           : isEcho ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
       }}>

@@ -69,6 +69,9 @@ export function useVisualSettings() {
           }
           if (merged.animationsEnabled === true) merged.animationsEnabled = 'on';
           else if (merged.animationsEnabled === false) merged.animationsEnabled = 'off';
+          // "Rainbow" accent theme was removed — fall back to default for
+          // any save-data written while it still existed.
+          if (merged.theme === 'rainbow') merged.theme = 'default';
           return merged;
         });
       }
