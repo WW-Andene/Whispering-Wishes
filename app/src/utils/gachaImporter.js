@@ -79,7 +79,17 @@ async function fetchPage(params, cardPoolType, signal) {
     serverId: params.serverId || '',
     cardPoolType: Number(cardPoolType),
     cardPoolId: params.cardPoolId || '',
-    languageCode: params.lang || 'en',
+    // Always request English from Kuro's API, regardless of the player's own client language
+    // (params.lang, taken straight from whatever the pasted Convene-history URL encodes — a French/
+    // German/Chinese/etc. client sends lang=fr/de/zh/... and the API happily returns pull.name/
+    // resourceName localized in that language). Every internal name-keyed lookup this app does
+    // (collectionImages portraits, ALL_CHARACTERS/STANDARD_5STAR_CHARACTERS owned/50-50 checks,
+    // CHARACTER_DATA/WEAPON_DATA itself) is keyed in English — IMPORT_NAME_ALIASES only normalizes
+    // two English-name variants (Rover forms, "The Shorekeeper"), not real translations, so a
+    // non-English import silently missed portraits AND silently broke owned-character/50-50
+    // detection for every pull. Requesting English directly from the source is far more robust than
+    // trying to build and maintain full name tables for every supported client language.
+    languageCode: 'en',
     recordId: params.recordId || '',
   };
 
@@ -152,7 +162,17 @@ async function fetchOnePage(params, poolType, signal) {
     serverId: params.serverId || '',
     cardPoolType: Number(poolType),
     cardPoolId: params.cardPoolId || '',
-    languageCode: params.lang || 'en',
+    // Always request English from Kuro's API, regardless of the player's own client language
+    // (params.lang, taken straight from whatever the pasted Convene-history URL encodes — a French/
+    // German/Chinese/etc. client sends lang=fr/de/zh/... and the API happily returns pull.name/
+    // resourceName localized in that language). Every internal name-keyed lookup this app does
+    // (collectionImages portraits, ALL_CHARACTERS/STANDARD_5STAR_CHARACTERS owned/50-50 checks,
+    // CHARACTER_DATA/WEAPON_DATA itself) is keyed in English — IMPORT_NAME_ALIASES only normalizes
+    // two English-name variants (Rover forms, "The Shorekeeper"), not real translations, so a
+    // non-English import silently missed portraits AND silently broke owned-character/50-50
+    // detection for every pull. Requesting English directly from the source is far more robust than
+    // trying to build and maintain full name tables for every supported client language.
+    languageCode: 'en',
     recordId: params.recordId || '',
   };
 
