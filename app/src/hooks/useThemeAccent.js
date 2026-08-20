@@ -53,10 +53,10 @@ export function useThemeAccent(visualSettings) {
     el.classList.toggle('theme-rainbow-animated', isRainbowAnimated);
     if (isRainbow) {
       // Static accent color for consumers that need a plain color (tab text,
-      // header icon). --border-* and the shimmer/glow/outline vars are left
-      // to CSS (.theme-rainbow / .theme-rainbow-animated) so they derive from
-      // the animated --rainbow-hue instead of being pinned to a static hex —
-      // inline styles would out-rank the keyframe and freeze the hue shift.
+      // header icon). The actual RGB effect is a hue-rotating gradient ring
+      // drawn per-card in CSS (.theme-rainbow .kuro-card::before) — see
+      // kuro.css — so --border-*/shimmer/card-* are left at their CSS
+      // defaults here instead of being pinned to a static hex.
       el.style.setProperty('--theme-accent', themeAccent);
       ['--border-default','--border-hover','--border-bright','--shimmer-color','--shimmer-color-bright','--card-outline','--card-outline-hover','--card-glow','--card-inset','--card-inset-hover'].forEach(v => el.style.removeProperty(v));
     } else if (themeAccent) {
