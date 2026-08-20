@@ -24,14 +24,90 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useSyncExternalStore } from 'react';
-import en from '../locale/en.json';
+
+// Each locale is split into per-feature JSON modules under locale/<lang>/*.json
+// so translators/agents can work on separate files without merge conflicts.
+// Modules are merged into a single flat-namespaced object below.
+import enApp from '../locale/en/app.json';
+import enTabs from '../locale/en/tabs.json';
+import enOnboarding from '../locale/en/onboarding.json';
+import enTracker from '../locale/en/tracker.json';
+import enCalculator from '../locale/en/calculator.json';
+import enPlanner from '../locale/en/planner.json';
+import enCommon from '../locale/en/common.json';
+import enPity from '../locale/en/pity.json';
+import enEvents from '../locale/en/events.json';
+import enAnalytics from '../locale/en/analytics.json';
+import enTeams from '../locale/en/teams.json';
+import enCollection from '../locale/en/collection.json';
+import enMap from '../locale/en/map.json';
+import enProfile from '../locale/en/profile.json';
+import enModals from '../locale/en/modals.json';
+import enAdmin from '../locale/en/admin.json';
+import enApp2 from '../locale/en/app2.json';
+
+import frApp from '../locale/fr/app.json';
+import frTabs from '../locale/fr/tabs.json';
+import frOnboarding from '../locale/fr/onboarding.json';
+import frTracker from '../locale/fr/tracker.json';
+import frCalculator from '../locale/fr/calculator.json';
+import frPlanner from '../locale/fr/planner.json';
+import frCommon from '../locale/fr/common.json';
+import frPity from '../locale/fr/pity.json';
+import frEvents from '../locale/fr/events.json';
+import frAnalytics from '../locale/fr/analytics.json';
+import frTeams from '../locale/fr/teams.json';
+import frCollection from '../locale/fr/collection.json';
+import frMap from '../locale/fr/map.json';
+import frProfile from '../locale/fr/profile.json';
+import frModals from '../locale/fr/modals.json';
+import frAdmin from '../locale/fr/admin.json';
+import frApp2 from '../locale/fr/app2.json';
+
+const en = {
+  app: { ...enApp, ...enApp2 },
+  tabs: enTabs,
+  onboarding: enOnboarding,
+  tracker: enTracker,
+  calculator: enCalculator,
+  planner: enPlanner,
+  common: enCommon,
+  pity: enPity,
+  events: enEvents,
+  analytics: enAnalytics,
+  teams: enTeams,
+  collection: enCollection,
+  map: enMap,
+  profile: enProfile,
+  modals: enModals,
+  admin: enAdmin,
+};
+
+const fr = {
+  app: { ...frApp, ...frApp2 },
+  tabs: frTabs,
+  onboarding: frOnboarding,
+  tracker: frTracker,
+  calculator: frCalculator,
+  planner: frPlanner,
+  common: frCommon,
+  pity: frPity,
+  events: frEvents,
+  analytics: frAnalytics,
+  teams: frTeams,
+  collection: frCollection,
+  map: frMap,
+  profile: frProfile,
+  modals: frModals,
+  admin: frAdmin,
+};
 
 // RTL locale list (WCAG + Unicode BIDI). When setAppLocale switches to one of
 // these, we flip `document.dir` so CSS logical properties can reflow.
 const RTL_LOCALES = new Set(['ar', 'he', 'fa', 'ur', 'yi']);
 
 // Registry of available locales. Add new JSON files here as translations land.
-const SUPPORTED_LOCALES = { en };
+const SUPPORTED_LOCALES = { en, fr };
 
 // BCP-47 locale → Intl uses this directly.
 // For single-tag locales like 'en' we let Intl pick the regional default.
@@ -40,8 +116,23 @@ const LOCALE_OVERRIDES = {
   // Leave empty to accept browser default; populate when we have translations.
 };
 
-let currentLocale = 'en';
-let strings = en;
+const LOCALE_STORAGE_KEY = 'ww_locale';
+
+function _readStoredLocale() {
+  try {
+    const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(LOCALE_STORAGE_KEY) : null;
+    return stored && SUPPORTED_LOCALES[stored] ? stored : 'en';
+  } catch {
+    return 'en';
+  }
+}
+
+let currentLocale = _readStoredLocale();
+let strings = SUPPORTED_LOCALES[currentLocale] || en;
+if (typeof document !== 'undefined' && document.documentElement) {
+  document.documentElement.lang = currentLocale;
+  document.documentElement.dir = RTL_LOCALES.has(currentLocale) ? 'rtl' : 'ltr';
+}
 
 // External store for React subscribers — re-render on setAppLocale.
 const _listeners = new Set();
@@ -75,6 +166,9 @@ export const setAppLocale = (locale) => {
     document.documentElement.lang = locale;
     document.documentElement.dir = RTL_LOCALES.has(locale) ? 'rtl' : 'ltr';
   }
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch { /* storage unavailable — locale won't persist across reloads */ }
   _emit();
 };
 // Legacy alias for code already calling setLocale

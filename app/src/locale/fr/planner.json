@@ -1,0 +1,8 @@
+{
+  "noBookmarks": "Aucun état enregistré pour l'instant — allez dans le Calculateur et appuyez sur Enregistrer pour sauvegarder une configuration.",
+  "setIncome": "Définissez un revenu quotidien d'Astrite pour estimer le nombre de jours restants.",
+  "estimated": "Estimation : {{date}}",
+  "costNote": "≈ {{cost}} $ via un rechargement au meilleur taux (~60 Astrite/1 $)",
+  "astriteNeeded": "Astrite nécessaire",
+  "daysToGoal": "Jours restants"
+}

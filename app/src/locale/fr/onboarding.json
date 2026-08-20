@@ -1,0 +1,19 @@
+{
+  "welcome": "Bienvenue sur Whispering Wishes !",
+  "import": "Importez votre historique",
+  "importDesc": "Rendez-vous dans l'onglet Profil pour importer votre historique de Convocations.",
+  "track": "Suivez vos bannières",
+  "trackDesc": "Consultez les bannières actives, la progression de la pitié (tirages depuis le dernier 5★) et les comptes à rebours.",
+  "collection": "Constituez votre collection",
+  "collectionDesc": "Suivez tous vos Résonateurs et armes.",
+  "calculate": "Calculez vos chances",
+  "calculateDesc": "Entrez votre Astrite et votre pitié pour voir les probabilités de tirage exactes.",
+  "analytics": "Consultez vos statistiques",
+  "analyticsDesc": "Vérifiez votre indice de chance, vos graphiques et votre historique de Convocations.",
+  "ready": "Vous êtes prêt !",
+  "readyDesc": "Bonne chance pour vos Convocations, Rôdeur !",
+  "skip": "Passer",
+  "back": "Retour",
+  "next": "Suivant",
+  "getStarted": "Commencer"
+}

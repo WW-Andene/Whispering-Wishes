@@ -1,0 +1,10 @@
+{
+  "intro": "Calculate your Convene probabilities by entering your resources below.",
+  "astrite": "Astrite",
+  "lunite": "Lunite",
+  "luniteHint": "converts to Astrite 1:1",
+  "guaranteed": "✓ Guaranteed (100%)",
+  "5050active": "⚠ 50/50 Active",
+  "maxHint": "Max {{max}}",
+  "calcCapped": "calc capped at {{max}}"
+}

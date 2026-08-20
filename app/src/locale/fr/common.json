@@ -1,0 +1,13 @@
+{
+  "confirm": "Confirmer",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "save": "Enregistrer",
+  "load": "Charger",
+  "clear": "Effacer",
+  "close": "Fermer",
+  "search": "Rechercher",
+  "error": "Une erreur est survenue",
+  "reload": "Recharger",
+  "undo": "Annuler l'action"
+}

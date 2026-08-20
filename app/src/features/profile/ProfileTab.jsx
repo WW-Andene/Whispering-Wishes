@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Diamond, Download, Eye, Monitor, Settings, Sparkles, Type, User, X } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Diamond, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, X } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
 import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
@@ -30,6 +30,7 @@ import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
+import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
 
 import {
   ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH,
@@ -115,6 +116,7 @@ function ProfileTab({
   } = useCloudStorage();
 
   // ── Tab-local state ──────────────────────────────────────────────────────
+  const appLocale = useAppLocale();
   const [showIdCard, setShowIdCard] = useState(false);
   const [idCardFormat, setIdCardFormat] = useState('landscape');
 
@@ -541,6 +543,44 @@ function ProfileTab({
               </CardBody>
             </Card>
 
+            {/* Language */}
+            <Card>
+              <CardHeader><Globe size={14} className="text-gray-400" /> {t('app.language')}</CardHeader>
+              <CardBody className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center text-gray-400" style={{ background: 'var(--bg-btn)' }}>
+                      <Globe size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-base font-medium">{t('app.language')}</div>
+                      <div className="text-gray-400 text-sm">{t('app.languageDesc')}</div>
+                    </div>
+                  </div>
+                  <div className="flex rounded-full overflow-hidden border border-[var(--border-medium)]" role="radiogroup" aria-label={t('app.language')}>
+                    <button
+                      type="button"
+                      onClick={() => { haptic?.(); setAppLocale('en'); }}
+                      role="radio"
+                      aria-checked={appLocale === 'en'}
+                      className={`px-4 py-1.5 text-sm font-medium transition-colors ${appLocale === 'en' ? 'bg-white text-black' : 'text-gray-300'}`}
+                    >
+                      {t('app.languageEnglish')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { haptic?.(); setAppLocale('fr'); }}
+                      role="radio"
+                      aria-checked={appLocale === 'fr'}
+                      className={`px-4 py-1.5 text-sm font-medium transition-colors ${appLocale === 'fr' ? 'bg-white text-black' : 'text-gray-300'}`}
+                    >
+                      {t('app.languageFrench')}
+                    </button>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+
             {/* Settings + Import — side by side on desktop */}
             <div className="desktop-grid-2 space-y-3 lg:space-y-0">
             {/* Display Settings */}
@@ -928,7 +968,7 @@ function ProfileTab({
                 <CardHeader action={<button onClick={async () => { if (await confirm({ title: 'Clear history', message: 'Clear all imported Convene history and collection ownership data?\nThis cannot be undone.', confirmLabel: 'Clear', destructive: true })) { dispatch({ type: 'CLEAR_PROFILE' }); try { localStorage.removeItem('ww-owned-chars'); localStorage.removeItem('ww-manual-counts'); } catch {} toast?.addToast?.('Profile and collection data cleared!', 'info'); } }} className="text-red-400 text-sm hover:text-red-300 transition-colors" aria-label="Clear all imported Convene history">Clear</button>}>Import Info</CardHeader>
                 <CardBody>
                   {state.profile.uid && <div className="flex justify-between text-base mb-2"><span className="text-gray-400">UID</span><span className="text-gray-100 font-mono">{state.profile.uid}</span></div>}
-                  <div className="flex justify-between text-base"><span className="text-gray-400">Imported</span><span className="text-gray-300">{new Date(state.profile.importedAt).toLocaleDateString('en-US')}</span></div>
+                  <div className="flex justify-between text-base"><span className="text-gray-400">Imported</span><span className="text-gray-300">{formatDate(new Date(state.profile.importedAt))}</span></div>
                   <p className="text-gray-400 text-sm mt-2">View detailed stats in the Stats tab</p>
                 </CardBody>
               </Card>
