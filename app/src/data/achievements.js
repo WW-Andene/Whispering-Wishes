@@ -1235,4 +1235,31 @@ const ACHIEVEMENTS = {
 const ALL_ACHIEVEMENT_CATEGORIES = [...new Set(Object.values(ACHIEVEMENT_SERIES).map(s => s.category))];
 const ALL_ACHIEVEMENT_VERSIONS = [...new Set(Object.values(ACHIEVEMENTS).map(a => a.version))].sort((a,b) => parseFloat(a) - parseFloat(b));
 
+// [SECTION:LOCALIZATION] — locale-aware overlays for achievements.fr.js.
+// English data above is the single source of truth; these merge in
+// translated name/desc/category text only, keyed by the same ids.
+import { ACHIEVEMENTS_FR, ACHIEVEMENT_SERIES_FR } from './achievements.fr.js';
+
+/** @param {string} locale */
+export function getLocalizedAchievements(locale) {
+  if (locale !== 'fr') return ACHIEVEMENTS;
+  const out = {};
+  for (const [id, base] of Object.entries(ACHIEVEMENTS)) {
+    const fr = ACHIEVEMENTS_FR[id];
+    out[id] = { ...base, ...(fr ? { name: fr.name, desc: fr.desc } : {}) };
+  }
+  return out;
+}
+
+/** @param {string} locale */
+export function getLocalizedAchievementSeries(locale) {
+  if (locale !== 'fr') return ACHIEVEMENT_SERIES;
+  const out = {};
+  for (const [id, base] of Object.entries(ACHIEVEMENT_SERIES)) {
+    const fr = ACHIEVEMENT_SERIES_FR[id];
+    out[id] = { ...base, ...(fr ? { name: fr.name, category: fr.category } : {}) };
+  }
+  return out;
+}
+
 export { ACHIEVEMENT_SERIES, ACHIEVEMENTS, ALL_ACHIEVEMENT_CATEGORIES, ALL_ACHIEVEMENT_VERSIONS };

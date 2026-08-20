@@ -10,11 +10,11 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Award, Check, ChevronLeft, EyeOff, Search, X } from 'lucide-react';
-import { ACHIEVEMENT_SERIES, ACHIEVEMENTS, ALL_ACHIEVEMENT_CATEGORIES, ALL_ACHIEVEMENT_VERSIONS } from '../../data/achievements.js';
+import { ACHIEVEMENT_SERIES, ACHIEVEMENTS, ALL_ACHIEVEMENT_CATEGORIES, ALL_ACHIEVEMENT_VERSIONS, getLocalizedAchievements } from '../../data/achievements.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
-import { t, formatNumber, getPluralForm } from '../../utils/i18n.js';
+import { t, formatNumber, getPluralForm, getLocale } from '../../utils/i18n.js';
 
 const STORAGE_KEY = 'ww-achievements-done';
 const SET_CODEC = {
@@ -36,6 +36,7 @@ const ALL_SERIES_LIST = Object.entries(ACHIEVEMENT_SERIES)
   .sort((a, b) => a.id - b.id);
 
 function AchievementsTool({ onClose }) {
+  const LOCALIZED_ACHIEVEMENTS = useMemo(() => getLocalizedAchievements(getLocale()), []);
   const [done, setDone] = usePersistedState(STORAGE_KEY, new Set(), SET_CODEC);
   const [search, setSearch] = useState('');
   const [versionFilter, setVersionFilter] = useState('all');
@@ -64,7 +65,7 @@ function AchievementsTool({ onClose }) {
   const isFiltering = searchLower.length > 0 || versionFilter !== 'all' || completionFilter !== 'all' || hiddenFilter !== 'all' || seriesFilter !== 'all';
 
   const matchesFilters = useCallback((id) => {
-    const a = ACHIEVEMENTS[id];
+    const a = LOCALIZED_ACHIEVEMENTS[id];
     if (!a) return false;
     if (searchLower && !a.name.toLowerCase().includes(searchLower) && !a.desc.toLowerCase().includes(searchLower)) return false;
     if (versionFilter !== 'all' && a.version !== versionFilter) return false;
@@ -110,7 +111,7 @@ function AchievementsTool({ onClose }) {
   const selectedSeries = seriesFilter !== 'all' ? ACHIEVEMENT_SERIES[seriesFilter] : null;
 
   const renderAchievementRow = (id) => {
-    const a = ACHIEVEMENTS[id];
+    const a = LOCALIZED_ACHIEVEMENTS[id];
     const s = ACHIEVEMENT_SERIES[a.group];
     const isDone = done.has(id);
     return (
