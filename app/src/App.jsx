@@ -22,7 +22,7 @@ import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } 
 import { Archive, BarChart3, Calculator, Calendar, ChevronDown, Download, Map, Sparkles, TrendingUp, User, Users } from 'lucide-react';
 // --- data ---
 import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
-import { CURRENT_BANNERS, preloadBannerHistoryArt } from './data/banners.js';
+import { getCurrentBannerAuto, preloadBannerHistoryArt } from './data/banners.js';
 import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, SERVERS, getServerOffset } from './data/constants.js';
 import { generateUniqueId, calculateLuckRating } from './utils/helpers.js';
 import { IMPORT_NAME_ALIASES } from './utils/gachaImporter.js';
@@ -157,12 +157,12 @@ function WhisperingWishesInner() {
       const banners = getActiveBanners();
       if (!banners || !banners.endDate) {
         console.error('[WW] getActiveBanners() returned invalid data');
-        return CURRENT_BANNERS;
+        return getCurrentBannerAuto();
       }
       return banners;
     } catch (err) {
       console.error('[WW] getActiveBanners() threw:', err);
-      return CURRENT_BANNERS;
+      return getCurrentBannerAuto();
     }
   });
   // Banner ends at server-specific time (e.g., 11:59 local for each server)

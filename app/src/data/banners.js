@@ -4,25 +4,26 @@
 // and character themes.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { RELEASE_ORDER } from './characters.js';
+import { RELEASE_ORDER, CHARACTER_DATA } from './characters.js';
 
 // Shared fallback art for any character/weapon that hasn't had a real portrait/icon
 // sourced yet (post-v3.3 additions). Swap out per-entry as real art becomes available.
 const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
 
 // [SECTION:BANNERS]
-// v3.5 Phase 2 — confirmed live: Suisui + Aemeath rerun, July 30, 2026 - August 19, 2026 (per
-// wuwatracker.com/fr/timeline, user-clarified 2026-08-14 — Suisui/Aemeath is the current phase-2
-// pairing; Yangyang: Xuanling paired with Luuk Herssen in the prior phase, v3.5-p1, not with Aemeath).
-// bannerArt URLs below reuse existing ibb.co uploads where the character/weapon already had one on file.
-// Suisui, Aemeath, Firstlight's Herald, and Everbright Polestar all have real splash art.
+// v3.6 Phase 1 — Qingxiao debut + Denia rerun, August 20 - September 10, 2026. Dates/lineup/art
+// carried over from BANNER_HISTORY's v3.6-p1 entry below (Game8 archive 453303, 21-day-cycle
+// estimate — marked `predicted: true` there since Kuro hasn't officially confirmed this phase yet).
+// title/element/weaponType pulled from CHARACTER_DATA (audited IDENTITY_DATA); featured4Stars carried
+// over from the prior v3.5 banner's set (Baizhi/Mortefi/Lumi, Variation/Endless Collapse/Relativistic
+// Jet) as the best available guess — not separately confirmed for this phase.
 const CURRENT_BANNERS = {
-  version: '3.5', phase: 2, // Game version (not app version)
-  // July 30, 10:00 CEST (UTC+2) = 08:00 UTC -> Aug 19, 11:59 CEST (UTC+2) = 09:59 UTC
-  startDate: '2026-07-30T08:00:00Z',
-  endDate: '2026-08-19T09:59:00Z',
-  characterBannerImage: 'https://i.ibb.co/wFwmhvLP/Suisui-banner.jpg',
-  weaponBannerImage: 'https://i.ibb.co/G3kfLMk7/First-s-Light-herald-Banner.jpg',
+  version: '3.6', phase: 1, // Game version (not app version)
+  // Aug 20, 10:00 CEST (UTC+2) = 08:00 UTC -> Sep 10, 10:00 CEST (UTC+2) = 08:00 UTC
+  startDate: '2026-08-20T08:00:00Z',
+  endDate: '2026-09-10T08:00:00Z',
+  characterBannerImage: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg',
+  weaponBannerImage: 'https://i.ibb.co/C3Gz8y18/Glint-Of-Cloud-Banner.jpg',
   eventBannerImage: PLACEHOLDER_IMAGE,
   whimperingWastesImage: 'https://i.ibb.co/HT4RyJBy/Whimpering-Wastes-BG.png',
   endstateMatrixImage: 'https://i.ibb.co/Jjn2Ncvp/images-2026-04-01-T034054-984.jpg',
@@ -35,12 +36,12 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: 'https://i.ibb.co/21kQ66xr/Drawn-Edges.webp',
   dailyResetImage: 'https://i.ibb.co/Jj6cqnsQ/image.jpg',
   characters: [
-    { id: 'suisui', name: 'Suisui', title: 'Host of Harmony', element: 'Glacio', weaponType: 'Rectifier', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/wFwmhvLP/Suisui-banner.jpg', imagePosition: 'center 25%' }, // real splash art
-    { id: 'aemeath', name: 'Aemeath', title: 'Digital ghost of Startorch Academy', element: 'Fusion', weaponType: 'Sword', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/Y4SzJSxL/Aemeath-banner.jpg', imagePosition: '50% 47%' }, // real splash art (same asset used in BANNER_HISTORY v3.1-p1 / CHARACTER_THEMES.aemeath, crop reused from CHARACTER_THEMES.aemeath.pos.header)
+    { id: 'qingxiao', name: 'Qingxiao', title: 'Heart Sword', element: 'Aero', weaponType: 'Sword', isNew: true, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/8nvgqZKC/e7478-17840855867105-1920.jpg' }, // no individual splash art yet — new debut, using the combined convene banner
+    { id: 'denia', name: 'Denia', title: 'Bubbles of Nihility', element: 'Fusion', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Baizhi', 'Mortefi', 'Lumi'], imageUrl: 'https://i.ibb.co/DPnPVGVF/denia-banner.jpg', imagePosition: '50% 31%' }, // real splash art (same asset as BANNER_HISTORY v3.3-p2 / CHARACTER_THEMES.denia)
   ],
   weapons: [
-    { id: 'firstlights-herald', name: "Firstlight's Herald", title: 'Absolute Pulsation', type: 'Rectifier', forCharacter: 'Suisui', element: 'Glacio', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/G3kfLMk7/First-s-Light-herald-Banner.jpg', imagePosition: 'center 15%' },
-    { id: 'everbright-polestar', name: 'Everbright Polestar', title: 'Absolute Pulsation', type: 'Sword', forCharacter: 'Aemeath', element: 'Fusion', isNew: false, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/cSVxJrz8/everbright-polestar-banner.jpg' }, // real "Featured Weapon Convene" splash art
+    { id: 'glint-of-clouds', name: 'Glint of Clouds', type: 'Sword', forCharacter: 'Qingxiao', element: 'Aero', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/C3Gz8y18/Glint-Of-Cloud-Banner.jpg' },
+    { id: 'forged-dwarf-star', name: 'Forged Dwarf Star', type: 'Rectifier', forCharacter: 'Denia', element: 'Fusion', isNew: false, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: 'https://i.ibb.co/Gv3c41jD/Forged-Dwarf-Star-Banner.webp' }, // real art, same asset as WEAPON_THEMES.forged-dwarf-star
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
@@ -1099,21 +1100,104 @@ function preloadBannerHistoryArt() {
   }
 }
 
+// Auto-detect which BANNER_HISTORY entry is actually live right now, and fall
+// back to a best-effort reconstruction from it if CURRENT_BANNERS (the hand-
+// curated snapshot above) wasn't updated in time for a new patch. Without
+// this, a missed manual edit means the app keeps silently showing an expired
+// banner forever — CURRENT_BANNERS has no mechanism of its own to notice its
+// own endDate has passed.
+//
+// CURRENT_BANNERS is preferred whenever it already matches (or is ahead of)
+// history, since it carries richer per-entry data (art crops, isNew flags,
+// featured 4-stars) that BANNER_HISTORY doesn't store. The reconstruction
+// below is a best-effort fallback, not a full replacement: weapon "title"
+// epithets aren't derivable from any data source we have, so they're simply
+// omitted (BannerCard already renders titles as optional).
+function slugify(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+export function getCurrentBannerAuto(now = Date.now()) {
+  const active = BANNER_HISTORY.find(h => {
+    const start = new Date(h.startDate).getTime();
+    const end = new Date(h.endDate).getTime();
+    return now >= start && now < end;
+  });
+  if (!active) return CURRENT_BANNERS;
+  if (CURRENT_BANNERS.version === active.version && CURRENT_BANNERS.phase === active.phase) {
+    return CURRENT_BANNERS;
+  }
+
+  // History has moved on to a phase CURRENT_BANNERS doesn't reflect yet —
+  // reconstruct a best-effort banner object instead of serving stale data.
+  const isFirstAppearance = (name) => {
+    for (let i = BANNER_HISTORY.length - 1; i >= 0; i--) {
+      if (BANNER_HISTORY[i].characters.includes(name)) return BANNER_HISTORY[i].id === active.id;
+    }
+    return false;
+  };
+  const characters = active.characters.map(name => {
+    const cd = CHARACTER_DATA[name] || {};
+    const theme = CHARACTER_THEMES.find(t => t.name === name);
+    return {
+      id: slugify(name),
+      name,
+      title: cd.title || '',
+      element: cd.element || '',
+      weaponType: cd.weapon || '',
+      isNew: isFirstAppearance(name),
+      featured4Stars: CURRENT_BANNERS.characters[0]?.featured4Stars || [],
+      imageUrl: theme?.bannerArt || active.bannerArt || PLACEHOLDER_IMAGE,
+      ...(theme?.pos?.header ? { imagePosition: theme.pos.header } : {}),
+    };
+  });
+  const weapons = active.weapons.map((name, i) => {
+    const forCharacter = active.characters[i] || active.characters[0];
+    const cd = CHARACTER_DATA[forCharacter] || {};
+    const theme = WEAPON_THEMES.find(t => t.name === name);
+    return {
+      id: slugify(name),
+      name,
+      type: cd.weapon || '',
+      forCharacter,
+      element: cd.element || '',
+      isNew: isFirstAppearance(forCharacter),
+      featured4Stars: CURRENT_BANNERS.weapons[0]?.featured4Stars || [],
+      imageUrl: theme?.bannerArt || active.weaponBannerArt || PLACEHOLDER_IMAGE,
+    };
+  });
+
+  return {
+    ...CURRENT_BANNERS,
+    version: active.version,
+    phase: active.phase,
+    startDate: active.startDate,
+    endDate: active.endDate,
+    characterBannerImage: active.bannerArt || CURRENT_BANNERS.characterBannerImage,
+    weaponBannerImage: active.weaponBannerArt || CURRENT_BANNERS.weaponBannerImage,
+    characters,
+    weapons,
+    _autoDerived: true,
+    _predicted: !!active.predicted,
+  };
+}
+
 import { CURRENT_BANNER_TITLES_FR, EVENTS_FR } from './banners.fr.js';
 
 // Locale-aware CURRENT_BANNERS: only the display-only `title` fields on
 // characters/weapons are swapped; every other field (names, dates, art URLs,
 // standard banner arrays) is shared and returned as-is.
 export function getLocalizedCurrentBanners(locale) {
-  if (locale !== 'fr') return CURRENT_BANNERS;
+  const base = getCurrentBannerAuto();
+  if (locale !== 'fr') return base;
   const translateTitle = (entry) => ({
     ...entry,
     ...(CURRENT_BANNER_TITLES_FR[entry.title] ? { title: CURRENT_BANNER_TITLES_FR[entry.title] } : {}),
   });
   return {
-    ...CURRENT_BANNERS,
-    characters: CURRENT_BANNERS.characters.map(translateTitle),
-    weapons: CURRENT_BANNERS.weapons.map(translateTitle),
+    ...base,
+    characters: base.characters.map(translateTitle),
+    weapons: base.weapons.map(translateTitle),
   };
 }
 

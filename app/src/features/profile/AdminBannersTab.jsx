@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { CURRENT_BANNERS } from '../../data/banners.js';
+import { getCurrentBannerAuto } from '../../data/banners.js';
 import { ADMIN_BANNER_KEY } from '../../shared/components/bannerUtils.js';
 import { storageAvailable } from '../../core/storage.js';
 
@@ -89,7 +89,7 @@ export default function AdminBannersTab({
     if (storageAvailable) {
       try { localStorage.removeItem(ADMIN_BANNER_KEY); } catch {}
     }
-    setActiveBanners(CURRENT_BANNERS);
+    setActiveBanners(getCurrentBannerAuto());
     toast?.addToast?.('Reset to default banners', 'success');
   };
 

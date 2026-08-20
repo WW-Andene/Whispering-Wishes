@@ -15,7 +15,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Calendar, Check, ChevronDown, Minus, Plus, Search, Star, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
-import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, CURRENT_BANNERS } from '../../data/banners.js';
+import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
@@ -506,7 +506,7 @@ function PlannerTab({
               if (!d) return null;
               const elColor = d ? getElementColor(d.element) : '#9ca3af';
               const theme = CHARACTER_THEMES.find(ct => ct.name === ftg.name);
-              const currentBanner = CURRENT_BANNERS.characters?.find(c => c.name === ftg.name);
+              const currentBanner = getCurrentBannerAuto().characters?.find(c => c.name === ftg.name);
               const themeArt = theme?.bannerArt || currentBanner?.imageUrl;
               const artPosition = theme?.pos?.header || currentBanner?.imagePosition || 'center 30%';
 
