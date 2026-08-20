@@ -535,3 +535,38 @@ v3.6-p2 banner (~Sep 10, per `BANNER_HISTORY`). No fabricated rotation added; `C
 is now 57 of 58, with Jingran the one legitimate remaining gap until his kit is actually published.
 
 Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
+
+---
+
+## 2026-08-20 (session 8) — Actually brought Team tab's rotation depth into the detail modal
+
+**User pushback (correctly)**: the previous session's fix was too narrow — it only changed badge
+styling and filled a data gap for one character, not the actual thing asked for (bring the Team tab's
+richer rotation explanation — reason/inherits/own-kit/hands-off — into the detail modal, for all
+characters). The user then pointed out the key insight: every character already gets exactly this
+"solo" version for free in the Team tab today, just by building a team with only that one character
+slotted — `calcTeamStats(slots, ...)`'s only hard requirement is `mems.length` non-zero, no minimum
+team size.
+
+**Implemented generically, not per-character**: `CharacterDetailModal.jsx` now calls the same
+`calcTeamStats` the Team tab uses, with a team of just the one character being viewed
+(`calcTeamStats([name, null, null], 0, null, {}, '', 90)` — empty `teamEquipment` falls back to
+`bestWeapon`/`bestEchoes`, the same "preview" defaults Team tab itself uses before you've equipped
+anything). This computes real `selfActive`/`handsOff` buff blocks — own-kit buffs and what a follow-up
+teammate would inherit from an Outro/skill — from the actual buff timeline, not hand-authored text, so
+it covers all 58 characters at once with zero per-character authoring.
+
+Two things deliberately left out of the solo view: `reason` (its copy assumes a team exists — "comes
+on-field last to receive every buff stacked up before it" reads wrong with no teammates) and
+`inherits` (always empty with 1 member, nothing to show). Kept the modal's own richer per-step
+rendering (skill icon, DMG% from `SKILL_MULTIPLIERS`, locale-aware notes via
+`getLocalizedCharacterRotations`) rather than swapping in Team tab's plainer chip-only version —
+overrode the computed timeline's `skillSequence` back to the localized rotation so French notes aren't
+lost (`calcTeamStats` itself sources from the raw English-only `CHARACTER_ROTATIONS`, a pre-existing
+gap in the Team tab too, not something this introduces).
+
+**Verified for all 58 characters**, not just spot-checked: wrote a throwaway script calling
+`calcTeamStats([name, null, null], ...)` for every `CHARACTER_DATA` key — 58/58 computed without
+error, all 58 produced non-empty `selfActive`/`handsOff` output (0 silently-empty solo rotations).
+
+Verified: `npx vitest run` — 612/612 passing, `npm run build` succeeds clean.
