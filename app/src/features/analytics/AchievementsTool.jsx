@@ -166,7 +166,7 @@ function AchievementsTool({ onClose }) {
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('analytics.achievements.searchPlaceholder')}
             aria-label={t('analytics.achievements.searchAria')}
-            className="w-full pl-8 pr-3 py-2 text-sm rounded-lg bg-black/25 border border-[var(--border-medium)] focus:outline-none focus:border-yellow-400/50 text-gray-200 placeholder-gray-500"
+            className="w-full pl-8 pr-8 py-2 text-sm rounded-lg bg-black/25 border border-[var(--border-medium)] focus:outline-none focus:border-yellow-400/50 text-gray-200 placeholder-gray-500"
           />
         </div>
 
