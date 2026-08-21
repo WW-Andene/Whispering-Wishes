@@ -5,7 +5,7 @@
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
-import { BANNER_HISTORY, PLACEHOLDER_IMAGE, CHARACTER_THEMES } from '../../data/banners.js';
+import { BANNER_HISTORY, PLACEHOLDER_IMAGE, CHARACTER_THEMES, MOST_PULLED_STATS } from '../../data/banners.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
@@ -316,11 +316,15 @@ function TrackerTab({
                       { value: 'newest', label: t('tracker.sortNewestFirst') },
                       { value: 'release', label: t('tracker.sortReleaseOrder') },
                       { value: 'lastRerun', label: t('tracker.sortLastRerun') },
+                      { value: 'mostPulled', label: t('tracker.sortMostPulled') },
                     ]}
                     className="w-full"
                     ariaLabel={t('tracker.sortBannerHistory')}
                     small
                   />
+                  {bannerHistorySort === 'mostPulled' && (
+                    <p className="text-xs text-gray-500 px-0.5">{t('tracker.mostPulledSourceNote')}</p>
+                  )}
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2" data-sheet-scroll>
                   {(() => {
@@ -333,71 +337,90 @@ function TrackerTab({
                       `${b.version}`.includes(q) ||
                       `v${b.version} p${b.phase}`.toLowerCase().includes(q);
 
+                    // Shared by "Last Rerun" and "Most Pulled": each character's most recent
+                    // (latest-dated) banner appearance, used to pair a co-featured weapon and pick
+                    // a sensible date/version to display alongside the per-character row.
+                    const latestByCharacter = new Map();
+                    for (const b of BANNER_HISTORY) {
+                      for (const c of b.characters) {
+                        const prev = latestByCharacter.get(c);
+                        if (!prev || new Date(b.startDate) > new Date(prev.startDate)) latestByCharacter.set(c, b);
+                      }
+                    }
+                    const renderCharacterRow = (character, banner, trailing) => {
+                      const cImg = collectionImages[character];
+                      // Pair the character with its co-featured weapon from that same banner
+                      // phase — characters[idx] lines up with weapons[idx], same convention
+                      // the phase-block view below uses.
+                      const cIdx = banner.characters.indexOf(character);
+                      const w = banner.weapons[cIdx];
+                      const wImg = w ? collectionImages[w] : null;
+                      // Use this character's own splash art, not the phase's shared bannerArt
+                      // (which is only the first-listed character's art — showing it for every
+                      // co-featured character in the phase is wrong).
+                      const rowArt = CHARACTER_THEMES.find(th => th.name === character)?.bannerArt || banner.bannerArt;
+                      return (
+                        <div key={`row-${character}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                          {rowArt && <img src={rowArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ objectPosition: rowArt === PLACEHOLDER_IMAGE ? 'center 15%' : undefined, maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
+                          <div className="relative z-10">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-white text-xl font-semibold">{trailing || t('tracker.lastAppearance', { version: banner.version, phase: banner.phase })}</span>
+                              <span className="text-gray-500 text-sm">{formatDate(new Date(banner.startDate + 'T12:00:00'), { month: 'short', day: 'numeric', year: 'numeric' })}{banner.predicted ? ` ${t('tracker.estimated')}` : ''}</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                  {cImg ? (
+                                    <img src={cImg} alt={character} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-sm text-yellow-400">{character[0]}</div>
+                                  )}
+                                </div>
+                                <span className="text-sm text-yellow-400 font-medium truncate">{character}</span>
+                              </div>
+                              {w ? (
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                    {wImg ? (
+                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                    )}
+                                  </div>
+                                  <span className="text-sm text-pink-400 font-medium truncate">{w}</span>
+                                </div>
+                              ) : <div className="flex-1" />}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    };
+
                     // "Last Rerun" view: one row per character, showing only their most recent
                     // (latest-dated) banner appearance — lets players see at a glance who is
                     // overdue for a rerun, instead of scrolling every past phase.
                     if (bannerHistorySort === 'lastRerun') {
-                      const latestByCharacter = new Map();
-                      for (const b of BANNER_HISTORY) {
-                        for (const c of b.characters) {
-                          const prev = latestByCharacter.get(c);
-                          if (!prev || new Date(b.startDate) > new Date(prev.startDate)) latestByCharacter.set(c, b);
-                        }
-                      }
                       const rows = Array.from(latestByCharacter.entries())
                         .map(([character, banner]) => ({ character, banner }))
                         .filter(({ character, banner }) => !q || character.toLowerCase().includes(q) || matchesQuery(banner))
                         .sort((a, b) => new Date(b.banner.startDate) - new Date(a.banner.startDate));
                       return rows.length === 0
                         ? <div className="text-center text-gray-400 text-base py-6">{t('tracker.noBannersMatch', { query: bannerHistorySearch.trim() })}</div>
-                        : rows.map(({ character, banner }) => {
-                            const cImg = collectionImages[character];
-                            // Pair the character with its co-featured weapon from that same banner
-                            // phase — characters[idx] lines up with weapons[idx], same convention
-                            // the phase-block view below uses.
-                            const cIdx = banner.characters.indexOf(character);
-                            const w = banner.weapons[cIdx];
-                            const wImg = w ? collectionImages[w] : null;
-                            // Use this character's own splash art, not the phase's shared
-                            // bannerArt (which is only the first-listed character's art — showing
-                            // it for every co-featured character in the phase is wrong).
-                            const rowArt = CHARACTER_THEMES.find(th => th.name === character)?.bannerArt || banner.bannerArt;
-                            return (
-                              <div key={`lr-${character}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
-                                {rowArt && <img src={rowArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ objectPosition: rowArt === PLACEHOLDER_IMAGE ? 'center 15%' : undefined, maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
-                                <div className="relative z-10">
-                                  <div className="flex justify-between items-center mb-2">
-                                    <span className="text-white text-xl font-semibold">{t('tracker.lastAppearance', { version: banner.version, phase: banner.phase })}</span>
-                                    <span className="text-gray-500 text-sm">{formatDate(new Date(banner.startDate + 'T12:00:00'), { month: 'short', day: 'numeric', year: 'numeric' })}{banner.predicted ? ` ${t('tracker.estimated')}` : ''}</span>
-                                  </div>
-                                  <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                      <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
-                                        {cImg ? (
-                                          <img src={cImg} alt={character} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
-                                        ) : (
-                                          <div className="w-full h-full flex items-center justify-center text-sm text-yellow-400">{character[0]}</div>
-                                        )}
-                                      </div>
-                                      <span className="text-sm text-yellow-400 font-medium truncate">{character}</span>
-                                    </div>
-                                    {w ? (
-                                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                        <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
-                                          {wImg ? (
-                                            <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
-                                          ) : (
-                                            <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
-                                          )}
-                                        </div>
-                                        <span className="text-sm text-pink-400 font-medium truncate">{w}</span>
-                                      </div>
-                                    ) : <div className="flex-1" />}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          });
+                        : rows.map(({ character, banner }) => renderCharacterRow(character, banner));
+                    }
+
+                    // "Most Pulled" view: one row per character with tracked pull data, sorted by
+                    // lifetime tracked pull count (see MOST_PULLED_STATS sourcing comment in
+                    // banners.js — a wuwatracker.com community sample, not the full playerbase).
+                    if (bannerHistorySort === 'mostPulled') {
+                      const rows = Object.entries(MOST_PULLED_STATS)
+                        .filter(([character]) => latestByCharacter.has(character))
+                        .map(([character, stats]) => ({ character, stats, banner: latestByCharacter.get(character) }))
+                        .filter(({ character, banner }) => !q || character.toLowerCase().includes(q) || matchesQuery(banner))
+                        .sort((a, b) => b.stats.totalPulls - a.stats.totalPulls);
+                      return rows.length === 0
+                        ? <div className="text-center text-gray-400 text-base py-6">{t('tracker.noBannersMatch', { query: bannerHistorySearch.trim() })}</div>
+                        : rows.map(({ character, stats, banner }) => renderCharacterRow(character, banner, t('tracker.pullsCount', { count: stats.totalPulls })));
                     }
 
                     const ordered = bannerHistorySort === 'release' ? [...BANNER_HISTORY].reverse() : BANNER_HISTORY;

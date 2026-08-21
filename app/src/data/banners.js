@@ -155,6 +155,54 @@ const BANNER_HISTORY = [
   { id: 'v1.0-p1', version: '1.0', phase: 1, characters: ['Jiyan'], weapons: ['Verdant Summit'], startDate: '2024-05-23', endDate: '2024-06-13', bannerArt: 'https://i.ibb.co/hFM8STLQ/jiyan-banner.jpg' },
 ];
 
+// [SECTION:MOST_PULLED]
+// Lifetime "total tracked pulls while featured" per character, sourced 2026-08-21 from
+// wuwatracker.com/fr/tracker/stats/<id> — one real-text (non-canvas) stats page per historical
+// banner phase, with sequential chronological IDs 100001 (Jiyan, v1.0-p1 launch banner) through
+// 100041 (Qingxiao & Denia, the live v3.6-p1 banner). Each page's "Invocations 5✦" list gives every
+// 5★ character's tracked pull count for that specific banner run; only the count(s) clearly above
+// that banner's standard-pool 50/50-loss baseline were credited as "featured" and summed here across
+// every rerun (the small always-present counts for off-banner 5★s are the standard-pool pity/50-50
+// losses, not that character's own featured run, and are excluded to avoid double counting). This is
+// a self-reported sample (~20k-250k tracked users per banner depending on age), not the full
+// playerbase, and 4★ resonators (Sanhua/Baizhi/Yangyang/Danjin/Mortefi/Chixia/Aalto/Taoqi/Yuanwu/
+// Youhu/Buling) are excluded entirely — they're always in the standard 4★ pool, never "featured".
+// `appearances` = number of distinct banner runs (original release + reruns) counted.
+const MOST_PULLED_STATS = {
+  'Aemeath':            { totalPulls: 416154, appearances: 2 },
+  'Cartethyia':         { totalPulls: 393288, appearances: 3 },
+  'Hiyuki':             { totalPulls: 307460, appearances: 1 },
+  'Shorekeeper':        { totalPulls: 264747, appearances: 3 },
+  'Chisa':              { totalPulls: 263447, appearances: 2 },
+  'Lynae':              { totalPulls: 253122, appearances: 3 },
+  'Phrolova':           { totalPulls: 228148, appearances: 3 },
+  'Zani':               { totalPulls: 224306, appearances: 3 },
+  'Carlotta':           { totalPulls: 222258, appearances: 2 },
+  'Iuno':               { totalPulls: 200703, appearances: 2 },
+  'Camellya':           { totalPulls: 200253, appearances: 2 },
+  'Augusta':            { totalPulls: 188955, appearances: 2 },
+  'Ciaccona':           { totalPulls: 170421, appearances: 3 },
+  'Cantarella':         { totalPulls: 166956, appearances: 3 },
+  'Phoebe':             { totalPulls: 165601, appearances: 3 },
+  'Galbrena':           { totalPulls: 138874, appearances: 2 },
+  'Jinhsi':             { totalPulls: 127246, appearances: 2 },
+  'Changli':            { totalPulls: 127203, appearances: 2 },
+  'Denia':              { totalPulls: 123508, appearances: 1 },
+  'Lupa':               { totalPulls: 116982, appearances: 2 },
+  'Qiuyuan':            { totalPulls: 107510, appearances: 2 },
+  'Lucilla':            { totalPulls: 95411,  appearances: 1 },
+  'Zhezhi':             { totalPulls: 83976,  appearances: 2 },
+  'Yangyang: Xuanling': { totalPulls: 78320,  appearances: 1 },
+  'Brant':              { totalPulls: 78077,  appearances: 2 },
+  'Yinlin':             { totalPulls: 76094,  appearances: 3 },
+  'Luuk Herssen':       { totalPulls: 58217,  appearances: 1 },
+  'Roccia':             { totalPulls: 57533,  appearances: 2 },
+  'Suisui':             { totalPulls: 52804,  appearances: 1 },
+  'Jiyan':              { totalPulls: 47330,  appearances: 2 },
+  'Sigrika':            { totalPulls: 43788,  appearances: 1 },
+  'Qingxiao':           { totalPulls: 17725,  appearances: 1 },
+  'Xiangli Yao':        { totalPulls: 11893,  appearances: 2 },
+};
 
 // [SECTION:EVENTS]
 // All times from wuwatracker.com (Europe reference — CET UTC+1 or CEST UTC+2, converted to UTC)
@@ -1274,6 +1322,7 @@ export {
   PLACEHOLDER_IMAGE,
   CURRENT_BANNERS,
   BANNER_HISTORY,
+  MOST_PULLED_STATS,
   EVENTS,
   PIONEER_PODCAST_HISTORY,
   DOUBLED_PAWNS_MATRIX_HISTORY,

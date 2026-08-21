@@ -43,5 +43,8 @@
   "sortNewestFirst": "Newest First",
   "sortReleaseOrder": "Release Order",
   "sortLastRerun": "Last Rerun",
-  "lastAppearance": "Last: v{{version}} P{{phase}}"
+  "sortMostPulled": "Most Pulled",
+  "lastAppearance": "Last: v{{version}} P{{phase}}",
+  "pullsCount": "{{count}} tracked pulls",
+  "mostPulledSourceNote": "Community-sample data from wuwatracker.com, not the full playerbase"
 }
