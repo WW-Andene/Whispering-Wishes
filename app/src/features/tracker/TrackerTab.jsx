@@ -96,7 +96,7 @@ function TrackerTab({
 
             {/* Onboarding hint for new users with no imported data */}
             {!state.profile.importedAt && !dismissedImport && setActiveTab && (
-              <div className="flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 mt-3 content-layer">
+              <div className="flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 content-layer">
                 <button onClick={() => setActiveTab('profile')} className="flex items-center gap-2.5 flex-1 min-w-0 hover:opacity-80 transition-opacity">
                   <Upload size={14} className="text-cyan-400 flex-shrink-0" />
                   <span className="text-cyan-300/90 text-base">{t('tracker.importHintPre')} <strong>{t('tabs.profile')}</strong> {t('tracker.importHintPost')}</span>
