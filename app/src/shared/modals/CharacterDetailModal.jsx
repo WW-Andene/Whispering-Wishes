@@ -145,13 +145,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
-          {fullSpineId && (
+          {imageUrl && (
             <button
               onClick={(e) => { e.stopPropagation(); setShowFullSpine(true); }}
-              className="absolute bottom-3 right-3 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 border border-white/20"
+              className="kuro-btn absolute bottom-3 right-3 z-20 w-8 h-8 !p-0 rounded-full flex items-center justify-center"
               aria-label={t('modals.characterDetail.viewFullSpineAria', { name })}
             >
-              <Play size={18} className="fill-white ml-0.5" />
+              <Play size={13} className="fill-current ml-0.5" />
             </button>
           )}
           <div className="absolute bottom-3 left-4">
@@ -824,21 +824,22 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
     {/* Full spine-sprite viewer — round play button in the header opens this centered
         panel showing the character's full sprite animation, unconstrained by the
         header's small preview band. */}
-    {fullSpineId && (
+    {imageUrl && (
       <FocusTrapModal isOpen={showFullSpine} onClose={() => setShowFullSpine(false)} onClick={() => setShowFullSpine(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered>
-        <div className={`kuro-card relative w-full max-w-sm aspect-square border ${colors.border}`} onClick={e => e.stopPropagation()}>
-          <button onClick={() => setShowFullSpine(false)} className="absolute top-3 right-3 z-20 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeFullSpineAria')}>
-            <X size={16} />
+        <div className={`kuro-card relative w-full max-w-sm border ${colors.border}`} onClick={e => e.stopPropagation()}>
+          <div className="kuro-card-inner relative w-full aspect-square overflow-hidden">
+            <SpinePlayer
+              characterId={fullSpineId}
+              context="full"
+              className="absolute inset-0"
+              backgroundColor="#00000000"
+              fallbackImgUrl={imageUrl}
+              fallbackImgStyle={{ objectFit: 'contain' }}
+            />
+          </div>
+          <button onClick={() => setShowFullSpine(false)} className="kuro-btn absolute top-3 right-3 z-20 w-8 h-8 !p-0 rounded-full flex items-center justify-center" aria-label={t('modals.characterDetail.closeFullSpineAria')}>
+            <X size={14} />
           </button>
-          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} rounded-2xl`} />
-          <SpinePlayer
-            characterId={fullSpineId}
-            context="full"
-            className="absolute inset-0 rounded-2xl"
-            backgroundColor="#00000000"
-            fallbackImgUrl={imageUrl}
-            fallbackImgStyle={{ objectFit: 'contain' }}
-          />
         </div>
       </FocusTrapModal>
     )}
