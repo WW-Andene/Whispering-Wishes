@@ -154,6 +154,7 @@ function ProfileTab({
   // ── Background picker state ─────────────────────────────────────────────
   const [bgTarget, setBgTarget] = useState('header');
   const [bgCategory, setBgCategory] = useState('resonators');
+  const [bgSectionCollapsed, setBgSectionCollapsed] = useState(false);
   const [activePlayersCount, setActivePlayersCount] = useState(null);
   const [activePlayersHistory, setActivePlayersHistory] = useState([]);
   const [presenceError, setPresenceError] = useState(null);
@@ -749,16 +750,24 @@ function ProfileTab({
 
                   return (
                   <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                    <div className="flex items-center gap-3 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => setBgSectionCollapsed(prev => !prev)}
+                      className={`flex items-center gap-3 w-full text-left ${bgSectionCollapsed ? '' : 'mb-3'}`}
+                      aria-expanded={!bgSectionCollapsed}
+                    >
                       <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-btn)', color: '#9ca3af' }}>
                         <Sparkles size={16} />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <div className="text-white text-base font-medium">{t('profile.display.backgrounds')}</div>
                         <div className="text-gray-400 text-sm">{t('profile.display.backgroundsDesc')}</div>
                       </div>
-                    </div>
+                      <ChevronDown size={16} className={`text-gray-400 transition-transform flex-shrink-0 ${bgSectionCollapsed ? '-rotate-90' : ''}`} />
+                    </button>
 
+                    {!bgSectionCollapsed && (
+                    <>
                     {/* Target buttons with previews */}
                     <div className="flex gap-1.5 mb-3">
                       {[
@@ -903,6 +912,8 @@ function ProfileTab({
                         </div>
                       )}
                     </div>
+                    </>
+                    )}
                   </div>
                   );
                 })()}
