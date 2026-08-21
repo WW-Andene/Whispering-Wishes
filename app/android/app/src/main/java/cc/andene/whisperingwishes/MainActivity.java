@@ -27,10 +27,20 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            // systemBars() bundles statusBars|navigationBars|captionBar together, and on
+            // some OEM builds (e.g. Xiaomi/MIUI) that combined top value comes back taller
+            // than the actual visible status bar — inflating the header. Asking for
+            // statusBars() + displayCutout() specifically (so a hole-punch/notch camera is
+            // still cleared) and navigationBars() alone for the bottom is more precise.
+            Insets top = insets.getInsets(WindowInsetsCompat.Type.statusBars() | WindowInsetsCompat.Type.displayCutout());
+            Insets bottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
             float density = getResources().getDisplayMetrics().density;
-            float topDp = bars.top / density;
-            float bottomDp = bars.bottom / density;
+            // Defensive cap regardless of source — no real device has a status bar or
+            // gesture nav area taller than this, so nothing should ever push the header/nav
+            // further than a normal status bar's worth of space no matter what a given
+            // OEM's inset APIs report.
+            float topDp = Math.min(top.top / density, 60f);
+            float bottomDp = Math.min(bottom.bottom / density, 48f);
             WebView webView = getBridge() != null ? getBridge().getWebView() : null;
             if (webView != null) {
                 String js = "document.documentElement.style.setProperty('--safe-area-top','" + topDp + "px');"
