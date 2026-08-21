@@ -46,5 +46,28 @@
   "sortMostPulled": "Most Pulled",
   "lastAppearance": "Last: v{{version}} P{{phase}}",
   "pullsCount": "{{count}} tracked pulls",
-  "mostPulledSourceNote": "Community-sample data from wuwatracker.com, not the full playerbase"
+  "mostPulledSourceNote": "Community-sample data from wuwatracker.com, not the full playerbase",
+  "conveneInfo": {
+    "buttonAria": "Convene system information",
+    "title": "Convene System",
+    "closeAria": "Close",
+    "baseRateLabel": "Base 5★ rate:",
+    "baseRateValue": "0.8% per Convene",
+    "softPityLabel": "Soft Pity",
+    "softPityValue": "Pull 66+",
+    "softPityDesc": "Rate increases by ~6.6% per pull after pull 65. By pull 79, rate exceeds 90%.",
+    "hardPityLabel": "Hard Pity",
+    "hardPityValue": "Pull 80",
+    "hardPityDesc": "Guaranteed 5★ at pull 80. Average is ~71 pulls.",
+    "guarantee4StarLabel": "4★ Guarantee",
+    "guarantee4StarValue": "Every 10 pulls",
+    "guarantee4StarDesc": "Base rate 6%. Independent from 5★ pity counter.",
+    "fiftyFiftyLabel": "50/50 System",
+    "fiftyFiftyValue": "Featured Resonator",
+    "fiftyFiftyDesc": "50% chance for the featured Resonator. Losing the 50/50 guarantees the featured Resonator on your next 5★ pull. Both pity counter and guarantee carry over to the next featured banner.",
+    "noFiftyFiftyLabel": "No 50/50",
+    "noFiftyFiftyValue": "Featured Weapon",
+    "noFiftyFiftyDesc": "The featured weapon is guaranteed when you pull a 5★. Pity counter carries over to the next featured weapon banner.",
+    "footerNote": "Each banner type has its own independent pity counter"
+  }
 }

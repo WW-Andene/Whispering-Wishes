@@ -9,7 +9,7 @@ import { BANNER_HISTORY, PLACEHOLDER_IMAGE, CHARACTER_THEMES, MOST_PULLED_STATS 
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
-import { BannerCard } from '../../shared/components/BannerCard.jsx';
+import { BannerCard, GachaInfoButton } from '../../shared/components/BannerCard.jsx';
 import { StandardBannerSection } from './StandardBannerSection.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -126,8 +126,9 @@ function TrackerTab({
               </CardBody>
             </Card>
 
-            <div className="flex items-center text-sm content-layer">
+            <div className="flex items-center justify-between text-sm content-layer">
               <span className="text-gray-400">{t('tracker.versionPhaseServer', { version: activeBanners.version, phase: activeBanners.phase, server: state.server })}</span>
+              <GachaInfoButton isChar={trackerCategory !== 'weapon'} />
             </div>
 
 

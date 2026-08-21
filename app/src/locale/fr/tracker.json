@@ -46,5 +46,28 @@
   "sortMostPulled": "Le plus convié",
   "lastAppearance": "Dernier : v{{version}} P{{phase}}",
   "pullsCount": "{{count}} Conviers suivis",
-  "mostPulledSourceNote": "Données d'échantillon communautaire de wuwatracker.com, pas l'ensemble des joueurs"
+  "mostPulledSourceNote": "Données d'échantillon communautaire de wuwatracker.com, pas l'ensemble des joueurs",
+  "conveneInfo": {
+    "buttonAria": "Informations sur le système de Convier",
+    "title": "Système de Convier",
+    "closeAria": "Fermer",
+    "baseRateLabel": "Taux de base 5★ :",
+    "baseRateValue": "0,8 % par Convier",
+    "softPityLabel": "Pitié douce",
+    "softPityValue": "Tirage 66+",
+    "softPityDesc": "Le taux augmente d'environ 6,6 % par tirage après le tirage 65. Au tirage 79, le taux dépasse 90 %.",
+    "hardPityLabel": "Pitié dure",
+    "hardPityValue": "Tirage 80",
+    "hardPityDesc": "5★ garanti au tirage 80. La moyenne est d'environ 71 tirages.",
+    "guarantee4StarLabel": "Garantie 4★",
+    "guarantee4StarValue": "Tous les 10 tirages",
+    "guarantee4StarDesc": "Taux de base 6 %. Indépendant du compteur de pitié 5★.",
+    "fiftyFiftyLabel": "Système 50/50",
+    "fiftyFiftyValue": "Résonateur en vedette",
+    "fiftyFiftyDesc": "50 % de chance d'obtenir le Résonateur en vedette. Perdre le 50/50 garantit le Résonateur en vedette à votre prochain tirage 5★. Le compteur de pitié et la garantie sont conservés pour la prochaine bannière en vedette.",
+    "noFiftyFiftyLabel": "Pas de 50/50",
+    "noFiftyFiftyValue": "Arme en vedette",
+    "noFiftyFiftyDesc": "L'arme en vedette est garantie dès que vous obtenez un 5★. Le compteur de pitié est conservé pour la prochaine bannière d'arme en vedette.",
+    "footerNote": "Chaque type de bannière a son propre compteur de pitié indépendant"
+  }
 }
