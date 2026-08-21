@@ -339,35 +339,48 @@ export function compressImage(source) {
   });
 }
 
+// Lazily-created, reused Tesseract worker — avoids paying the ~10MB wasm +
+// trained-data download cost more than once per session. Terminated only on
+// page unload (there's no good "done forever" signal from the UI side).
+let _ocrWorkerPromise = null;
+async function getOcrWorker() {
+  if (!_ocrWorkerPromise) {
+    _ocrWorkerPromise = import('tesseract.js').then(({ createWorker }) => createWorker('eng'));
+  }
+  return _ocrWorkerPromise;
+}
+
 /**
- * Extract player_id, record_id, svr_id from a screenshot via server-side Groq Vision OCR.
- * @param {string} base64Image - base64-encoded JPEG image
- * @returns {Promise<{ player_id: string|null, record_id: string|null, svr_id: string|null }>}
+ * Extract player_id, record_id, svr_id (and friends) from a screenshot of the
+ * in-game Convene History URL, entirely on-device via Tesseract.js (classical
+ * OCR — no AI/LLM, no network call with the image). The recognized text is
+ * fed straight into parseGachaUrl(), the same regex-based parser used for a
+ * manually-pasted URL, so accuracy depends only on Tesseract reading the
+ * on-screen text correctly, not on any model "understanding" the screenshot.
+ * @param {string} base64Image - base64-encoded JPEG image (no data: prefix)
+ * @returns {Promise<{ player_id: string|null, record_id: string|null, svr_id: string|null, resources_id: string|null, gacha_id: string|null, gacha_type: string|null, lang: string|null, svr_area: string|null }>}
  */
 export async function extractIdsFromImage(base64Image) {
-  const res = await fetch(apiUrl('/api/ocr'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image: base64Image }),
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.error || `OCR failed (${res.status})`);
-  }
-
-  const raw = await res.json();
-  // Validate response — only accept expected string fields
-  const ALLOWED = ['player_id', 'record_id', 'svr_id', 'resources_id', 'gacha_id', 'gacha_type', 'lang', 'svr_area'];
-  const ids = {};
-  for (const key of ALLOWED) {
-    const val = raw[key];
-    ids[key] = (typeof val === 'string' && val !== 'null' && val !== 'NULL' && val.trim()) ? val.trim() : null;
-  }
-  if (!ids.player_id) {
+  const worker = await getOcrWorker();
+  const { data: { text } } = await worker.recognize(`data:image/jpeg;base64,${base64Image}`);
+  // Tesseract commonly inserts stray whitespace/newlines inside long
+  // alphanumeric URLs — strip it all before handing off to the URL parser,
+  // since a real Convene History URL never contains whitespace.
+  const cleaned = text.replace(/\s+/g, '');
+  const parsed = parseGachaUrl(cleaned);
+  if (!parsed.valid || !parsed.playerId) {
     throw new Error('player_id not found. Try a clearer screenshot.');
   }
-  return ids;
+  return {
+    player_id: parsed.playerId,
+    record_id: parsed.recordId,
+    svr_id: parsed.svrId,
+    resources_id: parsed.resourcesId,
+    gacha_id: parsed.gachaId,
+    gacha_type: parsed.gachaType,
+    lang: parsed.lang,
+    svr_area: parsed.svrArea,
+  };
 }
 
 /**

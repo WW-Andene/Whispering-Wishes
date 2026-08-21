@@ -88,7 +88,6 @@ cp self-host/.env.example self-host/.env
 | Clé | À quoi ça sert | Obligatoire ? | Où l'obtenir |
 |---|---|---|---|
 | `HF_API_KEY` | Suppression de fond d'image (onglet Collection) | Non | https://huggingface.co/settings/tokens (gratuit) |
-| `GROQ_API_KEY` | OCR — scan d'URL gacha depuis un screenshot | Non | https://console.groq.com/keys (gratuit) |
 | `ADMIN_HASH` | Outil admin de suppression de fond en masse | Non | Le hash que ton panneau admin attend |
 | `PORT` | Port du serveur | Non (défaut `4173`) | — |
 | `HOST` | Adresse d'écoute du serveur | Non (défaut `0.0.0.0`) | — |
@@ -98,7 +97,7 @@ cp self-host/.env.example self-host/.env
 part actuellement — ignore-le.
 
 **Usage courant sans rien configurer de spécial** : laisse tout vide sauf
-`HF_API_KEY` et/ou `GROQ_API_KEY` si tu utilises ces deux features précises.
+`HF_API_KEY` si tu utilises la suppression de fond d'image.
 
 ## 6. Lancer le serveur
 
@@ -204,7 +203,7 @@ cd Whispering-Wishes/app
 npm install
 npm run build
 cp self-host/.env.example self-host/.env
-# édite self-host/.env si tu veux HF_API_KEY / GROQ_API_KEY
+# édite self-host/.env si tu veux HF_API_KEY
 npm run selfhost
 ```
 
