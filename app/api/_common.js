@@ -1,20 +1,18 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — api/_common.js
-// Shared helpers for the Vercel serverless routes (/api/ocr, /api/remove-bg,
+// Shared helpers for the Vercel serverless routes (/api/remove-bg,
 // /api/batch-remove-bg, /api/gacha/record/query).
 // Underscore prefix keeps this file out of Vercel's route table.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // P12-10 audit fix: API kill switch.
-// Any handler can prefix with `if (isServiceDisabled(res, 'ocr')) return;` to
-// return a 503 + user-readable message when operations need to pause an
-// upstream integration (Groq quota exhausted, HuggingFace outage, abuse
-// spike) without redeploying.
+// Any handler can prefix with `if (isServiceDisabled(res, 'remove-bg')) return;`
+// to return a 503 + user-readable message when operations need to pause an
+// upstream integration (HuggingFace outage, abuse spike) without redeploying.
 //
 // Environment variables (read at request time, not boot — supports live toggle
 // on hosts that hot-reload env like Vercel):
 //   SERVICE_DISABLED          → disables ALL API routes
-//   SERVICE_DISABLED_OCR      → disables only /api/ocr
 //   SERVICE_DISABLED_REMOVE_BG → disables /api/remove-bg + /api/batch-remove-bg
 //   SERVICE_DISABLED_GACHA     → disables /api/gacha/record/query
 //
@@ -68,7 +66,7 @@ export function isServiceDisabled(res, serviceKey) {
 // naturally to KV/Redis if the app ever adds it.
 //
 // Usage:
-//   if (!rateLimit(req, res, { key: 'ocr', max: 10, windowMs: 60_000 })) return;
+//   if (!rateLimit(req, res, { key: 'remove-bg', max: 10, windowMs: 60_000 })) return;
 //
 // Returns true when the request is allowed; returns false after writing a
 // 429 response and setting Retry-After header.

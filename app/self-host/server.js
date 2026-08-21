@@ -59,9 +59,6 @@ if (!fs.existsSync(DIST_DIR)) {
 }
 
 const app = express();
-// Raised from Express's 100kb default — /api/ocr accepts up to a 4MB base64
-// image in the JSON body (see api/ocr.js's own MAX_IMAGE_SIZE check), which
-// would otherwise be rejected by this layer before the handler ever sees it.
 app.use(express.json({ limit: '10mb' }));
 
 // Mirrors the security headers vercel.json applies in production, so a
@@ -86,12 +83,10 @@ app.use((req, res, next) => {
 // zero changes to the handler files themselves.
 const { default: removeBg } = await import('../api/remove-bg.js');
 const { default: batchRemoveBg } = await import('../api/batch-remove-bg.js');
-const { default: ocr } = await import('../api/ocr.js');
 const { default: gachaQuery } = await import('../api/gacha/record/query.js');
 
 app.post('/api/remove-bg', removeBg);
 app.post('/api/batch-remove-bg', batchRemoveBg);
-app.post('/api/ocr', ocr);
 app.options('/api/gacha/record/query', gachaQuery); // the handler itself replies to OPTIONS
 app.post('/api/gacha/record/query', gachaQuery);
 
@@ -109,6 +104,6 @@ const HOST = process.env.HOST || '0.0.0.0';
 app.listen(PORT, HOST, () => {
   console.log(`\nWhispering Wishes running at http://localhost:${PORT}`);
   if (HOST === '0.0.0.0') console.log(`Also reachable on your LAN at http://<this machine's IP>:${PORT}`);
-  const missing = ['HF_API_KEY', 'GROQ_API_KEY'].filter(k => !process.env[k]);
-  if (missing.length) console.log(`Note: ${missing.join(', ')} not set — background-removal/OCR features will return a config error until self-host/.env has them.`);
+  const missing = ['HF_API_KEY'].filter(k => !process.env[k]);
+  if (missing.length) console.log(`Note: ${missing.join(', ')} not set — background-removal features will return a config error until self-host/.env has them.`);
 });

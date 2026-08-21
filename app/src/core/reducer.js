@@ -225,7 +225,7 @@ const reducer = (state, action) => {
     }
     // SYNC_PITY removed - calculator is fully independent from history
     case ACTION.IMPORT_HISTORY: {
-      // P2-07 audit fix: WuWa player IDs are numeric (per api/ocr.js prompt + observed data).
+      // P2-07 audit fix: WuWa player IDs are numeric (observed data).
       // Previously `safeUid` was any string truncated to 32 chars — could store
       // control chars / whitespace. Now coerce to digits only; if nothing is left,
       // keep the existing uid (same fallback behavior for empty input as before).

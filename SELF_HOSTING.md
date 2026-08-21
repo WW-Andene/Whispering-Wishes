@@ -31,7 +31,6 @@ network latency.
 | Variable | Required for | Where to get it |
 |---|---|---|
 | `HF_API_KEY` | Background removal (Collection tab image editing) | https://huggingface.co/settings/tokens (free) |
-| `GROQ_API_KEY` | OCR gacha-URL import from screenshot | https://console.groq.com/keys (free) |
 | `ADMIN_HASH` | Admin panel's batch background-removal tool | whatever hash your admin panel expects |
 | `PORT` / `HOST` | Server bind address | defaults `4173` / `0.0.0.0` |
 | `EXTRA_ALLOWED_ORIGINS` | Letting a non-default URL call `/api/*` | see below |
