@@ -997,6 +997,8 @@ const OTHER_BACKGROUNDS = [
   { id: 'tacet-field', name: 'Tacet Field', art: 'https://i.ibb.co/zgQbgTp/Tacet-field.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
   { id: 'three-two-one-cheese', name: 'Three Two One Cheese', art: 'https://i.ibb.co/dJ2xPnNf/Three-two-one-cheese.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
   { id: 'here-come-the-woolies', name: 'Here Come the Woolies', art: 'https://i.ibb.co/8DMSZm1S/here-come-the-woolies.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'log-3-0', name: 'Log 3.0', art: 'https://i.ibb.co/ynHpJQsH/log-3-0.png', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'log-2-0', name: 'Log 2.0', art: 'https://i.ibb.co/Kc8q8mYt/Log-2-0.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
 ];
 
 // Animated (video) backgrounds — self-hosted under /animated-bg/. `art` is
