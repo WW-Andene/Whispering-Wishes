@@ -965,12 +965,14 @@ const WEAPON_THEMES = [
 // VERSION SPLASH SCREENS — Official game version key art
 // ═══════════════════════════════════════════════════════════════════════════════
 const VERSION_SPLASH_SCREENS = [
-  // v3.4-3.6 Live2D-source Drive links (v3.4, v3.4 Cyberpunk, v3.6) came back as .mp4 videos on
-  // inspection, not images — skipped per instruction to only keep non-video art. v3.5's Live2D
-  // link (X/Twitter) was a real image and is included below.
+  // All 6 Live2D-source links (v3.4, v3.4 Cyberpunk, v3.6 via Google Drive; v3.5, v2.4, v2.1 via
+  // X/Twitter) turned out to be video content, not stills — the Drive ones were outright .mp4
+  // files, and the X ones only *looked* like images because X's bot-facing og:image/twitter:card
+  // meta serves a static video-thumbnail frame even for video posts (twitter:card stayed
+  // "summary_large_image" instead of "player", which was the false signal). None of the Live2D
+  // links yielded real official splash art — only the Classic-style links below did.
   { id: 'v3.6', version: '3.6', name: 'Version 3.6 (Classic)', art: 'https://i.ibb.co/KQRKp4L/Classic-3-6.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
   { id: 'v3.5', version: '3.5', name: 'Version 3.5 (Classic)', art: 'https://i.ibb.co/KcxLTshs/Classic-3-5.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
-  { id: 'v3.5-live2d', version: '3.5', name: 'Version 3.5 (Live2D)', art: 'https://i.ibb.co/SX2gZ0wG/Live2-D-3-5.jpg', pos: { header: '50% 20%', nav: '50% 20%', bg: '50% 50%' } },
   { id: 'v3.4-cyberpunk', version: '3.4', name: 'Version 3.4 Cyberpunk (Classic)', art: 'https://i.ibb.co/hhrrJGn/Classic-3-4-Cyberpunk.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
   { id: 'v3.4', version: '3.4', name: 'Version 3.4 (Classic)', art: 'https://i.ibb.co/kg1KVz0j/Classic-3-4.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
   { id: 'v3.3', version: '3.3', name: 'Reverbs From The End of Galaxies',  art: 'https://i.ibb.co/KByqz7F/Reverbs-From-The-End-of-Galaxies.jpg',                                 pos: { header: '50% 32%', nav: '50% 32%', bg: '52% 50%' } },
@@ -982,11 +984,9 @@ const VERSION_SPLASH_SCREENS = [
   { id: 'v2.6', version: '2.6', name: "By Sun's Scourge, By Moon's Revelation", art: 'https://i.ibb.co/tPmjm4Gj/2-6-By-Sun-039-s-Scourge-By-Moon-039-s-Revelation.webp',              pos: { header: '50% 18%', nav: '50% 18%', bg: '50% 50%' } },
   { id: 'v2.5', version: '2.5', name: 'Unfading Melody of Life',               art: 'https://i.ibb.co/9mPqRNB5/2-5-Unfading-Melody-of-Life.webp',                                      pos: { header: '50% 30%', nav: '50% 32%', bg: '38% 50%' } },
   { id: 'v2.4', version: '2.4', name: 'Lightly We Toss the Crown',             art: 'https://i.ibb.co/1Y9nQ0fh/2-4-Lightly-We-Toss-the-Crown.webp',                                    pos: { header: '50% 26%', nav: '50% 25%', bg: '52% 50%' } },
-  { id: 'v2.4-live2d', version: '2.4', name: 'Lightly We Toss the Crown (Live2D)', art: 'https://i.ibb.co/SXh69F3p/Live2-D-2-4.jpg', pos: { header: '50% 26%', nav: '50% 25%', bg: '52% 50%' } },
   { id: 'v2.3', version: '2.3', name: 'Fiery Arpeggio of Summer Reunion',      art: 'https://i.ibb.co/xqGcwWtp/2-3-Fiery-Arpeggio-of-Summer-Reunion.webp',                             pos: { header: '50% 34%', nav: '50% 32%', bg: '26% 50%' } },
   { id: 'v2.2', version: '2.2', name: 'Tangled Truths in the Inverted Tower',  art: 'https://i.ibb.co/CsJzN541/2-2-Tangled-Truths-in-the-Inverted-Tower.webp',                         pos: { header: '50% 28%', nav: '50% 26%', bg: '62% 50%' } },
   { id: 'v2.1', version: '2.1', name: 'Waves Sing and the Cerulean Bird Calls', art: 'https://i.ibb.co/NR8Y3hX/2-1-Waves-Sing-and-the-Cerulean-Bird-Calls.webp',                       pos: { header: '50% 10%', nav: '50% 12%', bg: '78% 50%' } },
-  { id: 'v2.1-live2d', version: '2.1', name: 'Waves Sing and the Cerulean Bird Calls (Live2D)', art: 'https://i.ibb.co/N67k9B0D/Live2-D-2-1.jpg', pos: { header: '50% 20%', nav: '50% 20%', bg: '50% 50%' } },
   { id: 'v2.0', version: '2.0', name: 'All Silent Souls Can Sing',             art: 'https://i.ibb.co/ymyhCL34/2-0-All-Silent-Souls-Can-Sing.webp',                                    pos: { header: '50% 52%', nav: '50% 49%', bg: '36% 50%' } },
   { id: 'v1.4', version: '1.4', name: 'When the Night Knocks',                 art: 'https://i.ibb.co/gs28SY3/1-4-When-the-Night-Knocks.webp',                                         pos: { header: '50% 66%', nav: '50% 70%', bg: '46% 50%' } },
   { id: 'v1.3', version: '1.3', name: "To the Shore's End",                    art: 'https://i.ibb.co/Pv1CG7BX/1-3-To-the-Shore-039-s-End.webp',                                       pos: { header: '50% 16%', nav: '50% 16%', bg: '16% 50%' } },

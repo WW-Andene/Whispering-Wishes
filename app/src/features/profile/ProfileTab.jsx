@@ -818,7 +818,7 @@ function ProfileTab({
                         >
                           <img src={v.art} alt={v.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">v{v.version}{v.id.includes('-live2d') ? ' (L2D)' : v.id.includes('-cyberpunk') ? ' (CP)' : ''}</span>
+                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">v{v.version}{v.id.includes('-cyberpunk') ? ' (CP)' : ''}</span>
                           {isSelected('version', v.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
                         </button>
                       ))}
