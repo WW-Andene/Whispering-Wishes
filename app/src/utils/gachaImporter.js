@@ -342,24 +342,44 @@ export function compressImage(source) {
 // All three assets Tesseract needs (worker script, wasm core, trained data)
 // are vendored under public/vendor/tesseract/ instead of the library's CDN
 // defaults, so this works in the Capacitor APK with no network at all —
-// same reasoning as public/vendor/tmf/ elsewhere in this app. corePath is a
-// *directory*: tesseract.js feature-detects SIMD/relaxed-SIMD support and
-// picks the matching tesseract-core-*-lstm.wasm.js file itself, so all three
-// variants are shipped and it can't reach the internet to fetch the one it
-// picks.
+// same reasoning as public/vendor/tmf/ elsewhere in this app.
+//
+// corePath points at the plain (non-SIMD) core file directly, rather than at
+// the vendor directory: passing a directory makes tesseract.js run an async
+// SIMD/relaxed-SIMD feature probe inside the worker before picking a file,
+// and that probe was hanging indefinitely on Android's WebView with no
+// timeout anywhere in the chain — the exact "endless loading, never
+// succeeds" symptom. Pointing at a specific *.wasm.js file (ends in "js")
+// skips that detection path entirely; see tesseract.js's getCore.js.
 const TESSERACT_VENDOR_PATH = '/vendor/tesseract';
+const OCR_INIT_TIMEOUT_MS = 20000;
+const OCR_RECOGNIZE_TIMEOUT_MS = 30000;
+
+function withTimeout(promise, ms, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
 
 // Lazily-created, reused Tesseract worker — avoids paying the ~10MB wasm +
 // trained-data load cost more than once per session. Terminated only on
 // page unload (there's no good "done forever" signal from the UI side).
+// Reset to null on failure so a transient/first-run glitch doesn't
+// permanently poison every retry with the same rejected promise.
 let _ocrWorkerPromise = null;
 async function getOcrWorker() {
   if (!_ocrWorkerPromise) {
-    _ocrWorkerPromise = import('tesseract.js').then(({ createWorker }) => createWorker('eng', undefined, {
-      workerPath: `${TESSERACT_VENDOR_PATH}/worker.min.js`,
-      corePath: TESSERACT_VENDOR_PATH,
-      langPath: TESSERACT_VENDOR_PATH,
-    }));
+    _ocrWorkerPromise = withTimeout(
+      import('tesseract.js').then(({ createWorker }) => createWorker('eng', undefined, {
+        workerPath: `${TESSERACT_VENDOR_PATH}/worker.min.js`,
+        corePath: `${TESSERACT_VENDOR_PATH}/tesseract-core-lstm.wasm.js`,
+        langPath: TESSERACT_VENDOR_PATH,
+      })),
+      OCR_INIT_TIMEOUT_MS,
+      'OCR engine failed to start. Try again, or paste the URL manually.'
+    ).catch(err => { _ocrWorkerPromise = null; throw err; });
   }
   return _ocrWorkerPromise;
 }
@@ -376,7 +396,11 @@ async function getOcrWorker() {
  */
 export async function extractIdsFromImage(base64Image) {
   const worker = await getOcrWorker();
-  const { data: { text } } = await worker.recognize(`data:image/jpeg;base64,${base64Image}`);
+  const { data: { text } } = await withTimeout(
+    worker.recognize(`data:image/jpeg;base64,${base64Image}`),
+    OCR_RECOGNIZE_TIMEOUT_MS,
+    'OCR timed out. Try again, or paste the URL manually.'
+  );
   // Tesseract commonly inserts stray whitespace/newlines inside long
   // alphanumeric URLs — strip it all before handing off to the URL parser,
   // since a real Convene History URL never contains whitespace.
