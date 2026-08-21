@@ -14,12 +14,14 @@
     "step3Desc": "Consultez les bannières actives, la progression de la pitié (tirages depuis le dernier 5★) et les comptes à rebours.",
     "step4Title": "Constituez votre collection",
     "step4Desc": "Suivez tous vos Résonateurs et armes.",
-    "step5Title": "Calculez vos chances",
-    "step5Desc": "Entrez votre Astrite et votre pitié pour voir les probabilités exactes de tirage.",
-    "step6Title": "Consultez les statistiques",
-    "step6Desc": "Vérifiez votre indice de chance, vos graphiques et votre historique de Conviers.",
-    "step7Title": "Vous êtes prêt(e) !",
-    "step7Desc": "Bonne chance pour vos Conviers, Nomade !"
+    "step5Title": "Planifiez vos équipes",
+    "step5Desc": "Composez vos équipes de résonateurs et prévisualisez les dégâts de rotation dans l'onglet Équipes.",
+    "step6Title": "Calculez vos chances",
+    "step6Desc": "Entrez votre Astrite et votre pitié pour voir les probabilités exactes de tirage.",
+    "step7Title": "Consultez les statistiques",
+    "step7Desc": "Vérifiez votre indice de chance, vos graphiques et votre historique de Conviers.",
+    "step8Title": "Vous êtes prêt(e) !",
+    "step8Desc": "Bonne chance pour vos Conviers, Nomade !"
   },
   "serverSelector": {
     "ariaLabel": "Sélectionner la région du serveur",
