@@ -42,9 +42,9 @@
   "sortBannerHistory": "Trier l'historique des bannières",
   "sortNewestFirst": "Plus récent d'abord",
   "sortReleaseOrder": "Ordre de sortie",
-  "sortLastRerun": "Dernier rerun",
-  "sortMostPulled": "Le plus invoqué",
+  "sortLastRerun": "Dernière reprise",
+  "sortMostPulled": "Le plus convié",
   "lastAppearance": "Dernier : v{{version}} P{{phase}}",
-  "pullsCount": "{{count}} invocations suivies",
+  "pullsCount": "{{count}} Conviers suivis",
   "mostPulledSourceNote": "Données d'échantillon communautaire de wuwatracker.com, pas l'ensemble des joueurs"
 }
