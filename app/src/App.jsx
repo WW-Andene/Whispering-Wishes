@@ -91,15 +91,6 @@ const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
 // instead of silently passing the old `!ALL_CHARACTERS.has(p.name)` negative-only check.
 const ALL_WEAPONS_SET = new Set([...ALL_5STAR_WEAPONS, ...ALL_4STAR_WEAPONS, ...ALL_3STAR_WEAPONS, ...ALL_2STAR_WEAPONS, ...ALL_1STAR_WEAPONS]);
 
-// Fixed, hardcoded clearance for the header — deliberately NOT computed from
-// any WindowInsets/env(safe-area-inset-*)/CSS-var mechanism. Every dynamic
-// approach tried here ended up entangled with the app's overall window/
-// background sizing on-device (the header growing whenever the edge-to-edge
-// background did), even when the underlying insets math was sound in
-// isolation. A constant can't be entangled with anything — it's the same
-// number regardless of device, OS quirks, or how the background is laid out.
-const NOTCH_CLEARANCE_PX = 24;
-
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
   // Several tabs are wrapped in React.memo with custom comparators that don't
@@ -381,11 +372,31 @@ function WhisperingWishesInner() {
   useEffect(() => {
     const header = headerRef.current;
     if (!header) return;
-    const update = () => setHeaderPadding(header.offsetHeight + 12 + 12);
+    // getBoundingClientRect().bottom (not offsetHeight) so this correctly
+    // accounts for the header's marginTop (the notch/cutout clearance,
+    // native Android only) as well as its own rendered height — margin
+    // shifts the header's position without changing its own size, so
+    // offsetHeight alone would under-report the space it actually occupies.
+    const update = () => setHeaderPadding(header.getBoundingClientRect().bottom + 12);
     update();
     const ro = new ResizeObserver(update);
     ro.observe(header);
-    return () => ro.disconnect();
+    // ResizeObserver only fires on the header's own size changing, not on a
+    // margin-driven position shift — cover that (native's WindowInsets
+    // bridge lands asynchronously, a frame or more after first mount) with
+    // a short-lived poll, plus orientation/resize changes afterward.
+    const raf1 = requestAnimationFrame(() => {
+      const raf2 = requestAnimationFrame(update);
+      return () => cancelAnimationFrame(raf2);
+    });
+    const timer = setTimeout(update, 500);
+    window.addEventListener('resize', update);
+    return () => {
+      ro.disconnect();
+      cancelAnimationFrame(raf1);
+      clearTimeout(timer);
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
 
@@ -969,7 +980,7 @@ function WhisperingWishesInner() {
       {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
-      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, paddingTop: NOTCH_CLEARANCE_PX, overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
+      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
           headerBgType === 'animated' ? (
