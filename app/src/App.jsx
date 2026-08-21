@@ -27,6 +27,7 @@ import { getCurrentBannerAuto, preloadBannerHistoryArt } from './data/banners.js
 import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, SERVERS, getServerOffset } from './data/constants.js';
 import { generateUniqueId, calculateLuckRating } from './utils/helpers.js';
 import { IMPORT_NAME_ALIASES } from './utils/gachaImporter.js';
+import { isNativePlatform } from './utils/appUpdate.js';
 // --- extracted hooks ---
 import { useVisualSettings, DEFAULT_VISUAL_SETTINGS } from './hooks/useVisualSettings.js';
 import { useBackgroundFraming } from './hooks/useBackgroundFraming.js';
@@ -960,7 +961,7 @@ function WhisperingWishesInner() {
       {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
-      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, paddingTop: 'env(safe-area-inset-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
+      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, paddingTop: isNativePlatform() ? 0 : 'env(safe-area-inset-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
           headerBgType === 'animated' ? (
@@ -1044,7 +1045,7 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-evenly overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'env(safe-area-inset-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-evenly overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: isNativePlatform() ? 0 : 'env(safe-area-inset-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
           const tabs = ['tracker','events','map','planner','calculator','analytics','teams','gathering'];
           const idx = tabs.indexOf(activeTab);
           let newTab;
