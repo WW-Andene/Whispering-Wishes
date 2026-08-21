@@ -67,6 +67,8 @@
   "characterDetail": {
     "resonatorDetailsAria": "Détails du Résonateur {{name}}",
     "closeAria": "Fermer les détails du Résonateur",
+    "viewFullSpineAria": "Voir l'animation complète de {{name}}",
+    "closeFullSpineAria": "Fermer l'animation complète",
     "birthday": "Anniversaire",
     "birthplace": "Lieu de naissance",
     "region": "Région",

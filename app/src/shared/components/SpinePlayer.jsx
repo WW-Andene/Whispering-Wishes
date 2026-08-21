@@ -256,6 +256,14 @@ const SPRITE_NAME_TO_KEY = Object.fromEntries(
   Object.entries(SPRITE_SPINE_CHARACTERS).map(([k, v]) => [v.name.toLowerCase(), k]),
 );
 
+// Feature flag: sprite-surface Spine animations (SPRITE_SPINE_CHARACTERS) are
+// limited to the character detail modal's full-spine viewer panel. Every
+// other sprite call site (collection grid, detail-modal header preview, echo
+// "recommended for" avatars) gates on this and falls back to a static image
+// when it's false. Kept as a single flag here rather than deleting those call
+// sites, so re-enabling sprite surfaces elsewhere is a one-line change.
+export const SPINE_SPRITES_ENABLED_OUTSIDE_PANEL = false;
+
 export function getSpineId(displayName, { surface = 'banner' } = {}) {
   if (!displayName) return null;
   const lc = displayName.toLowerCase();

@@ -8,7 +8,7 @@ import { User, Crown } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { haptic } from '../../utils/helpers.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { SpinePlayer, getSpineId } from '../../shared/components/SpinePlayer.jsx';
+import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../../shared/components/SpinePlayer.jsx';
 
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t } from '../../utils/i18n.js';
@@ -43,7 +43,7 @@ const CollectionGridCard = memo(({ name, label, count, imgUrl, framing, isSelect
   const processedUrl = imgUrl;
   const [spineFailed, setSpineFailed] = useState(false);
   const spineId = isCharacter && isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
-  const useSpine = !!spineId && !spineFailed;
+  const useSpine = SPINE_SPRITES_ENABLED_OUTSIDE_PANEL && !!spineId && !spineFailed;
   const longPressHandlers = useLongPress(
     onLongPress ? (event) => onLongPress(name, isCharacter, event) : null,
     () => {

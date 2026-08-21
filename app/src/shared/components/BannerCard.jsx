@@ -36,6 +36,9 @@ const BANNER_CARD_OVERLAY_STYLE = Object.freeze({ background: 'linear-gradient(t
 const TEXT_SHADOW_STYLE = Object.freeze({ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 // L-FIX: Extracted inline style constants to avoid re-creating objects every render
 
+// Feature flag: Spine banner animations are disabled app-wide. Set to true to re-enable.
+const SPINE_BANNERS_ENABLED = false;
+
 const IMG_LAYER_STYLE = Object.freeze({ zIndex: 1 });
 const BANNER_SUBTLE_SHADOW = '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)';
 
@@ -87,7 +90,8 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   const isFull = visualSettings?.animationsEnabled === 'full';
   const spineId = isChar ? getSpineId(item.name) : null;
-  const useSpine = isFull && spineId && !spineFailed;
+  // Spine banners disabled app-wide (kept encapsulated here, not removed, for easy re-enable).
+  const useSpine = SPINE_BANNERS_ENABLED && isFull && spineId && !spineFailed;
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
