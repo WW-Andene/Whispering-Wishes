@@ -22,15 +22,31 @@ import { FullSpineViewerButton } from '../components/FullSpineViewerButton.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
-// Shared element color maps
+// Shared element color maps. `hex` (same source as helpers.js's ELEMENT_COLORS)
+// drives the header's corner fade: lighter top-left, subtly darker/cooler
+// bottom-right, both mixed from this same base hue.
 const DETAIL_ELEMENT_COLORS = {
-  Fusion: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/50' },
-  Electro: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
-  Aero: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50' },
-  Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50' },
-  Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50' },
-  Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
+  Fusion: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/50', hex: '#f97316' },
+  Electro: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50', hex: '#a855f7' },
+  Aero: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50', hex: '#10b981' },
+  Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50', hex: '#06b6d4' },
+  Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50', hex: '#ec4899' },
+  Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', hex: '#edaf18' },
 };
+// Mixes a hex color toward an {r,g,b} target by `amount` (0-1), at `alpha` opacity.
+const _mixRgba = (hex, target, amount, alpha) => {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.round(((n >> 16) & 255) + (target.r - ((n >> 16) & 255)) * amount);
+  const g = Math.round(((n >> 8) & 255) + (target.g - ((n >> 8) & 255)) * amount);
+  const b = Math.round((n & 255) + (target.b - (n & 255)) * amount);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+// Single diagonal fade: a lighter tint of the element color top-left, fading
+// through transparent, into a subtle cooler/darker shade (mixed toward the
+// app's own near-black navy, --bg-app-ish rgb(12,16,24)) bottom-right — both
+// derived from the same base hue rather than an unrelated color.
+const elementCornerFade = (hex) =>
+  `linear-gradient(135deg, ${_mixRgba(hex, { r: 255, g: 255, b: 255 }, 0.5, 0.28)} 0%, transparent 45%, ${_mixRgba(hex, { r: 12, g: 16, b: 24 }, 0.65, 0.22)} 100%)`;
 
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
@@ -102,6 +118,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+          <div className="absolute inset-0" style={{ background: elementCornerFade(colors.hex) }} />
           {framingMode && editingImage === `info-${name}` && (
             <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
               <span className="text-black text-sm">✓</span>
