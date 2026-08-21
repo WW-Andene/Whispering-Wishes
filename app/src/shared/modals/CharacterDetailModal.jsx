@@ -143,7 +143,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               )}
             </div>
           )}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(12,16,24,0.75) 0%, transparent 55%)' }} />
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
