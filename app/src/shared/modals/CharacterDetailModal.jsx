@@ -826,8 +826,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
         header's small preview band. */}
     {imageUrl && (
       <FocusTrapModal isOpen={showFullSpine} onClose={() => setShowFullSpine(false)} onClick={() => setShowFullSpine(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered>
-        <div className="relative w-full" style={{ maxWidth: '30rem' }} onClick={e => e.stopPropagation()}>
-          <div className="relative w-full aspect-square" style={{ filter: 'drop-shadow(0 20px 45px rgba(0,0,0,0.6))' }}>
+        <div className="relative w-full" style={{ maxWidth: '24rem' }} onClick={e => e.stopPropagation()}>
+          <div className="relative w-full aspect-square" style={{ filter: 'drop-shadow(0 20px 45px rgba(0,0,0,0.6))', transform: 'scale(1.25)' }}>
             <SpinePlayer
               characterId={fullSpineId}
               context="full"
