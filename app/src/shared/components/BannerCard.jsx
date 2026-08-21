@@ -12,6 +12,7 @@ import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
+import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
 import { t } from '../../utils/i18n.js';
 
 const BANNER_GRADIENT_MAP = {
@@ -192,6 +193,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             </div>
           </div>
         )}
+      {isChar && <FullSpineViewerButton name={item.name} imageUrl={imgUrl} className="absolute bottom-2 right-2 z-20" />}
     </div>
     </div>
   );

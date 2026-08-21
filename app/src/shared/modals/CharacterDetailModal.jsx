@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
+import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
 import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
@@ -18,6 +18,7 @@ import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegi
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
+import { FullSpineViewerButton } from '../components/FullSpineViewerButton.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
@@ -88,15 +89,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
   const isFullAnim = visualSettings?.animationsEnabled === 'full';
   const spineId = SPINE_SPRITES_ENABLED_OUTSIDE_PANEL && isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
-  // Full-spine viewer: available whenever this character has a sprite registered,
-  // independent of the header's own animationsEnabled/framingMode gating, and
-  // NOT gated by SPINE_SPRITES_ENABLED_OUTSIDE_PANEL — this panel is the one
-  // place sprite-surface Spine animations remain enabled.
-  const fullSpineId = getSpineId(name, { surface: 'collection' });
-  const [showFullSpine, setShowFullSpine] = React.useState(false);
 
   return (
-    <>
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.characterDetail.resonatorDetailsAria', { name })} centered>
       <div
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border ${colors.border}`}
@@ -145,15 +139,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
-          {imageUrl && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowFullSpine(true); }}
-              className="kuro-btn absolute bottom-3 right-3 z-20 w-8 h-8 !p-0 rounded-full flex items-center justify-center"
-              aria-label={t('modals.characterDetail.viewFullSpineAria', { name })}
-            >
-              <Play size={13} className="fill-current ml-0.5" />
-            </button>
-          )}
+          <FullSpineViewerButton name={name} imageUrl={imageUrl} className="absolute bottom-3 right-3 z-20" />
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border} inline-flex items-center gap-1`}>
@@ -820,30 +806,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
        </div>
       </div>
     </FocusTrapModal>
-
-    {/* Full spine-sprite viewer — round play button in the header opens this centered
-        panel showing the character's full sprite animation, unconstrained by the
-        header's small preview band. */}
-    {imageUrl && (
-      <FocusTrapModal isOpen={showFullSpine} onClose={() => setShowFullSpine(false)} onClick={() => setShowFullSpine(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered>
-        <div className="relative" style={{ width: 'min(90vw, calc(90vh * 9 / 16))' }} onClick={e => e.stopPropagation()}>
-          <div className="relative w-full aspect-[9/16]" style={{ filter: 'drop-shadow(0 20px 45px rgba(0,0,0,0.6))' }}>
-            <SpinePlayer
-              characterId={fullSpineId}
-              context="full"
-              className="absolute inset-0"
-              backgroundColor="#00000000"
-              fallbackImgUrl={imageUrl}
-              fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
-            />
-          </div>
-          <button onClick={() => setShowFullSpine(false)} className="kuro-btn absolute top-3 right-3 z-20 w-8 h-8 !p-0 rounded-full flex items-center justify-center" aria-label={t('modals.characterDetail.closeFullSpineAria')}>
-            <X size={14} />
-          </button>
-        </div>
-      </FocusTrapModal>
-    )}
-    </>
   );
 };
 
