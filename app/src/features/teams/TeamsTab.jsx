@@ -817,7 +817,7 @@ function TeamsTab({
                             return <p className="text-gray-500 text-sm text-center py-2">{t('teams.tab.noSuggestions')}</p>;
                           }
                           return teamSuggestions.map((s, i) => {
-                            if (s.header) return <div key={`h${i}`} className="text-xs text-gray-500 uppercase tracking-wider font-medium pt-2 pb-0.5 flex items-center gap-2"><span className="h-px flex-1 bg-white/5" />{s.header}<span className="h-px flex-1 bg-white/5" /></div>;
+                            if (s.header) return <div key={`h${i}`} className="text-xs text-gray-500 uppercase tracking-wider font-medium pt-2 pb-2 flex items-center gap-2"><span className="h-px flex-1 bg-white/5" />{s.header}<span className="h-px flex-1 bg-white/5" /></div>;
                             return (
                             <button
                               key={i}
