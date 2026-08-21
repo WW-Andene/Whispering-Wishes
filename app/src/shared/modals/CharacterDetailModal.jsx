@@ -834,7 +834,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               className="absolute inset-0"
               backgroundColor="#00000000"
               fallbackImgUrl={imageUrl}
-              fallbackImgStyle={{ objectFit: 'contain' }}
+              fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
             />
           </div>
           <button onClick={() => setShowFullSpine(false)} className="kuro-btn absolute top-3 right-3 z-20 w-8 h-8 !p-0 rounded-full flex items-center justify-center" aria-label={t('modals.characterDetail.closeFullSpineAria')}>

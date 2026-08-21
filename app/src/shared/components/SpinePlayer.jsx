@@ -410,10 +410,14 @@ function SpinePlayerComponent({
   const [tuning] = useSpineTuning(tuningKey);
   const isDefaultContext = !context || context === 'card';
   // Per-context defaults live in sub-objects on the registry entry
-  // (`charData.detail`, `charData.echo`). Fall back to 1 / 0 / 0 when a
-  // surface hasn't been tuned yet — the admin panel's sliders start neutral
-  // and the user can promote from there.
-  const ctxDefaults = isDefaultContext ? charData : (charData[context] || {});
+  // (`charData.detail`, `charData.echo`). An untuned context falls back to
+  // the `card` baseline (top-level scale/tx/ty) rather than identity
+  // (1/0/0) — a character's card framing is already a much closer starting
+  // point than "no zoom at all", since every character needs *some* zoom to
+  // fill its box (the source art/skeleton bounds include a lot of surrounding
+  // space). The admin panel's sliders still start from this same baseline
+  // and the user can promote a dedicated per-context tuning from there.
+  const ctxDefaults = isDefaultContext ? charData : (charData[context] || charData);
   const defScale = ctxDefaults.scale ?? 1;
   const defTx = ctxDefaults.tx ?? 0;
   const defTy = ctxDefaults.ty ?? 0;
