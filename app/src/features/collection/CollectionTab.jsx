@@ -401,13 +401,13 @@ function CollectionTab({
           {/* Search & Filters */}
           <div className="space-y-2" style={{position: 'relative', zIndex: 10}}>
             {/* Search Input */}
-            <div className="relative">
+            <div className="relative kuro-search-wrap">
               <input
                 type="text"
                 value={collectionSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={t('collection.search.placeholder')}
-                className="kuro-input w-full pl-8 text-base"
+                className="kuro-input w-full text-base"
                 aria-label={t('collection.search.ariaLabel')}
               />
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
