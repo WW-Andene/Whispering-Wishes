@@ -97,8 +97,8 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const useSpine = SPINE_BANNERS_ENABLED && isFull && spineId && !spineFailed;
 
   return (
-    <div className={isFull ? 'banner-card-glow' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5, borderRadius: '53px' } : { zIndex: 5 }}>
-    <div className="relative overflow-hidden border banner-card" style={{ minHeight: 'var(--height-banner)', borderRadius: '53px', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : BANNER_SUBTLE_SHADOW }}>
+    <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
+    <div className="relative overflow-hidden rounded-xl border banner-card" style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', borderColor: style.borderColor, boxShadow: isFull ? 'none' : BANNER_SUBTLE_SHADOW }}>
       {imgUrl && (
         <div
           className="absolute inset-0"

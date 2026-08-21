@@ -730,7 +730,7 @@
       height: 12px;
       border-top: 1px solid var(--border-bright);
       border-right: 1px solid var(--border-bright);
-      border-radius: 0 4px 0 0;
+      border-radius: 0 3px 0 0;
       z-index: 2;
       opacity: 0.85;
     }
@@ -744,7 +744,7 @@
       height: 12px;
       border-bottom: 1px solid var(--border-bright);
       border-left: 1px solid var(--border-bright);
-      border-radius: 0 0 0 4px;
+      border-radius: 0 0 0 3px;
       z-index: 2;
       opacity: 0.85;
     }
