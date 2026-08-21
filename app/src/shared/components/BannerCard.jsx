@@ -11,6 +11,7 @@ import { haptic, getElementColor, getElementIcon, getWeaponTypeIcon } from '../.
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
+import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
 
 const BANNER_GRADIENT_MAP = {
   Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400', glow: '249,115,22' },
@@ -34,6 +35,9 @@ const EVENT_ACCENT_COLORS = {
 const BANNER_CARD_OVERLAY_STYLE = Object.freeze({ background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 const TEXT_SHADOW_STYLE = Object.freeze({ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 // L-FIX: Extracted inline style constants to avoid re-creating objects every render
+
+// Feature flag: Spine banner animations are disabled app-wide. Set to true to re-enable.
+const SPINE_BANNERS_ENABLED = false;
 
 const IMG_LAYER_STYLE = Object.freeze({ zIndex: 1 });
 const BANNER_SUBTLE_SHADOW = '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)';
@@ -77,6 +81,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
+  const [spineFailed, setSpineFailed] = useState(false);
 
   // Use unified mask generator
   const maskGradient = visualSettings
@@ -84,8 +89,9 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   const isFull = visualSettings?.animationsEnabled === 'full';
-  // Spine banners are disabled app-wide; Spine sprites are limited to the detail modal.
-  const useSpine = false;
+  const spineId = isChar ? getSpineId(item.name) : null;
+  // Spine banners disabled app-wide (kept encapsulated here, not removed, for easy re-enable).
+  const useSpine = SPINE_BANNERS_ENABLED && isFull && spineId && !spineFailed;
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
@@ -115,6 +121,18 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           />
         </div>
       )}
+      {useSpine && (
+        <div className="absolute inset-0" style={{ zIndex: 2 }}>
+          <SpinePlayer
+            characterId={spineId}
+            className="w-full h-full"
+            style={{ opacity: pictureOpacity }}
+            backgroundColor="#00000000"
+            onError={() => setSpineFailed(true)}
+          />
+        </div>
+      )}
+
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
           <CountdownTimer endDate={endDate} color={timerColor || 'yellow'} />
