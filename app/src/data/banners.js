@@ -971,10 +971,10 @@ const VERSION_SPLASH_SCREENS = [
   // meta serves a static video-thumbnail frame even for video posts (twitter:card stayed
   // "summary_large_image" instead of "player", which was the false signal). None of the Live2D
   // links yielded real official splash art — only the Classic-style links below did.
-  { id: 'v3.6', version: '3.6', name: 'Version 3.6 (Classic)', art: 'https://i.ibb.co/KQRKp4L/Classic-3-6.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
-  { id: 'v3.5', version: '3.5', name: 'Version 3.5 (Classic)', art: 'https://i.ibb.co/KcxLTshs/Classic-3-5.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
-  { id: 'v3.4-cyberpunk', version: '3.4', name: 'Version 3.4 Cyberpunk (Classic)', art: 'https://i.ibb.co/hhrrJGn/Classic-3-4-Cyberpunk.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
-  { id: 'v3.4', version: '3.4', name: 'Version 3.4 (Classic)', art: 'https://i.ibb.co/kg1KVz0j/Classic-3-4.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
+  { id: 'v3.6', version: '3.6', name: 'Version 3.6 (Classic)', art: 'https://i.ibb.co/KQRKp4L/Classic-3-6.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '46% 50%' } },
+  { id: 'v3.5', version: '3.5', name: 'Version 3.5 (Classic)', art: 'https://i.ibb.co/KcxLTshs/Classic-3-5.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '46% 50%' } },
+  { id: 'v3.4-cyberpunk', version: '3.4', name: 'Version 3.4 Cyberpunk (Classic)', art: 'https://i.ibb.co/hhrrJGn/Classic-3-4-Cyberpunk.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '46% 50%' } },
+  { id: 'v3.4', version: '3.4', name: 'Version 3.4 (Classic)', art: 'https://i.ibb.co/kg1KVz0j/Classic-3-4.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '46% 50%' } },
   { id: 'v3.3', version: '3.3', name: 'Reverbs From The End of Galaxies',  art: 'https://i.ibb.co/KByqz7F/Reverbs-From-The-End-of-Galaxies.jpg',                                 pos: { header: '50% 32%', nav: '50% 32%', bg: '52% 50%' } },
   { id: 'v3.2', version: '3.2', name: 'Resolution to Illuminate the Shadows', art: 'https://i.ibb.co/7J4nf7jT/3-2-Resolution-to-Illuminate-the-Shadows.webp',                        pos: { header: '50% 26%', nav: '50% 22%', bg: '52% 50%' } },
   { id: 'v3.1', version: '3.1', name: 'For You Who Walk in Snow',              art: 'https://i.ibb.co/QvxjFT7f/3-1-For-You-Who-Walk-in-Snow.webp',                                     pos: { header: '50% 22%', nav: '50% 23%', bg: '50% 50%' } },
@@ -1120,7 +1120,7 @@ const ANIMATED_BACKGROUNDS = [
     name: 'v3.6 Live2D',
     art: './animated-bg/3.6-Live2D-Animated.mp4',
     poster: './animated-bg/3.6-Live2D-Animated.jpg',
-    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v3-5-live2d',
@@ -1128,7 +1128,7 @@ const ANIMATED_BACKGROUNDS = [
     name: 'v3.5 Live2D',
     art: './animated-bg/3.5-Live2D-Animated.mp4',
     poster: './animated-bg/3.5-Live2D-Animated.jpg',
-    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v3-4-live2d',
@@ -1136,7 +1136,7 @@ const ANIMATED_BACKGROUNDS = [
     name: 'v3.4 Live2D',
     art: './animated-bg/3.4-Live2D-Animated.mp4',
     poster: './animated-bg/3.4-Live2D-Animated.jpg',
-    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v3-4-cyberpunk-live2d',
@@ -1144,7 +1144,7 @@ const ANIMATED_BACKGROUNDS = [
     name: 'v3.4 Cyberpunk Live2D',
     art: './animated-bg/3.4-Cyberpunk-Live2D-Animated.mp4',
     poster: './animated-bg/3.4-Cyberpunk-Live2D-Animated.jpg',
-    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v2-4-live2d',
@@ -1152,7 +1152,7 @@ const ANIMATED_BACKGROUNDS = [
     name: 'v2.4 Live2D',
     art: './animated-bg/2.4-Live2D-Animated.mp4',
     poster: './animated-bg/2.4-Live2D-Animated.jpg',
-    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v2-1-live2d',
@@ -1160,7 +1160,7 @@ const ANIMATED_BACKGROUNDS = [
     name: 'v2.1 Live2D',
     art: './animated-bg/2.1-Live2D-Animated.mp4',
     poster: './animated-bg/2.1-Live2D-Animated.jpg',
-    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
 ];
 // Sorted most-recently-released first
