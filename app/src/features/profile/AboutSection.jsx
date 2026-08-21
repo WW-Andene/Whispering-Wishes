@@ -29,6 +29,7 @@ function AboutSection({ handleAdminTap, adminTapCount, dispatch, toast }) {
       <div className="space-y-1.5">
         <p>{t('profile.about.disclaimerBody1')}</p>
         <p>{t('profile.about.disclaimerBody2', { year: currentYear })}</p>
+        <p>{t('profile.about.disclaimerBody3')}</p>
       </div>
     )},
     { key: 'privacy', label: t('profile.about.privacy'), content: (
@@ -97,6 +98,8 @@ function AboutSection({ handleAdminTap, adminTapCount, dispatch, toast }) {
           <li><a href="https://game8.co/games/Wuthering-Waves" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Game8</a> — {t('profile.about.sourceGame8')}</li>
           <li><a href="https://wutheringwaves.wiki" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Wuthering Waves Wiki</a> — {t('profile.about.sourceWiki')}</li>
           <li><a href="https://www.prydwen.gg/wuthering-waves/" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Prydwen.gg</a> — {t('profile.about.sourcePrydwen')}</li>
+          <li><a href="https://nanoka.cc" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Nanoka.cc</a> — {t('profile.about.sourceNanoka')}</li>
+          <li><a href="https://x.com/KiriyumeBun" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">@KiriyumeBun</a> — {t('profile.about.sourceKiriyumeBun')}</li>
         </ul>
         <p className="mt-1">{t('profile.about.sourcesOutro')}</p>
       </div>
