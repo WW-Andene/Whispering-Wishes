@@ -54,6 +54,7 @@ import { ImageFramingProvider, useImageFramingContext } from './providers/ImageF
 import { CloudStorageProvider, useCloudStorage } from './providers/CloudStorageProvider.jsx';
 // --- shared ---
 import AdminMiniPanel from './features/profile/AdminMiniPanel.jsx';
+import PaddingDebugOverlay from './shared/components/PaddingDebugOverlay.jsx';
 import { DetailModalHost } from './shared/components/DetailModalHost.jsx';
 import { TabButton } from './shared/components/Card.jsx';
 import { AppErrorBoundary, TabErrorBoundary } from './shared/errors/ErrorBoundaries.jsx';
@@ -1298,6 +1299,9 @@ function WhisperingWishesInner() {
           detailModal={detailModal} toast={toast} confirm={confirm}
         />
       )}
+
+      {/* Padding debug overlay — self-manages visibility via localStorage, toggled from Admin Panel > Debug tab */}
+      <PaddingDebugOverlay />
 
       {/* Server Selector Modal */}
       <ServerSelectorModal
