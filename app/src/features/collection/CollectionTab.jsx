@@ -10,7 +10,7 @@ import { Archive, ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Swo
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
-import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
+import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES, getLocalizedEchoData } from '../../data/echoes.js';
 import { WEAPON_RELEASE_ORDER, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
 import { generateVerticalMaskGradient } from '../../shared/utils/maskGradient.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -41,6 +41,7 @@ function CollectionTab({
   // within a single render lifetime — recomputed each render like getLocalizedWeaponData() calls
   // elsewhere (e.g. WeaponDetailModal.jsx).
   const localizedWeaponData = getLocalizedWeaponData(getLocale());
+  const localizedEchoData = getLocalizedEchoData(getLocale());
 
   // ── Tab-local state (persisted across tab switches via sessionStorage) ────────
   const [collectionSort, setCollectionSort] = useSessionState('ww-coll-sort', 'release');
@@ -719,7 +720,7 @@ function CollectionTab({
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 4 })}
-                dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
+                dataLookup={localizedEchoData} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 collapsible
               />
@@ -740,7 +741,7 @@ function CollectionTab({
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 3 })}
-                dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
+                dataLookup={localizedEchoData} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 collapsible
               />
@@ -761,7 +762,7 @@ function CollectionTab({
                 hasActiveFilters={hasActiveFilters} onClearFilters={clearCollectionFilters} collectionImages={collectionImages}
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 1 })}
-                dataLookup={ECHO_DATA} dataType="echo" isCharacter={false}
+                dataLookup={localizedEchoData} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
                 collapsible
               />

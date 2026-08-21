@@ -755,7 +755,7 @@ export function getLocalizedEchoData(locale) {
   const out = {};
   for (const [name, base] of Object.entries(ECHO_DATA)) {
     const fr = ECHO_DATA_FR[name];
-    out[name] = { ...base, buff: translateBuffFr(base.buff), ...(fr?.desc ? { desc: fr.desc } : {}) };
+    out[name] = { ...base, buff: translateBuffFr(base.buff), ...(fr?.name ? { displayName: fr.name } : {}), ...(fr?.desc ? { desc: fr.desc } : {}) };
   }
   return out;
 }

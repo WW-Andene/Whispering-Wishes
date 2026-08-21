@@ -1,13 +1,16 @@
 import React from 'react';
 import { Diamond, Star, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA } from '../../data/echoes.js';
+import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, getLocalizedEchoData } from '../../data/echoes.js';
 import { haptic, getSetIcon, getElementIcon } from '../../utils/helpers.js';
+import { getLocale } from '../../utils/i18n.js';
 import { isHealerRole, isSupportRole } from './calcEngine.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
+
+const LOCALIZED_ECHO_DATA = getLocalizedEchoData(getLocale());
 
 export default function EchoSelector({
   echoSelectorOpen,
@@ -205,7 +208,7 @@ export default function EchoSelector({
                               )}
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-1.5">
-                                  <span className="text-white text-base font-semibold truncate">{name}</span>
+                                  <span className="text-white text-base font-semibold truncate">{LOCALIZED_ECHO_DATA[name]?.displayName || name}</span>
                                   {isRec && <span className="text-2xs px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>}
                                 </div>
                                 <div className="flex items-center gap-1 mt-0.5 flex-wrap">
@@ -308,7 +311,7 @@ export default function EchoSelector({
                       <Diamond size={16} className={`text-${costColor}-400`} />
                     )}
                     <div className="min-w-0">
-                      <h3 className="text-white font-semibold text-xl truncate">{echoName}</h3>
+                      <h3 className="text-white font-semibold text-xl truncate">{LOCALIZED_ECHO_DATA[echoName]?.displayName || echoName}</h3>
                       <p className="text-gray-400 text-sm">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
                     </div>
                   </div>

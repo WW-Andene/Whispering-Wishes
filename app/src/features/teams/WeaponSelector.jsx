@@ -1,10 +1,13 @@
 import React from 'react';
 import { Sword, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { WEAPON_DATA } from '../../data/weapons.js';
+import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { haptic, getStatIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { getLocale } from '../../utils/i18n.js';
+
+const LOCALIZED_WEAPON_DATA = getLocalizedWeaponData(getLocale());
 
 export default function WeaponSelector({
   weaponSelectorOpen,
@@ -98,7 +101,7 @@ export default function WeaponSelector({
                                         )}
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-1.5">
-                                            <span className="text-white text-base font-semibold truncate">{name}</span>
+                                            <span className="text-white text-base font-semibold truncate">{LOCALIZED_WEAPON_DATA[name]?.displayName || name}</span>
                                             <span className={`text-2xs ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                                             {isBest && <span className="kuro-badge kuro-badge-emerald">BiS</span>}
                                           </div>

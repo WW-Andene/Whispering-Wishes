@@ -44,6 +44,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
     return (collectionData.chars5Counts?.[n] || 0) + (collectionData.chars4Counts?.[n] || 0) > 0;
   };
   if (!data) return null;
+  const displayName = data.displayName || name;
 
   const costColors = ECHO_COST_COLORS[cost] || ECHO_COST_COLORS[4];
   const buffColors = ECHO_BUFF_COLORS[raw.buff] || { bg: 'bg-white/10', text: 'text-gray-300', border: 'border-[var(--border-medium)]' };
@@ -127,7 +128,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
                 return <span key={b} className={`kuro-badge ${bc.bg} ${bc.text} border ${bc.border}`}>{label}</span>;
               })}
             </div>
-            <h2 className="text-2xl font-semibold text-white">{name}</h2>
+            <h2 className="text-2xl font-semibold text-white">{displayName}</h2>
           </div>
         </div>
 

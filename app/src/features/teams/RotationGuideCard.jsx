@@ -10,7 +10,7 @@ import React from 'react';
 import { ChevronDown, ListOrdered } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { stepStyle } from './RotationTimeline.jsx';
-import { t } from '../../utils/i18n.js';
+import { t, getLocale } from '../../utils/i18n.js';
 
 export function RotationGuideCard({ rotationTimeline }) {
   if (!(rotationTimeline?.steps?.length > 0)) return null;
@@ -44,7 +44,7 @@ export function RotationGuideCard({ rotationTimeline }) {
                     <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">{t('teams.rotationGuide.skillSequence')}</div>
                     <div className="space-y-2">
                       {step.skillSequence.map((s, si) => {
-                        const sty = stepStyle(s.type);
+                        const sty = stepStyle(s.type, getLocale());
                         return (
                           <div key={si} className="flex items-start gap-2">
                             <span className="flex-shrink-0 w-4 h-4 rounded-full bg-white/10 text-gray-400 text-2xs font-bold flex items-center justify-center mt-0.5">{si + 1}</span>

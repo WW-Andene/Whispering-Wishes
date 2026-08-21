@@ -21,38 +21,47 @@
 /** @type {Record<string, { name?: string, desc?: string, passive?: string }>} */
 export const WEAPON_DATA_FR = {
   'Skull Thrasher': {
+    name: 'Trancheur de Crânes',
     desc: "Arme signature de Rebecca (« Solitaire Éveillée »). Lancer la Compétence d'Intro confère un Bonus DGT d'Attaque Basique ; infliger Hack - Shifting confère un Bonus DGT d'Attaque Basique plus un buff d'ATQ pour toute l'équipe.",
     passive: "ATQ +12 %. Compétence d'Intro : DGT d'Attaque Basique personnels +24 % (14 s). Hack - Shifting : DGT d'Attaque Basique personnels +12 % (14 s), ATQ d'équipe +24 % (30 s). Les effets de même nom ne se cumulent pas.",
   },
   'Freeze Frame': {
+    name: 'Image Figée',
     desc: "Arme signature de Lucilla (« Offrande de Lumière »). Infliger Glacio Chafe confère un Bonus DGT Glacio personnel et un buff d'ATQ pour toute l'équipe.",
     passive: "ATQ +12 %. Après avoir infligé Glacio Chafe : DGT Glacio personnels +30 % (12 s), ATQ d'équipe +24 % (30 s). Les effets de même nom ne peuvent pas se cumuler.",
   },
   'Spectral Trigger': {
+    name: 'Gâchette Spectrale',
     desc: "Arme signature de Lucy (« Rêve Englouti »). La Compétence de Résonance confère un Bonus DGT Spectro personnel cumulable ; Hack - Shifting confère une Amplification DGT d'Attaque Lourde personnelle et Ignore DÉF.",
     passive: "ATQ +12 %. Compétence de Résonance : DGT Spectro personnels +20 % (14 s, jusqu'à 2 cumuls). Hack - Shifting : DGT d'Attaque Lourde personnels +30 %, Ignore DÉF +10 % (14 s).",
   },
   'Azure Oath': {
+    name: 'Serment Azur',
     desc: "Arme signature de Yangyang : Xuanling (« Inflexible »). Infliger Havoc Bane confère une Amplification DGT d'Attaque Lourde personnelle et Ignore DÉF.",
     passive: "DGT tous éléments +12 %. Après avoir infligé Havoc Bane : DGT d'Attaque Lourde personnels +36 %, Ignore DÉF +12 % (8 s).",
   },
   'Frostburn': {
+    name: 'Brûlure de Givre',
     desc: "Arme signature de Hiyuki (« Plus Moi-même »). Appliquer Glacio Chafe amplifie les DGT Glacio personnels et l'Ignore DÉF de Libération, plus une amplification de zone des DGT de Glacio Chafe sur le terrain.",
     passive: "ATQ +12 %. Après avoir appliqué Glacio Chafe : DGT Glacio personnels +28 %, Ignore DÉF de Libération de Résonance +10 %. Sur le terrain : DGT de Glacio Chafe à proximité +20 % (6 s, jusqu'à 1x/0,1 s). L'effet de même nom le plus fort s'applique.",
   },
   'Forged Dwarf Star': {
+    name: 'Naine Forgée',
     desc: "Arme signature de Denia (« Dissolution »). Infliger Fusion Burst/Tune Strain confère un Bonus DGT de Libération personnel, s'étendant à un buff d'ATQ d'équipe pour de nouveaux déclenchements de Fusion Burst/Tune Strain.",
     passive: "ATQ +12 %. Après avoir infligé Fusion Burst/Tune Strain : DGT de Libération de Résonance personnels +36 % (5 s) ; pendant cette fenêtre, les membres de l'équipe infligeant Fusion Burst/Tune Strain gagnent ATQ +24 % (15 s). Les effets de même nom ne peuvent pas se cumuler.",
   },
   'Thousandfold Deliverance': {
+    name: 'Délivrance Millénaire',
     desc: "Arme signature de Jingran (« Écoutez, Esprits et Étoiles »). Lancer la Compétence d'Intro ou obtenir un Bouclier accumule Dégâts Critiques et Ignore DÉF d'Attaque Lourde personnels, adapté à son kit centré sur le Bouclier et le scaling PV.",
     passive: "DGT tous éléments +12 %. Compétence d'Intro ou obtenir un Bouclier : Dégâts Critiques personnels +4 % (jusqu'à 6 cumuls/24 % ; à 6 cumuls, Taux Critique d'Attaque Lourde +12 %). Lancer une Attaque Lourde consomme jusqu'à 2 cumuls pour Ignore DÉF d'Attaque Lourde +15 % chacun (jusqu'à 30 %, 2 s).",
   },
   'Glint of Clouds': {
+    name: 'Lueur des Nuages',
     desc: "Arme signature de Qingxiao. Lame de jade enveloppée de brume et de nuages. Bonus DGT Aero cumulable en infligeant Tune Strain - Shifting, ignorant la DÉF au maximum de cumuls.",
     passive: "ATQ +12 %. Infliger Tune Strain - Shifting confère un Bonus DGT Aero de 11,2 % (2 s, cumuls ×5, TRI 0,5 s) ; au maximum de cumuls, la durée s'étend à 30 s et les DGT Aero ignorent 10 % de DÉF.",
   },
   "Firstlight's Herald": {
+    name: 'Héraut de la Première Lumière',
     desc: "Arme signature de Suisui. Rectificateur forgé à l'aube, gravé de la légende de l'oiseau divin. Confère des PV Max et une régénération d'énergie de Libération, culminant en un buff d'ATQ d'équipe.",
     passive: "PV Max +12 %. La Libération restaure 8 Énergie de Concerto (TRI 20 s). Infliger Glacio Chafe + appliquer un soin sur le terrain confère les deux effets au prochain Outro (6 s) ; avec les deux actifs, ATQ d'équipe +20 %.",
   },
@@ -73,6 +82,7 @@ export const WEAPON_DATA_FR = {
     passive: "Résolution Orageuse : Régén. d'Énergie +12,8 %. Compétence d'Outro → ATQ du personnage entrant +10 % (14 s).",
   },
   'Abyss Surges': {
+    name: 'Ressacs de l\'Abysse',
     desc: "5★ Standard. Gantelets chargés d'un pouvoir abyssal. Régén. d'Énergie avec buffs croisés de DGT Basique/Compétence.",
     passive: "Résolution Orageuse : Régén. d'Énergie +12,8 %. Coup de Compétence de Résonance → DGT d'Attaque Basique personnels +10 % (8 s). Coup d'Attaque Basique → DGT de Compétence de Résonance personnels +10 % (8 s).",
   },
@@ -129,86 +139,107 @@ export const WEAPON_DATA_FR = {
     passive: "Depuis les Profondeurs : ATQ +12 %. Compétence d'Écho dans les 10 s suivant la Compétence d'Intro/Attaque Basique → cumul de Doux Rêve (max x2, déclenchement 1x/10 s). À 1 cumul : DGT d'Attaque Basique personnels +40 %. À 2 cumuls : ignore 12 % de RÉS Havoc.",
   },
   'Blazing Justice': {
+    name: 'Justice Flamboyante',
     desc: "Arme signature de Zani. Gantelets embrasés d'une justice inflexible. Renforce l'ATQ avec Ignore DÉF et Amplification Frazzle.",
     passive: "Briseuse d'Obscurité : ATQ +12 %. Attaque Basique → Ignore DÉF +8 %, Amplification DGT de Spectro Frazzle +50 % (6 s, un nouveau déclenchement réinitialise la durée).",
   },
   'Woodland Aria': {
+    name: 'Aria Sylvestre',
     desc: "Arme signature de Ciaccona. Pistolets chantant un air forestier de vent et de feuilles. Renforce les DGT Aero avec réduction de RÉS.",
     passive: "Air Estival Persistant : ATQ +12 %. Infliger Érosion Aero → DGT Aero personnels +24 % (10 s). Toucher des cibles en Érosion Aero → RÉS Aero -10 % (20 s).",
   },
   "Defier's Thorn": {
+    name: 'Épine du Défiant',
     desc: "Arme signature de Cartethyia. Épée épineuse d'un cœur rebelle. Scaling PV avec Ignore DÉF et Amplification DGT d'Érosion Aero.",
     passive: "Tarentelle du Chevalier Libre : PV +12 %. Dans les 15 s suivant la Compétence d'Intro/Attaque Basique : Ignore DÉF +8 %. Les cibles avec ≥1 cumul d'Érosion Aero subissent +20 % DGT.",
   },
   'Wildfire Mark': {
+    name: 'Marque du Feu Sauvage',
     desc: "Arme signature de Lupa. Sabre marqué par le feu sauvage et la fureur. Renforce les DGT de Libération avec un buff Fusion d'équipe.",
     passive: "ATQ +12 %, DGT de Libération de Résonance +24 %, DGT Fusion d'équipe +24 %.",
   },
   'Lethean Elegy': {
+    name: 'Élégie du Léthé',
     desc: "Arme signature de Phrolova. Rectificateur tissant une élégie de chagrins oubliés. ATQ avec buffs personnels déclenchés par la Compétence d'Écho.",
     passive: "Requiem des Enfers : ATQ +12 %. Dans les 12 s suivant des DGT de Compétence d'Écho : DGT de Compétence de Résonance personnels +32 %, DGT de Compétence d'Écho +32 %, Ignore DÉF +8 %.",
   },
   'Thunderflare Dominion': {
+    name: 'Domaine de la Foudre',
     desc: "Arme signature d'Augusta. Sabre crépitant de la domination de l'éclair. ATQ avec DGT d'Attaque Lourde et Ignore DÉF cumulable via Bouclier.",
     passive: "Éminence Fulgurante : ATQ +12 %. Compétence d'Intro/de Résonance → DGT d'Attaque Lourde personnels +20 % (15 s). Obtenir un Bouclier → les DGT d'Attaque Lourde ignorent 7,2 % de DÉF (cumuls x5, 7 s, TRI 0,5 s).",
   },
   "Moongazer's Sigil": {
+    name: 'Sceau du Contemplateur de Lune',
     desc: "Arme signature d'Iuno. Gantelets portant le sceau d'une prophétie lunaire. ATQ avec DGT de Libération et Ignore DÉF cumulable via Bouclier.",
     passive: "Splendeur de la Pleine Lune : ATQ +12 %. Compétence d'Intro/Libération → DGT de Libération de Résonance personnels +20 % (15 s). Obtenir un Bouclier → les DGT de Libération ignorent 7,2 % de DÉF (cumuls x5, 7 s, TRI 0,5 s ; la Compétence d'Intro maximise les cumuls instantanément).",
   },
   'Lux & Umbra': {
+    name: 'Lux & Umbra',
     desc: "Arme signature de Galbrena. Pistolets jumeaux de lumière et d'ombre entrelacées. ATQ avec buff croisé DGT de Compétence d'Écho/Attaque Lourde.",
     passive: "Vers le Feu Elle Revient : ATQ +12 %. DGT de Compétence d'Écho → DGT d'Attaque Lourde personnels +24 % (6 s). DGT d'Attaque Lourde → DGT de Compétence d'Écho personnels +24 % (6 s). Les deux actifs : Ignore DÉF +8 %.",
   },
   'Emerald Sentence': {
+    name: 'Sentence d\'Émeraude',
     desc: "Arme signature de Qiuyuan. Épée de jade prononçant une sentence émeraude contre les injustes. ATQ avec DGT d'Attaque Lourde déclenchés par la Compétence d'Écho et buff d'équipe.",
     passive: "Quand un Cœur se Pose : ATQ +12 %. Compétence d'Écho dans les 10 s suivant la Compétence d'Intro/Attaque Basique → DGT d'Attaque Lourde personnels +12 % (cumuls x2, 30 s, intervalle de déclenchement 10 s). Compétence d'Intro → DGT de Compétence d'Écho d'équipe +20 % (30 s).",
   },
   'Kumokiri': {
+    name: 'Kumokiri',
     desc: "Arme signature de Chisa. Lame voilée de brume qui tranche le brouillard et le destin. Renforce les DGT de Libération et tous types de DGT.",
     passive: "Fil du Destin : ATQ +12 %. Compétence d'Intro/infliger un État Négatif → DGT de Libération de Résonance personnels +8 % (cumuls x3, 15 s). Au maximum de cumuls, l'équipe infligeant un État Négatif → Bonus DGT tous éléments +24 % (15 s).",
   },
   'Spectrum Blaster': {
+    name: 'Blaster Spectral',
     desc: "Arme signature de Lynae. Pistolets qui tirent une lumière prismatique à travers le spectre. Renforce les DGT d'Attaque Basique et cumule les DGT totaux d'équipe sur Tune Break.",
     passive: "ATQ +12 %, DGT d'Attaque Basique personnels +36 % (4 s) au coup d'Intro/Attaque Basique, DGT totaux d'équipe +8 %/cumul ×3 (max 24 %, 30 s) sur Tune Rupture/Strain - Shifting pendant l'Attaque Basique.",
   },
   'Starfield Calibrator': {
+    name: 'Calibreur Stellaire',
     desc: "Arme signature de Mornye. Sabre calibré sur le rythme du champ stellaire. Scaling DÉF avec buff de Dégâts Critiques d'équipe.",
     passive: "DÉF +16 %, Concerto +8 (1x/20 s), Dégâts Critiques d'équipe +20 % (4 s) en soignant.",
   },
   'Everbright Polestar': {
+    name: 'Étoile Polaire Éternelle',
     desc: "Arme signature d'Aemeath. Épée rayonnant de la lumière de l'étoile polaire toujours brillante. Ignore DÉF avec Ignore RÉS Fusion.",
     passive: "Bonus DGT tous éléments +12 %, Ignore DÉF +32 %, Ignore RÉS Fusion +10 %.",
   },
   "Daybreaker's Spine": {
+    name: 'Épine de l\'Aube Brisée',
     desc: "Arme signature de Luuk Herssen. Gantelets forgés à partir de l'épine d'un briseur d'aube. Renforce l'Attaque Basique et les DGT Spectro.",
     passive: "ATQ +12 %, Amplification DGT d'Attaque Basique +20 %, DGT Spectro +20 %, Ignore DÉF +10 %.",
   },
   'Radiance Cleaver': {
+    name: 'Fendoir de Radiance',
     desc: "5★ Standard. Sabre synthétique de force concentrée. ATQ avec DGT de Libération sur les coups portés à une cible en Tune Strain - Interfered.",
     passive: "Briseur de Lame : ATQ +12 %. DGT sur des cibles en Tune Strain - Interfered → DGT de Libération de Résonance personnels +24 % (3 s, un nouveau déclenchement réinitialise la durée).",
   },
   'Laser Shearer': {
+    name: 'Cisaille Laser',
     desc: "5★ Standard. Épée synthétique qui tranche l'incertitude. ATQ avec DGT de Compétence sur les coups portés à une cible en Tune Strain - Interfered.",
     passive: "Capteur de Signal : ATQ +12 %. DGT sur des cibles en Tune Strain - Interfered → DGT de Compétence de Résonance personnels +24 % (3 s, un nouveau déclenchement réinitialise la durée).",
   },
   'Phasic Homogenizer': {
+    name: 'Homogénéisateur Phasique',
     desc: "5★ Standard. Pistolets synthétiques d'une concentration perçante. ATQ avec Bonus DGT tous éléments quand un coéquipier lance une compétence de Tune Break.",
     passive: "Porteur d'Intuition : ATQ +12 %. Un membre de l'équipe lance une compétence de Tune Break → Bonus DGT tous éléments personnel +20 % (14 s).",
   },
   'Pulsation Bracer': {
+    name: 'Brassard de Pulsation',
     desc: "5★ Standard. Gantelets synthétiques pulsant d'une poussée décisive. ATQ avec DGT d'Attaque Basique cumulables sur les coups portés à une cible en Tune Strain - Interfered.",
     passive: "Briseur de Barrière : ATQ +12 %. DGT sur des cibles en Tune Strain - Interfered → DGT d'Attaque Basique personnels +6 % (cumuls x3, 4 s, TRI 0,5 s, un nouveau déclenchement réinitialise la durée).",
   },
   'Boson Astrolabe': {
+    name: 'Astrolabe à Bosons',
     desc: "5★ Standard. Rectificateur synthétique cartographiant les possibilités stellaires. ATQ et DGT d'Attaque Basique quand un coéquipier lance une compétence de Tune Break.",
     passive: "Observateur de Trajectoire : ATQ +12 %. Un membre de l'équipe lance une compétence de Tune Break → ATQ personnelle +12 %, DGT d'Attaque Basique +12 % (14 s).",
   },
   "Bloodpact's Pledge": {
+    name: 'Serment du Pacte de Sang',
     desc: "5★ Standard. Épée scellée par un pacte de sang inviolable. Le soin renforce les DGT de Compétence de Résonance.",
     passive: "Soin → DGT de Compétence de Résonance +10 % pendant 6 s. DGT Aero +10 % pendant 30 s.",
   },
   'Solsworn Ciphers': {
+    name: 'Chiffres Ensoleillés',
     desc: "Arme signature de Sigrika. Gantelets gravés de chiffres solaires. Amplification DGT de Compétence d'Écho + Ignore DÉF.",
     passive: "ATQ +12 %. Compétence d'Intro/d'Écho → Amplification DGT de Compétence d'Écho +32 % pendant 15 s. Compétence d'Écho → Ignore DÉF Aero +10 %.",
   },
@@ -221,6 +252,7 @@ export const WEAPON_DATA_FR = {
     passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
   },
   'Marcato': {
+    name: 'Marcato',
     desc: "Adagio descendant, brisant tout comme un hymne mortel. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
     passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
   },
@@ -237,6 +269,7 @@ export const WEAPON_DATA_FR = {
     passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
   },
   'Cadenza': {
+    name: 'Cadenza',
     desc: "Crescendo ascendant, symphonie tonitruante de destruction. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
     passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
   },
@@ -317,10 +350,12 @@ export const WEAPON_DATA_FR = {
     passive: "Libération → 3 cumuls d'Armure de Fer, chacun +3 % ATQ et +3 % DÉF (max 3 cumuls, sans durée ; perd 1 cumul en subissant des DGT).",
   },
   'Stonard': {
+    name: 'Stonard',
     desc: "Gantelets cérémoniels du magistrat de Huanglong. Boost de DGT de Libération après la Compétence.",
     passive: "Compétence de Résonance → DGT de Libération +18 % pendant 15 s.",
   },
   'Amity Accord': {
+    name: 'Accord Amical',
     desc: "Camaraderie des rangers, armure contre le froid des étoiles. Boost de DGT de Libération sur la Compétence d'Intro.",
     passive: "Compétence d'Intro → DGT de Libération +20 % pendant 15 s.",
   },
@@ -333,6 +368,7 @@ export const WEAPON_DATA_FR = {
     passive: "Compétence d'Intro → DGT de Compétence de Résonance +20 % pendant 15 s.",
   },
   'Helios Cleaver': {
+    name: 'Fendoir Hélios',
     desc: "Sabre forgé dans le feu solaire. Buff d'ATQ cumulable graduellement après l'usage de la Compétence.",
     passive: "Après la Compétence de Résonance → ATQ +3 % toutes les 2 s (max x4, 12 s).",
   },
@@ -341,14 +377,17 @@ export const WEAPON_DATA_FR = {
     passive: "Compétence d'Intro → ATQ +8 %, DÉF +15 % pendant 15 s.",
   },
   'Autumntrace': {
+    name: 'Trace d\'Automne',
     desc: "Ginkgo doré de Huanglong, prospère et durable. ATQ cumulable sur coups d'Attaque Basique/Lourde.",
     passive: "DGT d'Attaque Basique/Lourde → ATQ +4 % par cumul (max x5, 7 s par cumul, intervalle de déclenchement 1 s).",
   },
   'Solar Flame': {
+    name: 'Flamme Solaire',
     desc: "Pistolets brûlant d'un feu solaire. ATQ et DGT d'Attaque Lourde cumulables au contact.",
     passive: "Attaque Basique/Lourde → ATQ +2,2 %, DGT d'Attaque Lourde +2,2 % (max x4, 7 s).",
   },
   'Feather Edge': {
+    name: 'Lame de Plume',
     desc: "Épée légère comme une plume mais tranchante comme une lame. Boost d'ATQ et de DGT de Libération après la Libération.",
     passive: "Libération → ATQ +7,2 %, DGT de Libération +10,8 % pendant 15 s.",
   },
@@ -373,14 +412,17 @@ export const WEAPON_DATA_FR = {
     passive: "Omniscient : Aucun DGT subi → ATQ +6 % toutes les 5 s (max 2 cumuls, 8 s). Subir des DGT : perd 1 cumul, soigne 5 % des PV.",
   },
   'Aureate Zenith': {
+    name: 'Zénith Doré',
     desc: "Sabre du Passe de Combat aux gravures inspirées de Griffrex. ATQ et DGT d'Attaque Lourde après la Libération.",
     passive: "Serment des Chasseurs de Marée : Après la Libération → ATQ +7,2 %, DGT d'Attaque Lourde +10,8 % pendant 15 s.",
   },
   'Aether Strike': {
+    name: 'Frappe d\'Éther',
     desc: "Gantelets du Passe de Combat aux gravures inspirées de Griffrex. ATQ et DGT de Libération après la Libération.",
     passive: "Serment des Chasseurs de Marée : Après la Libération → ATQ +7,2 %, DGT de Libération +10,8 % pendant 15 s.",
   },
   'Radiant Dawn': {
+    name: 'Aube Radieuse',
     desc: "Rectificateur du Passe de Combat aux gravures inspirées de Griffrex. ATQ et DGT d'Attaque Basique après la Compétence.",
     passive: "Serment des Chasseurs de Marée : Après la Compétence → ATQ +9 %, DGT d'Attaque Basique +9 % pendant 10 s.",
   },
@@ -445,22 +487,27 @@ export const WEAPON_DATA_FR = {
     passive: "Vaillance : Compétence d'Intro → ATQ +8 % pendant 10 s.",
   },
   'Originite: Type I': {
+    name: 'Originite : Type I',
     desc: "Sabre de l'Académie Huaxu pour la vérification technique. Soigne à l'usage de la Compétence.",
     passive: "Tempérance : Compétence de Résonance → soigne 3 % des PV Max (recharge 12 s).",
   },
   'Originite: Type II': {
+    name: 'Originite : Type II',
     desc: "Épée de l'Académie Huaxu pour la vérification technique. Soigne à l'usage de la Libération.",
     passive: "Anéantir : Libération de Résonance → soigne 5 % des PV Max (recharge 20 s).",
   },
   'Originite: Type III': {
+    name: 'Originite : Type III',
     desc: "Pistolets de l'Académie Huaxu pour la vérification technique. Soignent sur Contre d'Esquive.",
     passive: "Célérité : Contre d'Esquive → soigne 1,6 % des PV Max (recharge 6 s).",
   },
   'Originite: Type IV': {
+    name: 'Originite : Type IV',
     desc: "Gantelets de l'Académie Huaxu pour la vérification technique. Soignent au coup d'Attaque Basique.",
     passive: "Rajeunir : DGT d'Attaque Basique → soigne 0,5 % des PV Max (recharge 3 s).",
   },
   'Originite: Type V': {
+    name: 'Originite : Type V',
     desc: "Rectificateur de l'Académie Huaxu pour la vérification technique. Soigne sur la Compétence d'Intro.",
     passive: "Augmenter : Compétence d'Intro → soigne 5 % des PV Max (recharge 20 s).",
   },

@@ -860,3 +860,21 @@ export const CHAIN_NODE_NAMES_FR = {
   'Qingxiao': { s1: 'Comme des Nuages qui se Rencontrent et Dérivent', s2: 'Comme des Pétales qui Tombent Sans un Bruit', s3: 'Les Rêves S\'estompent, l\'Épée Demeure', s4: 'Où que Mène la Route, Côte à Côte', s5: 'Acier Froid qui Aspire à Réchauffer la Neige', s6: 'Purifie cette Époque Ternie, Jusqu\'à ce que Tout Redevienne Clair' },
   'Jingran': { s1: 'Yin et Yang en Harmonie, la Loi Ultime de l\'Être', s2: 'Une Lanterne Solitaire, à Travers des Terres Foulées par l\'Ombre', s3: 'Le Cours du Monde Change, Chacun vers sa Juste Voie', s4: 'Où la Réalité Rencontre l\'Illusion, Où les Vivants Rencontrent les Morts', s5: 'Les Fins Retournent aux Commencements, la Vérité de la Vie Mise à Nu', s6: 'Alors que Faveurs et Querelles S\'estompent, de Nouvelles Histoires Attendent' },
 };
+
+// SKILL_MULTIPLIERS' `type` field (Basic ATK/Skill/Liberation/etc.) is a small
+// fixed category vocabulary shared by every character, rendered as a label in
+// CharacterDetailModal.jsx's "Skills with Multipliers" list. Translated here
+// as a display-only lookup; SKILL_MULTIPLIERS itself (and its English `type`
+// strings used for typeColors/typeBg key lookups) is untouched.
+/** @type {Record<string, string>} */
+export const SKILL_TYPE_FR = {
+  'Basic ATK': 'Attaque Basique',
+  'Mid-air': 'Aérien',
+  'Heavy ATK': 'Attaque Lourde',
+  'Charged ATK': 'Attaque Chargée',
+  'Skill': 'Compétence',
+  'Liberation': 'Libération',
+  'Forte': 'Forte',
+  'Intro': 'Intro',
+  'Outro': 'Outro',
+};

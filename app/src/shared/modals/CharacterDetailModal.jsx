@@ -6,6 +6,7 @@
 import React from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
+import { SKILL_TYPE_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
@@ -383,7 +384,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     <div key={i} className={`px-2 py-1.5 rounded ${typeBg[type] || 'bg-white/5'}`}>
                       <div className="flex items-baseline gap-1.5">
                         {skillIcon && <img src={skillIcon} alt="" className="w-4 h-4 rounded shrink-0 self-center" onError={hideOnError} />}
-                        <span className={`text-sm font-medium shrink-0 ${typeColors[type] || 'text-gray-400'}`}>{type}</span>
+                        <span className={`text-sm font-medium shrink-0 ${typeColors[type] || 'text-gray-400'}`}>{(getLocale() === 'fr' && SKILL_TYPE_FR[type]) || type}</span>
                         <span className="text-sm text-gray-200 font-medium break-words">{skillName}</span>
                       </div>
                       <div className="text-sm text-gray-400 break-words mt-0.5">{mult}</div>
@@ -477,7 +478,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   // skillSequence chips) — spells out "Resonance Skill"/"Heavy Attack"/etc. instead of the
                   // short raw step.type, so a step reads the same whether it's seen here (solo, per-character)
                   // or team-composed in Teams.
-                  const sty = stepStyle(step.type);
+                  const sty = stepStyle(step.type, getLocale());
                   // Look up this step's DMG from SKILL_MULTIPLIERS — single source of truth, same [type, name] tags
                   // used above, so Team tab can resolve the same step against the same table later.
                   const row = (SKILL_MULTIPLIERS[name] || []).find(([t, n]) => t === step.type && n.includes(step.skill));

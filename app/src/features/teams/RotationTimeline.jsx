@@ -52,7 +52,29 @@ export const STEP_TYPE_STYLE = {
   Outro: { label: 'Outro Skill', cls: 'text-rose-400 bg-rose-500/10 border-rose-500/30' },
   Step: { label: 'Action', cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' },
 };
-export const stepStyle = (type) => STEP_TYPE_STYLE[type] || { label: type || 'Action', cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' };
+// French labels for the same step types — display-only, keyed the same as STEP_TYPE_STYLE.
+// STEP_TYPE_STYLE's English keys (Intro/Skill/Liberation/etc.) stay untouched since they're
+// matched against CHARACTER_ROTATIONS'/SKILL_MULTIPLIERS' raw `type` strings elsewhere.
+export const STEP_TYPE_LABEL_FR = {
+  Intro: "Compétence d'Intro",
+  Skill: 'Compétence de Résonance',
+  Liberation: 'Libération de Résonance',
+  Ultimate: 'Libération de Résonance (Ultime)',
+  'Heavy ATK': 'Attaque Lourde',
+  'Basic ATK': 'Attaque Basique',
+  Forte: 'Circuit Forte',
+  'Mid-air': 'Attaque Aérienne',
+  'Mid-air ATK': 'Attaque Aérienne',
+  Echo: "Compétence d'Écho",
+  Outro: "Compétence d'Outro",
+  Step: 'Action',
+};
+/** @param {string} type @param {string} [locale] */
+export const stepStyle = (type, locale) => {
+  const base = STEP_TYPE_STYLE[type] || { label: type || 'Action', cls: 'text-gray-400 bg-gray-500/10 border-gray-500/30' };
+  if (locale === 'fr' && STEP_TYPE_LABEL_FR[type]) return { ...base, label: STEP_TYPE_LABEL_FR[type] };
+  return base;
+};
 
 export default function RotationTimeline({ rotationTimeline }) {
   if (!rotationTimeline || !rotationTimeline.segments?.length || !rotationTimeline.totalTime) return null;
