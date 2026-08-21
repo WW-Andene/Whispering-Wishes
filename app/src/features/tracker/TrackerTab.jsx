@@ -98,11 +98,11 @@ function TrackerTab({
             {!state.profile.importedAt && !dismissedImport && setActiveTab && (
               <div className="flex items-center gap-3 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-3 content-layer">
                 <button onClick={() => setActiveTab('profile')} className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
-                  <Upload size={14} className="text-cyan-400 flex-shrink-0" />
+                  <Upload size={16} className="text-cyan-400 flex-shrink-0" />
                   <span className="text-cyan-300/90 text-base">{t('tracker.importHintPre')} <strong>{t('tabs.profile')}</strong> {t('tracker.importHintPost')}</span>
                   <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
                 </button>
-                <button onClick={() => setDismissedImport(true)} className="kuro-btn kuro-btn-sm flex-shrink-0 p-1.5" aria-label={t('tracker.dismiss')}><X size={14} /></button>
+                <button onClick={() => setDismissedImport(true)} className="kuro-btn kuro-btn-sm flex-shrink-0 p-1.5" aria-label={t('tracker.dismiss')}><X size={16} /></button>
               </div>
             )}
             {/* Category Tabs */}
@@ -228,7 +228,7 @@ function TrackerTab({
 
             {/* Banner History Archive */}
             <Card>
-              <CardHeader><Archive size={14} className="text-purple-400" /> {t('tracker.bannerHistory')}</CardHeader>
+              <CardHeader><Archive size={16} className="text-purple-400" /> {t('tracker.bannerHistory')}</CardHeader>
               <CardBody>
                 <div className="space-y-2">
                   {/* Show only the latest banner */}
@@ -267,7 +267,7 @@ function TrackerTab({
                                     {wImg ? (
                                       <img src={wImg} alt={wLabel} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
-                                      <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                      <div className="w-full h-full flex items-center justify-center"><Sword size={16} className="text-pink-400" /></div>
                                     )}
                                   </div>
                                   <span className="text-sm text-pink-400 font-medium truncate">{wLabel}</span>
@@ -297,7 +297,7 @@ function TrackerTab({
               <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
-                    <Archive size={14} className="text-purple-400" />
+                    <Archive size={16} className="text-purple-400" />
                     <span className="text-white text-xl font-semibold">{t('tracker.bannerHistory')}</span>
                   </div>
                   <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
@@ -305,7 +305,7 @@ function TrackerTab({
                 {/* Search / filter input */}
                 <div className="px-4 pt-3 pb-1 space-y-2">
                   <div className="relative">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     <input
                       type="text"
                       value={bannerHistorySearch}
@@ -391,7 +391,7 @@ function TrackerTab({
                                     {wImg ? (
                                       <img src={wImg} alt={wLabel} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
-                                      <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                      <div className="w-full h-full flex items-center justify-center"><Sword size={16} className="text-pink-400" /></div>
                                     )}
                                   </div>
                                   <span className="text-sm text-pink-400 font-medium truncate">{wLabel}</span>
@@ -469,7 +469,7 @@ function TrackerTab({
                                     {wImg ? (
                                       <img src={wImg} alt={wLabel} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
-                                      <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                      <div className="w-full h-full flex items-center justify-center"><Sword size={16} className="text-pink-400" /></div>
                                     )}
                                   </div>
                                   <span className="text-sm text-pink-400 font-medium truncate">{wLabel}</span>
@@ -492,7 +492,7 @@ function TrackerTab({
               <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
-                    <Clock size={14} className="text-cyan-400" />
+                    <Clock size={16} className="text-cyan-400" />
                     <span className="text-white text-xl font-semibold">{t('tracker.conveneHistory')}</span>
                     <span className="text-gray-500 text-sm">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''})</span>
                   </div>
@@ -501,7 +501,7 @@ function TrackerTab({
                 {/* Search & filters */}
                 <div className="px-4 pt-3 pb-1 space-y-2">
                   <div className="relative">
-                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     <input
                       type="text"
                       value={pullHistorySearch}
