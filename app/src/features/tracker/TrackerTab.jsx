@@ -102,7 +102,7 @@ function TrackerTab({
                   <span className="text-cyan-300/90 text-base">{t('tracker.importHintPre')} <strong>{t('tabs.profile')}</strong> {t('tracker.importHintPost')}</span>
                   <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
                 </button>
-                <button onClick={() => setDismissedImport(true)} className="kuro-btn kuro-btn-sm flex-shrink-0 p-1.5" aria-label={t('tracker.dismiss')}><X size={16} /></button>
+                <button onClick={() => setDismissedImport(true)} className="kuro-btn kuro-btn-sm flex-shrink-0 p-2" aria-label={t('tracker.dismiss')}><X size={16} /></button>
               </div>
             )}
             {/* Category Tabs */}
