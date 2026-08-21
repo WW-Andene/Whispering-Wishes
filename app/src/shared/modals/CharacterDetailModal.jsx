@@ -17,7 +17,7 @@ import { calcTeamStats } from '../../features/teams/calcTeamStats.js';
 import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getSetIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
-import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
+import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
@@ -87,9 +87,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
   const f = infoFraming || (framing ? { x: framing.x, y: framing.y, zoom: framing.zoom } : { x: 0, y: 0, zoom: 100 });
 
   const isFullAnim = visualSettings?.animationsEnabled === 'full';
-  const spineId = isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
+  const spineId = SPINE_SPRITES_ENABLED_OUTSIDE_PANEL && isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
   // Full-spine viewer: available whenever this character has a sprite registered,
-  // independent of the header's own animationsEnabled/framingMode gating.
+  // independent of the header's own animationsEnabled/framingMode gating, and
+  // NOT gated by SPINE_SPRITES_ENABLED_OUTSIDE_PANEL — this panel is the one
+  // place sprite-surface Spine animations remain enabled.
   const fullSpineId = getSpineId(name, { surface: 'collection' });
   const [showFullSpine, setShowFullSpine] = React.useState(false);
 

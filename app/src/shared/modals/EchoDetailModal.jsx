@@ -12,7 +12,7 @@ import { ELEMENT_COLORS, getElementColor, getElementIcon, getSetElementColor, ge
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
-import { SpinePlayer, getSpineId } from '../components/SpinePlayer.jsx';
+import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
 import MonsterCard from '../components/MonsterCard.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t, getLocale } from '../../utils/i18n.js';
@@ -283,7 +283,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
                   const charImg = DEFAULT_COLLECTION_IMAGES[charName];
                   const is5Star = CHARACTER_DATA[charName]?.rarity === 5;
                   const owned = ownsChar(charName);
-                  const charSpineId = isFullAnim ? getSpineId(charName, { surface: 'collection' }) : null;
+                  const charSpineId = SPINE_SPRITES_ENABLED_OUTSIDE_PANEL && isFullAnim ? getSpineId(charName, { surface: 'collection' }) : null;
                   return (
                     <div key={charName} className={`flex flex-col items-center gap-1 ${!owned ? 'opacity-50' : ''}`}>
                       {charImg ? (
