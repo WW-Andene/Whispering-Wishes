@@ -14,6 +14,41 @@ export const IMPORT_NAME_ALIASES = {
   'Rover: Havoc (Female)': 'Rover: Havoc', 'Rover: Havoc (Male)': 'Rover: Havoc',
   'Rover: Aero (Female)': 'Rover: Aero', 'Rover: Aero (Male)': 'Rover: Aero',
   'Rover: Electro (Female)': 'Rover: Electro', 'Rover: Electro (Male)': 'Rover: Electro',
+
+  // French client convene-history import aliases: official French weapon names -> internal English
+  // WEAPON_DATA keys. File/JSON imports (WuwaTracker exports etc.) do NOT force English like the
+  // direct API fetch above does, so a French-client export carries p.name/p.resourceName as the
+  // official French localized weapon name and needs to be mapped back to the internal key. Sourced
+  // from WuwaTracker's own French (fr) locale name table (wuwatracker.com/fr/weapons/*), which is
+  // the exact translation the pull-history exports this app imports use. Weapons whose French name
+  // is identical to English (untranslated in-game, e.g. most "signature"/one-word/proper-noun names)
+  // are omitted since no alias is needed. 'Skull Thrasher' is also untranslated in French.
+  'Sommet verdoyant': 'Verdant Summit', 'Lame lustrée': 'Lustrous Razor', 'Émeraude éternelle': 'Emerald of Genesis',
+  'Brouillard stable': 'Static Mist', "Flux de l'Abîme": 'Abyss Surges', 'Ondes cosmiques': 'Cosmic Ripples',
+  'Main du marionnettiste': 'Stringmaster', 'Cycles de saisons': 'Ages of Harvest', 'Flamme rayonnée': 'Blazing Brilliance',
+  'Germe de glacier': 'Rime-Draped Sprouts', 'Symphonie stellaire': 'Stellar Symphony', 'Printemps acéré': 'Red Spring',
+  'La Dernière Danse': 'The Last Dance', 'Tragi-comédie': 'Tragicomedy', 'Hymne Lumineux': 'Luminous Hymn',
+  'Courage Impérissable': 'Unflickering Valor', 'Murmures des Sirènes': 'Whispers of Sirens', 'Discorde': 'Discord',
+  'Variation fantastique': 'Variation', 'Tailleur lunaire': 'Lunar Cutter', 'Tonnerre': 'Thunderbolt',
+  'Le Fendeur': 'Overture', 'Valse en Masque': 'Waltz in Masquerade', 'Légende du Héros Ivre': 'Legend of Drunken Hero',
+  'Amour en Adieu': 'Romance in Farewell', 'Fables de Sagesse': 'Fables of Wisdom', 'Méditations sur la Grâce': 'Meditations on Mercy',
+  'Appel du Vide': 'Call of the Abyss', 'Ancre de Somnoire': 'Somnoire Anchor', 'Accrétion de fusion': 'Fusion Accretion',
+  'Spirale céleste': 'Celestial Spiral', 'Jets relativistes': 'Relativistic Jet', 'Effondrement éternel': 'Endless Collapse',
+  'Spectre en déclin': 'Waning Redshift', 'Lumineux': 'Lumingloss', 'Commando de la Conviction': 'Commando of Conviction',
+  'Gardien de Jinzhou': 'Jinzhou Keeper', 'Comète éclatant': 'Comet Flare', 'Dévoisant': 'Augment',
+  'Mirage creux': 'Hollow Mirage', "Main d'or": 'Stonard', "Accord d'Amity": 'Amity Accord',
+  'Éclat de Nova': 'Novaburst', 'Flamme divine': 'Undying Flame', "Tailleur d'Hélios": 'Helios Cleaver',
+  'Intrépide éternel': 'Dauntless Evernight', "Trace d'automne": 'Autumntrace', 'Épée #41': 'Broadblade#41',
+  'Épée #18': 'Sword#18', 'Gantelets #21D': 'Gauntlets#21D', 'Amplificateur #25': 'Rectifier#25',
+  'Pistolets #26': 'Pistols#26', 'Épée du Gardien': 'Guardian Sword', 'Pistolets du Gardien': 'Guardian Pistols',
+  'Gantelets du Gardien': 'Guardian Gauntlets', 'Amplificateur du Gardien': 'Guardian Rectifier', 'Sabre du Gardien': 'Guardian Broadblade',
+  'Épée du Voyageur': 'Sword of Voyager', 'Pistolets du Voyageur': 'Pistols of Voyager', 'Gantelets du Voyageur': 'Gauntlets of Voyager',
+  'Amplificateur du Voyageur': 'Rectifier of Voyager', 'Sabre du Voyageur': 'Broadblade of Voyager', 'Épée de Nuit': 'Sword of Night',
+  'Pistolets de Nuit': 'Pistols of Night', 'Gantelets de Nuit': 'Gauntlets of Night', 'Amplificateur de Nuit': 'Rectifier of Night',
+  'Sabre de nuit': 'Broadblade of Night', 'Voix céleste': 'Beguiling Melody', 'Sabre Tyro': 'Tyro Sword',
+  'Amplificateur Tyro': 'Tyro Rectifier', 'Gantelets Tyro': 'Tyro Gauntlets', 'Pistolets Tyro': 'Tyro Pistols',
+  'Epée Tyro': 'Tyro Broadblade', 'Sabre Novice': 'Training Sword', 'Amplificateur Novice': 'Training Rectifier',
+  'Gantelets Novices': 'Training Gauntlets', 'Pistolets Novices': 'Training Pistols', 'Epée Novice': 'Training Broadblade',
 };
 
 export const POOL_LABELS = {
