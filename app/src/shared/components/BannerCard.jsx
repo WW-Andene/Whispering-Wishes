@@ -12,6 +12,8 @@ import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
+import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
+import { t } from '../../utils/i18n.js';
 
 const BANNER_GRADIENT_MAP = {
   Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400', glow: '249,115,22' },
@@ -191,66 +193,68 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
             </div>
           </div>
         )}
-      {/* Gacha info icon — bottom-left corner */}
-      <GachaInfoButton isChar={isChar} />
+      {isChar && <FullSpineViewerButton name={item.name} imageUrl={imgUrl} className="absolute bottom-2 right-2 z-20" />}
     </div>
     </div>
   );
 });
 BannerCard.displayName = 'BannerCard';
 
-// Gacha system explanation — kuro-styled modal
-const GachaInfoButton = memo(({ isChar }) => {
+// Gacha system explanation — kuro-styled modal. Rendered once above the
+// banner list (TrackerTab) rather than per-card, since its content is the
+// same regardless of which banner it's opened from.
+const GachaInfoButton = memo(({ isChar, className = '' }) => {
   const [open, setOpen] = useState(false);
+  const ci = 'tracker.conveneInfo.';
   return (
     <>
       <button
-        className="absolute bottom-2 right-2 z-20 w-7 h-7 rounded-full flex items-center justify-center bg-black/50 border border-white/20 text-gray-300 hover:text-white hover:bg-black/70 transition-all backdrop-blur-sm"
+        className={`w-7 h-7 rounded-full flex items-center justify-center bg-black/50 border border-white/20 text-gray-300 hover:text-white hover:bg-black/70 transition-all backdrop-blur-sm ${className}`}
         onClick={(e) => { e.stopPropagation(); setOpen(true); haptic.light(); }}
-        aria-label="Convene system information"
+        aria-label={t(ci + 'buttonAria')}
       >
         <Info size={14} />
       </button>
-      <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} className="" onClick={() => setOpen(false)} ariaLabel="Convene system information" centered>
+      <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} className="" onClick={() => setOpen(false)} ariaLabel={t(ci + 'buttonAria')} centered>
         <div className="kuro-card w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
           <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between" data-sheet-header>
             <div className="flex items-center gap-2">
               <Info size={16} className="text-yellow-400" />
-              <h3 className="text-white font-semibold text-lg">Convene System</h3>
+              <h3 className="text-white font-semibold text-lg">{t(ci + 'title')}</h3>
             </div>
-            <button onClick={() => setOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close"><X size={16} /></button>
+            <button onClick={() => setOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t(ci + 'closeAria')}><X size={16} /></button>
           </div>
           <div className="p-4 space-y-3">
             <div className="space-y-2.5 text-sm text-gray-300 leading-relaxed">
               <div className="flex items-start gap-2">
                 <span className="text-yellow-400 text-lg leading-none mt-0.5">★</span>
-                <div><span className="text-white font-medium">Base 5★ rate:</span> 0.8% per Convene</div>
+                <div><span className="text-white font-medium">{t(ci + 'baseRateLabel')}</span> {t(ci + 'baseRateValue')}</div>
               </div>
               <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
-                <div className="flex justify-between"><span className="text-amber-400 font-medium">Soft Pity</span><span className="text-white">Pull 66+</span></div>
-                <div className="text-gray-400 text-xs">Rate increases by ~6.6% per pull after pull 65. By pull 79, rate exceeds 90%.</div>
+                <div className="flex justify-between"><span className="text-amber-400 font-medium">{t(ci + 'softPityLabel')}</span><span className="text-white">{t(ci + 'softPityValue')}</span></div>
+                <div className="text-gray-400 text-xs">{t(ci + 'softPityDesc')}</div>
               </div>
               <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
-                <div className="flex justify-between"><span className="text-red-400 font-medium">Hard Pity</span><span className="text-white">Pull 80</span></div>
-                <div className="text-gray-400 text-xs">Guaranteed 5★ at pull 80. Average is ~71 pulls.</div>
+                <div className="flex justify-between"><span className="text-red-400 font-medium">{t(ci + 'hardPityLabel')}</span><span className="text-white">{t(ci + 'hardPityValue')}</span></div>
+                <div className="text-gray-400 text-xs">{t(ci + 'hardPityDesc')}</div>
               </div>
               <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
-                <div className="flex justify-between"><span className="text-purple-400 font-medium">4★ Guarantee</span><span className="text-white">Every 10 pulls</span></div>
-                <div className="text-gray-400 text-xs">Base rate 6%. Independent from 5★ pity counter.</div>
+                <div className="flex justify-between"><span className="text-purple-400 font-medium">{t(ci + 'guarantee4StarLabel')}</span><span className="text-white">{t(ci + 'guarantee4StarValue')}</span></div>
+                <div className="text-gray-400 text-xs">{t(ci + 'guarantee4StarDesc')}</div>
               </div>
               {isChar ? (
                 <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
-                  <div className="flex justify-between"><span className="text-orange-400 font-medium">50/50 System</span><span className="text-white">Featured Resonator</span></div>
-                  <div className="text-gray-400 text-xs">50% chance for the featured Resonator. Losing the 50/50 guarantees the featured Resonator on your next 5★ pull. Both pity counter and guarantee carry over to the next featured banner.</div>
+                  <div className="flex justify-between"><span className="text-orange-400 font-medium">{t(ci + 'fiftyFiftyLabel')}</span><span className="text-white">{t(ci + 'fiftyFiftyValue')}</span></div>
+                  <div className="text-gray-400 text-xs">{t(ci + 'fiftyFiftyDesc')}</div>
                 </div>
               ) : (
                 <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
-                  <div className="flex justify-between"><span className="text-pink-400 font-medium">No 50/50</span><span className="text-white">Featured Weapon</span></div>
-                  <div className="text-gray-400 text-xs">The featured weapon is guaranteed when you pull a 5★. Pity counter carries over to the next featured weapon banner.</div>
+                  <div className="flex justify-between"><span className="text-pink-400 font-medium">{t(ci + 'noFiftyFiftyLabel')}</span><span className="text-white">{t(ci + 'noFiftyFiftyValue')}</span></div>
+                  <div className="text-gray-400 text-xs">{t(ci + 'noFiftyFiftyDesc')}</div>
                 </div>
               )}
             </div>
-            <div className="text-gray-500 text-xs text-center pt-1 border-t border-[var(--border-medium)]">Each banner type has its own independent pity counter</div>
+            <div className="text-gray-500 text-xs text-center pt-1 border-t border-[var(--border-medium)]">{t(ci + 'footerNote')}</div>
           </div>
         </div>
       </FocusTrapModal>
@@ -272,4 +276,4 @@ const ProbabilityBar = memo(({ label, value, color = 'cyan' }) => (
 ));
 ProbabilityBar.displayName = 'ProbabilityBar';
 
-export { BannerCard, ProbabilityBar, generateMaskGradient, BANNER_GRADIENT_MAP, EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW };
+export { BannerCard, GachaInfoButton, ProbabilityBar, generateMaskGradient, BANNER_GRADIENT_MAP, EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW };

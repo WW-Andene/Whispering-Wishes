@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
+import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
 import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
@@ -18,18 +18,27 @@ import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegi
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
+import { FullSpineViewerButton } from '../components/FullSpineViewerButton.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
-// Shared element color maps
+// Shared element color maps. `hex` (same source as helpers.js's ELEMENT_COLORS)
+// drives the header's layered depth gradient — the flat `bg` wash alone reads
+// as a single flat tint, so the header combines it with a diagonal fade and a
+// soft top-left glow for actual dimensionality.
 const DETAIL_ELEMENT_COLORS = {
-  Fusion: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/50' },
-  Electro: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
-  Aero: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50' },
-  Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50' },
-  Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50' },
-  Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
+  Fusion: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/50', hex: '#f97316' },
+  Electro: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50', hex: '#a855f7' },
+  Aero: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50', hex: '#10b981' },
+  Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50', hex: '#06b6d4' },
+  Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50', hex: '#ec4899' },
+  Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', hex: '#edaf18' },
 };
+// Layered depth wash for the header: a diagonal fade for baseline shading plus
+// a soft radial glow offset toward the top-left, so the element color reads
+// with actual light/dark nuance instead of one uniform flat tint.
+const elementDepthGradient = (hex) =>
+  `radial-gradient(120% 100% at 15% 10%, ${hex}38, transparent 60%), linear-gradient(135deg, ${hex}45 0%, ${hex}18 45%, transparent 100%)`;
 
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
@@ -88,15 +97,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
   const isFullAnim = visualSettings?.animationsEnabled === 'full';
   const spineId = SPINE_SPRITES_ENABLED_OUTSIDE_PANEL && isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
-  // Full-spine viewer: available whenever this character has a sprite registered,
-  // independent of the header's own animationsEnabled/framingMode gating, and
-  // NOT gated by SPINE_SPRITES_ENABLED_OUTSIDE_PANEL — this panel is the one
-  // place sprite-surface Spine animations remain enabled.
-  const fullSpineId = getSpineId(name, { surface: 'collection' });
-  const [showFullSpine, setShowFullSpine] = React.useState(false);
 
   return (
-    <>
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.characterDetail.resonatorDetailsAria', { name })} centered>
       <div
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border ${colors.border}`}
@@ -107,7 +109,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
         <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
         >
-          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
+          <div className="absolute inset-0" style={{ background: elementDepthGradient(colors.hex) }} />
           {framingMode && editingImage === `info-${name}` && (
             <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
               <span className="text-black text-sm">✓</span>
@@ -145,15 +147,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
-          {imageUrl && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowFullSpine(true); }}
-              className="kuro-btn absolute bottom-3 right-3 z-20 w-8 h-8 !p-0 rounded-full flex items-center justify-center"
-              aria-label={t('modals.characterDetail.viewFullSpineAria', { name })}
-            >
-              <Play size={13} className="fill-current ml-0.5" />
-            </button>
-          )}
+          <FullSpineViewerButton name={name} imageUrl={imageUrl} className="absolute bottom-3 right-3 z-20" />
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border} inline-flex items-center gap-1`}>
@@ -562,7 +556,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {data.bestWeapon && (() => {
           const hasWeapon = ownsWeapon(data.bestWeapon);
           return (
-          <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? `bg-gradient-to-r ${colors.bg} from-transparent` : 'bg-white/[0.02]'}`} style={!hasWeapon ? { opacity: 0.55 } : undefined}>
+          <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? '' : 'bg-white/[0.02]'}`} style={hasWeapon ? { background: `linear-gradient(to right, ${colors.hex}26, transparent)` } : { opacity: 0.55 }}>
             <div className="flex items-center justify-between mb-2">
               <div className="kuro-section-label">{t('modals.characterDetail.recommendedWeapon')}</div>
               {!hasWeapon && <span className="text-2xs text-gray-600 uppercase tracking-wider">{t('modals.characterDetail.notOwned')}</span>}
@@ -820,30 +814,6 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
        </div>
       </div>
     </FocusTrapModal>
-
-    {/* Full spine-sprite viewer — round play button in the header opens this centered
-        panel showing the character's full sprite animation, unconstrained by the
-        header's small preview band. */}
-    {imageUrl && (
-      <FocusTrapModal isOpen={showFullSpine} onClose={() => setShowFullSpine(false)} onClick={() => setShowFullSpine(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered>
-        <div className="relative" style={{ width: 'min(90vw, calc(90vh * 9 / 16))' }} onClick={e => e.stopPropagation()}>
-          <div className="relative w-full aspect-[9/16]" style={{ filter: 'drop-shadow(0 20px 45px rgba(0,0,0,0.6))' }}>
-            <SpinePlayer
-              characterId={fullSpineId}
-              context="full"
-              className="absolute inset-0"
-              backgroundColor="#00000000"
-              fallbackImgUrl={imageUrl}
-              fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
-            />
-          </div>
-          <button onClick={() => setShowFullSpine(false)} className="kuro-btn absolute top-3 right-3 z-20 w-8 h-8 !p-0 rounded-full flex items-center justify-center" aria-label={t('modals.characterDetail.closeFullSpineAria')}>
-            <X size={14} />
-          </button>
-        </div>
-      </FocusTrapModal>
-    )}
-    </>
   );
 };
 
