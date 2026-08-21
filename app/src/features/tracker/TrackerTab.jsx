@@ -5,7 +5,7 @@
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
-import { BANNER_HISTORY, PLACEHOLDER_IMAGE } from '../../data/banners.js';
+import { BANNER_HISTORY, PLACEHOLDER_IMAGE, CHARACTER_THEMES } from '../../data/banners.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
@@ -358,9 +358,13 @@ function TrackerTab({
                             const cIdx = banner.characters.indexOf(character);
                             const w = banner.weapons[cIdx];
                             const wImg = w ? collectionImages[w] : null;
+                            // Use this character's own splash art, not the phase's shared
+                            // bannerArt (which is only the first-listed character's art — showing
+                            // it for every co-featured character in the phase is wrong).
+                            const rowArt = CHARACTER_THEMES.find(th => th.name === character)?.bannerArt || banner.bannerArt;
                             return (
                               <div key={`lr-${character}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
-                                {banner.bannerArt && <img src={banner.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ objectPosition: banner.bannerArt === PLACEHOLDER_IMAGE ? 'center 15%' : undefined, maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
+                                {rowArt && <img src={rowArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ objectPosition: rowArt === PLACEHOLDER_IMAGE ? 'center 15%' : undefined, maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
                                 <div className="relative z-10">
                                   <div className="flex justify-between items-center mb-2">
                                     <span className="text-white text-xl font-semibold">{t('tracker.lastAppearance', { version: banner.version, phase: banner.phase })}</span>
