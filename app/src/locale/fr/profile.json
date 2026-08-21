@@ -169,7 +169,7 @@
     "disclaimer": "Avertissement",
     "disclaimerBody1": "Whispering Wishes est un outil non officiel créé par des fans. Il n'est ni affilié à, ni approuvé par, ni associé à Kuro Games, Kuro Technology (HK) Co., Limited, ou à l'une de leurs filiales.",
     "disclaimerBody2": "Wuthering Waves, tout le contenu du jeu, les personnages, les noms et les médias associés sont des marques déposées et des droits d'auteur de Kuro Games © 2024–{{year}}.",
-    "disclaimerBody3": "Les données du jeu, les illustrations et autres ressources proviennent de dataminages communautaires, d'artistes fans et d'outils de suivi tiers. Bien que nous nous efforcions d'être précis, certaines informations peuvent être obsolètes, non vérifiées ou incorrectes — vérifiez toujours les éléments importants en jeu.",
+    "disclaimerBody3": "Les données du jeu, les illustrations et autres ressources proviennent de ressources communautaires, d'artistes fans et d'outils de suivi tiers. Bien que nous nous efforcions d'être précis, certaines informations peuvent être obsolètes, non vérifiées ou incorrectes — vérifiez toujours les éléments importants en jeu.",
     "privacy": "Politique de confidentialité",
     "privacyLocalTitle": "Données stockées sur votre appareil",
     "privacyLocalBody": "L'historique de Convier, les paramètres du calculateur, les compositions d'équipe, les notes du planificateur et les préférences visuelles sont stockés localement dans votre navigateur (localStorage). Ces données ne quittent jamais votre appareil, sauf si vous utilisez explicitement la sauvegarde cloud ou le classement.",
@@ -209,7 +209,7 @@
     "sourceGame8": "guides de jeu et données",
     "sourceWiki": "données de personnages, armes et échos",
     "sourcePrydwen": "builds de personnages et analyses",
-    "sourceNanoka": "ressources et fichiers du jeu dataminés",
+    "sourceNanoka": "ressources et fichiers du jeu",
     "sourceKiriyumeBun": "illustrations Live2D et fonds d'écran de mise à jour"
   }
 }

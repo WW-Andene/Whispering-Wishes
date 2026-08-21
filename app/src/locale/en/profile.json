@@ -169,7 +169,7 @@
     "disclaimer": "Disclaimer",
     "disclaimerBody1": "Whispering Wishes is an unofficial fan-made tool. It is not affiliated with, endorsed by, or associated with Kuro Games, Kuro Technology (HK) Co., Limited, or any of their subsidiaries.",
     "disclaimerBody2": "Wuthering Waves, all game content, characters, names, and related media are trademarks and copyrights of Kuro Games © 2024–{{year}}.",
-    "disclaimerBody3": "Game data, artwork, and other assets are sourced from community datamines, fan artists, and third-party trackers. While we strive for accuracy, some information may be outdated, unverified, or incorrect — always cross-check anything important in-game.",
+    "disclaimerBody3": "Game data, artwork, and other assets are sourced from community resources, fan artists, and third-party trackers. While we strive for accuracy, some information may be outdated, unverified, or incorrect — always cross-check anything important in-game.",
     "privacy": "Privacy Policy",
     "privacyLocalTitle": "Data stored on your device",
     "privacyLocalBody": "Convene history, calculator settings, team builds, planner notes, and visual preferences are stored locally in your browser (localStorage). This data never leaves your device unless you explicitly use Cloud Backup or the Leaderboard.",
@@ -209,7 +209,7 @@
     "sourceGame8": "game guides and data",
     "sourceWiki": "character, weapon, and echo data",
     "sourcePrydwen": "character builds and analytics",
-    "sourceNanoka": "datamined game assets and resources",
+    "sourceNanoka": "game assets and resources",
     "sourceKiriyumeBun": "Live2D and version update wallpaper art"
   }
 }
