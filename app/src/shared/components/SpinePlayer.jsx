@@ -235,6 +235,15 @@ export const SPRITE_SPINE_CHARACTERS = {
   sanhua:          spriteEntry('Sanhua',           'Glacio',  'Sanhua',
                       { scale: 2.4,  tx: -8,   ty: 21,
                         detail: { scale: 2.65, tx: 4,    ty: 30 } }),
+  // Untuned — scale/tx/ty fall back to SPRITE_DEF until adjusted live in the
+  // admin mini panel (Ctrl+Alt+P) and promoted here.
+  luosela:         spriteEntry('Lucilla',           'Glacio',  'LuoSeLa'),
+  suisui:          spriteEntry('Suisui',            'Glacio',  'Suisui'),
+  rebecca:         spriteEntry('Rebecca',           'Electro', 'Rebecca'),
+  qingxiao:        spriteEntry('Qingxiao',          'Aero',    'Qingxiao'),
+  lucy:            spriteEntry('Lucy',              'Spectro', 'Lucy'),
+  jingran:         spriteEntry('Jingran',           'Fusion',  'Jingran'),
+  xuanling:        spriteEntry('Yangyang: Xuanling','Havoc',   'Xuanling'),
 };
 
 // Merged view for lookup by surface-prefixed id. Keys collide between the two
