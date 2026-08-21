@@ -16,6 +16,7 @@ import PityHistogram from './PityHistogram.jsx';
 import ConveneHistoryChart from './ConveneHistoryChart.jsx';
 import AchievementsTool from './AchievementsTool.jsx';
 import { ALL_CHARACTERS } from '../../data/characters.js';
+import { ALL_5STAR_WEAPONS } from '../../data/weaponLists.js';
 import { getMergedHistories } from '../../core/storageKeys.js';
 import { MEDAL_COLORS, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
 import { calculateLuckRating } from '../../utils/helpers.js';
@@ -33,6 +34,12 @@ import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 // Pull-log banner tag → translation key. The underlying `p.banner` values are
 // English data-comparison strings (set in statsTabData below) — only the
 // on-screen label is translated.
+// Known 5★ weapon names, used to validate community-pulls submissions below — mirrors the
+// ALL_CHARACTERS.has(p.name) check already done for characters, so a name that doesn't match
+// either known list (e.g. a stray API name quirk) is dropped instead of silently pushed through
+// with no matching collectionImages entry (which used to render as a blank, icon-less row).
+const ALL_5STAR_WEAPONS_SET = new Set(ALL_5STAR_WEAPONS);
+
 const PULL_BANNER_LABEL_KEYS = {
   Featured: 'analytics.perBanner.bannerNames.featuredResonator',
   Weapon: 'analytics.perBanner.bannerNames.featuredWeapon',
@@ -327,7 +334,7 @@ function AnalyticsTab({
       if (!res.ok) throw new Error(`Firebase write failed (${res.status})`);
       const { charHistory, weapHistory } = getMergedHistories(state.profile);
       const owned5Chars = [...new Set(charHistory.filter(p => p.rarity === 5 && p.name && ALL_CHARACTERS.has(p.name)).map(p => p.name))];
-      const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && !ALL_CHARACTERS.has(p.name)).map(p => p.name))];
+      const owned5Weaps = [...new Set(weapHistory.filter(p => p.rarity === 5 && p.name && ALL_5STAR_WEAPONS_SET.has(p.name)).map(p => p.name))];
       if (owned5Chars.length > 0 || owned5Weaps.length > 0) {
         try {
           await firebaseFetch(`community-pulls/${effectiveLeaderboardId}`, authToken, {

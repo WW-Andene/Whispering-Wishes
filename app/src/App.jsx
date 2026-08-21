@@ -22,6 +22,7 @@ import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } 
 import { Archive, BarChart3, Calculator, Calendar, ChevronDown, Download, Map, Sparkles, TrendingUp, User, Users } from 'lucide-react';
 // --- data ---
 import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
+import { ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from './data/weaponLists.js';
 import { getCurrentBannerAuto, preloadBannerHistoryArt } from './data/banners.js';
 import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, SERVERS, getServerOffset } from './data/constants.js';
 import { generateUniqueId, calculateLuckRating } from './utils/helpers.js';
@@ -88,6 +89,11 @@ import { t, formatDate, useAppLocale } from './utils/i18n.js';
 const DEBOUNCE_MS = 300;
 const CALC_DEFER_MS = 150;
 const STORAGE_WARNING_THRESHOLD = 3.5 * 1024 * 1024;
+// Known weapon names across all rarities, used to validate pull-history entries in collectionData
+// below — mirrors the ALL_CHARACTERS.has(p.name) check already done for characters, so a name that
+// matches neither known list (a stray API name quirk, an unmapped alias) is dropped from the count
+// instead of silently passing the old `!ALL_CHARACTERS.has(p.name)` negative-only check.
+const ALL_WEAPONS_SET = new Set([...ALL_5STAR_WEAPONS, ...ALL_4STAR_WEAPONS, ...ALL_3STAR_WEAPONS, ...ALL_2STAR_WEAPONS, ...ALL_1STAR_WEAPONS]);
 
 // [SECTION:MAINAPP]
 function WhisperingWishesInner() {
@@ -509,7 +515,7 @@ function WhisperingWishesInner() {
   const collectionData = useMemo(() => {
     const { charHistory, weapHistory } = getMergedHistories(state.profile);
     const countItems = (history, rarity, isChar) => {
-      const items = history.filter(p => p.rarity === rarity && p.name && (isChar ? ALL_CHARACTERS.has(p.name) : !ALL_CHARACTERS.has(p.name)));
+      const items = history.filter(p => p.rarity === rarity && p.name && (isChar ? ALL_CHARACTERS.has(p.name) : ALL_WEAPONS_SET.has(p.name)));
       return items.reduce((acc, p) => { acc[p.name] = (acc[p.name] || 0) + 1; return acc; }, {});
     };
     const sortItems = (items, sort, releaseOrder = RELEASE_ORDER) => {
