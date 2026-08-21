@@ -649,7 +649,7 @@ export function getLocalizedWeaponData(locale) {
   const out = {};
   for (const [name, base] of Object.entries(WEAPON_DATA)) {
     const fr = WEAPON_DATA_FR[name];
-    out[name] = { ...base, ...(fr?.desc ? { desc: fr.desc } : {}), ...(fr?.passive ? { passive: fr.passive } : {}) };
+    out[name] = { ...base, ...(fr?.name ? { displayName: fr.name } : {}), ...(fr?.desc ? { desc: fr.desc } : {}), ...(fr?.passive ? { passive: fr.passive } : {}) };
   }
   return out;
 }

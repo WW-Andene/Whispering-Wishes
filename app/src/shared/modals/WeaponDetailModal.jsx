@@ -33,6 +33,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
 
   const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
   const f = infoFraming || { x: 0, y: 0, zoom: 100 };
+  const displayName = data.displayName || name;
 
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.weaponDetail.weaponDetailsAria', { name })} centered>
@@ -52,7 +53,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
             </div>
           )}
           {imageUrl && (
-            <img src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} style={{
+            <img src={imageUrl} alt={displayName} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} style={{
               transform: `translateY(-50%) scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
               transformOrigin: 'center',
             }} />
@@ -68,7 +69,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
                 {data.type}
               </span>
             </div>
-            <h2 className="text-2xl font-semibold text-white">{name}</h2>
+            <h2 className="text-2xl font-semibold text-white">{displayName}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
               {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
             </div>

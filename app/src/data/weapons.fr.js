@@ -18,7 +18,7 @@
 // never this overlay, so translating passive here is safe — but never wire
 // this file into calcEngine.js/calcTeamStats.js.
 
-/** @type {Record<string, { desc?: string, passive?: string }>} */
+/** @type {Record<string, { name?: string, desc?: string, passive?: string }>} */
 export const WEAPON_DATA_FR = {
   'Skull Thrasher': {
     desc: "Arme signature de Rebecca (« Solitaire Éveillée »). Lancer la Compétence d'Intro confère un Bonus DGT d'Attaque Basique ; infliger Hack - Shifting confère un Bonus DGT d'Attaque Basique plus un buff d'ATQ pour toute l'équipe.",
@@ -57,19 +57,19 @@ export const WEAPON_DATA_FR = {
     passive: "PV Max +12 %. La Libération restaure 8 Énergie de Concerto (TRI 20 s). Infliger Glacio Chafe + appliquer un soin sur le terrain confère les deux effets au prochain Outro (6 s) ; avec les deux actifs, ATQ d'équipe +20 %.",
   },
   'Verdant Summit': {
-    desc: "Arme signature de Jiyan. Lame verdoyante qui commande le vent. La Compétence d'Intro/Libération cumule les DGT d'Attaque Lourde.",
+    name: "Sommet verdoyant",    desc: "Arme signature de Jiyan. Lame verdoyante qui commande le vent. La Compétence d'Intro/Libération cumule les DGT d'Attaque Lourde.",
     passive: "Épée Assermentée : Bonus DGT tous éléments +12 %. Compétence d'Intro/Libération → DGT d'Attaque Lourde personnels +24 % (cumuls x2, 14 s).",
   },
   'Lustrous Razor': {
-    desc: "5★ Standard. Lame affûtée jusqu'à un éclat lustré. Régén. d'Énergie avec DGT de Libération cumulables à l'usage de la Compétence.",
+    name: "Lame lustrée",    desc: "5★ Standard. Lame affûtée jusqu'à un éclat lustré. Régén. d'Énergie avec DGT de Libération cumulables à l'usage de la Compétence.",
     passive: "Résolution Orageuse : Régén. d'Énergie +12,8 %. Compétence de Résonance → DGT de Libération de Résonance personnels +7 % (cumuls x3, 12 s).",
   },
   'Emerald of Genesis': {
-    desc: "5★ Standard. Épée de jade d'origine ancienne. Régén. d'Énergie avec buff d'ATQ cumulable à l'usage de la Compétence.",
+    name: "Émeraude éternelle",    desc: "5★ Standard. Épée de jade d'origine ancienne. Régén. d'Énergie avec buff d'ATQ cumulable à l'usage de la Compétence.",
     passive: "Résolution Orageuse : Régén. d'Énergie +12,8 %. Compétence de Résonance → ATQ personnelle +6 % (cumuls x2, 10 s).",
   },
   'Static Mist': {
-    desc: "5★ Standard. Pistolets enveloppés d'une brume persistante. Régén. d'Énergie avec buff d'ATQ pour le Résonateur entrant après l'Outro.",
+    name: "Brouillard stable",    desc: "5★ Standard. Pistolets enveloppés d'une brume persistante. Régén. d'Énergie avec buff d'ATQ pour le Résonateur entrant après l'Outro.",
     passive: "Résolution Orageuse : Régén. d'Énergie +12,8 %. Compétence d'Outro → ATQ du personnage entrant +10 % (14 s).",
   },
   'Abyss Surges': {
@@ -77,23 +77,23 @@ export const WEAPON_DATA_FR = {
     passive: "Résolution Orageuse : Régén. d'Énergie +12,8 %. Coup de Compétence de Résonance → DGT d'Attaque Basique personnels +10 % (8 s). Coup d'Attaque Basique → DGT de Compétence de Résonance personnels +10 % (8 s).",
   },
   'Cosmic Ripples': {
-    desc: "5★ Standard. Rectificateur résonnant avec des ondulations cosmiques. Régén. d'Énergie avec buff cumulable de DGT d'Attaque Basique au contact.",
+    name: "Ondes cosmiques",    desc: "5★ Standard. Rectificateur résonnant avec des ondulations cosmiques. Régén. d'Énergie avec buff cumulable de DGT d'Attaque Basique au contact.",
     passive: "Résolution Orageuse : Régén. d'Énergie +12,8 %. DGT d'Attaque Basique → DGT d'Attaque Basique personnels +3,2 % (cumuls x5, 8 s, TRI 0,5 s).",
   },
   'Stringmaster': {
-    desc: "Arme signature de Yinlin. Cordes qui orchestrent le destin lui-même. Bonus DGT avec ATQ cumulable sur les DGT de Compétence.",
+    name: "Main du marionnettiste",    desc: "Arme signature de Yinlin. Cordes qui orchestrent le destin lui-même. Bonus DGT avec ATQ cumulable sur les DGT de Compétence.",
     passive: "Amplification Électrique : Bonus DGT tous éléments +12 %. DGT de Compétence de Résonance → ATQ personnelle +12 % (cumuls x2, 5 s). Hors du terrain : ATQ supplémentaire +12 %.",
   },
   'Ages of Harvest': {
-    desc: "Arme signature de Jinhsi. Lame forgée d'âges de récolte et de détermination. Bonus DGT + double marque de DGT de Compétence.",
+    name: "Cycles de saisons",    desc: "Arme signature de Jinhsi. Lame forgée d'âges de récolte et de détermination. Bonus DGT + double marque de DGT de Compétence.",
     passive: "Bonus DGT tous éléments +12 %, Compétence d'Intro/de Résonance → DGT de Compétence de Résonance +24 % chacun (cumulables).",
   },
   'Blazing Brilliance': {
-    desc: "Arme signature de Changli. Épée embrasée d'un éclat immortel. ATQ avec DGT de Compétence de Résonance cumulables.",
+    name: "Flamme rayonnée",    desc: "Arme signature de Changli. Épée embrasée d'un éclat immortel. ATQ avec DGT de Compétence de Résonance cumulables.",
     passive: "Phénix Écarlate : ATQ +12 %. Infliger des DGT → 1 cumul de Plume Ardente (TRI 0,5 s) ; Compétence de Résonance → 5 cumuls. Chaque cumul : DGT de Compétence de Résonance personnels +4 % (max x14/+56 % ; se réinitialise 12 s après avoir atteint le plafond).",
   },
   'Rime-Draped Sprouts': {
-    desc: "Arme signature de Zhezhi. Pousses embrassées de givre qui fleurissent dans le calme. Buff de DGT d'Attaque Basique reporté hors du terrain via l'Outro.",
+    name: "Germe de glacier",    desc: "Arme signature de Zhezhi. Pousses embrassées de givre qui fleurissent dans le calme. Buff de DGT d'Attaque Basique reporté hors du terrain via l'Outro.",
     passive: "Panorama : ATQ +12 %. Sur le terrain : Compétence de Résonance → DGT d'Attaque Basique personnels +12 % (cumuls x3, 6 s). À 3 cumuls, la Compétence d'Outro les consomme → DGT d'Attaque Basique +52 % pendant 27 s (fonctionne hors du terrain).",
   },
   "Verity's Handle": {
@@ -101,31 +101,31 @@ export const WEAPON_DATA_FR = {
     passive: "Ad Veritatem : Bonus DGT tous éléments +12 %. Libération → DGT de Libération de Résonance personnels +48 % (8 s), prolongés de +5 s par lancer de Compétence (jusqu'à 3 fois).",
   },
   'Stellar Symphony': {
-    desc: "Arme signature de Shorekeeper. Symphonie résonnant à travers la mer stellaire. Buff de PV, restauration de Concerto, ATQ d'équipe en soignant.",
+    name: "Symphonie stellaire",    desc: "Arme signature de Shorekeeper. Symphonie résonnant à travers la mer stellaire. Buff de PV, restauration de Concerto, ATQ d'équipe en soignant.",
     passive: "Évolution Astrale : PV +12 %. La Libération restaure 8 Énergie de Concerto (1x/20 s). Compétence de Soin → ATQ d'équipe +14 % pendant 30 s.",
   },
   'Red Spring': {
-    desc: "Arme signature de Camellya. Lame pourpre s'épanouissant comme une fleur de printemps rouge. Buff d'ATQ avec DGT d'Attaque Basique cumulables.",
+    name: "Printemps acéré",    desc: "Arme signature de Camellya. Lame pourpre s'épanouissant comme une fleur de printemps rouge. Buff d'ATQ avec DGT d'Attaque Basique cumulables.",
     passive: "ATQ +12 %, DGT d'Attaque Basique +10 % par cumul (max x3), +40 % DGT Basiques quand l'Énergie de Concerto est consommée.",
   },
   'The Last Dance': {
-    desc: "Arme signature de Carlotta. Pistolets élégants pour une dernière danse parfaite. Buff d'ATQ avec DGT de Compétence de Résonance sur Intro/Libération.",
+    name: "La Dernière Danse",    desc: "Arme signature de Carlotta. Pistolets élégants pour une dernière danse parfaite. Buff d'ATQ avec DGT de Compétence de Résonance sur Intro/Libération.",
     passive: "ATQ +12 %, Intro/Libération → DGT de Compétence de Résonance +48 % pendant 5 s.",
   },
   'Tragicomedy': {
-    desc: "Arme signature de Roccia. Gantelets nés de la comédie et de la tragédie entrelacées. ATQ avec DGT d'Attaque Lourde cumulables.",
+    name: "Tragi-comédie",    desc: "Arme signature de Roccia. Gantelets nés de la comédie et de la tragédie entrelacées. ATQ avec DGT d'Attaque Lourde cumulables.",
     passive: "Vocalise du Fou : ATQ +12 %. Attaque Basique/Compétence d'Intro → DGT d'Attaque Lourde personnels +48 % (3 s).",
   },
   'Luminous Hymn': {
-    desc: "Arme signature de Phoebe. Rectificateur couronné de lumière sacrée. ATQ avec DGT d'Attaque Basique/Lourde cumulables sur les DGT de Frazzle.",
+    name: "Hymne Lumineux",    desc: "Arme signature de Phoebe. Rectificateur couronné de lumière sacrée. ATQ avec DGT d'Attaque Basique/Lourde cumulables sur les DGT de Frazzle.",
     passive: "Hymne du Bâtisseur : ATQ +12 %. DGT sur des cibles en Spectro Frazzle → DGT d'Attaque Basique et Lourde personnels +14 % (cumuls x3, 6 s). Compétence d'Outro → Amplification DGT de Spectro Frazzle +30 % (30 s) autour du Résonateur actif.",
   },
   'Unflickering Valor': {
-    desc: "Arme signature de Brant. Épée de bravoure inébranlable et de détermination ardente. Taux Critique avec DGT d'Attaque Basique cumulables.",
+    name: "Courage Impérissable",    desc: "Arme signature de Brant. Épée de bravoure inébranlable et de détermination ardente. Taux Critique avec DGT d'Attaque Basique cumulables.",
     passive: "Le Rire Triomphe : Taux Critique +8 %. Libération → DGT d'Attaque Basique personnels +24 % (10 s). DGT d'Attaque Basique → DGT d'Attaque Basique personnels +24 % (4 s).",
   },
   'Whispers of Sirens': {
-    desc: "Arme signature de Cantarella. Rectificateur murmurant des chants de sirène de ruine. ATQ avec DGT d'Attaque Basique déclenchés par la Compétence d'Écho et Ignore RÉS Havoc.",
+    name: "Murmures des Sirènes",    desc: "Arme signature de Cantarella. Rectificateur murmurant des chants de sirène de ruine. ATQ avec DGT d'Attaque Basique déclenchés par la Compétence d'Écho et Ignore RÉS Havoc.",
     passive: "Depuis les Profondeurs : ATQ +12 %. Compétence d'Écho dans les 10 s suivant la Compétence d'Intro/Attaque Basique → cumul de Doux Rêve (max x2, déclenchement 1x/10 s). À 1 cumul : DGT d'Attaque Basique personnels +40 %. À 2 cumuls : ignore 12 % de RÉS Havoc.",
   },
   'Blazing Justice': {
@@ -213,11 +213,11 @@ export const WEAPON_DATA_FR = {
     passive: "ATQ +12 %. Compétence d'Intro/d'Écho → Amplification DGT de Compétence d'Écho +32 % pendant 15 s. Compétence d'Écho → Ignore DÉF Aero +10 %.",
   },
   'Discord': {
-    desc: "Adagio descendant, le rideau ne tombe jamais. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
+    name: "Discorde",    desc: "Adagio descendant, le rideau ne tombe jamais. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
     passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
   },
   'Variation': {
-    desc: "Adagio descendant, changeant l'air de la bataille. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
+    name: "Variation fantastique",    desc: "Adagio descendant, changeant l'air de la bataille. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
     passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
   },
   'Marcato': {
@@ -225,15 +225,15 @@ export const WEAPON_DATA_FR = {
     passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
   },
   'Lunar Cutter': {
-    desc: "Épée née de la lumière d'une étoile étrangère. Gagne des cumuls d'ATQ à l'entrée sur le terrain.",
+    name: "Tailleur lunaire",    desc: "Épée née de la lumière d'une étoile étrangère. Gagne des cumuls d'ATQ à l'entrée sur le terrain.",
     passive: "Entrée sur le terrain → 6 cumuls de Serment, chacun +2 % ATQ (max 6 cumuls/+12 %). Perd 1 cumul toutes les 2 s. Sur élimination : regagne 6 cumuls. Recharge de 12 s sur le déclenchement à l'entrée.",
   },
   'Thunderbolt': {
-    desc: "Pistolets cérémoniels de Huanglong, résilients et endurants. DGT de Compétence cumulables sur coups d'Attaque Basique/Lourde.",
+    name: "Tonnerre",    desc: "Pistolets cérémoniels de Huanglong, résilients et endurants. DGT de Compétence cumulables sur coups d'Attaque Basique/Lourde.",
     passive: "Coup d'Attaque Basique/Lourde → DGT de Compétence de Résonance +7 % par cumul (max x3, 10 s par cumul, intervalle de déclenchement 1 s).",
   },
   'Overture': {
-    desc: "Crescendo ascendant, un glorieux prélude tranchant. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
+    name: "Le Fendeur",    desc: "Crescendo ascendant, un glorieux prélude tranchant. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
     passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
   },
   'Cadenza': {
@@ -245,75 +245,75 @@ export const WEAPON_DATA_FR = {
     passive: "DGT sur des ennemis en Spectro Frazzle → +6 % DGT Spectro par 1 s (max x4, 6 s).",
   },
   'Waltz in Masquerade': {
-    desc: "Danses tourbillonnantes dissimulant des secrets chuchotés. ATQ cumulable sur les coups en État Négatif.",
+    name: "Valse en Masque",    desc: "Danses tourbillonnantes dissimulant des secrets chuchotés. ATQ cumulable sur les coups en État Négatif.",
     passive: "DGT sur des ennemis en État Négatif → ATQ +4 % (max x4, 10 s).",
   },
   'Legend of Drunken Hero': {
-    desc: "Le vin donne du courage mais émousse les sens. ATQ cumulable sur les coups en État Négatif.",
+    name: "Légende du Héros Ivre",    desc: "Le vin donne du courage mais émousse les sens. ATQ cumulable sur les coups en État Négatif.",
     passive: "DGT sur des ennemis en État Négatif → ATQ +4 % (max x4, 10 s).",
   },
   'Romance in Farewell': {
-    desc: "Pistolets gravés d'une promesse d'adieu et d'un chagrin persistant. ATQ cumulable sur les coups en État Négatif.",
+    name: "Amour en Adieu",    desc: "Pistolets gravés d'une promesse d'adieu et d'un chagrin persistant. ATQ cumulable sur les coups en État Négatif.",
     passive: "DGT sur des ennemis en État Négatif → ATQ +4 % (max x4, 10 s).",
   },
   'Fables of Wisdom': {
-    desc: "Épée gravée de fables spirituelles cachant la vérité. ATQ cumulable sur les coups en État Négatif.",
+    name: "Fables de Sagesse",    desc: "Épée gravée de fables spirituelles cachant la vérité. ATQ cumulable sur les coups en État Négatif.",
     passive: "DGT sur des ennemis en État Négatif → ATQ +4 % (max x4, 10 s).",
   },
   'Meditations on Mercy': {
-    desc: "Sabre d'un guerrier déchiré entre punition et pitié. ATQ cumulable sur les coups en État Négatif.",
+    name: "Méditations sur la Grâce",    desc: "Sabre d'un guerrier déchiré entre punition et pitié. ATQ cumulable sur les coups en État Négatif.",
     passive: "DGT sur des ennemis en État Négatif → ATQ +4 % (max x4, 10 s).",
   },
   'Call of the Abyss': {
-    desc: "Sceptre d'une domination perdue et d'une grandeur fanée. Boost de Bonus de Soins après la Libération.",
+    name: "Appel du Vide",    desc: "Sceptre d'une domination perdue et d'une grandeur fanée. Boost de Bonus de Soins après la Libération.",
     passive: "Libération → Bonus de Soins +16 % pendant 15 s.",
   },
   'Somnoire Anchor': {
-    desc: "Ancre du Gardien des Rêves venue des rivages du crépuscule. Buff d'ATQ cumulable en infligeant des DGT.",
+    name: "Ancre de Somnoire",    desc: "Ancre du Gardien des Rêves venue des rivages du crépuscule. Buff d'ATQ cumulable en infligeant des DGT.",
     passive: "Infliger des DGT → 1 cumul de Sifflement par 1 s, chacun +2 % ATQ (max x10, 3 s/cumul). Sortir du terrain efface tout. À 10 cumuls : Taux Critique +6 %.",
   },
   'Fusion Accretion': {
-    desc: "Prototype des Rives Noires canalisant le rayonnement d'un blazar. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
+    name: "Accrétion de fusion",    desc: "Prototype des Rives Noires canalisant le rayonnement d'un blazar. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
     passive: "Compétence de Résonance → +6 Énergie de Résonance, ATQ +10 % pendant 16 s (recharge 20 s).",
   },
   'Celestial Spiral': {
-    desc: "Rayonnement galactique en spirale vers une fin tragique. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
+    name: "Spirale céleste",    desc: "Rayonnement galactique en spirale vers une fin tragique. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
     passive: "Compétence de Résonance → +6 Énergie de Résonance, ATQ +10 % pendant 16 s (recharge 20 s).",
   },
   'Relativistic Jet': {
-    desc: "La course incessante d'un blazar vers la destruction cosmique. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
+    name: "Jets relativistes",    desc: "La course incessante d'un blazar vers la destruction cosmique. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
     passive: "Compétence de Résonance → +6 Énergie de Résonance, ATQ +10 % pendant 16 s (recharge 20 s).",
   },
   'Endless Collapse': {
-    desc: "Le cœur effondré d'un blazar mourant. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
+    name: "Effondrement éternel",    desc: "Le cœur effondré d'un blazar mourant. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
     passive: "Compétence de Résonance → +6 Énergie de Résonance, ATQ +10 % pendant 16 s (recharge 20 s).",
   },
   'Waning Redshift': {
-    desc: "Le rayonnement déclinant d'un blazar à travers des milliards d'années-lumière. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
+    name: "Spectre en déclin",    desc: "Le rayonnement déclinant d'un blazar à travers des milliards d'années-lumière. La Compétence confère de l'Énergie de Résonance et un buff d'ATQ.",
     passive: "Compétence de Résonance → +6 Énergie de Résonance, ATQ +10 % pendant 16 s (recharge 20 s).",
   },
   'Lumingloss': {
-    desc: "Épée lumineuse au tranchant cérémoniel brillant. Boost de DGT d'Attaque Basique et Lourde après la Compétence.",
+    name: "Lumineux",    desc: "Épée lumineuse au tranchant cérémoniel brillant. Boost de DGT d'Attaque Basique et Lourde après la Compétence.",
     passive: "Compétence de Résonance → DGT d'Attaque Basique et Lourde +20 % pendant 10 s (1 cumul max, intervalle de déclenchement 1 s).",
   },
   'Commando of Conviction': {
-    desc: "Les esprits s'unissent dans des gorges retentissantes de bravoure. Boost d'ATQ sur la Compétence d'Intro.",
+    name: "Commando de la Conviction",    desc: "Les esprits s'unissent dans des gorges retentissantes de bravoure. Boost d'ATQ sur la Compétence d'Intro.",
     passive: "Compétence d'Intro → ATQ +15 % pendant 15 s.",
   },
   'Jinzhou Keeper': {
-    desc: "Regard vigilant tourné vers le nord, où la pluie voile la cité. Boost d'ATQ et de PV sur la Compétence d'Intro.",
+    name: "Gardien de Jinzhou",    desc: "Regard vigilant tourné vers le nord, où la pluie voile la cité. Boost d'ATQ et de PV sur la Compétence d'Intro.",
     passive: "Compétence d'Intro → ATQ +8 %, PV +10 % pendant 15 s.",
   },
   'Comet Flare': {
-    desc: "Lumière stellaire étrangère forgée délicate et réactive. Bonus de Soins cumulable sur les coups d'Attaque Basique/Lourde.",
+    name: "Comète éclatant",    desc: "Lumière stellaire étrangère forgée délicate et réactive. Bonus de Soins cumulable sur les coups d'Attaque Basique/Lourde.",
     passive: "Coup d'Attaque Basique/Lourde → Bonus de Soins +3 % (max x3, 8 s).",
   },
   'Augment': {
-    desc: "Ginkgo doré de la résilience de Huanglong. Boost d'ATQ après l'usage de la Libération.",
+    name: "Dévoisant",    desc: "Ginkgo doré de la résilience de Huanglong. Boost d'ATQ après l'usage de la Libération.",
     passive: "Libération → ATQ +15 % pendant 15 s.",
   },
   'Hollow Mirage': {
-    desc: "Lumière creuse d'une étrange étoile dissimulant une force immense. Cumuls d'Armure de Fer sur la Libération.",
+    name: "Mirage creux",    desc: "Lumière creuse d'une étrange étoile dissimulant une force immense. Cumuls d'Armure de Fer sur la Libération.",
     passive: "Libération → 3 cumuls d'Armure de Fer, chacun +3 % ATQ et +3 % DÉF (max 3 cumuls, sans durée ; perd 1 cumul en subissant des DGT).",
   },
   'Stonard': {
@@ -325,11 +325,11 @@ export const WEAPON_DATA_FR = {
     passive: "Compétence d'Intro → DGT de Libération +20 % pendant 15 s.",
   },
   'Novaburst': {
-    desc: "Pistolets qui explosent d'une force semblable à une nova. Boost d'ATQ cumulable au dash/à l'esquive.",
+    name: "Éclat de Nova",    desc: "Pistolets qui explosent d'une force semblable à une nova. Boost d'ATQ cumulable au dash/à l'esquive.",
     passive: "Dash/esquive → ATQ +4 % (max x3, 8 s).",
   },
   'Undying Flame': {
-    desc: "Pistolets brûlant d'une flamme immortelle. Boost de DGT de Compétence sur la Compétence d'Intro.",
+    name: "Flamme divine",    desc: "Pistolets brûlant d'une flamme immortelle. Boost de DGT de Compétence sur la Compétence d'Intro.",
     passive: "Compétence d'Intro → DGT de Compétence de Résonance +20 % pendant 15 s.",
   },
   'Helios Cleaver': {
@@ -337,7 +337,7 @@ export const WEAPON_DATA_FR = {
     passive: "Après la Compétence de Résonance → ATQ +3 % toutes les 2 s (max x4, 12 s).",
   },
   'Dauntless Evernight': {
-    desc: "Sabre qui tranche à travers la plus longue des nuits. Boost d'ATQ et de DÉF sur la Compétence d'Intro.",
+    name: "Intrépide éternel",    desc: "Sabre qui tranche à travers la plus longue des nuits. Boost d'ATQ et de DÉF sur la Compétence d'Intro.",
     passive: "Compétence d'Intro → ATQ +8 %, DÉF +15 % pendant 15 s.",
   },
   'Autumntrace': {
@@ -353,23 +353,23 @@ export const WEAPON_DATA_FR = {
     passive: "Libération → ATQ +7,2 %, DGT de Libération +10,8 % pendant 15 s.",
   },
   'Broadblade#41': {
-    desc: "Sabre fabricable. Boost d'ATQ et de soin selon que les PV sont hauts ou bas.",
+    name: "Épée #41",    desc: "Sabre fabricable. Boost d'ATQ et de soin selon que les PV sont hauts ou bas.",
     passive: "PV >80 % → ATQ +12 %. PV <40 % → soigne 5 % à l'ATQ.",
   },
   'Sword#18': {
-    desc: "Épée de série améliorée fabriquée à Huanglong. Conçue pour les guerriers aguerris.",
+    name: "Épée #18",    desc: "Épée de série améliorée fabriquée à Huanglong. Conçue pour les guerriers aguerris.",
     passive: "Aube : PV <40 % → DGT d'Attaque Lourde +18 %, soigne 5 % des PV au coup d'Attaque Lourde (recharge 8 s).",
   },
   'Gauntlets#21D': {
-    desc: "Gantelets fabricables. Conception axée sur la contre-attaque avec soutien adaptatif.",
+    name: "Gantelets #21D",    desc: "Gantelets fabricables. Conception axée sur la contre-attaque avec soutien adaptatif.",
     passive: "Maître à Penser : Dash/esquive → ATQ +8 %, DGT de Contre d'Esquive +50 % pendant 8 s, soigne 5 % des PV sur une Contre (recharge 6 s).",
   },
   'Rectifier#25': {
-    desc: "Rectificateur fabricable. Soutien adaptatif avec soin conditionnel ou buff d'ATQ.",
+    name: "Amplificateur #25",    desc: "Rectificateur fabricable. Soutien adaptatif avec soin conditionnel ou buff d'ATQ.",
     passive: "Porteur d'Aube : Compétence → PV <60 % : soigne 5 % des PV (recharge 8 s) ; PV ≥60 % : ATQ +12 % pendant 10 s.",
   },
   'Pistols#26': {
-    desc: "Pistolets fabricables. Buff d'ATQ cumulable en évitant les dégâts.",
+    name: "Pistolets #26",    desc: "Pistolets fabricables. Buff d'ATQ cumulable en évitant les dégâts.",
     passive: "Omniscient : Aucun DGT subi → ATQ +6 % toutes les 5 s (max 2 cumuls, 8 s). Subir des DGT : perd 1 cumul, soigne 5 % des PV.",
   },
   'Aureate Zenith': {
@@ -385,63 +385,63 @@ export const WEAPON_DATA_FR = {
     passive: "Serment des Chasseurs de Marée : Après la Compétence → ATQ +9 %, DGT d'Attaque Basique +9 % pendant 10 s.",
   },
   'Guardian Sword': {
-    desc: "Épée fabricable forgée à Jinzhou. Renforce l'efficacité de la Compétence de Résonance.",
+    name: "Épée du Gardien",    desc: "Épée fabricable forgée à Jinzhou. Renforce l'efficacité de la Compétence de Résonance.",
     passive: "Unifié : DGT de Compétence de Résonance +12 %.",
   },
   'Guardian Pistols': {
-    desc: "Pistolets fabricables forgés à Jinzhou. Renforce l'efficacité de la Compétence de Résonance.",
+    name: "Pistolets du Gardien",    desc: "Pistolets fabricables forgés à Jinzhou. Renforce l'efficacité de la Compétence de Résonance.",
     passive: "Unité : DGT de Compétence de Résonance +12 %.",
   },
   'Guardian Gauntlets': {
-    desc: "Gantelets fabricables forgés à Jinzhou. Renforce l'efficacité de la Libération.",
+    name: "Gantelets du Gardien",    desc: "Gantelets fabricables forgés à Jinzhou. Renforce l'efficacité de la Libération.",
     passive: "Force Collective : DGT de Libération de Résonance +12 %.",
   },
   'Guardian Rectifier': {
-    desc: "Rectificateur fabricable forgé à Jinzhou. Renforce l'Attaque Basique et l'Attaque Lourde.",
+    name: "Amplificateur du Gardien",    desc: "Rectificateur fabricable forgé à Jinzhou. Renforce l'Attaque Basique et l'Attaque Lourde.",
     passive: "Camaraderie : DGT d'Attaque Basique et Lourde +12 %.",
   },
   'Guardian Broadblade': {
-    desc: "Sabre fabricable forgé à Jinzhou. Renforce l'efficacité de l'Attaque Basique et de l'Attaque Lourde.",
+    name: "Sabre du Gardien",    desc: "Sabre fabricable forgé à Jinzhou. Renforce l'efficacité de l'Attaque Basique et de l'Attaque Lourde.",
     passive: "Consensus : DGT d'Attaque Basique et Lourde +12 %.",
   },
   'Sword of Voyager': {
-    desc: "Épée de voyage conçue pour l'aventure prolongée. Restaure de l'énergie à l'usage de la Compétence.",
+    name: "Épée du Voyageur",    desc: "Épée de voyage conçue pour l'aventure prolongée. Restaure de l'énergie à l'usage de la Compétence.",
     passive: "Croisade : Compétence de Résonance → restaure 8 Énergie de Résonance (recharge 20 s).",
   },
   'Pistols of Voyager': {
-    desc: "Pistolets de voyage conçus pour l'aventure prolongée. Restaurent de l'énergie à l'usage de la Compétence.",
+    name: "Pistolets du Voyageur",    desc: "Pistolets de voyage conçus pour l'aventure prolongée. Restaurent de l'énergie à l'usage de la Compétence.",
     passive: "Long Voyage : Compétence de Résonance → restaure 8 Énergie de Résonance (recharge 20 s).",
   },
   'Gauntlets of Voyager': {
-    desc: "Gantelets de voyage conçus pour l'aventure prolongée. Restaurent de l'énergie à l'usage de la Compétence.",
+    name: "Gantelets du Voyageur",    desc: "Gantelets de voyage conçus pour l'aventure prolongée. Restaurent de l'énergie à l'usage de la Compétence.",
     passive: "Croisade : Compétence de Résonance → restaure 8 Énergie de Résonance (recharge 20 s).",
   },
   'Rectifier of Voyager': {
-    desc: "Rectificateur de voyage conçu pour l'aventure prolongée. Restaure de l'énergie à l'usage de la Compétence.",
+    name: "Amplificateur du Voyageur",    desc: "Rectificateur de voyage conçu pour l'aventure prolongée. Restaure de l'énergie à l'usage de la Compétence.",
     passive: "Croisade : Compétence de Résonance → restaure 8 Énergie de Résonance (recharge 20 s).",
   },
   'Broadblade of Voyager': {
-    desc: "Sabre de voyage conçu pour l'aventure prolongée. Restaure de l'énergie à l'usage de la Compétence.",
+    name: "Sabre du Voyageur",    desc: "Sabre de voyage conçu pour l'aventure prolongée. Restaure de l'énergie à l'usage de la Compétence.",
     passive: "Long Voyage : Compétence de Résonance → restaure 8 Énergie de Résonance (recharge 20 s).",
   },
   'Sword of Night': {
-    desc: "Épée forgée à minuit. Renforce le porteur à l'entrée sur le terrain.",
+    name: "Épée de Nuit",    desc: "Épée forgée à minuit. Renforce le porteur à l'entrée sur le terrain.",
     passive: "Vaillance : Compétence d'Intro → ATQ +8 % pendant 10 s.",
   },
   'Pistols of Night': {
-    desc: "Pistolets forgés à minuit. Renforcent le porteur à l'entrée sur le terrain.",
+    name: "Pistolets de Nuit",    desc: "Pistolets forgés à minuit. Renforcent le porteur à l'entrée sur le terrain.",
     passive: "Vaillance : Compétence d'Intro → ATQ +8 % pendant 10 s.",
   },
   'Gauntlets of Night': {
-    desc: "Gantelets forgés à minuit. Renforcent le porteur à l'entrée sur le terrain.",
+    name: "Gantelets de Nuit",    desc: "Gantelets forgés à minuit. Renforcent le porteur à l'entrée sur le terrain.",
     passive: "Vaillance : Compétence d'Intro → ATQ +8 % pendant 10 s.",
   },
   'Rectifier of Night': {
-    desc: "Rectificateur forgé à minuit. Renforce le porteur à l'entrée sur le terrain.",
+    name: "Amplificateur de Nuit",    desc: "Rectificateur forgé à minuit. Renforce le porteur à l'entrée sur le terrain.",
     passive: "Vaillance : Compétence d'Intro → ATQ +8 % pendant 10 s.",
   },
   'Broadblade of Night': {
-    desc: "Sabre forgé à minuit. Renforce le porteur à l'entrée sur le terrain.",
+    name: "Sabre de nuit",    desc: "Sabre forgé à minuit. Renforce le porteur à l'entrée sur le terrain.",
     passive: "Vaillance : Compétence d'Intro → ATQ +8 % pendant 10 s.",
   },
   'Originite: Type I': {
@@ -465,47 +465,47 @@ export const WEAPON_DATA_FR = {
     passive: "Augmenter : Compétence d'Intro → soigne 5 % des PV Max (recharge 20 s).",
   },
   'Beguiling Melody': {
-    desc: "Forgée à partir de l'écaille de Jué. Ressemble plus à un instrument de musique qu'à une arme.",
+    name: "Voix céleste",    desc: "Forgée à partir de l'écaille de Jué. Ressemble plus à un instrument de musique qu'à une arme.",
     passive: "Toucher Gracieux : Compétence d'Intro → restaure 4 Énergie de Concerto ; Compétence d'Outro → restaure 4 Énergie de Résonance.",
   },
   'Tyro Sword': {
-    desc: "La naissance de marées révolutionnaires. Une épée conçue pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
+    name: "Sabre Tyro",    desc: "La naissance de marées révolutionnaires. Une épée conçue pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
     passive: "Prologue : ATQ +5 %.",
   },
   'Tyro Rectifier': {
-    desc: "L'origine de la genèse universelle. Un Rectificateur conçu pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
+    name: "Amplificateur Tyro",    desc: "L'origine de la genèse universelle. Un Rectificateur conçu pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
     passive: "Prologue : ATQ +5 %.",
   },
   'Tyro Gauntlets': {
-    desc: "L'aube d'une entreprise durable. Une paire de gantelets conçus pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
+    name: "Gantelets Tyro",    desc: "L'aube d'une entreprise durable. Une paire de gantelets conçus pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
     passive: "Prologue : ATQ +5 %.",
   },
   'Tyro Pistols': {
-    desc: "L'origine d'une aventure vaillante. Une paire de pistolets conçus pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
+    name: "Pistolets Tyro",    desc: "L'origine d'une aventure vaillante. Une paire de pistolets conçus pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
     passive: "Prologue : ATQ +5 %.",
   },
   'Tyro Broadblade': {
-    desc: "Le début d'une quête vers l'excellence. Un sabre conçu pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
+    name: "Epée Tyro",    desc: "Le début d'une quête vers l'excellence. Un sabre conçu pour les Résonateurs novices. Recèle une puissance à ne pas sous-estimer sous son apparence simple.",
     passive: "Prologue : ATQ +5 %.",
   },
   'Training Sword': {
-    desc: "Cette épée est conçue spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
+    name: "Sabre Novice",    desc: "Cette épée est conçue spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
     passive: "Persévérer : ATQ +4 %.",
   },
   'Training Rectifier': {
-    desc: "Ce rectificateur est conçu spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
+    name: "Amplificateur Novice",    desc: "Ce rectificateur est conçu spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
     passive: "Persévérer : ATQ +4 %.",
   },
   'Training Gauntlets': {
-    desc: "Ces gantelets sont conçus spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
+    name: "Gantelets Novices",    desc: "Ces gantelets sont conçus spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
     passive: "Persévérer : ATQ +4 %.",
   },
   'Training Pistols': {
-    desc: "Ces pistolets sont conçus spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
+    name: "Pistolets Novices",    desc: "Ces pistolets sont conçus spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
     passive: "Persévérer : ATQ +4 %.",
   },
   'Training Broadblade': {
-    desc: "Ce sabre est conçu spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
+    name: "Epée Novice",    desc: "Ce sabre est conçu spécifiquement pour l'entraînement et l'enseignement, n'offrant que les fonctions de base.",
     passive: "Persévérer : ATQ +4 %.",
   },
 };

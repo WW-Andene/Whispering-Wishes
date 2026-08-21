@@ -37,7 +37,8 @@ function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
 }
 
 // Internal: CollectionGridCard
-const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess, onLongPress, isCharacter, isFullAnim }) => {
+const CollectionGridCard = memo(({ name, label, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess, onLongPress, isCharacter, isFullAnim }) => {
+  const displayLabel = label || name;
   // Pixel-level background removal for echo images (skip if pre-processed)
   const processedUrl = imgUrl;
   const [spineFailed, setSpineFailed] = useState(false);
@@ -67,7 +68,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
     type="button"
     className={cardClassName}
     style={{ height: 'var(--height-card-sm)', contain: 'paint', textAlign: 'center', ...(isProfilePic && !isSelected ? { borderColor: 'rgba(251,146,60,0.7)', boxShadow: '0 0 16px rgba(251,146,60,0.25), inset 0 0 12px rgba(251,146,60,0.06)' } : {}) }}
-    aria-label={`${name}${owned ? `${t('collection.grid.ownedSuffix')}${count > 1 ? ` ×${count}` : ''}` : t('collection.grid.notOwnedLabel')}${isProfilePic ? t('collection.grid.currentProfilePic') : ''}${isNew ? t('collection.grid.newLabel') : ''}`}
+    aria-label={`${displayLabel}${owned ? `${t('collection.grid.ownedSuffix')}${count > 1 ? ` ×${count}` : ''}` : t('collection.grid.notOwnedLabel')}${isProfilePic ? t('collection.grid.currentProfilePic') : ''}${isNew ? t('collection.grid.newLabel') : ''}`}
     {...longPressHandlers}
   >
     {/* P15-FIX: NIT-4 — Skeleton placeholder while image loads, prevents layout shift */}
@@ -97,7 +98,7 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
         ) : (
           <img
             src={processedUrl || imgUrl}
-            alt={name}
+            alt={displayLabel}
             className={`w-full h-full ${isCharacter ? 'object-contain' : 'object-cover'} pointer-events-none`}
             style={{
               transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
@@ -141,12 +142,12 @@ const CollectionGridCard = memo(({ name, count, imgUrl, framing, isSelected, own
       ) : (
         <div className="text-gray-500 font-bold text-2xl">—</div>
       )}
-      <div className={`text-sm truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{name}</div>
+      <div className={`text-sm truncate ${owned ? 'text-gray-200' : 'text-gray-400'}`}>{displayLabel}</div>
     </div>
   </button>
   );
 }, (prev, next) =>
-  prev.name === next.name && prev.count === next.count && prev.imgUrl === next.imgUrl &&
+  prev.name === next.name && prev.label === next.label && prev.count === next.count && prev.imgUrl === next.imgUrl &&
   prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
   prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
   prev.isProfilePic === next.isProfilePic && prev.isFullAnim === next.isFullAnim &&
@@ -185,7 +186,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
             : activeBanners.weapons?.some(w => w.name === name && w.isNew);
           return (
             <CollectionGridCard
-              key={name} name={name} count={count}
+              key={name} name={name} label={dataLookup[name]?.displayName || name} count={count}
               imgUrl={withCacheBuster(imgUrl)} framing={getImageFraming(imageKey)}
               isSelected={framingMode && editingImage === imageKey}
               owned={count > 0} collMask={collMask} collOpacity={collOpacity}

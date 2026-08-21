@@ -21,14 +21,14 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { generateUniqueId, getElementColor, getElementShape } from '../../utils/helpers.js';
 import { CHARACTER_DATA, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { WEAPON_DATA } from '../../data/weapons.js';
+import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { AstriteCalendar } from './AstriteCalendar.jsx';
-import { t, formatNumber, formatDate } from '../../utils/i18n.js';
+import { t, formatNumber, formatDate, getLocale } from '../../utils/i18n.js';
 
 
 // Computes the full material/shell/EXP-potion requirement for one Ascension Planner target.
@@ -584,8 +584,10 @@ function PlannerTab({
               const charPotionList = Object.entries(charPotions);
               const hasAnyToggle = ftg.ascension || ftg.skills || ftg.weapon;
               const weaponType = d.weapon;
+              const localizedWeaponData = ftg.weapon ? getLocalizedWeaponData(getLocale()) : null;
               const weaponOptions = ftg.weapon
-                ? Object.entries(WEAPON_DATA).filter(([, w]) => w.type === weaponType && (w.rarity === 5 || w.rarity === 4)).map(([name]) => name)
+                ? Object.entries(WEAPON_DATA).filter(([, w]) => w.type === weaponType && (w.rarity === 5 || w.rarity === 4))
+                    .map(([name]) => ({ name, label: localizedWeaponData[name]?.displayName || name }))
                 : [];
 
               return (
@@ -619,7 +621,7 @@ function PlannerTab({
                     <KuroSelect
                       value={ftg.weaponName || d.bestWeapon || ''}
                       onChange={weaponName => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, weaponName } : x))}
-                      options={weaponOptions.map(name => ({ value: name, label: name }))}
+                      options={weaponOptions.map(({ name, label }) => ({ value: name, label }))}
                       className="w-full"
                       ariaLabel={t('planner.chooseWeaponAria', { name: ftg.name })}
                       small

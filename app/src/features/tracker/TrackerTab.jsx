@@ -14,7 +14,8 @@ import { StandardBannerSection } from './StandardBannerSection.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
-import { t, formatDate } from '../../utils/i18n.js';
+import { t, formatDate, getLocale } from '../../utils/i18n.js';
+import { getLocalizedWeaponData } from '../../data/weapons.js';
 
 const FOCUS_DELAY_MS = 0;
 const TRACKER_CATEGORIES = Object.freeze([
@@ -61,6 +62,9 @@ function TrackerTab({
   const [pullHistoryBannerFilter, setPullHistoryBannerFilter] = useState('all');
   const [pullHistoryRarityFilter, setPullHistoryRarityFilter] = useState('all');
   const [dismissedImport, setDismissedImport] = useState(false);
+  // Localized weapon names for the Pull History list — pull.name is always the internal English
+  // key (character or weapon), but weapon names should display translated in French.
+  const localizedWeaponData = getLocalizedWeaponData(getLocale());
 
   // Merge all pull histories from all banners
   const allPulls = useMemo(() => {
@@ -241,6 +245,7 @@ function TrackerTab({
                           const w = b.weapons[idx];
                           const cImg = c ? collectionImages[c] : null;
                           const wImg = w ? collectionImages[w] : null;
+                          const wLabel = w ? (localizedWeaponData[w]?.displayName || w) : null;
                           return (
                             <div key={idx} className="flex items-center gap-4">
                               {c ? (
@@ -259,12 +264,12 @@ function TrackerTab({
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
                                     {wImg ? (
-                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
+                                      <img src={wImg} alt={wLabel} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
                                     )}
                                   </div>
-                                  <span className="text-sm text-pink-400 font-medium truncate">{w}</span>
+                                  <span className="text-sm text-pink-400 font-medium truncate">{wLabel}</span>
                                 </div>
                               ) : <div className="flex-1" />}
                             </div>
@@ -355,6 +360,7 @@ function TrackerTab({
                       const cIdx = banner.characters.indexOf(character);
                       const w = banner.weapons[cIdx];
                       const wImg = w ? collectionImages[w] : null;
+                      const wLabel = w ? (localizedWeaponData[w]?.displayName || w) : null;
                       // Use this character's own splash art, not the phase's shared bannerArt
                       // (which is only the first-listed character's art — showing it for every
                       // co-featured character in the phase is wrong).
@@ -382,12 +388,12 @@ function TrackerTab({
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
                                     {wImg ? (
-                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
+                                      <img src={wImg} alt={wLabel} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
                                     )}
                                   </div>
-                                  <span className="text-sm text-pink-400 font-medium truncate">{w}</span>
+                                  <span className="text-sm text-pink-400 font-medium truncate">{wLabel}</span>
                                 </div>
                               ) : <div className="flex-1" />}
                             </div>
@@ -441,6 +447,7 @@ function TrackerTab({
                           const w = b.weapons[idx];
                           const cImg = c ? collectionImages[c] : null;
                           const wImg = w ? collectionImages[w] : null;
+                          const wLabel = w ? (localizedWeaponData[w]?.displayName || w) : null;
                           return (
                             <div key={idx} className="flex items-center gap-4">
                               {c ? (
@@ -459,12 +466,12 @@ function TrackerTab({
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
                                     {wImg ? (
-                                      <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
+                                      <img src={wImg} alt={wLabel} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
                                       <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
                                     )}
                                   </div>
-                                  <span className="text-sm text-pink-400 font-medium truncate">{w}</span>
+                                  <span className="text-sm text-pink-400 font-medium truncate">{wLabel}</span>
                                 </div>
                               ) : <div className="flex-1" />}
                             </div>
@@ -548,7 +555,7 @@ function TrackerTab({
                         <div key={`pull-${idx}`} className={`flex items-center gap-3 px-3 py-2 rounded-lg border ${rarityBg} transition-colors`}>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className={`text-base font-semibold truncate ${rarityColor}`}>{pull.name || t('tracker.unknown')}</span>
+                              <span className={`text-base font-semibold truncate ${rarityColor}`}>{localizedWeaponData[pull.name]?.displayName || pull.name || t('tracker.unknown')}</span>
                               <span className={`text-sm ${rarityColor} opacity-70`}>{stars}</span>
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">

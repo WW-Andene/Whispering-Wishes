@@ -553,11 +553,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             <div className="flex items-center gap-3">
               {weaponImg && (
                 <div className={`w-14 h-14 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${hasWeapon && weaponData?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative', filter: hasWeapon ? 'none' : 'grayscale(100%)' }}>
-                  <img src={weaponImg} alt={data.bestWeapon} className="w-full h-full object-cover" onError={hideOnError} />
+                  <img src={weaponImg} alt={weaponData?.displayName || data.bestWeapon} className="w-full h-full object-cover" onError={hideOnError} />
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <div className={`text-xl font-bold ${hasWeapon ? 'text-yellow-400' : 'text-gray-500'}`}>{data.bestWeapon}</div>
+                <div className={`text-xl font-bold ${hasWeapon ? 'text-yellow-400' : 'text-gray-500'}`}>{weaponData?.displayName || data.bestWeapon}</div>
                 {weaponData && (
                   <>
                     <div className="text-gray-400 text-sm mt-0.5">{weaponData.type} • {weaponData.baseAtk ? t('modals.characterDetail.baseAtkValue', { value: weaponData.baseAtk }) : ''}{weaponData.baseAtk && weaponData.stat ? ' • ' : ''}{weaponData.stat}{weaponData.subStatValue ? ` ${weaponData.subStatValue}` : ''}</div>
@@ -583,14 +583,15 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   <div className="text-sm text-gray-500 mb-1.5">{tier}</div>
                   <div className="space-y-1.5">
                     {list.map((w, i) => {
-                      const wd = WEAPON_DATA[w];
+                      const wd = getLocalizedWeaponData(getLocale())[w] || WEAPON_DATA[w];
                       const wImg = DEFAULT_COLLECTION_IMAGES[w];
                       const owned = ownsWeapon(w);
+                      const wLabel = wd?.displayName || w;
                       return (
                         <div key={i} className={`flex items-center gap-2.5 p-1.5 rounded-lg ${owned ? 'bg-white/[0.03]' : 'bg-white/[0.015]'}`} style={!owned ? { opacity: 0.55 } : undefined}>
                           {wImg ? (
                             <div className={`w-10 h-10 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${owned && wd?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
-                              <img src={wImg} alt={w} className="w-full h-full object-cover" onError={hideOnError} />
+                              <img src={wImg} alt={wLabel} className="w-full h-full object-cover" onError={hideOnError} />
                             </div>
                           ) : (
                             <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center flex-shrink-0">
@@ -598,7 +599,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                             </div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <div className={`text-sm font-semibold truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{w}{!owned && ` (${t('modals.characterDetail.notOwned')})`}</div>
+                            <div className={`text-sm font-semibold truncate ${owned ? 'text-gray-200' : 'text-gray-500'}`}>{wLabel}{!owned && ` (${t('modals.characterDetail.notOwned')})`}</div>
                             {wd && <div className="text-xs text-gray-500 truncate">{wd.type} • {wd.stat}{wd.subStatValue ? ` ${wd.subStatValue}` : ''}</div>}
                           </div>
                         </div>
