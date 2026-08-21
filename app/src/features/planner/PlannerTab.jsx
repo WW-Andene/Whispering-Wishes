@@ -633,6 +633,22 @@ function PlannerTab({
                         <span className="text-yellow-400 text-sm font-medium">{t('planner.shellCredit')}</span>
                         <span className="text-yellow-400 font-bold text-sm kuro-number">{formatNumber(charShell)}</span>
                       </div>
+                      {charPotionList.length > 0 && (
+                        <div className="grid grid-cols-2 gap-1">
+                          {charPotionList.map(([name, qty]) => {
+                            const img = MATERIAL_IMAGES?.[name];
+                            return (
+                              <div key={name} className="flex items-center gap-1.5 p-1.5 rounded" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
+                                {img && <img src={img} alt="" className="w-5 h-5 rounded flex-shrink-0" onError={hideOnError} />}
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-xs font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
+                                </div>
+                                <span className="text-cyan-400 font-bold kuro-number text-xs flex-shrink-0">×{formatNumber(qty)}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                       <div className="grid grid-cols-2 gap-1">
                         {charMatList.map(([name, { qty, img }]) => (
                           <div key={name} className="flex items-center gap-1.5 p-1.5 rounded" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
@@ -650,8 +666,12 @@ function PlannerTab({
               );
             })}
 
-            {/* Combined total summary */}
-            {farmTargetsState.length > 1 && (() => {
+            {/* Combined materials-owned tracker. Triggers for any non-empty target list (not just
+                length > 1) — a single-character plan needs "already own" tracking just as much as a
+                multi-character one; only the shell/potion summary blocks are skipped for a single
+                target since the per-character card above already shows those, and repeating them
+                here would just be a duplicate. */}
+            {farmTargetsState.length > 0 && (() => {
               const mats = {};
               const potions = {};
               let totalShell = 0;
@@ -666,18 +686,22 @@ function PlannerTab({
                   potions[name] = (potions[name] || 0) + qty;
                 }
               });
+              if (Object.keys(mats).length === 0) return null;
               const matList = Object.entries(mats).sort((a, b) => b[1].qty - a[1].qty);
               const potionList = Object.entries(potions);
+              const isMulti = farmTargetsState.length > 1;
               return (
                 <>
-                  <div className="kuro-label mt-2">{t('planner.combinedTotal', { count: farmTargetsState.length })}</div>
-                  <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-yellow-400 text-base font-medium">{t('planner.shellCredit')}</span>
-                      <span className="text-yellow-400 font-bold text-lg kuro-number">{formatNumber(totalShell)}</span>
+                  <div className="kuro-label mt-2">{isMulti ? t('planner.combinedTotal', { count: farmTargetsState.length, plural: farmTargetsState.length > 1 ? 's' : '' }) : t('planner.remainingLabel')}</div>
+                  {isMulti && (
+                    <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <span className="text-yellow-400 text-base font-medium">{t('planner.shellCredit')}</span>
+                        <span className="text-yellow-400 font-bold text-lg kuro-number">{formatNumber(totalShell)}</span>
+                      </div>
                     </div>
-                  </div>
-                  {potionList.length > 0 && (
+                  )}
+                  {isMulti && potionList.length > 0 && (
                     <div className="grid grid-cols-2 gap-2">
                       {potionList.map(([name, qty]) => {
                         const img = MATERIAL_IMAGES?.[name];
