@@ -994,7 +994,7 @@ function WhisperingWishesInner() {
             <span className="absolute top-1 left-1 text-2xs bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'header' ? '● HEADER' : 'Header'}</span>
           </div>
         )}
-        <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto px-3 relative z-10">
+        <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto pl-3 pr-1.5 relative z-10">
           <div className="header-top flex items-center justify-between py-1.5">
             <div className="flex items-center gap-2">
               <div className="relative group cursor-pointer" onClick={async () => {

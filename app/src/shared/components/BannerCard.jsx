@@ -7,6 +7,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from '
 import { Info, Star, X } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
+import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { haptic, getElementColor, getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
@@ -157,8 +158,15 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         
         <div className={stats ? 'mb-14' : ''}>
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
-          <div className="flex gap-1 flex-wrap">
-            {(item.featured4Stars || []).map(n => <span key={n} className="text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>)}
+          <div className="flex gap-2 flex-wrap">
+            {(item.featured4Stars || []).map(n => (
+              <div key={n} className="flex flex-col items-center gap-0.5">
+                {DEFAULT_COLLECTION_IMAGES[n] && (
+                  <img src={DEFAULT_COLLECTION_IMAGES[n]} alt="" aria-hidden="true" className="w-7 h-7 rounded-full object-cover border border-cyan-400/40" onError={hideOnError} />
+                )}
+                <span className="text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
