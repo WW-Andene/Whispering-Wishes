@@ -1020,7 +1020,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 2.0,
     name: 'v2.0 All Silent Souls Can Sing',
     art: './animated-bg/2.0-All-Silent-Souls-Can-Sing-Animated.mp4',
-    poster: './animated-bg/2.0-All-Silent-Souls-Can-Sing-Animated.jpg',
+    poster: './Background/2.0-All-Silent-Souls-Can-Sing-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
@@ -1028,7 +1028,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 2.2,
     name: 'v2.2 Tangled Truth in Inverted Tower',
     art: './animated-bg/2.2-Tangled-Truth-In-Inverted-Tower-Animated.mp4',
-    poster: './animated-bg/2.2-Tangled-Truth-In-Inverted-Tower-Animated.jpg',
+    poster: './Background/2.2-Tangled-Truths-in-the-Inverted-Tower-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
@@ -1036,7 +1036,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 2.5,
     name: 'v2.5 Unfading Melody of Life',
     art: './animated-bg/2.5-Unfadind-Melody-Of-Life-Animated.mp4',
-    poster: './animated-bg/2.5-Unfadind-Melody-Of-Life-Animated.jpg',
+    poster: './Background/2.5-Unfading-Melody-of-Life-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
@@ -1044,7 +1044,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 2.6,
     name: "v2.6 By Sun's Scourge, By Moon's Revelation",
     art: "./animated-bg/2.6-By-Sun's-Scourge,ByMoon's-Revelation-Animated.mp4",
-    poster: "./animated-bg/2.6-By-Sun's-Scourge,ByMoon's-Revelation-Animated.jpg",
+    poster: './Background/2.6-By-Suns-Scourge-By-Moons-Revelation-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
@@ -1052,7 +1052,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 2.7,
     name: 'v2.7 Dawn Breaks on Dark Tides',
     art: './animated-bg/2.7-Dawn-Breaks-On-Dark-Tides-Animated.mp4',
-    poster: './animated-bg/2.7-Dawn-Breaks-On-Dark-Tides-Animated.jpg',
+    poster: './Background/2.7-Dawn-Breaks-on-Dark-Tides-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
@@ -1060,7 +1060,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 2.8,
     name: 'v2.8 To the City Set in Amber',
     art: './animated-bg/2.8-To-The-City-Set-In-Amber-Animated.mp4',
-    poster: './animated-bg/2.8-To-The-City-Set-In-Amber-Animated.jpg',
+    poster: './Background/2.8-To-the-City-Set-in-Amber-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
@@ -1068,7 +1068,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 3.0,
     name: 'v3.0 We Who See the Stars',
     art: './animated-bg/3.0-We-Who-See-The-Stars-Animated.mp4',
-    poster: './animated-bg/3.0-We-Who-See-The-Stars-Animated.jpg',
+    poster: './Background/3.0-We-Who-See-The-Stars-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
@@ -1076,7 +1076,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 3.1,
     name: 'v3.1 For You Who Walk in the Snow',
     art: './animated-bg/3.1-For-You-Who-Walk-In-The-Snow-Animated.mp4',
-    poster: './animated-bg/3.1-For-You-Who-Walk-In-The-Snow-Animated.jpg',
+    poster: './Background/3.1-For-You-Who-Walk-in-Snow-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   {
@@ -1084,7 +1084,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 3.2,
     name: 'v3.2',
     art: './animated-bg/3.2-animated.mp4',
-    poster: './animated-bg/3.2-animated.jpg',
+    poster: './Background/3.2-Resolution-to-Illuminate-the-Shadows-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '56% 50%' },
   },
   {
@@ -1092,7 +1092,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 3.3,
     name: 'v3.3',
     art: './animated-bg/3.3-animated.mp4',
-    poster: './animated-bg/3.3-animated.jpg',
+    poster: './Background/3.3-Reverbs-From-The-End-of-Galaxies-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '54% 50%' },
   },
   {
@@ -1100,7 +1100,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 3.2, // estimated: 1-year anniversary was the v2.3 anniversary rerun (~Apr 2025), so 2nd falls ~Apr 2026 = v3.2 window
     name: '2nd Anniversary',
     art: './animated-bg/2nd-anniversary-animated.mp4',
-    poster: './animated-bg/2nd-anniversary-animated.jpg',
+    poster: './Background/2nd-Anniversary-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '60% 50%' },
   },
   {
@@ -1108,7 +1108,7 @@ const ANIMATED_BACKGROUNDS = [
     version: 3.1, // estimated: Aemeath's introduction/Startorch Academy tie-in, released v3.1
     name: 'Startorch Academy',
     art: './animated-bg/startorch-academy-animated.mp4',
-    poster: './animated-bg/startorch-academy-animated.jpg',
+    poster: './Background/Startorch-Academy-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
   // Live2D-style version-update wallpapers (fan-cleaned 4K renders — Gdrive/@KiriyumeBun on X).
@@ -1118,48 +1118,48 @@ const ANIMATED_BACKGROUNDS = [
     id: 'v3-6-live2d',
     version: 3.6,
     name: 'v3.6 Live2D',
-    art: './animated-bg/3.6-Live2D-Animated.mp4',
-    poster: './animated-bg/3.6-Live2D-Animated.jpg',
+    art: './animated-bg/3.6-Lamplight-in-Mirage-Swords-Resolve-in-Heart-Live2D.mp4',
+    poster: './Background/3.6-Lamplight-in-Mirage-Swords-Resolve-in-Heart-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v3-5-live2d',
     version: 3.5,
     name: 'v3.5 Live2D',
-    art: './animated-bg/3.5-Live2D-Animated.mp4',
-    poster: './animated-bg/3.5-Live2D-Animated.jpg',
+    art: './animated-bg/3.5-Blade-of-Past-Resounds-Lingering-Dream-Hymns-Live2D.mp4',
+    poster: './Background/3.5-Blade-of-Past-Resounds-Lingering-Dream-Hymns-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v3-4-live2d',
     version: 3.4,
     name: 'v3.4 Live2D',
-    art: './animated-bg/3.4-Live2D-Animated.mp4',
-    poster: './animated-bg/3.4-Live2D-Animated.jpg',
+    art: './animated-bg/3.4-The-Dream-Not-Dreamed-Live2D.mp4',
+    poster: './Background/3.4-The-Dream-Not-Dreamed-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v3-4-cyberpunk-live2d',
     version: 3.4,
     name: 'v3.4 Cyberpunk Live2D',
-    art: './animated-bg/3.4-Cyberpunk-Live2D-Animated.mp4',
-    poster: './animated-bg/3.4-Cyberpunk-Live2D-Animated.jpg',
+    art: './animated-bg/3.4-The-Dream-Not-Dreamed-Cyberpunk-Live2D.mp4',
+    poster: './Background/3.4-The-Dream-Not-Dreamed-Cyberpunk-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v2-4-live2d',
     version: 2.4,
     name: 'v2.4 Live2D',
-    art: './animated-bg/2.4-Live2D-Animated.mp4',
-    poster: './animated-bg/2.4-Live2D-Animated.jpg',
+    art: './animated-bg/2.4-Lightly-We-Toss-the-Crown-Live2D.mp4',
+    poster: './Background/2.4-Lightly-We-Toss-the-Crown-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
   {
     id: 'v2-1-live2d',
     version: 2.1,
     name: 'v2.1 Live2D',
-    art: './animated-bg/2.1-Live2D-Animated.mp4',
-    poster: './animated-bg/2.1-Live2D-Animated.jpg',
+    art: './animated-bg/2.1-Waves-Sing-and-the-Cerulean-Bird-Calls-Live2D.mp4',
+    poster: './Background/2.1-Waves-Sing-and-the-Cerulean-Bird-Calls-Background.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '52% 50%' },
   },
 ];
