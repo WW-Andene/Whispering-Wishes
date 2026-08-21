@@ -306,7 +306,12 @@ function SpinePlayerComponent({
   const charDataLookup = SPINE_CHARACTERS[characterId];
   // Pass characterId so banner entries (no skelUrl on the registry) can be
   // resolved via their `banner:<id>` prefix.
-  const prerenderEntry = getPrerenderedIdle(charDataLookup, characterId);
+  // The `full` context (character-detail modal's full-spine viewer) skips
+  // tier 0 on purpose: its whole point is showing the real, hi-res live
+  // skeleton, not the small pre-baked idle loop optimized for grid/header
+  // thumbnails — going straight to tier 1 avoids that loop reading as a
+  // near-static clip at showcase size.
+  const prerenderEntry = context === 'full' ? null : getPrerenderedIdle(charDataLookup, characterId);
   const [prerenderFailed, setPrerenderFailed] = useState(false);
   const usePrerender = !!prerenderEntry && !prerenderFailed;
 
