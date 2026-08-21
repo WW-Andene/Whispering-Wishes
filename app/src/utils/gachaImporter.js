@@ -339,13 +339,27 @@ export function compressImage(source) {
   });
 }
 
+// All three assets Tesseract needs (worker script, wasm core, trained data)
+// are vendored under public/vendor/tesseract/ instead of the library's CDN
+// defaults, so this works in the Capacitor APK with no network at all —
+// same reasoning as public/vendor/tmf/ elsewhere in this app. corePath is a
+// *directory*: tesseract.js feature-detects SIMD/relaxed-SIMD support and
+// picks the matching tesseract-core-*-lstm.wasm.js file itself, so all three
+// variants are shipped and it can't reach the internet to fetch the one it
+// picks.
+const TESSERACT_VENDOR_PATH = '/vendor/tesseract';
+
 // Lazily-created, reused Tesseract worker — avoids paying the ~10MB wasm +
-// trained-data download cost more than once per session. Terminated only on
+// trained-data load cost more than once per session. Terminated only on
 // page unload (there's no good "done forever" signal from the UI side).
 let _ocrWorkerPromise = null;
 async function getOcrWorker() {
   if (!_ocrWorkerPromise) {
-    _ocrWorkerPromise = import('tesseract.js').then(({ createWorker }) => createWorker('eng'));
+    _ocrWorkerPromise = import('tesseract.js').then(({ createWorker }) => createWorker('eng', undefined, {
+      workerPath: `${TESSERACT_VENDOR_PATH}/worker.min.js`,
+      corePath: TESSERACT_VENDOR_PATH,
+      langPath: TESSERACT_VENDOR_PATH,
+    }));
   }
   return _ocrWorkerPromise;
 }
