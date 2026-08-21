@@ -38,7 +38,7 @@ const DETAIL_ELEMENT_COLORS = {
 // a soft radial glow offset toward the top-left, so the element color reads
 // with actual light/dark nuance instead of one uniform flat tint.
 const elementDepthGradient = (hex) =>
-  `radial-gradient(120% 100% at 15% 10%, ${hex}38, transparent 60%), linear-gradient(135deg, ${hex}45 0%, ${hex}18 45%, transparent 100%)`;
+  `linear-gradient(to right, rgba(255,255,255,0.07), transparent 40%), radial-gradient(120% 100% at 15% 10%, ${hex}38, transparent 60%), linear-gradient(135deg, ${hex}45 0%, ${hex}18 45%, transparent 100%)`;
 
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
@@ -143,7 +143,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               )}
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(12,16,24,0.75) 0%, transparent 55%)' }} />
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
