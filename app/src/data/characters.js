@@ -5321,6 +5321,25 @@ const SKILL_ICONS = {
     'Tonality Shift': 'https://i.ibb.co/BHfMMdWL/Skill-Qingxiao-Intro.webp', // Intro Skill
     'Lingering Song': 'https://i.ibb.co/0jpvcBrL/Skill-Qingxiao-Outro.webp', // Outro Skill
   },
+  // added 2026-08-21 (calendar-planner audit for the v3.6-p2 banner, ~2026-09-10) — Jingran had zero
+  // skill icons before this entry, unlike Qingxiao who released the same day. Sourced from
+  // static.nanoka.cc's SkillIconJingran atlas (SP_IconJingranB1/C1/D1/D2/QTE/T/Y.webp), re-hosted on
+  // ibb.co. B=dual-stance Basic ATK, C=dual-stance Resonance Skill (incl. the Heavy Attack follow-ups),
+  // D1/D2=the two Forte Circuit Heavy Attacks (Soul Raid / Stardome Meander), QTE=Liberation, T=Intro,
+  // Y=Outro — same atlas convention as Qingxiao's.
+  'Jingran': {
+    'Drink Soul': 'https://i.ibb.co/3Xs3ZZ7/jingran-skill-B1.webp', // Basic Attack, Yin Vessel stance
+    "Devil's Bane": 'https://i.ibb.co/3Xs3ZZ7/jingran-skill-B1.webp', // Basic Attack, Yang Font stance
+    'Encroaching Yin': 'https://i.ibb.co/S4kkG9mR/jingran-skill-C1.webp', // Resonance Skill, Yin Vessel stance
+    'Scorching Yang': 'https://i.ibb.co/S4kkG9mR/jingran-skill-C1.webp', // Resonance Skill, Yang Font stance
+    'Netherworld Traverse': 'https://i.ibb.co/S4kkG9mR/jingran-skill-C1.webp', // Resonance Skill Heavy Attack follow-up, Yin
+    "Afterlife's Guide": 'https://i.ibb.co/S4kkG9mR/jingran-skill-C1.webp', // Resonance Skill Heavy Attack follow-up, Yang
+    'Soul Raid': 'https://i.ibb.co/N2jbGWjg/jingran-skill-D1.webp', // Forte Circuit Heavy Attack
+    'Stardome Meander': 'https://i.ibb.co/1Y04vgs7/jingran-skill-D2.webp', // Forte Circuit Heavy Attack (alt)
+    'Burial of Thousand Souls': 'https://i.ibb.co/Fbfhy5pV/jingran-skill-QTE.webp', // Resonance Liberation
+    'Question the Tombs': 'https://i.ibb.co/WrW84w9/jingran-skill-T.webp', // Intro Skill
+    'Rising Fortune and Ebbing Evil': 'https://i.ibb.co/cctRq3Yp/jingran-skill-Y.webp', // Outro Skill
+  },
 };
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
@@ -5743,6 +5762,17 @@ const CHAIN_NODE_ICONS = {
     s4: 'https://i.ibb.co/FbHZ9dmQ/lucilla-chain-s4.webp',
     s5: 'https://i.ibb.co/vv4kf7XL/lucilla-chain-s5.webp',
     s6: 'https://i.ibb.co/6JXB03hR/lucilla-chain-s6.webp',
+  },
+  // Jingran added 2026-08-21 (calendar-planner audit for the v3.6-p2 banner, ~2026-09-10): same
+  // nanoka.cc datamine source as Lucilla — static.nanoka.cc/.../IconDevice/T_IconDevice_JingranM1-6_UI.webp,
+  // re-hosted on imgbb. Fandom has no Sequence Node uploads for him yet either (expected, pre-banner).
+  'Jingran': {
+    s1: 'https://i.ibb.co/DH7pqgVK/jingran-chain-s1.webp',
+    s2: 'https://i.ibb.co/7xQdnkRG/jingran-chain-s2.webp',
+    s3: 'https://i.ibb.co/KxHTkhd1/jingran-chain-s3.webp',
+    s4: 'https://i.ibb.co/zHb7QLvy/jingran-chain-s4.webp',
+    s5: 'https://i.ibb.co/cX6rbZV6/jingran-chain-s5.webp',
+    s6: 'https://i.ibb.co/rGv9DbkF/jingran-chain-s6.webp',
   },
   // Danjin/Yangyang/Sanhua added 2026-08-18: fandom DOES have these Sequence_Node_*.png assets
   // uploaded (unlike the June-2026 characters above) — fetched directly via the MediaWiki API
