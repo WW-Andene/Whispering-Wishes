@@ -9,6 +9,12 @@ import { RELEASE_ORDER, CHARACTER_DATA } from './characters.js';
 // Shared fallback art for any character/weapon that hasn't had a real portrait/icon
 // sourced yet (post-v3.3 additions). Swap out per-entry as real art becomes available.
 const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
+// v3.6 events with no dedicated art anywhere yet (verified 2026-08-20 via the fandom wiki's own
+// MediaWiki API — action=query on all 5 event titles returns "missing", and even the official
+// v3.6 splashscreen file referenced on Version/3.6 is itself unuploaded). Using Qingxiao's key art
+// (the new 3.6 debut Resonator, uploaded to fandom 2026-08-20) as a closer-fitting placeholder than
+// the generic Abby-Card2 image, re-hosted on imgbb 2026-08-20. Swap for real event art once posted.
+const V36_EVENT_PLACEHOLDER = 'https://i.ibb.co/5JtfTK8/wuwa-v36-event-placeholder.webp';
 
 // [SECTION:BANNERS]
 // v3.6 Phase 1 — Qingxiao debut + Denia rerun, August 20 - September 10, 2026. CONFIRMED LIVE
@@ -310,7 +316,7 @@ const EVENTS = {
     currentEnd: '2026-09-10T09:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: V36_EVENT_PLACEHOLDER,
   },
   giftsOfDriftingMist: {
     name: 'Gifts of Drifting Mist',
@@ -322,7 +328,7 @@ const EVENTS = {
     currentEnd: '2026-09-10T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: 'https://i.ibb.co/HTN1ZNWj/wuwa-gifts-of-drifting-mist.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
   },
   bountifulCrescendo: {
     name: 'Bountiful Crescendo',
@@ -350,7 +356,7 @@ const EVENTS = {
     currentEnd: '2026-08-25T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
     accentColor: 'red',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: 'https://i.ibb.co/zHQTnWXp/wuwa-resonance-sim-realm.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
   },
   secondComingOfSolaris: {
     name: 'Second Coming of Solaris: Coded Deception',
@@ -382,7 +388,7 @@ const EVENTS = {
     currentEnd: '2026-09-09T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: 'https://i.ibb.co/XxJtGLpQ/wuwa-the-strings-remember.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
   },
   ifDreamsStillReverberate: {
     name: 'If Dreams Still Reverberate',
@@ -397,7 +403,7 @@ const EVENTS = {
     currentEnd: '2026-09-15T01:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
-    imageUrl: PLACEHOLDER_IMAGE,
+    imageUrl: 'https://i.ibb.co/WpcMcR5t/wuwa-if-dreams-still-reverberate.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
   },
   fogveilPagoda: {
     name: 'Featured Exploration Event: Fogveil Pagoda',
