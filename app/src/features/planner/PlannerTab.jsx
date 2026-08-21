@@ -575,7 +575,7 @@ function PlannerTab({
               const elColor = d ? getElementColor(d.element) : '#9ca3af';
               const theme = CHARACTER_THEMES.find(ct => ct.name === ftg.name);
               const currentBanner = getCurrentBannerAuto().characters?.find(c => c.name === ftg.name);
-              const themeArt = theme?.bannerArt || currentBanner?.imageUrl;
+              const themeArt = theme?.bannerArt || currentBanner?.imageUrl || DEFAULT_COLLECTION_IMAGES[ftg.name];
               const artPosition = theme?.pos?.header || currentBanner?.imagePosition || 'center 30%';
 
               // Per-character materials (shared helper — same math as the combined summary below)
