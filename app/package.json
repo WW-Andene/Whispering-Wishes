@@ -25,7 +25,6 @@
     "@capacitor/browser": "^8.0.4",
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
-    "@capacitor/status-bar": "^8.0.3",
     "@esotericsoftware/spine-player": "^4.2.109",
     "express": "^4.21.2",
     "leaflet": "^1.9.4",
