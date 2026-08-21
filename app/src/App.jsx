@@ -946,7 +946,7 @@ function WhisperingWishesInner() {
               loop
               muted
               playsInline
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
               style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }}
             />
           ) : (
@@ -978,7 +978,7 @@ function WhisperingWishesInner() {
         {/* Theme banner art background */}
         {headerBgUrl && (
           headerBgType === 'animated' ? (
-            <video src={headerBgUrl} autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-contain" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: headerBgPos }} />
+            <video src={headerBgUrl} autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: headerBgPos }} />
           ) : (
             <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
           )
@@ -1068,7 +1068,7 @@ function WhisperingWishesInner() {
         }}>
         {navBgUrl && (
           navBgType === 'animated' ? (
-            <video src={navBgUrl} autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-contain" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: navBgPos }} />
+            <video src={navBgUrl} autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: navBgPos }} />
           ) : (
             <img src={navBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: navBgPos }} />
           )
