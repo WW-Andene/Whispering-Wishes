@@ -1111,6 +1111,57 @@ const ANIMATED_BACKGROUNDS = [
     poster: './animated-bg/startorch-academy-animated.jpg',
     pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
   },
+  // Live2D-style version-update wallpapers (fan-cleaned 4K renders — Gdrive/@KiriyumeBun on X).
+  // These are the actual animated MP4s the earlier "Live2D" splash-art request turned out to be;
+  // wired here as animated backgrounds instead of static VERSION_SPLASH_SCREENS entries.
+  {
+    id: 'v3-6-live2d',
+    version: 3.6,
+    name: 'v3.6 Live2D',
+    art: './animated-bg/3.6-Live2D-Animated.mp4',
+    poster: './animated-bg/3.6-Live2D-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v3-5-live2d',
+    version: 3.5,
+    name: 'v3.5 Live2D',
+    art: './animated-bg/3.5-Live2D-Animated.mp4',
+    poster: './animated-bg/3.5-Live2D-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v3-4-live2d',
+    version: 3.4,
+    name: 'v3.4 Live2D',
+    art: './animated-bg/3.4-Live2D-Animated.mp4',
+    poster: './animated-bg/3.4-Live2D-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v3-4-cyberpunk-live2d',
+    version: 3.4,
+    name: 'v3.4 Cyberpunk Live2D',
+    art: './animated-bg/3.4-Cyberpunk-Live2D-Animated.mp4',
+    poster: './animated-bg/3.4-Cyberpunk-Live2D-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v2-4-live2d',
+    version: 2.4,
+    name: 'v2.4 Live2D',
+    art: './animated-bg/2.4-Live2D-Animated.mp4',
+    poster: './animated-bg/2.4-Live2D-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
+  {
+    id: 'v2-1-live2d',
+    version: 2.1,
+    name: 'v2.1 Live2D',
+    art: './animated-bg/2.1-Live2D-Animated.mp4',
+    poster: './animated-bg/2.1-Live2D-Animated.jpg',
+    pos: { header: '50% 50%', nav: '50% 50%', bg: '50% 50%' },
+  },
 ];
 // Sorted most-recently-released first
 ANIMATED_BACKGROUNDS.sort((a, b) => b.version - a.version);
