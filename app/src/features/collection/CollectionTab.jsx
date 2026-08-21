@@ -408,6 +408,7 @@ function CollectionTab({
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={t('collection.search.placeholder')}
                 className="kuro-input w-full text-base"
+                style={{ paddingLeft: 32 }}
                 aria-label={t('collection.search.ariaLabel')}
               />
               <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
