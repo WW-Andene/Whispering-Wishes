@@ -996,7 +996,7 @@ function WhisperingWishesInner() {
           </div>
         )}
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto pl-3 pr-3 relative z-10">
-          <div className="header-top flex items-center justify-between py-1.5">
+          <div className="header-top flex items-center justify-between py-3">
             <div className="flex items-center gap-2">
               <div className="relative group cursor-pointer" onClick={async () => {
                 if (pwa?.canInstall) {
