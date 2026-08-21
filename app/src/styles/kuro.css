@@ -265,10 +265,10 @@
       --radius-xl: 15px;
       --radius-pill: 9999px;
       --card-radius: var(--radius-xl);
-      --card-padding: 14px;
+      --card-padding: 16px;
       --btn-radius: var(--radius-lg);       /* FIX: was --radius-md (8px), actual button uses 12px */
-      --btn-padding: 10px 12px;             /* Button default padding (matches input) */
-      --input-padding: 10px 12px;           /* Input/select default padding */
+      --btn-padding: 12px 12px;             /* Button default padding (matches input) */
+      --input-padding: 12px 12px;           /* Input/select default padding */
       --input-radius: var(--radius-md);     /* Input/select border-radius (8px) */
       --stat-radius: var(--radius-lg);
       --label-margin: var(--space-base);    /* Label bottom margin (6px) */
