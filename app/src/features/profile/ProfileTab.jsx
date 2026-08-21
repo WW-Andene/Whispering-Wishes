@@ -741,8 +741,7 @@ function ProfileTab({
                       const customPos = getCustomBgPosition(posKey, id);
                       const rawPos = customPos || pos?.[posKey] || 'center center';
                       const objectPosition = typeof rawPos === 'string' ? rawPos : 'center center';
-                      const extra = bgTarget === 'background' ? { bgStyle: 'none' } : {};
-                      saveVisualSettings({ ...visualSettings, [targetKey]: { type, id, url, objectPosition }, ...extra });
+                      saveVisualSettings({ ...visualSettings, [targetKey]: { type, id, url, objectPosition } });
                     }
                   };
 
@@ -777,7 +776,7 @@ function ProfileTab({
                       ].map(t => {
                         const bg = visualSettings[t.settingKey];
                         return (
-                          <button key={t.key} onClick={() => { setBgTarget(t.key); setEditingBgTarget(t.key === 'header' ? 'header' : t.key === 'navigation' ? 'nav' : 'bg'); if (t.key !== 'background' && bgCategory === 'custom') setBgCategory('resonators'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
+                          <button key={t.key} onClick={() => { setBgTarget(t.key); setEditingBgTarget(t.key === 'header' ? 'header' : t.key === 'navigation' ? 'nav' : 'bg'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
                             {bg?.url && bg?.type !== 'animated' && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />}
                             {bg?.type === 'animated' && <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/40 to-purple-900/40 opacity-50" />}
                             <span className="relative z-10">{t.label}</span>
@@ -858,59 +857,6 @@ function ProfileTab({
                           {isSelected('animated', a.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
                         </button>
                       ))}
-                      {bgCategory === 'custom' && (
-                        <div className="col-span-full">
-                          <div className="grid grid-cols-4 gap-1.5">
-                            {[
-                              { id: 'none', label: t('profile.display.customNone'), color: 'text-gray-400' },
-                              { id: 'resonance', label: t('profile.display.customResonance'), color: 'text-blue-400' },
-                              { id: 'reflect', label: t('profile.display.customReflect'), color: 'text-purple-400' },
-                              { id: 'honour', label: t('profile.display.customHonour'), color: 'text-amber-400' },
-                            ].map(bg => {
-                              const isActive = visualSettings.bgStyle === bg.id;
-                              return (
-                                <button key={bg.id}
-                                  onClick={() => saveVisualSettings({ ...visualSettings, bgStyle: bg.id, appBg: null })}
-                                  className={`min-h-[36px] py-1.5 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white ring-1 ring-white/20' : `${bg.color} hover:text-white`}`}
-                                  style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
-                                >{bg.label}</button>
-                              );
-                            })}
-                          </div>
-                          {visualSettings.bgStyle !== 'none' && (
-                            <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
-                              <div className="flex items-center gap-3">
-                                <div className="text-gray-500 text-sm font-medium w-[56px] shrink-0">{t('profile.display.resolution')}</div>
-                                <div className="flex gap-1 flex-1">
-                                  {[25, 50, 100, 200].map(res => {
-                                    const autoVal = visualSettings.animationsEnabled === 'full' ? 100 : 50;
-                                    const isActive = visualSettings.bgResolution === null ? res === autoVal : visualSettings.bgResolution === res;
-                                    return <button key={res}
-                                      onClick={() => saveVisualSettings({ ...visualSettings, bgResolution: res === autoVal ? null : res })}
-                                      className={`flex-1 min-h-[32px] py-1 rounded text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                                      style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
-                                    >{res}%</button>;
-                                  })}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <div className="text-gray-500 text-sm font-medium w-[56px] shrink-0">{t('profile.display.fps')}</div>
-                                <div className="flex gap-1 flex-1">
-                                  {[15, 30, 45, 60].map(fps => {
-                                    const autoVal = visualSettings.animationsEnabled === 'full' ? 30 : 15;
-                                    const isActive = visualSettings.bgFps === null ? fps === autoVal : visualSettings.bgFps === fps;
-                                    return <button key={fps}
-                                      onClick={() => saveVisualSettings({ ...visualSettings, bgFps: fps === autoVal ? null : fps })}
-                                      className={`flex-1 min-h-[32px] py-1 rounded text-sm font-medium transition-colors ${isActive ? 'bg-white/15 text-white' : 'text-gray-500 hover:text-gray-300'}`}
-                                      style={!isActive ? { background: 'var(--bg-btn)' } : undefined}
-                                    >{fps}</button>;
-                                  })}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
                     </>
                     )}

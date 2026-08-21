@@ -57,10 +57,6 @@ import AdminMiniPanel from './features/profile/AdminMiniPanel.jsx';
 import { DetailModalHost } from './shared/components/DetailModalHost.jsx';
 import { TabButton } from './shared/components/Card.jsx';
 import { AppErrorBoundary, TabErrorBoundary } from './shared/errors/ErrorBoundaries.jsx';
-import { BackgroundGlow } from './shared/backgrounds/BackgroundGlow.jsx';
-import { TriangleMirrorWave } from './shared/backgrounds/TriangleMirrorWave.jsx';
-import { ResonanceField } from './shared/backgrounds/ResonanceField.jsx';
-import { Honour } from './shared/backgrounds/Honour.jsx';
 import { getActiveBanners } from './shared/components/bannerUtils.js';
 // --- Feature tabs ---
 // --- Feature tabs (lazy-loaded for code splitting) ---
@@ -916,16 +912,6 @@ function WhisperingWishesInner() {
   return (
     <CloudStorageProvider getBackupPayload={getBackupPayload} onRestoreData={handleRestoreData}>
     <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
-      {visualSettings.bgStyle === 'resonance' ? (
-        <ResonanceField oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
-      ) : visualSettings.bgStyle === 'honour' ? (
-        <Honour oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
-      ) : visualSettings.bgStyle === 'reflect' ? (
-        <>
-          <BackgroundGlow oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
-          <TriangleMirrorWave oledMode={visualSettings.oledMode} animationsEnabled={visualSettings.animationsEnabled} bgResolution={visualSettings.bgResolution} bgFps={visualSettings.bgFps} />
-        </>
-      ) : null}
       {appBgUrl && (
         // Explicit top/left/right/bottom (not just the inset-0 class) so this
         // is pinned to the true viewport edges no matter what — including the

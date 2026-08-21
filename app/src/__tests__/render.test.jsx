@@ -15,7 +15,7 @@ const noop = () => {};
 const noopAsync = async () => false;
 const mockToast = { addToast: noop };
 const mockVS = {
-  animationsEnabled: 'on', bgStyle: 'none', swipeNavigation: false,
+  animationsEnabled: 'on', swipeNavigation: false,
   collectionFadePosition: 50, collectionFadeIntensity: 50,
   collectionFadeDirection: 'down', collectionOpacity: 100,
 };
