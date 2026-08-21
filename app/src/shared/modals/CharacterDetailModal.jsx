@@ -748,8 +748,12 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 <MaterialItem name={data.ascension.boss} qty={RESONATOR_ASCENSION_COSTS.boss} />
                 <MaterialItem name={data.ascension.specialty} qty={RESONATOR_ASCENSION_COSTS.specialty} />
                 {COMMON_MAT_TIERS[data.ascension.common] && <>
-                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={RESONATOR_ASCENSION_COSTS.commonT3} />
-                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={RESONATOR_ASCENSION_COSTS.commonT4} />
+                  {COMMON_MAT_TIERS[data.ascension.common].length >= 4 && <>
+                    <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={RESONATOR_ASCENSION_COSTS.commonT1} />
+                    <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={RESONATOR_ASCENSION_COSTS.commonT2} />
+                  </>}
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common].at(-2)} qty={RESONATOR_ASCENSION_COSTS.commonT3} />
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common].at(-1)} qty={RESONATOR_ASCENSION_COSTS.commonT4} />
                 </>}
               </> : <div className="text-gray-500 text-sm col-span-2">{t('modals.characterDetail.noAscensionData')}</div>}
             </div>
@@ -764,12 +768,20 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <div className="grid grid-cols-2 gap-1.5">
                 <MaterialItem name={data.skillMaterials.weeklyDrop} qty={SKILL_UPGRADE_COSTS.weeklyDrop} />
                 {FORGERY_MAT_TIERS[data.skillMaterials.forgery] && <>
-                  <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][0]} qty={SKILL_UPGRADE_COSTS.forgeryT3} />
-                  <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][1]} qty={SKILL_UPGRADE_COSTS.forgeryT4} />
+                  {FORGERY_MAT_TIERS[data.skillMaterials.forgery].length >= 4 && <>
+                    <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][0]} qty={SKILL_UPGRADE_COSTS.forgeryT1} />
+                    <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery][1]} qty={SKILL_UPGRADE_COSTS.forgeryT2} />
+                  </>}
+                  <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery].at(-2)} qty={SKILL_UPGRADE_COSTS.forgeryT3} />
+                  <MaterialItem name={FORGERY_MAT_TIERS[data.skillMaterials.forgery].at(-1)} qty={SKILL_UPGRADE_COSTS.forgeryT4} />
                 </>}
                 {data.ascension?.common && COMMON_MAT_TIERS[data.ascension.common] && <>
-                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={SKILL_UPGRADE_COSTS.commonT3} />
-                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={SKILL_UPGRADE_COSTS.commonT4} />
+                  {COMMON_MAT_TIERS[data.ascension.common].length >= 4 && <>
+                    <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][0]} qty={SKILL_UPGRADE_COSTS.commonT1} />
+                    <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common][1]} qty={SKILL_UPGRADE_COSTS.commonT2} />
+                  </>}
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common].at(-2)} qty={SKILL_UPGRADE_COSTS.commonT3} />
+                  <MaterialItem name={COMMON_MAT_TIERS[data.ascension.common].at(-1)} qty={SKILL_UPGRADE_COSTS.commonT4} />
                 </>}
               </div>
             </div>

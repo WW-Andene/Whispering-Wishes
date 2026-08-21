@@ -83,7 +83,7 @@
   "weaponLabel": "Arme",
   "bothLabel": "Les deux",
   "lustrousSuffix": " • {{n}} Lustrous",
-  "farmingPlanner": "Planificateur de farming",
+  "farmingPlanner": "Planificateur d'Ascension",
   "targetsCount": "{{count}} cible{{plural}}",
   "addResonator": "Ajouter un Résonateur",
   "selectResonator": "Sélectionner un Résonateur",
@@ -96,8 +96,12 @@
   "removeCharAria": "Supprimer {{name}}",
   "shellCredit": "Crédit Shell",
   "combinedTotal": "Total combiné ({{count}} Résonateurs)",
-  "awaitingFarming": "En attente de directives de farming",
+  "awaitingFarming": "En attente d'objectifs d'Ascension",
   "selectResonatorsHint": "Sélectionnez des Résonateurs pour calculer les matériaux requis pour l'Ascension, le Forte et les améliorations d'Arme",
+  "chooseWeaponAria": "Choisir l'arme à planifier pour {{name}}",
+  "ownedLabel": "Possédé :",
+  "ownedAria": "Quantité de {{name}} déjà possédée",
+  "remainingHint": "Les quantités ci-dessous sont ce qu'il reste à obtenir après déduction de ce que vous possédez déjà",
 
   "calendar": {
     "previousMonth": "Mois précédent",

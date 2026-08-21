@@ -83,7 +83,7 @@
   "weaponLabel": "Weapon",
   "bothLabel": "Both",
   "lustrousSuffix": " • {{n}} Lustrous",
-  "farmingPlanner": "Farming Planner",
+  "farmingPlanner": "Ascension Planner",
   "targetsCount": "{{count}} target{{plural}}",
   "addResonator": "Add Resonator",
   "selectResonator": "Select Resonator",
@@ -96,8 +96,12 @@
   "removeCharAria": "Remove {{name}}",
   "shellCredit": "Shell Credit",
   "combinedTotal": "Combined Total ({{count}} Resonators)",
-  "awaitingFarming": "Awaiting farming directives",
+  "awaitingFarming": "Awaiting Ascension targets",
   "selectResonatorsHint": "Select Resonators to compute material requirements for Ascension, Forte, and Weapon upgrades",
+  "chooseWeaponAria": "Choose weapon to plan for {{name}}",
+  "ownedLabel": "Owned:",
+  "ownedAria": "Quantity of {{name}} already owned",
+  "remainingHint": "Amounts below are what's still needed after subtracting what you already own",
 
   "calendar": {
     "previousMonth": "Previous month",

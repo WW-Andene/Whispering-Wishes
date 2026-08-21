@@ -151,12 +151,20 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
                 </h3>
                 <div className="grid grid-cols-2 gap-1.5">
                   {forgeryTiers && <>
-                    <MaterialItem name={forgeryTiers[0]} qty={costs.forgeryT3} />
-                    <MaterialItem name={forgeryTiers[1]} qty={costs.forgeryT4} />
+                    {forgeryTiers.length >= 4 && <>
+                      <MaterialItem name={forgeryTiers[0]} qty={costs.forgeryT1} />
+                      <MaterialItem name={forgeryTiers[1]} qty={costs.forgeryT2} />
+                    </>}
+                    <MaterialItem name={forgeryTiers.at(-2)} qty={costs.forgeryT3} />
+                    <MaterialItem name={forgeryTiers.at(-1)} qty={costs.forgeryT4} />
                   </>}
                   {commonTiers && <>
-                    <MaterialItem name={commonTiers[0]} qty={costs.commonT3} />
-                    <MaterialItem name={commonTiers[1]} qty={costs.commonT4} />
+                    {commonTiers.length >= 4 && <>
+                      <MaterialItem name={commonTiers[0]} qty={costs.commonT1} />
+                      <MaterialItem name={commonTiers[1]} qty={costs.commonT2} />
+                    </>}
+                    <MaterialItem name={commonTiers.at(-2)} qty={costs.commonT3} />
+                    <MaterialItem name={commonTiers.at(-1)} qty={costs.commonT4} />
                   </>}
                 </div>
               </div>

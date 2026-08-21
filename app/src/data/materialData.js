@@ -85,35 +85,61 @@ const MATERIAL_IMAGES = {
   // File:Item_Forged_Empyrean's_Sigh.png via the MediaWiki API (bypasses Cloudflare), uploaded
   // to imgbb 2026-08-20.
   "Forged Empyrean's Sigh": 'https://i.ibb.co/9mZJHrQ4/forged-empyreans-sigh.webp',
-  // === Common Enemy Drops (HF = tier 3, FF = tier 4) ===
+  // === Common Enemy Drops (all 4 tiers) ===
+  // Fixed 2026-08-21 (Planner audit): tiers 1-2 (LF/MF, or the family's own real name where it isn't
+  // LF-/MF- prefixed) were entirely missing before this pass. Most icons pulled from the user's own
+  // pre-existing "Wuthering Waves - Weapon & Skills materials" imgbb album (already uploaded there);
+  // a handful not in that album (Adagio Helix, Monowing Polarizer, Broken String) were freshly
+  // sourced via the wiki's rarity field + Recipe synthesis chain (e.g. MF Mech Core's own recipe
+  // reads "LF Mech Core×3"), not guessed.
   // Whisperin Core family
+  'LF-Whisperin Core': 'https://i.ibb.co/39gtHhnL/Item-LF-Whisperin-Core.webp',
+  'MF-Whisperin Core': 'https://i.ibb.co/qLRN9Vhf/Item-MF-Whisperin-Core.webp',
   'HF-Whisperin Core': 'https://i.ibb.co/5XdgF3vt/Item-HF-Whisperin-Core.webp',
   'FF-Whisperin Core': 'https://i.ibb.co/qL2Mqr1B/Item-FF-Whisperin-Core.webp',
-  // Ring family
+  // Ring family — real tier1/tier2 names, not LF-/MF- prefixed: Crude Ring -> Basic Ring -> Improved Ring -> Tailored Ring
+  'Crude Ring': 'https://i.ibb.co/Sww9p81n/Item-Crude-Ring.webp',
+  'Basic Ring': 'https://i.ibb.co/1pWNT3H/Item-Basic-Ring.webp',
   'Improved Ring': 'https://i.ibb.co/Txdrg5sZ/Item-Improved-Ring.webp',
   'Tailored Ring': 'https://i.ibb.co/d0S363jr/Item-Tailored-Ring.webp',
   // Howler Core family
+  'LF-Howler Core': 'https://i.ibb.co/rfG5TWmV/Item-LF-Howler-Core.webp',
+  'MF-Howler Core': 'https://i.ibb.co/cS5dwh4N/Item-MF-Howler-Core.webp',
   'HF-Howler Core': 'https://i.ibb.co/99xC7ZSb/Item-HF-Howler-Core.webp',
   'FF-Howler Core': 'https://i.ibb.co/GrrFvb5/Item-FF-Howler-Core.webp',
   // Tidal Residuum family
+  'LF-Tidal Residuum': 'https://i.ibb.co/j9MGh3HB/Item-LF-Tidal-Residuum.webp',
+  'MF-Tidal Residuum': 'https://i.ibb.co/V0gT9S4z/Item-MF-Tidal-Residuum.webp',
   'HF-Tidal Residuum': 'https://i.ibb.co/xqCsrnT1/Item-HF-Tidal-Residuum.webp',
   'FF-Tidal Residuum': 'https://i.ibb.co/Y7MHV4rp/Item-FF-Tidal-Residuum.webp',
   // Polygon Core family
+  'LF-Polygon Core': 'https://i.ibb.co/4nbS5BZM/Item-LF-Polygon-Core.webp',
+  'MF-Polygon Core': 'https://i.ibb.co/xq8XFg5V/Item-MF-Polygon-Core.webp',
   'HF-Polygon Core': 'https://i.ibb.co/5xBVprhn/Item-HF-Polygon-Core.webp',
   'FF-Polygon Core': 'https://i.ibb.co/VWBm757q/Item-FF-Polygon-Core.webp',
   // Mech Core family
+  'LF-Mech Core': 'https://i.ibb.co/n5MWWmt/Item-LF-Mech-Core.webp',
+  'MF-Mech Core': 'https://i.ibb.co/yBZk8JTw/Item-MF-Mech-Core.webp',
   'HF-Mech Core': 'https://i.ibb.co/SDmhhqSY/Item-HF-Mech-Core.webp',
   'FF-Mech Core': 'https://i.ibb.co/Ld5RwwQN/Item-FF-Mech-Core.webp',
   // Carved Crystal family
+  'LF-Carved Crystal': 'https://i.ibb.co/CpvjfQjF/Item-LF-Carved-Crystal.webp',
+  'MF-Carved Crystal': 'https://i.ibb.co/93fxzhLD/Item-MF-Carved-Crystal.webp',
   'HF-Carved Crystal': 'https://i.ibb.co/FqLcmHhR/Item-HF-Carved-Crystal.webp',
   'FF-Carved Crystal': 'https://i.ibb.co/cST0C2KY/Item-FF-Carved-Crystal.webp',
   // Exoswarm Core family
+  'LF-Exoswarm Core': 'https://i.ibb.co/1tty3DZY/Item-LF-Exoswarm-Core.webp',
+  'MF-Exoswarm Core': 'https://i.ibb.co/0ykkst0B/Item-MF-Exoswarm-Core.webp',
   'HF-Exoswarm Core': 'https://i.ibb.co/gbM0KFHq/Item-HF-Exoswarm-Core.webp',
   'FF-Exoswarm Core': 'https://i.ibb.co/ZyjbXDK/Item-FF-Exoswarm-Core.webp',
-  // Exoswarm Pendant (separate drop family)
+  // Exoswarm Pendant (separate drop family) — real tier1/2 names: Worn -> Fractured -> Chipped -> Intact
+  'Worn Exoswarm Pendant': 'https://i.ibb.co/gMtqfsHH/Item-Worn-Exoswarm-Pendant.webp',
+  'Fractured Exoswarm Pendant': 'https://i.ibb.co/67hG6z0R/Item-Fractured-Exoswarm-Pendant.webp',
   'Chipped Exoswarm Pendant': 'https://i.ibb.co/F4sHk3f9/Item-Chipped-Exoswarm-Pendant.webp',
   'Intact Exoswarm Pendant': 'https://i.ibb.co/Gy3PM1Q/Item-Intact-Exoswarm-Pendant.webp',
-  // === Forgery Materials (skill/weapon upgrade) ===
+  // === Forgery Materials (skill/weapon upgrade, all 4 tiers) ===
+  'Waveworn Residue 210': 'https://i.ibb.co/xqdYwmJD/Item-Waveworn-Residue-210.webp',
+  'Waveworn Residue 226': 'https://i.ibb.co/6RzrrNzX/Item-Waveworn-Residue-226.webp',
   'Waveworn Residue 235': 'https://i.ibb.co/N6b1m8VT/Item-Waveworn-Residue-235.webp',
   'Waveworn Residue 239': 'https://i.ibb.co/Xfwt09MV/Item-Waveworn-Residue-239.webp',
   // Waveworn Shard family — added 2026-08-17 while auditing Luuk Herssen: FORGERY_MAT_TIERS already
@@ -121,27 +147,46 @@ const MATERIAL_IMAGES = {
   // Waveworn Shard-forged weapons') skill-material row rendered with no picture.
   'HF-Waveworn Shard': 'https://i.ibb.co/KpS51SLv/Item-HF-Waveworn-Shard.webp',
   'FF-Waveworn Shard': 'https://i.ibb.co/TxB4P0Cp/Item-FF-Waveworn-Shard.webp',
-  // String family — added 2026-08-17 while auditing Luuk Herssen/Freeze Frame's shared skill-material
-  // pool. Real tier names, unlike this app's placeholder "HF-String"/"FF-String": Broken String (LF) →
-  // Spliced String (MF) → Solidified String (HF) → Melodic String (FF), per fandom's own item pages.
+  // String family — real tier names: Broken String (T1) → Spliced String (T2) → Solidified String
+  // (T3) → Melodic String (T4), per fandom's own item pages.
+  'Broken String': 'https://i.ibb.co/XxQdg8mq/Broken-String.webp',
+  'Spliced String': 'https://i.ibb.co/hFLktLwq/Item-Spliced-String.webp',
   'Solidified String': 'https://i.ibb.co/8D4cwT2p/Item-Solidified-String.webp',
   'Melodic String': 'https://i.ibb.co/pH17NjG/Item-Melodic-String.webp',
+  'Incomplete Combustor': 'https://i.ibb.co/Ngkpc65b/Item-Incomplete-Combustor.webp',
+  'Aftertune Combustor': 'https://i.ibb.co/zVF2SSJ2/Item-Aftertune-Combustor.webp',
   'Remnant Combustor': 'https://i.ibb.co/prsfDV7Y/Item-Remnant-Combustor.webp',
   'Reverb Combustor': 'https://i.ibb.co/jkt3qd95/Item-Reverb-Combustor.webp',
+  'Inert Metallic Drip': 'https://i.ibb.co/TxTMJWKS/Item-Inert-Metallic-Drip.webp',
+  'Reactive Metallic Drip': 'https://i.ibb.co/spt0sxj5/Item-Reactive-Metallic-Drip.webp',
   'Polarized Metallic Drip': 'https://i.ibb.co/xSVsWyKd/Item-Polarized-Metallic-Drip.webp',
   'Heterized Metallic Drip': 'https://i.ibb.co/WRXhhfR/Item-Heterized-Metallic-Drip.webp',
+  'Impure Phlogiston': 'https://i.ibb.co/9kdPKXSN/Item-Impure-Phlohiston.webp',
+  'Extracted Phlogiston': 'https://i.ibb.co/R4dGRr6q/Item-Extracted-Phlogiston.webp',
   'Refined Phlogiston': 'https://i.ibb.co/HTJ13kQy/Item-Refined-Phlogiston.webp',
   'Flawless Phlogiston': 'https://i.ibb.co/gZmPFYzP/Item-Flawless-Phlogiston.webp',
+  // Mask family — verified via wiki rarity fields (Constraint r2, Erosion r3, Distortion r4, Insanity r5)
+  // and Distortion's own Recipe ("Mask of Erosion×3"), confirming this exact tier order.
+  'Mask of Constraint': 'https://i.ibb.co/MDzkHzLK/Item-Mask-of-Constraint.webp',
+  'Mask of Erosion': 'https://i.ibb.co/RpbfQLKL/Item-Mask-of-Erosion.webp',
   'Mask of Distortion': 'https://i.ibb.co/QjX7YFy2/Item-Mask-of-Distortion.webp',
   'Mask of Insanity': 'https://i.ibb.co/spmvhjxs/Item-Mask-of-Insanity.webp',
+  'Lento Helix': 'https://i.ibb.co/sJ5bb73v/Item-Lento-Helix.webp',
+  'Adagio Helix': 'https://i.ibb.co/Zz6yyrYY/Adagio-Helix.webp',
   'Andante Helix': 'https://i.ibb.co/676tpkpg/Item-Andante-Helix.webp',
   'Presto Helix': 'https://i.ibb.co/pgMdH2f/Item-Presto-Helix.webp',
+  'Cadence Seed': 'https://i.ibb.co/Y7krgCtG/Item-Cadence-Seed.webp',
+  'Cadence Bud': 'https://i.ibb.co/C5JmLnCF/Item-Cadence-Bud.webp',
   'Cadence Leaf': 'https://i.ibb.co/35qhTRg8/Item-Cadence-Leaf.webp',
   'Cadence Blossom': 'https://i.ibb.co/MxztnSJ9/Item-Cadence-Blossom.webp',
   // Polarizer family
+  'Broken Wing Polarizer': 'https://i.ibb.co/xqt9n28Y/Item-Broken-Wing-Polarizer.webp',
+  'Monowing Polarizer': 'https://i.ibb.co/b0GGQKk/Monowing-Polarizer.webp',
   'Polywing Polarizer': 'https://wuwatracker.com/api/item-icons/file/polywing-polarizer.webp',
   'Layered Wing Polarizer': 'https://wuwatracker.com/api/item-icons/file/layered-wing-polarizer.webp',
   // Autopuppet Kernel family (Land of Xuanfang common drop — Suisui, Yangyang: Xuanling, Azure Oath)
+  'LF-Autopuppet Kernel': 'https://i.ibb.co/hRDdCtzW/LF-Autopuppet-Kernel.webp',
+  'MF-Autopuppet Kernel': 'https://i.ibb.co/LXC4qpr4/MF-Autopuppet-Kernel.webp',
   'HF-Autopuppet Kernel': 'https://i.ibb.co/Pv1RwHvF/HF-Autopuppet-Kernel.webp',
   'FF-Autopuppet Kernel': 'https://i.ibb.co/39PtWdsP/FF-Autopuppet-Kernel.webp',
   // v3.4/3.5 ascension specialty / weekly-boss-drop materials
@@ -158,43 +203,61 @@ const MATERIAL_IMAGES = {
   'We Who Question': 'https://i.ibb.co/G3Jd0prs/We-Who-Question.webp',
 };
 
-// [SECTION:COMMON_MAT_TIERS] — Maps common material family name → [tier3, tier4] display names
+// [SECTION:COMMON_MAT_TIERS] — Maps common material family name → [tier1, tier2, tier3, tier4] names
+// Fixed 2026-08-21 (Planner audit): was [tier3, tier4] only — real names for tiers 1-2 sourced via
+// the wiki's rarity field + Recipe synthesis chain for every family below.
 const COMMON_MAT_TIERS = {
-  'Whisperin Core': ['HF-Whisperin Core', 'FF-Whisperin Core'],
-  'Ring': ['Improved Ring', 'Tailored Ring'],
-  'Howler Core': ['HF-Howler Core', 'FF-Howler Core'],
-  'Tidal Residuum': ['HF-Tidal Residuum', 'FF-Tidal Residuum'],
-  'Polygon Core': ['HF-Polygon Core', 'FF-Polygon Core'],
-  'Mech Core': ['HF-Mech Core', 'FF-Mech Core'],
-  'Carved Crystal': ['HF-Carved Crystal', 'FF-Carved Crystal'],
-  'Exoswarm Core': ['HF-Exoswarm Core', 'FF-Exoswarm Core'],
-  'Exoswarm Pendant': ['Chipped Exoswarm Pendant', 'Intact Exoswarm Pendant'],
-  'Autopuppet Kernel': ['HF-Autopuppet Kernel', 'FF-Autopuppet Kernel'],
+  'Whisperin Core': ['LF-Whisperin Core', 'MF-Whisperin Core', 'HF-Whisperin Core', 'FF-Whisperin Core'],
+  'Ring': ['Crude Ring', 'Basic Ring', 'Improved Ring', 'Tailored Ring'],
+  'Howler Core': ['LF-Howler Core', 'MF-Howler Core', 'HF-Howler Core', 'FF-Howler Core'],
+  'Tidal Residuum': ['LF-Tidal Residuum', 'MF-Tidal Residuum', 'HF-Tidal Residuum', 'FF-Tidal Residuum'],
+  'Polygon Core': ['LF-Polygon Core', 'MF-Polygon Core', 'HF-Polygon Core', 'FF-Polygon Core'],
+  'Mech Core': ['LF-Mech Core', 'MF-Mech Core', 'HF-Mech Core', 'FF-Mech Core'],
+  'Carved Crystal': ['LF-Carved Crystal', 'MF-Carved Crystal', 'HF-Carved Crystal', 'FF-Carved Crystal'],
+  'Exoswarm Core': ['LF-Exoswarm Core', 'MF-Exoswarm Core', 'HF-Exoswarm Core', 'FF-Exoswarm Core'],
+  'Exoswarm Pendant': ['Worn Exoswarm Pendant', 'Fractured Exoswarm Pendant', 'Chipped Exoswarm Pendant', 'Intact Exoswarm Pendant'],
+  'Autopuppet Kernel': ['LF-Autopuppet Kernel', 'MF-Autopuppet Kernel', 'HF-Autopuppet Kernel', 'FF-Autopuppet Kernel'],
 };
 
-// [SECTION:FORGERY_MAT_TIERS] — Maps forgery family name → [tier3, tier4] display names
+// [SECTION:FORGERY_MAT_TIERS] — Maps forgery family name → [tier1, tier2, tier3, tier4] names
+// Fixed 2026-08-21 (Planner audit): same tier1/tier2 gap as COMMON_MAT_TIERS above, same sourcing.
+// 'Waveworn Shard' remains 2-tier — no confirmed real tier1/2 names sourced yet for that family; the
+// consuming code degrades gracefully (skips T1/T2 addition) rather than guessing.
 const FORGERY_MAT_TIERS = {
-  'Helix': ['Andante Helix', 'Presto Helix'],
-  'Cadence': ['Cadence Leaf', 'Cadence Blossom'],
-  'Metallic Drip': ['Polarized Metallic Drip', 'Heterized Metallic Drip'],
-  'Phlogiston': ['Refined Phlogiston', 'Flawless Phlogiston'],
-  'Combustor': ['Remnant Combustor', 'Reverb Combustor'],
-  'Mask': ['Mask of Distortion', 'Mask of Insanity'],
-  'Waveworn Residue': ['Waveworn Residue 235', 'Waveworn Residue 239'],
-  'Polarizer': ['Polywing Polarizer', 'Layered Wing Polarizer'],
-  'Carved Crystal': ['HF-Carved Crystal', 'FF-Carved Crystal'],
+  'Helix': ['Lento Helix', 'Adagio Helix', 'Andante Helix', 'Presto Helix'],
+  'Cadence': ['Cadence Seed', 'Cadence Bud', 'Cadence Leaf', 'Cadence Blossom'],
+  'Metallic Drip': ['Inert Metallic Drip', 'Reactive Metallic Drip', 'Polarized Metallic Drip', 'Heterized Metallic Drip'],
+  'Phlogiston': ['Impure Phlogiston', 'Extracted Phlogiston', 'Refined Phlogiston', 'Flawless Phlogiston'],
+  'Combustor': ['Incomplete Combustor', 'Aftertune Combustor', 'Remnant Combustor', 'Reverb Combustor'],
+  'Mask': ['Mask of Constraint', 'Mask of Erosion', 'Mask of Distortion', 'Mask of Insanity'],
+  'Waveworn Residue': ['Waveworn Residue 210', 'Waveworn Residue 226', 'Waveworn Residue 235', 'Waveworn Residue 239'],
+  'Polarizer': ['Broken Wing Polarizer', 'Monowing Polarizer', 'Polywing Polarizer', 'Layered Wing Polarizer'],
+  'Carved Crystal': ['LF-Carved Crystal', 'MF-Carved Crystal', 'HF-Carved Crystal', 'FF-Carved Crystal'],
   'Waveworn Shard': ['HF-Waveworn Shard', 'FF-Waveworn Shard'],
-  // Fixed 2026-08-17: real tier names are Solidified String (HF) / Melodic String (FF), not the
-  // placeholder "HF-String"/"FF-String" — those never matched any MATERIAL_IMAGES entry, so Lucilla's
-  // (and Freeze Frame/Fusion Accretion's) skill-material row rendered with no picture at all.
-  'String': ['Solidified String', 'Melodic String'],
+  // Fixed 2026-08-17: real tier names are Broken String (T1) / Spliced String (T2) / Solidified
+  // String (T3) / Melodic String (T4), not the placeholder "HF-String"/"FF-String" — those never
+  // matched any MATERIAL_IMAGES entry, so Lucilla's (and Freeze Frame/Fusion Accretion's)
+  // skill-material row rendered with no picture at all.
+  'String': ['Broken String', 'Spliced String', 'Solidified String', 'Melodic String'],
 };
 
 // [SECTION:MATERIAL_COSTS] — Total materials to max level
-// Resonator Lv 1→90 ascension costs (all 6 phases)
+// Fixed 2026-08-21 (Planner audit): every cost below previously tracked only 2 of the game's real 4
+// material tiers per family (T3/T4, the two most expensive), silently omitting T1/T2 entirely — a
+// 30-50% undercount on every material total the app has ever shown. Re-derived from
+// wutheringwaves.fandom.com's own live Lua rendering code (Module:Character Ascensions and Stats,
+// Module:Weapon Ascensions and Stats — the exact formulas used to generate every character/weapon
+// page's "Total Cost" figures) plus cross-verification against Lucilla's real rendered total on
+// nanoka.cc (170,000 / 4 / 12 / 12 / 4 / 46 / 60 matches exactly). commonT1/commonT2 and
+// forgeryT1/forgeryT2 are the newly-added tiers.
+
+// Resonator Lv 1→90 ascension costs (all 6 phases). Per-phase (wiki Module:Character Ascensions and
+// Stats asc_costs, A0-1 through A5-6): shell 5k/10k/15k/20k/40k/80k; commonT1 x4 (A0-1); specialty
+// x4/8/12/16/20 (A1-2..A5-6, total 60); commonT2 x4/8 (A1-2,A2-3, total 12); boss x3/6/9/12/16
+// (A1-2..A5-6, total 46); commonT3 x4/8 (A3-4,A4-5, total 12); commonT4 x4 (A5-6).
 const RESONATOR_ASCENSION_COSTS = {
   boss: 46,
-  commonT3: 12, commonT4: 4,
+  commonT1: 4, commonT2: 12, commonT3: 12, commonT4: 4,
   specialty: 60,
   shell: 170000,
 };
@@ -207,10 +270,13 @@ const RESONATOR_EXP_COSTS = {
   'Premium Resonance Potion': 122,
 };
 
-// All Forte nodes maxed (5 skills + inherent skills + stat bonuses)
+// All Forte nodes maxed (5 skills + inherent skills + stat bonuses). Verified against Lucilla's real
+// rendered "Skill Materials" total on nanoka.cc: 2,030,000 shell / 25 / 28 / 40 / 57 / 26 / 25 / 28 /
+// 55 / 67 — the commonT1(25)/commonT2(28)/forgeryT1(25)/forgeryT2(28) entries below were the ones
+// previously missing.
 const SKILL_UPGRADE_COSTS = {
-  forgeryT3: 55, forgeryT4: 67,
-  commonT3: 40, commonT4: 57,
+  forgeryT1: 25, forgeryT2: 28, forgeryT3: 55, forgeryT4: 67,
+  commonT1: 25, commonT2: 28, commonT3: 40, commonT4: 57,
   weeklyDrop: 26,
   shell: 2030000,
 };
@@ -219,17 +285,20 @@ const SKILL_UPGRADE_COSTS = {
 // Standard WuWa scaling: each refinement adds 25% of base passive bonus
 const WEAPON_REFINE_SCALE = [1, 1.25, 1.5, 1.75, 2];
 
-// 5★ Weapon Lv 1→90 ascension costs (all 6 phases)
+// 5★ Weapon Lv 1→90 ascension costs (all 6 phases). Per-phase (wiki Module:Weapon Ascensions and
+// Stats getAscensionCosts, rarity==5): shell 10k/20k/40k/60k/80k/120k; commonT1 x6; forgeryT1 x6,
+// commonT2 x6; forgeryT2 x8, commonT3 x4; forgeryT3 x6, commonT3 x6 (commonT3 total 10); forgeryT4
+// x8, commonT4 x4; forgeryT4 x12, commonT4 x8 (forgeryT4 total 20, commonT4 total 12).
 const WEAPON_ASCENSION_COSTS_5 = {
-  forgeryT3: 6, forgeryT4: 20,
-  commonT3: 10, commonT4: 12,
+  forgeryT1: 6, forgeryT2: 8, forgeryT3: 6, forgeryT4: 20,
+  commonT1: 6, commonT2: 6, commonT3: 10, commonT4: 12,
   shell: 330000,
 };
 
-// 4★ Weapon Lv 1→90 ascension costs
+// 4★ Weapon Lv 1→90 ascension costs (same wiki module, rarity==4)
 const WEAPON_ASCENSION_COSTS_4 = {
-  forgeryT3: 5, forgeryT4: 17,
-  commonT3: 9, commonT4: 11,
+  forgeryT1: 5, forgeryT2: 7, forgeryT3: 5, forgeryT4: 17,
+  commonT1: 5, commonT2: 5, commonT3: 9, commonT4: 11,
   shell: 264000,
 };
 

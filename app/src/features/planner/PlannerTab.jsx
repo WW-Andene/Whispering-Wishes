@@ -14,7 +14,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Calendar, Check, ChevronDown, Minus, Plus, Search, Star, X } from 'lucide-react';
-import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -30,6 +30,71 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { AstriteCalendar } from './AstriteCalendar.jsx';
 import { t, formatNumber, formatDate } from '../../utils/i18n.js';
 
+
+// Computes the full material/shell/EXP-potion requirement for one Ascension Planner target.
+// Shared by the per-character breakdown and the combined-total summary so the two never drift.
+// `ftg` = { name, ascension, skills, weapon, weaponName }.
+function computeFarmMaterials(ftg) {
+  const d = CHARACTER_DATA[ftg.name];
+  const mats = {};
+  const potions = {};
+  let shell = 0;
+  if (!d) return { mats, potions, shell };
+  const addMat = (name, qty) => { if (!name || !qty) return; if (!mats[name]) mats[name] = { qty: 0, img: MATERIAL_IMAGES?.[name] }; mats[name].qty += qty; };
+  const addPotion = (name, qty) => { if (!name || !qty) return; potions[name] = (potions[name] || 0) + qty; };
+
+  if (ftg.ascension) {
+    addMat(d.ascension?.boss, RESONATOR_ASCENSION_COSTS.boss);
+    const ct = COMMON_MAT_TIERS[d.ascension?.common];
+    if (ct) {
+      if (ct.length >= 4) { addMat(ct[0], RESONATOR_ASCENSION_COSTS.commonT1); addMat(ct[1], RESONATOR_ASCENSION_COSTS.commonT2); }
+      addMat(ct[ct.length - 2], RESONATOR_ASCENSION_COSTS.commonT3);
+      addMat(ct[ct.length - 1], RESONATOR_ASCENSION_COSTS.commonT4);
+    }
+    addMat(d.ascension?.specialty, RESONATOR_ASCENSION_COSTS.specialty);
+    shell += RESONATOR_ASCENSION_COSTS.shell;
+    addPotion('Premium Resonance Potion', RESONATOR_EXP_COSTS['Premium Resonance Potion']);
+  }
+  if (ftg.skills) {
+    const ft = FORGERY_MAT_TIERS[d.skillMaterials?.forgery];
+    if (ft) {
+      if (ft.length >= 4) { addMat(ft[0], SKILL_UPGRADE_COSTS.forgeryT1); addMat(ft[1], SKILL_UPGRADE_COSTS.forgeryT2); }
+      addMat(ft[ft.length - 2], SKILL_UPGRADE_COSTS.forgeryT3);
+      addMat(ft[ft.length - 1], SKILL_UPGRADE_COSTS.forgeryT4);
+    }
+    const ct = COMMON_MAT_TIERS[d.ascension?.common];
+    if (ct) {
+      if (ct.length >= 4) { addMat(ct[0], SKILL_UPGRADE_COSTS.commonT1); addMat(ct[1], SKILL_UPGRADE_COSTS.commonT2); }
+      addMat(ct[ct.length - 2], SKILL_UPGRADE_COSTS.commonT3);
+      addMat(ct[ct.length - 1], SKILL_UPGRADE_COSTS.commonT4);
+    }
+    addMat(d.skillMaterials?.weeklyDrop, SKILL_UPGRADE_COSTS.weeklyDrop);
+    shell += SKILL_UPGRADE_COSTS.shell;
+  }
+  if (ftg.weapon) {
+    const weaponName = ftg.weaponName || d.bestWeapon;
+    const w = weaponName ? WEAPON_DATA?.[weaponName] : null;
+    if (w?.ascensionMaterials) {
+      const costs = w.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
+      const expCosts = w.rarity === 5 ? WEAPON_EXP_COSTS_5 : WEAPON_EXP_COSTS_4;
+      const ft = FORGERY_MAT_TIERS[w.ascensionMaterials.forgery];
+      if (ft) {
+        if (ft.length >= 4) { addMat(ft[0], costs.forgeryT1); addMat(ft[1], costs.forgeryT2); }
+        addMat(ft[ft.length - 2], costs.forgeryT3);
+        addMat(ft[ft.length - 1], costs.forgeryT4);
+      }
+      const ct = COMMON_MAT_TIERS[w.ascensionMaterials.common];
+      if (ct) {
+        if (ct.length >= 4) { addMat(ct[0], costs.commonT1); addMat(ct[1], costs.commonT2); }
+        addMat(ct[ct.length - 2], costs.commonT3);
+        addMat(ct[ct.length - 1], costs.commonT4);
+      }
+      shell += costs.shell;
+      addPotion('Premium Energy Core', expCosts['Premium Energy Core']);
+    }
+  }
+  return { mats, potions, shell };
+}
 
 // [SECTION:PLANNER] ── PlannerTab main component ─────────────────────────────
 function PlannerTab({
@@ -50,10 +115,13 @@ function PlannerTab({
       return next;
     });
   }, []);
-  // Farming planner targets
+  // Ascension planner targets
   const [farmTargetsState, setFarmTargetsState] = usePersistedState('ww-farm-targets', []);
   const [farmPickerOpen, setFarmPickerOpen] = useState(false);
   const [farmSearch, setFarmSearch] = useState('');
+  // Materials already in inventory — subtracted from the combined total so it shows what's actually
+  // still needed, not just the raw max-level requirement.
+  const [ownedMats, setOwnedMats] = usePersistedState('ww-farm-owned-mats', {});
   // Collapsible card state
   const [collapsed, setCollapsed] = useState({});
 
@@ -510,38 +578,15 @@ function PlannerTab({
               const themeArt = theme?.bannerArt || currentBanner?.imageUrl;
               const artPosition = theme?.pos?.header || currentBanner?.imagePosition || 'center 30%';
 
-              // Per-character materials
-              const charMats = {};
-              let charShell = 0;
-              const addMat = (name, qty) => { if (!name || !qty) return; if (!charMats[name]) charMats[name] = { qty: 0, img: MATERIAL_IMAGES?.[name] }; charMats[name].qty += qty; };
-              if (ftg.ascension) {
-                addMat(d.ascension?.boss, RESONATOR_ASCENSION_COSTS.boss);
-                const ct = COMMON_MAT_TIERS[d.ascension?.common];
-                if (ct) { addMat(ct[0], RESONATOR_ASCENSION_COSTS.commonT3); addMat(ct[1], RESONATOR_ASCENSION_COSTS.commonT4); }
-                addMat(d.ascension?.specialty, RESONATOR_ASCENSION_COSTS.specialty);
-                charShell += RESONATOR_ASCENSION_COSTS.shell;
-              }
-              if (ftg.skills) {
-                const ft = FORGERY_MAT_TIERS[d.skillMaterials?.forgery];
-                if (ft) { addMat(ft[0], SKILL_UPGRADE_COSTS.forgeryT3); addMat(ft[1], SKILL_UPGRADE_COSTS.forgeryT4); }
-                const ct = COMMON_MAT_TIERS[d.ascension?.common];
-                if (ct) { addMat(ct[0], SKILL_UPGRADE_COSTS.commonT3); addMat(ct[1], SKILL_UPGRADE_COSTS.commonT4); }
-                addMat(d.skillMaterials?.weeklyDrop, SKILL_UPGRADE_COSTS.weeklyDrop);
-                charShell += SKILL_UPGRADE_COSTS.shell;
-              }
-              if (ftg.weapon && d.bestWeapon) {
-                const w = WEAPON_DATA?.[d.bestWeapon];
-                if (w?.ascensionMaterials) {
-                  const costs = w.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
-                  const ft = FORGERY_MAT_TIERS[w.ascensionMaterials.forgery];
-                  if (ft) { addMat(ft[0], costs.forgeryT3); addMat(ft[1], costs.forgeryT4); }
-                  const ct = COMMON_MAT_TIERS[w.ascensionMaterials.common];
-                  if (ct) { addMat(ct[0], costs.commonT3); addMat(ct[1], costs.commonT4); }
-                  charShell += costs.shell;
-                }
-              }
+              // Per-character materials (shared helper — same math as the combined summary below)
+              const { mats: charMats, potions: charPotions, shell: charShell } = computeFarmMaterials(ftg);
               const charMatList = Object.entries(charMats).sort((a, b) => b[1].qty - a[1].qty);
+              const charPotionList = Object.entries(charPotions);
               const hasAnyToggle = ftg.ascension || ftg.skills || ftg.weapon;
+              const weaponType = d.weapon;
+              const weaponOptions = ftg.weapon
+                ? Object.entries(WEAPON_DATA).filter(([, w]) => w.type === weaponType && (w.rarity === 5 || w.rarity === 4)).map(([name]) => name)
+                : [];
 
               return (
                 <div key={ftg.name} className="space-y-2">
@@ -566,6 +611,20 @@ function PlannerTab({
                       <button key={key} onClick={() => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, [key]: !x[key] } : x))} className={`kuro-btn flex-1 text-sm ${ftg[key] ? 'active-emerald' : ''}`} style={{ padding: '8px' }}>{ftg[key] ? '✓ ' : ''}{label}</button>
                     ))}
                   </div>
+
+                  {/* ── Weapon picker — only shown once the weapon toggle is on, defaults to the
+                       character's recommended weapon but lets the player plan for any weapon of the
+                       matching type instead ── */}
+                  {ftg.weapon && weaponOptions.length > 0 && (
+                    <KuroSelect
+                      value={ftg.weaponName || d.bestWeapon || ''}
+                      onChange={weaponName => setFarmTargetsState(prev => prev.map((x, j) => j === i ? { ...x, weaponName } : x))}
+                      options={weaponOptions.map(name => ({ value: name, label: name }))}
+                      className="w-full"
+                      ariaLabel={t('planner.chooseWeaponAria', { name: ftg.name })}
+                      small
+                    />
+                  )}
 
                   {/* ── Resources card ── */}
                   {hasAnyToggle && charMatList.length > 0 && (
@@ -594,39 +653,21 @@ function PlannerTab({
             {/* Combined total summary */}
             {farmTargetsState.length > 1 && (() => {
               const mats = {};
+              const potions = {};
               let totalShell = 0;
-              const addMat = (name, qty) => { if (!name || !qty) return; if (!mats[name]) mats[name] = { qty: 0, img: MATERIAL_IMAGES?.[name] }; mats[name].qty += qty; };
-              farmTargetsState.forEach(t => {
-                const d = CHARACTER_DATA[t.name];
-                if (!d) return;
-                if (t.ascension) {
-                  addMat(d.ascension?.boss, RESONATOR_ASCENSION_COSTS.boss);
-                  const ct = COMMON_MAT_TIERS[d.ascension?.common];
-                  if (ct) { addMat(ct[0], RESONATOR_ASCENSION_COSTS.commonT3); addMat(ct[1], RESONATOR_ASCENSION_COSTS.commonT4); }
-                  addMat(d.ascension?.specialty, RESONATOR_ASCENSION_COSTS.specialty);
-                  totalShell += RESONATOR_ASCENSION_COSTS.shell;
+              farmTargetsState.forEach(ftg => {
+                const r = computeFarmMaterials(ftg);
+                totalShell += r.shell;
+                for (const [name, { qty, img }] of Object.entries(r.mats)) {
+                  if (!mats[name]) mats[name] = { qty: 0, img };
+                  mats[name].qty += qty;
                 }
-                if (t.skills) {
-                  const ft = FORGERY_MAT_TIERS[d.skillMaterials?.forgery];
-                  if (ft) { addMat(ft[0], SKILL_UPGRADE_COSTS.forgeryT3); addMat(ft[1], SKILL_UPGRADE_COSTS.forgeryT4); }
-                  const ct = COMMON_MAT_TIERS[d.ascension?.common];
-                  if (ct) { addMat(ct[0], SKILL_UPGRADE_COSTS.commonT3); addMat(ct[1], SKILL_UPGRADE_COSTS.commonT4); }
-                  addMat(d.skillMaterials?.weeklyDrop, SKILL_UPGRADE_COSTS.weeklyDrop);
-                  totalShell += SKILL_UPGRADE_COSTS.shell;
-                }
-                if (t.weapon && d.bestWeapon) {
-                  const w = WEAPON_DATA?.[d.bestWeapon];
-                  if (w?.ascensionMaterials) {
-                    const costs = w.rarity === 5 ? WEAPON_ASCENSION_COSTS_5 : WEAPON_ASCENSION_COSTS_4;
-                    const ft = FORGERY_MAT_TIERS[w.ascensionMaterials.forgery];
-                    if (ft) { addMat(ft[0], costs.forgeryT3); addMat(ft[1], costs.forgeryT4); }
-                    const ct = COMMON_MAT_TIERS[w.ascensionMaterials.common];
-                    if (ct) { addMat(ct[0], costs.commonT3); addMat(ct[1], costs.commonT4); }
-                    totalShell += costs.shell;
-                  }
+                for (const [name, qty] of Object.entries(r.potions)) {
+                  potions[name] = (potions[name] || 0) + qty;
                 }
               });
               const matList = Object.entries(mats).sort((a, b) => b[1].qty - a[1].qty);
+              const potionList = Object.entries(potions);
               return (
                 <>
                   <div className="kuro-label mt-2">{t('planner.combinedTotal', { count: farmTargetsState.length })}</div>
@@ -636,16 +677,52 @@ function PlannerTab({
                       <span className="text-yellow-400 font-bold text-lg kuro-number">{formatNumber(totalShell)}</span>
                     </div>
                   </div>
+                  {potionList.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {potionList.map(([name, qty]) => {
+                        const img = MATERIAL_IMAGES?.[name];
+                        return (
+                          <div key={name} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
+                            {img && <img src={img} alt="" className="w-7 h-7 rounded flex-shrink-0" onError={hideOnError} />}
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
+                            </div>
+                            <span className="text-cyan-400 font-bold kuro-number text-base flex-shrink-0">×{formatNumber(qty)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div className="text-2xs uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>{t('planner.remainingHint')}</div>
                   <div className="grid grid-cols-2 gap-2">
-                    {matList.map(([name, { qty, img }]) => (
-                      <div key={name} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
-                        {img && <img src={img} alt="" className="w-7 h-7 rounded flex-shrink-0" onError={hideOnError} />}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
+                    {matList.map(([name, { qty, img }]) => {
+                      const owned = ownedMats[name] || 0;
+                      const remaining = Math.max(0, qty - owned);
+                      return (
+                        <div key={name} className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
+                          {img && <img src={img} alt="" className="w-7 h-7 rounded flex-shrink-0" onError={hideOnError} />}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <span className="text-2xs" style={{ color: 'var(--text-muted)' }}>{t('planner.ownedLabel')}</span>
+                              <input
+                                type="number"
+                                min="0"
+                                value={owned || ''}
+                                placeholder="0"
+                                onChange={e => {
+                                  const v = Math.max(0, parseInt(e.target.value, 10) || 0);
+                                  setOwnedMats(prev => v === 0 ? (({ [name]: _, ...rest }) => rest)(prev) : { ...prev, [name]: v });
+                                }}
+                                className="kuro-input text-2xs w-14 px-1 py-0.5"
+                                aria-label={t('planner.ownedAria', { name })}
+                              />
+                            </div>
+                          </div>
+                          <span className="text-orange-400 font-bold kuro-number text-base flex-shrink-0">×{formatNumber(remaining)}</span>
                         </div>
-                        <span className="text-orange-400 font-bold kuro-number text-base flex-shrink-0">×{qty}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               );
