@@ -826,15 +826,15 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
         header's small preview band. */}
     {imageUrl && (
       <FocusTrapModal isOpen={showFullSpine} onClose={() => setShowFullSpine(false)} onClick={() => setShowFullSpine(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered>
-        <div className="relative" style={{ width: 'min(75vw, 75vh)' }} onClick={e => e.stopPropagation()}>
-          <div className="relative w-full aspect-square" style={{ filter: 'drop-shadow(0 20px 45px rgba(0,0,0,0.6))' }}>
+        <div className="relative" style={{ width: 'min(90vw, calc(90vh * 9 / 16))' }} onClick={e => e.stopPropagation()}>
+          <div className="relative w-full aspect-[9/16]" style={{ filter: 'drop-shadow(0 20px 45px rgba(0,0,0,0.6))' }}>
             <SpinePlayer
               characterId={fullSpineId}
               context="full"
               className="absolute inset-0"
               backgroundColor="#00000000"
               fallbackImgUrl={imageUrl}
-              fallbackImgStyle={{ objectFit: 'contain' }}
+              fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
             />
           </div>
           <button onClick={() => setShowFullSpine(false)} className="kuro-btn absolute top-3 right-3 z-20 w-8 h-8 !p-0 rounded-full flex items-center justify-center" aria-label={t('modals.characterDetail.closeFullSpineAria')}>
