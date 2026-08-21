@@ -22,23 +22,15 @@ import { FullSpineViewerButton } from '../components/FullSpineViewerButton.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
-// Shared element color maps. `hex` (same source as helpers.js's ELEMENT_COLORS)
-// drives the header's layered depth gradient — the flat `bg` wash alone reads
-// as a single flat tint, so the header combines it with a diagonal fade and a
-// soft top-left glow for actual dimensionality.
+// Shared element color maps
 const DETAIL_ELEMENT_COLORS = {
-  Fusion: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/50', hex: '#f97316' },
-  Electro: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50', hex: '#a855f7' },
-  Aero: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50', hex: '#10b981' },
-  Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50', hex: '#06b6d4' },
-  Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50', hex: '#ec4899' },
-  Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', hex: '#edaf18' },
+  Fusion: { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/50' },
+  Electro: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/50' },
+  Aero: { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/50' },
+  Glacio: { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/50' },
+  Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50' },
+  Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50' },
 };
-// Layered depth wash for the header: a diagonal fade for baseline shading plus
-// a soft radial glow offset toward the top-left, so the element color reads
-// with actual light/dark nuance instead of one uniform flat tint.
-const elementDepthGradient = (hex) =>
-  `linear-gradient(to right, rgba(255,255,255,0.07), transparent 40%), radial-gradient(120% 100% at 15% 10%, ${hex}38, transparent 60%), linear-gradient(135deg, ${hex}45 0%, ${hex}18 45%, transparent 100%)`;
 
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
@@ -109,7 +101,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
         <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
         >
-          <div className="absolute inset-0" style={{ background: elementDepthGradient(colors.hex) }} />
+          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {framingMode && editingImage === `info-${name}` && (
             <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
               <span className="text-black text-sm">✓</span>
@@ -556,7 +548,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {data.bestWeapon && (() => {
           const hasWeapon = ownsWeapon(data.bestWeapon);
           return (
-          <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? '' : 'bg-white/[0.02]'}`} style={hasWeapon ? { background: `linear-gradient(to right, ${colors.hex}26, transparent)` } : { opacity: 0.55 }}>
+          <div className={`p-3 rounded-xl border ${hasWeapon ? colors.border : 'border-gray-700/50'} ${hasWeapon ? `bg-gradient-to-r ${colors.bg} from-transparent` : 'bg-white/[0.02]'}`} style={!hasWeapon ? { opacity: 0.55 } : undefined}>
             <div className="flex items-center justify-between mb-2">
               <div className="kuro-section-label">{t('modals.characterDetail.recommendedWeapon')}</div>
               {!hasWeapon && <span className="text-2xs text-gray-600 uppercase tracking-wider">{t('modals.characterDetail.notOwned')}</span>}
