@@ -352,19 +352,43 @@ function TrackerTab({
                         ? <div className="text-center text-gray-400 text-base py-6">{t('tracker.noBannersMatch', { query: bannerHistorySearch.trim() })}</div>
                         : rows.map(({ character, banner }) => {
                             const cImg = collectionImages[character];
+                            // Pair the character with its co-featured weapon from that same banner
+                            // phase — characters[idx] lines up with weapons[idx], same convention
+                            // the phase-block view below uses.
+                            const cIdx = banner.characters.indexOf(character);
+                            const w = banner.weapons[cIdx];
+                            const wImg = w ? collectionImages[w] : null;
                             return (
-                              <div key={`lr-${character}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors flex items-center gap-3" style={{ background: 'var(--bg-btn)' }}>
-                                <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star">
-                                  {cImg ? (
-                                    <img src={cImg} alt={character} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
-                                  ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-sm text-yellow-400">{character[0]}</div>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-white text-base font-medium truncate">{character}</div>
-                                  <div className="text-gray-500 text-sm">
-                                    {t('tracker.lastAppearance', { version: banner.version, phase: banner.phase })} · {formatDate(new Date(banner.startDate + 'T12:00:00'), { month: 'short', day: 'numeric', year: 'numeric' })}{banner.predicted ? ` ${t('tracker.estimated')}` : ''}
+                              <div key={`lr-${character}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors" style={{ background: 'var(--bg-btn)' }}>
+                                {banner.bannerArt && <img src={banner.bannerArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none" style={{ objectPosition: banner.bannerArt === PLACEHOLDER_IMAGE ? 'center 15%' : undefined, maskImage: 'linear-gradient(to left, black 30%, transparent 80%)', WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 80%)' }} loading="lazy" onError={hideOnError} />}
+                                <div className="relative z-10">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="text-white text-xl font-semibold">{t('tracker.lastAppearance', { version: banner.version, phase: banner.phase })}</span>
+                                    <span className="text-gray-500 text-sm">{formatDate(new Date(banner.startDate + 'T12:00:00'), { month: 'short', day: 'numeric', year: 'numeric' })}{banner.predicted ? ` ${t('tracker.estimated')}` : ''}</span>
+                                  </div>
+                                  <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                      <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                        {cImg ? (
+                                          <img src={cImg} alt={character} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
+                                        ) : (
+                                          <div className="w-full h-full flex items-center justify-center text-sm text-yellow-400">{character[0]}</div>
+                                        )}
+                                      </div>
+                                      <span className="text-sm text-yellow-400 font-medium truncate">{character}</span>
+                                    </div>
+                                    {w ? (
+                                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                        <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                          {wImg ? (
+                                            <img src={wImg} alt={w} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center"><Sword size={14} className="text-pink-400" /></div>
+                                          )}
+                                        </div>
+                                        <span className="text-sm text-pink-400 font-medium truncate">{w}</span>
+                                      </div>
+                                    ) : <div className="flex-1" />}
                                   </div>
                                 </div>
                               </div>
