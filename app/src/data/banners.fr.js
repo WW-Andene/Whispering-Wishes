@@ -74,11 +74,6 @@ export const EVENTS_FR = {
     subtitle: 'Eaux Renaissantes',
     description: 'Défi de combat avec système de jetons',
   },
-  versionSpecialCampaign: {
-    name: 'Campagne spéciale de version',
-    subtitle: 'Récompenses de connexion',
-    description: 'En Version 3.6, un événement spécial est disponible : vos 10 premiers Conviers dans le Convier Résonateur Réverbérant sont gratuits.',
-  },
   giftsOfDriftingMist: {
     name: 'Cadeaux de la Brume Errante',
     subtitle: 'Événement de connexion sur 7 jours',

@@ -9,12 +9,6 @@ import { RELEASE_ORDER, CHARACTER_DATA } from './characters.js';
 // Shared fallback art for any character/weapon that hasn't had a real portrait/icon
 // sourced yet (post-v3.3 additions). Swap out per-entry as real art becomes available.
 const PLACEHOLDER_IMAGE = 'https://i.ibb.co/cK3h3qFh/Abby-Card2.webp';
-// v3.6 events with no dedicated art anywhere yet (verified 2026-08-20 via the fandom wiki's own
-// MediaWiki API — action=query on all 5 event titles returns "missing", and even the official
-// v3.6 splashscreen file referenced on Version/3.6 is itself unuploaded). Using Qingxiao's key art
-// (the new 3.6 debut Resonator, uploaded to fandom 2026-08-20) as a closer-fitting placeholder than
-// the generic Abby-Card2 image, re-hosted on imgbb 2026-08-20. Swap for real event art once posted.
-const V36_EVENT_PLACEHOLDER = 'https://i.ibb.co/5JtfTK8/wuwa-v36-event-placeholder.webp';
 
 // [SECTION:BANNERS]
 // v3.6 Phase 1 — Qingxiao debut + Denia rerun, August 20 - September 10, 2026. CONFIRMED LIVE
@@ -298,26 +292,17 @@ const EVENTS = {
   // (JS-rendered browser fetch — the site exposes no readable embedded JSON for this page unlike
   // the achievements dataset, so exact per-event start/end timestamps could not be recovered from
   // the rendered bar via text scrape — only names + relative duration labels). Every v3.5-only
-  // one-off below (versionSpecialCampaign, giftsOfAftertune, lamentReconTacetCrisis,
-  // virtualCrisisQuadrantTrials, lolloCampaignNewJourney) has ended and does NOT appear on the live
-  // v3.6 bar — replaced with the actual v3.6 event names confirmed present on that bar. Dates are
-  // anchored to the confirmed-live v3.6-p1 window (BANNER_HISTORY: 2026-08-20 -> 2026-09-10) since
-  // exact per-event timestamps aren't recoverable this way — same "estimate anchored to a confirmed
-  // boundary" approach already used elsewhere in this file (see VERSION_DATES/BANNER_HISTORY 3.6
-  // comments). `rewards` left unset where no official figure is published, matching this file's
+  // one-off below (giftsOfAftertune, lamentReconTacetCrisis, virtualCrisisQuadrantTrials,
+  // lolloCampaignNewJourney) has ended and does NOT appear on the live v3.6 bar — replaced with the
+  // actual v3.6 event names confirmed present on that bar. Dates are anchored to the confirmed-live
+  // v3.6-p1 window (BANNER_HISTORY: 2026-08-20 -> 2026-09-10) since exact per-event timestamps
+  // aren't recoverable this way — same "estimate anchored to a confirmed boundary" approach already
+  // used elsewhere in this file (see VERSION_DATES/BANNER_HISTORY 3.6 comments). `versionSpecialCampaign`
+  // removed 2026-08-21: it was never confirmed on any source (no fandom article, not on wuwatracker's
+  // timeline, no wiki-uploaded splashscreen) — likely a hallucinated/misremembered entry from an
+  // earlier pass, not a real tracked event. `rewards` left unset where no official figure is published,
+  // matching this file's
   // existing convention (EventCard.jsx hides the badge cleanly when absent).
-  versionSpecialCampaign: {
-    name: 'Version Special Campaign',
-    subtitle: 'Login Rewards',
-    description: 'In Version 3.6, a special event will be available: your first 10x Convenes in Reverb Resonator Convene are free.',
-    resetType: 'Version update',
-    color: 'yellow',
-    currentStart: '2026-08-20T08:00:00Z',
-    currentEnd: '2026-09-10T09:59:59Z',
-    gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
-    accentColor: 'yellow',
-    imageUrl: V36_EVENT_PLACEHOLDER,
-  },
   giftsOfDriftingMist: {
     name: 'Gifts of Drifting Mist',
     subtitle: '7 Day Login Event',
