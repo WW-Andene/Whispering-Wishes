@@ -1111,9 +1111,9 @@ export const SKILL_NAME_FR = {
   },
   'Galbrena': {
     'Stage 1-4': 'Étape 1-4',
-    'Volley of Death 1-3': 'Volée de la Mort 1-3',
+    'Volley of Death 1-3': 'Salve Mortelle 1-3',
     'Encroach': 'Empiètement',
-    'Ascent of Malice': 'Ascension de la Malice',
+    'Ascent of Malice': 'Ascension de Malice',
     'Hellfire Absolution': "Absolution du Feu Infernal",
     'Hellflare Overload': 'Surcharge du feu infernal',
     'Ashen Pursuit': 'Poursuite Cendrée',
@@ -1121,9 +1121,9 @@ export const SKILL_NAME_FR = {
   'Iuno': {
     'Moonring 1-3': 'Anneau Lunaire 1-3',
     'Moonbow 1-3': 'Arc Lunaire 1-3',
-    'Pulse of Origins': 'Pouls des Origines',
+    'Pulse of Origins': 'Pulsation des Origines',
     'Closing Refrain': 'Refrain final',
-    'Arc Beyond the Edge': 'Arc Au-delà du Bord',
+    'Arc Beyond the Edge': 'Arc Au-delà des Limites',
     'Absolute Fullness': 'Plénitude Absolue',
     'Beneath Lunar Tides': 'Sous la marée lunaire',
     'Illuminated Manifestation': 'Manifestation Illuminée',
