@@ -5725,13 +5725,25 @@ const CHAIN_NODE_ICONS = {
     s5: 'https://i.ibb.co/vMRL5cr/suisui-s5.webp',
     s6: 'https://i.ibb.co/tM5fJd43/suisui-s6.webp',
   },
-  // Lucy/Rebecca/Lucilla (2026-08-17): NOT populated — verified via direct MediaWiki titles queries
+  // Lucy/Rebecca (2026-08-17): NOT populated — verified via direct MediaWiki titles queries
   // (action=query&titles=File:Sequence Node <exact S1-S6 node name>.png for all 18 node names across
   // all three characters) that wutheringwaves.fandom.com has not uploaded Sequence Node icon assets
-  // for any of them yet (their own Chain Table template renders an empty icon column on all three
+  // for either of them yet (their own Chain Table template renders an empty icon column on both
   // /Combat pages — a genuine wiki content gap for these June-2026-release characters, not a fetch
   // failure). Node NAMES are still populated below in CHAIN_NODE_NAMES since the modal renders names
   // independently of icons; add icons here once fandom uploads them.
+  // Lucilla added 2026-08-21: fandom still has no Sequence Node icons for her, but nanoka.cc's
+  // rendered character page (ww.nanoka.cc/character/1109) references the real datamined game assets
+  // directly — static.nanoka.cc/assets/ww/UIResources/Common/Image/IconDevice/T_IconDevice_LuoselaM1-6_UI.webp
+  // ("Luosela" = Lucilla's internal CN codename) — fetched and re-hosted on imgbb 2026-08-21.
+  'Lucilla': {
+    s1: 'https://i.ibb.co/x8g5ZyBV/lucilla-chain-s1.webp',
+    s2: 'https://i.ibb.co/JjZqqVyJ/lucilla-chain-s2.webp',
+    s3: 'https://i.ibb.co/NghnCyVj/lucilla-chain-s3.webp',
+    s4: 'https://i.ibb.co/FbHZ9dmQ/lucilla-chain-s4.webp',
+    s5: 'https://i.ibb.co/vv4kf7XL/lucilla-chain-s5.webp',
+    s6: 'https://i.ibb.co/6JXB03hR/lucilla-chain-s6.webp',
+  },
   // Danjin/Yangyang/Sanhua added 2026-08-18: fandom DOES have these Sequence_Node_*.png assets
   // uploaded (unlike the June-2026 characters above) — fetched directly via the MediaWiki API
   // (action=query&titles=File:Sequence Node <exact S1-S6 node name>.png&prop=imageinfo) and linked
