@@ -8,7 +8,6 @@ import { User, Crown } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { haptic } from '../../utils/helpers.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { SpinePlayer, getSpineId } from '../../shared/components/SpinePlayer.jsx';
 
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t } from '../../utils/i18n.js';
@@ -41,9 +40,6 @@ const CollectionGridCard = memo(({ name, label, count, imgUrl, framing, isSelect
   const displayLabel = label || name;
   // Pixel-level background removal for echo images (skip if pre-processed)
   const processedUrl = imgUrl;
-  const [spineFailed, setSpineFailed] = useState(false);
-  const spineId = isCharacter && isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
-  const useSpine = !!spineId && !spineFailed;
   const longPressHandlers = useLongPress(
     onLongPress ? (event) => onLongPress(name, isCharacter, event) : null,
     () => {
@@ -81,35 +77,19 @@ const CollectionGridCard = memo(({ name, label, count, imgUrl, framing, isSelect
           : isEcho ? 'radial-gradient(ellipse 75% 70% at center 45%, black 40%, transparent 85%)'
           : 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
       }}>
-        {useSpine ? (
-          <SpinePlayer
-            characterId={spineId}
-            className="w-full h-full pointer-events-none"
-            style={{ opacity: owned ? collOpacity : 0.3, filter: owned ? undefined : 'grayscale(100%)' }}
-            backgroundColor="#00000000"
-            onError={() => setSpineFailed(true)}
-            fallbackImgUrl={processedUrl || imgUrl}
-            fallbackImgStyle={{
-              transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
-              maskImage: collMask,
-              WebkitMaskImage: collMask,
-            }}
-          />
-        ) : (
-          <img
-            src={processedUrl || imgUrl}
-            alt={displayLabel}
-            className={`w-full h-full ${isCharacter ? 'object-contain' : 'object-cover'} pointer-events-none`}
-            style={{
-              transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
-              opacity: owned ? collOpacity : 0.3,
-              filter: owned ? 'none' : 'grayscale(100%)',
-              maskImage: collMask,
-              WebkitMaskImage: collMask
-            }}
-            onError={hideOnError}
-          />
-        )}
+        <img
+          src={processedUrl || imgUrl}
+          alt={displayLabel}
+          className={`w-full h-full ${isCharacter ? 'object-contain' : 'object-cover'} pointer-events-none`}
+          style={{
+            transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
+            opacity: owned ? collOpacity : 0.3,
+            filter: owned ? 'none' : 'grayscale(100%)',
+            maskImage: collMask,
+            WebkitMaskImage: collMask
+          }}
+          onError={hideOnError}
+        />
       </div>
     ) : (
       <div className="absolute inset-0 bg-neutral-800 animate-pulse" />

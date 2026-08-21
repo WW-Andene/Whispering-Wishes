@@ -11,7 +11,6 @@ import { haptic, getElementColor, getElementIcon, getWeaponTypeIcon } from '../.
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
-import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
 
 const BANNER_GRADIENT_MAP = {
   Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400', glow: '249,115,22' },
@@ -78,7 +77,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
-  const [spineFailed, setSpineFailed] = useState(false);
 
   // Use unified mask generator
   const maskGradient = visualSettings
@@ -86,8 +84,8 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   const isFull = visualSettings?.animationsEnabled === 'full';
-  const spineId = isChar ? getSpineId(item.name) : null;
-  const useSpine = isFull && spineId && !spineFailed;
+  // Spine banners are disabled app-wide; Spine sprites are limited to the detail modal.
+  const useSpine = false;
 
   return (
     <div className={isFull ? 'banner-card-glow rounded-xl' : ''} style={isFull ? { '--glow-color': style.glow, zIndex: 5 } : { zIndex: 5 }}>
@@ -117,18 +115,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           />
         </div>
       )}
-      {useSpine && (
-        <div className="absolute inset-0" style={{ zIndex: 2 }}>
-          <SpinePlayer
-            characterId={spineId}
-            className="w-full h-full"
-            style={{ opacity: pictureOpacity }}
-            backgroundColor="#00000000"
-            onError={() => setSpineFailed(true)}
-          />
-        </div>
-      )}
-
       {endDate && (
         <div className="absolute top-2 right-2 z-20">
           <CountdownTimer endDate={endDate} color={timerColor || 'yellow'} />
