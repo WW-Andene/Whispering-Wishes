@@ -52,6 +52,9 @@ function collectPaddingBoxes(rootEl) {
       boxTop, boxLeft, boxW, boxH, pt, pr, pb, pl,
     });
   }
+  // Number them reading order: top-to-bottom, then left-to-right
+  boxes.sort((a, b) => a.boxTop - b.boxTop || a.boxLeft - b.boxLeft);
+  boxes.forEach((b, i) => { b.num = i + 1; });
   return boxes;
 }
 
@@ -96,7 +99,8 @@ const PaddingDebugOverlay = () => {
     <div data-ww-debug-overlay className="fixed inset-0 pointer-events-none" style={{ zIndex: 999999 }}>
       {boxes.map(b => {
         const uniform = b.pt === b.pr && b.pt === b.pb && b.pt === b.pl;
-        const label = uniform ? `${b.pt}px` : [b.pt && `T${b.pt}`, b.pr && `R${b.pr}`, b.pb && `B${b.pb}`, b.pl && `L${b.pl}`].filter(Boolean).join(' ');
+        const values = uniform ? `${b.pt}px` : [b.pt && `T${b.pt}`, b.pr && `R${b.pr}`, b.pb && `B${b.pb}`, b.pl && `L${b.pl}`].filter(Boolean).join(' ');
+        const label = `#${b.num} ${values}`;
         return (
           <React.Fragment key={b.key}>
             {b.pt > 0 && <div style={{ position: 'fixed', top: b.boxTop, left: b.boxLeft, width: b.boxW, height: b.pt, background: 'rgba(236,72,153,0.35)', outline: '1px solid rgba(236,72,153,0.7)' }} />}
