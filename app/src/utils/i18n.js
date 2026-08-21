@@ -30,7 +30,6 @@ import { useSyncExternalStore } from 'react';
 // Modules are merged into a single flat-namespaced object below.
 import enApp from '../locale/en/app.json';
 import enTabs from '../locale/en/tabs.json';
-import enOnboarding from '../locale/en/onboarding.json';
 import enTracker from '../locale/en/tracker.json';
 import enCalculator from '../locale/en/calculator.json';
 import enPlanner from '../locale/en/planner.json';
@@ -49,7 +48,6 @@ import enAppShared from '../locale/en/appShared.json';
 
 import frApp from '../locale/fr/app.json';
 import frTabs from '../locale/fr/tabs.json';
-import frOnboarding from '../locale/fr/onboarding.json';
 import frTracker from '../locale/fr/tracker.json';
 import frCalculator from '../locale/fr/calculator.json';
 import frPlanner from '../locale/fr/planner.json';
@@ -69,7 +67,6 @@ import frAppShared from '../locale/fr/appShared.json';
 const en = {
   app: { ...enApp, ...enApp2, ...enAppShared },
   tabs: enTabs,
-  onboarding: enOnboarding,
   tracker: enTracker,
   calculator: enCalculator,
   planner: enPlanner,
@@ -88,7 +85,6 @@ const en = {
 const fr = {
   app: { ...frApp, ...frApp2, ...frAppShared },
   tabs: frTabs,
-  onboarding: frOnboarding,
   tracker: frTracker,
   calculator: frCalculator,
   planner: frPlanner,

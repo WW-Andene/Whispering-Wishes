@@ -14,12 +14,14 @@
     "step3Desc": "See active banners, pity progress (pulls since last 5★), and countdowns.",
     "step4Title": "Build Your Collection",
     "step4Desc": "Track all your Resonators and weapons.",
-    "step5Title": "Calculate Your Odds",
-    "step5Desc": "Enter your Astrite and pity to see exact pull probabilities.",
-    "step6Title": "View Analytics",
-    "step6Desc": "Check your luck rating, charts, and Convene history.",
-    "step7Title": "You're Ready!",
-    "step7Desc": "Good luck on your Convenes, Rover!"
+    "step5Title": "Plan Your Teams",
+    "step5Desc": "Build resonator teams and preview rotation damage in the Teams tab.",
+    "step6Title": "Calculate Your Odds",
+    "step6Desc": "Enter your Astrite and pity to see exact pull probabilities.",
+    "step7Title": "View Analytics",
+    "step7Desc": "Check your luck rating, charts, and Convene history.",
+    "step8Title": "You're Ready!",
+    "step8Desc": "Good luck on your Convenes, Rover!"
   },
   "serverSelector": {
     "ariaLabel": "Select server region",
