@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
+import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
 import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
@@ -88,8 +88,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
   const isFullAnim = visualSettings?.animationsEnabled === 'full';
   const spineId = isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
-  
+  // Full-spine viewer: available whenever this character has a sprite registered,
+  // independent of the header's own animationsEnabled/framingMode gating.
+  const fullSpineId = getSpineId(name, { surface: 'collection' });
+  const [showFullSpine, setShowFullSpine] = React.useState(false);
+
   return (
+    <>
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.characterDetail.resonatorDetailsAria', { name })} centered>
       <div
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border ${colors.border}`}
@@ -138,6 +143,15 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
+          {fullSpineId && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowFullSpine(true); }}
+              className="absolute bottom-3 right-3 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 border border-white/20"
+              aria-label={t('modals.characterDetail.viewFullSpineAria', { name })}
+            >
+              <Play size={18} className="fill-white ml-0.5" />
+            </button>
+          )}
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border} inline-flex items-center gap-1`}>
@@ -804,6 +818,29 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
        </div>
       </div>
     </FocusTrapModal>
+
+    {/* Full spine-sprite viewer — round play button in the header opens this centered
+        panel showing the character's full sprite animation, unconstrained by the
+        header's small preview band. */}
+    {fullSpineId && (
+      <FocusTrapModal isOpen={showFullSpine} onClose={() => setShowFullSpine(false)} onClick={() => setShowFullSpine(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered>
+        <div className={`kuro-card relative w-full max-w-sm aspect-square border ${colors.border}`} onClick={e => e.stopPropagation()}>
+          <button onClick={() => setShowFullSpine(false)} className="absolute top-3 right-3 z-20 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeFullSpineAria')}>
+            <X size={16} />
+          </button>
+          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} rounded-2xl`} />
+          <SpinePlayer
+            characterId={fullSpineId}
+            context="full"
+            className="absolute inset-0 rounded-2xl"
+            backgroundColor="#00000000"
+            fallbackImgUrl={imageUrl}
+            fallbackImgStyle={{ objectFit: 'contain' }}
+          />
+        </div>
+      </FocusTrapModal>
+    )}
+    </>
   );
 };
 
