@@ -15,6 +15,7 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { ALLOWED_IMAGE_HOSTS } from '../../shared/constants/appConstants.js';
+import { getDebugPaddingEnabled, setDebugPaddingEnabled } from '../../shared/components/PaddingDebugOverlay.jsx';
 import { t } from '../../utils/i18n.js';
 
 // ── Extracted tab components ─────────────────────────────────────────────────
@@ -132,6 +133,34 @@ function EchoBgRemover({ toast, adminHash }) {
   );
 }
 
+// ═══ Padding Debug Toggle ═══════════════════════════════════════════════════
+function PaddingDebugTab() {
+  const [enabled, setEnabled] = useState(getDebugPaddingEnabled);
+
+  const toggle = () => {
+    const next = !enabled;
+    setEnabled(next);
+    setDebugPaddingEnabled(next);
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-pink-500/10 border border-pink-500/30 rounded-lg p-3">
+        <p className="text-pink-400 text-base font-medium mb-1">Padding debug</p>
+        <p className="text-gray-400 text-sm">
+          Affiche en surimpression, sur toute l'app, le padding de chaque élément (bandes roses + valeurs en px). Reste actif même après avoir fermé ce panneau.
+        </p>
+      </div>
+      <button
+        onClick={toggle}
+        className={`kuro-btn w-full text-base py-2 ${enabled ? 'active-pink' : ''}`}
+      >
+        {enabled ? 'Désactiver le mode debug' : 'Activer le mode debug'}
+      </button>
+    </div>
+  );
+}
+
 // ═══ AdminPanel ═════════════════════════════════════════════════════════════
 export default function AdminPanel({
   showAdminPanel, setShowAdminPanel,
@@ -172,6 +201,7 @@ export default function AdminPanel({
     { key: 'players', label: <><span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse" />{t('admin.tabs.players')}</>, active: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
     { key: 'echobg', label: t('admin.tabs.echobg'), active: 'bg-pink-500/10 text-pink-400 border border-pink-500/30' },
     { key: 'diag', label: t('admin.tabs.diag'), active: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' },
+    { key: 'debug', label: 'Debug', active: 'bg-pink-500/10 text-pink-400 border border-pink-500/30' },
   ];
 
   return (
@@ -340,6 +370,8 @@ export default function AdminPanel({
                   )}
 
                   {adminTab === 'echobg' && <EchoBgRemover toast={toast} adminHash={ADMIN_HASH} />}
+
+                  {adminTab === 'debug' && <PaddingDebugTab />}
 
                   {adminTab === 'diag' && (() => {
                     let diag = null;
