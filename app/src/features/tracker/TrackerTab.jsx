@@ -47,6 +47,7 @@ function TrackerTab({
   }, []);
   const [showBannerHistory, setShowBannerHistory] = useState(false);
   const [bannerHistorySearch, setBannerHistorySearch] = useState('');
+  const [bannerHistorySort, setBannerHistorySort] = useState('newest');
   const [showPullHistory, setShowPullHistory] = useState(false);
   const [pullHistorySearch, setPullHistorySearch] = useState('');
   // P5-F003: Debounce search to avoid filtering 2000+ pulls per keystroke
@@ -296,7 +297,7 @@ function TrackerTab({
                   <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
                 {/* Search / filter input */}
-                <div className="px-4 pt-3 pb-1">
+                <div className="px-4 pt-3 pb-1 space-y-2">
                   <div className="relative">
                     <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     <input
@@ -308,20 +309,71 @@ function TrackerTab({
                       aria-label={t('tracker.filterBannerHistory')}
                     />
                   </div>
+                  <KuroSelect
+                    value={bannerHistorySort}
+                    onChange={setBannerHistorySort}
+                    options={[
+                      { value: 'newest', label: t('tracker.sortNewestFirst') },
+                      { value: 'release', label: t('tracker.sortReleaseOrder') },
+                      { value: 'lastRerun', label: t('tracker.sortLastRerun') },
+                    ]}
+                    className="w-full"
+                    ariaLabel={t('tracker.sortBannerHistory')}
+                    small
+                  />
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2" data-sheet-scroll>
                   {(() => {
                     const q = bannerHistorySearch.trim().toLowerCase();
-                    const filtered = q
-                      ? BANNER_HISTORY.filter(b =>
-                          b.characters.some(c => c.toLowerCase().includes(q)) ||
-                          b.weapons.some(w => w.toLowerCase().includes(q)) ||
-                          `v${b.version}`.toLowerCase().includes(q) ||
-                          `p${b.phase}`.toLowerCase().includes(q) ||
-                          `${b.version}`.includes(q) ||
-                          `v${b.version} p${b.phase}`.toLowerCase().includes(q)
-                        )
-                      : BANNER_HISTORY;
+                    const matchesQuery = b =>
+                      b.characters.some(c => c.toLowerCase().includes(q)) ||
+                      b.weapons.some(w => w.toLowerCase().includes(q)) ||
+                      `v${b.version}`.toLowerCase().includes(q) ||
+                      `p${b.phase}`.toLowerCase().includes(q) ||
+                      `${b.version}`.includes(q) ||
+                      `v${b.version} p${b.phase}`.toLowerCase().includes(q);
+
+                    // "Last Rerun" view: one row per character, showing only their most recent
+                    // (latest-dated) banner appearance — lets players see at a glance who is
+                    // overdue for a rerun, instead of scrolling every past phase.
+                    if (bannerHistorySort === 'lastRerun') {
+                      const latestByCharacter = new Map();
+                      for (const b of BANNER_HISTORY) {
+                        for (const c of b.characters) {
+                          const prev = latestByCharacter.get(c);
+                          if (!prev || new Date(b.startDate) > new Date(prev.startDate)) latestByCharacter.set(c, b);
+                        }
+                      }
+                      const rows = Array.from(latestByCharacter.entries())
+                        .map(([character, banner]) => ({ character, banner }))
+                        .filter(({ character, banner }) => !q || character.toLowerCase().includes(q) || matchesQuery(banner))
+                        .sort((a, b) => new Date(b.banner.startDate) - new Date(a.banner.startDate));
+                      return rows.length === 0
+                        ? <div className="text-center text-gray-400 text-base py-6">{t('tracker.noBannersMatch', { query: bannerHistorySearch.trim() })}</div>
+                        : rows.map(({ character, banner }) => {
+                            const cImg = collectionImages[character];
+                            return (
+                              <div key={`lr-${character}`} className="relative overflow-hidden p-3 rounded-lg border border-[var(--border-medium)] hover:border-white/15 transition-colors flex items-center gap-3" style={{ background: 'var(--bg-btn)' }}>
+                                <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star">
+                                  {cImg ? (
+                                    <img src={cImg} alt={character} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-sm text-yellow-400">{character[0]}</div>
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-white text-base font-medium truncate">{character}</div>
+                                  <div className="text-gray-500 text-sm">
+                                    {t('tracker.lastAppearance', { version: banner.version, phase: banner.phase })} · {formatDate(new Date(banner.startDate + 'T12:00:00'), { month: 'short', day: 'numeric', year: 'numeric' })}{banner.predicted ? ` ${t('tracker.estimated')}` : ''}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          });
+                    }
+
+                    const ordered = bannerHistorySort === 'release' ? [...BANNER_HISTORY].reverse() : BANNER_HISTORY;
+                    const filtered = q ? ordered.filter(matchesQuery) : ordered;
                     return filtered.length === 0
                       ? <div className="text-center text-gray-400 text-base py-6">{t('tracker.noBannersMatch', { query: bannerHistorySearch.trim() })}</div>
                       : filtered.map(b => (

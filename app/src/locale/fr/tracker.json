@@ -38,5 +38,10 @@
   "filterByBannerType": "Filtrer par type de bannière",
   "filterByRarity": "Filtrer par rareté",
   "unknown": "Inconnu",
-  "pityLabel": "Pitié :"
+  "pityLabel": "Pitié :",
+  "sortBannerHistory": "Trier l'historique des bannières",
+  "sortNewestFirst": "Plus récent d'abord",
+  "sortReleaseOrder": "Ordre de sortie",
+  "sortLastRerun": "Dernier rerun",
+  "lastAppearance": "Dernier : v{{version}} P{{phase}}"
 }

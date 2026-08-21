@@ -38,5 +38,10 @@
   "filterByBannerType": "Filter by banner type",
   "filterByRarity": "Filter by rarity",
   "unknown": "Unknown",
-  "pityLabel": "Pity:"
+  "pityLabel": "Pity:",
+  "sortBannerHistory": "Sort banner history",
+  "sortNewestFirst": "Newest First",
+  "sortReleaseOrder": "Release Order",
+  "sortLastRerun": "Last Rerun",
+  "lastAppearance": "Last: v{{version}} P{{phase}}"
 }
