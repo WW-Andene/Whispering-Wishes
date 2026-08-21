@@ -1,34 +1,8 @@
 # Whispering Wishes — Wuthering Waves Companion
+# Blocked to all automated crawlers (search engines included). This has no
+# effect on the app itself or its assets loading normally in a user's
+# browser — robots.txt only governs bots, not real page loads.
 
 User-agent: *
-Content-Signal: search=yes,ai-train=no,use=reference
-Allow: /
-
-User-agent: Amazonbot
+Content-Signal: search=no,ai-train=no,use=no
 Disallow: /
-
-User-agent: Applebot-Extended
-Disallow: /
-
-User-agent: Bytespider
-Disallow: /
-
-User-agent: CCBot
-Disallow: /
-
-User-agent: ClaudeBot
-Disallow: /
-
-User-agent: CloudflareBrowserRenderingCrawler
-Disallow: /
-
-User-agent: Google-Extended
-Disallow: /
-
-User-agent: GPTBot
-Disallow: /
-
-User-agent: meta-externalagent
-Disallow: /
-
-Sitemap: https://whispering-wishes.vercel.app/sitemap.xml
