@@ -4,28 +4,34 @@ import android.os.Bundle;
 import android.webkit.WebView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import com.getcapacitor.BridgeActivity;
 
-// Android 15+ (this app targets SDK 36) enforces edge-to-edge and ignores the
-// old opt-out APIs entirely — the window is always laid out under the
-// status/nav bars, and the system draws its own status bar chrome as a
-// compositor-level layer, not a transparent cutout that reveals whatever the
-// app painted underneath. That's why pinning windowBackground to the app's
-// own color didn't make the status bar strip blend — nothing the app draws
-// is actually visible there when the WebView is padded away from it.
+// Android 15+ (this app targets SDK 36) enforces edge-to-edge at the OS
+// level, but only on a device whose actual platform build is genuinely
+// Android 15+ — some OEM Android builds (e.g. Xiaomi/MIUI) lag behind or
+// patch this differently, so relying on it being automatic isn't safe.
+// setDecorFitsSystemWindows(false) requests it explicitly on every API
+// level this app supports (24+), so the WebView's real Android View always
+// spans the full physical screen — top and bottom — regardless of what a
+// given OEM's platform does on its own. Without this, the window can fall
+// back to the old "fitted" layout, where the OS itself shrinks the
+// WebView's actual height to make room for the status/nav bars — that's a
+// real reduction of the view's bounds, not something CSS padding controls.
 //
-// So this stays genuinely edge-to-edge (no View padding reserved at all —
-// the WebView draws its own background all the way to the physical screen
-// edges, top and bottom), and instead of trusting the WebView's own
-// env(safe-area-inset-*) CSS mapping (which has proven unreliable on-device
-// for positioning the header), the real inset values are pushed in directly
-// as CSS custom properties on <html> via evaluateJavascript. App.jsx reads
-// --safe-area-top/--safe-area-bottom instead of env() on native Android.
+// With the window genuinely edge-to-edge, the only remaining job is
+// positioning the header/nav so they don't sit under the status bar or
+// gesture area. Real inset values are computed here and pushed into the
+// WebView as CSS custom properties on <html> via evaluateJavascript,
+// rather than trusting the WebView's own env(safe-area-inset-*) mapping
+// (which has proven unreliable on-device for that). App.jsx reads
+// --safe-area-top/--safe-area-bottom.
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
             // systemBars() bundles statusBars|navigationBars|captionBar together, and on
             // some OEM builds (e.g. Xiaomi/MIUI) that combined top value comes back taller
