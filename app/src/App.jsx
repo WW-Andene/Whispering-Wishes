@@ -857,7 +857,7 @@ function WhisperingWishesInner() {
 
   const {
     activeTheme, themeAccent,
-    headerBgUrl, headerBgPos, navBgUrl, navBgPos, appBgUrl, appBgPos, appBgType,
+    headerBgUrl, headerBgPos, headerBgType, navBgUrl, navBgPos, navBgType, appBgUrl, appBgPos, appBgType,
   } = useThemeAccent(visualSettings);
 
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
@@ -946,7 +946,7 @@ function WhisperingWishesInner() {
               loop
               muted
               playsInline
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               style={{ opacity: bgFramingMode ? 0.6 : 0.35, objectPosition: appBgPos }}
             />
           ) : (
@@ -977,7 +977,11 @@ function WhisperingWishesInner() {
       <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, paddingTop: 'env(safe-area-inset-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
-          <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
+          headerBgType === 'animated' ? (
+            <video src={headerBgUrl} autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-contain" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: headerBgPos }} />
+          ) : (
+            <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
+          )
         )}
         {bgFramingMode && headerBgUrl && (
           <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'header' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('header')}>
@@ -1063,7 +1067,11 @@ function WhisperingWishesInner() {
           if (newTab) { setActiveTab(newTab); setTimeout(() => document.getElementById(`tab-${newTab}`)?.focus(), 0); }
         }}>
         {navBgUrl && (
-          <img src={navBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: navBgPos }} />
+          navBgType === 'animated' ? (
+            <video src={navBgUrl} autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-contain" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: navBgPos }} />
+          ) : (
+            <img src={navBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: navBgPos }} />
+          )
         )}
         {bgFramingMode && navBgUrl && (
           <div className={`absolute inset-0 z-20 cursor-pointer ${editingBgTarget === 'nav' ? 'ring-2 ring-inset ring-cyan-400' : ''}`} onClick={() => setEditingBgTarget('nav')}>

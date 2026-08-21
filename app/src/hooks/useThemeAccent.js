@@ -25,8 +25,10 @@ export function useThemeAccent(visualSettings) {
   // Independent background images
   const headerBgUrl = visualSettings.headerBg?.url || null;
   const headerBgPos = _bgPos(visualSettings.headerBg);
+  const headerBgType = visualSettings.headerBg?.type || null;
   const navBgUrl = visualSettings.navBg?.url || null;
   const navBgPos = _bgPos(visualSettings.navBg);
+  const navBgType = visualSettings.navBg?.type || null;
   const appBgUrl = visualSettings.appBg?.url || null;
   const appBgPos = _bgPos(visualSettings.appBg);
   const appBgType = visualSettings.appBg?.type || null;
@@ -57,8 +59,8 @@ export function useThemeAccent(visualSettings) {
 
   return {
     activeTheme, themeAccent,
-    headerBgUrl, headerBgPos,
-    navBgUrl, navBgPos,
+    headerBgUrl, headerBgPos, headerBgType,
+    navBgUrl, navBgPos, navBgType,
     appBgUrl, appBgPos, appBgType,
   };
 }
