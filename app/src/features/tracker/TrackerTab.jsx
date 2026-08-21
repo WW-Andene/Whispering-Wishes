@@ -96,8 +96,8 @@ function TrackerTab({
 
             {/* Onboarding hint for new users with no imported data */}
             {!state.profile.importedAt && !dismissedImport && setActiveTab && (
-              <div className="flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 content-layer">
-                <button onClick={() => setActiveTab('profile')} className="flex items-center gap-2.5 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+              <div className="flex items-center gap-3 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-3 content-layer">
+                <button onClick={() => setActiveTab('profile')} className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
                   <Upload size={14} className="text-cyan-400 flex-shrink-0" />
                   <span className="text-cyan-300/90 text-base">{t('tracker.importHintPre')} <strong>{t('tabs.profile')}</strong> {t('tracker.importHintPost')}</span>
                   <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
@@ -217,7 +217,7 @@ function TrackerTab({
                 <CardBody>
                   <button
                     onClick={() => setShowPullHistory(true)}
-                    className="w-full py-2.5 rounded-lg border border-cyan-500/30 text-cyan-300 text-base font-semibold hover:text-white hover:border-cyan-400/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-3 rounded-lg border border-cyan-500/30 text-cyan-300 text-base font-semibold hover:text-white hover:border-cyan-400/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                     style={{ background: 'var(--bg-btn)' }}
                   >
                     <Clock size={12} /> {t('tracker.viewConveneHistory', { count: allPulls.length })}
@@ -283,7 +283,7 @@ function TrackerTab({
                   {/* View All button */}
                   <button
                     onClick={() => setShowBannerHistory(true)}
-                    className="w-full py-2.5 rounded-lg border border-white/20 text-gray-200 text-base font-semibold hover:text-white hover:border-white/30 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                    className="w-full py-3 rounded-lg border border-white/20 text-gray-200 text-base font-semibold hover:text-white hover:border-white/30 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                     style={{ background: 'var(--bg-btn)' }}
                   >
                     <Archive size={12} /> {t('tracker.viewAllBanners', { count: BANNER_HISTORY.length })}
@@ -300,12 +300,12 @@ function TrackerTab({
                     <Archive size={14} className="text-purple-400" />
                     <span className="text-white text-xl font-semibold">{t('tracker.bannerHistory')}</span>
                   </div>
-                  <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
+                  <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
                 {/* Search / filter input */}
                 <div className="px-4 pt-3 pb-1 space-y-2">
                   <div className="relative">
-                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     <input
                       type="text"
                       value={bannerHistorySearch}
@@ -496,12 +496,12 @@ function TrackerTab({
                     <span className="text-white text-xl font-semibold">{t('tracker.conveneHistory')}</span>
                     <span className="text-gray-500 text-sm">({filteredPulls.length}{filteredPulls.length !== allPulls.length ? ` / ${allPulls.length}` : ''})</span>
                   </div>
-                  <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
+                  <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
                 {/* Search & filters */}
                 <div className="px-4 pt-3 pb-1 space-y-2">
                   <div className="relative">
-                    <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     <input
                       type="text"
                       value={pullHistorySearch}
