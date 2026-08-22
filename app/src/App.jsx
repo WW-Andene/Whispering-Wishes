@@ -1008,8 +1008,8 @@ function WhisperingWishesInner() {
                   pwa?.showInstallGuide?.();
                 }
               }} title={pwa?.canInstall ? t('app.installApp') : pwa?.isInstalled ? t('app.appInstalled') : t('app.addToHomeScreen')}>
-                <div className="relative w-[32px] h-[32px] flex items-center justify-center overflow-hidden group-hover:scale-[1.02] transition-transform" style={{ borderRadius: '7.68px' }}>
-                  <img src={HEADER_ICON} alt={t('app.logoAlt')} style={{ width: 53, height: 53, transform: 'scale(1.0)' }} className="object-cover" />
+                <div className="relative w-[44px] h-[44px] flex items-center justify-center overflow-hidden group-hover:scale-[1.02] transition-transform" style={{ borderRadius: '10.56px' }}>
+                  <img src={HEADER_ICON} alt={t('app.logoAlt')} style={{ width: 73, height: 73, transform: 'scale(1.0)' }} className="object-cover" />
                 </div>
                 {visualSettings.animationsEnabled !== 'off' && (
                   <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
@@ -1032,13 +1032,13 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div className="flex flex-col justify-center h-[32px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 7.68 } : undefined}>
-                <h1 className="text-white font-semibold text-sm tracking-wide leading-tight">Whispering Wishes</h1>
-                <p className="text-2xs tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>{t('app.appTagline')}</p>
+              <div className="flex flex-col justify-center h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 10.56 } : undefined}>
+                <h1 className="text-white font-semibold text-base tracking-wide leading-tight">Whispering Wishes</h1>
+                <p className="text-xs tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>{t('app.appTagline')}</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[32px] h-[32px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: '7.68px' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: '7.68px' }}>
+              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: '10.56px' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: '10.56px' }}>
                 {state.profile.profilePic && collectionImages[state.profile.profilePic]
                   ? (() => {
                       const pf = getImageFraming(`collection-${state.profile.profilePic}`);
@@ -1056,7 +1056,7 @@ function WhisperingWishesInner() {
                         </div>
                       );
                     })()
-                  : <User size={16} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
+                  : <User size={22} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
                 }
               </button>
             </div>
@@ -1086,14 +1086,14 @@ function WhisperingWishesInner() {
           </div>
         )}
         <div className="tab-indicator" />
-        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={16} /> {t('app.navTracker')}</TabButton>
-        <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={16} /> {t('app.navEvents')}</TabButton>
-        <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><Map size={16} /> {t('app.navMap')}</TabButton>
-        <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={16} /> {t('app.navPlan')}</TabButton>
-        <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={16} /> {t('app.navCalc')}</TabButton>
-        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={16} /> {t('app.navStats')}</TabButton>
-        <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={16} /> {t('app.navTeams')}</TabButton>
-        <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={16} /> {t('app.navCollection')}</TabButton>
+        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={19} /> {t('app.navTracker')}</TabButton>
+        <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={19} /> {t('app.navEvents')}</TabButton>
+        <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><Map size={19} /> {t('app.navMap')}</TabButton>
+        <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={19} /> {t('app.navPlan')}</TabButton>
+        <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={19} /> {t('app.navCalc')}</TabButton>
+        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={19} /> {t('app.navStats')}</TabButton>
+        <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={19} /> {t('app.navTeams')}</TabButton>
+        <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={19} /> {t('app.navCollection')}</TabButton>
       </nav>
 
       <main id="main-content" key={`main-${visualSettings.colorBlindMode ? 'cb' : 'std'}-${appLocale}`} className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 space-y-3 w-full" style={{ paddingTop: headerPadding, paddingBottom: navPadding }} role="main">
