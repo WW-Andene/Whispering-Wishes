@@ -1008,8 +1008,8 @@ function WhisperingWishesInner() {
                   pwa?.showInstallGuide?.();
                 }
               }} title={pwa?.canInstall ? t('app.installApp') : pwa?.isInstalled ? t('app.appInstalled') : t('app.addToHomeScreen')}>
-                <div className="relative w-[48px] h-[48px] flex items-center justify-center overflow-hidden group-hover:scale-[1.02] transition-transform" style={{ borderRadius: '13px' }}>
-                  <img src={HEADER_ICON} alt={t('app.logoAlt')} style={{ width: 80, height: 80, transform: 'scale(1.0)' }} className="object-cover" />
+                <div className="relative w-[32px] h-[32px] flex items-center justify-center overflow-hidden group-hover:scale-[1.02] transition-transform" style={{ borderRadius: '13px' }}>
+                  <img src={HEADER_ICON} alt={t('app.logoAlt')} style={{ width: 53, height: 53, transform: 'scale(1.0)' }} className="object-cover" />
                 </div>
                 {visualSettings.animationsEnabled !== 'off' && (
                   <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
@@ -1038,7 +1038,7 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[48px] h-[48px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: '13px' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: '13px' }}>
+              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[32px] h-[32px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: '13px' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: '13px' }}>
                 {state.profile.profilePic && collectionImages[state.profile.profilePic]
                   ? (() => {
                       const pf = getImageFraming(`collection-${state.profile.profilePic}`);
