@@ -61,7 +61,7 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId, accentColor 
       aria-controls={tabId ? `tabpanel-${tabId}` : undefined}
       tabIndex={active ? 0 : -1}
       aria-label={`${text || t('app.navigationFallback')} tab`}
-      className={`relative flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 text-sm font-medium transition-all duration-300 whitespace-nowrap group active:scale-[0.97] ${active && !accent ? 'text-yellow-400' : !active ? 'text-gray-500 hover:text-gray-300' : ''}`}
+      className={`relative flex flex-col items-center justify-center gap-0.5 px-3 py-1 text-sm font-medium transition-all duration-300 whitespace-nowrap group active:scale-[0.97] ${active && !accent ? 'text-yellow-400' : !active ? 'text-gray-500 hover:text-gray-300' : ''}`}
       style={active && accent ? { color: accent } : undefined}
     >
       <div className={`relative z-10 p-1 transition-all duration-300 ${active && !accent ? 'bg-yellow-500/10 shadow-lg shadow-yellow-500/25' : !active ? 'group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5' : ''}`} style={{ borderRadius: '7px', ...(active ? { filter: `drop-shadow(0 0 5px ${accent ? accent + '80' : 'rgba(237,175,24,0.5)'}) drop-shadow(0 0 2px rgba(0,0,0,0.35))`, ...(accent ? { background: accent + '1a', boxShadow: `0 10px 15px -3px ${accent}40` } : {}) } : { filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.35))' }) }}>
