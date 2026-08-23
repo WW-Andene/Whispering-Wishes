@@ -1038,7 +1038,7 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[48px] h-[48px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: '12px' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: '12px' }}>
+              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[48px] h-[48px] flex items-center justify-center overflow-hidden transition-all" style={activeTheme && activeTab === 'profile' ? { background: `${themeAccent}30`, borderRadius: '12px' } : undefined}>
                 {state.profile.profilePic && collectionImages[state.profile.profilePic]
                   ? (() => {
                       const pf = getImageFraming(`collection-${state.profile.profilePic}`);
