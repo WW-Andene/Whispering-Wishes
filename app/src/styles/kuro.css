@@ -196,12 +196,12 @@
       --font-data: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       /* DC3-OLED1: OLED mode uses minimal lightness steps instead of collapsing all to 0% */
       /* MED-8: Widened surface elevation spread (+2% lightness per step) */
-      --bg-card: rgba(16, 24, 28, 0.5);
-      --bg-card-inner: rgba(16, 24, 28, 1);
-      --bg-elevated: rgba(16, 24, 28, 0.75);
-      --bg-btn: rgba(16, 24, 28, 0.75);
-      --bg-input: rgba(16, 24, 28, 0.75);
-      --bg-stat: rgba(16, 24, 28, 0.75);
+      --bg-card: rgba(14, 24, 32, 0.5);
+      --bg-card-inner: rgba(14, 24, 32, 1);
+      --bg-elevated: rgba(14, 24, 32, 0.75);
+      --bg-btn: rgba(14, 24, 32, 0.75);
+      --bg-input: rgba(14, 24, 32, 0.75);
+      --bg-stat: rgba(14, 24, 32, 0.75);
       /* D-TOKEN-1: Border opacity tokens — replaces 30+ raw rgba(255,255,255,0.xx) border values */
       --border-subtle: rgba(255,255,255,0.06);
       --border-default: rgba(255,255,255,0.08);
