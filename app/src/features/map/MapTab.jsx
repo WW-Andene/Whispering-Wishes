@@ -2779,7 +2779,7 @@ export default function MapTab({ navPadding = 80 }) {
               <Construction size={16} className="text-yellow-400" />
               <h3 className="text-white font-semibold text-lg">{t('map.wip.title')}</h3>
             </div>
-            <button onClick={dismissWipNotice} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('map.wip.close')}>
+            <button onClick={dismissWipNotice} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('map.wip.close')}>
               <X size={16} />
             </button>
           </div>

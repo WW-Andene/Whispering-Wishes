@@ -31,7 +31,7 @@ const OnboardingModal = ({ onComplete }) => {
         <div className="kuro-card-inner rounded-2xl overflow-hidden">
 
           {/* Skip button */}
-          <button onClick={onComplete} className="kuro-btn absolute top-3 right-3 z-20 min-h-[44px]" style={{ padding: '6px 12px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.skip')}</button>
+          <button onClick={onComplete} className="kuro-btn absolute top-3 right-3 z-20 min-h-[48px]" style={{ padding: '6px 12px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.skip')}</button>
 
           {/* Content */}
           <div className="kuro-body text-center pt-6" aria-live="polite" aria-atomic="true">
@@ -53,14 +53,14 @@ const OnboardingModal = ({ onComplete }) => {
           <div className="flex justify-between items-center" style={{ padding: 'var(--card-padding)', borderTop: '1px solid var(--border-subtle)' }}>
             <div style={{ width: '72px' }}>
               {step > 0 && (
-                <button onClick={() => setStep(step - 1)} className="kuro-btn min-h-[44px]" style={{ padding: '8px 14px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.back')}</button>
+                <button onClick={() => setStep(step - 1)} className="kuro-btn min-h-[48px]" style={{ padding: '8px 14px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.back')}</button>
               )}
             </div>
             <div>
               {!isLast ? (
-                <button onClick={() => setStep(step + 1)} className="kuro-btn min-h-[44px]" style={{ padding: '8px 14px', fontSize: 'var(--font-sm)', borderColor: `${s.color}50`, color: s.color }}>{t('modals.onboarding.next')}</button>
+                <button onClick={() => setStep(step + 1)} className="kuro-btn min-h-[48px]" style={{ padding: '8px 14px', fontSize: 'var(--font-sm)', borderColor: `${s.color}50`, color: s.color }}>{t('modals.onboarding.next')}</button>
               ) : (
-                <button onClick={onComplete} className="kuro-btn active-emerald min-h-[44px]" style={{ padding: '8px 16px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.getStarted')}</button>
+                <button onClick={onComplete} className="kuro-btn active-emerald min-h-[48px]" style={{ padding: '8px 16px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.getStarted')}</button>
               )}
             </div>
           </div>

@@ -133,7 +133,7 @@ function EventsTab({
                 toast?.addToast?.(t('events.bannerRefreshed'), 'success');
               }}
               disabled={refreshCooling}
-              className={`text-sm flex items-center gap-1 transition-colors p-1.5 min-h-[44px] min-w-[44px] justify-center rounded-lg ${refreshCooling ? 'text-gray-600 cursor-not-allowed' : 'text-cyan-400 hover:text-cyan-300 hover:bg-white/5'}`}
+              className={`text-sm flex items-center gap-1 transition-colors p-1.5 min-h-[48px] min-w-[48px] justify-center rounded-lg ${refreshCooling ? 'text-gray-600 cursor-not-allowed' : 'text-cyan-400 hover:text-cyan-300 hover:bg-white/5'}`}
             >
               <RefreshCcw size={12} className={refreshCooling ? 'animate-spin' : ''} /> {t('events.refreshTimers')}
             </button>

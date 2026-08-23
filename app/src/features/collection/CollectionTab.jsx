@@ -949,7 +949,7 @@ function CollectionTab({
           onClick={() => adjustManualCount(counterWidget.name, counterWidget.isCharacter, -1)}
           aria-label={t('collection.widget.removeOne')}
         >−</button>
-        <div className="text-center min-w-[44px] px-1">
+        <div className="text-center min-w-[48px] px-1">
           <div className="text-white text-base font-bold kuro-number">{manualCounts[counterWidget.name] || 0}</div>
           <div className="text-gray-500 text-2xs truncate max-w-[60px]">{counterWidget.name.split(' ')[0]}</div>
         </div>

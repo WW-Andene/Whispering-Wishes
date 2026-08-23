@@ -297,7 +297,7 @@ function PlannerTab({
                       {i.lunite > 0 && <span className="text-cyan-400">+{i.lunite}L</span>}
                       {i.radiant > 0 && <span className="text-yellow-400">+{i.radiant}R</span>}
                       {i.lustrous > 0 && <span className="text-cyan-400">+{i.lustrous}L</span>}
-                      <button onClick={async () => { if (await confirm({ title: t('planner.removePurchaseTitle'), message: t('planner.removePurchaseMessage', { name: i.label }), confirmLabel: t('planner.removeLabel'), destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[44px] min-h-[44px] flex items-center justify-center -my-2" aria-label={t('planner.removeAriaLabel', { name: i.label })}><Minus size={12} /></button>
+                      <button onClick={async () => { if (await confirm({ title: t('planner.removePurchaseTitle'), message: t('planner.removePurchaseMessage', { name: i.label }), confirmLabel: t('planner.removeLabel'), destructive: true })) dispatch({ type: 'REMOVE_INCOME', id: i.id }); }} className="text-red-400 min-w-[48px] min-h-[48px] flex items-center justify-center -my-2" aria-label={t('planner.removeAriaLabel', { name: i.label })}><Minus size={12} /></button>
                     </div>
                   </div>
                 ))}
@@ -503,8 +503,8 @@ function PlannerTab({
                 <div className="text-gray-400 text-sm">P{b.charPity}/{b.weapPity}{b.charGuaranteed ? '(G)' : ''} • Std P{b.stdCharPity}/{b.stdWeapPity} • ×{b.charCopies}/{b.weapCopies}</div>
               </div>
               <div className="flex gap-1">
-                <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={t('planner.loadAriaLabel', { name: b.name })} className="px-3 py-1.5 text-sm bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[44px]">{t('planner.loadLabel')}</button>
-                <button onClick={async () => { if (await confirm({ title: t('planner.deleteBookmarkTitle'), message: t('planner.deleteBookmarkMessage', { name: b.name }), confirmLabel: t('planner.deleteLabel'), destructive: true })) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={t('planner.deleteAriaLabel', { name: b.name })} className="px-2 py-1.5 text-sm bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
+                <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={t('planner.loadAriaLabel', { name: b.name })} className="px-3 py-1.5 text-sm bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[48px]">{t('planner.loadLabel')}</button>
+                <button onClick={async () => { if (await confirm({ title: t('planner.deleteBookmarkTitle'), message: t('planner.deleteBookmarkMessage', { name: b.name }), confirmLabel: t('planner.deleteLabel'), destructive: true })) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={t('planner.deleteAriaLabel', { name: b.name })} className="px-2 py-1.5 text-sm bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[48px]">×</button>
               </div>
             </div>
           ))}
@@ -532,7 +532,7 @@ function PlannerTab({
                 <div className="kuro-card w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]">
                     <h3 className="text-white text-xl font-semibold">{t('planner.selectResonator')}</h3>
-                    <button onClick={() => setFarmPickerOpen(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('planner.closeLabel')}><X size={16} /></button>
+                    <button onClick={() => setFarmPickerOpen(false)} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('planner.closeLabel')}><X size={16} /></button>
                   </div>
                   <div className="p-3 border-b border-[var(--border-subtle)]">
                     <div className="relative">

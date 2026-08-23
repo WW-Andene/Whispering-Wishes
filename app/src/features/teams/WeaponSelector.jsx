@@ -30,7 +30,7 @@ export default function WeaponSelector({
                               {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}
                             </p>
                           </div>
-                          <button onClick={() => setWeaponSelectorOpen(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close weapon selector"><X size={16} /></button>
+                          <button onClick={() => setWeaponSelectorOpen(false)} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close weapon selector"><X size={16} /></button>
                         </div>
                         <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0">
                           <input

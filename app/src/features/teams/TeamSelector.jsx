@@ -56,7 +56,7 @@ export default function TeamSelector({
                             <h3 className="text-white text-xl font-semibold">{t('teams.selector.title')}</h3>
                             <p className="text-gray-500 text-sm">{t('teams.selector.subtitle', { slot: teamSelectorSlot + 1, team: activeTeam.name })}</p>
                           </div>
-                          <button onClick={() => setTeamSelectorOpen(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.selector.closeAria')}>
+                          <button onClick={() => setTeamSelectorOpen(false)} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.selector.closeAria')}>
                             <X size={16} />
                           </button>
                         </div>

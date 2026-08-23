@@ -353,13 +353,13 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         {/* Month nav */}
         <div className="flex items-center justify-between">
           {/* U6-04: Don't clear selectedDay on month nav — panel hides naturally, note input preserved */}
-          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label={t('planner.calendar.previousMonth')}><ChevronLeft size={16} /></button>
+          <button onClick={() => setMonthOffset(p => p - 1)} className="p-2 min-w-[48px] min-h-[48px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label={t('planner.calendar.previousMonth')}><ChevronLeft size={16} /></button>
           {/* U6-03: Show "Today" pill when viewing a non-current month */}
           <button onClick={() => { setMonthOffset(0); }} className="text-gray-100 text-md font-bold tracking-wide hover:text-yellow-400 transition-colors" title={monthOffset !== 0 ? t('planner.calendar.jumpToCurrentMonth') : undefined}>
             {cal.monthName}
             {monthOffset !== 0 && <span className="kuro-badge kuro-badge-yellow" style={{ borderRadius: 'var(--radius-pill)', verticalAlign: 'middle', marginLeft: 'var(--space-base)' }}>{t('planner.calendar.today')}</span>}
           </button>
-          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label={t('planner.calendar.nextMonth')}><ChevronRight size={16} /></button>
+          <button onClick={() => setMonthOffset(p => p + 1)} className="p-2 min-w-[48px] min-h-[48px] flex items-center justify-center text-gray-500 hover:text-white transition-colors" aria-label={t('planner.calendar.nextMonth')}><ChevronRight size={16} /></button>
         </div>
 
         {/* Weekday headers */}

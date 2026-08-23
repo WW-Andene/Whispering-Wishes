@@ -473,7 +473,7 @@ function AnalyticsTab({
                             <h3 className="text-white font-semibold text-xl">{t('analytics.leaderboard.title')}</h3>
                             <p className="text-gray-400 text-sm">{t('analytics.leaderboard.subtitle')}</p>
                           </div>
-                          <button onClick={() => setShowLeaderboard(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('analytics.leaderboard.closeAria')}>
+                          <button onClick={() => setShowLeaderboard(false)} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('analytics.leaderboard.closeAria')}>
                             <X size={16} />
                           </button>
                         </div>
@@ -784,7 +784,7 @@ function AnalyticsTab({
                                 boxShadow: `0 0 40px ${trophyObj.color}25, 0 0 80px ${trophyObj.color}10, inset 0 0 30px ${trophyObj.color}08`
                               }}
                             >
-                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label={t('analytics.trophies.closeAria')}>
+                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label={t('analytics.trophies.closeAria')}>
                                 <X size={14} />
                               </button>
                               <div

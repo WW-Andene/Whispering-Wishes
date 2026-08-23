@@ -254,7 +254,7 @@
       --size-avatar-lg: 112px;    /* Profile picture (IdCard, profile tab) */
       --size-avatar-md: 64px;     /* Camera button, medium icons */
       --size-avatar-sm: 28px;     /* Trophy icons, small avatars */
-      --size-touch-min: 44px;     /* iOS HIG minimum touch target */
+      --size-touch-min: 48px;     /* iOS HIG minimum touch target */
       --size-icon-btn: 28px;      /* Small icon buttons (profile pic setter) */
       /* MED-3 + TK-F2: Radius token scale + component-level abstraction */
       --radius-micro: 1px;
@@ -426,11 +426,11 @@
     /* Ensure minimum 44px touch targets for filter selects on touch devices */
     @media (pointer: coarse) {
       .kuro-body select {
-        min-height: 44px;
+        min-height: 48px;
       }
       /* P10-FIX: Ensure all standalone buttons meet minimum 36px touch target on touch devices (Step 10 audit — MEDIUM-5b) */
       .kuro-body button:not(.kuro-btn):not([role="tab"]):not([role="switch"]):not(.profile-pic-btn):not(.btn-icon-square) {
-        min-height: 44px; /* MED-15: iOS HIG 44px minimum */
+        min-height: 48px; /* MED-15: iOS HIG 44px minimum */
       }
     }
     

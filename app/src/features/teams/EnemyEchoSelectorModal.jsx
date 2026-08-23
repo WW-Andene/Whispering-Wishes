@@ -72,7 +72,7 @@ export default function EnemyEchoSelectorModal({
             <h3 className="text-white font-semibold text-xl">{t('teams.enemyEcho.title')}</h3>
             <p className="text-gray-400 text-sm">{t('teams.enemyEcho.subtitle', { count: ALL_TARGETABLE_ECHOES.length })}</p>
           </div>
-          <button onClick={onClose} className="modal-close-btn p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.enemyEcho.closeAria')}><X size={16} /></button>
+          <button onClick={onClose} className="modal-close-btn p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.enemyEcho.closeAria')}><X size={16} /></button>
         </div>
 
         {/* Search + Filters */}

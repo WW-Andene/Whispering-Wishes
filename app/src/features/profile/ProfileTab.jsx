@@ -537,7 +537,7 @@ function ProfileTab({
               <CardBody>
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
                   {Object.keys(SERVERS).map(s => (
-                    <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn min-h-[44px] py-2 text-sm font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
+                    <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn min-h-[48px] py-2 text-sm font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
                   ))}
                 </div>
                 <p className="text-gray-400 text-sm mt-2 text-center mx-auto" style={{maxWidth: 'none'}}>{t('profile.server.reset', { time: '4:00 AM', offset: `${getServerOffset(state.server) >= 0 ? '+' : ''}${getServerOffset(state.server)}` })}</p>
