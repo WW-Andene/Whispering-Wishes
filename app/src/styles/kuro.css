@@ -2478,12 +2478,14 @@
       }
       .desktop-layout .desktop-grid-2 > * { margin-top: 0 !important; }
       .desktop-layout .banner-grid {
-        display: grid !important; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr) /* MED-18: Reduced from 420px for smoother 2-col transition */) !important;
+        display: grid !important; grid-template-columns: repeat(auto-fit, 384px) !important;
+        justify-content: center !important;
         gap: 0.75rem !important; align-items: start !important;
       }
       .desktop-layout .banner-grid > * { margin-top: 0 !important; }
       .desktop-layout .event-grid {
-        display: grid !important; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)) !important;
+        display: grid !important; grid-template-columns: repeat(auto-fill, 384px) !important;
+        justify-content: center !important;
         gap: 0.75rem !important; align-items: start !important;
       }
       .desktop-layout .event-grid > * { margin-top: 0 !important; margin-bottom: 0 !important; }
