@@ -188,7 +188,7 @@
       --z-install: 9800;
       --z-max: 9999;
       /* Radius: --radius-full for badges/avatars */
-      --radius-full: 100px;
+      --radius-full: 96px;
       --text-body: #dfe5ef;
       --text-heading: #edf1f8;
       --font-display: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
@@ -250,9 +250,9 @@
       /* §E1-DIM: Architectural dimension tokens — card heights, avatar sizes */
       --height-banner: 192px;     /* Banner/Event cards minimum height */
       --height-card-sm: 140px;    /* Collection grid cards */
-      --height-card-md: 160px;    /* Team selector cards */
-      --size-avatar-lg: 110px;    /* Profile picture (IdCard, profile tab) */
-      --size-avatar-md: 68px;     /* Camera button, medium icons */
+      --height-card-md: 192px;    /* Team selector cards */
+      --size-avatar-lg: 112px;    /* Profile picture (IdCard, profile tab) */
+      --size-avatar-md: 64px;     /* Camera button, medium icons */
       --size-avatar-sm: 28px;     /* Trophy icons, small avatars */
       --size-touch-min: 44px;     /* iOS HIG minimum touch target */
       --size-icon-btn: 28px;      /* Small icon buttons (profile pic setter) */

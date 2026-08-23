@@ -981,7 +981,7 @@ function WhisperingWishesInner() {
       {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
-      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, height: 56, borderRadius: 13.44, display: 'flex', alignItems: 'center', marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
+      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, height: 56, borderRadius: 14, display: 'flex', alignItems: 'center', marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
           headerBgType === 'animated' ? (
@@ -1008,8 +1008,8 @@ function WhisperingWishesInner() {
                   pwa?.showInstallGuide?.();
                 }
               }} title={pwa?.canInstall ? t('app.installApp') : pwa?.isInstalled ? t('app.appInstalled') : t('app.addToHomeScreen')}>
-                <div className="relative w-[44px] h-[44px] flex items-center justify-center overflow-hidden group-hover:scale-[1.02] transition-transform" style={{ borderRadius: '10.56px' }}>
-                  <img src={HEADER_ICON} alt={t('app.logoAlt')} style={{ width: 73, height: 73, transform: 'scale(1.0)' }} className="object-cover" />
+                <div className="relative w-[44px] h-[44px] flex items-center justify-center overflow-hidden group-hover:scale-[1.02] transition-transform" style={{ borderRadius: '12px' }}>
+                  <img src={HEADER_ICON} alt={t('app.logoAlt')} style={{ width: 64, height: 64, transform: 'scale(1.0)' }} className="object-cover" />
                 </div>
                 {visualSettings.animationsEnabled !== 'off' && (
                   <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
@@ -1032,13 +1032,13 @@ function WhisperingWishesInner() {
                   </div>
                 )}
               </div>
-              <div className="flex flex-col justify-center h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 10.56 } : undefined}>
+              <div className="flex flex-col justify-center h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 12 } : undefined}>
                 <h1 className="text-white font-semibold text-base tracking-wide leading-tight">Whispering Wishes</h1>
                 <p className="text-xs tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>{t('app.appTagline')}</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: '10.56px' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: '10.56px' }}>
+              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[44px] h-[44px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: '12px' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: '12px' }}>
                 {state.profile.profilePic && collectionImages[state.profile.profilePic]
                   ? (() => {
                       const pf = getImageFraming(`collection-${state.profile.profilePic}`);
@@ -1065,7 +1065,7 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-center overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, height: 56, borderRadius: 13.44, marginBottom: 'var(--safe-area-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-center overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, height: 56, borderRadius: 14, marginBottom: 'var(--safe-area-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
           const tabs = ['tracker','events','map','planner','calculator','analytics','teams','gathering'];
           const idx = tabs.indexOf(activeTab);
           let newTab;

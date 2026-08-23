@@ -149,7 +149,7 @@ export default function ConveneScanner({
           <button onClick={captureDirectCamera} className="relative active:scale-90 transition-transform" style={{ width: 'var(--size-avatar-md)', height: 'var(--size-avatar-md)' }}>
             <div className="absolute inset-[-4px] rounded-full" style={{ background: 'conic-gradient(from 0deg, transparent 0%, transparent 20%, rgba(255,255,255,0.3) 45%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.3) 55%, transparent 80%, transparent 100%)', animation: 'captureShimmer 3s linear infinite' }} />
             <div className="absolute inset-0 kuro-scanner-ring-outer" />
-            <div className="absolute kuro-scanner-ring-inner" style={{ inset: 5 }} />
+            <div className="absolute kuro-scanner-ring-inner" style={{ inset: 4 }} />
             <div className="absolute inset-0 flex items-center justify-center">
               <Camera size={20} style={{ color: 'rgba(255,255,255,0.4)' }} />
             </div>
