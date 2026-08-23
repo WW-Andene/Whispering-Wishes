@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { BarChart3, Calculator, ChevronDown, Download } from 'lucide-react';
+import { Calculator, ChevronDown, Download } from 'lucide-react';
 // --- data ---
 import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
 import { ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from './data/weaponLists.js';
@@ -1091,7 +1091,7 @@ function WhisperingWishesInner() {
         <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><img src="./navicon/Icon_Map.png" alt="" className="w-5 h-5" /> {t('app.navMap')}</TabButton>
         <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><img src="./navicon/Icon_Guidebook.webp" alt="" className="w-5 h-5" /> {t('app.navPlan')}</TabButton>
         <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={16} /> {t('app.navCalc')}</TabButton>
-        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={16} /> {t('app.navStats')}</TabButton>
+        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><img src="./navicon/Icon_Bag.png" alt="" className="w-5 h-5" /> {t('app.navStats')}</TabButton>
         <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><img src="./navicon/Icon_Team.webp" alt="" className="w-5 h-5" /> {t('app.navTeams')}</TabButton>
         <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><img src="./navicon/Icon_Databank.webp" alt="" className="w-5 h-5" /> {t('app.navCollection')}</TabButton>
       </nav>
