@@ -304,7 +304,7 @@ function TrackerTab({
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-2" data-sheet-scroll>
                   {/* Search / filter input — sticky, floats over the scrolling history below (like the app header) */}
-                  <div className="sticky top-0 z-10 px-4 py-3 space-y-2" style={{ background: 'var(--bg-card)', backdropFilter: 'blur(var(--blur-sm))', WebkitBackdropFilter: 'blur(var(--blur-sm))' }}>
+                  <div className="sticky top-0 z-20 px-4 py-3 space-y-2" style={{ background: 'var(--bg-card)', backdropFilter: 'blur(var(--blur-sm))', WebkitBackdropFilter: 'blur(var(--blur-sm))' }}>
                     <div className="relative">
                       <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       <input
@@ -502,7 +502,7 @@ function TrackerTab({
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-1" data-sheet-scroll>
                   {/* Search & filters — sticky, floats over the scrolling history below (like the app header) */}
-                  <div className="sticky top-0 z-10 px-4 py-3 space-y-2" style={{ background: 'var(--bg-card)', backdropFilter: 'blur(var(--blur-sm))', WebkitBackdropFilter: 'blur(var(--blur-sm))' }}>
+                  <div className="sticky top-0 z-20 px-4 py-3 space-y-2" style={{ background: 'var(--bg-card)', backdropFilter: 'blur(var(--blur-sm))', WebkitBackdropFilter: 'blur(var(--blur-sm))' }}>
                     <div className="relative">
                       <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                       <input
