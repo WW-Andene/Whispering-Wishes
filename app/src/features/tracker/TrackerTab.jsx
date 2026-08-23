@@ -302,37 +302,38 @@ function TrackerTab({
                   </div>
                   <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
-                {/* Search / filter input */}
-                <div className="px-4 py-3 space-y-2">
-                  <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={bannerHistorySearch}
-                      onChange={e => setBannerHistorySearch(e.target.value)}
-                      placeholder={t('tracker.searchBannerPlaceholder')}
-                      className="kuro-input w-full pl-8 text-base"
-                      aria-label={t('tracker.filterBannerHistory')}
+                <div className="flex-1 overflow-y-auto space-y-2" data-sheet-scroll>
+                  {/* Search / filter input — sticky, floats over the scrolling history below (like the app header) */}
+                  <div className="sticky top-0 z-10 px-4 py-3 space-y-2" style={{ background: 'var(--bg-card)', backdropFilter: 'blur(var(--blur-sm))', WebkitBackdropFilter: 'blur(var(--blur-sm))' }}>
+                    <div className="relative">
+                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={bannerHistorySearch}
+                        onChange={e => setBannerHistorySearch(e.target.value)}
+                        placeholder={t('tracker.searchBannerPlaceholder')}
+                        className="kuro-input w-full pl-8 text-base"
+                        aria-label={t('tracker.filterBannerHistory')}
+                      />
+                    </div>
+                    <KuroSelect
+                      value={bannerHistorySort}
+                      onChange={setBannerHistorySort}
+                      options={[
+                        { value: 'newest', label: t('tracker.sortNewestFirst') },
+                        { value: 'release', label: t('tracker.sortReleaseOrder') },
+                        { value: 'lastRerun', label: t('tracker.sortLastRerun') },
+                        { value: 'mostPulled', label: t('tracker.sortMostPulled') },
+                      ]}
+                      className="w-full"
+                      ariaLabel={t('tracker.sortBannerHistory')}
+                      small
                     />
+                    {bannerHistorySort === 'mostPulled' && (
+                      <p className="text-xs text-gray-500 px-0.5">{t('tracker.mostPulledSourceNote')}</p>
+                    )}
                   </div>
-                  <KuroSelect
-                    value={bannerHistorySort}
-                    onChange={setBannerHistorySort}
-                    options={[
-                      { value: 'newest', label: t('tracker.sortNewestFirst') },
-                      { value: 'release', label: t('tracker.sortReleaseOrder') },
-                      { value: 'lastRerun', label: t('tracker.sortLastRerun') },
-                      { value: 'mostPulled', label: t('tracker.sortMostPulled') },
-                    ]}
-                    className="w-full"
-                    ariaLabel={t('tracker.sortBannerHistory')}
-                    small
-                  />
-                  {bannerHistorySort === 'mostPulled' && (
-                    <p className="text-xs text-gray-500 px-0.5">{t('tracker.mostPulledSourceNote')}</p>
-                  )}
-                </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-2" data-sheet-scroll>
+                  <div className="px-4 pb-4 space-y-2">
                   {(() => {
                     const q = bannerHistorySearch.trim().toLowerCase();
                     const matchesQuery = b =>
@@ -483,6 +484,7 @@ function TrackerTab({
                     </div>
                   ));
                   })()}
+                  </div>
                 </div>
               </div></div>
             </FocusTrapModal>
@@ -498,51 +500,52 @@ function TrackerTab({
                   </div>
                   <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
-                {/* Search & filters */}
-                <div className="px-4 py-3 space-y-2">
-                  <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                    <input
-                      type="text"
-                      value={pullHistorySearch}
-                      onChange={e => setPullHistorySearch(e.target.value)}
-                      placeholder={t('tracker.searchNamePlaceholder')}
-                      className="kuro-input w-full pl-8 text-base"
-                      aria-label={t('tracker.filterConveneByName')}
-                    />
+                <div className="flex-1 overflow-y-auto space-y-1" data-sheet-scroll>
+                  {/* Search & filters — sticky, floats over the scrolling history below (like the app header) */}
+                  <div className="sticky top-0 z-10 px-4 py-3 space-y-2" style={{ background: 'var(--bg-card)', backdropFilter: 'blur(var(--blur-sm))', WebkitBackdropFilter: 'blur(var(--blur-sm))' }}>
+                    <div className="relative">
+                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={pullHistorySearch}
+                        onChange={e => setPullHistorySearch(e.target.value)}
+                        placeholder={t('tracker.searchNamePlaceholder')}
+                        className="kuro-input w-full pl-8 text-base"
+                        aria-label={t('tracker.filterConveneByName')}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <KuroSelect
+                        value={pullHistoryBannerFilter}
+                        onChange={setPullHistoryBannerFilter}
+                        options={[
+                          { value: 'all', label: t('tracker.allBanners') },
+                          { value: 'Featured', label: t('tracker.featured') },
+                          { value: 'Weapon', label: t('tracker.weapon') },
+                          { value: 'Standard Resonator', label: t('tracker.standardResonatorLabel') },
+                          { value: 'Standard Weapon', label: t('tracker.standardWeaponLabel') },
+                          { value: 'Beginner', label: t('tracker.beginner') },
+                        ]}
+                        className="flex-1"
+                        ariaLabel={t('tracker.filterByBannerType')}
+                        small
+                      />
+                      <KuroSelect
+                        value={pullHistoryRarityFilter}
+                        onChange={setPullHistoryRarityFilter}
+                        options={[
+                          { value: 'all', label: t('tracker.allRarities') },
+                          { value: '5', label: '5★' },
+                          { value: '4', label: '4★' },
+                          { value: '3', label: '3★' },
+                        ]}
+                        className="flex-1"
+                        ariaLabel={t('tracker.filterByRarity')}
+                        small
+                      />
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <KuroSelect
-                      value={pullHistoryBannerFilter}
-                      onChange={setPullHistoryBannerFilter}
-                      options={[
-                        { value: 'all', label: t('tracker.allBanners') },
-                        { value: 'Featured', label: t('tracker.featured') },
-                        { value: 'Weapon', label: t('tracker.weapon') },
-                        { value: 'Standard Resonator', label: t('tracker.standardResonatorLabel') },
-                        { value: 'Standard Weapon', label: t('tracker.standardWeaponLabel') },
-                        { value: 'Beginner', label: t('tracker.beginner') },
-                      ]}
-                      className="flex-1"
-                      ariaLabel={t('tracker.filterByBannerType')}
-                      small
-                    />
-                    <KuroSelect
-                      value={pullHistoryRarityFilter}
-                      onChange={setPullHistoryRarityFilter}
-                      options={[
-                        { value: 'all', label: t('tracker.allRarities') },
-                        { value: '5', label: '5★' },
-                        { value: '4', label: '4★' },
-                        { value: '3', label: '3★' },
-                      ]}
-                      className="flex-1"
-                      ariaLabel={t('tracker.filterByRarity')}
-                      small
-                    />
-                  </div>
-                </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-1" data-sheet-scroll>
+                  <div className="px-4 pb-4 space-y-1">
                   {filteredPulls.length === 0 ? (
                     <div className="text-center text-gray-400 text-base py-6">
                       {allPulls.length === 0 ? t('tracker.noHistory') : t('tracker.noFiltered')}
@@ -576,6 +579,7 @@ function TrackerTab({
                       );
                     })
                   )}
+                  </div>
                 </div>
               </div></div>
             </FocusTrapModal>
