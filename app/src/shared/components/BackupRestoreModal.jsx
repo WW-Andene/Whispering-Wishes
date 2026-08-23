@@ -37,7 +37,7 @@ export function BackupRestoreModal({
             <Download size={14} className="text-yellow-400" />
             <span className="text-white text-xl font-semibold">{t('modals.backupRestore.title')}</span>
           </div>
-          <button onClick={onClose} className="p-2 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label={t('modals.backupRestore.closeAriaLabel')}><X size={16} /></button>
+          <button onClick={onClose} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all" aria-label={t('modals.backupRestore.closeAriaLabel')}><X size={16} /></button>
         </div>
         <div className="overflow-y-auto flex-1 p-4 space-y-3">
           <p className="text-gray-400 text-sm">{t('modals.backupRestore.exportInstructions')}</p>
