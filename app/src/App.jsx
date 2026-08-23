@@ -981,7 +981,7 @@ function WhisperingWishesInner() {
       {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
-      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, height: 60, borderRadius: 14, display: 'flex', alignItems: 'center', marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
+      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, height: 56, borderRadius: 14, display: 'flex', alignItems: 'center', marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
           headerBgType === 'animated' ? (
@@ -996,7 +996,7 @@ function WhisperingWishesInner() {
           </div>
         )}
         <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto pl-1.5 pr-1.5 relative z-10" style={{ width: '100%' }}>
-          <div className="header-top flex items-center justify-between py-1.5">
+          <div className="header-top flex items-center justify-between py-1">
             <div className="flex items-center gap-2">
               <div className="relative group cursor-pointer" onClick={async () => {
                 if (pwa?.canInstall) {
