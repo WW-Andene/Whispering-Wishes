@@ -59,7 +59,7 @@ const useEscapeKey = (isOpen, onClose) => {
 };
 
 // P12-FIX: Reusable modal wrapper with focus trapping + escape handling for inline modals (Step 11 audit — MEDIUM-6d)
-const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', onClick, centered = false }) => {
+const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', onClick, centered = false, padding = 'p-4' }) => {
   const focusTrapRef = useFocusTrap(isOpen);
   useEscapeKey(isOpen, onClose);
   const dragRef = useRef({ startY: 0, currentY: 0, dragging: false });
@@ -117,7 +117,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
   return createPortal(
     <div
       ref={focusTrapRef}
-      className={`fixed inset-0 z-[10000] flex sm:items-center sm:justify-center sm:p-4 ${centered ? 'items-center justify-center p-4' : 'items-end'} modal-backdrop ${className}`}
+      className={`fixed inset-0 z-[10000] flex sm:items-center sm:justify-center ${padding === 'p-3' ? 'sm:p-3' : 'sm:p-4'} ${centered ? `items-center justify-center ${padding === 'p-3' ? 'p-3' : 'p-4'}` : 'items-end'} modal-backdrop ${className}`}
       style={{
         // DSA-06 audit fix: chromatic navy scrim (--scrim token) instead of
         // the prior pure backdrop-blur-only treatment. Keeps modals cohesive

@@ -293,7 +293,7 @@ function TrackerTab({
             </Card>
 
             {/* Banner History Modal */}
-            <FocusTrapModal isOpen={showBannerHistory} onClose={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="" ariaLabel={t('tracker.bannerHistory')} onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} centered>
+            <FocusTrapModal isOpen={showBannerHistory} onClose={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="" ariaLabel={t('tracker.bannerHistory')} onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} centered padding="p-3">
               <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
@@ -490,7 +490,7 @@ function TrackerTab({
             </FocusTrapModal>
 
             {/* Pull History Modal */}
-            <FocusTrapModal isOpen={showPullHistory} onClose={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="" ariaLabel={t('tracker.conveneHistory')} onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} centered>
+            <FocusTrapModal isOpen={showPullHistory} onClose={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="" ariaLabel={t('tracker.conveneHistory')} onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} centered padding="p-3">
               <div className="kuro-card w-full max-w-md max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}><div className="kuro-card-inner overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
                   <div className="flex items-center gap-2">
