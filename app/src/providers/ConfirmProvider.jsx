@@ -37,7 +37,7 @@ const ConfirmProvider = ({ children }) => {
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
-      <FocusTrapModal isOpen={!!state} onClose={() => handleClose(false)} className="bg-black/80" onClick={() => handleClose(false)} ariaLabel={state?.title || 'Confirm'} centered padding="p-3">
+      <FocusTrapModal isOpen={!!state} onClose={() => handleClose(false)} className="" onClick={() => handleClose(false)} ariaLabel={state?.title || 'Confirm'} centered padding="p-3">
         {state && (
           <div className="kuro-card w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
             <div className="kuro-card-inner rounded-2xl overflow-hidden">
