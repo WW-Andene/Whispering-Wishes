@@ -148,7 +148,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10`, '--element-glow': `${getElementColor(m.d.element)}30` }}>
 
                   {/* ── Section 1: Character Header ── */}
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-3">
                     <div className={`w-11 h-12 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
                       style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
                       {collectionImages[m.name] ? (

@@ -92,7 +92,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
             }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.echoDetail.closeAria')}>
+          <button onClick={onClose} className="absolute top-3 right-3 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.echoDetail.closeAria')}>
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -137,7 +137,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
           {/* 1. Info bar — dmg value + sets */}
           <div className="flex items-center gap-2 flex-wrap">
             {data.dmg > 0 && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
                 <span className="text-sm text-gray-400">{t('modals.echoDetail.dmg')}</span>
                 <span className="text-base font-bold text-red-400">{data.dmg}%</span>
               </div>

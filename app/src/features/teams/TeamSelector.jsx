@@ -56,7 +56,7 @@ export default function TeamSelector({
                             <h3 className="text-white text-xl font-semibold">{t('teams.selector.title')}</h3>
                             <p className="text-gray-500 text-sm">{t('teams.selector.subtitle', { slot: teamSelectorSlot + 1, team: activeTeam.name })}</p>
                           </div>
-                          <button onClick={() => setTeamSelectorOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.selector.closeAria')}>
+                          <button onClick={() => setTeamSelectorOpen(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.selector.closeAria')}>
                             <X size={16} />
                           </button>
                         </div>
@@ -74,7 +74,7 @@ export default function TeamSelector({
                               aria-label={t('teams.selector.searchAria')}
                               autoFocus
                             />
-                            <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             <KuroSelect

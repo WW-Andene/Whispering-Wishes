@@ -230,33 +230,33 @@ const GachaInfoButton = memo(({ isChar, className = '' }) => {
               <Info size={16} className="text-yellow-400" />
               <h3 className="text-white font-semibold text-lg">{t(ci + 'title')}</h3>
             </div>
-            <button onClick={() => setOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t(ci + 'closeAria')}><X size={16} /></button>
+            <button onClick={() => setOpen(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t(ci + 'closeAria')}><X size={16} /></button>
           </div>
           <div className="p-4 space-y-3">
-            <div className="space-y-2.5 text-sm text-gray-300 leading-relaxed">
+            <div className="space-y-3 text-sm text-gray-300 leading-relaxed">
               <div className="flex items-start gap-2">
                 <span className="text-yellow-400 text-lg leading-none mt-0.5">★</span>
                 <div><span className="text-white font-medium">{t(ci + 'baseRateLabel')}</span> {t(ci + 'baseRateValue')}</div>
               </div>
-              <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+              <div className="p-3 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
                 <div className="flex justify-between"><span className="text-amber-400 font-medium">{t(ci + 'softPityLabel')}</span><span className="text-white">{t(ci + 'softPityValue')}</span></div>
                 <div className="text-gray-400 text-xs">{t(ci + 'softPityDesc')}</div>
               </div>
-              <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+              <div className="p-3 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
                 <div className="flex justify-between"><span className="text-red-400 font-medium">{t(ci + 'hardPityLabel')}</span><span className="text-white">{t(ci + 'hardPityValue')}</span></div>
                 <div className="text-gray-400 text-xs">{t(ci + 'hardPityDesc')}</div>
               </div>
-              <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+              <div className="p-3 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
                 <div className="flex justify-between"><span className="text-purple-400 font-medium">{t(ci + 'guarantee4StarLabel')}</span><span className="text-white">{t(ci + 'guarantee4StarValue')}</span></div>
                 <div className="text-gray-400 text-xs">{t(ci + 'guarantee4StarDesc')}</div>
               </div>
               {isChar ? (
-                <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                <div className="p-3 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
                   <div className="flex justify-between"><span className="text-orange-400 font-medium">{t(ci + 'fiftyFiftyLabel')}</span><span className="text-white">{t(ci + 'fiftyFiftyValue')}</span></div>
                   <div className="text-gray-400 text-xs">{t(ci + 'fiftyFiftyDesc')}</div>
                 </div>
               ) : (
-                <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                <div className="p-3 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
                   <div className="flex justify-between"><span className="text-pink-400 font-medium">{t(ci + 'noFiftyFiftyLabel')}</span><span className="text-white">{t(ci + 'noFiftyFiftyValue')}</span></div>
                   <div className="text-gray-400 text-xs">{t(ci + 'noFiftyFiftyDesc')}</div>
                 </div>

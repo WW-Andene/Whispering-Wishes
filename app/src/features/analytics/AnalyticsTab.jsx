@@ -473,7 +473,7 @@ function AnalyticsTab({
                             <h3 className="text-white font-semibold text-xl">{t('analytics.leaderboard.title')}</h3>
                             <p className="text-gray-400 text-sm">{t('analytics.leaderboard.subtitle')}</p>
                           </div>
-                          <button onClick={() => setShowLeaderboard(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('analytics.leaderboard.closeAria')}>
+                          <button onClick={() => setShowLeaderboard(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('analytics.leaderboard.closeAria')}>
                             <X size={16} />
                           </button>
                         </div>
@@ -492,7 +492,7 @@ function AnalyticsTab({
                             {leaderboardLoading ? (
                               <div className="space-y-2 py-2" aria-label={t('analytics.leaderboard.loadingAria')}>
                                 {[...Array(6)].map((_, i) => (
-                                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/5">
+                                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
                                     <div className="kuro-skeleton kuro-skeleton-circle w-[28px] h-[28px] flex-shrink-0" />
                                     <div className="flex-1 min-w-0 space-y-1.5">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${55 + i * 7}%` }} />
@@ -515,7 +515,7 @@ function AnalyticsTab({
                                 return (
                                   <div 
                                     key={entry.id}
-                                    className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${isYou ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'}`}
+                                    className={`flex items-center gap-3 p-3 rounded-lg transition-all ${isYou ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'}`}
                                   >
                                     <div 
                                       className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-base font-bold flex-shrink-0"
@@ -555,7 +555,7 @@ function AnalyticsTab({
                                 <div className="kuro-skeleton kuro-skeleton-text mx-auto mb-2" style={{ width: '40%' }} />
                                 <div className="kuro-skeleton kuro-skeleton-text w-24 mb-1.5" style={{ height: '8px' }} />
                                 {[...Array(5)].map((_, i) => (
-                                  <div key={i} className="flex items-center gap-2.5 py-1.5">
+                                  <div key={i} className="flex items-center gap-3 py-1.5">
                                     <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
                                     <div className="kuro-skeleton w-[28px] h-[28px] rounded-md flex-shrink-0" />
                                     <div className="flex-1 min-w-0 space-y-1">
@@ -575,7 +575,7 @@ function AnalyticsTab({
                                       const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
                                       const imgUrl = collectionImages[name] || '';
                                       return (
-                                        <div key={name} className="flex items-center gap-2.5 py-1.5">
+                                        <div key={name} className="flex items-center gap-3 py-1.5">
                                           <span className="text-sm font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
                                           {imgUrl && <img src={imgUrl} alt={name} className="w-[28px] h-[28px] rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
@@ -599,7 +599,7 @@ function AnalyticsTab({
                                       const pct = communityPulls.playerCount > 0 ? Math.round((count / communityPulls.playerCount) * 100) : 0;
                                       const imgUrl = collectionImages[name] || '';
                                       return (
-                                        <div key={name} className="flex items-center gap-2.5 py-1.5">
+                                        <div key={name} className="flex items-center gap-3 py-1.5">
                                           <span className="text-sm font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
                                           {imgUrl && <div className="w-[28px] h-[28px] rounded-md overflow-hidden bg-neutral-800 flex-shrink-0 holo-5star" style={{ position: 'relative' }}><img src={imgUrl} alt={name} className="w-full h-full object-cover" loading="lazy" onError={hideOnError} /></div>}
                                           <div className="flex-1 min-w-0">
@@ -695,7 +695,7 @@ function AnalyticsTab({
                             return (
                               <div key={p.id || `pull-${p.name}-${p.pity}-${p.timestamp || i}`} className="pull-log-row flex items-center justify-between p-1.5 rounded text-base" style={{'--pity-color': pityColor, background: 'rgba(255,255,255,0.03)'}}>
                                 <div className="flex items-center gap-2 min-w-0">
-                                  {imgUrl && <img src={imgUrl} alt={p.name} className="w-[22px] h-[22px] rounded object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
+                                  {imgUrl && <img src={imgUrl} alt={p.name} className="w-[24px] h-[24px] rounded object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                   <span className="text-yellow-400 font-medium truncate">{p.name}</span>
                                   <span className="text-gray-500 flex-shrink-0">{PULL_BANNER_LABEL_KEYS[p.banner] ? t(PULL_BANNER_LABEL_KEYS[p.banner]) : p.banner}</span>
                                   {p.banner === 'Featured' && p.won5050 === true && <span className="text-emerald-400 text-base font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 flex-shrink-0" aria-label={t('analytics.pullLog.wonAria')}>✓ W</span>}
@@ -741,7 +741,7 @@ function AnalyticsTab({
                           return (
                             <div
                               key={trophy.id}
-                              className="relative p-2.5 rounded-lg text-center transition-all active:scale-95 cursor-pointer"
+                              className="relative p-3 rounded-lg text-center transition-all active:scale-95 cursor-pointer"
                               role="button" tabIndex={0} aria-label={t('analytics.trophies.trophyAria', { name: trophy.name })}
                               onClick={(e) => { e.stopPropagation(); setSelectedTrophy(trophy.id); }}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTrophy(trophy.id); } }}
@@ -784,7 +784,7 @@ function AnalyticsTab({
                                 boxShadow: `0 0 40px ${trophyObj.color}25, 0 0 80px ${trophyObj.color}10, inset 0 0 30px ${trophyObj.color}08`
                               }}
                             >
-                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label={t('analytics.trophies.closeAria')}>
+                              <button onClick={() => setSelectedTrophy(null)} className="absolute top-2 right-2 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full hover:bg-white/10 text-gray-500 hover:text-white transition-all" aria-label={t('analytics.trophies.closeAria')}>
                                 <X size={14} />
                               </button>
                               <div

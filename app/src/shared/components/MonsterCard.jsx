@@ -89,7 +89,7 @@ function MonsterCard({
       onClick={handleClick}
       className={`kuro-card text-left w-full transition-all ${compact ? 'p-2' : 'p-3'} ${handleClick ? 'hover:scale-[1.01] cursor-pointer' : ''} ${selected ? 'border-2 border-yellow-400/60 bg-yellow-500/10' : ''}`}
     >
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-3">
         {iconUrl ? (
           <div className={`${compact ? 'w-9 h-9' : 'w-12 h-12'} rounded-lg overflow-hidden flex-shrink-0 border border-red-500/30 bg-red-500/8`}>
             <img src={iconUrl} alt={name} className="w-full h-full object-cover" onError={hideOnError} />

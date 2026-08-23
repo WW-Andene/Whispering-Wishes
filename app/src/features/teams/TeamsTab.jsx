@@ -643,7 +643,7 @@ function TeamsTab({
                       {/* Loadout preset dropdown (triggered from header Load icon) */}
                       {showPresetDropdown && (
                         <div className="relative mb-3">
-                          <div className="absolute top-0 right-0 z-50 min-w-[200px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
+                          <div className="absolute top-0 right-0 z-50 min-w-[192px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
                             {equipPresets.length === 0 ? (
                               <div className="px-3 py-2 text-sm text-gray-500">{t('teams.tab.noSavedLoadouts')}</div>
                             ) : (
@@ -822,7 +822,7 @@ function TeamsTab({
                             <button
                               key={i}
                               onClick={() => applySuggestion(s)}
-                              className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-[var(--border-medium)] hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
+                              className="w-full flex items-center gap-3 p-3 rounded-lg border border-[var(--border-medium)] hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
                               style={{ background: 'var(--bg-stat)' }}
                             >
                               <div className="flex gap-1 flex-shrink-0">

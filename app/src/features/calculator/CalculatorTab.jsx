@@ -478,7 +478,7 @@ function CalculatorTab({ state, dispatch }) {
       {/* Bookmark Modal */}
       <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="" onClick={() => setShowBookmarkModal(false)} ariaLabel={t('calculator.saveCurrentState')} centered>
           <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('calculator.closeBookmarkModalAria')}><X size={16} /></button>}>{t('calculator.saveCurrentState')}</CardHeader>
+            <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('calculator.closeBookmarkModalAria')}><X size={16} /></button>}>{t('calculator.saveCurrentState')}</CardHeader>
             <CardBody className="space-y-3">
               <input type="text" value={bookmarkName} onChange={e => setBookmarkName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { haptic.success(); dispatch({ type: 'SAVE_BOOKMARK', name: bookmarkName || t('calculator.defaultBookmarkName', { n: (state.bookmarks?.length || 0) + 1 }) }); setBookmarkName(''); setShowBookmarkModal(false); } }} placeholder={t('calculator.bookmarkNamePlaceholder')} maxLength={MAX_BOOKMARK_NAME_LENGTH} className="kuro-input w-full" aria-label={t('calculator.bookmarkNameAria')} />
               <div className="text-gray-300 text-sm">

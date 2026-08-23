@@ -19,7 +19,7 @@ export default function AdminTrophiesTab({
         {/* Current trophies list */}
         <div className="mb-3">
           <div className="text-gray-400 text-sm font-medium mb-1 uppercase tracking-wider">Current Trophies ({trophies?.list?.length || 0})</div>
-          <div className="max-h-[200px] overflow-y-auto kuro-scroll bg-black/30 rounded border border-[var(--border-medium)] p-2 space-y-0.5">
+          <div className="max-h-[192px] overflow-y-auto kuro-scroll bg-black/30 rounded border border-[var(--border-medium)] p-2 space-y-0.5">
             {(trophies?.list || []).map(t => (
               <div key={t.id} className="flex items-center gap-2 py-0.5">
                 <span className="text-sm font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>

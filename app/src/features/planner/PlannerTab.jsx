@@ -447,11 +447,11 @@ function PlannerTab({
           </div>
           {/* Probability estimate */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="kuro-stat p-2.5 text-center flex flex-col items-center justify-center">
+            <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probNow >= 80 ? 'text-emerald-400' : planData.probNow >= 50 ? 'text-yellow-400' : planData.probNow >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probNow.toFixed(1)}%</div>
               <div className="text-gray-500 text-xs">{t('planner.chanceNow', { pulls: planData.availablePulls })}</div>
             </div>
-            <div className="kuro-stat p-2.5 text-center flex flex-col items-center justify-center">
+            <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probByEnd >= 80 ? 'text-emerald-400' : planData.probByEnd >= 50 ? 'text-yellow-400' : planData.probByEnd >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probByEnd.toFixed(1)}%</div>
               <div className="text-gray-500 text-xs">{t('planner.chanceByEnd', { pulls: planData.pullsByEnd })}</div>
             </div>
@@ -504,7 +504,7 @@ function PlannerTab({
               </div>
               <div className="flex gap-1">
                 <button onClick={() => dispatch({ type: 'LOAD_BOOKMARK', id: b.id })} aria-label={t('planner.loadAriaLabel', { name: b.name })} className="px-3 py-1.5 text-sm bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded border border-cyan-500/30 transition-colors min-h-[44px]">{t('planner.loadLabel')}</button>
-                <button onClick={async () => { if (await confirm({ title: t('planner.deleteBookmarkTitle'), message: t('planner.deleteBookmarkMessage', { name: b.name }), confirmLabel: t('planner.deleteLabel'), destructive: true })) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={t('planner.deleteAriaLabel', { name: b.name })} className="px-2.5 py-1.5 text-sm bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
+                <button onClick={async () => { if (await confirm({ title: t('planner.deleteBookmarkTitle'), message: t('planner.deleteBookmarkMessage', { name: b.name }), confirmLabel: t('planner.deleteLabel'), destructive: true })) dispatch({ type: 'DELETE_BOOKMARK', id: b.id }); }} aria-label={t('planner.deleteAriaLabel', { name: b.name })} className="px-3 py-1.5 text-sm bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded border border-red-500/30 transition-colors min-h-[44px]">×</button>
               </div>
             </div>
           ))}
@@ -532,12 +532,12 @@ function PlannerTab({
                 <div className="kuro-card w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]">
                     <h3 className="text-white text-xl font-semibold">{t('planner.selectResonator')}</h3>
-                    <button onClick={() => setFarmPickerOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('planner.closeLabel')}><X size={16} /></button>
+                    <button onClick={() => setFarmPickerOpen(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('planner.closeLabel')}><X size={16} /></button>
                   </div>
                   <div className="p-3 border-b border-[var(--border-subtle)]">
                     <div className="relative">
                       <input type="text" value={farmSearch} onChange={e => setFarmSearch(e.target.value)} placeholder={t('planner.searchResonators')} className="kuro-input w-full pl-8 text-base" aria-label={t('planner.searchResonatorsAria')} autoFocus />
-                      <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                     </div>
                   </div>
                   <div className="flex-1 overflow-y-auto p-4">
@@ -630,7 +630,7 @@ function PlannerTab({
 
                   {/* ── Resources card ── */}
                   {hasAnyToggle && charMatList.length > 0 && (
-                    <div className="p-2.5 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
+                    <div className="p-3 rounded-lg space-y-1.5" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
                       <div className="flex items-center justify-between p-1.5 rounded bg-yellow-500/10">
                         <span className="text-yellow-400 text-sm font-medium">{t('planner.shellCredit')}</span>
                         <span className="text-yellow-400 font-bold text-sm kuro-number">{formatNumber(charShell)}</span>
@@ -696,7 +696,7 @@ function PlannerTab({
                 <>
                   <div className="kuro-label mt-2">{isMulti ? t('planner.combinedTotal', { count: farmTargetsState.length, plural: farmTargetsState.length > 1 ? 's' : '' }) : t('planner.remainingLabel')}</div>
                   {isMulti && (
-                    <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                    <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                       <div className="flex items-center justify-between">
                         <span className="text-yellow-400 text-base font-medium">{t('planner.shellCredit')}</span>
                         <span className="text-yellow-400 font-bold text-lg kuro-number">{formatNumber(totalShell)}</span>

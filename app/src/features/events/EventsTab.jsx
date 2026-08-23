@@ -141,7 +141,7 @@ function EventsTab({
           </div>
         }>{t('events.title')}</CardHeader>
         <CardBody className="space-y-2">
-              <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+              <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-yellow-400 text-base font-medium">{progressStats.hasProgress ? t('events.weeklyProgress') : t('events.weeklyRewards')}</span>
                   <span className="text-yellow-400 font-bold text-xl kuro-number">{progressStats.hasProgress ? `${formatNumber(progressStats.earnedAstrite)} / ${formatNumber(progressStats.totalAstrite)}` : formatNumber(progressStats.totalAstrite)} {t('events.astrite')}</span>

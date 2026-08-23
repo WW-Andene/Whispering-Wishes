@@ -64,7 +64,7 @@ export default function IdCardModal({
                           </div>
                         </div>
                         {luckRating && (
-                          <div className="mt-2.5 flex items-center gap-2">
+                          <div className="mt-3 flex items-center gap-2">
                             <div className="flex-1 h-1.5 rounded-full overflow-hidden kuro-border-subtle" style={{ background: 'var(--bg-stat)' }}>
                               <div className="h-full rounded-full kuro-gradient-luck kuro-shadow-luck-bar" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%` }} />
                             </div>
@@ -272,7 +272,7 @@ export default function IdCardModal({
               <div className="flex rounded-xl overflow-hidden kuro-border-medium" style={{ background: 'var(--bg-btn)' }}>
                 <button
                   onClick={() => setIdCardFormat('landscape')}
-                  className="px-3 py-2.5 text-sm font-medium flex items-center gap-1.5 transition-all"
+                  className="px-3 py-3 text-sm font-medium flex items-center gap-1.5 transition-all"
                   style={idCardFormat === 'landscape' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18', borderRight: '1px solid var(--border-medium)' } : { color: '#6b7280', borderRight: '1px solid var(--border-medium)' }}
                   title={t('profile.idCard.landscape')}
                 >
@@ -280,7 +280,7 @@ export default function IdCardModal({
                 </button>
                 <button
                   onClick={() => setIdCardFormat('portrait')}
-                  className="px-3 py-2.5 text-sm font-medium flex items-center gap-1.5 transition-all"
+                  className="px-3 py-3 text-sm font-medium flex items-center gap-1.5 transition-all"
                   style={idCardFormat === 'portrait' ? { background: 'rgba(237,175,24,0.15)', color: '#edaf18' } : { color: '#6b7280' }}
                   title={t('profile.idCard.portrait')}
                 >
@@ -290,14 +290,14 @@ export default function IdCardModal({
               {/* Download */}
               <button
                 onClick={() => downloadIdCard(idCardFormat)}
-                className="kuro-btn flex-1 py-2.5 text-base active-gold flex items-center justify-center gap-2"
+                className="kuro-btn flex-1 py-3 text-base active-gold flex items-center justify-center gap-2"
               >
                 <Download size={14} /> {t('profile.idCard.download', { format: idCardFormat === 'portrait' ? '9:16' : '16:9' })}
               </button>
               {/* Close */}
               <button
                 onClick={() => setShowIdCard(false)}
-                className="kuro-btn px-4 py-2.5 text-base"
+                className="kuro-btn px-4 py-3 text-base"
               >
                 <X size={14} />
               </button>

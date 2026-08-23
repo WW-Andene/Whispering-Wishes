@@ -216,7 +216,7 @@ const PWAProvider = ({ children }) => {
       {/* Install guide modal — platform-specific instructions (opened via logo tap) */}
       {showInstallGuide && (
         <div className="fixed inset-0 z-[9900] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInstallGuide(false)}>
-          <div className="w-[300px] rounded-2xl p-4 shadow-xl border border-white/10" style={{ background: '#0f141c' }} onClick={e => e.stopPropagation()}>
+          <div className="w-[256px] rounded-2xl p-4 shadow-xl border border-white/10" style={{ background: '#0f141c' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
                 <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />

@@ -153,7 +153,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
+          <button onClick={onClose} className="absolute top-3 right-3 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
           <FullSpineViewerButton name={name} imageUrl={imageUrl} className="absolute bottom-3 right-3 z-20" />
@@ -243,7 +243,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* Tier */}
           {data.tier && (
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-base font-bold ${
+            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-base font-bold ${
               data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40' :
               data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
               data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' :
@@ -608,7 +608,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                       const owned = ownsWeapon(w);
                       const wLabel = wd?.displayName || w;
                       return (
-                        <div key={i} className={`flex items-center gap-2.5 p-1.5 rounded-lg ${owned ? 'bg-white/[0.03]' : 'bg-white/[0.015]'}`} style={!owned ? { opacity: 0.55 } : undefined}>
+                        <div key={i} className={`flex items-center gap-3 p-1.5 rounded-lg ${owned ? 'bg-white/[0.03]' : 'bg-white/[0.015]'}`} style={!owned ? { opacity: 0.55 } : undefined}>
                           {wImg ? (
                             <div className={`w-10 h-10 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${owned && wd?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
                               <img src={wImg} alt={wLabel} className="w-full h-full object-cover" onError={hideOnError} />

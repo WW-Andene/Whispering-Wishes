@@ -116,7 +116,7 @@ function AchievementsTool({ onClose }) {
     const s = LOCALIZED_ACHIEVEMENT_SERIES[a.group];
     const isDone = done.has(id);
     return (
-      <div key={id} className="flex items-start gap-3 p-2.5 rounded-lg border transition-colors" style={{ borderColor: isDone ? 'rgba(74,222,128,0.35)' : 'var(--border-medium)', background: isDone ? 'rgba(74,222,128,0.06)' : 'rgba(15,20,28,0.25)' }}>
+      <div key={id} className="flex items-start gap-3 p-3 rounded-lg border transition-colors" style={{ borderColor: isDone ? 'rgba(74,222,128,0.35)' : 'var(--border-medium)', background: isDone ? 'rgba(74,222,128,0.06)' : 'rgba(15,20,28,0.25)' }}>
         <button
           onClick={() => toggleDone(id)}
           aria-label={isDone ? t('analytics.achievements.markUndone', { name: a.name }) : t('analytics.achievements.markDone', { name: a.name })}
@@ -153,13 +153,13 @@ function AchievementsTool({ onClose }) {
         <Award size={14} className="text-yellow-400 inline-block mr-1.5 -mt-0.5" /> {t('analytics.achievements.title')}
       </CardHeader>
       <CardBody className="space-y-3">
-        <div className="flex items-center justify-between text-sm bg-black/20 rounded-lg p-2.5">
+        <div className="flex items-center justify-between text-sm bg-black/20 rounded-lg p-3">
           <span className="text-gray-300">{t('analytics.achievements.progress')} <strong>{formatNumber(done.size)}</strong> / {formatNumber(totalCount)}</span>
           <span className="text-gray-300">{t('analytics.achievements.rewards')} <strong className="text-yellow-400">{formatNumber(earnedPoints)}</strong> / {formatNumber(totalPoints)}</span>
         </div>
 
         <div className="relative">
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
             value={search}
@@ -220,7 +220,7 @@ function AchievementsTool({ onClose }) {
                 <button
                   key={s.id}
                   onClick={() => setSeriesFilter(s.id)}
-                  className="w-full text-left p-2.5 rounded-lg border border-[var(--border-medium)] bg-black/20 hover:bg-black/30 transition-colors"
+                  className="w-full text-left p-3 rounded-lg border border-[var(--border-medium)] bg-black/20 hover:bg-black/30 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-medium flex items-center gap-2">

@@ -24,7 +24,7 @@ export function RotationGuideCard({ rotationTimeline }) {
         <div className="space-y-0">
           {rotationTimeline.steps.map((step, i) => (
             <React.Fragment key={step.order}>
-              <div className={`p-2.5 rounded-lg border ${step.isDps ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-[var(--border-medium)]'}`} style={step.isDps ? undefined : { background: 'var(--bg-stat)' }}>
+              <div className={`p-3 rounded-lg border ${step.isDps ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-[var(--border-medium)]'}`} style={step.isDps ? undefined : { background: 'var(--bg-stat)' }}>
                 <div className="flex items-center gap-2">
                   <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-2xs font-bold ${step.isDps ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/10 text-gray-400'}`}>{step.order}</span>
                   <span className={`font-semibold text-sm ${step.isDps ? 'text-yellow-400' : 'text-gray-200'}`}>{step.name}</span>

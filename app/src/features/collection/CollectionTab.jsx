@@ -350,8 +350,8 @@ function CollectionTab({
         <>
           {/* Import prompt toast — non-blocking, dismissible */}
           {!state.profile.importedAt && !dismissedImport && setActiveTab && (
-            <div className="flex items-center gap-2.5 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-2.5 content-layer">
-              <button onClick={() => setActiveTab('profile')} className="flex items-center gap-2.5 flex-1 min-w-0 hover:opacity-80 transition-opacity">
+            <div className="flex items-center gap-3 rounded-lg border border-cyan-500/25 bg-cyan-500/5 px-3 py-3 content-layer">
+              <button onClick={() => setActiveTab('profile')} className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity">
                 <Upload size={14} className="text-cyan-400 flex-shrink-0" />
                 <span className="text-cyan-300/90 text-sm">{t('collection.importPromptPre')} <strong>{t('collection.importPromptTab')}</strong> {t('collection.importPromptPost')}</span>
                 <ArrowRight size={12} className="text-cyan-400/60 flex-shrink-0" />
@@ -411,7 +411,7 @@ function CollectionTab({
                 style={{ paddingLeft: 32 }}
                 aria-label={t('collection.search.ariaLabel')}
               />
-              <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
               {collectionSearch && (
                 <button onClick={() => handleSearchChange('')} className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-white transition-colors" aria-label={t('collection.search.clear')}>
                   <X size={14} />

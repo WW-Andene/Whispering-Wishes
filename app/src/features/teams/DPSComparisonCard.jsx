@@ -80,7 +80,7 @@ export default function DPSComparisonCard({
             summary + shortcut into the same selector modal, rather than a second full editable
             control, to avoid two out-of-sync-looking copies of the same picker. */}
         <button onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); haptic.light(); }}
-          className="w-full mb-3 flex items-center gap-2.5 p-2 rounded-lg border border-[var(--border-medium)] hover:border-white/20 transition-colors text-left"
+          className="w-full mb-3 flex items-center gap-3 p-2 rounded-lg border border-[var(--border-medium)] hover:border-white/20 transition-colors text-left"
           style={{ background: 'var(--bg-stat)' }}>
           <Sword size={12} className="text-red-400 shrink-0" />
           <span className="text-gray-400 text-sm font-medium shrink-0">{t('teams.dpsCompare.target')}</span>
@@ -95,7 +95,7 @@ export default function DPSComparisonCard({
             const teamPct = ((s.teamDps || s.perfectDps || 0) / unifiedMax) * 100;
             const soloPct = ((s.soloDps || s.rawDps || 0) / unifiedMax) * 100;
             return (
-              <div key={entry.id} className="group p-2.5 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
+              <div key={entry.id} className="group p-3 rounded-lg border border-[var(--border-medium)] relative" style={{ background: 'var(--bg-stat)' }}>
                 <div className="flex items-center justify-between mb-1.5 pr-8">
                   <span className="text-sm font-medium text-gray-300 truncate" title={entry.slots.filter(Boolean).join(' / ')}>
                     {entry.slots.filter(Boolean).join(' / ') || t('teams.dpsCompare.emptyTeam')}

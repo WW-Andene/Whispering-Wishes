@@ -15,7 +15,7 @@ export default function AdminPlayersTab({
     <div className="space-y-4">
       <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 text-center">
         <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
+          <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse shadow-lg shadow-emerald-400/50" />
           <span className="text-emerald-400 text-base font-medium uppercase tracking-wider">{t('admin.players.live')}</span>
         </div>
         <div className="text-6xl font-bold text-emerald-400 kuro-number kuro-tshadow-glow-gold-lg" style={{ transition: 'opacity 0.3s ease' }}>

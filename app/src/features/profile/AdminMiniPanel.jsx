@@ -188,7 +188,7 @@ export default function AdminMiniPanel({
     <div
       className={`fixed z-[10010] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md kuro-shadow-admin ${getMiniPanelPositionClasses()}`}
     >
-      <div className="sticky top-0 bg-cyan-900/40 border-b border-cyan-500/30 p-2.5 flex items-center justify-between">
+      <div className="sticky top-0 bg-cyan-900/40 border-b border-cyan-500/30 p-3 flex items-center justify-between">
         <span className="text-cyan-300 text-sm font-bold flex items-center gap-1.5"><Settings size={14} /> {t('admin.mini.visualSettings')}</span>
         <div className="flex gap-1">
           <div className="flex gap-0.5 mr-1">
@@ -237,7 +237,7 @@ export default function AdminMiniPanel({
             </div>
             <div className="flex gap-1 justify-center items-center">
               <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom - 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.zoomOut')}>−</button>
-              <span className="px-2 py-1 text-white text-base min-w-[50px] text-center">{getImageFraming(editingImage).zoom}%</span>
+              <span className="px-2 py-1 text-white text-base min-w-[48px] text-center">{getImageFraming(editingImage).zoom}%</span>
               <button onClick={() => updateEditingFraming({ zoom: getImageFraming(editingImage).zoom + 10 })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.zoomIn')}>+</button>
             </div>
             <div className="text-center text-gray-500 text-2xs mt-2">{t('admin.mini.tapAnotherImage')}</div>
@@ -272,7 +272,7 @@ export default function AdminMiniPanel({
               </div>
               <div className="flex gap-1 justify-center items-center">
                 <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.max(100, infoF.zoom - 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.zoomOut')}>−</button>
-                <span className="px-2 py-1 text-white text-base min-w-[50px] text-center">{infoF.zoom}%</span>
+                <span className="px-2 py-1 text-white text-base min-w-[48px] text-center">{infoF.zoom}%</span>
                 <button onClick={() => saveImageFraming(infoKey, { ...infoF, zoom: Math.min(300, infoF.zoom + 10) })} className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded text-white text-base" aria-label={t('admin.mini.zoomIn')}>+</button>
               </div>
               <div className="text-center text-gray-500 text-2xs mt-2">{t('admin.mini.infoPanelHint')}</div>
