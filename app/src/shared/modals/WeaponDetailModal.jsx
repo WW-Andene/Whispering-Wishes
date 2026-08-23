@@ -43,17 +43,17 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
       >
        <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header */}
-        <div className={`relative h-40 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''} ${framingMode ? ' cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? ' ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+        <div className={`relative h-48 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''} ${framingMode ? ' cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? ' ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {framingMode && editingImage === `info-${name}` && (
-            <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+            <div className="absolute top-2 left-2 z-20 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
               <span className="text-black text-sm">✓</span>
             </div>
           )}
           {imageUrl && (
-            <img src={imageUrl} alt={displayName} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} style={{
+            <img src={imageUrl} alt={displayName} className="absolute right-2 top-1/2 -translate-y-1/2 h-32 object-contain opacity-90" onError={hideOnError} style={{
               transform: `translateY(-50%) scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
               transformOrigin: 'center',
             }} />

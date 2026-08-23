@@ -125,7 +125,7 @@ export default function EchoSelector({
                   {/* Recommendation indicator */}
                   {recommendedEchoes.size > 0 && (
                     <div className="flex items-center gap-1.5 text-sm text-orange-400">
-                      <Star size={10} className="text-orange-400" fill="currentColor" />
+                      <Star size={12} className="text-orange-400" fill="currentColor" />
                       <span>Orange glow = recommended for {echoSelectorTarget.charName}</span>
                     </div>
                   )}
@@ -200,7 +200,7 @@ export default function EchoSelector({
                           >
                             <div className="flex items-center gap-2">
                               {collectionImages[name] ? (
-                                <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border ${isRec ? 'border-orange-400/50 bg-orange-500/10' : `border-${costColor}-500/30 bg-${costColor}-500/8`}`} style={{ position: 'relative' }}>
+                                <div className={`w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border ${isRec ? 'border-orange-400/50 bg-orange-500/10' : `border-${costColor}-500/30 bg-${costColor}-500/8`}`} style={{ position: 'relative' }}>
                                   <EchoImage src={collectionImages[name]} alt={name} className="w-full h-full object-cover" noBgProcess={ECHO_DATA[name]?.noBgProcess} />
                                 </div>
                               ) : (
@@ -304,7 +304,7 @@ export default function EchoSelector({
                 <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                   <div className="flex items-center gap-2 min-w-0">
                     {collectionImages[echoName] ? (
-                      <div className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
+                      <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
                         <EchoImage src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-cover" noBgProcess={ECHO_DATA[echoName]?.noBgProcess} />
                       </div>
                     ) : (

@@ -121,16 +121,16 @@ function AchievementsTool({ onClose }) {
           onClick={() => toggleDone(id)}
           aria-label={isDone ? t('analytics.achievements.markUndone', { name: a.name }) : t('analytics.achievements.markDone', { name: a.name })}
           aria-pressed={isDone}
-          className="mt-0.5 w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors"
+          className="mt-0.5 w-6 h-6 rounded flex items-center justify-center flex-shrink-0 border transition-colors"
           style={{ borderColor: isDone ? '#4ade80' : 'var(--border-medium)', background: isDone ? '#4ade80' : 'transparent' }}
         >
-          {isDone && <Check size={13} className="text-black" strokeWidth={3} />}
+          {isDone && <Check size={12} className="text-black" strokeWidth={3} />}
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
             <span className="font-medium text-sm flex items-center gap-1.5" style={{ color: isDone ? '#4ade80' : 'inherit' }}>
               {a.name}
-              {a.hidden && <EyeOff size={11} className="text-gray-500 flex-shrink-0" aria-label={t('analytics.achievements.hiddenAchievement')} />}
+              {a.hidden && <EyeOff size={12} className="text-gray-500 flex-shrink-0" aria-label={t('analytics.achievements.hiddenAchievement')} />}
             </span>
             <span className="text-xs text-yellow-400/80 flex-shrink-0">{t('analytics.achievements.points', { n: formatNumber(a.points) })}</span>
           </div>
@@ -196,11 +196,11 @@ function AchievementsTool({ onClose }) {
           // Drilled into one series via a card click
           <div className="space-y-1.5">
             <button onClick={() => setSeriesFilter('all')} className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-200 mb-1">
-              <ChevronLeft size={13} /> {t('analytics.achievements.backToSeries')}
+              <ChevronLeft size={12} /> {t('analytics.achievements.backToSeries')}
             </button>
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium flex items-center gap-2">
-                {selectedSeries.icon && <img src={selectedSeries.icon} alt="" className="w-5 h-5" loading="lazy" />}
+                {selectedSeries.icon && <img src={selectedSeries.icon} alt="" className="w-6 h-6" loading="lazy" />}
                 {selectedSeries.name}
               </span>
               <span className="text-gray-400 text-xs">
@@ -224,7 +224,7 @@ function AchievementsTool({ onClose }) {
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-medium flex items-center gap-2">
-                      {s.icon && <img src={s.icon} alt="" className="w-5 h-5 flex-shrink-0" loading="lazy" />}
+                      {s.icon && <img src={s.icon} alt="" className="w-6 h-6 flex-shrink-0" loading="lazy" />}
                       {s.name}
                     </span>
                     <span className="text-[10px] text-gray-500 flex-shrink-0">{s.category}</span>

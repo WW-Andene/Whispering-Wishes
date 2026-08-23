@@ -79,9 +79,9 @@ const TabLoadingSkeleton = () => (
         <div className="kuro-body space-y-3 py-6">
           <div className="h-4 bg-white/10 rounded w-1/4" />
           <div className="flex gap-2">
-            <div className="h-20 bg-white/5 rounded flex-1" />
-            <div className="h-20 bg-white/5 rounded flex-1" />
-            <div className="h-20 bg-white/5 rounded flex-1" />
+            <div className="h-24 bg-white/5 rounded flex-1" />
+            <div className="h-24 bg-white/5 rounded flex-1" />
+            <div className="h-24 bg-white/5 rounded flex-1" />
           </div>
         </div>
       </div>

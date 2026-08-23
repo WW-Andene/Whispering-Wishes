@@ -149,7 +149,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
 
                   {/* ── Section 1: Character Header ── */}
                   <div className="flex items-center gap-3">
-                    <div className={`w-11 h-12 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
+                    <div className={`w-12 h-12 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
                       style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
                       {collectionImages[m.name] ? (
                         <img src={collectionImages[m.name]} alt={m.name} className="w-full h-full object-cover object-top breath-zoom" onError={hideOnError} />
@@ -186,7 +186,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         haptic.success();
                       }}
                     >
-                      <Zap size={10} className="inline mr-0.5" />{t('teams.damageCalc.autoEquip')}
+                      <Zap size={12} className="inline mr-0.5" />{t('teams.damageCalc.autoEquip')}
                     </button>
                     {/* Reset Equipment button */}
                     {(() => {
@@ -208,7 +208,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             }
                           }}
                         >
-                          <X size={10} className="inline mr-0.5" />{t('teams.damageCalc.reset')}
+                          <X size={12} className="inline mr-0.5" />{t('teams.damageCalc.reset')}
                         </button>
                       );
                     })()}
@@ -230,7 +230,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     const eqKey = state.activeTeamIndex + ':' + m.name;
                     const eq = teamEquipment[eqKey] || { weapon: null, echoes: [null, null, null, null, null] };
                     const equippedWeap = eq.weapon ? WEAPON_DATA[eq.weapon] : null;
-                    const slotStyle = 'w-10 h-10 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center relative overflow-hidden';
+                    const slotStyle = 'w-12 h-12 rounded-lg border flex flex-col items-center justify-center cursor-pointer transition-all text-center relative overflow-hidden';
                     return (
                       <div className="space-y-2">
                         {/* Equipment grid + Weapon info */}
@@ -407,7 +407,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         {/* Advanced: Sequence + Refinement + Sonata (collapsible) */}
                         <details className="group" open>
                           <summary className="kuro-label cursor-pointer hover:text-gray-200 transition-colors select-none !flex !flex-row items-center gap-1 list-none [&::-webkit-details-marker]:hidden" style={{ display: 'flex', flexDirection: 'row', marginBottom: 0 }}>
-                            <ChevronDown size={10} className="transform group-open:rotate-180 transition-transform flex-shrink-0" />
+                            <ChevronDown size={12} className="transform group-open:rotate-180 transition-transform flex-shrink-0" />
                             <span>{t('teams.damageCalc.sequenceRefinement')}</span>
                           </summary>
                         <div className="kuro-detail-box mt-1 space-y-2">
@@ -641,7 +641,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
                       <div className="h-full rounded-full dps-bar" style={{ width: `${s.pct}%`, background: `linear-gradient(90deg, ${s.color}30, ${s.color}60)`, boxShadow: `0 0 8px ${s.color}30` }} />
                     </div>
-                    <span className="text-sm font-medium w-10 text-right" style={{ color: s.color }}>{s.pct}%</span>
+                    <span className="text-sm font-medium w-12 text-right" style={{ color: s.color }}>{s.pct}%</span>
                   </div>
                 ))}
               </div>
@@ -659,7 +659,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
                         <div className="h-full rounded-full dps-bar" style={{ width: `${m.pct}%`, background: `linear-gradient(90deg, ${elColor}30, ${elColor}60)`, boxShadow: `0 0 8px ${elColor}30` }} />
                       </div>
-                      <span className="text-sm font-medium w-10 text-right" style={{ color: elColor }}>{m.pct}%</span>
+                      <span className="text-sm font-medium w-12 text-right" style={{ color: elColor }}>{m.pct}%</span>
                     </div>
                   );
                 })}

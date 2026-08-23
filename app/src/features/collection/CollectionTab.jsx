@@ -945,7 +945,7 @@ function CollectionTab({
           top: Math.max(counterWidget.y - 50, 10),
         }}>
         <button
-          className="kuro-btn w-10 h-10 flex items-center justify-center text-lg font-bold text-red-400 hover:bg-red-500/20"
+          className="kuro-btn w-12 h-12 flex items-center justify-center text-lg font-bold text-red-400 hover:bg-red-500/20"
           onClick={() => adjustManualCount(counterWidget.name, counterWidget.isCharacter, -1)}
           aria-label={t('collection.widget.removeOne')}
         >−</button>
@@ -954,7 +954,7 @@ function CollectionTab({
           <div className="text-gray-500 text-2xs truncate max-w-[60px]">{counterWidget.name.split(' ')[0]}</div>
         </div>
         <button
-          className="kuro-btn w-10 h-10 flex items-center justify-center text-lg font-bold text-emerald-400 hover:bg-emerald-500/20"
+          className="kuro-btn w-12 h-12 flex items-center justify-center text-lg font-bold text-emerald-400 hover:bg-emerald-500/20"
           onClick={() => adjustManualCount(counterWidget.name, counterWidget.isCharacter, +1)}
           aria-label={t('collection.widget.addOne')}
         >+</button>

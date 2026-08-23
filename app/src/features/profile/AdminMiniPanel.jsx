@@ -163,7 +163,7 @@ function SpineTuningSection() {
           }}
           className="flex-1 py-1 rounded text-2xs bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/30"
         >
-          <ClipboardList size={10} className="inline mr-1" /> {t('admin.mini.export')}
+          <ClipboardList size={12} className="inline mr-1" /> {t('admin.mini.export')}
         </button>
       </div>
     </div>
@@ -186,16 +186,16 @@ export default function AdminMiniPanel({
 
   return createPortal(
     <div
-      className={`fixed z-[10010] w-72 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md kuro-shadow-admin ${getMiniPanelPositionClasses()}`}
+      className={`fixed z-[10010] w-64 max-h-[50vh] overflow-auto rounded-xl border-2 border-cyan-500/50 bg-neutral-900/95 backdrop-blur-md kuro-shadow-admin ${getMiniPanelPositionClasses()}`}
     >
       <div className="sticky top-0 bg-cyan-900/40 border-b border-cyan-500/30 p-3 flex items-center justify-between">
         <span className="text-cyan-300 text-sm font-bold flex items-center gap-1.5"><Settings size={14} /> {t('admin.mini.visualSettings')}</span>
         <div className="flex gap-1">
           <div className="flex gap-0.5 mr-1">
-            <button onClick={() => saveMiniPanelPosition('top-left')} aria-label={t('admin.mini.moveTopLeft')} className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'top-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↖</button>
-            <button onClick={() => saveMiniPanelPosition('top-right')} aria-label={t('admin.mini.moveTopRight')} className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'top-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↗</button>
-            <button onClick={() => saveMiniPanelPosition('bottom-left')} aria-label={t('admin.mini.moveBottomLeft')} className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'bottom-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↙</button>
-            <button onClick={() => saveMiniPanelPosition('bottom-right')} aria-label={t('admin.mini.moveBottomRight')} className={`w-5 h-5 rounded text-2xs ${miniPanelPosition === 'bottom-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↘</button>
+            <button onClick={() => saveMiniPanelPosition('top-left')} aria-label={t('admin.mini.moveTopLeft')} className={`w-6 h-6 rounded text-2xs ${miniPanelPosition === 'top-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↖</button>
+            <button onClick={() => saveMiniPanelPosition('top-right')} aria-label={t('admin.mini.moveTopRight')} className={`w-6 h-6 rounded text-2xs ${miniPanelPosition === 'top-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↗</button>
+            <button onClick={() => saveMiniPanelPosition('bottom-left')} aria-label={t('admin.mini.moveBottomLeft')} className={`w-6 h-6 rounded text-2xs ${miniPanelPosition === 'bottom-left' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↙</button>
+            <button onClick={() => saveMiniPanelPosition('bottom-right')} aria-label={t('admin.mini.moveBottomRight')} className={`w-6 h-6 rounded text-2xs ${miniPanelPosition === 'bottom-right' ? 'bg-cyan-500 text-black' : 'bg-white/10 text-gray-400'}`}>↘</button>
           </div>
           <button onClick={() => setAdminMiniMode(false)} className="text-cyan-400 hover:text-white p-1 rounded hover:bg-white/20 bg-white/10 transition-colors" title={t('admin.mini.expand')} aria-label={t('admin.mini.expandAria')}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
@@ -296,7 +296,7 @@ export default function AdminMiniPanel({
             }}
             className="w-full py-2 rounded text-sm font-medium border transition-all bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20"
           >
-            <ClipboardList size={10} className="inline mr-1" />
+            <ClipboardList size={12} className="inline mr-1" />
             {t('admin.mini.exportFramingData', { count: Object.keys(imageFraming).length })}
           </button>
         )}
@@ -351,7 +351,7 @@ export default function AdminMiniPanel({
             }}
             className="w-full py-2 rounded text-sm font-medium border transition-all bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20"
           >
-            <ClipboardList size={10} className="inline mr-1" />
+            <ClipboardList size={12} className="inline mr-1" />
             {t('admin.mini.exportBgPositions')}
           </button>
         )}

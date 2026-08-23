@@ -702,7 +702,7 @@ function TeamsTab({
                               }}
                             >
                               {framingMode && editingImage === teamKey && (
-                                <div className="absolute top-1 left-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                                <div className="absolute top-1 left-1 z-20 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
                                   <span className="text-black text-sm">✓</span>
                                 </div>
                               )}
@@ -720,7 +720,7 @@ function TeamsTab({
                                 />
                                 </div>
                               )}
-                              {/* P6-FIX: Increased from w-5 h-5 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
+                              {/* P6-FIX: Increased from w-6 h-6 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
                               {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
                                 className="action-btn absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
@@ -830,7 +830,7 @@ function TeamsTab({
                                   const cd = CHARACTER_DATA[m];
                                   const sf = getImageFraming(`collection-${m}`) || { x: 0, y: 0, zoom: 100 };
                                   return (
-                                    <div key={j} className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative${cd?.rarity === 5 ? ' holo-5star' : ''}`}
+                                    <div key={j} className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 relative${cd?.rarity === 5 ? ' holo-5star' : ''}`}
                                       style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${getElementColor(cd.element)}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${getElementColor(cd.element)}30` : 'none' }}>
                                       {collectionImages[m] ? (
                                         <div className="absolute inset-0 breath-zoom"><img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} /></div>

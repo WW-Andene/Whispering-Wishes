@@ -22,7 +22,7 @@ export default function AdminTrophiesTab({
           <div className="max-h-[192px] overflow-y-auto kuro-scroll bg-black/30 rounded border border-[var(--border-medium)] p-2 space-y-0.5">
             {(trophies?.list || []).map(t => (
               <div key={t.id} className="flex items-center gap-2 py-0.5">
-                <span className="text-sm font-mono text-gray-500 w-20 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
+                <span className="text-sm font-mono text-gray-500 w-24 flex-shrink-0 truncate" title={t.id}>{t.id}</span>
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: t.color }} />
                 <span className={`text-sm flex-1 truncate ${trophyOverrides[t.id] ? 'text-amber-400' : 'text-gray-300'}`} title={t.name}>{t.name}</span>
                 <span className="text-2xs text-gray-500 flex-shrink-0">{t.name.length}ch</span>
@@ -50,7 +50,7 @@ export default function AdminTrophiesTab({
         {/* JSON import textarea */}
         <div className="text-gray-400 text-sm font-medium mb-1 uppercase tracking-wider">Import Overrides (JSON)</div>
         <textarea
-          className="kuro-input w-full h-40 text-sm font-mono"
+          className="kuro-input w-full h-48 text-sm font-mono"
           value={trophyJsonInput}
           onChange={(e) => setTrophyJsonInput(e.target.value)}
           placeholder={'{\n  "pity1": { "name": "New Name Here", "desc": "New description" },\n  "win7": { "name": "Another Name" }\n}'}

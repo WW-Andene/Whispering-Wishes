@@ -50,7 +50,7 @@ function PityHistogram({ statsTabData }) {
           Pity distribution: {allBuckets.map(label => `${label} Convenes: ${buckets[label] || 0}`).join(', ')}.
           Average pity: {avgPity}, range: {minPity} to {maxPity}.
         </div>
-        <div className="flex items-end gap-1.5 h-24 pt-5 mb-2" aria-hidden="true">
+        <div className="flex items-end gap-1.5 h-24 pt-6 mb-2" aria-hidden="true">
           {allBuckets.map(label => {
             const count = buckets[label] || 0;
             const height = maxCount > 0 ? (count / maxCount) * 100 : 0;

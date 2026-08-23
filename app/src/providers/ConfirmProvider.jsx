@@ -41,7 +41,7 @@ const ConfirmProvider = ({ children }) => {
         {state && (
           <div className="kuro-card w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
             <div className="kuro-card-inner rounded-2xl overflow-hidden">
-              <div className="p-5 text-center">
+              <div className="p-6 text-center">
                 <h3 className="text-white font-semibold text-xl mb-2">{state.title}</h3>
                 <p className="text-gray-400 text-base leading-relaxed whitespace-pre-line">{state.message}</p>
               </div>

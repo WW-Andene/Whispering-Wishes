@@ -91,11 +91,11 @@ function MonsterCard({
     >
       <div className="flex items-center gap-3">
         {iconUrl ? (
-          <div className={`${compact ? 'w-9 h-9' : 'w-12 h-12'} rounded-lg overflow-hidden flex-shrink-0 border border-red-500/30 bg-red-500/8`}>
+          <div className={`${compact ? 'w-8 h-8' : 'w-12 h-12'} rounded-lg overflow-hidden flex-shrink-0 border border-red-500/30 bg-red-500/8`}>
             <img src={iconUrl} alt={name} className="w-full h-full object-cover" onError={hideOnError} />
           </div>
         ) : (
-          <div className={`${compact ? 'w-9 h-9' : 'w-12 h-12'} rounded-lg flex items-center justify-center border border-red-500/30 bg-red-500/5 flex-shrink-0`}>
+          <div className={`${compact ? 'w-8 h-8' : 'w-12 h-12'} rounded-lg flex items-center justify-center border border-red-500/30 bg-red-500/5 flex-shrink-0`}>
             <Skull size={compact ? 14 : 18} className="text-red-400" />
           </div>
         )}
@@ -112,7 +112,7 @@ function MonsterCard({
                 onFocus={e => e.target.select()}
                 onChange={e => { const n = parseInt(e.target.value, 10); if (!Number.isNaN(n)) setLevel?.(clampLevel(n)); }}
                 onBlur={e => { if (e.target.value === '' || Number.isNaN(parseInt(e.target.value, 10))) setLevel?.(90); }}
-                className="w-10 text-2xs text-center bg-transparent text-gray-400 border border-[var(--border-subtle)] rounded px-0.5 py-px"
+                className="w-12 text-2xs text-center bg-transparent text-gray-400 border border-[var(--border-subtle)] rounded px-0.5 py-px"
               />
               <button type="button" onClick={() => stepLevel(1)} className="w-4 h-4 flex items-center justify-center rounded bg-white/5 hover:bg-white/15 text-gray-400 text-2xs leading-none">+</button>
               <span className="text-2xs text-gray-500">/ 120</span>

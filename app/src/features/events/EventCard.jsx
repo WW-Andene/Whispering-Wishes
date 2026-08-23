@@ -105,12 +105,12 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
             <div className="flex gap-1">
               {!isDone && (
                 <button onClick={() => onStatusChange('done')} className="kuro-btn kuro-btn-sm active-emerald min-w-[48px] backdrop-blur-sm" aria-label={`Mark ${event.name} as done`}>
-                  <Check size={10} className="inline -mt-0.5" /> Done
+                  <Check size={12} className="inline -mt-0.5" /> Done
                 </button>
               )}
               {!isSkipped && (
                 <button onClick={() => onStatusChange('skipped')} className="kuro-btn kuro-btn-sm min-w-[48px] backdrop-blur-sm" aria-label={`Skip ${event.name}`}>
-                  <SkipForward size={10} className="inline -mt-0.5" /> Skip
+                  <SkipForward size={12} className="inline -mt-0.5" /> Skip
                 </button>
               )}
               {status && (

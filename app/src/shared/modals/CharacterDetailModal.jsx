@@ -114,13 +114,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
       >
        <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header with image */}
-        <div className={`relative h-40 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+        <div className={`relative h-48 overflow-hidden rounded-t-2xl ${framingMode ? 'cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? 'ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           <div className="absolute inset-0" style={{ background: elementCornerFade(colors.hex) }} />
           {framingMode && editingImage === `info-${name}` && (
-            <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+            <div className="absolute top-2 left-2 z-20 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
               <span className="text-black text-sm">✓</span>
             </div>
           )}
@@ -311,7 +311,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                           const icon = getCombatRoleIcon(tag);
                           return (
                             <span key={tag} className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
-                              {icon ? <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} /> : <Sparkles size={10} className="text-gray-400" />}
+                              {icon ? <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} /> : <Sparkles size={12} className="text-gray-400" />}
                               {tag}
                             </span>
                           );
@@ -610,11 +610,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                       return (
                         <div key={i} className={`flex items-center gap-3 p-1.5 rounded-lg ${owned ? 'bg-white/[0.03]' : 'bg-white/[0.015]'}`} style={!owned ? { opacity: 0.55 } : undefined}>
                           {wImg ? (
-                            <div className={`w-10 h-10 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${owned && wd?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
+                            <div className={`w-12 h-12 rounded-lg overflow-hidden bg-neutral-800 border border-[var(--border-medium)] flex-shrink-0${owned && wd?.rarity === 5 ? ' holo-5star' : ''}`} style={{ position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
                               <img src={wImg} alt={wLabel} className="w-full h-full object-cover" onError={hideOnError} />
                             </div>
                           ) : (
-                            <div className="w-10 h-10 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center flex-shrink-0">
+                            <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center flex-shrink-0">
                               <Sparkles size={12} className="text-gray-600" />
                             </div>
                           )}

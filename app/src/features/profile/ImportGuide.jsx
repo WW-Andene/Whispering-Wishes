@@ -50,7 +50,7 @@ const ImportGuide = memo(({ platform }) => {
       <p className="text-gray-100 font-medium text-base">{guide.title()}</p>
       {guide.steps.map((Step, i) => (
         <div key={i} className="flex items-start gap-2">
-          <span className="flex-shrink-0 w-5 h-5 rounded bg-white/10 text-gray-200 flex items-center justify-center text-sm font-bold">{i + 1}</span>
+          <span className="flex-shrink-0 w-6 h-6 rounded bg-white/10 text-gray-200 flex items-center justify-center text-sm font-bold">{i + 1}</span>
           <p><Step /></p>
         </div>
       ))}

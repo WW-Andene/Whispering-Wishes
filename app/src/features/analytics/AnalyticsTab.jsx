@@ -445,7 +445,7 @@ function AnalyticsTab({
                 {/* P13-FIX: MEDIUM-4 — Accessible consent modal (replaces window.confirm) */}
                 <FocusTrapModal isOpen={showConsentModal} onClose={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} className="" onClick={() => { setShowConsentModal(false); consentResolveRef.current?.(false); }} ariaLabel={t('analytics.consent.ariaLabel')} centered>
                   <div className="kuro-card w-full max-w-sm" onClick={e => e.stopPropagation()}>
-                    <div className="kuro-card-inner p-5 space-y-4 rounded-2xl">
+                    <div className="kuro-card-inner p-6 space-y-4 rounded-2xl">
                       <h3 className="text-white font-semibold text-xl">{t('analytics.consent.title')}</h3>
                       <div className="text-gray-300 text-base space-y-2">
                         <p>{t('analytics.consent.intro')}</p>
@@ -498,7 +498,7 @@ function AnalyticsTab({
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${55 + i * 7}%` }} />
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '35%' }} />
                                     </div>
-                                    <div className="kuro-skeleton kuro-skeleton-text w-10 h-4 flex-shrink-0" />
+                                    <div className="kuro-skeleton kuro-skeleton-text w-12 h-4 flex-shrink-0" />
                                   </div>
                                 ))}
                               </div>
@@ -625,7 +625,7 @@ function AnalyticsTab({
                       {communityStats && leaderboardTab === 'rankings' && (
                         <div className="px-4 py-3 border-t border-[var(--border-medium)] space-y-2">
                           <p className="text-sm text-gray-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                            <BarChart3 size={10} /> {t('analytics.leaderboard.communityStats')}
+                            <BarChart3 size={12} /> {t('analytics.leaderboard.communityStats')}
                             <span className="text-gray-500 font-normal">{t('analytics.leaderboard.playersCount', { n: formatNumber(communityStats.totalPlayers) })}</span>
                           </p>
                           <div className="grid grid-cols-3 gap-1.5">
@@ -650,8 +650,8 @@ function AnalyticsTab({
                           )}
                           {communityStats.luckiest && communityStats.unluckiest && communityStats.totalPlayers >= 2 && (
                             <div className="flex justify-between text-sm gap-2">
-                              <span className="text-emerald-500/70 flex items-center gap-0.5"><Clover size={10} /> {t('analytics.leaderboard.luckiest', { pity: communityStats.luckiest.avgPity.toFixed(1) })}</span>
-                              <span className="text-red-500/70 flex items-center gap-0.5"><TrendingDown size={10} /> {t('analytics.leaderboard.unluckiest', { pity: communityStats.unluckiest.avgPity.toFixed(1) })}</span>
+                              <span className="text-emerald-500/70 flex items-center gap-0.5"><Clover size={12} /> {t('analytics.leaderboard.luckiest', { pity: communityStats.luckiest.avgPity.toFixed(1) })}</span>
+                              <span className="text-red-500/70 flex items-center gap-0.5"><TrendingDown size={12} /> {t('analytics.leaderboard.unluckiest', { pity: communityStats.unluckiest.avgPity.toFixed(1) })}</span>
                             </div>
                           )}
                         </div>
@@ -752,13 +752,13 @@ function AnalyticsTab({
                               }}
                             >
                               <div 
-                                className="w-9 h-9 mx-auto mb-1.5 rounded-full flex items-center justify-center"
+                                className="w-8 h-8 mx-auto mb-1.5 rounded-full flex items-center justify-center"
                                 style={{
                                   background: `linear-gradient(135deg, ${trophy.color}30, ${trophy.color}10)`,
                                   boxShadow: `0 0 15px ${trophy.color}40`
                                 }}
                               >
-                                <IconComponent size={18} style={{ color: trophy.color }} />
+                                <IconComponent size={16} style={{ color: trophy.color }} />
                               </div>
                               <div className="text-sm font-bold text-white truncate">{trophy.name}</div>
                               {trophy.desc && <div className="text-sm text-gray-400 truncate mt-0.5" title={trophy.desc}>{trophy.desc}</div>}
@@ -776,7 +776,7 @@ function AnalyticsTab({
                         return (
                           <FocusTrapModal isOpen={true} onClose={() => setSelectedTrophy(null)} className="" onClick={() => setSelectedTrophy(null)} ariaLabel={t('analytics.trophies.trophyAria', { name: trophyObj.name })} centered>
                             <div
-                              className="relative mx-6 p-5 rounded-xl text-center max-w-xs w-full"
+                              className="relative mx-6 p-6 rounded-xl text-center max-w-xs w-full"
                               onClick={(e) => e.stopPropagation()}
                               style={{
                                 background: `linear-gradient(145deg, #1a1a2e, #0d0d1a)`,

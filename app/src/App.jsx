@@ -1028,7 +1028,7 @@ function WhisperingWishesInner() {
                 )}
                 {pwa?.canInstall && (
                   <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center shadow-md" style={{ background: themeAccent || '#eab308' }} aria-hidden="true">
-                    <Download size={9} className="text-black" />
+                    <Download size={8} className="text-black" />
                   </div>
                 )}
               </div>
@@ -1056,7 +1056,7 @@ function WhisperingWishesInner() {
                         </div>
                       );
                     })()
-                  : <User size={22} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
+                  : <User size={24} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
                 }
               </button>
             </div>

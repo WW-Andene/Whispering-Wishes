@@ -98,7 +98,7 @@ export default function AdminPlayersTab({
         ) : adminPlayerList.length === 0 ? (
           <p className="kuro-empty-state text-gray-400 text-base text-center py-4">{t('admin.players.awaitingRegistration')}</p>
         ) : (
-          <div className="space-y-1 max-h-72 overflow-y-auto kuro-scroll">
+          <div className="space-y-1 max-h-64 overflow-y-auto kuro-scroll">
             {adminPlayerList.map((p, i) => (
               <div key={p.firebaseKey} className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
                 <div className="min-w-0">

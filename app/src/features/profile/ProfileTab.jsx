@@ -814,7 +814,7 @@ function ProfileTab({
                           <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                           <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{t.name}</span>
-                          {isSelected('resonator', t.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={10} className="text-black" /></div>}
+                          {isSelected('resonator', t.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={12} className="text-black" /></div>}
                         </button>
                       ))}
                       {bgCategory === 'version' && VERSION_SPLASH_SCREENS.map(v => (
@@ -827,7 +827,7 @@ function ProfileTab({
                           <img src={v.art} alt={v.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                           <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">v{v.version}{v.id.includes('-cyberpunk') ? ' (Cyberpunk)' : ''}</span>
-                          {isSelected('version', v.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                          {isSelected('version', v.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
                         </button>
                       ))}
                       {bgCategory === 'others' && OTHER_BACKGROUNDS.map(o => (
@@ -840,7 +840,7 @@ function ProfileTab({
                           <img src={o.art} alt={o.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                           <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{o.name}</span>
-                          {isSelected('other', o.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                          {isSelected('other', o.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
                         </button>
                       ))}
                       {bgCategory === 'animated' && ANIMATED_BACKGROUNDS.map(a => (
@@ -854,7 +854,7 @@ function ProfileTab({
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                           <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{a.name}</span>
                           <div className="absolute top-0.5 left-0.5 text-2xs bg-black/70 text-cyan-300 px-1 py-0.5 rounded">VIDEO</div>
-                          {isSelected('animated', a.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>}
+                          {isSelected('animated', a.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
                         </button>
                       ))}
                     </div>

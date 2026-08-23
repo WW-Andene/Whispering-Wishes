@@ -195,7 +195,7 @@ export default function TeamSelector({
                           {/* Recommended teammates indicator */}
                           {recommendedNames.size > 0 && (
                             <div className="flex items-center gap-1.5 text-sm text-orange-400">
-                              <Star size={10} className="text-orange-400" fill="currentColor" />
+                              <Star size={12} className="text-orange-400" fill="currentColor" />
                               <span>{t('teams.selector.recommendedHint')}</span>
                             </div>
                           )}
@@ -257,7 +257,7 @@ export default function TeamSelector({
                                   {/* In another team */}
                                   {isInAnotherTeam && (
                                     <div className="absolute top-1 left-1 mt-4">
-                                      <Users size={7} className="text-cyan-400" />
+                                      <Users size={8} className="text-cyan-400" />
                                     </div>
                                   )}
                                   {/* Recommended badge */}

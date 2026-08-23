@@ -250,7 +250,7 @@ function PlannerTab({
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
                   <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteActive ? { background: 'var(--bg-btn)' } : undefined}>
-                    {state.planner.luniteActive && <Check size={10} />}
+                    {state.planner.luniteActive && <Check size={12} />}
                   </span>
                   <div>
                     <div className={`text-base font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>{t('planner.luniteSubTitle')}</div>
@@ -641,7 +641,7 @@ function PlannerTab({
                             const img = MATERIAL_IMAGES?.[name];
                             return (
                               <div key={name} className="flex items-center gap-1.5 p-1.5 rounded" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
-                                {img && <img src={img} alt="" className="w-5 h-5 rounded flex-shrink-0" onError={hideOnError} />}
+                                {img && <img src={img} alt="" className="w-6 h-6 rounded flex-shrink-0" onError={hideOnError} />}
                                 <div className="flex-1 min-w-0">
                                   <div className="text-xs font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
                                 </div>
@@ -654,7 +654,7 @@ function PlannerTab({
                       <div className="grid grid-cols-2 gap-1">
                         {charMatList.map(([name, { qty, img }]) => (
                           <div key={name} className="flex items-center gap-1.5 p-1.5 rounded" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)' }}>
-                            {img && <img src={img} alt="" className="w-5 h-5 rounded flex-shrink-0" onError={hideOnError} />}
+                            {img && <img src={img} alt="" className="w-6 h-6 rounded flex-shrink-0" onError={hideOnError} />}
                             <div className="flex-1 min-w-0">
                               <div className="text-xs font-medium truncate" style={{ color: 'var(--text-heading)' }}>{name}</div>
                             </div>

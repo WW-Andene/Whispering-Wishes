@@ -279,7 +279,7 @@ const ProbabilityBar = memo(({ label, value, color = 'cyan' }) => (
         {value > 10 && <span className="text-sm text-black font-bold">{value}%</span>}
       </div>
     </div>
-    {value <= 10 && <span className="text-sm text-gray-400 w-10">{value}%</span>}
+    {value <= 10 && <span className="text-sm text-gray-400 w-12">{value}%</span>}
   </div>
 ));
 ProbabilityBar.displayName = 'ProbabilityBar';

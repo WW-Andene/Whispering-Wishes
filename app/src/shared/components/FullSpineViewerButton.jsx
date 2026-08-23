@@ -25,7 +25,7 @@ const FullSpineViewerButton = ({ name, imageUrl, className = '' }) => {
         className={`kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center ${className}`}
         aria-label={t('modals.characterDetail.viewFullSpineAria', { name })}
       >
-        <Play size={13} className="fill-current ml-0.5" />
+        <Play size={12} className="fill-current ml-0.5" />
       </button>
       <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} onClick={() => setOpen(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered>
         <div className="relative" style={{ width: 'min(90vw, calc(85vh / 2))' }} onClick={e => e.stopPropagation()}>

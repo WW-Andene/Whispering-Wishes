@@ -80,7 +80,7 @@ export default function ConveneScanner({
       <div className="absolute top-0 left-0 right-0 pointer-events-none" style={{ paddingTop: 'max(8px, env(safe-area-inset-top))' }}>
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl overflow-hidden kuro-border-default kuro-shadow-ring">
+            <div className="w-8 h-8 rounded-xl overflow-hidden kuro-border-default kuro-shadow-ring">
               <img src={HEADER_ICON} alt="" className="w-full h-full object-cover" />
             </div>
             <div>
@@ -126,7 +126,7 @@ export default function ConveneScanner({
 
         {/* Center target + cross */}
         <div className="absolute flex items-center justify-center" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-          <Scan size={36} strokeWidth={2} style={{ color: 'rgba(255,255,255,0.4)' }} />
+          <Scan size={32} strokeWidth={2} style={{ color: 'rgba(255,255,255,0.4)' }} />
           <svg className="absolute" width="28" height="28" viewBox="0 0 28 28">
             <line x1="0" y1="14" x2="12" y2="14" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
             <line x1="16" y1="14" x2="28" y2="14" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
@@ -151,7 +151,7 @@ export default function ConveneScanner({
             <div className="absolute inset-0 kuro-scanner-ring-outer" />
             <div className="absolute kuro-scanner-ring-inner" style={{ inset: 4 }} />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Camera size={20} style={{ color: 'rgba(255,255,255,0.4)' }} />
+              <Camera size={24} style={{ color: 'rgba(255,255,255,0.4)' }} />
             </div>
           </button>
         </div>
