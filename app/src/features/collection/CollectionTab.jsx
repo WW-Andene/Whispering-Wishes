@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSessionState } from '../../hooks/useSessionState.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
-import { Archive, ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
+import { Archive, ArrowRight, Calendar, RefreshCcw, Search, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
@@ -432,7 +432,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewResonators')}
                       aria-pressed={collectionView === 'items'}
                     >
-                      <Crown size={12} className="inline mr-1" />{t('collection.view.resonators')}
+                      <img src="./navicon/Icon_Resonator.webp" alt="" className="inline w-3 h-3 mr-1" />{t('collection.view.resonators')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('weapons'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
@@ -450,7 +450,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewEchoes')}
                       aria-pressed={collectionView === 'echoes'}
                     >
-                      <Sparkles size={12} className="inline mr-1" />{t('collection.view.echoes')}
+                      <img src="./navicon/Icon_Echoe.webp" alt="" className="inline w-3 h-3 mr-1" />{t('collection.view.echoes')}
                     </button>
                   </div>
                 </CardBody>
