@@ -432,7 +432,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewResonators')}
                       aria-pressed={collectionView === 'items'}
                     >
-                      <img src="./navicon/Icon_Resonator.webp" alt="" className="inline w-3 h-3 mr-1" />{t('collection.view.resonators')}
+                      <img src="./navicon/Characters.webp" alt="" className="inline w-3 h-3 mr-1" />{t('collection.view.resonators')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('weapons'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
