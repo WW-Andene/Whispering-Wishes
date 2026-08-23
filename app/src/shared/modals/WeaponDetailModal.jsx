@@ -43,23 +43,23 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
       >
        <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header */}
-        <div className={`relative h-40 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''} ${framingMode ? ' cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? ' ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+        <div className={`relative h-48 overflow-hidden rounded-t-2xl${data.rarity === 5 ? ' holo-5star' : ''} ${framingMode ? ' cursor-pointer' : ''} ${framingMode && editingImage === `info-${name}` ? ' ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
         >
           <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg}`} />
           {framingMode && editingImage === `info-${name}` && (
-            <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+            <div className="absolute top-2 left-2 z-20 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
               <span className="text-black text-sm">✓</span>
             </div>
           )}
           {imageUrl && (
-            <img src={imageUrl} alt={displayName} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" onError={hideOnError} style={{
+            <img src={imageUrl} alt={displayName} className="absolute right-2 top-1/2 -translate-y-1/2 h-32 object-contain opacity-90" onError={hideOnError} style={{
               transform: `translateY(-50%) scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
               transformOrigin: 'center',
             }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.weaponDetail.closeAria')}>
+          <button onClick={onClose} className="absolute top-3 right-3 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.weaponDetail.closeAria')}>
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -81,13 +81,13 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
           {/* 1. Stats bar */}
           <div className="flex items-center gap-2 flex-wrap">
             {data.baseAtk && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
                 {getStatIcon('ATK') && <img src={getStatIcon('ATK')} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                 <span className="text-sm text-gray-400">{t('modals.weaponDetail.statAtk')}</span>
                 <span className="text-base font-bold text-red-400">{formatNumber(data.baseAtk)}</span>
               </div>
             )}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
               {getStatIcon(data.stat) && <img src={getStatIcon(data.stat)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
               <span className="text-sm text-gray-400">{data.stat}</span>
               <span className="text-base font-bold text-white">{data.subStatValue || ''}</span>

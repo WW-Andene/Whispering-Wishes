@@ -303,7 +303,7 @@ function TrackerTab({
                   <button onClick={() => { setShowBannerHistory(false); setBannerHistorySearch(''); }} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
                 {/* Search / filter input */}
-                <div className="px-4 pt-3 pb-1 space-y-2">
+                <div className="px-4 py-3 space-y-2">
                   <div className="relative">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     <input
@@ -499,7 +499,7 @@ function TrackerTab({
                   <button onClick={() => { setShowPullHistory(false); setPullHistorySearch(''); setPullHistoryBannerFilter('all'); setPullHistoryRarityFilter('all'); }} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 active:scale-95 transition-all"><X size={16} /></button>
                 </div>
                 {/* Search & filters */}
-                <div className="px-4 pt-3 pb-1 space-y-2">
+                <div className="px-4 py-3 space-y-2">
                   <div className="relative">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                     <input

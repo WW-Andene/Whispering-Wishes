@@ -388,8 +388,8 @@ export function useImageFraming(storageAvailable) {
     switch (miniPanelPosition) {
       case 'top-left': return 'top-16 left-2';
       case 'top-right': return 'top-16 right-2';
-      case 'bottom-left': return 'bottom-20 left-2';
-      default: return 'bottom-20 right-2';
+      case 'bottom-left': return 'bottom-24 left-2';
+      default: return 'bottom-24 right-2';
     }
   }, [miniPanelPosition]);
 

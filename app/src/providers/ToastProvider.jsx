@@ -49,7 +49,7 @@ const ToastProvider = ({ children }) => {
     <ToastContext.Provider value={contextValue}>
       {children}
       {/* MED-4: Toast z-index separated from install prompt */}
-      <div className="fixed bottom-20 left-3 right-3 z-[9500] flex flex-col items-center gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <div className="fixed bottom-24 left-3 right-3 z-[9500] flex flex-col items-center gap-2 pointer-events-none" role="status" aria-live="polite" aria-atomic="true" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {toasts.map(toast => (
           <div key={toast.id} className={`kuro-toast px-4 py-3 rounded-lg flex items-center gap-2 text-base font-medium pointer-events-auto border ${toast.type === 'warning' ? 'text-amber-900 border-amber-300/40' : 'text-white border-white/20'}`} style={{
             animation: 'slideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1)',

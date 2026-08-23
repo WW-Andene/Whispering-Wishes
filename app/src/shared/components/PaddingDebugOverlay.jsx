@@ -98,16 +98,53 @@ const PaddingDebugOverlay = () => {
   return createPortal(
     <div data-ww-debug-overlay className="fixed inset-0 pointer-events-none" style={{ zIndex: 999999 }}>
       {boxes.map(b => {
-        const uniform = b.pt === b.pr && b.pt === b.pb && b.pt === b.pl;
-        const values = uniform ? `${b.pt}px` : [b.pt && `T${b.pt}`, b.pr && `R${b.pr}`, b.pb && `B${b.pb}`, b.pl && `L${b.pl}`].filter(Boolean).join(' ');
-        const label = `#${b.num} ${values}`;
+        const labelBase = {
+          position: 'fixed',
+          fontSize: '9px',
+          lineHeight: 1,
+          fontFamily: 'monospace',
+          color: '#fff',
+          background: 'rgba(236,72,153,0.9)',
+          padding: '1px 3px',
+          borderRadius: '2px',
+          whiteSpace: 'nowrap',
+        };
+        const innerLeft = b.boxLeft + b.pl;
+        const innerTop = b.boxTop + b.pt;
+        const innerW = b.boxW - b.pl - b.pr;
+        const innerH = b.boxH - b.pt - b.pb;
         return (
           <React.Fragment key={b.key}>
             {b.pt > 0 && <div style={{ position: 'fixed', top: b.boxTop, left: b.boxLeft, width: b.boxW, height: b.pt, background: 'rgba(236,72,153,0.35)', outline: '1px solid rgba(236,72,153,0.7)' }} />}
             {b.pb > 0 && <div style={{ position: 'fixed', top: b.boxTop + b.boxH - b.pb, left: b.boxLeft, width: b.boxW, height: b.pb, background: 'rgba(236,72,153,0.35)', outline: '1px solid rgba(236,72,153,0.7)' }} />}
             {b.pl > 0 && <div style={{ position: 'fixed', top: b.boxTop + b.pt, left: b.boxLeft, width: b.pl, height: b.boxH - b.pt - b.pb, background: 'rgba(236,72,153,0.35)', outline: '1px solid rgba(236,72,153,0.7)' }} />}
             {b.pr > 0 && <div style={{ position: 'fixed', top: b.boxTop + b.pt, left: b.boxLeft + b.boxW - b.pr, width: b.pr, height: b.boxH - b.pt - b.pb, background: 'rgba(236,72,153,0.35)', outline: '1px solid rgba(236,72,153,0.7)' }} />}
-            <div style={{ position: 'fixed', top: b.boxTop + 1, left: b.boxLeft + 1, fontSize: '9px', lineHeight: 1, fontFamily: 'monospace', color: '#fff', background: 'rgba(236,72,153,0.9)', padding: '1px 3px', borderRadius: '2px', whiteSpace: 'nowrap' }}>{label}</div>
+
+            {/* Top padding label — horizontal, centered on the top strip */}
+            {b.pt > 0 && (
+              <div style={{ ...labelBase, top: b.boxTop + Math.max(0, b.pt - 12) / 2, left: b.boxLeft + b.boxW / 2, transform: 'translate(-50%, 0)' }}>
+                T{b.pt}
+              </div>
+            )}
+            {/* Bottom padding label — horizontal, centered on the bottom strip */}
+            {b.pb > 0 && (
+              <div style={{ ...labelBase, top: b.boxTop + b.boxH - b.pb + Math.max(0, b.pb - 12) / 2, left: b.boxLeft + b.boxW / 2, transform: 'translate(-50%, 0)' }}>
+                B{b.pb}
+              </div>
+            )}
+            {/* Left padding label — rotated vertical, centered on the left strip */}
+            {b.pl > 0 && (
+              <div style={{ ...labelBase, top: innerTop + innerH / 2, left: b.boxLeft + b.pl / 2, transform: 'translate(-50%, -50%) rotate(-90deg)' }}>
+                L{b.pl}
+              </div>
+            )}
+            {/* Right padding label — rotated vertical, centered on the right strip */}
+            {b.pr > 0 && (
+              <div style={{ ...labelBase, top: innerTop + innerH / 2, left: b.boxLeft + b.boxW - b.pr / 2, transform: 'translate(-50%, -50%) rotate(-90deg)' }}>
+                R{b.pr}
+              </div>
+            )}
+            <div style={{ position: 'fixed', top: b.boxTop + 1, left: b.boxLeft + 1, fontSize: '9px', lineHeight: 1, fontFamily: 'monospace', color: '#fff', background: 'rgba(236,72,153,0.9)', padding: '1px 3px', borderRadius: '2px', whiteSpace: 'nowrap' }}>#{b.num}</div>
           </React.Fragment>
         );
       })}

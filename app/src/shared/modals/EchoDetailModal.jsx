@@ -75,24 +75,24 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
       >
        <div className="overflow-y-auto flex-1" data-sheet-scroll>
         {/* Header */}
-        <div className={`relative h-40 overflow-hidden rounded-t-2xl${framingMode ? ' cursor-pointer' : ''}${framingMode && editingImage === `info-${name}` ? ' ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
+        <div className={`relative h-48 overflow-hidden rounded-t-2xl${framingMode ? ' cursor-pointer' : ''}${framingMode && editingImage === `info-${name}` ? ' ring-2 ring-emerald-500' : ''}`} style={{ contain: 'paint' }} data-sheet-header
           onClick={framingMode ? (e) => { e.stopPropagation(); setEditingImage(`info-${name}`); } : undefined}
         >
           <div className="absolute inset-0" style={headerGradient ? { background: headerGradient } : {}} />
           {!headerGradient && <div className={`absolute inset-0 bg-gradient-to-br ${costColors.bg}`} />}
           {framingMode && editingImage === `info-${name}` && (
-            <div className="absolute top-2 left-2 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+            <div className="absolute top-2 left-2 z-20 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
               <span className="text-black text-sm">✓</span>
             </div>
           )}
           {imageUrl && (
-            <EchoImage src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-36 object-contain opacity-90" noBgProcess={data?.noBgProcess} style={{
+            <EchoImage src={imageUrl} alt={name} className="absolute right-2 top-1/2 -translate-y-1/2 h-32 object-contain opacity-90" noBgProcess={data?.noBgProcess} style={{
               transform: `translateY(-50%) scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
               transformOrigin: 'center',
             }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
-          <button onClick={onClose} className="absolute top-3 right-3 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.echoDetail.closeAria')}>
+          <button onClick={onClose} className="absolute top-3 right-3 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.echoDetail.closeAria')}>
             <X size={16} />
           </button>
           <div className="absolute bottom-3 left-4">
@@ -137,7 +137,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
           {/* 1. Info bar — dmg value + sets */}
           <div className="flex items-center gap-2 flex-wrap">
             {data.dmg > 0 && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
                 <span className="text-sm text-gray-400">{t('modals.echoDetail.dmg')}</span>
                 <span className="text-base font-bold text-red-400">{data.dmg}%</span>
               </div>

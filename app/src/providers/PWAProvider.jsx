@@ -12,9 +12,9 @@ import { HEADER_ICON } from '../data/constants.js';
 
 // Shared install banner component used by both native and iframe prompts
 const InstallBanner = ({ subtitle, actionLabel, onAction, onDismiss }) => (
-  <div className="fixed bottom-20 left-3 right-3 z-[9800] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
+  <div className="fixed bottom-24 left-3 right-3 z-[9800] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
     <div className="flex items-center gap-3">
-      <div className="w-10 h-10 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
+      <div className="w-12 h-12 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
         <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
       </div>
       <div className="flex-1">
@@ -216,9 +216,9 @@ const PWAProvider = ({ children }) => {
       {/* Install guide modal — platform-specific instructions (opened via logo tap) */}
       {showInstallGuide && (
         <div className="fixed inset-0 z-[9900] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setShowInstallGuide(false)}>
-          <div className="w-[300px] rounded-2xl p-4 shadow-xl border border-white/10" style={{ background: '#0f141c' }} onClick={e => e.stopPropagation()}>
+          <div className="w-[256px] rounded-2xl p-4 shadow-xl border border-white/10" style={{ background: '#0f141c' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden shadow-lg">
+              <div className="w-12 h-12 rounded-xl overflow-hidden shadow-lg">
                 <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
               </div>
               <div>

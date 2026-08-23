@@ -932,7 +932,7 @@ function WhisperingWishesInner() {
 
   return (
     <CloudStorageProvider getBackupPayload={getBackupPayload} onRestoreData={handleRestoreData}>
-    <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
+    <div className={`min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
       {appBgUrl && (
         // Explicit top/left/right/bottom (not just the inset-0 class) so this
         // is pinned to the true viewport edges no matter what — including the
@@ -981,7 +981,7 @@ function WhisperingWishesInner() {
       {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
-      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
+      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, height: 60, borderRadius: 14, display: 'flex', alignItems: 'center', marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
           headerBgType === 'animated' ? (
@@ -995,7 +995,7 @@ function WhisperingWishesInner() {
             <span className="absolute top-1 left-1 text-2xs bg-black/70 text-cyan-400 px-1.5 py-0.5 rounded">{editingBgTarget === 'header' ? '● HEADER' : 'Header'}</span>
           </div>
         )}
-        <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto pl-3 pr-1.5 relative z-10">
+        <div className="header-inner max-w-lg md:max-w-2xl lg:max-w-none mx-auto pl-1.5 pr-1.5 relative z-10" style={{ width: '100%' }}>
           <div className="header-top flex items-center justify-between py-1.5">
             <div className="flex items-center gap-2">
               <div className="relative group cursor-pointer" onClick={async () => {
@@ -1008,8 +1008,8 @@ function WhisperingWishesInner() {
                   pwa?.showInstallGuide?.();
                 }
               }} title={pwa?.canInstall ? t('app.installApp') : pwa?.isInstalled ? t('app.appInstalled') : t('app.addToHomeScreen')}>
-                <div className="relative w-[48px] h-[48px] flex items-center justify-center overflow-hidden group-hover:scale-[1.02] transition-transform" style={{ borderRadius: '13px' }}>
-                  <img src={HEADER_ICON} alt={t('app.logoAlt')} style={{ width: 80, height: 80, transform: 'scale(1.0)' }} className="object-cover" />
+                <div className="relative w-[48px] h-[48px] flex items-center justify-center overflow-hidden group-hover:scale-[1.02] transition-transform" style={{ borderRadius: '12px' }}>
+                  <img src={HEADER_ICON} alt={t('app.logoAlt')} style={{ width: 64, height: 64, transform: 'scale(1.0)' }} className="object-cover" />
                 </div>
                 {visualSettings.animationsEnabled !== 'off' && (
                   <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
@@ -1028,17 +1028,17 @@ function WhisperingWishesInner() {
                 )}
                 {pwa?.canInstall && (
                   <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center shadow-md" style={{ background: themeAccent || '#eab308' }} aria-hidden="true">
-                    <Download size={9} className="text-black" />
+                    <Download size={8} className="text-black" />
                   </div>
                 )}
               </div>
-              <div className="flex flex-col justify-center min-h-[44px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-base) var(--space-md)' } : undefined}>
-                <h1 className="text-white font-semibold text-xl tracking-wide leading-tight">Whispering Wishes</h1>
-                <p className="text-sm tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>{t('app.appTagline')}</p>
+              <div className="flex flex-col justify-center h-[48px]" style={activeTheme ? { background: 'rgba(15,20,28,0.3)', borderRadius: 12 } : undefined}>
+                <h1 className="text-white font-semibold text-base tracking-wide leading-tight">Whispering Wishes</h1>
+                <p className="text-xs tracking-wider uppercase leading-tight" style={{ color: activeTheme ? themeAccent : 'rgba(250,204,21,0.5)' }}>{t('app.appTagline')}</p>
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[48px] h-[48px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: '13px' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: '13px' }}>
+              <button onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[48px] h-[48px] flex items-center justify-center rounded-lg overflow-hidden transition-all" style={activeTheme ? { background: activeTab === 'profile' ? `${themeAccent}30` : 'rgba(15,20,28,0.3)', borderRadius: '12px' } : { ...headerControlBg, border: `1px solid ${activeTab === 'profile' ? 'rgba(237,175,24,0.5)' : 'var(--border-medium)'}`, borderRadius: '12px' }}>
                 {state.profile.profilePic && collectionImages[state.profile.profilePic]
                   ? (() => {
                       const pf = getImageFraming(`collection-${state.profile.profilePic}`);
@@ -1056,7 +1056,7 @@ function WhisperingWishesInner() {
                         </div>
                       );
                     })()
-                  : <User size={16} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
+                  : <User size={24} className={activeTab === 'profile' ? 'text-yellow-400' : 'text-gray-400'} />
                 }
               </button>
             </div>
@@ -1065,7 +1065,7 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-evenly overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, marginBottom: 'var(--safe-area-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-center overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, height: 60, borderRadius: 14, marginBottom: 'var(--safe-area-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
           const tabs = ['tracker','events','map','planner','calculator','analytics','teams','gathering'];
           const idx = tabs.indexOf(activeTab);
           let newTab;
@@ -1342,18 +1342,6 @@ function WhisperingWishesInner() {
         setActiveTab={setActiveTab}
         collectionData={collectionData}
       />
-
-
-      {/* Desktop right margin - ad slot + footer text at bottom (hidden on mobile) */}
-      <div className="desktop-ad-margin">
-        <div className="ad-slot">160×600</div>
-        <div className="ad-margin-footer">
-          <p className="text-gray-600 text-2xs leading-relaxed">
-            {`v${APP_VERSION}`} • u/WW_Andene<br/>{t('app.notAffiliated')}<br/>
-            <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-600 hover:text-yellow-400 transition-colors">{t('app.contact')}</a>
-          </p>
-        </div>
-      </div>
 
     </div>
     </CloudStorageProvider>

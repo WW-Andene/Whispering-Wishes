@@ -30,7 +30,7 @@ export default function WeaponSelector({
                               {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}
                             </p>
                           </div>
-                          <button onClick={() => setWeaponSelectorOpen(false)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close weapon selector"><X size={16} /></button>
+                          <button onClick={() => setWeaponSelectorOpen(false)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close weapon selector"><X size={16} /></button>
                         </div>
                         <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0">
                           <input
@@ -93,7 +93,7 @@ export default function WeaponSelector({
                                     >
                                       <div className="flex items-center gap-2">
                                         {collectionImages[name] ? (
-                                          <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border ${rarity5 ? 'kuro-rarity-frame-5 holo-5star' : 'kuro-rarity-frame-4'}`} style={{ position: 'relative' }}>
+                                          <div className={`w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border ${rarity5 ? 'kuro-rarity-frame-5 holo-5star' : 'kuro-rarity-frame-4'}`} style={{ position: 'relative' }}>
                                             <img src={collectionImages[name]} alt={name} className="w-full h-full object-cover" onError={hideOnError} />
                                           </div>
                                         ) : (

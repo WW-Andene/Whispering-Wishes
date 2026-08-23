@@ -83,7 +83,7 @@ export default function EchoSelector({
                     <h3 className="text-white font-semibold text-xl">Select Echo</h3>
                     <p className="text-gray-400 text-sm">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
                   </div>
-                  <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close echo selector"><X size={16} /></button>
+                  <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close echo selector"><X size={16} /></button>
                 </div>
                 {/* Search + Filters */}
                 <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
@@ -125,7 +125,7 @@ export default function EchoSelector({
                   {/* Recommendation indicator */}
                   {recommendedEchoes.size > 0 && (
                     <div className="flex items-center gap-1.5 text-sm text-orange-400">
-                      <Star size={10} className="text-orange-400" fill="currentColor" />
+                      <Star size={12} className="text-orange-400" fill="currentColor" />
                       <span>Orange glow = recommended for {echoSelectorTarget.charName}</span>
                     </div>
                   )}
@@ -200,7 +200,7 @@ export default function EchoSelector({
                           >
                             <div className="flex items-center gap-2">
                               {collectionImages[name] ? (
-                                <div className={`w-9 h-9 rounded-lg overflow-hidden flex-shrink-0 border ${isRec ? 'border-orange-400/50 bg-orange-500/10' : `border-${costColor}-500/30 bg-${costColor}-500/8`}`} style={{ position: 'relative' }}>
+                                <div className={`w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border ${isRec ? 'border-orange-400/50 bg-orange-500/10' : `border-${costColor}-500/30 bg-${costColor}-500/8`}`} style={{ position: 'relative' }}>
                                   <EchoImage src={collectionImages[name]} alt={name} className="w-full h-full object-cover" noBgProcess={ECHO_DATA[name]?.noBgProcess} />
                                 </div>
                               ) : (
@@ -304,7 +304,7 @@ export default function EchoSelector({
                 <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                   <div className="flex items-center gap-2 min-w-0">
                     {collectionImages[echoName] ? (
-                      <div className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
+                      <div className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-${costColor}-500/30 bg-${costColor}-500/8`} style={{ position: 'relative' }}>
                         <EchoImage src={collectionImages[echoName]} alt={echoName} className="w-full h-full object-cover" noBgProcess={ECHO_DATA[echoName]?.noBgProcess} />
                       </div>
                     ) : (
@@ -315,7 +315,7 @@ export default function EchoSelector({
                       <p className="text-gray-400 text-sm">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
                     </div>
                   </div>
-                  <button onClick={() => setEchoStatPanel(null)} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all flex-shrink-0" aria-label="Close echo stats"><X size={16} /></button>
+                  <button onClick={() => setEchoStatPanel(null)} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all flex-shrink-0" aria-label="Close echo stats"><X size={16} /></button>
                 </div>
                 <div className="overflow-y-auto flex-1 p-3 space-y-4">
                   {/* Sonata sets — highlight recommended */}

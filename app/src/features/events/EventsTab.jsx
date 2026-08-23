@@ -141,7 +141,7 @@ function EventsTab({
           </div>
         }>{t('events.title')}</CardHeader>
         <CardBody className="space-y-2">
-              <div className="p-2.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+              <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-yellow-400 text-base font-medium">{progressStats.hasProgress ? t('events.weeklyProgress') : t('events.weeklyRewards')}</span>
                   <span className="text-yellow-400 font-bold text-xl kuro-number">{progressStats.hasProgress ? `${formatNumber(progressStats.earnedAstrite)} / ${formatNumber(progressStats.totalAstrite)}` : formatNumber(progressStats.totalAstrite)} {t('events.astrite')}</span>
@@ -191,7 +191,7 @@ function EventsTab({
             {active.map((entry) => renderCard(entry, false))}
             {expired.length > 0 && (
               <>
-                <div className="flex items-center gap-2 pt-2 pb-1">
+                <div className="flex items-center gap-2 pt-2 pb-2">
                   <div className="flex-1 h-px bg-gray-700/50" />
                   <span className="text-gray-500 text-sm font-medium uppercase tracking-wider">{t('events.expired')}</span>
                   <div className="flex-1 h-px bg-gray-700/50" />

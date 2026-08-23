@@ -100,7 +100,7 @@ export function BackupRestoreModal({
             value={restoreText}
             onChange={(e) => setRestoreText(e.target.value)}
             placeholder={t('modals.backupRestore.restoreTextareaPlaceholder')}
-            className="kuro-input w-full h-20 text-sm font-mono"
+            className="kuro-input w-full h-24 text-sm font-mono"
             aria-label={t('modals.backupRestore.restoreTextareaAriaLabel')}
           />
           <button

@@ -210,7 +210,7 @@ export default function AdminPanel({
       <FocusTrapModal isOpen={showAdminPanel && !adminMiniMode} onClose={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="" onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} ariaLabel="Admin panel" centered>
           <div className="kuro-card w-full max-w-2xl max-h-[90vh]" style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column' }} onClick={(e) => e.stopPropagation()}>
             <div className="kuro-card-inner" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
-            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('admin.panel.closeAria')}><X size={16} /></button>}>
+            <CardHeader action={<button onClick={() => { setShowAdminPanel(false); setAdminUnlocked(false); setAdminPassword(''); }} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('admin.panel.closeAria')}><X size={16} /></button>}>
               <span className="flex items-center gap-2"><Settings size={16} /> {t('admin.panel.title')}</span>
             </CardHeader>
             <div className="kuro-body space-y-3" style={{ overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
@@ -283,7 +283,7 @@ export default function AdminPanel({
                             return <div className="kuro-empty-state text-center py-4"><p className="text-gray-400 text-base">{t('admin.collectionTab.importPrompt')}</p><button onClick={() => setActiveTab('profile')} className="kuro-btn kuro-btn-primary text-sm mt-2 px-3 py-1.5">{t('admin.collectionTab.goToImport')}</button></div>;
                           }
                           return (
-                            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                            <div className="space-y-2 max-h-[256px] overflow-y-auto pr-2">
                               {uniqueNames.map(name => {
                                 const hasDefault = DEFAULT_COLLECTION_IMAGES[name];
                                 const hasCustom = customCollectionImages[name];

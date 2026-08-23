@@ -120,7 +120,7 @@ export default function AdminBannersTab({
         <div className="space-y-1">
           {activeBanners.characters.map((c, i) => (
             <div key={c.id} className="flex items-center gap-2">
-              <span className="text-gray-300 text-sm w-20 truncate">{c.name}</span>
+              <span className="text-gray-300 text-sm w-24 truncate">{c.name}</span>
               <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.charImages[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, charImages: { ...prev.charImages, [i]: e.target.value } }))} className="kuro-input flex-1 text-sm py-1" aria-label={`${c.name} image URL`} />
               <input type="text" placeholder="center 20%" value={bannerForm.charImagePositions[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, charImagePositions: { ...prev.charImagePositions, [i]: e.target.value } }))} className="kuro-input w-24 text-sm py-1" aria-label={`${c.name} image position`} title="CSS object-position (e.g. center 20%)" />
             </div>
@@ -133,7 +133,7 @@ export default function AdminBannersTab({
         <div className="space-y-1">
           {activeBanners.weapons.map((w, i) => (
             <div key={w.id} className="flex items-center gap-2">
-              <span className="text-gray-300 text-sm w-20 truncate">{w.name}</span>
+              <span className="text-gray-300 text-sm w-24 truncate">{w.name}</span>
               <input type="text" placeholder="https://i.ibb.co/..." value={bannerForm.weapImages[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, weapImages: { ...prev.weapImages, [i]: e.target.value } }))} className="kuro-input flex-1 text-sm py-1" aria-label={`${w.name} image URL`} />
               <input type="text" placeholder="center 30%" value={bannerForm.weapImagePositions[i] ?? ''} onChange={(e) => setBannerForm(prev => ({ ...prev, weapImagePositions: { ...prev.weapImagePositions, [i]: e.target.value } }))} className="kuro-input w-24 text-sm py-1" aria-label={`${w.name} image position`} title="CSS object-position (e.g. center 30%)" />
             </div>

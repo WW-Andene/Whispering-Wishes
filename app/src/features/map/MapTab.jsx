@@ -2214,7 +2214,7 @@ export default function MapTab({ navPadding = 80 }) {
           position: absolute;
           right: var(--space-md, 12px);
           z-index: var(--z-overlay, 1000);
-          width: 300px;
+          width: 256px;
           overflow: visible;
         }
         .map-downloads-popover .kuro-header { padding: var(--space-sm, 8px) var(--space-md, 12px); }
@@ -2356,7 +2356,7 @@ export default function MapTab({ navPadding = 80 }) {
           border-color: var(--border-focus);
         }
         .zone-author-panel textarea {
-          min-height: 80px; resize: vertical;
+          min-height: 96px; resize: vertical;
           font-family: var(--font-data);
           font-size: 11px;
           padding: var(--space-xs, 6px) var(--space-sm, 8px);
@@ -2460,7 +2460,7 @@ export default function MapTab({ navPadding = 80 }) {
           position: absolute; top: 56px; left: 50%;
           transform: translateX(-50%);
           z-index: var(--z-toast, 9500);
-          padding: 10px 12px;
+          padding: 12px;
           border-radius: var(--radius-lg);
           background: var(--bg-card);
           color: ${COLOR_CANON};
@@ -2480,7 +2480,7 @@ export default function MapTab({ navPadding = 80 }) {
           position: absolute;
           right: var(--space-md, 12px);
           z-index: var(--z-overlay, 1000);
-          width: 300px;
+          width: 256px;
           overflow: visible;
         }
         .map-zones-popover .kuro-header { padding: var(--space-sm, 8px) var(--space-md, 12px); }
@@ -2502,7 +2502,7 @@ export default function MapTab({ navPadding = 80 }) {
           position: absolute;
           right: var(--space-md, 12px);
           z-index: var(--z-overlay, 1000);
-          width: 260px;
+          width: 256px;
           overflow: visible;
         }
         .map-filters-popover .kuro-header { padding: var(--space-sm, 8px) var(--space-md, 12px); }
@@ -2714,7 +2714,7 @@ export default function MapTab({ navPadding = 80 }) {
           color: ${COLOR_CANON};
         }
         .zone-selector-caret {
-          display: inline-block; width: 10px; text-align: center;
+          display: inline-block; width: 8px; text-align: center;
           opacity: 0.7; flex-shrink: 0;
         }
         .zone-selector-name {
@@ -2779,11 +2779,11 @@ export default function MapTab({ navPadding = 80 }) {
               <Construction size={16} className="text-yellow-400" />
               <h3 className="text-white font-semibold text-lg">{t('map.wip.title')}</h3>
             </div>
-            <button onClick={dismissWipNotice} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('map.wip.close')}>
+            <button onClick={dismissWipNotice} className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('map.wip.close')}>
               <X size={16} />
             </button>
           </div>
-          <div className="w-full h-40 flex items-center justify-center overflow-hidden" style={{ background: 'var(--bg-btn)' }}>
+          <div className="w-full h-48 flex items-center justify-center overflow-hidden" style={{ background: 'var(--bg-btn)' }}>
             <img
               src="https://i.ibb.co/jZQdMWr1/wuthering-waves-seems-like-abby-will-be-featured-in-new-v0-8kca82nabwbd1-1.png"
               alt=""

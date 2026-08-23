@@ -136,7 +136,7 @@ export default function RotationTimeline({ rotationTimeline }) {
             const isField = row.type === 'field';
             const isEcho = row.buffKind === 'echo';
             return (
-              <div key={i} style={{ position: 'relative', height: 22, marginBottom: 2 }}>
+              <div key={i} style={{ position: 'relative', height: 24, marginBottom: 2 }}>
                 {/* Grid lines */}
                 {ticks.map(tick => (
                   <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
@@ -151,7 +151,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                 <div className={`absolute flex items-center ${isField ? 'rounded rotation-segment' : 'rounded-sm buff-bar'}`}
                   style={{
                     left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`,
-                    top: 1, bottom: 1,
+                    top: 2, bottom: 2,
                     background: `${row.color}${isField ? '30' : isEcho ? '14' : '18'}`,
                     border: `1px solid ${row.color}${isField ? '60' : isEcho ? '30' : '35'}`,
                     borderStyle: isEcho ? 'dashed' : 'solid',

@@ -279,7 +279,7 @@ export default function ImportFlow({
               </div>
             ) : (
             <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
-              <Upload size={20} className={`mx-auto mb-1 ${isDragOver ? 'text-yellow-400' : 'text-gray-300'}`} />
+              <Upload size={24} className={`mx-auto mb-1 ${isDragOver ? 'text-yellow-400' : 'text-gray-300'}`} />
               <p className={`text-sm ${isDragOver ? 'text-yellow-400 font-medium' : 'text-gray-300'}`}>
                 {isDragOver ? 'Drop JSON file here' : 'Upload or drag and drop a JSON file'}
               </p>

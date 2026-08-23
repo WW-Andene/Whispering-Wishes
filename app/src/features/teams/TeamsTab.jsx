@@ -643,7 +643,7 @@ function TeamsTab({
                       {/* Loadout preset dropdown (triggered from header Load icon) */}
                       {showPresetDropdown && (
                         <div className="relative mb-3">
-                          <div className="absolute top-0 right-0 z-50 min-w-[200px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
+                          <div className="absolute top-0 right-0 z-50 min-w-[192px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
                             {equipPresets.length === 0 ? (
                               <div className="px-3 py-2 text-sm text-gray-500">{t('teams.tab.noSavedLoadouts')}</div>
                             ) : (
@@ -702,7 +702,7 @@ function TeamsTab({
                               }}
                             >
                               {framingMode && editingImage === teamKey && (
-                                <div className="absolute top-1 left-1 z-20 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                                <div className="absolute top-1 left-1 z-20 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
                                   <span className="text-black text-sm">✓</span>
                                 </div>
                               )}
@@ -720,7 +720,7 @@ function TeamsTab({
                                 />
                                 </div>
                               )}
-                              {/* P6-FIX: Increased from w-5 h-5 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
+                              {/* P6-FIX: Increased from w-6 h-6 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
                               {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
                                 className="action-btn absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
@@ -817,12 +817,12 @@ function TeamsTab({
                             return <p className="text-gray-500 text-sm text-center py-2">{t('teams.tab.noSuggestions')}</p>;
                           }
                           return teamSuggestions.map((s, i) => {
-                            if (s.header) return <div key={`h${i}`} className="text-xs text-gray-500 uppercase tracking-wider font-medium pt-2 pb-0.5 flex items-center gap-2"><span className="h-px flex-1 bg-white/5" />{s.header}<span className="h-px flex-1 bg-white/5" /></div>;
+                            if (s.header) return <div key={`h${i}`} className="text-xs text-gray-500 uppercase tracking-wider font-medium pt-2 pb-2 flex items-center gap-2"><span className="h-px flex-1 bg-white/5" />{s.header}<span className="h-px flex-1 bg-white/5" /></div>;
                             return (
                             <button
                               key={i}
                               onClick={() => applySuggestion(s)}
-                              className="w-full flex items-center gap-3 p-2.5 rounded-lg border border-[var(--border-medium)] hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
+                              className="w-full flex items-center gap-3 p-3 rounded-lg border border-[var(--border-medium)] hover:border-yellow-500/30 hover:bg-yellow-500/5 transition-all text-left"
                               style={{ background: 'var(--bg-stat)' }}
                             >
                               <div className="flex gap-1 flex-shrink-0">
@@ -830,7 +830,7 @@ function TeamsTab({
                                   const cd = CHARACTER_DATA[m];
                                   const sf = getImageFraming(`collection-${m}`) || { x: 0, y: 0, zoom: 100 };
                                   return (
-                                    <div key={j} className={`w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 relative${cd?.rarity === 5 ? ' holo-5star' : ''}`}
+                                    <div key={j} className={`w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 relative${cd?.rarity === 5 ? ' holo-5star' : ''}`}
                                       style={{ background: cd ? getElementBg(cd.element) : 'rgba(255,255,255,0.1)', contain: 'paint', border: cd ? `1px solid ${getElementColor(cd.element)}50` : '1px solid rgba(255,255,255,0.15)', boxShadow: cd ? `0 0 8px ${getElementColor(cd.element)}30` : 'none' }}>
                                       {collectionImages[m] ? (
                                         <div className="absolute inset-0 breath-zoom"><img src={collectionImages[m]} alt={m} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${sf.zoom / 100}) translate(${-sf.x}%, ${-sf.y}%)` }} onError={hideOnError} /></div>
