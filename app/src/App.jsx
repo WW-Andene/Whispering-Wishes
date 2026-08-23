@@ -1086,14 +1086,14 @@ function WhisperingWishesInner() {
           </div>
         )}
         <div className="tab-indicator" />
-        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={19} /> {t('app.navTracker')}</TabButton>
-        <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={19} /> {t('app.navEvents')}</TabButton>
-        <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><Map size={19} /> {t('app.navMap')}</TabButton>
-        <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={19} /> {t('app.navPlan')}</TabButton>
-        <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={19} /> {t('app.navCalc')}</TabButton>
-        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={19} /> {t('app.navStats')}</TabButton>
-        <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={19} /> {t('app.navTeams')}</TabButton>
-        <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={19} /> {t('app.navCollection')}</TabButton>
+        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><Sparkles size={16} /> {t('app.navTracker')}</TabButton>
+        <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><Calendar size={16} /> {t('app.navEvents')}</TabButton>
+        <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><Map size={16} /> {t('app.navMap')}</TabButton>
+        <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><TrendingUp size={16} /> {t('app.navPlan')}</TabButton>
+        <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={16} /> {t('app.navCalc')}</TabButton>
+        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><BarChart3 size={16} /> {t('app.navStats')}</TabButton>
+        <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><Users size={16} /> {t('app.navTeams')}</TabButton>
+        <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><Archive size={16} /> {t('app.navCollection')}</TabButton>
       </nav>
 
       <main id="main-content" key={`main-${visualSettings.colorBlindMode ? 'cb' : 'std'}-${appLocale}`} className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 space-y-3 w-full" style={{ paddingTop: headerPadding, paddingBottom: navPadding }} role="main">
