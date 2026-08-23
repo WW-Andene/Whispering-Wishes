@@ -312,6 +312,7 @@ function TrackerTab({
                       onChange={e => setBannerHistorySearch(e.target.value)}
                       placeholder={t('tracker.searchBannerPlaceholder')}
                       className="kuro-input w-full pl-8 text-base"
+                      style={{ background: 'transparent', border: 'none', backdropFilter: 'none', WebkitBackdropFilter: 'none' }}
                       aria-label={t('tracker.filterBannerHistory')}
                     />
                   </div>
@@ -327,6 +328,7 @@ function TrackerTab({
                     className="w-full"
                     ariaLabel={t('tracker.sortBannerHistory')}
                     small
+                    transparent
                   />
                   {bannerHistorySort === 'mostPulled' && (
                     <p className="text-xs text-gray-500 px-0.5">{t('tracker.mostPulledSourceNote')}</p>

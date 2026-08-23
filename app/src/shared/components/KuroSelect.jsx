@@ -7,7 +7,7 @@ import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 
-const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
+const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center, transparent }) => {
   const [open, setOpen] = useState(false);
   const [focusIdx, setFocusIdx] = useState(-1);
   const [pos, setPos] = useState(null);
@@ -107,8 +107,8 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
       <button
         type="button"
         onClick={toggle}
-        className={`flex items-center ${center ? 'justify-center' : 'justify-between'} gap-1 w-full rounded-lg text-gray-300 border border-[var(--border-medium)] focus:border-yellow-500/50 focus:outline-none transition-colors ${small ? 'px-2 py-1.5 text-sm' : 'px-3 py-1.5 text-sm min-h-[48px]'}`}
-        style={{ background: 'var(--bg-btn)' }}
+        className={`flex items-center ${center ? 'justify-center' : 'justify-between'} gap-1 w-full rounded-lg text-gray-300 ${transparent ? '' : 'border border-[var(--border-medium)]'} focus:border-yellow-500/50 focus:outline-none transition-colors ${small ? 'px-2 py-1.5 text-sm' : 'px-3 py-1.5 text-sm min-h-[48px]'}`}
+        style={{ background: transparent ? 'transparent' : 'var(--bg-btn)' }}
         aria-label={ariaLabel}
         aria-expanded={open}
         aria-haspopup="listbox"
