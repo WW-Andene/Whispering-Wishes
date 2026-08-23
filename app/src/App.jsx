@@ -932,7 +932,7 @@ function WhisperingWishesInner() {
 
   return (
     <CloudStorageProvider getBackupPayload={getBackupPayload} onRestoreData={handleRestoreData}>
-    <div className={`desktop-layout min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
+    <div className={`min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
       {appBgUrl && (
         // Explicit top/left/right/bottom (not just the inset-0 class) so this
         // is pinned to the true viewport edges no matter what — including the
@@ -1342,18 +1342,6 @@ function WhisperingWishesInner() {
         setActiveTab={setActiveTab}
         collectionData={collectionData}
       />
-
-
-      {/* Desktop right margin - ad slot + footer text at bottom (hidden on mobile) */}
-      <div className="desktop-ad-margin">
-        <div className="ad-slot">160×600</div>
-        <div className="ad-margin-footer">
-          <p className="text-gray-600 text-2xs leading-relaxed">
-            {`v${APP_VERSION}`} • u/WW_Andene<br/>{t('app.notAffiliated')}<br/>
-            <a href="mailto:whisperingwishes.app@gmail.com" className="text-gray-600 hover:text-yellow-400 transition-colors">{t('app.contact')}</a>
-          </p>
-        </div>
-      </div>
 
     </div>
     </CloudStorageProvider>
