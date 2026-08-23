@@ -27,7 +27,7 @@ const FullSpineViewerButton = ({ name, imageUrl, className = '' }) => {
       >
         <Play size={12} className="fill-current ml-0.5" />
       </button>
-      <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} onClick={() => setOpen(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered>
+      <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} onClick={() => setOpen(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered padding="p-3">
         <div className="relative" style={{ width: 'min(90vw, calc(85vh / 2))' }} onClick={e => e.stopPropagation()}>
           <div className="relative w-full aspect-[1/2]" style={{ filter: 'drop-shadow(0 20px 45px rgba(0,0,0,0.6))' }}>
             <SpinePlayer

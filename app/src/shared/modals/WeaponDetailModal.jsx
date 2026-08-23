@@ -36,7 +36,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
   const displayName = data.displayName || name;
 
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.weaponDetail.weaponDetailsAria', { name })} centered>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.weaponDetail.weaponDetailsAria', { name })} centered padding="p-3">
       <div
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border ${colors.border}`}
         onClick={e => e.stopPropagation()}

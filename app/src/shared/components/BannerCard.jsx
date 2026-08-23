@@ -223,7 +223,7 @@ const GachaInfoButton = memo(({ isChar, className = '' }) => {
       >
         <Info size={14} />
       </button>
-      <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} className="" onClick={() => setOpen(false)} ariaLabel={t(ci + 'buttonAria')} centered>
+      <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} className="" onClick={() => setOpen(false)} ariaLabel={t(ci + 'buttonAria')} centered padding="p-3">
         <div className="kuro-card w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
           <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between" data-sheet-header>
             <div className="flex items-center gap-2">

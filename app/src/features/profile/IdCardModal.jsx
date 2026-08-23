@@ -31,7 +31,7 @@ export default function IdCardModal({
   const { getImageFraming } = useImageFramingContext();
   if (!showIdCard) return null;
   return (
-      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="" onClick={() => setShowIdCard(false)} ariaLabel={t('profile.idCard.ariaLabel')} centered>
+      <FocusTrapModal isOpen={showIdCard} onClose={() => setShowIdCard(false)} className="" onClick={() => setShowIdCard(false)} ariaLabel={t('profile.idCard.ariaLabel')} centered padding="p-3">
           <div className="w-full overflow-y-auto rounded-2xl" style={{ maxWidth: '420px', maxHeight: '90vh', aspectRatio: '9/16' }} onClick={(e) => e.stopPropagation()}>
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>

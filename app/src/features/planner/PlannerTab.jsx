@@ -528,7 +528,7 @@ function PlannerTab({
 
             {/* Resonator picker modal */}
             {farmPickerOpen && (
-              <FocusTrapModal isOpen onClose={() => setFarmPickerOpen(false)} className="" onClick={() => setFarmPickerOpen(false)} centered>
+              <FocusTrapModal isOpen onClose={() => setFarmPickerOpen(false)} className="" onClick={() => setFarmPickerOpen(false)} centered padding="p-3">
                 <div className="kuro-card w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]">
                     <h3 className="text-white text-xl font-semibold">{t('planner.selectResonator')}</h3>

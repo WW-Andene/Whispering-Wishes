@@ -8,7 +8,7 @@ import { t } from '../../utils/i18n.js';
 
 export function ServerSelectorModal({ isOpen, onClose, servers, currentServer, onSelectServer }) {
   return (
-    <FocusTrapModal isOpen={isOpen} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.serverSelector.ariaLabel')} centered>
+    <FocusTrapModal isOpen={isOpen} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.serverSelector.ariaLabel')} centered padding="p-3">
       <div className="kuro-card w-full max-w-[192px] rounded-2xl py-2" style={{ overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
         <h3 className="text-white font-semibold text-base px-4 py-3 border-b border-[var(--border-medium)]">{t('modals.serverSelector.heading')}</h3>
         {Object.keys(servers).map(s => (

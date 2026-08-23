@@ -67,7 +67,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
   ).map(([cname]) => cname);
 
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.echoDetail.echoDetailsAria', { name })} centered>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.echoDetail.echoDetailsAria', { name })} centered padding="p-3">
       <div
         className="kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border"
         style={borderColor ? { borderColor: `${borderColor}80` } : {}}

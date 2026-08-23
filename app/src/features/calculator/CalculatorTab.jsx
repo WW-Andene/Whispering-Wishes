@@ -476,7 +476,7 @@ function CalculatorTab({ state, dispatch }) {
           </div>
 
       {/* Bookmark Modal */}
-      <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="" onClick={() => setShowBookmarkModal(false)} ariaLabel={t('calculator.saveCurrentState')} centered>
+      <FocusTrapModal isOpen={showBookmarkModal} onClose={() => setShowBookmarkModal(false)} className="" onClick={() => setShowBookmarkModal(false)} ariaLabel={t('calculator.saveCurrentState')} centered padding="p-3">
           <Card className="w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
             <CardHeader action={<button onClick={() => setShowBookmarkModal(false)} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all" aria-label={t('calculator.closeBookmarkModalAria')}><X size={16} /></button>}>{t('calculator.saveCurrentState')}</CardHeader>
             <CardBody className="space-y-3">

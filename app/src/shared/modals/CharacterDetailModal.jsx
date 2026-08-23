@@ -107,7 +107,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
   const spineId = SPINE_SPRITES_ENABLED_OUTSIDE_PANEL && isFullAnim && !framingMode ? getSpineId(name, { surface: 'collection' }) : null;
 
   return (
-    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.characterDetail.resonatorDetailsAria', { name })} centered>
+    <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.characterDetail.resonatorDetailsAria', { name })} centered padding="p-3">
       <div
         className={`kuro-card relative w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border ${colors.border}`}
         onClick={e => e.stopPropagation()}

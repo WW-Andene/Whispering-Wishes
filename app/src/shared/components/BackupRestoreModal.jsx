@@ -30,7 +30,7 @@ export function BackupRestoreModal({
   setTrophyOverrides,
 }) {
   return (
-    <FocusTrapModal isOpen={isOpen} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.backupRestore.ariaLabel')} centered>
+    <FocusTrapModal isOpen={isOpen} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.backupRestore.ariaLabel')} centered padding="p-3">
       <div className="kuro-card w-full sm:max-w-sm rounded-2xl max-h-[85vh] sm:max-h-[80vh] flex flex-col" style={{ overflow: 'hidden' }} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)] flex-shrink-0" data-sheet-header>
           <div className="flex items-center gap-2">

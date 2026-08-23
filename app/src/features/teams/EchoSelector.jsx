@@ -32,7 +32,7 @@ export default function EchoSelector({
   return (
     <>
       {/* Echo Selector Modal */}
-      <FocusTrapModal isOpen={echoSelectorOpen} onClose={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="" onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} centered>
+      <FocusTrapModal isOpen={echoSelectorOpen} onClose={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="" onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} centered padding="p-3">
         <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
           {(() => {
             const slotIdx = echoSelectorTarget.slotIdx;
@@ -232,7 +232,7 @@ export default function EchoSelector({
       </FocusTrapModal>
 
       {/* Echo Stat Configuration Panel */}
-      <FocusTrapModal isOpen={!!echoStatPanel} onClose={() => setEchoStatPanel(null)} className="" onClick={() => setEchoStatPanel(null)} centered>
+      <FocusTrapModal isOpen={!!echoStatPanel} onClose={() => setEchoStatPanel(null)} className="" onClick={() => setEchoStatPanel(null)} centered padding="p-3">
         <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
           {echoStatPanel && (() => {
             const { teamIdx, charName, slotIdx, echoName } = echoStatPanel;

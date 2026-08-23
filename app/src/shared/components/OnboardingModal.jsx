@@ -26,7 +26,7 @@ const OnboardingModal = ({ onComplete }) => {
   const isLast = step === steps.length - 1;
 
   return (
-    <FocusTrapModal isOpen={true} onClose={onComplete} ariaLabel={t('modals.onboarding.ariaLabel')} className="bg-black/90" centered>
+    <FocusTrapModal isOpen={true} onClose={onComplete} ariaLabel={t('modals.onboarding.ariaLabel')} className="bg-black/90" centered padding="p-3">
       <div className="kuro-card w-full max-w-xs" style={{ border: `1px solid ${s.color}30` }}>
         <div className="kuro-card-inner rounded-2xl overflow-hidden">
 
