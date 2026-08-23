@@ -81,13 +81,13 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
           {/* 1. Stats bar */}
           <div className="flex items-center gap-2 flex-wrap">
             {data.baseAtk && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
                 {getStatIcon('ATK') && <img src={getStatIcon('ATK')} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                 <span className="text-sm text-gray-400">{t('modals.weaponDetail.statAtk')}</span>
                 <span className="text-base font-bold text-red-400">{formatNumber(data.baseAtk)}</span>
               </div>
             )}
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
               {getStatIcon(data.stat) && <img src={getStatIcon(data.stat)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
               <span className="text-sm text-gray-400">{data.stat}</span>
               <span className="text-base font-bold text-white">{data.subStatValue || ''}</span>

@@ -137,7 +137,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
           {/* 1. Info bar — dmg value + sets */}
           <div className="flex items-center gap-2 flex-wrap">
             {data.dmg > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-red-500/10 border border-red-500/30">
                 <span className="text-sm text-gray-400">{t('modals.echoDetail.dmg')}</span>
                 <span className="text-base font-bold text-red-400">{data.dmg}%</span>
               </div>

@@ -243,7 +243,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
 
           {/* Tier */}
           {data.tier && (
-            <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-base font-bold ${
+            <div className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-base font-bold ${
               data.tier.toa === 'T0' ? 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/40' :
               data.tier.toa === 'T0.5' ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40' :
               data.tier.toa === 'T1' || data.tier.toa === 'T1.5' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40' :
