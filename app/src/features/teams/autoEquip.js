@@ -84,13 +84,16 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
   };
   const defaultSubs = getSubstats();
   const newEchoes = [null, null, null, null, null];
+  // Echoes are not a limited/unique resource in WuWa -- unlike weapons (one real copy per
+  // account), any number of characters can equip the exact same named echo simultaneously, and
+  // this app doesn't track owned echo quantities anywhere (no echoCounts model, unlike the real
+  // chars5Counts/weaps5Counts collection). A prior version excluded a teammate's own 4-cost echo
+  // from this member's candidate pool here, with no in-game or in-app basis for the exclusion.
+  // For the ~14 sets that only have a single 4-cost echo in the whole roster (Eternal Radiance,
+  // Halo of Starry Radiance, Lingering Tunes, etc.), that exclusion could deny this member their
+  // only possible 4-cost slot for the set whenever a teammate got auto-built first, capping the
+  // whole set at 4/5 pieces -- never completable -- for no real reason.
   const usedNames = new Set();
-  allMemberNames.forEach(otherName => {
-    if (otherName === memberName) return;
-    const teammateEq = teamEquipmentSnapshot[activeTeamIndex + ':' + otherName];
-    const teammate4Cost = teammateEq?.echoes?.[0]?.name;
-    if (teammate4Cost) usedNames.add(teammate4Cost);
-  });
   const assignedCounts = new Map();
   const markAssigned = (name, setPrefs) => {
     (ECHO_DATA[name]?.sets || []).forEach(s => {
