@@ -981,7 +981,7 @@ function WhisperingWishesInner() {
       {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
-      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, height: 60, borderRadius: 14, display: 'flex', alignItems: 'center', marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
+      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, height: 62, borderRadius: 14, display: 'flex', alignItems: 'center', marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
           headerBgType === 'animated' ? (
@@ -1065,7 +1065,7 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-center overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, height: 60, borderRadius: 14, marginBottom: 'var(--safe-area-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-center overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, height: 62, borderRadius: 14, marginBottom: 'var(--safe-area-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
           const tabs = ['tracker','events','map','planner','calculator','analytics','teams','gathering'];
           const idx = tabs.indexOf(activeTab);
           let newTab;
@@ -1086,14 +1086,14 @@ function WhisperingWishesInner() {
           </div>
         )}
         <div className="tab-indicator" />
-        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><img src="./navicon/Icon_Convene.webp" alt="" className="w-5 h-5 object-contain" /> {t('app.navTracker')}</TabButton>
-        <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><img src="./navicon/Icon_Event.webp" alt="" className="w-5 h-5 object-contain" /> {t('app.navEvents')}</TabButton>
-        <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><img src="./navicon/Icon_Map.png" alt="" className="w-5 h-5 object-contain" /> {t('app.navMap')}</TabButton>
-        <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><img src="./navicon/Icon_Guidebook.webp" alt="" className="w-5 h-5 object-contain" /> {t('app.navPlan')}</TabButton>
+        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><img src="./navicon/Icon_Convene.webp" alt="" className="w-6 h-6 object-contain" /> {t('app.navTracker')}</TabButton>
+        <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><img src="./navicon/Icon_Event.webp" alt="" className="w-6 h-6 object-contain" /> {t('app.navEvents')}</TabButton>
+        <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><img src="./navicon/Icon_Map.png" alt="" className="w-6 h-6 object-contain" /> {t('app.navMap')}</TabButton>
+        <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><img src="./navicon/Icon_Guidebook.webp" alt="" className="w-6 h-6 object-contain" /> {t('app.navPlan')}</TabButton>
         <TabButton active={activeTab === 'calculator'} onClick={() => setActiveTab('calculator')} tabRef={tabNavRef} tabId="calculator" accentColor={themeAccent}><Calculator size={16} /> {t('app.navCalc')}</TabButton>
-        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><img src="./navicon/Icon_Bag.png" alt="" className="w-5 h-5 object-contain" /> {t('app.navStats')}</TabButton>
-        <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><img src="./navicon/Icon_Team.webp" alt="" className="w-5 h-5 object-contain" /> {t('app.navTeams')}</TabButton>
-        <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><img src="./navicon/Icon_Databank.webp" alt="" className="w-5 h-5 object-contain" /> {t('app.navCollection')}</TabButton>
+        <TabButton active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} tabRef={tabNavRef} tabId="analytics" accentColor={themeAccent}><img src="./navicon/Icon_Bag.png" alt="" className="w-6 h-6 object-contain" /> {t('app.navStats')}</TabButton>
+        <TabButton active={activeTab === 'teams'} onClick={() => setActiveTab('teams')} tabRef={tabNavRef} tabId="teams" accentColor={themeAccent}><img src="./navicon/Icon_Team.webp" alt="" className="w-6 h-6 object-contain" /> {t('app.navTeams')}</TabButton>
+        <TabButton active={activeTab === 'gathering'} onClick={() => setActiveTab('gathering')} tabRef={tabNavRef} tabId="gathering" accentColor={themeAccent}><img src="./navicon/Icon_Databank.webp" alt="" className="w-6 h-6 object-contain" /> {t('app.navCollection')}</TabButton>
       </nav>
 
       <main id="main-content" key={`main-${visualSettings.colorBlindMode ? 'cb' : 'std'}-${appLocale}`} className="max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto px-3 space-y-3 w-full" style={{ paddingTop: headerPadding, paddingBottom: navPadding }} role="main">
