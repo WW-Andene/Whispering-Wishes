@@ -374,6 +374,7 @@ const EVENTS = {
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
     imageUrl: './banners/TqLqWVsv-bountiful-crescendo.webp', // real event art, sourced 2026-08-20 from fandom's File:Bountiful_Crescendo.jpg (recurring material double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
+    hasBakedTitle: true, // this art is the official promo template with the event title/subtitle already baked into the image (left side) — EventCard must not render its own duplicate text overlay for it
   },
   resonanceSimRealm: {
     name: 'Resonance Sim Realm',
@@ -461,6 +462,7 @@ const EVENTS = {
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
     imageUrl: './banners/99Pk72ZX-chord-cleansing.webp', // real event art, sourced 2026-08-20 from fandom's File:Chord_Cleansing.jpg (recurring echo double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
+    hasBakedTitle: true, // this art is the official promo template with the event title/subtitle already baked into the image (left side) — EventCard must not render its own duplicate text overlay for it
   },
 };
 

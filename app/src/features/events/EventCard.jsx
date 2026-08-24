@@ -78,12 +78,23 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-xl ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500 ' : colors.text}`}>
-              {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
-              {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
-              {event.name}
-            </h4>
-            <p className="text-gray-200 text-sm">{event.subtitle}</p>
+            {/* Official promo art for recurring events (Bountiful Crescendo, Chord
+                Cleansing) already has the title/subtitle baked into the image itself —
+                rendering our own text on top duplicated it. Skip it for those, but the
+                <img alt={event.name}> above still gives an accessible name either way. */}
+            {!event.hasBakedTitle && (
+              <>
+                <h4 className={`font-bold text-xl ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500 ' : colors.text}`}>
+                  {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
+                  {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
+                  {event.name}
+                </h4>
+                <p className="text-gray-200 text-sm">{event.subtitle}</p>
+              </>
+            )}
+            {isExpired && event.hasBakedTitle && (
+              isDone ? <CheckCircle size={12} className="text-emerald-400" /> : isSkipped ? <SkipForward size={12} className="text-gray-500" /> : null
+            )}
           </div>
           <div className="text-right flex-shrink-0">
             {isExpired ? (
