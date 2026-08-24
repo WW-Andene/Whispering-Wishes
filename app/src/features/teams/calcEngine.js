@@ -671,6 +671,23 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // An elemDmg buff only helps this DPS if its condition (when present) actually names their
     // element or "all" — otherwise it's a buff for a different attribute that does nothing here.
     const elemBuffApplies = (b) => { const cond = (b.condition || '').toLowerCase(); return !cond || cond.includes(dpsEl) || cond.includes('all'); };
+    // deepen/offTune were previously treated as always-universal (no gate at all), but several
+    // kits' deepen/offTune amps are explicitly locked to their OWN element/mechanic in free-text
+    // condition (e.g. Ciaccona's outro: "Aero Erosion DMG Amp only"; Phoebe's outro: "Spectro Frazzle
+    // DMG Amp (Confession)") — those did nothing for an off-element DPS but still scored full uplift,
+    // which is exactly how both got phantom-recommended as top-8 teammates for Aemeath (Fusion, no
+    // Frazzle/Erosion in her kit). Reuses the same named-element check as elemDmg/allDmg, but only
+    // rejects when the condition explicitly names a DIFFERENT element than the DPS's own — a deepen
+    // buff with no element mentioned at all (most of them: pure activation-trigger conditions) stays
+    // universal, since unlike elemDmg it was never scoped to "this element or nothing" by convention.
+    const ELEMENT_NAMES = ['fusion', 'spectro', 'aero', 'glacio', 'electro', 'havoc'];
+    const deepenBuffApplies = (b) => {
+      const cond = (b.condition || '').toLowerCase();
+      if (!cond) return true;
+      const mentioned = ELEMENT_NAMES.filter(el => cond.includes(el));
+      if (mentioned.length === 0) return true; // no element named — a genuine universal/trigger condition
+      return mentioned.includes(dpsEl);
+    };
     // A type-specific buff (basicDmg/heavyDmg/echoDmg/skillDmg/coordDmg) only routes into the DPS's
     // damage at all if their dmgFocus actually includes that attack type — routeTypeBonuses in this
     // same file enforces the identical gate for the real damage calc, so scoring has to match it or
@@ -679,7 +696,8 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     const buffApplies = (b) => {
       if (typeFocusMap[b.stat]) return dpsFocus.includes(typeFocusMap[b.stat]);
       if (b.stat === 'elemDmg' || b.stat === 'allDmg') return elemBuffApplies(b);
-      return true; // atkPct/critRate/critDmg/deepen/offTune are universal, no gate needed
+      if (b.stat === 'deepen' || b.stat === 'offTune') return deepenBuffApplies(b);
+      return true; // atkPct/critRate/critDmg are universal, no gate needed
     };
     // Score any buff generically via real formula-derived uplift — this is what lets a completely
     // off-meta pairing (any character whose CHAR_BUFF_TABLE just happens to fit) get credited the
@@ -696,33 +714,57 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     };
     members.forEach(m => {
       if (m === mainDps) return;
-      const bt = CHAR_BUFF_TABLE[m]; if (!bt) return;
-      (bt.outroBuffs || []).forEach(scoreBuff);
-      // Liberation-triggered team/next buffs (Verina/Shorekeeper/Baizhi-style healers/supports).
-      // High-cost (175 Energy) Liberation-reliant supports need real ER investment to sustain uptime
-      // that a generic roster-suggestion context can't assume the player has built — 175 is the same
-      // cost cutoff calcEnergyCycles uses to switch to its harder ER_THRESHOLD_HEALER target, applied
-      // here as a mild discount on this support's own libBuff output rather than assuming either full
-      // uptime or zero. (Comparing maxEnergy, a cost in the ~100-175 range, directly against
-      // ER_THRESHOLD_HEALER, a 140% ER *target*, would silently mix units — use the real 175 cutoff.)
-      const erDiscount = (CHARACTER_DATA[m]?.maxEnergy || 0) >= 175 ? 0.85 : 1;
-      (bt.libBuffs || []).forEach(b => {
-        if (b.target !== 'team' && b.target !== 'next') return;
-        if (!buffApplies(b)) return;
-        const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField) * erDiscount;
-        if (uplift > 0) score += uplift * UPLIFT_TO_SCORE;
-      });
-      (bt.debuffs || []).forEach(db => {
-        if (db.stat === 'defShred' || db.stat === 'resShred') {
-          const uplift = estimateBuffUplift(db.stat, db.value);
-          if (uplift > 0) { score += uplift * UPLIFT_TO_SCORE; tags.push('Shred'); }
-        }
-        if (db.stat === 'frazzle') { score += 5; tags.push('Frazzle'); }
-        if (db.stat === 'erosion') { score += 5; tags.push('Erosion'); }
-        // 'deepen'/'offTune' as a debuff stat (enemy DMG Taken, e.g. Galbrena's Afterflame) is a
-        // universal damage multiplier just like the buff-side 'deepen'.
-        if (db.stat === 'deepen' || db.stat === 'offTune') { const u = estimateBuffUplift('deepen', db.value); if (u > 0) score += u * UPLIFT_TO_SCORE; }
-      });
+      // Two Main DPS in one team is a real, deliberate pattern in some specific cases (they share a
+      // buff that makes running both worth the traded on-field time/energy — e.g. a Fusion Main DPS
+      // buffing another Fusion Main DPS's element), but it's a real cost the rest of this scorer never
+      // otherwise accounts for (whoever isn't mainDps here spends their own on-field window/energy
+      // economy contributing ~nothing to the team's headline damage unless their kit actually buffs the
+      // real mainDps). Track this member's own score contribution and penalize redundant hypercarries
+      // that bring no such payoff, instead of crediting a second DPS's tier/element-resonance points as
+      // if it were a free support slot.
+      const scoreBeforeMember = score;
+      const bt = CHAR_BUFF_TABLE[m];
+      if (bt) {
+        (bt.outroBuffs || []).forEach(scoreBuff);
+        // Liberation-triggered team/next buffs (Verina/Shorekeeper/Baizhi-style healers/supports).
+        // High-cost (175 Energy) Liberation-reliant supports need real ER investment to sustain uptime
+        // that a generic roster-suggestion context can't assume the player has built — 175 is the same
+        // cost cutoff calcEnergyCycles uses to switch to its harder ER_THRESHOLD_HEALER target, applied
+        // here as a mild discount on this support's own libBuff output rather than assuming either full
+        // uptime or zero. (Comparing maxEnergy, a cost in the ~100-175 range, directly against
+        // ER_THRESHOLD_HEALER, a 140% ER *target*, would silently mix units — use the real 175 cutoff.)
+        const erDiscount = (CHARACTER_DATA[m]?.maxEnergy || 0) >= 175 ? 0.85 : 1;
+        (bt.libBuffs || []).forEach(b => {
+          if (b.target !== 'team' && b.target !== 'next') return;
+          if (!buffApplies(b)) return;
+          const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField) * erDiscount;
+          if (uplift > 0) score += uplift * UPLIFT_TO_SCORE;
+        });
+        (bt.debuffs || []).forEach(db => {
+          if (db.stat === 'defShred' || db.stat === 'resShred') {
+            const uplift = estimateBuffUplift(db.stat, db.value);
+            if (uplift > 0) { score += uplift * UPLIFT_TO_SCORE; tags.push('Shred'); }
+          }
+          if (db.stat === 'frazzle') { score += 5; tags.push('Frazzle'); }
+          if (db.stat === 'erosion') { score += 5; tags.push('Erosion'); }
+          // 'deepen'/'offTune' as a debuff stat (enemy DMG Taken, e.g. Galbrena's Afterflame) is a
+          // damage multiplier just like the buff-side 'deepen' — same off-element gate applies (a
+          // debuff condition can name a specific element/mechanic just as easily as a buff's can).
+          if (db.stat === 'deepen' || db.stat === 'offTune') { if (deepenBuffApplies(db)) { const u = estimateBuffUplift('deepen', db.value); if (u > 0) score += u * UPLIFT_TO_SCORE; } }
+        });
+      }
+      // Redundant-hypercarry penalty: a second Main DPS earns its slot only if it demonstrably
+      // buffed the real mainDps above (scoreBeforeMember < score) — that's the "specific case" where
+      // running two Main DPS together is genuinely worth it (a shared buff pays for the traded
+      // on-field time/energy). Otherwise this member's own tier/element-resonance points are still
+      // counted (they ARE a real, buildable Resonator) but the redundancy itself — a hypercarry
+      // slot spent on a unit that never turns on for this DPS — costs more than a slot spent on any
+      // dedicated support would have, so the whole candidate is pushed back down the ranking instead
+      // of parking two same-role carries side by side with no synergy tag to show for it.
+      if (CHARACTER_DATA[m]?.role === 'Main DPS') {
+        if (score > scoreBeforeMember) tags.push('Dual DPS');
+        else { score -= 20; tags.push('Redundant DPS'); }
+      }
     });
   }
   // Element
