@@ -204,7 +204,12 @@ export default function TeamSelector({
                         {/* Character Grid */}
                         <div className="flex-1 overflow-y-auto p-4">
                           <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                            {filteredChars.map(name => {
+                            {/* recommendedNames is a Map built by sorting all candidates by score
+                                descending then taking the top slice -- its insertion order already IS
+                                the rank order, so this array's index (not the score itself, which the
+                                badge has no room to show) gives each recommended character its
+                                1st/2nd/3rd... position for the badge below. */}
+                            {(() => { var recommendedOrder = [...recommendedNames.keys()]; return filteredChars.map(name => {
                               const cd = CHARACTER_DATA[name];
                               const img = collectionImages[name] || '';
                               const el = cd?.element;
@@ -260,10 +265,11 @@ export default function TeamSelector({
                                       <Users size={8} className="text-cyan-400" />
                                     </div>
                                   )}
-                                  {/* Recommended badge */}
+                                  {/* Recommended badge — rank number is this candidate's position in
+                                      recommendedOrder (highest synergy score = #1), not just a flat tag */}
                                   {isRecommended && (
                                     <div className="absolute top-0.5 right-0.5 z-10">
-                                      <span className="text-2xs px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ REC</span>
+                                      <span className="text-2xs px-1 py-0.5 rounded font-bold bg-orange-500 text-white kuro-tshadow-badge">★ #{recommendedOrder.indexOf(name) + 1}</span>
                                     </div>
                                   )}
                                   {/* Role tag */}
@@ -278,7 +284,7 @@ export default function TeamSelector({
                                   </div>
                                 </button>
                               );
-                            })}
+                            }); })()}
                           </div>
                           {filteredChars.length === 0 && (
                             <div className="text-center py-8">
