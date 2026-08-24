@@ -1287,8 +1287,8 @@
     .kuro-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: linear-gradient(135deg, #e6b030, #edaf18);
       cursor: pointer;
@@ -1303,8 +1303,8 @@
     }
     
     .kuro-slider::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: linear-gradient(135deg, #e6b030, #edaf18);
       cursor: pointer;
@@ -1515,7 +1515,7 @@
       border-radius: 8px;
     }
     .kuro-skeleton-text {
-      height: 10px;
+      height: 8px;
       border-radius: 4px;
     }
     .kuro-skeleton-circle {
@@ -2500,8 +2500,8 @@
       position: absolute;
       top: 6px;
       right: 6px;
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-top: 1px solid rgba(255,255,255,0.12);
       border-right: 1px solid rgba(255,255,255,0.12);
       border-radius: 0 3px 0 0;
@@ -2510,8 +2510,8 @@
       position: absolute;
       bottom: 6px;
       left: 6px;
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
       border-left: 1px solid rgba(255,255,255,0.08);
       border-radius: 0 0 0 3px;

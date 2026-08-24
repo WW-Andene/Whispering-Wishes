@@ -2125,7 +2125,7 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-point-icon:active { cursor: grabbing; }
         .zone-author-point {
           display: flex; align-items: center; justify-content: center;
-          width: 22px; height: 22px; border-radius: 50%;
+          width: 24px; height: 24px; border-radius: 50%;
           background: var(--bg-card-inner);
           border: 1.5px solid ${COLOR_CANON};
           box-shadow: 0 0 8px rgba(var(--color-gold), 0.5);
@@ -2592,7 +2592,7 @@ export default function MapTab({ navPadding = 80 }) {
           content: '';
           position: absolute;
           left: 3px; top: 0;
-          width: 4px; height: 7px;
+          width: 4px; height: 8px;
           border: solid var(--bg-card);
           border-width: 0 1.5px 1.5px 0;
           transform: rotate(45deg);
