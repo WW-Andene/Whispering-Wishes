@@ -1117,6 +1117,7 @@ function WhisperingWishesInner() {
                 toast={toast}
                 confirm={confirm}
                 setActiveTab={setActiveTab}
+                setDetailModal={setDetailModal}
               />
 
             </Suspense>

@@ -35,6 +35,7 @@ function TrackerTab({
   toast,
   confirm,
   setActiveTab,
+  setDetailModal,
 }) {
   const [trackerCategory, setTrackerCategoryRaw] = useState(() => {
     try {
@@ -151,6 +152,7 @@ function TrackerTab({
                     endDate={bannerEndDate}
                     timerColor="yellow"
                     collectionImages={collectionImages}
+                    setDetailModal={setDetailModal}
                   />
                 )) : (
                   <div className="kuro-empty-state text-center py-8">
@@ -180,6 +182,7 @@ function TrackerTab({
                     endDate={bannerEndDate}
                     timerColor="pink"
                     collectionImages={collectionImages}
+                    setDetailModal={setDetailModal}
                   />
                 )) : (
                   <div className="kuro-empty-state text-center py-8">

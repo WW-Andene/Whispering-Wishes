@@ -81,7 +81,7 @@ const generateMaskGradient = (fadePos, fadeIntensity) => {
 
 
 
-const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor, collectionImages }) => {
+const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor, collectionImages, setDetailModal }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
@@ -183,7 +183,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                       />
                     </div>
                   )}
-                  <span className="block w-12 text-[8px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm text-center truncate" title={n}>{n}</span>
+                  <span
+                    className="block w-12 text-[8px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm text-center truncate cursor-pointer"
+                    title={n}
+                    onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: n, imageUrl: previewImg, framing })}
+                  >{n}</span>
                 </div>
               );
             })}
