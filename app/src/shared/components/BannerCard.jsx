@@ -12,6 +12,7 @@ import { haptic, getElementColor, getElementIcon, getWeaponTypeIcon } from '../.
 import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
 import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
 import { t } from '../../utils/i18n.js';
@@ -93,6 +94,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   const isFull = visualSettings?.animationsEnabled === 'full';
   const spineId = isChar ? getSpineId(item.name) : null;
+  const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   // Spine banners disabled app-wide (kept encapsulated here, not removed, for easy re-enable).
   const useSpine = SPINE_BANNERS_ENABLED && isFull && spineId && !spineFailed;
 
@@ -161,16 +163,22 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="flex gap-2 flex-wrap">
             {(item.featured4Stars || []).map(n => {
               const previewImg = (collectionImages || DEFAULT_COLLECTION_IMAGES)[n];
+              const framingKey = `collection-${n}`;
+              const framing = getImageFraming(framingKey);
+              const isEditingThis = framingMode && editingImage === framingKey;
               return (
                 <div key={n} className="inline-flex flex-col items-center gap-0.5">
                   {previewImg && (
-                    <div className="w-12 h-12 rounded-md overflow-hidden border border-cyan-400/40">
+                    <div
+                      className={`w-12 h-12 rounded-md overflow-hidden border ${isEditingThis ? 'border-emerald-400 ring-2 ring-emerald-500/50' : 'border-cyan-400/40'} ${framingMode ? 'cursor-pointer' : ''}`}
+                      onClick={framingMode ? () => setEditingImage(framingKey) : undefined}
+                    >
                       <img
                         src={previewImg}
                         alt=""
                         aria-hidden="true"
-                        className="w-full h-full object-cover"
-                        style={{ objectPosition: 'center 25%', transform: 'scale(3.5)', transformOrigin: '45% 28%' }}
+                        className="w-full h-full object-contain pointer-events-none"
+                        style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
                         onError={hideOnError}
                       />
                     </div>
