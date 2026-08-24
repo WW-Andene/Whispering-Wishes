@@ -14,7 +14,6 @@ import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
 import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
-import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t } from '../../utils/i18n.js';
 
 const BANNER_GRADIENT_MAP = {
@@ -86,7 +85,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
   const [spineFailed, setSpineFailed] = useState(false);
-  const { getImageFraming } = useImageFramingContext();
 
   // Use unified mask generator
   const maskGradient = visualSettings
@@ -162,7 +160,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-2 flex-wrap">
             {(item.featured4Stars || []).map(n => {
-              const framing = getImageFraming(`collection-${n}`);
               return (
                 <div key={n} className="inline-flex flex-col items-center gap-0.5">
                   {DEFAULT_COLLECTION_IMAGES[n] && (
@@ -172,7 +169,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                         alt=""
                         aria-hidden="true"
                         className="w-full h-full object-cover"
-                        style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
+                        style={{ objectPosition: 'center 25%' }}
                         onError={hideOnError}
                       />
                     </div>
