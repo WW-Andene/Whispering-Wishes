@@ -248,7 +248,8 @@
       --font-5xl: 23px;
       --font-6xl: 25px;
       /* §E1-DIM: Architectural dimension tokens — card heights, avatar sizes */
-      --height-banner: 192px;     /* Banner/Event cards minimum height */
+      --height-banner: 192px;     /* Event cards minimum height */
+      --height-banner-tracker: 64px; /* Tracker Resonator/Weapon/Standard banner cards — 3:1 with header width (CLAUDE.md) */
       --height-card-sm: 140px;    /* Collection grid cards */
       --height-card-md: 192px;    /* Team selector cards */
       --size-avatar-lg: 112px;    /* Profile picture (IdCard, profile tab) */
