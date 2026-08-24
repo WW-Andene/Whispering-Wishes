@@ -125,6 +125,8 @@
     "recommendedEchoes": "Recommended Echoes",
     "buildN": "Build {{n}}",
     "mainEcho": "Main Echo",
+    "sonataRecommended": "Recommended Sonata",
+    "echoCost": "Cost {{cost}}",
     "mixedEchoSet": "Mixed Echo Set",
     "echoSet": "Echo Set",
     "teamComps": "Team Comps",

@@ -8,7 +8,7 @@ import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, Layout
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
 import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
-import { ECHO_DATA } from '../../data/echoes.js';
+import { ECHO_DATA, getSonataLoadouts } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
@@ -656,6 +656,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             }
             const buildLabelOf = (row) => splitLabel(row.set || row.main).label;
             const showBuildLabels = rows.length > 1;
+            const loadouts = getSonataLoadouts(data.bestEchoes, data.statScaling);
             return (
           <div className="kuro-detail-box">
             <div className="kuro-section-label mb-2">{t('modals.characterDetail.recommendedEchoes')}</div>
@@ -683,6 +684,32 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                         <div>
                           <div className="text-cyan-400 text-base font-bold">{main.text}</div>
                           <div className="text-gray-400 text-sm">{t('modals.characterDetail.mainEcho')}</div>
+                        </div>
+                      </div>
+                    )}
+                    {/* Full 5-echo (4/3/3/1/1 cost) sonata loadout — the cost-4 slot is the community-
+                        sourced main echo above; the cost-3/cost-1 slots are generic representatives (any
+                        echo carrying the same set works, no guide names one specifically) paired with the
+                        standard main-stat priority for that cost tier. */}
+                    {loadouts[idx]?.slots.length > 0 && (
+                      <div>
+                        <div className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-1.5">
+                          {t('modals.characterDetail.sonataRecommended')}
+                          {loadouts[idx].sonataName ? <span className="text-gray-300 normal-case font-bold ml-1.5">{loadouts[idx].sonataName}</span> : null}
+                        </div>
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                          {loadouts[idx].slots.map((slot, si) => (
+                            <React.Fragment key={si}>
+                              {si > 0 && <span className="text-gray-600 text-sm flex-shrink-0">/</span>}
+                              <div className="flex flex-col items-center gap-1 flex-shrink-0 w-16">
+                                <div className={`w-12 h-12 rounded-lg border flex items-center justify-center overflow-hidden flex-shrink-0 ${slot.generic ? 'bg-white/5 border-[var(--border-medium)]' : 'bg-cyan-500/10 border-cyan-500/30'}`}>
+                                  {slot.iconUrl ? <img src={slot.iconUrl} alt={slot.name} className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={12} className="text-purple-400" />}
+                                </div>
+                                <div className="text-[10px] text-gray-300 text-center leading-tight line-clamp-2">{slot.name}</div>
+                                <div className="text-[10px] text-gray-500 text-center leading-tight">{t('modals.characterDetail.echoCost', { cost: slot.cost })}{slot.mainStat ? ` · ${slot.mainStat}` : ''}</div>
+                              </div>
+                            </React.Fragment>
+                          ))}
                         </div>
                       </div>
                     )}
