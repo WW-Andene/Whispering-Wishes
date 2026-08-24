@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Shuffle, Target, Trash2, Upload, Users, X } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { scoreTeamComposition, isHealerRole, isSupportRole, TIER_SCORES } from './calcEngine.js';
+import { CHARACTER_DATA, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
+import { scoreTeamComposition, isHealerRole, isSupportRole } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -127,40 +127,21 @@ function TeamsTab({
     const customSeen = new Set();
     // For each owned DPS, find best sub + best healer/support
     for (const dps of ownedDps) {
-      const dpsEl = CHARACTER_DATA[dps]?.element;
-      const dpsFocus = CHARACTER_DATA[dps]?.dmgFocus || [];
-      // Score each potential sub-DPS partner
-      const subCandidates = ownedSub.filter(s => s !== dps).map(sub => {
-        let fit = 0;
-        const bt = CHAR_BUFF_TABLE[sub];
-        if (bt) {
-          (bt.outroBuffs || []).forEach(b => {
-            if (b.stat === 'deepen') fit += 10;
-            else if (b.stat === 'elemDmg') { const cond = (b.condition || '').toLowerCase(); if (!cond || cond.includes((dpsEl || '').toLowerCase())) fit += 8; }
-            else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) fit += 12;
-            else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) fit += 12;
-            else if (b.stat === 'echoDmg' && dpsFocus.includes('Echo')) fit += 12;
-            else if (b.stat === 'skillDmg' && dpsFocus.includes('Skill')) fit += 10;
-          });
-          (bt.debuffs || []).forEach(db => { if (db.stat === 'defShred' || db.stat === 'resShred') fit += 6; });
-        }
-        if (CHARACTER_DATA[sub]?.element === dpsEl) fit += 5; // element resonance
-        const tier = CHARACTER_DATA[sub]?.tier?.toa;
-        fit += (TIER_SCORES[tier] ?? 5);
-        return { name: sub, fit };
-      }).sort((a, b) => b.fit - a.fit);
-      // Score each potential healer/support
-      const healCandidates = ownedHeal.filter(h => h !== dps).map(heal => {
-        let fit = 0;
-        const bt = CHAR_BUFF_TABLE[heal];
-        if (bt) {
-          (bt.outroBuffs || []).forEach(b => { if (b.stat === 'deepen') fit += 10; else if (b.stat === 'atkPct') fit += 6; });
-          (bt.libBuffs || []).forEach(b => { if (b.stat === 'critRate' || b.stat === 'critDmg') fit += 8; else if (b.stat === 'atkPct') fit += 6; });
-        }
-        const tier = CHARACTER_DATA[heal]?.tier?.toa;
-        fit += (TIER_SCORES[tier] ?? 5);
-        return { name: heal, fit };
-      }).sort((a, b) => b.fit - a.fit);
+      // Candidate pre-filtering used to run its own hand-rolled "fit" heuristic here — a second,
+      // independently-maintained copy of what scoreTeamComposition already does, and one that never
+      // received any of that shared engine's fixes (deepen/allDmg off-element gating, echo-set
+      // potential, etc.) as they landed. It could pre-select an off-element phantom-synergy candidate
+      // into the top-3/top-2 pool ahead of a genuinely better one, even though the FINAL assembled
+      // team's score (below, via scoreTeam) was always correct — the bug was in which candidates ever
+      // got a chance to be tried. Scoring each hypothetical [dps, candidate] pair through the same
+      // scoreTeam the rest of this file uses keeps candidate selection and final scoring permanently
+      // in sync instead of two logics that can only drift further apart over time.
+      const subCandidates = ownedSub.filter(s => s !== dps)
+        .map(sub => ({ name: sub, fit: scoreTeam([dps, sub], dps).score }))
+        .sort((a, b) => b.fit - a.fit);
+      const healCandidates = ownedHeal.filter(h => h !== dps)
+        .map(heal => ({ name: heal, fit: scoreTeam([dps, heal], dps).score }))
+        .sort((a, b) => b.fit - a.fit);
       // Build top 2 teams per DPS
       const bestSubs = subCandidates.slice(0, 3);
       const bestHeals = healCandidates.slice(0, 2);
