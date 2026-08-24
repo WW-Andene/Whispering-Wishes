@@ -47,6 +47,8 @@ This can and will collapse previously-distinct values onto the same PerfectSuite
 
 Only these ratios are valid for card-shaped elements: `1:1`, `2:3`, `3:4`, `3:5`.
 
+`3:1` is also valid, reserved for elements that need a wide/short exception to the card ratios above — e.g. the header, navbar, and similar full-width bars.
+
 ## Header / Navbar
 
 Visually 192px wide × 64px tall (both PerfectSuite values), even though the actual implementation is responsive/fluid rather than hard-coded — treat 192×64 as the reference proportions when sizing anything meant to align with the header/nav.
