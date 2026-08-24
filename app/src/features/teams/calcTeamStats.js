@@ -973,6 +973,16 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         // On-field sub-DPS characters receive all buffs normally.
         const focus = m.d.dmgFocus || [];
         const isOffField = focus.includes('Coordinated ATK') && focus.length <= 2;
+        // Same applyBuff bridge pattern as the main-DPS tier above -- consolidates this sub-DPS's own
+        // 4 near-identical chains (outroBuffs/libBuffs/debuffs-from-others/own selfBuffs+debuffs) onto
+        // the one shared, gated implementation instead of each carrying its own copy. Note this block
+        // deliberately does NOT pass dpsFocus to the outroBuffs applyBuff calls below: unlike the main
+        // DPS tier, this sub-DPS path never gated basicDmg/heavyDmg/libDmg/echoDmg/skillDmg by dmgFocus
+        // here (they all route into sAmplify unconditionally) -- preserved as-is as a pure dedup, not
+        // changed, since that's a separate question from the deepen/allDmg/elemDmg bug this migration
+        // targets.
+        const subElLower = (m.d.element || '').toLowerCase();
+        const sStats = { atkPct: sAtkPct, cr: sCr, cd: sCd, elemDmg: sElem, deepen: sDeepen, amplify: sAmplify, echoDmg: sEchoDmg, defShred: sDefShred, resShred: sResShred, defIgnore: sDefIgnore };
         mems.forEach(other => {
           if (other.name === m.name) return;
           const obt = CHAR_BUFF_TABLE[other.name];
@@ -986,23 +996,15 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
               const snapshotFactor = isOffField ? 0.6 : 1.0;
               const uptime = overlapUptimeForSeg(sSeg, outroStart(other.name), b.duration || 14);
               const val = b.value * uptime * snapshotFactor;
-              if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
-              else if (b.stat === 'allDmg') sAmplify += val;
-              // elemDmg here was previously grouped with allDmg (no gate at all) — unlike the properly
-              // gated libBuffs elemDmg path just below (obt.libBuffs), an element-restricted outro amp
-              // (e.g. Denia's "Fusion Burst mode" 60% elemDmg) was applying in full to an off-element
-              // sub-DPS's damage.
-              else if (b.stat === 'elemDmg') { if (universalStatApplies(b.condition, (m.d.element || '').toLowerCase())) sAmplify += val; }
-              else if (b.stat === 'deepen') { if (universalStatApplies(b.condition, (m.d.element || '').toLowerCase())) sDeepen += val; }
-              else if (b.stat === 'basicDmg') sAmplify += val;
-              else if (b.stat === 'heavyDmg') sAmplify += val;
-              else if (b.stat === 'libDmg') sAmplify += val;
-              else if (b.stat === 'echoDmg') sAmplify += val;
-              else if (b.stat === 'critRate') sCr += val;
-              else if (b.stat === 'critDmg') sCd += val;
-              else if (b.stat === 'skillDmg') sAmplify += val;
-              else if (b.stat === 'resShred') sResShred += val;
-              else if (b.stat === 'defShred') sDefShred += val;
+              if (b.stat === 'atkPct') {
+                sStats.atkPct += m.scaling === 'ATK' ? val : val * 0.25;
+              } else if (['allDmg', 'elemDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'skillDmg'].includes(b.stat)) {
+                applyBuff(sStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsElLower: subElLower });
+              } else if (b.stat === 'deepen') {
+                applyBuff(sStats, 'deepen', val, { condition: b.condition, dpsElLower: subElLower });
+              } else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'resShred' || b.stat === 'defShred') {
+                applyBuff(sStats, b.stat, val);
+              }
             }
           });
           // Sonata set p5 team/next ATK% buffs (see the same fix on the main-tier computation above).
@@ -1010,36 +1012,25 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           if (oP5v?.teamAtk) {
             const uptime = overlapUptimeForSeg(sSeg, blockStart(other.name), 20);
             const val = oP5v.teamAtk * uptime * (isOffField ? 0.6 : 1.0);
-            sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
+            sStats.atkPct += m.scaling === 'ATK' ? val : val * 0.25;
           }
           if (oP5v?.nextAtk) {
             const uptime = overlapUptimeForSeg(sSeg, outroStart(other.name), 14);
             const val = oP5v.nextAtk * uptime * (isOffField ? 0.6 : 1.0);
-            sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
+            sStats.atkPct += m.scaling === 'ATK' ? val : val * 0.25;
           }
           (obt.libBuffs || []).forEach(b => {
             if (b.target === 'team' || b.target === 'next') {
               const uptime = overlapUptimeForSeg(sSeg, blockStart(other.name), b.duration || 25);
               const val = b.value * uptime;
-              if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
-              else if (b.stat === 'allDmg') sElem += val;
-              else if (b.stat === 'elemDmg') {
-                const buffEl = (b.condition || '').toLowerCase();
-                const subEl = (m.d.element || '').toLowerCase();
-                if (!buffEl || buffEl.includes(subEl) || buffEl.includes('all')) sElem += val;
-              }
-              else if (b.stat === 'critRate') sCr += val;
-              else if (b.stat === 'critDmg') sCd += val;
-              else if (b.stat === 'echoDmg') sEchoDmg += val;
+              if (b.stat === 'atkPct') { sStats.atkPct += m.scaling === 'ATK' ? val : val * 0.25; }
+              else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(sStats, b.stat, val, { condition: b.condition, dpsElLower: subElLower });
+              else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'echoDmg') applyBuff(sStats, b.stat, val);
             }
           });
           (obt.debuffs || []).forEach(db => {
-            if (db.stat === 'defShred') sDefShred += db.value;
-            else if (db.stat === 'resShred') sResShred += db.value;
-            else if (db.stat === 'offTune') { if (universalStatApplies(db.condition, (m.d.element || '').toLowerCase())) sDeepen += db.value; }
-            else if (db.stat === 'havocBane') sDefShred += db.value * 2;
-            else if (db.stat === 'deepen') { if (universalStatApplies(db.condition, (m.d.element || '').toLowerCase())) sDeepen += db.value; }
-            else if (db.stat === 'defIgnore') sDefIgnore += db.value;
+            if (db.stat === 'havocBane') { sStats.defShred += db.value * 2; return; }
+            applyBuff(sStats, db.stat, db.value, { condition: db.condition, dpsElLower: subElLower });
           });
         });
         const mbt = CHAR_BUFF_TABLE[m.name];
@@ -1047,22 +1038,14 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           const subTotalER = energyCycleFactors?.[m.name]?.totalER;
           (mbt.selfBuffs || []).forEach(b => {
             const val = resolveBuffValue(b, subTotalER);
-            if (b.stat === 'atkPct') sAtkPct += val;
-            else if (b.stat === 'elemDmg') sElem += val;
-            else if (b.stat === 'critRate') sCr += val;
-            else if (b.stat === 'critDmg') sCd += val;
-            else if (b.stat === 'defIgnore') sDefIgnore += val;
-            else if (b.stat === 'deepen') sDeepen += val;
-            else if (b.stat === 'echoDmg') sEchoDmg += val;
+            // Own kit's self-target buffs — no target-matching gate needed, same as the main tier.
+            if (['atkPct', 'elemDmg', 'critRate', 'critDmg', 'defIgnore', 'deepen', 'echoDmg'].includes(b.stat)) applyBuff(sStats, b.stat, val);
           });
           (mbt.debuffs || []).forEach(db => {
-            if (db.stat === 'defShred') sDefShred += db.value;
-            else if (db.stat === 'resShred') sResShred += db.value;
-            else if (db.stat === 'offTune') { if (universalStatApplies(db.condition, (m.d.element || '').toLowerCase())) sDeepen += db.value; }
-            else if (db.stat === 'deepen') { if (universalStatApplies(db.condition, (m.d.element || '').toLowerCase())) sDeepen += db.value; }
-            else if (db.stat === 'defIgnore') sDefIgnore += db.value;
+            applyBuff(sStats, db.stat, db.value, { condition: db.condition, dpsElLower: subElLower });
           });
         }
+        ({ atkPct: sAtkPct, cr: sCr, cd: sCd, elemDmg: sElem, deepen: sDeepen, amplify: sAmplify, echoDmg: sEchoDmg, defShred: sDefShred, resShred: sResShred, defIgnore: sDefIgnore } = sStats);
         if (m.weapon) {
           const subRefLevel = sEq?.refinement || 1;
           const subRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[subRefLevel - 1] || 1 : 1;
