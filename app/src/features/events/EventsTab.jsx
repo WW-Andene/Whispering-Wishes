@@ -189,16 +189,7 @@ function EventsTab({
         ) : (
           <>
             {active.map((entry) => renderCard(entry, false))}
-            {expired.length > 0 && (
-              <>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-px bg-gray-700/50" />
-                  <span className="text-gray-500 text-sm font-medium uppercase tracking-wider">{t('events.expired')}</span>
-                  <div className="flex-1 h-px bg-gray-700/50" />
-                </div>
-                {expired.map((entry) => renderCard(entry, true))}
-              </>
-            )}
+            {expired.map((entry) => renderCard(entry, true))}
           </>
         )}
       </div>
