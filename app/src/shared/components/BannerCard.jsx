@@ -158,9 +158,9 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         
         <div className={stats ? 'mb-14' : ''}>
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
             {(item.featured4Stars || []).map(n => (
-              <div key={n} className="inline-flex flex-col items-center gap-0.5">
+              <div key={n} className="flex flex-col items-center gap-0.5">
                 {DEFAULT_COLLECTION_IMAGES[n] && (
                   <img src={DEFAULT_COLLECTION_IMAGES[n]} alt="" aria-hidden="true" width={48} height={48} className="w-12 h-12 rounded-md object-cover border border-cyan-400/40" onError={hideOnError} />
                 )}
