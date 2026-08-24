@@ -14,6 +14,7 @@ import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
 import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t } from '../../utils/i18n.js';
 
 const BANNER_GRADIENT_MAP = {
@@ -85,6 +86,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
   const [spineFailed, setSpineFailed] = useState(false);
+  const { getImageFraming } = useImageFramingContext();
 
   // Use unified mask generator
   const maskGradient = visualSettings
@@ -159,14 +161,26 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         <div className={stats ? 'mb-14' : ''}>
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-2 flex-wrap">
-            {(item.featured4Stars || []).map(n => (
-              <div key={n} className="inline-flex flex-col items-center gap-0.5">
-                {DEFAULT_COLLECTION_IMAGES[n] && (
-                  <img src={DEFAULT_COLLECTION_IMAGES[n]} alt="" aria-hidden="true" width={48} height={48} className="w-12 h-12 rounded-md object-cover border border-cyan-400/40" onError={hideOnError} />
-                )}
-                <span className="block w-12 text-[8px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm text-center truncate" title={n}>{n}</span>
-              </div>
-            ))}
+            {(item.featured4Stars || []).map(n => {
+              const framing = getImageFraming(`collection-${n}`);
+              return (
+                <div key={n} className="inline-flex flex-col items-center gap-0.5">
+                  {DEFAULT_COLLECTION_IMAGES[n] && (
+                    <div className="w-12 h-12 rounded-md overflow-hidden border border-cyan-400/40">
+                      <img
+                        src={DEFAULT_COLLECTION_IMAGES[n]}
+                        alt=""
+                        aria-hidden="true"
+                        className="w-full h-full object-cover"
+                        style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
+                        onError={hideOnError}
+                      />
+                    </div>
+                  )}
+                  <span className="block w-12 text-[8px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm text-center truncate" title={n}>{n}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
