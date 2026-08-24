@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSessionState } from '../../hooks/useSessionState.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
-import { Archive, ArrowRight, Calendar, RefreshCcw, Search, Upload, X } from 'lucide-react';
+import { Archive, ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
@@ -432,7 +432,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewResonators')}
                       aria-pressed={collectionView === 'items'}
                     >
-                      <img src="./navicon/Icon_Resonator.png" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.resonators')}
+                      <Crown size={12} className="inline mr-1" />{t('collection.view.resonators')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('weapons'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
@@ -441,7 +441,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewWeapons')}
                       aria-pressed={collectionView === 'weapons'}
                     >
-                      <img src="./navicon/Icon_Weapons.webp" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.weapons')}
+                      <Sword size={12} className="inline mr-1" />{t('collection.view.weapons')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('echoes'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
@@ -450,7 +450,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewEchoes')}
                       aria-pressed={collectionView === 'echoes'}
                     >
-                      <img src="./navicon/Icon_Echoe.webp" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.echoes')}
+                      <Sparkles size={12} className="inline mr-1" />{t('collection.view.echoes')}
                     </button>
                   </div>
                 </CardBody>

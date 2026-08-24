@@ -173,10 +173,10 @@ function CalculatorTab({ state, dispatch }) {
                     <div className="text-gray-400 text-sm -mt-1">{t('calculator.limitedTimeBanner')}</div>
                     <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="featured-convene-label">
                       <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'char'); setCalc('forging', ''); setCalc('lustrous', ''); }} aria-pressed={state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'char'} className={`kuro-btn ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'char' ? 'active-gold' : ''}`}>
-                        <img src="./navicon/Icon_Resonator.png" alt="" className="w-4 h-4 mx-auto mb-1.5 object-contain" />{t('calculator.resonator')}
+                        <Crown size={16} className="mx-auto mb-1.5" />{t('calculator.resonator')}
                       </button>
                       <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'weap'); setCalc('radiant', ''); setCalc('lustrous', ''); }} aria-pressed={state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap'} className={`kuro-btn ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'weap' ? 'active-pink' : ''}`}>
-                        <img src="./navicon/Icon_Weapons.webp" alt="" className="w-4 h-4 mx-auto mb-1.5 object-contain" />{t('calculator.weapon')}
+                        <Swords size={16} className="mx-auto mb-1.5" />{t('calculator.weapon')}
                       </button>
                     </div>
                     <button onClick={() => { setCalc('bannerCategory', 'featured'); setCalc('selectedBanner', 'both'); setCalc('lustrous', ''); }} aria-pressed={state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'both'} className={`kuro-btn w-full ${state.calc.bannerCategory === 'featured' && state.calc.selectedBanner === 'both' ? 'active-emerald' : ''}`}>
@@ -190,10 +190,10 @@ function CalculatorTab({ state, dispatch }) {
                     <div className="text-gray-400 text-sm -mt-1">{t('calculator.permanentBanner')}</div>
                     <div className="grid grid-cols-2 gap-2" role="group" aria-labelledby="standard-convene-label">
                       <button onClick={() => { setCalc('bannerCategory', 'standard'); setCalc('selectedBanner', 'char'); setCalc('radiant', ''); setCalc('forging', ''); }} aria-pressed={state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'char'} className={`kuro-btn ${state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'char' ? 'active-cyan' : ''}`}>
-                        <img src="./navicon/Icon_Resonator.png" alt="" className="w-4 h-4 mx-auto mb-1.5 object-contain" />{t('calculator.resonator')}
+                        <Star size={16} className="mx-auto mb-1.5" />{t('calculator.resonator')}
                       </button>
                       <button onClick={() => { setCalc('bannerCategory', 'standard'); setCalc('selectedBanner', 'weap'); setCalc('radiant', ''); setCalc('forging', ''); }} aria-pressed={state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'weap'} className={`kuro-btn ${state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'weap' ? 'active-cyan' : ''}`}>
-                        <img src="./navicon/Icon_Weapons.webp" alt="" className="w-4 h-4 mx-auto mb-1.5 object-contain" />{t('calculator.weapon')}
+                        <Sword size={16} className="mx-auto mb-1.5 rotate-45" />{t('calculator.weapon')}
                       </button>
                     </div>
                     <button onClick={() => { setCalc('bannerCategory', 'standard'); setCalc('selectedBanner', 'both'); setCalc('radiant', ''); setCalc('forging', ''); }} aria-pressed={state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'both'} className={`kuro-btn w-full ${state.calc.bannerCategory === 'standard' && state.calc.selectedBanner === 'both' ? 'active-emerald' : ''}`}>
