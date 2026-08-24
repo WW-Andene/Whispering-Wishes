@@ -427,30 +427,30 @@ function CollectionTab({
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => setCollectionView('items')}
-                      className={`kuro-btn flex-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
+                      className={`kuro-btn flex-1 flex items-center justify-center gap-1 ${collectionView === 'items' ? 'active-gold' : ''}`}
                       title={t('collection.view.resonators')}
                       aria-label={t('collection.view.viewResonators')}
                       aria-pressed={collectionView === 'items'}
                     >
-                      <img src="./navicon/Characters.webp" alt="" className="inline w-4 h-4 mr-1 object-contain" />{t('collection.view.resonators')}
+                      <img src="./navicon/Characters.webp" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.resonators')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('weapons'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
-                      className={`kuro-btn flex-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
+                      className={`kuro-btn flex-1 flex items-center justify-center gap-1 ${collectionView === 'weapons' ? 'active-pink' : ''}`}
                       title={t('collection.view.weapons')}
                       aria-label={t('collection.view.viewWeapons')}
                       aria-pressed={collectionView === 'weapons'}
                     >
-                      <img src="./navicon/Icon_Weapons.webp" alt="" className="inline w-4 h-4 mr-1 object-contain" />{t('collection.view.weapons')}
+                      <img src="./navicon/Icon_Weapons.webp" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.weapons')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('echoes'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
-                      className={`kuro-btn flex-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
+                      className={`kuro-btn flex-1 flex items-center justify-center gap-1 ${collectionView === 'echoes' ? 'active-cyan' : ''}`}
                       title={t('collection.view.echoes')}
                       aria-label={t('collection.view.viewEchoes')}
                       aria-pressed={collectionView === 'echoes'}
                     >
-                      <img src="./navicon/Icon_Echoe.webp" alt="" className="inline w-4 h-4 mr-1 object-contain" />{t('collection.view.echoes')}
+                      <img src="./navicon/Icon_Echoe.webp" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.echoes')}
                     </button>
                   </div>
                 </CardBody>
