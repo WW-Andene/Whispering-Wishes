@@ -150,6 +150,7 @@ function TrackerTab({
                     visualSettings={visualSettings}
                     endDate={bannerEndDate}
                     timerColor="yellow"
+                    collectionImages={collectionImages}
                   />
                 )) : (
                   <div className="kuro-empty-state text-center py-8">
@@ -178,6 +179,7 @@ function TrackerTab({
                     visualSettings={visualSettings}
                     endDate={bannerEndDate}
                     timerColor="pink"
+                    collectionImages={collectionImages}
                   />
                 )) : (
                   <div className="kuro-empty-state text-center py-8">

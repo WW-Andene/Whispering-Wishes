@@ -80,7 +80,7 @@ const generateMaskGradient = (fadePos, fadeIntensity) => {
 
 
 
-const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor }) => {
+const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor, collectionImages }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
@@ -160,12 +160,13 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-2 flex-wrap">
             {(item.featured4Stars || []).map(n => {
+              const previewImg = (collectionImages || DEFAULT_COLLECTION_IMAGES)[n];
               return (
                 <div key={n} className="inline-flex flex-col items-center gap-0.5">
-                  {DEFAULT_COLLECTION_IMAGES[n] && (
+                  {previewImg && (
                     <div className="w-12 h-12 rounded-md overflow-hidden border border-cyan-400/40">
                       <img
-                        src={DEFAULT_COLLECTION_IMAGES[n]}
+                        src={previewImg}
                         alt=""
                         aria-hidden="true"
                         className="w-full h-full object-cover"
