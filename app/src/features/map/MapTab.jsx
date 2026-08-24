@@ -2785,7 +2785,7 @@ export default function MapTab({ navPadding = 80 }) {
           </div>
           <div className="w-full h-48 flex items-center justify-center overflow-hidden" style={{ background: 'var(--bg-btn)' }}>
             <img
-              src="https://i.ibb.co/jZQdMWr1/wuthering-waves-seems-like-abby-will-be-featured-in-new-v0-8kca82nabwbd1-1.png"
+              src="/misc-assets/jZQdMWr1-abby-teaser.png"
               alt=""
               className="object-cover"
               style={{ width: '80%', height: '80%' }}

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Walks app/public/{portraits,animated-bg,spine}/ and emits a flat list of
+// Walks app/public/{portraits,animated-bg,spine,characters,banners,echoes,
+// materials,misc-assets}/ and emits a flat list of
 // every file's URL path to app/public/dev/asset-manifest.json. Used by the
 // "Download for offline" feature (ProfileTab → OfflineAssetsCard) to bulk-
 // fetch these directories into the service worker's persistent cache.
@@ -14,13 +15,14 @@
 // src/providers/tileSW.js already computes its full tile list mathematically
 // from the known tile-pyramid dimensions.
 //
-// A fourth "icons" category is scraped separately, below: character/weapon/
-// echo/skill icons aren't files in public/ at all — they're hotlinked from
-// third-party hosts (i.ibb.co, wuwatracker.com, wuwa.gg, static.nanoka.cc)
-// straight in src/data/*.js. There's no directory to walk, so instead we
-// regex every such URL out of those files. No file size is known ahead of
-// time for these (unlike local files), so totalBytes for this category is
-// left at 0 — the UI just won't show a size estimate for it.
+// A final "icons" category is scraped separately, below: character/weapon/
+// echo/skill icons formerly hotlinked from i.ibb.co have all been downloaded
+// into app/public/{characters,banners,echoes,materials}/ and are covered by
+// the directory walk above. What's left hotlinked (monster head icons from
+// static.nanoka.cc, and any wuwatracker.com/wuwa.gg references) still has no
+// local copy, so we still regex those URLs out of src/data/*.js. No file size
+// is known ahead of time for these, so totalBytes for this category is left
+// at 0 — the UI just won't show a size estimate for it.
 //
 //   node tools/build-asset-manifest.mjs
 
@@ -32,7 +34,7 @@ const here = path.dirname(url.fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..');
 const publicDir = path.join(repoRoot, 'app/public');
 const srcDataDir = path.join(repoRoot, 'app/src/data');
-const DIRS = ['portraits', 'animated-bg', 'spine'];
+const DIRS = ['portraits', 'animated-bg', 'spine', 'characters', 'banners', 'echoes', 'materials', 'misc-assets'];
 const ICON_HOSTS = ['i.ibb.co', 'wuwatracker.com', 'wuwa.gg', 'static.nanoka.cc'];
 const ICON_URL_RE = new RegExp(
   `https?://(?:${ICON_HOSTS.map(h => h.replace(/\./g, '\\.')).join('|')})/[^"'\`)\\s]+?\\.(?:webp|png|jpg|jpeg)`,
