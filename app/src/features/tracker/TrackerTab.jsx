@@ -105,10 +105,10 @@ function TrackerTab({
                 <button onClick={() => setDismissedImport(true)} className="kuro-btn kuro-btn-sm flex-shrink-0 p-2" aria-label={t('tracker.dismiss')}><X size={16} /></button>
               </div>
             )}
-            {/* Category Tabs — 3:1 header card (192x64 reference, CLAUDE.md) */}
-            <Card style={{ height: 64 }}>
-              <CardBody className="h-full flex items-center">
-                <div className="flex gap-2 w-full" role="tablist" aria-label={t('tracker.ariaCategory')} onKeyDown={(e) => {
+            {/* Category Tabs */}
+            <Card>
+              <CardBody>
+                <div className="flex gap-2" role="tablist" aria-label={t('tracker.ariaCategory')} onKeyDown={(e) => {
                     const keys = TRACKER_CATEGORIES.map(c => c.key);
                     const idx = keys.indexOf(trackerCategory);
                     let next;
