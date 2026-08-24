@@ -415,6 +415,7 @@ function TeamsTab({
                             } catch { toast?.addToast?.(t('teams.tab.exportFailed'), 'error'); }
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.exportAria')}
                         >
                           <Download size={12} />
@@ -455,6 +456,7 @@ function TeamsTab({
                             input.click();
                           }}
                           className="kuro-btn kuro-btn-sm kuro-btn-primary text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.importAria')}
                         >
                           <Upload size={12} />
@@ -485,6 +487,7 @@ function TeamsTab({
                             } catch { toast?.addToast?.(t('teams.tab.shareFailed'), 'error'); }
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.copyAria')}
                         >
                           <Share2 size={12} />
@@ -519,6 +522,7 @@ function TeamsTab({
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
                           title={teamCompareEntries.length >= 5 ? t('teams.tab.compareMax') : !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s) ? t('teams.tab.compareNeedChars') : t('teams.tab.compareAdd')}
                           className="kuro-btn kuro-btn-sm kuro-btn-primary active-gold text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.compareAria')}
                         >
                           {t('teams.tab.compareLabel')}
@@ -533,6 +537,7 @@ function TeamsTab({
                             haptic.success();
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.saveAria')}
                           title={t('teams.tab.saveTitle')}
                         >
@@ -541,6 +546,7 @@ function TeamsTab({
                         <button
                           onClick={() => setShowPresetDropdown(prev => !prev)}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.loadAria')}
                           aria-expanded={showPresetDropdown}
                           title={t('teams.tab.loadTitle')}
@@ -568,6 +574,7 @@ function TeamsTab({
                             haptic.medium();
                           } }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.clearAllSlotsAria')}
                         >
                           <Trash2 size={12} />

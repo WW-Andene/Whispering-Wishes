@@ -522,7 +522,7 @@ function PlannerTab({
         {!collapsed.farm && (
           <CardBody className="space-y-3">
             {/* Add Resonator button */}
-            <button onClick={() => { setFarmPickerOpen(true); setFarmSearch(''); }} className="kuro-btn w-full active-gold" style={{ padding: '10px' }}>
+            <button onClick={() => { setFarmPickerOpen(true); setFarmSearch(''); }} className="kuro-btn w-full active-gold" style={{ padding: '8px' }}>
               <Plus size={14} className="inline mr-1.5" />{t('planner.addResonator')}
             </button>
 
