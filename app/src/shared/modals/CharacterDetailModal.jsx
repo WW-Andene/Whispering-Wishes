@@ -705,6 +705,27 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                         </div>
                       </div>
                     )}
+                    {/* Full roster of echoes carrying each recommended set, name+icon, one horizontal
+                        scroll row per set part — lets the player see every echo they could slot in. */}
+                    {setParts.map((part, pi) => {
+                      const setName = part.replace(/\s+\d+\s*pc$/i, '').trim();
+                      const setEchoes = Object.entries(ECHO_DATA)
+                        .filter(([, e]) => e.sets?.includes(setName))
+                        .map(([echoName, e]) => ({ echoName, iconUrl: e.iconUrl }));
+                      if (!setEchoes.length) return null;
+                      return (
+                        <div key={`set-echoes-${pi}`} className="flex items-center gap-2 overflow-x-auto pb-1">
+                          {setEchoes.map(({ echoName, iconUrl }) => (
+                            <div key={echoName} className="flex flex-col items-center gap-1 flex-shrink-0 w-16">
+                              <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center overflow-hidden flex-shrink-0">
+                                {iconUrl ? <img src={iconUrl} alt={echoName} className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={12} className="text-purple-400" />}
+                              </div>
+                              <div className="text-[10px] text-gray-400 text-center leading-tight line-clamp-2">{echoName}</div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}
