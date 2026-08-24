@@ -671,15 +671,16 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // An elemDmg buff only helps this DPS if its condition (when present) actually names their
     // element or "all" — otherwise it's a buff for a different attribute that does nothing here.
     const elemBuffApplies = (b) => { const cond = (b.condition || '').toLowerCase(); return !cond || cond.includes(dpsEl) || cond.includes('all'); };
-    // deepen/offTune were previously treated as always-universal (no gate at all), but several
-    // kits' deepen/offTune amps are explicitly locked to their OWN element/mechanic in free-text
-    // condition (e.g. Ciaccona's outro: "Aero Erosion DMG Amp only"; Phoebe's outro: "Spectro Frazzle
-    // DMG Amp (Confession)") — those did nothing for an off-element DPS but still scored full uplift,
-    // which is exactly how both got phantom-recommended as top-8 teammates for Aemeath (Fusion, no
-    // Frazzle/Erosion in her kit). Reuses the same named-element check as elemDmg/allDmg, but only
-    // rejects when the condition explicitly names a DIFFERENT element than the DPS's own — a deepen
-    // buff with no element mentioned at all (most of them: pure activation-trigger conditions) stays
-    // universal, since unlike elemDmg it was never scoped to "this element or nothing" by convention.
+    // deepen/offTune/allDmg were previously treated as always-universal (no gate at all), but several
+    // kits' amps are explicitly locked to their OWN element/mechanic in free-text condition (e.g.
+    // Ciaccona's outro: "Aero Erosion DMG Amp only"; Phoebe's outro: "Spectro Frazzle DMG Amp
+    // (Confession)") — those did nothing for an off-element DPS but still scored full uplift, which is
+    // exactly how both got phantom-recommended as top-8 teammates for Aemeath (Fusion, no
+    // Frazzle/Erosion in her kit). Unlike elemDmg (genuinely element-scoped, needs elemBuffApplies'
+    // strict "names this element or says all" check), these three stats are universal BY DEFAULT —
+    // this only rejects when the condition explicitly names a DIFFERENT element than the DPS's own. A
+    // condition with no element mentioned at all (most of them: pure activation-trigger text, e.g.
+    // Denia's "Tune Strain mode..." allDmg outro) stays universal, exactly as its stat name promises.
     const ELEMENT_NAMES = ['fusion', 'spectro', 'aero', 'glacio', 'electro', 'havoc'];
     const deepenBuffApplies = (b) => {
       const cond = (b.condition || '').toLowerCase();
@@ -695,8 +696,17 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     const typeFocusMap = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', echoDmg: 'Echo', coordDmg: 'Coordinated ATK', skillDmg: 'Skill' };
     const buffApplies = (b) => {
       if (typeFocusMap[b.stat]) return dpsFocus.includes(typeFocusMap[b.stat]);
-      if (b.stat === 'elemDmg' || b.stat === 'allDmg') return elemBuffApplies(b);
-      if (b.stat === 'deepen' || b.stat === 'offTune') return deepenBuffApplies(b);
+      // elemDmg is genuinely element-scoped by definition, so it needs the strict check: condition
+      // must explicitly name this DPS's element or say "all" (elemBuffApplies).
+      if (b.stat === 'elemDmg') return elemBuffApplies(b);
+      // allDmg means "All-Attribute DMG" by its own stat name — it is NOT element-scoped, so routing
+      // it through elemBuffApplies (which requires the condition to literally contain "all" or the
+      // DPS's element) was wrongly rejecting real allDmg buffs whose condition text only describes an
+      // unrelated activation trigger (Denia's "Tune Strain mode..." outro, Suisui's "400+ Floral
+      // Epistle consumed..." outro — neither mentions any element or the word "all", so both scored
+      // zero synergy for every DPS, including a perfectly-matched one). Same off-element-mismatch-only
+      // gate as deepen/offTune below is the correct check here.
+      if (b.stat === 'allDmg' || b.stat === 'deepen' || b.stat === 'offTune') return deepenBuffApplies(b);
       return true; // atkPct/critRate/critDmg are universal, no gate needed
     };
     // Score any buff generically via real formula-derived uplift — this is what lets a completely
