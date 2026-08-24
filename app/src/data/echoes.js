@@ -459,6 +459,107 @@ const ECHO_SKILL_BUFFS = {
   'Reminiscence - Nightmare: Adam Smasher': { buffs: [{ stat: 'critRate', value: 15 }], passive: true, condition: 'Lucy or Rebecca' },
 };
 
+// [SECTION:GENERIC_SONATA_LOADOUT] — full 5-echo (4/3/3/1/1 cost) loadout builder.
+// Community build guides (Prydwen, Beebom, nanoka, etc.) only ever name a specific echo for the
+// cost-4 main slot — the other 4 slots exist purely to complete the set bonus, so guides just say
+// "any echo of set X". Rather than fabricate names nobody's guide actually recommends, this fills
+// those slots with a real, verifiable echo that carries the right set at the right cost tier (first
+// match in ALL_3COST_ECHOES/ALL_1COST_ECHOES), and pairs each slot with the generic main-stat
+// priority WW players target for that cost tier (Crit DMG/Crit Rate on cost-3, ATK%/HP%/DEF% on
+// cost-1) — a placeholder representative, not a claimed "this exact echo" recommendation.
+const isSetSlot = (s) => /\d\s*pc\b/i.test(s || '');
+const splitEchoLabel = (s) => {
+  const m = /^(.*?)\s*\(([^)]+)\)\s*$/.exec(s || '');
+  return m ? { text: m[1].trim(), label: m[2].trim() } : { text: (s || '').trim(), label: null };
+};
+const findEchoOfSet = (setName, costList) => {
+  const inTier = costList.find(e => ECHO_DATA[e]?.sets?.includes(setName));
+  if (inTier) return inTier;
+  // Fallback: the set has no echo at this cost tier — use whatever tier it does have one in.
+  return [ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES].flat().find(e => ECHO_DATA[e]?.sets?.includes(setName)) || null;
+};
+// Standard WW main-stat convention: the cost-4 slot (largest guaranteed roll) carries Crit DMG, one
+// cost-3 slot carries Crit Rate (targeting the ~1:2 Crit Rate:Crit DMG ratio), and the other cost-3
+// carries the build's own Elemental DMG% (echoes can't roll their own set's DMG% as a main stat, so
+// this is always the *character's* element, not necessarily the sonata's). Cost-1 echoes can't roll
+// Crit or Elemental DMG% at all, so they default to ATK% (or the character's scaling stat).
+const cost4MainStat = (statScaling) => statScaling === 'HP' ? 'Healing Bonus' : 'Crit DMG';
+const cost3MainStats = (statScaling, element) => statScaling === 'HP' ? ['Healing Bonus', 'Energy Regen'] : ['Crit Rate', element ? `${element} DMG` : 'ATK%'];
+const cost1MainStats = (statScaling) => statScaling === 'HP' ? ['HP%', 'HP%'] : statScaling === 'DEF' ? ['DEF%', 'DEF%'] : ['ATK%', 'ATK%'];
+
+/**
+ * Builds full 5-echo (cost 4/3/3/1/1) generic loadouts from a character's `bestEchoes` array.
+ * Returns [{ sonataName, sonataElement, sonataSetName, label, slots: [{ cost, name, iconUrl, mainStat, generic }] }].
+ * `sonataElement` is the sonata's own ECHO_SETS element (a DMG element, or 'Heal'/'Support'/'ATK'/
+ * 'Shield' for non-elemental sets); `sonataSetName` is the primary set's exact name — together they
+ * let the UI color the sonata name/main-echo highlight in the UI.
+ * `generic: true` on a slot marks it as a representative pick (any echo of that set/cost works),
+ * as opposed to the cost-4 slot, which is the community-sourced named recommendation.
+ * `element` is the character's own element (for the cost-3 Elemental DMG% slot) — distinct from the
+ * sonata's element, since echoes can't roll their own set's DMG% as a main stat.
+ */
+export function getSonataLoadouts(bestEchoes, statScaling, element) {
+  if (!bestEchoes?.length) return [];
+  const rows = [];
+  for (let i = 0; i < bestEchoes.length; i++) {
+    const entry = bestEchoes[i];
+    if (isSetSlot(entry)) { rows.push({ main: null, set: entry }); }
+    else {
+      const next = bestEchoes[i + 1];
+      if (next && isSetSlot(next)) { rows.push({ main: entry, set: next }); i++; }
+      else { rows.push({ main: entry, set: null }); }
+    }
+  }
+  return rows.map((row) => {
+    const main = row.main ? splitEchoLabel(row.main) : null;
+    const setSlot = row.set ? splitEchoLabel(row.set) : null;
+    const setParts = setSlot ? setSlot.text.split('+').map(p => p.trim()).filter(Boolean) : [];
+    // e.g. "Wishes of Quiet Snowfall 5pc" → { name: 'Wishes of Quiet Snowfall', count: 5 }
+    const parsedSets = setParts.map(p => {
+      const m = /^(.*?)\s+(\d+)\s*pc$/i.exec(p);
+      return m ? { name: m[1].trim(), count: parseInt(m[2], 10) } : { name: p.replace(/\s+\d+\s*pc$/i, '').trim(), count: 5 };
+    });
+    const sonataName = parsedSets.map(s => s.name).join(' + ') || (main ? (ECHO_DATA[main.text]?.sets?.[0] || '') : '');
+    const label = setSlot?.label || main?.label || null;
+    // The sonata's own "element" per ECHO_SETS — not always a DMG element (can be 'Heal'/'Support'/
+    // 'ATK'/'Shield') — plus the primary set's own name, both used by the UI to color the sonata
+    // name and highlight the main echo slot (the 6 DMG-element sets use the app's standard element
+    // colors; the Heal/Support/ATK/Shield sets are keyed by name to a color sampled from their own
+    // icon artwork, since there's no shared brand color for those categories).
+    const primarySetName = parsedSets[0]?.name || (main ? ECHO_DATA[main.text]?.sets?.[0] : null) || null;
+    const sonataElement = primarySetName ? ECHO_SETS[primarySetName]?.element || null : null;
+    if (!parsedSets.length && !main) return { sonataName, sonataElement, sonataSetName: primarySetName, label, slots: [] };
+
+    // How many of the 4 non-main slots belong to each set, honoring "3pc + 2pc" splits (main echo
+    // itself already counts as 1 piece toward the first-listed set).
+    const remainingCounts = parsedSets.map((s, i) => Math.max(0, s.count - (i === 0 && main ? 1 : 0)));
+    const setQueue = [];
+    parsedSets.forEach((s, i) => { for (let n = 0; n < remainingCounts[i]; n++) setQueue.push(s.name); });
+    while (setQueue.length < 4 && parsedSets.length) setQueue.push(parsedSets[setQueue.length % parsedSets.length].name);
+    // A row can list just a main echo with no explicit set (e.g. an alt main-echo pick alongside a
+    // full [main, set] row elsewhere in the same build list) — fall back to that echo's own set so
+    // the cost-3/cost-1 slots still fill in rather than being left empty.
+    const primarySet = primarySetName;
+
+    const cost4Name = main ? main.text : (primarySet ? findEchoOfSet(primarySet, ALL_4COST_ECHOES) : null);
+    const c3Stats = cost3MainStats(statScaling, element);
+    const c1Stats = cost1MainStats(statScaling);
+    const slots = [];
+    if (cost4Name) slots.push({ cost: 4, name: cost4Name, iconUrl: ECHO_DATA[cost4Name]?.iconUrl || null, mainStat: cost4MainStat(statScaling), generic: !main });
+    [0, 1].forEach((n) => {
+      const setName = setQueue[n] || primarySet;
+      const name = setName ? findEchoOfSet(setName, ALL_3COST_ECHOES) : null;
+      if (name) slots.push({ cost: 3, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c3Stats[n], generic: true });
+    });
+    [2, 3].forEach((n) => {
+      const setName = setQueue[n] || primarySet;
+      const name = setName ? findEchoOfSet(setName, ALL_1COST_ECHOES) : null;
+      if (name) slots.push({ cost: 1, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c1Stats[n - 2], generic: true });
+    });
+    return { sonataName, sonataElement, sonataSetName: primarySetName, label, slots };
+  });
+}
+
 // Per-level (1-120) HP/ATK/DEF for boss echoes, sourced from nanoka.cc's static monster data
 // (static.nanoka.cc/ww/3.6/en/monster/<id>.json, matched by echo id). Index 0 = level 1 ... index
 // 119 = level 120 (120 is the ceiling nanoka's own level slider exposes for these bosses — Tower/
