@@ -67,7 +67,7 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId, accentColor 
       <div className={`relative z-10 p-[6px] flex items-center justify-center transition-all duration-300 ${active && !accent ? 'bg-yellow-500/25 shadow-lg shadow-yellow-500/25' : !active ? 'group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5' : ''}`} style={{ borderRadius: '6px', ...(active ? { filter: `drop-shadow(0 0 3px ${accent ? accent + '80' : 'rgba(237,175,24,0.5)'})`, ...(accent ? { background: accent + '30', boxShadow: `0 10px 15px -3px ${accent}40` } : {}) } : { filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.35))' }) }}>
         {icon}
       </div>
-      <span className="relative z-10 leading-none">{text}</span>
+      <span className="relative z-10 leading-none mt-1">{text}</span>
     </button>
   );
 });
