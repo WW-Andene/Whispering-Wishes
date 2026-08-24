@@ -432,7 +432,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewResonators')}
                       aria-pressed={collectionView === 'items'}
                     >
-                      <img src="./navicon/Characters.webp" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.resonators')}
+                      <img src="./navicon/Icon_Resonator.png" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.resonators')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('weapons'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
@@ -441,7 +441,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewWeapons')}
                       aria-pressed={collectionView === 'weapons'}
                     >
-                      <img src="./navicon/Icon_Weapons.webp" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.weapons')}
+                      <img src="./navicon/Icon_Weapon.png" alt="" className="w-5 h-5 object-contain shrink-0" />{t('collection.view.weapons')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('echoes'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
