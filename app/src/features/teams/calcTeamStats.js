@@ -999,7 +999,12 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
               if (b.stat === 'atkPct') {
                 sStats.atkPct += m.scaling === 'ATK' ? val : val * 0.25;
               } else if (['allDmg', 'elemDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'skillDmg'].includes(b.stat)) {
-                applyBuff(sStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsElLower: subElLower });
+                // Type-focus gate (dpsFocus) was missing here even though the main-DPS tier enforces it
+                // (routeTypeBonuses' own gate, mirrored by applyBuff's TYPE_FOCUS_MAP) -- a real support
+                // with a type-specific outro (Iuno's 50% Heavy ATK Amp, Lucy's Basic ATK Amp, Qiuyuan's
+                // Echo Amp, etc., 14 characters carry one) applied its full value to ANY sub-DPS
+                // regardless of whether that sub-DPS's own dmgFocus includes that attack type at all.
+                applyBuff(sStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsFocus: focus, dpsElLower: subElLower });
               } else if (b.stat === 'deepen') {
                 applyBuff(sStats, 'deepen', val, { condition: b.condition, dpsElLower: subElLower });
               } else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'resShred' || b.stat === 'defShred') {
