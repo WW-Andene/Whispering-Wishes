@@ -33,9 +33,14 @@ const DETAIL_ELEMENT_COLORS = {
   Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50', hex: '#ec4899' },
   Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', hex: '#edaf18' },
 };
-// Sonata (echo set) colors — reuses the 6 damage-element colors above, plus the non-elemental
-// ECHO_SETS.element values (Heal/Support/ATK/Shield) sets can carry. Used to color the sonata name
-// and highlight the main echo slot in the Recommended Echoes section, matching the sonata's own hue.
+// Sonata (echo set) colors, for the Recommended Echoes section's sonata name + main-echo highlight.
+// The 6 DMG-element sets use the app's standard element colors (same hues as the header/element
+// badges elsewhere) — these are a real, consistent brand convention, not a guess. The 12 sets whose
+// ECHO_SETS.element is non-elemental (Heal/Support/ATK/Shield) have no such convention, so each is
+// keyed by its own set name to a color actually sampled from its in-game icon artwork (SET_ICONS in
+// helpers.js) — average hue of the icon's saturated pixels, brightened for legibility on a dark
+// background but not reassigned to an arbitrary category color (e.g. Moonlit Clouds' icon is a
+// muted slate-blue, not the violet a "Support" default would have implied).
 const SONATA_ELEMENT_COLORS = {
   Fusion: { text: 'text-orange-400', border: 'border-orange-500/60', ring: 'ring-orange-500/60', bg: 'bg-orange-500/10' },
   Electro: { text: 'text-purple-400', border: 'border-purple-500/60', ring: 'ring-purple-500/60', bg: 'bg-purple-500/10' },
@@ -43,10 +48,22 @@ const SONATA_ELEMENT_COLORS = {
   Glacio: { text: 'text-cyan-400', border: 'border-cyan-500/60', ring: 'ring-cyan-500/60', bg: 'bg-cyan-500/10' },
   Havoc: { text: 'text-pink-400', border: 'border-pink-500/60', ring: 'ring-pink-500/60', bg: 'bg-pink-500/10' },
   Spectro: { text: 'text-yellow-400', border: 'border-yellow-500/60', ring: 'ring-yellow-500/60', bg: 'bg-yellow-500/10' },
-  Heal: { text: 'text-green-400', border: 'border-green-500/60', ring: 'ring-green-500/60', bg: 'bg-green-500/10' },
-  Support: { text: 'text-violet-400', border: 'border-violet-500/60', ring: 'ring-violet-500/60', bg: 'bg-violet-500/10' },
-  ATK: { text: 'text-amber-400', border: 'border-amber-500/60', ring: 'ring-amber-500/60', bg: 'bg-amber-500/10' },
-  Shield: { text: 'text-blue-400', border: 'border-blue-500/60', ring: 'ring-blue-500/60', bg: 'bg-blue-500/10' },
+};
+// Sampled from each set's actual SET_ICONS artwork (see helpers.js) — full literal Tailwind
+// arbitrary-value classes, one const per set, so the JIT scanner can find them at build time.
+const SONATA_SET_COLORS = {
+  'Rejuvenating Glow': { text: 'text-[#9dd247]', border: 'border-[#9dd247]/60', ring: 'ring-[#9dd247]/60', bg: 'bg-[#9dd247]/10' },
+  'Moonlit Clouds': { text: 'text-[#7480aa]', border: 'border-[#7480aa]/60', ring: 'ring-[#7480aa]/60', bg: 'bg-[#7480aa]/10' },
+  'Lingering Tunes': { text: 'text-[#d14b47]', border: 'border-[#d14b47]/60', ring: 'ring-[#d14b47]/60', bg: 'bg-[#d14b47]/10' },
+  'Crown of Valor': { text: 'text-[#bc8d5d]', border: 'border-[#bc8d5d]/60', ring: 'ring-[#bc8d5d]/60', bg: 'bg-[#bc8d5d]/10' },
+  'Law of Harmony': { text: 'text-[#7091c9]', border: 'border-[#7091c9]/60', ring: 'ring-[#7091c9]/60', bg: 'bg-[#7091c9]/10' },
+  'Empyrean Anthem': { text: 'text-[#6f90c6]', border: 'border-[#6f90c6]/60', ring: 'ring-[#6f90c6]/60', bg: 'bg-[#6f90c6]/10' },
+  'Tidebreaking Courage': { text: 'text-[#7598a3]', border: 'border-[#7598a3]/60', ring: 'ring-[#7598a3]/60', bg: 'bg-[#7598a3]/10' },
+  'Halo of Starry Radiance': { text: 'text-[#a1d345]', border: 'border-[#a1d345]/60', ring: 'ring-[#a1d345]/60', bg: 'bg-[#a1d345]/10' },
+  'Song of Feathered Trace': { text: 'text-[#a79a81]', border: 'border-[#a79a81]/60', ring: 'ring-[#a79a81]/60', bg: 'bg-[#a79a81]/10' },
+  'Lamp of Nether Road': { text: 'text-[#c46e54]', border: 'border-[#c46e54]/60', ring: 'ring-[#c46e54]/60', bg: 'bg-[#c46e54]/10' },
+  'Reel of Spliced Memories': { text: 'text-[#7293c9]', border: 'border-[#7293c9]/60', ring: 'ring-[#7293c9]/60', bg: 'bg-[#7293c9]/10' },
+  'Shadow of Shattered Dreams': { text: 'text-[#d54a43]', border: 'border-[#d54a43]/60', ring: 'ring-[#d54a43]/60', bg: 'bg-[#d54a43]/10' },
 };
 const DEFAULT_SONATA_COLOR = { text: 'text-purple-400', border: 'border-purple-500/60', ring: 'ring-purple-500/60', bg: 'bg-purple-500/10' };
 // Mixes a hex color toward an {r,g,b} target by `amount` (0-1), at `alpha` opacity.
@@ -663,7 +680,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             <div className="kuro-section-label mb-2">{t('modals.characterDetail.recommendedEchoes')}</div>
             <div className="space-y-4">
               {loadouts.map((build, idx) => {
-                const sc = SONATA_ELEMENT_COLORS[build.sonataElement] || DEFAULT_SONATA_COLOR;
+                const sc = SONATA_SET_COLORS[build.sonataSetName] || SONATA_ELEMENT_COLORS[build.sonataElement] || DEFAULT_SONATA_COLOR;
                 return (
                 <div key={idx} className="space-y-2">
                   {showBuildLabels && (

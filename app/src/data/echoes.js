@@ -489,9 +489,10 @@ const cost1MainStats = (statScaling) => statScaling === 'HP' ? ['HP%', 'HP%'] : 
 
 /**
  * Builds full 5-echo (cost 4/3/3/1/1) generic loadouts from a character's `bestEchoes` array.
- * Returns [{ sonataName, sonataElement, label, slots: [{ cost, name, iconUrl, mainStat, generic }] }].
+ * Returns [{ sonataName, sonataElement, sonataSetName, label, slots: [{ cost, name, iconUrl, mainStat, generic }] }].
  * `sonataElement` is the sonata's own ECHO_SETS element (a DMG element, or 'Heal'/'Support'/'ATK'/
- * 'Shield' for non-elemental sets) — for coloring the sonata name/main-echo highlight in the UI.
+ * 'Shield' for non-elemental sets); `sonataSetName` is the primary set's exact name — together they
+ * let the UI color the sonata name/main-echo highlight in the UI.
  * `generic: true` on a slot marks it as a representative pick (any echo of that set/cost works),
  * as opposed to the cost-4 slot, which is the community-sourced named recommendation.
  * `element` is the character's own element (for the cost-3 Elemental DMG% slot) — distinct from the
@@ -521,10 +522,13 @@ export function getSonataLoadouts(bestEchoes, statScaling, element) {
     const sonataName = parsedSets.map(s => s.name).join(' + ') || (main ? (ECHO_DATA[main.text]?.sets?.[0] || '') : '');
     const label = setSlot?.label || main?.label || null;
     // The sonata's own "element" per ECHO_SETS — not always a DMG element (can be 'Heal'/'Support'/
-    // 'ATK'/'Shield') — used by the UI to color the sonata name and highlight the main echo slot.
+    // 'ATK'/'Shield') — plus the primary set's own name, both used by the UI to color the sonata
+    // name and highlight the main echo slot (the 6 DMG-element sets use the app's standard element
+    // colors; the Heal/Support/ATK/Shield sets are keyed by name to a color sampled from their own
+    // icon artwork, since there's no shared brand color for those categories).
     const primarySetName = parsedSets[0]?.name || (main ? ECHO_DATA[main.text]?.sets?.[0] : null) || null;
     const sonataElement = primarySetName ? ECHO_SETS[primarySetName]?.element || null : null;
-    if (!parsedSets.length && !main) return { sonataName, sonataElement, label, slots: [] };
+    if (!parsedSets.length && !main) return { sonataName, sonataElement, sonataSetName: primarySetName, label, slots: [] };
 
     // How many of the 4 non-main slots belong to each set, honoring "3pc + 2pc" splits (main echo
     // itself already counts as 1 piece toward the first-listed set).
@@ -552,7 +556,7 @@ export function getSonataLoadouts(bestEchoes, statScaling, element) {
       const name = setName ? findEchoOfSet(setName, ALL_1COST_ECHOES) : null;
       if (name) slots.push({ cost: 1, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c1Stats[n - 2], generic: true });
     });
-    return { sonataName, sonataElement, label, slots };
+    return { sonataName, sonataElement, sonataSetName: primarySetName, label, slots };
   });
 }
 
