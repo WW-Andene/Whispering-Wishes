@@ -665,7 +665,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Broadblade of Voyager': '/banners/bMYZxLtK-Weapon-Broadblade-of-Voyager.webp',
   'Helios Cleaver': '/banners/Kj719h8m-Weapon-Helios-Cleaver.webp',
   'Dauntless Evernight': '/banners/PvhJ1Cw2-Dauntless-Evernight.webp',
-  'Autumntrace': '/banners/wuwa.gg-images-Items-T_IconWeapon21010074_UI.png', // 4.1 fix: temp source — migrate to ibb.co when available
+  'Autumntrace': '/banners/static.nanoka.cc-T_IconWeapon21010074_UI.webp',
   // 1-Cost Echo images
   'Whiff Whaff': '/banners/DDyTMyQR-Whiff-Whaff-Icon.webp',
   'Snip Snap': '/banners/LDv0brpC-Snip-Snap-Icon.webp',
