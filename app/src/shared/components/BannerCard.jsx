@@ -169,7 +169,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                         alt=""
                         aria-hidden="true"
                         className="w-full h-full object-cover"
-                        style={{ objectPosition: 'center 25%', transform: 'scale(3.5)', transformOrigin: '45% 20%' }}
+                        style={{ objectPosition: 'center 25%', transform: 'scale(3.5)', transformOrigin: '45% 28%' }}
                         onError={hideOnError}
                       />
                     </div>
