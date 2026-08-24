@@ -478,7 +478,13 @@ const findEchoOfSet = (setName, costList) => {
   // Fallback: the set has no echo at this cost tier — use whatever tier it does have one in.
   return [ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES].flat().find(e => ECHO_DATA[e]?.sets?.includes(setName)) || null;
 };
-const cost3MainStats = (statScaling) => statScaling === 'HP' ? ['Healing Bonus', 'Energy Regen'] : ['Crit DMG', 'Crit Rate'];
+// Standard WW main-stat convention: the cost-4 slot (largest guaranteed roll) carries Crit DMG, one
+// cost-3 slot carries Crit Rate (targeting the ~1:2 Crit Rate:Crit DMG ratio), and the other cost-3
+// carries the build's own Elemental DMG% (echoes can't roll their own set's DMG% as a main stat, so
+// this is always the *character's* element, not necessarily the sonata's). Cost-1 echoes can't roll
+// Crit or Elemental DMG% at all, so they default to ATK% (or the character's scaling stat).
+const cost4MainStat = (statScaling) => statScaling === 'HP' ? 'Healing Bonus' : 'Crit DMG';
+const cost3MainStats = (statScaling, element) => statScaling === 'HP' ? ['Healing Bonus', 'Energy Regen'] : ['Crit Rate', element ? `${element} DMG` : 'ATK%'];
 const cost1MainStats = (statScaling) => statScaling === 'HP' ? ['HP%', 'HP%'] : statScaling === 'DEF' ? ['DEF%', 'DEF%'] : ['ATK%', 'ATK%'];
 
 /**
@@ -486,8 +492,10 @@ const cost1MainStats = (statScaling) => statScaling === 'HP' ? ['HP%', 'HP%'] : 
  * Returns [{ sonataName, label, slots: [{ cost, name, iconUrl, mainStat, generic }] }].
  * `generic: true` on a slot marks it as a representative pick (any echo of that set/cost works),
  * as opposed to the cost-4 slot, which is the community-sourced named recommendation.
+ * `element` is the character's own element (for the cost-3 Elemental DMG% slot) — distinct from the
+ * sonata's element, since echoes can't roll their own set's DMG% as a main stat.
  */
-export function getSonataLoadouts(bestEchoes, statScaling) {
+export function getSonataLoadouts(bestEchoes, statScaling, element) {
   if (!bestEchoes?.length) return [];
   const rows = [];
   for (let i = 0; i < bestEchoes.length; i++) {
@@ -518,14 +526,16 @@ export function getSonataLoadouts(bestEchoes, statScaling) {
     const setQueue = [];
     parsedSets.forEach((s, i) => { for (let n = 0; n < remainingCounts[i]; n++) setQueue.push(s.name); });
     while (setQueue.length < 4 && parsedSets.length) setQueue.push(parsedSets[setQueue.length % parsedSets.length].name);
-    const primarySet = parsedSets[0]?.name || null;
+    // A row can list just a main echo with no explicit set (e.g. an alt main-echo pick alongside a
+    // full [main, set] row elsewhere in the same build list) — fall back to that echo's own set so
+    // the cost-3/cost-1 slots still fill in rather than being left empty.
+    const primarySet = parsedSets[0]?.name || (main ? ECHO_DATA[main.text]?.sets?.[0] : null) || null;
 
     const cost4Name = main ? main.text : (primarySet ? findEchoOfSet(primarySet, ALL_4COST_ECHOES) : null);
-    const cost4MainStat = cost4Name ? (ECHO_DATA[cost4Name]?.buff || (primarySet && ECHO_SETS[primarySet] ? `${ECHO_SETS[primarySet].element} DMG` : 'ATK%')) : null;
-    const c3Stats = cost3MainStats(statScaling);
+    const c3Stats = cost3MainStats(statScaling, element);
     const c1Stats = cost1MainStats(statScaling);
     const slots = [];
-    if (cost4Name) slots.push({ cost: 4, name: cost4Name, iconUrl: ECHO_DATA[cost4Name]?.iconUrl || null, mainStat: cost4MainStat, generic: !main });
+    if (cost4Name) slots.push({ cost: 4, name: cost4Name, iconUrl: ECHO_DATA[cost4Name]?.iconUrl || null, mainStat: cost4MainStat(statScaling), generic: !main });
     [0, 1].forEach((n) => {
       const setName = setQueue[n] || primarySet;
       const name = setName ? findEchoOfSet(setName, ALL_3COST_ECHOES) : null;

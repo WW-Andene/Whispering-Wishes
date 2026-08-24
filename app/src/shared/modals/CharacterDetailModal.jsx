@@ -8,13 +8,13 @@ import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, Layout
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, CHAIN_NODE_NAMES, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
 import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
-import { ECHO_DATA, getSonataLoadouts } from '../../data/echoes.js';
+import { getSonataLoadouts } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
 import { calcTeamStats } from '../../features/teams/calcTeamStats.js';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getSetIcon, getCombatRoleIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
@@ -633,129 +633,44 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           )}
 
           {/* Best Echoes - with pictures. bestEchoes is read in [main, set, main, set, ...] pairs — each
-              pair is one recommended build and renders as its own row. A "set" slot may itself combine two
-              partial sets ("X 3pc + Y 2pc"): both set icons are shown side by side for a mixed set. Any
-              trailing "(...)" note (role/purpose, e.g. "(personal DMG)") is pulled out as the row's label. */}
+              pair is one recommended build and renders as its own row: a sonata (set) name heading
+              followed by its full 5-echo (cost 4/3/3/1/1) loadout in a fixed grid so every icon lines up.
+              The cost-4 slot is the community-sourced main echo; the cost-3/cost-1 slots are generic
+              representatives (any echo carrying the same set works — no guide names one specifically),
+              each paired with the standard main-stat priority for that cost tier. Any trailing "(...)"
+              note (role/purpose, e.g. "(personal DMG)") on the source data is pulled out as the row's label. */}
           {data.bestEchoes?.length > 0 && (() => {
-            const isSetSlot = (s) => /\d\s*pc\b/i.test(s || '');
-            const splitLabel = (s) => {
-              const m = /^(.*?)\s*\(([^)]+)\)\s*$/.exec(s || '');
-              return m ? { text: m[1].trim(), label: m[2].trim() } : { text: (s || '').trim(), label: null };
-            };
-            // Group the flat array into [main, set] pairs — a leading entry that's already a set slot
-            // (e.g. a 4★ echo-only character with no unique main echo) stands alone as a set-only row.
-            const rows = [];
-            for (let i = 0; i < data.bestEchoes.length; i++) {
-              const entry = data.bestEchoes[i];
-              if (isSetSlot(entry)) { rows.push({ main: null, set: entry }); }
-              else {
-                const next = data.bestEchoes[i + 1];
-                if (next && isSetSlot(next)) { rows.push({ main: entry, set: next }); i++; }
-                else { rows.push({ main: entry, set: null }); }
-              }
-            }
-            const buildLabelOf = (row) => splitLabel(row.set || row.main).label;
-            const showBuildLabels = rows.length > 1;
-            const loadouts = getSonataLoadouts(data.bestEchoes, data.statScaling);
+            const loadouts = getSonataLoadouts(data.bestEchoes, data.statScaling, data.element);
+            const showBuildLabels = loadouts.length > 1;
             return (
           <div className="kuro-detail-box">
             <div className="kuro-section-label mb-2">{t('modals.characterDetail.recommendedEchoes')}</div>
             <div className="space-y-4">
-              {rows.map((row, idx) => {
-                const main = row.main ? splitLabel(row.main) : null;
-                const mainImg = main ? ECHO_DATA[main.text]?.iconUrl : null;
-                // Split a mixed set slot ("X 3pc + Y 2pc") into its component sets, each resolved to its own icon.
-                const setParts = row.set
-                  ? splitLabel(row.set).text.split('+').map(p => p.trim()).filter(Boolean)
-                  : [];
-                const buildLabel = buildLabelOf(row) || main?.label;
-                return (
-                  <div key={idx} className="space-y-2">
-                    {showBuildLabels && (
-                      <div className="text-gray-500 text-xs font-semibold uppercase tracking-wide">
-                        {t('modals.characterDetail.buildN', { n: idx + 1 })}{buildLabel ? ` — ${buildLabel}` : ''}
-                      </div>
-                    )}
-                    {main && (
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                          {mainImg ? <img src={mainImg} alt="" className="w-full h-full object-cover" onError={hideOnError} /> : <Star size={14} className="text-cyan-400 fill-cyan-400" />}
+              {loadouts.map((build, idx) => (
+                <div key={idx} className="space-y-2">
+                  {showBuildLabels && (
+                    <div className="text-gray-500 text-xs font-semibold uppercase tracking-wide">
+                      {t('modals.characterDetail.buildN', { n: idx + 1 })}{build.label ? ` — ${build.label}` : ''}
+                    </div>
+                  )}
+                  {build.sonataName && (
+                    <div className="text-purple-400 text-base font-bold">{build.sonataName}</div>
+                  )}
+                  {build.slots.length > 0 && (
+                    <div className="grid grid-cols-5 gap-2">
+                      {build.slots.map((slot, si) => (
+                        <div key={si} className="flex flex-col items-center gap-1">
+                          <div className={`w-12 h-12 rounded-lg border flex items-center justify-center overflow-hidden ${slot.generic ? 'bg-white/5 border-[var(--border-medium)]' : 'bg-cyan-500/10 border-cyan-500/30'}`}>
+                            {slot.iconUrl ? <img src={slot.iconUrl} alt={slot.name} className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={12} className="text-purple-400" />}
+                          </div>
+                          <div className="text-[10px] text-gray-300 text-center leading-tight line-clamp-2">{slot.name}</div>
+                          <div className="text-[10px] text-gray-500 text-center leading-tight">{t('modals.characterDetail.echoCost', { cost: slot.cost })}{slot.mainStat ? ` · ${slot.mainStat}` : ''}</div>
                         </div>
-                        <div>
-                          <div className="text-cyan-400 text-base font-bold">{main.text}</div>
-                          <div className="text-gray-400 text-sm">{t('modals.characterDetail.mainEcho')}</div>
-                        </div>
-                      </div>
-                    )}
-                    {/* Full 5-echo (4/3/3/1/1 cost) sonata loadout — the cost-4 slot is the community-
-                        sourced main echo above; the cost-3/cost-1 slots are generic representatives (any
-                        echo carrying the same set works, no guide names one specifically) paired with the
-                        standard main-stat priority for that cost tier. */}
-                    {loadouts[idx]?.slots.length > 0 && (
-                      <div>
-                        <div className="text-gray-500 text-xs font-semibold uppercase tracking-wide mb-1.5">
-                          {t('modals.characterDetail.sonataRecommended')}
-                          {loadouts[idx].sonataName ? <span className="text-gray-300 normal-case font-bold ml-1.5">{loadouts[idx].sonataName}</span> : null}
-                        </div>
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                          {loadouts[idx].slots.map((slot, si) => (
-                            <React.Fragment key={si}>
-                              {si > 0 && <span className="text-gray-600 text-sm flex-shrink-0">/</span>}
-                              <div className="flex flex-col items-center gap-1 flex-shrink-0 w-16">
-                                <div className={`w-12 h-12 rounded-lg border flex items-center justify-center overflow-hidden flex-shrink-0 ${slot.generic ? 'bg-white/5 border-[var(--border-medium)]' : 'bg-cyan-500/10 border-cyan-500/30'}`}>
-                                  {slot.iconUrl ? <img src={slot.iconUrl} alt={slot.name} className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={12} className="text-purple-400" />}
-                                </div>
-                                <div className="text-[10px] text-gray-300 text-center leading-tight line-clamp-2">{slot.name}</div>
-                                <div className="text-[10px] text-gray-500 text-center leading-tight">{t('modals.characterDetail.echoCost', { cost: slot.cost })}{slot.mainStat ? ` · ${slot.mainStat}` : ''}</div>
-                              </div>
-                            </React.Fragment>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {setParts.length > 0 && (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center flex-shrink-0">
-                          {setParts.map((part, pi) => {
-                            const setName = part.replace(/\s+\d+\s*pc$/i, '').trim();
-                            const setImg = getSetIcon(setName);
-                            return (
-                              <div key={pi} className={`w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/30 flex items-center justify-center overflow-hidden ${pi > 0 ? '-ml-2' : ''}`}>
-                                {setImg ? <img src={setImg} alt="" className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={14} className="text-purple-400" />}
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <div>
-                          <div className="text-purple-400 text-base font-bold">{setParts.join(' + ')}</div>
-                          <div className="text-gray-400 text-sm">{setParts.length > 1 ? t('modals.characterDetail.mixedEchoSet') : t('modals.characterDetail.echoSet')}</div>
-                        </div>
-                      </div>
-                    )}
-                    {/* Full roster of echoes carrying each recommended set, name+icon, one horizontal
-                        scroll row per set part — lets the player see every echo they could slot in. */}
-                    {setParts.map((part, pi) => {
-                      const setName = part.replace(/\s+\d+\s*pc$/i, '').trim();
-                      const setEchoes = Object.entries(ECHO_DATA)
-                        .filter(([, e]) => e.sets?.includes(setName))
-                        .map(([echoName, e]) => ({ echoName, iconUrl: e.iconUrl }));
-                      if (!setEchoes.length) return null;
-                      return (
-                        <div key={`set-echoes-${pi}`} className="flex items-center gap-2 overflow-x-auto pb-1">
-                          {setEchoes.map(({ echoName, iconUrl }) => (
-                            <div key={echoName} className="flex flex-col items-center gap-1 flex-shrink-0 w-16">
-                              <div className="w-12 h-12 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center overflow-hidden flex-shrink-0">
-                                {iconUrl ? <img src={iconUrl} alt={echoName} className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={12} className="text-purple-400" />}
-                              </div>
-                              <div className="text-[10px] text-gray-400 text-center leading-tight line-clamp-2">{echoName}</div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
             );
