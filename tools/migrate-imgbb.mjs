@@ -35,7 +35,10 @@ for (const url of urls) {
   const safeName = rawName.replace(/[^a-zA-Z0-9._-]/g, '_');
   const localName = `${id}-${safeName}`;
   const localFsPath = path.join(outDir, localName);
-  const localWebPath = `/${category}/${localName}`;
+  // Relative (not root-absolute) — this app is served from arbitrary subpaths
+  // (see vite.config.js's `base: './'`), so a leading '/' 404s under any
+  // non-root deployment. Match the existing ./navicon/, ./Background/ etc. convention.
+  const localWebPath = `./${category}/${localName}`;
   mapping.set(url, localWebPath);
 
   if (dryRun) continue;
