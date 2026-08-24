@@ -792,9 +792,19 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
   if (els.length > elSet.size) { score += 12; tags.push('Resonance'); }
   if (elSet.size === 1 && els.length > 1) { score += 8; tags.push('Mono'); }
   // BiS weapon
-  let hasBis = false;
-  members.forEach(m => { const d = CHARACTER_DATA[m]; if (d?.bestWeapon && ownedWeaps.has(d.bestWeapon)) { score += d.role === 'Main DPS' ? 12 : 4; hasBis = true; } });
+  let hasBis = false, hasGoodWeapon = false;
+  members.forEach(m => {
+    const d = CHARACTER_DATA[m]; if (!d) return;
+    if (d.bestWeapon && ownedWeaps.has(d.bestWeapon)) { score += d.role === 'Main DPS' ? 12 : 4; hasBis = true; return; }
+    // Signature/limited bestWeapon is often not owned, but a top-tier alt5 substitute (the character's
+    // own documented near-BiS pick, e.g. Aemeath's Emerald of Genesis at 83.5% vs. her signature) is a
+    // real, common case that previously scored as if the player had NO good weapon at all for this
+    // member — same all-or-nothing gap bestEchoes potential had before this pass, just for weapons.
+    // Half the exact-BiS bonus reflects the real (if smaller) DPS gap vs. the signature.
+    if ((d.weaponAlts?.alt5 || []).some(w => ownedWeaps.has(w))) { score += d.role === 'Main DPS' ? 6 : 2; hasGoodWeapon = true; }
+  });
   if (hasBis) tags.push('BiS Weapon');
+  else if (hasGoodWeapon) tags.push('Good Weapon');
   return { score, tags: [...new Set(tags)].slice(0, 3) };
 }
 
