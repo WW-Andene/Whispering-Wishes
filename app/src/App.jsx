@@ -1086,7 +1086,7 @@ function WhisperingWishesInner() {
           </div>
         )}
         <div className="tab-indicator" />
-        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><img src="./navicon/Icon_Convene.webp" alt="" className="w-4 h-4 object-contain shrink-0" /> {t('app.navTracker')}</TabButton>
+        <TabButton active={activeTab === 'tracker'} onClick={() => setActiveTab('tracker')} tabRef={tabNavRef} tabId="tracker" accentColor={themeAccent}><img src="./navicon/Icon_Resonator.png" alt="" className="w-4 h-4 object-contain shrink-0" /> {t('app.navTracker')}</TabButton>
         <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')} tabRef={tabNavRef} tabId="events" accentColor={themeAccent}><img src="./navicon/Icon_Event.webp" alt="" className="w-4 h-4 object-contain shrink-0" /> {t('app.navEvents')}</TabButton>
         <TabButton active={activeTab === 'map'} onClick={() => setActiveTab('map')} tabRef={tabNavRef} tabId="map" accentColor={themeAccent}><img src="./navicon/Icon_Map.png" alt="" className="w-4 h-4 object-contain shrink-0" /> {t('app.navMap')}</TabButton>
         <TabButton active={activeTab === 'planner'} onClick={() => setActiveTab('planner')} tabRef={tabNavRef} tabId="planner" accentColor={themeAccent}><img src="./navicon/Icon_Guidebook.webp" alt="" className="w-4 h-4 object-contain shrink-0" /> {t('app.navPlan')}</TabButton>
