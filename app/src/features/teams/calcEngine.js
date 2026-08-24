@@ -752,6 +752,25 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
           // debuff condition can name a specific element/mechanic just as easily as a buff's can).
           if (db.stat === 'deepen' || db.stat === 'offTune') { if (deepenBuffApplies(db)) { const u = estimateBuffUplift('deepen', db.value); if (u > 0) score += u * UPLIFT_TO_SCORE; } }
         });
+        // Healer/support team-wide echo-set potential (Rejuvenating Glow, Halo of Starry Radiance, ...):
+        // TEAM_SET_BUFFS is only ever applied in calcTeamStats.js for a team the player has ALREADY
+        // built with that echo set equipped — the recommendation engine had no equivalent at all, so a
+        // healer's single biggest realistic team contribution (their own bestEchoes' documented #1/#2
+        // heal-triggered team ATK% set, e.g. Verina/Shorekeeper/Baizhi all list "Rejuvenating Glow 5pc")
+        // was invisible here even though it's the character's own data, not a guess. Unlike bestWeapon
+        // (only credited when ownedWeaps confirms the player actually has it), echo sets aren't tracked
+        // per-candidate here, so this is real but unconfirmed potential, not a guarantee — scored at a
+        // discount vs. a confirmed kit buff, same spirit as the ER-uptime discount above.
+        const ECHO_SET_POTENTIAL_DISCOUNT = 0.6;
+        (CHARACTER_DATA[m]?.bestEchoes || []).forEach(entry => {
+          const setName = Object.keys(TEAM_SET_BUFFS).find(sn => entry.includes(sn));
+          if (!setName) return;
+          TEAM_SET_BUFFS[setName].forEach(b => {
+            if (!buffApplies(b)) return;
+            const uplift = estimateBuffUplift(b.stat, b.value) * ECHO_SET_POTENTIAL_DISCOUNT;
+            if (uplift > 0) { score += uplift * UPLIFT_TO_SCORE; tags.push('Echo Set Potential'); }
+          });
+        });
       }
       // Redundant-hypercarry penalty: a second Main DPS earns its slot only if it demonstrably
       // buffed the real mainDps above (scoreBeforeMember < score) — that's the "specific case" where
