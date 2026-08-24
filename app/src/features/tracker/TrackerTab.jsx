@@ -118,7 +118,7 @@ function TrackerTab({
                   }}>
                   {TRACKER_CATEGORIES.map((cat) => (
                     <button key={cat.key} onClick={() => setTrackerCategory(cat.key)} role="tab" aria-selected={trackerCategory === cat.key} tabIndex={trackerCategory === cat.key ? 0 : -1} className={`kuro-btn flex-1 ${trackerCategory === cat.key ? (cat.color === 'yellow' ? 'active-gold' : cat.color === 'pink' ? 'active-pink' : 'active-cyan') : ''}`}>
-                      {cat.key === 'character' ? <Crown size={12} className="inline mr-1" /> : cat.key === 'weapon' ? <Swords size={12} className="inline mr-1" /> : <Star size={12} className="inline mr-1" />}
+                      {cat.key === 'character' ? <img src="./navicon/Icon_Resonator.png" alt="" className="inline w-3 h-3 mr-1 object-contain" /> : cat.key === 'weapon' ? <img src="./navicon/Icon_Weapons.webp" alt="" className="inline w-3 h-3 mr-1 object-contain" /> : <Star size={12} className="inline mr-1" />}
                       {t(`tracker.category.${cat.key}`)}
                     </button>
                   ))}
