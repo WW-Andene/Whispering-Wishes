@@ -489,7 +489,9 @@ const cost1MainStats = (statScaling) => statScaling === 'HP' ? ['HP%', 'HP%'] : 
 
 /**
  * Builds full 5-echo (cost 4/3/3/1/1) generic loadouts from a character's `bestEchoes` array.
- * Returns [{ sonataName, label, slots: [{ cost, name, iconUrl, mainStat, generic }] }].
+ * Returns [{ sonataName, sonataElement, label, slots: [{ cost, name, iconUrl, mainStat, generic }] }].
+ * `sonataElement` is the sonata's own ECHO_SETS element (a DMG element, or 'Heal'/'Support'/'ATK'/
+ * 'Shield' for non-elemental sets) — for coloring the sonata name/main-echo highlight in the UI.
  * `generic: true` on a slot marks it as a representative pick (any echo of that set/cost works),
  * as opposed to the cost-4 slot, which is the community-sourced named recommendation.
  * `element` is the character's own element (for the cost-3 Elemental DMG% slot) — distinct from the
@@ -518,7 +520,11 @@ export function getSonataLoadouts(bestEchoes, statScaling, element) {
     });
     const sonataName = parsedSets.map(s => s.name).join(' + ') || (main ? (ECHO_DATA[main.text]?.sets?.[0] || '') : '');
     const label = setSlot?.label || main?.label || null;
-    if (!parsedSets.length && !main) return { sonataName, label, slots: [] };
+    // The sonata's own "element" per ECHO_SETS — not always a DMG element (can be 'Heal'/'Support'/
+    // 'ATK'/'Shield') — used by the UI to color the sonata name and highlight the main echo slot.
+    const primarySetName = parsedSets[0]?.name || (main ? ECHO_DATA[main.text]?.sets?.[0] : null) || null;
+    const sonataElement = primarySetName ? ECHO_SETS[primarySetName]?.element || null : null;
+    if (!parsedSets.length && !main) return { sonataName, sonataElement, label, slots: [] };
 
     // How many of the 4 non-main slots belong to each set, honoring "3pc + 2pc" splits (main echo
     // itself already counts as 1 piece toward the first-listed set).
@@ -529,7 +535,7 @@ export function getSonataLoadouts(bestEchoes, statScaling, element) {
     // A row can list just a main echo with no explicit set (e.g. an alt main-echo pick alongside a
     // full [main, set] row elsewhere in the same build list) — fall back to that echo's own set so
     // the cost-3/cost-1 slots still fill in rather than being left empty.
-    const primarySet = parsedSets[0]?.name || (main ? ECHO_DATA[main.text]?.sets?.[0] : null) || null;
+    const primarySet = primarySetName;
 
     const cost4Name = main ? main.text : (primarySet ? findEchoOfSet(primarySet, ALL_4COST_ECHOES) : null);
     const c3Stats = cost3MainStats(statScaling, element);
@@ -546,7 +552,7 @@ export function getSonataLoadouts(bestEchoes, statScaling, element) {
       const name = setName ? findEchoOfSet(setName, ALL_1COST_ECHOES) : null;
       if (name) slots.push({ cost: 1, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c1Stats[n - 2], generic: true });
     });
-    return { sonataName, label, slots };
+    return { sonataName, sonataElement, label, slots };
   });
 }
 

@@ -33,6 +33,22 @@ const DETAIL_ELEMENT_COLORS = {
   Havoc: { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/50', hex: '#ec4899' },
   Spectro: { bg: 'bg-yellow-500/20', text: 'text-yellow-400', border: 'border-yellow-500/50', hex: '#edaf18' },
 };
+// Sonata (echo set) colors — reuses the 6 damage-element colors above, plus the non-elemental
+// ECHO_SETS.element values (Heal/Support/ATK/Shield) sets can carry. Used to color the sonata name
+// and highlight the main echo slot in the Recommended Echoes section, matching the sonata's own hue.
+const SONATA_ELEMENT_COLORS = {
+  Fusion: { text: 'text-orange-400', border: 'border-orange-500/60', ring: 'ring-orange-500/60', bg: 'bg-orange-500/10' },
+  Electro: { text: 'text-purple-400', border: 'border-purple-500/60', ring: 'ring-purple-500/60', bg: 'bg-purple-500/10' },
+  Aero: { text: 'text-emerald-400', border: 'border-emerald-500/60', ring: 'ring-emerald-500/60', bg: 'bg-emerald-500/10' },
+  Glacio: { text: 'text-cyan-400', border: 'border-cyan-500/60', ring: 'ring-cyan-500/60', bg: 'bg-cyan-500/10' },
+  Havoc: { text: 'text-pink-400', border: 'border-pink-500/60', ring: 'ring-pink-500/60', bg: 'bg-pink-500/10' },
+  Spectro: { text: 'text-yellow-400', border: 'border-yellow-500/60', ring: 'ring-yellow-500/60', bg: 'bg-yellow-500/10' },
+  Heal: { text: 'text-green-400', border: 'border-green-500/60', ring: 'ring-green-500/60', bg: 'bg-green-500/10' },
+  Support: { text: 'text-violet-400', border: 'border-violet-500/60', ring: 'ring-violet-500/60', bg: 'bg-violet-500/10' },
+  ATK: { text: 'text-amber-400', border: 'border-amber-500/60', ring: 'ring-amber-500/60', bg: 'bg-amber-500/10' },
+  Shield: { text: 'text-blue-400', border: 'border-blue-500/60', ring: 'ring-blue-500/60', bg: 'bg-blue-500/10' },
+};
+const DEFAULT_SONATA_COLOR = { text: 'text-purple-400', border: 'border-purple-500/60', ring: 'ring-purple-500/60', bg: 'bg-purple-500/10' };
 // Mixes a hex color toward an {r,g,b} target by `amount` (0-1), at `alpha` opacity.
 const _mixRgba = (hex, target, amount, alpha) => {
   const n = parseInt(hex.slice(1), 16);
@@ -646,7 +662,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           <div className="kuro-detail-box">
             <div className="kuro-section-label mb-2">{t('modals.characterDetail.recommendedEchoes')}</div>
             <div className="space-y-4">
-              {loadouts.map((build, idx) => (
+              {loadouts.map((build, idx) => {
+                const sc = SONATA_ELEMENT_COLORS[build.sonataElement] || DEFAULT_SONATA_COLOR;
+                return (
                 <div key={idx} className="space-y-2">
                   {showBuildLabels && (
                     <div className="text-gray-500 text-xs font-semibold uppercase tracking-wide">
@@ -654,14 +672,14 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     </div>
                   )}
                   {build.sonataName && (
-                    <div className="text-purple-400 text-base font-bold">{build.sonataName}</div>
+                    <div className={`${sc.text} text-base font-bold`}>{build.sonataName}</div>
                   )}
                   {build.slots.length > 0 && (
                     <div className="grid grid-cols-5 gap-2">
                       {build.slots.map((slot, si) => (
                         <div key={si} className="flex flex-col items-center gap-1">
-                          <div className={`w-12 h-12 rounded-lg border flex items-center justify-center overflow-hidden ${slot.generic ? 'bg-white/5 border-[var(--border-medium)]' : 'bg-purple-500/10 border-purple-500/60 ring-2 ring-purple-500/60'}`}>
-                            {slot.iconUrl ? <img src={slot.iconUrl} alt={slot.name} className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={12} className="text-purple-400" />}
+                          <div className={`w-12 h-12 rounded-lg border flex items-center justify-center overflow-hidden ${slot.generic ? 'bg-white/5 border-[var(--border-medium)]' : `${sc.bg} ${sc.border} ring-2 ${sc.ring}`}`}>
+                            {slot.iconUrl ? <img src={slot.iconUrl} alt={slot.name} className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={12} className={sc.text} />}
                           </div>
                           <div className="text-[10px] text-gray-300 text-center leading-tight line-clamp-2">{slot.name}</div>
                           <div className="text-[10px] text-gray-500 text-center leading-tight">{t('modals.characterDetail.echoCost', { cost: slot.cost })}{slot.mainStat ? ` · ${slot.mainStat}` : ''}</div>
@@ -670,7 +688,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
             );
