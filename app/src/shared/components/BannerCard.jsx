@@ -164,7 +164,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                 {DEFAULT_COLLECTION_IMAGES[n] && (
                   <img src={DEFAULT_COLLECTION_IMAGES[n]} alt="" aria-hidden="true" width={48} height={48} className="w-12 h-12 rounded-md object-cover border border-cyan-400/40" onError={hideOnError} />
                 )}
-                <span className="w-12 text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm text-center truncate" title={n}>{n}</span>
+                <span className="block w-12 text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm text-center truncate" title={n}>{n}</span>
               </div>
             ))}
           </div>
