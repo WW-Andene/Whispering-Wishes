@@ -26,6 +26,7 @@ import {
   calcEnergyCycles,
   isHealerRole,
   TEAM_SET_BUFFS,
+  universalStatApplies,
 } from './calcEngine.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
@@ -701,7 +702,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
               const dpsEl = (mainDps.d.element || '').toLowerCase();
               if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) amplify += val;
             }
-            else if (b.stat === 'deepen') deepen += val;
+            else if (b.stat === 'deepen') { if (universalStatApplies(b.condition, (mainDps.d.element || '').toLowerCase())) deepen += val; }
             else if (b.stat === 'basicDmg') { if (dpsFocus.includes('Basic ATK')) amplify += val; }
             else if (b.stat === 'heavyDmg') { if (dpsFocus.includes('Heavy ATK')) amplify += val; }
             else if (b.stat === 'libDmg') { if (dpsFocus.includes('Liberation')) amplify += val; }
@@ -768,12 +769,12 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         else if (db.stat === 'resShred') resShred += db.value;
         else if (db.stat === 'frazzle') {}
         else if (db.stat === 'erosion') {}
-        else if (db.stat === 'offTune') deepen += db.value;
+        else if (db.stat === 'offTune') { if (universalStatApplies(db.condition, (mainDps.d.element || '').toLowerCase())) deepen += db.value; }
         else if (db.stat === 'havocBane') defShred += db.value * 2;
         // 'deepen' as a debuff stat (e.g. Galbrena's Afterflame — enemy DMG Taken) is the same
         // multiplier as the buff-side 'deepen', just framed as an enemy debuff instead of an ally
         // buff — was never recognized here, silently dropping the whole effect from every DPS calc.
-        else if (db.stat === 'deepen') deepen += db.value;
+        else if (db.stat === 'deepen') { if (universalStatApplies(db.condition, (mainDps.d.element || '').toLowerCase())) deepen += db.value; }
         // 'defIgnore' debuffs (e.g. Carlotta's Deconstruction) target the enemy's own DEF, same as
         // the buff-side 'defIgnore' — was falling through to the no-op default, dropping enemy DEF
         // Ignore debuffs from the calc entirely.
@@ -1002,8 +1003,13 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
               const uptime = overlapUptimeForSeg(sSeg, outroStart(other.name), b.duration || 14);
               const val = b.value * uptime * snapshotFactor;
               if (b.stat === 'atkPct') sAtkPct += m.scaling === 'ATK' ? val : val * 0.25;
-              else if (b.stat === 'allDmg' || b.stat === 'elemDmg') sAmplify += val;
-              else if (b.stat === 'deepen') sDeepen += val;
+              else if (b.stat === 'allDmg') sAmplify += val;
+              // elemDmg here was previously grouped with allDmg (no gate at all) — unlike the properly
+              // gated libBuffs elemDmg path just below (obt.libBuffs), an element-restricted outro amp
+              // (e.g. Denia's "Fusion Burst mode" 60% elemDmg) was applying in full to an off-element
+              // sub-DPS's damage.
+              else if (b.stat === 'elemDmg') { if (universalStatApplies(b.condition, (m.d.element || '').toLowerCase())) sAmplify += val; }
+              else if (b.stat === 'deepen') { if (universalStatApplies(b.condition, (m.d.element || '').toLowerCase())) sDeepen += val; }
               else if (b.stat === 'basicDmg') sAmplify += val;
               else if (b.stat === 'heavyDmg') sAmplify += val;
               else if (b.stat === 'libDmg') sAmplify += val;
@@ -1046,9 +1052,9 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           (obt.debuffs || []).forEach(db => {
             if (db.stat === 'defShred') sDefShred += db.value;
             else if (db.stat === 'resShred') sResShred += db.value;
-            else if (db.stat === 'offTune') sDeepen += db.value;
+            else if (db.stat === 'offTune') { if (universalStatApplies(db.condition, (m.d.element || '').toLowerCase())) sDeepen += db.value; }
             else if (db.stat === 'havocBane') sDefShred += db.value * 2;
-            else if (db.stat === 'deepen') sDeepen += db.value;
+            else if (db.stat === 'deepen') { if (universalStatApplies(db.condition, (m.d.element || '').toLowerCase())) sDeepen += db.value; }
             else if (db.stat === 'defIgnore') sDefIgnore += db.value;
           });
         });
@@ -1068,8 +1074,8 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           (mbt.debuffs || []).forEach(db => {
             if (db.stat === 'defShred') sDefShred += db.value;
             else if (db.stat === 'resShred') sResShred += db.value;
-            else if (db.stat === 'offTune') sDeepen += db.value;
-            else if (db.stat === 'deepen') sDeepen += db.value;
+            else if (db.stat === 'offTune') { if (universalStatApplies(db.condition, (m.d.element || '').toLowerCase())) sDeepen += db.value; }
+            else if (db.stat === 'deepen') { if (universalStatApplies(db.condition, (m.d.element || '').toLowerCase())) sDeepen += db.value; }
             else if (db.stat === 'defIgnore') sDefIgnore += db.value;
           });
         }
@@ -1273,7 +1279,10 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const bt = CHAR_BUFF_TABLE[m.name];
       if (!bt) return;
       (bt.outroBuffs || []).forEach(b => {
-        if (b.stat === 'deepen') syn += 5; // Universal deepen is always good
+        // Not actually universal — an element-restricted deepen (Ciaccona's "Aero Erosion DMG Amp
+        // only", Phoebe's "Spectro Frazzle DMG Amp (Confession)") credited full synergy points here
+        // even against an unrelated main DPS.
+        if (b.stat === 'deepen') { if (universalStatApplies(b.condition, (mainEl || '').toLowerCase())) syn += 5; }
         else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) syn += 5;
         else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) syn += 5;
         else if (b.stat === 'libDmg' && dpsFocus.includes('Liberation')) syn += 3;

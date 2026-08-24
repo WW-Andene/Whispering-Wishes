@@ -542,6 +542,24 @@ export function applyResonanceChain(stats, charName, seqLevel, isMainDps) {
   return totalMultBonus;
 }
 
+// A deepen/offTune/allDmg buff or debuff is universal by convention UNLESS its free-text `condition`
+// explicitly names a DIFFERENT element than the target's own (e.g. Ciaccona's outro: "Aero Erosion DMG
+// Amp only"; Phoebe's outro: "Spectro Frazzle DMG Amp (Confession)") — a condition naming no element at
+// all (the common case: pure activation-trigger text) stays universal. Shared by scoreTeamComposition
+// (recommendation ranking) and calcTeamStats.js (the real damage calculator) so this rule can only ever
+// be defined in one place — calcTeamStats.js previously summed every deepen contribution completely
+// unconditionally with no equivalent check at all, so Ciaccona/Phoebe-style element-locked deepen amps
+// were silently applied in full to the actual displayed DPS number for ANY paired main/sub DPS,
+// regardless of element match.
+const ELEMENT_NAMES = ['fusion', 'spectro', 'aero', 'glacio', 'electro', 'havoc'];
+export function universalStatApplies(condition, targetElementLower) {
+  const cond = (condition || '').toLowerCase();
+  if (!cond) return true;
+  const mentioned = ELEMENT_NAMES.filter(el => cond.includes(el));
+  if (mentioned.length === 0) return true; // no element named — a genuine universal/trigger condition
+  return mentioned.includes(targetElementLower);
+}
+
 // ── Team composition scoring: tier + role coverage + buff/debuff synergy + element resonance +
 // BiS weapon ownership, all reusing data that already exists on every character (element, role,
 // dmgFocus, tier, CHAR_BUFF_TABLE's outroBuffs/libBuffs/debuffs, bestWeapon) — no separate
@@ -681,14 +699,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // this only rejects when the condition explicitly names a DIFFERENT element than the DPS's own. A
     // condition with no element mentioned at all (most of them: pure activation-trigger text, e.g.
     // Denia's "Tune Strain mode..." allDmg outro) stays universal, exactly as its stat name promises.
-    const ELEMENT_NAMES = ['fusion', 'spectro', 'aero', 'glacio', 'electro', 'havoc'];
-    const deepenBuffApplies = (b) => {
-      const cond = (b.condition || '').toLowerCase();
-      if (!cond) return true;
-      const mentioned = ELEMENT_NAMES.filter(el => cond.includes(el));
-      if (mentioned.length === 0) return true; // no element named — a genuine universal/trigger condition
-      return mentioned.includes(dpsEl);
-    };
+    const deepenBuffApplies = (b) => universalStatApplies(b.condition, dpsEl);
     // A type-specific buff (basicDmg/heavyDmg/echoDmg/skillDmg/coordDmg) only routes into the DPS's
     // damage at all if their dmgFocus actually includes that attack type — routeTypeBonuses in this
     // same file enforces the identical gate for the real damage calc, so scoring has to match it or
