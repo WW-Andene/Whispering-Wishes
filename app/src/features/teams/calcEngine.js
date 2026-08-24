@@ -266,15 +266,36 @@ export function applyEchoStats(stats, echoes, element, scaling, baseStats) {
   });
 }
 
+// Which dmgFocus tag gates each type-specific stat — same mapping routeTypeBonuses/scoreTeamComposition
+// already use, kept here too so applyBuff can enforce it itself instead of requiring every call site to
+// remember to check first (that's exactly how calcTeamStats.js ended up with 8 near-identical chains
+// that individually needed the same deepen/allDmg/elemDmg gating fix applied by hand).
+const TYPE_FOCUS_MAP = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', libDmg: 'Liberation', echoDmg: 'Echo', coordDmg: 'Coordinated ATK' };
+
 // ── Apply buff to stat accumulator (replaces 8 identical if-else chains) ──
+// options.condition + options.dpsFocus/dpsElLower let this enforce the exact same gates
+// scoreTeamComposition uses (type-focus match for basicDmg/heavyDmg/libDmg/echoDmg/coordDmg; strict
+// element match for elemDmg; off-element-mismatch-only for deepen/offTune/allDmg) in ONE place instead
+// of at every call site. Passing neither dpsFocus nor dpsElLower skips gating entirely (e.g. a
+// character's own selfBuffs, which are inherently about their own damage and need no target-matching).
 export function applyBuff(stats, buff, value, options = {}) {
-  const { isAmplify = false } = options;
+  const { isAmplify = false, condition, dpsFocus, dpsElLower } = options;
+  if (dpsFocus && TYPE_FOCUS_MAP[buff] && !dpsFocus.includes(TYPE_FOCUS_MAP[buff])) return;
+  if (dpsElLower != null) {
+    if (buff === 'elemDmg') {
+      const cond = (condition || '').toLowerCase();
+      if (cond && !cond.includes(dpsElLower) && !cond.includes('all')) return;
+    } else if (buff === 'deepen' || buff === 'offTune' || buff === 'allDmg') {
+      if (!universalStatApplies(condition, dpsElLower)) return;
+    }
+  }
   const target = isAmplify ? 'amplify' : null;
   switch (buff) {
     case 'atkPct':    stats.atkPct += value; break;
     case 'allDmg':    stats[target || 'elemDmg'] += value; break;
     case 'elemDmg':   stats[target || 'elemDmg'] += value; break;
     case 'deepen':    stats.deepen += value; break;
+    case 'offTune':   stats.deepen += value; break;
     case 'basicDmg':  stats[target || 'basicDmg'] += value; break;
     case 'heavyDmg':  stats[target || 'heavyDmg'] += value; break;
     case 'libDmg':    stats[target || 'libDmg'] += value; break;

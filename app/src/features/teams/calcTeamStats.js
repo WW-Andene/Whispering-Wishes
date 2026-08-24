@@ -27,6 +27,7 @@ import {
   isHealerRole,
   TEAM_SET_BUFFS,
   universalStatApplies,
+  applyBuff,
 } from './calcEngine.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
@@ -677,6 +678,16 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
 
     const dpsFocus = mainDps.d.dmgFocus || [];
     let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg, mainSkillDmg = wpSkillDmg;
+    // Bridges the flat atkPct/cr/cd/elemDmg/deepen/amplify/resShred/defShred/defIgnore/echoDmg
+    // accumulators (used throughout this whole FULL TIER section) into a single object applyBuff can
+    // mutate directly, then syncs back once after the loop -- addition is commutative so accumulating
+    // into the bridge across every member first and reading the flat variables only after the loop
+    // (instead of after each individual buff) changes nothing about the final totals. This is what lets
+    // every buff/debuff branch below share ONE gated implementation (calcEngine.js's applyBuff) instead
+    // of each repeating its own copy of the type-focus/element-match checks -- previously the actual
+    // cause of the deepen/allDmg/elemDmg gating bugs needing ~8 separate hand-patches across this file.
+    const mainDpsElLower = (mainDps.d.element || '').toLowerCase();
+    const mainStats = { atkPct, cr, cd, elemDmg, deepen, amplify, resShred, defShred, defIgnore, echoDmg };
     mems.forEach(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
       if (!bt) return;
@@ -693,25 +704,14 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
             const uptime = overlapUptime(outroStart(m.name), b.duration || 14);
             const val = b.value * uptime;
             if (b.stat === 'atkPct') {
-              if (mainDps.scaling === 'ATK') atkPct += val;
-              else atkPct += val * 0.25;
+              mainStats.atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
+            } else if (['allDmg', 'elemDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'skillDmg'].includes(b.stat)) {
+              applyBuff(mainStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsFocus, dpsElLower: mainDpsElLower });
+            } else if (b.stat === 'deepen') {
+              applyBuff(mainStats, 'deepen', val, { condition: b.condition, dpsElLower: mainDpsElLower });
+            } else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'resShred' || b.stat === 'defShred') {
+              applyBuff(mainStats, b.stat, val);
             }
-            else if (b.stat === 'allDmg') amplify += val;
-            else if (b.stat === 'elemDmg') {
-              const buffEl = (b.condition || '').toLowerCase();
-              const dpsEl = (mainDps.d.element || '').toLowerCase();
-              if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) amplify += val;
-            }
-            else if (b.stat === 'deepen') { if (universalStatApplies(b.condition, (mainDps.d.element || '').toLowerCase())) deepen += val; }
-            else if (b.stat === 'basicDmg') { if (dpsFocus.includes('Basic ATK')) amplify += val; }
-            else if (b.stat === 'heavyDmg') { if (dpsFocus.includes('Heavy ATK')) amplify += val; }
-            else if (b.stat === 'libDmg') { if (dpsFocus.includes('Liberation')) amplify += val; }
-            else if (b.stat === 'echoDmg') { if (dpsFocus.includes('Echo')) amplify += val; }
-            else if (b.stat === 'skillDmg') amplify += val;
-            else if (b.stat === 'critRate') cr += val;
-            else if (b.stat === 'critDmg') cd += val;
-            else if (b.stat === 'resShred') resShred += val;
-            else if (b.stat === 'defShred') defShred += val;
           }
         });
       }
@@ -725,28 +725,21 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       if (p5v?.teamAtk) {
         const uptime = overlapUptime(blockStart(m.name), 20);
         const val = p5v.teamAtk * uptime;
-        atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
+        mainStats.atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
       }
       if (!isMain && p5v?.nextAtk) {
         const uptime = overlapUptime(outroStart(m.name), 14);
         const val = p5v.nextAtk * uptime;
-        atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
+        mainStats.atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
       }
 
       (bt.libBuffs || []).forEach(b => {
         if (b.target === 'team' || (!isMain && b.target === 'next')) {
           const uptime = overlapUptime(blockStart(m.name), b.duration || 25);
           const val = b.value * uptime;
-          if (b.stat === 'atkPct' && mainDps.scaling === 'ATK') atkPct += val;
-          else if (b.stat === 'allDmg') elemDmg += val;
-          else if (b.stat === 'elemDmg') {
-            const buffEl = (b.condition || '').toLowerCase();
-            const dpsEl = (mainDps.d.element || '').toLowerCase();
-            if (!buffEl || buffEl.includes(dpsEl) || buffEl.includes('all')) elemDmg += val;
-          }
-          else if (b.stat === 'critRate') cr += val;
-          else if (b.stat === 'critDmg') cd += val;
-          else if (b.stat === 'echoDmg') echoDmg += val;
+          if (b.stat === 'atkPct') { if (mainDps.scaling === 'ATK') mainStats.atkPct += val; }
+          else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(mainStats, b.stat, val, { condition: b.condition, dpsElLower: mainDpsElLower });
+          else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'echoDmg') applyBuff(mainStats, b.stat, val);
         }
       });
 
@@ -754,33 +747,24 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         const mainTotalER = energyCycleFactors?.[mainDps.name]?.totalER;
         (bt.selfBuffs || []).forEach(b => {
           const val = resolveBuffValue(b, mainTotalER);
-          if (b.stat === 'atkPct') atkPct += val;
-          else if (b.stat === 'elemDmg') elemDmg += val;
-          else if (b.stat === 'critRate') cr += val;
-          else if (b.stat === 'critDmg') cd += val;
-          else if (b.stat === 'defIgnore') defIgnore += val;
-          else if (b.stat === 'deepen') deepen += val;
-          else if (b.stat === 'echoDmg') echoDmg += val;
+          // Own kit's self-target buffs always apply to their own damage — no target-matching gate
+          // needed (that's exactly what a "self" buff means), so no dpsFocus/dpsElLower passed here.
+          if (['atkPct', 'elemDmg', 'critRate', 'critDmg', 'defIgnore', 'deepen', 'echoDmg'].includes(b.stat)) applyBuff(mainStats, b.stat, val);
         });
       }
 
       (bt.debuffs || []).forEach(db => {
-        if (db.stat === 'defShred') defShred += db.value;
-        else if (db.stat === 'resShred') resShred += db.value;
-        else if (db.stat === 'frazzle') {}
-        else if (db.stat === 'erosion') {}
-        else if (db.stat === 'offTune') { if (universalStatApplies(db.condition, (mainDps.d.element || '').toLowerCase())) deepen += db.value; }
-        else if (db.stat === 'havocBane') defShred += db.value * 2;
-        // 'deepen' as a debuff stat (e.g. Galbrena's Afterflame — enemy DMG Taken) is the same
-        // multiplier as the buff-side 'deepen', just framed as an enemy debuff instead of an ally
-        // buff — was never recognized here, silently dropping the whole effect from every DPS calc.
-        else if (db.stat === 'deepen') { if (universalStatApplies(db.condition, (mainDps.d.element || '').toLowerCase())) deepen += db.value; }
-        // 'defIgnore' debuffs (e.g. Carlotta's Deconstruction) target the enemy's own DEF, same as
-        // the buff-side 'defIgnore' — was falling through to the no-op default, dropping enemy DEF
-        // Ignore debuffs from the calc entirely.
-        else if (db.stat === 'defIgnore') defIgnore += db.value;
+        if (db.stat === 'frazzle' || db.stat === 'erosion') return; // handled separately by the DOT tier
+        if (db.stat === 'havocBane') { mainStats.defShred += db.value * 2; return; }
+        // 'deepen'/'offTune' as a debuff stat (e.g. Galbrena's Afterflame — enemy DMG Taken) is the
+        // same multiplier as the buff-side 'deepen', just framed as an enemy debuff instead of an ally
+        // buff — was never recognized here before, silently dropping the whole effect from every DPS
+        // calc. 'defIgnore' debuffs (e.g. Carlotta's Deconstruction) target the enemy's own DEF, same
+        // as the buff-side 'defIgnore' — was falling through to the no-op default too.
+        applyBuff(mainStats, db.stat, db.value, { condition: db.condition, dpsElLower: mainDpsElLower });
       });
     });
+    ({ atkPct, cr, cd, elemDmg, deepen, amplify, resShred, defShred, defIgnore, echoDmg } = mainStats);
 
     // DMG Bonus layer: weapon + echo self-bonuses (NOT outro amplify)
     basicDmg += echoBasicDmg; heavyDmg += echoHeavyDmg; libDmg += echoLibDmg;
