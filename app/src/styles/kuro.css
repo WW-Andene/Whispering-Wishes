@@ -237,11 +237,11 @@
          12px: compact body           14px: primary values, card content
          16px: section headers        18px: large display    20px+: hero display */
       --font-2xs: 10px;
-      --font-sm: 11px;
-      --font-base: 13px;
+      --font-sm: 12px;
+      --font-base: 12px;
       --font-md: 14px;
       --font-lg: 16px;
-      --font-xl: 17px;
+      --font-xl: 16px;
       --font-2xl: 19px;
       --font-3xl: 20px;
       --font-4xl: 22px;

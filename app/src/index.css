@@ -51,12 +51,15 @@ body {
 html.dyslexic-font {
   --font-display: 'OpenDyslexic', ui-sans-serif, system-ui, sans-serif;
   --font-data: 'OpenDyslexic', ui-monospace, SFMono-Regular, Menlo, monospace;
-  /* OpenDyslexic renders wider — compensate with -1px on all size tokens */
+  /* OpenDyslexic renders wider — compensate vs. the base kuro.css scale.
+     PerfectSuite-compliant (CLAUDE.md): each value is the nearest suite
+     number, tie-broken by primary > secondary > tertiary — no longer a
+     strict -1px-per-token offset from the base scale. */
   --font-2xs: 9px;
-  --font-sm: 10px;
+  --font-sm: 8px;
   --font-base: 12px;
-  --font-md: 13px;
-  --font-lg: 15px;
+  --font-md: 12px;
+  --font-lg: 16px;
   --font-xl: 16px;
   --font-2xl: 18px;
 }
