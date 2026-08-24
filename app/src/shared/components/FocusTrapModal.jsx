@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { getFrameEl } from './ViewportFrame.jsx';
 
 // [SECTION:A11Y_HOOKS] - Accessibility hooks for modal focus trapping & escape key
 // P14-FIX: MEDIUM-22 — Re-query focusable elements on each Tab keypress instead of caching.
@@ -64,21 +65,19 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
   useEscapeKey(isOpen, onClose);
   const dragRef = useRef({ startY: 0, currentY: 0, dragging: false });
   const sheetRef = useRef(null);
-  // Prevent background scroll when modal is open (fixes iOS Safari scroll bleed)
+  // Prevent background scroll when modal is open. Scrolling now happens
+  // inside the ViewportFrame (the real document/body never scrolls), so
+  // lock that instead of document.body.
   useEffect(() => {
     if (!isOpen) return;
-    const scrollY = window.scrollY;
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
+    const frameEl = getFrameEl();
+    if (!frameEl) return;
+    const scrollTop = frameEl.scrollTop;
+    const prevOverflow = frameEl.style.overflow;
+    frameEl.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = '';
-      document.body.style.position = '';
-      document.body.style.top = '';
-      document.body.style.width = '';
-      // Restore scroll position instantly to avoid visual jump on iOS
-      window.scrollTo({ top: scrollY, left: 0, behavior: 'instant' });
+      frameEl.style.overflow = prevOverflow;
+      frameEl.scrollTop = scrollTop;
     };
   }, [isOpen]);
 
@@ -142,7 +141,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
         {children}
       </div>
     </div>,
-    document.body
+    getFrameEl()
   );
 };
 
