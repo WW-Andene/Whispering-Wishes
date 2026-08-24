@@ -660,7 +660,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     <div className="grid grid-cols-5 gap-2">
                       {build.slots.map((slot, si) => (
                         <div key={si} className="flex flex-col items-center gap-1">
-                          <div className={`w-12 h-12 rounded-lg border flex items-center justify-center overflow-hidden ${slot.generic ? 'bg-white/5 border-[var(--border-medium)]' : 'bg-cyan-500/10 border-cyan-500/30'}`}>
+                          <div className={`w-12 h-12 rounded-lg border flex items-center justify-center overflow-hidden ${slot.generic ? 'bg-white/5 border-[var(--border-medium)]' : 'bg-purple-500/10 border-purple-500/60 ring-2 ring-purple-500/60'}`}>
                             {slot.iconUrl ? <img src={slot.iconUrl} alt={slot.name} className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={12} className="text-purple-400" />}
                           </div>
                           <div className="text-[10px] text-gray-300 text-center leading-tight line-clamp-2">{slot.name}</div>
