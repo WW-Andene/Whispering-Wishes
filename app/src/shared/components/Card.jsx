@@ -61,10 +61,10 @@ const TabButton = memo(({ active, onClick, children, tabRef, tabId, accentColor 
       aria-controls={tabId ? `tabpanel-${tabId}` : undefined}
       tabIndex={active ? 0 : -1}
       aria-label={`${text || t('app.navigationFallback')} tab`}
-      className={`relative flex flex-col items-center justify-center gap-0.5 p-1.5 text-base font-medium transition-all duration-300 whitespace-nowrap group active:scale-[0.97] ${active && !accent ? 'text-yellow-400' : !active ? 'text-white hover:text-gray-300' : ''}`}
+      className={`relative flex flex-col items-center justify-center p-2 text-sm font-medium transition-all duration-300 whitespace-nowrap group active:scale-[0.97] ${active && !accent ? 'text-yellow-400' : !active ? 'text-white hover:text-gray-300' : ''}`}
       style={active && accent ? { color: accent } : undefined}
     >
-      <div className={`relative z-10 w-8 h-8 flex items-center justify-center transition-all duration-300 ${active && !accent ? 'bg-yellow-500/25 shadow-lg shadow-yellow-500/25' : !active ? 'group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5' : ''}`} style={{ borderRadius: 'var(--radius-md)', ...(active ? { filter: `drop-shadow(0 0 3px ${accent ? accent + '80' : 'rgba(237,175,24,0.5)'})`, ...(accent ? { background: accent + '30', boxShadow: `0 10px 15px -3px ${accent}40` } : {}) } : { filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.35))' }) }}>
+      <div className={`relative z-10 w-7 h-7 flex items-center justify-center transition-all duration-300 ${active && !accent ? 'bg-yellow-500/25 shadow-lg shadow-yellow-500/25' : !active ? 'group-hover:bg-white/5 group-hover:shadow-md group-hover:shadow-white/5' : ''}`} style={{ borderRadius: 'var(--radius-md)', ...(active ? { filter: `drop-shadow(0 0 3px ${accent ? accent + '80' : 'rgba(237,175,24,0.5)'})`, ...(accent ? { background: accent + '30', boxShadow: `0 10px 15px -3px ${accent}40` } : {}) } : { filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.35))' }) }}>
         {icon}
       </div>
       <span className="relative z-10 leading-none">{text}</span>
