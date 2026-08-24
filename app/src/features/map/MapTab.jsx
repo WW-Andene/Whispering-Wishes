@@ -2402,7 +2402,7 @@ export default function MapTab({ navPadding = 80 }) {
         }
         .zone-author-panel .draft-row .lvl-tag {
           display: inline-flex; align-items: center; justify-content: center;
-          min-width: 22px;
+          min-width: 24px;
           /* Matches .kuro-badge geometry (2×8 padding, 4px radius,
              10px font) for one consistent inline-chip scale. */
           padding: 2px 8px;

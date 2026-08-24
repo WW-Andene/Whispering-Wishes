@@ -1547,7 +1547,7 @@
       content: '';
       position: absolute;
       top: 0; left: 50%; transform: translateX(-50%);
-      width: 40px;
+      width: 32px;
       height: 1px;
       background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 0.3), transparent);
     }
