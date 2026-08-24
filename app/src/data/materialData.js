@@ -182,8 +182,8 @@ const MATERIAL_IMAGES = {
   // Polarizer family
   'Broken Wing Polarizer': '/materials/xqt9n28Y-Item-Broken-Wing-Polarizer.webp',
   'Monowing Polarizer': '/materials/b0GGQKk-Monowing-Polarizer.webp',
-  'Polywing Polarizer': 'https://wuwatracker.com/api/item-icons/file/polywing-polarizer.webp',
-  'Layered Wing Polarizer': 'https://wuwatracker.com/api/item-icons/file/layered-wing-polarizer.webp',
+  'Polywing Polarizer': '/materials/wuwatracker.com-api-item-icons-file-polywing-polarizer.webp',
+  'Layered Wing Polarizer': '/materials/wuwatracker.com-api-item-icons-file-layered-wing-polarizer.webp',
   // Autopuppet Kernel family (Land of Xuanfang common drop — Suisui, Yangyang: Xuanling, Azure Oath)
   'LF-Autopuppet Kernel': '/materials/hRDdCtzW-LF-Autopuppet-Kernel.webp',
   'MF-Autopuppet Kernel': '/materials/LXC4qpr4-MF-Autopuppet-Kernel.webp',

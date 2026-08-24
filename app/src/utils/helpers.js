@@ -115,22 +115,22 @@ const ELEMENT_SHAPES = {
 // Official in-game element icons (T_IconElementAttri* UI assets), re-hosted on ibb.co.
 // Source: static.nanoka.cc asset CDN, traced from its client bundle 2026-08-17.
 const ELEMENT_ICONS = {
-  Glacio:  'https://i.ibb.co/60n11MZg/Element-Glacio.webp',
-  Fusion:  'https://i.ibb.co/RpbkMNCt/Element-Fusion.webp',
-  Electro: 'https://i.ibb.co/BVKXJnxb/Element-Electro.webp',
-  Aero:    'https://i.ibb.co/YF7k8Wy6/Element-Aero.webp',
-  Spectro: 'https://i.ibb.co/JjVxtqZ4/Element-Spectro.webp',
-  Havoc:   'https://i.ibb.co/20gBGvrV/Element-Havoc.webp',
+  Glacio:  '/ui-icons/i.ibb.co-60n11MZg-Element-Glacio.webp',
+  Fusion:  '/ui-icons/i.ibb.co-RpbkMNCt-Element-Fusion.webp',
+  Electro: '/ui-icons/i.ibb.co-BVKXJnxb-Element-Electro.webp',
+  Aero:    '/ui-icons/i.ibb.co-YF7k8Wy6-Element-Aero.webp',
+  Spectro: '/ui-icons/i.ibb.co-JjVxtqZ4-Element-Spectro.webp',
+  Havoc:   '/ui-icons/i.ibb.co-20gBGvrV-Element-Havoc.webp',
 };
 const getElementIcon = (el) => ELEMENT_ICONS[el] || null;
 // Official in-game weapon-type icons (SP_IconNor* UI assets), re-hosted on ibb.co.
 // Source: static.nanoka.cc/assets/ww/UIResources/Common/Atlas/SkillIcon/SkillIconNor/, 2026-08-17.
 const WEAPON_TYPE_ICONS = {
-  Broadblade: 'https://i.ibb.co/JF8qY50h/Weapon-Type-Broadblade.webp',
-  Sword:      'https://i.ibb.co/Xx5RH0dH/Weapon-Type-Sword.webp',
-  Pistols:    'https://i.ibb.co/sJbMbWm4/Weapon-Type-Pistols.webp',
-  Gauntlets:  'https://i.ibb.co/wFXHM40H/Weapon-Type-Gauntlets.webp',
-  Rectifier:  'https://i.ibb.co/5gds1gDg/Weapon-Type-Rectifier.webp',
+  Broadblade: '/ui-icons/i.ibb.co-JF8qY50h-Weapon-Type-Broadblade.webp',
+  Sword:      '/ui-icons/i.ibb.co-Xx5RH0dH-Weapon-Type-Sword.webp',
+  Pistols:    '/ui-icons/i.ibb.co-sJbMbWm4-Weapon-Type-Pistols.webp',
+  Gauntlets:  '/ui-icons/i.ibb.co-wFXHM40H-Weapon-Type-Gauntlets.webp',
+  Rectifier:  '/ui-icons/i.ibb.co-5gds1gDg-Weapon-Type-Rectifier.webp',
 };
 const getWeaponTypeIcon = (type) => WEAPON_TYPE_ICONS[type] || null;
 // Official in-game stat icons (T_Iconproperty* UI assets for ATK/HP/DEF/Energy Regen; Crit Rate/Crit
@@ -138,12 +138,12 @@ const getWeaponTypeIcon = (type) => WEAPON_TYPE_ICONS[type] || null;
 // Re-hosted on ibb.co. Keys are the base stat name — '%' suffixes (e.g. weapon substat 'ATK%') are
 // stripped by getStatIcon() before lookup.
 const STAT_ICONS = {
-  ATK:          'https://i.ibb.co/XrcVGXTx/Stat-ATK.webp',
-  HP:           'https://i.ibb.co/nsrx0Ckg/Stat-HP.webp',
-  DEF:          'https://i.ibb.co/xtS2fNjc/Stat-DEF.webp',
-  'Energy Regen': 'https://i.ibb.co/rRJTgZKr/Stat-Energy-Regen.webp',
-  'Crit Rate':  'https://i.ibb.co/yBdK77pW/Stat-Crit-Rate.webp',
-  'Crit DMG':   'https://i.ibb.co/tT1t8HTN/Stat-Crit-DMG.webp',
+  ATK:          '/ui-icons/i.ibb.co-XrcVGXTx-Stat-ATK.webp',
+  HP:           '/ui-icons/i.ibb.co-nsrx0Ckg-Stat-HP.webp',
+  DEF:          '/ui-icons/i.ibb.co-xtS2fNjc-Stat-DEF.webp',
+  'Energy Regen': '/ui-icons/i.ibb.co-rRJTgZKr-Stat-Energy-Regen.webp',
+  'Crit Rate':  '/ui-icons/i.ibb.co-yBdK77pW-Stat-Crit-Rate.webp',
+  'Crit DMG':   '/ui-icons/i.ibb.co-tT1t8HTN-Stat-Crit-DMG.webp',
 };
 const getStatIcon = (stat) => {
   if (!stat) return null;
@@ -153,41 +153,41 @@ const getStatIcon = (stat) => {
 // Official Sonata (echo) set icons (T_IconSonata* UI assets), re-hosted on ibb.co.
 // Source: wutheringwaves.fandom.com/wiki/Sonata, traced 2026-08-17.
 const SET_ICONS = {
-  'Freezing Frost':            'https://i.ibb.co/b5cjDwZP/Icon-Freezing-Frost.webp',
-  'Molten Rift':                'https://i.ibb.co/q3qYZYrP/Icon-Molten-Rift.webp',
-  'Void Thunder':                'https://i.ibb.co/LhH3mKDt/Icon-Void-Thunder.webp',
-  'Sierra Gale':                'https://i.ibb.co/JWxWKBbG/Icon-Sierra-Gale.webp',
-  'Celestial Light':            'https://i.ibb.co/23wDkGX2/Icon-Celestial-Light.webp',
+  'Freezing Frost':            '/ui-icons/i.ibb.co-b5cjDwZP-Icon-Freezing-Frost.webp',
+  'Molten Rift':                '/ui-icons/i.ibb.co-q3qYZYrP-Icon-Molten-Rift.webp',
+  'Void Thunder':                '/ui-icons/i.ibb.co-LhH3mKDt-Icon-Void-Thunder.webp',
+  'Sierra Gale':                '/ui-icons/i.ibb.co-JWxWKBbG-Icon-Sierra-Gale.webp',
+  'Celestial Light':            '/ui-icons/i.ibb.co-23wDkGX2-Icon-Celestial-Light.webp',
   // Sun-Sinking Eclipse was renamed to Havoc Eclipse in v1.4 — same set, same icon
-  'Havoc Eclipse':              'https://i.ibb.co/p6mwBLpJ/Icon-Sun-sinking-Eclipse.webp',
-  'Rejuvenating Glow':          'https://i.ibb.co/dwJc2xcy/Icon-Rejuvenating-Glow.webp',
-  'Moonlit Clouds':              'https://i.ibb.co/PBDwxwt/Icon-Moonlit-Clouds.webp',
-  'Lingering Tunes':            'https://i.ibb.co/G4qdLpgx/Icon-Lingering-Tunes.webp',
-  'Frosty Resolve':              'https://i.ibb.co/HfNmN45f/Icon-Frosty-Resolve.webp',
-  'Eternal Radiance':            'https://i.ibb.co/6zkWW4h/Icon-Eternal-Radiance.webp',
-  'Midnight Veil':              'https://i.ibb.co/vbQ99B4/Icon-Midnight-Veil.webp',
-  'Empyrean Anthem':            'https://i.ibb.co/WNPt9mvL/Icon-Empyrean-Anthem.webp',
-  'Tidebreaking Courage':        'https://i.ibb.co/twrQZYKq/Icon-Tidebreaking-Courage.webp',
-  'Gusts of Welkin':            'https://i.ibb.co/s93G4MWw/Icon-Gusts-of-Welkin.webp',
-  'Windward Pilgrimage':        'https://i.ibb.co/WWMCRYcw/Icon-Windward-Pilgrimage.webp',
-  'Flaming Clawprint':          'https://i.ibb.co/B5Rsjgn2/Icon-Flaming-Clawprint.webp',
-  'Crown of Valor':              'https://i.ibb.co/DfCHGtNs/Icon-Crown-of-Valor.webp',
-  'Law of Harmony':              'https://i.ibb.co/fdKgmPfs/Icon-Law-of-Harmony.webp',
-  "Flamewing's Shadow":          'https://i.ibb.co/FL64LWkQ/Icon-Flamewing-s-Shadow.webp',
-  'Thread of Severed Fate':      'https://i.ibb.co/Zz6yX3X0/Icon-Thread-of-Severed-Fate.webp',
-  'Dream of the Lost':          'https://i.ibb.co/dwXb8xTc/Icon-Dream-of-the-Lost.webp',
-  'Pact of Neonlight Leap':      'https://i.ibb.co/9m2qR6xk/Icon-Pact-of-Neonlight-Leap.webp',
-  'Rite of Gilded Revelation':  'https://i.ibb.co/fzBZS81C/Icon-Rite-of-Gilded-Revelation.webp',
-  'Halo of Starry Radiance':    'https://i.ibb.co/Y7MT2Y4G/Icon-Halo-of-Starry-Radiance.webp',
-  'Trailblazing Star':          'https://i.ibb.co/0RvWtQgj/Icon-Trailblazing-Star.webp',
-  'Chromatic Foam':              'https://i.ibb.co/G4Qr7QdJ/Icon-Chromatic-Foam.webp',
-  'Sound of True Name':          'https://i.ibb.co/Df7Y2V3q/Icon-Sound-of-True-Name.webp',
-  'Song of Feathered Trace':    'https://i.ibb.co/k65KVHds/Icon-Song-of-Feathered-Trace.webp',
-  "Heart of Evil's Purge":      'https://i.ibb.co/zT2YWWFT/Icon-Heart-of-Evil-s-Purge.webp',
-  'Lamp of Nether Road':        'https://i.ibb.co/XwV6kgH/Icon-Lamp-of-Nether-Road.webp',
-  'Reel of Spliced Memories':    'https://i.ibb.co/qYKQ4Vx9/Icon-Reel-of-Spliced-Memories.webp',
-  'Wishes of Quiet Snowfall':    'https://i.ibb.co/q3k4jgDX/Icon-Wishes-of-Quiet-Snowfall.webp',
-  'Shadow of Shattered Dreams':  'https://i.ibb.co/XZvbg138/Icon-Shadow-of-Shattered-Dreams.webp',
+  'Havoc Eclipse':              '/ui-icons/i.ibb.co-p6mwBLpJ-Icon-Sun-sinking-Eclipse.webp',
+  'Rejuvenating Glow':          '/ui-icons/i.ibb.co-dwJc2xcy-Icon-Rejuvenating-Glow.webp',
+  'Moonlit Clouds':              '/ui-icons/i.ibb.co-PBDwxwt-Icon-Moonlit-Clouds.webp',
+  'Lingering Tunes':            '/ui-icons/i.ibb.co-G4qdLpgx-Icon-Lingering-Tunes.webp',
+  'Frosty Resolve':              '/ui-icons/i.ibb.co-HfNmN45f-Icon-Frosty-Resolve.webp',
+  'Eternal Radiance':            '/ui-icons/i.ibb.co-6zkWW4h-Icon-Eternal-Radiance.webp',
+  'Midnight Veil':              '/ui-icons/i.ibb.co-vbQ99B4-Icon-Midnight-Veil.webp',
+  'Empyrean Anthem':            '/ui-icons/i.ibb.co-WNPt9mvL-Icon-Empyrean-Anthem.webp',
+  'Tidebreaking Courage':        '/ui-icons/i.ibb.co-twrQZYKq-Icon-Tidebreaking-Courage.webp',
+  'Gusts of Welkin':            '/ui-icons/i.ibb.co-s93G4MWw-Icon-Gusts-of-Welkin.webp',
+  'Windward Pilgrimage':        '/ui-icons/i.ibb.co-WWMCRYcw-Icon-Windward-Pilgrimage.webp',
+  'Flaming Clawprint':          '/ui-icons/i.ibb.co-B5Rsjgn2-Icon-Flaming-Clawprint.webp',
+  'Crown of Valor':              '/ui-icons/i.ibb.co-DfCHGtNs-Icon-Crown-of-Valor.webp',
+  'Law of Harmony':              '/ui-icons/i.ibb.co-fdKgmPfs-Icon-Law-of-Harmony.webp',
+  "Flamewing's Shadow":          '/ui-icons/i.ibb.co-FL64LWkQ-Icon-Flamewing-s-Shadow.webp',
+  'Thread of Severed Fate':      '/ui-icons/i.ibb.co-Zz6yX3X0-Icon-Thread-of-Severed-Fate.webp',
+  'Dream of the Lost':          '/ui-icons/i.ibb.co-dwXb8xTc-Icon-Dream-of-the-Lost.webp',
+  'Pact of Neonlight Leap':      '/ui-icons/i.ibb.co-9m2qR6xk-Icon-Pact-of-Neonlight-Leap.webp',
+  'Rite of Gilded Revelation':  '/ui-icons/i.ibb.co-fzBZS81C-Icon-Rite-of-Gilded-Revelation.webp',
+  'Halo of Starry Radiance':    '/ui-icons/i.ibb.co-Y7MT2Y4G-Icon-Halo-of-Starry-Radiance.webp',
+  'Trailblazing Star':          '/ui-icons/i.ibb.co-0RvWtQgj-Icon-Trailblazing-Star.webp',
+  'Chromatic Foam':              '/ui-icons/i.ibb.co-G4Qr7QdJ-Icon-Chromatic-Foam.webp',
+  'Sound of True Name':          '/ui-icons/i.ibb.co-Df7Y2V3q-Icon-Sound-of-True-Name.webp',
+  'Song of Feathered Trace':    '/ui-icons/i.ibb.co-k65KVHds-Icon-Song-of-Feathered-Trace.webp',
+  "Heart of Evil's Purge":      '/ui-icons/i.ibb.co-zT2YWWFT-Icon-Heart-of-Evil-s-Purge.webp',
+  'Lamp of Nether Road':        '/ui-icons/i.ibb.co-XwV6kgH-Icon-Lamp-of-Nether-Road.webp',
+  'Reel of Spliced Memories':    '/ui-icons/i.ibb.co-qYKQ4Vx9-Icon-Reel-of-Spliced-Memories.webp',
+  'Wishes of Quiet Snowfall':    '/ui-icons/i.ibb.co-q3k4jgDX-Icon-Wishes-of-Quiet-Snowfall.webp',
+  'Shadow of Shattered Dreams':  '/ui-icons/i.ibb.co-XZvbg138-Icon-Shadow-of-Shattered-Dreams.webp',
 };
 const getSetIcon = (setName) => SET_ICONS[setName] || null;
 // In-game faction emblem/logo icons, re-hosted on ibb.co.
@@ -197,31 +197,31 @@ const getSetIcon = (setName) => SET_ICONS[setName] || null;
 // War) have no dedicated icon asset there, so they're intentionally omitted
 // rather than guessed. Consumed by CharacterDetailModal's Organization row.
 const FACTION_ICONS = {
-  'Black Shores':          'https://i.ibb.co/j9CYZKpd/Black-Shores.webp',
-  'Midnight Rangers':      'https://i.ibb.co/Zz92sqFX/Midnight-Rangers.webp',
-  'Fractsidus':            'https://i.ibb.co/kVVdYWDC/Fractsidus.webp',
-  'Pioneer Association':  'https://i.ibb.co/5XkMDsnY/Pioneer-Association.webp',
-  'Lollo Logistics':      'https://i.ibb.co/bR6KRJXM/Lollo-Logistics.webp',
-  'Order of the Deep':    'https://i.ibb.co/qYB4FKVs/Order-of-the-Deep.webp',
-  'Troupe of Fools':      'https://i.ibb.co/S7NWRwVD/Troupe-of-Fools.webp',
-  'Montelli Family':      'https://i.ibb.co/21NbvT2k/Montelli-Family.webp',
-  'Fisalia Family':        'https://i.ibb.co/xqn6PCQd/Fisalia-Family.webp',
-  'Startorch Academy':    'https://i.ibb.co/tprYJw6t/Startorch-Academy.webp',
-  'Spacetrek Collective':  'https://i.ibb.co/ynLTRypG/Spacetrek-Collective.webp',
-  'Roya Tribe':            'https://i.ibb.co/PZkNcXCb/Roya-Tribe.webp',
+  'Black Shores':          '/ui-icons/i.ibb.co-j9CYZKpd-Black-Shores.webp',
+  'Midnight Rangers':      '/ui-icons/i.ibb.co-Zz92sqFX-Midnight-Rangers.webp',
+  'Fractsidus':            '/ui-icons/i.ibb.co-kVVdYWDC-Fractsidus.webp',
+  'Pioneer Association':  '/ui-icons/i.ibb.co-5XkMDsnY-Pioneer-Association.webp',
+  'Lollo Logistics':      '/ui-icons/i.ibb.co-bR6KRJXM-Lollo-Logistics.webp',
+  'Order of the Deep':    '/ui-icons/i.ibb.co-qYB4FKVs-Order-of-the-Deep.webp',
+  'Troupe of Fools':      '/ui-icons/i.ibb.co-S7NWRwVD-Troupe-of-Fools.webp',
+  'Montelli Family':      '/ui-icons/i.ibb.co-21NbvT2k-Montelli-Family.webp',
+  'Fisalia Family':        '/ui-icons/i.ibb.co-xqn6PCQd-Fisalia-Family.webp',
+  'Startorch Academy':    '/ui-icons/i.ibb.co-tprYJw6t-Startorch-Academy.webp',
+  'Spacetrek Collective':  '/ui-icons/i.ibb.co-ynLTRypG-Spacetrek-Collective.webp',
+  'Roya Tribe':            '/ui-icons/i.ibb.co-PZkNcXCb-Roya-Tribe.webp',
   // Added 2026-08-17 for Augusta's audit: Septimont is a city-state region of Rinascita (see
   // REGION_DATA's fix in characters.js) but also has its own dedicated emblem, used as her organization.
-  'Septimont':             'https://i.ibb.co/0pV0d4Yg/septimont-emblem.webp',
+  'Septimont':             '/ui-icons/i.ibb.co-0pV0d4Yg-septimont-emblem.webp',
   // Added 2026-08-17 for Lucy's audit: her organization field is the nation Lahai-Roi itself (see
   // characters.js's IDENTITY_DATA comment) — reuses the same Roya Frostlands Emblem asset as the
   // REGION_ICONS entry below, matching the Black Shores dual-use precedent (a name that's both a
   // nation and a faction shares one emblem rather than needing two).
-  'Lahai-Roi':             'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
+  'Lahai-Roi':             '/ui-icons/i.ibb.co-0jpmLZTp-Region-royafrostlands.webp',
   // Added 2026-08-18 for Qingxiao's audit: Mengzhou is a city within Huanglong (like Jinzhou) with its
   // own dedicated emblem, sourced from fandom's File:Mengzhou_Emblem.png (uploaded for her 3.6 release).
-  'Mengzhou':              'https://i.ibb.co/hJV68MmF/mengzhou-emblem.webp',
+  'Mengzhou':              '/ui-icons/i.ibb.co-hJV68MmF-mengzhou-emblem.webp',
   // Added 2026-08-18 for Baizhi's 4★ audit, sourced from fandom's File:Huaxu_Academy.png.
-  'Huaxu Academy':         'https://i.ibb.co/hFdM9DTy/huaxu-academy.webp',
+  'Huaxu Academy':         '/ui-icons/i.ibb.co-hFdM9DTy-huaxu-academy.webp',
 };
 const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 // In-game nation/region emblem icons, re-hosted on ibb.co. Same convention as FACTION_ICONS but for
@@ -230,24 +230,24 @@ const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
 // both a nation and its own faction, so it's deliberately listed in both maps with the same asset).
 // Only populated for nations that have appeared for an audited character so far.
 const REGION_ICONS = {
-  'Huanglong': 'https://i.ibb.co/G34c0tdc/Huanglong-Emblem.webp',
-  'Black Shores': 'https://i.ibb.co/j9CYZKpd/Black-Shores.webp',
+  'Huanglong': '/ui-icons/i.ibb.co-G34c0tdc-Huanglong-Emblem.webp',
+  'Black Shores': '/ui-icons/i.ibb.co-j9CYZKpd-Black-Shores.webp',
   // Added 2026-08-18: Septimont is a valid Region filter value (CollectionTab) but had no REGION_ICONS
   // entry — only a FACTION_ICONS one. Same asset, matching this file's own Black Shores dual-use precedent.
-  'Septimont': 'https://i.ibb.co/0pV0d4Yg/septimont-emblem.webp',
+  'Septimont': '/ui-icons/i.ibb.co-0pV0d4Yg-septimont-emblem.webp',
   // Added 2026-08-17: Carlotta's region (and Roccia/Phoebe/Brant/Cantarella/Zani/Ciaccona/Cartethyia/
   // Lupa/Phrolova's, per REGION_DATA in characters.js) had no icon at all until now.
-  'Rinascita': 'https://i.ibb.co/hFwcxxhG/rinascita-emblem.webp',
+  'Rinascita': '/ui-icons/i.ibb.co-hFwcxxhG-rinascita-emblem.webp',
   // Fixed 2026-08-17 (was File:Lahai-Roi.png, a 1920x1080 gameplay screenshot, not an emblem — wrong
   // asset for a badge icon). The nation's own {{Nation Infobox}} on fandom lists File:Roya_Frostlands_
   // Emblem.png as ITS emblem too (Lahai-Roi is the underground nation beneath the surface Roya
   // Frostlands, and the wiki has never made a separate emblem for the two) — same asset as the
   // 'Roya Frostlands' entry below, matching the wiki's own convention rather than guessing a new icon.
-  'Lahai-Roi': 'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
+  'Lahai-Roi': '/ui-icons/i.ibb.co-0jpmLZTp-Region-royafrostlands.webp',
   // Added 2026-08-17: Aemeath's birthplace (distinct from her Lahai-Roi region tie above) — sourced
   // from fandom's own File:Roya_Frostlands_Emblem.png. New Federation (Lynae/Mornye's birthplace) has
   // no dedicated emblem asset on the wiki, so it's intentionally left unset rather than guessed.
-  'Roya Frostlands': 'https://i.ibb.co/0jpmLZTp/Region-royafrostlands.webp',
+  'Roya Frostlands': '/ui-icons/i.ibb.co-0jpmLZTp-Region-royafrostlands.webp',
 };
 const getRegionIcon = (region) => REGION_ICONS[region] || null;
 
@@ -258,44 +258,44 @@ const getRegionIcon = (region) => REGION_ICONS[region] || null;
 // same ~38 icons), re-hosted on ibb.co (2026-08-17). Keys match the infobox `role` field's tag text
 // exactly (semicolon-separated in wikitext, see characters.js's COMBAT_ROLE_DATA comment).
 const COMBAT_ROLE_ICONS = {
-  'Main Damage Dealer':                    'https://i.ibb.co/W4hpCQK0/Role-Main-Damage-Dealer.webp',
-  'Resonance Skill Damage':                'https://i.ibb.co/pBKR9Cnh/Role-Resonance-Skill-Damage.webp',
-  'Concerto Efficiency':                   'https://i.ibb.co/QvrG5dSh/Role-Concerto-Efficiency.webp',
-  'Traction':                              'https://i.ibb.co/z9nYB8L/Role-Traction.webp',
-  'Resonance Liberation Regeneration':     'https://i.ibb.co/rRwcLxNs/Role-Resonance-Liberation-Regeneration.webp',
-  'Support and Healer':                    'https://i.ibb.co/xSxCY50N/Role-Support-And-Healer.webp',
-  'Coordinated Attack':                    'https://i.ibb.co/zWxYmVq3/Role-Coordinated-Attack.webp',
-  'DMG Amplification':                     'https://i.ibb.co/1tbwQf7c/Role-DMGAmplification.webp',
-  'Basic Attack DMG Amplification':        'https://i.ibb.co/VcHHWdsP/Role-Basic-Attack-DMGAmplification.webp',
-  'Resonance Liberation Damage':           'https://i.ibb.co/VWpRsvgx/Role-Resonance-Liberation-Damage.webp',
-  'Resonance Skill DMG Amplification':     'https://i.ibb.co/PHkR7pc/Role-Resonance-Skill-DMGAmplification.webp',
-  'Stagnation':                            'https://i.ibb.co/jkksyQRy/Role-Stagnation.webp',
-  'Basic Attack Damage':                   'https://i.ibb.co/QFG8KmHN/Role-Basic-Attack-Damage.webp',
-  'Havoc DMG Amplification':               'https://i.ibb.co/WNGg3bcj/Role-Havoc-DMGAmplification.webp',
-  'Aero DMG Amplification':                'https://i.ibb.co/j9x4bJ4M/Role-Aero-DMGAmplification.webp',
-  'Heavy Attack Damage':                   'https://i.ibb.co/dsRPFN0h/Role-Heavy-Attack-Damage.webp',
-  'Heavy Attack DMG Amplification':        'https://i.ibb.co/4wjWDVxF/Role-Heavy-Attack-DMGAmplification.webp',
-  'Resonance Liberation DMG Amplification': 'https://i.ibb.co/MDvPXhD4/Role-Resonance-Liberation-DMGAmplification.webp',
-  'Electro DMG Amplification':             'https://i.ibb.co/4Rw38fBj/Role-Electro-DMGAmplification.webp',
-  'Vibration Strength Reduction':          'https://i.ibb.co/gM2GBSkv/Role-Vibration-Strength-Reduction.webp',
-  'Interruption Resistance Boost':         'https://i.ibb.co/1tWDtMZK/Role-Interruption-Resistance-Boost.webp',
-  'Fusion DMG Amplification':              'https://i.ibb.co/hFQJvK5t/Role-Fusion-DMGAmplification.webp',
-  'Glacio DMG Amplification':              'https://i.ibb.co/Gv9NJ8sF/Role-Glacio-DMGAmplification.webp',
-  'Spectro DMG Amplification':             'https://i.ibb.co/sJVW2xP6/Role-Spectro-DMGAmplification.webp',
-  'Coordinated Attack DMG Amplification':  'https://i.ibb.co/G34ytqhK/Role-Coordinated-Attack-DMGAmplification.webp',
-  'Spectro Frazzle':                       'https://i.ibb.co/tpjNJZ4q/Role-Spectro-Frazzle-Role.webp',
-  'Aero Erosion':                          'https://i.ibb.co/YBfF4MZJ/Role-Aero-Erosion-Role.webp',
-  'Echo Skill DMG Amplification':          'https://i.ibb.co/ccGBSck3/Role-Echo-Skill-DMGAmplification.webp',
-  'Glacio Chafe':                          'https://i.ibb.co/CK3CZrT8/Role-Glacio-Chafe-Role.webp',
-  'Electro Flare':                         'https://i.ibb.co/wFQpCbgN/Role-Electro-Flare-Role.webp',
-  'Fusion Burst':                          'https://i.ibb.co/YFnMtBws/Role-Fusion-Burst-Role.webp',
-  'Havoc Bane':                            'https://i.ibb.co/kV0kLwbb/Role-Havoc-Bane-Role.webp',
-  'Tune Rupture Response':                 'https://i.ibb.co/5X8kGT3f/Role-Tune-Rupture-Response.webp',
-  'Tune Break Boost':                      'https://i.ibb.co/PZY92L4r/Role-Tune-Break-Boost.webp',
-  'Tune Strain Response':                  'https://i.ibb.co/jZJchddX/Role-Tune-Strain-Response.webp',
-  'Off-Tune Buildup Efficiency':           'https://i.ibb.co/Jjcpjtg6/Role-Off-Tune-Buildup-Efficiency.webp',
-  'Echo Skill Damage':                     'https://i.ibb.co/XrLtSVzH/Role-Echo-Skill-Damage.webp',
-  'Hack Response':                         'https://i.ibb.co/jPFyVDzn/Role-Hack-Response.webp',
+  'Main Damage Dealer':                    '/ui-icons/i.ibb.co-W4hpCQK0-Role-Main-Damage-Dealer.webp',
+  'Resonance Skill Damage':                '/ui-icons/i.ibb.co-pBKR9Cnh-Role-Resonance-Skill-Damage.webp',
+  'Concerto Efficiency':                   '/ui-icons/i.ibb.co-QvrG5dSh-Role-Concerto-Efficiency.webp',
+  'Traction':                              '/ui-icons/i.ibb.co-z9nYB8L-Role-Traction.webp',
+  'Resonance Liberation Regeneration':     '/ui-icons/i.ibb.co-rRwcLxNs-Role-Resonance-Liberation-Regeneration.webp',
+  'Support and Healer':                    '/ui-icons/i.ibb.co-xSxCY50N-Role-Support-And-Healer.webp',
+  'Coordinated Attack':                    '/ui-icons/i.ibb.co-zWxYmVq3-Role-Coordinated-Attack.webp',
+  'DMG Amplification':                     '/ui-icons/i.ibb.co-1tbwQf7c-Role-DMGAmplification.webp',
+  'Basic Attack DMG Amplification':        '/ui-icons/i.ibb.co-VcHHWdsP-Role-Basic-Attack-DMGAmplification.webp',
+  'Resonance Liberation Damage':           '/ui-icons/i.ibb.co-VWpRsvgx-Role-Resonance-Liberation-Damage.webp',
+  'Resonance Skill DMG Amplification':     '/ui-icons/i.ibb.co-PHkR7pc-Role-Resonance-Skill-DMGAmplification.webp',
+  'Stagnation':                            '/ui-icons/i.ibb.co-jkksyQRy-Role-Stagnation.webp',
+  'Basic Attack Damage':                   '/ui-icons/i.ibb.co-QFG8KmHN-Role-Basic-Attack-Damage.webp',
+  'Havoc DMG Amplification':               '/ui-icons/i.ibb.co-WNGg3bcj-Role-Havoc-DMGAmplification.webp',
+  'Aero DMG Amplification':                '/ui-icons/i.ibb.co-j9x4bJ4M-Role-Aero-DMGAmplification.webp',
+  'Heavy Attack Damage':                   '/ui-icons/i.ibb.co-dsRPFN0h-Role-Heavy-Attack-Damage.webp',
+  'Heavy Attack DMG Amplification':        '/ui-icons/i.ibb.co-4wjWDVxF-Role-Heavy-Attack-DMGAmplification.webp',
+  'Resonance Liberation DMG Amplification': '/ui-icons/i.ibb.co-MDvPXhD4-Role-Resonance-Liberation-DMGAmplification.webp',
+  'Electro DMG Amplification':             '/ui-icons/i.ibb.co-4Rw38fBj-Role-Electro-DMGAmplification.webp',
+  'Vibration Strength Reduction':          '/ui-icons/i.ibb.co-gM2GBSkv-Role-Vibration-Strength-Reduction.webp',
+  'Interruption Resistance Boost':         '/ui-icons/i.ibb.co-1tWDtMZK-Role-Interruption-Resistance-Boost.webp',
+  'Fusion DMG Amplification':              '/ui-icons/i.ibb.co-hFQJvK5t-Role-Fusion-DMGAmplification.webp',
+  'Glacio DMG Amplification':              '/ui-icons/i.ibb.co-Gv9NJ8sF-Role-Glacio-DMGAmplification.webp',
+  'Spectro DMG Amplification':             '/ui-icons/i.ibb.co-sJVW2xP6-Role-Spectro-DMGAmplification.webp',
+  'Coordinated Attack DMG Amplification':  '/ui-icons/i.ibb.co-G34ytqhK-Role-Coordinated-Attack-DMGAmplification.webp',
+  'Spectro Frazzle':                       '/ui-icons/i.ibb.co-tpjNJZ4q-Role-Spectro-Frazzle-Role.webp',
+  'Aero Erosion':                          '/ui-icons/i.ibb.co-YBfF4MZJ-Role-Aero-Erosion-Role.webp',
+  'Echo Skill DMG Amplification':          '/ui-icons/i.ibb.co-ccGBSck3-Role-Echo-Skill-DMGAmplification.webp',
+  'Glacio Chafe':                          '/ui-icons/i.ibb.co-CK3CZrT8-Role-Glacio-Chafe-Role.webp',
+  'Electro Flare':                         '/ui-icons/i.ibb.co-wFQpCbgN-Role-Electro-Flare-Role.webp',
+  'Fusion Burst':                          '/ui-icons/i.ibb.co-YFnMtBws-Role-Fusion-Burst-Role.webp',
+  'Havoc Bane':                            '/ui-icons/i.ibb.co-kV0kLwbb-Role-Havoc-Bane-Role.webp',
+  'Tune Rupture Response':                 '/ui-icons/i.ibb.co-5X8kGT3f-Role-Tune-Rupture-Response.webp',
+  'Tune Break Boost':                      '/ui-icons/i.ibb.co-PZY92L4r-Role-Tune-Break-Boost.webp',
+  'Tune Strain Response':                  '/ui-icons/i.ibb.co-jZJchddX-Role-Tune-Strain-Response.webp',
+  'Off-Tune Buildup Efficiency':           '/ui-icons/i.ibb.co-Jjcpjtg6-Role-Off-Tune-Buildup-Efficiency.webp',
+  'Echo Skill Damage':                     '/ui-icons/i.ibb.co-XrLtSVzH-Role-Echo-Skill-Damage.webp',
+  'Hack Response':                         '/ui-icons/i.ibb.co-jPFyVDzn-Role-Hack-Response.webp',
 };
 const getCombatRoleIcon = (tag) => COMBAT_ROLE_ICONS[tag] || null;
 
