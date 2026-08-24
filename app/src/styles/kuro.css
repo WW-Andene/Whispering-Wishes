@@ -1414,8 +1414,8 @@
     /* MED-36: Chart container with responsive aspect ratio */
     .kuro-chart-container {
       aspect-ratio: 16 / 9;
-      max-height: 300px;
-      min-height: 150px;
+      max-height: 288px; /* 256 + 32, composite-primary rounding (CLAUDE.md, delta>16px) */
+      min-height: 144px; /* 128 + 16, composite-primary rounding (CLAUDE.md, delta>16px) */
     }
 
     /* MED-22: Pity danger zone — progressive visual urgency */
