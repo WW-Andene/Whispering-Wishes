@@ -160,11 +160,11 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-2 flex-wrap">
             {(item.featured4Stars || []).map(n => (
-              <div key={n} className="flex flex-col items-center gap-0.5">
+              <div key={n} className="inline-flex flex-col items-stretch gap-0.5 max-w-20">
                 {DEFAULT_COLLECTION_IMAGES[n] && (
-                  <img src={DEFAULT_COLLECTION_IMAGES[n]} alt="" aria-hidden="true" className="w-7 h-7 rounded-md object-cover border border-cyan-400/40" onError={hideOnError} />
+                  <img src={DEFAULT_COLLECTION_IMAGES[n]} alt="" aria-hidden="true" className="w-full aspect-square rounded-md object-cover border border-cyan-400/40" onError={hideOnError} />
                 )}
-                <span className="text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>
+                <span className="text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm text-center whitespace-nowrap">{n}</span>
               </div>
             ))}
           </div>
