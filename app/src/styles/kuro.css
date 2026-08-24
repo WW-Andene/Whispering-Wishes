@@ -1506,12 +1506,12 @@
       border-radius: 4px;
     }
     .kuro-skeleton-row {
-      height: 36px;
+      height: 32px;
       margin-bottom: 6px;
       border-radius: 8px;
     }
     .kuro-skeleton-stat {
-      height: 72px;
+      height: 64px;
       border-radius: 8px;
     }
     .kuro-skeleton-text {
@@ -1768,7 +1768,7 @@
 
     /* FB-F1: Delete/removal slide-out animation */
     @keyframes kuroSlideOut {
-      from { opacity: 1; transform: translateX(0); max-height: 100px; }
+      from { opacity: 1; transform: translateX(0); max-height: 96px; }
       to { opacity: 0; transform: translateX(-20px); max-height: 0; overflow: hidden; }
     }
     .kuro-slide-out {
@@ -2704,8 +2704,8 @@
     /* ═══ SCANNER UI (§E5-SC) ═══ */
     /* ConveneScanner button style */
     .kuro-scanner-btn {
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       border-radius: 12px;
       background: rgba(6,10,18,0.8);
       backdrop-filter: blur(12px);
