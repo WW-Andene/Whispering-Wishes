@@ -432,7 +432,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewResonators')}
                       aria-pressed={collectionView === 'items'}
                     >
-                      <img src="./navicon/Characters.webp" alt="" className="inline w-4 h-4 mr-1" />{t('collection.view.resonators')}
+                      <img src="./navicon/Characters.webp" alt="" className="inline w-4 h-4 mr-1 object-contain" />{t('collection.view.resonators')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('weapons'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
@@ -441,7 +441,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewWeapons')}
                       aria-pressed={collectionView === 'weapons'}
                     >
-                      <img src="./navicon/Icon_Weapons.webp" alt="" className="inline w-4 h-4 mr-1" />{t('collection.view.weapons')}
+                      <img src="./navicon/Icon_Weapons.webp" alt="" className="inline w-4 h-4 mr-1 object-contain" />{t('collection.view.weapons')}
                     </button>
                     <button
                       onClick={() => { setCollectionView('echoes'); if (collectionSort === 'dps' || collectionSort === 'tier') setCollectionSort('copies'); }}
@@ -450,7 +450,7 @@ function CollectionTab({
                       aria-label={t('collection.view.viewEchoes')}
                       aria-pressed={collectionView === 'echoes'}
                     >
-                      <img src="./navicon/Icon_Echoe.webp" alt="" className="inline w-4 h-4 mr-1" />{t('collection.view.echoes')}
+                      <img src="./navicon/Icon_Echoe.webp" alt="" className="inline w-4 h-4 mr-1 object-contain" />{t('collection.view.echoes')}
                     </button>
                   </div>
                 </CardBody>
