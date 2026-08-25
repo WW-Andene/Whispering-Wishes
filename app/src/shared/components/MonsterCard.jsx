@@ -92,7 +92,7 @@ function MonsterCard({
       <div className="flex items-center gap-3">
         {iconUrl ? (
           <div className={`${compact ? 'w-8 h-8' : 'w-12 h-12'} rounded-lg overflow-hidden flex-shrink-0 border border-red-500/30 bg-red-500/8`}>
-            <img src={iconUrl} alt={name} className="w-full h-full object-cover" onError={hideOnError} />
+            <img src={iconUrl} alt={name} loading="lazy" decoding="async" className="w-full h-full object-cover" onError={hideOnError} />
           </div>
         ) : (
           <div className={`${compact ? 'w-8 h-8' : 'w-12 h-12'} rounded-lg flex items-center justify-center border border-red-500/30 bg-red-500/5 flex-shrink-0`}>
