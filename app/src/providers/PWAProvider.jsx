@@ -11,14 +11,14 @@ import { HEADER_ICON } from '../data/constants.js';
 // Removed ~130 lines of inline SERVICE_WORKER_CODE string that was registered via blob URL.
 
 // Shared install banner component used by both native and iframe prompts
-const InstallBanner = ({ subtitle, actionLabel, onAction, onDismiss }) => (
+const InstallBanner = ({ title = 'Install Whispering Wishes', subtitle, actionLabel, onAction, onDismiss }) => (
   <div className="fixed bottom-24 left-3 right-3 z-[9800] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
     <div className="flex items-center gap-3">
       <div className="w-12 h-12 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
         <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
       </div>
       <div className="flex-1">
-        <div className="text-black font-semibold text-xl">Install Whispering Wishes</div>
+        <div className="text-black font-semibold text-xl">{title}</div>
         <div className="text-black/70 text-base">{subtitle}</div>
       </div>
       <button
@@ -80,6 +80,7 @@ const PWAProvider = ({ children }) => {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
     // Check if already installed (PWA or iOS standalone)
@@ -134,6 +135,7 @@ const PWAProvider = ({ children }) => {
             swStateChangeHandler = () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 console.info('[WW] New version available');
+                setUpdateAvailable(true);
               }
             };
             newWorker.addEventListener('statechange', swStateChangeHandler);
@@ -184,7 +186,8 @@ const PWAProvider = ({ children }) => {
     isInstalled,
     promptInstall,
     showInstallGuide: () => setShowInstallGuide(true),
-  }), [installPrompt, isInstalled, promptInstall]);
+    updateAvailable,
+  }), [installPrompt, isInstalled, promptInstall, updateAvailable]);
 
   return (
     <PWAContext.Provider value={pwaValue}>
@@ -194,6 +197,16 @@ const PWAProvider = ({ children }) => {
         <div role="alert" aria-live="assertive" className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-500 text-black text-center py-1 text-base font-medium">
           You are offline - some features may be limited
         </div>
+      )}
+      {/* New version available — reload to pick it up */}
+      {updateAvailable && (
+        <InstallBanner
+          title="Update available"
+          subtitle="A new version is ready"
+          actionLabel="Refresh"
+          onAction={() => window.location.reload()}
+          onDismiss={() => setUpdateAvailable(false)}
+        />
       )}
       {/* Install prompt banner — native */}
       {installPrompt && !isInstalled && !isInIframe && (
