@@ -312,7 +312,7 @@ export default function AdminPanel({
                                       className={`kuro-input flex-1 text-sm py-1 ${hasCustom ? 'border-purple-500/50' : ''}`}
                                     />
                                     {displayUrl && (
-                                      <img src={displayUrl} alt={name} className="w-[28px] h-[28px] object-cover rounded border border-purple-500/30" loading="lazy" onError={hideOnError} />
+                                      <img src={displayUrl} alt={name} className="w-[30px] h-[30px] object-cover rounded border border-purple-500/30" loading="lazy" onError={hideOnError} />
                                     )}
                                   </div>
                                 );

@@ -603,7 +603,7 @@ function PlannerTab({
                       <span className="font-bold text-2xl text-white px-4 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(3px)', textShadow: `0 1px 6px rgba(0,0,0,0.5)` }}>{ftg.name}</span>
                     </div>
                     <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))}
-                      className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-black/50 text-white/70 hover:text-white flex items-center justify-center transition-opacity btn-icon-square"
+                      className="absolute top-1 right-1 z-20 w-[30px] h-[30px] aspect-square p-0 rounded-lg bg-black/50 text-white/70 hover:text-white flex items-center justify-center transition-opacity btn-icon-square"
                       aria-label={t('planner.removeCharAria', { name: ftg.name })}><X size={12} /></button>
                   </div>
 

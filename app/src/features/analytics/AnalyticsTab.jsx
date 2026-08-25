@@ -493,7 +493,7 @@ function AnalyticsTab({
                               <div className="space-y-2 py-2" aria-label={t('analytics.leaderboard.loadingAria')}>
                                 {[...Array(6)].map((_, i) => (
                                   <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
-                                    <div className="kuro-skeleton kuro-skeleton-circle w-[28px] h-[28px] flex-shrink-0" />
+                                    <div className="kuro-skeleton kuro-skeleton-circle w-[30px] h-[30px] flex-shrink-0" />
                                     <div className="flex-1 min-w-0 space-y-1.5">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${55 + i * 7}%` }} />
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '35%' }} />
@@ -518,7 +518,7 @@ function AnalyticsTab({
                                     className={`flex items-center gap-3 p-3 rounded-lg transition-all ${isYou ? 'bg-cyan-500/10 border border-cyan-500/30' : 'bg-white/5'}`}
                                   >
                                     <div 
-                                      className="w-[28px] h-[28px] rounded-full flex items-center justify-center text-base font-bold flex-shrink-0"
+                                      className="w-[30px] h-[30px] rounded-full flex items-center justify-center text-base font-bold flex-shrink-0"
                                       style={{
                                         background: i < 3 ? `linear-gradient(135deg, ${(MEDAL_COLORS[i] ?? '#9ca3af')}40, ${(MEDAL_COLORS[i] ?? '#9ca3af')}20)` : 'rgba(255,255,255,0.1)',
                                         color: i < 3 ? MEDAL_COLORS[i] : '#9ca3af',
@@ -557,7 +557,7 @@ function AnalyticsTab({
                                 {[...Array(5)].map((_, i) => (
                                   <div key={i} className="flex items-center gap-3 py-1.5">
                                     <div className="kuro-skeleton kuro-skeleton-text w-4 h-3 flex-shrink-0" />
-                                    <div className="kuro-skeleton w-[28px] h-[28px] rounded-md flex-shrink-0" />
+                                    <div className="kuro-skeleton w-[30px] h-[30px] rounded-md flex-shrink-0" />
                                     <div className="flex-1 min-w-0 space-y-1">
                                       <div className="kuro-skeleton kuro-skeleton-text" style={{ width: `${50 + i * 8}%` }} />
                                       <div className="kuro-skeleton h-1 rounded-full" style={{ width: `${70 - i * 10}%` }} />
@@ -577,7 +577,7 @@ function AnalyticsTab({
                                       return (
                                         <div key={name} className="flex items-center gap-3 py-1.5">
                                           <span className="text-sm font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <img src={imgUrl} alt={name} className="w-[28px] h-[28px] rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
+                                          {imgUrl && <img src={imgUrl} alt={name} className="w-[30px] h-[30px] rounded-md object-cover bg-neutral-800 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-base text-gray-200 truncate">{name}</span>
@@ -601,7 +601,7 @@ function AnalyticsTab({
                                       return (
                                         <div key={name} className="flex items-center gap-3 py-1.5">
                                           <span className="text-sm font-bold w-4 text-right" style={{color: i < 3 ? MEDAL_COLORS[i] : '#6b7280'}}>{i + 1}</span>
-                                          {imgUrl && <div className="w-[28px] h-[28px] rounded-md overflow-hidden bg-neutral-800 flex-shrink-0 holo-5star" style={{ position: 'relative' }}><img src={imgUrl} alt={name} className="w-full h-full object-cover" loading="lazy" onError={hideOnError} /></div>}
+                                          {imgUrl && <div className="w-[30px] h-[30px] rounded-md overflow-hidden bg-neutral-800 flex-shrink-0 holo-5star" style={{ position: 'relative' }}><img src={imgUrl} alt={name} className="w-full h-full object-cover" loading="lazy" onError={hideOnError} /></div>}
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between">
                                               <span className="text-base text-gray-200 truncate">{name}</span>

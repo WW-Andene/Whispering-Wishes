@@ -667,7 +667,7 @@ function CollectionTab({
               <div className="flex gap-1.5 items-center justify-end">
                 <button
                   onClick={refreshImages}
-                  className="kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-gray-400 hover:text-emerald-400 transition-all"
+                  className="kuro-btn flex items-center justify-center w-[30px] h-[30px] !p-0 !rounded-lg text-gray-400 hover:text-emerald-400 transition-all"
                   title={t('collection.sort.refresh')}
                   aria-label={t('collection.sort.refreshAria')}
                 >
@@ -675,7 +675,7 @@ function CollectionTab({
                 </button>
                 <button
                   onClick={() => setCollectionSort('copies')}
-                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-base font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
+                  className={`kuro-btn flex items-center justify-center w-[30px] h-[30px] !p-0 !rounded-lg text-base font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
                   title={t('collection.sort.byCopies')}
                   aria-label={t('collection.sort.byCopies')}
                   aria-pressed={collectionSort === 'copies'}
@@ -684,7 +684,7 @@ function CollectionTab({
                 </button>
                 <button
                   onClick={() => setCollectionSort('release')}
-                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
+                  className={`kuro-btn flex items-center justify-center w-[30px] h-[30px] !p-0 !rounded-lg transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
                   title={t('collection.sort.byRelease')}
                   aria-label={t('collection.sort.byRelease')}
                   aria-pressed={collectionSort === 'release'}
@@ -694,7 +694,7 @@ function CollectionTab({
                 {collectionView === 'items' && (
                   <button
                     onClick={() => setCollectionSort(prev => prev === 'name' ? 'nameDesc' : 'name')}
-                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-sm font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
+                    className={`kuro-btn flex items-center justify-center w-[30px] h-[30px] !p-0 !rounded-lg text-sm font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
                     title={collectionSort === 'nameDesc' ? t('collection.sort.za') : t('collection.sort.az')}
                     aria-label={collectionSort === 'nameDesc' ? t('collection.sort.sortedZA') : t('collection.sort.sortAlpha')}
                     aria-pressed={collectionSort === 'name' || collectionSort === 'nameDesc'}
@@ -951,7 +951,7 @@ function CollectionTab({
         >−</button>
         <div className="text-center min-w-[48px] px-1">
           <div className="text-white text-base font-bold kuro-number">{manualCounts[counterWidget.name] || 0}</div>
-          <div className="text-gray-500 text-2xs truncate max-w-[60px]">{counterWidget.name.split(' ')[0]}</div>
+          <div className="text-gray-500 text-2xs truncate max-w-[62px]">{counterWidget.name.split(' ')[0]}</div>
         </div>
         <button
           className="kuro-btn w-12 h-12 flex items-center justify-center text-lg font-bold text-emerald-400 hover:bg-emerald-500/20"
