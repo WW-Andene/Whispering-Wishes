@@ -766,7 +766,7 @@ const UPLIFT_TO_SCORE = 2.5;
 // carry, so any candidate team built around a Sub DPS (or other off-role character) run as a
 // realistic/overused hypercarry — a genuinely common way these are actually played — scored with NO
 // DPS-power component at all, understating it versus a canonical Main-DPS-led team of equal quality.
-export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverride) {
+export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverride, enemyResMap = null) {
   let score = 0;
   const roles = members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
   const tags = [];
@@ -806,8 +806,14 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // rather than only ever discounting OTHER members' output and treating the DPS's own energy cost
     // as free.
     if (dpsFocus.includes('Liberation') && (CHARACTER_DATA[mainDps]?.maxEnergy || 0) >= 175) dpsScore *= 0.85;
-    score += dpsScore;
     const dpsEl = (CHARACTER_DATA[mainDps]?.element || '').toLowerCase();
+    // Without a selected enemy this stays a pure enemy-blind synergy score, same as before. With one,
+    // fold in the mainDps's element RES against that specific enemy (same calcResMult the real damage
+    // calc uses, and the same "no data -> 10%" fallback calcTeamStats.js's getEnemyRes uses) so the
+    // list this powers (TeamsTab's "Team Suggestions" card) actually reorders per-enemy instead of
+    // always surfacing the same generically-strongest team regardless of which target is selected.
+    if (enemyResMap) dpsScore *= calcResMult(enemyResMap[dpsEl] ?? 10, 0);
+    score += dpsScore;
     // Compare a buff/support's uptime against the DPS's actual on-field window, not the whole
     // rotation — a buff sitting on them while off-field does nothing. Falls back to rotTime only
     // when onField isn't tracked for this character.

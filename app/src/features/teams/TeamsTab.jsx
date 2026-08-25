@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Share2, Shuffle, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { scoreTeamComposition, isHealerRole, isSupportRole } from './calcEngine.js';
+import { getEnemyResMap } from './calcTeamStats.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -26,6 +27,16 @@ function TeamsTab({
 }) {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [suggestionsCollapsed, setSuggestionsCollapsed] = useSessionState('ww-team-suggestions-collapsed', false);
+  // Lifted up from DamageCalculator so the "Team Suggestions" card below can rank against the same
+  // selected enemy the calculator uses, instead of that card being entirely enemy-blind by
+  // construction (it previously had no way to even know an enemy had been picked).
+  const [enemyLevel, setEnemyLevel] = useState(90);
+  const [enemyEcho, setEnemyEcho] = useState('');
+  const [enemyEchoModalOpen, setEnemyEchoModalOpen] = useState(false);
+  const [enemyEchoSearch, setEnemyEchoSearch] = useState('');
+  const [enemyEchoRankFilter, setEnemyEchoRankFilter] = useState('all');
+  const [enemyEchoSetFilter, setEnemyEchoSetFilter] = useState('all');
+  const [enemyEchoBuffFilter, setEnemyEchoBuffFilter] = useState('all');
   const [saveLoadoutOpen, setSaveLoadoutOpen] = useState(false);
   const [saveLoadoutName, setSaveLoadoutName] = useState('');
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
@@ -110,7 +121,11 @@ function TeamsTab({
     // dpsOverride threads through to scoreTeamComposition so a candidate team built around an
     // off-role hypercarry pick still gets scored WITH its real DPS-power component instead of
     // silently finding no 'Main DPS'-tagged member and skipping that whole part of the score.
-    const scoreTeam = (members, dpsOverride) => scoreTeamComposition(members, ownedWeaps, dpsOverride);
+    // enemyResMap folds the selected enemy's per-element RES into the mainDps power term when one
+    // is picked (null/no-op otherwise) — this is what makes the whole list re-rank per enemy
+    // instead of always surfacing the same generically-strongest teams regardless of the target.
+    const enemyResMap = getEnemyResMap(enemyEcho);
+    const scoreTeam = (members, dpsOverride) => scoreTeamComposition(members, ownedWeaps, dpsOverride, enemyResMap);
 
     // ═══ SECTION 1: Build custom teams from YOUR owned characters ═══
     const customTeams = [];
@@ -208,7 +223,7 @@ function TeamsTab({
     return allSuggestions;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- metaShuffleSeed is a deliberate re-roll
     // trigger, not a real data dependency; its value is never read, only its identity changing matters.
-  }, [collectionData, metaShuffleSeed]);
+  }, [collectionData, metaShuffleSeed, enemyEcho]);
 
   return (
           <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
@@ -797,6 +812,13 @@ function TeamsTab({
                     onOpenEchoStatPanel={(teamIdx, charName, slotIdx, echoName) => {
                       setEchoStatPanel({ teamIdx, charName, slotIdx, echoName });
                     }}
+                    enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
+                    enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
+                    enemyEchoModalOpen={enemyEchoModalOpen} setEnemyEchoModalOpen={setEnemyEchoModalOpen}
+                    enemyEchoSearch={enemyEchoSearch} setEnemyEchoSearch={setEnemyEchoSearch}
+                    enemyEchoRankFilter={enemyEchoRankFilter} setEnemyEchoRankFilter={setEnemyEchoRankFilter}
+                    enemyEchoSetFilter={enemyEchoSetFilter} setEnemyEchoSetFilter={setEnemyEchoSetFilter}
+                    enemyEchoBuffFilter={enemyEchoBuffFilter} setEnemyEchoBuffFilter={setEnemyEchoBuffFilter}
                   />
 
                   {/* Suggested Teams from Character Data — collapsible */}

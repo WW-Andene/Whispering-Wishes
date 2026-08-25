@@ -42,6 +42,17 @@ function resolveBuffValue(b, totalER) {
   return Math.min(cap, Math.max(0, totalER - threshold) * ratePerPercent);
 }
 
+// Shared with scoreTeamComposition (calcEngine.js) so TeamsTab's "Team Suggestions" list can fold
+// the selected enemy's per-element RES into its ranking using the exact same lookup calcTeamStats
+// itself uses below (enemyStats.res when the full per-level curve is known, else the older flat
+// enemyRes map, else {} so getEnemyRes's own ?? 10 fallback applies uniformly).
+export function getEnemyResMap(enemyEcho) {
+  if (!enemyEcho) return null;
+  const enemyEchoData = ECHO_DATA[enemyEcho];
+  const enemyStats = enemyEchoData?.enemyStats || null;
+  return enemyStats?.res || enemyEchoData?.enemyRes || {};
+}
+
 export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, enemyEcho, enemyLevel) {
     const mems = slots.filter(s => s).map(name => {
       const d = CHARACTER_DATA[name];

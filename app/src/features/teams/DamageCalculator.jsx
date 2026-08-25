@@ -33,14 +33,17 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   onOpenWeaponSelector,
   onOpenEchoSelector,
   onOpenEchoStatPanel,
+  // Enemy target state is owned by TeamsTab (not local here) so the sibling "Team Suggestions"
+  // card there can also read the same selected enemy and rank its list against it, instead of
+  // that card being structurally unable to ever know which enemy is selected.
+  enemyLevel, setEnemyLevel,
+  enemyEcho, setEnemyEcho,
+  enemyEchoModalOpen, setEnemyEchoModalOpen,
+  enemyEchoSearch, setEnemyEchoSearch,
+  enemyEchoRankFilter, setEnemyEchoRankFilter,
+  enemyEchoSetFilter, setEnemyEchoSetFilter,
+  enemyEchoBuffFilter, setEnemyEchoBuffFilter,
 }, ref) {
-  const [enemyLevel, setEnemyLevel] = useState(90);
-  const [enemyEcho, setEnemyEcho] = useState('');
-  const [enemyEchoModalOpen, setEnemyEchoModalOpen] = useState(false);
-  const [enemyEchoSearch, setEnemyEchoSearch] = useState('');
-  const [enemyEchoRankFilter, setEnemyEchoRankFilter] = useState('all');
-  const [enemyEchoSetFilter, setEnemyEchoSetFilter] = useState('all');
-  const [enemyEchoBuffFilter, setEnemyEchoBuffFilter] = useState('all');
   const [autoTeamPool, setAutoTeamPool] = useState('owned'); // 'owned' | 'any'
   const [autoTeamBusy, setAutoTeamBusy] = useState(false);
 
