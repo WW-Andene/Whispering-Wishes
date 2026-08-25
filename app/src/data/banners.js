@@ -925,9 +925,14 @@ const CHARACTER_THEMES = [
   { id: 'suisui',        name: 'Suisui',        element: 'Glacio',  bannerArt: './banners/wFwmhvLP-Suisui-banner.jpg',       pos: { header: '50% 36%', nav: '50% 36%', bg: '60% 50%' } },
   { id: 'yangyang-xuanling', name: 'Yangyang: Xuanling', element: 'Havoc', bannerArt: './banners/QFHC5Y4h-Yangyang-Xuanling-banner.jpg', pos: { header: '50% 36%', nav: '50% 36%', bg: '60% 50%' } },
 ];
-// Sorted most-recently-released first, reusing the single source of truth for release order
-// (RELEASE_ORDER, characters.js) instead of relying on manual placement above.
-CHARACTER_THEMES.sort((a, b) => RELEASE_ORDER.indexOf(b.name) - RELEASE_ORDER.indexOf(a.name));
+// Sorted 5★ before 4★, most-recently-released first within each rarity tier — reusing
+// CHARACTER_DATA for rarity and RELEASE_ORDER (characters.js) for release order, instead
+// of relying on manual placement above.
+CHARACTER_THEMES.sort((a, b) => {
+  const rarityDiff = (CHARACTER_DATA[b.name]?.rarity || 0) - (CHARACTER_DATA[a.name]?.rarity || 0);
+  if (rarityDiff !== 0) return rarityDiff;
+  return RELEASE_ORDER.indexOf(b.name) - RELEASE_ORDER.indexOf(a.name);
+});
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WEAPON THEMES — Real "Featured Weapon Convene" splash art per 5★ weapon
