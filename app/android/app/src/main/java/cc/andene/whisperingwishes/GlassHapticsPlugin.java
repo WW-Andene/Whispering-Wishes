@@ -12,17 +12,20 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 // Replaces @capacitor/haptics on Android. That plugin's impact/notification
 // styles are all VibrationEffect.createWaveform() — a raw amplitude ramp
-// held for 43-60ms (see its HapticsImpactType/HapticsNotificationType.java)
-// — which reads as a dull, soft "buzz" on most actuators, not a sharp tap.
+// held for 43-60ms — which reads as a dull, soft "buzz" on most actuators.
 //
-// This uses VibrationEffect.Composition's primitives instead (API 30+,
-// PRIMITIVE_LOW_TICK added in 33): short, OS/OEM-tuned transients rendered
-// directly by the haptic actuator's own driver, the same category of API
-// that makes stock Android UI taps (Pixel keyboard, quick-settings toggles)
-// feel crisp rather than buzzy — the closest thing on a phone motor to the
-// short, precise clicks DualSense's HD haptics are known for. Falls back
-// through createPredefined() (API 29) and short createOneShot()/legacy
-// vibrate() on older OS versions where no primitive API exists at all.
+// v1 of this plugin used PRIMITIVE_TICK/PRIMITIVE_LOW_TICK for the base
+// taps, which turned out to still feel "too full and deep" — Android's own
+// docs describe LOW_TICK/TICK as deliberately soft/subtle sensations, the
+// opposite of what was wanted. Switched entirely to PRIMITIVE_CLICK (varying
+// only its scale/amplitude, never swapping in a softer primitive) — a
+// single sharp, dry transient with no resonant tail, closer to a mechanical
+// keyboard-style key click (e.g. MIUI's own keyboard tap feedback) than a
+// vibration motor buzz. Falls back through createPredefined(EFFECT_CLICK)
+// (API 29) and short, high-amplitude createOneShot()/legacy vibrate() on
+// older OS versions with no primitive-composition API at all — every
+// fallback tier stays short-and-sharp rather than reaching for a softer
+// effect just because the primitive API isn't available.
 @CapacitorPlugin(name = "GlassHaptics")
 public class GlassHapticsPlugin extends Plugin {
     private Vibrator vibrator;
@@ -43,36 +46,18 @@ public class GlassHapticsPlugin extends Plugin {
         return (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
-    @PluginMethod public void light(PluginCall call) { playTick(0.35f); call.resolve(); }
-    @PluginMethod public void medium(PluginCall call) { playTick(0.75f); call.resolve(); }
-    @PluginMethod public void heavy(PluginCall call) { playClick(1.0f); call.resolve(); }
+    @PluginMethod public void light(PluginCall call) { playClick(0.3f, 8, 130); call.resolve(); }
+    @PluginMethod public void medium(PluginCall call) { playClick(0.65f, 9, 190); call.resolve(); }
+    @PluginMethod public void heavy(PluginCall call) { playClick(1.0f, 10, 255); call.resolve(); }
     @PluginMethod public void success(PluginCall call) { playSuccess(); call.resolve(); }
     @PluginMethod public void warning(PluginCall call) { playWarning(); call.resolve(); }
     @PluginMethod public void error(PluginCall call) { playError(); call.resolve(); }
 
-    // "Frosted glass tick" — the thinnest primitive the platform exposes.
+    // A single dry click — same primitive at every intensity, only the
+    // amplitude/scale changes, so "light" never turns into a softer/longer
+    // sensation, just a quieter version of the same hard tap.
     @SuppressWarnings("deprecation")
-    private void playTick(float scale) {
-        if (Build.VERSION.SDK_INT >= 33) {
-            vibrator.vibrate(VibrationEffect.startComposition()
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_LOW_TICK, scale)
-                .compose());
-        } else if (Build.VERSION.SDK_INT >= 30) {
-            vibrator.vibrate(VibrationEffect.startComposition()
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_TICK, scale)
-                .compose());
-        } else if (Build.VERSION.SDK_INT >= 29) {
-            vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK));
-        } else if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createOneShot(10, (int) Math.max(40, 255 * scale)));
-        } else {
-            vibrator.vibrate(10);
-        }
-    }
-
-    // A sharper "click" primitive — for the heavier end of the scale.
-    @SuppressWarnings("deprecation")
-    private void playClick(float scale) {
+    private void playClick(float scale, int fallbackDurationMs, int fallbackAmplitude) {
         if (Build.VERSION.SDK_INT >= 30) {
             vibrator.vibrate(VibrationEffect.startComposition()
                 .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, scale)
@@ -80,64 +65,59 @@ public class GlassHapticsPlugin extends Plugin {
         } else if (Build.VERSION.SDK_INT >= 29) {
             vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
         } else if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createOneShot(18, (int) Math.max(80, 255 * scale)));
+            vibrator.vibrate(VibrationEffect.createOneShot(fallbackDurationMs, fallbackAmplitude));
         } else {
-            vibrator.vibrate(20);
+            vibrator.vibrate(fallbackDurationMs);
         }
     }
 
-    // A light tick followed by a sharper click ~40ms later — reads as a
-    // quick two-part "settle" rather than a sustained buzz.
+    // Two hard clicks in quick succession (25ms apart) — a tight double-tap,
+    // not a soft-then-hard swell.
     @SuppressWarnings("deprecation")
     private void playSuccess() {
         if (Build.VERSION.SDK_INT >= 30) {
             vibrator.vibrate(VibrationEffect.startComposition()
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_TICK, 0.4f)
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.8f, 40)
+                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.6f)
+                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 1.0f, 25)
                 .compose());
         } else if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 12, 40, 16 }, new int[] { 0, 90, 0, 160 }, -1));
+            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 8, 25, 9 }, new int[] { 0, 160, 0, 220 }, -1));
         } else {
-            vibrator.vibrate(new long[] { 0, 12, 40, 16 }, -1);
+            vibrator.vibrate(new long[] { 0, 8, 25, 9 }, -1);
         }
     }
 
-    // Three short, evenly-spaced ticks — deliberately not a buzz-buzz-buzz.
+    // Three short, tightly-spaced clicks — a dry rattle, not a slow pulse.
     @SuppressWarnings("deprecation")
     private void playWarning() {
         if (Build.VERSION.SDK_INT >= 30) {
             vibrator.vibrate(VibrationEffect.startComposition()
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_TICK, 0.6f)
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_TICK, 0.6f, 60)
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_TICK, 0.6f, 60)
+                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.8f)
+                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.8f, 40)
+                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.8f, 40)
                 .compose());
         } else if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 14, 60, 14, 60, 14 }, new int[] { 0, 130, 0, 130, 0, 130 }, -1));
+            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 9, 40, 9, 40, 9 }, new int[] { 0, 190, 0, 190, 0, 190 }, -1));
         } else {
-            vibrator.vibrate(new long[] { 0, 14, 60, 14, 60, 14 }, -1);
+            vibrator.vibrate(new long[] { 0, 9, 40, 9, 40, 9 }, -1);
         }
     }
 
-    // A firm click followed by a quieter low-tick "settle" — distinct from
-    // success's tick-then-click ordering so the two remain tactilely different.
+    // Two firm clicks, closer together than success's (18ms) — reads as a
+    // harder, more urgent double-tap so it stays distinct from success.
     @SuppressWarnings("deprecation")
     private void playError() {
-        if (Build.VERSION.SDK_INT >= 33) {
+        if (Build.VERSION.SDK_INT >= 30) {
             vibrator.vibrate(VibrationEffect.startComposition()
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.9f)
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_LOW_TICK, 0.5f, 70)
-                .compose());
-        } else if (Build.VERSION.SDK_INT >= 30) {
-            vibrator.vibrate(VibrationEffect.startComposition()
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.9f)
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_TICK, 0.5f, 70)
+                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 1.0f)
+                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, 1.0f, 18)
                 .compose());
         } else if (Build.VERSION.SDK_INT >= 29) {
             vibrator.vibrate(VibrationEffect.createPredefined(VibrationEffect.EFFECT_DOUBLE_CLICK));
         } else if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 20, 45, 24 }, new int[] { 0, 200, 0, 255 }, -1));
+            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 10, 18, 10 }, new int[] { 0, 230, 0, 255 }, -1));
         } else {
-            vibrator.vibrate(new long[] { 0, 20, 45, 24 }, -1);
+            vibrator.vibrate(new long[] { 0, 10, 18, 10 }, -1);
         }
     }
 }
