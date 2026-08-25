@@ -1,3 +1,3 @@
 {
-  "tooltip": "Soft pity starts at pull 64 (increasing rate). Hard pity at pull 80 (guaranteed 5★). 50/50 means a 50% chance for the featured character; losing gives a guarantee next time."
+  "tooltip": "Soft pity starts at pull {{start}} (increasing rate). Hard pity at pull 80 (guaranteed 5★). 50/50 means a 50% chance for the featured character; losing gives a guarantee next time."
 }
