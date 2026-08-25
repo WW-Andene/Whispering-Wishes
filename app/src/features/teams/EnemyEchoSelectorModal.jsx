@@ -72,7 +72,7 @@ export default function EnemyEchoSelectorModal({
             <h3 className="text-white font-semibold text-xl">{t('teams.enemyEcho.title')}</h3>
             <p className="text-gray-400 text-sm">{t('teams.enemyEcho.subtitle', { count: ALL_TARGETABLE_ECHOES.length })}</p>
           </div>
-          <button onClick={onClose} className="modal-close-btn p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.enemyEcho.closeAria')}><X size={16} /></button>
+          <button onClick={onClose} className="modal-close-btn p-3 min-w-[calc(48px*var(--ui-scale,1))] min-h-[calc(48px*var(--ui-scale,1))] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.enemyEcho.closeAria')}><X size={16} /></button>
         </div>
 
         {/* Search + Filters */}
@@ -138,7 +138,7 @@ export default function EnemyEchoSelectorModal({
         )}
 
         <div className="overflow-y-auto flex-1 p-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2">
             {filtered.map(name => {
               const ed = ECHO_DATA[name];
               return (

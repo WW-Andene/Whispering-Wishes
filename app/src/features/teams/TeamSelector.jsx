@@ -56,7 +56,7 @@ export default function TeamSelector({
                             <h3 className="text-white text-xl font-semibold">{t('teams.selector.title')}</h3>
                             <p className="text-gray-500 text-sm">{t('teams.selector.subtitle', { slot: teamSelectorSlot + 1, team: activeTeam.name })}</p>
                           </div>
-                          <button onClick={() => setTeamSelectorOpen(false)} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.selector.closeAria')}>
+                          <button onClick={() => setTeamSelectorOpen(false)} className="p-3 min-w-[calc(48px*var(--ui-scale,1))] min-h-[calc(48px*var(--ui-scale,1))] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.selector.closeAria')}>
                             <X size={16} />
                           </button>
                         </div>
@@ -203,7 +203,7 @@ export default function TeamSelector({
 
                         {/* Character Grid */}
                         <div className="flex-1 overflow-y-auto p-4">
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                          <div className="grid grid-cols-4 gap-2">
                             {/* recommendedNames is a Map built by sorting all candidates by score
                                 descending then taking the top slice -- its insertion order already IS
                                 the rank order, so this array's index (not the score itself, which the

@@ -384,7 +384,7 @@ function CollectionTab({
                 <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                   <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300 progress-fill" style={{width: `${pct}%`}} />
                 </div>
-                <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-sm">
+                <div className="grid grid-cols-4 gap-1 text-center text-sm">
                   <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.resonator5')}</div></div>
                   <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.resonator4')}</div></div>
                   <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.weapon5')}</div></div>
@@ -470,7 +470,7 @@ function CollectionTab({
                   </button>
                 </div>
               )}
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-3 gap-1.5">
 
                 {/* ── Resonators view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
                 {collectionView === 'items' && (<>

@@ -637,7 +637,7 @@ function TeamsTab({
                       {/* Loadout preset dropdown (triggered from header Load icon) */}
                       {showPresetDropdown && (
                         <div className="relative mb-3">
-                          <div className="absolute top-0 right-0 z-50 min-w-[192px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
+                          <div className="absolute top-0 right-0 z-50 min-w-[calc(192px*var(--ui-scale,1))] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
                             {equipPresets.length === 0 ? (
                               <div className="px-3 py-2 text-sm text-gray-500">{t('teams.tab.noSavedLoadouts')}</div>
                             ) : (
@@ -714,10 +714,10 @@ function TeamsTab({
                                 />
                                 </div>
                               )}
-                              {/* P6-FIX: Increased from w-6 h-6 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
+                              {/* P6-FIX: Increased from w-6 h-6 to w-[calc(28px*var(--ui-scale,1))] h-[calc(28px*var(--ui-scale,1))] for touch targets (F-P6-050) */}
                               {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="action-btn absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
+                                className="action-btn absolute top-1 right-1 z-20 w-[calc(28px*var(--ui-scale,1))] h-[calc(28px*var(--ui-scale,1))] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
                                 aria-label={t('teams.tab.removeSlotAria', { name: charName, slot: slotIdx + 1 })}
                               >
                                 <X size={12} />
@@ -725,7 +725,7 @@ function TeamsTab({
                               {!framingMode && dmgCapableCount > 1 && (charData?.totalMult || 0) > 0 && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setTeamMainDps(charName); }}
-                                  className={`action-btn absolute top-1 left-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg flex items-center justify-center btn-icon-square transition-all ${activeTeam.mainDpsOverride === charName ? 'bg-yellow-500 text-black opacity-100' : 'bg-black/60 text-yellow-400/70 opacity-60 hover:opacity-100'}`}
+                                  className={`action-btn absolute top-1 left-1 z-20 w-[calc(28px*var(--ui-scale,1))] h-[calc(28px*var(--ui-scale,1))] aspect-square p-0 rounded-lg flex items-center justify-center btn-icon-square transition-all ${activeTeam.mainDpsOverride === charName ? 'bg-yellow-500 text-black opacity-100' : 'bg-black/60 text-yellow-400/70 opacity-60 hover:opacity-100'}`}
                                   aria-label={activeTeam.mainDpsOverride === charName ? t('teams.tab.headlineDpsClearAria', { name: charName }) : t('teams.tab.headlineDpsSetAria', { name: charName })}
                                   title={activeTeam.mainDpsOverride === charName ? t('teams.tab.headlineDpsClearTitle') : t('teams.tab.headlineDpsSetTitle')}
                                 >

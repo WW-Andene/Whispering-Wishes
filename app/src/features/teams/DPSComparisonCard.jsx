@@ -102,7 +102,7 @@ export default function DPSComparisonCard({
                   </span>
                 </div>
                 <button onClick={() => { cleanupEntryEquipment(entry, setTeamEquipment); setTeamCompareEntries(prev => prev.filter(e => e.id !== entry.id)); haptic.light(); }}
-                  className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
+                  className="absolute top-1 right-1 z-20 w-[calc(28px*var(--ui-scale,1))] h-[calc(28px*var(--ui-scale,1))] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity btn-icon-square"
                   aria-label={t('teams.dpsCompare.removeAria')}>
                   <X size={12} />
                 </button>
@@ -144,7 +144,7 @@ export default function DPSComparisonCard({
                           borderLeft: 'none',
                           boxShadow: `0 0 12px ${bar.color}50, inset 0 0 15px ${bar.color}30`
                         }} />
-                      <div className="absolute top-0 bottom-0 w-[2px] rounded-full"
+                      <div className="absolute top-0 bottom-0 w-[calc(2px*var(--ui-scale,1))] rounded-full"
                         style={{ left: 0, background: bar.color, boxShadow: `0 0 8px ${bar.color}, 0 0 16px ${bar.color}80` }} />
                     </div>
                   </div>
