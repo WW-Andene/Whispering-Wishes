@@ -40,19 +40,26 @@ const hapticsAllowed = () => typeof document !== 'undefined' && !document.docume
 // touch-synchronous the same way, so they stay on the plugin path.
 const hasNativeTapBridge = () => typeof window !== 'undefined' && typeof window.AndroidHaptics?.tap === 'function';
 
-// Web fallback durations stay short/plain navigator.vibrate() — there's no
-// composition-primitive equivalent on the web, and these were already fine.
+// Web/PWA fallback via navigator.vibrate() — no composition-primitive
+// equivalent exists on the web, so there's nothing to "tune" beyond duration/
+// pattern. Durations bumped up from the original 10/25/50ms: below ~20-30ms,
+// Chrome Android's vibrate() call frequently doesn't spin the motor up far
+// enough to be felt at all (motor spin-up lag eats short pulses), so the old
+// "light" was often imperceptible rather than just subtle. Also worth noting:
+// the Vibration API has no effect at all on iOS Safari/PWA (Apple has never
+// implemented it) — on iOS this silently no-ops, which isn't fixable from web
+// code; only a native iOS build (not planned yet) could address that.
 const haptic = {
   light: () => {
     if (!hapticsAllowed()) return;
     if (hasNativeTapBridge()) { window.AndroidHaptics.tap(); return; }
-    isNative() ? GlassHaptics.light().catch(() => {}) : navigator?.vibrate?.(10);
+    isNative() ? GlassHaptics.light().catch(() => {}) : navigator?.vibrate?.(20);
   },
-  medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : navigator?.vibrate?.(25); },
-  heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : navigator?.vibrate?.(50); },
-  success: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.success().catch(() => {}) : navigator?.vibrate?.([15, 50, 15]); },
-  warning: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.warning().catch(() => {}) : navigator?.vibrate?.([30, 30, 30]); },
-  error: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.error().catch(() => {}) : navigator?.vibrate?.([50, 50, 80]); },
+  medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : navigator?.vibrate?.(35); },
+  heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : navigator?.vibrate?.(60); },
+  success: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.success().catch(() => {}) : navigator?.vibrate?.([20, 60, 20]); },
+  warning: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.warning().catch(() => {}) : navigator?.vibrate?.([35, 40, 35]); },
+  error: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.error().catch(() => {}) : navigator?.vibrate?.([60, 50, 90]); },
 };
 
 
