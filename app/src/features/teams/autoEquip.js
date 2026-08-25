@@ -44,21 +44,42 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
   const weapon = (d.bestWeapon && WEAPON_DATA[d.bestWeapon]) ? d.bestWeapon : pickGenericWeapon(d);
   const recSets = new Map();
   const rawDirectEchoes = new Set();
-  (d.bestEchoes || []).forEach(entry => {
+  // Some bestEchoes entries carry a trailing parenthetical note distinguishing alternate builds
+  // (e.g. "Havoc Eclipse 2pc (personal DMG)", "Rejuvenating Glow 5pc (best overall team ATK)" —
+  // see Chisa/Aemeath/Denia's multi-build entries). The pc-count regex below needs the string to
+  // END in "Npc", so that trailing "(...)" silently broke the match and dropped the set from
+  // recSets entirely for every character using this annotation convention. Stripped here first so
+  // "Havoc Eclipse 2pc (personal DMG)" still parses as "Havoc Eclipse", 2.
+  const stripAnnotation = s => s.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  // A multi-build entry also lists TWO OR MORE separate, mutually-exclusive build options back to
+  // back in one array (main echo + set for build A, then main echo + set for build B, ...) rather
+  // than one coherent 5-piece loadout. Merging every one of those sets into a single recSets map
+  // produces an impossible target (e.g. needing 3pc of one set AND 2pc of another AND 5pc of a
+  // third all in the same 5-echo loadout) that can never be satisfied once the earlier sets have
+  // already claimed all 5 slots — pickEcho then finds every remaining set's threshold "already
+  // met" or unreachable and returns null for the leftover slots. So once the running total of
+  // requested pieces reaches a full loadout (5), stop folding in further entries: they belong to
+  // a different, alternate build, not additional pieces of this one.
+  let totalRequestedPc = 0;
+  for (const entry of (d.bestEchoes || [])) {
+    if (totalRequestedPc >= 5) break;
     [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES].forEach(en => {
       if (entry.toLowerCase().includes(en.toLowerCase())) rawDirectEchoes.add(en);
     });
-    entry.split('+').forEach(part => {
-      const trimmed = part.trim();
+    for (const rawPart of entry.split('+')) {
+      if (totalRequestedPc >= 5) break;
+      const trimmed = stripAnnotation(rawPart);
       const pcMatch = trimmed.match(/^(.+?)\s+(\d+)pc$/i);
       if (pcMatch && ECHO_SETS[pcMatch[1].trim()]) {
-        recSets.set(pcMatch[1].trim(), parseInt(pcMatch[2], 10));
+        const pc = parseInt(pcMatch[2], 10);
+        recSets.set(pcMatch[1].trim(), pc);
+        totalRequestedPc += pc;
       } else {
         const plain = trimmed.replace(/\s+\d+pc$/i, '').trim();
-        if (ECHO_SETS[plain]) recSets.set(plain, 5);
+        if (ECHO_SETS[plain]) { recSets.set(plain, 5); totalRequestedPc += 5; }
       }
-    });
-  });
+    }
+  }
   const isTeamMainDps = mainDpsOverrideName === memberName;
   if (isTeamMainDps && d.role !== 'Main DPS') {
     const allTierEchoes = [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES];
@@ -187,6 +208,22 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
       const chosen = bestElemMatch || bestPure || bestLive || anyMatch;
       if (chosen) { usedNames.add(chosen); markAssigned(chosen, setPrefs); return chosen; }
     }
+    // Every named set target is already satisfied (or there's no set target at all) but this
+    // slot still needs an echo — a real player doesn't leave a slot empty just because the build
+    // guide's set-piece count adds up to less than 5 (e.g. Rebecca/Lucy's curated "Shadow of
+    // Shattered Dreams 1pc + Void Thunder 2pc" only specifies 3 pieces on purpose, meaning the
+    // other 2 slots are meant to be generic best-substat fillers). Fall back to any unused,
+    // element-appropriate, non-dead-weight echo instead of returning null here.
+    let fallbackLive = null, fallbackAny = null;
+    for (const name of tierList) {
+      if (usedNames.has(name)) continue;
+      const ed = ECHO_DATA[name];
+      if (!ed) continue;
+      if (!fallbackAny) fallbackAny = name;
+      if (!fallbackLive && matchesElement(ed) && !isDeadWeight(ed)) { fallbackLive = name; break; }
+    }
+    const fallback = fallbackLive || fallbackAny;
+    if (fallback) { usedNames.add(fallback); markAssigned(fallback, setPrefs); return fallback; }
     return null;
   };
   const e0 = pickEcho(ALL_4COST_ECHOES, recSets);
