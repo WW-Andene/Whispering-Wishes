@@ -878,6 +878,40 @@
     .kuro-btn:active {
       transform: translateY(0) scale(0.97);
       transition: transform var(--transition-fast);
+      /* Pressing "into" the glass rather than just scaling down */
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.28), var(--shadow-md);
+    }
+
+    /* Glass-touch — a specular highlight that appears exactly under the
+       finger/cursor and fades outward, like light catching real glass at
+       the point of contact. Position comes from --touch-x/--touch-y, set by
+       utils/glassTouch.js on pointerdown; that same module never adds this
+       class at all when animations are off, so no-animations users never
+       pay for it (also gates the paired haptic.light() tick — see
+       helpers.js's hapticsAllowed()). border-radius: inherit means this
+       pseudo-element's own background is clipped to the element's rounded
+       corners without needing overflow:hidden on the element itself. */
+    .glass-ripple::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(circle 120px at var(--touch-x, 50%) var(--touch-y, 50%),
+        rgba(255,255,255,0.85) 0%,
+        rgba(255,255,255,0.30) 32%,
+        transparent 68%);
+      /* screen (not overlay) — overlay behaves like multiply on a base this
+         dark and barely shows; screen always brightens regardless of what's
+         underneath, which is what a specular highlight needs here. */
+      mix-blend-mode: screen;
+      animation: glass-touch-pulse 550ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes glass-touch-pulse {
+      0%   { opacity: 0;   transform: scale(0.8); }
+      30%  { opacity: 1;   transform: scale(1); }
+      100% { opacity: 0;   transform: scale(1.1); }
     }
 
     /* AUDIT-FIX M30: Disabled button state — §DP3: cool-shifted opacity */
@@ -1859,6 +1893,7 @@
 
     /* Toggle switches */
     [role="switch"] {
+      position: relative;
       cursor: pointer;
       transition: background var(--transition-fast), transform var(--transition-fast);
     }

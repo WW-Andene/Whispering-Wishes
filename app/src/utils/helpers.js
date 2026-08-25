@@ -14,13 +14,21 @@ import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 // API itself when running on plain web, so no separate web path is needed.
 const isNative = () => typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
 
+// useVisualSettings.js already toggles a 'no-animations' class on <html>
+// whenever animationsEnabled === 'off' (see its sync-to-<html> effect) — this
+// reuses that same signal rather than plumbing the setting through every
+// haptic call site, so haptics only ever fire when animations are 'on' or
+// 'full'. Checked at call time (not cached) since the class can flip at any
+// point from the Settings tab.
+const hapticsAllowed = () => typeof document !== 'undefined' && !document.documentElement.classList.contains('no-animations');
+
 const haptic = {
-  light: () => { isNative() ? Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}) : navigator?.vibrate?.(10); },
-  medium: () => { isNative() ? Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}) : navigator?.vibrate?.(25); },
-  heavy: () => { isNative() ? Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {}) : navigator?.vibrate?.(50); },
-  success: () => { isNative() ? Haptics.notification({ type: NotificationType.Success }).catch(() => {}) : navigator?.vibrate?.([15, 50, 15]); },
-  warning: () => { isNative() ? Haptics.notification({ type: NotificationType.Warning }).catch(() => {}) : navigator?.vibrate?.([30, 30, 30]); },
-  error: () => { isNative() ? Haptics.notification({ type: NotificationType.Error }).catch(() => {}) : navigator?.vibrate?.([50, 50, 80]); },
+  light: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}) : navigator?.vibrate?.(10); },
+  medium: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}) : navigator?.vibrate?.(25); },
+  heavy: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {}) : navigator?.vibrate?.(50); },
+  success: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.notification({ type: NotificationType.Success }).catch(() => {}) : navigator?.vibrate?.([15, 50, 15]); },
+  warning: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.notification({ type: NotificationType.Warning }).catch(() => {}) : navigator?.vibrate?.([30, 30, 30]); },
+  error: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.notification({ type: NotificationType.Error }).catch(() => {}) : navigator?.vibrate?.([50, 50, 80]); },
 };
 
 
