@@ -1,4 +1,59 @@
 {
+  "importFlow": {
+    "title": "Importer l'historique des convocations",
+    "subtitle": "Importez votre historique de convocations directement depuis le jeu.",
+    "platform": { "pc": "PC", "android": "Android", "ps5": "PS5" },
+    "method": { "file": "Fichier", "paste": "Coller", "direct": "Direct" },
+    "file": {
+      "importing": "Importation...",
+      "sizeKb": "{{size}} Ko - analyse en cours...",
+      "dropHere": "Déposez le fichier JSON ici",
+      "uploadOrDrop": "Téléversez ou glissez-déposez un fichier JSON"
+    },
+    "paste": {
+      "placeholder": "Collez vos données JSON ici…\n\nExemple : {\"pulls\":[…]}",
+      "import": "Importer",
+      "tip": "Astuce : Dans WuWa Tracker, allez dans Profil → Paramètres → Données → Exporter l'historique de convocations → Copiez le contenu JSON."
+    },
+    "direct": {
+      "subtitle": "Collez votre URL d'historique de convocations ci-dessous ou saisissez les identifiants manuellement.",
+      "urlPlaceholder": "Collez l'URL de l'historique de convocations ici…",
+      "playerId": "player_id",
+      "playerIdRequired": "player_id est requis.",
+      "playerIdPlaceholder": "ex. 500123456",
+      "recordId": "record_id",
+      "recordIdPlaceholder": "clé alphanumérique",
+      "optional": "(optionnel)",
+      "svrId": "svr_id",
+      "svrIdPlaceholder": "ex. 76",
+      "resourcesId": "resources_id",
+      "resourcesIdPlaceholder": "clé alphanumérique",
+      "scanning": "Analyse en cours...",
+      "openCamera": "Ouvrir la caméra",
+      "uploadImage": "Téléverser une image",
+      "idsExtracted": "Identifiants extraits avec succès",
+      "importing": "Importation...",
+      "cancel": "Annuler",
+      "import": "Importer",
+      "importComplete": "Importation terminée !",
+      "urlExpiresNote": "Ouvrez l'historique de convocations en jeu et copiez l'URL depuis la barre d'adresse du navigateur. L'URL expire après un certain temps."
+    },
+    "toast": {
+      "idsExtracted": "Identifiants extraits de la capture d'écran !",
+      "cameraDenied": "Accès à la caméra refusé",
+      "cameraError": "Erreur caméra : {{message}}",
+      "fileTooLarge": "Fichier trop volumineux ({{size}} Mo). Maximum : {{max}} Mo.",
+      "importFailed": "Échec de l'importation : {{message}}",
+      "unknownError": "Erreur inconnue",
+      "readFailed": "Échec de la lecture du fichier",
+      "dropJsonOnly": "Veuillez déposer un fichier .json",
+      "pasteFirst": "Veuillez d'abord coller vos données JSON",
+      "noConveneData": "Aucune donnée de convocation reçue. L'URL a peut-être expiré. Essayez d'en obtenir une nouvelle depuis le jeu.",
+      "importProcessingFailed": "Échec du traitement de l'importation",
+      "importFailedGeneric": "Échec de l'importation",
+      "screenshotScanFailed": "Échec de l'analyse de la capture d'écran"
+    }
+  },
   "importGuide": {
     "step": {
       "openConvene": {

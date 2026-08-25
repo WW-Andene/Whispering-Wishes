@@ -11,6 +11,7 @@ import { MAX_IMPORT_SIZE_MB } from '../../data/constants.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { ImportGuide } from './ImportGuide.jsx';
 import ConveneScanner from './ConveneScanner.jsx';
+import { t } from '../../utils/i18n.js';
 
 export default function ImportFlow({
   processImportData,
@@ -60,7 +61,7 @@ export default function ImportFlow({
   const handleDirectFetch = useCallback(async () => {
     const pid = directPlayerId.trim();
     const rid = directRecordId.trim();
-    if (!pid) { setDirectError('player_id is required.'); return; }
+    if (!pid) { setDirectError(t('profile.importFlow.direct.playerIdRequired')); return; }
     try {
       const params = buildFetchParams(directUrl, pid, rid, directSvrId);
       if (directResourcesId) params.cardPoolId = directResourcesId;
@@ -78,7 +79,7 @@ export default function ImportFlow({
       if (directAbortRef.current?.signal.aborted) { setDirectStatus('idle'); return; }
       if (result.total === 0) {
         setDirectStatus('error');
-        setDirectError('No Convene data returned. The URL may be expired. Try getting a fresh one from the game.');
+        setDirectError(t('profile.importFlow.toast.noConveneData'));
         return;
       }
       const jsonStr = convertToImportFormat({ ...result, playerId: pid });
@@ -87,12 +88,12 @@ export default function ImportFlow({
         setDirectStatus('done');
       } else {
         setDirectStatus('error');
-        setDirectError('Import processing failed');
+        setDirectError(t('profile.importFlow.toast.importProcessingFailed'));
       }
     } catch (err) {
       if (err.name === 'AbortError') { setDirectStatus('idle'); return; }
       setDirectStatus('error');
-      setDirectError(err.message || 'Import failed');
+      setDirectError(err.message || t('profile.importFlow.toast.importFailedGeneric'));
     }
   }, [directUrl, directPlayerId, directRecordId, directSvrId, directResourcesId, directGachaId, directGachaType, directLang, processImportData]);
 
@@ -110,10 +111,10 @@ export default function ImportFlow({
       if (ids.gacha_type) setDirectGachaType(ids.gacha_type);
       if (ids.lang) setDirectLang(ids.lang);
       setDirectScanStatus('done');
-      toast?.addToast?.('IDs extracted from screenshot!', 'success');
+      toast?.addToast?.(t('profile.importFlow.toast.idsExtracted'), 'success');
     } catch (err) {
       setDirectScanStatus('error');
-      setDirectError(err.message || 'Screenshot scan failed');
+      setDirectError(err.message || t('profile.importFlow.toast.screenshotScanFailed'));
     }
   }, [toast]);
 
@@ -134,7 +135,7 @@ export default function ImportFlow({
         }
       }, 100);
     } catch (err) {
-      toast?.addToast?.(err.name === 'NotAllowedError' ? 'Camera access denied' : `Camera error: ${err.message}`, 'error');
+      toast?.addToast?.(err.name === 'NotAllowedError' ? t('profile.importFlow.toast.cameraDenied') : t('profile.importFlow.toast.cameraError', { message: err.message }), 'error');
     }
   }, [toast]);
 
@@ -176,17 +177,17 @@ export default function ImportFlow({
     if (!file) return;
     const MAX_IMPORT_SIZE = MAX_IMPORT_SIZE_MB * 1024 * 1024;
     if (file.size > MAX_IMPORT_SIZE) {
-      toast?.addToast?.(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`, 'error');
+      toast?.addToast?.(t('profile.importFlow.toast.fileTooLarge', { size: (file.size / 1024 / 1024).toFixed(1), max: MAX_IMPORT_SIZE_MB }), 'error');
       e.target.value = '';
       return;
     }
     setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
     reader.onload = (ev) => {
-      processImportData(ev.target.result).catch((err) => { toast?.addToast?.('Import failed: ' + (err?.message || 'Unknown error'), 'error'); }).finally(() => setImportStatus(null));
+      processImportData(ev.target.result).catch((err) => { toast?.addToast?.(t('profile.importFlow.toast.importFailed', { message: err?.message || t('profile.importFlow.toast.unknownError') }), 'error'); }).finally(() => setImportStatus(null));
     };
     reader.onerror = () => {
-      toast?.addToast?.('Failed to read file', 'error');
+      toast?.addToast?.(t('profile.importFlow.toast.readFailed'), 'error');
       setImportStatus(null);
     };
     reader.readAsText(file);
@@ -200,36 +201,36 @@ export default function ImportFlow({
     const file = e.dataTransfer?.files?.[0];
     if (!file) return;
     if (!file.name.endsWith('.json')) {
-      toast?.addToast?.('Please drop a .json file', 'error');
+      toast?.addToast?.(t('profile.importFlow.toast.dropJsonOnly'), 'error');
       return;
     }
     const MAX_IMPORT_SIZE = MAX_IMPORT_SIZE_MB * 1024 * 1024;
     if (file.size > MAX_IMPORT_SIZE) {
-      toast?.addToast?.(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum is ${MAX_IMPORT_SIZE_MB}MB.`, 'error');
+      toast?.addToast?.(t('profile.importFlow.toast.fileTooLarge', { size: (file.size / 1024 / 1024).toFixed(1), max: MAX_IMPORT_SIZE_MB }), 'error');
       return;
     }
     setImportStatus({ fileName: file.name, fileSize: (file.size / 1024).toFixed(1) });
     const reader = new FileReader();
-    reader.onload = (ev) => { processImportData(ev.target.result).catch((err) => { toast?.addToast?.('Import failed: ' + (err?.message || 'Unknown error'), 'error'); }).finally(() => setImportStatus(null)); };
-    reader.onerror = () => { toast?.addToast?.('Failed to read file', 'error'); setImportStatus(null); };
+    reader.onload = (ev) => { processImportData(ev.target.result).catch((err) => { toast?.addToast?.(t('profile.importFlow.toast.importFailed', { message: err?.message || t('profile.importFlow.toast.unknownError') }), 'error'); }).finally(() => setImportStatus(null)); };
+    reader.onerror = () => { toast?.addToast?.(t('profile.importFlow.toast.readFailed'), 'error'); setImportStatus(null); };
     reader.readAsText(file);
   }, [processImportData, toast]);
 
   const handlePasteImport = useCallback(() => {
     if (!pasteJsonText.trim()) {
-      toast?.addToast?.('Please paste your JSON data first', 'error');
+      toast?.addToast?.(t('profile.importFlow.toast.pasteFirst'), 'error');
       return;
     }
-    processImportData(pasteJsonText).then((ok) => { if (ok) setPasteJsonText(''); }).catch((err) => { toast?.addToast?.('Import failed: ' + (err?.message || 'Unknown error'), 'error'); });
+    processImportData(pasteJsonText).then((ok) => { if (ok) setPasteJsonText(''); }).catch((err) => { toast?.addToast?.(t('profile.importFlow.toast.importFailed', { message: err?.message || t('profile.importFlow.toast.unknownError') }), 'error'); });
   }, [pasteJsonText, processImportData, toast]);
 
   return (
     <Card>
-      <CardHeader>Import Convene History</CardHeader>
+      <CardHeader>{t('profile.importFlow.title')}</CardHeader>
       <CardBody className="space-y-3">
-        <p className="text-gray-300 text-sm">Import your Convene history directly from the game.</p>
+        <p className="text-gray-300 text-sm">{t('profile.importFlow.subtitle')}</p>
         <div className="grid grid-cols-3 gap-2">
-          {[['pc', 'PC', Monitor], ['android', 'Android', Smartphone], ['ps5', 'PS5', Gamepad2]].map(([k, l, Icon]) => (
+          {[['pc', t('profile.importFlow.platform.pc'), Monitor], ['android', t('profile.importFlow.platform.android'), Smartphone], ['ps5', t('profile.importFlow.platform.ps5'), Gamepad2]].map(([k, l, Icon]) => (
             <button key={k} onClick={() => { setImportPlatform(k); if (k === 'pc' || k === 'android') setImportMethod('direct'); if (k === 'ps5') setImportMethod('direct'); }} aria-pressed={importPlatform === k} className={`kuro-btn p-2 text-center ${importPlatform === k ? 'active-gold' : ''}`}>
               <Icon size={16} className="mx-auto mb-0.5" /><div className="text-sm">{l}</div>
             </button>
@@ -244,19 +245,19 @@ export default function ImportFlow({
             onClick={() => setImportMethod('file')}
             className={`kuro-btn py-2 text-base ${importMethod === 'file' ? 'active-gold' : ''}`}
           >
-            <Upload size={14} className="inline mr-1.5" />File
+            <Upload size={14} className="inline mr-1.5" />{t('profile.importFlow.method.file')}
           </button>
           <button
             onClick={() => setImportMethod('paste')}
             className={`kuro-btn py-2 text-base ${importMethod === 'paste' ? 'active-gold' : ''}`}
           >
-            <ClipboardList size={14} className="inline mr-1.5" />Paste
+            <ClipboardList size={14} className="inline mr-1.5" />{t('profile.importFlow.method.paste')}
           </button>
           <button
             onClick={() => setImportMethod('direct')}
             className={`kuro-btn py-2 text-base ${importMethod === 'direct' ? 'active-emerald' : ''}`}
           >
-            <Link size={14} className="inline mr-1.5" />Direct
+            <Link size={14} className="inline mr-1.5" />{t('profile.importFlow.method.direct')}
           </button>
         </div>
 
@@ -269,19 +270,19 @@ export default function ImportFlow({
             onDrop={handleFileDrop}
           >
             {importStatus ? (
-              <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label="Importing file">
+              <div className="p-4 border-2 border-dashed border-yellow-500/40 rounded-lg text-center bg-yellow-500/5" aria-label={t('profile.importFlow.file.importing')}>
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <div className="kuro-skeleton kuro-skeleton-text" style={{ width: '60%', height: '12px' }} />
-                  <span className="text-yellow-400/80 text-sm font-medium animate-pulse">Importing...</span>
+                  <span className="text-yellow-400/80 text-sm font-medium animate-pulse">{t('profile.importFlow.file.importing')}</span>
                 </div>
                 <p className="text-yellow-400 text-sm font-medium kuro-number">{importStatus.fileName}</p>
-                <p className="text-gray-500 text-sm mt-0.5">{importStatus.fileSize} KB - parsing...</p>
+                <p className="text-gray-500 text-sm mt-0.5">{t('profile.importFlow.file.sizeKb', { size: importStatus.fileSize })}</p>
               </div>
             ) : (
             <div className={`p-4 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-yellow-500 bg-yellow-500/10' : 'border-white/20 hover:border-yellow-500/50'}`}>
               <Upload size={24} className={`mx-auto mb-1 ${isDragOver ? 'text-yellow-400' : 'text-gray-300'}`} />
               <p className={`text-sm ${isDragOver ? 'text-yellow-400 font-medium' : 'text-gray-300'}`}>
-                {isDragOver ? 'Drop JSON file here' : 'Upload or drag and drop a JSON file'}
+                {isDragOver ? t('profile.importFlow.file.dropHere') : t('profile.importFlow.file.uploadOrDrop')}
               </p>
             </div>
             )}
@@ -295,9 +296,7 @@ export default function ImportFlow({
             <textarea
               value={pasteJsonText}
               onChange={(e) => setPasteJsonText(e.target.value)}
-              placeholder='Paste your JSON data here…
-
-Example: {"pulls":[…]}'
+              placeholder={t('profile.importFlow.paste.placeholder')}
               className="kuro-input w-full h-32 text-sm font-mono resize-none"
               spellCheck={false}
               aria-label="Paste import JSON data"
@@ -308,7 +307,7 @@ Example: {"pulls":[…]}'
                 disabled={!pasteJsonText.trim()}
                 className={`kuro-btn flex-1 py-2 text-base ${pasteJsonText.trim() ? 'active-emerald' : 'opacity-50'}`}
               >
-                <Check size={14} className="inline mr-1.5" />Import
+                <Check size={14} className="inline mr-1.5" />{t('profile.importFlow.paste.import')}
               </button>
               {pasteJsonText && (
                 <button
@@ -320,7 +319,7 @@ Example: {"pulls":[…]}'
               )}
             </div>
             <p className="text-gray-400 text-sm">
-              Tip: In WuWa Tracker, go to Profile → Settings → Data → Export Convene History → Copy the JSON content.
+              {t('profile.importFlow.paste.tip')}
             </p>
           </div>
         )}
@@ -328,32 +327,32 @@ Example: {"pulls":[…]}'
         {/* Direct Import Method — fetch from WuWa API */}
         {importMethod === 'direct' && (
           <div className="space-y-2">
-            <p className="text-gray-400 text-sm">Paste your Convene History URL below or enter IDs manually.</p>
+            <p className="text-gray-400 text-sm">{t('profile.importFlow.direct.subtitle')}</p>
             <input
               type="text"
               value={directUrl}
               onChange={(e) => handleDirectUrlChange(e.target.value)}
-              placeholder="Paste Convene History URL here…"
+              placeholder={t('profile.importFlow.direct.urlPlaceholder')}
               className="kuro-input w-full text-sm font-mono"
               spellCheck={false}
             />
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-gray-500 text-sm block mb-0.5">player_id</label>
-                <input type="text" value={directPlayerId} onChange={(e) => setDirectPlayerId(e.target.value)} placeholder="e.g. 500123456" className="kuro-input w-full text-sm font-mono" />
+                <label className="text-gray-500 text-sm block mb-0.5">{t('profile.importFlow.direct.playerId')}</label>
+                <input type="text" value={directPlayerId} onChange={(e) => setDirectPlayerId(e.target.value)} placeholder={t('profile.importFlow.direct.playerIdPlaceholder')} className="kuro-input w-full text-sm font-mono" />
               </div>
               <div>
-                <label className="text-gray-500 text-sm block mb-0.5">record_id</label>
-                <input type="text" value={directRecordId} onChange={(e) => setDirectRecordId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-sm font-mono" />
+                <label className="text-gray-500 text-sm block mb-0.5">{t('profile.importFlow.direct.recordId')}</label>
+                <input type="text" value={directRecordId} onChange={(e) => setDirectRecordId(e.target.value)} placeholder={t('profile.importFlow.direct.recordIdPlaceholder')} className="kuro-input w-full text-sm font-mono" />
               </div>
             </div>
             <div>
-              <label className="text-gray-500 text-sm block mb-0.5">svr_id <span className="text-gray-600">(optional)</span></label>
-              <input type="text" value={directSvrId} onChange={(e) => setDirectSvrId(e.target.value)} placeholder="e.g. 76" className="kuro-input w-full text-sm font-mono" />
+              <label className="text-gray-500 text-sm block mb-0.5">{t('profile.importFlow.direct.svrId')} <span className="text-gray-600">{t('profile.importFlow.direct.optional')}</span></label>
+              <input type="text" value={directSvrId} onChange={(e) => setDirectSvrId(e.target.value)} placeholder={t('profile.importFlow.direct.svrIdPlaceholder')} className="kuro-input w-full text-sm font-mono" />
             </div>
             <div>
-              <label className="text-gray-500 text-sm block mb-0.5">resources_id <span className="text-gray-600">(optional)</span></label>
-              <input type="text" value={directResourcesId} onChange={(e) => setDirectResourcesId(e.target.value)} placeholder="alphanumeric key" className="kuro-input w-full text-sm font-mono" />
+              <label className="text-gray-500 text-sm block mb-0.5">{t('profile.importFlow.direct.resourcesId')} <span className="text-gray-600">{t('profile.importFlow.direct.optional')}</span></label>
+              <input type="text" value={directResourcesId} onChange={(e) => setDirectResourcesId(e.target.value)} placeholder={t('profile.importFlow.direct.resourcesIdPlaceholder')} className="kuro-input w-full text-sm font-mono" />
             </div>
 
             {/* Camera / Screenshot OCR */}
@@ -367,14 +366,14 @@ Example: {"pulls":[…]}'
             <div className="flex gap-2">
               <button onClick={openDirectCamera} className="kuro-btn flex-1 py-2 text-base text-center" disabled={directScanStatus === 'scanning'}>
                 <Camera size={14} className="inline mr-1.5" />
-                {directScanStatus === 'scanning' ? 'Scanning...' : 'Open Camera'}
+                {directScanStatus === 'scanning' ? t('profile.importFlow.direct.scanning') : t('profile.importFlow.direct.openCamera')}
               </button>
               <label className="kuro-btn flex-1 py-2 text-base text-center cursor-pointer">
-                <Upload size={14} className="inline mr-1.5" />Upload Image
+                <Upload size={14} className="inline mr-1.5" />{t('profile.importFlow.direct.uploadImage')}
                 <input type="file" accept="image/*" onChange={(e) => handleScreenshotOcr(e.target.files?.[0])} className="hidden" />
               </label>
             </div>
-            {directScanStatus === 'done' && <p className="text-emerald-400 text-sm text-center">IDs extracted successfully</p>}
+            {directScanStatus === 'done' && <p className="text-emerald-400 text-sm text-center">{t('profile.importFlow.direct.idsExtracted')}</p>}
             {directScanStatus === 'error' && <p className="text-red-400 text-sm text-center">{directError}</p>}
 
             {/* Fetch button */}
@@ -382,7 +381,7 @@ Example: {"pulls":[…]}'
               <div className="space-y-2">
                 <div className="flex items-center justify-center gap-2 py-3">
                   <Loader size={14} className="text-emerald-400 animate-spin" />
-                  <span className="text-emerald-400 text-base">Importing...</span>
+                  <span className="text-emerald-400 text-base">{t('profile.importFlow.direct.importing')}</span>
                 </div>
                 <div className="grid grid-cols-4 gap-1">
                   {Object.entries(directProgress).map(([pool, info]) => (
@@ -391,7 +390,7 @@ Example: {"pulls":[…]}'
                     </div>
                   ))}
                 </div>
-                <button onClick={() => directAbortRef.current?.abort()} className="kuro-btn w-full py-1.5 text-base text-red-400">Cancel</button>
+                <button onClick={() => directAbortRef.current?.abort()} className="kuro-btn w-full py-1.5 text-base text-red-400">{t('profile.importFlow.direct.cancel')}</button>
               </div>
             ) : (
               <button
@@ -399,14 +398,14 @@ Example: {"pulls":[…]}'
                 disabled={!directPlayerId.trim()}
                 className={`kuro-btn w-full py-2 text-base ${directPlayerId.trim() ? 'active-emerald' : 'opacity-50'}`}
               >
-                <Download size={14} className="inline mr-1.5" />Import
+                <Download size={14} className="inline mr-1.5" />{t('profile.importFlow.direct.import')}
               </button>
             )}
 
-            {directStatus === 'done' && <p className="text-emerald-400 text-sm text-center">Import complete!</p>}
+            {directStatus === 'done' && <p className="text-emerald-400 text-sm text-center">{t('profile.importFlow.direct.importComplete')}</p>}
             {directError && <p className="text-red-400 text-sm text-center">{directError}</p>}
 
-            <p className="text-gray-500 text-sm">Open Convene History in-game and copy the URL from the browser address bar. The URL expires after some time.</p>
+            <p className="text-gray-500 text-sm">{t('profile.importFlow.direct.urlExpiresNote')}</p>
           </div>
         )}
       </CardBody>
