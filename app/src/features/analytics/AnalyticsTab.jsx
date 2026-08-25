@@ -392,14 +392,16 @@ function AnalyticsTab({
             )}
 
             {!overallStats ? (
-              <Card>
-                <CardBody className="kuro-empty-state text-center py-8">
-                  <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
-                  <p className="text-gray-300 text-md font-medium">{t('analytics.empty.awaitingSignal')}</p>
-                  <p className="text-gray-400 text-base mt-1 mb-3">{t('analytics.empty.importPrompt')}</p>
-                  <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-base px-4 py-2">{t('analytics.empty.openProfile')}</button>
-                </CardBody>
-              </Card>
+              <div className="min-h-[384px] flex items-center justify-center">
+                <Card className="w-full">
+                  <CardBody className="kuro-empty-state text-center py-8">
+                    <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />
+                    <p className="text-gray-300 text-md font-medium">{t('analytics.empty.awaitingSignal')}</p>
+                    <p className="text-gray-400 text-base mt-1 mb-3">{t('analytics.empty.importPrompt')}</p>
+                    <button onClick={() => setActiveTab('profile')} className="kuro-btn active-cyan text-base px-4 py-2">{t('analytics.empty.openProfile')}</button>
+                  </CardBody>
+                </Card>
+              </div>
             ) : !overallStats?.totalPulls ? (
               <div className="space-y-2">
                 <div className="kuro-skeleton kuro-skeleton-stat rounded-lg" />
