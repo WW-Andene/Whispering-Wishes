@@ -14,11 +14,34 @@ import { isHealerRole, isSupportRole } from './calcEngine.js';
 // instead of drifting. Pure w.r.t. its inputs — takes an explicit teamEquipmentSnapshot rather than
 // reading component state directly, so a caller can thread an in-progress snapshot across multiple
 // sequential calls before committing a single setTeamEquipment update.
+// Generic weapon fallback for when bestWeapon is missing/unresolvable (a data-entry gap, not
+// something reachable today — every current roster entry has a real bestWeapon — but nothing
+// should silently equip zero weapon if a future character ever lacks one). Picks the highest-
+// rarity weapon of the character's own weapon type, preferring one whose substat matches what
+// this role actually wants: Crit Rate/Crit DMG for a DPS, Energy Regen for a healer/support,
+// or the character's own scaling stat as a last resort.
+function pickGenericWeapon(d) {
+  const candidates = Object.entries(WEAPON_DATA).filter(([, w]) => w.type === d.weapon);
+  if (!candidates.length) return null;
+  const scaling = d.statScaling || 'ATK';
+  const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
+  const isDpsRole = d.role === 'Main DPS' || d.role === 'Sub DPS';
+  const score = ([, w]) => {
+    let s = (w.rarity || 0) * 100;
+    if (isDpsRole && (w.stat === 'Crit Rate' || w.stat === 'Crit DMG')) s += 50;
+    else if (!isDpsRole && w.stat === 'Energy Regen') s += 30;
+    else if (w.stat === scalingStat) s += 20;
+    return s;
+  };
+  candidates.sort((a, b) => score(b) - score(a));
+  return candidates[0][0];
+}
+
 function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName) {
   const d = CHARACTER_DATA[memberName];
   if (!d) return null;
   const aeqKey = activeTeamIndex + ':' + memberName;
-  const weapon = d.bestWeapon && WEAPON_DATA[d.bestWeapon] ? d.bestWeapon : null;
+  const weapon = (d.bestWeapon && WEAPON_DATA[d.bestWeapon]) ? d.bestWeapon : pickGenericWeapon(d);
   const recSets = new Map();
   const rawDirectEchoes = new Set();
   (d.bestEchoes || []).forEach(entry => {
