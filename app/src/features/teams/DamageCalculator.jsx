@@ -12,7 +12,7 @@ import { EchoImage } from '../../shared/components/EchoImage.jsx';
 import RotationTimeline from './RotationTimeline.jsx';
 import { useSessionState } from '../../hooks/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
-import { computeAutoEquipEntry } from './autoEquip.js';
+import { computeAutoEquipEntry, computeAutoEquipEntryOptimized } from './autoEquip.js';
 import { RotationGuideCard } from './RotationGuideCard.jsx';
 import { EnemyTargetCard, EnemyTargetModal } from './EnemyTargetSection.jsx';
 import { calcTeamStats as calcTeamStatsImpl } from './calcTeamStats.js';
@@ -118,7 +118,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   // sees the results of the ones already processed in this same pass.
                   let snapshot = teamEquipment;
                   allNames.forEach(name => {
-                    const result = computeAutoEquipEntry(name, snapshot, state.activeTeamIndex, allNames, activeTeamData.mainDpsOverride);
+                    const result = computeAutoEquipEntryOptimized(name, snapshot, state.activeTeamIndex, allNames, activeTeamData.mainDpsOverride, activeTeamData.slots, enemyEcho, enemyLevel);
                     if (result) snapshot = { ...snapshot, [result.aeqKey]: result.entry };
                   });
                   setTeamEquipment(snapshot);
@@ -180,7 +180,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       className="kuro-btn text-sm px-2 py-1 flex-shrink-0 self-start"
                       aria-label={t('teams.damageCalc.autoEquipAria', { name: m.name })}
                       onClick={() => {
-                        const result = computeAutoEquipEntry(m.name, teamEquipment, state.activeTeamIndex, members.map(mem => mem.name), activeTeamData.mainDpsOverride);
+                        const result = computeAutoEquipEntryOptimized(m.name, teamEquipment, state.activeTeamIndex, members.map(mem => mem.name), activeTeamData.mainDpsOverride, activeTeamData.slots, enemyEcho, enemyLevel);
                         if (!result) return;
                         setTeamEquipment(prev => ({ ...prev, [result.aeqKey]: result.entry }));
                         haptic.success();

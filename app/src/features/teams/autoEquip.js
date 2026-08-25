@@ -7,6 +7,7 @@ import { CHARACTER_DATA } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA } from '../../data/echoes.js';
 import { isHealerRole, isSupportRole } from './calcEngine.js';
+import { calcTeamStats } from './calcTeamStats.js';
 
 // Extracted from the per-character "Auto Equip" button's onClick so both that button and the
 // team-wide "Full Auto Build" button (which needs to run this for every member in one pass, with
@@ -252,4 +253,41 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
   return { aeqKey, entry };
 }
 
-export { computeAutoEquipEntry };
+// Search-based auto-equip: for a member whose ideal preset isn't already forced by their own
+// static role (the headline DPS always wants 'default'; a Healer/Support always wants 'support'),
+// don't guess at a team-aware heuristic -- actually build each real candidate preset and run it
+// through the real calcTeamStats, keeping whichever produces the highest teamDps. This replaces
+// a static rule with a measurement: a plausible-sounding heuristic tried here previously (spare
+// non-headline DPS -> ER when no healer is on the team) turned out to be a real 21% teamDps
+// regression once actually checked against the engine (12613 -> 9767 on a concrete case) --
+// exactly the kind of wrong-but-plausible guess this search-based approach can't make, since it
+// never assumes an answer, it tries the real options and measures the real result.
+// Only searches members with a genuinely ambiguous preset (non-headline Main/Sub DPS); headline
+// DPS and Healer/Support members skip straight to the normal single build, since re-deriving an
+// already-unambiguous choice would just waste calcTeamStats calls for the same answer every time.
+const CANDIDATE_PRESETS = ['default', 'er', 'support'];
+function computeAutoEquipEntryOptimized(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName, slots, enemyEcho, enemyLevel) {
+  const d = CHARACTER_DATA[memberName];
+  if (!d) return null;
+  const isTeamMainDps = mainDpsOverrideName === memberName;
+  const hasUnambiguousPreset = isTeamMainDps || isHealerRole(d.role) || isSupportRole(d.role);
+  if (hasUnambiguousPreset || !slots) {
+    return computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName);
+  }
+  const aeqKey = activeTeamIndex + ':' + memberName;
+  let best = null, bestDps = -Infinity;
+  for (const candidatePreset of CANDIDATE_PRESETS) {
+    const forcedSnapshot = { ...teamEquipmentSnapshot, [aeqKey]: { echoPreset: candidatePreset } };
+    const result = computeAutoEquipEntry(memberName, forcedSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName);
+    if (!result) continue;
+    const trialTeamEquipment = { ...teamEquipmentSnapshot, [result.aeqKey]: result.entry };
+    let teamDps = 0;
+    try {
+      teamDps = calcTeamStats(slots, activeTeamIndex, mainDpsOverrideName, trialTeamEquipment, enemyEcho, enemyLevel)?.teamDps || 0;
+    } catch { teamDps = 0; }
+    if (teamDps > bestDps) { bestDps = teamDps; best = result; }
+  }
+  return best || computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName);
+}
+
+export { computeAutoEquipEntry, computeAutoEquipEntryOptimized };
