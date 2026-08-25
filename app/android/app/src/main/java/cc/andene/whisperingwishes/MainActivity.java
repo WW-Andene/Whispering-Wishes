@@ -1,6 +1,9 @@
 package cc.andene.whisperingwishes;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.view.HapticFeedbackConstants;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -28,6 +31,7 @@ import com.getcapacitor.BridgeActivity;
 // env(safe-area-inset-*), which has proven unreliable for this on-device.
 public class MainActivity extends BridgeActivity {
     @Override
+    @SuppressLint("JavascriptInterface")
     protected void onCreate(Bundle savedInstanceState) {
         // Must run before super.onCreate() — Capacitor registers plugins
         // while the Bridge is being constructed there.
@@ -51,6 +55,47 @@ public class MainActivity extends BridgeActivity {
             }
             return insets;
         });
+
+        // Experimental low-latency haptic path — see GlassHapticsPlugin.java's
+        // history: performHapticFeedback(KEYBOARD_TAP) called through
+        // Capacitor's normal plugin bridge (JSON message + promise round
+        // trip) still didn't match the system keyboard's tap feel, despite
+        // using the exact same feedback constant. One remaining, untested
+        // difference: the keyboard calls performHapticFeedback() synchronously
+        // from within its own native touch handling, with essentially zero
+        // latency after the finger lands — our plugin call, going through the
+        // JS bridge, arrives some milliseconds later. If Xiaomi's haptic
+        // renderer is timing-sensitive (common for "premium" haptic engines,
+        // which often expect near-zero touch-to-trigger latency to pick the
+        // sharp waveform over a generic fallback), that gap alone could be
+        // why. addJavascriptInterface() calls a real Java method directly
+        // from JS with no message serialization or promise wrapping — the
+        // lowest-latency JS-to-native path WebView offers, well below
+        // Capacitor's own plugin bridge overhead. Exposed as
+        // window.AndroidHaptics.tap() — see src/utils/helpers.js, which
+        // prefers this over the GlassHaptics plugin for the "light" tap
+        // specifically (the one fired on every button press) to test the
+        // timing hypothesis; success/warning/error stay on the plugin path.
+        WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+        if (webView != null) {
+            webView.addJavascriptInterface(new NativeHapticsBridge(webView), "AndroidHaptics");
+        }
+    }
+
+    // @JavascriptInterface only exposes this one explicitly-annotated,
+    // no-argument method to JS — not arbitrary reflection, so this doesn't
+    // carry the pre-API-17 addJavascriptInterface security history (minSdk
+    // here is 24).
+    private static class NativeHapticsBridge {
+        private final WebView webView;
+        NativeHapticsBridge(WebView webView) { this.webView = webView; }
+
+        @JavascriptInterface
+        public void tap() {
+            // JS interface callbacks run on a WebView-managed thread, not
+            // necessarily the main thread — performHapticFeedback requires it.
+            webView.post(() -> webView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP));
+        }
     }
 
     @Override

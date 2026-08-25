@@ -29,10 +29,25 @@ const isNative = () => typeof window !== 'undefined' && !!window.Capacitor?.isNa
 // point from the Settings tab.
 const hapticsAllowed = () => typeof document !== 'undefined' && !document.documentElement.classList.contains('no-animations');
 
+// Experimental: window.AndroidHaptics.tap() is a raw addJavascriptInterface
+// bridge (see MainActivity.java) instead of Capacitor's plugin bridge (JSON
+// message + promise round trip) — meaningfully lower JS-to-native latency,
+// to test whether Xiaomi's haptic renderer is timing-sensitive about how
+// soon after touch performHapticFeedback() gets called. Only wired for
+// "light" since that's the one fired on every button press via
+// glassTouch.js (the case where the timing gap is largest relative to the
+// user's actual finger-down moment); success/warning/error aren't
+// touch-synchronous the same way, so they stay on the plugin path.
+const hasNativeTapBridge = () => typeof window !== 'undefined' && typeof window.AndroidHaptics?.tap === 'function';
+
 // Web fallback durations stay short/plain navigator.vibrate() — there's no
 // composition-primitive equivalent on the web, and these were already fine.
 const haptic = {
-  light: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.light().catch(() => {}) : navigator?.vibrate?.(10); },
+  light: () => {
+    if (!hapticsAllowed()) return;
+    if (hasNativeTapBridge()) { window.AndroidHaptics.tap(); return; }
+    isNative() ? GlassHaptics.light().catch(() => {}) : navigator?.vibrate?.(10);
+  },
   medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : navigator?.vibrate?.(25); },
   heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : navigator?.vibrate?.(50); },
   success: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.success().catch(() => {}) : navigator?.vibrate?.([15, 50, 15]); },
