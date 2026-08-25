@@ -62,28 +62,32 @@ export const ECHO_MAIN_STAT_VALUES = {
   1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
 };
 
-// Echo substat values — probability-weighted average of each stat's 8 real roll grades,
-// using the game's actual per-grade pull chances (source: wutheringwaves.fandom.com/wiki/Echo/Stats,
-// cross-checked against a user-supplied roll table, 2026-08-25). Each substat has 8 possible
-// rolls with chances [7.33%, 14.65%, 19.54%, 23.51%, 15.63%, 10.42%, 5.95%, 2.98%]; the value
-// below is Σ(chance_i × grade_i)/100 for that stat's grade list, not a flat min/mid/max snapshot.
+// Echo substat values — probability-weighted average of each stat's real roll grades, using
+// Kuro's own KR-law-mandated disclosed per-grade roll chances (source:
+// wutheringwaves.fandom.com/wiki/Echo/Stats § "Detailed substat values distribution", citing
+// wutheringwaves.kurogames.com's official disclosure; fetched 2026-08-25). Crit Rate/Crit DMG
+// use their own front-loaded chances [23.33%, 23.33%, 23.33%, 8%, 8%, 8%, 3%, 3%]; all other
+// 8-grade substats (ATK%/HP%/DEF%/ER/DMG bonuses/flat HP) share chances [6.80%, 7.77%, 20.39%,
+// 24.27%, 17.48%, 14.56%, 5.83%, 2.91%]. Each value below is Σ(chance_i × grade_i)/100 for that
+// stat's grade list, not a flat min/mid/max snapshot.
 export const ECHO_SUB_STAT_VALUES = {
-  'ATK%': 8.59, 'HP%': 8.59, 'DEF%': 10.87,
-  'Crit Rate': 8.07, 'Crit DMG': 16.15,
-  'Energy Regen': 9.16,
-  'Basic ATK DMG': 8.59, 'Heavy ATK DMG': 8.59,
-  'Resonance Skill DMG': 8.59, 'Resonance Liberation DMG': 8.59,
+  'ATK%': 8.77, 'HP%': 8.77, 'DEF%': 11.09,
+  'Crit Rate': 7.53, 'Crit DMG': 15.06,
+  'Energy Regen': 9.36,
+  'Basic ATK DMG': 8.77, 'Heavy ATK DMG': 8.77,
+  'Resonance Skill DMG': 8.77, 'Resonance Liberation DMG': 8.77,
 };
 
 // Flat echo substat values (in raw stat points, NOT %) — probability-weighted average of the
-// real roll grades, same source/date as ECHO_SUB_STAT_VALUES above. HP has 8 grades (320-580)
-// using the same 8-grade chance table as the % substats; ATK and DEF have only 4 grades with
-// their own chance table [18.52%, 44.45%, 26.38%, 10.36%]. Unlike the % substats, these can't
-// be looked up context-free: they need the wearer's own base ATK/HP/DEF to convert into an
-// equivalent %-of-base contribution (see applyEchoStats below), so they're kept in a separate
-// table rather than merged into ECHO_SUB_STAT_VALUES.
+// real roll grades, same official source/date as ECHO_SUB_STAT_VALUES above. HP has 8 grades
+// (320-580) using the same 8-grade chance table as the % substats; ATK and DEF have only 4
+// grades with their own disclosed chances (ATK: [6.80%, 52.43%, 37.86%, 2.91%], DEF: [14.56%,
+// 44.66%, 32.04%, 8.74%]). Unlike the % substats, these can't be looked up context-free: they
+// need the wearer's own base ATK/HP/DEF to convert into an equivalent %-of-base contribution
+// (see applyEchoStats below), so they're kept in a separate table rather than merged into
+// ECHO_SUB_STAT_VALUES.
 export const ECHO_FLAT_SUB_STAT_VALUES = {
-  'ATK': 42.8, 'HP': 429.5, 'DEF': 52.8,
+  'ATK': 43.7, 'HP': 438.3, 'DEF': 53.5,
 };
 
 // ── Stat accumulator: replaces 50+ loose variables per tier ──
