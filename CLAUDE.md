@@ -4,13 +4,22 @@ Read this before making any UI/styling change. These are hard rules, not suggest
 
 ## PerfectSuite — the only valid numeric scale
 
+> **Updated.** This replaces the prior version of the scale and its tie-break rules. The suite is now smaller and organized in three explicit tiers per power-of-2 octave: `[Primary]`, `(Secondary)`, `{Tertiary}`.
+
 Every numeric dimension in the app — font-size, width, height, padding, margin, gap, icon size, border-radius input, anything measured in px — **must** be one of these values:
 
 ```
-2, 4, 6, 8, 12, 14, 16, 24, 28, 30, 32, 48, 56, 60, 62, 64,
-96, 112, 120, 124, 126, 128, 192, 224, 240, 248, 252, 254, 256,
-384, 448, 480, 496, 504, 508, 510, 512, 768, 896, 960, 992,
-1008, 1016, 1020, 1022, 1024
+[1]
+[2]  (3)
+[4]  (6)
+[8]  (12)  {14}
+[16] (24)  {30}
+[32] (48)  {62}
+[64] (96)  {126}
+[128] (192) {254}
+[256] (384) {510}
+[512] (768) {1022}
+[1024]
 ```
 
 No other number is permitted. This applies everywhere, not just to new code — when you touch an existing value that isn't in this list, fix it to the nearest PerfectSuite value as part of that change instead of leaving it.
@@ -22,13 +31,11 @@ No other number is permitted. This applies everywhere, not just to new code — 
 
 ### Rounding priority (tie-breaking)
 
-When an off-suite value must be corrected, round to the mathematically nearest PerfectSuite value. When two candidates are **equidistant**, break the tie using this priority order — primary beats secondary beats tertiary:
+When an off-suite value must be corrected, round to the mathematically nearest PerfectSuite value. When two candidates are **equidistant**, break the tie using this priority order — **Nearest beats Primary beats Secondary beats Tertiary**:
 
-- **Primary** (powers of 2): `1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024`
-- **Secondary** (3 × powers of 2): `3, 6, 12, 24, 48, 96, 192, 384, 768`
-- **Tertiary**: every other PerfectSuite value not listed above (`14, 28, 30, 56, 60, 62, 120, 124, 126, 224, 240, 248, 252, 254, 448, 480, 496, 504, 508, 510, 896, 960, 992, 1008, 1016, 1020, 1022`)
-
-`1` and `3` are valid PerfectSuite values (primary/secondary respectively) even though they weren't in the original list above — the full valid set is the union of all three tiers.
+- **`[Primary]`** (powers of 2): `1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024`
+- **`(Secondary)`** (3 × powers of 2): `3, 6, 12, 24, 48, 96, 192, 384, 768`
+- **`{Tertiary}`** (one below the next primary — `2×prev primary − 2`): `14, 30, 62, 126, 254, 510, 1022`
 
 Worked examples:
 - `10` → tie between `8` (primary) and `12` (secondary), both distance 2 → primary wins → **8**
@@ -39,23 +46,32 @@ Worked examples:
 
 This can and will collapse previously-distinct values onto the same PerfectSuite number (e.g. two font sizes both rounding to `12`) — that's an accepted outcome of strict suite compliance, not a bug to work around by picking a different rounding.
 
+### Exception — values above 16px
+
+For a value greater than `16`, don't just snap to the single nearest suite number. Instead: take the nearest `[Primary]` at or below the value, then add another `[Primary]` on top to close the remaining gap as tightly as possible.
+
+- Example: `150` → nearest primary at/below is `128`; `128 + 16 = 144` is the closest reachable primary+primary sum → **144**.
+
 ## Corner radius
 
-`radius = 0.24 × the element's height`, then rounded down to the nearest PerfectSuite value.
+`radius = 0.24 × the element's height`, then rounded to the nearest PerfectSuite sub-number (apply the tie-break priority above).
 
-## Card aspect ratios
+## Aspect ratios — preferred, not mandatory
 
-Only these ratios are valid for card-shaped elements: `1:1`, `2:3`, `3:4`, `3:5`.
+Unlike the PerfectSuite scale, these ratios are a **priority list to reach for**, not a hard constraint — use judgment, don't force a mismatch:
 
-`3:1` is also valid, reserved for elements that need a wide/short exception to the card ratios above — e.g. the header, navbar, and similar full-width bars.
+`3:2`, `4:3`, `5:4`, `3:1` (the last reserved for wide/short bars — header, navbar, and similar).
 
 ## Header / Navbar
 
 Visually 192px wide × 64px tall (both PerfectSuite values), even though the actual implementation is responsive/fluid rather than hard-coded — treat 192×64 as the reference proportions when sizing anything meant to align with the header/nav.
 
+## Design goals behind these rules
+
+Standardization · Coherency · Consistency · Pixel-perfect precision · Symmetry · Strict aesthetic proportions · Conscious, deliberate art-direction choices — never a default or "close enough" value.
+
 ## Precedent already in the codebase
 
-Confirms this scale predates being written down here — match it, don't reinvent it:
-- Nav icons: `w-4 h-4` (16px), `w-6 h-6` (24px)
-- Nav profile button: `w-[48px] h-[48px]`
-- `--size-icon-btn: 28px` (kuro.css) — compliant (28 is in the suite).
+- Nav icons: `w-4 h-4` (16px), `w-6 h-6` (24px) — still compliant under the updated suite.
+- Nav profile button: `w-[48px] h-[48px]` — still compliant.
+- `--size-icon-btn: 28px` (kuro.css) — **no longer compliant** under the updated suite (28 was tertiary in the old scale; the new tertiary tier no longer includes it — nearest is now `30`). Flagged here, not yet fixed in code — treat as a normal off-suite value the next time this token is touched.
