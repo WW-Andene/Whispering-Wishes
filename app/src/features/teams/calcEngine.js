@@ -817,7 +817,24 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
           // 'deepen'/'offTune' as a debuff stat (enemy DMG Taken, e.g. Galbrena's Afterflame) is a
           // damage multiplier just like the buff-side 'deepen' — same off-element gate applies (a
           // debuff condition can name a specific element/mechanic just as easily as a buff's can).
-          if (db.stat === 'deepen' || db.stat === 'offTune') { if (deepenBuffApplies(db)) { const u = estimateBuffUplift('deepen', db.value); if (u > 0) score += u * UPLIFT_TO_SCORE; } }
+          // Unlike outroBuffs/libBuffs above, this was given zero uptime/reliability discount at
+          // all — Galbrena's Afterflame ("+1.5%/stack DMG Taken... while Galbrena is in Demon
+          // Hypostasis, up to 60%") requires HER OWN sustained on-field engagement to generate and
+          // hold, which she can't realistically get while benched as a suggested teammate for a
+          // different headline DPS (Augusta). Uncapped, this alone (150 score pts) was enough to
+          // rank Galbrena #1 above every one of Augusta's real curated partners, and to wrongly
+          // earn the "Dual DPS" tag instead of the "Redundant DPS" penalty that check exists
+          // specifically to catch (score > scoreBeforeMember only looked true because of this).
+          // Same self-state-dependency logic as the ER-uptime/echo-set-potential discounts already
+          // established elsewhere in this function: discount a second Main DPS's own state-gated
+          // debuff, since a benched, non-headline Main DPS's on-field time can't be assumed.
+          if (db.stat === 'deepen' || db.stat === 'offTune') {
+            if (deepenBuffApplies(db)) {
+              const selfStateDiscount = (CHARACTER_DATA[m]?.role === 'Main DPS' && m !== mainDps) ? 0.35 : 1;
+              const u = estimateBuffUplift('deepen', db.value) * selfStateDiscount;
+              if (u > 0) score += u * UPLIFT_TO_SCORE;
+            }
+          }
         });
         // Healer/support team-wide echo-set potential (Rejuvenating Glow, Halo of Starry Radiance, ...):
         // TEAM_SET_BUFFS is only ever applied in calcTeamStats.js for a team the player has ALREADY
