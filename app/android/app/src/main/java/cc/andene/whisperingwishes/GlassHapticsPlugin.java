@@ -23,16 +23,22 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 // threshold where human touch perception stops resolving separate impulses
 // and merges them into one continuous vibration, regardless of how sharp
 // each individual pulse is. Fixed by widening every inter-pulse gap to
-// 70ms+. Also added supportsClickPrimitive(): on hardware without a real
-// composition-capable actuator, the OS silently emulates PRIMITIVE_CLICK
-// with its own approximation, which can itself feel buzzy — detecting that
-// and falling through to a self-authored ultra-short one-shot instead means
-// this plugin controls the exact on/off edge rather than trusting an
-// unknown emulation.
+// 70ms+.
+//
+// v3 also added a Vibrator.areAllPrimitivesSupported() hardware check
+// before ever attempting PRIMITIVE_CLICK, meant to protect devices with no
+// real composition-capable actuator from a buzzy OS-level emulation of the
+// primitive. That backfired: it's known to report false on some real
+// Xiaomi/MIUI devices whose actuator handles the primitive fine, which
+// silently downgraded every single light/medium/heavy tap (fired on every
+// button press) to the createOneShot() fallback — and a plain amplitude
+// pulse rides an ERM-style motor's physical spin-up/coast-down time, which
+// is exactly the buzz being complained about. Removed: just attempt the
+// primitive unconditionally on API 30+, as v2 did — that was never the
+// part users flagged as buzzy, only the multi-click spacing was.
 @CapacitorPlugin(name = "GlassHaptics")
 public class GlassHapticsPlugin extends Plugin {
     private Vibrator vibrator;
-    private Boolean clickPrimitiveSupported; // lazily resolved, cached — computed once per process
 
     @Override
     public void load() {
@@ -51,11 +57,7 @@ public class GlassHapticsPlugin extends Plugin {
     }
 
     private boolean supportsClickPrimitive() {
-        if (clickPrimitiveSupported == null) {
-            clickPrimitiveSupported = Build.VERSION.SDK_INT >= 30
-                && vibrator.areAllPrimitivesSupported(VibrationEffect.Composition.PRIMITIVE_CLICK);
-        }
-        return clickPrimitiveSupported;
+        return Build.VERSION.SDK_INT >= 30;
     }
 
     @PluginMethod public void light(PluginCall call) { playClick(0.3f, 6, 130); call.resolve(); }
