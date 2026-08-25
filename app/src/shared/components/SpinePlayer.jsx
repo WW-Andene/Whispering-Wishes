@@ -22,7 +22,6 @@ import React, { useEffect, useId, useRef, useState, memo } from 'react';
 import { useSpineTuning } from '../../hooks/useSpineTuning.js';
 import { useSpineBudget } from '../../hooks/useSpineBudget.js';
 import { useInView } from '../../hooks/useInView.js';
-import { getFrameEl } from './ViewportFrame.jsx';
 import { getPrerenderedIdle } from '../spinePrerenderManifest.js';
 
 // SVG color-matrix filter used to chroma-key black out of MP4 prerenders.
@@ -330,7 +329,7 @@ function SpinePlayerComponent({
   // actually in the viewport AND a global concurrency-budget slot is free.
   // Otherwise the static fallback img renders in its place until both
   // conditions are satisfied.
-  const [wrapRef, inView] = useInView({ rootMargin: '200px', threshold: 0, root: getFrameEl() });
+  const [wrapRef, inView] = useInView();
   const slotId = useId();
   const wantWebGL = !!charDataLookup && !usePrerender && !failed;
   const granted = useSpineBudget(slotId, wantWebGL && inView);

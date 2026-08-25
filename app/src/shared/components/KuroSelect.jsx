@@ -6,7 +6,6 @@
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
-import { getFrameEl, getScale } from './ViewportFrame.jsx';
 
 const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
   const [open, setOpen] = useState(false);
@@ -22,10 +21,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
     setOpen(prev => {
       if (!prev && ref.current) {
         const rect = ref.current.getBoundingClientRect();
-        // rect is in real screen px; the dropdown portals inside the scaled
-        // ViewportFrame, so convert back to the frame's local (design) px.
-        const scale = getScale();
-        setPos({ top: rect.bottom / scale + 4, left: rect.left / scale, width: rect.width / scale });
+        setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
       }
       return !prev;
     });
@@ -152,7 +148,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
             );
           })}
         </div>,
-        getFrameEl()
+        document.body
       )}
     </div>
   );
