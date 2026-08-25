@@ -4,14 +4,21 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { ECHO_SETS, ECHO_DATA } from '../data/echoes.js';
-import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { registerPlugin } from '@capacitor/core';
 
-// Haptic feedback utility — fails silently on unsupported devices.
-// On the native (Capacitor) build this calls Android's real haptic motor
-// APIs (richer, distinct click/tick waveforms) instead of the WebView's
-// navigator.vibrate(), which only ever produces one flat buzz pattern
-// regardless of style — @capacitor/haptics falls through to the Vibration
-// API itself when running on plain web, so no separate web path is needed.
+// GlassHapticsPlugin.java (in-project, Android only) replaces
+// @capacitor/haptics: that plugin's impact/notification styles are all
+// VibrationEffect.createWaveform() — a raw amplitude ramp held for
+// 43-60ms — which reads as a dull, soft "buzz" on most actuators, not a
+// sharp tap. GlassHaptics instead uses VibrationEffect.Composition's short
+// OS/OEM-tuned primitives (PRIMITIVE_TICK/PRIMITIVE_CLICK/PRIMITIVE_LOW_TICK)
+// — the same category of API that makes stock Android UI taps feel crisp
+// rather than buzzy, closer to a quick tap on thin glass than a motor buzz.
+// No iOS build exists yet (see CAPACITOR_APP.md) — if one gets added,
+// @capacitor/haptics' iOS side (Apple's Taptic Engine via UIFeedbackGenerator)
+// is already good and would need its own branch here instead of this plugin.
+const GlassHaptics = registerPlugin('GlassHaptics');
+
 const isNative = () => typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
 
 // useVisualSettings.js already toggles a 'no-animations' class on <html>
@@ -22,13 +29,15 @@ const isNative = () => typeof window !== 'undefined' && !!window.Capacitor?.isNa
 // point from the Settings tab.
 const hapticsAllowed = () => typeof document !== 'undefined' && !document.documentElement.classList.contains('no-animations');
 
+// Web fallback durations stay short/plain navigator.vibrate() — there's no
+// composition-primitive equivalent on the web, and these were already fine.
 const haptic = {
-  light: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}) : navigator?.vibrate?.(10); },
-  medium: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}) : navigator?.vibrate?.(25); },
-  heavy: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {}) : navigator?.vibrate?.(50); },
-  success: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.notification({ type: NotificationType.Success }).catch(() => {}) : navigator?.vibrate?.([15, 50, 15]); },
-  warning: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.notification({ type: NotificationType.Warning }).catch(() => {}) : navigator?.vibrate?.([30, 30, 30]); },
-  error: () => { if (!hapticsAllowed()) return; isNative() ? Haptics.notification({ type: NotificationType.Error }).catch(() => {}) : navigator?.vibrate?.([50, 50, 80]); },
+  light: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.light().catch(() => {}) : navigator?.vibrate?.(10); },
+  medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : navigator?.vibrate?.(25); },
+  heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : navigator?.vibrate?.(50); },
+  success: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.success().catch(() => {}) : navigator?.vibrate?.([15, 50, 15]); },
+  warning: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.warning().catch(() => {}) : navigator?.vibrate?.([30, 30, 30]); },
+  error: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.error().catch(() => {}) : navigator?.vibrate?.([50, 50, 80]); },
 };
 
 
