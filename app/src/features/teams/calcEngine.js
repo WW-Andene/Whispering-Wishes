@@ -873,6 +873,15 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       const bt = CHAR_BUFF_TABLE[m];
       if (bt) {
         (bt.outroBuffs || []).forEach(scoreBuff);
+        // selfBuffs with target:'team' are a real, deliberate data convention (see Sigrika's Blessing
+        // of Runes — "+48% Aero DMG to whichever Resonator is active", explicitly NOT self-only despite
+        // living in the selfBuffs array — and Rover: Electro's Overshock team ATK buff) for a passive,
+        // always-on team-wide effect that isn't tied to an outro/Liberation trigger. This loop only
+        // ever read outroBuffs/libBuffs/debuffs from a teammate, so any character whose real team
+        // contribution is modeled this way was scored as if that buff didn't exist at all when being
+        // evaluated as a partner for someone else. True self-only entries (target:'self') are correctly
+        // still skipped here — only the small number of genuinely team-scoped selfBuffs qualify.
+        (bt.selfBuffs || []).forEach(b => { if (b.target === 'team') scoreBuff(b); });
         // Liberation-triggered team/next buffs (Verina/Shorekeeper/Baizhi-style healers/supports).
         // High-cost (175 Energy) Liberation-reliant supports need real ER investment to sustain uptime
         // that a generic roster-suggestion context can't assume the player has built — 175 is the same
