@@ -81,7 +81,7 @@ import { silentCatch } from './utils/silentCatch.js';
 import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storageKeys.js';
 import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
 import { t, formatDate, useAppLocale } from './utils/i18n.js';
-import { useIsReferenceDevice } from './hooks/useIsReferenceDevice.js';
+import { useIsReferenceDevice, useUiScale } from './hooks/useIsReferenceDevice.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -103,11 +103,12 @@ function WhisperingWishesInner() {
   // instead, guaranteeing the new language actually shows up everywhere.
   const appLocale = useAppLocale();
 
-  // Gate point for multi-format UI recalculation (CLAUDE.md-adjacent request):
-  // the reference device (Xiaomi 13T, 439px) always renders through this same
-  // untouched path. Non-reference widths will pick up recalculated sizing in
-  // a later step — nothing consumes isReferenceDevice yet, so this is a no-op.
+  // Multi-format UI recalculation: the reference device (Xiaomi 13T, 439px)
+  // always keeps --ui-scale pinned to 1 (untouched sizing). Other widths get
+  // --ui-scale = innerWidth/439 written onto <html>, which the design tokens
+  // in kuro.css/index.css multiply themselves by via calc().
   const isReferenceDevice = useIsReferenceDevice();
+  useUiScale();
 
   const toast = useToast();
   const confirm = useConfirm();
