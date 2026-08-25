@@ -2008,7 +2008,18 @@ const CHAR_BUFF_TABLE = {
     // weapon is actually equipped. Hardcoding it here double-counted it and phantom-applied it even when a
     // different weapon was equipped (also had the wrong duration: 10s here vs the weapon's real 4s).
     weaponBuffs: [],
-    debuffs: [{ stat: 'offTune', value: 50, duration: 25, condition: 'Syntony Field: Off-Tune Buildup Rate +50%' }],
+    // Off-Tune Buildup Rate corrected 2026-08-25: was modeled here as a debuffs-array 'offTune'
+    // stat, which applyBuff/scoreTeamComposition alias directly to 'deepen' -- a genuine universal
+    // DMG-Taken multiplier (the alias exists for Galbrena-style enemy DMG Taken debuffs, e.g. her
+    // own Afterflame, which really is that). But "Off-Tune Buildup Rate" is not a damage multiplier
+    // at all -- per her own kit desc, it's the RATE the Off-Tune status gauge fills, which only
+    // matters if it actually triggers a Tune Break, and even then only for characters with real
+    // Tune Break DMG. It was granting a flat +50% damage-style bonus to ANY partner regardless of
+    // whether the team engages with Tune Break mechanics at all (e.g. Augusta, whose kit has zero
+    // Tune interaction) -- confirmed wrong by her own tuneBreak.boostToTeam already being 0 below
+    // (deliberately not crediting broad team-wide Tune Break Boost for this effect). Removed the
+    // incorrect debuffs entry; the real effect stays represented, correctly scoped, via tuneBreak.
+    debuffs: [],
     tuneBreak: {
       boostToTeam: 0,
       baseTuneBreakBoost: 10,
