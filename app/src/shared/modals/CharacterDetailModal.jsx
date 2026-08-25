@@ -698,8 +698,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                           <div className={`w-12 h-12 rounded-lg border flex items-center justify-center overflow-hidden ${slot.generic ? 'bg-white/5 border-[var(--border-medium)]' : `${sc.bg} ${sc.border} ring-2 ${sc.ring}`}`}>
                             {slot.iconUrl ? <img src={slot.iconUrl} alt={slot.name} className="w-full h-full object-cover" onError={hideOnError} /> : <LayoutGrid size={12} className={sc.text} />}
                           </div>
-                          <div className="text-[10px] text-gray-300 text-center leading-tight line-clamp-2">{slot.name}</div>
-                          <div className="text-[10px] text-gray-500 text-center leading-tight">{t('modals.characterDetail.echoCost', { cost: slot.cost })}{slot.mainStat ? ` · ${slot.mainStat}` : ''}</div>
+                          <div className="text-[8px] text-gray-300 text-center leading-tight line-clamp-2">{slot.name}</div>
+                          <div className="text-[8px] text-gray-500 text-center leading-tight">{t('modals.characterDetail.echoCost', { cost: slot.cost })}{slot.mainStat ? ` · ${slot.mainStat}` : ''}</div>
                         </div>
                       ))}
                     </div>
