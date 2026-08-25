@@ -258,7 +258,7 @@
       --height-card-md: calc(192px * var(--ui-scale, 1));    /* Team selector cards */
       --size-avatar-lg: calc(112px * var(--ui-scale, 1));    /* Profile picture (IdCard, profile tab) */
       --size-avatar-md: calc(64px * var(--ui-scale, 1));     /* Camera button, medium icons */
-      --size-avatar-sm: calc(28px * var(--ui-scale, 1));     /* Trophy icons, small avatars */
+      --size-avatar-sm: calc(30px * var(--ui-scale, 1));     /* Trophy icons, small avatars */
       --size-touch-min: calc(48px * var(--ui-scale, 1));     /* iOS HIG minimum touch target */
       --size-icon-btn: calc(30px * var(--ui-scale, 1));      /* Small icon buttons (profile pic setter) */
       /* MED-3 + TK-F2: Radius token scale + component-level abstraction */
@@ -953,13 +953,13 @@
     .kuro-btn-sm {
       font-size: 12px;
       padding: 4px 8px;
-      min-height: 28px;
+      min-height: 30px;
       border-radius: 8px;
     }
     .kuro-btn-icon {
       padding: 6px;
       aspect-ratio: 1;
-      min-height: 28px;
+      min-height: 30px;
     }
 
     /* E5-BT6: Button loading state — spinner + preserved width */
