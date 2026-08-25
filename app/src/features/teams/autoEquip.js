@@ -6,7 +6,7 @@
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA } from '../../data/echoes.js';
-import { isHealerRole, isSupportRole } from './calcEngine.js';
+import { isHealerRole, isSupportRole, scoreTeamComposition } from './calcEngine.js';
 import { calcTeamStats } from './calcTeamStats.js';
 
 // Extracted from the per-character "Auto Equip" button's onClick so both that button and the
@@ -290,4 +290,75 @@ function computeAutoEquipEntryOptimized(memberName, teamEquipmentSnapshot, activ
   return best || computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName);
 }
 
-export { computeAutoEquipEntry, computeAutoEquipEntryOptimized };
+// ── Enemy-aware "Auto Team" ──
+// Generates a bounded set of candidate 3-member teams from a character pool (either the player's
+// owned roster, or the full roster to include aspirational/unowned picks), pre-filters them with
+// the cheap enemy-blind scoreTeamComposition (same synergy heuristic the "Team Suggestions" list
+// already uses), then actually builds and calc's the real top candidates against the SPECIFIC
+// selected enemy and keeps whichever produces the highest real teamDps. This is the missing link
+// between two things that already existed independently: calcTeamStats already knows an enemy's
+// real elemental resistance (surfaces as e.g. "Lorelei resists Havoc"), and scoreTeamComposition
+// already ranks team synergy -- but nothing previously combined them, so team suggestions never
+// changed based on which enemy was selected. Candidate generation mirrors TeamsTab.jsx's own
+// owned-roster suggestion logic (top-3 sub-partner x top-2 healer/support per DPS candidate) so
+// the two stay consistent, just parameterized by pool instead of hardcoded to ownedNames.
+function generateCandidateTeams(pool, ownedWeaps) {
+  const validPool = pool.filter(n => CHARACTER_DATA[n]);
+  const dpsPool = validPool.filter(n => CHARACTER_DATA[n].role === 'Main DPS');
+  const hypercarryPool = validPool.filter(n => CHARACTER_DATA[n].role === 'Sub DPS' && (CHARACTER_DATA[n].totalMult || 0) > 0);
+  const dpsCandidates = [...dpsPool, ...hypercarryPool];
+  const subPool = validPool.filter(n => CHARACTER_DATA[n].role === 'Sub DPS');
+  const healPool = validPool.filter(n => isHealerRole(CHARACTER_DATA[n].role) || isSupportRole(CHARACTER_DATA[n].role));
+  const scoreTeam = (members, dpsOverride) => scoreTeamComposition(members, ownedWeaps, dpsOverride);
+  const seen = new Set();
+  const candidates = [];
+  for (const dps of dpsCandidates) {
+    const subCandidates = subPool.filter(s => s !== dps)
+      .map(sub => ({ name: sub, fit: scoreTeam([dps, sub], dps).score }))
+      .sort((a, b) => b.fit - a.fit).slice(0, 3);
+    const healCandidates = healPool.filter(h => h !== dps)
+      .map(heal => ({ name: heal, fit: scoreTeam([dps, heal], dps).score }))
+      .sort((a, b) => b.fit - a.fit).slice(0, 2);
+    for (const sub of subCandidates) {
+      for (const heal of healCandidates) {
+        if (sub.name === heal.name) continue;
+        const members = [dps, sub.name, heal.name];
+        const key = [...members].sort().join('|');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const { score } = scoreTeam(members, dps);
+        candidates.push({ members, dpsOverride: dps, cheapScore: score });
+      }
+    }
+  }
+  return candidates;
+}
+
+// pool: character names to draw from (pass an owned-only list for "owned", or the full roster for
+// "any" -- the caller decides ownership mode, this function is pool-agnostic). ownedNames (a Set)
+// is used only to report how many of each candidate's 3 members are actually owned, so a caller
+// searching the full roster can still show that info without a second, separate pass.
+function pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLevel, teamIdx = 0, topN = 12) {
+  const candidates = generateCandidateTeams(pool, ownedWeaps)
+    .sort((a, b) => b.cheapScore - a.cheapScore)
+    .slice(0, topN);
+  let best = null;
+  for (const cand of candidates) {
+    const slots = [...cand.members, null];
+    let teamEquipment = {};
+    for (const name of cand.members) {
+      const result = computeAutoEquipEntryOptimized(name, teamEquipment, teamIdx, cand.members, cand.dpsOverride, slots, enemyEcho, enemyLevel);
+      if (result) teamEquipment = { ...teamEquipment, [result.aeqKey]: result.entry };
+    }
+    let result;
+    try { result = calcTeamStats(slots, teamIdx, cand.dpsOverride, teamEquipment, enemyEcho, enemyLevel); } catch { continue; }
+    const teamDps = result?.teamDps || 0;
+    const ownedCount = ownedNames ? cand.members.filter(m => ownedNames.has(m)).length : 0;
+    if (!best || teamDps > best.teamDps) {
+      best = { members: cand.members, mainDps: cand.dpsOverride, teamEquipment, teamDps, ownedCount };
+    }
+  }
+  return best;
+}
+
+export { computeAutoEquipEntry, computeAutoEquipEntryOptimized, pickBestTeamForEnemy };

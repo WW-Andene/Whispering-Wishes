@@ -777,10 +777,13 @@ function TeamsTab({
                     teamEquipment={teamEquipment}
                     setTeamEquipment={setTeamEquipment}
                     state={state}
+                    dispatch={dispatch}
+                    collectionData={collectionData}
                     collectionImages={collectionImages}
                     teamCompareEntries={teamCompareEntries}
                     setTeamCompareEntries={setTeamCompareEntries}
                     confirm={confirm}
+                    toast={toast}
                     onOpenWeaponSelector={(teamIdx, charName) => {
                       setWeaponSelectorTarget({ teamIdx, charName });
                       setWeaponSearch('');
