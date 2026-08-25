@@ -31,7 +31,7 @@ const OnboardingModal = ({ onComplete }) => {
         <div className="kuro-card-inner rounded-2xl overflow-hidden">
 
           {/* Skip button */}
-          <button onClick={onComplete} className="kuro-btn absolute top-3 right-3 z-20 min-h-[48px]" style={{ padding: '6px 12px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.skip')}</button>
+          <button onClick={onComplete} className="kuro-btn absolute top-3 right-4 z-20 min-h-[48px]" style={{ padding: '8px 14px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.skip')}</button>
 
           {/* Content */}
           <div className="kuro-body text-center pt-6" aria-live="polite" aria-atomic="true">
