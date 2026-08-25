@@ -107,6 +107,15 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
     [...rawDirectEchoes].filter(name => (ECHO_DATA[name]?.sets || []).some(s => recSets.has(s)))
   );
   const currentEq = teamEquipmentSnapshot[aeqKey];
+  // Tried making a "redundant" non-headline DPS (no healer/support anywhere on the team) build
+  // toward ER/utility instead of another personal Crit template, reasoning a spare DPS should
+  // contribute energy uptime if it can't contribute damage-carry duty. Measured it against the
+  // real engine on a concrete case (Jinhsi/Encore/Augusta, no healer): teamDps went from 12613 to
+  // 9767 -- a real regression, not an improvement. ER is a personal stat that only speeds up that
+  // character's OWN Liberation cast; it doesn't share to teammates, so for a kit that isn't
+  // Liberation-DMG-heavy, trading Crit Rate/DMG for it is a straight loss with nothing to show for
+  // it. Reverted -- a bad 3-DPS/no-healer comp doesn't have a gear-choice fix; each member's own
+  // best personal build is still genuinely the best available result for the team as a whole.
   const roleDefaultPreset = isTeamMainDps ? 'default'
     : (isHealerRole(d.role) || isSupportRole(d.role)) ? 'support' : 'default';
   const preset = currentEq?.echoPreset || roleDefaultPreset;
