@@ -11,6 +11,17 @@
     "downloadStarted": "Opening download — install it once it finishes.",
     "downloadFailed": "Couldn't open download: {{error}}"
   },
+  "pushNotifications": {
+    "title": "Push Notifications",
+    "description": "Get notified when events end or version updates drop. Requires a one-time permission grant.",
+    "enable": "Enable Notifications",
+    "disable": "Disable Notifications",
+    "permissionDenied": "Notification permission denied — enable it in Android's app settings.",
+    "error": "Couldn't set up notifications: {{error}}",
+    "registering": "Registering…",
+    "copyToken": "Copy Device Token",
+    "tokenCopied": "Device token copied."
+  },
   "importFlow": {
     "title": "Import Convene History",
     "subtitle": "Import your Convene history directly from the game.",

@@ -4,4 +4,7 @@
     <string name="title_activity_main">Whispering Wishes</string>
     <string name="package_name">cc.andene.whisperingwishes</string>
     <string name="custom_url_scheme">cc.andene.whisperingwishes</string>
+    <string name="widget_description">Shows the next event ending soon</string>
+    <string name="widget_no_event_title">Whispering Wishes</string>
+    <string name="widget_no_event_subtitle">Open the app</string>
 </resources>

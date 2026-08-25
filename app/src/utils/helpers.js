@@ -4,15 +4,23 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { ECHO_SETS, ECHO_DATA } from '../data/echoes.js';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
 
-// Haptic feedback utility — fails silently on unsupported devices
+// Haptic feedback utility — fails silently on unsupported devices.
+// On the native (Capacitor) build this calls Android's real haptic motor
+// APIs (richer, distinct click/tick waveforms) instead of the WebView's
+// navigator.vibrate(), which only ever produces one flat buzz pattern
+// regardless of style — @capacitor/haptics falls through to the Vibration
+// API itself when running on plain web, so no separate web path is needed.
+const isNative = () => typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
+
 const haptic = {
-  light: () => { navigator?.vibrate?.(10); },
-  medium: () => { navigator?.vibrate?.(25); },
-  heavy: () => { navigator?.vibrate?.(50); },
-  success: () => { navigator?.vibrate?.([15, 50, 15]); },
-  warning: () => { navigator?.vibrate?.([30, 30, 30]); },
-  error: () => { navigator?.vibrate?.([50, 50, 80]); },
+  light: () => { isNative() ? Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}) : navigator?.vibrate?.(10); },
+  medium: () => { isNative() ? Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {}) : navigator?.vibrate?.(25); },
+  heavy: () => { isNative() ? Haptics.impact({ style: ImpactStyle.Heavy }).catch(() => {}) : navigator?.vibrate?.(50); },
+  success: () => { isNative() ? Haptics.notification({ type: NotificationType.Success }).catch(() => {}) : navigator?.vibrate?.([15, 50, 15]); },
+  warning: () => { isNative() ? Haptics.notification({ type: NotificationType.Warning }).catch(() => {}) : navigator?.vibrate?.([30, 30, 30]); },
+  error: () => { isNative() ? Haptics.notification({ type: NotificationType.Error }).catch(() => {}) : navigator?.vibrate?.([50, 50, 80]); },
 };
 
 

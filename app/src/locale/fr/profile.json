@@ -11,6 +11,17 @@
     "downloadStarted": "Ouverture du téléchargement — installez-la une fois terminée.",
     "downloadFailed": "Impossible d'ouvrir le téléchargement : {{error}}"
   },
+  "pushNotifications": {
+    "title": "Notifications push",
+    "description": "Soyez averti quand un événement se termine ou qu'une mise à jour de version sort. Nécessite une autorisation ponctuelle.",
+    "enable": "Activer les notifications",
+    "disable": "Désactiver les notifications",
+    "permissionDenied": "Permission refusée — activez-la dans les paramètres Android de l'application.",
+    "error": "Impossible de configurer les notifications : {{error}}",
+    "registering": "Enregistrement…",
+    "copyToken": "Copier le jeton de l'appareil",
+    "tokenCopied": "Jeton de l'appareil copié."
+  },
   "importFlow": {
     "title": "Importer l'historique des convocations",
     "subtitle": "Importez votre historique de convocations directement depuis le jeu.",

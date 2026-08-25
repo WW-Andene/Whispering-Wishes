@@ -28,6 +28,7 @@ import AdminPanel from './AdminPanel.jsx';
 import AboutSection from './AboutSection.jsx';
 import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
+import PushNotificationsCard from './PushNotificationsCard.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
@@ -931,6 +932,7 @@ function ProfileTab({
 
             {/* ── App maintenance: updates + offline asset downloads ────────── */}
             <AppUpdateCard toast={toast} />
+            <PushNotificationsCard toast={toast} />
             <OfflineAssetsCard toast={toast} />
 
             {/* ── Cloud Backup ──────────────────────────────────── */}

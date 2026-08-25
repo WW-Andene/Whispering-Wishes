@@ -79,6 +79,7 @@ import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storag
 import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
 import { t, formatDate, useAppLocale } from './utils/i18n.js';
 import { useIsReferenceDevice, useUiScale } from './hooks/useIsReferenceDevice.js';
+import { syncHomeScreenWidget } from './utils/widgetSync.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -185,6 +186,10 @@ function WhisperingWishesInner() {
       dispatch({ type: 'SET_SERVER', server: 'Europe' });
     }
   }, [state.server, toast]);
+  // Keep the Android home-screen widget's "next event ending" in sync — no-op on web
+  useEffect(() => {
+    syncHomeScreenWidget(state.server);
+  }, [state.server]);
   const [trophyOverrides, setTrophyOverrides] = useState(() => {
     try { const s = localStorage.getItem(TROPHY_OVERRIDES_KEY); return s ? JSON.parse(s) : {}; } catch (err) { silentCatch(err, 'trophy overrides init'); return {}; }
   });
