@@ -2802,13 +2802,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           </div>
         </div>
       </FocusTrapModal>
-      {/* paddingBottom: 0 overrides .tab-content's own 12px bottom padding (kuro.css) — that
-          padding has no top-side equivalent (.tab-content sets padding-top: 0), so on a card
-          sized to exactly fill the space between header and nav, it read as extra gap below the
-          card that doesn't mirror the gap above it. Cancelling it lets the height calc below use
-          just navPadding + headerPadding, matching the space each of those already reserves. */}
-      <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1, paddingBottom: 0 }}>
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + headerPadding}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
+      {/* Top side: header's own rendered box already has ~6px of trailing space baked into it
+          before the 12px gap (headerPadding = header.getBoundingClientRect().bottom + 12 captures
+          both). Bottom side has no equivalent — .tab-content's default padding-bottom is a flat
+          12px with no matching 6px, so the gap under the map read as 6px smaller than the gap
+          above it. paddingBottom: 6 (not the class default 12, not 0) plus the matching -6 in the
+          height calc below restores that missing 6px so both sides reserve the same 18px total. */}
+      <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1, paddingBottom: 6 }}>
+        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + headerPadding + 6}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
           <div className="kuro-card-inner" style={{ position: 'relative', height: '100%' }}>
             <div
               ref={containerRef}
