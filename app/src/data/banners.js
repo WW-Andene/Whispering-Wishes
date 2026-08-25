@@ -906,6 +906,17 @@ const CHARACTER_THEMES = [
   { id: 'lingyang',      name: 'Lingyang',      element: 'Glacio',  bannerArt: './banners/KzKHgTLN-lingyang-banner.jpg' },
   { id: 'verina',        name: 'Verina',        element: 'Spectro', bannerArt: './banners/C3Wd3F32-verina-banner.jpg' },
   { id: 'buling',        name: 'Buling',        element: 'Havoc',   bannerArt: './banners/XkYLV2gC-buling-banner.jpg' },
+  { id: 'aalto',         name: 'Aalto',         element: 'Aero',    bannerArt: './banners/Banner_Aalto.jpg' },
+  { id: 'baizhi',        name: 'Baizhi',        element: 'Glacio',  bannerArt: './banners/Banner_Baizhi.jpg' },
+  { id: 'chixia',        name: 'Chixia',        element: 'Fusion',  bannerArt: './banners/Banner_Chixia.jpg' },
+  { id: 'danjin',        name: 'Danjin',        element: 'Havoc',   bannerArt: './banners/Banner_Danjin.jpg' },
+  { id: 'lumi',          name: 'Lumi',          element: 'Electro', bannerArt: './banners/Banner_Lumi.jpeg' },
+  { id: 'mortefi',       name: 'Mortefi',       element: 'Fusion',  bannerArt: './banners/Banner_Mortefi.jpg' },
+  { id: 'sanhua-std',    name: 'Sanhua',        element: 'Glacio',  bannerArt: './banners/Banner_Sanhua.jpg' },
+  { id: 'taoqi',         name: 'Taoqi',         element: 'Havoc',   bannerArt: './banners/Banner_Taoqi.webp' },
+  { id: 'yangyang-std',  name: 'Yangyang',      element: 'Aero',    bannerArt: './banners/Banner_Yangyang.jpg' },
+  { id: 'youhu',         name: 'Youhu',         element: 'Glacio',  bannerArt: './banners/Banner_Youhu.jpeg' },
+  { id: 'yuanwu',        name: 'Yuanwu',        element: 'Electro', bannerArt: './banners/Banner_Yuanwu.webp' },
   // v3.4-3.5 — no individual header/nav/bg crop tuning yet; using the average pos across every
   // other tuned entry above (avg of 30: header 50%/36%, nav 50%/36%, bg 60%/50%)
   { id: 'lucy',          name: 'Lucy',          element: 'Spectro', bannerArt: './banners/mC4xmBYY-Lucy-Banner.jpg',        pos: { header: '50% 36%', nav: '50% 36%', bg: '60% 50%' } },
