@@ -6,13 +6,15 @@
 // calcTeamStats, and is passed in here as props.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { Sword } from 'lucide-react';
+import { Sword, X } from 'lucide-react';
 import { Card, CardBody } from '../../shared/components/Card.jsx';
 import MonsterCard from '../../shared/components/MonsterCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
 import { ECHO_DATA } from '../../data/echoes.js';
+import { haptic } from '../../utils/helpers.js';
+import { t } from '../../utils/i18n.js';
 
-export function EnemyTargetCard({ enemyEcho, enemyLevel, setEnemyLevel, collectionImages, setEnemyEchoSearch, setEnemyEchoModalOpen }) {
+export function EnemyTargetCard({ enemyEcho, setEnemyEcho, enemyLevel, setEnemyLevel, collectionImages, setEnemyEchoSearch, setEnemyEchoModalOpen }) {
   const enemyTargetEd = enemyEcho ? ECHO_DATA[enemyEcho] : null;
   // monsterIconUrl (the boss's own portrait) must win over collectionImages — see the matching fix
   // and full explanation in EnemyEchoSelectorModal.jsx's icon priority.
@@ -42,14 +44,26 @@ export function EnemyTargetCard({ enemyEcho, enemyLevel, setEnemyLevel, collecti
             <span className="text-gray-600 text-sm">/ 120</span>
           </div>
         </div>
-        <MonsterCard
-          name={enemyEcho || 'No Target Selected (Default)'}
-          rank={enemyTargetEd?.rank}
-          iconUrl={enemyTargetIcon}
-          enemyStats={enemyTargetStats}
-          level={enemyLevel}
-          onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); }}
-        />
+        <div className="relative">
+          <MonsterCard
+            name={enemyEcho || 'No Target Selected (Default)'}
+            rank={enemyTargetEd?.rank}
+            iconUrl={enemyTargetIcon}
+            enemyStats={enemyTargetStats}
+            level={enemyLevel}
+            onClick={() => { setEnemyEchoSearch(''); setEnemyEchoModalOpen(true); }}
+          />
+          {enemyEcho && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setEnemyEcho(''); haptic.light(); }}
+              className="action-btn absolute top-1 right-1 z-20 w-[calc(28px*var(--ui-scale,1))] h-[calc(28px*var(--ui-scale,1))] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
+              aria-label={t('teams.enemyEcho.clearTarget')}
+              title={t('teams.enemyEcho.clearTarget')}
+            >
+              <X size={12} />
+            </button>
+          )}
+        </div>
       </CardBody>
     </Card>
   );

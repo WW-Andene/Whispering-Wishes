@@ -68,7 +68,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   // it isn't an actual enemy.
   const enemyTargetCard = (
     <EnemyTargetCard
-      enemyEcho={enemyEcho} enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
+      enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho} enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
       collectionImages={collectionImages}
       setEnemyEchoSearch={setEnemyEchoSearch} setEnemyEchoModalOpen={setEnemyEchoModalOpen}
     />
