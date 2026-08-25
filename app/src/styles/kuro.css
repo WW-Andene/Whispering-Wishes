@@ -914,6 +914,40 @@
       100% { opacity: 0;   transform: scale(1.1); }
     }
 
+    /* Diffuse light wave — a ring of light that spreads outward from the
+       touch point and dissipates (fading opacity + growing blur) as it
+       travels, unlike glass-ripple above which stays put and pulses in
+       place. Spawned by utils/glassTouch.js as a fixed-position element on
+       <body> (not clipped to the pressed element's box) so it can actually
+       radiate into the surrounding page, the way light diffusing through
+       real glass would spill past the point of contact. Position comes from
+       --wave-x/--wave-y, set inline per-instance since these elements are
+       created and destroyed per tap rather than reused. */
+    .light-wave-diffuse {
+      position: fixed;
+      left: var(--wave-x, 0);
+      top: var(--wave-y, 0);
+      width: 16px;
+      height: 16px;
+      margin: -8px 0 0 -8px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      background: radial-gradient(circle,
+        rgba(255,255,255,0.5) 0%,
+        rgba(255,255,255,0.22) 40%,
+        transparent 72%);
+      mix-blend-mode: screen;
+      will-change: transform, opacity, filter;
+      animation: light-wave-diffuse-expand 700ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes light-wave-diffuse-expand {
+      0%   { transform: scale(0.4); opacity: 0.85; filter: blur(1px); }
+      55%  { opacity: 0.4; filter: blur(4px); }
+      100% { transform: scale(13); opacity: 0; filter: blur(11px); }
+    }
+
     /* AUDIT-FIX M30: Disabled button state — §DP3: cool-shifted opacity */
     .kuro-btn:disabled, .kuro-btn[disabled] {
       opacity: 0.4;
