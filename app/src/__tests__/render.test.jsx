@@ -87,7 +87,7 @@ describe('Module imports', () => {
 describe('Tab SSR rendering', () => {
   it('renders TrackerTab', async () => {
     const { default: C } = await import('../features/tracker/TrackerTab.jsx');
-    renderWithProviders(C, {
+    renderComponent(C, {
       state: initialState, dispatch: noop, activeBanners: CURRENT_BANNERS,
       visualSettings: mockVS, themeAccent: '#edaf18', collectionImages: {},
       bannerEndDate: new Date().toISOString(), toast: mockToast, confirm: noopAsync,
