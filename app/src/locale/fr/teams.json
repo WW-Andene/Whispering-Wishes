@@ -168,6 +168,8 @@
     "saveSuccess": "Composition « {{name}} » enregistrée !",
     "saveAria": "Enregistrer la composition d'équipement",
     "saveTitle": "Enregistrer la composition",
+    "saveCancel": "Annuler",
+    "saveConfirm": "Enregistrer",
     "loadAria": "Charger la composition d'équipement",
     "loadTitle": "Charger la composition",
     "clearTeamTitle": "Vider l'équipe",

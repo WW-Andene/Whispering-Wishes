@@ -7,6 +7,7 @@ import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import TeamSelector from './TeamSelector.jsx';
 import WeaponSelector from './WeaponSelector.jsx';
 import EchoSelector from './EchoSelector.jsx';
@@ -25,6 +26,8 @@ function TeamsTab({
 }) {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [suggestionsCollapsed, setSuggestionsCollapsed] = useSessionState('ww-team-suggestions-collapsed', false);
+  const [saveLoadoutOpen, setSaveLoadoutOpen] = useState(false);
+  const [saveLoadoutName, setSaveLoadoutName] = useState('');
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
   const [teamSearch, setTeamSearch] = useState('');
@@ -529,12 +532,8 @@ function TeamsTab({
                         </button>
                         <button
                           onClick={() => {
-                            const name = window.prompt(t('teams.tab.savePrompt'), t('teams.tab.saveDefaultName', { name: activeTeam.name || t('teams.tab.defaultTeamName', { index: state.activeTeamIndex + 1 }) }));
-                            if (!name || !name.trim()) return;
-                            const preset = { name: name.trim(), teams: state.teams.map(tm => ({ name: tm.name, slots: [...tm.slots] })), equipment: { ...teamEquipment } };
-                            setEquipPresets(prev => [...prev.filter(p => p.name !== name.trim()), preset]);
-                            toast?.addToast?.(t('teams.tab.saveSuccess', { name: name.trim() }), 'success');
-                            haptic.success();
+                            setSaveLoadoutName(t('teams.tab.saveDefaultName', { name: activeTeam.name || t('teams.tab.defaultTeamName', { index: state.activeTeamIndex + 1 }) }));
+                            setSaveLoadoutOpen(true);
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5"
                           style={{ paddingLeft: 8, paddingRight: 8 }}
@@ -893,6 +892,52 @@ function TeamsTab({
                     collectionData={collectionData}
                     state={state}
                   />
+
+                  {/* Save Loadout Modal */}
+                  <FocusTrapModal isOpen={saveLoadoutOpen} onClose={() => setSaveLoadoutOpen(false)} className="" onClick={() => setSaveLoadoutOpen(false)} centered padding="p-3" ariaLabel={t('teams.tab.saveTitle')}>
+                    <div className="kuro-card w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
+                      <div className="px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
+                        <h3 className="text-white font-semibold text-lg">{t('teams.tab.saveTitle')}</h3>
+                      </div>
+                      <div className="p-4 space-y-3">
+                        <label className="block text-gray-400 text-sm">{t('teams.tab.savePrompt')}</label>
+                        <input
+                          type="text"
+                          className="kuro-input w-full text-base"
+                          value={saveLoadoutName}
+                          onChange={(e) => setSaveLoadoutName(e.target.value)}
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key !== 'Enter' || !saveLoadoutName.trim()) return;
+                            const name = saveLoadoutName.trim();
+                            const preset = { name, teams: state.teams.map(tm => ({ name: tm.name, slots: [...tm.slots] })), equipment: { ...teamEquipment } };
+                            setEquipPresets(prev => [...prev.filter(p => p.name !== name), preset]);
+                            toast?.addToast?.(t('teams.tab.saveSuccess', { name }), 'success');
+                            haptic.success();
+                            setSaveLoadoutOpen(false);
+                          }}
+                        />
+                        <div className="flex gap-2">
+                          <button onClick={() => setSaveLoadoutOpen(false)} className="kuro-btn flex-1 text-sm">{t('teams.tab.saveCancel')}</button>
+                          <button
+                            onClick={() => {
+                              if (!saveLoadoutName.trim()) return;
+                              const name = saveLoadoutName.trim();
+                              const preset = { name, teams: state.teams.map(tm => ({ name: tm.name, slots: [...tm.slots] })), equipment: { ...teamEquipment } };
+                              setEquipPresets(prev => [...prev.filter(p => p.name !== name), preset]);
+                              toast?.addToast?.(t('teams.tab.saveSuccess', { name }), 'success');
+                              haptic.success();
+                              setSaveLoadoutOpen(false);
+                            }}
+                            disabled={!saveLoadoutName.trim()}
+                            className="kuro-btn kuro-btn-primary active-gold flex-1 text-sm"
+                          >
+                            {t('teams.tab.saveConfirm')}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </FocusTrapModal>
 
                   {/* Weapon Selector Modal */}
                   <WeaponSelector

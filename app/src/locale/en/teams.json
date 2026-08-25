@@ -168,6 +168,8 @@
     "saveSuccess": "Loadout \"{{name}}\" saved!",
     "saveAria": "Save equipment loadout",
     "saveTitle": "Save Loadout",
+    "saveCancel": "Cancel",
+    "saveConfirm": "Save",
     "loadAria": "Load equipment loadout",
     "loadTitle": "Load Loadout",
     "clearTeamTitle": "Clear team",
