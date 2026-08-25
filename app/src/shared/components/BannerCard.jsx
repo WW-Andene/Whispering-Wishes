@@ -167,7 +167,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
                 <div key={n} className="inline-flex flex-col items-center gap-0.5">
                   {previewImg && (
                     <div
-                      className={`w-12 h-12 rounded-md overflow-hidden border ${isEditingThis ? 'border-emerald-400 ring-2 ring-emerald-500/50' : 'border-cyan-400/40'} ${framingMode ? 'cursor-pointer' : ''}`}
+                      className={`w-12 h-12 rounded-md overflow-hidden border bg-black/50 ${isEditingThis ? 'border-emerald-400 ring-2 ring-emerald-500/50' : 'border-cyan-400/40'} ${framingMode ? 'cursor-pointer' : ''}`}
                       onClick={framingMode ? () => setEditingImage(framingKey) : undefined}
                     >
                       <img
