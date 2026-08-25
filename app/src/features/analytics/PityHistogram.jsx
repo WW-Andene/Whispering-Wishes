@@ -5,6 +5,7 @@
 import React from 'react';
 import { BarChart3 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { t } from '../../utils/i18n.js';
 
 const getBarColor = (label) => {
   const start = parseInt(label.split('-')[0], 10);
@@ -28,10 +29,10 @@ function PityHistogram({ statsTabData }) {
     return (
       <Card>
         <CardHeader>
-          <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
+          <span className="flex items-center gap-1.5"><BarChart3 size={14} /> {t('analytics.pityHistogram.title')}</span>
         </CardHeader>
         <CardBody>
-          <p className="text-gray-400 text-base text-center py-4">Need 2+ five-star Convenes to show distribution</p>
+          <p className="text-gray-400 text-base text-center py-4">{t('analytics.pityHistogram.needMore')}</p>
         </CardBody>
       </Card>
     );
@@ -42,13 +43,15 @@ function PityHistogram({ statsTabData }) {
 
   return (
     <Card>
-      <CardHeader action={<span className="text-gray-500 text-sm">{fiveStars.length} Convenes</span>}>
-        <span className="flex items-center gap-1.5"><BarChart3 size={14} /> 5★ Pity Distribution</span>
+      <CardHeader action={<span className="text-gray-500 text-sm">{t('analytics.pityHistogram.convenesCount', { n: fiveStars.length })}</span>}>
+        <span className="flex items-center gap-1.5"><BarChart3 size={14} /> {t('analytics.pityHistogram.title')}</span>
       </CardHeader>
       <CardBody>
         <div className="sr-only">
-          Pity distribution: {allBuckets.map(label => `${label} Convenes: ${buckets[label] || 0}`).join(', ')}.
-          Average pity: {avgPity}, range: {minPity} to {maxPity}.
+          {t('analytics.pityHistogram.srSummary', {
+            buckets: allBuckets.map(label => t('analytics.pityHistogram.srBucket', { label, count: buckets[label] || 0 })).join(', '),
+            avg: avgPity, min: minPity, max: maxPity,
+          })}
         </div>
         <div className="flex items-end gap-1.5 h-24 pt-6 mb-2" aria-hidden="true">
           {allBuckets.map(label => {
@@ -56,7 +59,7 @@ function PityHistogram({ statsTabData }) {
             const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
             const color = getBarColor(label);
             return (
-              <div key={label} className="flex-1 flex flex-col items-center" title={`${label} pity: ${count} Convene${count !== 1 ? 's' : ''}`}>
+              <div key={label} className="flex-1 flex flex-col items-center" title={t('analytics.pityHistogram.barTitle', { label, count, plural: count !== 1 ? 's' : '' })}>
                 <div className="w-full relative" style={{ height: '72px' }}>
                   {count > 0 && (
                     <div
@@ -106,15 +109,15 @@ function PityHistogram({ statsTabData }) {
         <div className="mt-3 pt-3 border-t border-[var(--border-medium)] grid grid-cols-3 gap-2 text-center">
           <div>
             <div className="text-emerald-400 font-bold text-xl kuro-number kuro-tshadow-glow-emerald">{minPity}</div>
-            <div className="text-gray-400 text-sm">Lowest</div>
+            <div className="text-gray-400 text-sm">{t('analytics.pityHistogram.lowest')}</div>
           </div>
           <div>
             <div className="text-yellow-400 font-bold text-xl kuro-number kuro-tshadow-glow-gold">{avgPity}</div>
-            <div className="text-gray-400 text-sm">Average</div>
+            <div className="text-gray-400 text-sm">{t('analytics.pityHistogram.average')}</div>
           </div>
           <div>
             <div className="text-red-400 font-bold text-xl kuro-number kuro-tshadow-glow-red">{maxPity}</div>
-            <div className="text-gray-400 text-sm">Highest</div>
+            <div className="text-gray-400 text-sm">{t('analytics.pityHistogram.highest')}</div>
           </div>
         </div>
 

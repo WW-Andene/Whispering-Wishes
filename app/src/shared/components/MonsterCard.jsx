@@ -8,6 +8,7 @@
 import React, { useState, memo } from 'react';
 import { Skull } from 'lucide-react';
 import { getElementIcon, getStatIcon } from '../../utils/helpers.js';
+import { t } from '../../utils/i18n.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { getEnemyStatsAtLevel, getEnemyStaggerStatsAtLevel } from '../../data/echoes.js';
 
@@ -155,7 +156,7 @@ function MonsterCard({
             </span>
           );
         }) : (
-          <span className="text-2xs text-gray-500">No elemental RES data</span>
+          <span className="text-2xs text-gray-500">{t('teams.monsterCard.noResData')}</span>
         )}
       </div>
     </Wrapper>

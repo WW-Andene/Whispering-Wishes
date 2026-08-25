@@ -1,4 +1,15 @@
 {
+  "pityHistogram": {
+    "title": "5★ Pity Distribution",
+    "needMore": "Need 2+ five-star Convenes to show distribution",
+    "convenesCount": "{{n}} Convenes",
+    "srSummary": "Pity distribution: {{buckets}}. Average pity: {{avg}}, range: {{min}} to {{max}}.",
+    "srBucket": "{{label}} Convenes: {{count}}",
+    "barTitle": "{{label}} pity: {{count}} Convene{{plural}}",
+    "lowest": "Lowest",
+    "average": "Average",
+    "highest": "Highest"
+  },
   "achievements": {
     "open": "Open",
     "openAria": "Open achievements tracker",

@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef, memo } from 'react';
 import { getTimeRemaining } from '../../core/time.js';
+import { t } from '../../utils/i18n.js';
 
 const TIMER_COLOR_MAP = { yellow: 'text-yellow-400', pink: 'text-pink-400', cyan: 'text-cyan-400', orange: 'text-orange-400', purple: 'text-purple-400' };
 
@@ -89,7 +90,7 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   }, []); // Callbacks accessed via refs (P9-FIX: MEDIUM-5f)
   
   // For daily/weekly resets, never show "ENDED" - recalculate next reset
-  if (time.expired && !alwaysShow) return <span className="text-gray-400 text-base font-medium uppercase tracking-wider">Ended</span>;
+  if (time.expired && !alwaysShow) return <span className="text-gray-400 text-base font-medium uppercase tracking-wider">{t('planner.endedLabel')}</span>;
   if (time.expired && alwaysShow) {
     // If expired but alwaysShow and has recalcFn, skip rendering zeros — next tick will recalculate
     if (recalcFn) return null;

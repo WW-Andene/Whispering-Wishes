@@ -1,4 +1,19 @@
 {
+  "resultsCard": {
+    "successProbability": "P(≥{{copies}} copies)",
+    "expectedCopies": "Expected Copies",
+    "convenesNeededAvg": "Convenes Needed (avg)",
+    "ready": "Ready!",
+    "worstCase": "Worst Case",
+    "featured4Star": "Featured 4★ ({{count}}/{{target}})",
+    "featured4StarNoTarget": "Featured 4★",
+    "fourStarTotal": "4★ Total",
+    "fourStarExpected": "4★ Expected ({{count}}/{{target}})",
+    "fourStarExpectedNoTarget": "4★ Expected",
+    "fourStarConvenesNeeded": "4★ Convenes Needed",
+    "fourStarNeedsMore": "4★ target requires more Convenes than 5★ target",
+    "ratesDisclosure": "Rates: 0.8% base, soft pity 66-79, hard pity 80. DP + Monte Carlo hybrid."
+  },
   "intro": "Calculate your Convene probabilities by entering your resources below.",
   "astrite": "Astrite",
   "lunite": "Lunite",

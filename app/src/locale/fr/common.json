@@ -1,4 +1,13 @@
 {
+  "visualSlider": {
+    "fadeDirection": "Direction du fondu",
+    "top": "↑ Haut",
+    "bottom": "↓ Bas",
+    "fadeToTop": "↑ Fondu vers le haut",
+    "fadeToBottom": "↓ Fondu vers le bas",
+    "setDirectionTopAria": "Régler la direction de {{key}} vers le haut",
+    "setDirectionBottomAria": "Régler la direction de {{key}} vers le bas"
+  },
   "confirm": "Confirmer",
   "cancel": "Annuler",
   "delete": "Supprimer",

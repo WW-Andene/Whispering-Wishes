@@ -9,6 +9,7 @@ import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
+import { t } from '../../utils/i18n.js';
 
 const StandardBannerOverlay = memo(() => {
   const canvasRef = useRef(null);
@@ -172,7 +173,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
               </div>
               <div className="text-center">
                 <div className="text-white font-bold text-xl kuro-number">{profileData.history.length}</div>
-                <div className="text-gray-400 text-sm mt-0.5">Convenes</div>
+                <div className="text-gray-400 text-sm mt-0.5">{t('tracker.convenesLabel')}</div>
               </div>
             </div>
           </div>

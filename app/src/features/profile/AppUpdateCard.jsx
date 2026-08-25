@@ -11,6 +11,7 @@ import { RefreshCw, Download, CheckCircle2 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { checkForUpdate, downloadUpdate, isNativePlatform } from '../../utils/appUpdate.js';
 import { haptic } from '../../utils/helpers.js';
+import { t } from '../../utils/i18n.js';
 
 export default function AppUpdateCard({ toast }) {
   const [native] = useState(isNativePlatform());
@@ -27,7 +28,7 @@ export default function AppUpdateCard({ toast }) {
       setResult(res);
       if (!res.hasUpdate) haptic.success();
     } catch (err) {
-      setError(err.message || 'Check failed');
+      setError(err.message || t('profile.appUpdate.checkFailed'));
     } finally {
       setChecking(false);
     }
@@ -44,35 +45,35 @@ export default function AppUpdateCard({ toast }) {
     haptic.medium();
     try {
       await downloadUpdate(result.downloadUrl);
-      toast?.addToast?.('Opening download — install it once it finishes.', 'info');
+      toast?.addToast?.(t('profile.appUpdate.downloadStarted'), 'info');
     } catch (err) {
-      toast?.addToast?.(`Couldn't open download: ${err.message}`, 'error');
+      toast?.addToast?.(t('profile.appUpdate.downloadFailed', { error: err.message }), 'error');
     }
   };
 
   return (
     <Card>
       <CardHeader action={
-        <button onClick={runCheck} disabled={checking} className="kuro-btn kuro-btn-sm kuro-btn-icon disabled:opacity-40" aria-label="Check for updates">
+        <button onClick={runCheck} disabled={checking} className="kuro-btn kuro-btn-sm kuro-btn-icon disabled:opacity-40" aria-label={t('profile.appUpdate.checkAria')}>
           <RefreshCw size={14} className={checking ? 'animate-spin' : ''} />
         </button>
-      }>App Update</CardHeader>
+      }>{t('profile.appUpdate.title')}</CardHeader>
       <CardBody className="space-y-2">
-        {checking && !result && <p className="text-gray-400 text-sm">Checking for updates…</p>}
-        {error && <p className="text-red-400 text-sm">Couldn't check for updates: {error}</p>}
+        {checking && !result && <p className="text-gray-400 text-sm">{t('profile.appUpdate.checking')}</p>}
+        {error && <p className="text-red-400 text-sm">{t('profile.appUpdate.checkError', { error })}</p>}
         {result && !result.hasUpdate && (
           <div className="flex items-center gap-2 text-emerald-400 text-sm">
-            <CheckCircle2 size={16} /> Up to date ({result.currentVersion}, build {result.currentBuild})
+            <CheckCircle2 size={16} /> {t('profile.appUpdate.upToDate', { version: result.currentVersion, build: result.currentBuild })}
           </div>
         )}
         {result && result.hasUpdate && (
           <div className="space-y-2">
             <div className="text-gray-200 text-sm">
-              Update available: build {result.currentBuild} → {result.latestBuild}
+              {t('profile.appUpdate.updateAvailable', { current: result.currentBuild, latest: result.latestBuild })}
             </div>
             {result.notes && <p className="text-gray-500 text-2xs whitespace-pre-wrap line-clamp-3">{result.notes}</p>}
             <button onClick={handleDownload} className="kuro-btn kuro-btn-sm flex items-center gap-1 w-full justify-center">
-              <Download size={14} /> Download Update
+              <Download size={14} /> {t('profile.appUpdate.download')}
             </button>
           </div>
         )}

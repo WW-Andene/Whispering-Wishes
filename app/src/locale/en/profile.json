@@ -1,4 +1,16 @@
 {
+  "appUpdate": {
+    "title": "App Update",
+    "checkAria": "Check for updates",
+    "checking": "Checking for updates…",
+    "checkFailed": "Check failed",
+    "checkError": "Couldn't check for updates: {{error}}",
+    "upToDate": "Up to date ({{version}}, build {{build}})",
+    "updateAvailable": "Update available: build {{current}} → {{latest}}",
+    "download": "Download Update",
+    "downloadStarted": "Opening download — install it once it finishes.",
+    "downloadFailed": "Couldn't open download: {{error}}"
+  },
   "importFlow": {
     "title": "Import Convene History",
     "subtitle": "Import your Convene history directly from the game.",

@@ -1,4 +1,7 @@
 {
+  "monsterCard": {
+    "noResData": "Aucune donnée de RES élémentaire"
+  },
   "selector": {
     "title": "Sélectionner un Résonateur",
     "subtitle": "Emplacement {{slot}} • {{team}}",

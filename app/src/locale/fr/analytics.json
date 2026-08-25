@@ -1,4 +1,15 @@
 {
+  "pityHistogram": {
+    "title": "Distribution de la pitié 5★",
+    "needMore": "Il faut 2 Conviers 5★ ou plus pour afficher la distribution",
+    "convenesCount": "{{n}} Conviers",
+    "srSummary": "Distribution de la pitié : {{buckets}}. Pitié moyenne : {{avg}}, plage : {{min}} à {{max}}.",
+    "srBucket": "{{label}} Conviers : {{count}}",
+    "barTitle": "Pitié {{label}} : {{count}} Convier{{plural}}",
+    "lowest": "Minimum",
+    "average": "Moyenne",
+    "highest": "Maximum"
+  },
   "achievements": {
     "open": "Ouvrir",
     "openAria": "Ouvrir le suivi des trophées",

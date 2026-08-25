@@ -1,4 +1,16 @@
 {
+  "appUpdate": {
+    "title": "Mise à jour de l'application",
+    "checkAria": "Vérifier les mises à jour",
+    "checking": "Vérification des mises à jour…",
+    "checkFailed": "Échec de la vérification",
+    "checkError": "Impossible de vérifier les mises à jour : {{error}}",
+    "upToDate": "À jour ({{version}}, build {{build}})",
+    "updateAvailable": "Mise à jour disponible : build {{current}} → {{latest}}",
+    "download": "Télécharger la mise à jour",
+    "downloadStarted": "Ouverture du téléchargement — installez-la une fois terminée.",
+    "downloadFailed": "Impossible d'ouvrir le téléchargement : {{error}}"
+  },
   "importFlow": {
     "title": "Importer l'historique des convocations",
     "subtitle": "Importez votre historique de convocations directement depuis le jeu.",

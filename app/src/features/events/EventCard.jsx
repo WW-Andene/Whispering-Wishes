@@ -11,6 +11,7 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { EVENT_ACCENT_COLORS, TEXT_SHADOW_STYLE, generateMaskGradient } from '../../shared/components/BannerCard.jsx';
 import { PLACEHOLDER_IMAGE } from '../../data/banners.js';
+import { t } from '../../utils/i18n.js';
 
 const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {
   const [resetTick, setResetTick] = useState(0);
@@ -87,7 +88,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           </div>
           <div className="text-right flex-shrink-0">
             {isExpired ? (
-              <span className="kuro-badge kuro-badge-red font-medium">Expired</span>
+              <span className="kuro-badge kuro-badge-red font-medium">{t('events.expired')}</span>
             ) : (
               <>
                 <div className="text-gray-400 text-sm mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
