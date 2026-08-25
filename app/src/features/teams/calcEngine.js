@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { ECHO_SKILL_BUFFS } from '../../data/echoes.js';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, CHARACTER_ROTATIONS } from '../../data/characters.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 
 // ── Constants (named, not magic) ──
@@ -616,6 +616,86 @@ export function universalStatApplies(condition, targetElementLower) {
 // truth so the two can never drift the way they did before this was extracted. ──
 export const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
 
+// ── Real per-type damage-share weighting ──
+// scoreTeamComposition used to treat every type-specific DMG buff (Basic/Heavy/Skill/Liberation/
+// Echo/Coordinated ATK) as equally valuable once a DPS's dmgFocus list even contained that type at
+// all — a binary "applies or doesn't" gate with no sense of which type is actually DOMINANT in that
+// character's real rotation. E.g. a +50% Heavy ATK DMG buff and a +25% Liberation DMG buff were
+// scored as comparably valuable for Augusta regardless of which type she actually deals more damage
+// through. Fixes that using CHARACTER_ROTATIONS (a real, ordered per-character move sequence, where
+// each entry already carries a `type` — and, when the actual damage type differs from the INPUT
+// button pressed, e.g. Augusta's Liberation-button "Sword of Eternal Oath" whose own note says
+// "counted as Heavy ATK DMG", that reclassification is honored over the raw type tag).
+// A naive first attempt summed SKILL_MULTIPLIERS' raw per-cast % values instead, but that wrongly
+// treats a single Liberation cast (~once per rotation) as equal to one Heavy ATK combo repeated
+// many times per rotation — CHARACTER_ROTATIONS' real move-count-per-loop is the correct signal.
+const NOTE_OVERRIDE_RE = /counted as ([\w][\w\s+-]*?) DMG/i;
+function noteOverrideFocus(note) {
+  if (!note) return null;
+  const m = note.match(NOTE_OVERRIDE_RE);
+  if (!m) return null;
+  for (const part of m[1].toLowerCase().split('+').map(p => p.trim())) {
+    if (part.includes('basic')) return 'Basic ATK';
+    if (part.includes('heavy')) return 'Heavy ATK';
+    if (part.includes('liberation')) return 'Liberation';
+    if (part.includes('echo')) return 'Echo';
+    if (part.includes('coordinated')) return 'Coordinated ATK';
+    if (part.includes('skill')) return 'Skill'; // catches "Resonance Skill DMG" and "Skill DMG"
+  }
+  return null; // e.g. "Spectro Frazzle DMG" — a real effect, but not one of the 6 dmgFocus buckets
+}
+const ROTATION_RAW_TYPE_TO_FOCUS = {
+  'Basic ATK': 'Basic ATK', 'Mid-air': 'Basic ATK', 'Charged ATK': 'Basic ATK',
+  'Heavy ATK': 'Heavy ATK', 'Skill': 'Skill', 'Liberation': 'Liberation',
+  'Echo': 'Echo', 'Coordinated ATK': 'Coordinated ATK',
+  // Intro/Outro/Forte excluded by default — Forte entries are usually a multi-hit continuation of
+  // one empowered combo string with no type of their own; only their FIRST hit's note typically
+  // restates a "counted as X DMG" override (see the Forte-continuation handling below), and
+  // Intro/Outro are one-off utility casts, not a repeated rotation-damage type.
+};
+const damageTypeShareCache = new Map();
+// Real per-type damage share for a character, derived from counting how many times each real
+// damage type appears in one full CHARACTER_ROTATIONS loop. Returns null (not an empty object) for
+// any character without rotation data, so callers can cleanly fall back to the old flat-equal
+// behavior instead of dividing by a zero-length share map.
+export function computeDamageTypeShares(name) {
+  if (damageTypeShareCache.has(name)) return damageTypeShareCache.get(name);
+  const rotation = CHARACTER_ROTATIONS[name];
+  let result = null;
+  if (rotation) {
+    const counts = {};
+    let lastForteFocus = null;
+    rotation.forEach(entry => {
+      const override = noteOverrideFocus(entry.note);
+      let focus = override || ROTATION_RAW_TYPE_TO_FOCUS[entry.type];
+      if (!focus && entry.type === 'Forte' && lastForteFocus) focus = lastForteFocus;
+      lastForteFocus = entry.type === 'Forte' ? (override || lastForteFocus) : null;
+      if (!focus) return;
+      counts[focus] = (counts[focus] || 0) + 1;
+    });
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    if (total > 0) {
+      result = {};
+      for (const [k, v] of Object.entries(counts)) result[k] = v / total;
+    }
+  }
+  damageTypeShareCache.set(name, result);
+  return result;
+}
+const TYPE_STAT_TO_FOCUS = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', libDmg: 'Liberation', echoDmg: 'Echo', coordDmg: 'Coordinated ATK', skillDmg: 'Skill' };
+// Converts a real share into a multiplier calibrated against the OLD flat-equal assumption, so a
+// character with no share data (or a type whose real share happens to exactly equal "1 divided by
+// however many types they qualify for") is completely unaffected — only a genuinely dominant or
+// genuinely minor type moves score up or down from where it used to sit.
+function typeShareMultiplier(stat, dpsName) {
+  const focus = TYPE_STAT_TO_FOCUS[stat];
+  if (!focus) return 1;
+  const shares = computeDamageTypeShares(dpsName);
+  if (!shares || shares[focus] == null) return 1;
+  const qualifyingTypeCount = Object.keys(shares).length;
+  return shares[focus] * qualifyingTypeCount;
+}
+
 // ── Mechanic-grounded synergy uplift: replaces flat "+8 points for a deepen buff, +6 for elemDmg"
 // pattern-matching with an estimate of what each buff/debuff actually contributes to DPS output,
 // using the same multiplicative bracket structure calcDmgBonus/calcAvgCrit already model. This is
@@ -773,7 +853,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       if (!buffApplies(b)) return;
       const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField);
       if (uplift <= 0) return;
-      score += uplift * UPLIFT_TO_SCORE;
+      score += uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
       if (b.stat === 'deepen' || b.stat === 'offTune') tags.push('Deepen');
       else if (b.stat === 'basicDmg') tags.push('ATK Amp');
       else if (b.stat === 'heavyDmg') tags.push('Heavy Amp');
@@ -805,7 +885,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
           if (b.target !== 'team' && b.target !== 'next') return;
           if (!buffApplies(b)) return;
           const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField) * erDiscount;
-          if (uplift > 0) score += uplift * UPLIFT_TO_SCORE;
+          if (uplift > 0) score += uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
         });
         (bt.debuffs || []).forEach(db => {
           if (db.stat === 'defShred' || db.stat === 'resShred') {
