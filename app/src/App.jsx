@@ -81,6 +81,7 @@ import { silentCatch } from './utils/silentCatch.js';
 import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storageKeys.js';
 import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
 import { t, formatDate, useAppLocale } from './utils/i18n.js';
+import { useIsReferenceDevice } from './hooks/useIsReferenceDevice.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -101,6 +102,12 @@ function WhisperingWishesInner() {
   // is folded into the <main> key below to force a clean remount of every tab
   // instead, guaranteeing the new language actually shows up everywhere.
   const appLocale = useAppLocale();
+
+  // Gate point for multi-format UI recalculation (CLAUDE.md-adjacent request):
+  // the reference device (Xiaomi 13T, 439px) always renders through this same
+  // untouched path. Non-reference widths will pick up recalculated sizing in
+  // a later step — nothing consumes isReferenceDevice yet, so this is a no-op.
+  const isReferenceDevice = useIsReferenceDevice();
 
   const toast = useToast();
   const confirm = useConfirm();
@@ -932,7 +939,7 @@ function WhisperingWishesInner() {
 
   return (
     <CloudStorageProvider getBackupPayload={getBackupPayload} onRestoreData={handleRestoreData}>
-    <div className={`min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
+    <div data-reference-device={isReferenceDevice} className={`min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
       {appBgUrl && (
         // Explicit top/left/right/bottom (not just the inset-0 class) so this
         // is pinned to the true viewport edges no matter what — including the
