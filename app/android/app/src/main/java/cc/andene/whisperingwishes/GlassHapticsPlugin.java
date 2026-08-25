@@ -1,109 +1,94 @@
 package cc.andene.whisperingwishes;
 
-import android.content.Context;
 import android.os.Build;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
-import android.os.VibratorManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.HapticFeedbackConstants;
+import android.view.View;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-// Replaces @capacitor/haptics on Android. History of what didn't work:
-//   v1 — PRIMITIVE_TICK/LOW_TICK: Android's own docs call these deliberately
-//        soft/subtle. Wrong primitive regardless of scale.
-//   v2 — PRIMITIVE_CLICK: fixed "soft", but multi-pulse patterns were only
-//        18-40ms apart — below the ~50-60ms flutter-fusion threshold where
-//        touch perception merges separate impulses into one buzz. Widened
-//        to 70-90ms.
-//   v3 — added a Vibrator.areAllPrimitivesSupported() hardware check before
-//        using the primitive at all: backfired, reports false on real
-//        Xiaomi/MIUI hardware that renders it fine, silently downgrading
-//        every tap to a worse fallback. Reverted.
-//   v4 — still buzzy even with the primitive called directly and correctly
-//        spaced. Conclusion: on this actual device, PRIMITIVE_CLICK isn't
-//        rendered by real actuator hardware at all — the framework falls
-//        back to its own generic approximation when the vendor HAL doesn't
-//        implement composition primitives, and that approximation is
-//        itself buzzy. No amount of primitive/spacing tuning fixes a
-//        primitive that was never really hardware-rendered to begin with.
+// Complete rewrite — every earlier version of this plugin (raw
+// createWaveform, VibrationEffect.Composition primitives, short/long raw
+// pulses) went through the Vibrator API, and none of them matched the
+// user's own system keyboard's tap feel, no matter how duration/amplitude/
+// primitive was tuned. Confirmed on-device: the system keyboard (MIUI) DOES
+// produce a crisp, distinct tap on this exact hardware — so the motor is
+// capable of it, and the bottleneck was never the actuator. The reason is
+// architectural: a system keyboard's key tap doesn't call Vibrator at all.
+// It calls View.performHapticFeedback(int) with a HapticFeedbackConstants
+// value (KEYBOARD_TAP for a keyboard) — a completely separate Android API
+// that routes through the OEM's own tuned haptic composer for that specific
+// feedback *constant*, not the generic Vibrator/VibrationEffect pipeline.
+// No Vibrator call, however tuned, can reach that path — only
+// performHapticFeedback() can.
 //
-// This version drops VibrationEffect.Composition entirely and goes back to
-// plain amplitude control (createOneShot/createWaveform, API 26+) — but
-// pushed to the extreme opposite of the original "43-60ms ramp" problem:
-// the shortest duration the platform will actually render (a handful of
-// ms) at maximum amplitude. A pulse that short has no time to feel like a
-// sustained buzz no matter how the actuator ramps, while still being sharp
-// (full amplitude, no easing) rather than soft.
+// Multi-part patterns (success/warning/error) can't be expressed as a
+// single composed effect the way VibrationEffect.Composition allowed —
+// performHapticFeedback() fires one named feedback per call — so they're
+// built by sequencing separate calls with Handler.postDelayed() instead.
 @CapacitorPlugin(name = "GlassHaptics")
 public class GlassHapticsPlugin extends Plugin {
-    private Vibrator vibrator;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
-    @Override
-    public void load() {
-        Context ctx = getContext();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            VibratorManager vm = (VibratorManager) ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
-            vibrator = vm.getDefaultVibrator();
-        } else {
-            vibrator = getDeprecatedVibrator(ctx);
-        }
+    // View methods must run on the main thread; Capacitor plugin methods
+    // don't guarantee that, so every feedback fire — including single taps
+    // — goes through postDelayed (0ms delay = "now") rather than calling
+    // performHapticFeedback() directly from whatever thread invoked us.
+    private void fire(int constant, int delayMs) {
+        mainHandler.postDelayed(() -> {
+            if (getBridge() == null) return;
+            View webView = getBridge().getWebView();
+            if (webView != null) webView.performHapticFeedback(constant);
+        }, delayMs);
     }
 
-    @SuppressWarnings("deprecation")
-    private Vibrator getDeprecatedVibrator(Context ctx) {
-        return (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
+    @PluginMethod
+    public void light(PluginCall call) {
+        fire(HapticFeedbackConstants.KEYBOARD_TAP, 0);
+        call.resolve();
     }
 
-    @PluginMethod public void light(PluginCall call) { pulse(3, 160); call.resolve(); }
-    @PluginMethod public void medium(PluginCall call) { pulse(4, 210); call.resolve(); }
-    @PluginMethod public void heavy(PluginCall call) { pulse(6, 255); call.resolve(); }
-    @PluginMethod public void success(PluginCall call) { playSuccess(); call.resolve(); }
-    @PluginMethod public void warning(PluginCall call) { playWarning(); call.resolve(); }
-    @PluginMethod public void error(PluginCall call) { playError(); call.resolve(); }
-
-    // A single 3-6ms pulse at near-max amplitude — as short and hard as the
-    // platform allows, so there's no window for the motor to ramp into a
-    // felt buzz.
-    @SuppressWarnings("deprecation")
-    private void pulse(int durationMs, int amplitude) {
-        if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createOneShot(durationMs, amplitude));
-        } else {
-            vibrator.vibrate(durationMs);
-        }
+    @PluginMethod
+    public void medium(PluginCall call) {
+        fire(Build.VERSION.SDK_INT >= 23 ? HapticFeedbackConstants.CONTEXT_CLICK : HapticFeedbackConstants.KEYBOARD_TAP, 0);
+        call.resolve();
     }
 
-    // Two hard 3-4ms pulses 90ms apart — well clear of the flutter-fusion
-    // threshold, so it reads as two distinct taps.
-    @SuppressWarnings("deprecation")
-    private void playSuccess() {
-        if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 3, 90, 4 }, new int[] { 0, 150, 0, 220 }, -1));
-        } else {
-            vibrator.vibrate(new long[] { 0, 3, 90, 4 }, -1);
-        }
+    @PluginMethod
+    public void heavy(PluginCall call) {
+        fire(HapticFeedbackConstants.LONG_PRESS, 0);
+        call.resolve();
     }
 
-    // Three short pulses, 80ms apart.
-    @SuppressWarnings("deprecation")
-    private void playWarning() {
-        if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 3, 80, 3, 80, 3 }, new int[] { 0, 190, 0, 190, 0, 190 }, -1));
-        } else {
-            vibrator.vibrate(new long[] { 0, 3, 80, 3, 80, 3 }, -1);
-        }
+    // Keyboard-tap, then a firmer confirm ~90ms later — a light-then-hard
+    // double tap.
+    @PluginMethod
+    public void success(PluginCall call) {
+        int confirm = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.LONG_PRESS;
+        fire(HapticFeedbackConstants.KEYBOARD_TAP, 0);
+        fire(confirm, 90);
+        call.resolve();
     }
 
-    // Two max-amplitude pulses 70ms apart — tighter than success's 90ms
-    // (reads as more urgent) but still clear of the fusion threshold.
-    @SuppressWarnings("deprecation")
-    private void playError() {
-        if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 4, 70, 5 }, new int[] { 0, 230, 0, 255 }, -1));
-        } else {
-            vibrator.vibrate(new long[] { 0, 4, 70, 5 }, -1);
-        }
+    // Three keyboard-taps 80ms apart.
+    @PluginMethod
+    public void warning(PluginCall call) {
+        fire(HapticFeedbackConstants.KEYBOARD_TAP, 0);
+        fire(HapticFeedbackConstants.KEYBOARD_TAP, 80);
+        fire(HapticFeedbackConstants.KEYBOARD_TAP, 160);
+        call.resolve();
+    }
+
+    // A dedicated "reject" feedback where available, repeated 70ms later —
+    // tighter spacing than success so it still reads as more urgent.
+    @PluginMethod
+    public void error(PluginCall call) {
+        int reject = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.REJECT : HapticFeedbackConstants.LONG_PRESS;
+        fire(reject, 0);
+        fire(reject, 70);
+        call.resolve();
     }
 }
