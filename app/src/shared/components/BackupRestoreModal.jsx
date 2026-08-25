@@ -178,6 +178,19 @@ export function BackupRestoreModal({
                   planner: { ...initialState.planner, ...safeParsed.planner },
                   settings: { ...initialState.settings, ...safeParsed.settings },
                   bookmarks: Array.isArray(safeParsed.bookmarks) ? safeParsed.bookmarks : [],
+                  // B4-FIX: apply the same structural validation as loadFromStorage (core/storage.js)
+                  // — a hand-edited or corrupted backup's `teams`/`activeTeamIndex` previously passed
+                  // through with only prototype-pollution stripping, no shape check, unlike the normal
+                  // load-from-localStorage path. That let a malformed teams array (wrong length, missing
+                  // slots) reach components that assume exactly 5 teams of 3 slots each.
+                  teams: Array.isArray(safeParsed.teams) && safeParsed.teams.length === 5
+                    ? safeParsed.teams.map((tm, i) => ({
+                        name: (tm && typeof tm.name === 'string') ? tm.name : initialState.teams[i].name,
+                        slots: (tm && Array.isArray(tm.slots) && tm.slots.length === 3) ? tm.slots : [null, null, null],
+                        mainDpsOverride: (tm && typeof tm.mainDpsOverride === 'string') ? tm.mainDpsOverride : null,
+                      }))
+                    : initialState.teams,
+                  activeTeamIndex: typeof safeParsed.activeTeamIndex === 'number' ? Math.max(0, Math.min(4, safeParsed.activeTeamIndex)) : 0,
                 };
                 dispatch({ type: 'LOAD_STATE', state: restoredState });
                 // Restore auxiliary localStorage data if present in backup
