@@ -56,22 +56,14 @@ const hasNativeTapBridge = () => typeof window !== 'undefined' && typeof window.
 // rather than a tick — cutting the pulse short via a second vibrate(0) call
 // before that minimum is reached produces a shorter, sharper actual motor
 // pulse than any duration argument alone can.
-// Fire a duration then immediately cancel it with vibrate(0), synchronously
-// (no requestAnimationFrame delay) — cuts the motor pulse short right after
-// it starts rather than letting the full duration ring out.
-const webVibrateTick = (ms = 10) => {
-  navigator?.vibrate?.(ms);
-  navigator?.vibrate?.(0);
-};
-
 const haptic = {
   light: () => {
     if (!hapticsAllowed()) return;
     if (hasNativeTapBridge()) { window.AndroidHaptics.tap(); return; }
-    isNative() ? GlassHaptics.light().catch(() => {}) : webVibrateTick(10);
+    isNative() ? GlassHaptics.light().catch(() => {}) : navigator?.vibrate?.(1);
   },
-  medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : webVibrateTick(20); },
-  heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : webVibrateTick(35); },
+  medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : navigator?.vibrate?.(1); },
+  heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : navigator?.vibrate?.(1); },
   success: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.success().catch(() => {}) : navigator?.vibrate?.([20, 60, 20]); },
   warning: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.warning().catch(() => {}) : navigator?.vibrate?.([35, 40, 35]); },
   error: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.error().catch(() => {}) : navigator?.vibrate?.([60, 50, 90]); },
