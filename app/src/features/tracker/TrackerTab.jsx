@@ -552,7 +552,7 @@ function TrackerTab({
                   </div>
                   <div className="px-4 pb-4 space-y-1">
                   {filteredPulls.length === 0 ? (
-                    <div className="text-center text-gray-400 text-base py-6">
+                    <div className="min-h-[384px] flex items-center justify-center text-center text-gray-400 text-base px-6">
                       {allPulls.length === 0 ? t('tracker.noHistory') : t('tracker.noFiltered')}
                     </div>
                   ) : (
