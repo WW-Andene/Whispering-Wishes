@@ -1,8 +1,12 @@
 package cc.andene.whisperingwishes;
 
+import android.content.Context;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import com.getcapacitor.Plugin;
@@ -89,6 +93,72 @@ public class GlassHapticsPlugin extends Plugin {
         int reject = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.REJECT : HapticFeedbackConstants.LONG_PRESS;
         fire(reject, 0);
         fire(reject, 70);
+        call.resolve();
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // DIAGNOSTIC LAB — every remaining untried variable in the vibration
+    // module's public surface, for one-shot manual A/B testing on-device.
+    // Not used by the app's real UI (see helpers.js) — wired to a temporary
+    // "Haptic Lab" section in ProfileTab instead. Delete once the search for
+    // a distinguishable feel on this hardware concludes either way.
+    // ═══════════════════════════════════════════════════════════════════════
+
+    @SuppressWarnings("deprecation")
+    private Vibrator getVibrator() {
+        Context ctx = getContext();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            VibratorManager vm = (VibratorManager) ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+            return vm != null ? vm.getDefaultVibrator() : null;
+        }
+        return (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
+    }
+
+    private void firePrimitive(int primitiveId, PluginCall call) {
+        if (Build.VERSION.SDK_INT < 30) { call.reject("Requires API 30+"); return; }
+        Vibrator v = getVibrator();
+        if (v == null) { call.reject("No vibrator"); return; }
+        v.vibrate(VibrationEffect.startComposition().addPrimitive(primitiveId, 1.0f).compose());
+        call.resolve();
+    }
+
+    // Never tried: every Composition primitive besides CLICK/TICK/LOW_TICK.
+    @PluginMethod public void labThud(PluginCall call) { firePrimitive(VibrationEffect.Composition.PRIMITIVE_THUD, call); }
+    @PluginMethod public void labSpin(PluginCall call) { firePrimitive(VibrationEffect.Composition.PRIMITIVE_SPIN, call); }
+    @PluginMethod public void labQuickRise(PluginCall call) { firePrimitive(VibrationEffect.Composition.PRIMITIVE_QUICK_RISE, call); }
+    @PluginMethod public void labSlowRise(PluginCall call) { firePrimitive(VibrationEffect.Composition.PRIMITIVE_SLOW_RISE, call); }
+    @PluginMethod public void labQuickFall(PluginCall call) { firePrimitive(VibrationEffect.Composition.PRIMITIVE_QUICK_FALL, call); }
+
+    private void fireConstant(int constant, int minApi, PluginCall call) {
+        if (Build.VERSION.SDK_INT < minApi) { call.reject("Requires API " + minApi + "+"); return; }
+        if (getBridge() == null) { call.reject("No bridge"); return; }
+        View webView = getBridge().getWebView();
+        if (webView == null) { call.reject("No webview"); return; }
+        webView.performHapticFeedback(constant);
+        call.resolve();
+    }
+
+    // Never tried: every HapticFeedbackConstants value besides
+    // KEYBOARD_TAP/CONTEXT_CLICK/LONG_PRESS/CONFIRM/REJECT.
+    @PluginMethod public void labClockTick(PluginCall call) { fireConstant(HapticFeedbackConstants.CLOCK_TICK, 1, call); }
+    @PluginMethod public void labGestureStart(PluginCall call) { fireConstant(HapticFeedbackConstants.GESTURE_START, 30, call); }
+    @PluginMethod public void labGestureEnd(PluginCall call) { fireConstant(HapticFeedbackConstants.GESTURE_END, 30, call); }
+    @PluginMethod public void labSegmentTick(PluginCall call) { fireConstant(HapticFeedbackConstants.SEGMENT_TICK, 30, call); }
+    @PluginMethod public void labSegmentFrequentTick(PluginCall call) { fireConstant(HapticFeedbackConstants.SEGMENT_FREQUENT_TICK, 30, call); }
+    @PluginMethod public void labToggleOn(PluginCall call) { fireConstant(HapticFeedbackConstants.TOGGLE_ON, 34, call); }
+    @PluginMethod public void labToggleOff(PluginCall call) { fireConstant(HapticFeedbackConstants.TOGGLE_OFF, 34, call); }
+    @PluginMethod public void labDragStart(PluginCall call) { fireConstant(HapticFeedbackConstants.DRAG_START, 34, call); }
+
+    // Never tried: performHapticFeedback's flags parameter — this bypasses
+    // the per-view "haptic enabled" setting check entirely, in case that
+    // check (not the constant/API choice) was silently downgrading every
+    // previous attempt to a generic renderer.
+    @PluginMethod
+    public void labKeyboardTapIgnoreSetting(PluginCall call) {
+        if (getBridge() == null) { call.reject("No bridge"); return; }
+        View webView = getBridge().getWebView();
+        if (webView == null) { call.reject("No webview"); return; }
+        webView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING);
         call.resolve();
     }
 }

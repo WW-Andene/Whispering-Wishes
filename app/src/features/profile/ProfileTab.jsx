@@ -30,6 +30,7 @@ import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
 import PushNotificationsCard from './PushNotificationsCard.jsx';
 import { openSoundSettings, isNativePlatform as isNativePlatformForSettings } from '../../utils/systemSettings.js';
+import HapticLabCard from './HapticLabCard.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
@@ -942,6 +943,7 @@ function ProfileTab({
             {/* ── App maintenance: updates + offline asset downloads ────────── */}
             <AppUpdateCard toast={toast} />
             <PushNotificationsCard toast={toast} />
+            <HapticLabCard />
             <OfflineAssetsCard toast={toast} />
 
             {/* ── Cloud Backup ──────────────────────────────────── */}
