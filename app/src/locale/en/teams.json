@@ -189,6 +189,7 @@
     "noCharsAssigned": "No characters assigned",
     "tapEmptySlot": "Tap an empty slot to add a Resonator",
     "addSlotAria": "Add resonator to slot {{slot}}",
+    "changeSlotAria": "{{name}}, slot {{slot}} — click to change Resonator",
     "addResonator": "Add Resonator",
     "removeSlotAria": "Remove {{name}} from slot {{slot}}",
     "headlineDpsClearAria": "{{name}} is the headline DPS — click to auto-detect instead",

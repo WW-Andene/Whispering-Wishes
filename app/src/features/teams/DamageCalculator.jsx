@@ -241,11 +241,20 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                               {/* Weapon slot */}
                               <div
                                 className={`${slotStyle} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8 holo-5star' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
+                                role="button"
+                                tabIndex={0}
                                 onClick={() => {
                                   onOpenWeaponSelector(state.activeTeamIndex, m.name);
                                   haptic.light();
                                 }}
+                                onKeyDown={(e) => {
+                                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                                  e.preventDefault();
+                                  onOpenWeaponSelector(state.activeTeamIndex, m.name);
+                                  haptic.light();
+                                }}
                                 title={eq.weapon || t('teams.damageCalc.selectWeapon')}
+                                aria-label={eq.weapon || t('teams.damageCalc.selectWeapon')}
                               >
                                 {equippedWeap && collectionImages[eq.weapon] ? (
                                   <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-cover rounded-lg" onError={hideOnError} />
@@ -272,8 +281,21 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 return (
                                   <div key={ei}
                                     className={`${slotStyle} ${echoName ? `border-${costColor}-500/40 bg-${costColor}-500/8` : 'border-dashed border-white/15 hover:border-' + costColor + '-500/40'}`}
+                                    role="button"
+                                    tabIndex={0}
                                     title={echoName || t('teams.damageCalc.selectEcho', { cost: costLabel })}
+                                    aria-label={echoName || t('teams.damageCalc.selectEcho', { cost: costLabel })}
                                     onClick={() => {
+                                      if (echoName) {
+                                        onOpenEchoStatPanel(state.activeTeamIndex, m.name, ei, echoName);
+                                      } else {
+                                        onOpenEchoSelector(state.activeTeamIndex, m.name, ei);
+                                      }
+                                      haptic.light();
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key !== 'Enter' && e.key !== ' ') return;
+                                      e.preventDefault();
                                       if (echoName) {
                                         onOpenEchoStatPanel(state.activeTeamIndex, m.name, ei, echoName);
                                       } else {

@@ -189,6 +189,7 @@
     "noCharsAssigned": "Aucun personnage assigné",
     "tapEmptySlot": "Touchez un emplacement vide pour ajouter un Résonateur",
     "addSlotAria": "Ajouter un résonateur à l'emplacement {{slot}}",
+    "changeSlotAria": "{{name}}, emplacement {{slot}} — cliquer pour changer de Résonateur",
     "addResonator": "Ajouter un Résonateur",
     "removeSlotAria": "Retirer {{name}} de l'emplacement {{slot}}",
     "headlineDpsClearAria": "{{name}} est le DPS principal — cliquer pour revenir à la détection automatique",

@@ -36,6 +36,8 @@
       "cancel": "Annuler",
       "import": "Importer",
       "importComplete": "Importation terminée !",
+      "closeCamera": "Fermer la caméra",
+      "captureScreenshot": "Prendre la capture d'écran",
       "urlExpiresNote": "Ouvrez l'historique de convocations en jeu et copiez l'URL depuis la barre d'adresse du navigateur. L'URL expire après un certain temps."
     },
     "toast": {

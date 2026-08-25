@@ -36,6 +36,8 @@
       "cancel": "Cancel",
       "import": "Import",
       "importComplete": "Import complete!",
+      "closeCamera": "Close camera",
+      "captureScreenshot": "Capture screenshot",
       "urlExpiresNote": "Open Convene History in-game and copy the URL from the browser address bar. The URL expires after some time."
     },
     "toast": {

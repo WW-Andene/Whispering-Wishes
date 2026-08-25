@@ -686,7 +686,19 @@ function TeamsTab({
                               key={slotIdx}
                               className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer group ${framingMode && editingImage === teamKey ? 'border-emerald-500 ring-2 ring-emerald-500/50' : rarity5 ? 'bg-yellow-500/10 border-yellow-500/30 holo-5star' : 'bg-purple-500/10 border-purple-500/30'}`}
                               style={{ height: '160px', contain: 'paint' }}
+                              role="button"
+                              tabIndex={0}
+                              aria-label={t('teams.tab.changeSlotAria', { name: charName, slot: slotIdx + 1 })}
                               onClick={() => {
+                                if (framingMode) {
+                                  setEditingImage(teamKey);
+                                } else {
+                                  openSelector(slotIdx);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key !== 'Enter' && e.key !== ' ') return;
+                                e.preventDefault();
                                 if (framingMode) {
                                   setEditingImage(teamKey);
                                 } else {
