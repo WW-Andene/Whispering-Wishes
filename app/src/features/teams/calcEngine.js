@@ -55,11 +55,15 @@ export const ER_THRESHOLD_SUB_DPS = 130;   // off-field Sub-DPS: less passive en
 export const ER_THRESHOLD_STANDARD = 140;  // Support/other roles below the 175-cost healer cutoff
 export const ER_THRESHOLD_HEALER = 140;    // ER threshold for 175-cost healers
 
-// Echo main stat values by cost tier
+// Echo main stat values by cost tier — rarity-5, max-level (the endgame BiS assumption this
+// calculator targets) roll ceilings, sourced from wutheringwaves.fandom.com/wiki/Echo/Stats §
+// "Mainstats" (fetched 2026-08-25). DEF% is deliberately rolled higher than ATK%/HP% at every
+// tier to compensate for it being the weaker stat, and 1-cost HP% is rolled higher than its own
+// ATK%/DEF% — both real, confirmed asymmetries, not typos.
 export const ECHO_MAIN_STAT_VALUES = {
-  4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
-  3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
-  1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
+  4: { 'ATK%': 33, 'HP%': 33, 'DEF%': 41.5, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
+  3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 38, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
+  1: { 'ATK%': 18, 'HP%': 22.8, 'DEF%': 18 },
 };
 
 // Echo substat values — probability-weighted average of each stat's real roll grades, using
