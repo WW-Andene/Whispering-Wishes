@@ -1,7 +1,12 @@
 package cc.andene.whisperingwishes;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.view.HapticFeedbackConstants;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
@@ -10,6 +15,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import com.getcapacitor.BridgeActivity;
+import java.lang.reflect.Method;
 
 // The app's own border/background is always full-screen edge-to-edge,
 // unconditionally — setDecorFitsSystemWindows(false) forces that on every
@@ -90,11 +96,74 @@ public class MainActivity extends BridgeActivity {
         private final WebView webView;
         NativeHapticsBridge(WebView webView) { this.webView = webView; }
 
+        @SuppressWarnings("deprecation")
+        private Vibrator getVibrator() {
+            Context ctx = webView.getContext();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                VibratorManager vm = (VibratorManager) ctx.getSystemService(Context.VIBRATOR_MANAGER_SERVICE);
+                return vm != null ? vm.getDefaultVibrator() : null;
+            }
+            return (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
+        }
+
+        // Android 15 (API 35) added frequency-envelope vibration —
+        // VibrationEffect.WaveformEnvelopeBuilder lets a control point
+        // specify a target frequency (Hz), not just amplitude, on hardware
+        // that supports it (Vibrator.areEnvelopeEffectsSupported()). This
+        // is the API-level equivalent of "vary the frequency to change the
+        // felt texture" — the one variable (amplitude/duration aside) this
+        // plugin's whole history never controlled. Called via reflection
+        // rather than a direct compile-time reference: it's new and
+        // narrowly documented enough that getting an exact method
+        // signature wrong should fail soft (caught below, falls through to
+        // performHapticFeedback) rather than break the build.
+        private boolean tryFrequencySnap(Vibrator vibrator) {
+            try {
+                if (Build.VERSION.SDK_INT < 35 || vibrator == null) return false;
+
+                Method supportedMethod = Vibrator.class.getMethod("areEnvelopeEffectsSupported");
+                if (!(Boolean) supportedMethod.invoke(vibrator)) return false;
+
+                float resonantHz = 150f; // typical phone LRA resonant frequency, used as a fallback
+                try {
+                    Method resonantMethod = Vibrator.class.getMethod("getResonantFrequency");
+                    float reported = (float) resonantMethod.invoke(vibrator);
+                    if (reported > 0) resonantHz = reported;
+                } catch (Exception ignored) {
+                    // getResonantFrequency() not available/reported — keep the fallback.
+                }
+
+                Class<?> builderClass = Class.forName("android.os.VibrationEffect$WaveformEnvelopeBuilder");
+                Object builder = builderClass.getConstructor().newInstance();
+                Method addControlPoint = builderClass.getMethod("addControlPoint", float.class, float.class, long.class);
+                // A near-instant snap to the actuator's own resonant frequency
+                // (its sharpest, most efficient response point) and straight
+                // back to zero — meant to read as a harder edge than a flat
+                // single-frequency pulse, not a texture sweep across
+                // frequencies (a single tap has nothing to sweep across).
+                addControlPoint.invoke(builder, 1.0f, resonantHz, 6L);
+                addControlPoint.invoke(builder, 0.0f, resonantHz, 2L);
+
+                Object effect = builderClass.getMethod("build").invoke(builder);
+                Vibrator.class.getMethod("vibrate", VibrationEffect.class).invoke(vibrator, effect);
+                return true;
+            } catch (Throwable t) {
+                // Wrong method name/signature for this OS build, unsupported
+                // hardware, or any other reflection failure — fall through.
+                return false;
+            }
+        }
+
         @JavascriptInterface
         public void tap() {
             // JS interface callbacks run on a WebView-managed thread, not
-            // necessarily the main thread — performHapticFeedback requires it.
-            webView.post(() -> webView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP));
+            // necessarily the main thread — performHapticFeedback/Vibrator
+            // calls expect it.
+            webView.post(() -> {
+                if (!tryFrequencySnap(getVibrator())) {
+                    webView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                }
+            });
         }
     }
 
