@@ -33,9 +33,9 @@ No other number is permitted. This applies everywhere, not just to new code — 
 
 When an off-suite value must be corrected, round to the mathematically nearest PerfectSuite value. When two candidates are **equidistant**, break the tie using this priority order — **Nearest beats Primary beats Secondary beats Tertiary**:
 
-- **`[Primary]`** (powers of 2): `1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024`
-- **`(Secondary)`** (3 × powers of 2): `3, 6, 12, 24, 48, 96, 192, 384, 768`
-- **`{Tertiary}`** (one below the next primary — `2×prev primary − 2`): `14, 30, 62, 126, 254, 510, 1022`
+- **`[Primary]`** (base 2): `1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024`
+- **`(Secondary)`** (base 2 intermediate — the midpoint between two consecutive primaries): `3, 6, 12, 24, 48, 96, 192, 384, 768`
+- **`{Tertiary}`** (base 2 additional — sum of the primary steps below the next primary, e.g. `8+4+2=14`, `16+8+4+2=30`): `14, 30, 62, 126, 254, 510, 1022`
 
 Worked examples:
 - `10` → tie between `8` (primary) and `12` (secondary), both distance 2 → primary wins → **8**
