@@ -154,16 +154,37 @@ public class MainActivity extends BridgeActivity {
             }
         }
 
+        @SuppressWarnings("deprecation")
         @JavascriptInterface
         public void tap() {
-            // JS interface callbacks run on a WebView-managed thread, not
-            // necessarily the main thread — performHapticFeedback/Vibrator
-            // calls expect it.
+            // TEMPORARY CANARY TEST — every previous attempt in this file's
+            // history has felt identical to every other one, which is
+            // suspicious in its own right: 11 genuinely different APIs
+            // (amplitude waveforms, composition primitives, performHapticFeedback,
+            // a lower-latency bridge, frequency envelopes) producing zero
+            // perceptible difference is more consistent with "the new code
+            // never actually runs on the device" (stale build, caching, a
+            // selector not matching) than with "the hardware caps every one
+            // of them at the same output". A blunt, impossible-to-miss
+            // 1.5s buzz — nothing tried before was anywhere close to this —
+            // is a fast way to tell: if this ALSO feels the same as a normal
+            // short tap, the problem is upstream of this whole file. Revert
+            // this once confirmed either way.
+            Vibrator vibrator = getVibrator();
+            if (vibrator != null) {
+                if (Build.VERSION.SDK_INT >= 26) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(1500, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    vibrator.vibrate(1500);
+                }
+            }
+            /* Real implementation, restore after the canary test:
             webView.post(() -> {
                 if (!tryFrequencySnap(getVibrator())) {
                     webView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
                 }
             });
+            */
         }
     }
 
