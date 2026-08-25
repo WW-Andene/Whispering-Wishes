@@ -77,9 +77,20 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
   // repeated stat here silently double-counts its value. 'ATK' (flat) is always a safe
   // distinct filler: it's a different substat type from the '%' stats above, handled via
   // flatSubToPct rather than colliding with scalingStat (which is always the '%' form).
+  //
+  // Ordering for the 'default' (Crit DPS) preset follows the real substat value weights
+  // (wutheringwaves.fandom.com/wiki/Echo/Stats, fetched 2026-08-25): Crit Rate 2.0 > Crit DMG
+  // 1.0 > ATK%/scalingStat 0.75 > a DMG-bonus substat matching the character's own dmgFocus 0.5
+  // > flat ATK 0.1 > Energy Regen 0. Energy Regen is explicitly the worst substat for a pure
+  // Crit DPS (weight 0) so it's dropped from this preset entirely in favor of the character's
+  // matching DMG-bonus substat when their kit has one (Basic/Heavy ATK, Skill, or Liberation
+  // DMG); 'er' and 'support' presets keep Energy Regen since it's weighted 0.5-1.0 there instead.
+  const FOCUS_TO_DMG_SUBSTAT = { 'Basic ATK': 'Basic ATK DMG', 'Heavy ATK': 'Heavy ATK DMG', 'Skill': 'Resonance Skill DMG', 'Liberation': 'Resonance Liberation DMG' };
+  const focusSubstat = (d.dmgFocus || []).map(f => FOCUS_TO_DMG_SUBSTAT[f]).find(Boolean);
   const getSubstats = () => {
     if (preset === 'er') return ['Energy Regen', scalingStat, 'Crit Rate', 'Crit DMG', 'ATK'];
     if (preset === 'support') return [scalingStat, 'Energy Regen', 'Crit Rate', 'Crit DMG', 'ATK'];
+    if (focusSubstat) return [scalingStat, 'Crit Rate', 'Crit DMG', focusSubstat, 'ATK'];
     return [scalingStat, 'Crit Rate', 'Crit DMG', 'ATK', 'Energy Regen'];
   };
   const defaultSubs = getSubstats();

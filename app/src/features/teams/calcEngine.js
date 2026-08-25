@@ -272,7 +272,10 @@ export function applyEchoStats(stats, echoes, element, scaling, baseStats) {
       if (sub === scalingStat) stats.atkPct += val;
       else if (sub === 'Crit Rate') stats.cr += val;
       else if (sub === 'Crit DMG') stats.cd += val;
+      else if (sub === 'Basic ATK DMG') stats.basicDmg += val;
+      else if (sub === 'Heavy ATK DMG') stats.heavyDmg += val;
       else if (sub === 'Resonance Skill DMG') stats.skillDmg += val;
+      else if (sub === 'Resonance Liberation DMG') stats.libDmg += val;
       else if (sub === 'Energy Regen') { /* tracked separately */ }
     });
   });
