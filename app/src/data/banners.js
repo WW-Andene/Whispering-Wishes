@@ -255,9 +255,10 @@ const EVENTS = {
     description: 'Limited-time event',
     resetType: 'Version update',
     color: 'yellow',
-    // v3.6 cycle: Aug 20 (BANNER_HISTORY-confirmed live start) -> Sep 30 (PIONEER_PODCAST_HISTORY
-    // 3.6 row's own end estimate, same "Game8-pattern" estimate basis as VERSION_DATES 3.6).
-    currentEnd: '2026-09-29T01:59:59Z',
+    // Corrected 2026-08-25: hour aligned to the confirmed 08:00 UTC version-boundary convention
+    // (was already the right day via wuwatracker.com/fr/timeline's pixel-geometry read, just the
+    // wrong hour — see the giftsOfDriftingMist block above for the technique).
+    currentEnd: '2026-09-29T07:59:59Z',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
@@ -275,10 +276,11 @@ const EVENTS = {
     resetType: 'Permanent',
     color: 'cyan',
     // Permanent content, current active arena introduced in v3.6 — not a time-limited event
-    // Showing with currentEnd for current version cycle display only. End date estimated from the
-    // v3.6 version cycle end (VERSION_DATES) minus 1 day, matching the v3.5 entry's own established
-    // pattern (ends the day before Pioneer Podcast's version-end date).
-    currentEnd: '2026-09-29T01:59:59Z',
+    // Showing with currentEnd for current version cycle display only. Corrected 2026-08-25:
+    // wuwatracker.com/fr/timeline's pixel geometry (bar-div left/width vs. the day-marker grid)
+    // shows this arena's bar actually ends Sep 28, one day before Pioneer Podcast/most other
+    // v3.6 events — not the same date as previously guessed.
+    currentEnd: '2026-09-28T07:59:59Z',
     permanent: true,
     rewards: 'Weekly Rewards',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
@@ -291,11 +293,11 @@ const EVENTS = {
     description: 'High difficulty boss rush — new in v3.2',
     resetType: 'Multi-version',
     color: 'pink',
-    // v3.6 cycle estimate: confirmed live on wuwatracker.com/fr/timeline's v3.6 event bar as
-    // still active ("Endstate Matrix (Phase 1)"), anchored to the v3.6-p1 banner window
-    // (BANNER_HISTORY) since exact reset time wasn't recoverable from the rendered bar via text scrape.
-    currentStart: '2026-08-20T02:00:00Z',
-    currentEnd: '2026-09-10T01:59:59Z',
+    // Corrected 2026-08-25: previous end (Sep 10, matching only the v3.6-p1 banner window) was
+    // wrong — the timeline's own bar-div pixel geometry (left/width px vs. the day-marker grid,
+    // 32px = 1 day) shows this actually spans the FULL v3.6 version, both phases, ending Sep 29.
+    currentStart: '2026-08-20T08:00:00Z',
+    currentEnd: '2026-09-29T07:59:59Z',
     introducedVersion: '3.2',
     rewards: '400 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
@@ -336,20 +338,23 @@ const EVENTS = {
     accentColor: 'cyan',
     imageUrl: './banners/HT4RyJBy-Whimpering-Wastes-BG.png'
   },
-  // v3.6 refresh (2026-08-20): re-pulled wuwatracker.com/fr/timeline's rendered v3.6 event bar
-  // (JS-rendered browser fetch — the site exposes no readable embedded JSON for this page unlike
-  // the achievements dataset, so exact per-event start/end timestamps could not be recovered from
-  // the rendered bar via text scrape — only names + relative duration labels). Every v3.5-only
-  // one-off below (giftsOfAftertune, lamentReconTacetCrisis, virtualCrisisQuadrantTrials,
-  // lolloCampaignNewJourney) has ended and does NOT appear on the live v3.6 bar — replaced with the
-  // actual v3.6 event names confirmed present on that bar. Dates are anchored to the confirmed-live
-  // v3.6-p1 window (BANNER_HISTORY: 2026-08-20 -> 2026-09-10) since exact per-event timestamps
-  // aren't recoverable this way — same "estimate anchored to a confirmed boundary" approach already
-  // used elsewhere in this file (see VERSION_DATES/BANNER_HISTORY 3.6 comments). `versionSpecialCampaign`
-  // removed 2026-08-21: it was never confirmed on any source (no fandom article, not on wuwatracker's
-  // timeline, no wiki-uploaded splashscreen) — likely a hallucinated/misremembered entry from an
-  // earlier pass, not a real tracked event. `rewards` left unset where no official figure is published,
-  // matching this file's
+  // Corrected 2026-08-25: every one-off v3.6 event below was previously anchored as a guess to the
+  // v3.6-p1 banner window (2026-08-20 -> 2026-09-10) because the site's rendered bar text only
+  // exposed names + relative duration labels ("15d", "1mo", etc), not per-event start/end. This
+  // pass instead pulled the raw HTML of wuwatracker.com/fr/timeline (DV web_fetch, getRawHtml,
+  // Chrome/Windows UA + google.com referer + 8s load wait to clear the JS challenge — same
+  // anti-bot technique as the character icon sourcing) and read each event bar's own
+  // `left`/`width` inline-style pixel values against the day-marker grid (verified 32px = 1 day,
+  // calendar starts Monday 2026-05-25). That gives exact day-level start/end per event, and several
+  // turned out to be wrong — often badly (e.g. bountifulCrescendo and chordCleansing were modeled
+  // as spanning the whole Aug20-Sep10 phase-1 window; the real timeline bar shows both as one-week
+  // windows near the END of the version, not tied to the phase-1 start at all). Times use the
+  // confirmed 08:00 UTC version-boundary convention (CURRENT_BANNERS.startDate/BANNER_HISTORY),
+  // with `currentEnd` set one minute before the following day's 08:00 boundary — the same
+  // "boundary hour minus one minute" convention already used for the 02:00/01:59:59 daily-reset
+  // pairs below (towerOfAdversity, whimperingWastes), which the pixel geometry confirmed as already
+  // accurate and left unchanged. `versionSpecialCampaign` stays removed (never confirmed on any
+  // source). `rewards` left unset where no official figure is published, matching this file's
   // existing convention (EventCard.jsx hides the badge cleanly when absent).
   giftsOfDriftingMist: {
     name: 'Gifts of Drifting Mist',
@@ -358,7 +363,8 @@ const EVENTS = {
     resetType: 'Version update',
     color: 'yellow',
     currentStart: '2026-08-20T08:00:00Z',
-    currentEnd: '2026-09-10T01:59:59Z',
+    // pixel geometry: bar spans the full v3.6 version (both phases), not just phase 1 — ends Sep 29.
+    currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: './banners/HTN1ZNWj-wuwa-gifts-of-drifting-mist.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
@@ -369,8 +375,10 @@ const EVENTS = {
     description: 'Spend Waveplates to claim double rewards after completing eligible material-farming challenges.',
     resetType: 'Limited-time',
     color: 'lime',
-    currentStart: '2026-08-20T02:00:00Z',
-    currentEnd: '2026-09-10T01:59:59Z',
+    // pixel geometry: this does NOT start with the version — it's a 7-day window right before the
+    // version ends (Sep 3 -> Sep 10), not Aug 20 -> Sep 10 as previously modeled.
+    currentStart: '2026-09-03T08:00:00Z',
+    currentEnd: '2026-09-10T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
     imageUrl: './banners/TqLqWVsv-bountiful-crescendo.webp', // real event art, sourced 2026-08-20 from fandom's File:Bountiful_Crescendo.jpg (recurring material double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
@@ -381,12 +389,10 @@ const EVENTS = {
     description: 'New v3.6 limited-time combat event.',
     resetType: 'Limited-time',
     color: 'red',
-    currentStart: '2026-08-20T08:00:00Z',
-    // end date fixed 2026-08-20 (session 6): wuwatracker.com/fr/timeline's chronology (rendered via
-    // DV's JS-capable web_fetch, same anti-bot technique as the character icon sourcing) shows this
-    // event running 5d from the Aug 20 v3.6-p1 start, not the full phase-1 span this file previously
-    // guessed for every un-audited event.
-    currentEnd: '2026-08-25T01:59:59Z',
+    currentStart: '2026-08-22T08:00:00Z',
+    // pixel geometry: runs almost the entire v3.6 version (through Sep 29), not just 5 days as the
+    // previous text-scrape pass estimated.
+    currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
     accentColor: 'red',
     imageUrl: './banners/zHQTnWXp-wuwa-resonance-sim-realm.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
@@ -397,10 +403,9 @@ const EVENTS = {
     description: 'New v3.6 limited-time leisure event.',
     resetType: 'Limited-time',
     color: 'cyan',
-    currentStart: '2026-08-20T08:00:00Z',
-    // end date fixed 2026-08-20 (session 6): wuwatracker.com/fr/timeline shows this running 12d from
-    // the Aug 20 start, not the full phase-1 span.
-    currentEnd: '2026-09-01T01:59:59Z',
+    // pixel geometry: starts a week into the version (Aug 27), not at the Aug 20 launch.
+    currentStart: '2026-08-27T08:00:00Z',
+    currentEnd: '2026-09-14T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
     // real art, sourced 2026-08-20 from fandom's File:Second_Coming_of_Solaris_(Ultra).jpg — the
@@ -415,10 +420,9 @@ const EVENTS = {
     description: 'New v3.6 limited-time leisure event.',
     resetType: 'Limited-time',
     color: 'purple',
-    currentStart: '2026-08-20T08:00:00Z',
-    // end date fixed 2026-08-20 (session 6): wuwatracker.com/fr/timeline shows this running 20d from
-    // the Aug 20 start (ends 1 day before the phase-1 -> phase-2 boundary, not exactly on it).
-    currentEnd: '2026-09-09T01:59:59Z',
+    // pixel geometry: starts Sep 3 (two weeks into the version), not at the Aug 20 launch.
+    currentStart: '2026-09-03T08:00:00Z',
+    currentEnd: '2026-09-21T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
     imageUrl: './banners/XxJtGLpQ-wuwa-the-strings-remember.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
@@ -429,11 +433,10 @@ const EVENTS = {
     description: 'New v3.6 limited-time co-op combat event.',
     resetType: 'Limited-time',
     color: 'orange',
-    currentStart: '2026-08-20T08:00:00Z',
-    // end date fixed 2026-08-20 (session 6): wuwatracker.com/fr/timeline shows this running 26d from
-    // the Aug 20 start — it actually outlasts the phase-1 -> phase-2 boundary (Sep 10) by 5 days,
-    // the opposite direction from every other event this file had guessed at the phase boundary.
-    currentEnd: '2026-09-15T01:59:59Z',
+    // pixel geometry: starts at the phase-1/phase-2 boundary (Sep 10), not the Aug 20 launch —
+    // this is a phase-2-only event, the opposite of what the earlier text-scrape guess assumed.
+    currentStart: '2026-09-10T08:00:00Z',
+    currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
     imageUrl: './banners/WpcMcR5t-wuwa-if-dreams-still-reverberate.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
@@ -444,8 +447,9 @@ const EVENTS = {
     description: 'New v3.6 limited-time exploration event.',
     resetType: 'Limited-time',
     color: 'lime',
-    currentStart: '2026-08-20T08:00:00Z',
-    currentEnd: '2026-09-10T01:59:59Z',
+    // pixel geometry: starts Sep 17 (a week into phase 2), not at the Aug 20 launch.
+    currentStart: '2026-09-17T08:00:00Z',
+    currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
     imageUrl: './banners/WNv772NQ-fogveil-pagoda.webp', // real event art, sourced 2026-08-20 from fandom's File:Fogveil_Pagoda.png, uploaded to imgbb 2026-08-20
@@ -456,8 +460,10 @@ const EVENTS = {
     description: 'Spend Waveplates to claim double rewards after completing a Tacet Suppression challenge.',
     resetType: 'Limited-time',
     color: 'pink',
-    currentStart: '2026-08-20T02:00:00Z',
-    currentEnd: '2026-09-10T01:59:59Z',
+    // pixel geometry: this does NOT start with the version either — a 7-day window right before
+    // the version ends (Sep 22 -> Sep 29), not Aug 20 -> Sep 10 as previously modeled.
+    currentStart: '2026-09-22T08:00:00Z',
+    currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
     imageUrl: './banners/99Pk72ZX-chord-cleansing.webp', // real event art, sourced 2026-08-20 from fandom's File:Chord_Cleansing.jpg (recurring echo double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
