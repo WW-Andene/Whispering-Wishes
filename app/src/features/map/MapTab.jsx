@@ -34,7 +34,7 @@ function slugify(s) {
   return String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `zone-${Date.now().toString(36)}`;
 }
 
-export default function MapTab({ navPadding = 80 }) {
+export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const leafletRef = useRef(null);
@@ -2803,7 +2803,7 @@ export default function MapTab({ navPadding = 80 }) {
         </div>
       </FocusTrapModal>
       <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
+        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + headerPadding}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
           <div className="kuro-card-inner" style={{ position: 'relative', height: '100%' }}>
             <div
               ref={containerRef}
