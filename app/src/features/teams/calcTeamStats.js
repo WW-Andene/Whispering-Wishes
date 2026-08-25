@@ -626,7 +626,14 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           const val = mainStatVals[cost]?.[echo.mainStat] || 0;
           applyStat(echo.mainStat, val);
         }
-        (echo.substats || []).forEach(sub => {
+        // Same duplicate-substat guard as calcEngine.js's applyEchoStats (a real echo can never
+        // carry the same substat type twice or more than 5 total) -- this block hand-duplicates
+        // that function's logic instead of calling it, so it needs the same defense independently
+        // rather than trusting it stays in sync.
+        const seenMainSubs = new Set();
+        (echo.substats || []).slice(0, 5).forEach(sub => {
+          if (seenMainSubs.has(sub)) return;
+          seenMainSubs.add(sub);
           if (sub === 'ATK' || sub === 'HP' || sub === 'DEF') {
             // Flat ATK/HP/DEF substat: converts to %-of-base-stat, and only actually helps the
             // main DPS if it matches their own scaling stat (see calcEngine.js flatSubToPct for

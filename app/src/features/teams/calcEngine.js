@@ -262,7 +262,17 @@ export function applyEchoStats(stats, echoes, element, scaling, baseStats) {
       else if (echo.mainStat === 'Resonance Skill DMG') stats.skillDmg += val;
       else if (echo.mainStat === 'Resonance Liberation DMG') stats.libDmg += val;
     }
-    (echo.substats || []).forEach(sub => {
+    // A real echo can never carry the same substat type twice (the game enforces 5 DISTINCT
+    // rolls) or more than 5 substats total, but nothing upstream of this function actually
+    // guarantees that -- the UI's toggle-button substat picker and auto-equip's own hardcoded
+    // templates both happen to keep this true today, but imported/restored save data (App.jsx's
+    // backup-restore path writes teamEquipment from a user-supplied JSON with only generic
+    // sanitization, no echo-specific validation) could still hand this function something
+    // malformed. Guard here, at the point of use, rather than trusting every possible caller.
+    const seenSubs = new Set();
+    (echo.substats || []).slice(0, 5).forEach(sub => {
+      if (seenSubs.has(sub)) return;
+      seenSubs.add(sub);
       if (sub === 'ATK' || sub === 'HP' || sub === 'DEF') {
         stats.atkPct += flatSubToPct(sub, scaling, baseStats);
         return;
