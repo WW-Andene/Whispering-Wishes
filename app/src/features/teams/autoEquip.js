@@ -151,10 +151,14 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
   };
   const defaultSubs = getSubstats();
   const newEchoes = [null, null, null, null, null];
-  // Echoes are not a limited/unique resource in WuWa -- unlike weapons (one real copy per
-  // account), any number of characters can equip the exact same named echo simultaneously, and
-  // this app doesn't track owned echo quantities anywhere (no echoCounts model, unlike the real
-  // chars5Counts/weaps5Counts collection). A prior version excluded a teammate's own 4-cost echo
+  // Echoes are not a limited/unique resource in WuWa. Weapons aren't exclusive-per-account either
+  // -- any number of characters can equip the same named weapon simultaneously (nothing stops two
+  // Broadblade users both running the same signature sword); the only real weapon constraint is
+  // refinement rank, which caps at R5 (WEAPON_REFINE_SCALE has exactly 5 entries) regardless of
+  // how many duplicate copies are owned. Neither weapons nor echoes are quantity-tracked anywhere
+  // in this app (no echoCounts/weapsCounts inventory model, unlike the real chars5Counts/
+  // weaps5Counts collection), so there's nothing to gate equip selection on here either way. A
+  // prior version excluded a teammate's own 4-cost echo
   // from this member's candidate pool here, with no in-game or in-app basis for the exclusion.
   // For the ~14 sets that only have a single 4-cost echo in the whole roster (Eternal Radiance,
   // Halo of Starry Radiance, Lingering Tunes, etc.), that exclusion could deny this member their
