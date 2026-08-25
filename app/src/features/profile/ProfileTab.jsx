@@ -29,6 +29,7 @@ import AboutSection from './AboutSection.jsx';
 import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
 import PushNotificationsCard from './PushNotificationsCard.jsx';
+import { openSoundSettings, isNativePlatform as isNativePlatformForSettings } from '../../utils/systemSettings.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
@@ -721,6 +722,14 @@ function ProfileTab({
                 )}
                 {visualSettings.animationsEnabled === 'full' && (
                   <p className="text-fuchsia-400 text-base font-medium text-center mx-auto" style={{maxWidth: 'none'}}>{t('profile.display.animationsFull')}</p>
+                )}
+                {isNativePlatformForSettings() && visualSettings.animationsEnabled !== 'off' && (
+                  <div className="rounded-lg border border-[var(--border-medium)] bg-white/5 p-3 space-y-2">
+                    <p className="text-gray-400 text-sm">{t('profile.display.vibrationHint')}</p>
+                    <button onClick={() => { haptic.light(); openSoundSettings(); }} className="kuro-btn kuro-btn-sm w-full">
+                      {t('profile.display.openSoundSettings')}
+                    </button>
+                  </div>
                 )}
 
                 {/* Background Picker */}

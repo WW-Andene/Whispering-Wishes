@@ -148,6 +148,8 @@
     "animationsOff": "Désactivé - Aucune animation",
     "animationsOn": "Activé - Toutes les animations",
     "animationsFull": "Complet - Spine activé",
+    "vibrationHint": "Pas de vibration ? Certains téléphones (MIUI/Xiaomi confirmé) ont un interrupteur système global qui prime sur toutes les apps.",
+    "openSoundSettings": "Ouvrir les réglages Son & Vibration",
     "animationsAriaLabel": "Animations : {{current}} — cliquez pour passer à {{next}}",
     "animationsTitle": "Actuellement : {{current}}. Cliquez pour changer.",
     "backgrounds": "Arrière-plans",

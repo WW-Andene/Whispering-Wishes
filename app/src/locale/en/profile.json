@@ -148,6 +148,8 @@
     "animationsOff": "Off - No animation at all",
     "animationsOn": "On - All animation",
     "animationsFull": "Full - Spine activated",
+    "vibrationHint": "Not feeling vibration? Some phones (MIUI/Xiaomi confirmed) have a system-wide vibration switch that overrides every app.",
+    "openSoundSettings": "Open Sound & Vibration Settings",
     "animationsAriaLabel": "Animations: {{current}} — click to switch to {{next}}",
     "animationsTitle": "Currently: {{current}}. Click to cycle.",
     "backgrounds": "Backgrounds",
