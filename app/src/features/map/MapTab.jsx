@@ -2787,8 +2787,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
             <img
               src="./misc-assets/jZQdMWr1-abby-teaser.png"
               alt=""
-              className="object-cover"
-              style={{ width: '80%', height: '80%' }}
+              className="object-contain w-full h-full"
               loading="eager"
               onError={hideOnError}
             />
