@@ -62,24 +62,28 @@ export const ECHO_MAIN_STAT_VALUES = {
   1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
 };
 
-// Echo substat values
+// Echo substat values — probability-weighted average of each stat's 8 real roll grades,
+// using the game's actual per-grade pull chances (source: wutheringwaves.fandom.com/wiki/Echo/Stats,
+// cross-checked against a user-supplied roll table, 2026-08-25). Each substat has 8 possible
+// rolls with chances [7.33%, 14.65%, 19.54%, 23.51%, 15.63%, 10.42%, 5.95%, 2.98%]; the value
+// below is Σ(chance_i × grade_i)/100 for that stat's grade list, not a flat min/mid/max snapshot.
 export const ECHO_SUB_STAT_VALUES = {
-  'ATK%': 9, 'HP%': 9, 'DEF%': 9,
-  'Crit Rate': 7.5, 'Crit DMG': 15,
-  'Energy Regen': 8,
-  'Basic ATK DMG': 9, 'Heavy ATK DMG': 9,
-  'Resonance Skill DMG': 9, 'Resonance Liberation DMG': 9,
+  'ATK%': 8.59, 'HP%': 8.59, 'DEF%': 10.87,
+  'Crit Rate': 8.07, 'Crit DMG': 16.15,
+  'Energy Regen': 9.16,
+  'Basic ATK DMG': 8.59, 'Heavy ATK DMG': 8.59,
+  'Resonance Skill DMG': 8.59, 'Resonance Liberation DMG': 8.59,
 };
 
-// Flat echo substat max-roll values (in raw stat points, NOT %). Sourced from
-// prydwen.gg's Echo Stats guide (https://www.prydwen.gg/wuthering-waves/guides/echo-stats,
-// fetched 2026-08-18): substat roll ranges are ATK 30-60, HP 320-580, DEF 40-70 — using the
-// highest roll to match the convention of the % table above. Unlike the % substats, these
-// can't be looked up context-free: they need the wearer's own base ATK/HP/DEF to convert into
-// an equivalent %-of-base contribution (see applyEchoStats below), so they're kept in a
-// separate table rather than merged into ECHO_SUB_STAT_VALUES.
+// Flat echo substat values (in raw stat points, NOT %) — probability-weighted average of the
+// real roll grades, same source/date as ECHO_SUB_STAT_VALUES above. HP has 8 grades (320-580)
+// using the same 8-grade chance table as the % substats; ATK and DEF have only 4 grades with
+// their own chance table [18.52%, 44.45%, 26.38%, 10.36%]. Unlike the % substats, these can't
+// be looked up context-free: they need the wearer's own base ATK/HP/DEF to convert into an
+// equivalent %-of-base contribution (see applyEchoStats below), so they're kept in a separate
+// table rather than merged into ECHO_SUB_STAT_VALUES.
 export const ECHO_FLAT_SUB_STAT_VALUES = {
-  'ATK': 60, 'HP': 580, 'DEF': 70,
+  'ATK': 42.8, 'HP': 429.5, 'DEF': 52.8,
 };
 
 // ── Stat accumulator: replaces 50+ loose variables per tier ──
