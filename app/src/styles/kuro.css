@@ -248,7 +248,7 @@
       --font-lg: calc(16px * var(--ui-scale, 1));
       --font-xl: calc(16px * var(--ui-scale, 1));
       --font-2xl: calc(19px * var(--ui-scale, 1));
-      --font-3xl: calc(20px * var(--ui-scale, 1));
+      --font-3xl: calc(16px * var(--ui-scale, 1));
       --font-4xl: calc(22px * var(--ui-scale, 1));
       --font-5xl: calc(23px * var(--ui-scale, 1));
       --font-6xl: calc(25px * var(--ui-scale, 1));
