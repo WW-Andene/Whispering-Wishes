@@ -593,7 +593,7 @@ function PlannerTab({
               return (
                 <div key={ftg.name} className="space-y-2">
                   {/* ── Splash banner ── */}
-                  <div className="relative overflow-hidden rounded-xl" style={{ height: '100px', border: `1px solid ${elColor}40` }}>
+                  <div className="relative overflow-hidden rounded-xl" style={{ height: '96px', border: `1px solid ${elColor}40` }}>
                     {themeArt && (
                       <img src={themeArt} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" loading="lazy" onError={hideOnError}
                         style={{ opacity: 0.5, objectPosition: artPosition }} />
