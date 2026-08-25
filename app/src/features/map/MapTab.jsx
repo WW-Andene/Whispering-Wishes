@@ -2802,11 +2802,12 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           </div>
         </div>
       </FocusTrapModal>
-      {/* .tab-content's own padding-bottom: 12px (kuro.css) is left as-is (not overridden) — it
-          stacks additively on top of navPadding+headerPadding here rather than being cancelled
-          out. */}
-      <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + headerPadding + 12}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
+      {/* Wrapper gets the outer height (viewport minus header/nav reserved space); the card is a
+          flex child (flex: 1) that fills whatever's left INSIDE that box, including .tab-content's
+          own padding (box-sizing: border-box handles that automatically) — no manual "+12" fudge
+          constant to keep re-guessing. */}
+      <div className="kuro-calc space-y-3 tab-content" style={{ display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1, height: `calc(100dvh - ${headerPadding + navPadding}px)` }}>
+        <div className="kuro-card map-card" style={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
           <div className="kuro-card-inner" style={{ position: 'relative', height: '100%' }}>
             <div
               ref={containerRef}
