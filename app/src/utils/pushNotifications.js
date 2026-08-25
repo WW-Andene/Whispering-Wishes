@@ -3,24 +3,26 @@
 // Push notifications for the native (Capacitor) build. Native-only: there's
 // no push transport on the web build (no service-worker Web Push wired up).
 //
-// IMPORTANT — this wires the full client side (permission, FCM registration,
-// token, foreground/tap listeners) but there is currently NO SERVER that
-// sends anything to that token: `api/` has no push-sending endpoint, and the
-// leaderboard/backup features talk to Firebase's REST/Auth APIs directly
-// (see CloudStorageProvider.jsx) rather than the Firebase Admin SDK a real
-// sender would need. Two things are required before a notification can
-// actually arrive on a device, neither of which this file can provide:
+// Full round trip: this registers with FCM, then POSTs the resulting token to
+// /api/push/register.js, which stores it in Firebase RTDB using a
+// service-account-minted admin token (see api/_googleAuth.js) — no user
+// login required, since push shouldn't be gated behind a Google sign-in.
+// /api/push/send.js (admin-only, triggered manually or by a cron — not
+// called from this app) reads that same list and broadcasts via FCM HTTP v1.
+//
+// Two things must still exist for a notification to actually arrive:
 //   1. android/app/google-services.json from a real Firebase project (see
 //      build.gradle's conditional `apply plugin: 'com.google.gms...'` — the
-//      APK builds and runs fine without it, push registration just fails).
-//   2. Something that calls the FCM HTTP v1 API with a target token/topic —
-//      a Firebase Cloud Function, a Vercel serverless function using the
-//      Admin SDK, or manual sends from the Firebase Console for testing.
-// Until both exist, getPushToken() below will resolve to null (registration
-// error swallowed) and the app behaves exactly as if this file didn't exist.
+//      APK builds and runs fine without it, FCM registration just fails).
+//   2. FIREBASE_SERVICE_ACCOUNT_JSON, FIREBASE_DB_URL, and PUSH_ADMIN_SECRET
+//      set as server-side env vars (Vercel project settings, NOT prefixed
+//      with VITE_ — those get bundled into client JS). See CAPACITOR_APP.md.
+// Without both, registerTokenWithServer() below fails silently (caught,
+// logged) and the app behaves exactly as if this file didn't exist.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { PushNotifications } from '@capacitor/push-notifications';
+import { apiUrl } from './apiBase.js';
 
 export const isNativePlatform = () =>
   typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
@@ -36,6 +38,22 @@ export const hasOptedIntoPush = () => {
   try { return localStorage.getItem(OPT_IN_STORAGE_KEY) === '1'; } catch { return false; }
 };
 
+// Best-effort — a failed registration just means this device won't receive
+// broadcasts until the next successful call (e.g. next app launch); it never
+// blocks the local "push enabled" UX, which only depends on OS permission.
+async function registerTokenWithServer(token) {
+  try {
+    const res = await fetch(apiUrl('/api/push/register'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    if (!res.ok) console.warn('Push token registration with server failed:', res.status);
+  } catch (err) {
+    console.warn('Push token registration with server failed:', err.message);
+  }
+}
+
 let listenersAttached = false;
 function attachListeners(onToken, onNotification) {
   if (listenersAttached) return;
@@ -43,6 +61,7 @@ function attachListeners(onToken, onNotification) {
 
   PushNotifications.addListener('registration', (token) => {
     try { localStorage.setItem(TOKEN_STORAGE_KEY, token.value); } catch {}
+    registerTokenWithServer(token.value);
     onToken?.(token.value);
   });
 

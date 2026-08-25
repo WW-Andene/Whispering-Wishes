@@ -45,6 +45,39 @@ Résultat mesuré : **APK de 7 MB** (contre 1 GB en bundlant tout).
 | Animations Spine des personnages | ❌ chargées depuis ton hosting |
 | Fonds animés des bannières | ❌ chargées depuis ton hosting |
 | Suppression de fond d'image, OCR gacha, proxy gacha | ❌ appellent `/api/*` sur ton hosting (choix fait : pas de clé API perso embarquée) |
+| Notifications push | ❌ nécessite `google-services.json` + config Firebase côté serveur (voir ci-dessous) |
+
+## Notifications push
+
+Le client (permission, enregistrement FCM, écouteurs) est entièrement câblé, mais
+**deux choses côté serveur/config sont nécessaires** avant qu'une notification
+puisse réellement arriver sur un appareil :
+
+### 1. Projet Firebase + `google-services.json`
+1. Crée un projet sur [Firebase Console](https://console.firebase.google.com/)
+   (ou réutilise celui déjà lié à `VITE_FIREBASE_DB`)
+2. Ajoute une app Android avec le package `cc.andene.whisperingwishes`
+3. Télécharge `google-services.json` et place-le dans `app/android/app/`
+   (déjà dans `.gitignore` — jamais commité)
+
+### 2. Variables d'environnement serveur (Vercel — jamais préfixées `VITE_`)
+| Variable | D'où la sortir |
+|---|---|
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Firebase Console → Paramètres du projet → Comptes de service → "Générer une nouvelle clé privée" — colle le JSON entier comme valeur (une seule ligne) |
+| `FIREBASE_DB_URL` | Même URL que `VITE_FIREBASE_DB`, mais en variable serveur séparée (les `VITE_*` ne sont embarquées que côté client, pas dans le runtime Vercel) |
+| `PUSH_ADMIN_SECRET` | Une chaîne aléatoire de ton choix (`openssl rand -hex 32`) — protège `/api/push/send` |
+
+Une fois les deux en place : ouvrir l'app une fois enregistre le token de
+l'appareil (`push-tokens/{token}` dans Realtime Database, via
+`/api/push/register`), puis envoyer un test :
+```bash
+curl -X POST https://ton-app.vercel.app/api/push/send \
+  -H "x-admin-secret: $PUSH_ADMIN_SECRET" -H "Content-Type: application/json" \
+  -d '{"title":"Test","body":"Ça marche !"}'
+```
+`/api/push/send` n'est jamais appelé par l'app elle-même — c'est un outil
+d'admin (curl manuel, ou un Vercel Cron qui poste avec un titre/texte calculé
+depuis les événements qui se terminent bientôt).
 
 ## Build
 
