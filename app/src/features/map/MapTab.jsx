@@ -2162,7 +2162,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           font-size: 12px;
           font-weight: 500;
           letter-spacing: 0.02em;
-          padding: 4px 12px;
+          padding: 4px 8px;
           min-height: 30px;
           border-radius: 8px;
           cursor: pointer;
@@ -2344,7 +2344,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           border-radius: var(--input-radius, var(--radius-md, 7px));
           font-family: var(--font-display);
           font-size: 12px;
-          padding: 8px 12px;
+          padding: 8px 8px;
           min-height: 30px;
           outline: none; min-width: 0; width: 100%;
           transition: border-color var(--transition-fast, 120ms);
@@ -2733,7 +2733,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           background: rgba(var(--color-cyan), 0.06);
           border: 1px solid rgba(var(--color-cyan), 0.2);
           border-radius: 8px;
-          padding: 8px 12px;
+          padding: 8px 8px;
           display: flex; flex-direction: column;
           gap: var(--space-sm, 8px);
         }

@@ -105,7 +105,7 @@
       padding-inline-end: 32px;
     }
     [dir="rtl"] .kuro-search-wrap svg:first-child {
-      inset-inline-start: 12px;
+      inset-inline-start: 8px;
       inset-inline-end: auto;
     }
     /* Icons with directional meaning (arrows, chevrons) that should mirror in RTL.
@@ -381,7 +381,7 @@
     }
     .kuro-field-error {
       color: #fca5a5;
-      font-size: 12px;
+      font-size: 8px;
       margin-top: 4px;
       display: block;
     }
@@ -396,7 +396,7 @@
     }
     .kuro-search-wrap svg:first-child {
       position: absolute;
-      left: 12px;
+      left: 8px;
       top: 50%;
       transform: translateY(-50%);
       color: #6b7389;
@@ -746,7 +746,7 @@
       content: '';
       position: absolute;
       bottom: 8px;
-      left: 12px;
+      left: 8px;
       width: 12px;
       height: 12px;
       border-bottom: 1px solid var(--border-bright);
@@ -789,7 +789,7 @@
       letter-spacing: 0.03em; /* E4-LS1: Intentional terminal-style positive tracking */
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     
@@ -931,7 +931,7 @@
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      font-size: 12px;
+      font-size: 8px;
       padding: 2px 8px;
       border-radius: 4px;
       border: 1px solid;
@@ -952,7 +952,7 @@
     /* MED-6: Compact button variants for inline actions */
     .kuro-btn-sm {
       font-size: 12px;
-      padding: 4px 12px;
+      padding: 4px 8px;
       min-height: 28px;
       border-radius: 8px;
     }
@@ -1110,13 +1110,13 @@
     /* E2-MO2: Compact inputs on mobile for above-fold density */
     @media (max-width: 640px) {
       .kuro-calc .kuro-input {
-        padding: 8px 12px;
+        padding: 8px 8px;
         font-size: 13px;
       }
     }
 
     .kuro-input-sm {
-      padding: 4px 12px;
+      padding: 4px 8px;
       font-size: 12px;
       width: 56px;
       text-align: center;
@@ -1469,7 +1469,7 @@
     .kuro-tooltip {
       position: absolute;
       z-index: 9999;
-      padding: 6px 12px;
+      padding: 6px 8px;
       font-size: 11px;
       color: var(--text-heading);
       background: rgba(12, 16, 24, 0.92);
@@ -1691,7 +1691,7 @@
     [role="columnheader"] {
       font-weight: 600;
       text-align: left;
-      font-size: 12px;
+      font-size: 8px;
       color: var(--text-body);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -1746,7 +1746,7 @@
 
     /* CD-F1: Purpose-based card variants */
     .card-data {
-      padding: 12px;
+      padding: 8px;
     }
     .card-action {
       background: rgba(255, 255, 255, 0.03);
@@ -2471,7 +2471,7 @@
       overflow: hidden;
       background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008));
       border: 1px solid rgba(255,255,255,0.08);
-      padding: 12px;
+      padding: 8px;
     }
     .idcard-section--lg {
       padding: 12px;
