@@ -10,32 +10,32 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
-// Replaces @capacitor/haptics on Android. That plugin's impact/notification
-// styles are all VibrationEffect.createWaveform() — a raw amplitude ramp
-// held for 43-60ms — which reads as a dull, soft "buzz" on most actuators.
+// Replaces @capacitor/haptics on Android. History of what didn't work:
+//   v1 — PRIMITIVE_TICK/LOW_TICK: Android's own docs call these deliberately
+//        soft/subtle. Wrong primitive regardless of scale.
+//   v2 — PRIMITIVE_CLICK: fixed "soft", but multi-pulse patterns were only
+//        18-40ms apart — below the ~50-60ms flutter-fusion threshold where
+//        touch perception merges separate impulses into one buzz. Widened
+//        to 70-90ms.
+//   v3 — added a Vibrator.areAllPrimitivesSupported() hardware check before
+//        using the primitive at all: backfired, reports false on real
+//        Xiaomi/MIUI hardware that renders it fine, silently downgrading
+//        every tap to a worse fallback. Reverted.
+//   v4 — still buzzy even with the primitive called directly and correctly
+//        spaced. Conclusion: on this actual device, PRIMITIVE_CLICK isn't
+//        rendered by real actuator hardware at all — the framework falls
+//        back to its own generic approximation when the vendor HAL doesn't
+//        implement composition primitives, and that approximation is
+//        itself buzzy. No amount of primitive/spacing tuning fixes a
+//        primitive that was never really hardware-rendered to begin with.
 //
-// v1 used PRIMITIVE_TICK/LOW_TICK, which Android's own docs describe as
-// deliberately soft/subtle — wrong primitive regardless of scale. v2 moved
-// everything to PRIMITIVE_CLICK, which fixed the "soft" complaint but the
-// multi-pulse patterns (success/warning/error) still read as a buzz
-// ("zz zz zz") instead of distinct taps ("click click click"). Root cause:
-// those pulses were only 18-40ms apart — below the ~50-60ms flutter-fusion
-// threshold where human touch perception stops resolving separate impulses
-// and merges them into one continuous vibration, regardless of how sharp
-// each individual pulse is. Fixed by widening every inter-pulse gap to
-// 70ms+.
-//
-// v3 also added a Vibrator.areAllPrimitivesSupported() hardware check
-// before ever attempting PRIMITIVE_CLICK, meant to protect devices with no
-// real composition-capable actuator from a buzzy OS-level emulation of the
-// primitive. That backfired: it's known to report false on some real
-// Xiaomi/MIUI devices whose actuator handles the primitive fine, which
-// silently downgraded every single light/medium/heavy tap (fired on every
-// button press) to the createOneShot() fallback — and a plain amplitude
-// pulse rides an ERM-style motor's physical spin-up/coast-down time, which
-// is exactly the buzz being complained about. Removed: just attempt the
-// primitive unconditionally on API 30+, as v2 did — that was never the
-// part users flagged as buzzy, only the multi-click spacing was.
+// This version drops VibrationEffect.Composition entirely and goes back to
+// plain amplitude control (createOneShot/createWaveform, API 26+) — but
+// pushed to the extreme opposite of the original "43-60ms ramp" problem:
+// the shortest duration the platform will actually render (a handful of
+// ms) at maximum amplitude. A pulse that short has no time to feel like a
+// sustained buzz no matter how the actuator ramps, while still being sharp
+// (full amplitude, no easing) rather than soft.
 @CapacitorPlugin(name = "GlassHaptics")
 public class GlassHapticsPlugin extends Plugin {
     private Vibrator vibrator;
@@ -56,80 +56,54 @@ public class GlassHapticsPlugin extends Plugin {
         return (Vibrator) ctx.getSystemService(Context.VIBRATOR_SERVICE);
     }
 
-    private boolean supportsClickPrimitive() {
-        return Build.VERSION.SDK_INT >= 30;
-    }
-
-    @PluginMethod public void light(PluginCall call) { playClick(0.3f, 6, 130); call.resolve(); }
-    @PluginMethod public void medium(PluginCall call) { playClick(0.65f, 7, 190); call.resolve(); }
-    @PluginMethod public void heavy(PluginCall call) { playClick(1.0f, 8, 255); call.resolve(); }
+    @PluginMethod public void light(PluginCall call) { pulse(3, 160); call.resolve(); }
+    @PluginMethod public void medium(PluginCall call) { pulse(4, 210); call.resolve(); }
+    @PluginMethod public void heavy(PluginCall call) { pulse(6, 255); call.resolve(); }
     @PluginMethod public void success(PluginCall call) { playSuccess(); call.resolve(); }
     @PluginMethod public void warning(PluginCall call) { playWarning(); call.resolve(); }
     @PluginMethod public void error(PluginCall call) { playError(); call.resolve(); }
 
-    // A single dry click — same primitive at every intensity, only the
-    // amplitude changes, so "light" never turns into a longer/softer
-    // sensation, just a quieter version of the same hard tap.
+    // A single 3-6ms pulse at near-max amplitude — as short and hard as the
+    // platform allows, so there's no window for the motor to ramp into a
+    // felt buzz.
     @SuppressWarnings("deprecation")
-    private void playClick(float scale, int fallbackDurationMs, int fallbackAmplitude) {
-        if (supportsClickPrimitive()) {
-            vibrator.vibrate(VibrationEffect.startComposition()
-                .addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, scale)
-                .compose());
-        } else if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createOneShot(fallbackDurationMs, fallbackAmplitude));
+    private void pulse(int durationMs, int amplitude) {
+        if (Build.VERSION.SDK_INT >= 26) {
+            vibrator.vibrate(VibrationEffect.createOneShot(durationMs, amplitude));
         } else {
-            vibrator.vibrate(fallbackDurationMs);
+            vibrator.vibrate(durationMs);
         }
     }
 
-    // A single primitive click at `delayMs` into a composition, or the
-    // matching single-pulse position in a legacy on/off waveform — shared by
-    // the three multi-tap patterns below so their timing is defined once.
-    private VibrationEffect.Composition addClick(VibrationEffect.Composition c, float scale, int delayMs) {
-        return delayMs == 0 ? c.addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, scale)
-                             : c.addPrimitive(VibrationEffect.Composition.PRIMITIVE_CLICK, scale, delayMs);
-    }
-
-    // Two hard clicks 90ms apart — comfortably above the ~50-60ms
-    // flutter-fusion threshold, so it reads as two distinct taps ("click
-    // click") instead of one continuous buzz.
+    // Two hard 3-4ms pulses 90ms apart — well clear of the flutter-fusion
+    // threshold, so it reads as two distinct taps.
     @SuppressWarnings("deprecation")
     private void playSuccess() {
-        if (supportsClickPrimitive()) {
-            vibrator.vibrate(addClick(addClick(VibrationEffect.startComposition(), 0.6f, 0), 1.0f, 90).compose());
-        } else if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 6, 90, 7 }, new int[] { 0, 160, 0, 220 }, -1));
+        if (Build.VERSION.SDK_INT >= 26) {
+            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 3, 90, 4 }, new int[] { 0, 150, 0, 220 }, -1));
         } else {
-            vibrator.vibrate(new long[] { 0, 6, 90, 7 }, -1);
+            vibrator.vibrate(new long[] { 0, 3, 90, 4 }, -1);
         }
     }
 
-    // Three short clicks, 80ms apart — a dry "toc toc toc" rattle, not a
-    // rapid buzz.
+    // Three short pulses, 80ms apart.
     @SuppressWarnings("deprecation")
     private void playWarning() {
-        if (supportsClickPrimitive()) {
-            vibrator.vibrate(
-                addClick(addClick(addClick(VibrationEffect.startComposition(), 0.8f, 0), 0.8f, 80), 0.8f, 80).compose()
-            );
-        } else if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 7, 80, 7, 80, 7 }, new int[] { 0, 190, 0, 190, 0, 190 }, -1));
+        if (Build.VERSION.SDK_INT >= 26) {
+            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 3, 80, 3, 80, 3 }, new int[] { 0, 190, 0, 190, 0, 190 }, -1));
         } else {
-            vibrator.vibrate(new long[] { 0, 7, 80, 7, 80, 7 }, -1);
+            vibrator.vibrate(new long[] { 0, 3, 80, 3, 80, 3 }, -1);
         }
     }
 
-    // Two firm clicks 70ms apart — tighter than success's 90ms (reads as
-    // more urgent) but still well clear of the fusion threshold.
+    // Two max-amplitude pulses 70ms apart — tighter than success's 90ms
+    // (reads as more urgent) but still clear of the fusion threshold.
     @SuppressWarnings("deprecation")
     private void playError() {
-        if (supportsClickPrimitive()) {
-            vibrator.vibrate(addClick(addClick(VibrationEffect.startComposition(), 1.0f, 0), 1.0f, 70).compose());
-        } else if (Build.VERSION.SDK_INT >= 26) {
-            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 8, 70, 8 }, new int[] { 0, 230, 0, 255 }, -1));
+        if (Build.VERSION.SDK_INT >= 26) {
+            vibrator.vibrate(VibrationEffect.createWaveform(new long[] { 0, 4, 70, 5 }, new int[] { 0, 230, 0, 255 }, -1));
         } else {
-            vibrator.vibrate(new long[] { 0, 8, 70, 8 }, -1);
+            vibrator.vibrate(new long[] { 0, 4, 70, 5 }, -1);
         }
     }
 }
