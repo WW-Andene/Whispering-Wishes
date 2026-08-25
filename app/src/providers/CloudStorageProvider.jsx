@@ -7,7 +7,6 @@
 import { createContext, useContext, useState, useRef, useCallback, useMemo, useEffect } from 'react';
 import { useToast } from './ToastProvider.jsx';
 import { useConfirm } from './ConfirmProvider.jsx';
-import { sanitizeStateObj } from '../core/storage.js';
 
 const CloudStorageContext = createContext(null);
 

@@ -19,12 +19,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
-import { Calculator, ChevronDown, Download } from 'lucide-react';
+import { Calculator, Download } from 'lucide-react';
 // --- data ---
 import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
 import { ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from './data/weaponLists.js';
 import { getCurrentBannerAuto, preloadBannerHistoryArt } from './data/banners.js';
-import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, SERVERS, getServerOffset } from './data/constants.js';
+import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, SERVERS } from './data/constants.js';
 import { generateUniqueId, calculateLuckRating } from './utils/helpers.js';
 import { IMPORT_NAME_ALIASES } from './utils/gachaImporter.js';
 // --- extracted hooks ---
@@ -35,7 +35,7 @@ import { useTabNavigation } from './hooks/useTabNavigation.js';
 import { usePresenceTracking, checkFirebaseRateLimit } from './hooks/usePresenceTracking.js';
 import { useThemeAccent } from './hooks/useThemeAccent.js';
 // --- core ---
-import { ACTION, UNDOABLE_ACTIONS, createUndoReducer, initialState, reducer } from './core/reducer.js';
+import { UNDOABLE_ACTIONS, createUndoReducer, initialState, reducer } from './core/reducer.js';
 import { STORAGE_KEY, storageAvailable, loadFromStorage, saveToStorage, sanitizeStateObj, sanitizeImportedState } from './core/storage.js';
 import { getServerAdjustedEnd } from './core/time.js';
 import { computeTrophies } from './core/computeTrophies.js';
@@ -43,7 +43,7 @@ import { computeTrophies } from './core/computeTrophies.js';
 import { PWAProvider, usePWA } from './providers/PWAProvider.jsx';
 import { ToastProvider, useToast } from './providers/ToastProvider.jsx';
 import { ConfirmProvider, useConfirm } from './providers/ConfirmProvider.jsx';
-import { FocusTrapModal, useFocusTrap } from './shared/components/FocusTrapModal.jsx';
+import { useFocusTrap } from './shared/components/FocusTrapModal.jsx';
 import { ServerSelectorModal } from './shared/components/ServerSelectorModal.jsx';
 import { ColorblindFilterDefs } from './shared/components/ColorblindFilterDefs.jsx';
 import { BackupRestoreModal } from './shared/components/BackupRestoreModal.jsx';
@@ -72,11 +72,8 @@ const TeamsTab = lazy(() => import('./features/teams/TeamsTab.jsx'));
 const ProfileTab = lazy(() => import('./features/profile/ProfileTab.jsx'));
 const MapTab = lazy(() => import('./features/map/MapTab.jsx'));
 const TabLoadingFallback = () => <div className="flex items-center justify-center py-20 text-gray-500 text-sm">Loading...</div>;
-import { constantTimeCompare } from './utils/constantTimeCompare.js';
-import {
-  VISUAL_SETTINGS_KEY, IMAGE_FRAMING_KEY, TROPHY_OVERRIDES_KEY,
-  ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH, MAX_BOOKMARK_NAME_LENGTH,
-} from './shared/constants/appConstants.js';
+
+import { VISUAL_SETTINGS_KEY, IMAGE_FRAMING_KEY, TROPHY_OVERRIDES_KEY } from './shared/constants/appConstants.js';
 import { silentCatch } from './utils/silentCatch.js';
 import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storageKeys.js';
 import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
@@ -407,7 +404,6 @@ function WhisperingWishesInner() {
       window.removeEventListener('resize', update);
     };
   }, []);
-
 
   const [detailModal, setDetailModal] = useState({ show: false, type: null, name: null, imageUrl: null, framing: null });
   // Close detail modal on tab switch to prevent it blocking the new tab
@@ -1340,8 +1336,6 @@ function WhisperingWishesInner() {
         setCustomCollectionImages={setCustomCollectionImages}
         setTrophyOverrides={setTrophyOverrides}
       />
-
-
 
       {/* Character/Weapon Detail Modal */}
       <DetailModalHost

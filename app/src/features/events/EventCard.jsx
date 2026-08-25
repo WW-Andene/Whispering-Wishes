@@ -4,12 +4,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Star, Check, CheckCircle, SkipForward } from 'lucide-react';
+import { Check, CheckCircle, SkipForward } from 'lucide-react';
 import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
-import { haptic } from '../../utils/helpers.js';
+
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
-import { EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, generateMaskGradient } from '../../shared/components/BannerCard.jsx';
+import { EVENT_ACCENT_COLORS, TEXT_SHADOW_STYLE, generateMaskGradient } from '../../shared/components/BannerCard.jsx';
 import { PLACEHOLDER_IMAGE } from '../../data/banners.js';
 
 const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {
@@ -129,6 +129,5 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
   );
 });
 EventCard.displayName = 'EventCard';
-
 
 export { EventCard };

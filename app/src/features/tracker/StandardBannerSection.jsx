@@ -4,11 +4,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Star } from 'lucide-react';
+
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
-import { haptic } from '../../utils/helpers.js';
+
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
+import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
 
 const StandardBannerOverlay = memo(() => {
   const canvasRef = useRef(null);

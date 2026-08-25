@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, BarChart3, ChevronDown, Diamond, Sparkles, Sword, Users, X, Zap } from 'lucide-react';
-import { CHARACTER_DATA } from '../../data/characters.js';
+import { AlertTriangle, ChevronDown, Diamond, Sparkles, Sword, Users, X, Zap } from 'lucide-react';
+
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_DATA, getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { isHealerRole, DMG_FOCUS_ROLE_TAG } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
 import RotationTimeline from './RotationTimeline.jsx';
@@ -574,7 +574,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       </div>
                     </div>
                   )}
-
 
                 </div>
               );

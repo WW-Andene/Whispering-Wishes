@@ -4,8 +4,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useRef, useCallback, memo } from 'react';
-import { User, Crown } from 'lucide-react';
-import { CHARACTER_DATA } from '../../data/characters.js';
+import { Crown } from 'lucide-react';
+
 import { haptic } from '../../utils/helpers.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../../shared/components/SpinePlayer.jsx';

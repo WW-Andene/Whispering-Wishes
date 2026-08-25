@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Shuffle, Target, Trash2, Upload, Users, X } from 'lucide-react';
+import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Share2, Shuffle, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { scoreTeamComposition, isHealerRole, isSupportRole } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';

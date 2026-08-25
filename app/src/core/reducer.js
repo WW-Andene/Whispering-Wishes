@@ -3,16 +3,13 @@
 // Action constants, undo reducer wrapper, initial state, and main reducer.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import {
-  HARD_PITY, HARD_PITY_4STAR, FEATURED_4STAR_RATE,
-  LUNITE_DAILY_ASTRITE, MAX_ASTRITE,
-} from '../data/constants.js';
+import { HARD_PITY, HARD_PITY_4STAR, LUNITE_DAILY_ASTRITE, MAX_ASTRITE } from '../data/constants.js';
 import { generateUniqueId } from '../utils/helpers.js';
 // Sanitizers moved to dedicated leaf module (P1-08 audit fix) — formerly this
 // line imported from ./storage.js, which created a reducer.js ↔ storage.js cycle.
 // The cycle was documented-safe but fragile: any future module-eval-time reference
 // to exports of the other file would have produced a silent TDZ bug.
-import { sanitizeImportedState, sanitizeStateObj } from './stateSanitizer.js';
+import { sanitizeImportedState } from './stateSanitizer.js';
 
 // P15-FIX: MEDIUM-12 — Action type constants to prevent silent typo failures in dispatch calls
 const ACTION = Object.freeze({

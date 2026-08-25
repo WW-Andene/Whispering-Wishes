@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Settings, Trash2, LocateFixed, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
-import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { Card, CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 import { DEFAULT_ICON_DRAFTS } from '../../data/mapDefaults.js';
@@ -1906,7 +1906,6 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       });
     }
   }, []);
-
 
   const handleUndo = () => setAuthorPoints(prev => prev.slice(0, -1));
   const handleClear = () => { setAuthorPoints([]); setJsonSnippet(''); };

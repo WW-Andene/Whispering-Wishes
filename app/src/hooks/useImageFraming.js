@@ -5,7 +5,7 @@
 // Extracted from App.jsx - manages position/zoom for character images in
 // collection, team cards, and info panels. Persists to localStorage.
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { sanitizeStateObj } from '../core/storage.js';
 import { IMAGE_FRAMING_KEY } from '../shared/constants/appConstants.js';
 

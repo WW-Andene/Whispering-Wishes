@@ -5,24 +5,24 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Diamond, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, X } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
-import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
-import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
+import { HEADER_ICON, SERVERS, getServerOffset } from '../../data/constants.js';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
 import { haptic, getElementColor, getElementBg } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
 import { clearAllAuxKeys } from '../../core/storageKeys.js';
 import { renderIdCard } from './idCardRenderer.js';
-import { useFocusTrap, FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
-import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
+import { useFocusTrap } from '../../shared/components/FocusTrapModal.jsx';
+
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/bannerUtils.js';
-import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
+
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
+
 import IdCardModal from './IdCardModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
 import AboutSection from './AboutSection.jsx';
@@ -32,10 +32,7 @@ import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
 
-import {
-  ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH,
-  TROPHY_OVERRIDES_KEY, ALLOWED_IMAGE_HOSTS, isAllowedImageUrl,
-} from '../../shared/constants/appConstants.js';
+import { ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH, isAllowedImageUrl } from '../../shared/constants/appConstants.js';
 const MAX_ADMIN_ATTEMPTS = 3;
 // Escalating lockout: 24h → 1 week → 1 month → permanent ban (after 3 lockouts)
 const LOCKOUT_ESCALATION = [
@@ -448,7 +445,6 @@ function ProfileTab({
     }
   }, [adminTab, adminUnlocked, showAdminPanel, fetchActivePlayersCount, fetchAdminPlayerList]);
 
-
   // ID Card canvas download — rendering logic extracted to idCardRenderer.js
   const downloadIdCard = useCallback(async (format) => {
     try {
@@ -467,7 +463,6 @@ function ProfileTab({
       toast?.addToast?.('Failed to save ID card. Try a different profile image', 'error');
     }
   }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies, getImageFraming]);
-
 
   return (
     <>

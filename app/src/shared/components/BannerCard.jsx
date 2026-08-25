@@ -4,16 +4,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Info, Star, X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
-import { haptic, getElementColor, getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
-import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
+import { haptic, getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
+
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
+import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
 import { t } from '../../utils/i18n.js';
 
@@ -46,7 +46,6 @@ const SPINE_BANNERS_ENABLED = false;
 const IMG_LAYER_STYLE = Object.freeze({ zIndex: 1 });
 const BANNER_SUBTLE_SHADOW = '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)';
 
-
 const _maskCache = new Map();
 const generateMaskGradient = (fadePos, fadeIntensity) => {
   const key = `h-${fadePos}-${fadeIntensity}`;
@@ -78,8 +77,6 @@ const generateMaskGradient = (fadePos, fadeIntensity) => {
   _maskCache.set(key, result);
   return result;
 };
-
-
 
 const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor, collectionImages, setDetailModal }) => {
   const isChar = type === 'character';
