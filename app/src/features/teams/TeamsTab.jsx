@@ -465,7 +465,7 @@ function TeamsTab({
                           <Upload size={12} />
                         </button>
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             try {
                               const team = state.teams[state.activeTeamIndex] || state.teams[0];
                               const slots = team.slots;
@@ -484,7 +484,7 @@ function TeamsTab({
                                 lines.push(t('teams.tab.shareStats', { raw: formatNumber(stats.rawDps), full: formatNumber(stats.realDps), perfect: formatNumber(stats.perfectDps) }));
                               }
                               const text = lines.join('\n');
-                              navigator.clipboard.writeText(text);
+                              await navigator.clipboard.writeText(text);
                               toast?.addToast?.(t('teams.tab.copySuccess'), 'success');
                               haptic.light();
                             } catch { toast?.addToast?.(t('teams.tab.shareFailed'), 'error'); }
