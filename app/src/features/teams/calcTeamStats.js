@@ -788,7 +788,16 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         // buff — was never recognized here before, silently dropping the whole effect from every DPS
         // calc. 'defIgnore' debuffs (e.g. Carlotta's Deconstruction) target the enemy's own DEF, same
         // as the buff-side 'defIgnore' — was falling through to the no-op default too.
-        applyBuff(mainStats, db.stat, db.value, { condition: db.condition, dpsElLower: mainDpsElLower });
+        // Same self-state-dependency discount as calcEngine.js's scoreTeamComposition: a non-headline
+        // Main DPS's own deepen/offTune debuff (e.g. Galbrena's Afterflame, gated to "while Galbrena is
+        // in Demon Hypostasis" -- her own sustained active-state) can't be assumed to reliably fire when
+        // she isn't the character actually receiving the rotation's on-field time. Verified this was a
+        // real gap: with Jiyan as the real headline, Galbrena's Afterflame applied its full raw 60%
+        // regardless of her own on-field presence, identical to a teammate with no such debuff at all
+        // except for this one uncapped bonus. Discounted, not zeroed, since she still spends SOME
+        // on-field time via her own rotation block, just not enough to assume the full value.
+        const selfStateDiscount = (db.stat === 'deepen' || db.stat === 'offTune') && !isMain && CHARACTER_DATA[m.name]?.role === 'Main DPS' ? 0.35 : 1;
+        applyBuff(mainStats, db.stat, db.value * selfStateDiscount, { condition: db.condition, dpsElLower: mainDpsElLower });
       });
     });
     ({ atkPct, cr, cd, elemDmg, deepen, amplify, resShred, defShred, defIgnore, echoDmg } = mainStats);
