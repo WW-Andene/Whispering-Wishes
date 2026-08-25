@@ -2265,7 +2265,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           position: absolute;
           left: var(--space-md, 12px);
           right: var(--space-md, 12px);
-          bottom: 56px;
+          bottom: 62px;
           z-index: var(--z-elevated, 10);
           background: var(--bg-card);
           border: 1px solid var(--border-default);
@@ -2286,7 +2286,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         .zone-author-collapsed {
           position: absolute;
           right: var(--space-md, 12px);
-          bottom: 56px;
+          bottom: 62px;
           z-index: var(--z-elevated, 10);
           display: inline-flex; align-items: center; gap: var(--space-xs, 6px);
           background: var(--bg-card); color: var(--text-body);
@@ -2456,7 +2456,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
            canonical kuro-btn (10×12) so the chip reads as a button-
            equivalent pill rather than a bespoke surface. */
         .zone-author-toast {
-          position: absolute; top: 56px; left: 50%;
+          position: absolute; top: 62px; left: 50%;
           transform: translateX(-50%);
           z-index: var(--z-toast, 9500);
           padding: 12px;

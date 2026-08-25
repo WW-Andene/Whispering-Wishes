@@ -308,7 +308,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
                           <User size={14} className="text-gray-500" />
                         </div>
                       )}
-                      <span className="text-sm text-gray-400 text-center leading-tight max-w-[56px] truncate">{charName}</span>
+                      <span className="text-sm text-gray-400 text-center leading-tight max-w-[62px] truncate">{charName}</span>
                     </div>
                   );
                 })}
