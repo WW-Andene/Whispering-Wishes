@@ -793,10 +793,31 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
   // not a mistake, so it's surfaced as a tag rather than hidden or penalized.
   if (mainDps && mainDps !== roleMainDps) tags.push('Hypercarry');
   if (mainDps) {
-    // Main DPS totalMult currently spans ~2200 (Lingyang) to 3800 (Aemeath) across the roster.
-    // Min-max normalize against that observed range so the top of the meta still differentiates
-    // (a flat divisor saturates and makes most current-meta DPS score identically).
-    const dpsMult = CHARACTER_DATA[mainDps]?.totalMult || 0;
+    // Main DPS totalMult currently spans ~2200 (Lingyang) to 3800 (Aemeath) across the roster --
+    // but that range only holds for ATK-scaling DPS. totalMult is "% of the character's own scaling
+    // stat" (calcTeamStats.js: mDmg = baseStat * mult/100 * ...), and an HP-scaling DPS's baseStat
+    // (Cartethyia: baseHp 14800) is ~35x an ATK-scaling DPS's baseAtk (~350-460), so their totalMult
+    // is calibrated on a completely different scale (Cartethyia: 110, not 2200-3800) to produce a
+    // comparable real damage number. Reading it as a raw 2200-3800-range value here would have
+    // scored every HP/DEF-scaling DPS as ~0 (clamped) regardless of how strong they actually are.
+    // Convert to an ATK-equivalent mult first (raw scaling-stat output ÷ a typical 5★ DPS baseAtk)
+    // so this stays comparable across ATK/HP/DEF scalers before applying the existing calibration.
+    const mainDpsD = CHARACTER_DATA[mainDps];
+    const scalingBase = mainDpsD?.statScaling === 'HP' ? mainDpsD?.baseHp
+      : mainDpsD?.statScaling === 'DEF' ? mainDpsD?.baseDef
+      : mainDpsD?.baseAtk;
+    const REFERENCE_BASE_ATK = 400; // typical 5★ Main DPS baseAtk (observed range ~375-460)
+    const rawMult = mainDpsD?.totalMult || 0;
+    // scalingBase × rawMult is the character's real raw output scale (calcTeamStats.js's mDmg
+    // formula) -- for an HP/DEF scaler, convert it back to "what totalMult would read as if this
+    // were an ATK scaler with REFERENCE_BASE_ATK", the unit the 2000-3800 calibration below expects.
+    // ATK scalers are left as their raw totalMult, unchanged from before this fix, since their own
+    // baseAtk already sits close enough to REFERENCE_BASE_ATK that the existing calibration was
+    // tuned against their real totalMult values directly.
+    const isAltScaling = mainDpsD?.statScaling === 'HP' || mainDpsD?.statScaling === 'DEF';
+    const dpsMult = (isAltScaling && scalingBase) ? rawMult * (scalingBase / REFERENCE_BASE_ATK) : rawMult;
+    // Min-max normalize against that observed ATK-equivalent range so the top of the meta still
+    // differentiates (a flat divisor saturates and makes most current-meta DPS score identically).
     let dpsScore = Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
     const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
     // A Liberation-focused DPS with a 175-Energy cost (calcEnergyCycles' own cutoff for the harder ER

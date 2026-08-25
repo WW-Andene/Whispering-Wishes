@@ -1181,7 +1181,24 @@ const CHARACTER_DATA = {
   ['Camellya',      3100, 26, 19],  // Budding + Blossom full rotation
   ['Carlotta',      3400, 23, 14],  // Burst gunslinger, fast rotation
   ['Brant',         2700, 24, 17],  // Basic ATK chains + self-heal
-  ['Cartethyia',    2500, 25, 16],  // HP scaling + Erosion
+  // Fixed 2026-08-25: was 2500, the same raw number range used for every OTHER Main DPS in this
+  // table — but this column's own header comment defines it as "sum of ATK% multipliers", and
+  // Cartethyia doesn't scale off ATK, she scales off HP (baseHp 14800 vs her own baseAtk 313, a
+  // ~47x larger base stat — see the HP stat table above and statScaling: 'HP' below). The real damage
+  // formula (calcTeamStats.js: mDmg = baseStat * mult/100 * ...) has no unit conversion between
+  // "%ATK" and "%HP" — it just multiplies raw baseStat by mult/100 whatever the scaling stat is — so
+  // reusing an ATK%-calibrated number against her ~47x-larger HP base silently inflated her computed
+  // damage by roughly that same ~47x versus every ATK-scaling teammate. Concretely this made her
+  // auto-calculated teamDps ~5x every other top-tier DPS (284k vs Aemeath's 61k, the game's actual
+  // highest personal-power Main DPS per totalMult) regardless of build or enemy, so any enemy-aware
+  // team search always picked her -- exactly the "Auto Team never adapts" symptom reported. Rescaled
+  // by the same baseAtk/baseHp ratio (313/14800 ≈ 0.0212) applied to a target raw-output magnitude in
+  // the same range as the game's other top-end (T0/T0.5) Main DPS (Aemeath: baseAtk 425 × totalMult
+  // 3800 / 100 = 16150 raw scale) — 16150 / 14800 × 100 ≈ 110. This keeps her genuinely top-tier
+  // (matches community consensus she's the strongest personal-power DPS in the game, per Prydwen/
+  // game8 build guides) without the base-stat-unit bug making her a 5x outlier no real enemy RES
+  // swing could ever overcome.
+  ['Cartethyia',    110, 25, 16],  // HP scaling + Erosion — totalMult is %HP here, NOT %ATK (see comment above)
   ['Augusta',       2800, 23, 15],  // Heavy ATK + Shield
   ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
   ['Luuk Herssen',  2400, 23, 16],  // Basic ATK chains
@@ -1192,7 +1209,13 @@ const CHARACTER_DATA = {
   // review — raised to 3500 to sit alongside the other T0 Main DPS (Yangyang: Xuanling 3600, Hiyuki 3400).
   ['Sigrika',       3500, 24, 16],  // Echo Skill + Heavy ATK Aero DPS, Rune consumption
   ['Qingxiao',      2900, 24, 17],  // Stance-builder into Ephemeral Transcendence burst
-  ['Jingran',       3000, 24, 15],  // HP-scaling Heavy ATK bursts, Yinghuo empowerment
+  // Fixed 2026-08-25: same unit bug as Cartethyia above (was 3000, an ATK%-scale number applied
+  // against his HP base -- baseHp 15375 vs baseAtk 313, ~49x larger). Rescaled by that same ratio
+  // (3000 / (15375/313) ≈ 61) so his real damage formula output (mDmg = baseHp * mult/100 * ...) lands
+  // in the same order of magnitude as other Main DPS instead of ~49x inflated. His kit/build is still
+  // "Unconfirmed" (unreleased, see his main CHARACTER_DATA entry) so this is a unit-conversion fix,
+  // not a verified tier placement -- revisit once his real build guide exists.
+  ['Jingran',       60, 24, 15],  // HP-scaling Heavy ATK bursts, Yinghuo empowerment — totalMult is %HP, NOT %ATK
   ["Yangyang: Xuanling", 3600, 23, 18],  // Azure/Feather stance swap, Havoc Bane self-buff — T0/T0 ceiling
   ['Hiyuki',        3400, 23, 17],  // Present/Foreclaimed Self, Iai burst finisher — best Glacio DPS
   ['Lucy',          2000, 23, 12],  // TCP/Root Access into enhanced Heavy + Ultimate

@@ -338,16 +338,28 @@ function generateCandidateTeams(pool, ownedWeaps) {
 // "any" -- the caller decides ownership mode, this function is pool-agnostic). ownedNames (a Set)
 // is used only to report how many of each candidate's 3 members are actually owned, so a caller
 // searching the full roster can still show that info without a second, separate pass.
-function pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLevel, teamIdx = 0, topN = 20) {
+function pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLevel, teamIdx = 0) {
   // Cap per-mainDps rather than taking a single flat top-N slice across all candidates: the
   // cheapScore used to rank candidates here is scoreTeamComposition, which is entirely enemy-blind
-  // (no RES/element awareness). A flat slice(0, topN) meant whichever DPS character generically
-  // scores highest crowds out every other DPS's candidates before the enemy-aware real calc below
-  // ever runs -- so the "Auto Team" result was effectively the same team regardless of which enemy
-  // was selected. Keeping a couple of candidates per distinct mainDps guarantees every DPS character
-  // in the pool gets a real (enemy RES-aware) shot at winning, so a target that resists the
-  // generically-best DPS's element can actually surface a different, better-suited team.
-  const perDpsCap = 2;
+  // (no RES/element awareness). Keeping a few candidates per distinct mainDps guarantees every DPS
+  // character in the pool gets a real (enemy RES-aware) shot at winning, so a target that resists
+  // the generically-best DPS's element can actually surface a different, better-suited team.
+  //
+  // A previous version of this function ALSO sliced the per-DPS-capped list down to one flat
+  // top-N (by the same enemy-blind cheapScore) before running the real calc, on top of this
+  // per-DPS cap -- meant to protect against evaluating too many candidates, but it re-introduced
+  // the exact bug the per-DPS cap exists to prevent, just one level up: verified against a concrete
+  // case, Aemeath's real best partner pairing (Lynae + Shorekeeper, real teamDps 61028, beating
+  // every other DPS tried including the generic favorite) correctly survived the per-DPS cap, but
+  // then got cut by the flat top-N slice because its enemy-blind cheapScore (419) happened to rank
+  // outside it globally -- so the search still landed on a worse team (54450) even though a
+  // genuinely better one had already been generated and just never got a real evaluation. A
+  // "guarantee one shot per element" patch on top of that only forwarded each element's cheap-score
+  // #1 combo, which for Aemeath's element (Denia + Shorekeeper, cheapScore 481) real-evaluated to
+  // 49143 -- worse than the Lynae pairing the flat slice had already discarded. Removed both layers:
+  // every candidate that survives the per-DPS cap now gets a real evaluation below, no further
+  // enemy-blind slicing on top of it.
+  const perDpsCap = 3;
   const sortedCandidates = generateCandidateTeams(pool, ownedWeaps).sort((a, b) => b.cheapScore - a.cheapScore);
   const byDps = new Map();
   for (const cand of sortedCandidates) {
@@ -356,31 +368,7 @@ function pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLeve
     list.push(cand);
     byDps.set(cand.dpsOverride, list);
   }
-  const candidates = [...byDps.values()].flat()
-    .sort((a, b) => b.cheapScore - a.cheapScore)
-    .slice(0, topN);
-  // The flat top-N above is ranked purely by cheapScore -- scoreTeamComposition, which knows
-  // nothing about any enemy's RES. Slicing to top-N on that alone means an off-meta DPS whose
-  // element the selected enemy is actually weak to never even reaches the real enemy-aware
-  // calcTeamStats call below if its generic synergy score didn't already put it in the top N --
-  // so the "enemy-aware" search could only ever re-confirm whichever team already looked best
-  // generically, regardless of which enemy (or even whether one) was selected. Guarantee each
-  // distinct main-DPS element gets at least one real shot against the enemy, in addition to the
-  // flat top-N, so a RES-favorable underdog can actually surface and win.
-  if (enemyEcho) {
-    const seenKeys = new Set(candidates.map(c => c.members.slice().sort().join('|')));
-    const bestPerElement = new Map();
-    for (const cand of sortedCandidates) {
-      const el = CHARACTER_DATA[cand.dpsOverride]?.element;
-      if (el && !bestPerElement.has(el)) bestPerElement.set(el, cand);
-    }
-    for (const cand of bestPerElement.values()) {
-      const key = cand.members.slice().sort().join('|');
-      if (seenKeys.has(key)) continue;
-      seenKeys.add(key);
-      candidates.push(cand);
-    }
-  }
+  const candidates = [...byDps.values()].flat();
   let best = null;
   for (const cand of candidates) {
     const slots = [...cand.members, null];
