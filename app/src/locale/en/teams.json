@@ -32,6 +32,7 @@
     "autoTeamAria": "Auto Team: pick and build the best 3-character team against the selected enemy",
     "autoTeamBusy": "Building…",
     "autoTeamNoResult": "Couldn't build a team from this pool — try a different character pool or check your collection has enough roles covered",
+    "autoTeamNoEnemy": "Select an enemy target first — Auto Team builds a team against a specific enemy's resistances",
     "autoTeamPoolAria": "Character pool to search for Auto Team",
     "autoTeamPoolOwned": "Owned only",
     "autoTeamPoolAny": "Any character",

@@ -32,6 +32,7 @@
     "autoTeamAria": "Équipe Auto : choisir et construire la meilleure équipe de 3 personnages contre l'ennemi sélectionné",
     "autoTeamBusy": "Construction…",
     "autoTeamNoResult": "Impossible de construire une équipe avec ce pool — essayez un autre pool de personnages ou vérifiez que votre collection couvre assez de rôles",
+    "autoTeamNoEnemy": "Sélectionnez d'abord un ennemi cible — Équipe Auto construit une équipe en fonction des résistances d'un ennemi précis",
     "autoTeamPoolAria": "Pool de personnages pour Équipe Auto",
     "autoTeamPoolOwned": "Possédés uniquement",
     "autoTeamPoolAny": "Tout personnage",

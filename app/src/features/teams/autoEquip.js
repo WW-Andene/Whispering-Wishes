@@ -348,8 +348,9 @@ function pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLeve
   // in the pool gets a real (enemy RES-aware) shot at winning, so a target that resists the
   // generically-best DPS's element can actually surface a different, better-suited team.
   const perDpsCap = 2;
+  const sortedCandidates = generateCandidateTeams(pool, ownedWeaps).sort((a, b) => b.cheapScore - a.cheapScore);
   const byDps = new Map();
-  for (const cand of generateCandidateTeams(pool, ownedWeaps).sort((a, b) => b.cheapScore - a.cheapScore)) {
+  for (const cand of sortedCandidates) {
     const list = byDps.get(cand.dpsOverride) || [];
     if (list.length >= perDpsCap) continue;
     list.push(cand);
@@ -358,6 +359,28 @@ function pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLeve
   const candidates = [...byDps.values()].flat()
     .sort((a, b) => b.cheapScore - a.cheapScore)
     .slice(0, topN);
+  // The flat top-N above is ranked purely by cheapScore -- scoreTeamComposition, which knows
+  // nothing about any enemy's RES. Slicing to top-N on that alone means an off-meta DPS whose
+  // element the selected enemy is actually weak to never even reaches the real enemy-aware
+  // calcTeamStats call below if its generic synergy score didn't already put it in the top N --
+  // so the "enemy-aware" search could only ever re-confirm whichever team already looked best
+  // generically, regardless of which enemy (or even whether one) was selected. Guarantee each
+  // distinct main-DPS element gets at least one real shot against the enemy, in addition to the
+  // flat top-N, so a RES-favorable underdog can actually surface and win.
+  if (enemyEcho) {
+    const seenKeys = new Set(candidates.map(c => c.members.slice().sort().join('|')));
+    const bestPerElement = new Map();
+    for (const cand of sortedCandidates) {
+      const el = CHARACTER_DATA[cand.dpsOverride]?.element;
+      if (el && !bestPerElement.has(el)) bestPerElement.set(el, cand);
+    }
+    for (const cand of bestPerElement.values()) {
+      const key = cand.members.slice().sort().join('|');
+      if (seenKeys.has(key)) continue;
+      seenKeys.add(key);
+      candidates.push(cand);
+    }
+  }
   let best = null;
   for (const cand of candidates) {
     const slots = [...cand.members, null];

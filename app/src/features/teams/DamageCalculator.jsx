@@ -120,6 +120,16 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       <button
         onClick={(e) => {
           e.stopPropagation();
+          // Auto Team's whole premise is picking a team suited to a SPECIFIC enemy's per-element
+          // RES (that's what pickBestTeamForEnemy actually optimizes for) -- with no enemy selected
+          // there's no RES data to differentiate candidates on, so it silently degraded to just
+          // re-confirming whichever team already scores highest on the enemy-blind heuristic, no
+          // matter which pool/context was chosen. Require a target so the button either does what
+          // its own label promises or explains why it didn't run, instead of quietly doing neither.
+          if (!enemyEcho) {
+            toast?.addToast?.(t('teams.damageCalc.autoTeamNoEnemy'), 'error');
+            return;
+          }
           setAutoTeamBusy(true);
           // Deferred so the busy state actually paints before the (synchronous, ~30-150ms)
           // search runs — pickBestTeamForEnemy builds and calc's several real candidate
@@ -146,7 +156,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         disabled={autoTeamBusy}
         className="action-btn flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-cyan-400/80 hover:text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
         aria-label={t('teams.damageCalc.autoTeamAria')}
-        title={t('teams.damageCalc.autoTeamAria')}
+        title={enemyEcho ? t('teams.damageCalc.autoTeamAria') : t('teams.damageCalc.autoTeamNoEnemy')}
       >
         <Users size={12} /> {autoTeamBusy ? t('teams.damageCalc.autoTeamBusy') : t('teams.damageCalc.autoTeam')}
       </button>
