@@ -8,6 +8,7 @@ import { AlertCircle } from 'lucide-react';
 // P12-05 audit fix: forward caught crashes to the optional external tracker.
 // No-op when no adapter is installed (see core/errorTracker.js).
 import { captureError } from '../../core/errorTracker.js';
+import { t } from '../../utils/i18n.js';
 
 // Error Boundary — catches crashes per tab so one broken tab doesn't kill the app
 class TabErrorBoundary extends React.Component {
@@ -37,18 +38,18 @@ class TabErrorBoundary extends React.Component {
             <div className="kuro-card-inner">
               <div className="kuro-body text-center py-8">
                 <AlertCircle size={32} className="mx-auto mb-3 text-red-400" />
-                <div className="text-white font-bold text-xl mb-1">Something went wrong</div>
-                <p className="text-gray-400 text-base mb-4">The {this.props.tabName || 'tab'} tab encountered an error.</p>
+                <div className="text-white font-bold text-xl mb-1">{t('errors.tabCrash.title')}</div>
+                <p className="text-gray-400 text-base mb-4">{t('errors.tabCrash.message', { tab: this.props.tabName || 'tab' })}</p>
                 <button
                   onClick={() => this.setState({ hasError: false, error: null })}
                   className="kuro-btn active-cyan text-base px-4 py-2"
-                  aria-label={`Reload the ${this.props.tabName || 'tab'} tab`}
+                  aria-label={t('errors.tabCrash.reloadAria', { tab: this.props.tabName || 'tab' })}
                 >
-                  ↻ Reload
+                  {t('errors.tabCrash.reload')}
                 </button>
                 {this.state.error && (
                   <details className="mt-3 text-left" open>
-                    <summary className="text-gray-400 text-sm cursor-pointer">Error details</summary>
+                    <summary className="text-gray-400 text-sm cursor-pointer">{t('errors.tabCrash.details')}</summary>
                     <pre className="mt-1 p-2 bg-black/50 rounded text-red-400 text-sm overflow-x-auto whitespace-pre-wrap">{this.state.error.message}{'\n'}{this.state.error.stack?.split('\n').slice(0, 5).join('\n')}</pre>
                   </details>
                 )}
@@ -64,7 +65,7 @@ class TabErrorBoundary extends React.Component {
 
 // Issue #147: Skeleton loading placeholder for tab transitions
 const TabLoadingSkeleton = () => (
-  <div className="kuro-calc space-y-3 tab-content animate-pulse" aria-label="Loading tab content" role="status">
+  <div className="kuro-calc space-y-3 tab-content animate-pulse" aria-label={t('errors.loading')} role="status">
     <div className="kuro-card">
       <div className="kuro-card-inner">
         <div className="kuro-body space-y-3 py-6">
@@ -86,7 +87,7 @@ const TabLoadingSkeleton = () => (
         </div>
       </div>
     </div>
-    <span className="sr-only">Loading...</span>
+    <span className="sr-only">{t('errors.loading')}</span>
   </div>
 );
 
@@ -110,15 +111,15 @@ class AppErrorBoundary extends React.Component {
           {/* §E10-ER-F3: Red border accent to distinguish app-level crash from tab-level */}
           <div style={{ textAlign: 'center', maxWidth: '420px', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 'var(--radius-xl)', padding: '2rem', background: 'rgba(239,68,68,0.05)' }}>
             <div style={{ fontSize: 48, marginBottom: 'var(--space-lg)', color: '#ef4444' }}>!</div>
-            <h1 style={{ fontSize: 'var(--font-2xl)', fontWeight: 700, marginBottom: 'var(--space-sm)' }}>Whispering Wishes crashed</h1>
-            <p style={{ color: '#9ca3af', fontSize: 'var(--font-md)', marginBottom: 'var(--space-xl)' }}>Something unexpected went wrong. Your data is safe in local storage.</p>
+            <h1 style={{ fontSize: 'var(--font-2xl)', fontWeight: 700, marginBottom: 'var(--space-sm)' }}>{t('errors.appCrash.title')}</h1>
+            <p style={{ color: '#9ca3af', fontSize: 'var(--font-md)', marginBottom: 'var(--space-xl)' }}>{t('errors.appCrash.message')}</p>
             <button
               onClick={() => this.setState({ hasError: false, error: null })}
               style={{ padding: 'var(--space-sm) var(--space-xl)', background: 'rgba(6,182,212,0.2)', border: '1px solid rgba(6,182,212,0.4)', color: '#22d3ee', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 'var(--font-md)', marginRight: 8, outline: 'none' }}
               onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(6,182,212,0.5)'; }}
               onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
             >
-              Try Again
+              {t('errors.appCrash.tryAgain')}
             </button>
             <button
               onClick={() => window.location.reload()}
@@ -126,12 +127,12 @@ class AppErrorBoundary extends React.Component {
               onFocus={(e) => { e.target.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.3)'; }}
               onBlur={(e) => { e.target.style.boxShadow = 'none'; }}
             >
-              Reload Page
+              {t('errors.appCrash.reloadPage')}
             </button>
             {this.state.error && (
               <details style={{ marginTop: 'var(--space-lg)', textAlign: 'left' }}>
-                <summary style={{ color: '#6b7280', fontSize: 'var(--font-base)', cursor: 'pointer' }}>Error details</summary>
-                <pre style={{ marginTop: 'var(--space-sm)', padding: 'var(--space-md)', background: 'rgba(0,0,0,0.5)', borderRadius: 'var(--radius-md)', color: '#f87171', fontSize: 'var(--font-sm)', overflow: 'auto', whiteSpace: 'pre-wrap' }}>{import.meta.env.DEV ? this.state.error.message : 'An unexpected error occurred.'}</pre>
+                <summary style={{ color: '#6b7280', fontSize: 'var(--font-base)', cursor: 'pointer' }}>{t('errors.appCrash.details')}</summary>
+                <pre style={{ marginTop: 'var(--space-sm)', padding: 'var(--space-md)', background: 'rgba(0,0,0,0.5)', borderRadius: 'var(--radius-md)', color: '#f87171', fontSize: 'var(--font-sm)', overflow: 'auto', whiteSpace: 'pre-wrap' }}>{import.meta.env.DEV ? this.state.error.message : t('errors.appCrash.genericMessage')}</pre>
               </details>
             )}
           </div>

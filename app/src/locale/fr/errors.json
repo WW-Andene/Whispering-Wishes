@@ -1,0 +1,18 @@
+{
+  "tabCrash": {
+    "title": "Une erreur est survenue",
+    "message": "L'onglet {{tab}} a rencontré une erreur.",
+    "reload": "↻ Recharger",
+    "reloadAria": "Recharger l'onglet {{tab}}",
+    "details": "Détails de l'erreur"
+  },
+  "appCrash": {
+    "title": "Whispering Wishes a planté",
+    "message": "Une erreur inattendue est survenue. Vos données sont en sécurité dans le stockage local.",
+    "tryAgain": "Réessayer",
+    "reloadPage": "Recharger la page",
+    "details": "Détails de l'erreur",
+    "genericMessage": "Une erreur inattendue s'est produite."
+  },
+  "loading": "Chargement..."
+}
