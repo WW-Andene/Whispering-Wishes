@@ -338,8 +338,24 @@ function generateCandidateTeams(pool, ownedWeaps) {
 // "any" -- the caller decides ownership mode, this function is pool-agnostic). ownedNames (a Set)
 // is used only to report how many of each candidate's 3 members are actually owned, so a caller
 // searching the full roster can still show that info without a second, separate pass.
-function pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLevel, teamIdx = 0, topN = 12) {
-  const candidates = generateCandidateTeams(pool, ownedWeaps)
+function pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLevel, teamIdx = 0, topN = 20) {
+  // Cap per-mainDps rather than taking a single flat top-N slice across all candidates: the
+  // cheapScore used to rank candidates here is scoreTeamComposition, which is entirely enemy-blind
+  // (no RES/element awareness). A flat slice(0, topN) meant whichever DPS character generically
+  // scores highest crowds out every other DPS's candidates before the enemy-aware real calc below
+  // ever runs -- so the "Auto Team" result was effectively the same team regardless of which enemy
+  // was selected. Keeping a couple of candidates per distinct mainDps guarantees every DPS character
+  // in the pool gets a real (enemy RES-aware) shot at winning, so a target that resists the
+  // generically-best DPS's element can actually surface a different, better-suited team.
+  const perDpsCap = 2;
+  const byDps = new Map();
+  for (const cand of generateCandidateTeams(pool, ownedWeaps).sort((a, b) => b.cheapScore - a.cheapScore)) {
+    const list = byDps.get(cand.dpsOverride) || [];
+    if (list.length >= perDpsCap) continue;
+    list.push(cand);
+    byDps.set(cand.dpsOverride, list);
+  }
+  const candidates = [...byDps.values()].flat()
     .sort((a, b) => b.cheapScore - a.cheapScore)
     .slice(0, topN);
   let best = null;

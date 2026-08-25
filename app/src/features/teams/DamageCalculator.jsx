@@ -101,10 +101,63 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     />
   );
 
+  // Shared by both the empty-team state (build a team from scratch) and the populated Team
+  // Overview header -- previously only rendered inside the populated branch below, so "Auto Team"
+  // was invisible until the player had already put at least one member in the slots by hand.
+  const autoTeamControls = (
+    <div className="flex items-center gap-1.5">
+      <select
+        value={autoTeamPool}
+        onClick={e => e.stopPropagation()}
+        onChange={e => setAutoTeamPool(e.target.value)}
+        className="text-2xs px-1 py-0.5 rounded bg-black/30 border border-[var(--border-medium)] text-gray-300"
+        aria-label={t('teams.damageCalc.autoTeamPoolAria')}
+        title={t('teams.damageCalc.autoTeamPoolAria')}
+      >
+        <option value="owned">{t('teams.damageCalc.autoTeamPoolOwned')}</option>
+        <option value="any">{t('teams.damageCalc.autoTeamPoolAny')}</option>
+      </select>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setAutoTeamBusy(true);
+          // Deferred so the busy state actually paints before the (synchronous, ~30-150ms)
+          // search runs — pickBestTeamForEnemy builds and calc's several real candidate
+          // teams against the current enemy, it's not instant like a single auto-equip call.
+          setTimeout(() => {
+            try {
+              const pool = autoTeamPool === 'owned' ? [...ownedNames] : RELEASE_ORDER.filter(n => !n.startsWith('Rover:'));
+              const best = pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLevel, state.activeTeamIndex);
+              if (!best) {
+                toast?.addToast?.(t('teams.damageCalc.autoTeamNoResult'), 'error');
+                return;
+              }
+              best.members.forEach((name, idx) => {
+                dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: idx, character: name });
+              });
+              dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: best.mainDps });
+              setTeamEquipment(prev => ({ ...prev, ...best.teamEquipment }));
+              haptic.success();
+            } finally {
+              setAutoTeamBusy(false);
+            }
+          }, 0);
+        }}
+        disabled={autoTeamBusy}
+        className="action-btn flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-cyan-400/80 hover:text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+        aria-label={t('teams.damageCalc.autoTeamAria')}
+        title={t('teams.damageCalc.autoTeamAria')}
+      >
+        <Users size={12} /> {autoTeamBusy ? t('teams.damageCalc.autoTeamBusy') : t('teams.damageCalc.autoTeam')}
+      </button>
+    </div>
+  );
+
   if (!stats) return (
     <>
       {enemyTargetCard}
       <Card><CardBody className="text-center py-6">
+        <div className="flex justify-center mb-3">{autoTeamControls}</div>
         <Users size={24} className="mx-auto mb-2 text-gray-500" />
         <p className="text-gray-400 text-sm">{t('teams.damageCalc.emptyState')}</p>
       </CardBody></Card>
@@ -122,50 +175,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setOverviewCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOverviewCollapsed(p => !p); } }} aria-expanded={!overviewCollapsed}>
           <CardHeader action={
             <div className="flex items-center gap-1.5">
-              <select
-                value={autoTeamPool}
-                onClick={e => e.stopPropagation()}
-                onChange={e => setAutoTeamPool(e.target.value)}
-                className="text-2xs px-1 py-0.5 rounded bg-black/30 border border-[var(--border-medium)] text-gray-300"
-                aria-label={t('teams.damageCalc.autoTeamPoolAria')}
-                title={t('teams.damageCalc.autoTeamPoolAria')}
-              >
-                <option value="owned">{t('teams.damageCalc.autoTeamPoolOwned')}</option>
-                <option value="any">{t('teams.damageCalc.autoTeamPoolAny')}</option>
-              </select>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setAutoTeamBusy(true);
-                  // Deferred so the busy state actually paints before the (synchronous, ~30-150ms)
-                  // search runs — pickBestTeamForEnemy builds and calc's several real candidate
-                  // teams against the current enemy, it's not instant like a single auto-equip call.
-                  setTimeout(() => {
-                    try {
-                      const pool = autoTeamPool === 'owned' ? [...ownedNames] : RELEASE_ORDER.filter(n => !n.startsWith('Rover:'));
-                      const best = pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLevel, state.activeTeamIndex);
-                      if (!best) {
-                        toast?.addToast?.(t('teams.damageCalc.autoTeamNoResult'), 'error');
-                        return;
-                      }
-                      best.members.forEach((name, idx) => {
-                        dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: idx, character: name });
-                      });
-                      dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: best.mainDps });
-                      setTeamEquipment(prev => ({ ...prev, ...best.teamEquipment }));
-                      haptic.success();
-                    } finally {
-                      setAutoTeamBusy(false);
-                    }
-                  }, 0);
-                }}
-                disabled={autoTeamBusy}
-                className="action-btn flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-cyan-400/80 hover:text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                aria-label={t('teams.damageCalc.autoTeamAria')}
-                title={t('teams.damageCalc.autoTeamAria')}
-              >
-                <Users size={12} /> {autoTeamBusy ? t('teams.damageCalc.autoTeamBusy') : t('teams.damageCalc.autoTeam')}
-              </button>
+              {autoTeamControls}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
