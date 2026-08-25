@@ -49,11 +49,23 @@ const hasNativeTapBridge = () => typeof window !== 'undefined' && typeof window.
 // the Vibration API has no effect at all on iOS Safari/PWA (Apple has never
 // implemented it) — on iOS this silently no-ops, which isn't fixable from web
 // code; only a native iOS build (not planned yet) could address that.
+// webVibrateTick: fires vibrate(1) then cancels it on the next frame
+// (vibrate(0)) instead of letting a fixed-duration pulse run its course.
+// Requested test: browsers clamp very short vibrate() durations up to some
+// internal minimum, which is why plain vibrate(10-20) reads as a soft buzz
+// rather than a tick — cutting the pulse short via a second vibrate(0) call
+// before that minimum is reached produces a shorter, sharper actual motor
+// pulse than any duration argument alone can.
+const webVibrateTick = () => {
+  navigator?.vibrate?.(1);
+  requestAnimationFrame(() => navigator?.vibrate?.(0));
+};
+
 const haptic = {
   light: () => {
     if (!hapticsAllowed()) return;
     if (hasNativeTapBridge()) { window.AndroidHaptics.tap(); return; }
-    isNative() ? GlassHaptics.light().catch(() => {}) : navigator?.vibrate?.(20);
+    isNative() ? GlassHaptics.light().catch(() => {}) : webVibrateTick();
   },
   medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : navigator?.vibrate?.(35); },
   heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : navigator?.vibrate?.(60); },
