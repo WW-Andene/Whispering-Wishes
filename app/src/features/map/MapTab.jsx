@@ -2803,7 +2803,9 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         </div>
       </FocusTrapModal>
       <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + headerPadding}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
+        {/* -12: .tab-content (kuro.css) adds its own padding-bottom: 12px below this card, which
+            must be subtracted here too or the card overflows past the nav by that much. */}
+        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + headerPadding + 12}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
           <div className="kuro-card-inner" style={{ position: 'relative', height: '100%' }}>
             <div
               ref={containerRef}
