@@ -56,25 +56,22 @@ const hasNativeTapBridge = () => typeof window !== 'undefined' && typeof window.
 // rather than a tick — cutting the pulse short via a second vibrate(0) call
 // before that minimum is reached produces a shorter, sharper actual motor
 // pulse than any duration argument alone can.
-// frames=1: cancel on the very next frame (~16ms) — the sharpest possible
-// pulse, used for "light". More frames let the motor spin up further before
-// the cancel lands, giving medium/heavy more felt weight while still cutting
-// the tail short rather than letting a fixed-duration pulse ring out.
-const webVibrateTick = (frames = 1) => {
-  navigator?.vibrate?.(1);
-  let n = frames;
-  const step = () => { if (--n <= 0) navigator?.vibrate?.(0); else requestAnimationFrame(step); };
-  requestAnimationFrame(step);
+// Fire a duration then immediately cancel it with vibrate(0), synchronously
+// (no requestAnimationFrame delay) — cuts the motor pulse short right after
+// it starts rather than letting the full duration ring out.
+const webVibrateTick = (ms = 10) => {
+  navigator?.vibrate?.(ms);
+  navigator?.vibrate?.(0);
 };
 
 const haptic = {
   light: () => {
     if (!hapticsAllowed()) return;
     if (hasNativeTapBridge()) { window.AndroidHaptics.tap(); return; }
-    isNative() ? GlassHaptics.light().catch(() => {}) : webVibrateTick(1);
+    isNative() ? GlassHaptics.light().catch(() => {}) : webVibrateTick(10);
   },
-  medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : webVibrateTick(2); },
-  heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : webVibrateTick(4); },
+  medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : webVibrateTick(20); },
+  heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : webVibrateTick(35); },
   success: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.success().catch(() => {}) : navigator?.vibrate?.([20, 60, 20]); },
   warning: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.warning().catch(() => {}) : navigator?.vibrate?.([35, 40, 35]); },
   error: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.error().catch(() => {}) : navigator?.vibrate?.([60, 50, 90]); },
