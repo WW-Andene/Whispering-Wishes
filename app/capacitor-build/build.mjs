@@ -56,8 +56,14 @@ if (!HOST_URL) {
   process.exit(1);
 }
 
-// The four directories excluded from the native bundle — see file header.
-const EXCLUDED_DIRS = ['map-tiles', 'portraits', 'animated-bg', 'spine'];
+// Directories excluded from the native bundle — see file header. `banners`
+// (character/weapon convene art) and `banner-history` (version banner
+// archive) were missing from this list despite the file header/
+// CAPACITOR_APP.md documenting a ~7MB native bundle: together they're
+// ~176MB, which is why a real debug APK built from this script came out at
+// ~226MB instead. Same treatment as the other four: redirected to the
+// hosted deployment via the sw.js patch below, not bundled locally.
+const EXCLUDED_DIRS = ['map-tiles', 'portraits', 'animated-bg', 'spine', 'banners', 'banner-history'];
 
 console.log('Building web bundle...');
 execSync('npm run build', { cwd: APP_ROOT, stdio: 'inherit', env: { ...process.env, VITE_API_BASE_URL: HOST_URL } });
