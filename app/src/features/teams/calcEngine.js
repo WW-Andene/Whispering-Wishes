@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { ECHO_SKILL_BUFFS } from '../../data/echoes.js';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, CHARACTER_ROTATIONS } from '../../data/characters.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 
 // ── Constants (named, not magic) ──
@@ -55,31 +55,43 @@ export const ER_THRESHOLD_SUB_DPS = 130;   // off-field Sub-DPS: less passive en
 export const ER_THRESHOLD_STANDARD = 140;  // Support/other roles below the 175-cost healer cutoff
 export const ER_THRESHOLD_HEALER = 140;    // ER threshold for 175-cost healers
 
-// Echo main stat values by cost tier
+// Echo main stat values by cost tier — rarity-5, max-level (the endgame BiS assumption this
+// calculator targets) roll ceilings, sourced from wutheringwaves.fandom.com/wiki/Echo/Stats §
+// "Mainstats" (fetched 2026-08-25). DEF% is deliberately rolled higher than ATK%/HP% at every
+// tier to compensate for it being the weaker stat, and 1-cost HP% is rolled higher than its own
+// ATK%/DEF% — both real, confirmed asymmetries, not typos.
 export const ECHO_MAIN_STAT_VALUES = {
-  4: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
-  3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 30, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
-  1: { 'ATK%': 18, 'HP%': 18, 'DEF%': 18 },
+  4: { 'ATK%': 33, 'HP%': 33, 'DEF%': 41.5, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
+  3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 38, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
+  1: { 'ATK%': 18, 'HP%': 22.8, 'DEF%': 18 },
 };
 
-// Echo substat values
+// Echo substat values — probability-weighted average of each stat's real roll grades, using
+// Kuro's own KR-law-mandated disclosed per-grade roll chances (source:
+// wutheringwaves.fandom.com/wiki/Echo/Stats § "Detailed substat values distribution", citing
+// wutheringwaves.kurogames.com's official disclosure; fetched 2026-08-25). Crit Rate/Crit DMG
+// use their own front-loaded chances [23.33%, 23.33%, 23.33%, 8%, 8%, 8%, 3%, 3%]; all other
+// 8-grade substats (ATK%/HP%/DEF%/ER/DMG bonuses/flat HP) share chances [6.80%, 7.77%, 20.39%,
+// 24.27%, 17.48%, 14.56%, 5.83%, 2.91%]. Each value below is Σ(chance_i × grade_i)/100 for that
+// stat's grade list, not a flat min/mid/max snapshot.
 export const ECHO_SUB_STAT_VALUES = {
-  'ATK%': 9, 'HP%': 9, 'DEF%': 9,
-  'Crit Rate': 7.5, 'Crit DMG': 15,
-  'Energy Regen': 8,
-  'Basic ATK DMG': 9, 'Heavy ATK DMG': 9,
-  'Resonance Skill DMG': 9, 'Resonance Liberation DMG': 9,
+  'ATK%': 8.77, 'HP%': 8.77, 'DEF%': 11.09,
+  'Crit Rate': 7.53, 'Crit DMG': 15.06,
+  'Energy Regen': 9.36,
+  'Basic ATK DMG': 8.77, 'Heavy ATK DMG': 8.77,
+  'Resonance Skill DMG': 8.77, 'Resonance Liberation DMG': 8.77,
 };
 
-// Flat echo substat max-roll values (in raw stat points, NOT %). Sourced from
-// prydwen.gg's Echo Stats guide (https://www.prydwen.gg/wuthering-waves/guides/echo-stats,
-// fetched 2026-08-18): substat roll ranges are ATK 30-60, HP 320-580, DEF 40-70 — using the
-// highest roll to match the convention of the % table above. Unlike the % substats, these
-// can't be looked up context-free: they need the wearer's own base ATK/HP/DEF to convert into
-// an equivalent %-of-base contribution (see applyEchoStats below), so they're kept in a
-// separate table rather than merged into ECHO_SUB_STAT_VALUES.
+// Flat echo substat values (in raw stat points, NOT %) — probability-weighted average of the
+// real roll grades, same official source/date as ECHO_SUB_STAT_VALUES above. HP has 8 grades
+// (320-580) using the same 8-grade chance table as the % substats; ATK and DEF have only 4
+// grades with their own disclosed chances (ATK: [6.80%, 52.43%, 37.86%, 2.91%], DEF: [14.56%,
+// 44.66%, 32.04%, 8.74%]). Unlike the % substats, these can't be looked up context-free: they
+// need the wearer's own base ATK/HP/DEF to convert into an equivalent %-of-base contribution
+// (see applyEchoStats below), so they're kept in a separate table rather than merged into
+// ECHO_SUB_STAT_VALUES.
 export const ECHO_FLAT_SUB_STAT_VALUES = {
-  'ATK': 60, 'HP': 580, 'DEF': 70,
+  'ATK': 43.7, 'HP': 438.3, 'DEF': 53.5,
 };
 
 // ── Stat accumulator: replaces 50+ loose variables per tier ──
@@ -250,7 +262,17 @@ export function applyEchoStats(stats, echoes, element, scaling, baseStats) {
       else if (echo.mainStat === 'Resonance Skill DMG') stats.skillDmg += val;
       else if (echo.mainStat === 'Resonance Liberation DMG') stats.libDmg += val;
     }
-    (echo.substats || []).forEach(sub => {
+    // A real echo can never carry the same substat type twice (the game enforces 5 DISTINCT
+    // rolls) or more than 5 substats total, but nothing upstream of this function actually
+    // guarantees that -- the UI's toggle-button substat picker and auto-equip's own hardcoded
+    // templates both happen to keep this true today, but imported/restored save data (App.jsx's
+    // backup-restore path writes teamEquipment from a user-supplied JSON with only generic
+    // sanitization, no echo-specific validation) could still hand this function something
+    // malformed. Guard here, at the point of use, rather than trusting every possible caller.
+    const seenSubs = new Set();
+    (echo.substats || []).slice(0, 5).forEach(sub => {
+      if (seenSubs.has(sub)) return;
+      seenSubs.add(sub);
       if (sub === 'ATK' || sub === 'HP' || sub === 'DEF') {
         stats.atkPct += flatSubToPct(sub, scaling, baseStats);
         return;
@@ -260,7 +282,10 @@ export function applyEchoStats(stats, echoes, element, scaling, baseStats) {
       if (sub === scalingStat) stats.atkPct += val;
       else if (sub === 'Crit Rate') stats.cr += val;
       else if (sub === 'Crit DMG') stats.cd += val;
+      else if (sub === 'Basic ATK DMG') stats.basicDmg += val;
+      else if (sub === 'Heavy ATK DMG') stats.heavyDmg += val;
       else if (sub === 'Resonance Skill DMG') stats.skillDmg += val;
+      else if (sub === 'Resonance Liberation DMG') stats.libDmg += val;
       else if (sub === 'Energy Regen') { /* tracked separately */ }
     });
   });
@@ -591,6 +616,86 @@ export function universalStatApplies(condition, targetElementLower) {
 // truth so the two can never drift the way they did before this was extracted. ──
 export const TIER_SCORES = { 'T0': 40, 'T0.5': 35, 'T1': 28, 'T1.5': 22, 'T2': 16, 'T3': 8, 'T4': 0 };
 
+// ── Real per-type damage-share weighting ──
+// scoreTeamComposition used to treat every type-specific DMG buff (Basic/Heavy/Skill/Liberation/
+// Echo/Coordinated ATK) as equally valuable once a DPS's dmgFocus list even contained that type at
+// all — a binary "applies or doesn't" gate with no sense of which type is actually DOMINANT in that
+// character's real rotation. E.g. a +50% Heavy ATK DMG buff and a +25% Liberation DMG buff were
+// scored as comparably valuable for Augusta regardless of which type she actually deals more damage
+// through. Fixes that using CHARACTER_ROTATIONS (a real, ordered per-character move sequence, where
+// each entry already carries a `type` — and, when the actual damage type differs from the INPUT
+// button pressed, e.g. Augusta's Liberation-button "Sword of Eternal Oath" whose own note says
+// "counted as Heavy ATK DMG", that reclassification is honored over the raw type tag).
+// A naive first attempt summed SKILL_MULTIPLIERS' raw per-cast % values instead, but that wrongly
+// treats a single Liberation cast (~once per rotation) as equal to one Heavy ATK combo repeated
+// many times per rotation — CHARACTER_ROTATIONS' real move-count-per-loop is the correct signal.
+const NOTE_OVERRIDE_RE = /counted as ([\w][\w\s+-]*?) DMG/i;
+function noteOverrideFocus(note) {
+  if (!note) return null;
+  const m = note.match(NOTE_OVERRIDE_RE);
+  if (!m) return null;
+  for (const part of m[1].toLowerCase().split('+').map(p => p.trim())) {
+    if (part.includes('basic')) return 'Basic ATK';
+    if (part.includes('heavy')) return 'Heavy ATK';
+    if (part.includes('liberation')) return 'Liberation';
+    if (part.includes('echo')) return 'Echo';
+    if (part.includes('coordinated')) return 'Coordinated ATK';
+    if (part.includes('skill')) return 'Skill'; // catches "Resonance Skill DMG" and "Skill DMG"
+  }
+  return null; // e.g. "Spectro Frazzle DMG" — a real effect, but not one of the 6 dmgFocus buckets
+}
+const ROTATION_RAW_TYPE_TO_FOCUS = {
+  'Basic ATK': 'Basic ATK', 'Mid-air': 'Basic ATK', 'Charged ATK': 'Basic ATK',
+  'Heavy ATK': 'Heavy ATK', 'Skill': 'Skill', 'Liberation': 'Liberation',
+  'Echo': 'Echo', 'Coordinated ATK': 'Coordinated ATK',
+  // Intro/Outro/Forte excluded by default — Forte entries are usually a multi-hit continuation of
+  // one empowered combo string with no type of their own; only their FIRST hit's note typically
+  // restates a "counted as X DMG" override (see the Forte-continuation handling below), and
+  // Intro/Outro are one-off utility casts, not a repeated rotation-damage type.
+};
+const damageTypeShareCache = new Map();
+// Real per-type damage share for a character, derived from counting how many times each real
+// damage type appears in one full CHARACTER_ROTATIONS loop. Returns null (not an empty object) for
+// any character without rotation data, so callers can cleanly fall back to the old flat-equal
+// behavior instead of dividing by a zero-length share map.
+export function computeDamageTypeShares(name) {
+  if (damageTypeShareCache.has(name)) return damageTypeShareCache.get(name);
+  const rotation = CHARACTER_ROTATIONS[name];
+  let result = null;
+  if (rotation) {
+    const counts = {};
+    let lastForteFocus = null;
+    rotation.forEach(entry => {
+      const override = noteOverrideFocus(entry.note);
+      let focus = override || ROTATION_RAW_TYPE_TO_FOCUS[entry.type];
+      if (!focus && entry.type === 'Forte' && lastForteFocus) focus = lastForteFocus;
+      lastForteFocus = entry.type === 'Forte' ? (override || lastForteFocus) : null;
+      if (!focus) return;
+      counts[focus] = (counts[focus] || 0) + 1;
+    });
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    if (total > 0) {
+      result = {};
+      for (const [k, v] of Object.entries(counts)) result[k] = v / total;
+    }
+  }
+  damageTypeShareCache.set(name, result);
+  return result;
+}
+const TYPE_STAT_TO_FOCUS = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', libDmg: 'Liberation', echoDmg: 'Echo', coordDmg: 'Coordinated ATK', skillDmg: 'Skill' };
+// Converts a real share into a multiplier calibrated against the OLD flat-equal assumption, so a
+// character with no share data (or a type whose real share happens to exactly equal "1 divided by
+// however many types they qualify for") is completely unaffected — only a genuinely dominant or
+// genuinely minor type moves score up or down from where it used to sit.
+function typeShareMultiplier(stat, dpsName) {
+  const focus = TYPE_STAT_TO_FOCUS[stat];
+  if (!focus) return 1;
+  const shares = computeDamageTypeShares(dpsName);
+  if (!shares || shares[focus] == null) return 1;
+  const qualifyingTypeCount = Object.keys(shares).length;
+  return shares[focus] * qualifyingTypeCount;
+}
+
 // ── Mechanic-grounded synergy uplift: replaces flat "+8 points for a deepen buff, +6 for elemDmg"
 // pattern-matching with an estimate of what each buff/debuff actually contributes to DPS output,
 // using the same multiplicative bracket structure calcDmgBonus/calcAvgCrit already model. This is
@@ -661,7 +766,7 @@ const UPLIFT_TO_SCORE = 2.5;
 // carry, so any candidate team built around a Sub DPS (or other off-role character) run as a
 // realistic/overused hypercarry — a genuinely common way these are actually played — scored with NO
 // DPS-power component at all, understating it versus a canonical Main-DPS-led team of equal quality.
-export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverride) {
+export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverride, enemyResMap = null) {
   let score = 0;
   const roles = members.map(m => CHARACTER_DATA[m]?.role).filter(Boolean);
   const tags = [];
@@ -688,10 +793,31 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
   // not a mistake, so it's surfaced as a tag rather than hidden or penalized.
   if (mainDps && mainDps !== roleMainDps) tags.push('Hypercarry');
   if (mainDps) {
-    // Main DPS totalMult currently spans ~2200 (Lingyang) to 3800 (Aemeath) across the roster.
-    // Min-max normalize against that observed range so the top of the meta still differentiates
-    // (a flat divisor saturates and makes most current-meta DPS score identically).
-    const dpsMult = CHARACTER_DATA[mainDps]?.totalMult || 0;
+    // Main DPS totalMult currently spans ~2200 (Lingyang) to 3800 (Aemeath) across the roster --
+    // but that range only holds for ATK-scaling DPS. totalMult is "% of the character's own scaling
+    // stat" (calcTeamStats.js: mDmg = baseStat * mult/100 * ...), and an HP-scaling DPS's baseStat
+    // (Cartethyia: baseHp 14800) is ~35x an ATK-scaling DPS's baseAtk (~350-460), so their totalMult
+    // is calibrated on a completely different scale (Cartethyia: 110, not 2200-3800) to produce a
+    // comparable real damage number. Reading it as a raw 2200-3800-range value here would have
+    // scored every HP/DEF-scaling DPS as ~0 (clamped) regardless of how strong they actually are.
+    // Convert to an ATK-equivalent mult first (raw scaling-stat output ÷ a typical 5★ DPS baseAtk)
+    // so this stays comparable across ATK/HP/DEF scalers before applying the existing calibration.
+    const mainDpsD = CHARACTER_DATA[mainDps];
+    const scalingBase = mainDpsD?.statScaling === 'HP' ? mainDpsD?.baseHp
+      : mainDpsD?.statScaling === 'DEF' ? mainDpsD?.baseDef
+      : mainDpsD?.baseAtk;
+    const REFERENCE_BASE_ATK = 400; // typical 5★ Main DPS baseAtk (observed range ~375-460)
+    const rawMult = mainDpsD?.totalMult || 0;
+    // scalingBase × rawMult is the character's real raw output scale (calcTeamStats.js's mDmg
+    // formula) -- for an HP/DEF scaler, convert it back to "what totalMult would read as if this
+    // were an ATK scaler with REFERENCE_BASE_ATK", the unit the 2000-3800 calibration below expects.
+    // ATK scalers are left as their raw totalMult, unchanged from before this fix, since their own
+    // baseAtk already sits close enough to REFERENCE_BASE_ATK that the existing calibration was
+    // tuned against their real totalMult values directly.
+    const isAltScaling = mainDpsD?.statScaling === 'HP' || mainDpsD?.statScaling === 'DEF';
+    const dpsMult = (isAltScaling && scalingBase) ? rawMult * (scalingBase / REFERENCE_BASE_ATK) : rawMult;
+    // Min-max normalize against that observed ATK-equivalent range so the top of the meta still
+    // differentiates (a flat divisor saturates and makes most current-meta DPS score identically).
     let dpsScore = Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
     const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
     // A Liberation-focused DPS with a 175-Energy cost (calcEnergyCycles' own cutoff for the harder ER
@@ -701,8 +827,14 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // rather than only ever discounting OTHER members' output and treating the DPS's own energy cost
     // as free.
     if (dpsFocus.includes('Liberation') && (CHARACTER_DATA[mainDps]?.maxEnergy || 0) >= 175) dpsScore *= 0.85;
-    score += dpsScore;
     const dpsEl = (CHARACTER_DATA[mainDps]?.element || '').toLowerCase();
+    // Without a selected enemy this stays a pure enemy-blind synergy score, same as before. With one,
+    // fold in the mainDps's element RES against that specific enemy (same calcResMult the real damage
+    // calc uses, and the same "no data -> 10%" fallback calcTeamStats.js's getEnemyRes uses) so the
+    // list this powers (TeamsTab's "Team Suggestions" card) actually reorders per-enemy instead of
+    // always surfacing the same generically-strongest team regardless of which target is selected.
+    if (enemyResMap) dpsScore *= calcResMult(enemyResMap[dpsEl] ?? 10, 0);
+    score += dpsScore;
     // Compare a buff/support's uptime against the DPS's actual on-field window, not the whole
     // rotation — a buff sitting on them while off-field does nothing. Falls back to rotTime only
     // when onField isn't tracked for this character.
@@ -748,7 +880,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       if (!buffApplies(b)) return;
       const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField);
       if (uplift <= 0) return;
-      score += uplift * UPLIFT_TO_SCORE;
+      score += uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
       if (b.stat === 'deepen' || b.stat === 'offTune') tags.push('Deepen');
       else if (b.stat === 'basicDmg') tags.push('ATK Amp');
       else if (b.stat === 'heavyDmg') tags.push('Heavy Amp');
@@ -768,6 +900,15 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       const bt = CHAR_BUFF_TABLE[m];
       if (bt) {
         (bt.outroBuffs || []).forEach(scoreBuff);
+        // selfBuffs with target:'team' are a real, deliberate data convention (see Sigrika's Blessing
+        // of Runes — "+48% Aero DMG to whichever Resonator is active", explicitly NOT self-only despite
+        // living in the selfBuffs array — and Rover: Electro's Overshock team ATK buff) for a passive,
+        // always-on team-wide effect that isn't tied to an outro/Liberation trigger. This loop only
+        // ever read outroBuffs/libBuffs/debuffs from a teammate, so any character whose real team
+        // contribution is modeled this way was scored as if that buff didn't exist at all when being
+        // evaluated as a partner for someone else. True self-only entries (target:'self') are correctly
+        // still skipped here — only the small number of genuinely team-scoped selfBuffs qualify.
+        (bt.selfBuffs || []).forEach(b => { if (b.target === 'team') scoreBuff(b); });
         // Liberation-triggered team/next buffs (Verina/Shorekeeper/Baizhi-style healers/supports).
         // High-cost (175 Energy) Liberation-reliant supports need real ER investment to sustain uptime
         // that a generic roster-suggestion context can't assume the player has built — 175 is the same
@@ -780,7 +921,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
           if (b.target !== 'team' && b.target !== 'next') return;
           if (!buffApplies(b)) return;
           const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField) * erDiscount;
-          if (uplift > 0) score += uplift * UPLIFT_TO_SCORE;
+          if (uplift > 0) score += uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
         });
         (bt.debuffs || []).forEach(db => {
           if (db.stat === 'defShred' || db.stat === 'resShred') {
@@ -792,7 +933,24 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
           // 'deepen'/'offTune' as a debuff stat (enemy DMG Taken, e.g. Galbrena's Afterflame) is a
           // damage multiplier just like the buff-side 'deepen' — same off-element gate applies (a
           // debuff condition can name a specific element/mechanic just as easily as a buff's can).
-          if (db.stat === 'deepen' || db.stat === 'offTune') { if (deepenBuffApplies(db)) { const u = estimateBuffUplift('deepen', db.value); if (u > 0) score += u * UPLIFT_TO_SCORE; } }
+          // Unlike outroBuffs/libBuffs above, this was given zero uptime/reliability discount at
+          // all — Galbrena's Afterflame ("+1.5%/stack DMG Taken... while Galbrena is in Demon
+          // Hypostasis, up to 60%") requires HER OWN sustained on-field engagement to generate and
+          // hold, which she can't realistically get while benched as a suggested teammate for a
+          // different headline DPS (Augusta). Uncapped, this alone (150 score pts) was enough to
+          // rank Galbrena #1 above every one of Augusta's real curated partners, and to wrongly
+          // earn the "Dual DPS" tag instead of the "Redundant DPS" penalty that check exists
+          // specifically to catch (score > scoreBeforeMember only looked true because of this).
+          // Same self-state-dependency logic as the ER-uptime/echo-set-potential discounts already
+          // established elsewhere in this function: discount a second Main DPS's own state-gated
+          // debuff, since a benched, non-headline Main DPS's on-field time can't be assumed.
+          if (db.stat === 'deepen' || db.stat === 'offTune') {
+            if (deepenBuffApplies(db)) {
+              const selfStateDiscount = (CHARACTER_DATA[m]?.role === 'Main DPS' && m !== mainDps) ? 0.35 : 1;
+              const u = estimateBuffUplift('deepen', db.value) * selfStateDiscount;
+              if (u > 0) score += u * UPLIFT_TO_SCORE;
+            }
+          }
         });
         // Healer/support team-wide echo-set potential (Rejuvenating Glow, Halo of Starry Radiance, ...):
         // TEAM_SET_BUFFS is only ever applied in calcTeamStats.js for a team the player has ALREADY

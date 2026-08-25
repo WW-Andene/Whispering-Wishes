@@ -34,7 +34,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   theme: 'default',
   headerBg: null,
   navBg: null,
-  appBg: { type: 'other', id: 'log-2-0', url: 'https://i.ibb.co/Kc8q8mYt/Log-2-0.jpg', objectPosition: '50% 50%' },
+  appBg: { type: 'other', id: 'log-2-0', url: './Background/Kc8q8mYt-Log-2-0.jpg', objectPosition: '50% 50%' },
   dyslexicFont: false,
   colorBlindMode: false,
 });

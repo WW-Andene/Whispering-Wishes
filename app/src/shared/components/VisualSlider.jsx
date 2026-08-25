@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { memo } from 'react';
+import { t } from '../../utils/i18n.js';
 
 // Visual slider group — eliminates ~286 lines of duplication across admin modal + mini window
 const VisualSliderGroup = memo(({ title, color, sliders, visualSettings, saveVisualSettings, compact = false, directionControl = null }) => {
@@ -31,8 +32,8 @@ const VisualSliderGroup = memo(({ title, color, sliders, visualSettings, saveVis
         <h4 className={`${c.text} text-sm font-medium uppercase tracking-wider`}>{title}</h4>
         {directionControl && (
           <div className="flex gap-1 mb-1.5">
-            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'top' })} className={`flex-1 py-1 rounded text-sm ${visualSettings[directionControl.key] === 'top' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={`Set ${directionControl.key} direction to top`} aria-pressed={visualSettings[directionControl.key] === 'top'}>↑ Top</button>
-            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'bottom' })} className={`flex-1 py-1 rounded text-sm ${visualSettings[directionControl.key] === 'bottom' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={`Set ${directionControl.key} direction to bottom`} aria-pressed={visualSettings[directionControl.key] === 'bottom'}>↓ Bottom</button>
+            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'top' })} className={`flex-1 py-1 rounded text-sm ${visualSettings[directionControl.key] === 'top' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={t('common.visualSlider.setDirectionTopAria', { key: directionControl.key })} aria-pressed={visualSettings[directionControl.key] === 'top'}>{t('common.visualSlider.top')}</button>
+            <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'bottom' })} className={`flex-1 py-1 rounded text-sm ${visualSettings[directionControl.key] === 'bottom' ? `${c.activeBg} ${c.text}` : 'bg-neutral-700 text-gray-500'}`} aria-label={t('common.visualSlider.setDirectionBottomAria', { key: directionControl.key })} aria-pressed={visualSettings[directionControl.key] === 'bottom'}>{t('common.visualSlider.bottom')}</button>
           </div>
         )}
         <div className="space-y-1.5">{sliders.map(renderSlider)}</div>
@@ -47,12 +48,12 @@ const VisualSliderGroup = memo(({ title, color, sliders, visualSettings, saveVis
         <div className="space-y-3 mb-3">
           <div>
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-300">Fade Direction</span>
-              <span className={c.text}>{visualSettings[directionControl.key] === 'top' ? '↑ Top' : '↓ Bottom'}</span>
+              <span className="text-gray-300">{t('common.visualSlider.fadeDirection')}</span>
+              <span className={c.text}>{visualSettings[directionControl.key] === 'top' ? t('common.visualSlider.top') : t('common.visualSlider.bottom')}</span>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'top' })} className={`flex-1 py-1.5 rounded text-sm transition-all ${visualSettings[directionControl.key] === 'top' ? `${c.activeBg} ${c.text} border ${c.activeBorder}` : 'bg-neutral-700 text-gray-400'}`}>↑ Fade to Top</button>
-              <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'bottom' })} className={`flex-1 py-1.5 rounded text-sm transition-all ${visualSettings[directionControl.key] === 'bottom' ? `${c.activeBg} ${c.text} border ${c.activeBorder}` : 'bg-neutral-700 text-gray-400'}`}>↓ Fade to Bottom</button>
+              <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'top' })} className={`flex-1 py-1.5 rounded text-sm transition-all ${visualSettings[directionControl.key] === 'top' ? `${c.activeBg} ${c.text} border ${c.activeBorder}` : 'bg-neutral-700 text-gray-400'}`}>{t('common.visualSlider.fadeToTop')}</button>
+              <button onClick={() => saveVisualSettings({ ...visualSettings, [directionControl.key]: 'bottom' })} className={`flex-1 py-1.5 rounded text-sm transition-all ${visualSettings[directionControl.key] === 'bottom' ? `${c.activeBg} ${c.text} border ${c.activeBorder}` : 'bg-neutral-700 text-gray-400'}`}>{t('common.visualSlider.fadeToBottom')}</button>
             </div>
           </div>
         </div>

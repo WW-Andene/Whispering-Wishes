@@ -136,7 +136,7 @@ function AchievementsTool({ onClose }) {
           </div>
           <p className="text-xs text-gray-400 mt-0.5">{a.desc}</p>
           {isFiltering && (
-            <p className="text-[10px] text-gray-500 mt-1">{s?.name} · {t('analytics.achievements.versionShort', { version: a.version })}</p>
+            <p className="text-[8px] text-gray-500 mt-1">{s?.name} · {t('analytics.achievements.versionShort', { version: a.version })}</p>
           )}
         </div>
       </div>
@@ -227,7 +227,7 @@ function AchievementsTool({ onClose }) {
                       {s.icon && <img src={s.icon} alt="" className="w-6 h-6 flex-shrink-0" loading="lazy" />}
                       {s.name}
                     </span>
-                    <span className="text-[10px] text-gray-500 flex-shrink-0">{s.category}</span>
+                    <span className="text-[8px] text-gray-500 flex-shrink-0">{s.category}</span>
                   </div>
                   <div className="flex items-center justify-between text-xs text-gray-400 mt-1">
                     <span>{formatNumber(p.doneCount)} / {formatNumber(p.total)}</span>

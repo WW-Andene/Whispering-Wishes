@@ -42,6 +42,17 @@ function resolveBuffValue(b, totalER) {
   return Math.min(cap, Math.max(0, totalER - threshold) * ratePerPercent);
 }
 
+// Shared with scoreTeamComposition (calcEngine.js) so TeamsTab's "Team Suggestions" list can fold
+// the selected enemy's per-element RES into its ranking using the exact same lookup calcTeamStats
+// itself uses below (enemyStats.res when the full per-level curve is known, else the older flat
+// enemyRes map, else {} so getEnemyRes's own ?? 10 fallback applies uniformly).
+export function getEnemyResMap(enemyEcho) {
+  if (!enemyEcho) return null;
+  const enemyEchoData = ECHO_DATA[enemyEcho];
+  const enemyStats = enemyEchoData?.enemyStats || null;
+  return enemyStats?.res || enemyEchoData?.enemyRes || {};
+}
+
 export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, enemyEcho, enemyLevel) {
     const mems = slots.filter(s => s).map(name => {
       const d = CHARACTER_DATA[name];
@@ -626,7 +637,14 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           const val = mainStatVals[cost]?.[echo.mainStat] || 0;
           applyStat(echo.mainStat, val);
         }
-        (echo.substats || []).forEach(sub => {
+        // Same duplicate-substat guard as calcEngine.js's applyEchoStats (a real echo can never
+        // carry the same substat type twice or more than 5 total) -- this block hand-duplicates
+        // that function's logic instead of calling it, so it needs the same defense independently
+        // rather than trusting it stays in sync.
+        const seenMainSubs = new Set();
+        (echo.substats || []).slice(0, 5).forEach(sub => {
+          if (seenMainSubs.has(sub)) return;
+          seenMainSubs.add(sub);
           if (sub === 'ATK' || sub === 'HP' || sub === 'DEF') {
             // Flat ATK/HP/DEF substat: converts to %-of-base-stat, and only actually helps the
             // main DPS if it matches their own scaling stat (see calcEngine.js flatSubToPct for
@@ -743,6 +761,26 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         }
       });
 
+      // A real, deliberate data convention: some passive, always-on team-wide buffs (not tied to an
+      // outro/Liberation trigger) are stored in selfBuffs with target:'team' instead of a dedicated
+      // team-buff array (see Sigrika's Blessing of Runes -- "+48% Aero DMG to whichever Resonator is
+      // active", explicitly NOT self-only despite the array name -- and Rover: Electro's Overshock
+      // team ATK buff). This loop previously only ever read a non-main teammate's outroBuffs/libBuffs,
+      // never selfBuffs at all, so a teammate's real target:'team' buff was completely invisible to
+      // the actual DPS number -- confirmed via a direct A/B calcTeamStats comparison (Sigrika vs. a
+      // same-element filler with no such buff produced byte-identical elemDmg). isMain is excluded
+      // here since a main DPS's own selfBuffs (any target) already apply to themselves below.
+      if (!isMain) {
+        (bt.selfBuffs || []).forEach(b => {
+          if (b.target !== 'team') return;
+          const uptime = overlapUptime(blockStart(m.name), b.duration || 25);
+          const val = b.value * uptime;
+          if (b.stat === 'atkPct') { if (mainDps.scaling === 'ATK') mainStats.atkPct += val; }
+          else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(mainStats, b.stat, val, { condition: b.condition, dpsElLower: mainDpsElLower });
+          else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'echoDmg') applyBuff(mainStats, b.stat, val);
+        });
+      }
+
       if (isMain) {
         const mainTotalER = energyCycleFactors?.[mainDps.name]?.totalER;
         (bt.selfBuffs || []).forEach(b => {
@@ -761,7 +799,16 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         // buff — was never recognized here before, silently dropping the whole effect from every DPS
         // calc. 'defIgnore' debuffs (e.g. Carlotta's Deconstruction) target the enemy's own DEF, same
         // as the buff-side 'defIgnore' — was falling through to the no-op default too.
-        applyBuff(mainStats, db.stat, db.value, { condition: db.condition, dpsElLower: mainDpsElLower });
+        // Same self-state-dependency discount as calcEngine.js's scoreTeamComposition: a non-headline
+        // Main DPS's own deepen/offTune debuff (e.g. Galbrena's Afterflame, gated to "while Galbrena is
+        // in Demon Hypostasis" -- her own sustained active-state) can't be assumed to reliably fire when
+        // she isn't the character actually receiving the rotation's on-field time. Verified this was a
+        // real gap: with Jiyan as the real headline, Galbrena's Afterflame applied its full raw 60%
+        // regardless of her own on-field presence, identical to a teammate with no such debuff at all
+        // except for this one uncapped bonus. Discounted, not zeroed, since she still spends SOME
+        // on-field time via her own rotation block, just not enough to assume the full value.
+        const selfStateDiscount = (db.stat === 'deepen' || db.stat === 'offTune') && !isMain && CHARACTER_DATA[m.name]?.role === 'Main DPS' ? 0.35 : 1;
+        applyBuff(mainStats, db.stat, db.value * selfStateDiscount, { condition: db.condition, dpsElLower: mainDpsElLower });
       });
     });
     ({ atkPct, cr, cd, elemDmg, deepen, amplify, resShred, defShred, defIgnore, echoDmg } = mainStats);

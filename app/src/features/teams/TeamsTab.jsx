@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Search, Share2, Shuffle, Target, Trash2, Upload, Users, X } from 'lucide-react';
+import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Share2, Shuffle, Target, Trash2, Upload, Users, X } from 'lucide-react';
 import { CHARACTER_DATA, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { scoreTeamComposition, isHealerRole, isSupportRole } from './calcEngine.js';
+import { getEnemyResMap } from './calcTeamStats.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import TeamSelector from './TeamSelector.jsx';
 import WeaponSelector from './WeaponSelector.jsx';
 import EchoSelector from './EchoSelector.jsx';
@@ -25,6 +27,18 @@ function TeamsTab({
 }) {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [suggestionsCollapsed, setSuggestionsCollapsed] = useSessionState('ww-team-suggestions-collapsed', false);
+  // Lifted up from DamageCalculator so the "Team Suggestions" card below can rank against the same
+  // selected enemy the calculator uses, instead of that card being entirely enemy-blind by
+  // construction (it previously had no way to even know an enemy had been picked).
+  const [enemyLevel, setEnemyLevel] = useState(90);
+  const [enemyEcho, setEnemyEcho] = useState('');
+  const [enemyEchoModalOpen, setEnemyEchoModalOpen] = useState(false);
+  const [enemyEchoSearch, setEnemyEchoSearch] = useState('');
+  const [enemyEchoRankFilter, setEnemyEchoRankFilter] = useState('all');
+  const [enemyEchoSetFilter, setEnemyEchoSetFilter] = useState('all');
+  const [enemyEchoBuffFilter, setEnemyEchoBuffFilter] = useState('all');
+  const [saveLoadoutOpen, setSaveLoadoutOpen] = useState(false);
+  const [saveLoadoutName, setSaveLoadoutName] = useState('');
   const [teamSelectorOpen, setTeamSelectorOpen] = useState(false);
   const [teamSelectorSlot, setTeamSelectorSlot] = useState(0);
   const [teamSearch, setTeamSearch] = useState('');
@@ -107,7 +121,11 @@ function TeamsTab({
     // dpsOverride threads through to scoreTeamComposition so a candidate team built around an
     // off-role hypercarry pick still gets scored WITH its real DPS-power component instead of
     // silently finding no 'Main DPS'-tagged member and skipping that whole part of the score.
-    const scoreTeam = (members, dpsOverride) => scoreTeamComposition(members, ownedWeaps, dpsOverride);
+    // enemyResMap folds the selected enemy's per-element RES into the mainDps power term when one
+    // is picked (null/no-op otherwise) — this is what makes the whole list re-rank per enemy
+    // instead of always surfacing the same generically-strongest teams regardless of the target.
+    const enemyResMap = getEnemyResMap(enemyEcho);
+    const scoreTeam = (members, dpsOverride) => scoreTeamComposition(members, ownedWeaps, dpsOverride, enemyResMap);
 
     // ═══ SECTION 1: Build custom teams from YOUR owned characters ═══
     const customTeams = [];
@@ -205,7 +223,7 @@ function TeamsTab({
     return allSuggestions;
     // eslint-disable-next-line react-hooks/exhaustive-deps -- metaShuffleSeed is a deliberate re-roll
     // trigger, not a real data dependency; its value is never read, only its identity changing matters.
-  }, [collectionData, metaShuffleSeed]);
+  }, [collectionData, metaShuffleSeed, enemyEcho]);
 
   return (
           <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
@@ -415,6 +433,7 @@ function TeamsTab({
                             } catch { toast?.addToast?.(t('teams.tab.exportFailed'), 'error'); }
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.exportAria')}
                         >
                           <Download size={12} />
@@ -455,12 +474,13 @@ function TeamsTab({
                             input.click();
                           }}
                           className="kuro-btn kuro-btn-sm kuro-btn-primary text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.importAria')}
                         >
                           <Upload size={12} />
                         </button>
                         <button
-                          onClick={() => {
+                          onClick={async () => {
                             try {
                               const team = state.teams[state.activeTeamIndex] || state.teams[0];
                               const slots = team.slots;
@@ -479,12 +499,13 @@ function TeamsTab({
                                 lines.push(t('teams.tab.shareStats', { raw: formatNumber(stats.rawDps), full: formatNumber(stats.realDps), perfect: formatNumber(stats.perfectDps) }));
                               }
                               const text = lines.join('\n');
-                              navigator.clipboard.writeText(text);
+                              await navigator.clipboard.writeText(text);
                               toast?.addToast?.(t('teams.tab.copySuccess'), 'success');
                               haptic.light();
                             } catch { toast?.addToast?.(t('teams.tab.shareFailed'), 'error'); }
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.copyAria')}
                         >
                           <Share2 size={12} />
@@ -519,20 +540,18 @@ function TeamsTab({
                           disabled={teamCompareEntries.length >= 5 || !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s)}
                           title={teamCompareEntries.length >= 5 ? t('teams.tab.compareMax') : !(state.teams[state.activeTeamIndex] || state.teams[0]).slots.some(s => s) ? t('teams.tab.compareNeedChars') : t('teams.tab.compareAdd')}
                           className="kuro-btn kuro-btn-sm kuro-btn-primary active-gold text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.compareAria')}
                         >
                           {t('teams.tab.compareLabel')}
                         </button>
                         <button
                           onClick={() => {
-                            const name = window.prompt(t('teams.tab.savePrompt'), t('teams.tab.saveDefaultName', { name: activeTeam.name || t('teams.tab.defaultTeamName', { index: state.activeTeamIndex + 1 }) }));
-                            if (!name || !name.trim()) return;
-                            const preset = { name: name.trim(), teams: state.teams.map(tm => ({ name: tm.name, slots: [...tm.slots] })), equipment: { ...teamEquipment } };
-                            setEquipPresets(prev => [...prev.filter(p => p.name !== name.trim()), preset]);
-                            toast?.addToast?.(t('teams.tab.saveSuccess', { name: name.trim() }), 'success');
-                            haptic.success();
+                            setSaveLoadoutName(t('teams.tab.saveDefaultName', { name: activeTeam.name || t('teams.tab.defaultTeamName', { index: state.activeTeamIndex + 1 }) }));
+                            setSaveLoadoutOpen(true);
                           }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.saveAria')}
                           title={t('teams.tab.saveTitle')}
                         >
@@ -541,6 +560,7 @@ function TeamsTab({
                         <button
                           onClick={() => setShowPresetDropdown(prev => !prev)}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.loadAria')}
                           aria-expanded={showPresetDropdown}
                           title={t('teams.tab.loadTitle')}
@@ -568,6 +588,7 @@ function TeamsTab({
                             haptic.medium();
                           } }}
                           className="kuro-btn kuro-btn-sm text-sm px-2 py-1.5 whitespace-nowrap"
+                          style={{ paddingLeft: 8, paddingRight: 8 }}
                           aria-label={t('teams.tab.clearAllSlotsAria')}
                         >
                           <Trash2 size={12} />
@@ -630,7 +651,7 @@ function TeamsTab({
                       {/* Loadout preset dropdown (triggered from header Load icon) */}
                       {showPresetDropdown && (
                         <div className="relative mb-3">
-                          <div className="absolute top-0 right-0 z-50 min-w-[192px] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
+                          <div className="absolute top-0 right-0 z-50 min-w-[calc(192px*var(--ui-scale,1))] rounded-lg border border-[var(--border-medium)] bg-[var(--bg-card)] shadow-xl overflow-hidden">
                             {equipPresets.length === 0 ? (
                               <div className="px-3 py-2 text-sm text-gray-500">{t('teams.tab.noSavedLoadouts')}</div>
                             ) : (
@@ -680,7 +701,19 @@ function TeamsTab({
                               key={slotIdx}
                               className={`relative overflow-hidden border rounded-lg text-center ${!framingMode ? 'collection-card' : ''} cursor-pointer group ${framingMode && editingImage === teamKey ? 'border-emerald-500 ring-2 ring-emerald-500/50' : rarity5 ? 'bg-yellow-500/10 border-yellow-500/30 holo-5star' : 'bg-purple-500/10 border-purple-500/30'}`}
                               style={{ height: '160px', contain: 'paint' }}
+                              role="button"
+                              tabIndex={0}
+                              aria-label={t('teams.tab.changeSlotAria', { name: charName, slot: slotIdx + 1 })}
                               onClick={() => {
+                                if (framingMode) {
+                                  setEditingImage(teamKey);
+                                } else {
+                                  openSelector(slotIdx);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key !== 'Enter' && e.key !== ' ') return;
+                                e.preventDefault();
                                 if (framingMode) {
                                   setEditingImage(teamKey);
                                 } else {
@@ -707,10 +740,10 @@ function TeamsTab({
                                 />
                                 </div>
                               )}
-                              {/* P6-FIX: Increased from w-6 h-6 to w-[28px] h-[28px] for touch targets (F-P6-050) */}
+                              {/* P6-FIX: Increased from w-6 h-6 to w-[calc(28px*var(--ui-scale,1))] h-[calc(28px*var(--ui-scale,1))] for touch targets (F-P6-050) */}
                               {!framingMode && <button
                                 onClick={(e) => { e.stopPropagation(); removeFromSlot(slotIdx); }}
-                                className="action-btn absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
+                                className="action-btn absolute top-1 right-1 z-20 w-[calc(28px*var(--ui-scale,1))] h-[calc(28px*var(--ui-scale,1))] aspect-square p-0 rounded-lg bg-red-500/80 text-white flex items-center justify-center opacity-60 hover:opacity-100 btn-icon-square"
                                 aria-label={t('teams.tab.removeSlotAria', { name: charName, slot: slotIdx + 1 })}
                               >
                                 <X size={12} />
@@ -718,7 +751,7 @@ function TeamsTab({
                               {!framingMode && dmgCapableCount > 1 && (charData?.totalMult || 0) > 0 && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); setTeamMainDps(charName); }}
-                                  className={`action-btn absolute top-1 left-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg flex items-center justify-center btn-icon-square transition-all ${activeTeam.mainDpsOverride === charName ? 'bg-yellow-500 text-black opacity-100' : 'bg-black/60 text-yellow-400/70 opacity-60 hover:opacity-100'}`}
+                                  className={`action-btn absolute top-1 left-1 z-20 w-[calc(28px*var(--ui-scale,1))] h-[calc(28px*var(--ui-scale,1))] aspect-square p-0 rounded-lg flex items-center justify-center btn-icon-square transition-all ${activeTeam.mainDpsOverride === charName ? 'bg-yellow-500 text-black opacity-100' : 'bg-black/60 text-yellow-400/70 opacity-60 hover:opacity-100'}`}
                                   aria-label={activeTeam.mainDpsOverride === charName ? t('teams.tab.headlineDpsClearAria', { name: charName }) : t('teams.tab.headlineDpsSetAria', { name: charName })}
                                   title={activeTeam.mainDpsOverride === charName ? t('teams.tab.headlineDpsClearTitle') : t('teams.tab.headlineDpsSetTitle')}
                                 >
@@ -759,10 +792,13 @@ function TeamsTab({
                     teamEquipment={teamEquipment}
                     setTeamEquipment={setTeamEquipment}
                     state={state}
+                    dispatch={dispatch}
+                    collectionData={collectionData}
                     collectionImages={collectionImages}
                     teamCompareEntries={teamCompareEntries}
                     setTeamCompareEntries={setTeamCompareEntries}
                     confirm={confirm}
+                    toast={toast}
                     onOpenWeaponSelector={(teamIdx, charName) => {
                       setWeaponSelectorTarget({ teamIdx, charName });
                       setWeaponSearch('');
@@ -776,6 +812,13 @@ function TeamsTab({
                     onOpenEchoStatPanel={(teamIdx, charName, slotIdx, echoName) => {
                       setEchoStatPanel({ teamIdx, charName, slotIdx, echoName });
                     }}
+                    enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
+                    enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
+                    enemyEchoModalOpen={enemyEchoModalOpen} setEnemyEchoModalOpen={setEnemyEchoModalOpen}
+                    enemyEchoSearch={enemyEchoSearch} setEnemyEchoSearch={setEnemyEchoSearch}
+                    enemyEchoRankFilter={enemyEchoRankFilter} setEnemyEchoRankFilter={setEnemyEchoRankFilter}
+                    enemyEchoSetFilter={enemyEchoSetFilter} setEnemyEchoSetFilter={setEnemyEchoSetFilter}
+                    enemyEchoBuffFilter={enemyEchoBuffFilter} setEnemyEchoBuffFilter={setEnemyEchoBuffFilter}
                   />
 
                   {/* Suggested Teams from Character Data — collapsible */}
@@ -886,6 +929,52 @@ function TeamsTab({
                     collectionData={collectionData}
                     state={state}
                   />
+
+                  {/* Save Loadout Modal */}
+                  <FocusTrapModal isOpen={saveLoadoutOpen} onClose={() => setSaveLoadoutOpen(false)} className="" onClick={() => setSaveLoadoutOpen(false)} centered padding="p-3" ariaLabel={t('teams.tab.saveTitle')}>
+                    <div className="kuro-card w-full max-w-xs" onClick={(e) => e.stopPropagation()}>
+                      <div className="px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
+                        <h3 className="text-white font-semibold text-lg">{t('teams.tab.saveTitle')}</h3>
+                      </div>
+                      <div className="p-4 space-y-3">
+                        <label className="block text-gray-400 text-sm">{t('teams.tab.savePrompt')}</label>
+                        <input
+                          type="text"
+                          className="kuro-input w-full text-base"
+                          value={saveLoadoutName}
+                          onChange={(e) => setSaveLoadoutName(e.target.value)}
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key !== 'Enter' || !saveLoadoutName.trim()) return;
+                            const name = saveLoadoutName.trim();
+                            const preset = { name, teams: state.teams.map(tm => ({ name: tm.name, slots: [...tm.slots] })), equipment: { ...teamEquipment } };
+                            setEquipPresets(prev => [...prev.filter(p => p.name !== name), preset]);
+                            toast?.addToast?.(t('teams.tab.saveSuccess', { name }), 'success');
+                            haptic.success();
+                            setSaveLoadoutOpen(false);
+                          }}
+                        />
+                        <div className="flex gap-2">
+                          <button onClick={() => setSaveLoadoutOpen(false)} className="kuro-btn flex-1 text-sm">{t('teams.tab.saveCancel')}</button>
+                          <button
+                            onClick={() => {
+                              if (!saveLoadoutName.trim()) return;
+                              const name = saveLoadoutName.trim();
+                              const preset = { name, teams: state.teams.map(tm => ({ name: tm.name, slots: [...tm.slots] })), equipment: { ...teamEquipment } };
+                              setEquipPresets(prev => [...prev.filter(p => p.name !== name), preset]);
+                              toast?.addToast?.(t('teams.tab.saveSuccess', { name }), 'success');
+                              haptic.success();
+                              setSaveLoadoutOpen(false);
+                            }}
+                            disabled={!saveLoadoutName.trim()}
+                            className="kuro-btn kuro-btn-primary active-gold flex-1 text-sm"
+                          >
+                            {t('teams.tab.saveConfirm')}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </FocusTrapModal>
 
                   {/* Weapon Selector Modal */}
                   <WeaponSelector

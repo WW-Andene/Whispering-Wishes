@@ -4,15 +4,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Info, Star, X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
-import { haptic, getElementColor, getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
-import { getTimeRemaining, getServerAdjustedEnd } from '../../core/time.js';
+import { haptic, getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
+
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
-import { SpinePlayer, getSpineId, SPINE_CHARACTERS } from './SpinePlayer.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
 import { t } from '../../utils/i18n.js';
 
@@ -35,7 +36,7 @@ const EVENT_ACCENT_COLORS = {
   red: { text: 'text-red-400', border: 'border-red-500/30', bg: 'bg-red-500/20' },
 };
 
-const BANNER_CARD_OVERLAY_STYLE = Object.freeze({ background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '10px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
+const BANNER_CARD_OVERLAY_STYLE = Object.freeze({ background: 'linear-gradient(to top, rgba(8,12,20,0.85) 60%, transparent)', padding: '8px 12px 12px', textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 const TEXT_SHADOW_STYLE = Object.freeze({ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.8)' });
 // L-FIX: Extracted inline style constants to avoid re-creating objects every render
 
@@ -44,7 +45,6 @@ const SPINE_BANNERS_ENABLED = false;
 
 const IMG_LAYER_STYLE = Object.freeze({ zIndex: 1 });
 const BANNER_SUBTLE_SHADOW = '0 0 40px rgba(237,175,24,0.06), 0 4px 16px rgba(0,0,0,0.3)';
-
 
 const _maskCache = new Map();
 const generateMaskGradient = (fadePos, fadeIntensity) => {
@@ -78,9 +78,7 @@ const generateMaskGradient = (fadePos, fadeIntensity) => {
   return result;
 };
 
-
-
-const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor }) => {
+const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor, collectionImages, setDetailModal }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
@@ -93,6 +91,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   const isFull = visualSettings?.animationsEnabled === 'full';
   const spineId = isChar ? getSpineId(item.name) : null;
+  const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   // Spine banners disabled app-wide (kept encapsulated here, not removed, for easy re-enable).
   const useSpine = SPINE_BANNERS_ENABLED && isFull && spineId && !spineFailed;
 
@@ -159,14 +158,36 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         <div className={stats ? 'mb-14' : ''}>
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-2 flex-wrap">
-            {(item.featured4Stars || []).map(n => (
-              <div key={n} className="flex flex-col items-center gap-0.5">
-                {DEFAULT_COLLECTION_IMAGES[n] && (
-                  <img src={DEFAULT_COLLECTION_IMAGES[n]} alt="" aria-hidden="true" className="w-7 h-7 rounded-full object-cover border border-cyan-400/40" onError={hideOnError} />
-                )}
-                <span className="text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm">{n}</span>
-              </div>
-            ))}
+            {(item.featured4Stars || []).map(n => {
+              const previewImg = (collectionImages || DEFAULT_COLLECTION_IMAGES)[n];
+              const framingKey = `collection-${n}`;
+              const framing = getImageFraming(framingKey);
+              const isEditingThis = framingMode && editingImage === framingKey;
+              return (
+                <div key={n} className="inline-flex flex-col items-center gap-0.5">
+                  {previewImg && (
+                    <div
+                      className={`w-12 h-12 rounded-md overflow-hidden border bg-black/25 ${isEditingThis ? 'border-emerald-400 ring-2 ring-emerald-500/50' : 'border-cyan-400/40'} ${framingMode ? 'cursor-pointer' : ''}`}
+                      onClick={framingMode ? () => setEditingImage(framingKey) : undefined}
+                    >
+                      <img
+                        src={previewImg}
+                        alt=""
+                        aria-hidden="true"
+                        className="w-full h-full object-contain pointer-events-none"
+                        style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
+                        onError={hideOnError}
+                      />
+                    </div>
+                  )}
+                  <span
+                    className="block w-12 text-[8px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded backdrop-blur-sm text-center truncate cursor-pointer"
+                    title={n}
+                    onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: n, imageUrl: previewImg, framing })}
+                  >{n}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -274,7 +295,7 @@ GachaInfoButton.displayName = 'GachaInfoButton';
 const ProbabilityBar = memo(({ label, value, color = 'cyan' }) => (
   <div className="flex items-center gap-2" role="meter" aria-label={`${label}: ${value}%`} aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>
     <span className="text-gray-400 text-sm w-12">{label}</span>
-    <div className="flex-1 h-5 bg-neutral-800 rounded overflow-hidden">
+    <div className="flex-1 h-4 bg-neutral-800 rounded overflow-hidden">
       <div className={`h-full ${color === 'cyan' ? 'bg-cyan-500' : color === 'pink' ? 'bg-pink-500' : 'bg-yellow-500'} transition-[width] duration-300 flex items-center justify-end pr-1`} style={{ width: `${Math.max(value, 1)}%` }}>
         {value > 10 && <span className="text-sm text-black font-bold">{value}%</span>}
       </div>

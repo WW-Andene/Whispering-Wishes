@@ -1,0 +1,14 @@
+{
+  "offline": "You are offline - some features may be limited",
+  "updateTitle": "Update available",
+  "updateSubtitle": "A new version is ready",
+  "updateAction": "Refresh",
+  "installTitle": "Install Whispering Wishes",
+  "installSubtitleNative": "Add to home screen for the best experience",
+  "installActionNative": "Install",
+  "installSubtitleIframe": "Open in a new tab to install as an app",
+  "installActionIframe": "Open",
+  "dismissAria": "Dismiss install prompt",
+  "guideSubtitle": "Add to your home screen",
+  "gotIt": "Got it"
+}

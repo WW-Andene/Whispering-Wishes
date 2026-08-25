@@ -1,4 +1,19 @@
 {
+  "resultsCard": {
+    "successProbability": "P(≥{{copies}} exemplaires)",
+    "expectedCopies": "Exemplaires attendus",
+    "convenesNeededAvg": "Conviers nécessaires (moy.)",
+    "ready": "Prêt !",
+    "worstCase": "Pire cas",
+    "featured4Star": "4★ en vedette ({{count}}/{{target}})",
+    "featured4StarNoTarget": "4★ en vedette",
+    "fourStarTotal": "4★ au total",
+    "fourStarExpected": "4★ attendus ({{count}}/{{target}})",
+    "fourStarExpectedNoTarget": "4★ attendus",
+    "fourStarConvenesNeeded": "Conviers nécessaires pour le 4★",
+    "fourStarNeedsMore": "L'objectif 4★ nécessite plus de Conviers que l'objectif 5★",
+    "ratesDisclosure": "Taux : 0,8 % de base, pitié douce 66-79, pitié dure 80. Hybride PD + Monte-Carlo."
+  },
   "intro": "Calculez vos probabilités de Convier en entrant vos ressources ci-dessous.",
   "astrite": "Astrite",
   "lunite": "Lunite",

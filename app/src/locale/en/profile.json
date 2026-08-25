@@ -1,4 +1,73 @@
 {
+  "appUpdate": {
+    "title": "App Update",
+    "checkAria": "Check for updates",
+    "checking": "Checking for updates…",
+    "checkFailed": "Check failed",
+    "checkError": "Couldn't check for updates: {{error}}",
+    "upToDate": "Up to date ({{version}}, build {{build}})",
+    "updateAvailable": "Update available: build {{current}} → {{latest}}",
+    "download": "Download Update",
+    "downloadStarted": "Opening download — install it once it finishes.",
+    "downloadFailed": "Couldn't open download: {{error}}"
+  },
+  "importFlow": {
+    "title": "Import Convene History",
+    "subtitle": "Import your Convene history directly from the game.",
+    "platform": { "pc": "PC", "android": "Android", "ps5": "PS5" },
+    "method": { "file": "File", "paste": "Paste", "direct": "Direct" },
+    "file": {
+      "importing": "Importing...",
+      "sizeKb": "{{size}} KB - parsing...",
+      "dropHere": "Drop JSON file here",
+      "uploadOrDrop": "Upload or drag and drop a JSON file"
+    },
+    "paste": {
+      "placeholder": "Paste your JSON data here…\n\nExample: {\"pulls\":[…]}",
+      "import": "Import",
+      "tip": "Tip: In WuWa Tracker, go to Profile → Settings → Data → Export Convene History → Copy the JSON content."
+    },
+    "direct": {
+      "subtitle": "Paste your Convene History URL below or enter IDs manually.",
+      "urlPlaceholder": "Paste Convene History URL here…",
+      "playerId": "player_id",
+      "playerIdRequired": "player_id is required.",
+      "playerIdPlaceholder": "e.g. 500123456",
+      "recordId": "record_id",
+      "recordIdPlaceholder": "alphanumeric key",
+      "optional": "(optional)",
+      "svrId": "svr_id",
+      "svrIdPlaceholder": "e.g. 76",
+      "resourcesId": "resources_id",
+      "resourcesIdPlaceholder": "alphanumeric key",
+      "scanning": "Scanning...",
+      "openCamera": "Open Camera",
+      "uploadImage": "Upload Image",
+      "idsExtracted": "IDs extracted successfully",
+      "importing": "Importing...",
+      "cancel": "Cancel",
+      "import": "Import",
+      "importComplete": "Import complete!",
+      "closeCamera": "Close camera",
+      "captureScreenshot": "Capture screenshot",
+      "urlExpiresNote": "Open Convene History in-game and copy the URL from the browser address bar. The URL expires after some time."
+    },
+    "toast": {
+      "idsExtracted": "IDs extracted from screenshot!",
+      "cameraDenied": "Camera access denied",
+      "cameraError": "Camera error: {{message}}",
+      "fileTooLarge": "File too large ({{size}}MB). Maximum is {{max}}MB.",
+      "importFailed": "Import failed: {{message}}",
+      "unknownError": "Unknown error",
+      "readFailed": "Failed to read file",
+      "dropJsonOnly": "Please drop a .json file",
+      "pasteFirst": "Please paste your JSON data first",
+      "noConveneData": "No Convene data returned. The URL may be expired. Try getting a fresh one from the game.",
+      "importProcessingFailed": "Import processing failed",
+      "importFailedGeneric": "Import failed",
+      "screenshotScanFailed": "Screenshot scan failed"
+    }
+  },
   "importGuide": {
     "step": {
       "openConvene": {

@@ -4,11 +4,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Star } from 'lucide-react';
+
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
-import { haptic } from '../../utils/helpers.js';
+
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
+import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
+import { t } from '../../utils/i18n.js';
 
 const StandardBannerOverlay = memo(() => {
   const canvasRef = useRef(null);
@@ -154,7 +155,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
         <div className={hasStats ? 'mb-14' : ''}>
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Available 5★</div>
           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
-            {(items || []).map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-sm text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
+            {(items || []).map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-[8px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
           </div>
         </div>
       </div>
@@ -172,7 +173,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
               </div>
               <div className="text-center">
                 <div className="text-white font-bold text-xl kuro-number">{profileData.history.length}</div>
-                <div className="text-gray-400 text-sm mt-0.5">Convenes</div>
+                <div className="text-gray-400 text-sm mt-0.5">{t('tracker.convenesLabel')}</div>
               </div>
             </div>
           </div>

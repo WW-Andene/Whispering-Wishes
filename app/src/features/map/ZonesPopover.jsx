@@ -8,6 +8,7 @@
 
 import { LocateFixed, Pen } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { t } from '../../utils/i18n.js';
 
 export function ZonesPopover({
   panelRef,
@@ -128,7 +129,7 @@ export function ZonesPopover({
         </CardHeader>
         <CardBody className="map-zones-body">
           {roots.length === 0
-            ? <div className="zone-selector-empty">No zones</div>
+            ? <div className="zone-selector-empty">{t('map.zonesPopover.noZones')}</div>
             : roots.map(z => renderNode(z, 0))}
         </CardBody>
       </Card>

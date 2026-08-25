@@ -6,19 +6,20 @@
 import { useState, useMemo, useCallback, useEffect, createContext, useContext } from 'react';
 import { X } from 'lucide-react';
 import { HEADER_ICON } from '../data/constants.js';
+import { t } from '../utils/i18n.js';
 
 // P14-FIX: HIGH-6 — Service worker code moved to /public/sw.js (static file).
 // Removed ~130 lines of inline SERVICE_WORKER_CODE string that was registered via blob URL.
 
 // Shared install banner component used by both native and iframe prompts
-const InstallBanner = ({ subtitle, actionLabel, onAction, onDismiss }) => (
+const InstallBanner = ({ title, subtitle, actionLabel, onAction, onDismiss }) => (
   <div className="fixed bottom-24 left-3 right-3 z-[9800] bg-gradient-to-r from-[rgba(237,175,24,0.9)] to-[rgba(237,175,24,0.7)] backdrop-blur-sm rounded-xl p-3 shadow-xl border border-yellow-400/30">
     <div className="flex items-center gap-3">
       <div className="w-12 h-12 bg-black/20 rounded-lg overflow-hidden flex items-center justify-center">
         <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
       </div>
       <div className="flex-1">
-        <div className="text-black font-semibold text-xl">Install Whispering Wishes</div>
+        <div className="text-black font-semibold text-xl">{title}</div>
         <div className="text-black/70 text-base">{subtitle}</div>
       </div>
       <button
@@ -29,7 +30,7 @@ const InstallBanner = ({ subtitle, actionLabel, onAction, onDismiss }) => (
       </button>
       <button
         onClick={onDismiss}
-        className="p-1 text-black/50 hover:text-black transition-colors" aria-label="Dismiss install prompt"
+        className="p-1 text-black/50 hover:text-black transition-colors" aria-label={t('pwa.dismissAria')}
       >
         <X size={16} />
       </button>
@@ -80,6 +81,7 @@ const PWAProvider = ({ children }) => {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
     // Check if already installed (PWA or iOS standalone)
@@ -134,6 +136,7 @@ const PWAProvider = ({ children }) => {
             swStateChangeHandler = () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 console.info('[WW] New version available');
+                setUpdateAvailable(true);
               }
             };
             newWorker.addEventListener('statechange', swStateChangeHandler);
@@ -184,7 +187,8 @@ const PWAProvider = ({ children }) => {
     isInstalled,
     promptInstall,
     showInstallGuide: () => setShowInstallGuide(true),
-  }), [installPrompt, isInstalled, promptInstall]);
+    updateAvailable,
+  }), [installPrompt, isInstalled, promptInstall, updateAvailable]);
 
   return (
     <PWAContext.Provider value={pwaValue}>
@@ -192,14 +196,25 @@ const PWAProvider = ({ children }) => {
       {/* Offline indicator */}
       {!isOnline && (
         <div role="alert" aria-live="assertive" className="fixed top-0 left-0 right-0 z-[9999] bg-yellow-500 text-black text-center py-1 text-base font-medium">
-          You are offline - some features may be limited
+          {t('pwa.offline')}
         </div>
+      )}
+      {/* New version available — reload to pick it up */}
+      {updateAvailable && (
+        <InstallBanner
+          title={t('pwa.updateTitle')}
+          subtitle={t('pwa.updateSubtitle')}
+          actionLabel={t('pwa.updateAction')}
+          onAction={() => window.location.reload()}
+          onDismiss={() => setUpdateAvailable(false)}
+        />
       )}
       {/* Install prompt banner — native */}
       {installPrompt && !isInstalled && !isInIframe && (
         <InstallBanner
-          subtitle="Add to home screen for the best experience"
-          actionLabel="Install"
+          title={t('pwa.installTitle')}
+          subtitle={t('pwa.installSubtitleNative')}
+          actionLabel={t('pwa.installActionNative')}
           onAction={promptInstall}
           onDismiss={() => setInstallPrompt(null)}
         />
@@ -207,8 +222,9 @@ const PWAProvider = ({ children }) => {
       {/* Install prompt banner — iframe fallback */}
       {isInIframe && !isInstalled && !iframeBannerDismissed && (
         <InstallBanner
-          subtitle="Open in a new tab to install as an app"
-          actionLabel="Open"
+          title={t('pwa.installTitle')}
+          subtitle={t('pwa.installSubtitleIframe')}
+          actionLabel={t('pwa.installActionIframe')}
           onAction={() => window.open(window.location.href, '_blank')}
           onDismiss={() => setIframeBannerDismissed(true)}
         />
@@ -222,13 +238,13 @@ const PWAProvider = ({ children }) => {
                 <img src={HEADER_ICON} alt="Whispering Wishes" className="w-full h-full object-cover" />
               </div>
               <div>
-                <div className="text-white font-semibold text-xl">Install Whispering Wishes</div>
-                <div className="text-gray-500 text-sm">Add to your home screen</div>
+                <div className="text-white font-semibold text-xl">{t('pwa.installTitle')}</div>
+                <div className="text-gray-500 text-sm">{t('pwa.guideSubtitle')}</div>
               </div>
             </div>
             <InstallSteps />
             <button onClick={() => setShowInstallGuide(false)} className="mt-4 w-full py-2 rounded-lg text-base font-medium bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 transition-colors">
-              Got it
+              {t('pwa.gotIt')}
             </button>
           </div>
         </div>

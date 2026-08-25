@@ -1,4 +1,7 @@
 {
+  "zonesPopover": {
+    "noZones": "No zones"
+  },
   "wip": {
     "title": "Map — Work in Progress",
     "close": "Close",

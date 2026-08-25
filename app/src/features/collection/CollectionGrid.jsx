@@ -4,8 +4,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useRef, useCallback, memo } from 'react';
-import { User, Crown } from 'lucide-react';
-import { CHARACTER_DATA } from '../../data/characters.js';
+import { Crown } from 'lucide-react';
+
 import { haptic } from '../../utils/helpers.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../../shared/components/SpinePlayer.jsx';
@@ -99,6 +99,8 @@ const CollectionGridCard = memo(({ name, label, count, imgUrl, framing, isSelect
           <img
             src={processedUrl || imgUrl}
             alt={displayLabel}
+            loading="lazy"
+            decoding="async"
             className={`w-full h-full ${isCharacter ? 'object-contain' : 'object-cover'} pointer-events-none`}
             style={{
               transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)`,
@@ -177,7 +179,7 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
   return (
     <>
       <div className="text-sm text-gray-400 mb-2 text-right">{t('collection.grid.shownCount', { owned: ownedCount, shown: items.length })}{hasActiveFilters ? t('collection.grid.totalSuffix', { total: totalCount }) : ''}</div>
-      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {showItems.map(([name, count]) => {
           const imgUrl = collectionImages[name];
           const imageKey = `collection-${name}`;

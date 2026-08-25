@@ -1,4 +1,7 @@
 {
+  "monsterCard": {
+    "noResData": "Aucune donnée de RES élémentaire"
+  },
   "selector": {
     "title": "Sélectionner un Résonateur",
     "subtitle": "Emplacement {{slot}} • {{team}}",
@@ -25,6 +28,14 @@
     "emptyState": "Ajoutez des Résonateurs à votre équipe pour voir l'analyse des dégâts",
     "fullAutoBuild": "Build Auto Complet",
     "fullAutoBuildAria": "Build Auto Complet : équiper automatiquement tous les membres de cette équipe en une fois",
+    "autoTeam": "Équipe Auto",
+    "autoTeamAria": "Équipe Auto : choisir et construire la meilleure équipe de 3 personnages contre l'ennemi sélectionné",
+    "autoTeamBusy": "Construction…",
+    "autoTeamNoResult": "Impossible de construire une équipe avec ce pool — essayez un autre pool de personnages ou vérifiez que votre collection couvre assez de rôles",
+    "autoTeamNoEnemy": "Sélectionnez d'abord un ennemi cible — Équipe Auto construit une équipe en fonction des résistances d'un ennemi précis",
+    "autoTeamPoolAria": "Pool de personnages pour Équipe Auto",
+    "autoTeamPoolOwned": "Possédés uniquement",
+    "autoTeamPoolAny": "Tout personnage",
     "teamOverview": "Aperçu de l'équipe",
     "baseStats": "Stats de base (Nv.90)",
     "weaponPrefix": "+Arme {{value}}",
@@ -168,6 +179,8 @@
     "saveSuccess": "Composition « {{name}} » enregistrée !",
     "saveAria": "Enregistrer la composition d'équipement",
     "saveTitle": "Enregistrer la composition",
+    "saveCancel": "Annuler",
+    "saveConfirm": "Enregistrer",
     "loadAria": "Charger la composition d'équipement",
     "loadTitle": "Charger la composition",
     "clearTeamTitle": "Vider l'équipe",
@@ -187,6 +200,7 @@
     "noCharsAssigned": "Aucun personnage assigné",
     "tapEmptySlot": "Touchez un emplacement vide pour ajouter un Résonateur",
     "addSlotAria": "Ajouter un résonateur à l'emplacement {{slot}}",
+    "changeSlotAria": "{{name}}, emplacement {{slot}} — cliquer pour changer de Résonateur",
     "addResonator": "Ajouter un Résonateur",
     "removeSlotAria": "Retirer {{name}} de l'emplacement {{slot}}",
     "headlineDpsClearAria": "{{name}} est le DPS principal — cliquer pour revenir à la détection automatique",

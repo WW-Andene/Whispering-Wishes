@@ -590,7 +590,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
               return [...seen.entries()].map(([group, { color, weekly }]) => (
                 <span key={group} className="flex items-center gap-1">
                   {weekly
-                    ? <span style={{ display: 'inline-flex', gap: '1px' }}><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '5px', height: '4px', borderRadius: '1px', background: color }} /></span>
+                    ? <span style={{ display: 'inline-flex', gap: '1px' }}><span style={{ width: '4px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '4px', height: '4px', borderRadius: '1px', background: color }} /><span style={{ width: '4px', height: '4px', borderRadius: '1px', background: color }} /></span>
                     : <span style={{ width: '16px', height: '4px', borderRadius: 'var(--radius-micro)', background: color, display: 'inline-block' }} />
                   }
                   {getLegendLabel(group)}

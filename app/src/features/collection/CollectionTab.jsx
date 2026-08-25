@@ -6,8 +6,8 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSessionState } from '../../hooks/useSessionState.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
-import { Archive, ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, ALL_CHARACTERS } from '../../data/characters.js';
+import { ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES, getLocalizedEchoData } from '../../data/echoes.js';
@@ -384,7 +384,7 @@ function CollectionTab({
                 <div className="h-2 rounded-full overflow-hidden mb-3" style={{ background: 'var(--bg-stat)' }}>
                   <div className="h-full bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full transition-[width] duration-300 progress-fill" style={{width: `${pct}%`}} />
                 </div>
-                <div className="grid grid-cols-4 sm:grid-cols-7 gap-1 text-center text-sm">
+                <div className="grid grid-cols-4 gap-1 text-center text-sm">
                   <div><div className="text-yellow-400 font-bold">{ownedChars5}<span className="text-gray-500 font-normal">/{ALL_5STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.resonator5')}</div></div>
                   <div><div className="text-purple-400 font-bold">{ownedChars4}<span className="text-gray-500 font-normal">/{ALL_4STAR_RESONATORS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.resonator4')}</div></div>
                   <div><div className="text-yellow-400 font-bold">{ownedWeaps5}<span className="text-gray-500 font-normal">/{ALL_5STAR_WEAPONS.length}</span></div><div className="text-gray-500 mt-1">{t('collection.progress.weapon5')}</div></div>
@@ -470,7 +470,7 @@ function CollectionTab({
                   </button>
                 </div>
               )}
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-3 gap-1.5">
 
                 {/* ── Resonators view: Type, Elements, Stat Scaling, Damage, Rôle ── */}
                 {collectionView === 'items' && (<>
@@ -667,7 +667,7 @@ function CollectionTab({
               <div className="flex gap-1.5 items-center justify-end">
                 <button
                   onClick={refreshImages}
-                  className="kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-gray-400 hover:text-emerald-400 transition-all"
+                  className="kuro-btn flex items-center justify-center w-[30px] h-[30px] !p-0 !rounded-lg text-gray-400 hover:text-emerald-400 transition-all"
                   title={t('collection.sort.refresh')}
                   aria-label={t('collection.sort.refreshAria')}
                 >
@@ -675,7 +675,7 @@ function CollectionTab({
                 </button>
                 <button
                   onClick={() => setCollectionSort('copies')}
-                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-base font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
+                  className={`kuro-btn flex items-center justify-center w-[30px] h-[30px] !p-0 !rounded-lg text-base font-bold transition-all ${collectionSort === 'copies' ? 'active-gold' : 'text-gray-400'}`}
                   title={t('collection.sort.byCopies')}
                   aria-label={t('collection.sort.byCopies')}
                   aria-pressed={collectionSort === 'copies'}
@@ -684,7 +684,7 @@ function CollectionTab({
                 </button>
                 <button
                   onClick={() => setCollectionSort('release')}
-                  className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
+                  className={`kuro-btn flex items-center justify-center w-[30px] h-[30px] !p-0 !rounded-lg transition-all ${collectionSort === 'release' ? 'active-gold' : 'text-gray-400'}`}
                   title={t('collection.sort.byRelease')}
                   aria-label={t('collection.sort.byRelease')}
                   aria-pressed={collectionSort === 'release'}
@@ -694,7 +694,7 @@ function CollectionTab({
                 {collectionView === 'items' && (
                   <button
                     onClick={() => setCollectionSort(prev => prev === 'name' ? 'nameDesc' : 'name')}
-                    className={`kuro-btn flex items-center justify-center w-[28px] h-[28px] !p-0 !rounded-lg text-sm font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
+                    className={`kuro-btn flex items-center justify-center w-[30px] h-[30px] !p-0 !rounded-lg text-sm font-bold transition-all ${collectionSort === 'name' || collectionSort === 'nameDesc' ? 'active-gold' : 'text-gray-400'}`}
                     title={collectionSort === 'nameDesc' ? t('collection.sort.za') : t('collection.sort.az')}
                     aria-label={collectionSort === 'nameDesc' ? t('collection.sort.sortedZA') : t('collection.sort.sortAlpha')}
                     aria-pressed={collectionSort === 'name' || collectionSort === 'nameDesc'}
@@ -951,7 +951,7 @@ function CollectionTab({
         >−</button>
         <div className="text-center min-w-[48px] px-1">
           <div className="text-white text-base font-bold kuro-number">{manualCounts[counterWidget.name] || 0}</div>
-          <div className="text-gray-500 text-2xs truncate max-w-[60px]">{counterWidget.name.split(' ')[0]}</div>
+          <div className="text-gray-500 text-2xs truncate max-w-[62px]">{counterWidget.name.split(' ')[0]}</div>
         </div>
         <button
           className="kuro-btn w-12 h-12 flex items-center justify-center text-lg font-bold text-emerald-400 hover:bg-emerald-500/20"

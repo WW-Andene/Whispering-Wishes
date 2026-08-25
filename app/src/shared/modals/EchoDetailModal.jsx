@@ -4,11 +4,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { User, Star, X } from 'lucide-react';
+import { User, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
-import { ECHO_DATA, ECHO_SETS, getLocalizedEchoSets, getLocalizedEchoData } from '../../data/echoes.js';
-import { ELEMENT_COLORS, getElementColor, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor, getSetIcon } from '../../utils/helpers.js';
+import { ECHO_DATA, getLocalizedEchoSets, getLocalizedEchoData } from '../../data/echoes.js';
+import { ELEMENT_COLORS, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor, getSetIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';
@@ -308,7 +308,7 @@ const EchoDetailModal = ({ name, onClose, imageUrl, cost, infoFraming, collectio
                           <User size={14} className="text-gray-500" />
                         </div>
                       )}
-                      <span className="text-sm text-gray-400 text-center leading-tight max-w-[56px] truncate">{charName}</span>
+                      <span className="text-sm text-gray-400 text-center leading-tight max-w-[62px] truncate">{charName}</span>
                     </div>
                   );
                 })}

@@ -45,6 +45,8 @@ import enModals from '../locale/en/modals.json';
 import enAdmin from '../locale/en/admin.json';
 import enApp2 from '../locale/en/app2.json';
 import enAppShared from '../locale/en/appShared.json';
+import enErrors from '../locale/en/errors.json';
+import enPwa from '../locale/en/pwa.json';
 
 import frApp from '../locale/fr/app.json';
 import frTabs from '../locale/fr/tabs.json';
@@ -63,6 +65,8 @@ import frModals from '../locale/fr/modals.json';
 import frAdmin from '../locale/fr/admin.json';
 import frApp2 from '../locale/fr/app2.json';
 import frAppShared from '../locale/fr/appShared.json';
+import frErrors from '../locale/fr/errors.json';
+import frPwa from '../locale/fr/pwa.json';
 
 const en = {
   app: { ...enApp, ...enApp2, ...enAppShared },
@@ -80,6 +84,8 @@ const en = {
   profile: enProfile,
   modals: enModals,
   admin: enAdmin,
+  errors: enErrors,
+  pwa: enPwa,
 };
 
 const fr = {
@@ -98,6 +104,8 @@ const fr = {
   profile: frProfile,
   modals: frModals,
   admin: frAdmin,
+  errors: frErrors,
+  pwa: frPwa,
 };
 
 // RTL locale list (WCAG + Unicode BIDI). When setAppLocale switches to one of

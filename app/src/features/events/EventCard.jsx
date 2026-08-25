@@ -4,13 +4,14 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Star, Check, CheckCircle, SkipForward } from 'lucide-react';
+import { Check, CheckCircle, SkipForward } from 'lucide-react';
 import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
-import { haptic } from '../../utils/helpers.js';
+
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
-import { EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, generateMaskGradient } from '../../shared/components/BannerCard.jsx';
+import { EVENT_ACCENT_COLORS, TEXT_SHADOW_STYLE, generateMaskGradient } from '../../shared/components/BannerCard.jsx';
 import { PLACEHOLDER_IMAGE } from '../../data/banners.js';
+import { t } from '../../utils/i18n.js';
 
 const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {
   const [resetTick, setResetTick] = useState(0);
@@ -87,7 +88,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           </div>
           <div className="text-right flex-shrink-0">
             {isExpired ? (
-              <span className="kuro-badge kuro-badge-red font-medium">Expired</span>
+              <span className="kuro-badge kuro-badge-red font-medium">{t('events.expired')}</span>
             ) : (
               <>
                 <div className="text-gray-400 text-sm mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
@@ -104,17 +105,17 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           {onStatusChange && !isExpired && (
             <div className="flex gap-1">
               {!isDone && (
-                <button onClick={() => onStatusChange('done')} className="kuro-btn kuro-btn-sm active-emerald min-w-[48px] backdrop-blur-sm" aria-label={`Mark ${event.name} as done`}>
+                <button onClick={() => onStatusChange('done')} className="kuro-btn kuro-btn-sm active-emerald min-w-[48px] backdrop-blur-sm" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={`Mark ${event.name} as done`}>
                   <Check size={12} className="inline -mt-0.5" /> Done
                 </button>
               )}
               {!isSkipped && (
-                <button onClick={() => onStatusChange('skipped')} className="kuro-btn kuro-btn-sm min-w-[48px] backdrop-blur-sm" aria-label={`Skip ${event.name}`}>
+                <button onClick={() => onStatusChange('skipped')} className="kuro-btn kuro-btn-sm min-w-[48px] backdrop-blur-sm" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={`Skip ${event.name}`}>
                   <SkipForward size={12} className="inline -mt-0.5" /> Skip
                 </button>
               )}
               {status && (
-                <button onClick={() => onStatusChange(null)} className="kuro-btn kuro-btn-sm backdrop-blur-sm" aria-label={`Undo ${event.name} status`}>
+                <button onClick={() => onStatusChange(null)} className="kuro-btn kuro-btn-sm backdrop-blur-sm" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={`Undo ${event.name} status`}>
                   {isDone ? 'Undo Done' : 'Undo Skip'}
                 </button>
               )}
@@ -129,6 +130,5 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
   );
 });
 EventCard.displayName = 'EventCard';
-
 
 export { EventCard };

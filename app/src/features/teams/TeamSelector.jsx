@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Search, Star, Users, X, Heart, Swords, TrendingUp, Target, Flame, Droplets, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon } from '../../utils/helpers.js';
+import { getElementColor, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon } from '../../utils/helpers.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -56,7 +56,7 @@ export default function TeamSelector({
                             <h3 className="text-white text-xl font-semibold">{t('teams.selector.title')}</h3>
                             <p className="text-gray-500 text-sm">{t('teams.selector.subtitle', { slot: teamSelectorSlot + 1, team: activeTeam.name })}</p>
                           </div>
-                          <button onClick={() => setTeamSelectorOpen(false)} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.selector.closeAria')}>
+                          <button onClick={() => setTeamSelectorOpen(false)} className="p-3 min-w-[calc(48px*var(--ui-scale,1))] min-h-[calc(48px*var(--ui-scale,1))] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.selector.closeAria')}>
                             <X size={16} />
                           </button>
                         </div>
@@ -203,7 +203,7 @@ export default function TeamSelector({
 
                         {/* Character Grid */}
                         <div className="flex-1 overflow-y-auto p-4">
-                          <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                          <div className="grid grid-cols-4 gap-2">
                             {/* recommendedNames is a Map built by sorting all candidates by score
                                 descending then taking the top slice -- its insertion order already IS
                                 the rank order, so this array's index (not the score itself, which the
@@ -224,7 +224,7 @@ export default function TeamSelector({
                                   onClick={() => selectCharacter(name)}
                                   className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 group collection-card ${cd?.rarity === 5 ? 'holo-5star' : ''} ${isRecommended ? 'border-2 border-orange-400 kuro-shadow-rec' : owned ? (cd?.rarity === 5 ? 'border bg-yellow-500/10 border-yellow-500/30 glow-gold' : 'border bg-purple-500/10 border-purple-500/30 glow-purple') : 'border bg-neutral-800/50 border-neutral-700/50'}`}
                                   style={{
-                                    height: '90px',
+                                    height: '96px',
                                     contain: 'paint',
                                     opacity: owned ? 1 : 0.5,
                                   }}

@@ -87,7 +87,7 @@ export default function ConveneScanner({
               <p style={{ fontSize: 'var(--font-base)', fontWeight: 700, letterSpacing: '0.04em', color: 'rgba(255,255,255,0.85)' }}>Whispering Wishes</p>
             </div>
           </div>
-          <button onClick={closeDirectCamera} className="pointer-events-auto flex items-center justify-center kuro-scanner-btn">
+          <button onClick={closeDirectCamera} aria-label={t('profile.importFlow.direct.closeCamera')} className="pointer-events-auto flex items-center justify-center kuro-scanner-btn">
             <X size={16} style={{ color: 'rgba(255,255,255,0.35)' }} />
           </button>
         </div>
@@ -146,7 +146,7 @@ export default function ConveneScanner({
       {/* Bottom bar */}
       <div className="absolute bottom-0 left-0 right-0 pointer-events-none" style={{ paddingBottom: 'max(20px, env(safe-area-inset-bottom))' }}>
         <div className="flex justify-center pointer-events-auto" style={{ paddingTop: 16 }}>
-          <button onClick={captureDirectCamera} className="relative active:scale-90 transition-transform" style={{ width: 'var(--size-avatar-md)', height: 'var(--size-avatar-md)' }}>
+          <button onClick={captureDirectCamera} aria-label={t('profile.importFlow.direct.captureScreenshot')} className="relative active:scale-90 transition-transform" style={{ width: 'var(--size-avatar-md)', height: 'var(--size-avatar-md)' }}>
             <div className="absolute inset-[-4px] rounded-full" style={{ background: 'conic-gradient(from 0deg, transparent 0%, transparent 20%, rgba(255,255,255,0.3) 45%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.3) 55%, transparent 80%, transparent 100%)', animation: 'captureShimmer 3s linear infinite' }} />
             <div className="absolute inset-0 kuro-scanner-ring-outer" />
             <div className="absolute kuro-scanner-ring-inner" style={{ inset: 4 }} />

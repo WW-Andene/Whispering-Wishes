@@ -5,24 +5,24 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Diamond, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, X } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
-import { APP_VERSION, HEADER_ICON, SERVERS, getServerOffset, ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/constants.js';
-import { CHARACTER_DATA, ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { CURRENT_BANNERS, DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
+import { HEADER_ICON, SERVERS, getServerOffset } from '../../data/constants.js';
+import { CHARACTER_DATA } from '../../data/characters.js';
+import { CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
 import { haptic, getElementColor, getElementBg } from '../../utils/helpers.js';
 import { storageAvailable } from '../../core/storage.js';
 import { clearAllAuxKeys } from '../../core/storageKeys.js';
 import { renderIdCard } from './idCardRenderer.js';
-import { useFocusTrap, FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
-import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
+import { useFocusTrap } from '../../shared/components/FocusTrapModal.jsx';
+
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/bannerUtils.js';
-import { VisualSliderGroup, VISUAL_SLIDER_CONFIGS } from '../../shared/components/VisualSlider.jsx';
+
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
+
 import IdCardModal from './IdCardModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
 import AboutSection from './AboutSection.jsx';
@@ -32,10 +32,7 @@ import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
 
-import {
-  ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH,
-  TROPHY_OVERRIDES_KEY, ALLOWED_IMAGE_HOSTS, isAllowedImageUrl,
-} from '../../shared/constants/appConstants.js';
+import { ADMIN_SALT, ADMIN_TAP_TIMEOUT_MS, MAX_USERNAME_LENGTH, isAllowedImageUrl } from '../../shared/constants/appConstants.js';
 const MAX_ADMIN_ATTEMPTS = 3;
 // Escalating lockout: 24h → 1 week → 1 month → permanent ban (after 3 lockouts)
 const LOCKOUT_ESCALATION = [
@@ -448,7 +445,6 @@ function ProfileTab({
     }
   }, [adminTab, adminUnlocked, showAdminPanel, fetchActivePlayersCount, fetchAdminPlayerList]);
 
-
   // ID Card canvas download — rendering logic extracted to idCardRenderer.js
   const downloadIdCard = useCallback(async (format) => {
     try {
@@ -467,7 +463,6 @@ function ProfileTab({
       toast?.addToast?.('Failed to save ID card. Try a different profile image', 'error');
     }
   }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies, getImageFraming]);
-
 
   return (
     <>
@@ -550,7 +545,7 @@ function ProfileTab({
               <CardBody className="space-y-3">
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center text-gray-400" style={{ background: 'var(--bg-btn)' }}>
+                    <div className="w-[30px] h-[30px] rounded-lg flex items-center justify-center text-gray-400" style={{ background: 'var(--bg-btn)' }}>
                       <Globe size={16} />
                     </div>
                     <div>
@@ -591,7 +586,7 @@ function ProfileTab({
                 {/* OLED Mode Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
                       <Monitor size={16} />
                     </div>
                     <div>
@@ -618,7 +613,7 @@ function ProfileTab({
                 {/* Dyslexic Font Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.dyslexicFont ? 'bg-amber-500 text-white' : 'text-gray-400'}`} style={!visualSettings.dyslexicFont ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.dyslexicFont ? 'bg-amber-500 text-white' : 'text-gray-400'}`} style={!visualSettings.dyslexicFont ? { background: 'var(--bg-btn)' } : undefined}>
                       <Type size={16} />
                     </div>
                     <div>
@@ -641,7 +636,7 @@ function ProfileTab({
                 {/* Color-Blind Mode Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.colorBlindMode ? 'bg-teal-500 text-white' : 'text-gray-400'}`} style={!visualSettings.colorBlindMode ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.colorBlindMode ? 'bg-teal-500 text-white' : 'text-gray-400'}`} style={!visualSettings.colorBlindMode ? { background: 'var(--bg-btn)' } : undefined}>
                       <Eye size={16} />
                     </div>
                     <div>
@@ -664,7 +659,7 @@ function ProfileTab({
                 {/* Swipe Navigation Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
                       <ChevronDown size={16} className="-rotate-90" />
                     </div>
                     <div>
@@ -691,7 +686,7 @@ function ProfileTab({
                 {/* Animations Toggle — 3-state: off < on < full */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[28px] h-[28px] rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
                       <Sparkles size={16} />
                     </div>
                     <div>
@@ -714,7 +709,7 @@ function ProfileTab({
                     <span className="absolute inset-0 flex items-center justify-center text-sm font-bold tracking-wide text-white/80 pointer-events-none select-none">
                       {visualSettings.animationsEnabled === 'off' ? 'OFF' : visualSettings.animationsEnabled === 'on' ? 'ON' : 'FULL'}
                     </span>
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[28px]' : 'left-[48px]'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[30px]' : 'left-[48px]'}`} />
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
@@ -755,7 +750,7 @@ function ProfileTab({
                       className={`flex items-center gap-3 w-full text-left ${bgSectionCollapsed ? '' : 'mb-3'}`}
                       aria-expanded={!bgSectionCollapsed}
                     >
-                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-btn)', color: '#9ca3af' }}>
+                      <div className="w-[30px] h-[30px] rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-btn)', color: '#9ca3af' }}>
                         <Sparkles size={16} />
                       </div>
                       <div className="flex-1">
@@ -868,7 +863,7 @@ function ProfileTab({
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3 mb-3">
                     <div
-                      className="w-[28px] h-[28px] rounded-lg flex items-center justify-center"
+                      className="w-[30px] h-[30px] rounded-lg flex items-center justify-center"
                       style={{ background: visualSettings.theme !== 'default' ? getElementBg(visualSettings.theme) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(visualSettings.theme) : '#9ca3af' }}
                     >
                       <Sparkles size={16} />
@@ -892,7 +887,7 @@ function ProfileTab({
                 {pwa?.canInstall && (
                   <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                     <div className="flex items-center gap-3">
-                      <div className="w-[28px] h-[28px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
+                      <div className="w-[30px] h-[30px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
                         <Download size={16} />
                       </div>
                       <div>

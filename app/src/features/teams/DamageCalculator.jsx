@@ -1,18 +1,19 @@
 import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, BarChart3, ChevronDown, Diamond, Sparkles, Sword, Users, X, Zap } from 'lucide-react';
-import { CHARACTER_DATA } from '../../data/characters.js';
+import { AlertTriangle, ChevronDown, Diamond, Sparkles, Sword, Users, X, Zap } from 'lucide-react';
+
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_DATA, getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { isHealerRole, DMG_FOCUS_ROLE_TAG } from './calcEngine.js';
 import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon } from '../../utils/helpers.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
 import RotationTimeline from './RotationTimeline.jsx';
 import { useSessionState } from '../../hooks/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
-import { computeAutoEquipEntry } from './autoEquip.js';
+import { computeAutoEquipEntry, computeAutoEquipEntryOptimized, pickBestTeamForEnemy } from './autoEquip.js';
+import { RELEASE_ORDER } from '../../data/characters.js';
 import { RotationGuideCard } from './RotationGuideCard.jsx';
 import { EnemyTargetCard, EnemyTargetModal } from './EnemyTargetSection.jsx';
 import { calcTeamStats as calcTeamStatsImpl } from './calcTeamStats.js';
@@ -22,21 +23,38 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,
   setTeamEquipment,
   state,
+  dispatch,
+  collectionData,
   collectionImages,
   teamCompareEntries,
   setTeamCompareEntries,
   confirm,
+  toast,
   onOpenWeaponSelector,
   onOpenEchoSelector,
   onOpenEchoStatPanel,
+  // Enemy target state is owned by TeamsTab (not local here) so the sibling "Team Suggestions"
+  // card there can also read the same selected enemy and rank its list against it, instead of
+  // that card being structurally unable to ever know which enemy is selected.
+  enemyLevel, setEnemyLevel,
+  enemyEcho, setEnemyEcho,
+  enemyEchoModalOpen, setEnemyEchoModalOpen,
+  enemyEchoSearch, setEnemyEchoSearch,
+  enemyEchoRankFilter, setEnemyEchoRankFilter,
+  enemyEchoSetFilter, setEnemyEchoSetFilter,
+  enemyEchoBuffFilter, setEnemyEchoBuffFilter,
 }, ref) {
-  const [enemyLevel, setEnemyLevel] = useState(90);
-  const [enemyEcho, setEnemyEcho] = useState('');
-  const [enemyEchoModalOpen, setEnemyEchoModalOpen] = useState(false);
-  const [enemyEchoSearch, setEnemyEchoSearch] = useState('');
-  const [enemyEchoRankFilter, setEnemyEchoRankFilter] = useState('all');
-  const [enemyEchoSetFilter, setEnemyEchoSetFilter] = useState('all');
-  const [enemyEchoBuffFilter, setEnemyEchoBuffFilter] = useState('all');
+  const [autoTeamPool, setAutoTeamPool] = useState('owned'); // 'owned' | 'any'
+  const [autoTeamBusy, setAutoTeamBusy] = useState(false);
+
+  const ownedNames = useMemo(() => new Set([
+    ...Object.keys(collectionData?.chars5Counts || {}),
+    ...Object.keys(collectionData?.chars4Counts || {}),
+  ]), [collectionData]);
+  const ownedWeaps = useMemo(() => new Set([
+    ...Object.keys(collectionData?.weaps5Counts || {}),
+    ...Object.keys(collectionData?.weaps4Counts || {}),
+  ]), [collectionData]);
 
   // ── Reusable calculator with proper WuWa damage formula ──
   // Memoized so it only recalculates when teamEquipment changes.
@@ -68,7 +86,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   // it isn't an actual enemy.
   const enemyTargetCard = (
     <EnemyTargetCard
-      enemyEcho={enemyEcho} enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
+      enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho} enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
       collectionImages={collectionImages}
       setEnemyEchoSearch={setEnemyEchoSearch} setEnemyEchoModalOpen={setEnemyEchoModalOpen}
     />
@@ -86,10 +104,73 @@ const DamageCalculator = forwardRef(function DamageCalculator({
     />
   );
 
+  // Shared by both the empty-team state (build a team from scratch) and the populated Team
+  // Overview header -- previously only rendered inside the populated branch below, so "Auto Team"
+  // was invisible until the player had already put at least one member in the slots by hand.
+  const autoTeamControls = (
+    <div className="flex items-center gap-1.5">
+      <select
+        value={autoTeamPool}
+        onClick={e => e.stopPropagation()}
+        onChange={e => setAutoTeamPool(e.target.value)}
+        className="text-2xs px-1 py-0.5 rounded bg-black/30 border border-[var(--border-medium)] text-gray-300"
+        aria-label={t('teams.damageCalc.autoTeamPoolAria')}
+        title={t('teams.damageCalc.autoTeamPoolAria')}
+      >
+        <option value="owned">{t('teams.damageCalc.autoTeamPoolOwned')}</option>
+        <option value="any">{t('teams.damageCalc.autoTeamPoolAny')}</option>
+      </select>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          // Auto Team's whole premise is picking a team suited to a SPECIFIC enemy's per-element
+          // RES (that's what pickBestTeamForEnemy actually optimizes for) -- with no enemy selected
+          // there's no RES data to differentiate candidates on, so it silently degraded to just
+          // re-confirming whichever team already scores highest on the enemy-blind heuristic, no
+          // matter which pool/context was chosen. Require a target so the button either does what
+          // its own label promises or explains why it didn't run, instead of quietly doing neither.
+          if (!enemyEcho) {
+            toast?.addToast?.(t('teams.damageCalc.autoTeamNoEnemy'), 'error');
+            return;
+          }
+          setAutoTeamBusy(true);
+          // Deferred so the busy state actually paints before the (synchronous, ~30-150ms)
+          // search runs — pickBestTeamForEnemy builds and calc's several real candidate
+          // teams against the current enemy, it's not instant like a single auto-equip call.
+          setTimeout(() => {
+            try {
+              const pool = autoTeamPool === 'owned' ? [...ownedNames] : RELEASE_ORDER.filter(n => !n.startsWith('Rover:'));
+              const best = pickBestTeamForEnemy(pool, ownedWeaps, ownedNames, enemyEcho, enemyLevel, state.activeTeamIndex);
+              if (!best) {
+                toast?.addToast?.(t('teams.damageCalc.autoTeamNoResult'), 'error');
+                return;
+              }
+              best.members.forEach((name, idx) => {
+                dispatch({ type: 'SET_TEAM_SLOT', teamIndex: state.activeTeamIndex, slotIndex: idx, character: name });
+              });
+              dispatch({ type: 'SET_TEAM_MAIN_DPS', teamIndex: state.activeTeamIndex, name: best.mainDps });
+              setTeamEquipment(prev => ({ ...prev, ...best.teamEquipment }));
+              haptic.success();
+            } finally {
+              setAutoTeamBusy(false);
+            }
+          }, 0);
+        }}
+        disabled={autoTeamBusy}
+        className="action-btn flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-cyan-400/80 hover:text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+        aria-label={t('teams.damageCalc.autoTeamAria')}
+        title={enemyEcho ? t('teams.damageCalc.autoTeamAria') : t('teams.damageCalc.autoTeamNoEnemy')}
+      >
+        <Users size={12} /> {autoTeamBusy ? t('teams.damageCalc.autoTeamBusy') : t('teams.damageCalc.autoTeam')}
+      </button>
+    </div>
+  );
+
   if (!stats) return (
     <>
       {enemyTargetCard}
       <Card><CardBody className="text-center py-6">
+        <div className="flex justify-center mb-3">{autoTeamControls}</div>
         <Users size={24} className="mx-auto mb-2 text-gray-500" />
         <p className="text-gray-400 text-sm">{t('teams.damageCalc.emptyState')}</p>
       </CardBody></Card>
@@ -107,6 +188,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setOverviewCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOverviewCollapsed(p => !p); } }} aria-expanded={!overviewCollapsed}>
           <CardHeader action={
             <div className="flex items-center gap-1.5">
+              {autoTeamControls}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -118,7 +200,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   // sees the results of the ones already processed in this same pass.
                   let snapshot = teamEquipment;
                   allNames.forEach(name => {
-                    const result = computeAutoEquipEntry(name, snapshot, state.activeTeamIndex, allNames, activeTeamData.mainDpsOverride);
+                    const result = computeAutoEquipEntryOptimized(name, snapshot, state.activeTeamIndex, allNames, activeTeamData.mainDpsOverride, activeTeamData.slots, enemyEcho, enemyLevel);
                     if (result) snapshot = { ...snapshot, [result.aeqKey]: result.entry };
                   });
                   setTeamEquipment(snapshot);
@@ -180,7 +262,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       className="kuro-btn text-sm px-2 py-1 flex-shrink-0 self-start"
                       aria-label={t('teams.damageCalc.autoEquipAria', { name: m.name })}
                       onClick={() => {
-                        const result = computeAutoEquipEntry(m.name, teamEquipment, state.activeTeamIndex, members.map(mem => mem.name), activeTeamData.mainDpsOverride);
+                        const result = computeAutoEquipEntryOptimized(m.name, teamEquipment, state.activeTeamIndex, members.map(mem => mem.name), activeTeamData.mainDpsOverride, activeTeamData.slots, enemyEcho, enemyLevel);
                         if (!result) return;
                         setTeamEquipment(prev => ({ ...prev, [result.aeqKey]: result.entry }));
                         haptic.success();
@@ -241,11 +323,20 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                               {/* Weapon slot */}
                               <div
                                 className={`${slotStyle} ${equippedWeap ? (equippedWeap.rarity === 5 ? 'border-yellow-500/40 bg-yellow-500/8 holo-5star' : 'border-purple-500/40 bg-purple-500/8') : 'border-dashed border-white/15 hover:border-yellow-500/40'}`}
+                                role="button"
+                                tabIndex={0}
                                 onClick={() => {
                                   onOpenWeaponSelector(state.activeTeamIndex, m.name);
                                   haptic.light();
                                 }}
+                                onKeyDown={(e) => {
+                                  if (e.key !== 'Enter' && e.key !== ' ') return;
+                                  e.preventDefault();
+                                  onOpenWeaponSelector(state.activeTeamIndex, m.name);
+                                  haptic.light();
+                                }}
                                 title={eq.weapon || t('teams.damageCalc.selectWeapon')}
+                                aria-label={eq.weapon || t('teams.damageCalc.selectWeapon')}
                               >
                                 {equippedWeap && collectionImages[eq.weapon] ? (
                                   <img src={collectionImages[eq.weapon]} alt={eq.weapon} className="w-full h-full object-cover rounded-lg" onError={hideOnError} />
@@ -272,8 +363,21 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                 return (
                                   <div key={ei}
                                     className={`${slotStyle} ${echoName ? `border-${costColor}-500/40 bg-${costColor}-500/8` : 'border-dashed border-white/15 hover:border-' + costColor + '-500/40'}`}
+                                    role="button"
+                                    tabIndex={0}
                                     title={echoName || t('teams.damageCalc.selectEcho', { cost: costLabel })}
+                                    aria-label={echoName || t('teams.damageCalc.selectEcho', { cost: costLabel })}
                                     onClick={() => {
+                                      if (echoName) {
+                                        onOpenEchoStatPanel(state.activeTeamIndex, m.name, ei, echoName);
+                                      } else {
+                                        onOpenEchoSelector(state.activeTeamIndex, m.name, ei);
+                                      }
+                                      haptic.light();
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key !== 'Enter' && e.key !== ' ') return;
+                                      e.preventDefault();
                                       if (echoName) {
                                         onOpenEchoStatPanel(state.activeTeamIndex, m.name, ei, echoName);
                                       } else {
@@ -552,7 +656,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       </div>
                     </div>
                   )}
-
 
                 </div>
               );

@@ -1,4 +1,13 @@
 {
+  "visualSlider": {
+    "fadeDirection": "Fade Direction",
+    "top": "↑ Top",
+    "bottom": "↓ Bottom",
+    "fadeToTop": "↑ Fade to Top",
+    "fadeToBottom": "↓ Fade to Bottom",
+    "setDirectionTopAria": "Set {{key}} direction to top",
+    "setDirectionBottomAria": "Set {{key}} direction to bottom"
+  },
   "confirm": "Confirm",
   "cancel": "Cancel",
   "delete": "Delete",

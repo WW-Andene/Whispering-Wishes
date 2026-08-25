@@ -1,4 +1,7 @@
 {
+  "monsterCard": {
+    "noResData": "No elemental RES data"
+  },
   "selector": {
     "title": "Select Resonator",
     "subtitle": "Slot {{slot}} • {{team}}",
@@ -25,6 +28,14 @@
     "emptyState": "Add Resonators to your team to see damage analysis",
     "fullAutoBuild": "Full Auto Build",
     "fullAutoBuildAria": "Full Auto Build: auto-equip every member of this team at once",
+    "autoTeam": "Auto Team",
+    "autoTeamAria": "Auto Team: pick and build the best 3-character team against the selected enemy",
+    "autoTeamBusy": "Building…",
+    "autoTeamNoResult": "Couldn't build a team from this pool — try a different character pool or check your collection has enough roles covered",
+    "autoTeamNoEnemy": "Select an enemy target first — Auto Team builds a team against a specific enemy's resistances",
+    "autoTeamPoolAria": "Character pool to search for Auto Team",
+    "autoTeamPoolOwned": "Owned only",
+    "autoTeamPoolAny": "Any character",
     "teamOverview": "Team Overview",
     "baseStats": "Base Stats (Lv.90)",
     "weaponPrefix": "+Weapon {{value}}",
@@ -168,6 +179,8 @@
     "saveSuccess": "Loadout \"{{name}}\" saved!",
     "saveAria": "Save equipment loadout",
     "saveTitle": "Save Loadout",
+    "saveCancel": "Cancel",
+    "saveConfirm": "Save",
     "loadAria": "Load equipment loadout",
     "loadTitle": "Load Loadout",
     "clearTeamTitle": "Clear team",
@@ -187,6 +200,7 @@
     "noCharsAssigned": "No characters assigned",
     "tapEmptySlot": "Tap an empty slot to add a Resonator",
     "addSlotAria": "Add resonator to slot {{slot}}",
+    "changeSlotAria": "{{name}}, slot {{slot}} — click to change Resonator",
     "addResonator": "Add Resonator",
     "removeSlotAria": "Remove {{name}} from slot {{slot}}",
     "headlineDpsClearAria": "{{name}} is the headline DPS — click to auto-detect instead",

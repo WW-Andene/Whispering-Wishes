@@ -522,7 +522,7 @@ function PlannerTab({
         {!collapsed.farm && (
           <CardBody className="space-y-3">
             {/* Add Resonator button */}
-            <button onClick={() => { setFarmPickerOpen(true); setFarmSearch(''); }} className="kuro-btn w-full active-gold" style={{ padding: '10px' }}>
+            <button onClick={() => { setFarmPickerOpen(true); setFarmSearch(''); }} className="kuro-btn w-full active-gold" style={{ padding: '8px' }}>
               <Plus size={14} className="inline mr-1.5" />{t('planner.addResonator')}
             </button>
 
@@ -552,7 +552,7 @@ function PlannerTab({
                           return (
                             <button key={name} onClick={() => { setFarmTargetsState(prev => [...prev, { name, ascension: true, skills: true, weapon: false }]); setFarmPickerOpen(false); }}
                               className={`relative rounded-lg overflow-hidden transition-all hover:scale-[1.03] active:scale-95 ${rarity5 ? 'border bg-yellow-500/10 border-yellow-500/30' : 'border bg-purple-500/10 border-purple-500/30'}`}
-                              style={{ height: '90px', contain: 'paint' }}>
+                              style={{ height: '96px', contain: 'paint' }}>
                               {img && <img src={img} alt={name} className="absolute inset-0 w-full h-full object-contain pointer-events-none" loading="lazy" onError={hideOnError} />}
                               <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
                               <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center" style={{ background: getElementColor(cd?.element) }}>{getElementShape(cd?.element) || cd?.element?.[0]}</div>
@@ -593,7 +593,7 @@ function PlannerTab({
               return (
                 <div key={ftg.name} className="space-y-2">
                   {/* ── Splash banner ── */}
-                  <div className="relative overflow-hidden rounded-xl" style={{ height: '100px', border: `1px solid ${elColor}40` }}>
+                  <div className="relative overflow-hidden rounded-xl" style={{ height: '96px', border: `1px solid ${elColor}40` }}>
                     {themeArt && (
                       <img src={themeArt} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" loading="lazy" onError={hideOnError}
                         style={{ opacity: 0.5, objectPosition: artPosition }} />
@@ -603,7 +603,7 @@ function PlannerTab({
                       <span className="font-bold text-2xl text-white px-4 py-1 rounded-lg" style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(3px)', textShadow: `0 1px 6px rgba(0,0,0,0.5)` }}>{ftg.name}</span>
                     </div>
                     <button onClick={() => setFarmTargetsState(prev => prev.filter((_, j) => j !== i))}
-                      className="absolute top-1 right-1 z-20 w-[28px] h-[28px] aspect-square p-0 rounded-lg bg-black/50 text-white/70 hover:text-white flex items-center justify-center transition-opacity btn-icon-square"
+                      className="absolute top-1 right-1 z-20 w-[30px] h-[30px] aspect-square p-0 rounded-lg bg-black/50 text-white/70 hover:text-white flex items-center justify-center transition-opacity btn-icon-square"
                       aria-label={t('planner.removeCharAria', { name: ftg.name })}><X size={12} /></button>
                   </div>
 

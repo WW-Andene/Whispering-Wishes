@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Settings, Trash2, LocateFixed, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
-import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { Card, CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
 import { DEFAULT_ICON_DRAFTS } from '../../data/mapDefaults.js';
@@ -34,7 +34,7 @@ function slugify(s) {
   return String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `zone-${Date.now().toString(36)}`;
 }
 
-export default function MapTab({ navPadding = 80 }) {
+export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const leafletRef = useRef(null);
@@ -1907,7 +1907,6 @@ export default function MapTab({ navPadding = 80 }) {
     }
   }, []);
 
-
   const handleUndo = () => setAuthorPoints(prev => prev.slice(0, -1));
   const handleClear = () => { setAuthorPoints([]); setJsonSnippet(''); };
 
@@ -2125,7 +2124,7 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-point-icon:active { cursor: grabbing; }
         .zone-author-point {
           display: flex; align-items: center; justify-content: center;
-          width: 22px; height: 22px; border-radius: 50%;
+          width: 24px; height: 24px; border-radius: 50%;
           background: var(--bg-card-inner);
           border: 1.5px solid ${COLOR_CANON};
           box-shadow: 0 0 8px rgba(var(--color-gold), 0.5);
@@ -2163,8 +2162,8 @@ export default function MapTab({ navPadding = 80 }) {
           font-size: 12px;
           font-weight: 500;
           letter-spacing: 0.02em;
-          padding: 4px 10px;
-          min-height: 28px;
+          padding: 4px 8px;
+          min-height: 30px;
           border-radius: 8px;
           cursor: pointer;
           background: var(--bg-btn);
@@ -2266,7 +2265,7 @@ export default function MapTab({ navPadding = 80 }) {
           position: absolute;
           left: var(--space-md, 12px);
           right: var(--space-md, 12px);
-          bottom: 56px;
+          bottom: 62px;
           z-index: var(--z-elevated, 10);
           background: var(--bg-card);
           border: 1px solid var(--border-default);
@@ -2287,7 +2286,7 @@ export default function MapTab({ navPadding = 80 }) {
         .zone-author-collapsed {
           position: absolute;
           right: var(--space-md, 12px);
-          bottom: 56px;
+          bottom: 62px;
           z-index: var(--z-elevated, 10);
           display: inline-flex; align-items: center; gap: var(--space-xs, 6px);
           background: var(--bg-card); color: var(--text-body);
@@ -2345,8 +2344,8 @@ export default function MapTab({ navPadding = 80 }) {
           border-radius: var(--input-radius, var(--radius-md, 7px));
           font-family: var(--font-display);
           font-size: 12px;
-          padding: 8px 10px;
-          min-height: 28px;
+          padding: 8px 8px;
+          min-height: 30px;
           outline: none; min-width: 0; width: 100%;
           transition: border-color var(--transition-fast, 120ms);
         }
@@ -2402,7 +2401,7 @@ export default function MapTab({ navPadding = 80 }) {
         }
         .zone-author-panel .draft-row .lvl-tag {
           display: inline-flex; align-items: center; justify-content: center;
-          min-width: 22px;
+          min-width: 24px;
           /* Matches .kuro-badge geometry (2×8 padding, 4px radius,
              10px font) for one consistent inline-chip scale. */
           padding: 2px 8px;
@@ -2457,7 +2456,7 @@ export default function MapTab({ navPadding = 80 }) {
            canonical kuro-btn (10×12) so the chip reads as a button-
            equivalent pill rather than a bespoke surface. */
         .zone-author-toast {
-          position: absolute; top: 56px; left: 50%;
+          position: absolute; top: 62px; left: 50%;
           transform: translateX(-50%);
           z-index: var(--z-toast, 9500);
           padding: 12px;
@@ -2592,7 +2591,7 @@ export default function MapTab({ navPadding = 80 }) {
           content: '';
           position: absolute;
           left: 3px; top: 0;
-          width: 4px; height: 7px;
+          width: 4px; height: 8px;
           border: solid var(--bg-card);
           border-width: 0 1.5px 1.5px 0;
           transform: rotate(45deg);
@@ -2734,7 +2733,7 @@ export default function MapTab({ navPadding = 80 }) {
           background: rgba(var(--color-cyan), 0.06);
           border: 1px solid rgba(var(--color-cyan), 0.2);
           border-radius: 8px;
-          padding: 8px 10px;
+          padding: 8px 8px;
           display: flex; flex-direction: column;
           gap: var(--space-sm, 8px);
         }
@@ -2785,10 +2784,9 @@ export default function MapTab({ navPadding = 80 }) {
           </div>
           <div className="w-full h-48 flex items-center justify-center overflow-hidden" style={{ background: 'var(--bg-btn)' }}>
             <img
-              src="https://i.ibb.co/jZQdMWr1/wuthering-waves-seems-like-abby-will-be-featured-in-new-v0-8kca82nabwbd1-1.png"
+              src="./misc-assets/jZQdMWr1-abby-teaser.png"
               alt=""
-              className="object-cover"
-              style={{ width: '80%', height: '80%' }}
+              className="object-contain w-full h-full"
               loading="eager"
               onError={hideOnError}
             />
@@ -2802,8 +2800,13 @@ export default function MapTab({ navPadding = 80 }) {
           </div>
         </div>
       </FocusTrapModal>
-      <div className="kuro-calc space-y-3 tab-content" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="kuro-card map-card" style={{ height: `calc(100dvh - ${navPadding + 93}px)`, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
+      {/* Wrapper gets the outer height (viewport minus header/nav reserved space); the card is a
+          flex child (flex: 1) that fills whatever's left INSIDE that box, including .tab-content's
+          own padding (box-sizing: border-box handles that automatically). Extra -12: the margin
+          that should sit between the wrapper and the nav (mirroring the one between the header and
+          the wrapper) wasn't showing up on its own, so it's reserved explicitly here. */}
+      <div className="kuro-calc space-y-3 tab-content" style={{ display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1, height: `calc(100dvh - ${headerPadding + navPadding + 12}px)` }}>
+        <div className="kuro-card map-card" style={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
           <div className="kuro-card-inner" style={{ position: 'relative', height: '100%' }}>
             <div
               ref={containerRef}

@@ -105,7 +105,7 @@
       padding-inline-end: 32px;
     }
     [dir="rtl"] .kuro-search-wrap svg:first-child {
-      inset-inline-start: 10px;
+      inset-inline-start: 8px;
       inset-inline-end: auto;
     }
     /* Icons with directional meaning (arrows, chevrons) that should mirror in RTL.
@@ -153,6 +153,11 @@
        §E10-CB-F3: Element icon/shape backup for colorblind accessibility:
        Fusion=Flame, Electro=Bolt, Aero=Wind, Glacio=Snowflake, Havoc=Spiral, Spectro=Star */
     :root {
+      /* Multi-format UI recalculation: set to window.innerWidth/439 (only on
+         non-reference devices, see useIsReferenceDevice.js) via App.jsx. The
+         literal default of 1 here is what the reference device (Xiaomi 13T,
+         439px) and every browser without JS still gets — untouched sizing. */
+      --ui-scale: 1;
       --color-gold: 237, 175, 24;   /* oklch(78% 0.17 85°) */
       --color-pink: 236, 72, 153;   /* oklch(62% 0.22 350°) — §E9-CM-F1: Weapon banner domain color */
       --color-cyan: 56, 189, 248;   /* oklch(76% 0.14 230°) — MED-10: Restrict to: info state, Glacio element, Standard banner */
@@ -188,7 +193,7 @@
       --z-install: 9800;
       --z-max: 9999;
       /* Radius: --radius-full for badges/avatars */
-      --radius-full: 96px;
+      --radius-full: calc(96px * var(--ui-scale, 1));
       --text-body: #dfe5ef;
       --text-heading: #edf1f8;
       --font-display: 'Rajdhani', ui-sans-serif, system-ui, sans-serif;
@@ -213,9 +218,9 @@
       /* DC2-BD1: Border focus token for focus ring definition */
       --border-focus: rgba(var(--color-gold), 0.5);
       /* DC3-BL1: Standardized backdrop-blur tokens */
-      --blur-sm: 4px;
-      --blur-md: 8px;
-      --blur-lg: 16px;
+      --blur-sm: calc(4px * var(--ui-scale, 1));
+      --blur-md: calc(8px * var(--ui-scale, 1));
+      --blur-lg: calc(16px * var(--ui-scale, 1));
       /* DC5-ST3: Trophy tier color tokens */
       --trophy-bronze: #cd7f32;
       --trophy-silver: #c0c0c0;
@@ -223,52 +228,52 @@
       --trophy-diamond: #b9f2ff;
       /* E7-CC2: Spacing tokens for remaining inline elements */
       /* BR-F2: Distinctive 6px base for prominent component spacing */
-      --space-base: 6px;
-      --space-xs: 4px;
-      --space-sm: 8px;
-      --space-md: 12px;
-      --space-lg: 16px;
-      --space-xl: 24px;
-      --space-2xl: 32px;
+      --space-base: calc(6px * var(--ui-scale, 1));
+      --space-xs: calc(4px * var(--ui-scale, 1));
+      --space-sm: calc(8px * var(--ui-scale, 1));
+      --space-md: calc(12px * var(--ui-scale, 1));
+      --space-lg: calc(16px * var(--ui-scale, 1));
+      --space-xl: calc(24px * var(--ui-scale, 1));
+      --space-2xl: calc(32px * var(--ui-scale, 1));
       /* §E4-TS: Type scale — Major Second 1.125× from 14px base
          Micro range (7–12px) is linear by design for data-dense instrument UIs.
          7px: IdCard metadata only   8px: badge counters, star indicators
          9px: timestamps, decorative  10px: labels, categories, button text
          12px: compact body           14px: primary values, card content
          16px: section headers        18px: large display    20px+: hero display */
-      --font-2xs: 10px;
-      --font-sm: 11px;
-      --font-base: 13px;
-      --font-md: 14px;
-      --font-lg: 16px;
-      --font-xl: 17px;
-      --font-2xl: 19px;
-      --font-3xl: 20px;
-      --font-4xl: 22px;
-      --font-5xl: 23px;
-      --font-6xl: 25px;
+      --font-2xs: calc(12px * var(--ui-scale, 1));
+      --font-sm: calc(12px * var(--ui-scale, 1));
+      --font-base: calc(12px * var(--ui-scale, 1));
+      --font-md: calc(14px * var(--ui-scale, 1));
+      --font-lg: calc(16px * var(--ui-scale, 1));
+      --font-xl: calc(16px * var(--ui-scale, 1));
+      --font-2xl: calc(19px * var(--ui-scale, 1));
+      --font-3xl: calc(16px * var(--ui-scale, 1));
+      --font-4xl: calc(22px * var(--ui-scale, 1));
+      --font-5xl: calc(23px * var(--ui-scale, 1));
+      --font-6xl: calc(25px * var(--ui-scale, 1));
       /* §E1-DIM: Architectural dimension tokens — card heights, avatar sizes */
-      --height-banner: 192px;     /* Banner/Event cards minimum height */
-      --height-card-sm: 140px;    /* Collection grid cards */
-      --height-card-md: 192px;    /* Team selector cards */
-      --size-avatar-lg: 112px;    /* Profile picture (IdCard, profile tab) */
-      --size-avatar-md: 64px;     /* Camera button, medium icons */
-      --size-avatar-sm: 28px;     /* Trophy icons, small avatars */
-      --size-touch-min: 48px;     /* iOS HIG minimum touch target */
-      --size-icon-btn: 28px;      /* Small icon buttons (profile pic setter) */
+      --height-banner: calc(192px * var(--ui-scale, 1));     /* Banner/Event cards minimum height */
+      --height-card-sm: calc(140px * var(--ui-scale, 1));    /* Collection grid cards */
+      --height-card-md: calc(192px * var(--ui-scale, 1));    /* Team selector cards */
+      --size-avatar-lg: calc(112px * var(--ui-scale, 1));    /* Profile picture (IdCard, profile tab) */
+      --size-avatar-md: calc(64px * var(--ui-scale, 1));     /* Camera button, medium icons */
+      --size-avatar-sm: calc(30px * var(--ui-scale, 1));     /* Trophy icons, small avatars */
+      --size-touch-min: calc(48px * var(--ui-scale, 1));     /* iOS HIG minimum touch target */
+      --size-icon-btn: calc(30px * var(--ui-scale, 1));      /* Small icon buttons (profile pic setter) */
       /* MED-3 + TK-F2: Radius token scale + component-level abstraction */
-      --radius-micro: 2px;
-      --radius-xs: 4px;
-      --radius-sm: 6px;
-      --radius-md: 8px;
-      --radius-lg: 12px;
-      --radius-xl: 16px;
+      --radius-micro: calc(2px * var(--ui-scale, 1));
+      --radius-xs: calc(4px * var(--ui-scale, 1));
+      --radius-sm: calc(6px * var(--ui-scale, 1));
+      --radius-md: calc(8px * var(--ui-scale, 1));
+      --radius-lg: calc(12px * var(--ui-scale, 1));
+      --radius-xl: calc(16px * var(--ui-scale, 1));
       --radius-pill: 9999px;
       --card-radius: var(--radius-xl);
-      --card-padding: 16px;
+      --card-padding: calc(16px * var(--ui-scale, 1));
       --btn-radius: var(--radius-lg);       /* 12px, matches actual button radius */
-      --btn-padding: 12px 12px;             /* Button default padding (matches input) */
-      --input-padding: 12px 12px;           /* Input/select default padding */
+      --btn-padding: calc(12px * var(--ui-scale, 1)) calc(12px * var(--ui-scale, 1));             /* Button default padding (matches input) */
+      --input-padding: calc(12px * var(--ui-scale, 1)) calc(12px * var(--ui-scale, 1));           /* Input/select default padding */
       --input-radius: var(--radius-md);     /* Input/select border-radius (8px) */
       --stat-radius: var(--radius-lg);
       --label-margin: var(--space-base);    /* Label bottom margin (6px) */
@@ -376,7 +381,7 @@
     }
     .kuro-field-error {
       color: #fca5a5;
-      font-size: 10px;
+      font-size: 8px;
       margin-top: 4px;
       display: block;
     }
@@ -391,7 +396,7 @@
     }
     .kuro-search-wrap svg:first-child {
       position: absolute;
-      left: 10px;
+      left: 8px;
       top: 50%;
       transform: translateY(-50%);
       color: #6b7389;
@@ -784,7 +789,7 @@
       letter-spacing: 0.03em; /* E4-LS1: Intentional terminal-style positive tracking */
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     
@@ -926,7 +931,7 @@
       display: inline-flex;
       align-items: center;
       gap: 3px;
-      font-size: 10px;
+      font-size: 8px;
       padding: 2px 8px;
       border-radius: 4px;
       border: 1px solid;
@@ -947,14 +952,14 @@
     /* MED-6: Compact button variants for inline actions */
     .kuro-btn-sm {
       font-size: 12px;
-      padding: 4px 10px;
-      min-height: 28px;
+      padding: 4px 8px;
+      min-height: 30px;
       border-radius: 8px;
     }
     .kuro-btn-icon {
       padding: 6px;
       aspect-ratio: 1;
-      min-height: 28px;
+      min-height: 30px;
     }
 
     /* E5-BT6: Button loading state — spinner + preserved width */
@@ -1105,7 +1110,7 @@
     /* E2-MO2: Compact inputs on mobile for above-fold density */
     @media (max-width: 640px) {
       .kuro-calc .kuro-input {
-        padding: 8px 10px;
+        padding: 8px 8px;
         font-size: 13px;
       }
     }
@@ -1113,7 +1118,7 @@
     .kuro-input-sm {
       padding: 4px 8px;
       font-size: 12px;
-      width: 56px;
+      width: 62px;
       text-align: center;
     }
     
@@ -1287,8 +1292,8 @@
     .kuro-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: linear-gradient(135deg, #e6b030, #edaf18);
       cursor: pointer;
@@ -1303,8 +1308,8 @@
     }
     
     .kuro-slider::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: linear-gradient(135deg, #e6b030, #edaf18);
       cursor: pointer;
@@ -1414,8 +1419,8 @@
     /* MED-36: Chart container with responsive aspect ratio */
     .kuro-chart-container {
       aspect-ratio: 16 / 9;
-      max-height: 300px;
-      min-height: 150px;
+      max-height: 288px; /* 256 + 32, composite-primary rounding (CLAUDE.md, delta>16px) */
+      min-height: 144px; /* 128 + 16, composite-primary rounding (CLAUDE.md, delta>16px) */
     }
 
     /* MED-22: Pity danger zone — progressive visual urgency */
@@ -1464,7 +1469,7 @@
     .kuro-tooltip {
       position: absolute;
       z-index: 9999;
-      padding: 6px 10px;
+      padding: 6px 8px;
       font-size: 11px;
       color: var(--text-heading);
       background: rgba(12, 16, 24, 0.92);
@@ -1506,16 +1511,16 @@
       border-radius: 4px;
     }
     .kuro-skeleton-row {
-      height: 36px;
+      height: 32px;
       margin-bottom: 6px;
       border-radius: 8px;
     }
     .kuro-skeleton-stat {
-      height: 72px;
+      height: 64px;
       border-radius: 8px;
     }
     .kuro-skeleton-text {
-      height: 10px;
+      height: 8px;
       border-radius: 4px;
     }
     .kuro-skeleton-circle {
@@ -1547,7 +1552,7 @@
       content: '';
       position: absolute;
       top: 0; left: 50%; transform: translateX(-50%);
-      width: 40px;
+      width: 32px;
       height: 1px;
       background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 0.3), transparent);
     }
@@ -1686,7 +1691,7 @@
     [role="columnheader"] {
       font-weight: 600;
       text-align: left;
-      font-size: 10px;
+      font-size: 8px;
       color: var(--text-body);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -1741,7 +1746,7 @@
 
     /* CD-F1: Purpose-based card variants */
     .card-data {
-      padding: 10px;
+      padding: 8px;
     }
     .card-action {
       background: rgba(255, 255, 255, 0.03);
@@ -1768,7 +1773,7 @@
 
     /* FB-F1: Delete/removal slide-out animation */
     @keyframes kuroSlideOut {
-      from { opacity: 1; transform: translateX(0); max-height: 100px; }
+      from { opacity: 1; transform: translateX(0); max-height: 96px; }
       to { opacity: 0; transform: translateX(-20px); max-height: 0; overflow: hidden; }
     }
     .kuro-slide-out {
@@ -2466,7 +2471,7 @@
       overflow: hidden;
       background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008));
       border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px;
+      padding: 8px;
     }
     .idcard-section--lg {
       padding: 12px;
@@ -2500,8 +2505,8 @@
       position: absolute;
       top: 6px;
       right: 6px;
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-top: 1px solid rgba(255,255,255,0.12);
       border-right: 1px solid rgba(255,255,255,0.12);
       border-radius: 0 3px 0 0;
@@ -2510,8 +2515,8 @@
       position: absolute;
       bottom: 6px;
       left: 6px;
-      width: 10px;
-      height: 10px;
+      width: 8px;
+      height: 8px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
       border-left: 1px solid rgba(255,255,255,0.08);
       border-radius: 0 0 0 3px;
@@ -2704,8 +2709,8 @@
     /* ═══ SCANNER UI (§E5-SC) ═══ */
     /* ConveneScanner button style */
     .kuro-scanner-btn {
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       border-radius: 12px;
       background: rgba(6,10,18,0.8);
       backdrop-filter: blur(12px);

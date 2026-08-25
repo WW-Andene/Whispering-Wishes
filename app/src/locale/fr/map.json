@@ -1,4 +1,7 @@
 {
+  "zonesPopover": {
+    "noZones": "Aucune zone"
+  },
   "wip": {
     "title": "Carte — En cours de développement",
     "close": "Fermer",

@@ -4,10 +4,8 @@
 // Pure async function: takes data, produces downloadable canvas image.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { APP_VERSION, HEADER_ICON } from '../../data/constants.js';
+import { HEADER_ICON } from '../../data/constants.js';
 import { ALL_CHARACTERS } from '../../data/characters.js';
-import { getElementColor, getElementBg } from '../../utils/helpers.js';
-import { getMergedHistories } from '../../core/storageKeys.js';
 
 /**
  * Render and download an ID card as PNG.

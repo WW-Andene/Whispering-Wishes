@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { RefreshCcw, Calendar } from 'lucide-react';
 import { getLocalizedEvents } from '../../data/banners.js';
 import { getServerOffset } from '../../data/constants.js';
-import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
+import { getServerAdjustedEnd } from '../../core/time.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { EventCard } from './EventCard.jsx';
 import { getActiveBanners } from '../../shared/components/bannerUtils.js';
@@ -189,16 +189,7 @@ function EventsTab({
         ) : (
           <>
             {active.map((entry) => renderCard(entry, false))}
-            {expired.length > 0 && (
-              <>
-                <div className="flex items-center gap-2 pt-2 pb-2">
-                  <div className="flex-1 h-px bg-gray-700/50" />
-                  <span className="text-gray-500 text-sm font-medium uppercase tracking-wider">{t('events.expired')}</span>
-                  <div className="flex-1 h-px bg-gray-700/50" />
-                </div>
-                {expired.map((entry) => renderCard(entry, true))}
-              </>
-            )}
+            {expired.map((entry) => renderCard(entry, true))}
           </>
         )}
       </div>

@@ -1,0 +1,18 @@
+{
+  "tabCrash": {
+    "title": "Something went wrong",
+    "message": "The {{tab}} tab encountered an error.",
+    "reload": "↻ Reload",
+    "reloadAria": "Reload the {{tab}} tab",
+    "details": "Error details"
+  },
+  "appCrash": {
+    "title": "Whispering Wishes crashed",
+    "message": "Something unexpected went wrong. Your data is safe in local storage.",
+    "tryAgain": "Try Again",
+    "reloadPage": "Reload Page",
+    "details": "Error details",
+    "genericMessage": "An unexpected error occurred."
+  },
+  "loading": "Loading..."
+}

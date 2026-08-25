@@ -3,7 +3,7 @@
 // Banner utility functions and admin constants.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { CURRENT_BANNERS, getLocalizedCurrentBanners } from '../../data/banners.js';
+import { getLocalizedCurrentBanners } from '../../data/banners.js';
 import { storageAvailable, sanitizeStateObj } from '../../core/storage.js';
 import { getLocale } from '../../utils/i18n.js';
 
@@ -31,6 +31,5 @@ const getActiveBanners = () => {
   const custom = loadCustomBanners();
   return custom || getLocalizedCurrentBanners(getLocale());
 };
-
 
 export { ADMIN_BANNER_KEY, ADMIN_HASH, loadCustomBanners, getActiveBanners };
