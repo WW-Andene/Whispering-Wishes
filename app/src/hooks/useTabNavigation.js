@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TAB_ORDER } from '../data/constants.js';
 import { haptic } from '../utils/helpers.js';
+import { getFrameEl } from '../shared/components/ViewportFrame.jsx';
 
 export function useTabNavigation(swipeEnabled) {
   const [activeTab, setActiveTabRaw] = useState('tracker');
@@ -28,13 +29,14 @@ export function useTabNavigation(swipeEnabled) {
   const activeTabRef = useRef(activeTab);
 
   const setActiveTab = useCallback((tab) => {
-    tabScrollPositions.current[activeTabRef.current] = window.scrollY;
+    tabScrollPositions.current[activeTabRef.current] = getFrameEl()?.scrollTop ?? 0;
     setActiveTabRaw(tab);
   }, []);
 
   useEffect(() => {
     const saved = tabScrollPositions.current[activeTab];
-    window.scrollTo(0, saved || 0);
+    const frameEl = getFrameEl();
+    if (frameEl) frameEl.scrollTop = saved || 0;
   }, [activeTab]);
 
   useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);

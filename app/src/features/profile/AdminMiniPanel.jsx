@@ -6,6 +6,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ClipboardList, Settings, X } from 'lucide-react';
+import { getFrameEl } from '../../shared/components/ViewportFrame.jsx';
 import { APP_VERSION } from '../../data/constants.js';
 import { CHARACTER_DATA, RELEASE_ORDER } from '../../data/characters.js';
 import { Card, CardBody } from '../../shared/components/Card.jsx';
@@ -384,6 +385,6 @@ export default function AdminMiniPanel({
         </Card>
       </div>
     </div>,
-    document.body
+    getFrameEl()
   );
 }
