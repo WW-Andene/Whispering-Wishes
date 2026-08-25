@@ -59,6 +59,8 @@ function AnalyticsTab({
   toast,
   hashUidForStorage,
   checkFirebaseRateLimit,
+  headerPadding,
+  navPadding,
 }) {
   const { getFirebaseAuth, firebaseUrl, firebaseFetch, FIREBASE_AVAILABLE } = useCloudStorage();
   // ── Analytics-only state ──────────────────────────────────────────────────
@@ -392,7 +394,15 @@ function AnalyticsTab({
             )}
 
             {!overallStats ? (
-              <div className="min-h-[384px] flex items-center justify-center">
+              // Centered on the actual visible viewport (between the floating header and
+              // bottom nav), not just within an arbitrary fixed-height box — a static
+              // min-h-[384px] only centers the card relative to itself, which reads as
+              // "stuck near the top" on any screen taller than ~384px + header/nav once
+              // the Achievements card above it (when present) is accounted for.
+              <div
+                className="flex items-center justify-center"
+                style={{ minHeight: `calc(100dvh - ${(headerPadding ?? 64) + (navPadding ?? 64)}px)` }}
+              >
                 <Card className="w-full">
                   <CardBody className="kuro-empty-state text-center py-8">
                     <BarChart3 size={32} className="mx-auto mb-2 text-gray-400" />

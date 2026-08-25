@@ -1206,6 +1206,8 @@ function WhisperingWishesInner() {
                 toast={toast}
                 hashUidForStorage={hashUidForStorage}
                 checkFirebaseRateLimit={checkFirebaseRateLimit}
+                headerPadding={headerPadding}
+                navPadding={navPadding}
               />
 
             </Suspense>
