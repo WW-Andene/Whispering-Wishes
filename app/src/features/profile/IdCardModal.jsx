@@ -12,7 +12,7 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { t } from '../../utils/i18n.js';
+import { t, formatNumber } from '../../utils/i18n.js';
 
 const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
@@ -105,7 +105,7 @@ export default function IdCardModal({
                     <div className="grid grid-cols-3 gap-1.5">
                     {[
                       { label: t('profile.idCard.avgPity'), value: overallStats?.avgPity ?? '—', color: '#edaf18', bg: 'rgba(237,175,24,0.1)', bc: 'rgba(237,175,24,0.3)' },
-                      { label: t('profile.idCard.totalConvenes'), value: overallStats?.totalPulls?.toLocaleString('en-US') ?? '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
+                      { label: t('profile.idCard.totalConvenes'), value: overallStats?.totalPulls != null ? formatNumber(overallStats.totalPulls) : '—', color: '#e5e7eb', bg: 'var(--bg-stat)', bc: 'rgba(255,255,255,0.12)' },
                       { label: t('profile.idCard.fiveStarObtained'), value: overallStats?.fiveStars ?? '—', color: '#a855f7', bg: 'rgba(168,85,247,0.1)', bc: 'rgba(168,85,247,0.3)' },
                       { label: t('profile.idCard.winRate5050'), value: overallStats?.winRate ? overallStats.winRate + '%' : '—', color: '#22c55e', bg: 'rgba(34,197,94,0.1)', bc: 'rgba(34,197,94,0.3)' },
                       { label: t('profile.idCard.won'), value: overallStats?.won5050 ?? '—', color: '#4ade80', bg: 'rgba(34,197,94,0.06)', bc: 'rgba(34,197,94,0.2)' },
