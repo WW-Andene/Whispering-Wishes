@@ -750,6 +750,26 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         }
       });
 
+      // A real, deliberate data convention: some passive, always-on team-wide buffs (not tied to an
+      // outro/Liberation trigger) are stored in selfBuffs with target:'team' instead of a dedicated
+      // team-buff array (see Sigrika's Blessing of Runes -- "+48% Aero DMG to whichever Resonator is
+      // active", explicitly NOT self-only despite the array name -- and Rover: Electro's Overshock
+      // team ATK buff). This loop previously only ever read a non-main teammate's outroBuffs/libBuffs,
+      // never selfBuffs at all, so a teammate's real target:'team' buff was completely invisible to
+      // the actual DPS number -- confirmed via a direct A/B calcTeamStats comparison (Sigrika vs. a
+      // same-element filler with no such buff produced byte-identical elemDmg). isMain is excluded
+      // here since a main DPS's own selfBuffs (any target) already apply to themselves below.
+      if (!isMain) {
+        (bt.selfBuffs || []).forEach(b => {
+          if (b.target !== 'team') return;
+          const uptime = overlapUptime(blockStart(m.name), b.duration || 25);
+          const val = b.value * uptime;
+          if (b.stat === 'atkPct') { if (mainDps.scaling === 'ATK') mainStats.atkPct += val; }
+          else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(mainStats, b.stat, val, { condition: b.condition, dpsElLower: mainDpsElLower });
+          else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'echoDmg') applyBuff(mainStats, b.stat, val);
+        });
+      }
+
       if (isMain) {
         const mainTotalER = energyCycleFactors?.[mainDps.name]?.totalER;
         (bt.selfBuffs || []).forEach(b => {
