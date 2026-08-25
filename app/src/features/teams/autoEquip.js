@@ -47,6 +47,18 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
       recSets.set(ownElementSet, 5);
     }
   }
+  // No curated set recommendation to parse at all (bestEchoes is missing/unconfirmed — e.g. an
+  // unreleased character, or any future data-entry gap) — without this, pickEcho below has an
+  // empty setPrefs map and its whole selection loop never runs, silently leaving every echo slot
+  // null instead of degrading to a worse-but-real build. Same generic same-element fallback the
+  // off-role-hypercarry branch above already uses, just applied unconditionally whenever there's
+  // still nothing to build off of, not only for that one specific case.
+  if (recSets.size === 0) {
+    const allTierEchoes = [...ALL_4COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_1COST_ECHOES];
+    const genericElementSet = Object.keys(ECHO_SETS).find(s => ECHO_SETS[s].element === d.element
+      && allTierEchoes.some(n => ECHO_DATA[n]?.sets?.includes(s)));
+    if (genericElementSet) recSets.set(genericElementSet, 5);
+  }
   const directEchoes = new Set(
     [...rawDirectEchoes].filter(name => (ECHO_DATA[name]?.sets || []).some(s => recSets.has(s)))
   );
