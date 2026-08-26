@@ -39,6 +39,17 @@ public class MainActivity extends BridgeActivity {
     @Override
     @SuppressLint("JavascriptInterface")
     protected void onCreate(Bundle savedInstanceState) {
+        // The manifest points this activity at AppTheme.NoActionBarLaunch (a
+        // Theme.SplashScreen variant) so the OS shows a splash instead of a
+        // blank window during cold start — but nothing ever switched the
+        // activity's real theme back afterward, so it stayed on the splash
+        // theme for its entire life. That theme isn't the app's actual dark,
+        // edge-to-edge NoActionBar theme: its own status-bar defaults painted
+        // an opaque bar on top of the WebView instead of the transparent one
+        // AppTheme.NoActionBar declares, hiding content underneath it. Must
+        // run before super.onCreate() so the real theme is active before the
+        // first frame is drawn.
+        setTheme(R.style.AppTheme_NoActionBar);
         // Must run before super.onCreate() — Capacitor registers plugins
         // while the Bridge is being constructed there.
         registerPlugin(SystemSettingsPlugin.class);

@@ -13,6 +13,15 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowBackground">@color/app_background</item>
+        <!-- Explicit transparent status/nav bars — MainActivity already calls
+             setDecorFitsSystemWindows(false) so the WebView draws full-bleed
+             underneath them, but that alone doesn't stop the OS from painting
+             an opaque default color there too; without this, whatever
+             AppCompat.DayNight.NoActionBar falls back to (not this app's navy)
+             sits on top of the content instead of letting it show through. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
 
