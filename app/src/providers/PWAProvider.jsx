@@ -5,7 +5,7 @@
 
 import { useState, useMemo, useCallback, useEffect, createContext, useContext } from 'react';
 import { X } from 'lucide-react';
-import { HEADER_ICON } from '../data/constants.js';
+import { HEADER_ICON, APP_VERSION } from '../data/constants.js';
 import { t } from '../utils/i18n.js';
 
 // P14-FIX: HIGH-6 — Service worker code moved to /public/sw.js (static file).
@@ -131,10 +131,24 @@ const PWAProvider = ({ children }) => {
     let swUpdateHandler = null;
     let swStateChangeHandler = null;
     let swInstallingWorker = null;
+    let swSyncVersionHandler = null;
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js', { scope: './' })
         .then((registration) => {
           swRegistration = registration;
+          // sw.js's SET_VERSION handler existed but nothing ever actually sent
+          // this message — its own APP_VERSION constant (used to name the
+          // precache bucket that PRECACHE files like manifest.webmanifest live
+          // in) silently drifted from the app's real version indefinitely,
+          // with no way to force a refresh short of hand-editing sw.js's own
+          // bytes (the only thing that makes a browser re-run the SW's
+          // `install` event, which is what actually refetches PRECACHE from
+          // the network). Sending it on every load — to whichever worker is
+          // currently controlling, not just a freshly installed one — keeps
+          // the active worker's cache-name bookkeeping in sync going forward.
+          swSyncVersionHandler = () => navigator.serviceWorker.controller?.postMessage({ type: 'SET_VERSION', version: APP_VERSION });
+          swSyncVersionHandler();
+          navigator.serviceWorker.addEventListener('controllerchange', swSyncVersionHandler);
           swUpdateHandler = () => {
             const newWorker = registration.installing;
             if (!newWorker) return;
@@ -162,6 +176,9 @@ const PWAProvider = ({ children }) => {
       // P5-01 audit fix: detach SW registration listeners on unmount.
       if (swRegistration && swUpdateHandler) {
         try { swRegistration.removeEventListener('updatefound', swUpdateHandler); } catch {}
+      }
+      if (swSyncVersionHandler && 'serviceWorker' in navigator) {
+        try { navigator.serviceWorker.removeEventListener('controllerchange', swSyncVersionHandler); } catch {}
       }
       if (swInstallingWorker && swStateChangeHandler) {
         try { swInstallingWorker.removeEventListener('statechange', swStateChangeHandler); } catch {}

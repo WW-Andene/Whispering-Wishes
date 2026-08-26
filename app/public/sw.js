@@ -5,7 +5,16 @@
 // proper SW update lifecycle. A static file fixes all three issues.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-let APP_VERSION = '3.5.0'; // Fallback — can be overridden by app via message
+// P26-FIX: bumped 3.5.0 -> 3.5.1 to force a real SW update. Browsers only
+// re-run the `install` event (which is what actually refetches PRECACHE —
+// manifest.webmanifest, index.html, etc. — from the network) when this
+// file's own bytes change; editing PRECACHE'd files themselves does nothing
+// on their own. The SET_VERSION postMessage handler below existed to keep
+// this in sync with the app's real version, but nothing in src/ ever
+// actually sent that message — a dead mechanism that let this drift
+// indefinitely while every other fix silently kept serving a stale
+// manifest.webmanifest to already-installed clients.
+let APP_VERSION = '3.5.1';
 let APP_CACHE = `ww-app-v${APP_VERSION}`;
 let IMG_CACHE = `ww-images-v${APP_VERSION}`;
 let CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
