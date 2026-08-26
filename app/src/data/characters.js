@@ -4515,710 +4515,710 @@ const SKILL_ICONS = {
   // existing reference to it still resolves. All new icons sourced directly from fandom's
   // fandom's static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19).
   'Aalto': {
-    'Half Truths': './characters/8gYdwYCF-skill-pistols.webp', // Basic ATK — shared generic Pistols icon
-    'Standard': './characters/8gYdwYCF-skill-pistols.webp',
-    'Shift Trick': './characters/4ZDDVq43-aalto-skill.webp',
-    'Flower in the Mist': './characters/qYjnpYdK-aalto-heavy.webp',
-    'Misty Cover': './characters/35S8hKWN-aalto-liberation.webp',
-    'Mistcloak Dash': './characters/35S8hKWN-aalto-liberation.webp', // alias, see comment above
-    'Feint Shot': './characters/PzsmFsvH-Skill-Feint-Shot.webp',
-    'Dissolving Mist': './characters/N2bhMGbv-Skill-Dissolving-Mist.webp',
+    'Half Truths': './characters/_shared/8gYdwYCF-skill-pistols.webp', // Basic ATK — shared generic Pistols icon
+    'Standard': './characters/_shared/8gYdwYCF-skill-pistols.webp',
+    'Shift Trick': './characters/aalto/4ZDDVq43-aalto-skill.webp',
+    'Flower in the Mist': './characters/aalto/qYjnpYdK-aalto-heavy.webp',
+    'Misty Cover': './characters/aalto/35S8hKWN-aalto-liberation.webp',
+    'Mistcloak Dash': './characters/aalto/35S8hKWN-aalto-liberation.webp', // alias, see comment above
+    'Feint Shot': './characters/aalto/PzsmFsvH-Skill-Feint-Shot.webp',
+    'Dissolving Mist': './characters/aalto/N2bhMGbv-Skill-Dissolving-Mist.webp',
   },
   'Baizhi': {
-    'Destined Promise': './characters/6c75rLCc-baizhi-basic.webp', // Basic ATK — generic Rectifier icon
-    'Standard': './characters/6c75rLCc-baizhi-basic.webp',
-    'Emergency Plan': './characters/2BC255K-baizhi-skill.webp',
-    'Momentary Union': './characters/fsP021g-baizhi-liberation.webp',
-    'Cycle of Life': './characters/d0nRGZwy-baizhi-forte.webp',
-    'Overflowing Frost': './characters/bghHsrhw-Skill-Overflowing-Frost.webp',
-    'Rejuvinating Flow': './characters/Zps3MW2N-Skill-Rejuvinating-Flow.webp', // fandom's own spelling ("Rejuvinating") — kept verbatim to match the wiki's file name
+    'Destined Promise': './characters/baizhi/6c75rLCc-baizhi-basic.webp', // Basic ATK — generic Rectifier icon
+    'Standard': './characters/baizhi/6c75rLCc-baizhi-basic.webp',
+    'Emergency Plan': './characters/baizhi/2BC255K-baizhi-skill.webp',
+    'Momentary Union': './characters/baizhi/fsP021g-baizhi-liberation.webp',
+    'Cycle of Life': './characters/baizhi/d0nRGZwy-baizhi-forte.webp',
+    'Overflowing Frost': './characters/baizhi/bghHsrhw-Skill-Overflowing-Frost.webp',
+    'Rejuvinating Flow': './characters/baizhi/Zps3MW2N-Skill-Rejuvinating-Flow.webp', // fandom's own spelling ("Rejuvinating") — kept verbatim to match the wiki's file name
   },
   'Chixia': {
-    'POW POW': './characters/xq4xPQNP-Lynae-basic.webp', // Basic ATK — shared generic Pistols icon
-    'Standard': './characters/xq4xPQNP-Lynae-basic.webp',
-    'Whizzing Fight Spirit': './characters/s9jWxj9V-chixia-skill.webp',
-    'Blazing Flames': './characters/67N4dq55-chixia-liberation.webp',
-    'Heroic Bullets': './characters/x8mwJBr0-chixia-forte.webp',
-    'Grand Entrance': './characters/NdrkdWzL-Skill-Grand-Entrance.webp',
-    'Leaping Flames': './characters/2Ygxpzps-Skill-Leaping-Flames.webp',
+    'POW POW': './characters/_shared/xq4xPQNP-Lynae-basic.webp', // Basic ATK — shared generic Pistols icon
+    'Standard': './characters/_shared/xq4xPQNP-Lynae-basic.webp',
+    'Whizzing Fight Spirit': './characters/chixia/s9jWxj9V-chixia-skill.webp',
+    'Blazing Flames': './characters/chixia/67N4dq55-chixia-liberation.webp',
+    'Heroic Bullets': './characters/chixia/x8mwJBr0-chixia-forte.webp',
+    'Grand Entrance': './characters/chixia/NdrkdWzL-Skill-Grand-Entrance.webp',
+    'Leaping Flames': './characters/chixia/2Ygxpzps-Skill-Leaping-Flames.webp',
   },
   'Encore': {
-    'Wooly Attack': './characters/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon (same asset already used for Yinlin), also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Cosmos: Frolicking': './characters/RkMykBkT-Skill-Rectifier.webp', // Cosmos Rave's Basic ATK replacement — same generic weapon icon
-    'Flaming Woolies': './characters/twHsyRRM-Skill-Flaming-Woolies.webp',
-    'Cosmos Rampage': './characters/twHsyRRM-Skill-Flaming-Woolies.webp', // Cosmos Rave's Resonance Skill replacement, same wiki icon as the base Skill
-    'Cosmos Rave': './characters/CKy2Dkf5-Skill-Cosmos-Rave.webp',
-    'Heavy ATK: Cloudy Frenzy': './characters/whstB0k3-Skill-Black-White-Woolies.webp', // Forte Circuit's own icon, covers both Forte states
-    'Heavy ATK: Cosmos Rupture': './characters/whstB0k3-Skill-Black-White-Woolies.webp',
-    'Woolies Helpers': './characters/gbpQxXkC-Skill-Woolies-Can-Help.webp',
-    'Woolies Can Help!': './characters/gbpQxXkC-Skill-Woolies-Can-Help.webp', // rotation-step phrasing, same icon
-    'Cosmos: Rampage': './characters/twHsyRRM-Skill-Flaming-Woolies.webp', // rotation-step phrasing for 'Cosmos Rampage', same icon
-    'Heavy Attack: Cosmos Rupture': './characters/whstB0k3-Skill-Black-White-Woolies.webp', // rotation-step phrasing ('Attack' vs 'ATK'), same icon
-    'Thermal Field': './characters/MkS6WNzG-Skill-Thermal-Field.webp',
+    'Wooly Attack': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon (same asset already used for Yinlin), also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Cosmos: Frolicking': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Cosmos Rave's Basic ATK replacement — same generic weapon icon
+    'Flaming Woolies': './characters/encore/twHsyRRM-Skill-Flaming-Woolies.webp',
+    'Cosmos Rampage': './characters/encore/twHsyRRM-Skill-Flaming-Woolies.webp', // Cosmos Rave's Resonance Skill replacement, same wiki icon as the base Skill
+    'Cosmos Rave': './characters/encore/CKy2Dkf5-Skill-Cosmos-Rave.webp',
+    'Heavy ATK: Cloudy Frenzy': './characters/encore/whstB0k3-Skill-Black-White-Woolies.webp', // Forte Circuit's own icon, covers both Forte states
+    'Heavy ATK: Cosmos Rupture': './characters/encore/whstB0k3-Skill-Black-White-Woolies.webp',
+    'Woolies Helpers': './characters/encore/gbpQxXkC-Skill-Woolies-Can-Help.webp',
+    'Woolies Can Help!': './characters/encore/gbpQxXkC-Skill-Woolies-Can-Help.webp', // rotation-step phrasing, same icon
+    'Cosmos: Rampage': './characters/encore/twHsyRRM-Skill-Flaming-Woolies.webp', // rotation-step phrasing for 'Cosmos Rampage', same icon
+    'Heavy Attack: Cosmos Rupture': './characters/encore/whstB0k3-Skill-Black-White-Woolies.webp', // rotation-step phrasing ('Attack' vs 'ATK'), same icon
+    'Thermal Field': './characters/encore/MkS6WNzG-Skill-Thermal-Field.webp',
   },
   'Calcharo': {
-    'Gnawing Fangs': './characters/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon (same asset already used for Jiyan), also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/CpPvLLVt-Skill-Broadblade.webp',
-    'Extermination Order': './characters/7Nyx9Z3b-Skill-Extermination-Order.webp',
-    'Heavy ATK: "Mercy"': './characters/kVd4h62C-Skill-Hunting-Mission.webp', // Forte Circuit's own icon, covers both Forte states
-    'Heavy ATK: "Death Messenger"': './characters/kVd4h62C-Skill-Hunting-Mission.webp',
-    'Phantom Etching': './characters/Xx7Hd3NG-Skill-Phantom-Etching.webp', // must precede 'Hounds Roar' below — the Liberation row's name is "Phantom Etching → Hounds Roar" and should resolve to this icon, not the generic weapon one
-    'Hounds Roar': './characters/CpPvLLVt-Skill-Broadblade.webp', // Deathblade Gear's Basic ATK replacement, referenced standalone in the rotation — same generic weapon icon
-    'Wanted Outlaw': './characters/B2pH4yjS-Skill-Wanted-Outlaw.webp',
-    'Shadowy Raid': './characters/k2vk5Fqp-Skill-Shadowy-Raid.webp',
-    'Heavy Attack: "Death Messenger"': './characters/kVd4h62C-Skill-Hunting-Mission.webp', // rotation-step phrasing ('Attack' vs 'ATK'), same icon
+    'Gnawing Fangs': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon (same asset already used for Jiyan), also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp',
+    'Extermination Order': './characters/calcharo/7Nyx9Z3b-Skill-Extermination-Order.webp',
+    'Heavy ATK: "Mercy"': './characters/calcharo/kVd4h62C-Skill-Hunting-Mission.webp', // Forte Circuit's own icon, covers both Forte states
+    'Heavy ATK: "Death Messenger"': './characters/calcharo/kVd4h62C-Skill-Hunting-Mission.webp',
+    'Phantom Etching': './characters/calcharo/Xx7Hd3NG-Skill-Phantom-Etching.webp', // must precede 'Hounds Roar' below — the Liberation row's name is "Phantom Etching → Hounds Roar" and should resolve to this icon, not the generic weapon one
+    'Hounds Roar': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Deathblade Gear's Basic ATK replacement, referenced standalone in the rotation — same generic weapon icon
+    'Wanted Outlaw': './characters/calcharo/B2pH4yjS-Skill-Wanted-Outlaw.webp',
+    'Shadowy Raid': './characters/calcharo/k2vk5Fqp-Skill-Shadowy-Raid.webp',
+    'Heavy Attack: "Death Messenger"': './characters/calcharo/kVd4h62C-Skill-Hunting-Mission.webp', // rotation-step phrasing ('Attack' vs 'ATK'), same icon
   },
   'Yinlin': {
-    "Zapstring's Dance": './characters/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Magnetic Roar': './characters/6785t0vK-Skill-Magnetic-Roar.webp',
-    'Lightning Execution': './characters/6785t0vK-Skill-Magnetic-Roar.webp', // second phase of the same Resonance Skill, no separate wiki icon
-    'Chameleon Cipher': './characters/ymCP6ZNM-Skill-Chameleon-Cipher.webp',
-    'Thundering Wrath': './characters/0y3Tswfv-Skill-Thundering-Wrath.webp',
-    'Raging Storm': './characters/TMqQ3Sdc-Skill-Raging-Storm.webp',
-    'Strategist': './characters/dJzzqS1V-Skill-Strategist.webp',
+    "Zapstring's Dance": './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Magnetic Roar': './characters/yinlin/6785t0vK-Skill-Magnetic-Roar.webp',
+    'Lightning Execution': './characters/yinlin/6785t0vK-Skill-Magnetic-Roar.webp', // second phase of the same Resonance Skill, no separate wiki icon
+    'Chameleon Cipher': './characters/yinlin/ymCP6ZNM-Skill-Chameleon-Cipher.webp',
+    'Thundering Wrath': './characters/yinlin/0y3Tswfv-Skill-Thundering-Wrath.webp',
+    'Raging Storm': './characters/yinlin/TMqQ3Sdc-Skill-Raging-Storm.webp',
+    'Strategist': './characters/yinlin/dJzzqS1V-Skill-Strategist.webp',
   },
   'Jiyan': {
-    'Lone Lance': './characters/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon on the wiki, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/CpPvLLVt-Skill-Broadblade.webp', // Heavy ATK / Dodge Counter rows
-    'Windqueller': './characters/Rk9XDRW3-Skill-Windqueller.webp',
-    'Lance of Qingloong': './characters/CpPvLLVt-Skill-Broadblade.webp', // Qingloong Mode's Heavy Attack replacement, same generic weapon icon
-    'Emerald Storm: Finale': './characters/F4SmBx2q-Skill-Qingloong-at-War.webp', // Forte Circuit's own icon
-    'Emerald Storm: Prelude': './characters/4gT4C4SW-Skill-Emerald-Storm-Prelude.webp',
-    'Tactical Strike': './characters/33s8c1p-Skill-Tactical-Strike.webp',
-    'Discipline': './characters/TBjWQSR1-Skill-Discipline.webp',
+    'Lone Lance': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — shared generic Broadblade icon on the wiki, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Heavy ATK / Dodge Counter rows
+    'Windqueller': './characters/jiyan/Rk9XDRW3-Skill-Windqueller.webp',
+    'Lance of Qingloong': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Qingloong Mode's Heavy Attack replacement, same generic weapon icon
+    'Emerald Storm: Finale': './characters/jiyan/F4SmBx2q-Skill-Qingloong-at-War.webp', // Forte Circuit's own icon
+    'Emerald Storm: Prelude': './characters/jiyan/4gT4C4SW-Skill-Emerald-Storm-Prelude.webp',
+    'Tactical Strike': './characters/jiyan/33s8c1p-Skill-Tactical-Strike.webp',
+    'Discipline': './characters/jiyan/TBjWQSR1-Skill-Discipline.webp',
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Jianxin, re-hosted on ibb.co (2026-08-17,
   // matching the convention used for the other audited characters above — all 6 URLs verified 200/live
   // before upload).
   'Jianxin': {
-    'Fengyiquan': './characters/dsbWXdtk-Skill-Gauntlets.webp', // Basic ATK — shared generic Gauntlets icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/dsbWXdtk-Skill-Gauntlets.webp',
-    'Calming Air': './characters/4w8Mq52y-Skill-Calming-Air.webp',
-    'Primordial Chi Spiral': './characters/xtnnFYZC-Skill-Primordial-Chi-Spiral.webp',
-    'Purification Force Field': './characters/JjzrRftm-Skill-Purification-Force-Field.webp',
-    'Essence of Tao': './characters/jZvd35BH-Skill-Essence-of-Tao.webp', // Intro Skill
-    'Transcendence': './characters/jP7RDt0b-Skill-Transcendence.webp', // Outro Skill
+    'Fengyiquan': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Basic ATK — shared generic Gauntlets icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Calming Air': './characters/jianxin/4w8Mq52y-Skill-Calming-Air.webp',
+    'Primordial Chi Spiral': './characters/jianxin/xtnnFYZC-Skill-Primordial-Chi-Spiral.webp',
+    'Purification Force Field': './characters/jianxin/JjzrRftm-Skill-Purification-Force-Field.webp',
+    'Essence of Tao': './characters/jianxin/jZvd35BH-Skill-Essence-of-Tao.webp', // Intro Skill
+    'Transcendence': './characters/jianxin/jP7RDt0b-Skill-Transcendence.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Lingyang, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload.
   'Lingyang': {
-    'Majestic Fists': './characters/Cs76xkJK-Skill-Majestic-Fists.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/Cs76xkJK-Skill-Majestic-Fists.webp',
-    'Ancient Arts': './characters/5h5F3YrR-Skill-Ancient-Arts.webp',
-    'Unification of Spirits': './characters/4R6ggr17-Skill-Unification-of-Spirits.webp',
-    "Strive: Lion's Vigor": './characters/Wbh05jj-Skill-Strive-Lions-Vigor.webp',
-    'Lion Awakens': './characters/v4t5F4cP-Skill-Lion-Awakens.webp', // Intro Skill
-    'Frosty Marks': './characters/SwNjm5nr-Skill-Frosty-Marks.webp', // Outro Skill
+    'Majestic Fists': './characters/lingyang/Cs76xkJK-Skill-Majestic-Fists.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/lingyang/Cs76xkJK-Skill-Majestic-Fists.webp',
+    'Ancient Arts': './characters/lingyang/5h5F3YrR-Skill-Ancient-Arts.webp',
+    'Unification of Spirits': './characters/lingyang/4R6ggr17-Skill-Unification-of-Spirits.webp',
+    "Strive: Lion's Vigor": './characters/lingyang/Wbh05jj-Skill-Strive-Lions-Vigor.webp',
+    'Lion Awakens': './characters/lingyang/v4t5F4cP-Skill-Lion-Awakens.webp', // Intro Skill
+    'Frosty Marks': './characters/lingyang/SwNjm5nr-Skill-Frosty-Marks.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Verina, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Cultivation
   // (Basic ATK) uses the same generic Skill_Rectifier.png icon already re-hosted for Encore/Yinlin.
   'Verina': {
-    'Cultivation': './characters/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Botany Experiment': './characters/S4TqBZMp-Skill-Botany-Experiment.webp',
-    'Starflower Blooms': './characters/4RZZwnz0-Skill-Starflower-Blooms.webp',
-    'Arboreal Flourish': './characters/204LdT14-Skill-Arboreal-Flourish.webp',
-    'Verdant Growth': './characters/kgxDz6Xv-Skill-Verdant-Growth.webp', // Intro Skill
-    'Blossom': './characters/1fVPJtzv-Skill-Blossom.webp', // Outro Skill
+    'Cultivation': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Botany Experiment': './characters/verina/S4TqBZMp-Skill-Botany-Experiment.webp',
+    'Starflower Blooms': './characters/verina/4RZZwnz0-Skill-Starflower-Blooms.webp',
+    'Arboreal Flourish': './characters/verina/204LdT14-Skill-Arboreal-Flourish.webp',
+    'Verdant Growth': './characters/verina/kgxDz6Xv-Skill-Verdant-Growth.webp', // Intro Skill
+    'Blossom': './characters/verina/1fVPJtzv-Skill-Blossom.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Jinhsi, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API (Forte table section fetched directly by section index to
   // dodge the page's huge collapsed ascension tables) — all 6 URLs verified 200/live before upload.
   'Jinhsi': {
-    'Slash of Breaking Dawn': './characters/tMmTFPJH-Skill-Broadblade.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/tMmTFPJH-Skill-Broadblade.webp',
-    'Trailing Lights of Eons': './characters/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp',
-    'Overflowing Radiance': './characters/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill mechanic (alt-cast after Basic Attack 4/Intro), same wiki icon as Trailing Lights of Eons
-    'Incarnation': './characters/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill state entered via Overflowing Radiance, same wiki icon
-    'Illuminous Epiphany': './characters/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill mechanic cast from within Incarnation, same wiki icon
-    'Luminal Synthesis': './characters/R5sPDCC-Skill-Luminal-Synthesis.webp',
-    'Purge of Light': './characters/cSS7ms3Z-Skill-Purge-of-Light.webp',
-    "Loong's Halo": './characters/cKXv3P1y-Skill-Loong-Halo.webp', // Intro Skill
-    'Temporal Bender': './characters/qZDp0Jz-Skill-Temporal-Bender.webp', // Outro Skill
+    'Slash of Breaking Dawn': './characters/jinhsi/tMmTFPJH-Skill-Broadblade.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/jinhsi/tMmTFPJH-Skill-Broadblade.webp',
+    'Trailing Lights of Eons': './characters/jinhsi/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp',
+    'Overflowing Radiance': './characters/jinhsi/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill mechanic (alt-cast after Basic Attack 4/Intro), same wiki icon as Trailing Lights of Eons
+    'Incarnation': './characters/jinhsi/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill state entered via Overflowing Radiance, same wiki icon
+    'Illuminous Epiphany': './characters/jinhsi/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill mechanic cast from within Incarnation, same wiki icon
+    'Luminal Synthesis': './characters/jinhsi/R5sPDCC-Skill-Luminal-Synthesis.webp',
+    'Purge of Light': './characters/jinhsi/cSS7ms3Z-Skill-Purge-of-Light.webp',
+    "Loong's Halo": './characters/jinhsi/cKXv3P1y-Skill-Loong-Halo.webp', // Intro Skill
+    'Temporal Bender': './characters/jinhsi/qZDp0Jz-Skill-Temporal-Bender.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Changli, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Blazing
   // Enlightenment (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Sword.png icon.
   'Changli': {
-    'Blazing Enlightenment': './characters/4w6tSxmb-Skill-Sword.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/4w6tSxmb-Skill-Sword.webp',
-    'Tripartite Flames': './characters/DDwNWX8M-Skill-Tripartite-Flames.webp',
-    'True Sight: Capture': './characters/DDwNWX8M-Skill-Tripartite-Flames.webp', // Resonance Skill mechanic (plunging finisher after True Sight), same wiki icon as Tripartite Flames
-    'Flaming Sacrifice': './characters/39K3xvGn-Skill-Flaming-Sacrifice.webp',
-    'Radiance of Fealty': './characters/Df83Zv7v-Skill-Radiance-of-Fealty.webp',
-    'Obedience of Rules': './characters/4w1N13zp-Skill-Obedience-of-Rules.webp', // Intro Skill
-    'Strategy of Duality': './characters/sdkt9Yhd-Skill-Strategy-of-Duality.webp', // Outro Skill
+    'Blazing Enlightenment': './characters/_shared/4w6tSxmb-Skill-Sword.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/4w6tSxmb-Skill-Sword.webp',
+    'Tripartite Flames': './characters/changli/DDwNWX8M-Skill-Tripartite-Flames.webp',
+    'True Sight: Capture': './characters/changli/DDwNWX8M-Skill-Tripartite-Flames.webp', // Resonance Skill mechanic (plunging finisher after True Sight), same wiki icon as Tripartite Flames
+    'Flaming Sacrifice': './characters/changli/39K3xvGn-Skill-Flaming-Sacrifice.webp',
+    'Radiance of Fealty': './characters/changli/Df83Zv7v-Skill-Radiance-of-Fealty.webp',
+    'Obedience of Rules': './characters/changli/4w1N13zp-Skill-Obedience-of-Rules.webp', // Intro Skill
+    'Strategy of Duality': './characters/changli/sdkt9Yhd-Skill-Strategy-of-Duality.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Zhezhi, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Dimming Brush
   // (Basic ATK) uses the same generic Skill_Rectifier.png icon already re-hosted for Encore/Yinlin/Verina.
   'Zhezhi': {
-    'Dimming Brush': './characters/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Heavy ATK: Conjuration': './characters/RkMykBkT-Skill-Rectifier.webp', // Heavy Attack's own name on the wiki, no dedicated icon — generic weapon icon
-    'Manifestation': './characters/DDNMwsCy-Skill-Manifestation.webp',
-    'Stroke of Genius / Creation\'s Zenith': './characters/DDNMwsCy-Skill-Manifestation.webp', // named cast-states of the same Resonance Skill (Manifestation), no separate wiki icon
-    'Ink and Wash': './characters/8DYg2f8z-Skill-Ink-and-Wash.webp',
-    'Living Canvas': './characters/Vc7cVKF1-Skill-Living-Canvas.webp',
-    'Radiant Ruin': './characters/LX3NLrxP-Skill-Radiant-Ruin.webp', // Intro Skill
-    'Carve and Draw': './characters/V0s9WpHG-Skill-Carve-and-Draw.webp', // Outro Skill
+    'Dimming Brush': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Heavy ATK: Conjuration': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Heavy Attack's own name on the wiki, no dedicated icon — generic weapon icon
+    'Manifestation': './characters/zhezhi/DDNMwsCy-Skill-Manifestation.webp',
+    'Stroke of Genius / Creation\'s Zenith': './characters/zhezhi/DDNMwsCy-Skill-Manifestation.webp', // named cast-states of the same Resonance Skill (Manifestation), no separate wiki icon
+    'Ink and Wash': './characters/zhezhi/8DYg2f8z-Skill-Ink-and-Wash.webp',
+    'Living Canvas': './characters/zhezhi/Vc7cVKF1-Skill-Living-Canvas.webp',
+    'Radiant Ruin': './characters/zhezhi/LX3NLrxP-Skill-Radiant-Ruin.webp', // Intro Skill
+    'Carve and Draw': './characters/zhezhi/V0s9WpHG-Skill-Carve-and-Draw.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Xiangli Yao, re-hosted on ibb.co
   // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
   // upload. Probe (Basic ATK) has no dedicated wiki asset (it's itself a redirect to the generic
   // Gauntlets icon), also covers Heavy ATK/Mid-air/Dodge Counter, same as Jianxin's shared icon.
   'Xiangli Yao': {
-    'Probe': './characters/dsbWXdtk-Skill-Gauntlets.webp',
-    'Standard': './characters/dsbWXdtk-Skill-Gauntlets.webp',
-    'Mid-air Attack: Revamp': './characters/dsbWXdtk-Skill-Gauntlets.webp', // rotation-step phrasing for the Mid-air Attack, same generic weapon icon
-    'Deduction': './characters/8D4YCpRh-skill-deduction.webp',
-    'Decipher': './characters/8D4YCpRh-skill-deduction.webp', // Forte-upgraded Skill, same wiki icon as base Deduction
-    'Divergence': './characters/8D4YCpRh-skill-deduction.webp', // Intuition state's Resonance Skill replacement for Deduction, same wiki icon
-    'Skill: Law of Reigns': './characters/8D4YCpRh-skill-deduction.webp', // Resonance Skill repeatedly cast during Intuition, no dedicated wiki icon — same as Deduction
-    'Pivot-Impale': './characters/dsbWXdtk-Skill-Gauntlets.webp', // Intuition state's Basic Attack replacement, same generic weapon icon
-    'Forever Seeking': './characters/TMjphf6y-skill-forever-seeking.webp',
-    'Cogitation Model': './characters/CKYDdBRY-skill-cogitation.webp',
-    'Principle': './characters/cXpS7bBx-skill-principle.webp', // Intro Skill
-    'Chain Rule': './characters/spxqcJ3K-skill-chain-rule.webp', // Outro Skill
+    'Probe': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Mid-air Attack: Revamp': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // rotation-step phrasing for the Mid-air Attack, same generic weapon icon
+    'Deduction': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp',
+    'Decipher': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp', // Forte-upgraded Skill, same wiki icon as base Deduction
+    'Divergence': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp', // Intuition state's Resonance Skill replacement for Deduction, same wiki icon
+    'Skill: Law of Reigns': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp', // Resonance Skill repeatedly cast during Intuition, no dedicated wiki icon — same as Deduction
+    'Pivot-Impale': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Intuition state's Basic Attack replacement, same generic weapon icon
+    'Forever Seeking': './characters/xiangli-yao/TMjphf6y-skill-forever-seeking.webp',
+    'Cogitation Model': './characters/xiangli-yao/CKYDdBRY-skill-cogitation.webp',
+    'Principle': './characters/xiangli-yao/cXpS7bBx-skill-principle.webp', // Intro Skill
+    'Chain Rule': './characters/xiangli-yao/spxqcJ3K-skill-chain-rule.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Shorekeeper, re-hosted on ibb.co
   // (2026-08-17), resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before
   // upload. Origin Calculus (Basic ATK) uses the same generic Skill_Rectifier.png icon already
   // re-hosted for Encore/Yinlin/Verina/Zhezhi.
   'Shorekeeper': {
-    'Origin Calculus': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Standard': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Heavy Attack: Illation': './characters/RkMykBkT-Skill-Rectifier.webp', // Forte-gauge-gated Heavy Attack, no dedicated wiki icon — generic weapon icon
-    'Chaos Theory': './characters/zTGgrNMM-skill-chaos-theory.webp',
-    'Astral Chord': './characters/pkXPr5P-skill-astral-chord.webp',
-    'End Loop': './characters/MD3NpydF-skill-end-loop.webp',
-    'Proof of Existence': './characters/RGFGH8d9-skill-proof-of-existence.webp', // Intro Skill
-    'Discernment': './characters/RGFGH8d9-skill-proof-of-existence.webp', // Supernal Stellarealm's Intro Skill replacement for Proof of Existence, same wiki icon
-    'Binary Butterfly': './characters/bjjhnD3f-skill-binary-butterfly.webp', // Outro Skill
+    'Origin Calculus': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Heavy Attack: Illation': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Forte-gauge-gated Heavy Attack, no dedicated wiki icon — generic weapon icon
+    'Chaos Theory': './characters/shorekeeper/zTGgrNMM-skill-chaos-theory.webp',
+    'Astral Chord': './characters/shorekeeper/pkXPr5P-skill-astral-chord.webp',
+    'End Loop': './characters/shorekeeper/MD3NpydF-skill-end-loop.webp',
+    'Proof of Existence': './characters/shorekeeper/RGFGH8d9-skill-proof-of-existence.webp', // Intro Skill
+    'Discernment': './characters/shorekeeper/RGFGH8d9-skill-proof-of-existence.webp', // Supernal Stellarealm's Intro Skill replacement for Proof of Existence, same wiki icon
+    'Binary Butterfly': './characters/shorekeeper/bjjhnD3f-skill-binary-butterfly.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Camellya, re-hosted on ibb.co
   // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
   // upload. Burgeoning (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Sword.png
   // icon (same as Changli's).
   'Camellya': {
-    'Burgeoning': './characters/x86mmjbD-skill-sword.webp',
-    'Standard': './characters/x86mmjbD-skill-sword.webp',
-    'Valse of Bloom and Blight': './characters/wrNPQ1TC-skill-valse.webp',
-    'Crimson Blossom': './characters/wrNPQ1TC-skill-valse.webp', // Resonance Skill mechanic (a named hit within Valse of Bloom and Blight), same wiki icon
-    'Vining Waltz': './characters/wrNPQ1TC-skill-valse.webp', // Blossom Mode's Basic ATK replacement, same Skill icon
-    'Blazing Waltz': './characters/wrNPQ1TC-skill-valse.webp',
-    'Floral Ravage': './characters/wrNPQ1TC-skill-valse.webp', // Blossom Mode's Resonance Skill replacement, same wiki icon
-    'Fervor Efflorescent': './characters/ynCScFqJ-skill-fervor.webp',
-    'Vegetative Universe': './characters/xqcjjVmq-skill-vegetative.webp',
-    'Ephemeral': './characters/xqcjjVmq-skill-vegetative.webp', // Forte Circuit's own upgraded skill, same icon
-    'Everblooming': './characters/M5ckbVnH-skill-everblooming.webp', // Intro Skill
-    'Twining': './characters/vvrfhcLs-skill-twining.webp', // Outro Skill
+    'Burgeoning': './characters/_shared/x86mmjbD-skill-sword.webp',
+    'Standard': './characters/_shared/x86mmjbD-skill-sword.webp',
+    'Valse of Bloom and Blight': './characters/camellya/wrNPQ1TC-skill-valse.webp',
+    'Crimson Blossom': './characters/camellya/wrNPQ1TC-skill-valse.webp', // Resonance Skill mechanic (a named hit within Valse of Bloom and Blight), same wiki icon
+    'Vining Waltz': './characters/camellya/wrNPQ1TC-skill-valse.webp', // Blossom Mode's Basic ATK replacement, same Skill icon
+    'Blazing Waltz': './characters/camellya/wrNPQ1TC-skill-valse.webp',
+    'Floral Ravage': './characters/camellya/wrNPQ1TC-skill-valse.webp', // Blossom Mode's Resonance Skill replacement, same wiki icon
+    'Fervor Efflorescent': './characters/camellya/ynCScFqJ-skill-fervor.webp',
+    'Vegetative Universe': './characters/camellya/xqcjjVmq-skill-vegetative.webp',
+    'Ephemeral': './characters/camellya/xqcjjVmq-skill-vegetative.webp', // Forte Circuit's own upgraded skill, same icon
+    'Everblooming': './characters/camellya/M5ckbVnH-skill-everblooming.webp', // Intro Skill
+    'Twining': './characters/camellya/vvrfhcLs-skill-twining.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Carlotta, re-hosted on ibb.co
   // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
   // upload. Silent Execution (Basic ATK) has no dedicated wiki asset, uses the shared generic
   // Skill_Pistols.png icon.
   'Carlotta': {
-    'Silent Execution': './characters/NG3jXXG-skill-pistols.webp',
-    'Standard': './characters/NG3jXXG-skill-pistols.webp',
-    'Necessary Measures': './characters/NG3jXXG-skill-pistols.webp', // Moldable-Crystal Basic ATK replacement, same generic weapon icon
-    'Art of Violence': './characters/JwZzgLS1-skill-artofviolence.webp',
-    'Chromatic Splendor': './characters/JwZzgLS1-skill-artofviolence.webp', // 2nd-press of the same Resonance Skill, no separate wiki icon
-    'Lethal Repertoire': './characters/d49NGW0G-skill-lethalrepertoire.webp',
-    'Imminent Oblivion': './characters/d49NGW0G-skill-lethalrepertoire.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
-    'Era of New Wave': './characters/7dRxcfdg-skill-eraofnewwave.webp',
-    'Death Knell': './characters/7dRxcfdg-skill-eraofnewwave.webp', // Twilight Tango's Liberation-replacement attacks, same wiki icon
-    'Fatal Finale': './characters/7dRxcfdg-skill-eraofnewwave.webp',
-    'Wintertime Aria': './characters/d4gxw6J8-skill-wintertimearia.webp', // Intro Skill
-    'Closing Remark': './characters/qMFKhW2G-skill-closingremark.webp', // Outro Skill
+    'Silent Execution': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Standard': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Necessary Measures': './characters/_shared/NG3jXXG-skill-pistols.webp', // Moldable-Crystal Basic ATK replacement, same generic weapon icon
+    'Art of Violence': './characters/carlotta/JwZzgLS1-skill-artofviolence.webp',
+    'Chromatic Splendor': './characters/carlotta/JwZzgLS1-skill-artofviolence.webp', // 2nd-press of the same Resonance Skill, no separate wiki icon
+    'Lethal Repertoire': './characters/carlotta/d49NGW0G-skill-lethalrepertoire.webp',
+    'Imminent Oblivion': './characters/carlotta/d49NGW0G-skill-lethalrepertoire.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
+    'Era of New Wave': './characters/carlotta/7dRxcfdg-skill-eraofnewwave.webp',
+    'Death Knell': './characters/carlotta/7dRxcfdg-skill-eraofnewwave.webp', // Twilight Tango's Liberation-replacement attacks, same wiki icon
+    'Fatal Finale': './characters/carlotta/7dRxcfdg-skill-eraofnewwave.webp',
+    'Wintertime Aria': './characters/carlotta/d4gxw6J8-skill-wintertimearia.webp', // Intro Skill
+    'Closing Remark': './characters/carlotta/qMFKhW2G-skill-closingremark.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Roccia, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Pero, Easy
   // (Basic ATK) has no dedicated wiki asset (a redirect to the generic Gauntlets icon, same as
   // Jianxin/Xiangli Yao's shared icon).
   'Roccia': {
-    'Pero, Easy': './characters/dsbWXdtk-Skill-Gauntlets.webp',
-    'Standard': './characters/dsbWXdtk-Skill-Gauntlets.webp',
-    'Real Fantasy': './characters/dsbWXdtk-Skill-Gauntlets.webp', // Forte's Basic ATK replacement, same generic weapon icon
-    'Acrobatic Trick': './characters/SDY1939h-skill-acrobatictrick.webp',
-    'A Prop Master Prepares': './characters/fzp1K5tw-skill-apropmaster.webp',
-    'Commedia Improvviso!': './characters/z3hHnSz-skill-commediaimprov.webp',
-    'Pero, Help': './characters/kstN6pTM-skill-perohelp.webp', // Intro Skill
-    'Applause, Please!': './characters/v4xJNxgk-skill-applauseplease.webp', // Outro Skill
+    'Pero, Easy': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Real Fantasy': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Forte's Basic ATK replacement, same generic weapon icon
+    'Acrobatic Trick': './characters/roccia/SDY1939h-skill-acrobatictrick.webp',
+    'A Prop Master Prepares': './characters/roccia/fzp1K5tw-skill-apropmaster.webp',
+    'Commedia Improvviso!': './characters/roccia/z3hHnSz-skill-commediaimprov.webp',
+    'Pero, Help': './characters/roccia/kstN6pTM-skill-perohelp.webp', // Intro Skill
+    'Applause, Please!': './characters/roccia/v4xJNxgk-skill-applauseplease.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Phoebe, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. O Come Divine
   // Light (Basic ATK) uses the same generic Skill_Rectifier.png icon already re-hosted for
   // Encore/Yinlin/Verina/Zhezhi/Shorekeeper.
   'Phoebe': {
-    'O Come Divine Light': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Standard': './characters/RkMykBkT-Skill-Rectifier.webp',
-    "Chamuel's Star": './characters/RkMykBkT-Skill-Rectifier.webp', // Ring-of-Mirrors Basic ATK replacement, same generic weapon icon
-    'To Where Light Shines': './characters/6JNhMwTC-skill-towherelight.webp',
-    'Radiant Invocation': './characters/cKDPRGRt-skill-radiantinvocation.webp',
-    'Starflash': './characters/cKDPRGRt-skill-radiantinvocation.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
-    'Absolution Litany': './characters/cKDPRGRt-skill-radiantinvocation.webp',
-    'Utter Confession': './characters/cKDPRGRt-skill-radiantinvocation.webp',
-    'Dawn of Enlightenment': './characters/ksP6pd0b-skill-dawnofenlight.webp',
-    'Golden Grace': './characters/gbGWpjwC-skill-goldengrace.webp', // Intro Skill
-    'Attentive Heart': './characters/HTZ5ppLG-skill-attentiveheart.webp', // Outro Skill
+    'O Come Divine Light': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    "Chamuel's Star": './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Ring-of-Mirrors Basic ATK replacement, same generic weapon icon
+    'To Where Light Shines': './characters/phoebe/6JNhMwTC-skill-towherelight.webp',
+    'Radiant Invocation': './characters/phoebe/cKDPRGRt-skill-radiantinvocation.webp',
+    'Starflash': './characters/phoebe/cKDPRGRt-skill-radiantinvocation.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
+    'Absolution Litany': './characters/phoebe/cKDPRGRt-skill-radiantinvocation.webp',
+    'Utter Confession': './characters/phoebe/cKDPRGRt-skill-radiantinvocation.webp',
+    'Dawn of Enlightenment': './characters/phoebe/ksP6pd0b-skill-dawnofenlight.webp',
+    'Golden Grace': './characters/phoebe/gbGWpjwC-skill-goldengrace.webp', // Intro Skill
+    'Attentive Heart': './characters/phoebe/HTZ5ppLG-skill-attentiveheart.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Brant, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. Captain's
   // Rhapsody (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Sword.png icon
   // (same as Changli/Camellya's).
   'Brant': {
-    "Captain's Rhapsody": './characters/x86mmjbD-skill-sword.webp',
-    'Standard': './characters/x86mmjbD-skill-sword.webp',
-    'Rhapsodic Riff': './characters/x86mmjbD-skill-sword.webp', // Basic ATK-chained Heavy ATK, same generic weapon icon
-    'Stage 2-3 + Charged Attack + Flip': './characters/x86mmjbD-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo, same generic weapon icon
-    'Anchors Aweigh': './characters/Kp8DPNdC-skill-anchorsaweigh.webp',
-    'Ocean Odyssey': './characters/VWJhTfT2-skill-oceanodyssey.webp',
-    'Returned from Ashes': './characters/VWJhTfT2-skill-oceanodyssey.webp', // Forte Circuit's own upgraded Skill, same icon
-    'To the Horizon': './characters/Gfc6z3zy-skill-totheheorizon.webp',
-    'Applaud for Me!': './characters/Xk8TCww5-skill-applaudforme.webp', // Intro Skill
-    'The Course is Set!': './characters/HpqFG4gz-skill-thecourseisset.webp', // Outro Skill
+    "Captain's Rhapsody": './characters/_shared/x86mmjbD-skill-sword.webp',
+    'Standard': './characters/_shared/x86mmjbD-skill-sword.webp',
+    'Rhapsodic Riff': './characters/_shared/x86mmjbD-skill-sword.webp', // Basic ATK-chained Heavy ATK, same generic weapon icon
+    'Stage 2-3 + Charged Attack + Flip': './characters/_shared/x86mmjbD-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo, same generic weapon icon
+    'Anchors Aweigh': './characters/brant/Kp8DPNdC-skill-anchorsaweigh.webp',
+    'Ocean Odyssey': './characters/brant/VWJhTfT2-skill-oceanodyssey.webp',
+    'Returned from Ashes': './characters/brant/VWJhTfT2-skill-oceanodyssey.webp', // Forte Circuit's own upgraded Skill, same icon
+    'To the Horizon': './characters/brant/Gfc6z3zy-skill-totheheorizon.webp',
+    'Applaud for Me!': './characters/brant/Xk8TCww5-skill-applaudforme.webp', // Intro Skill
+    'The Course is Set!': './characters/brant/HpqFG4gz-skill-thecourseisset.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Cantarella, re-hosted on ibb.co
   // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
   // upload. Illusion Collapse (Basic ATK) has a dedicated icon (not a shared generic weapon one).
   'Cantarella': {
-    'Illusion Collapse': './characters/Jw0SD1X0-skill-illusioncollapse.webp',
-    'Standard': './characters/Jw0SD1X0-skill-illusioncollapse.webp',
-    'Delusive Dive': './characters/Jw0SD1X0-skill-illusioncollapse.webp', // Trance's Heavy Attack replacement, same generic Basic/Heavy icon
-    'Phantom Sting': './characters/Jw0SD1X0-skill-illusioncollapse.webp', // Mirage's Basic ATK replacement, same icon
-    'Dance with Shadows': './characters/VWcwSf2F-skill-dancewithshadows.webp',
-    'Flickering Reverie': './characters/VWcwSf2F-skill-dancewithshadows.webp', // Mirage's Resonance Skill replacement, same wiki icon
-    'Between Illusion and Reality': './characters/SDPF5pzn-skill-betweenillusion.webp',
-    'Perception Drain': './characters/SDPF5pzn-skill-betweenillusion.webp', // Forte Circuit's own upgraded Skill, same icon
-    'Beneath the Sea': './characters/60bNqfnF-skill-beneaththesea.webp',
-    'Cruise': './characters/DgDVdZ3T-skill-cruise.webp', // Intro Skill
-    'Gentle Tentacles': './characters/fVyzhpgr-skill-gentletentacles.webp', // Outro Skill
+    'Illusion Collapse': './characters/cantarella/Jw0SD1X0-skill-illusioncollapse.webp',
+    'Standard': './characters/cantarella/Jw0SD1X0-skill-illusioncollapse.webp',
+    'Delusive Dive': './characters/cantarella/Jw0SD1X0-skill-illusioncollapse.webp', // Trance's Heavy Attack replacement, same generic Basic/Heavy icon
+    'Phantom Sting': './characters/cantarella/Jw0SD1X0-skill-illusioncollapse.webp', // Mirage's Basic ATK replacement, same icon
+    'Dance with Shadows': './characters/cantarella/VWcwSf2F-skill-dancewithshadows.webp',
+    'Flickering Reverie': './characters/cantarella/VWcwSf2F-skill-dancewithshadows.webp', // Mirage's Resonance Skill replacement, same wiki icon
+    'Between Illusion and Reality': './characters/cantarella/SDPF5pzn-skill-betweenillusion.webp',
+    'Perception Drain': './characters/cantarella/SDPF5pzn-skill-betweenillusion.webp', // Forte Circuit's own upgraded Skill, same icon
+    'Beneath the Sea': './characters/cantarella/60bNqfnF-skill-beneaththesea.webp',
+    'Cruise': './characters/cantarella/DgDVdZ3T-skill-cruise.webp', // Intro Skill
+    'Gentle Tentacles': './characters/cantarella/fVyzhpgr-skill-gentletentacles.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Zani, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. Routine
   // Negotiation (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Gauntlets.webp
   // icon (same as Jianxin/Xiangli Yao/Roccia's).
   'Zani': {
-    'Routine Negotiation': './characters/dsbWXdtk-Skill-Gauntlets.webp',
-    'Standard': './characters/dsbWXdtk-Skill-Gauntlets.webp',
-    'Stage 3': './characters/dsbWXdtk-Skill-Gauntlets.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Heavy Slash': './characters/dsbWXdtk-Skill-Gauntlets.webp', // Inferno Mode's Basic ATK replacement, same generic weapon icon
-    'Restless Watch': './characters/Cpng0BLF-skill-restlesswatch.webp',
-    'Pinpoint Strike': './characters/Cpng0BLF-skill-restlesswatch.webp', // same Resonance Skill's parry counter, same wiki icon
-    'Targeted Action': './characters/Cpng0BLF-skill-restlesswatch.webp',
-    'There Will Be A Light': './characters/0jtmQHtM-skill-therewillbealight.webp',
-    'Between Dawn and Dusk': './characters/tpPYsMpx-skill-betweendawndusk.webp',
-    'Rekindle': './characters/tpPYsMpx-skill-betweendawndusk.webp', // Liberation's own named cast, same icon
-    'The Last Stand': './characters/tpPYsMpx-skill-betweendawndusk.webp',
-    'Immediate Execution': './characters/Xx8gjJV2-skill-immediateexecution.webp', // Intro Skill
-    'Beacon For the Future': './characters/yczmx4Lj-skill-beaconforfuture.webp', // Outro Skill
+    'Routine Negotiation': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Stage 3': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Heavy Slash': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Inferno Mode's Basic ATK replacement, same generic weapon icon
+    'Restless Watch': './characters/zani/Cpng0BLF-skill-restlesswatch.webp',
+    'Pinpoint Strike': './characters/zani/Cpng0BLF-skill-restlesswatch.webp', // same Resonance Skill's parry counter, same wiki icon
+    'Targeted Action': './characters/zani/Cpng0BLF-skill-restlesswatch.webp',
+    'There Will Be A Light': './characters/zani/0jtmQHtM-skill-therewillbealight.webp',
+    'Between Dawn and Dusk': './characters/zani/tpPYsMpx-skill-betweendawndusk.webp',
+    'Rekindle': './characters/zani/tpPYsMpx-skill-betweendawndusk.webp', // Liberation's own named cast, same icon
+    'The Last Stand': './characters/zani/tpPYsMpx-skill-betweendawndusk.webp',
+    'Immediate Execution': './characters/zani/Xx8gjJV2-skill-immediateexecution.webp', // Intro Skill
+    'Beacon For the Future': './characters/zani/yczmx4Lj-skill-beaconforfuture.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Ciaccona, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before upload. Quadruple
   // Time Steps (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Pistols.webp icon
   // (same as Carlotta's).
   'Ciaccona': {
-    'Quadruple Time Steps': './characters/NG3jXXG-skill-pistols.webp',
-    'Standard': './characters/NG3jXXG-skill-pistols.webp',
-    'Stage 3-4': './characters/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Stage 4': './characters/NG3jXXG-skill-pistols.webp',
-    'Jump-cancel into Mid-air Attack 1-2': './characters/NG3jXXG-skill-pistols.webp', // Mid-air Attack, same generic weapon icon
-    'Harmonic Allegro': './characters/pjvmZNW0-skill-harmonicallegro.webp',
-    'Symphony of Wind and Verse': './characters/rDrSyYC-skill-symphonywindverse.webp',
-    'Quadruple Downbeat': './characters/rDrSyYC-skill-symphonywindverse.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
-    "Singer's Triple Cadenza": './characters/Q3SvKHzY-skill-singerstriplecadenza.webp',
-    'Symphonic Poem: Tonic': './characters/Q3SvKHzY-skill-singerstriplecadenza.webp', // the Improvised Symphonic Poem hit within Singer's Triple Cadenza, same wiki icon
-    'Roaming with the Wind': './characters/RGVC6MLt-skill-roamingwithwind.webp', // Intro Skill
-    'Windcalling Tune': './characters/wFNRyDTB-skill-windcallingtune.webp', // Outro Skill
+    'Quadruple Time Steps': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Standard': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Stage 3-4': './characters/_shared/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Stage 4': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Jump-cancel into Mid-air Attack 1-2': './characters/_shared/NG3jXXG-skill-pistols.webp', // Mid-air Attack, same generic weapon icon
+    'Harmonic Allegro': './characters/ciaccona/pjvmZNW0-skill-harmonicallegro.webp',
+    'Symphony of Wind and Verse': './characters/ciaccona/rDrSyYC-skill-symphonywindverse.webp',
+    'Quadruple Downbeat': './characters/ciaccona/rDrSyYC-skill-symphonywindverse.webp', // Forte Circuit's own upgraded Heavy ATK, same icon
+    "Singer's Triple Cadenza": './characters/ciaccona/Q3SvKHzY-skill-singerstriplecadenza.webp',
+    'Symphonic Poem: Tonic': './characters/ciaccona/Q3SvKHzY-skill-singerstriplecadenza.webp', // the Improvised Symphonic Poem hit within Singer's Triple Cadenza, same wiki icon
+    'Roaming with the Wind': './characters/ciaccona/RGVC6MLt-skill-roamingwithwind.webp', // Intro Skill
+    'Windcalling Tune': './characters/ciaccona/wFNRyDTB-skill-windcallingtune.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Cartethyia, re-hosted on ibb.co
   // (2026-08-17), resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before
   // upload. Sword to Carve My Forms (Basic ATK) has no dedicated wiki asset, uses the shared generic
   // Skill_Sword.webp icon (same as Changli/Camellya/Brant's).
   'Cartethyia': {
-    'Sword to Carve My Forms': './characters/x86mmjbD-skill-sword.webp',
-    'Standard': './characters/x86mmjbD-skill-sword.webp',
-    'Base Form': './characters/x86mmjbD-skill-sword.webp', // Fleurdelys/base-form Basic-Heavy-Mid-air variants share the generic icon
-    'Fleurdelys': './characters/x86mmjbD-skill-sword.webp',
-    'Sword to Bear Their Names': './characters/cX7v4GDm-skill-swordbeartheirnames.webp',
-    'Sword to Answer Waves': './characters/cX7v4GDm-skill-swordbeartheirnames.webp', // Fleurdelys Resonance Skill replacement, same wiki icon
-    'May Tempest Break the Tides': './characters/cX7v4GDm-skill-swordbeartheirnames.webp',
-    'Tempest': './characters/z3B1sYY-skill-tempest.webp',
-    "A Knight's Heartfelt Prayers": './characters/BVqRm8KJ-skill-knightsheartfelt.webp',
-    'Blade of Howling Squall': './characters/BVqRm8KJ-skill-knightsheartfelt.webp', // Liberation's own upgraded cast, same icon
-    "Sword to Mark Tide's Trace": './characters/k2KS9cv0-skill-swordmarktidestrace.webp', // Intro Skill
-    'Sword to Call for Freedom': './characters/k2KS9cv0-skill-swordmarktidestrace.webp', // Fleurdelys Intro replacement, same icon
-    "Wind's Divine Blessing": './characters/KzFYk17W-skill-windsdivineblessing.webp', // Outro Skill
+    'Sword to Carve My Forms': './characters/_shared/x86mmjbD-skill-sword.webp',
+    'Standard': './characters/_shared/x86mmjbD-skill-sword.webp',
+    'Base Form': './characters/_shared/x86mmjbD-skill-sword.webp', // Fleurdelys/base-form Basic-Heavy-Mid-air variants share the generic icon
+    'Fleurdelys': './characters/_shared/x86mmjbD-skill-sword.webp',
+    'Sword to Bear Their Names': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp',
+    'Sword to Answer Waves': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp', // Fleurdelys Resonance Skill replacement, same wiki icon
+    'May Tempest Break the Tides': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp',
+    'Tempest': './characters/cartethyia/z3B1sYY-skill-tempest.webp',
+    "A Knight's Heartfelt Prayers": './characters/cartethyia/BVqRm8KJ-skill-knightsheartfelt.webp',
+    'Blade of Howling Squall': './characters/cartethyia/BVqRm8KJ-skill-knightsheartfelt.webp', // Liberation's own upgraded cast, same icon
+    "Sword to Mark Tide's Trace": './characters/cartethyia/k2KS9cv0-skill-swordmarktidestrace.webp', // Intro Skill
+    'Sword to Call for Freedom': './characters/cartethyia/k2KS9cv0-skill-swordmarktidestrace.webp', // Fleurdelys Intro replacement, same icon
+    "Wind's Divine Blessing": './characters/cartethyia/KzFYk17W-skill-windsdivineblessing.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Lupa, re-hosted on ibb.co (2026-08-17),
   // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload. Flaming Star
   // (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Broadblade.webp icon.
   'Lupa': {
-    'Flaming Star': './characters/RGn44dhM-skill-broadblade.webp',
-    'Standard': './characters/RGn44dhM-skill-broadblade.webp',
-    'Stage 1-2': './characters/RGn44dhM-skill-broadblade.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Firestrike': './characters/RGn44dhM-skill-broadblade.webp', // Mid-air Attack, no dedicated wiki icon — generic weapon icon
-    "Wolf's Claw": './characters/RGn44dhM-skill-broadblade.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
-    'Starfall': './characters/RGn44dhM-skill-broadblade.webp',
-    "Shewolf's Hunt": './characters/5WbyTxzD-skill-shewolfshunt.webp',
-    'Feral Fang': './characters/5WbyTxzD-skill-shewolfshunt.webp', // same Resonance Skill's follow-up, same wiki icon
-    'Ignis Lupa': './characters/S7W3d25X-skill-ignislupa.webp',
-    'Dance with the Wolf': './characters/S7W3d25X-skill-ignislupa.webp', // Forte Circuit's own upgraded Skill, same icon
-    'Fire-Kissed Glory': './characters/mrPk9FF3-skill-firekissedglory.webp',
-    'Foebreaker': './characters/mrPk9FF3-skill-firekissedglory.webp', // Liberation follow-up, same wiki icon
-    'Try Focusing, Eh?': './characters/jkNfHp2y-skill-tryfocusingeh.webp', // Intro Skill
-    'Nowhere to Run!': './characters/jkNfHp2y-skill-tryfocusingeh.webp', // Intro's Wild Hunt upgrade, same icon
-    'Stand by Me, Warrior': './characters/bjzbJyCH-skill-standbymewarrior.webp', // Outro Skill
+    'Flaming Star': './characters/lupa/RGn44dhM-skill-broadblade.webp',
+    'Standard': './characters/lupa/RGn44dhM-skill-broadblade.webp',
+    'Stage 1-2': './characters/lupa/RGn44dhM-skill-broadblade.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Firestrike': './characters/lupa/RGn44dhM-skill-broadblade.webp', // Mid-air Attack, no dedicated wiki icon — generic weapon icon
+    "Wolf's Claw": './characters/lupa/RGn44dhM-skill-broadblade.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
+    'Starfall': './characters/lupa/RGn44dhM-skill-broadblade.webp',
+    "Shewolf's Hunt": './characters/lupa/5WbyTxzD-skill-shewolfshunt.webp',
+    'Feral Fang': './characters/lupa/5WbyTxzD-skill-shewolfshunt.webp', // same Resonance Skill's follow-up, same wiki icon
+    'Ignis Lupa': './characters/lupa/S7W3d25X-skill-ignislupa.webp',
+    'Dance with the Wolf': './characters/lupa/S7W3d25X-skill-ignislupa.webp', // Forte Circuit's own upgraded Skill, same icon
+    'Fire-Kissed Glory': './characters/lupa/mrPk9FF3-skill-firekissedglory.webp',
+    'Foebreaker': './characters/lupa/mrPk9FF3-skill-firekissedglory.webp', // Liberation follow-up, same wiki icon
+    'Try Focusing, Eh?': './characters/lupa/jkNfHp2y-skill-tryfocusingeh.webp', // Intro Skill
+    'Nowhere to Run!': './characters/lupa/jkNfHp2y-skill-tryfocusingeh.webp', // Intro's Wild Hunt upgrade, same icon
+    'Stand by Me, Warrior': './characters/lupa/bjzbJyCH-skill-standbymewarrior.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Phrolova, re-hosted on ibb.co
   // (2026-08-17), resolved via the MediaWiki imageinfo API — all 5 URLs verified 200/live before
   // upload. Movement of Life and Death (Basic ATK) uses the shared generic Skill_Rectifier.webp icon
   // (same as Encore/Yinlin/Verina/Zhezhi/Shorekeeper/Phoebe's).
   'Phrolova': {
-    'Movement of Life and Death': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Standard': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Stage 3': './characters/RkMykBkT-Skill-Rectifier.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Stage 1-3': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Scarlet Coda': './characters/RkMykBkT-Skill-Rectifier.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
-    'Whispers in a Fleeting Dream': './characters/6J40K1F8-skill-whispersfleetingdream.webp',
-    'Whispers in Fleeting Dream': './characters/6J40K1F8-skill-whispersfleetingdream.webp',
-    'Movement of Fate and Finality': './characters/847dkvDn-skill-rhapsodynewworld.webp',
-    'Murmurs in a Haunting Dream': './characters/847dkvDn-skill-rhapsodynewworld.webp',
-    'Rhapsody of a New World': './characters/847dkvDn-skill-rhapsodynewworld.webp',
-    'Waltz of Forsaken Depths': './characters/RG9T1CF5-skill-waltzforsakendepths.webp',
-    'Maestro State': './characters/RG9T1CF5-skill-waltzforsakendepths.webp', // Hecate's off-field attacks during Liberation's Maestro state, same icon
-    'Curtain Call': './characters/RG9T1CF5-skill-waltzforsakendepths.webp',
-    'Suite of Quietus': './characters/7dWwXT4m-skill-suiteofquietus.webp', // Intro Skill
-    'Suite of Immortality': './characters/7dWwXT4m-skill-suiteofquietus.webp', // Maestro-enhanced Intro, same icon
-    'Unfinished Piece': './characters/DDQz9zyk-skill-unfinishedpiece.webp', // Outro Skill
+    'Movement of Life and Death': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Stage 3': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Stage 1-3': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Scarlet Coda': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
+    'Whispers in a Fleeting Dream': './characters/phrolova/6J40K1F8-skill-whispersfleetingdream.webp',
+    'Whispers in Fleeting Dream': './characters/phrolova/6J40K1F8-skill-whispersfleetingdream.webp',
+    'Movement of Fate and Finality': './characters/phrolova/847dkvDn-skill-rhapsodynewworld.webp',
+    'Murmurs in a Haunting Dream': './characters/phrolova/847dkvDn-skill-rhapsodynewworld.webp',
+    'Rhapsody of a New World': './characters/phrolova/847dkvDn-skill-rhapsodynewworld.webp',
+    'Waltz of Forsaken Depths': './characters/phrolova/RG9T1CF5-skill-waltzforsakendepths.webp',
+    'Maestro State': './characters/phrolova/RG9T1CF5-skill-waltzforsakendepths.webp', // Hecate's off-field attacks during Liberation's Maestro state, same icon
+    'Curtain Call': './characters/phrolova/RG9T1CF5-skill-waltzforsakendepths.webp',
+    'Suite of Quietus': './characters/phrolova/7dWwXT4m-skill-suiteofquietus.webp', // Intro Skill
+    'Suite of Immortality': './characters/phrolova/7dWwXT4m-skill-suiteofquietus.webp', // Maestro-enhanced Intro, same icon
+    'Unfinished Piece': './characters/phrolova/DDQz9zyk-skill-unfinishedpiece.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Augusta, re-hosted on ibb.co (2026-08-17).
   'Augusta': {
-    "Hunter's Path": './characters/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (fandom's own File:Skill_Hunter's_Path.png resolves to this same asset)
-    'Thunderoar: Backstep': './characters/CpPvLLVt-Skill-Broadblade.webp', // Prowess-gated Heavy Attack variant, no dedicated wiki icon — generic weapon icon
-    'Thunderoar: Spinslash': './characters/CpPvLLVt-Skill-Broadblade.webp',
-    "Warrior's Blade": './characters/Mxg3Z8k9-warriors-blade.webp',
-    'Undying Sunlight': './characters/Mxg3Z8k9-warriors-blade.webp', // Ascendancy-enhanced Resonance Skill, same wiki icon
-    'Sunward Conquest': './characters/wN42DMTf-sunward-conquest.webp', // Resonance Liberation (Sword of Eternal Oath)
-    'Sword of Eternal Oath': './characters/wN42DMTf-sunward-conquest.webp',
-    'Sublime is the Sun': './characters/wN42DMTf-sunward-conquest.webp', // held Liberation alt-cast, same icon
-    'Sunborne': './characters/wN42DMTf-sunward-conquest.webp',
-    'Everbright Protector': './characters/wN42DMTf-sunward-conquest.webp',
-    'Call Me By the Sun': './characters/21vnPFbj-call-me-by-sun.webp', // Forte Circuit
-    "Glory's Favor": './characters/RT0Pjfbz-glorys-favor.webp', // Inherent Skill
-    'Blazing Valor': './characters/C3Gkv7Pf-blazing-valor.webp', // Inherent Skill
-    'Stride of Goldenflare': './characters/Kj6cSTM0-stride-goldenflare.webp', // Intro Skill
-    'Battlesong of the Unyielding': './characters/20CntVcB-battlesong-unyielding.webp', // Outro Skill
+    "Hunter's Path": './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (fandom's own File:Skill_Hunter's_Path.png resolves to this same asset)
+    'Thunderoar: Backstep': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Prowess-gated Heavy Attack variant, no dedicated wiki icon — generic weapon icon
+    'Thunderoar: Spinslash': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp',
+    "Warrior's Blade": './characters/augusta/Mxg3Z8k9-warriors-blade.webp',
+    'Undying Sunlight': './characters/augusta/Mxg3Z8k9-warriors-blade.webp', // Ascendancy-enhanced Resonance Skill, same wiki icon
+    'Sunward Conquest': './characters/augusta/wN42DMTf-sunward-conquest.webp', // Resonance Liberation (Sword of Eternal Oath)
+    'Sword of Eternal Oath': './characters/augusta/wN42DMTf-sunward-conquest.webp',
+    'Sublime is the Sun': './characters/augusta/wN42DMTf-sunward-conquest.webp', // held Liberation alt-cast, same icon
+    'Sunborne': './characters/augusta/wN42DMTf-sunward-conquest.webp',
+    'Everbright Protector': './characters/augusta/wN42DMTf-sunward-conquest.webp',
+    'Call Me By the Sun': './characters/augusta/21vnPFbj-call-me-by-sun.webp', // Forte Circuit
+    "Glory's Favor": './characters/augusta/RT0Pjfbz-glorys-favor.webp', // Inherent Skill
+    'Blazing Valor': './characters/augusta/C3Gkv7Pf-blazing-valor.webp', // Inherent Skill
+    'Stride of Goldenflare': './characters/augusta/Kj6cSTM0-stride-goldenflare.webp', // Intro Skill
+    'Battlesong of the Unyielding': './characters/augusta/20CntVcB-battlesong-unyielding.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Iuno, re-hosted on ibb.co (2026-08-17).
   'Iuno': {
-    'Moon Steps': './characters/dsbWXdtk-Skill-Gauntlets.webp', // Basic ATK — generic Gauntlets icon (fandom's own File:Skill_Moon_Steps.png resolves to this same asset)
-    'Moonring': './characters/dsbWXdtk-Skill-Gauntlets.webp',
-    'Moonbow': './characters/dsbWXdtk-Skill-Gauntlets.webp',
-    'Foresight Fugue': './characters/Q7YyYGJL-skill-foresight-fugue.webp',
-    'Pulse of Origins': './characters/Q7YyYGJL-skill-foresight-fugue.webp',
-    'Closing Refrain': './characters/Q7YyYGJL-skill-foresight-fugue.webp',
-    'Unfinished Refrain': './characters/Q7YyYGJL-skill-foresight-fugue.webp',
-    'Arc Beyond the Edge': './characters/Q7YyYGJL-skill-foresight-fugue.webp',
-    'Beneath Lunar Tides': './characters/XZR1WbdL-skill-beneath-lunar-tides.webp', // Resonance Liberation
-    'Ebb and Flow': './characters/bRJF5hbd-skill-ebb-and-flow.webp', // Forte Circuit
-    'Absolute Fullness': './characters/bRJF5hbd-skill-ebb-and-flow.webp', // Forte-empowered Heavy ATK, same icon
-    'Waxing Ascent': './characters/HDtjs76J-skill-waxing-ascent.webp', // Inherent Skill
-    'Derivation': './characters/k2FqSVVC-skill-derivation.webp', // Inherent Skill
-    'Illuminated Manifestation': './characters/TqYmWyr5-skill-illuminated-manifestation.webp', // Intro Skill
-    'From Gloom to Gleam': './characters/V0xjgmx3-skill-from-gloom-to-gleam.webp', // Outro Skill
+    'Moon Steps': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Basic ATK — generic Gauntlets icon (fandom's own File:Skill_Moon_Steps.png resolves to this same asset)
+    'Moonring': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Moonbow': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Foresight Fugue': './characters/iuno/Q7YyYGJL-skill-foresight-fugue.webp',
+    'Pulse of Origins': './characters/iuno/Q7YyYGJL-skill-foresight-fugue.webp',
+    'Closing Refrain': './characters/iuno/Q7YyYGJL-skill-foresight-fugue.webp',
+    'Unfinished Refrain': './characters/iuno/Q7YyYGJL-skill-foresight-fugue.webp',
+    'Arc Beyond the Edge': './characters/iuno/Q7YyYGJL-skill-foresight-fugue.webp',
+    'Beneath Lunar Tides': './characters/iuno/XZR1WbdL-skill-beneath-lunar-tides.webp', // Resonance Liberation
+    'Ebb and Flow': './characters/iuno/bRJF5hbd-skill-ebb-and-flow.webp', // Forte Circuit
+    'Absolute Fullness': './characters/iuno/bRJF5hbd-skill-ebb-and-flow.webp', // Forte-empowered Heavy ATK, same icon
+    'Waxing Ascent': './characters/iuno/HDtjs76J-skill-waxing-ascent.webp', // Inherent Skill
+    'Derivation': './characters/iuno/k2FqSVVC-skill-derivation.webp', // Inherent Skill
+    'Illuminated Manifestation': './characters/iuno/TqYmWyr5-skill-illuminated-manifestation.webp', // Intro Skill
+    'From Gloom to Gleam': './characters/iuno/V0xjgmx3-skill-from-gloom-to-gleam.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Galbrena, re-hosted on ibb.co (2026-08-17).
   'Galbrena': {
-    "Slayer's Trigger": './characters/8gYdwYCF-skill-pistols.webp', // Basic ATK — generic Pistols icon (fandom's own File:Skill_Slayer's_Trigger.png resolves to this same asset)
-    'Stage 1-4': './characters/8gYdwYCF-skill-pistols.webp',
-    'Stage 2-4, 2-3': './characters/8gYdwYCF-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Seraphic Execution': './characters/8gYdwYCF-skill-pistols.webp', // Demon Hypostasis Basic ATK replacement, same generic weapon icon
-    'Volley of Death': './characters/8gYdwYCF-skill-pistols.webp',
-    'Flamewing Verdict': './characters/8gYdwYCF-skill-pistols.webp',
-    'Edge Transcended': './characters/spB7R1n5-skill-edge-transcended.webp',
-    'Encroach': './characters/spB7R1n5-skill-edge-transcended.webp',
-    'Ascent of Malice': './characters/spB7R1n5-skill-edge-transcended.webp',
-    'Ravage': './characters/spB7R1n5-skill-edge-transcended.webp',
-    'Hellfire Absolution': './characters/60YMcsnV-skill-hellfire-absolution.webp', // Resonance Liberation
-    'Beyond Threshold': './characters/LDJBGZSx-skill-beyond-threshold.webp', // Forte Circuit
-    'Oathbound Hunt': './characters/hFY1T091-skill-oathbound-hunt.webp', // Inherent Skill
-    'Sin Feaster': './characters/cckG70y9-skill-sin-feaster.webp', // Inherent Skill
-    'Hellflare Overload': './characters/fYZhFW4t-skill-hellflare-overload.webp', // Intro Skill
-    'Ashen Pursuit': './characters/ch99n99W-skill-ashen-pursuit.webp', // Outro Skill
+    "Slayer's Trigger": './characters/_shared/8gYdwYCF-skill-pistols.webp', // Basic ATK — generic Pistols icon (fandom's own File:Skill_Slayer's_Trigger.png resolves to this same asset)
+    'Stage 1-4': './characters/_shared/8gYdwYCF-skill-pistols.webp',
+    'Stage 2-4, 2-3': './characters/_shared/8gYdwYCF-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Seraphic Execution': './characters/_shared/8gYdwYCF-skill-pistols.webp', // Demon Hypostasis Basic ATK replacement, same generic weapon icon
+    'Volley of Death': './characters/_shared/8gYdwYCF-skill-pistols.webp',
+    'Flamewing Verdict': './characters/_shared/8gYdwYCF-skill-pistols.webp',
+    'Edge Transcended': './characters/galbrena/spB7R1n5-skill-edge-transcended.webp',
+    'Encroach': './characters/galbrena/spB7R1n5-skill-edge-transcended.webp',
+    'Ascent of Malice': './characters/galbrena/spB7R1n5-skill-edge-transcended.webp',
+    'Ravage': './characters/galbrena/spB7R1n5-skill-edge-transcended.webp',
+    'Hellfire Absolution': './characters/galbrena/60YMcsnV-skill-hellfire-absolution.webp', // Resonance Liberation
+    'Beyond Threshold': './characters/galbrena/LDJBGZSx-skill-beyond-threshold.webp', // Forte Circuit
+    'Oathbound Hunt': './characters/galbrena/hFY1T091-skill-oathbound-hunt.webp', // Inherent Skill
+    'Sin Feaster': './characters/galbrena/cckG70y9-skill-sin-feaster.webp', // Inherent Skill
+    'Hellflare Overload': './characters/galbrena/fYZhFW4t-skill-hellflare-overload.webp', // Intro Skill
+    'Ashen Pursuit': './characters/galbrena/ch99n99W-skill-ashen-pursuit.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Qiuyuan, re-hosted on ibb.co (2026-08-17).
   'Qiuyuan': {
-    'Inkwash': './characters/YTdT2Yxf-skill-sword.webp', // Basic ATK — generic Sword icon (fandom's own File:Skill_Inkwash.png resolves to this same asset)
-    'Thus Spoke the Blade': './characters/YTdT2Yxf-skill-sword.webp', // Forte-enhanced Basic ATK/Heavy ATK replacements, same generic weapon icon
-    'Through the Groves': './characters/Wpj83CS4-skill-through-the-groves.webp',
-    'Undaunted Wayfarer': './characters/Wpj83CS4-skill-through-the-groves.webp', // held Skill variant, same icon
-    'Straw Cape in Drizzly Rain': './characters/Wpj83CS4-skill-through-the-groves.webp', // S3 Skill replacement, same icon
-    'Sundering Strike': './characters/0Lg31jf-skill-sundering-strike.webp', // Resonance Liberation
-    'Verdant Edge': './characters/79CMny9-skill-verdant-edge.webp', // Forte Circuit
-    'To Teach': './characters/79CMny9-skill-verdant-edge.webp', // Forte Heavy ATK finishers, same icon
-    'To Save': './characters/79CMny9-skill-verdant-edge.webp',
-    'To Sacrifice': './characters/79CMny9-skill-verdant-edge.webp',
-    'Quietude Within': './characters/DgW9vm0Y-skill-quietude-within.webp', // Inherent Skill
-    'Drink Away Woes Age-Old': './characters/357LJjGX-skill-drink-away-woes.webp', // Inherent Skill
-    'Attack the Must-Defend': './characters/DH5PV4Mc-skill-attack-the-must-defend.webp', // Intro Skill
-    'Strike Before Ready': './characters/m5YJ7bBB-skill-strike-before-ready.webp', // Outro Skill
+    'Inkwash': './characters/_shared/YTdT2Yxf-skill-sword.webp', // Basic ATK — generic Sword icon (fandom's own File:Skill_Inkwash.png resolves to this same asset)
+    'Thus Spoke the Blade': './characters/_shared/YTdT2Yxf-skill-sword.webp', // Forte-enhanced Basic ATK/Heavy ATK replacements, same generic weapon icon
+    'Through the Groves': './characters/qiuyuan/Wpj83CS4-skill-through-the-groves.webp',
+    'Undaunted Wayfarer': './characters/qiuyuan/Wpj83CS4-skill-through-the-groves.webp', // held Skill variant, same icon
+    'Straw Cape in Drizzly Rain': './characters/qiuyuan/Wpj83CS4-skill-through-the-groves.webp', // S3 Skill replacement, same icon
+    'Sundering Strike': './characters/qiuyuan/0Lg31jf-skill-sundering-strike.webp', // Resonance Liberation
+    'Verdant Edge': './characters/qiuyuan/79CMny9-skill-verdant-edge.webp', // Forte Circuit
+    'To Teach': './characters/qiuyuan/79CMny9-skill-verdant-edge.webp', // Forte Heavy ATK finishers, same icon
+    'To Save': './characters/qiuyuan/79CMny9-skill-verdant-edge.webp',
+    'To Sacrifice': './characters/qiuyuan/79CMny9-skill-verdant-edge.webp',
+    'Quietude Within': './characters/qiuyuan/DgW9vm0Y-skill-quietude-within.webp', // Inherent Skill
+    'Drink Away Woes Age-Old': './characters/qiuyuan/357LJjGX-skill-drink-away-woes.webp', // Inherent Skill
+    'Attack the Must-Defend': './characters/qiuyuan/DH5PV4Mc-skill-attack-the-must-defend.webp', // Intro Skill
+    'Strike Before Ready': './characters/qiuyuan/m5YJ7bBB-skill-strike-before-ready.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Chisa, re-hosted on ibb.co (2026-08-17).
   'Chisa': {
-    'Reign of Silence': './characters/39ZxR3C4-skill-broadblade.webp', // Basic ATK — generic Broadblade icon (fandom's own File:Skill_Reign_of_Silence.png resolves to this same asset)
-    'Rending Lunge': './characters/39ZxR3C4-skill-broadblade.webp',
-    'Death Snip': './characters/39ZxR3C4-skill-broadblade.webp',
-    'Thread Withdrawn': './characters/39ZxR3C4-skill-broadblade.webp',
-    'Fractured Composition': './characters/Q7HCQCXS-skill-fractured-composition.webp',
-    'Eye of Unraveling': './characters/Q7HCQCXS-skill-fractured-composition.webp',
-    'Serrated Loop': './characters/Q7HCQCXS-skill-fractured-composition.webp',
-    'Moment of Nihility': './characters/wrM902F9-skill-moment-of-nihility.webp', // Resonance Liberation
-    'Sight of Unraveling - Oblivion': './characters/4g9Q3h0k-skill-sight-of-unraveling.webp', // Forte Circuit
-    'Sawring': './characters/4g9Q3h0k-skill-sight-of-unraveling.webp', // Sawring - Blitz/Eradication, Forte-state attacks, same icon
-    'Inescapable Fate': './characters/mCmwWwsJ-skill-inescapable-fate.webp', // Inherent Skill
-    'All Ends Here': './characters/KzpjDvHh-skill-all-ends-here.webp', // Inherent Skill
-    'Reverberance - Return': './characters/KxsFThC1-skill-reverberance-return.webp', // Intro Skill
-    'Unraveling - Law Zero': './characters/mC9hRxyB-skill-unraveling-law-zero.webp', // Outro Skill
+    'Reign of Silence': './characters/chisa/39ZxR3C4-skill-broadblade.webp', // Basic ATK — generic Broadblade icon (fandom's own File:Skill_Reign_of_Silence.png resolves to this same asset)
+    'Rending Lunge': './characters/chisa/39ZxR3C4-skill-broadblade.webp',
+    'Death Snip': './characters/chisa/39ZxR3C4-skill-broadblade.webp',
+    'Thread Withdrawn': './characters/chisa/39ZxR3C4-skill-broadblade.webp',
+    'Fractured Composition': './characters/chisa/Q7HCQCXS-skill-fractured-composition.webp',
+    'Eye of Unraveling': './characters/chisa/Q7HCQCXS-skill-fractured-composition.webp',
+    'Serrated Loop': './characters/chisa/Q7HCQCXS-skill-fractured-composition.webp',
+    'Moment of Nihility': './characters/chisa/wrM902F9-skill-moment-of-nihility.webp', // Resonance Liberation
+    'Sight of Unraveling - Oblivion': './characters/chisa/4g9Q3h0k-skill-sight-of-unraveling.webp', // Forte Circuit
+    'Sawring': './characters/chisa/4g9Q3h0k-skill-sight-of-unraveling.webp', // Sawring - Blitz/Eradication, Forte-state attacks, same icon
+    'Inescapable Fate': './characters/chisa/mCmwWwsJ-skill-inescapable-fate.webp', // Inherent Skill
+    'All Ends Here': './characters/chisa/KzpjDvHh-skill-all-ends-here.webp', // Inherent Skill
+    'Reverberance - Return': './characters/chisa/KxsFThC1-skill-reverberance-return.webp', // Intro Skill
+    'Unraveling - Law Zero': './characters/chisa/mC9hRxyB-skill-unraveling-law-zero.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Lynae/Mornye/Aemeath, pulled via the
   // MediaWiki API (bypasses the site's Cloudflare challenge entirely) and re-hosted on ibb.co (2026-08-17).
   'Lynae': {
-    'Stage 1-3': './characters/xq4xPQNP-Lynae-basic.webp', // Basic ATK — generic Pistols icon (fandom's own File:Skill_Chroma_Drift.png resolves to this same asset)
-    'Kaleidoscopic 1-5': './characters/xq4xPQNP-Lynae-basic.webp',
-    'Spark Collision': './characters/xq4xPQNP-Lynae-basic.webp',
-    'Lynae-Style Palettes': './characters/KxK0V0g9-Lynae-res-Skill.webp', // Resonance Skill
-    'Additive Color': './characters/KxK0V0g9-Lynae-res-Skill.webp', // Additive Color shares the Resonance Skill's own icon
-    'Visual Impact': './characters/Q3tV0xMr-Lynae-forte.webp', // Forte Circuit — Chromaticity Modeling
-    'Iridescent Splash': './characters/Q3tV0xMr-Lynae-forte.webp',
-    'Polychrome Leap': './characters/Q3tV0xMr-Lynae-forte.webp', // Forte Gauge (Lumiflow)-gated jump mechanic, same Forte icon
-    'Prismatic Overblast': './characters/WW1q9Z9P-Lynae-liberation.webp', // Resonance Liberation
-    'Time to Show Some Colors!': './characters/nsQDdd3q-Lynae-intro.webp', // Intro Skill
-    "Let's Hit the Road!": './characters/6c4LdY9C-Lynae-outro.webp', // Outro Skill
-    'Spectral Analysis': './characters/Jw2KkfqG-Lynae-tune.webp', // Tune Break
+    'Stage 1-3': './characters/_shared/xq4xPQNP-Lynae-basic.webp', // Basic ATK — generic Pistols icon (fandom's own File:Skill_Chroma_Drift.png resolves to this same asset)
+    'Kaleidoscopic 1-5': './characters/_shared/xq4xPQNP-Lynae-basic.webp',
+    'Spark Collision': './characters/_shared/xq4xPQNP-Lynae-basic.webp',
+    'Lynae-Style Palettes': './characters/lynae/KxK0V0g9-Lynae-res-Skill.webp', // Resonance Skill
+    'Additive Color': './characters/lynae/KxK0V0g9-Lynae-res-Skill.webp', // Additive Color shares the Resonance Skill's own icon
+    'Visual Impact': './characters/lynae/Q3tV0xMr-Lynae-forte.webp', // Forte Circuit — Chromaticity Modeling
+    'Iridescent Splash': './characters/lynae/Q3tV0xMr-Lynae-forte.webp',
+    'Polychrome Leap': './characters/lynae/Q3tV0xMr-Lynae-forte.webp', // Forte Gauge (Lumiflow)-gated jump mechanic, same Forte icon
+    'Prismatic Overblast': './characters/lynae/WW1q9Z9P-Lynae-liberation.webp', // Resonance Liberation
+    'Time to Show Some Colors!': './characters/lynae/nsQDdd3q-Lynae-intro.webp', // Intro Skill
+    "Let's Hit the Road!": './characters/lynae/6c4LdY9C-Lynae-outro.webp', // Outro Skill
+    'Spectral Analysis': './characters/lynae/Jw2KkfqG-Lynae-tune.webp', // Tune Break
   },
   'Mornye': {
-    'Stage 1-4': './characters/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (same asset already used for Calcharo/Jiyan)
-    'Wide Field Observation Mode Stage 1-3': './characters/CpPvLLVt-Skill-Broadblade.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Optimal Solution': './characters/q3z1KKmg-Mornye-res-Skill.webp', // Resonance Skill — Resolution
-    'Distributed Array': './characters/q3z1KKmg-Mornye-res-Skill.webp',
-    'Geopotential Shift': './characters/MDT4gMcx-Mornye-forte.webp', // Forte Circuit — Mass-Energy Equivalence
-    'Inversion': './characters/MDT4gMcx-Mornye-forte.webp',
-    'Critical Protocol': './characters/kVF6D8Lw-Mornye-liberation.webp', // Resonance Liberation
-    'Convergence': './characters/NgLq63xG-Mornye-intro.webp', // Intro Skill
-    'Recursion': './characters/wrMwYwtW-Mornye-outro.webp', // Outro Skill
-    'Decoupling': './characters/rGgn1yqf-Mornye-tune.webp', // Tune Break
+    'Stage 1-4': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (same asset already used for Calcharo/Jiyan)
+    'Wide Field Observation Mode Stage 1-3': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Optimal Solution': './characters/mornye/q3z1KKmg-Mornye-res-Skill.webp', // Resonance Skill — Resolution
+    'Distributed Array': './characters/mornye/q3z1KKmg-Mornye-res-Skill.webp',
+    'Geopotential Shift': './characters/mornye/MDT4gMcx-Mornye-forte.webp', // Forte Circuit — Mass-Energy Equivalence
+    'Inversion': './characters/mornye/MDT4gMcx-Mornye-forte.webp',
+    'Critical Protocol': './characters/mornye/kVF6D8Lw-Mornye-liberation.webp', // Resonance Liberation
+    'Convergence': './characters/mornye/NgLq63xG-Mornye-intro.webp', // Intro Skill
+    'Recursion': './characters/mornye/wrMwYwtW-Mornye-outro.webp', // Outro Skill
+    'Decoupling': './characters/mornye/rGgn1yqf-Mornye-tune.webp', // Tune Break
   },
   'Aemeath': {
-    'Aemeath Form Stage': './characters/4w6tSxmb-Skill-Sword.webp', // Basic ATK — generic Sword icon, covers both her human- and Mech-form Basic strings
-    'Mech Form Stage': './characters/4w6tSxmb-Skill-Sword.webp',
-    'Aemeath Charged': './characters/4w6tSxmb-Skill-Sword.webp',
-    'Mech Charged': './characters/4w6tSxmb-Skill-Sword.webp',
-    'Aemeath Stage': './characters/4w6tSxmb-Skill-Sword.webp', // rotation-step phrasing ('Aemeath Stage 2-4'), same icon
-    'Mech Stage': './characters/4w6tSxmb-Skill-Sword.webp', // rotation-step phrasing ('Mech Stage 2-4'/'Mech Stage 3-4'), same icon
-    'Heavy Attack - Mech: Charged II': './characters/4w6tSxmb-Skill-Sword.webp', // rotation-step phrasing for the Mech Charged ATK, same icon
-    'Sync Strikes': './characters/V0KcrNV5-Aemeath-res-Skill.webp', // Resonance Skill — Shared Voyage
-    'Form Switch': './characters/V0KcrNV5-Aemeath-res-Skill.webp', // rotation-step phrasing for pressing the Resonance Skill to toggle Aemeath/Mech form, same icon
-    'Seraphic Duet': './characters/V0KcrNV5-Aemeath-res-Skill.webp',
-    'Heavenfall Edict': './characters/3YGvVWff-Aemeath-liberation.webp', // Resonance Liberation — Towards the Daybreak
-    'Songs Across the Universe': './characters/prZnwGKQ-Aemeath-skill-intro.webp', // Intro Skill — Overture of Departure
-    'Debut of Meteoric Radiance': './characters/prZnwGKQ-Aemeath-skill-intro.webp',
-    'Silent Protection': './characters/svSPtz0x-Aemeath-outro.webp', // Outro Skill
+    'Aemeath Form Stage': './characters/_shared/4w6tSxmb-Skill-Sword.webp', // Basic ATK — generic Sword icon, covers both her human- and Mech-form Basic strings
+    'Mech Form Stage': './characters/_shared/4w6tSxmb-Skill-Sword.webp',
+    'Aemeath Charged': './characters/_shared/4w6tSxmb-Skill-Sword.webp',
+    'Mech Charged': './characters/_shared/4w6tSxmb-Skill-Sword.webp',
+    'Aemeath Stage': './characters/_shared/4w6tSxmb-Skill-Sword.webp', // rotation-step phrasing ('Aemeath Stage 2-4'), same icon
+    'Mech Stage': './characters/_shared/4w6tSxmb-Skill-Sword.webp', // rotation-step phrasing ('Mech Stage 2-4'/'Mech Stage 3-4'), same icon
+    'Heavy Attack - Mech: Charged II': './characters/_shared/4w6tSxmb-Skill-Sword.webp', // rotation-step phrasing for the Mech Charged ATK, same icon
+    'Sync Strikes': './characters/aemeath/V0KcrNV5-Aemeath-res-Skill.webp', // Resonance Skill — Shared Voyage
+    'Form Switch': './characters/aemeath/V0KcrNV5-Aemeath-res-Skill.webp', // rotation-step phrasing for pressing the Resonance Skill to toggle Aemeath/Mech form, same icon
+    'Seraphic Duet': './characters/aemeath/V0KcrNV5-Aemeath-res-Skill.webp',
+    'Heavenfall Edict': './characters/aemeath/3YGvVWff-Aemeath-liberation.webp', // Resonance Liberation — Towards the Daybreak
+    'Songs Across the Universe': './characters/aemeath/prZnwGKQ-Aemeath-skill-intro.webp', // Intro Skill — Overture of Departure
+    'Debut of Meteoric Radiance': './characters/aemeath/prZnwGKQ-Aemeath-skill-intro.webp',
+    'Silent Protection': './characters/aemeath/svSPtz0x-Aemeath-outro.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Luuk Herssen, pulled via the MediaWiki API
   // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
   'Luuk Herssen': {
-    'Stage 1-4': './characters/rR5XytVJ-Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (fandom's own File:Skill_Such_is_Light.png resolves to this same asset)
-    'Scythe: Dissection': './characters/rR5XytVJ-Luuk-skill-basic.webp', // Mid-air Attack strings — considered Basic ATK
-    'Scythe: Resection': './characters/rR5XytVJ-Luuk-skill-basic.webp',
-    'Scythe Resection Stage': './characters/rR5XytVJ-Luuk-skill-basic.webp', // rotation-step phrasing without the colon ('Jump: Scythe Resection Stage 2-3'), same icon
-    'Jump: Resection': './characters/rR5XytVJ-Luuk-skill-basic.webp', // rotation-step phrasing ('Basic 1 → Jump: Resection 2-3'), same icon
-    'Golden Reflux': './characters/1fhf0vt7-Luuk-skill-res-Skill.webp', // Resonance Skill — Reunion of All the Fallen
-    'Aureole of Execution': './characters/1fhf0vt7-Luuk-skill-res-Skill.webp',
-    'Basic Attack - Golden Impale': './characters/1fhf0vt7-Luuk-skill-res-Skill.webp',
-    'Golden Impale': './characters/1fhf0vt7-Luuk-skill-res-Skill.webp', // rotation-step phrasing (short form), same Resonance Skill icon
-    'Gavel of Earthshaker': './characters/8nFJT3SG-Luuk-skill-forte.webp', // Forte Circuit — Spark from the Frost
-    "Rewritten in Winter's Margins": './characters/1Y4xcqYx-Luuk-skill-liberation.webp', // Resonance Liberation
-    'Before Injection of Dawn': './characters/ksYqXQPQ-Luuk-skill-intro.webp', // Intro Skill
-    'Bow to the Last Light': './characters/W4MMpcrv-Luuk-skill-outro.webp', // Outro Skill
-    'Silent Debate of Light': './characters/BHdBsKjP-Luuk-skill-tune.webp', // Tune Break
+    'Stage 1-4': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (fandom's own File:Skill_Such_is_Light.png resolves to this same asset)
+    'Scythe: Dissection': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // Mid-air Attack strings — considered Basic ATK
+    'Scythe: Resection': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp',
+    'Scythe Resection Stage': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // rotation-step phrasing without the colon ('Jump: Scythe Resection Stage 2-3'), same icon
+    'Jump: Resection': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // rotation-step phrasing ('Basic 1 → Jump: Resection 2-3'), same icon
+    'Golden Reflux': './characters/luuk-herssen/1fhf0vt7-Luuk-skill-res-Skill.webp', // Resonance Skill — Reunion of All the Fallen
+    'Aureole of Execution': './characters/luuk-herssen/1fhf0vt7-Luuk-skill-res-Skill.webp',
+    'Basic Attack - Golden Impale': './characters/luuk-herssen/1fhf0vt7-Luuk-skill-res-Skill.webp',
+    'Golden Impale': './characters/luuk-herssen/1fhf0vt7-Luuk-skill-res-Skill.webp', // rotation-step phrasing (short form), same Resonance Skill icon
+    'Gavel of Earthshaker': './characters/luuk-herssen/8nFJT3SG-Luuk-skill-forte.webp', // Forte Circuit — Spark from the Frost
+    "Rewritten in Winter's Margins": './characters/luuk-herssen/1Y4xcqYx-Luuk-skill-liberation.webp', // Resonance Liberation
+    'Before Injection of Dawn': './characters/luuk-herssen/ksYqXQPQ-Luuk-skill-intro.webp', // Intro Skill
+    'Bow to the Last Light': './characters/luuk-herssen/W4MMpcrv-Luuk-skill-outro.webp', // Outro Skill
+    'Silent Debate of Light': './characters/luuk-herssen/BHdBsKjP-Luuk-skill-tune.webp', // Tune Break
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Sigrika, pulled via the MediaWiki API
   // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
   'Sigrika': {
-    'Stage 1-4': './characters/rR5XytVJ-Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (same asset already used for Luuk Herssen)
-    'Stage 2-4': './characters/rR5XytVJ-Luuk-skill-basic.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Elucidated': './characters/rR5XytVJ-Luuk-skill-basic.webp', // Decipher-state Basic ATK finisher, still generic weapon icon
-    'Heavy ATK: Schemata of Runes': './characters/rR5XytVJ-Luuk-skill-basic.webp', // Heavy Attack, no dedicated wiki icon — generic weapon icon
-    'BOOMY BOOM!': './characters/k6M2mPzF-Sigrika-skill-res-Skill.webp', // Resonance Skill — Royan Close Quarters Combat
-    'BIG BOOMY BOOM!': './characters/k6M2mPzF-Sigrika-skill-res-Skill.webp',
-    'Runic Outburst': './characters/1Ydcf5Gb-Sigrika-skill-forte.webp', // Forte Circuit — Within Infinity's Embrace
-    'Learn My True Name': './characters/1Ydcf5Gb-Sigrika-skill-forte.webp',
-    "Where Trust Leads Me!": './characters/tTFS1w8x-Sigrika-skill-liberation.webp', // Resonance Liberation
-    'Solsworn Etymology': './characters/Qj6rsbGF-Sigrika-skill-intro.webp', // Intro Skill
-    'In This Very Moment': './characters/q3yGzhyX-Sigrika-skill-outro.webp', // Outro Skill
+    'Stage 1-4': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (same asset already used for Luuk Herssen)
+    'Stage 2-4': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Elucidated': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // Decipher-state Basic ATK finisher, still generic weapon icon
+    'Heavy ATK: Schemata of Runes': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // Heavy Attack, no dedicated wiki icon — generic weapon icon
+    'BOOMY BOOM!': './characters/sigrika/k6M2mPzF-Sigrika-skill-res-Skill.webp', // Resonance Skill — Royan Close Quarters Combat
+    'BIG BOOMY BOOM!': './characters/sigrika/k6M2mPzF-Sigrika-skill-res-Skill.webp',
+    'Runic Outburst': './characters/sigrika/1Ydcf5Gb-Sigrika-skill-forte.webp', // Forte Circuit — Within Infinity's Embrace
+    'Learn My True Name': './characters/sigrika/1Ydcf5Gb-Sigrika-skill-forte.webp',
+    "Where Trust Leads Me!": './characters/sigrika/tTFS1w8x-Sigrika-skill-liberation.webp', // Resonance Liberation
+    'Solsworn Etymology': './characters/sigrika/Qj6rsbGF-Sigrika-skill-intro.webp', // Intro Skill
+    'In This Very Moment': './characters/sigrika/q3yGzhyX-Sigrika-skill-outro.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Hiyuki, pulled via the MediaWiki API
   // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
   'Hiyuki': {
-    'Present Self Stage': './characters/YTdT2Yxf-skill-sword.webp', // Basic ATK — generic Sword icon (fandom's own File:Skill_Flaming_Sakura_Blade_Art.png resolves to this same asset)
-    'Foreclaimed Self Stage': './characters/YTdT2Yxf-skill-sword.webp',
-    'Iai Stance': './characters/YTdT2Yxf-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo ('Iai Stance x3'), same icon
-    'Frost Splinter': './characters/9HCF6LL6-Hiyuki-skill-forte.webp', // Heavy ATK, Forte-gated — Everfrost Dominion
-    'Bitterfrost': './characters/9HCF6LL6-Hiyuki-skill-forte.webp',
-    'Glacio Bite': './characters/9HCF6LL6-Hiyuki-skill-forte.webp', // Forte Circuit
-    'Foreclaiming': './characters/hJgrR7gJ-Hiyuki-skill-liberation.webp', // Resonance Liberation
-    'Frostblight': './characters/7Jq5CD3r-Hiyuki-skill-res-Skill.webp', // Resonance Skill
-    'Frostedge': './characters/NRt7X9T-Hiyuki-skill-intro.webp', // Intro Skill
-    'Snowlight Blessing': './characters/Ng7S6X8j-Hiyuki-skill-outro.webp', // Outro Skill
+    'Present Self Stage': './characters/_shared/YTdT2Yxf-skill-sword.webp', // Basic ATK — generic Sword icon (fandom's own File:Skill_Flaming_Sakura_Blade_Art.png resolves to this same asset)
+    'Foreclaimed Self Stage': './characters/_shared/YTdT2Yxf-skill-sword.webp',
+    'Iai Stance': './characters/_shared/YTdT2Yxf-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo ('Iai Stance x3'), same icon
+    'Frost Splinter': './characters/hiyuki/9HCF6LL6-Hiyuki-skill-forte.webp', // Heavy ATK, Forte-gated — Everfrost Dominion
+    'Bitterfrost': './characters/hiyuki/9HCF6LL6-Hiyuki-skill-forte.webp',
+    'Glacio Bite': './characters/hiyuki/9HCF6LL6-Hiyuki-skill-forte.webp', // Forte Circuit
+    'Foreclaiming': './characters/hiyuki/hJgrR7gJ-Hiyuki-skill-liberation.webp', // Resonance Liberation
+    'Frostblight': './characters/hiyuki/7Jq5CD3r-Hiyuki-skill-res-Skill.webp', // Resonance Skill
+    'Frostedge': './characters/hiyuki/NRt7X9T-Hiyuki-skill-intro.webp', // Intro Skill
+    'Snowlight Blessing': './characters/hiyuki/Ng7S6X8j-Hiyuki-skill-outro.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Denia, pulled via the MediaWiki API
   // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
   'Denia': {
-    'Stage 1-4': './characters/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used for Encore/Yinlin)
-    'Stagecraft Form Stage 4': './characters/RkMykBkT-Skill-Rectifier.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Phantom Bubble': './characters/ZpdRC3Kx-denia-res-Skill.webp', // Resonance Skill — Bubbles and Baits
-    'Banish': './characters/ZpdRC3Kx-denia-res-Skill.webp', // Breakdown Form's Resonance Skill replacement, same wiki icon
-    'Final Act: Stagecraft': './characters/xtj5xwht-denia-liberation.webp', // Resonance Liberation — 1st Ultimate
-    'Final Act: Breakdown': './characters/xtj5xwht-denia-liberation.webp', // Resonance Liberation — 2nd Ultimate, same wiki icon
-    'Erosion Field': './characters/PGHNXhY3-denia-forte.webp', // Forte Circuit "Flawless"
-    "It's Been A While!": './characters/hx2nmhpT-denia-intro.webp', // Intro Skill — Formal Greetings
-    'Formal Greetings': './characters/hx2nmhpT-denia-intro.webp',
-    'Unfinished Lies': './characters/BVB2jBsW-denia-outro.webp', // Outro Skill
+    'Stage 1-4': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used for Encore/Yinlin)
+    'Stagecraft Form Stage 4': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Phantom Bubble': './characters/denia/ZpdRC3Kx-denia-res-Skill.webp', // Resonance Skill — Bubbles and Baits
+    'Banish': './characters/denia/ZpdRC3Kx-denia-res-Skill.webp', // Breakdown Form's Resonance Skill replacement, same wiki icon
+    'Final Act: Stagecraft': './characters/denia/xtj5xwht-denia-liberation.webp', // Resonance Liberation — 1st Ultimate
+    'Final Act: Breakdown': './characters/denia/xtj5xwht-denia-liberation.webp', // Resonance Liberation — 2nd Ultimate, same wiki icon
+    'Erosion Field': './characters/denia/PGHNXhY3-denia-forte.webp', // Forte Circuit "Flawless"
+    "It's Been A While!": './characters/denia/hx2nmhpT-denia-intro.webp', // Intro Skill — Formal Greetings
+    'Formal Greetings': './characters/denia/hx2nmhpT-denia-intro.webp',
+    'Unfinished Lies': './characters/denia/BVB2jBsW-denia-outro.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Lucy/Rebecca, pulled via the MediaWiki
   // API (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
   'Lucy': {
-    'Locked Thread': './characters/NG3jXXG-skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
-    'Thread Shredding Stage 1-4': './characters/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Dual Threading': './characters/NG3jXXG-skill-pistols.webp', // Root Access's Heavy Attack replacement, same generic weapon icon
-    'Payload': './characters/Z6KMgzkb-lucy-res-Skill.webp', // Resonance Skill — Protocol Breach
-    'Pulse Interference': './characters/Z6KMgzkb-lucy-res-Skill.webp',
-    'Deadlock': './characters/Z6KMgzkb-lucy-res-Skill.webp', // Max-TCP Resonance Skill upgrade, same wiki icon
-    'Netrunner': './characters/qFDfbxtV-lucy-liberation.webp', // Resonance Liberation
-    'Old Net Deep Dive': './characters/qFDfbxtV-lucy-liberation.webp', // Multi-threading's Resonance Liberation replacement, same wiki icon
-    'Multi-threading': './characters/hJfyn0s6-lucy-forte.webp', // Forte-gated Heavy ATK — Depths of Blackwall
-    'Hack Response': './characters/hJfyn0s6-lucy-forte.webp', // Forte Circuit
-    'Outdated Hallucination': './characters/TBQxkbJy-lucy-intro.webp', // Intro Skill
-    'Countermeasure Program': './characters/gZT3x8g7-lucy-outro.webp', // Outro Skill
+    'Locked Thread': './characters/_shared/NG3jXXG-skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
+    'Thread Shredding Stage 1-4': './characters/_shared/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Dual Threading': './characters/_shared/NG3jXXG-skill-pistols.webp', // Root Access's Heavy Attack replacement, same generic weapon icon
+    'Payload': './characters/lucy/Z6KMgzkb-lucy-res-Skill.webp', // Resonance Skill — Protocol Breach
+    'Pulse Interference': './characters/lucy/Z6KMgzkb-lucy-res-Skill.webp',
+    'Deadlock': './characters/lucy/Z6KMgzkb-lucy-res-Skill.webp', // Max-TCP Resonance Skill upgrade, same wiki icon
+    'Netrunner': './characters/lucy/qFDfbxtV-lucy-liberation.webp', // Resonance Liberation
+    'Old Net Deep Dive': './characters/lucy/qFDfbxtV-lucy-liberation.webp', // Multi-threading's Resonance Liberation replacement, same wiki icon
+    'Multi-threading': './characters/lucy/hJfyn0s6-lucy-forte.webp', // Forte-gated Heavy ATK — Depths of Blackwall
+    'Hack Response': './characters/lucy/hJfyn0s6-lucy-forte.webp', // Forte Circuit
+    'Outdated Hallucination': './characters/lucy/TBQxkbJy-lucy-intro.webp', // Intro Skill
+    'Countermeasure Program': './characters/lucy/gZT3x8g7-lucy-outro.webp', // Outro Skill
   },
   'Rebecca': {
-    "Mix-'n'-Match": './characters/NG3jXXG-skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
-    'Guts Stage 1-3': './characters/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    "Yo, It's Big Boomin' Time!": './characters/4RZv4Pks-rebecca-intro.webp', // Intro Skill — My Turn! (must precede the shorter Skill-row key below)
-    "Hey, Leadhead": './characters/4RZv4Pks-rebecca-intro.webp', // Guts-mode Intro alternative, same wiki icon
-    "It's Big Boomin' Time!": './characters/8n7M3D1K-rebecca-res-Skill.webp', // Resonance Skill — Tactical Tweaks
-    "Come 'n' Get Me!": './characters/8n7M3D1K-rebecca-res-Skill.webp',
-    "Party 'til Dawn!": './characters/KcVy8tQW-rebecca-liberation.webp', // Resonance Liberation
-    'BOOM! Fireworks!': './characters/KcVy8tQW-rebecca-liberation.webp', // fired when Overload is consumed as Mk. 31 HMG (Liberation) ends, same wiki icon
-    'Rat-tat-tat': './characters/tGfyYTJ-rebecca-forte.webp', // Forte-gated Heavy ATK — Gloves Are Comin' Off!
-    'Bang-bang-bang': './characters/tGfyYTJ-rebecca-forte.webp',
-    'Hack Response': './characters/tGfyYTJ-rebecca-forte.webp', // Forte Circuit
-    'Preem Choom': './characters/zhQshWzF-rebecca-outro.webp', // Outro Skill
+    "Mix-'n'-Match": './characters/_shared/NG3jXXG-skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
+    'Guts Stage 1-3': './characters/_shared/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    "Yo, It's Big Boomin' Time!": './characters/rebecca/4RZv4Pks-rebecca-intro.webp', // Intro Skill — My Turn! (must precede the shorter Skill-row key below)
+    "Hey, Leadhead": './characters/rebecca/4RZv4Pks-rebecca-intro.webp', // Guts-mode Intro alternative, same wiki icon
+    "It's Big Boomin' Time!": './characters/rebecca/8n7M3D1K-rebecca-res-Skill.webp', // Resonance Skill — Tactical Tweaks
+    "Come 'n' Get Me!": './characters/rebecca/8n7M3D1K-rebecca-res-Skill.webp',
+    "Party 'til Dawn!": './characters/rebecca/KcVy8tQW-rebecca-liberation.webp', // Resonance Liberation
+    'BOOM! Fireworks!': './characters/rebecca/KcVy8tQW-rebecca-liberation.webp', // fired when Overload is consumed as Mk. 31 HMG (Liberation) ends, same wiki icon
+    'Rat-tat-tat': './characters/rebecca/tGfyYTJ-rebecca-forte.webp', // Forte-gated Heavy ATK — Gloves Are Comin' Off!
+    'Bang-bang-bang': './characters/rebecca/tGfyYTJ-rebecca-forte.webp',
+    'Hack Response': './characters/rebecca/tGfyYTJ-rebecca-forte.webp', // Forte Circuit
+    'Preem Choom': './characters/rebecca/zhQshWzF-rebecca-outro.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Lucilla, pulled via the MediaWiki API
   // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
   'Lucilla': {
-    'Snapshot': './characters/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used elsewhere)
-    'Tracing Forms Stage 1-3': './characters/RkMykBkT-Skill-Rectifier.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Letting It Go': './characters/RkMykBkT-Skill-Rectifier.webp', // auto-follow-up after Basic Attack - Tracing Forms Stage 3, same generic weapon icon
-    'Phantom Frame': './characters/G4jbSdr2-lucilla-res-Skill.webp', // Resonance Skill
-    'Clear As Day': './characters/Q7dvwN32-lucilla-liberation.webp', // Resonance Liberation
-    'Oblivion': './characters/qYZ1pTZ0-lucilla-forte.webp', // Forte Circuit — Memory Palace
-    'Clip It': './characters/7JWJhpcF-lucilla-intro.webp', // Intro Skill
-    'Montage': './characters/RGZrzfTY-lucilla-outro.webp', // Outro Skill
+    'Snapshot': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used elsewhere)
+    'Tracing Forms Stage 1-3': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Letting It Go': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // auto-follow-up after Basic Attack - Tracing Forms Stage 3, same generic weapon icon
+    'Phantom Frame': './characters/lucilla/G4jbSdr2-lucilla-res-Skill.webp', // Resonance Skill
+    'Clear As Day': './characters/lucilla/Q7dvwN32-lucilla-liberation.webp', // Resonance Liberation
+    'Oblivion': './characters/lucilla/qYZ1pTZ0-lucilla-forte.webp', // Forte Circuit — Memory Palace
+    'Clip It': './characters/lucilla/7JWJhpcF-lucilla-intro.webp', // Intro Skill
+    'Montage': './characters/lucilla/RGZrzfTY-lucilla-outro.webp', // Outro Skill
   },
   // Source: wutheringwaves.fandom.com Skill_*.png assets for Yangyang: Xuanling/Suisui, pulled via
   // the MediaWiki API (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-18).
   'Yangyang: Xuanling': {
-    'Azure/Feather Stance': './characters/x86mmjbD-skill-sword.webp', // Basic ATK — generic Sword icon (same asset already used elsewhere)
-    'Havoc in Bloom Stage 1-3': './characters/x86mmjbD-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Feather Fall': './characters/x86mmjbD-skill-sword.webp', // Mid-air Attack, no dedicated wiki icon — generic weapon icon
-    'Sword Stance Switch': './characters/NgDz5JK6-yx-res-Skill.webp', // Resonance Skill — Feather's Edge
-    'Azure Sword Stance': './characters/N6yKBC9r-yx-forte.webp', // Forte-gated Heavy ATK — The Way of Ten Thousand Voices
-    'Feather Sword Stance': './characters/N6yKBC9r-yx-forte.webp',
-    'Shadow of Xuanling': './characters/N6yKBC9r-yx-forte.webp', // Forte Circuit
-    'Hush of a Thousand Voices': './characters/hJWFGQ8N-yx-liberation.webp', // Resonance Liberation
-    'Skybound Feather': './characters/5hWRkHJj-yx-intro.webp', // Intro Skill
-    'As the Wind Wills': './characters/SDZqCdLj-yx-outro.webp', // Outro Skill
+    'Azure/Feather Stance': './characters/_shared/x86mmjbD-skill-sword.webp', // Basic ATK — generic Sword icon (same asset already used elsewhere)
+    'Havoc in Bloom Stage 1-3': './characters/_shared/x86mmjbD-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Feather Fall': './characters/_shared/x86mmjbD-skill-sword.webp', // Mid-air Attack, no dedicated wiki icon — generic weapon icon
+    'Sword Stance Switch': './characters/yangyang-xuanling/NgDz5JK6-yx-res-Skill.webp', // Resonance Skill — Feather's Edge
+    'Azure Sword Stance': './characters/yangyang-xuanling/N6yKBC9r-yx-forte.webp', // Forte-gated Heavy ATK — The Way of Ten Thousand Voices
+    'Feather Sword Stance': './characters/yangyang-xuanling/N6yKBC9r-yx-forte.webp',
+    'Shadow of Xuanling': './characters/yangyang-xuanling/N6yKBC9r-yx-forte.webp', // Forte Circuit
+    'Hush of a Thousand Voices': './characters/yangyang-xuanling/hJWFGQ8N-yx-liberation.webp', // Resonance Liberation
+    'Skybound Feather': './characters/yangyang-xuanling/5hWRkHJj-yx-intro.webp', // Intro Skill
+    'As the Wind Wills': './characters/yangyang-xuanling/SDZqCdLj-yx-outro.webp', // Outro Skill
   },
   'Suisui': {
-    'Zephyr Stance Stage 1-4': './characters/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used elsewhere)
-    'Zephyr Stance thrust': './characters/rKYhDsHw-suisui-res-Skill.webp', // Resonance Skill — Vernal Screen
-    'Drizzle Stance Stage 1-4': './characters/RkMykBkT-Skill-Rectifier.webp',
-    'Awakening Spring': './characters/rKYhDsHw-suisui-res-Skill.webp', // Zephyr Skill's max-Cloud Breath upgrade, same wiki icon
-    'Drizzle Stance thrust': './characters/rKYhDsHw-suisui-res-Skill.webp',
-    'Zephyr Stance': './characters/RkMykBkT-Skill-Rectifier.webp', // Mid-air Attack row, generic weapon icon (must follow the longer Zephyr-prefixed keys above)
-    'Drizzle Stance': './characters/cRkfdDc-suisui-forte.webp', // Forte-gated Heavy ATK — Lambent Gold (must follow the longer Drizzle-prefixed keys above)
-    'Song of Thoroughfare': './characters/27WLZMx6-suisui-liberation.webp', // Resonance Liberation
-    'Tinkling Jade': './characters/fdXb5bgm-suisui-intro.webp', // Intro Skill
-    'Rippling Waters': './characters/fhrX8pF-suisui-outro.webp', // Outro Skill
+    'Zephyr Stance Stage 1-4': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — generic Rectifier icon (same asset already used elsewhere)
+    'Zephyr Stance thrust': './characters/suisui/rKYhDsHw-suisui-res-Skill.webp', // Resonance Skill — Vernal Screen
+    'Drizzle Stance Stage 1-4': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Awakening Spring': './characters/suisui/rKYhDsHw-suisui-res-Skill.webp', // Zephyr Skill's max-Cloud Breath upgrade, same wiki icon
+    'Drizzle Stance thrust': './characters/suisui/rKYhDsHw-suisui-res-Skill.webp',
+    'Zephyr Stance': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Mid-air Attack row, generic weapon icon (must follow the longer Zephyr-prefixed keys above)
+    'Drizzle Stance': './characters/suisui/cRkfdDc-suisui-forte.webp', // Forte-gated Heavy ATK — Lambent Gold (must follow the longer Drizzle-prefixed keys above)
+    'Song of Thoroughfare': './characters/suisui/27WLZMx6-suisui-liberation.webp', // Resonance Liberation
+    'Tinkling Jade': './characters/suisui/fdXb5bgm-suisui-intro.webp', // Intro Skill
+    'Rippling Waters': './characters/suisui/fhrX8pF-suisui-outro.webp', // Outro Skill
   },
   // Danjin/Yangyang/Sanhua icons added 2026-08-18, sourced directly from wutheringwaves.fandom.com's
   // own static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19).
   'Danjin': {
-    'Execution': './characters/prZWKCtm-Skill-Sword.webp', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/prZWKCtm-Skill-Sword.webp',
-    'Crimson Fragment': './characters/0Rsb2H4t-Skill-Crimson-Fragment.webp',
-    'Crimson Erosion': './characters/0Rsb2H4t-Skill-Crimson-Fragment.webp', // Resonance Skill's Crimson Erosion follow-up, same skill icon
-    'Sanguine Pulse': './characters/0Rsb2H4t-Skill-Crimson-Fragment.webp',
-    'Crimson Bloom': './characters/JjPSmMNr-Skill-Crimson-Bloom.webp',
-    'Serene Vigil': './characters/m5pGRN2t-Skill-Serene-Vigil.webp',
-    'Chaoscleave': './characters/m5pGRN2t-Skill-Serene-Vigil.webp', // Forte Circuit's Heavy ATK finisher, same Forte icon
-    'Vindication': './characters/fz39Q85Q-Skill-Vindication.webp',
-    'Duality': './characters/VYn8FS1d-Skill-Duality.webp',
+    'Execution': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/prZWKCtm-Skill-Sword.webp',
+    'Crimson Fragment': './characters/danjin/0Rsb2H4t-Skill-Crimson-Fragment.webp',
+    'Crimson Erosion': './characters/danjin/0Rsb2H4t-Skill-Crimson-Fragment.webp', // Resonance Skill's Crimson Erosion follow-up, same skill icon
+    'Sanguine Pulse': './characters/danjin/0Rsb2H4t-Skill-Crimson-Fragment.webp',
+    'Crimson Bloom': './characters/danjin/JjPSmMNr-Skill-Crimson-Bloom.webp',
+    'Serene Vigil': './characters/danjin/m5pGRN2t-Skill-Serene-Vigil.webp',
+    'Chaoscleave': './characters/danjin/m5pGRN2t-Skill-Serene-Vigil.webp', // Forte Circuit's Heavy ATK finisher, same Forte icon
+    'Vindication': './characters/danjin/fz39Q85Q-Skill-Vindication.webp',
+    'Duality': './characters/danjin/VYn8FS1d-Skill-Duality.webp',
   },
   'Yangyang': {
-    'Feather as Blade': './characters/prZWKCtm-Skill-Sword.webp', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/prZWKCtm-Skill-Sword.webp',
-    'Zephyr Domain': './characters/VW0qky4r-Skill-Zephyr-Domain.webp',
-    'Zephyr Song': './characters/prZWKCtm-Skill-Sword.webp', // Heavy ATK follow-up, no dedicated fandom icon — generic Sword icon (same convention as Basic/Heavy ATK above)
-    'Wind Spirals': './characters/934FW2wW-Skill-Wind-Spirals.webp',
-    'Echoing Feathers': './characters/s9HtLNhg-Skill-Echoing-Feathers.webp',
-    'Feather Release': './characters/s9HtLNhg-Skill-Echoing-Feathers.webp', // Forte Circuit's Mid-air Attack finisher, same Forte icon
-    'Cerulean Song': './characters/0SJV3np-Skill-Cerulean-Song.webp',
-    'Whispering Breeze': './characters/ZpfP3HZb-Skill-Whispering-Breeze.webp',
+    'Feather as Blade': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/prZWKCtm-Skill-Sword.webp',
+    'Zephyr Domain': './characters/yangyang/VW0qky4r-Skill-Zephyr-Domain.webp',
+    'Zephyr Song': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Heavy ATK follow-up, no dedicated fandom icon — generic Sword icon (same convention as Basic/Heavy ATK above)
+    'Wind Spirals': './characters/yangyang/934FW2wW-Skill-Wind-Spirals.webp',
+    'Echoing Feathers': './characters/yangyang/s9HtLNhg-Skill-Echoing-Feathers.webp',
+    'Feather Release': './characters/yangyang/s9HtLNhg-Skill-Echoing-Feathers.webp', // Forte Circuit's Mid-air Attack finisher, same Forte icon
+    'Cerulean Song': './characters/yangyang/0SJV3np-Skill-Cerulean-Song.webp',
+    'Whispering Breeze': './characters/yangyang/ZpfP3HZb-Skill-Whispering-Breeze.webp',
   },
   'Sanhua': {
-    'Frigid Light': './characters/prZWKCtm-Skill-Sword.webp', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
-    'Standard': './characters/prZWKCtm-Skill-Sword.webp',
-    'Eternal Frost': './characters/W4h4QXjz-Skill-Eternal-Frost.webp',
-    'Glacial Gaze': './characters/m5qSqm32-Skill-Glacial-Gaze.webp',
-    'Clarity of Mind': './characters/tMVxnqGb-Skill-Clarity-of-Mind.webp',
-    'Detonate': './characters/tMVxnqGb-Skill-Clarity-of-Mind.webp', // Forte Circuit's Heavy ATK finisher, same Forte icon
-    'Freezing Thorns': './characters/203JZS27-Skill-Freezing-Thorns.webp',
-    'Silversnow': './characters/CpzvZz5K-Skill-Silversnow.webp',
+    'Frigid Light': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic ATK — generic Sword icon, also covers Heavy ATK/Mid-air/Dodge Counter
+    'Standard': './characters/_shared/prZWKCtm-Skill-Sword.webp',
+    'Eternal Frost': './characters/sanhua/W4h4QXjz-Skill-Eternal-Frost.webp',
+    'Glacial Gaze': './characters/sanhua/m5qSqm32-Skill-Glacial-Gaze.webp',
+    'Clarity of Mind': './characters/sanhua/tMVxnqGb-Skill-Clarity-of-Mind.webp',
+    'Detonate': './characters/sanhua/tMVxnqGb-Skill-Clarity-of-Mind.webp', // Forte Circuit's Heavy ATK finisher, same Forte icon
+    'Freezing Thorns': './characters/sanhua/203JZS27-Skill-Freezing-Thorns.webp',
+    'Silversnow': './characters/sanhua/CpzvZz5K-Skill-Silversnow.webp',
   },
   // added 2026-08-18 — previously entirely missing (was falling back to no icon for every Taoqi skill
   // row). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19).
   'Taoqi': {
-    'Concealed Edge': './characters/B5n54GNt-Skill-Broadblade.webp', // Basic/Heavy/Mid-air/Dodge Counter — generic Broadblade icon
-    'Standard': './characters/B5n54GNt-Skill-Broadblade.webp',
-    'Strategic Parry': './characters/B5n54GNt-Skill-Broadblade.webp',
-    'Fortified Defense': './characters/LDMqFSKn-Skill-Fortified-Defense.webp',
-    'Unmovable': './characters/hJXvfC0F-Skill-Unmovable.webp',
-    'Power Shift': './characters/Y4dHVS3L-Skill-Power-Shift.webp',
-    'Defense Formation': './characters/KpkZ63SL-Skill-Defense-Formation.webp',
-    'Iron Will': './characters/G3bg0S5R-Skill-Iron-Will.webp',
+    'Concealed Edge': './characters/_shared/B5n54GNt-Skill-Broadblade.webp', // Basic/Heavy/Mid-air/Dodge Counter — generic Broadblade icon
+    'Standard': './characters/_shared/B5n54GNt-Skill-Broadblade.webp',
+    'Strategic Parry': './characters/_shared/B5n54GNt-Skill-Broadblade.webp',
+    'Fortified Defense': './characters/taoqi/LDMqFSKn-Skill-Fortified-Defense.webp',
+    'Unmovable': './characters/taoqi/hJXvfC0F-Skill-Unmovable.webp',
+    'Power Shift': './characters/taoqi/Y4dHVS3L-Skill-Power-Shift.webp',
+    'Defense Formation': './characters/taoqi/KpkZ63SL-Skill-Defense-Formation.webp',
+    'Iron Will': './characters/taoqi/G3bg0S5R-Skill-Iron-Will.webp',
   },
   // added 2026-08-18 — previously entirely missing (was falling back to no icon for every Yuanwu skill
   // row). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19).
   // 'Leihuangquan' itself has no dedicated skill icon file on the wiki — it redirects to the generic
   // Gauntlets weapon-type icon.
   'Yuanwu': {
-    'Leihuangquan': './characters/QvdmVfvF-Skill-Gauntlets.webp',
-    'Thunder Field': './characters/MK40ZPV-Skill-Leihuang-Master.webp',
-    'Thunder Wedge': './characters/MK40ZPV-Skill-Leihuang-Master.webp',
-    'Rumbling Spark': './characters/Q7zJbCct-Skill-Unassuming-Blade.webp',
-    'Thunder Uprising': './characters/Q7zJbCct-Skill-Unassuming-Blade.webp',
-    'Thunderweaver': './characters/Q7zJbCct-Skill-Unassuming-Blade.webp',
-    'Blazing Might': './characters/spn2bspQ-Skill-Blazing-Might.webp',
-    'Thunder Bombardment': './characters/21ghLjJQ-Skill-Thunder-Bombardment.webp',
-    'Lightning Manipulation': './characters/7dB9SgTZ-Skill-Lightning-Manipulation.webp',
+    'Leihuangquan': './characters/_shared/QvdmVfvF-Skill-Gauntlets.webp',
+    'Thunder Field': './characters/yuanwu/MK40ZPV-Skill-Leihuang-Master.webp',
+    'Thunder Wedge': './characters/yuanwu/MK40ZPV-Skill-Leihuang-Master.webp',
+    'Rumbling Spark': './characters/yuanwu/Q7zJbCct-Skill-Unassuming-Blade.webp',
+    'Thunder Uprising': './characters/yuanwu/Q7zJbCct-Skill-Unassuming-Blade.webp',
+    'Thunderweaver': './characters/yuanwu/Q7zJbCct-Skill-Unassuming-Blade.webp',
+    'Blazing Might': './characters/yuanwu/spn2bspQ-Skill-Blazing-Might.webp',
+    'Thunder Bombardment': './characters/yuanwu/21ghLjJQ-Skill-Thunder-Bombardment.webp',
+    'Lightning Manipulation': './characters/yuanwu/7dB9SgTZ-Skill-Lightning-Manipulation.webp',
   },
   // added 2026-08-18 — previously entirely missing (Mortefi's SKILL_MULTIPLIERS rows had no icon
   // lookup at all). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the
@@ -5226,13 +5226,13 @@ const SKILL_ICONS = {
   // Coordinated ATK hit fired during Burning Rhapsody) has no dedicated icon file on the wiki — it's a
   // sub-effect of Resonance Liberation Violent Finale, so it reuses that icon.
   'Mortefi': {
-    'Impromptu Show': './characters/FbhQWDHw-Skill-Pistols.webp',
-    'Passionate Variation': './characters/4ZLkXg3k-Skill-Passionate-Variation.webp',
-    'Violent Finale': './characters/jXMLr4K-Skill-Violent-Finale.webp',
-    'Marcato': './characters/jXMLr4K-Skill-Violent-Finale.webp',
-    'Fury Fugue': './characters/cS6rzxkd-Skill-Fury-Fugue.webp',
-    'Dissonance': './characters/60NBXg5j-Skill-Dissonance.webp',
-    'Rage Transposition': './characters/Dfg4cLZs-Skill-Rage-Transposition.webp',
+    'Impromptu Show': './characters/mortefi/FbhQWDHw-Skill-Pistols.webp',
+    'Passionate Variation': './characters/mortefi/4ZLkXg3k-Skill-Passionate-Variation.webp',
+    'Violent Finale': './characters/mortefi/jXMLr4K-Skill-Violent-Finale.webp',
+    'Marcato': './characters/mortefi/jXMLr4K-Skill-Violent-Finale.webp',
+    'Fury Fugue': './characters/mortefi/cS6rzxkd-Skill-Fury-Fugue.webp',
+    'Dissonance': './characters/mortefi/60NBXg5j-Skill-Dissonance.webp',
+    'Rage Transposition': './characters/mortefi/Dfg4cLZs-Skill-Rage-Transposition.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Skill_*.png assets via the MediaWiki API (Forte Details table image thumbnails + a direct
@@ -5241,16 +5241,16 @@ const SKILL_ICONS = {
   // (Chime/Ruyi/Ding/Mask) share Scroll Divination's icon since they're all sub-effects of the same
   // Resonance Skill row on the wiki, with no separate per-variant icon files uploaded.
   'Youhu': {
-    'Frosty Punches': './characters/QvdmVfvF-Skill-Gauntlets.webp',
-    'Scroll Divination': './characters/Z66ZH20V-Skill-Scroll-Divination.webp',
-    'Chime': './characters/Z66ZH20V-Skill-Scroll-Divination.webp',
-    'Ruyi': './characters/Z66ZH20V-Skill-Scroll-Divination.webp',
-    'Ding': './characters/Z66ZH20V-Skill-Scroll-Divination.webp',
-    'Mask': './characters/Z66ZH20V-Skill-Scroll-Divination.webp',
-    "Fortune's Favor": './characters/tT1TmNJ5-Skill-Fortune-s-Favor.webp',
-    'Poetic Essence': './characters/6JDTt2c6-Skill-Poetic-Essence.webp',
-    'Scroll of Wonders': './characters/SX5rWz0L-Skill-Scroll-of-Wonders.webp',
-    'Timeless Classics': './characters/RTxh31Pp-Skill-Timeless-Classics.webp',
+    'Frosty Punches': './characters/_shared/QvdmVfvF-Skill-Gauntlets.webp',
+    'Scroll Divination': './characters/youhu/Z66ZH20V-Skill-Scroll-Divination.webp',
+    'Chime': './characters/youhu/Z66ZH20V-Skill-Scroll-Divination.webp',
+    'Ruyi': './characters/youhu/Z66ZH20V-Skill-Scroll-Divination.webp',
+    'Ding': './characters/youhu/Z66ZH20V-Skill-Scroll-Divination.webp',
+    'Mask': './characters/youhu/Z66ZH20V-Skill-Scroll-Divination.webp',
+    "Fortune's Favor": './characters/youhu/tT1TmNJ5-Skill-Fortune-s-Favor.webp',
+    'Poetic Essence': './characters/youhu/6JDTt2c6-Skill-Poetic-Essence.webp',
+    'Scroll of Wonders': './characters/youhu/SX5rWz0L-Skill-Scroll-of-Wonders.webp',
+    'Timeless Classics': './characters/youhu/RTxh31Pp-Skill-Timeless-Classics.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Skill_*.png assets via the MediaWiki API (Forte Details table image thumbnails, section=4 of
@@ -5258,18 +5258,18 @@ const SKILL_ICONS = {
   // resolves 'Energized Pounce'/'Energized Rebound' (Forte Circuit moves) to Signal Light's icon rather
   // than falling through to the plain Resonance Skill (Searchlight Service) icon.
   'Lumi': {
-    'Energized': './characters/WLVPqHx-Signal-Light.webp',
-    'Glare': './characters/WLVPqHx-Signal-Light.webp',
-    'Red Spotlight': './characters/WLVPqHx-Signal-Light.webp',
-    'Laser': './characters/WLVPqHx-Signal-Light.webp',
-    'Pounce': './characters/FvQP99m-Searchlight-Service.webp',
-    'Rebound': './characters/FvQP99m-Searchlight-Service.webp',
-    'Squeakie Express': './characters/Y7pMmWDX-Squeakie-Express.webp',
-    'Yellow Light': './characters/B5n54GNt-Skill-Broadblade.webp',
-    'Red Light': './characters/B5n54GNt-Skill-Broadblade.webp',
-    'Glitter': './characters/B5n54GNt-Skill-Broadblade.webp',
-    'Special Delivery': './characters/Xxx7gYgj-Skill-Special-Delivery.webp',
-    'Escorting': './characters/N2dQ7Kyg-Skill-Escorting.webp',
+    'Energized': './characters/lumi/WLVPqHx-Signal-Light.webp',
+    'Glare': './characters/lumi/WLVPqHx-Signal-Light.webp',
+    'Red Spotlight': './characters/lumi/WLVPqHx-Signal-Light.webp',
+    'Laser': './characters/lumi/WLVPqHx-Signal-Light.webp',
+    'Pounce': './characters/lumi/FvQP99m-Searchlight-Service.webp',
+    'Rebound': './characters/lumi/FvQP99m-Searchlight-Service.webp',
+    'Squeakie Express': './characters/lumi/Y7pMmWDX-Squeakie-Express.webp',
+    'Yellow Light': './characters/_shared/B5n54GNt-Skill-Broadblade.webp',
+    'Red Light': './characters/_shared/B5n54GNt-Skill-Broadblade.webp',
+    'Glitter': './characters/_shared/B5n54GNt-Skill-Broadblade.webp',
+    'Special Delivery': './characters/lumi/Xxx7gYgj-Skill-Special-Delivery.webp',
+    'Escorting': './characters/lumi/N2dQ7Kyg-Skill-Escorting.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Skill_*.png assets via the MediaWiki API (action=query&titles=File:Skill+...&prop=imageinfo, section
@@ -5277,67 +5277,67 @@ const SKILL_ICONS = {
   // the shared generic Skill_Rectifier.png weapon-type icon on fandom, used here for all her un-enhanced
   // Basic ATK/Heavy Attack/Mid-air Attack moves.
   'Buling': {
-    'Hexagram Calls': './characters/rKNB0p6J-Skill-Rectifier.webp',
-    'Mid-air Attack': './characters/rKNB0p6J-Skill-Rectifier.webp',
-    'Heavy Attack': './characters/rKNB0p6J-Skill-Rectifier.webp',
-    'In Shadow Thunder Stirs': './characters/6Jpxh0rV-Skill-In-Shadow-Thunder-Stirs.webp',
-    'Five Thunders Spell Array': './characters/6J1q4XqN-Skill-Flashing-Thunder-Spell.webp',
-    'Flashing Thunder Spell': './characters/6J1q4XqN-Skill-Flashing-Thunder-Spell.webp',
-    'Summon and Smite': './characters/rGpQ3fpb-Skill-Summon-and-Smite.webp',
-    'Exorcism Spell': './characters/R4hYk7rh-Skill-Exorcism-Spell.webp',
+    'Hexagram Calls': './characters/buling/rKNB0p6J-Skill-Rectifier.webp',
+    'Mid-air Attack': './characters/buling/rKNB0p6J-Skill-Rectifier.webp',
+    'Heavy Attack': './characters/buling/rKNB0p6J-Skill-Rectifier.webp',
+    'In Shadow Thunder Stirs': './characters/buling/6Jpxh0rV-Skill-In-Shadow-Thunder-Stirs.webp',
+    'Five Thunders Spell Array': './characters/buling/6J1q4XqN-Skill-Flashing-Thunder-Spell.webp',
+    'Flashing Thunder Spell': './characters/buling/6J1q4XqN-Skill-Flashing-Thunder-Spell.webp',
+    'Summon and Smite': './characters/buling/rGpQ3fpb-Skill-Summon-and-Smite.webp',
+    'Exorcism Spell': './characters/buling/R4hYk7rh-Skill-Exorcism-Spell.webp',
   },
   // added 2026-08-18 — previously entirely missing (zero SKILL_ICONS coverage for all 4 Rover
   // attunements). Sourced from fandom's own static.wikia.nocookie.net Skill_*.png assets via the
   // MediaWiki API (Rover/Combat's tabbed Forte tables, one tab per element). All 4 Rovers share the
   // same generic Skill_Sword.png Basic ATK icon (also covers Heavy ATK/Mid-air/Dodge Counter).
   'Rover: Havoc': {
-    'Tuneslayer': './characters/prZWKCtm-Skill-Sword.webp', // Basic ATK
-    'Standard': './characters/prZWKCtm-Skill-Sword.webp',
-    'Wingblade': './characters/99BT9Qqn-Skill-Wingblade.webp', // Resonance Skill
-    'Umbra Eclipse': './characters/nNpvGF4L-Skill-Umbra-Eclipse.webp', // Forte Circuit
-    'Devastation': './characters/nNpvGF4L-Skill-Umbra-Eclipse.webp', // Forte-gated Heavy Attack that enters Dark Surge, same Forte icon
-    'Deadening Abyss': './characters/bgvHXLqr-Skill-Deadening-Abyss.webp', // Resonance Liberation
-    'Umbra: Lifetaker': './characters/bgvHXLqr-Skill-Deadening-Abyss.webp', // Umbra-state Liberation nuke, same wiki icon
-    'Instant of Annihilation': './characters/chtkVHd2-Skill-Instant-of-Annihilation.webp', // Intro Skill
-    'Soundweaver': './characters/4wsczBtt-Skill-Soundweaver.webp', // Outro Skill
+    'Tuneslayer': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic ATK
+    'Standard': './characters/_shared/prZWKCtm-Skill-Sword.webp',
+    'Wingblade': './characters/rover-havoc/99BT9Qqn-Skill-Wingblade.webp', // Resonance Skill
+    'Umbra Eclipse': './characters/rover-havoc/nNpvGF4L-Skill-Umbra-Eclipse.webp', // Forte Circuit
+    'Devastation': './characters/rover-havoc/nNpvGF4L-Skill-Umbra-Eclipse.webp', // Forte-gated Heavy Attack that enters Dark Surge, same Forte icon
+    'Deadening Abyss': './characters/rover-havoc/bgvHXLqr-Skill-Deadening-Abyss.webp', // Resonance Liberation
+    'Umbra: Lifetaker': './characters/rover-havoc/bgvHXLqr-Skill-Deadening-Abyss.webp', // Umbra-state Liberation nuke, same wiki icon
+    'Instant of Annihilation': './characters/rover-havoc/chtkVHd2-Skill-Instant-of-Annihilation.webp', // Intro Skill
+    'Soundweaver': './characters/rover-havoc/4wsczBtt-Skill-Soundweaver.webp', // Outro Skill
   },
   'Rover: Spectro': {
-    'Vibration Manifestation': './characters/prZWKCtm-Skill-Sword.webp', // Basic ATK
-    'Standard': './characters/prZWKCtm-Skill-Sword.webp',
-    'Resonance': './characters/prZWKCtm-Skill-Sword.webp', // Heavy Attack: Resonance/Aftertune combo timing hits, no dedicated icon — generic weapon icon
-    'Aftertune': './characters/prZWKCtm-Skill-Sword.webp',
-    'Resonating Slashes': './characters/tw4hy1Ck-Skill-Resonating-Slashes.webp', // Resonance Skill
-    'Resonating Spin': './characters/tw4hy1Ck-Skill-Resonating-Slashes.webp', // Forte-Gauge-enhanced Resonance Skill state, same wiki icon
-    'Resonating Whirl': './characters/tw4hy1Ck-Skill-Resonating-Slashes.webp',
-    'Resonating Echoes': './characters/tw4hy1Ck-Skill-Resonating-Slashes.webp',
-    'Echoing Orchestra': './characters/PvNGkhk3-Skill-Echoing-Orchestra.webp', // Resonance Liberation
-    'Waveshock': './characters/CpD7BjSZ-Skill-Waveshock.webp', // Intro Skill
-    'Instant': './characters/hFR6TPbf-Skill-Instant.webp', // Outro Skill
+    'Vibration Manifestation': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic ATK
+    'Standard': './characters/_shared/prZWKCtm-Skill-Sword.webp',
+    'Resonance': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Heavy Attack: Resonance/Aftertune combo timing hits, no dedicated icon — generic weapon icon
+    'Aftertune': './characters/_shared/prZWKCtm-Skill-Sword.webp',
+    'Resonating Slashes': './characters/rover-spectro/tw4hy1Ck-Skill-Resonating-Slashes.webp', // Resonance Skill
+    'Resonating Spin': './characters/rover-spectro/tw4hy1Ck-Skill-Resonating-Slashes.webp', // Forte-Gauge-enhanced Resonance Skill state, same wiki icon
+    'Resonating Whirl': './characters/rover-spectro/tw4hy1Ck-Skill-Resonating-Slashes.webp',
+    'Resonating Echoes': './characters/rover-spectro/tw4hy1Ck-Skill-Resonating-Slashes.webp',
+    'Echoing Orchestra': './characters/rover-spectro/PvNGkhk3-Skill-Echoing-Orchestra.webp', // Resonance Liberation
+    'Waveshock': './characters/rover-spectro/CpD7BjSZ-Skill-Waveshock.webp', // Intro Skill
+    'Instant': './characters/rover-spectro/hFR6TPbf-Skill-Instant.webp', // Outro Skill
   },
   'Rover: Aero': {
-    'Wind Cutter': './characters/prZWKCtm-Skill-Sword.webp', // Basic ATK
-    'Standard': './characters/prZWKCtm-Skill-Sword.webp',
-    'Plunge': './characters/prZWKCtm-Skill-Sword.webp', // Mid-air Attack plunging attack, no dedicated icon — generic weapon icon
-    'Illusion Breaker': './characters/JFC1QjWX-Skill-Illusion-Breaker.webp', // Resonance Skill
-    'Awakening Gale': './characters/JFC1QjWX-Skill-Illusion-Breaker.webp', // Resonance Skill's mid-air jump-attack cast, same wiki icon
-    'Skyfall Severance': './characters/JFC1QjWX-Skill-Illusion-Breaker.webp', // Resonance Skill's mid-air follow-up cast, same wiki icon
-    'Unbound Flow': './characters/JFC1QjWX-Skill-Illusion-Breaker.webp', // max-Windstrings Resonance Skill upgrade, same wiki icon
-    'Cycle of Wind': './characters/Q7gm1B2G-Skill-Cycle-of-Wind.webp', // Forte Circuit
-    'Cloudburst Dance': './characters/Q7gm1B2G-Skill-Cycle-of-Wind.webp', // Forte Circuit's Mid-air Attack replacement, same wiki icon
-    'Omega Storm': './characters/4nCR1X2f-Skill-Omega-Storm.webp', // Resonance Liberation
-    'Relentless Squall': './characters/bjqZf19b-Skill-Relentless-Squall.webp', // Intro Skill
-    "Storm's Echo": './characters/N69CQqFv-Skill-Storm-s-Echo.webp', // Outro Skill
+    'Wind Cutter': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic ATK
+    'Standard': './characters/_shared/prZWKCtm-Skill-Sword.webp',
+    'Plunge': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Mid-air Attack plunging attack, no dedicated icon — generic weapon icon
+    'Illusion Breaker': './characters/rover-aero/JFC1QjWX-Skill-Illusion-Breaker.webp', // Resonance Skill
+    'Awakening Gale': './characters/rover-aero/JFC1QjWX-Skill-Illusion-Breaker.webp', // Resonance Skill's mid-air jump-attack cast, same wiki icon
+    'Skyfall Severance': './characters/rover-aero/JFC1QjWX-Skill-Illusion-Breaker.webp', // Resonance Skill's mid-air follow-up cast, same wiki icon
+    'Unbound Flow': './characters/rover-aero/JFC1QjWX-Skill-Illusion-Breaker.webp', // max-Windstrings Resonance Skill upgrade, same wiki icon
+    'Cycle of Wind': './characters/rover-aero/Q7gm1B2G-Skill-Cycle-of-Wind.webp', // Forte Circuit
+    'Cloudburst Dance': './characters/rover-aero/Q7gm1B2G-Skill-Cycle-of-Wind.webp', // Forte Circuit's Mid-air Attack replacement, same wiki icon
+    'Omega Storm': './characters/rover-aero/4nCR1X2f-Skill-Omega-Storm.webp', // Resonance Liberation
+    'Relentless Squall': './characters/rover-aero/bjqZf19b-Skill-Relentless-Squall.webp', // Intro Skill
+    "Storm's Echo": './characters/rover-aero/N69CQqFv-Skill-Storm-s-Echo.webp', // Outro Skill
   },
   'Rover: Electro': {
-    'Deterrence': './characters/prZWKCtm-Skill-Sword.webp', // Basic ATK
-    'Standard': './characters/prZWKCtm-Skill-Sword.webp',
-    'Repel': './characters/prZWKCtm-Skill-Sword.webp', // Basic Attack follow-up after Resonance Skill, no dedicated icon — generic weapon icon
-    'Thunderclap': './characters/2YyS74Pn-Skill-Thunderclap.webp', // Resonance Skill
-    "Myriad Omens' Mandate": './characters/7NKRhwQH-Skill-Myriad-Omens-Mandate.webp', // Forte Circuit
-    'Overshock': './characters/7NKRhwQH-Skill-Myriad-Omens-Mandate.webp', // Forte Circuit's capped-Electric-Surge Skill replacement, same wiki icon
-    'Ultimate Tactics': './characters/wNFW43BD-Skill-Ultimate-Tactics.webp', // Resonance Liberation
-    'Thunderous Fury': './characters/Kj3cKLdS-Skill-Thunderous-Fury.webp', // Intro Skill
-    'Rumbling Thunders': './characters/Zpw7cvMr-Skill-Rumbling-Thunders.webp', // Outro Skill
+    'Deterrence': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic ATK
+    'Standard': './characters/_shared/prZWKCtm-Skill-Sword.webp',
+    'Repel': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic Attack follow-up after Resonance Skill, no dedicated icon — generic weapon icon
+    'Thunderclap': './characters/rover-electro/2YyS74Pn-Skill-Thunderclap.webp', // Resonance Skill
+    "Myriad Omens' Mandate": './characters/rover-electro/7NKRhwQH-Skill-Myriad-Omens-Mandate.webp', // Forte Circuit
+    'Overshock': './characters/rover-electro/7NKRhwQH-Skill-Myriad-Omens-Mandate.webp', // Forte Circuit's capped-Electric-Surge Skill replacement, same wiki icon
+    'Ultimate Tactics': './characters/rover-electro/wNFW43BD-Skill-Ultimate-Tactics.webp', // Resonance Liberation
+    'Thunderous Fury': './characters/rover-electro/Kj3cKLdS-Skill-Thunderous-Fury.webp', // Intro Skill
+    'Rumbling Thunders': './characters/rover-electro/Zpw7cvMr-Skill-Rumbling-Thunders.webp', // Outro Skill
   },
   // added 2026-08-20 — fills the dead-end logged in the 2026-08-20 (session 4) Update_report.md entry.
   // Sourced from static.nanoka.cc's SkillIconQingxiao atlas (SP_IconQingxiaoB1/C1/D1/D2/QTE/T/Y.webp),
@@ -5345,15 +5345,15 @@ const SKILL_ICONS = {
   // [2 icons for her 2 Forte-state moves], QTE=Resonance Liberation, T=Intro, Y=Outro) matches the
   // pattern nanoka uses site-wide for every other character's SkillIcon atlas, not just Qingxiao's.
   'Qingxiao': {
-    'Stringblade': './characters/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp', // Basic ATK
-    'Plunging Attack': './characters/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp',
-    'Sword Glide': './characters/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp',
-    'Severing Note': './characters/QFfYPWSS-Skill-Qingxiao-Resonance-Skill.webp', // Resonance Skill
-    'Ephemeral Transcendence': './characters/Lz6TqkmC-Skill-Qingxiao-Forte-Circuit.webp', // Forte Circuit
-    "Heaven's Reckoning": './characters/Y7cXCSsL-Skill-Qingxiao-Forte-Circuit-Alt.webp', // Forte Circuit finisher
-    'Billows Beneath Heaven': './characters/jkphKz37-Skill-Qingxiao-Liberation.webp', // Resonance Liberation
-    'Tonality Shift': './characters/BHfMMdWL-Skill-Qingxiao-Intro.webp', // Intro Skill
-    'Lingering Song': './characters/0jpvcBrL-Skill-Qingxiao-Outro.webp', // Outro Skill
+    'Stringblade': './characters/qingxiao/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp', // Basic ATK
+    'Plunging Attack': './characters/qingxiao/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp',
+    'Sword Glide': './characters/qingxiao/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp',
+    'Severing Note': './characters/qingxiao/QFfYPWSS-Skill-Qingxiao-Resonance-Skill.webp', // Resonance Skill
+    'Ephemeral Transcendence': './characters/qingxiao/Lz6TqkmC-Skill-Qingxiao-Forte-Circuit.webp', // Forte Circuit
+    "Heaven's Reckoning": './characters/qingxiao/Y7cXCSsL-Skill-Qingxiao-Forte-Circuit-Alt.webp', // Forte Circuit finisher
+    'Billows Beneath Heaven': './characters/qingxiao/jkphKz37-Skill-Qingxiao-Liberation.webp', // Resonance Liberation
+    'Tonality Shift': './characters/qingxiao/BHfMMdWL-Skill-Qingxiao-Intro.webp', // Intro Skill
+    'Lingering Song': './characters/qingxiao/0jpvcBrL-Skill-Qingxiao-Outro.webp', // Outro Skill
   },
   // added 2026-08-21 (calendar-planner audit for the v3.6-p2 banner, ~2026-09-10) — Jingran had zero
   // skill icons before this entry, unlike Qingxiao who released the same day. Sourced from
@@ -5362,17 +5362,17 @@ const SKILL_ICONS = {
   // D1/D2=the two Forte Circuit Heavy Attacks (Soul Raid / Stardome Meander), QTE=Liberation, T=Intro,
   // Y=Outro — same atlas convention as Qingxiao's.
   'Jingran': {
-    'Drink Soul': './characters/3Xs3ZZ7-jingran-skill-B1.webp', // Basic Attack, Yin Vessel stance
-    "Devil's Bane": './characters/3Xs3ZZ7-jingran-skill-B1.webp', // Basic Attack, Yang Font stance
-    'Encroaching Yin': './characters/S4kkG9mR-jingran-skill-C1.webp', // Resonance Skill, Yin Vessel stance
-    'Scorching Yang': './characters/S4kkG9mR-jingran-skill-C1.webp', // Resonance Skill, Yang Font stance
-    'Netherworld Traverse': './characters/S4kkG9mR-jingran-skill-C1.webp', // Resonance Skill Heavy Attack follow-up, Yin
-    "Afterlife's Guide": './characters/S4kkG9mR-jingran-skill-C1.webp', // Resonance Skill Heavy Attack follow-up, Yang
-    'Soul Raid': './characters/N2jbGWjg-jingran-skill-D1.webp', // Forte Circuit Heavy Attack
-    'Stardome Meander': './characters/1Y04vgs7-jingran-skill-D2.webp', // Forte Circuit Heavy Attack (alt)
-    'Burial of Thousand Souls': './characters/Fbfhy5pV-jingran-skill-QTE.webp', // Resonance Liberation
-    'Question the Tombs': './characters/WrW84w9-jingran-skill-T.webp', // Intro Skill
-    'Rising Fortune and Ebbing Evil': './characters/cctRq3Yp-jingran-skill-Y.webp', // Outro Skill
+    'Drink Soul': './characters/jingran/3Xs3ZZ7-jingran-skill-B1.webp', // Basic Attack, Yin Vessel stance
+    "Devil's Bane": './characters/jingran/3Xs3ZZ7-jingran-skill-B1.webp', // Basic Attack, Yang Font stance
+    'Encroaching Yin': './characters/jingran/S4kkG9mR-jingran-skill-C1.webp', // Resonance Skill, Yin Vessel stance
+    'Scorching Yang': './characters/jingran/S4kkG9mR-jingran-skill-C1.webp', // Resonance Skill, Yang Font stance
+    'Netherworld Traverse': './characters/jingran/S4kkG9mR-jingran-skill-C1.webp', // Resonance Skill Heavy Attack follow-up, Yin
+    "Afterlife's Guide": './characters/jingran/S4kkG9mR-jingran-skill-C1.webp', // Resonance Skill Heavy Attack follow-up, Yang
+    'Soul Raid': './characters/jingran/N2jbGWjg-jingran-skill-D1.webp', // Forte Circuit Heavy Attack
+    'Stardome Meander': './characters/jingran/1Y04vgs7-jingran-skill-D2.webp', // Forte Circuit Heavy Attack (alt)
+    'Burial of Thousand Souls': './characters/jingran/Fbfhy5pV-jingran-skill-QTE.webp', // Resonance Liberation
+    'Question the Tombs': './characters/jingran/WrW84w9-jingran-skill-T.webp', // Intro Skill
+    'Rising Fortune and Ebbing Evil': './characters/jingran/cctRq3Yp-jingran-skill-Y.webp', // Outro Skill
   },
 };
 const getSkillIcon = (name, skillName) => {
@@ -5388,395 +5388,395 @@ const getSkillIcon = (name, skillName) => {
 // Only characters that have been audited so far are populated.
 const CHAIN_NODE_ICONS = {
   'Aalto': {
-    s1: './characters/NkJrMMZ-aalto-s1.webp',
-    s2: './characters/3mWXdcDs-aalto-s2.webp',
-    s3: './characters/tMr4KzDw-aalto-s3.webp',
-    s4: './characters/Hf4q5RKy-aalto-s4.webp',
-    s5: './characters/KMWZb8Q-aalto-s5.webp',
-    s6: './characters/KzcQtD3c-aalto-s6.webp',
+    s1: './characters/aalto/NkJrMMZ-aalto-s1.webp',
+    s2: './characters/aalto/3mWXdcDs-aalto-s2.webp',
+    s3: './characters/aalto/tMr4KzDw-aalto-s3.webp',
+    s4: './characters/aalto/Hf4q5RKy-aalto-s4.webp',
+    s5: './characters/aalto/KMWZb8Q-aalto-s5.webp',
+    s6: './characters/aalto/KzcQtD3c-aalto-s6.webp',
   },
   'Baizhi': {
-    s1: './characters/mF47z129-baizhi-s1.webp',
-    s2: './characters/0RXgwTXZ-baizhi-s2.webp',
-    s3: './characters/gb918z7X-baizhi-s3.webp',
-    s4: './characters/hxg5Y83Q-baizhi-s4.webp',
-    s5: './characters/Rw5VF1d-baizhi-s5.webp',
-    s6: './characters/3Q9HWqJ-baizhi-s6.webp',
+    s1: './characters/baizhi/mF47z129-baizhi-s1.webp',
+    s2: './characters/baizhi/0RXgwTXZ-baizhi-s2.webp',
+    s3: './characters/baizhi/gb918z7X-baizhi-s3.webp',
+    s4: './characters/baizhi/hxg5Y83Q-baizhi-s4.webp',
+    s5: './characters/baizhi/Rw5VF1d-baizhi-s5.webp',
+    s6: './characters/baizhi/3Q9HWqJ-baizhi-s6.webp',
   },
   'Chixia': {
-    s1: './characters/RGQBc5g3-chixia-s1.webp',
-    s2: './characters/svts4DW5-chixia-s2.webp',
-    s3: './characters/dRDWwbs-chixia-s3.webp',
-    s4: './characters/HThYzvPf-chixia-s4.webp',
-    s5: './characters/KpFQt9N0-chixia-s5.webp',
-    s6: './characters/bg00YYjQ-chixia-s6.webp',
+    s1: './characters/chixia/RGQBc5g3-chixia-s1.webp',
+    s2: './characters/chixia/svts4DW5-chixia-s2.webp',
+    s3: './characters/chixia/dRDWwbs-chixia-s3.webp',
+    s4: './characters/chixia/HThYzvPf-chixia-s4.webp',
+    s5: './characters/chixia/KpFQt9N0-chixia-s5.webp',
+    s6: './characters/chixia/bg00YYjQ-chixia-s6.webp',
   },
   'Encore': {
-    s1: './characters/67jq2qtF-Sequence-Node-Woolys-Fairy-Tale.webp',
-    s2: './characters/qvQ1d2y-Sequence-Node-Sheep-counting-Lullaby.webp',
-    s3: './characters/607dHq05-Sequence-Node-Fog-The-Black-Shores.webp',
-    s4: './characters/wZc99zfT-Sequence-Node-Adventure-Lets-go.webp',
-    s5: './characters/ccg6m394-Sequence-Node-Hero-Takes-the-Stage.webp',
-    s6: './characters/0RK9HNY8-Sequence-Node-Woolies-Save-the-World.webp',
+    s1: './characters/encore/67jq2qtF-Sequence-Node-Woolys-Fairy-Tale.webp',
+    s2: './characters/encore/qvQ1d2y-Sequence-Node-Sheep-counting-Lullaby.webp',
+    s3: './characters/encore/607dHq05-Sequence-Node-Fog-The-Black-Shores.webp',
+    s4: './characters/encore/wZc99zfT-Sequence-Node-Adventure-Lets-go.webp',
+    s5: './characters/encore/ccg6m394-Sequence-Node-Hero-Takes-the-Stage.webp',
+    s6: './characters/encore/0RK9HNY8-Sequence-Node-Woolies-Save-the-World.webp',
   },
   'Calcharo': {
-    s1: './characters/zW1SQbgD-Sequence-Node-Covert-Negotiation.webp',
-    s2: './characters/0RhbRfYd-Sequence-Node-Zero-Sum-Game.webp',
-    s3: './characters/F42fkz3h-Sequence-Node-Iron-Fist-Diplomacy.webp',
-    s4: './characters/hRVPBYSc-Sequence-Node-Dark-Alliance.webp',
-    s5: './characters/bMhxw2YM-Sequence-Node-Unconventional-Compact.webp',
-    s6: './characters/WvtpCtrd-Sequence-Node-The-Ultimatum.webp',
+    s1: './characters/calcharo/zW1SQbgD-Sequence-Node-Covert-Negotiation.webp',
+    s2: './characters/calcharo/0RhbRfYd-Sequence-Node-Zero-Sum-Game.webp',
+    s3: './characters/calcharo/F42fkz3h-Sequence-Node-Iron-Fist-Diplomacy.webp',
+    s4: './characters/calcharo/hRVPBYSc-Sequence-Node-Dark-Alliance.webp',
+    s5: './characters/calcharo/bMhxw2YM-Sequence-Node-Unconventional-Compact.webp',
+    s6: './characters/calcharo/WvtpCtrd-Sequence-Node-The-Ultimatum.webp',
   },
   'Yinlin': {
-    s1: './characters/hFqjmjxt-Sequence-Node-Moralitys-Crossroad.webp',
-    s2: './characters/x85ZgwFQ-Sequence-Node-Ensnarled-By-Rapport.webp',
-    s3: './characters/XZFYMQ66-Sequence-Node-Unyielding-Verdict.webp',
-    s4: './characters/qMBj8Pb1-Sequence-Node-Steadfast-Conviction.webp',
-    s5: './characters/tPPkZN2W-Sequence-Node-Resounding-Will.webp',
-    s6: './characters/HfFYQC4C-Sequence-Node-Pursuit-of-Justice.webp',
+    s1: './characters/yinlin/hFqjmjxt-Sequence-Node-Moralitys-Crossroad.webp',
+    s2: './characters/yinlin/x85ZgwFQ-Sequence-Node-Ensnarled-By-Rapport.webp',
+    s3: './characters/yinlin/XZFYMQ66-Sequence-Node-Unyielding-Verdict.webp',
+    s4: './characters/yinlin/qMBj8Pb1-Sequence-Node-Steadfast-Conviction.webp',
+    s5: './characters/yinlin/tPPkZN2W-Sequence-Node-Resounding-Will.webp',
+    s6: './characters/yinlin/HfFYQC4C-Sequence-Node-Pursuit-of-Justice.webp',
   },
   'Jiyan': {
-    s1: './characters/8DQZqf8V-Sequence-Node-Benevolence.webp',
-    s2: './characters/qYfdjDZj-Sequence-Node-Versatility.webp',
-    s3: './characters/KpnqFPPK-Sequence-Node-Spectation.webp',
-    s4: './characters/w3M5q2w-Sequence-Node-Prudence.webp',
-    s5: './characters/fzZxFxmw-Sequence-Node-Resolution.webp',
-    s6: './characters/0jYkwNc5-Sequence-Node-Fortitude.webp',
+    s1: './characters/jiyan/8DQZqf8V-Sequence-Node-Benevolence.webp',
+    s2: './characters/jiyan/qYfdjDZj-Sequence-Node-Versatility.webp',
+    s3: './characters/jiyan/KpnqFPPK-Sequence-Node-Spectation.webp',
+    s4: './characters/jiyan/w3M5q2w-Sequence-Node-Prudence.webp',
+    s5: './characters/jiyan/fzZxFxmw-Sequence-Node-Resolution.webp',
+    s6: './characters/jiyan/0jYkwNc5-Sequence-Node-Fortitude.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Jianxin, re-hosted on ibb.co
   // (2026-08-17, matching the convention above) — order confirmed S1→S6 against the Chain Table on
   // Jianxin/Combat, all 6 URLs verified 200/live before upload.
   'Jianxin': {
-    s1: './characters/Cp76tHr7-Sequence-Node-Verdant-Branchlet.webp',
-    s2: './characters/Z0VXpGV-Sequence-Node-Tao-Seekers-Journey.webp',
-    s3: './characters/NgdRQB4T-Sequence-Node-Principles-of-Wuwei.webp',
-    s4: './characters/9HypDDH7-Sequence-Node-Multitide-Reflection.webp',
-    s5: './characters/DHW1ndcQ-Sequence-Node-Mirroring-Introspection.webp',
-    s6: './characters/hFH1wK8g-Sequence-Node-Truth-from-Within.webp',
+    s1: './characters/jianxin/Cp76tHr7-Sequence-Node-Verdant-Branchlet.webp',
+    s2: './characters/jianxin/Z0VXpGV-Sequence-Node-Tao-Seekers-Journey.webp',
+    s3: './characters/jianxin/NgdRQB4T-Sequence-Node-Principles-of-Wuwei.webp',
+    s4: './characters/jianxin/9HypDDH7-Sequence-Node-Multitide-Reflection.webp',
+    s5: './characters/jianxin/DHW1ndcQ-Sequence-Node-Mirroring-Introspection.webp',
+    s6: './characters/jianxin/hFH1wK8g-Sequence-Node-Truth-from-Within.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Lingyang, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Chain Table on ww.nanoka.cc/character/1104, all 6
   // URLs verified 200/live before upload.
   'Lingyang': {
-    s1: './characters/35qjT11k-Sequence-Node-Lion-of-Light.webp',
-    s2: './characters/fY1GpNzv-Sequence-Node-Dominant-and-Fierce.webp',
-    s3: './characters/rR5Sv0w7-Sequence-Node-Jaw-Dropping-Feats.webp',
-    s4: './characters/Wvr3prmH-Sequence-Node-Immortals-Bow.webp',
-    s5: './characters/hRYWXtX5-Sequence-Node-Seven-Stars-Shine.webp',
-    s6: './characters/Z1myY6Sc-Sequence-Node-Demons-Tremble.webp',
+    s1: './characters/lingyang/35qjT11k-Sequence-Node-Lion-of-Light.webp',
+    s2: './characters/lingyang/fY1GpNzv-Sequence-Node-Dominant-and-Fierce.webp',
+    s3: './characters/lingyang/rR5Sv0w7-Sequence-Node-Jaw-Dropping-Feats.webp',
+    s4: './characters/lingyang/Wvr3prmH-Sequence-Node-Immortals-Bow.webp',
+    s5: './characters/lingyang/hRYWXtX5-Sequence-Node-Seven-Stars-Shine.webp',
+    s6: './characters/lingyang/Z1myY6Sc-Sequence-Node-Demons-Tremble.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Verina, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Chain Table on ww.nanoka.cc/character/1503, all 6
   // URLs verified 200/live before upload.
   'Verina': {
-    s1: './characters/RptDBgXm-Sequence-Node-Moment-of-Emergence.webp',
-    s2: './characters/zW0fpNdD-Sequence-Node-Sprouting-Reflections.webp',
-    s3: './characters/VWb4ycvt-Sequence-Node-The-Choice-to-Flourish.webp',
-    s4: './characters/Hpfb99bt-Sequence-Node-Blossoming-Embrace.webp',
-    s5: './characters/xtHvxT1F-Sequence-Node-Miraculous-Blooms.webp',
-    s6: './characters/fYjvXxRB-Sequence-Node-Joyous-Harvest.webp',
+    s1: './characters/verina/RptDBgXm-Sequence-Node-Moment-of-Emergence.webp',
+    s2: './characters/verina/zW0fpNdD-Sequence-Node-Sprouting-Reflections.webp',
+    s3: './characters/verina/VWb4ycvt-Sequence-Node-The-Choice-to-Flourish.webp',
+    s4: './characters/verina/Hpfb99bt-Sequence-Node-Blossoming-Embrace.webp',
+    s5: './characters/verina/xtHvxT1F-Sequence-Node-Miraculous-Blooms.webp',
+    s6: './characters/verina/fYjvXxRB-Sequence-Node-Joyous-Harvest.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Jinhsi, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 directly against the Resonance Chain table on Jinhsi/Combat
   // (fetched by section index), all 6 URLs verified 200/live before upload.
   'Jinhsi': {
-    s1: './characters/B2ZXj0Vp-Sequence-Node-Abyssal-Ascension.webp',
-    s2: './characters/C5bnYtr4-Sequence-Node-Chronofrost-Repose.webp',
-    s3: './characters/spYvJ40L-Sequence-Node-Celestial-Incarnate.webp',
-    s4: './characters/wFtWBff4-Sequence-Node-Benevolent-Grace.webp',
-    s5: './characters/SDksbmM6-Sequence-Node-Frostfire-Illumination.webp',
-    s6: './characters/63m9q28-Sequence-Node-Thawing-Triumph.webp',
+    s1: './characters/jinhsi/B2ZXj0Vp-Sequence-Node-Abyssal-Ascension.webp',
+    s2: './characters/jinhsi/C5bnYtr4-Sequence-Node-Chronofrost-Repose.webp',
+    s3: './characters/jinhsi/spYvJ40L-Sequence-Node-Celestial-Incarnate.webp',
+    s4: './characters/jinhsi/wFtWBff4-Sequence-Node-Benevolent-Grace.webp',
+    s5: './characters/jinhsi/SDksbmM6-Sequence-Node-Frostfire-Illumination.webp',
+    s6: './characters/jinhsi/63m9q28-Sequence-Node-Thawing-Triumph.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Changli, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 directly against the Resonance Chain table on Changli/Combat
   // (fetched by section index), all 6 URLs verified 200/live before upload.
   'Changli': {
-    s1: './characters/FM07vnf-Sequence-Node-Hidden-Thoughts.webp',
-    s2: './characters/XBqhm0L-Sequence-Node-Pursuit-of-Desires.webp',
-    s3: './characters/ZzVrnF98-Sequence-Node-Learned-Secrets.webp',
-    s4: './characters/MkQV5gT9-Sequence-Node-Polished-Words.webp',
-    s5: './characters/39jsTQRB-Sequence-Node-Sacrificed-Gains.webp',
-    s6: './characters/wZJn2XcV-Sequence-Node-Realized-Plans.webp',
+    s1: './characters/changli/FM07vnf-Sequence-Node-Hidden-Thoughts.webp',
+    s2: './characters/changli/XBqhm0L-Sequence-Node-Pursuit-of-Desires.webp',
+    s3: './characters/changli/ZzVrnF98-Sequence-Node-Learned-Secrets.webp',
+    s4: './characters/changli/MkQV5gT9-Sequence-Node-Polished-Words.webp',
+    s5: './characters/changli/39jsTQRB-Sequence-Node-Sacrificed-Gains.webp',
+    s6: './characters/changli/wZJn2XcV-Sequence-Node-Realized-Plans.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Zhezhi, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 directly against the Resonance Chain table on Zhezhi/Combat
   // (fetched by section index), all 6 URLs verified 200/live before upload.
   'Zhezhi': {
-    s1: './characters/pB0KfwRY-Sequence-Node-Brushworks-Finish.webp',
-    s2: './characters/PGNt7fSK-Sequence-Node-Vivid-Strokes.webp',
-    s3: './characters/b5zxp1S9-Sequence-Node-Reflections-Grace.webp',
-    s4: './characters/jZbWXLGX-Sequence-Node-Hues-Spectrum.webp',
-    s5: './characters/8gCVrMWV-Sequence-Node-Compositions-Clue.webp',
-    s6: './characters/MDqdsTLR-Sequence-Node-Infinite-Legacy.webp',
+    s1: './characters/zhezhi/pB0KfwRY-Sequence-Node-Brushworks-Finish.webp',
+    s2: './characters/zhezhi/PGNt7fSK-Sequence-Node-Vivid-Strokes.webp',
+    s3: './characters/zhezhi/b5zxp1S9-Sequence-Node-Reflections-Grace.webp',
+    s4: './characters/zhezhi/jZbWXLGX-Sequence-Node-Hues-Spectrum.webp',
+    s5: './characters/zhezhi/8gCVrMWV-Sequence-Node-Compositions-Clue.webp',
+    s6: './characters/zhezhi/MDqdsTLR-Sequence-Node-Infinite-Legacy.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Xiangli Yao, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live build
   // page and ww.nanoka.cc/character/1305, all 6 URLs verified 200/live before upload.
   'Xiangli Yao': {
-    s1: './characters/zHRQ6hSs-node-s1-prodigy.webp',
-    s2: './characters/DDWBkrdQ-node-s2-traces.webp',
-    s3: './characters/0RyGcG7t-node-s3-ruins.webp',
-    s4: './characters/fzP6KpqR-node-s4-vessel.webp',
-    s5: './characters/DPTYYfnj-node-s5-end.webp',
-    s6: './characters/bg0ffhj0-node-s6-solace.webp',
+    s1: './characters/xiangli-yao/zHRQ6hSs-node-s1-prodigy.webp',
+    s2: './characters/xiangli-yao/DDWBkrdQ-node-s2-traces.webp',
+    s3: './characters/xiangli-yao/0RyGcG7t-node-s3-ruins.webp',
+    s4: './characters/xiangli-yao/fzP6KpqR-node-s4-vessel.webp',
+    s5: './characters/xiangli-yao/DPTYYfnj-node-s5-end.webp',
+    s6: './characters/xiangli-yao/bg0ffhj0-node-s6-solace.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Shorekeeper, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1505, all 6 URLs verified 200/live before upload.
   'Shorekeeper': {
-    s1: './characters/mrNGMGDz-node-s1-unspoken.webp',
-    s2: './characters/1fsfvs1s-node-s2-nightsgift.webp',
-    s3: './characters/PZkV3FHz-node-s3-infinity.webp',
-    s4: './characters/V00QHX4H-node-s4-overflowing.webp',
-    s5: './characters/S4R3jKr6-node-s5-echoes.webp',
-    s6: './characters/d45HxqB9-node-s6-newworld.webp',
+    s1: './characters/shorekeeper/mrNGMGDz-node-s1-unspoken.webp',
+    s2: './characters/shorekeeper/1fsfvs1s-node-s2-nightsgift.webp',
+    s3: './characters/shorekeeper/PZkV3FHz-node-s3-infinity.webp',
+    s4: './characters/shorekeeper/V00QHX4H-node-s4-overflowing.webp',
+    s5: './characters/shorekeeper/S4R3jKr6-node-s5-echoes.webp',
+    s6: './characters/shorekeeper/d45HxqB9-node-s6-newworld.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Camellya, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1603, all 6 URLs verified 200/live before upload.
   'Camellya': {
-    s1: './characters/vy9wwMt-node-s1-somewhere.webp',
-    s2: './characters/ZprdWSNF-node-s2-callingupon.webp',
-    s3: './characters/gZDgkrSv-node-s3-budadorned.webp',
-    s4: './characters/mm8Yz1g-node-s4-rootsset.webp',
-    s5: './characters/yFZ91RMt-node-s5-infinityheld.webp',
-    s6: './characters/FbpkkPqC-node-s6-bloomfor.webp',
+    s1: './characters/camellya/vy9wwMt-node-s1-somewhere.webp',
+    s2: './characters/camellya/ZprdWSNF-node-s2-callingupon.webp',
+    s3: './characters/camellya/gZDgkrSv-node-s3-budadorned.webp',
+    s4: './characters/camellya/mm8Yz1g-node-s4-rootsset.webp',
+    s5: './characters/camellya/yFZ91RMt-node-s5-infinityheld.webp',
+    s6: './characters/camellya/FbpkkPqC-node-s6-bloomfor.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Carlotta, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1107, all 6 URLs verified 200/live before upload.
   'Carlotta': {
-    s1: './characters/1GCPHM5j-node-s1-beauty.webp',
-    s2: './characters/1YD00C0c-node-s2-fallen.webp',
-    s3: './characters/CK20vW27-node-s3-adelante.webp',
-    s4: './characters/DDVdry80-node-s4-yesterdays.webp',
-    s5: './characters/tPpvpmFC-node-s5-toast.webp',
-    s6: './characters/Kx65J6sT-node-s6-curtain.webp',
+    s1: './characters/carlotta/1GCPHM5j-node-s1-beauty.webp',
+    s2: './characters/carlotta/1YD00C0c-node-s2-fallen.webp',
+    s3: './characters/carlotta/CK20vW27-node-s3-adelante.webp',
+    s4: './characters/carlotta/DDVdry80-node-s4-yesterdays.webp',
+    s5: './characters/carlotta/tPpvpmFC-node-s5-toast.webp',
+    s6: './characters/carlotta/Kx65J6sT-node-s6-curtain.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Roccia, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1606, all 6 URLs verified 200/live before upload.
   'Roccia': {
-    s1: './characters/q3QR4dS0-node-s1-shadows.webp',
-    s2: './characters/VWZG28Xy-node-s2-luceanite.webp',
-    s3: './characters/GfR6DwXb-node-s3-heart.webp',
-    s4: './characters/7Jy9x2yr-node-s4-wonders.webp',
-    s5: './characters/BHYrDMBc-node-s5-dreams.webp',
-    s6: './characters/3yGZ0kCy-node-s6-goldenwings.webp',
+    s1: './characters/roccia/q3QR4dS0-node-s1-shadows.webp',
+    s2: './characters/roccia/VWZG28Xy-node-s2-luceanite.webp',
+    s3: './characters/roccia/GfR6DwXb-node-s3-heart.webp',
+    s4: './characters/roccia/7Jy9x2yr-node-s4-wonders.webp',
+    s5: './characters/roccia/BHYrDMBc-node-s5-dreams.webp',
+    s6: './characters/roccia/3yGZ0kCy-node-s6-goldenwings.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Phoebe, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1506, all 6 URLs verified 200/live before upload.
   'Phoebe': {
-    s1: './characters/TqtQJ6NK-node-s1-warmlight.webp',
-    s2: './characters/k245MwKF-node-s2-boatadrift.webp',
-    s3: './characters/8DLvhqMz-node-s3-daisy.webp',
-    s4: './characters/8gfbj5t1-node-s4-ringingbells.webp',
-    s5: './characters/HDfvkYsV-node-s5-prayer.webp',
-    s6: './characters/HT7qsxPx-node-s6-whispering.webp',
+    s1: './characters/phoebe/TqtQJ6NK-node-s1-warmlight.webp',
+    s2: './characters/phoebe/k245MwKF-node-s2-boatadrift.webp',
+    s3: './characters/phoebe/8DLvhqMz-node-s3-daisy.webp',
+    s4: './characters/phoebe/8gfbj5t1-node-s4-ringingbells.webp',
+    s5: './characters/phoebe/HDfvkYsV-node-s5-prayer.webp',
+    s6: './characters/phoebe/HT7qsxPx-node-s6-whispering.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Brant, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1206, all 6 URLs verified 200/live before upload.
   'Brant': {
-    s1: './characters/Y4GdsDmY-node-s1-currentswinds.webp',
-    s2: './characters/gkF07br-node-s2-smilescheers.webp',
-    s3: './characters/Y49jmcXH-node-s3-stormsisail.webp',
-    s4: './characters/Fb56p7DW-node-s4-freedomising.webp',
-    s5: './characters/chfPWLFw-node-s5-actorsstage.webp',
-    s6: './characters/xnDJCdF-node-s6-captainscarnevale.webp',
+    s1: './characters/brant/Y4GdsDmY-node-s1-currentswinds.webp',
+    s2: './characters/brant/gkF07br-node-s2-smilescheers.webp',
+    s3: './characters/brant/Y49jmcXH-node-s3-stormsisail.webp',
+    s4: './characters/brant/Fb56p7DW-node-s4-freedomising.webp',
+    s5: './characters/brant/chfPWLFw-node-s5-actorsstage.webp',
+    s6: './characters/brant/xnDJCdF-node-s6-captainscarnevale.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Cantarella, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1607, all 6 URLs verified 200/live before upload.
   'Cantarella': {
-    s1: './characters/0RDfQXSY-node-s1-embracewaves.webp',
-    s2: './characters/LXfVYCkX-node-s2-surrenderreverie.webp',
-    s3: './characters/hxxmdVSb-node-s3-gazeabyss.webp',
-    s4: './characters/PZhy4tmF-node-s4-beholdsoul.webp',
-    s5: './characters/0g4C5hH-node-s5-restreflection.webp',
-    s6: './characters/KxGNqZtQ-node-s6-falldream.webp',
+    s1: './characters/cantarella/0RDfQXSY-node-s1-embracewaves.webp',
+    s2: './characters/cantarella/LXfVYCkX-node-s2-surrenderreverie.webp',
+    s3: './characters/cantarella/hxxmdVSb-node-s3-gazeabyss.webp',
+    s4: './characters/cantarella/PZhy4tmF-node-s4-beholdsoul.webp',
+    s5: './characters/cantarella/0g4C5hH-node-s5-restreflection.webp',
+    s6: './characters/cantarella/KxGNqZtQ-node-s6-falldream.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Zani, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1507, all 6 URLs verified 200/live before upload.
   'Zani': {
-    s1: './characters/gbN5SWFV-node-s1-alarmclock.webp',
-    s2: './characters/N25LYLMp-node-s2-stalebread.webp',
-    s3: './characters/6kDrsB0-node-s3-newcommute.webp',
-    s4: './characters/nsWMbP51-node-s4-efficiency.webp',
-    s5: './characters/tpwvvSMk-node-s5-delivered.webp',
-    s6: './characters/Q3vpqhCQ-node-s6-clockout.webp',
+    s1: './characters/zani/gbN5SWFV-node-s1-alarmclock.webp',
+    s2: './characters/zani/N25LYLMp-node-s2-stalebread.webp',
+    s3: './characters/zani/6kDrsB0-node-s3-newcommute.webp',
+    s4: './characters/zani/nsWMbP51-node-s4-efficiency.webp',
+    s5: './characters/zani/tpwvvSMk-node-s5-delivered.webp',
+    s6: './characters/zani/Q3vpqhCQ-node-s6-clockout.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Ciaccona, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1407, all 6 URLs verified 200/live before upload.
   'Ciaccona': {
-    s1: './characters/M4Jpwcj-node-s1-wherewindsings.webp',
-    s2: './characters/xtVFFs9Y-node-s2-songfourseasons.webp',
-    s3: './characters/W4dYrWRZ-node-s3-starlitimprov.webp',
-    s4: './characters/XxMdXrfV-node-s4-toccatafugue.webp',
-    s5: './characters/4n8DXGQZ-node-s5-eternalidyll.webp',
-    s6: './characters/8gp4zwSF-node-s6-unendingcadence.webp',
+    s1: './characters/ciaccona/M4Jpwcj-node-s1-wherewindsings.webp',
+    s2: './characters/ciaccona/xtVFFs9Y-node-s2-songfourseasons.webp',
+    s3: './characters/ciaccona/W4dYrWRZ-node-s3-starlitimprov.webp',
+    s4: './characters/ciaccona/XxMdXrfV-node-s4-toccatafugue.webp',
+    s5: './characters/ciaccona/4n8DXGQZ-node-s5-eternalidyll.webp',
+    s6: './characters/ciaccona/8gp4zwSF-node-s6-unendingcadence.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Cartethyia, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1409, all 6 URLs verified 200/live before upload.
   'Cartethyia': {
-    s1: './characters/0yZrwg1M-node-s1-crowndestined.webp',
-    s2: './characters/99w78Rv3-node-s2-bladebroken.webp',
-    s3: './characters/BRNk023-node-s3-prisonerhanged.webp',
-    s4: './characters/vxL2nJYQ-node-s4-sacrificemade.webp',
-    s5: './characters/4wX7vYgB-node-s5-hopereshaped.webp',
-    s6: './characters/ycVQfbhB-node-s6-freedomfound.webp',
+    s1: './characters/cartethyia/0yZrwg1M-node-s1-crowndestined.webp',
+    s2: './characters/cartethyia/99w78Rv3-node-s2-bladebroken.webp',
+    s3: './characters/cartethyia/BRNk023-node-s3-prisonerhanged.webp',
+    s4: './characters/cartethyia/vxL2nJYQ-node-s4-sacrificemade.webp',
+    s5: './characters/cartethyia/4wX7vYgB-node-s5-hopereshaped.webp',
+    s6: './characters/cartethyia/ycVQfbhB-node-s6-freedomfound.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Lupa, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1207, all 6 URLs verified 200/live before upload.
   'Lupa': {
-    s1: './characters/QFQ1RhRB-node-s1-beholdnameless.webp',
-    s2: './characters/9H67hH9f-node-s2-everyground.webp',
-    s3: './characters/9kyL2xf3-node-s3-wolflamehowls.webp',
-    s4: './characters/23DMbTHn-node-s4-highandaflame.webp',
-    s5: './characters/99p0trjM-node-s5-embracethunderous.webp',
-    s6: './characters/MT1mRss-node-s6-brightestflaming.webp',
+    s1: './characters/lupa/QFQ1RhRB-node-s1-beholdnameless.webp',
+    s2: './characters/lupa/9H67hH9f-node-s2-everyground.webp',
+    s3: './characters/lupa/9kyL2xf3-node-s3-wolflamehowls.webp',
+    s4: './characters/lupa/23DMbTHn-node-s4-highandaflame.webp',
+    s5: './characters/lupa/99p0trjM-node-s5-embracethunderous.webp',
+    s6: './characters/lupa/MT1mRss-node-s6-brightestflaming.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Phrolova, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain table on both Prydwen's live
   // build page and ww.nanoka.cc/character/1608, all 6 URLs verified 200/live before upload.
   'Phrolova': {
-    s1: './characters/KpvxFB70-node-s1-keytonetherworld.webp',
-    s2: './characters/8nw8Sy8L-node-s2-ropetiedtolife.webp',
-    s3: './characters/TBSCHsv0-node-s3-daggercutclean.webp',
-    s4: './characters/JwDPJhkf-node-s4-torchilluminating.webp',
-    s5: './characters/1f1yj3zj-node-s5-forkedroad.webp',
-    s6: './characters/dStZKfy-node-s6-nighttodepart.webp',
+    s1: './characters/phrolova/KpvxFB70-node-s1-keytonetherworld.webp',
+    s2: './characters/phrolova/8nw8Sy8L-node-s2-ropetiedtolife.webp',
+    s3: './characters/phrolova/TBSCHsv0-node-s3-daggercutclean.webp',
+    s4: './characters/phrolova/JwDPJhkf-node-s4-torchilluminating.webp',
+    s5: './characters/phrolova/1f1yj3zj-node-s5-forkedroad.webp',
+    s6: './characters/phrolova/dStZKfy-node-s6-nighttodepart.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Augusta, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on Prydwen's live build page.
   'Augusta': {
-    s1: './characters/HTwqDr5n-node-s1.webp',
-    s2: './characters/DHWH8D47-node-s2.webp',
-    s3: './characters/QwdPnbk-node-s3.webp',
-    s4: './characters/mCrQsqH3-node-s4.webp',
-    s5: './characters/ccxMpt1c-node-s5.webp',
-    s6: './characters/cKP8919X-node-s6.webp',
+    s1: './characters/augusta/HTwqDr5n-node-s1.webp',
+    s2: './characters/augusta/DHWH8D47-node-s2.webp',
+    s3: './characters/augusta/QwdPnbk-node-s3.webp',
+    s4: './characters/augusta/mCrQsqH3-node-s4.webp',
+    s5: './characters/augusta/ccxMpt1c-node-s5.webp',
+    s6: './characters/augusta/cKP8919X-node-s6.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Iuno, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
   'Iuno': {
-    s1: './characters/kWsh4y7-node-s1.webp',
-    s2: './characters/QRQmjWq-node-s2.webp',
-    s3: './characters/v6f4N31z-node-s3.webp',
-    s4: './characters/k2ZxwPWd-node-s4.webp',
-    s5: './characters/604PG1hL-node-s5.webp',
-    s6: './characters/67Frp4bF-node-s6.webp',
+    s1: './characters/iuno/kWsh4y7-node-s1.webp',
+    s2: './characters/iuno/QRQmjWq-node-s2.webp',
+    s3: './characters/iuno/v6f4N31z-node-s3.webp',
+    s4: './characters/iuno/k2ZxwPWd-node-s4.webp',
+    s5: './characters/iuno/604PG1hL-node-s5.webp',
+    s6: './characters/iuno/67Frp4bF-node-s6.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Galbrena, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
   'Galbrena': {
-    s1: './characters/jNH3nSM-node-s1.webp',
-    s2: './characters/2VQC6y5-node-s2.webp',
-    s3: './characters/Hpf7ZPdk-node-s3.webp',
-    s4: './characters/q3p3wPfG-node-s4.webp',
-    s5: './characters/0VRF3CBL-node-s5.webp',
-    s6: './characters/gb17vj3m-node-s6.webp',
+    s1: './characters/galbrena/jNH3nSM-node-s1.webp',
+    s2: './characters/galbrena/2VQC6y5-node-s2.webp',
+    s3: './characters/galbrena/Hpf7ZPdk-node-s3.webp',
+    s4: './characters/galbrena/q3p3wPfG-node-s4.webp',
+    s5: './characters/galbrena/0VRF3CBL-node-s5.webp',
+    s6: './characters/galbrena/gb17vj3m-node-s6.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Qiuyuan, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
   'Qiuyuan': {
-    s1: './characters/84TqFSG3-node-s1.webp',
-    s2: './characters/qLkrYVXv-node-s2.webp',
-    s3: './characters/whd9Dwmz-node-s3.webp',
-    s4: './characters/Fqk0VQJq-node-s4.webp',
-    s5: './characters/0RBWxffy-node-s5.webp',
-    s6: './characters/LdNkcSqg-node-s6.webp',
+    s1: './characters/qiuyuan/84TqFSG3-node-s1.webp',
+    s2: './characters/qiuyuan/qLkrYVXv-node-s2.webp',
+    s3: './characters/qiuyuan/whd9Dwmz-node-s3.webp',
+    s4: './characters/qiuyuan/Fqk0VQJq-node-s4.webp',
+    s5: './characters/qiuyuan/0RBWxffy-node-s5.webp',
+    s6: './characters/qiuyuan/LdNkcSqg-node-s6.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Chisa, re-hosted on ibb.co
   // (2026-08-17) — order confirmed S1→S6 against the Resonance Chain list on the character's fandom page.
   'Chisa': {
-    s1: './characters/3mw4Nw94-node-s1.webp',
-    s2: './characters/nN9MKSTV-node-s2.webp',
-    s3: './characters/1fX8724w-node-s3.webp',
-    s4: './characters/zHZY0j4p-node-s4.webp',
-    s5: './characters/GffX5Qbj-node-s5.webp',
-    s6: './characters/1S0brGY-node-s6.webp',
+    s1: './characters/chisa/3mw4Nw94-node-s1.webp',
+    s2: './characters/chisa/nN9MKSTV-node-s2.webp',
+    s3: './characters/chisa/1fX8724w-node-s3.webp',
+    s4: './characters/chisa/zHZY0j4p-node-s4.webp',
+    s5: './characters/chisa/GffX5Qbj-node-s5.webp',
+    s6: './characters/chisa/1S0brGY-node-s6.webp',
   },
   // Source: wutheringwaves.fandom.com Sequence_Node_*.png assets for Lynae/Mornye/Aemeath, pulled via the
   // MediaWiki API (bypasses the site's Cloudflare challenge entirely) and re-hosted on ibb.co (2026-08-17)
   // — order confirmed S1→S6 against each character's own Resonance Chain section (action=parse, section
   // "Resonance Chain", Node 1→Node 6 in document order).
   'Lynae': {
-    s1: './characters/jKpHS2C-Lynae-s1.webp',
-    s2: './characters/kjCkrdC-Lynae-s2.webp',
-    s3: './characters/TBB7SWd9-Lynae-s3.webp',
-    s4: './characters/XZ0yd3HN-Lynae-s4.webp',
-    s5: './characters/23k6X01r-Lynae-s5.webp',
-    s6: './characters/wNpcWSrY-Lynae-s6.webp',
+    s1: './characters/lynae/jKpHS2C-Lynae-s1.webp',
+    s2: './characters/lynae/kjCkrdC-Lynae-s2.webp',
+    s3: './characters/lynae/TBB7SWd9-Lynae-s3.webp',
+    s4: './characters/lynae/XZ0yd3HN-Lynae-s4.webp',
+    s5: './characters/lynae/23k6X01r-Lynae-s5.webp',
+    s6: './characters/lynae/wNpcWSrY-Lynae-s6.webp',
   },
   'Mornye': {
-    s1: './characters/5hVnMMTV-Mornye-s1.webp',
-    s2: './characters/Kzr4mvfw-Mornye-s2.webp',
-    s3: './characters/KBrzbMX-Mornye-s3.webp',
-    s4: './characters/Kp4VY4tn-Mornye-s4.webp',
-    s5: './characters/zV1QDk59-Mornye-s5.webp',
-    s6: './characters/DDCxvJfC-Mornye-s6.webp',
+    s1: './characters/mornye/5hVnMMTV-Mornye-s1.webp',
+    s2: './characters/mornye/Kzr4mvfw-Mornye-s2.webp',
+    s3: './characters/mornye/KBrzbMX-Mornye-s3.webp',
+    s4: './characters/mornye/Kp4VY4tn-Mornye-s4.webp',
+    s5: './characters/mornye/zV1QDk59-Mornye-s5.webp',
+    s6: './characters/mornye/DDCxvJfC-Mornye-s6.webp',
   },
   'Aemeath': {
-    s1: './characters/WNfdHqR4-Aemeath-s1.webp',
-    s2: './characters/b5SXdtzk-Aemeath-s2.webp',
-    s3: './characters/MygKfXVn-Aemeath-chain-s3.webp',
-    s4: './characters/mVwt8H0s-Aemeath-s4.webp',
-    s5: './characters/dwK7K9m7-Aemeath-s5.webp',
-    s6: './characters/wFsPszFL-Aemeath-chain-s6.webp',
+    s1: './characters/aemeath/WNfdHqR4-Aemeath-s1.webp',
+    s2: './characters/aemeath/b5SXdtzk-Aemeath-s2.webp',
+    s3: './characters/aemeath/MygKfXVn-Aemeath-chain-s3.webp',
+    s4: './characters/aemeath/mVwt8H0s-Aemeath-s4.webp',
+    s5: './characters/aemeath/dwK7K9m7-Aemeath-s5.webp',
+    s6: './characters/aemeath/wFsPszFL-Aemeath-chain-s6.webp',
   },
   'Luuk Herssen': {
-    s1: './characters/xtbnWHrb-Luuk-chain-s1.webp',
-    s2: './characters/hF2MW2bF-Luuk-chain-s2.webp',
-    s3: './characters/2X8CFmL-Luuk-chain-s3.webp',
-    s4: './characters/JF8kcKvm-Luuk-chain-s4.webp',
-    s5: './characters/1tXKZntb-Luuk-chain-s5.webp',
-    s6: './characters/svXR1Hkf-Luuk-chain-s6.webp',
+    s1: './characters/luuk-herssen/xtbnWHrb-Luuk-chain-s1.webp',
+    s2: './characters/luuk-herssen/hF2MW2bF-Luuk-chain-s2.webp',
+    s3: './characters/luuk-herssen/2X8CFmL-Luuk-chain-s3.webp',
+    s4: './characters/luuk-herssen/JF8kcKvm-Luuk-chain-s4.webp',
+    s5: './characters/luuk-herssen/1tXKZntb-Luuk-chain-s5.webp',
+    s6: './characters/luuk-herssen/svXR1Hkf-Luuk-chain-s6.webp',
   },
   'Sigrika': {
-    s1: './characters/jv6R8NVL-Sigrika-chain-s1.webp',
-    s2: './characters/nyJ4qGz-Sigrika-chain-s2.webp',
-    s3: './characters/tMYNB071-Sigrika-chain-s3.webp',
-    s4: './characters/mCj31gfL-Sigrika-chain-s4.webp',
-    s5: './characters/9H04pcpv-Sigrika-chain-s5.webp',
-    s6: './characters/9kG4hxbd-Sigrika-chain-s6.webp',
+    s1: './characters/sigrika/jv6R8NVL-Sigrika-chain-s1.webp',
+    s2: './characters/sigrika/nyJ4qGz-Sigrika-chain-s2.webp',
+    s3: './characters/sigrika/tMYNB071-Sigrika-chain-s3.webp',
+    s4: './characters/sigrika/mCj31gfL-Sigrika-chain-s4.webp',
+    s5: './characters/sigrika/9H04pcpv-Sigrika-chain-s5.webp',
+    s6: './characters/sigrika/9kG4hxbd-Sigrika-chain-s6.webp',
   },
   'Hiyuki': {
-    s1: './characters/cK3XdXtT-Hiyuki-chain-s1.webp',
-    s2: './characters/tMGFBF2R-Hiyuki-chain-s2.webp',
-    s3: './characters/Rmcwhym-Hiyuki-chain-s3.webp',
-    s4: './characters/4RpdTpjM-Hiyuki-chain-s4.webp',
-    s5: './characters/4ZdSWbXC-Hiyuki-chain-s5.webp',
-    s6: './characters/VP72Z2V-Hiyuki-chain-s6.webp',
+    s1: './characters/hiyuki/cK3XdXtT-Hiyuki-chain-s1.webp',
+    s2: './characters/hiyuki/tMGFBF2R-Hiyuki-chain-s2.webp',
+    s3: './characters/hiyuki/Rmcwhym-Hiyuki-chain-s3.webp',
+    s4: './characters/hiyuki/4RpdTpjM-Hiyuki-chain-s4.webp',
+    s5: './characters/hiyuki/4ZdSWbXC-Hiyuki-chain-s5.webp',
+    s6: './characters/hiyuki/VP72Z2V-Hiyuki-chain-s6.webp',
   },
   'Denia': {
-    s1: './characters/dwDTRNpm-denia-s1.webp',
-    s2: './characters/v4KYCSjk-denia-s2.webp',
-    s3: './characters/SXYXMvNR-denia-s3.webp',
-    s4: './characters/tTjNYQZD-denia-s4.webp',
-    s5: './characters/gZBNkHMH-denia-s5.webp',
-    s6: './characters/Zz5XhZzj-denia-s6.webp',
+    s1: './characters/denia/dwDTRNpm-denia-s1.webp',
+    s2: './characters/denia/v4KYCSjk-denia-s2.webp',
+    s3: './characters/denia/SXYXMvNR-denia-s3.webp',
+    s4: './characters/denia/tTjNYQZD-denia-s4.webp',
+    s5: './characters/denia/gZBNkHMH-denia-s5.webp',
+    s6: './characters/denia/Zz5XhZzj-denia-s6.webp',
   },
   'Yangyang: Xuanling': {
-    s1: './characters/93ZS4rdV-yx-s1.webp',
-    s2: './characters/ksZDCX9W-yx-s2.webp',
-    s3: './characters/XrMxyjcG-yx-s3.webp',
-    s4: './characters/KpQnZkWY-yx-s4.webp',
-    s5: './characters/6KDh2KB-yx-s5.webp',
-    s6: './characters/TD3gkgcb-yx-s6.webp',
+    s1: './characters/yangyang-xuanling/93ZS4rdV-yx-s1.webp',
+    s2: './characters/yangyang-xuanling/ksZDCX9W-yx-s2.webp',
+    s3: './characters/yangyang-xuanling/XrMxyjcG-yx-s3.webp',
+    s4: './characters/yangyang-xuanling/KpQnZkWY-yx-s4.webp',
+    s5: './characters/yangyang-xuanling/6KDh2KB-yx-s5.webp',
+    s6: './characters/yangyang-xuanling/TD3gkgcb-yx-s6.webp',
   },
   'Suisui': {
-    s1: './characters/1YF19wXw-suisui-s1.webp',
-    s2: './characters/7d5F5ZtZ-suisui-s2.webp',
-    s3: './characters/JFGC6Dq2-suisui-s3.webp',
-    s4: './characters/DDMC0F52-suisui-s4.webp',
-    s5: './characters/vMRL5cr-suisui-s5.webp',
-    s6: './characters/tM5fJd43-suisui-s6.webp',
+    s1: './characters/suisui/1YF19wXw-suisui-s1.webp',
+    s2: './characters/suisui/7d5F5ZtZ-suisui-s2.webp',
+    s3: './characters/suisui/JFGC6Dq2-suisui-s3.webp',
+    s4: './characters/suisui/DDMC0F52-suisui-s4.webp',
+    s5: './characters/suisui/vMRL5cr-suisui-s5.webp',
+    s6: './characters/suisui/tM5fJd43-suisui-s6.webp',
   },
   // Lucy/Rebecca (2026-08-17): NOT populated — verified via direct MediaWiki titles queries
   // (action=query&titles=File:Sequence Node <exact S1-S6 node name>.png for all 18 node names across
@@ -5790,23 +5790,23 @@ const CHAIN_NODE_ICONS = {
   // directly — static.nanoka.cc/assets/ww/UIResources/Common/Image/IconDevice/T_IconDevice_LuoselaM1-6_UI.webp
   // ("Luosela" = Lucilla's internal CN codename) — fetched and re-hosted on imgbb 2026-08-21.
   'Lucilla': {
-    s1: './characters/x8g5ZyBV-lucilla-chain-s1.webp',
-    s2: './characters/JjZqqVyJ-lucilla-chain-s2.webp',
-    s3: './characters/NghnCyVj-lucilla-chain-s3.webp',
-    s4: './characters/FbHZ9dmQ-lucilla-chain-s4.webp',
-    s5: './characters/vv4kf7XL-lucilla-chain-s5.webp',
-    s6: './characters/6JXB03hR-lucilla-chain-s6.webp',
+    s1: './characters/lucilla/x8g5ZyBV-lucilla-chain-s1.webp',
+    s2: './characters/lucilla/JjZqqVyJ-lucilla-chain-s2.webp',
+    s3: './characters/lucilla/NghnCyVj-lucilla-chain-s3.webp',
+    s4: './characters/lucilla/FbHZ9dmQ-lucilla-chain-s4.webp',
+    s5: './characters/lucilla/vv4kf7XL-lucilla-chain-s5.webp',
+    s6: './characters/lucilla/6JXB03hR-lucilla-chain-s6.webp',
   },
   // Jingran added 2026-08-21 (calendar-planner audit for the v3.6-p2 banner, ~2026-09-10): same
   // nanoka.cc datamine source as Lucilla — static.nanoka.cc/.../IconDevice/T_IconDevice_JingranM1-6_UI.webp,
   // re-hosted on imgbb. Fandom has no Sequence Node uploads for him yet either (expected, pre-banner).
   'Jingran': {
-    s1: './characters/DH7pqgVK-jingran-chain-s1.webp',
-    s2: './characters/7xQdnkRG-jingran-chain-s2.webp',
-    s3: './characters/KxHTkhd1-jingran-chain-s3.webp',
-    s4: './characters/zHb7QLvy-jingran-chain-s4.webp',
-    s5: './characters/cX6rbZV6-jingran-chain-s5.webp',
-    s6: './characters/rGv9DbkF-jingran-chain-s6.webp',
+    s1: './characters/jingran/DH7pqgVK-jingran-chain-s1.webp',
+    s2: './characters/jingran/7xQdnkRG-jingran-chain-s2.webp',
+    s3: './characters/jingran/KxHTkhd1-jingran-chain-s3.webp',
+    s4: './characters/jingran/zHb7QLvy-jingran-chain-s4.webp',
+    s5: './characters/jingran/cX6rbZV6-jingran-chain-s5.webp',
+    s6: './characters/jingran/rGv9DbkF-jingran-chain-s6.webp',
   },
   // Danjin/Yangyang/Sanhua added 2026-08-18: fandom DOES have these Sequence_Node_*.png assets
   // uploaded (unlike the June-2026 characters above) — fetched directly via the MediaWiki API
@@ -5814,89 +5814,89 @@ const CHAIN_NODE_ICONS = {
   // fandom's static.wikia.nocookie.net Skill_*.png assets, re-hosted on ibb.co (2026-08-19). This closes the gap the
   // earlier audit pass missed (only CHAIN_NODE_NAMES was filled in, not the icon table).
   'Danjin': {
-    s1: './characters/5g9W42c0-Sequence-Node-Crimson-Heart-of-Justice.webp',
-    s2: './characters/rfZX4JF7-Sequence-Node-Dusted-Mirror.webp',
-    s3: './characters/dJjdp5Vh-Sequence-Node-Fleeting-Blossom.webp',
-    s4: './characters/B2zYPj4s-Sequence-Node-Solitary-Carnation.webp',
-    s5: './characters/4Z1rKbqK-Sequence-Node-Reigning-Blade.webp',
-    s6: './characters/7P4QXyb-Sequence-Node-Bloodied-Jade.webp',
+    s1: './characters/danjin/5g9W42c0-Sequence-Node-Crimson-Heart-of-Justice.webp',
+    s2: './characters/danjin/rfZX4JF7-Sequence-Node-Dusted-Mirror.webp',
+    s3: './characters/danjin/dJjdp5Vh-Sequence-Node-Fleeting-Blossom.webp',
+    s4: './characters/danjin/B2zYPj4s-Sequence-Node-Solitary-Carnation.webp',
+    s5: './characters/danjin/4Z1rKbqK-Sequence-Node-Reigning-Blade.webp',
+    s6: './characters/danjin/7P4QXyb-Sequence-Node-Bloodied-Jade.webp',
   },
   'Yangyang': {
-    s1: './characters/B2X82K7q-Sequence-Node-Sapphire-Skies-Soaring-Sparrows.webp',
-    s2: './characters/4ZLLwpmg-Sequence-Node-Nesting-Twigs-in-Beaks-They-Harrow.webp',
-    s3: './characters/S49SrGRq-Sequence-Node-Nature-Sings-in-Symphony.webp',
-    s4: './characters/36xqPN5-Sequence-Node-Close-Your-Eyes-and-Listen-in.webp',
-    s5: './characters/LdSxmYwN-Sequence-Node-Winds-Whisper-in-Harmony.webp',
-    s6: './characters/RTtYL5yC-Sequence-Node-A-Tribute-to-Life-s-Sweet-Hymn.webp',
+    s1: './characters/yangyang/B2X82K7q-Sequence-Node-Sapphire-Skies-Soaring-Sparrows.webp',
+    s2: './characters/yangyang/4ZLLwpmg-Sequence-Node-Nesting-Twigs-in-Beaks-They-Harrow.webp',
+    s3: './characters/yangyang/S49SrGRq-Sequence-Node-Nature-Sings-in-Symphony.webp',
+    s4: './characters/yangyang/36xqPN5-Sequence-Node-Close-Your-Eyes-and-Listen-in.webp',
+    s5: './characters/yangyang/LdSxmYwN-Sequence-Node-Winds-Whisper-in-Harmony.webp',
+    s6: './characters/yangyang/RTtYL5yC-Sequence-Node-A-Tribute-to-Life-s-Sweet-Hymn.webp',
   },
   'Sanhua': {
-    s1: './characters/KjhFTRrx-Sequence-Node-Solitude-s-Embrace.webp',
-    s2: './characters/9kxR0b3Y-Sequence-Node-Snowy-Clarity.webp',
-    s3: './characters/gcZgcdD-Sequence-Node-Anomalous-Vision.webp',
-    s4: './characters/hR4K48ZD-Sequence-Node-Blade-Mastery.webp',
-    s5: './characters/7Nj6QGLK-Sequence-Node-Unraveling-Fate.webp',
-    s6: './characters/CsBNd2c9-Sequence-Node-Daybreak-Radiance.webp',
+    s1: './characters/sanhua/KjhFTRrx-Sequence-Node-Solitude-s-Embrace.webp',
+    s2: './characters/sanhua/9kxR0b3Y-Sequence-Node-Snowy-Clarity.webp',
+    s3: './characters/sanhua/gcZgcdD-Sequence-Node-Anomalous-Vision.webp',
+    s4: './characters/sanhua/hR4K48ZD-Sequence-Node-Blade-Mastery.webp',
+    s5: './characters/sanhua/7Nj6QGLK-Sequence-Node-Unraveling-Fate.webp',
+    s6: './characters/sanhua/CsBNd2c9-Sequence-Node-Daybreak-Radiance.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=Taoqi/Combat&prop=images).
   'Taoqi': {
-    s1: './characters/SXh4R3Vq-Sequence-Node-Essense-of-Tranquility.webp',
-    s2: './characters/m5XCTx1C-Sequence-Node-Silent-Strength.webp',
-    s3: './characters/9kJGkmL6-Sequence-Node-Keen-eyed-Observer.webp',
-    s4: './characters/9kWbx8fb-Sequence-Node-Heavylifting-Duty.webp',
-    s5: './characters/DPqM6zwH-Sequence-Node-Benevolent-Guardian.webp',
-    s6: './characters/5XzTbxBV-Sequence-Node-Defender-of-Peace.webp',
+    s1: './characters/taoqi/SXh4R3Vq-Sequence-Node-Essense-of-Tranquility.webp',
+    s2: './characters/taoqi/m5XCTx1C-Sequence-Node-Silent-Strength.webp',
+    s3: './characters/taoqi/9kJGkmL6-Sequence-Node-Keen-eyed-Observer.webp',
+    s4: './characters/taoqi/9kWbx8fb-Sequence-Node-Heavylifting-Duty.webp',
+    s5: './characters/taoqi/DPqM6zwH-Sequence-Node-Benevolent-Guardian.webp',
+    s6: './characters/taoqi/5XzTbxBV-Sequence-Node-Defender-of-Peace.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=Yuanwu/Combat&prop=images).
   'Yuanwu': {
-    s1: './characters/ycfKwWWG-Sequence-Node-Steaming-Cup-of-Justice.webp',
-    s2: './characters/B20h0wfN-Sequence-Node-Fierce-Heart-Serene-Mind.webp',
-    s3: './characters/S4PSJrpp-Sequence-Node-Upholder-of-Integrity.webp',
-    s4: './characters/wrCs8zvG-Sequence-Node-Retributive-Knuckles.webp',
-    s5: './characters/ZpNBLSt6-Sequence-Node-Neighborhood-Protector.webp',
-    s6: './characters/nGN7G1z-Sequence-Node-Defender-of-All-Realms.webp',
+    s1: './characters/yuanwu/ycfKwWWG-Sequence-Node-Steaming-Cup-of-Justice.webp',
+    s2: './characters/yuanwu/B20h0wfN-Sequence-Node-Fierce-Heart-Serene-Mind.webp',
+    s3: './characters/yuanwu/S4PSJrpp-Sequence-Node-Upholder-of-Integrity.webp',
+    s4: './characters/yuanwu/wrCs8zvG-Sequence-Node-Retributive-Knuckles.webp',
+    s5: './characters/yuanwu/ZpNBLSt6-Sequence-Node-Neighborhood-Protector.webp',
+    s6: './characters/yuanwu/nGN7G1z-Sequence-Node-Defender-of-All-Realms.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=Mortefi/Combat&prop=images).
   'Mortefi': {
-    s1: './characters/s9ygxXYL-Sequence-Node-Solitary-Etude.webp',
-    s2: './characters/Z64664sR-Sequence-Node-Hypocritical-Hymn.webp',
-    s3: './characters/qLXh8L9K-Sequence-Node-Flaming-Recitativo.webp',
-    s4: './characters/99G1xJHS-Sequence-Node-Cathartic-Waltz.webp',
-    s5: './characters/yF2s64FP-Sequence-Node-Funerary-Quartet.webp',
-    s6: './characters/dspC2MzV-Sequence-Node-Apoplectic-Instrumental.webp',
+    s1: './characters/mortefi/s9ygxXYL-Sequence-Node-Solitary-Etude.webp',
+    s2: './characters/mortefi/Z64664sR-Sequence-Node-Hypocritical-Hymn.webp',
+    s3: './characters/mortefi/qLXh8L9K-Sequence-Node-Flaming-Recitativo.webp',
+    s4: './characters/mortefi/99G1xJHS-Sequence-Node-Cathartic-Waltz.webp',
+    s5: './characters/mortefi/yF2s64FP-Sequence-Node-Funerary-Quartet.webp',
+    s6: './characters/mortefi/dspC2MzV-Sequence-Node-Apoplectic-Instrumental.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=parse&page=Youhu/Combat&prop=text&section=9).
   'Youhu': {
-    s1: './characters/cX15STLS-Sequence-Node-Waterside-Respite.webp',
-    s2: './characters/840rck5k-Sequence-Node-Sunroom-Siesta.webp',
-    s3: './characters/GvrkqwV3-Sequence-Node-Restless-Sleep.webp',
-    s4: './characters/2745M8Dv-Sequence-Node-Frosted-Lullaby.webp',
-    s5: './characters/nqjLTh0J-Sequence-Node-Dreamland-Meander.webp',
-    s6: './characters/qLYPfdcj-Sequence-Node-Slumber-Evermore.webp',
+    s1: './characters/youhu/cX15STLS-Sequence-Node-Waterside-Respite.webp',
+    s2: './characters/youhu/840rck5k-Sequence-Node-Sunroom-Siesta.webp',
+    s3: './characters/youhu/GvrkqwV3-Sequence-Node-Restless-Sleep.webp',
+    s4: './characters/youhu/2745M8Dv-Sequence-Node-Frosted-Lullaby.webp',
+    s5: './characters/youhu/nqjLTh0J-Sequence-Node-Dreamland-Meander.webp',
+    s6: './characters/youhu/qLYPfdcj-Sequence-Node-Slumber-Evermore.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=parse&page=Lumi/Combat&prop=text&section=9).
   'Lumi': {
-    s1: './characters/TqHQ8XjX-Sequence-Node-Parcel-To-Be-Delivered.webp',
-    s2: './characters/fVcQnMDm-Sequence-Node-Lollo-Logistics-Ready-to-Help.webp',
-    s3: './characters/vNfCcYX-Sequence-Node-Priority-Parcel-In-Transit.webp',
-    s4: './characters/LGscd4x-Sequence-Node-Captain-Lumi-At-Your-Service.webp',
-    s5: './characters/bgzPXf0f-Sequence-Node-Parcel-Collected-On-Time.webp',
-    s6: './characters/5XyLn8f0-Sequence-Node-Give-Me-A-Five-star-Rating.webp',
+    s1: './characters/lumi/TqHQ8XjX-Sequence-Node-Parcel-To-Be-Delivered.webp',
+    s2: './characters/lumi/fVcQnMDm-Sequence-Node-Lollo-Logistics-Ready-to-Help.webp',
+    s3: './characters/lumi/vNfCcYX-Sequence-Node-Priority-Parcel-In-Transit.webp',
+    s4: './characters/lumi/LGscd4x-Sequence-Node-Captain-Lumi-At-Your-Service.webp',
+    s5: './characters/lumi/bgzPXf0f-Sequence-Node-Parcel-Collected-On-Time.webp',
+    s6: './characters/lumi/5XyLn8f0-Sequence-Node-Give-Me-A-Five-star-Rating.webp',
   },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's own static.wikia.nocookie.net
   // Sequence_Node_*.png assets via the MediaWiki API (action=query&titles=File:Sequence+Node+...&prop=
   // imageinfo, from Buling/Combat's image list).
   'Buling': {
-    s1: './characters/Nd55rsFn-Sequence-Node-Exorcist-Gadgets-Lend-Me-Your-Power.webp',
-    s2: './characters/v4b7KSnp-Sequence-Node-Talisman-Burns-Spirits-Turn.webp',
-    s3: './characters/BVdbprg6-Sequence-Node-Summoner-of-Spirits-Seeker-of-Fate.webp',
-    s4: './characters/fYLSNdB2-Sequence-Node-Wanderer-of-Solaris-Blessed-by-Fortune.webp',
-    s5: './characters/NdSwppx6-Sequence-Node-Forum-Ban-New-Account.webp',
-    s6: './characters/bRH5Fycd-Sequence-Node-Almighty-Forum-Lord-of-Thunder-Spell.webp',
+    s1: './characters/buling/Nd55rsFn-Sequence-Node-Exorcist-Gadgets-Lend-Me-Your-Power.webp',
+    s2: './characters/buling/v4b7KSnp-Sequence-Node-Talisman-Burns-Spirits-Turn.webp',
+    s3: './characters/buling/BVdbprg6-Sequence-Node-Summoner-of-Spirits-Seeker-of-Fate.webp',
+    s4: './characters/buling/fYLSNdB2-Sequence-Node-Wanderer-of-Solaris-Blessed-by-Fortune.webp',
+    s5: './characters/buling/NdSwppx6-Sequence-Node-Forum-Ban-New-Account.webp',
+    s6: './characters/buling/bRH5Fycd-Sequence-Node-Almighty-Forum-Lord-of-Thunder-Spell.webp',
   },
   // added 2026-08-20 — fills the dead-end logged in the 2026-08-20 (session 4) Update_report.md entry.
   // Fandom still has zero Sequence_Node_*/Skill_* uploads for Qingxiao, but DV's JS-capable web_fetch
@@ -5906,12 +5906,12 @@ const CHAIN_NODE_ICONS = {
   // challenge on the CDN itself), then re-hosted on ibb.co per this file's convention. R.Chain order
   // (M1-M6) matches the game's own s1-s6 sequence-node numbering used in CHAIN_NODE_NAMES above.
   'Qingxiao': {
-    s1: './characters/yn2fQNNY-qingxiao-s1.webp',
-    s2: './characters/pj1TDk2Z-qingxiao-s2.webp',
-    s3: './characters/SXYD4cPD-qingxiao-s3.webp',
-    s4: './characters/q30vSXqr-qingxiao-s4.webp',
-    s5: './characters/1t4yB6YJ-qingxiao-s5.webp',
-    s6: './characters/cGpCS76-qingxiao-s6.webp',
+    s1: './characters/qingxiao/yn2fQNNY-qingxiao-s1.webp',
+    s2: './characters/qingxiao/pj1TDk2Z-qingxiao-s2.webp',
+    s3: './characters/qingxiao/SXYD4cPD-qingxiao-s3.webp',
+    s4: './characters/qingxiao/q30vSXqr-qingxiao-s4.webp',
+    s5: './characters/qingxiao/1t4yB6YJ-qingxiao-s5.webp',
+    s6: './characters/qingxiao/cGpCS76-qingxiao-s6.webp',
   },
 };
 
