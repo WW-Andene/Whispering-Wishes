@@ -14,7 +14,7 @@
 // actually sent that message — a dead mechanism that let this drift
 // indefinitely while every other fix silently kept serving a stale
 // manifest.webmanifest to already-installed clients.
-let APP_VERSION = '3.5.6';
+let APP_VERSION = '3.5.7';
 let APP_CACHE = `ww-app-v${APP_VERSION}`;
 let IMG_CACHE = `ww-images-v${APP_VERSION}`;
 let CDN_CACHE = `ww-cdn-v${APP_VERSION}`;

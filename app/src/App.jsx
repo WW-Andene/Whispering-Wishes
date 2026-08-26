@@ -58,6 +58,7 @@ import AdminMiniPanel from './features/profile/AdminMiniPanel.jsx';
 import PaddingDebugOverlay from './shared/components/PaddingDebugOverlay.jsx';
 import { DetailModalHost } from './shared/components/DetailModalHost.jsx';
 import { TabButton } from './shared/components/Card.jsx';
+import { ThemeColor } from './shared/components/ThemeColor.jsx';
 import { AppErrorBoundary, TabErrorBoundary } from './shared/errors/ErrorBoundaries.jsx';
 import { getActiveBanners } from './shared/components/bannerUtils.js';
 // --- Feature tabs ---
@@ -947,6 +948,7 @@ function WhisperingWishesInner() {
 
   return (
     <CloudStorageProvider getBackupPayload={getBackupPayload} onRestoreData={handleRestoreData}>
+    <ThemeColor />
     <div data-reference-device={isReferenceDevice} className={`min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
       {appBgUrl && (
         // Explicit top/left/right/bottom (not just the inset-0 class) so this

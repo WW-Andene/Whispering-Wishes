@@ -49,13 +49,9 @@ const PWA_META_TAGS = [
   { name: 'apple-mobile-web-app-capable', content: 'yes' },
   { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
   { name: 'apple-mobile-web-app-title', content: 'Whispering Wishes' },
-  // Matches index.html's static tag and useVisualSettings.js's own sync effect
-  // (#080c14, the app's real navy background) — previously hardcoded gold
-  // (#edaf18) here independently, a color-drift bug: harmless only as long as
-  // index.html's tag loads first and this injector's "skip if already present"
-  // guard holds, but a real risk of the status bar going gold instead of navy
-  // wherever that assumption breaks.
-  { name: 'theme-color', content: 'transparent' },
+  // theme-color is intentionally absent here — owned solely by <ThemeColor />
+  // (shared/components/ThemeColor.jsx) now. This used to also inject its own
+  // (initially gold, later navy) value independently, a color-drift bug.
   { name: 'msapplication-TileColor', content: '#080c14' },
   { name: 'msapplication-navbutton-color', content: '#080c14' }
 ];

@@ -85,19 +85,10 @@ export function useVisualSettings() {
     // Runtime changes handled by the separate listener effect below
   }, []);
 
-  // Keep the theme-color meta tag pinned to the app's real background (#080c14 —
-  // same value as index.html's static tag and the manifest's theme_color/
-  // background_color). This used to hardcode a second, slightly different navy
-  // (#0c0820) here, independently of index.html's — a real color-drift bug
-  // (Android's status bar reads whichever value wins, not necessarily the one
-  // that matches the rest of the app) rather than a deliberate "icon setup".
-  useEffect(() => {
-    try {
-      let themeColor = document.querySelector('meta[name="theme-color"]');
-      if (!themeColor) { themeColor = document.createElement('meta'); themeColor.name = 'theme-color'; document.head.appendChild(themeColor); }
-      themeColor.content = 'transparent';
-    } catch (e) { console.warn('theme-color sync failed:', e); }
-  }, []);
+  // theme-color meta tag is now owned solely by <ThemeColor /> (shared/components/
+  // ThemeColor.jsx), mounted once in App.jsx — this used to duplicate that same
+  // logic here with its own hardcoded value, independently of index.html's and
+  // PWAProvider.jsx's, and the three drifted out of sync with each other over time.
 
   // Debounced persistence — live state update immediately, localStorage after 300ms idle
   const saveVisualSettings = useCallback((newSettings) => {
