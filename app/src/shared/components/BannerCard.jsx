@@ -78,7 +78,7 @@ const generateMaskGradient = (fadePos, fadeIntensity) => {
   return result;
 };
 
-const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDate, timerColor, collectionImages, setDetailModal }) => {
+const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, timerColor, collectionImages, setDetailModal }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
@@ -155,7 +155,7 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
           {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{item.title}</p>}
         </div>
         
-        <div className={stats ? 'mb-14' : ''}>
+        <div>
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
           <div className="flex gap-2 flex-wrap">
             {(item.featured4Stars || []).map(n => {
@@ -192,36 +192,6 @@ const BannerCard = memo(({ item, type, stats, bannerImage, visualSettings, endDa
         </div>
       </div>
       
-      {stats && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15" style={BANNER_CARD_OVERLAY_STYLE}>
-          <div className="flex items-center gap-3">
-            <div className="flex-1 flex items-center gap-3">
-                <div className="text-center">
-                  <div className={`font-bold text-xl kuro-number ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : stats.pity5 >= 75 ? 'text-red-400' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400' : isChar ? 'text-yellow-400' : 'text-pink-400'}`}>{stats.pity5}<span className="text-gray-400 text-sm ml-0.5">/{HARD_PITY}</span></div>
-                  <div className={`text-sm mt-0.5 ${stats.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : stats.pity5 >= 75 ? 'text-red-400 font-medium' : stats.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{stats.pity5 >= HARD_PITY ? '★ GUARANTEED!' : stats.pity5 >= 75 ? '⚠ High Pity!' : stats.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-purple-400 font-bold text-xl kuro-number">{stats.pity4}<span className="text-gray-400 text-sm ml-0.5">/10</span></div>
-                  <div className={`text-sm mt-0.5 ${stats.guaranteed4Star ? 'text-emerald-400 font-medium' : 'text-gray-400'}`}>{stats.guaranteed4Star ? '4★ Featured ✓' : '4★ Pity'}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-white font-bold text-xl kuro-number">{stats.totalPulls}</div>
-                  <div className="text-gray-400 text-sm mt-0.5">Convenes</div>
-                </div>
-              </div>
-              {/* MED-27: Escalated from text-sm to text-base font-bold for visual weight */}
-              {isChar ? (
-                <div className={`text-base font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'}`}>
-                  {stats.guaranteed ? '✓ Guaranteed' : '50/50'}
-                </div>
-              ) : (
-                <div className={`text-base font-bold px-2 py-0.5 rounded-full backdrop-blur-sm ${stats.guaranteed ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-pink-500/20 text-pink-400 border border-pink-500/30'}`}>
-                  {stats.guaranteed ? '✓ Guaranteed' : 'No Guarantee'}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       {isChar && <FullSpineViewerButton name={item.name} imageUrl={imgUrl} className="absolute bottom-2 right-2 z-20" />}
     </div>
     </div>
@@ -232,6 +202,37 @@ BannerCard.displayName = 'BannerCard';
 // Gacha system explanation — kuro-styled modal. Rendered once above the
 // banner list (TrackerTab) rather than per-card, since its content is the
 // same regardless of which banner it's opened from.
+// Compact pity tracker — extracted from BannerCard's old bottom-overlay stats bar (which
+// repeated identically on every card of a category, since it always showed the same
+// account-wide pity/convene numbers regardless of which specific banner card it sat on).
+// Rendered once, in TrackerTab's header row immediately left of GachaInfoButton, instead of
+// once per card. Sized to sit inline at the same ~28px row height as that button (w-7 h-7) —
+// text-sm/text-xs here, versus the old overlay's text-xl, since this is now a compact summary
+// next to an icon rather than a full-width bar of its own.
+const PityTrackerCompact = memo(({ stats, isChar }) => {
+  if (!stats) return null;
+  const pity5Color = stats.pity5 >= HARD_PITY
+    ? 'text-red-500'
+    : stats.pity5 >= 75
+    ? 'text-red-400'
+    : stats.pity5 >= SOFT_PITY_START
+    ? 'text-amber-400'
+    : isChar ? 'text-yellow-400' : 'text-pink-400';
+  const guaranteed = isChar
+    ? (stats.guaranteed ? { text: '✓', cls: 'text-emerald-400' } : { text: '50/50', cls: 'text-orange-400' })
+    : (stats.guaranteed ? { text: '✓', cls: 'text-emerald-400' } : { text: '—', cls: 'text-pink-400' });
+  return (
+    <div className="flex items-center gap-1.5 text-sm leading-none">
+      <span className={`font-bold kuro-number ${pity5Color}`}>{stats.pity5}<span className="text-gray-400 font-normal">/{HARD_PITY}</span></span>
+      <span className="text-gray-600">·</span>
+      <span className="text-purple-400 font-medium kuro-number">{stats.pity4}<span className="text-gray-400">/10</span></span>
+      <span className="text-gray-600">·</span>
+      <span className={`font-semibold ${guaranteed.cls}`}>{guaranteed.text}</span>
+    </div>
+  );
+});
+PityTrackerCompact.displayName = 'PityTrackerCompact';
+
 const GachaInfoButton = memo(({ isChar, className = '' }) => {
   const [open, setOpen] = useState(false);
   const ci = 'tracker.conveneInfo.';
@@ -305,4 +306,4 @@ const ProbabilityBar = memo(({ label, value, color = 'cyan' }) => (
 ));
 ProbabilityBar.displayName = 'ProbabilityBar';
 
-export { BannerCard, GachaInfoButton, ProbabilityBar, generateMaskGradient, BANNER_GRADIENT_MAP, EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW };
+export { BannerCard, GachaInfoButton, PityTrackerCompact, ProbabilityBar, generateMaskGradient, BANNER_GRADIENT_MAP, EVENT_ACCENT_COLORS, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE, IMG_LAYER_STYLE, BANNER_SUBTLE_SHADOW };

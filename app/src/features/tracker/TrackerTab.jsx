@@ -9,7 +9,7 @@ import { BANNER_HISTORY, PLACEHOLDER_IMAGE, CHARACTER_THEMES, MOST_PULLED_STATS 
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
-import { BannerCard, GachaInfoButton } from '../../shared/components/BannerCard.jsx';
+import { BannerCard, GachaInfoButton, PityTrackerCompact } from '../../shared/components/BannerCard.jsx';
 import { StandardBannerSection } from './StandardBannerSection.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -129,7 +129,29 @@ function TrackerTab({
 
             <div className="flex items-center justify-between text-sm content-layer">
               <span className="text-gray-400">{t('tracker.versionPhaseServer', { version: activeBanners.version, phase: activeBanners.phase, server: state.server })}</span>
-              <GachaInfoButton isChar={trackerCategory !== 'weapon'} />
+              <div className="flex items-center gap-2">
+                {trackerCategory === 'character' && (
+                  <PityTrackerCompact
+                    isChar
+                    stats={state.profile.featured?.history?.length ? {
+                      pity5: state.profile.featured.pity5,
+                      pity4: state.profile.featured.pity4,
+                      guaranteed: state.profile.featured.guaranteed,
+                    } : null}
+                  />
+                )}
+                {trackerCategory === 'weapon' && (
+                  <PityTrackerCompact
+                    isChar={false}
+                    stats={state.profile.weapon?.history?.length ? {
+                      pity5: state.profile.weapon.pity5,
+                      pity4: state.profile.weapon.pity4,
+                      guaranteed: state.profile.weapon.guaranteed,
+                    } : null}
+                  />
+                )}
+                <GachaInfoButton isChar={trackerCategory !== 'weapon'} />
+              </div>
             </div>
 
 
@@ -141,13 +163,6 @@ function TrackerTab({
                     item={c}
                     type="character"
                     bannerImage={activeBanners.characterBannerImage}
-                    stats={state.profile.featured?.history?.length ? {
-                      pity5: state.profile.featured.pity5,
-                      pity4: state.profile.featured.pity4,
-                      totalPulls: state.profile.featured.history.length,
-                      guaranteed: state.profile.featured.guaranteed,
-                      guaranteed4Star: state.profile.featured.guaranteed4Star,
-                    } : null}
                     visualSettings={visualSettings}
                     endDate={bannerEndDate}
                     timerColor="yellow"
@@ -172,12 +187,6 @@ function TrackerTab({
                     item={w}
                     type="weapon"
                     bannerImage={activeBanners.weaponBannerImage}
-                    stats={state.profile.weapon?.history?.length ? {
-                      pity5: state.profile.weapon.pity5,
-                      pity4: state.profile.weapon.pity4,
-                      totalPulls: state.profile.weapon.history.length,
-                      guaranteed4Star: state.profile.weapon.guaranteed4Star,
-                    } : null}
                     visualSettings={visualSettings}
                     endDate={bannerEndDate}
                     timerColor="pink"
