@@ -5,20 +5,18 @@
 // HapticFeedbackConstants beyond KEYBOARD_TAP/CONTEXT_CLICK/LONG_PRESS/
 // CONFIRM/REJECT, and the FLAG_IGNORE_VIEW_SETTING flag) as one-tap buttons,
 // for on-device A/B testing. Not used by the app's real feedback (see
-// helpers.js) — delete this file and its GlassHapticsPlugin.java lab*
+// utils/haptics.js) — delete this file and its GlassHapticsPlugin.java lab*
 // methods once the search concludes either way.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
 import { FlaskConical } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
-import { registerPlugin } from '@capacitor/core';
-import { haptic } from '../../utils/helpers.js';
-
-const GlassHaptics = registerPlugin('GlassHaptics');
-
-const isNativePlatform = () =>
-  typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
+// Shares the app's one GlassHaptics bridge from utils/haptics.js instead of
+// calling registerPlugin('GlassHaptics') a second time here — a prior
+// version of this file created its own independent plugin proxy, which
+// worked but meant two separate JS-side handles onto the same native plugin.
+import { haptic, GlassHaptics, isNativePlatform } from '../../utils/haptics.js';
 
 const LAB_ITEMS = [
   { key: 'labThud', label: 'PRIMITIVE_THUD' },

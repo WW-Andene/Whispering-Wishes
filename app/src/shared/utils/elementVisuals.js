@@ -1,132 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — utils/helpers.js
-// Utility functions: haptic feedback, ID generation, luck rating, element colors
+// WHISPERING WISHES — shared/utils/elementVisuals.js
+// Extracted from the former utils/helpers.js grab-bag (2026-08-26 restructuring):
+// this file owns the app's element/weapon/set/faction/region/combat-role color
+// and icon lookup system — a single, unrelated-to-haptics domain that used to
+// be bolted onto the same file as the haptic-feedback module. Moved to
+// shared/ (not utils/) because it's consumed by 10+ feature and shared
+// components, not a small cross-cutting helper.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { ECHO_SETS, ECHO_DATA } from '../data/echoes.js';
-import { registerPlugin } from '@capacitor/core';
-
-// GlassHapticsPlugin.java (in-project, Android only) replaces
-// @capacitor/haptics: that plugin's impact/notification styles are all
-// VibrationEffect.createWaveform() — a raw amplitude ramp held for
-// 43-60ms — which reads as a dull, soft "buzz" on most actuators, not a
-// sharp tap. GlassHaptics instead uses VibrationEffect.Composition's short
-// OS/OEM-tuned primitives (PRIMITIVE_TICK/PRIMITIVE_CLICK/PRIMITIVE_LOW_TICK)
-// — the same category of API that makes stock Android UI taps feel crisp
-// rather than buzzy, closer to a quick tap on thin glass than a motor buzz.
-// No iOS build exists yet (see CAPACITOR_APP.md) — if one gets added,
-// @capacitor/haptics' iOS side (Apple's Taptic Engine via UIFeedbackGenerator)
-// is already good and would need its own branch here instead of this plugin.
-const GlassHaptics = registerPlugin('GlassHaptics');
-
-const isNative = () => typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
-
-// useVisualSettings.js already toggles a 'no-animations' class on <html>
-// whenever animationsEnabled === 'off' (see its sync-to-<html> effect) — this
-// reuses that same signal rather than plumbing the setting through every
-// haptic call site, so haptics only ever fire when animations are 'on' or
-// 'full'. Checked at call time (not cached) since the class can flip at any
-// point from the Settings tab.
-const hapticsAllowed = () => typeof document !== 'undefined' && !document.documentElement.classList.contains('no-animations');
-
-// Experimental: window.AndroidHaptics.tap() is a raw addJavascriptInterface
-// bridge (see MainActivity.java) instead of Capacitor's plugin bridge (JSON
-// message + promise round trip) — meaningfully lower JS-to-native latency,
-// to test whether Xiaomi's haptic renderer is timing-sensitive about how
-// soon after touch performHapticFeedback() gets called. Only wired for
-// "light" since that's the one fired on every button press via
-// glassTouch.js (the case where the timing gap is largest relative to the
-// user's actual finger-down moment); success/warning/error aren't
-// touch-synchronous the same way, so they stay on the plugin path.
-const hasNativeTapBridge = () => typeof window !== 'undefined' && typeof window.AndroidHaptics?.tap === 'function';
-
-// Web/PWA fallback via navigator.vibrate() — no composition-primitive
-// equivalent exists on the web, so there's nothing to "tune" beyond duration/
-// pattern. Durations bumped up from the original 10/25/50ms: below ~20-30ms,
-// Chrome Android's vibrate() call frequently doesn't spin the motor up far
-// enough to be felt at all (motor spin-up lag eats short pulses), so the old
-// "light" was often imperceptible rather than just subtle. Also worth noting:
-// the Vibration API has no effect at all on iOS Safari/PWA (Apple has never
-// implemented it) — on iOS this silently no-ops, which isn't fixable from web
-// code; only a native iOS build (not planned yet) could address that.
-// webVibrateTick: fires vibrate(1) then cancels it on the next frame
-// (vibrate(0)) instead of letting a fixed-duration pulse run its course.
-// Requested test: browsers clamp very short vibrate() durations up to some
-// internal minimum, which is why plain vibrate(10-20) reads as a soft buzz
-// rather than a tick — cutting the pulse short via a second vibrate(0) call
-// before that minimum is reached produces a shorter, sharper actual motor
-// pulse than any duration argument alone can.
-const haptic = {
-  light: () => {
-    if (!hapticsAllowed()) return;
-    if (hasNativeTapBridge()) { window.AndroidHaptics.tap(); return; }
-    isNative() ? GlassHaptics.light().catch(() => {}) : navigator?.vibrate?.(1);
-  },
-  medium: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.medium().catch(() => {}) : navigator?.vibrate?.(1); },
-  heavy: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.heavy().catch(() => {}) : navigator?.vibrate?.(1); },
-  success: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.success().catch(() => {}) : navigator?.vibrate?.([20, 60, 20]); },
-  warning: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.warning().catch(() => {}) : navigator?.vibrate?.([35, 40, 35]); },
-  error: () => { if (!hapticsAllowed()) return; isNative() ? GlassHaptics.error().catch(() => {}) : navigator?.vibrate?.([60, 50, 90]); },
-};
-
-
-// Unique ID generator (used by toast & reducer)
-// P12-FIX: Monotonic counter prevents ID collisions in the crypto.randomUUID fallback path
-// (same-millisecond calls to Date.now() would otherwise produce identical IDs) (Step 12 audit — LOW-12n)
-let __uniqueIdCounter = 0;
-const generateUniqueId = () => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    try { return crypto.randomUUID(); } catch {}
-  }
-  // 5.3 fix: CSPRNG fallback (crypto.getRandomValues is older/wider than randomUUID)
-  try {
-    const arr = new Uint8Array(8);
-    crypto.getRandomValues(arr);
-    return `${Date.now()}-${++__uniqueIdCounter}-${Array.from(arr, b => b.toString(36)).join('')}`;
-  } catch {
-    return `${Date.now()}-${++__uniqueIdCounter}-${Math.random().toString(36).slice(2)}`;
-  }
-};
-
-// [SECTION:LUCK]
-// Luck rating: maps average pity to a percentile using a normal distribution.
-// Theoretical parameters derived from WuWa's rate function (0.8% base, soft pity 65–79, hard pity 80):
-//   Mean pity at 5★ = 53.5 pulls, Std dev = 22.7 pulls (single draw).
-// For N 5★ pulls, the sample mean has std dev = 22.7/√N (central limit theorem).
-// We use max(N, 3) to avoid extreme percentiles from tiny samples.
-// Computed from app's soft pity model: SOFT_PITY_START=66, HARD_PITY=80
-// (P2-20 audit fix: comment previously said SOFT_PITY_START=64 — drift from constants.js:73), BASE_RATE=0.8%
-const LUCK_MEAN_PITY = 53.0;
-const LUCK_STD_DEV_SINGLE = 22.4;
-
-const calculateLuckRating = (avgPity, numFiveStars) => {
-  if (!avgPity || avgPity === '—') return null;
-  const avg = parseFloat(avgPity);
-  if (isNaN(avg) || avg <= 0) return null;
-
-  // Sample-size adjusted std dev: shrinks with more data points
-  const n = Math.max(numFiveStars || 1, 3); // floor of 3 to prevent extreme swings
-  const adjustedStd = LUCK_STD_DEV_SINGLE / Math.sqrt(n);
-
-  // Inverted: lower avg pity = luckier = higher z-score/percentile
-  const zScore = (LUCK_MEAN_PITY - avg) / adjustedStd;
-
-  // Abramowitz & Stegun approximation of normal CDF (accurate to ±0.0005)
-  const absZ = Math.abs(zScore);
-  const t = 1 / (1 + 0.2316419 * absZ);
-  const d = 0.3989422804014327; // 1/√(2π)
-  const p = d * Math.exp(-absZ * absZ / 2) * (t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429)))));
-  const cdf = zScore >= 0 ? 1 - p : p;
-  const percentile = Math.max(0, Math.min(100, Math.round(cdf * 100)));
-
-  // WuWa lore hierarchy: Civilian < Drifter < Resonator < Sentinel < Arbiter
-  // Color scale: white < green < blue < purple < gold
-  if (percentile >= 90) return { rating: 'Arbiter', color: '#edaf18', tier: 'S', percentile };
-  if (percentile >= 70) return { rating: 'Sentinel', color: '#a855f7', tier: 'A', percentile };
-  if (percentile >= 40) return { rating: 'Resonator', color: '#60a5fa', tier: 'B', percentile };
-  if (percentile >= 20) return { rating: 'Drifter', color: '#22c55e', tier: 'C', percentile };
-  return { rating: 'Civilian', color: '#e8ecf2', tier: 'D', percentile };
-};
+import { ECHO_SETS, ECHO_DATA } from '../../data/echoes.js';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // ELEMENT COLOR UTILITIES — Single source of truth for element→color mappings
@@ -414,9 +296,6 @@ const getBuffElementColor = (buff) => {
 };
 
 export {
-  haptic,
-  generateUniqueId,
-  calculateLuckRating,
   ELEMENT_COLORS,
   ELEMENT_ICONS,
   getElementColor,

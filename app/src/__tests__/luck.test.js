@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // P2-21 audit fix: sanity tests for luck-rating percentile tiers.
 //
-// `calculateLuckRating` in utils/helpers.js depends on LUCK_MEAN_PITY (53.0)
+// `calculateLuckRating` in shared/utils/luckRating.js depends on LUCK_MEAN_PITY (53.0)
 // and LUCK_STD_DEV_SINGLE (22.4), which are hand-derived from the app's
 // probability model (BASE_5STAR_RATE=0.008, SOFT_PITY_START=66, HARD_PITY=80
 // in data/constants.js + core/calcStats.js).
@@ -11,8 +11,7 @@
 // from the engine and asserting the constants are still a close match.
 // ═══════════════════════════════════════════════════════════════════════════════
 import { describe, it, expect } from 'vitest';
-import { calculateLuckRating } from '../utils/helpers.js';
-
+import { calculateLuckRating } from '../shared/utils/luckRating.js';
 describe('Luck rating — tier boundaries', () => {
   it('very low avg pity yields Arbiter (S tier)', () => {
     // With 10 five-stars averaging 20 pity, z-score is strongly positive →

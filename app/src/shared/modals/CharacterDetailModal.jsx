@@ -14,7 +14,7 @@ import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONAT
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
 import { calcTeamStats } from '../../features/teams/calcTeamStats.js';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getCombatRoleIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getCombatRoleIcon } from '../utils/elementVisuals.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
@@ -22,7 +22,7 @@ import { FullSpineViewerButton } from '../components/FullSpineViewerButton.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
-// Shared element color maps. `hex` (same source as helpers.js's ELEMENT_COLORS)
+// Shared element color maps. `hex` (same source as elementVisuals.js's ELEMENT_COLORS)
 // drives the header's corner fade: lighter top-left, subtly darker/cooler
 // bottom-right, both mixed from this same base hue.
 const DETAIL_ELEMENT_COLORS = {
@@ -38,7 +38,7 @@ const DETAIL_ELEMENT_COLORS = {
 // badges elsewhere) — these are a real, consistent brand convention, not a guess. The 12 sets whose
 // ECHO_SETS.element is non-elemental (Heal/Support/ATK/Shield) have no such convention, so each is
 // keyed by its own set name to a color actually sampled from its in-game icon artwork (SET_ICONS in
-// helpers.js) — average hue of the icon's saturated pixels, brightened for legibility on a dark
+// elementVisuals.js) — average hue of the icon's saturated pixels, brightened for legibility on a dark
 // background but not reassigned to an arbitrary category color (e.g. Moonlit Clouds' icon is a
 // muted slate-blue, not the violet a "Support" default would have implied).
 const SONATA_ELEMENT_COLORS = {
@@ -49,7 +49,7 @@ const SONATA_ELEMENT_COLORS = {
   Havoc: { text: 'text-pink-400', border: 'border-pink-500/60', ring: 'ring-pink-500/60', bg: 'bg-pink-500/10' },
   Spectro: { text: 'text-yellow-400', border: 'border-yellow-500/60', ring: 'ring-yellow-500/60', bg: 'bg-yellow-500/10' },
 };
-// Sampled from each set's actual SET_ICONS artwork (see helpers.js) — full literal Tailwind
+// Sampled from each set's actual SET_ICONS artwork (see elementVisuals.js) — full literal Tailwind
 // arbitrary-value classes, one const per set, so the JIT scanner can find them at build time.
 const SONATA_SET_COLORS = {
   'Rejuvenating Glow': { text: 'text-[#9dd247]', border: 'border-[#9dd247]/60', ring: 'ring-[#9dd247]/60', bg: 'bg-[#9dd247]/10' },

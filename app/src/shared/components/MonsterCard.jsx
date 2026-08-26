@@ -7,7 +7,7 @@
 
 import React, { useState, memo } from 'react';
 import { Skull } from 'lucide-react';
-import { getElementIcon, getStatIcon } from '../../utils/helpers.js';
+import { getElementIcon, getStatIcon } from '../utils/elementVisuals.js';
 import { t } from '../../utils/i18n.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { getEnemyStatsAtLevel, getEnemyStaggerStatsAtLevel } from '../../data/echoes.js';

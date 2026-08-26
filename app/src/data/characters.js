@@ -366,7 +366,7 @@ const CHARACTER_DATA = {
   // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
   // and ww.nanoka.cc's character #1607 sheet. desc: title "Sea of Dreams" (nanoka) prepended and blurb
   // rewritten to match the roster's convention. organization uses 'Fisalia Family' (no leading "The")
-  // to match helpers.js's FACTION_ICONS key exactly, avoiding the mismatch previously found on Carlotta.
+  // to match elementVisuals.js's FACTION_ICONS key exactly, avoiding the mismatch previously found on Carlotta.
   // skills/ascension/skill materials/bestEchoes all re-confirmed accurate. weaponAlts was entirely
   // missing — added: alt5 uses Rime-Draped Sprouts (87.0%) and Stringmaster (85.0%), Prydwen's #2/#3
   // non-signature 5-stars; alt4 uses Radiant Dawn (77.9%, best 4★) and Augment (77.8%, #2 4★); alt3 uses
@@ -385,7 +385,7 @@ const CHARACTER_DATA = {
   // Heavy Attacks", but Zani cannot apply Spectro Frazzle herself at all; she instantly converts
   // teammates' Frazzle into her own Heliacal Ember/Blaze resource, which is a meaningfully different
   // (and team-dependent) mechanic. organization uses 'Montelli Family' (no leading "The") to match
-  // helpers.js's FACTION_ICONS key, avoiding the mismatch previously found on Carlotta. skills/ascension/
+  // elementVisuals.js's FACTION_ICONS key, avoiding the mismatch previously found on Carlotta. skills/ascension/
   // skill materials/bestEchoes/outroBuffs/selfBuffs all re-confirmed accurate. weaponAlts was entirely
   // missing — added: alt5 uses Tragicomedy (93.7%) and Verity's Handle (85.0%), Prydwen's #2/#3
   // non-signature 5-stars; alt4 uses Aether Strike (72.6%, best 4★) and Celestial Spiral (69.3%, #2 4★);
@@ -454,7 +454,7 @@ const CHARACTER_DATA = {
   // blurb rewritten — the previous desc wrongly said she "summons Hecate via Echo Skill"; Hecate is
   // actually summoned by her Resonance Liberation (entering Maestro state) — Echo Skill casts merely
   // trigger extra Hecate attacks while Maestro is already active. organization uses 'Fractsidus' (no
-  // leading "The") to match helpers.js's FACTION_ICONS key exactly, same fix applied to Carlotta/Zani.
+  // leading "The") to match elementVisuals.js's FACTION_ICONS key exactly, same fix applied to Carlotta/Zani.
   // skills/ascension/skill materials/bestEchoes/outroBuffs/selfBuffs all re-confirmed accurate (already
   // corrected in a prior 2026-08-16 pass). weaponAlts was entirely missing — added: alt5 uses
   // Stringmaster (82.0%) and Whispers of Sirens (80.2%), Prydwen's #2/#3 non-signature 5-stars; alt4
@@ -1515,7 +1515,7 @@ const CHARACTER_DATA = {
   // birthplace: ww.nanoka.cc's own infobox lists this as literally "Unknown" for her (unlike most other
   // characters, which have a real birthplace even when their nation/region tie is separately unconfirmed).
   ['Camellya', 'Sanguine Blossom', 'Unknown', 'Black Shores', { en: 'Meaghan Martin', cn: 'Liu ZhiXiao', jp: 'Ise Mariya', kr: 'Yu Hye Ji' }],
-  // organization: 'Montelli Family' (no leading "The") to match helpers.js's FACTION_ICONS key exactly —
+  // organization: 'Montelli Family' (no leading "The") to match elementVisuals.js's FACTION_ICONS key exactly —
   // the icon lookup is a straight object-key match, so "The Montelli Family" silently resolved to no icon.
   ['Carlotta', 'Reshaping Dimensions', 'Ragunna', 'Montelli Family', { en: 'Jennifer English', cn: 'Yan Yeqiao', jp: 'Ueda Kana', kr: 'Kim Soon Mi' }],
   ['Roccia', 'Stage in the Box', 'Rinascita', 'Troupe of Fools', { en: 'Holly Earl', cn: 'Shen Huasang', jp: 'Kohara Konomi', kr: 'Jang Mi' }],
@@ -1523,7 +1523,7 @@ const CHARACTER_DATA = {
   ['Brant', 'Flamebound Compass', 'Rinascita', 'Troupe of Fools', { en: "Hyoie O'Grady", cn: 'Ray Mo', jp: 'Kishio Daisuke', kr: 'Lee Ju Seung' }],
   ['Cantarella', 'Sea of Dreams', 'Rinascita', 'Fisalia Family', { en: 'Alexandra Guelff', cn: 'Xiaomi', jp: 'Nakahara Mai', kr: 'Kim Yul' }],
   // organization: 'Montelli Family' (no leading "The", even though nanoka's own infobox literally shows
-  // "The Montelli Family") to match helpers.js's FACTION_ICONS key exactly, same fix applied to Carlotta.
+  // "The Montelli Family") to match elementVisuals.js's FACTION_ICONS key exactly, same fix applied to Carlotta.
   ['Zani', 'Scorched Radiance', 'Rinascita', 'Montelli Family', { en: 'Alexandra Metaxa', cn: 'Nie Xiying', jp: 'Ueda Hitomi', kr: 'Won Esther' }],
   ['Ciaccona', 'Woven Melodies', 'Rinascita', 'Ragunna', { en: 'Rebecca Hanssen', cn: 'Ye Zhiqiu', jp: 'Hasegawa Ikumi', kr: 'Kim Ye Rim' }],
   ['Cartethyia', 'Feathered Tempest', 'Rinascita', 'Ragunna', { en: 'Amanda Elizabeth Rischel', cn: 'Yun Hezhui', jp: 'Asakawa Yuu', kr: 'Bae Ha Gyoung' }],
@@ -1766,7 +1766,7 @@ const CHARACTER_DATA = {
 
 // [SECTION:COMBAT_ROLE_DATA] — Per-character Combat Role tag badges (Main Damage Dealer, Heavy Attack
 // DMG, Traction, DMG Amplification, Tune Rupture Response, etc.) — a fixed, game-wide icon set of ~38
-// tags (see helpers.js's COMBAT_ROLE_ICONS) where each character just carries a subset. Distinct from
+// tags (see elementVisuals.js's COMBAT_ROLE_ICONS) where each character just carries a subset. Distinct from
 // the single `role` field elsewhere (Main DPS/Sub DPS/Healer) — these are the specific mechanical tags
 // from the character's own infobox `role` field (order preserved as listed there).
 // Source: wutheringwaves.fandom.com infobox `role` field, pulled via the MediaWiki API's raw wikitext

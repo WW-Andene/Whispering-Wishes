@@ -12,12 +12,12 @@
 // Respects the Settings tab's animation level: useVisualSettings.js toggles
 // a 'no-animations' class on <html> when animationsEnabled === 'off', which
 // this checks before doing anything — neither visual appears and
-// haptic.light() (independently gated the same way, see helpers.js) never
+// haptic.light() (independently gated the same way, see haptics.js) never
 // fires. 'on' and 'full' both get the effect; there's currently nothing
 // about it heavy enough to reserve for 'full' only.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { haptic } from './helpers.js';
+import { haptic } from './haptics.js';
 
 const SELECTOR = '.kuro-btn, [role="switch"], [role="tab"]';
 const ANIMATION_NAME = 'glass-touch-pulse';

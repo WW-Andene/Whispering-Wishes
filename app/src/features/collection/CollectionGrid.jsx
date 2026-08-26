@@ -6,7 +6,7 @@
 import React, { useState, useRef, useCallback, memo } from 'react';
 import { Crown } from 'lucide-react';
 
-import { haptic } from '../../utils/helpers.js';
+import { haptic } from '../../utils/haptics.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../../shared/components/SpinePlayer.jsx';
 

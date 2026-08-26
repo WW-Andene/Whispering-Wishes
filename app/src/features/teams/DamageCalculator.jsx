@@ -4,7 +4,8 @@ import { AlertTriangle, ChevronDown, Diamond, Sparkles, Sword, Users, X, Zap } f
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_DATA, getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { isHealerRole, DMG_FOCUS_ROLE_TAG } from './calcEngine.js';
-import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon } from '../../utils/helpers.js';
+import { haptic } from '../../utils/haptics.js';
+import { getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon } from '../../shared/utils/elementVisuals.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 
 import { hideOnError } from '../../shared/utils/imageHelpers.js';

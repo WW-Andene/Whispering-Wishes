@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { HARD_PITY, HARD_PITY_4STAR, LUNITE_DAILY_ASTRITE, MAX_ASTRITE } from '../data/constants.js';
-import { generateUniqueId } from '../utils/helpers.js';
+import { generateUniqueId } from '../utils/generateId.js';
 // Sanitizers moved to dedicated leaf module (P1-08 audit fix) — formerly this
 // line imported from ./storage.js, which created a reducer.js ↔ storage.js cycle.
 // The cycle was documented-safe but fragile: any future module-eval-time reference

@@ -13,7 +13,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, BellOff, Copy } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { initPushNotifications, disablePushNotifications, isNativePlatform, getStoredPushToken, hasOptedIntoPush } from '../../utils/pushNotifications.js';
-import { haptic } from '../../utils/helpers.js';
+import { haptic } from '../../utils/haptics.js';
 import { t } from '../../utils/i18n.js';
 
 export default function PushNotificationsCard({ toast }) {

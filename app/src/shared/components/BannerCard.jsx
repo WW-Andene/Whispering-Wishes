@@ -8,8 +8,8 @@ import { Info, X } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
-import { haptic, getElementIcon, getWeaponTypeIcon } from '../../utils/helpers.js';
-
+import { haptic } from '../../utils/haptics.js';
+import { getElementIcon, getWeaponTypeIcon } from '../utils/elementVisuals.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';

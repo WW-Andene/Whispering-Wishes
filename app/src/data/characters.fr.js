@@ -82,7 +82,7 @@ export const CHARACTER_DESC_FR = {
 // IDENTITY_DATA `title` field (displayed as the italic subtitle under the
 // character's name in CharacterDetailModal.jsx — CHARACTER_DATA[name].title,
 // display-only, no functional consumers). birthplace/organization are proper
-// nouns/faction keys matched against helpers.js's FACTION_ICONS and are left
+// nouns/faction keys matched against elementVisuals.js's FACTION_ICONS and are left
 // untranslated, same policy as element/echo/weapon names.
 /** @type {Record<string, string>} */
 export const CHARACTER_TITLE_FR = {

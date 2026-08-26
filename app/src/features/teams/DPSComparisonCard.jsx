@@ -5,8 +5,8 @@
 import React from 'react';
 import { BarChart3, Sword, X } from 'lucide-react';
 import { getEnemyStatsAtLevel } from '../../data/echoes.js';
-import { getElementColor, getElementIcon } from '../../utils/helpers.js';
-import { haptic } from '../../utils/helpers.js';
+import { getElementColor, getElementIcon } from '../../shared/utils/elementVisuals.js';
+import { haptic } from '../../utils/haptics.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { t, formatNumber } from '../../utils/i18n.js';

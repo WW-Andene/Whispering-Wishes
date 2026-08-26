@@ -11,7 +11,7 @@ import { Card, CardBody } from '../../shared/components/Card.jsx';
 import MonsterCard from '../../shared/components/MonsterCard.jsx';
 import EnemyEchoSelectorModal from './EnemyEchoSelectorModal.jsx';
 import { ECHO_DATA } from '../../data/echoes.js';
-import { haptic } from '../../utils/helpers.js';
+import { haptic } from '../../utils/haptics.js';
 import { t } from '../../utils/i18n.js';
 
 export function EnemyTargetCard({ enemyEcho, setEnemyEcho, enemyLevel, setEnemyLevel, collectionImages, setEnemyEchoSearch, setEnemyEchoModalOpen }) {

@@ -11,7 +11,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ASTRITE_PER_PULL, MAX_ASTRITE, MAX_CALC_PULLS } from '../../data/constants.js';
-import { haptic } from '../../utils/helpers.js';
+import { haptic } from '../../utils/haptics.js';
 import { calcStats } from '../../core/calcStats.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';

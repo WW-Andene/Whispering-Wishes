@@ -5,8 +5,8 @@
 
 import { useState, useMemo, useCallback, useEffect, useRef, createContext, useContext } from 'react';
 import { Info, CheckCircle, AlertCircle, AlertTriangle } from 'lucide-react';
-import { haptic, generateUniqueId } from '../utils/helpers.js';
-
+import { haptic } from '../utils/haptics.js';
+import { generateUniqueId } from '../utils/generateId.js';
 // [SECTION:TOAST]
 
 const ToastContext = createContext(null);

@@ -6,8 +6,7 @@
 
 import { useMemo, useEffect } from 'react';
 import { CHARACTER_THEMES } from '../data/banners.js';
-import { getElementColor } from '../utils/helpers.js';
-
+import { getElementColor } from '../shared/utils/elementVisuals.js';
 const ELEMENTS = ['Spectro', 'Glacio', 'Fusion', 'Electro', 'Aero', 'Havoc'];
 
 // Guard: objectPosition must be a string (can be corrupted to {x,y,zoom} from stale data)

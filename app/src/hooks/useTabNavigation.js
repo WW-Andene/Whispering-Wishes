@@ -5,8 +5,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TAB_ORDER } from '../data/constants.js';
-import { haptic } from '../utils/helpers.js';
-
+import { haptic } from '../utils/haptics.js';
 export function useTabNavigation(swipeEnabled) {
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);

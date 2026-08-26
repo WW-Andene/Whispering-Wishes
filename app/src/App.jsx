@@ -25,7 +25,8 @@ import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data
 import { ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from './data/weaponLists.js';
 import { getCurrentBannerAuto, preloadBannerHistoryArt } from './data/banners.js';
 import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, SERVERS } from './data/constants.js';
-import { generateUniqueId, calculateLuckRating } from './utils/helpers.js';
+import { generateUniqueId } from './utils/generateId.js';
+import { calculateLuckRating } from './shared/utils/luckRating.js';
 import { IMPORT_NAME_ALIASES } from './utils/gachaImporter.js';
 // --- extracted hooks ---
 import { useVisualSettings, DEFAULT_VISUAL_SETTINGS } from './hooks/useVisualSettings.js';

@@ -4,8 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useRef, useCallback } from 'react';
-import { generateUniqueId } from '../utils/helpers.js';
-
+import { generateUniqueId } from '../utils/generateId.js';
 const FETCH_TIMEOUT_MS = 10000;
 const PRESENCE_INTERVAL_MS = 60000;
 const FIREBASE_WRITE_COOLDOWN_MS = 5000;

@@ -8,7 +8,7 @@ import { User, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { ECHO_DATA, getLocalizedEchoSets, getLocalizedEchoData } from '../../data/echoes.js';
-import { ELEMENT_COLORS, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor, getSetIcon } from '../../utils/helpers.js';
+import { ELEMENT_COLORS, getElementIcon, getSetElementColor, getEchoSetColors, getBuffElementColor, getSetIcon } from '../utils/elementVisuals.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { EchoImage } from '../components/EchoImage.jsx';

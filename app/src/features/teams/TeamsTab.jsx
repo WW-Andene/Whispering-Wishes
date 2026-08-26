@@ -3,7 +3,8 @@ import { BookmarkPlus, ChevronDown, Crown, Download, FolderOpen, Plus, Share2, S
 import { CHARACTER_DATA, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { scoreTeamComposition, isHealerRole, isSupportRole } from './calcEngine.js';
 import { getEnemyResMap } from './calcTeamStats.js';
-import { haptic, getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../utils/helpers.js';
+import { haptic } from '../../utils/haptics.js';
+import { getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../shared/utils/elementVisuals.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';

@@ -10,7 +10,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, Download, CheckCircle2 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { checkForUpdate, downloadUpdate, isNativePlatform } from '../../utils/appUpdate.js';
-import { haptic } from '../../utils/helpers.js';
+import { haptic } from '../../utils/haptics.js';
 import { t } from '../../utils/i18n.js';
 
 export default function AppUpdateCard({ toast }) {

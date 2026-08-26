@@ -19,7 +19,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from './CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon, getCombatRoleIcon } from '../../utils/helpers.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon, getCombatRoleIcon } from '../../shared/utils/elementVisuals.js';
 import { t, getLocale } from '../../utils/i18n.js';
 
 function CollectionTab({
