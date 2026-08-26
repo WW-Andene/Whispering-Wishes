@@ -95,7 +95,7 @@ export function useVisualSettings() {
     try {
       let themeColor = document.querySelector('meta[name="theme-color"]');
       if (!themeColor) { themeColor = document.createElement('meta'); themeColor.name = 'theme-color'; document.head.appendChild(themeColor); }
-      themeColor.content = '#080c14';
+      themeColor.content = 'transparent';
     } catch (e) { console.warn('theme-color sync failed:', e); }
   }, []);
 

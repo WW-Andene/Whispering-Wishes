@@ -55,7 +55,7 @@ const PWA_META_TAGS = [
   // index.html's tag loads first and this injector's "skip if already present"
   // guard holds, but a real risk of the status bar going gold instead of navy
   // wherever that assumption breaks.
-  { name: 'theme-color', content: '#080c14' },
+  { name: 'theme-color', content: 'transparent' },
   { name: 'msapplication-TileColor', content: '#080c14' },
   { name: 'msapplication-navbutton-color', content: '#080c14' }
 ];

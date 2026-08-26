@@ -84,6 +84,14 @@ body::before {
   min-height: 100vh;
   min-height: 100dvh;
   isolation: isolate;
+  /* In fullscreen display mode the former status/nav-bar area becomes real,
+     paintable viewport instead of OS-reserved space — env(safe-area-inset-*)
+     then only reflects a genuine notch/cutout (0 on most devices), so this
+     is a real reservation, not a no-op. html/body's own background-color
+     already covers the full 100dvh behind this padding, so nothing here
+     goes unpainted the way the bare fullscreen attempt left a black gap. */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Accessible focus outlines — BT-F1: Extended to a, [role="button"] */
