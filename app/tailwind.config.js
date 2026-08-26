@@ -20,6 +20,12 @@ export default {
       '2xl': '99999px', // ENCAPSULATED — desktop layout disabled
     },
     extend: {
+      // Tailwind's default min-h-screen/h-screen resolve to 100vh, which doesn't
+      // account for mobile browser chrome (address bar) resizing the visual
+      // viewport — 100dvh does. Overridden here so every existing min-h-screen/
+      // h-screen usage in the codebase gets this for free, no className edits needed.
+      minHeight: { screen: '100dvh' },
+      height: { screen: '100dvh' },
       // D-TYPE-0: Unified font-size scale backed by CSS variables (kuro.css)
       fontSize: {
         '2xs': 'var(--font-2xs)',   // 10px

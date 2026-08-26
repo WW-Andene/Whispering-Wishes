@@ -14,7 +14,8 @@
    ═══════════════════════════════════════════════════════════════════════════ */
 
 html {
-  background-color: #080c14;
+  height: 100%;
+  background: #080c14;
   color: #e2e8f0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -24,11 +25,13 @@ html {
 
 body {
   margin: 0;
-  min-height: 100vh;
   min-height: 100dvh;
-  background-color: #080c14;
+  background: #080c14;
   font-family: var(--font-display, 'Rajdhani'), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
+  /* NOT overflow: hidden — body is the app's only scroll container (no
+     #root/<main> overflow-y:auto exists to take over); that would freeze
+     every tab whose content exceeds the viewport height. */
 }
 
 /* OpenDyslexic — self-hosted for CSP compatibility */
@@ -81,15 +84,8 @@ body::before {
 }
 
 #root {
-  min-height: 100vh;
   min-height: 100dvh;
   isolation: isolate;
-  /* In fullscreen display mode the former status/nav-bar area becomes real,
-     paintable viewport instead of OS-reserved space — env(safe-area-inset-*)
-     then only reflects a genuine notch/cutout (0 on most devices), so this
-     is a real reservation, not a no-op. html/body's own background-color
-     already covers the full 100dvh behind this padding, so nothing here
-     goes unpainted the way the bare fullscreen attempt left a black gap. */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
 }
