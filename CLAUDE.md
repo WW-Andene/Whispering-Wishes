@@ -2,6 +2,14 @@
 
 Read this before making any UI/styling change. These are hard rules, not suggestions — do not bypass them by reaching for a default Tailwind class, an arbitrary one-off pixel value, or a "close enough" number.
 
+## Structure, organization & code hygiene — non-negotiable
+
+Structuring, organizing, segmenting, naming, optimizing, and classifying files, folders, and the code itself is **absolute — never to be bypassed**, regardless of deadline, urgency, or how small a change seems. A quick fix does not excuse dropping a file in the wrong place, reusing a misleading name, or leaving a new symbol unclassified "for now."
+
+Hygiene, ownership clarity, coherence, and above all **consistency** — of entities, of the project, and of process — are an irrefutable priority. This holds regardless of context: no task, deadline, or user request implicitly waives it. If a request would require violating it, flag that before proceeding rather than quietly complying.
+
+**Enforcement cadence:** run the `app-restructuring` skill (`claude_skill/app-restructuring-SKILL.md`) and a code-audit pass regularly — as a floor, every ~50 commits to the repo — to keep the codebase in a clean, correctly-organized state rather than letting drift accumulate. Treat this as scheduled maintenance, not something to wait for the user to request.
+
 ## PerfectSuite — the only valid numeric scale
 
 > **Updated.** This replaces the prior version of the scale and its tie-break rules. The suite is now smaller and organized in three explicit tiers per power-of-2 octave: `[Primary]`, `(Secondary)`, `{Tertiary}`.
