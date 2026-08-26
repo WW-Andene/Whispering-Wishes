@@ -83,6 +83,23 @@ body::before {
   pointer-events: none;
 }
 
+/* TEMPORARY TEST — user-suggested overlay to see whether env(safe-area-inset-top)
+   actually reports non-zero height for the plain status bar (not just a notch)
+   in standalone display mode on this device. If it does, this paints our own
+   navy over it instead of leaving whatever the OS renders there; if it's 0
+   here (as spec suggests it should be for a non-notched phone), this is a
+   no-op and proves once more the status bar area is outside the page. */
+.status-bar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background: var(--status-color, #080c14);
+  pointer-events: none;
+  z-index: 9999;
+}
+
 #root {
   min-height: 100dvh;
   isolation: isolate;
