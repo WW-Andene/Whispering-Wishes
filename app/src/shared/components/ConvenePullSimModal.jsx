@@ -50,8 +50,10 @@ const FIVE_STAR_GLOW_RGB = '234,179,8';
 // The rarity badge below is stretched to the tile's own width (w-12)
 // rather than sizing to its own content.
 const PullResultIcon = ({ result, getImageFraming, onOpenDetail }) => {
-  const imgUrl = DEFAULT_COLLECTION_IMAGES[result.name];
-  const framing = getImageFraming(`collection-${result.name}`);
+  // 3★ results have no confirmed real name yet (see conveneSimulator.js's
+  // file header) — rendered as a plain rarity placeholder, not clickable.
+  const imgUrl = result.name ? DEFAULT_COLLECTION_IMAGES[result.name] : null;
+  const framing = result.name ? getImageFraming(`collection-${result.name}`) : null;
   const box = (
     <div className={`relative w-12 h-12 rounded-md overflow-hidden border bg-black/25 ${RARITY_RING[result.rarity]}`}>
       {imgUrl ? (
@@ -70,12 +72,16 @@ const PullResultIcon = ({ result, getImageFraming, onOpenDetail }) => {
       )}
     </div>
   );
+  const badge = <span className={`kuro-badge ${RARITY_BADGE[result.rarity]} w-12 justify-center`}>{result.rarity}★</span>;
+  const glowBox = result.rarity === 5
+    ? <div className="banner-card-glow rounded-md" style={{ '--glow-color': FIVE_STAR_GLOW_RGB }}>{box}</div>
+    : box;
+  if (!result.name) {
+    return <div className="flex flex-col items-center gap-1">{glowBox}{badge}</div>;
+  }
   return (
     <button type="button" onClick={onOpenDetail} className="flex flex-col items-center gap-1" aria-label={result.name}>
-      {result.rarity === 5
-        ? <div className="banner-card-glow rounded-md" style={{ '--glow-color': FIVE_STAR_GLOW_RGB }}>{box}</div>
-        : box}
-      <span className={`kuro-badge ${RARITY_BADGE[result.rarity]} w-12 justify-center`}>{result.rarity}★</span>
+      {glowBox}{badge}
     </button>
   );
 };
@@ -108,7 +114,7 @@ const ConveneSimStatsSummary = ({ stats, onReset }) => {
   );
 };
 
-const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, featured4Stars, startPity5, startPity4, startGuaranteed, visualSettings, setDetailModal }) => {
+const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, featured4Stars, startPity5, startPity4, startGuaranteed, startGuaranteed4, visualSettings, setDetailModal }) => {
   const [phase, setPhase] = useState('rarity'); // 'rarity' | 'character' | 'revealed'
   const { getImageFraming } = useImageFramingContext();
   const isWeaponKind = kind === 'weapon' || kind === 'standardWeap';
@@ -117,7 +123,7 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
 
   const sim = useMemo(() => {
     if (!isOpen) return null;
-    return simulateConvenePulls({ count, kind, featuredNames, featured4Stars, startPity5, startPity4, startGuaranteed });
+    return simulateConvenePulls({ count, kind, featuredNames, featured4Stars, startPity5, startPity4, startGuaranteed, startGuaranteed4 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
@@ -156,6 +162,7 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   const handleCharacterEnded = () => setPhase('revealed');
 
   const openDetail = (result) => {
+    if (!result.name) return;
     const type = result.rarity === 3 || isWeaponKind ? 'weapon' : 'character';
     setDetailModal?.({ show: true, type, name: result.name, imageUrl: DEFAULT_COLLECTION_IMAGES[result.name], framing: getImageFraming(`collection-${result.name}`) });
   };
