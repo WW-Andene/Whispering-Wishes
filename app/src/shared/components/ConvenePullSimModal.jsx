@@ -50,8 +50,10 @@ const FIVE_STAR_REVEAL_SRC = './convene-sim/5star-reveal.mp4';
 
 // Background music loop for the whole modal (public/audio/convene-screen.m4a)
 // — separate from the rarity/item videos' own audio, gated on both the
-// master sound toggle and its own Sound-section switch.
-const CONVENE_MUSIC_SRC = './audio/convene-screen.m4a';
+// master sound toggle and its own Sound-section switch. Resolved against
+// BASE_URL, not window.location.href — Vite's base is './' (relative, for
+// subpath/native file:// builds), same fix as chime.js/useAmbientMusic.js.
+const CONVENE_MUSIC_SRC = `${import.meta.env.BASE_URL || './'}audio/convene-screen.m4a`;
 const CONVENE_MUSIC_VOLUME = 0.25;
 
 // +20% past the HTML5 <video> element's normal 100% ceiling (ConveneVideoLayer's
@@ -122,8 +124,14 @@ const RARITY_GLOW_RGB = { 5: FIVE_STAR_GLOW_RGB, 4: '168,85,247', 3: '56,189,248
 // (object-contain, no collection-<name> framing crop — that framing is
 // tuned for the app's square thumbnails and was clipping full-body art
 // here). Weapons keep the framing crop (their icons are meant to be zoomed
-// to that box), but the crop's hard edge is softened with a feathered mask
-// + a tiny blur (convene-weapon-feather, kuro.css) instead of a bare cutoff.
+// to that box), but the crop's hard edge is softened with a feathered
+// blur-halo (convene-weapon-feather, kuro.css) instead of a bare cutoff —
+// two stacked copies of the same image: a fully sharp one masked to fade
+// out past 70%, and a blurred one masked to only show in the 70%-100% ring
+// (invisible under the sharp layer's opaque center), so only the edge
+// itself blurs while the rest of the icon stays crisp. Characters (no crop
+// to hide) get a larger box — 25% bigger than a weapon's — since there's
+// no risk of clipping raw, non-transformed art.
 // A quick white flash (keyed per item so it retriggers every reveal) plus
 // the rarity glow sell the "card flips face-up" moment.
 const ItemRevealFull = ({ result, getImageFraming }) => {
@@ -131,6 +139,7 @@ const ItemRevealFull = ({ result, getImageFraming }) => {
   const isWeapon = result.type === 'weapon';
   const framing = (isWeapon && result.name) ? getImageFraming(`collection-${result.name}`) : null;
   const glowRgb = RARITY_GLOW_RGB[result.rarity];
+  const weaponTransform = isWeapon ? { transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` } : undefined;
   return (
     <div
       className="absolute inset-0 animate-[scaleIn_0.3s_cubic-bezier(0.16,1,0.3,1)]"
@@ -138,14 +147,23 @@ const ItemRevealFull = ({ result, getImageFraming }) => {
     >
       {imgUrl ? (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className={`relative w-[75%] h-[75%] overflow-hidden ${isWeapon ? 'convene-weapon-feather' : ''}`}>
+          <div className={`relative overflow-hidden ${isWeapon ? 'w-[75%] h-[75%]' : 'w-[93.75%] h-[93.75%]'}`}>
             <img
               src={imgUrl}
               alt={result.name}
-              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-              style={isWeapon ? { transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` } : undefined}
+              className={`absolute inset-0 w-full h-full object-contain pointer-events-none ${isWeapon ? 'convene-weapon-sharp' : ''}`}
+              style={weaponTransform}
               onError={hideOnError}
             />
+            {isWeapon && (
+              <img
+                src={imgUrl}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none convene-weapon-blur"
+                style={weaponTransform}
+              />
+            )}
           </div>
         </div>
       ) : (
@@ -217,7 +235,7 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
       musicRef.current?.pause();
       return;
     }
-    const audio = musicRef.current || new Audio(new URL(CONVENE_MUSIC_SRC, window.location.href).href);
+    const audio = musicRef.current || new Audio(CONVENE_MUSIC_SRC);
     audio.loop = true;
     audio.volume = CONVENE_MUSIC_VOLUME;
     musicRef.current = audio;

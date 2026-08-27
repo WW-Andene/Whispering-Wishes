@@ -487,15 +487,20 @@
 
     /* ConvenePullSimModal's item reveal — a weapon's icon is cropped/zoomed
        to fill its box (unlike a character's raw sprite), so its box edge is
-       a hard cutoff. Feather it with a radial mask (fades to transparent
-       near the edge) plus a tiny blur on the image itself, so the crop
-       reads as a soft vignette instead of a bare clip line. */
-    .convene-weapon-feather {
+       a hard cutoff. Two stacked copies of the same image fix this: the
+       sharp one (on top) fades to transparent past 70% radius and stays
+       fully crisp before that; the blurred one (underneath) is masked to
+       only show in the 70%-100% ring, invisible under the sharp layer's
+       opaque center. Net effect: only the outer edge blurs+fades, the rest
+       of the icon stays untouched — not a uniform blur over the whole image. */
+    .convene-weapon-sharp {
       mask-image: radial-gradient(circle at 50% 50%, black 70%, transparent 100%);
       -webkit-mask-image: radial-gradient(circle at 50% 50%, black 70%, transparent 100%);
     }
-    .convene-weapon-feather img {
-      filter: blur(1px);
+    .convene-weapon-blur {
+      filter: blur(4px);
+      mask-image: radial-gradient(circle at 50% 50%, transparent 70%, black 85%, transparent 100%);
+      -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent 70%, black 85%, transparent 100%);
     }
 
     @keyframes borderGlow {
