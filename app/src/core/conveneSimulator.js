@@ -50,7 +50,7 @@ const ALL_3STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].ra
  * @param {number} [opts.startPity5] - player's live pity5 for this banner, as a starting point
  * @param {number} [opts.startPity4]
  * @param {boolean} [opts.startGuaranteed] - live 50/50-loss guarantee flag (character banner only)
- * @returns {{ results: Array<{name: string|null, rarity: 3|4|5, isFeatured: boolean}>, video: 'common'|'4star'|'5star' }}
+ * @returns {{ results: Array<{name: string|null, rarity: 3|4|5, isFeatured: boolean, pity: number, won50: boolean|null}>, video: 'common'|'4star'|'5star' }}
  */
 export function simulateConvenePulls({ count, kind, featuredNames = [], featured4Stars = [], startPity5 = 0, startPity4 = 0, startGuaranteed = false }) {
   const isWeapon = kind === 'weapon' || kind === 'standardWeap';
@@ -74,15 +74,23 @@ export function simulateConvenePulls({ count, kind, featuredNames = [], featured
   for (let i = 0; i < count; i++) {
     pity5++; pity4++;
     if (Math.random() < getPullRate5(pity5)) {
-      let name, isFeatured;
+      // won50: true = won a real 50/50 roll, false = lost it (next 5★ is
+      // guaranteed), null = no 50/50 concept here (weapon/standard banners,
+      // or this hit itself was the guaranteed one from a prior loss).
+      let name, isFeatured, won50;
       if (isStandard) {
-        name = pick(pool5); isFeatured = false;
-      } else if (isWeapon || guaranteed || Math.random() < 0.5) {
-        name = featuredNames[0] ?? pick(pool5); isFeatured = true; guaranteed = false;
+        name = pick(pool5); isFeatured = false; won50 = null;
+      } else if (isWeapon) {
+        // Weapon banners have no 50/50 — every 5★ is the featured weapon.
+        name = featuredNames[0] ?? pick(pool5); isFeatured = true; won50 = null;
+      } else if (guaranteed) {
+        name = featuredNames[0] ?? pick(pool5); isFeatured = true; won50 = null; guaranteed = false;
+      } else if (Math.random() < 0.5) {
+        name = featuredNames[0] ?? pick(pool5); isFeatured = true; won50 = true;
       } else {
-        name = pick(pool5); isFeatured = false; guaranteed = true;
+        name = pick(pool5); isFeatured = false; won50 = false; guaranteed = true;
       }
-      results.push({ name, rarity: 5, isFeatured });
+      results.push({ name, rarity: 5, isFeatured, pity: pity5, won50 });
       pity5 = 0; pity4 = 0; // a 5★ also satisfies the 4★ pity window
     } else if (pity4 >= HARD_PITY_4STAR || Math.random() < FLAT_4STAR_RATE) {
       results.push(rollFourStar());

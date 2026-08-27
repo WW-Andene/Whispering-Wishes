@@ -579,8 +579,10 @@ function TrackerTab({
                       const rarityColor = pull.rarity === 5 ? 'text-yellow-400' : pull.rarity === 4 ? 'text-purple-400' : 'text-blue-400';
                       const rarityBg = pull.rarity === 5 ? 'border-yellow-500/20 bg-yellow-500/5' : pull.rarity === 4 ? 'border-purple-500/20 bg-purple-500/5' : 'border-[var(--border-medium)]';
                       const stars = '★'.repeat(pull.rarity || 0);
+                      const imgUrl = pull.name ? collectionImages[pull.name] : null;
                       return (
                         <div key={`pull-${idx}`} className={`flex items-center gap-3 px-3 py-2 rounded-lg border ${rarityBg} transition-colors`}>
+                          {imgUrl && <img src={imgUrl} alt="" className="w-8 h-8 rounded-md object-cover bg-black/25 flex-shrink-0" loading="lazy" onError={hideOnError} />}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
                               <span className={`text-base font-semibold truncate ${rarityColor}`}>{localizedWeaponData[pull.name]?.displayName || pull.name || t('tracker.unknown')}</span>

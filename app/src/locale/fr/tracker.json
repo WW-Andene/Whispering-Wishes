@@ -78,6 +78,15 @@
     "resultsTitle": "Résultat du tirage ×{{count}}",
     "featuredBadge": "★",
     "skip": "Passer",
-    "disclaimer": "Simulation à titre d'aperçu uniquement — ne dépense pas d'Astrite/Marées et n'affecte pas votre pitié suivie."
+    "disclaimer": "Simulation à titre d'aperçu uniquement — ne dépense pas d'Astrite/Marées et n'affecte pas votre pitié suivie.",
+    "statsTitle": "Statistiques du simulateur",
+    "statsReset": "Réinitialiser",
+    "statsTotalPulls": "Tirages totaux",
+    "statsPullBreakdown": "Répartition des tirages",
+    "statsWeapons": "Armes obtenues",
+    "statsCharacters": "Résonateurs obtenus",
+    "stats5050": "50/50",
+    "stats5050Value": "{{won}} gagnés / {{lost}} perdus",
+    "statsAvgPity5": "Tirages moy. par 5★"
   }
 }

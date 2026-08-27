@@ -6,10 +6,15 @@
 // character with its own convene clip (public/convene-animations/, same
 // asset as BannerCard's ▶️ preview) — that character's video plays next,
 // before finally revealing the 1 or 10 items. A Skip button (visible
-// during either video) jumps straight to the reveal.
+// during either video) jumps straight to the reveal. Below the reveal, a
+// persistent per-banner-kind stats summary (useConveneSimStats.js,
+// localStorage-backed) tallies every pull ever rolled here, with its own
+// Reset button.
 //
 // This is a display-only simulator (core/conveneSimulator.js) — no wallet
-// is spent, no pity/history is written to state.profile.
+// is spent, no pity/history is written to state.profile. The stats summary
+// is the one thing that *does* persist, but it's entirely separate storage
+// from the real tracked pity/history.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useEffect } from 'react';
@@ -20,6 +25,7 @@ import { simulateConvenePulls } from '../../core/conveneSimulator.js';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banners.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
+import { useConveneSimStats } from '../../hooks/useConveneSimStats.js';
 import { t } from '../../utils/i18n.js';
 
 const VIDEO_SRC = {
@@ -74,17 +80,55 @@ const PullResultIcon = ({ result, getImageFraming, onOpenDetail }) => {
   );
 };
 
+// Persistent per-banner summary (useConveneSimStats) shown under the
+// results grid — "Reset" clears only this banner kind's simulator tally,
+// never anything in state.profile.
+const StatRow = ({ label, value }) => (
+  <div className="flex items-center justify-between">
+    <span className="text-gray-400 text-sm">{label}</span>
+    <span className="text-gray-100 text-sm font-medium kuro-number">{value}</span>
+  </div>
+);
+
+const ConveneSimStatsSummary = ({ stats, onReset }) => {
+  const avgPity5 = stats.fiveStarCount > 0 ? (stats.fiveStarPitySum / stats.fiveStarCount).toFixed(1) : '—';
+  return (
+    <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-gray-300 text-sm font-semibold uppercase tracking-wider">{t('tracker.conveneSim.statsTitle')}</span>
+        <button type="button" onClick={onReset} className="kuro-btn kuro-btn-sm">{t('tracker.conveneSim.statsReset')}</button>
+      </div>
+      <StatRow label={t('tracker.conveneSim.statsTotalPulls')} value={stats.totalPulls} />
+      <StatRow label={t('tracker.conveneSim.statsPullBreakdown')} value={`×1: ${stats.x1Pulls} · ×10: ${stats.x10Pulls}`} />
+      <StatRow label={t('tracker.conveneSim.statsWeapons')} value={`5★ ${stats.weaponsByRarity[5]} · 4★ ${stats.weaponsByRarity[4]} · 3★ ${stats.weaponsByRarity[3]}`} />
+      <StatRow label={t('tracker.conveneSim.statsCharacters')} value={`5★ ${stats.charactersByRarity[5]} · 4★ ${stats.charactersByRarity[4]}`} />
+      <StatRow label={t('tracker.conveneSim.stats5050')} value={t('tracker.conveneSim.stats5050Value', { won: stats.won50, lost: stats.lost50 })} />
+      <StatRow label={t('tracker.conveneSim.statsAvgPity5')} value={avgPity5} />
+    </div>
+  );
+};
+
 const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, featured4Stars, startPity5, startPity4, startGuaranteed, visualSettings, setDetailModal }) => {
   const [phase, setPhase] = useState('rarity'); // 'rarity' | 'character' | 'revealed'
   const { getImageFraming } = useImageFramingContext();
   const isWeaponKind = kind === 'weapon' || kind === 'standardWeap';
   const muted = !visualSettings?.soundEnabled;
+  const { stats, record, reset } = useConveneSimStats(kind);
 
   const sim = useMemo(() => {
     if (!isOpen) return null;
     return simulateConvenePulls({ count, kind, featuredNames, featured4Stars, startPity5, startPity4, startGuaranteed });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
+  // Tallied the moment a pull is rolled (not gated on watching the video or
+  // reaching the reveal) — once initiated, a pull "happened" the same way a
+  // real convene commits immediately, matching the fix that makes closing
+  // early always reroll on the next attempt rather than replaying this one.
+  useEffect(() => {
+    if (sim) record(sim, count);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sim]);
 
   // The specific character whose own convene video plays after the rarity
   // clip — the highest-rarity result (5★ preferred, then 4★) that both
@@ -141,6 +185,7 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
               {sim.results.map((r, i) => <PullResultIcon key={i} result={r} getImageFraming={getImageFraming} onOpenDetail={() => openDetail(r)} />)}
             </div>
             <p className="text-gray-500 text-sm text-center mt-3">{t('tracker.conveneSim.disclaimer')}</p>
+            <ConveneSimStatsSummary stats={stats} onReset={reset} />
           </div>
         )}
       </div>
