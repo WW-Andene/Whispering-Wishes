@@ -41,6 +41,12 @@ public class BannerWidget extends AppWidgetProvider {
     private static final String KEY_FEATURED4 = "widget_banner_featured4";
     private static final String KEY_CONVENE_URL = "widget_banner_convene_url";
     private static final int THUMB_PX = 96; // decode target for the 30dp featured-4★ thumbnails
+    private static final int PILL_ICON_PX = 40; // decode target for the 14dp ×1/×10 currency icons
+    // Same bundled asset ConvenePullPills.jsx's ASTRITE_ICON constant uses —
+    // always shown here (unlike the in-app pill, this doesn't know whether
+    // the player has a tide currency entered in Calculator) since it's
+    // always a valid fallback.
+    private static final String ASTRITE_ICON_ASSET = "ui-icons/Currency-Astrite.webp";
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -104,6 +110,17 @@ public class BannerWidget extends AppWidgetProvider {
             views.setViewVisibility(R.id.widget_play, android.view.View.GONE);
         }
 
+        // ×1 / ×10 pull-simulator pills — roll entirely natively
+        // (WidgetPullSimulator.java) and launch WidgetPullActivity to play
+        // the rarity video + show the result grid, no app launch involved.
+        Bitmap astriteIcon = WidgetAssetUtils.decodeAsset(context, ASTRITE_ICON_ASSET, PILL_ICON_PX);
+        if (astriteIcon != null) {
+            views.setImageViewBitmap(R.id.widget_pull_x1_icon, astriteIcon);
+            views.setImageViewBitmap(R.id.widget_pull_x10_icon, astriteIcon);
+        }
+        views.setOnClickPendingIntent(R.id.widget_pull_x1, pullPendingIntent(context, appWidgetId, 1));
+        views.setOnClickPendingIntent(R.id.widget_pull_x10, pullPendingIntent(context, appWidgetId, 10));
+
         // Tapping anywhere else on the banner opens the app itself, same as
         // the countdown widget.
         Intent launchIntent = new Intent(context, MainActivity.class);
@@ -113,6 +130,17 @@ public class BannerWidget extends AppWidgetProvider {
         views.setOnClickPendingIntent(R.id.widget_root, pendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
+    }
+
+    private static PendingIntent pullPendingIntent(Context context, int appWidgetId, int count) {
+        Intent intent = new Intent(context, WidgetPullActivity.class);
+        intent.putExtra(WidgetPullActivity.EXTRA_COUNT, count);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        // Distinct request codes per (widget instance × count) so the two
+        // pills' PendingIntents don't collide/overwrite each other.
+        int requestCode = appWidgetId * 10 + 2 + (count == 1 ? 0 : 1);
+        return PendingIntent.getActivity(context, requestCode, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     // Called from MainActivity.onResume() so reopening the app refreshes the

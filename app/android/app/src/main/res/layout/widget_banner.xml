@@ -27,28 +27,98 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="10dp">
 
-        <TextView
-            android:id="@+id/widget_banner_element"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="#FDE047"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08" />
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/widget_banner_name"
+            <TextView
+                android:id="@+id/widget_banner_element"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FDE047"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.08" />
+
+            <TextView
+                android:id="@+id/widget_banner_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:text="@string/app_name" />
+        </LinearLayout>
+
+        <!-- ×1 / ×10 pull-simulator pills — see WidgetPullSimulator.java for
+             the native probability engine and WidgetPullActivity.java for
+             the rarity-video + result-screen flow they launch. Astrite icon
+             (public/ui-icons/, bundled locally like the banner art) matches
+             ConvenePullPills.jsx's own fallback icon in-app. -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:text="@string/app_name" />
+            android:orientation="vertical"
+            android:gravity="end">
+
+            <LinearLayout
+                android:id="@+id/widget_pull_x1"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:layout_marginBottom="4dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="6dp"
+                android:paddingEnd="8dp"
+                android:background="@drawable/widget_pill_bg">
+
+                <ImageView
+                    android:id="@+id/widget_pull_x1_icon"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="3dp"
+                    android:contentDescription="@null" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_pull_x1"
+                    android:textColor="#E5E7EB"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/widget_pull_x10"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="6dp"
+                android:paddingEnd="8dp"
+                android:background="@drawable/widget_pill_bg">
+
+                <ImageView
+                    android:id="@+id/widget_pull_x10_icon"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="3dp"
+                    android:contentDescription="@null" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/widget_pull_x10"
+                    android:textColor="#E5E7EB"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout

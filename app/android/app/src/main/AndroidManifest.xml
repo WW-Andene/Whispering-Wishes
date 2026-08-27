@@ -50,6 +50,14 @@
             android:launchMode="singleInstance"
             android:configChanges="orientation|screenSize" />
 
+        <activity
+            android:name=".WidgetPullActivity"
+            android:theme="@style/AppTheme.ConveneOverlay"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleInstance"
+            android:configChanges="orientation|screenSize" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

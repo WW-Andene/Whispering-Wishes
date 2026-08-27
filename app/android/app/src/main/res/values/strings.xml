@@ -10,4 +10,8 @@
     <string name="banner_widget_description">Shows the featured gacha banner — art, Featured 4★s, and a button to play the convene animation</string>
     <string name="banner_widget_play_aria">Play convene animation</string>
     <string name="convene_widget_playback_error">Couldn\'t play the convene animation — check your connection</string>
+    <string name="widget_pull_x1">×1</string>
+    <string name="widget_pull_x10">×10</string>
+    <string name="widget_pull_results_title">%1$d× Pull Result</string>
+    <string name="widget_pull_disclaimer">Simulated for preview only — does not spend Astrite/Tides or affect your tracked pity.</string>
 </resources>

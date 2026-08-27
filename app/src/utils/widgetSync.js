@@ -19,6 +19,8 @@
 
 import { Preferences } from '@capacitor/preferences';
 import { getLocalizedEvents, DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../data/banners.js';
+import { STANDARD_5STAR_CHARACTERS, ALL_4STAR_RESONATORS } from '../data/characters.js';
+import { WEAPON_DATA } from '../data/weapons.js';
 import { getServerAdjustedEnd } from '../core/time.js';
 import { getLocale } from '../utils/i18n.js';
 
@@ -110,7 +112,43 @@ export async function syncBannerWidget(activeBanners) {
     } else {
       await Preferences.remove({ key: 'widget_banner_convene_url' });
     }
+
+    await syncPullSimPools(item);
   } catch (err) {
     console.warn('Banner widget sync failed:', err);
   }
+}
+
+// Feeds WidgetPullSimulator.java (the widget's own ×1/×10 buttons) with
+// everything it needs to roll a pull entirely natively, with no app launch
+// involved: the full (unsliced — odds depend on the real count, unlike the
+// 3-thumbnail preview above) featured-4★ list, the three static name pools
+// core/conveneSimulator.js draws from for a character banner (standard
+// 5★s, off-rate 4★ characters+weapons, 3★ weapons), and one combined
+// name->asset map covering every name across all of those plus the
+// featured character — everything the native result screen could ever
+// need a portrait for. Kept as plain JSON the pools/images this app
+// already computes in JS, rather than also hand-porting these same name
+// lists into Java where they'd inevitably drift out of sync with
+// characters.js/weapons.js over time — only the roll *math* (pity curve,
+// 50/50, guarantee) is duplicated in WidgetPullSimulator.java, not the data.
+async function syncPullSimPools(item) {
+  await Preferences.set({ key: 'widget_pull_featured4', value: JSON.stringify(item.featured4Stars || []) });
+
+  const standard5 = [...STANDARD_5STAR_CHARACTERS];
+  const fourStarWeapons = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 4);
+  const threeStarWeapons = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 3 && n !== 'Beguiling Melody');
+
+  await Preferences.set({ key: 'widget_pull_pool_standard5', value: JSON.stringify(standard5) });
+  await Preferences.set({ key: 'widget_pull_pool_4star_chars', value: JSON.stringify(ALL_4STAR_RESONATORS) });
+  await Preferences.set({ key: 'widget_pull_pool_4star_weapons', value: JSON.stringify(fourStarWeapons) });
+  await Preferences.set({ key: 'widget_pull_pool_3star_weapons', value: JSON.stringify(threeStarWeapons) });
+
+  const assetMap = {};
+  const allNames = [item.name, ...(item.featured4Stars || []), ...standard5, ...ALL_4STAR_RESONATORS, ...fourStarWeapons, ...threeStarWeapons];
+  for (const name of allNames) {
+    const asset = stripRelative(DEFAULT_COLLECTION_IMAGES[name]);
+    if (asset) assetMap[name] = asset;
+  }
+  await Preferences.set({ key: 'widget_pull_asset_map', value: JSON.stringify(assetMap) });
 }
