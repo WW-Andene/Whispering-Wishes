@@ -163,8 +163,7 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
 
   const openDetail = (result) => {
     if (!result.name) return;
-    const type = result.rarity === 3 || isWeaponKind ? 'weapon' : 'character';
-    setDetailModal?.({ show: true, type, name: result.name, imageUrl: DEFAULT_COLLECTION_IMAGES[result.name], framing: getImageFraming(`collection-${result.name}`) });
+    setDetailModal?.({ show: true, type: result.type, name: result.name, imageUrl: DEFAULT_COLLECTION_IMAGES[result.name], framing: getImageFraming(`collection-${result.name}`) });
   };
 
   return (

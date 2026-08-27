@@ -22,18 +22,27 @@
 //
 // 4★ rate-up also carries a guarantee, mirroring the 5★ system — losing
 // the 4★ "50/50" (i.e. the 4★ wasn't one of the banner's rate-up trio)
-// guarantees the next 4★ hit is a rate-up one. This matches gachaRates.js's
-// own AVG_4STAR_PULLS_PER_FEATURED=1.5 constant, which only makes sense
-// under a 50%-with-guarantee system (a flat, memoryless 50% chance would
-// average 2 hits per rate-up copy, not 1.5).
+// guarantees the next 4★ hit is a rate-up one. Confirmed exact wording
+// (user-supplied, from a per-banner drop-rate reference page): "There is a
+// 50% chance to get one of the rate-up 4-star character or weapon for
+// every 10 convenes. Losing the 50% to an off-rate character or weapon
+// will guarantee the rate-up character on your next 4-star pull!"
 //
-// 3★ resolution is the least-verified part of this simulator: WEAPON_DATA's
-// rarity-3 entries are all documented as craft-only (Guardian/Voyager/
-// Night/Originite series) or quest rewards (Beguiling Melody) — none are
-// annotated anywhere in this codebase as actual convene drops. Picking a
-// name from that pool for a 3★ pull could show an item that was never a
-// real gacha result. Flagged in the audit that introduced this comment;
-// pending a confirmed real drop list, 3★ results have no specific name.
+// 4★ off-rate pool is CHARACTERS AND WEAPONS COMBINED, on every banner
+// kind — confirmed by the same reference page: Qingxiao's Character
+// Convene (a resonator banner) lists both an off-rate *character* pool
+// (9 names — exactly ALL_4STAR_RESONATORS minus that banner's 3 rate-up)
+// and a full 21-entry 4★ *weapon* drop list, meaning a character banner
+// can drop 4★ weapons and (by symmetry) a weapon banner can drop 4★
+// characters. Previously this only drew from the matching-type pool.
+//
+// 3★ pool confirmed (same reference page, exact 15-weapon list for
+// Qingxiao's banner): the Voyager, Night, and Originite series — NOT the
+// Guardian series (in-file documented as "Craftable in Jinzhou") or
+// Beguiling Melody ("Quest Reward"), which are excluded below by name.
+// Rate confirmed too: 5★ 0.8%, 4★ 6.0% flat, 3★ takes the 93.2%
+// remainder — exactly BASE_5STAR_RATE/FLAT_4STAR_RATE below, validating
+// both as correct rather than estimates.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { ALL_4STAR_RESONATORS, STANDARD_5STAR_CHARACTERS } from '../data/characters.js';
@@ -45,12 +54,9 @@ const SOFT_PITY_START = 66;
 const HARD_PITY = 80;
 const SOFT_PITY_STEPS = HARD_PITY - SOFT_PITY_START;
 const HARD_PITY_4STAR = 10;
-// Below its own pity, 4★ has no official flat rate published — 6% is the
-// commonly cited community estimate (consistent with AVG_PULLS_PER_4STAR
-// ≈ 7.69 in gachaRates.js). Best-effort, see file header.
-const FLAT_4STAR_RATE = 0.06;
+const FLAT_4STAR_RATE = 0.06; // 6.0% flat, confirmed — see file header
 // 4★ rate-up "50/50" chance per hit before the guarantee kicks in — see
-// file header (AVG_4STAR_PULLS_PER_FEATURED=1.5 implies exactly this).
+// file header for the confirmed exact mechanic wording.
 const FOUR_STAR_RATEUP_CHANCE = 0.5;
 
 const getPullRate5 = (pity) => {
@@ -61,6 +67,11 @@ const getPullRate5 = (pity) => {
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const ALL_4STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 4);
+// Confirmed convene-drop 3★ weapons (see file header) — the Guardian
+// series and Beguiling Melody are craft/quest-only and excluded.
+const CONVENE_3STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n =>
+  WEAPON_DATA[n].rarity === 3 && !n.startsWith('Guardian ') && n !== 'Beguiling Melody'
+);
 
 /**
  * @param {object} opts
@@ -72,11 +83,12 @@ const ALL_4STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].ra
  * @param {number} [opts.startPity4]
  * @param {boolean} [opts.startGuaranteed] - live 50/50-loss guarantee flag (character banner only)
  * @param {boolean} [opts.startGuaranteed4] - live 4★-rate-up-loss guarantee flag (character/weapon only)
- * @returns {{ results: Array<{name: string|null, rarity: 3|4|5, isFeatured: boolean, pity?: number, won50?: boolean|null}>, video: 'common'|'4star'|'5star' }}
+ * @returns {{ results: Array<{name: string|null, rarity: 3|4|5, type: 'character'|'weapon', isFeatured: boolean, pity?: number, won50?: boolean|null}>, video: 'common'|'4star'|'5star' }}
  */
 export function simulateConvenePulls({ count, kind, featuredNames = [], featured4Stars = [], startPity5 = 0, startPity4 = 0, startGuaranteed = false, startGuaranteed4 = false }) {
   const isWeapon = kind === 'weapon' || kind === 'standardWeap';
   const isStandard = kind === 'standardChar' || kind === 'standardWeap';
+  const featuredType = isWeapon ? 'weapon' : 'character';
 
   // 50/50-loss pool — always the fixed standard roster, never "every other
   // released 5★" (see file header). Only reachable for character banners;
@@ -84,7 +96,14 @@ export function simulateConvenePulls({ count, kind, featuredNames = [], featured
   // rate-up/loss concept at all.
   const standardPool5 = isWeapon ? CURRENT_BANNERS.standardWeapons.map(w => w.name) : [...STANDARD_5STAR_CHARACTERS];
   const pool4RateUp = isStandard ? [] : featured4Stars;
-  const pool4Rest = (isWeapon ? ALL_4STAR_WEAPONS : ALL_4STAR_RESONATORS).filter(n => !featured4Stars.includes(n));
+  // Off-rate 4★ pool is characters AND weapons combined, on every banner
+  // kind — see file header (confirmed via Qingxiao's, a character banner,
+  // own 4★ weapon drop list). Tagged with type so a cross-type result
+  // (e.g. a weapon on a character banner) is still labeled correctly.
+  const pool4Rest = [
+    ...ALL_4STAR_RESONATORS.map(name => ({ name, type: 'character' })),
+    ...ALL_4STAR_WEAPONS.map(name => ({ name, type: 'weapon' })),
+  ].filter(x => !featured4Stars.includes(x.name));
 
   let pity5 = startPity5, pity4 = startPity4;
   let guaranteed = isStandard ? false : startGuaranteed;
@@ -92,11 +111,15 @@ export function simulateConvenePulls({ count, kind, featuredNames = [], featured
   const results = [];
 
   const rollFourStar = () => {
-    if (pool4RateUp.length === 0) return { name: pick(pool4Rest), rarity: 4, isFeatured: false };
+    if (pool4RateUp.length === 0) {
+      const off = pick(pool4Rest);
+      return { name: off.name, rarity: 4, type: off.type, isFeatured: false };
+    }
     const rateUp = guaranteed4 || Math.random() < FOUR_STAR_RATEUP_CHANCE;
     guaranteed4 = rateUp ? false : true;
-    const name = rateUp ? pick(pool4RateUp) : pick(pool4Rest.length ? pool4Rest : pool4RateUp);
-    return { name, rarity: 4, isFeatured: rateUp };
+    if (rateUp) return { name: pick(pool4RateUp), rarity: 4, type: featuredType, isFeatured: true };
+    const off = pool4Rest.length ? pick(pool4Rest) : { name: pick(pool4RateUp), type: featuredType };
+    return { name: off.name, rarity: 4, type: off.type, isFeatured: false };
   };
 
   for (let i = 0; i < count; i++) {
@@ -118,14 +141,15 @@ export function simulateConvenePulls({ count, kind, featuredNames = [], featured
       } else {
         name = pick(standardPool5); isFeatured = false; won50 = false; guaranteed = true;
       }
-      results.push({ name, rarity: 5, isFeatured, pity: pity5, won50 });
+      // 5★ pools never cross type (confirmed: "no 5-star weapons on
+      // Qingxiao's [character] banner") — always this banner's own type.
+      results.push({ name, rarity: 5, type: featuredType, isFeatured, pity: pity5, won50 });
       pity5 = 0; pity4 = 0; // a 5★ also satisfies the 4★ pity window
     } else if (pity4 >= HARD_PITY_4STAR || Math.random() < FLAT_4STAR_RATE) {
       results.push(rollFourStar());
       pity4 = 0;
     } else {
-      // See file header — no confirmed real convene drop list for 3★s yet.
-      results.push({ name: null, rarity: 3, isFeatured: false });
+      results.push({ name: pick(CONVENE_3STAR_WEAPONS), rarity: 3, type: 'weapon', isFeatured: false });
     }
   }
 

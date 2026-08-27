@@ -53,11 +53,11 @@ export function useConveneSimStats(kind) {
       };
       next.totalPulls += count;
       if (count === 1) next.x1Pulls += 1; else next.x10Pulls += 1;
-      const isWeaponKind = kind === 'weapon' || kind === 'standardWeap';
       for (const r of sim.results) {
-        // 3★ pulls are always weapons regardless of banner kind (see
-        // conveneSimulator.js) — everything else follows the banner kind.
-        if (r.rarity === 3 || isWeaponKind) {
+        // Each result carries its own type now — a 4★ can be a weapon on a
+        // character banner or vice versa (see conveneSimulator.js), so this
+        // can no longer be inferred from the banner kind alone.
+        if (r.type === 'weapon') {
           next.weaponsByRarity[r.rarity] = (next.weaponsByRarity[r.rarity] || 0) + 1;
         } else {
           next.charactersByRarity[r.rarity] = (next.charactersByRarity[r.rarity] || 0) + 1;
