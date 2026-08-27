@@ -38,19 +38,23 @@ const FullSpineViewerButton = ({ name, imageUrl, className = '', variant = 'butt
               scale/position pipeline either way, so the static and
               animated states now look consistent by construction instead
               of by separately tuning two different renderers.
-              scale 1.4 / ty 14 (2026-08-27): raises the framing ~20% —
-              enough overhang at this scale for the shift not to expose any
-              empty edge (top = 50*(1-scale) + ty*scale ≈ 0%, right at the
-              limit). Tune further via the admin Spine panel if needed. */}
+              No zoom (scale 1, as requested) + ty -20 to raise the figure
+              20%. Per SpinePlayer.jsx's own fit math, positive ty is a
+              translateY(+ty%) equivalent (moves content DOWN, opening a
+              gap at top) — a first attempt used +14 and got exactly that
+              backwards result. Negative ty moves it up instead, opening a
+              gap at the BOTTOM instead of the top — left as-is since the
+              tile's own aspect ratio is getting shortened separately to
+              absorb that gap rather than compensating for it here. */}
           <SpinePlayer
             characterId={fullSpineId}
             context="full"
             paused={!tilePlaying}
             className="absolute inset-0"
             backgroundColor="#00000000"
-            scaleOverride={1.4}
+            scaleOverride={1}
             txOverride={0}
-            tyOverride={14}
+            tyOverride={-20}
             fallbackImgUrl={imageUrl}
             fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
           />
