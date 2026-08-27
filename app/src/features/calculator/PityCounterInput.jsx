@@ -26,11 +26,11 @@ const PityCounterInput = memo(({ label, pity, onPityChange, copies, maxCopies, o
     <div className="grid grid-cols-2 gap-2 text-base">
       <div className="flex items-center justify-between">
         <span style={{ color }}>5★ Target:</span>
-        <input type="text" inputMode="numeric" value={copies} onChange={e => { const v = parseInt(e.target.value, 10) || 1; onCopiesChange(Math.max(1, Math.min(maxCopies, v))); }} className="kuro-input kuro-input-sm" aria-label={`${ariaPrefix} 5-star copies`} />
+        <input type="text" inputMode="numeric" value={copies} onFocus={e => e.target.select()} onChange={e => { const v = parseInt(e.target.value, 10) || 1; onCopiesChange(Math.max(1, Math.min(maxCopies, v))); }} className="kuro-input kuro-input-sm" aria-label={`${ariaPrefix} 5-star copies`} />
       </div>
       <div className="flex items-center justify-between">
         <span className="text-purple-400">4★ Target:</span>
-        <input type="text" inputMode="numeric" value={fourStarCopies} onChange={e => { const v = parseInt(e.target.value, 10) || 0; onFourStarChange(Math.max(0, Math.min(maxFourStar, v))); }} className="kuro-input kuro-input-sm" aria-label={`${ariaPrefix} 4-star copies`} />
+        <input type="text" inputMode="numeric" value={fourStarCopies} onFocus={e => e.target.select()} onChange={e => { const v = parseInt(e.target.value, 10) || 0; onFourStarChange(Math.max(0, Math.min(maxFourStar, v))); }} className="kuro-input kuro-input-sm" aria-label={`${ariaPrefix} 4-star copies`} />
       </div>
     </div>
   </div>
