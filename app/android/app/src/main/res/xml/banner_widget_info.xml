@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- minWidth/minHeight follow Android's own widget grid formula
+     (70dp * cells - 30dp), not the web app's PerfectSuite scale — that
+     scale is scoped to the Tailwind/CSS web UI (see CLAUDE.md), and the
+     home-screen grid is a distinct system with its own fixed cell math.
+     4x2 cells — big enough to show banner art, the Featured 4★ row, and
+     the ▶️ convene-animation button, mirroring BannerCard.jsx's own layout. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:previewImage="@mipmap/ic_launcher"
+    android:initialLayout="@layout/widget_banner"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:description="@string/banner_widget_description">
+</appwidget-provider>

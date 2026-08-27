@@ -194,5 +194,6 @@ public class MainActivity extends BridgeActivity {
         // mount/server change), so it's the natural place to ask for a
         // sooner update.
         EventCountdownWidget.requestUpdate(this);
+        BannerWidget.requestUpdate(this);
     }
 }
