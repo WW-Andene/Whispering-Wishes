@@ -78,6 +78,8 @@
     "resultsTitle": "{{count}}× Pull Result",
     "featuredBadge": "★",
     "skip": "Skip",
+    "targetWeaponLabel": "Target Weapon (tap to select)",
+    "targetWeaponHint": "Your next simulated 5★ will be guaranteed to be this weapon",
     "disclaimer": "Simulated for preview only — does not spend Astrite/Tides or affect your tracked pity.",
     "statsTitle": "Simulator Stats",
     "statsReset": "Reset",

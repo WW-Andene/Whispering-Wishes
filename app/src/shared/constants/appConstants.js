@@ -9,6 +9,7 @@ export const VISUAL_SETTINGS_KEY = 'whispering-wishes-visual-settings-v3';
 export const IMAGE_FRAMING_KEY = 'whispering-wishes-image-framing-v1';
 export const TROPHY_OVERRIDES_KEY = 'whispering-wishes-trophy-overrides-v1';
 export const CONVENE_SIM_STATS_KEY = 'whispering-wishes-convene-sim-stats-v1';
+export const STANDARD_WEAPON_TARGET_KEY = 'whispering-wishes-standard-weapon-target-v1';
 
 // ── Admin ────��──────────────────────���─────────────────────────────────────────
 export const ADMIN_SALT = 'whispering-wishes-v3-admin';

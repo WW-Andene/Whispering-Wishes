@@ -43,6 +43,15 @@
 // Rate confirmed too: 5★ 0.8%, 4★ 6.0% flat, 3★ takes the 93.2%
 // remainder — exactly BASE_5STAR_RATE/FLAT_4STAR_RATE below, validating
 // both as correct rather than estimates.
+//
+// Standard Weapon Convene ("Winter Brume") has its own mechanic, distinct
+// from every other banner here: the player picks a Target Weapon ahead of
+// time, and the very next 5★ pulled is 100% guaranteed to be it — not a
+// random pick from the pool, and not a 50/50 (source: official per-banner
+// rules page). featuredNames[0] carries that pick when kind==='standardWeap'
+// (see StandardBannerSection.jsx's target-weapon selector); falls back to
+// a random pick from the pool if no target has been chosen. Standard
+// Resonator Convene ("Tidal Chorus") has no such selection — always random.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { ALL_4STAR_RESONATORS, STANDARD_5STAR_CHARACTERS } from '../data/characters.js';
@@ -129,7 +138,15 @@ export function simulateConvenePulls({ count, kind, featuredNames = [], featured
       // guaranteed), null = no 50/50 concept here (weapon/standard banners,
       // or this hit itself was the guaranteed one from a prior loss).
       let name, isFeatured, won50;
-      if (isStandard) {
+      if (kind === 'standardWeap') {
+        // Winter Brume's "Target Weapon" system: pick one of the 11
+        // standard weapons ahead of time and the next 5★ is 100%
+        // guaranteed to be it (not a random pick from the pool) — no
+        // "50/50" involved at all, unlike the featured weapon banner's
+        // rate-up mechanic. Falls back to a random pick only if the
+        // player hasn't chosen a target yet.
+        name = featuredNames[0] ?? pick(standardPool5); isFeatured = false; won50 = null;
+      } else if (isStandard) {
         name = pick(standardPool5); isFeatured = false; won50 = null;
       } else if (isWeapon) {
         // Weapon banners have no 50/50 — every 5★ is the featured weapon.

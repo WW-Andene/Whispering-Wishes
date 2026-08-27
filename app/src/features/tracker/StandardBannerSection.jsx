@@ -11,6 +11,8 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
 import { ConvenePullPills } from '../../shared/components/ConvenePullPills.jsx';
 import { ConvenePullSimModal } from '../../shared/components/ConvenePullSimModal.jsx';
+import { storageAvailable } from '../../core/storage.js';
+import { STANDARD_WEAPON_TARGET_KEY } from '../../shared/constants/appConstants.js';
 import { t } from '../../utils/i18n.js';
 
 const StandardBannerOverlay = memo(() => {
@@ -136,6 +138,23 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
   const isFull = visualSettings?.animationsEnabled === 'full';
   const [pullSim, setPullSim] = useState(null);
   const [pullSimId, setPullSimId] = useState(0);
+  // Winter Brume's "Target Weapon" system (standardWeap only, see
+  // conveneSimulator.js's file header) — persisted so the pick survives
+  // between visits, same as a real Epitomized-Path-style selection would.
+  const [targetWeapon, setTargetWeapon] = useState(() => {
+    if (kind !== 'standardWeap' || !storageAvailable) return null;
+    try { return localStorage.getItem(STANDARD_WEAPON_TARGET_KEY) || null; } catch { return null; }
+  });
+  const selectTarget = (name) => {
+    const next = targetWeapon === name ? null : name;
+    setTargetWeapon(next);
+    if (storageAvailable) {
+      try {
+        if (next) localStorage.setItem(STANDARD_WEAPON_TARGET_KEY, next);
+        else localStorage.removeItem(STANDARD_WEAPON_TARGET_KEY);
+      } catch {}
+    }
+  };
   return (
     <div className="relative overflow-hidden rounded-xl border border-cyan-500/30 kuro-shadow-standard-banner" style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', zIndex: 5 }}>
       {bannerImage && (
@@ -161,6 +180,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
         onClose={() => setPullSim(null)}
         kind={kind}
         count={pullSim || 1}
+        featuredNames={targetWeapon ? [targetWeapon] : undefined}
         startPity5={profileData?.pity5 ?? 0}
         startPity4={profileData?.pity4 ?? 0}
         visualSettings={visualSettings}
@@ -174,9 +194,25 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <h4 className="font-bold text-xl text-white leading-tight">{title}</h4>
         </div>
         <div className={hasStats ? 'mb-14' : ''}>
-          <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Available 5★</div>
+          <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">
+            {kind === 'standardWeap' ? t('tracker.conveneSim.targetWeaponLabel') : 'Available 5★'}
+          </div>
           <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
-            {(items || []).map(item => <span key={typeof item === 'string' ? item : item[itemKey]} className="text-[8px] text-cyan-300 bg-cyan-500/30 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm">{typeof item === 'string' ? item : item[itemKey]}</span>)}
+            {(items || []).map(item => {
+              const name = typeof item === 'string' ? item : item[itemKey];
+              const selectable = kind === 'standardWeap';
+              const selected = selectable && targetWeapon === name;
+              return (
+                <span
+                  key={name}
+                  onClick={selectable ? (e) => { e.stopPropagation(); selectTarget(name); } : undefined}
+                  className={`text-[8px] px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm ${selectable ? 'cursor-pointer' : ''} ${selected ? 'bg-yellow-500 text-black font-bold' : 'text-cyan-300 bg-cyan-500/30'}`}
+                  title={selectable ? t('tracker.conveneSim.targetWeaponHint') : undefined}
+                >
+                  {selected && '★ '}{name}
+                </span>
+              );
+            })}
           </div>
         </div>
       </div>
