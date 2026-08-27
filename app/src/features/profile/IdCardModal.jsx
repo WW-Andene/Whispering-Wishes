@@ -155,8 +155,8 @@ export default function IdCardModal({
                               <div key={i} className="flex-1 flex flex-col items-center">
                                 <div className="w-full relative" style={{ height: '96px' }}>
                                   {cnt > 0 && (
-                                    <div className="absolute left-0 right-0 text-center font-bold"
-                                      className="kuro-number" style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: 'var(--space-xs)', color, textShadow: `0 0 8px ${color}` }}>
+                                    <div className="absolute left-0 right-0 text-center font-bold kuro-number"
+                                      style={{ fontSize: '8px', bottom: `${height}%`, marginBottom: 'var(--space-xs)', color, textShadow: `0 0 8px ${color}` }}>
                                       {cnt}
                                     </div>
                                   )}

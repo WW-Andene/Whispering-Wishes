@@ -44,31 +44,15 @@
     <link rel="dns-prefetch" href="https://i.ibb.co" />
     <link rel="dns-prefetch" href="https://i.imgur.com" />
     <link rel="dns-prefetch" href="https://cdn.discordapp.com" />
-    <!-- Spine player runtime (IIFE) — loaded from CDN for WebGL texture compatibility.
-         P3-02 audit fix: Subresource Integrity hashes pinned to version 4.2.109.
-         Regenerate on version bump:
-           curl -sSL "<url>" | openssl dgst -sha384 -binary | openssl base64 -A -->
-    <link rel="stylesheet"
-          href="https://unpkg.com/@esotericsoftware/spine-player@4.2.109/dist/spine-player.css"
-          integrity="sha384-SAzRnvZaanzeQyV9076wVkiVpz8Ps2uicu0yff7GJdBU2Pr65zYUg5tYbXT8Uzaz"
-          crossorigin="anonymous" />
-    <script src="https://unpkg.com/@esotericsoftware/spine-player@4.2.109/dist/iife/spine-player.js"
-            integrity="sha384-C2uhee9ZK7jve2lChHRuBQ0OqZjzZSNaxmRiBY9Y0fHA6yFLUZjPQyE7ogX3kJZg"
-            crossorigin="anonymous"></script>
-    <!-- Secondary spine-player runtime @4.1.55 for Spine 4.1-exported assets
-         (e.g. sprite-spine portraits from nanoka). Spine runtimes are not
-         backward-compatible across minor versions, so the 4.2 runtime above
-         cannot read a 4.1 .skel. We stash 4.2's globals, let 4.1 install onto
-         window.spine, then capture as window.spine41 and restore 4.2. Both
-         runtimes are loaded synchronously so SpinePlayer never has to wait
-         for a "ready" signal.
-         SRI regenerated via:
-           curl -sSL "<url>" | openssl dgst -sha384 -binary | openssl base64 -A -->
-    <script>window.__spine42 = window.spine; window.spine = undefined;</script>
-    <script src="https://unpkg.com/@esotericsoftware/spine-player@4.1.55/dist/iife/spine-player.js"
-            integrity="sha384-JmJJLCJBXRw87w7ce9AOcL7EqR8Km9mzuu0MDsbSaceHZEeB+0QstgcQ6a076u8Q"
-            crossorigin="anonymous"></script>
-    <script>window.spine41 = window.spine; window.spine = window.__spine42; delete window.__spine42;</script>
+    <!-- Spine player runtime <script> tags used to live here, in <head> — they're
+         synchronous, network-fetched (unpkg.com CDN, no local fallback), and were
+         parse-blocking, which meant the browser wouldn't even construct the boot
+         splash <video> in <body> below until those two external scripts finished
+         downloading. On a cold app launch (exactly when network is often still
+         settling), that delayed the "instant" video visibly. Moved to just after
+         the splash video's markup instead — same synchronous loading behavior
+         and ordering, just no longer gating the one thing that needs to start
+         immediately. See there for the full rationale/SRI regen instructions. -->
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
     </noscript>
@@ -97,6 +81,36 @@
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <video id="splash-video" src="./splash-intro.mp4" poster="./splash-intro-poster.jpg" preload="auto" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video>
     </div>
+    <!-- Spine player runtime (IIFE) — loaded from CDN for WebGL texture compatibility.
+         Moved here (was in <head>) so these synchronous, network-fetched scripts
+         don't block the browser from reaching/starting the boot splash video
+         above on a cold launch. Not needed until a Spine-animated character tab
+         is actually opened, well after boot, so parsing them this much later
+         costs nothing.
+         P3-02 audit fix: Subresource Integrity hashes pinned to version 4.2.109.
+         Regenerate on version bump:
+           curl -sSL "<url>" | openssl dgst -sha384 -binary | openssl base64 -A -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/@esotericsoftware/spine-player@4.2.109/dist/spine-player.css"
+          integrity="sha384-SAzRnvZaanzeQyV9076wVkiVpz8Ps2uicu0yff7GJdBU2Pr65zYUg5tYbXT8Uzaz"
+          crossorigin="anonymous" />
+    <script src="https://unpkg.com/@esotericsoftware/spine-player@4.2.109/dist/iife/spine-player.js"
+            integrity="sha384-C2uhee9ZK7jve2lChHRuBQ0OqZjzZSNaxmRiBY9Y0fHA6yFLUZjPQyE7ogX3kJZg"
+            crossorigin="anonymous"></script>
+    <!-- Secondary spine-player runtime @4.1.55 for Spine 4.1-exported assets
+         (e.g. sprite-spine portraits from nanoka). Spine runtimes are not
+         backward-compatible across minor versions, so the 4.2 runtime above
+         cannot read a 4.1 .skel. We stash 4.2's globals, let 4.1 install onto
+         window.spine, then capture as window.spine41 and restore 4.2. Both
+         runtimes are loaded synchronously so SpinePlayer never has to wait
+         for a "ready" signal.
+         SRI regenerated via:
+           curl -sSL "<url>" | openssl dgst -sha384 -binary | openssl base64 -A -->
+    <script>window.__spine42 = window.spine; window.spine = undefined;</script>
+    <script src="https://unpkg.com/@esotericsoftware/spine-player@4.1.55/dist/iife/spine-player.js"
+            integrity="sha384-JmJJLCJBXRw87w7ce9AOcL7EqR8Km9mzuu0MDsbSaceHZEeB+0QstgcQ6a076u8Q"
+            crossorigin="anonymous"></script>
+    <script>window.spine41 = window.spine; window.spine = window.__spine42; delete window.__spine42;</script>
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
     <script type="module" src="/src/main.jsx"></script>

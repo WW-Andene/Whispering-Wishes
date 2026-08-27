@@ -1,9 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — capacitor-build/build.mjs
 // Produces dist-native/ for the Capacitor (native app) build — a filtered copy
-// of the normal dist/ build that leaves out the four asset directories too
-// large to reasonably bundle into an app binary (map-tiles/, portraits/,
-// animated-bg/, spine/ — together ~1GB, vs a few MB for everything else).
+// of the normal dist/ build that leaves out the asset directories too large
+// to reasonably bundle into an app binary (map-tiles/, portraits/,
+// animated-bg/, spine/, convene-animations/ — together well over 1GB, vs a
+// few MB for everything else). convene-animations/ added 2026-08-27 once it
+// grew to ~40 per-character videos (~300MB+).
 // Those directories are still fetched at runtime, just from the hosted
 // deployment (VITE_API_BASE_URL / CAPACITOR_HOST_URL) instead of from local
 // files — patched into dist-native/sw.js below. Everything else (calculator,
@@ -57,7 +59,7 @@ if (!HOST_URL) {
 }
 
 // The four directories excluded from the native bundle — see file header.
-const EXCLUDED_DIRS = ['map-tiles', 'portraits', 'animated-bg', 'spine'];
+const EXCLUDED_DIRS = ['map-tiles', 'portraits', 'animated-bg', 'spine', 'convene-animations'];
 
 console.log('Building web bundle...');
 execSync('npm run build', { cwd: APP_ROOT, stdio: 'inherit', env: { ...process.env, VITE_API_BASE_URL: HOST_URL } });

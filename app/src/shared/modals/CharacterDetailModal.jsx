@@ -3,13 +3,13 @@
 // CharacterDetailModal
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
-import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
 import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { getSonataLoadouts } from '../../data/echoes.js';
-import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
@@ -19,6 +19,7 @@ import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
 import { FullSpineViewerButton } from '../components/FullSpineViewerButton.jsx';
+import { ConveneVideo } from '../components/ConveneVideoLayer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
@@ -86,8 +87,12 @@ const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filt
 
 const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData, visualSettings }) => {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
+  const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
+  const [assetBannerVideoPlaying, setAssetBannerVideoPlaying] = useState(false);
   const data = CHARACTER_DATA[name];
   if (!data) return null;
+  const conveneVideoUrl = getConveneAnimation(name);
+  const bannerArtUrl = getCharacterBannerArt(name);
 
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
   const bestWeapon = data.bestWeapon || null;
@@ -185,11 +190,29 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               )}
             </div>
           )}
+          {/* Convene video plays directly in the header itself (same spot as
+              the image/Spine layer above) rather than a separate modal —
+              matches BannerCard.jsx's treatment of the same ▶ button, fading
+              out over its last ~1.5s instead of cutting to the static image
+              (see ConveneVideoLayer.jsx). */}
+          {conveneVideoPlaying && conveneVideoUrl && (
+            <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setConveneVideoPlaying(false)} />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
-          <FullSpineViewerButton name={name} imageUrl={imageUrl} className="absolute bottom-3 right-3 z-20" />
+          {conveneVideoUrl ? (
+            <button
+              onClick={(e) => { e.stopPropagation(); setConveneVideoPlaying(p => !p); }}
+              className="kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center absolute bottom-3 right-3 z-20"
+              aria-label={conveneVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name })}
+            >
+              {conveneVideoPlaying ? <X size={14} /> : <Play size={12} className="fill-current ml-0.5" />}
+            </button>
+          ) : (
+            <FullSpineViewerButton name={name} imageUrl={imageUrl} className="absolute bottom-3 right-3 z-20" />
+          )}
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border} inline-flex items-center gap-1`}>
@@ -818,6 +841,61 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               ))}
             </div>
           </div>
+
+          {/* Assets — Sprite (▶ opens the same full Spine viewer as the
+              header's own button), Banner Art, and Banner Animation (the
+              convene video, playable right in its own tile). 2026-08-27:
+              starting with Qingxiao; every asset here is null-safe and
+              simply omits a tile when that character doesn't have it yet. */}
+          {(imageUrl || bannerArtUrl) && (
+            <div>
+              <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
+                <LayoutGrid size={14} className="text-gray-300" /> {t('modals.characterDetail.assetsSection')}
+              </h3>
+              {/* Vertical stack, not a row of forced-square crops — each tile
+                  keeps the aspect ratio its actual content is shot at: the
+                  Sprite is a tall full-body cutout (1:2, matching the full
+                  Spine viewer's own aspect), Banner Art/Animation are the
+                  wide gacha-banner crop (16:9, matching the theme picker's
+                  own background tiles in ProfileTab.jsx). */}
+              <div className="flex flex-col gap-2">
+                {/* Was aspect-[1/2] — shortened ~35% (1:2 -> 1:1.3) to
+                    crop off the bottom gap the -20% ty raise opened up,
+                    matching it back against the top. */}
+                {imageUrl && (
+                  <FullSpineViewerButton name={name} imageUrl={imageUrl} variant="tile" label={t('modals.characterDetail.assetSprite')} className="w-full aspect-[1/1.3]" />
+                )}
+                {/* Banner Art and Banner Animation fused into one tile — the
+                    art is what's shown either way, the video (when this
+                    character has one) just plays inline over it instead of
+                    getting a whole separate duplicate-art tile. */}
+                {bannerArtUrl && (
+                  <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-video">
+                    {assetBannerVideoPlaying ? (
+                      <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setAssetBannerVideoPlaying(false)} className="absolute inset-0" />
+                    ) : (
+                      <img src={bannerArtUrl} alt="" className="w-full h-full object-cover" onError={hideOnError} />
+                    )}
+                    {conveneVideoUrl && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setAssetBannerVideoPlaying(p => !p); }}
+                        className="absolute inset-0 flex items-center justify-center"
+                        aria-label={assetBannerVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name })}
+                      >
+                        {!assetBannerVideoPlaying && (
+                          <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+                            <Play size={12} className="fill-current text-white ml-0.5" />
+                          </div>
+                        )}
+                      </button>
+                    )}
+                    {!assetBannerVideoPlaying && <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg pointer-events-none">{t('modals.characterDetail.assetBanner')}</span>}
+
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
        </div>
       </div>

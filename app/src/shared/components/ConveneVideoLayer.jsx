@@ -1,0 +1,64 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — shared/components/ConveneVideoLayer.jsx
+// Shared "play a character's convene video in place" video element — the
+// fade-to-static-image-before-it-ends timing logic, used identically by
+// BannerCard.jsx (gacha banner card) and CharacterDetailModal.jsx (header).
+// Extracted once a second call site needed the exact same fade-out logic,
+// rather than duplicating it. Each caller keeps its own toggle button
+// inline (positioning/DOM-order needs differ per call site enough that
+// sharing that small a piece of JSX wasn't worth the indirection).
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+
+// How long before the clip actually ends its opacity starts easing to 0,
+// so playback doesn't just cut to the static image mid-frame — requested
+// explicitly as a 1-2s fade, not an instant stop.
+const FADE_OUT_SECONDS = 1.5;
+// Fade-in on start — requested "same but shorter", so noticeably quicker
+// than the fade-out rather than a matching 1.5s.
+const FADE_IN_SECONDS = 0.4;
+
+const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0' }) => {
+  const [visible, setVisible] = useState(false);
+  const [fadingOut, setFadingOut] = useState(false);
+  const firedRef = useRef(false);
+
+  // Starts at opacity 0 and transitions to 1 right after mount — setting
+  // both the initial and target opacity in the same render wouldn't
+  // animate, since there'd be nothing for the transition to interpolate
+  // from. One rAF is enough to let the browser paint the 0-opacity frame
+  // first.
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const handleTimeUpdate = useCallback((e) => {
+    const v = e.currentTarget;
+    if (!firedRef.current && v.duration && v.duration - v.currentTime <= FADE_OUT_SECONDS) {
+      firedRef.current = true;
+      setFadingOut(true);
+    }
+  }, []);
+
+  return (
+    <div className={className} style={zIndex != null ? { zIndex } : undefined}>
+      <video
+        key={videoUrl}
+        src={videoUrl}
+        className="w-full h-full object-cover"
+        style={{
+          opacity: fadingOut ? 0 : (visible ? 1 : 0),
+          transition: `opacity ${fadingOut ? FADE_OUT_SECONDS : FADE_IN_SECONDS}s linear`,
+        }}
+        autoPlay
+        playsInline
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={onEnded}
+      />
+    </div>
+  );
+};
+
+export { ConveneVideo };
