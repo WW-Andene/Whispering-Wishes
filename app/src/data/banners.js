@@ -1060,6 +1060,10 @@ const OTHER_BACKGROUNDS = [
   // ~29%, nav ~31%, bg centered) — a neutral starting framing since this specific
   // composition hasn't been hand-tuned against the real header/nav crop yet.
   { id: 'when-the-night-knocks', name: 'When the Night Knocks', art: './Background/When-the-Night-Knocks-Background.jpeg', pos: { header: '50% 29%', nav: '50% 31%', bg: '50% 50%' } },
+  // Hsin isn't released yet (no CHARACTER_DATA entry) — this is just the theme
+  // choice, same average pos as the entry above since neither has been
+  // hand-tuned against its real crop yet.
+  { id: 'hsin-banner', name: 'Hsin', art: './characters/hsin/Hsin_Banner.jpg', pos: { header: '50% 29%', nav: '50% 31%', bg: '50% 50%' } },
 ];
 
 // Animated (video) backgrounds — self-hosted under /animated-bg/. `art` is
