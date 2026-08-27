@@ -1,13 +1,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — OfflineAssetsCard
-// "Download for offline" for four categories: three local asset directories
-// the native (Capacitor) app build excludes from its bundle to stay a
+// "Download for offline" for every downloadable resource category
+// (ASSET_CATEGORY_LABELS in assetSW.js): all local asset directories the
+// native (Capacitor) app build excludes from its bundle to stay a
 // reasonable size (see CAPACITOR_APP.md) — character animations
-// (portraits/, spine/) and banner videos (animated-bg/) — plus every
-// character/weapon/echo/skill icon, which are hotlinked from third-party
-// hosts rather than shipped locally at all (see build-asset-manifest.mjs).
-// On the web build the local three are already served same-origin, so this
-// is equally useful there for anyone who wants the PWA to work fully
+// (portraits/, spine/), banner videos (animated-bg/), and every other
+// locally-shipped icon/art directory (characters/, banners/, echoes/,
+// materials/, misc-assets/, achievements/, ui-icons/) — plus whatever
+// character/weapon/echo/skill icons are still hotlinked from third-party
+// hosts rather than shipped locally (see build-asset-manifest.mjs).
+// On the web build the local directories are already served same-origin, so
+// this is equally useful there for anyone who wants the PWA to work fully
 // offline (e.g. before a flight) rather than lazily fetching art the first
 // time each screen is visited.
 //
