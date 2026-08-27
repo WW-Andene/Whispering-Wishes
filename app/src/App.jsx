@@ -82,7 +82,7 @@ import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storag
 import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
 import { t, formatDate, useAppLocale } from './utils/i18n.js';
 import { useIsReferenceDevice, useUiScale } from './hooks/useIsReferenceDevice.js';
-import { syncHomeScreenWidget, syncBannerWidget } from './utils/widgetSync.js';
+import { syncBannerWidget } from './utils/widgetSync.js';
 import { initGlassTouch } from './utils/glassTouch.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
@@ -190,10 +190,6 @@ function WhisperingWishesInner() {
       dispatch({ type: 'SET_SERVER', server: 'Europe' });
     }
   }, [state.server, toast]);
-  // Keep the Android home-screen widget's "next event ending" in sync — no-op on web
-  useEffect(() => {
-    syncHomeScreenWidget(state.server);
-  }, [state.server]);
   // Keep the Android home-screen banner widget (art, featured 4★s, convene
   // video) in sync with whichever character banner is currently featured —
   // no-op on web

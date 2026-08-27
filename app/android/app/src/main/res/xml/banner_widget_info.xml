@@ -16,5 +16,6 @@
     android:initialLayout="@layout/widget_banner"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
+    android:configure="cc.andene.whisperingwishes.BannerWidgetConfigureActivity"
     android:description="@string/banner_widget_description">
 </appwidget-provider>

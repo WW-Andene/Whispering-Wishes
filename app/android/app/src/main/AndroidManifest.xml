@@ -21,17 +21,6 @@
         </activity>
 
         <receiver
-            android:name=".EventCountdownWidget"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/event_countdown_widget_info" />
-        </receiver>
-
-        <receiver
             android:name=".BannerWidget"
             android:exported="false">
             <intent-filter>
@@ -57,6 +46,15 @@
             android:excludeFromRecents="true"
             android:launchMode="singleInstance"
             android:configChanges="orientation|screenSize" />
+
+        <activity
+            android:name=".BannerWidgetConfigureActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"

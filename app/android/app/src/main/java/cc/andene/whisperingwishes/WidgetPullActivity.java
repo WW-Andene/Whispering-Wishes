@@ -50,7 +50,9 @@ public class WidgetPullActivity extends Activity {
         setContentView(R.layout.activity_widget_pull);
 
         int count = getIntent().getIntExtra(EXTRA_COUNT, 1);
-        simResult = WidgetPullSimulator.roll(this, count);
+        String category = getIntent().getStringExtra(EXTRA_CATEGORY);
+        if (category == null) category = "character";
+        simResult = WidgetPullSimulator.roll(this, category, count);
 
         View root = findViewById(R.id.pull_root);
         root.setOnClickListener(v -> {
@@ -159,4 +161,5 @@ public class WidgetPullActivity extends Activity {
     }
 
     public static final String EXTRA_COUNT = "widget_pull_count";
+    public static final String EXTRA_CATEGORY = "widget_pull_category";
 }
