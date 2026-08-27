@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
-import { Info, X } from 'lucide-react';
+import { Info, X, Play } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banners.js';
@@ -15,7 +15,6 @@ import { CountdownTimer } from './CountdownTimer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
-import { ConveneVideoButton } from './ConveneVideoButton.jsx';
 import { t } from '../../utils/i18n.js';
 
 const BANNER_GRADIENT_MAP = {
@@ -84,6 +83,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
   const [spineFailed, setSpineFailed] = useState(false);
+  const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
 
   // Use unified mask generator
   const maskGradient = visualSettings
@@ -133,6 +133,24 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
             style={{ opacity: pictureOpacity }}
             backgroundColor="#00000000"
             onError={() => setSpineFailed(true)}
+          />
+        </div>
+      )}
+
+      {/* Convene video plays directly in the banner itself (in place of the
+          static image/Spine layer) rather than opening a separate modal —
+          same card, same frame, just swapping what's showing in it. z-index
+          3 so it sits above both the image and Spine layers but still below
+          the text overlay (z-10) and the play/stop button (z-20). */}
+      {conveneVideoPlaying && conveneVideoUrl && (
+        <div className="absolute inset-0" style={{ zIndex: 3 }}>
+          <video
+            key={conveneVideoUrl}
+            src={conveneVideoUrl}
+            className="w-full h-full object-cover"
+            autoPlay
+            playsInline
+            onEnded={() => setConveneVideoPlaying(false)}
           />
         </div>
       )}
@@ -195,7 +213,15 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
       </div>
       
       {isChar && (conveneVideoUrl
-        ? <ConveneVideoButton name={item.name} videoUrl={conveneVideoUrl} className="absolute bottom-2 right-2 z-20" />
+        ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); setConveneVideoPlaying(p => !p); }}
+            className="kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center absolute bottom-2 right-2 z-20"
+            aria-label={conveneVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name: item.name })}
+          >
+            {conveneVideoPlaying ? <X size={14} /> : <Play size={12} className="fill-current ml-0.5" />}
+          </button>
+        )
         : <FullSpineViewerButton name={item.name} imageUrl={imgUrl} className="absolute bottom-2 right-2 z-20" />
       )}
     </div>

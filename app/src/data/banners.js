@@ -1247,12 +1247,13 @@ ANIMATED_BACKGROUNDS.sort((a, b) => b.version - a.version);
 // ══════════════════════════════════════════════════════════════════════════════
 // CONVENE ANIMATIONS — per-character "featured convene" showcase video,
 // keyed by character name. 2026-08-27: the ▶ button on a character's own
-// gacha banner card (BannerCard.jsx, previously FullSpineViewerButton —
-// opened the generic full-body Spine viewer) now plays this video instead
-// when one exists for that character, via ConveneVideoButton.jsx. Falls
-// back to the Spine viewer for every character not listed here yet — this
-// starts with just Qingxiao (user-supplied clip) and is meant to be filled
-// in per-character over time, not a full replacement on day one.
+// gacha banner card (BannerCard.jsx, previously always opening the generic
+// full-body Spine viewer via FullSpineViewerButton) now plays this video
+// instead, directly in place within the banner card itself (not a separate
+// modal), when one exists for that character. Falls back to the Spine
+// viewer for every character not listed here yet — this starts with just
+// Qingxiao (user-supplied clip) and is meant to be filled in per-character
+// over time, not a full replacement on day one.
 // ══════════════════════════════════════════════════════════════════════════════
 const CONVENE_ANIMATIONS = {
   Qingxiao: './convene-animations/qingxiao-convene.mp4',
