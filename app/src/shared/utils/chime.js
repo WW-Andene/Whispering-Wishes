@@ -6,7 +6,10 @@
 // one-at-a-time convene sim flow.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const CHIME_URL = '/convene-sim/item-reveal-chime.mp3';
+// Vite's base is './' (relative) so the app can be served from a subpath or
+// loaded via file:// in the native build — an absolute leading-slash URL
+// 404s in both cases, which is why the chime was silent.
+const CHIME_URL = `${import.meta.env.BASE_URL || './'}convene-sim/item-reveal-chime.mp3`;
 
 /**
  * Plays the item-reveal sound. No-op if playback is unavailable/blocked

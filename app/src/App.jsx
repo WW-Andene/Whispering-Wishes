@@ -30,6 +30,7 @@ import { calculateLuckRating } from './shared/utils/luckRating.js';
 import { IMPORT_NAME_ALIASES } from './utils/gachaImporter.js';
 // --- extracted hooks ---
 import { useVisualSettings, DEFAULT_VISUAL_SETTINGS } from './hooks/useVisualSettings.js';
+import { useAmbientMusic } from './hooks/useAmbientMusic.js';
 import { useBackgroundFraming } from './hooks/useBackgroundFraming.js';
 import { useCollectionImages, COLLECTION_IMAGES_KEY } from './hooks/useCollectionImages.js';
 import { useTabNavigation } from './hooks/useTabNavigation.js';
@@ -203,7 +204,8 @@ function WhisperingWishesInner() {
   
   // ── Extracted hooks ──────────────────────────────────────────────────────
   const { visualSettings, setVisualSettings, saveVisualSettings } = useVisualSettings();
-  
+  useAmbientMusic(visualSettings);
+
   
 
   // Image framing — provided by ImageFramingProvider context

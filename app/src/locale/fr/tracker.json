@@ -84,13 +84,14 @@
     "disclaimer": "Simulation à titre d'aperçu uniquement — ne dépense pas d'Astrite/Marées et n'affecte pas votre pitié suivie.",
     "statsTitle": "Statistiques du simulateur",
     "statsReset": "Réinitialiser",
-    "statsCurrentPity": "Pitié simulée actuelle",
+    "statsPity5Label": "Pitié 5★",
+    "statsPity4Label": "Pitié 4★",
     "statsTotalPulls": "Tirages totaux",
     "statsPullBreakdown": "Répartition des tirages",
     "statsWeapons": "Armes obtenues",
     "statsCharacters": "Résonateurs obtenus",
-    "stats5050": "50/50",
-    "stats5050Value": "{{won}} gagnés / {{lost}} perdus",
+    "stats50Won": "50/50 gagnés",
+    "stats50Lost": "50/50 perdus",
     "statsAvgPity5": "Tirages moy. par 5★"
   }
 }

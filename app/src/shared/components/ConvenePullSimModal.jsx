@@ -4,12 +4,14 @@
 // convene-sim video for the best rarity rolled (public/convene-sim/
 // {common,4star,5star}.mp4), then reveals the 1 or 10 items ONE AT A TIME
 // — full-size icon, tap-to-continue, like a real convene or a trading-card
-// unboxing rather than a stat sheet dumped all at once. If the item being
-// revealed is a 4★/5★ character with its own convene clip (public/
-// convene-animations/, same asset as BannerCard's ▶️ preview), that video
-// plays first — right as we arrive at THAT item's turn, not eagerly after
-// the rarity clip — then the item itself reveals. A Skip button (visible
-// during either video) jumps straight to the summary. Each item's reveal
+// unboxing rather than a stat sheet dumped all at once. A 5★ item's turn
+// additionally opens with a reveal beat (public/convene-sim/5star-reveal.mp4)
+// before anything else. If the item being revealed is a 4★/5★ character
+// with its own convene clip (public/convene-animations/, same asset as
+// BannerCard's ▶️ preview), that video plays next — right as we arrive at
+// THAT item's turn, not eagerly after the rarity clip — then the item
+// itself reveals. A Skip button (visible during any video) jumps straight
+// to the summary. Each item's reveal
 // plays a small chime (chime.js — public/convene-sim/item-reveal-chime.mp3).
 // After the
 // last item, a summary screen shows every result at a glance plus a
@@ -22,7 +24,7 @@
 // from the real tracked pity/history.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { ConveneVideo } from './ConveneVideoLayer.jsx';
@@ -39,6 +41,18 @@ const VIDEO_SRC = {
   '4star': './convene-sim/4star.mp4',
   '5star': './convene-sim/5star.mp4',
 };
+
+// Plays right as a 5★ item's own turn comes up, BEFORE that item's character
+// convene clip (itemVideoFor) — a short "light gathering" reveal beat that
+// precedes the character-specific animation, same pacing idea as the
+// rarity video preceding the item-by-item reveal.
+const FIVE_STAR_REVEAL_SRC = './convene-sim/5star-reveal.mp4';
+
+// Background music loop for the whole modal (public/audio/convene-screen.m4a)
+// — separate from the rarity/item videos' own audio, gated on both the
+// master sound toggle and its own Sound-section switch.
+const CONVENE_MUSIC_SRC = './audio/convene-screen.m4a';
+const CONVENE_MUSIC_VOLUME = 0.25;
 
 // +20% past the HTML5 <video> element's normal 100% ceiling (ConveneVideoLayer's
 // GainNode boost) — the 5★ rarity clip and a 5★'s own character convene clip
@@ -146,40 +160,65 @@ const ItemRevealFull = ({ result, getImageFraming }) => {
   );
 };
 
-// Persistent per-banner summary (useConveneSimStats) — "Reset" clears only
-// this banner kind's simulator tally, never anything in state.profile.
-const StatRow = ({ label, value }) => (
-  <div className="flex items-center justify-between">
-    <span className="text-gray-400 text-sm">{label}</span>
-    <span className="text-gray-100 text-sm font-medium kuro-number">{value}</span>
+// Small labeled stat tile — reuses the app's .kuro-stat card (same
+// component CalculatorTab's results grid is built from) instead of a flat
+// label/value row list, so the simulator's summary reads as a proper stat
+// dashboard rather than a settings-style list.
+const StatTile = ({ accentClass, value, label, wide }) => (
+  <div className={`kuro-stat ${accentClass} ${wide ? 'col-span-2' : ''}`}>
+    <div className="kuro-number text-gray-100 text-lg font-extrabold">{value}</div>
+    <div className="text-gray-400 text-2xs mt-0.5 leading-tight">{label}</div>
   </div>
 );
 
+// Persistent per-banner summary (useConveneSimStats) — "Reset" clears only
+// this banner kind's simulator tally, never anything in state.profile.
 const ConveneSimStatsSummary = ({ stats, onReset }) => {
   const avgPity5 = stats.fiveStarCount > 0 ? (stats.fiveStarPitySum / stats.fiveStarCount).toFixed(1) : '—';
   return (
-    <div className="mt-3 pt-3 border-t border-white/10 space-y-1.5">
-      <div className="flex items-center justify-between mb-1">
+    <div className="mt-3 pt-3 border-t border-white/10">
+      <div className="flex items-center justify-between mb-2">
         <span className="text-gray-300 text-sm font-semibold uppercase tracking-wider">{t('tracker.conveneSim.statsTitle')}</span>
         <button type="button" onClick={onReset} className="kuro-btn kuro-btn-sm">{t('tracker.conveneSim.statsReset')}</button>
       </div>
-      <StatRow label={t('tracker.conveneSim.statsCurrentPity')} value={`5★ ${stats.pity5}/${HARD_PITY} · 4★ ${stats.pity4}/${HARD_PITY_4STAR}`} />
-      <StatRow label={t('tracker.conveneSim.statsTotalPulls')} value={stats.totalPulls} />
-      <StatRow label={t('tracker.conveneSim.statsPullBreakdown')} value={`×1: ${stats.x1Pulls} · ×10: ${stats.x10Pulls}`} />
-      <StatRow label={t('tracker.conveneSim.statsWeapons')} value={`5★ ${stats.weaponsByRarity[5]} · 4★ ${stats.weaponsByRarity[4]} · 3★ ${stats.weaponsByRarity[3]}`} />
-      <StatRow label={t('tracker.conveneSim.statsCharacters')} value={`5★ ${stats.charactersByRarity[5]} · 4★ ${stats.charactersByRarity[4]}`} />
-      <StatRow label={t('tracker.conveneSim.stats5050')} value={t('tracker.conveneSim.stats5050Value', { won: stats.won50, lost: stats.lost50 })} />
-      <StatRow label={t('tracker.conveneSim.statsAvgPity5')} value={avgPity5} />
+      <div className="grid grid-cols-2 gap-2 text-center">
+        <StatTile accentClass="kuro-stat-gold" value={`${stats.pity5}/${HARD_PITY}`} label={t('tracker.conveneSim.statsPity5Label')} />
+        <StatTile accentClass="kuro-stat-purple" value={`${stats.pity4}/${HARD_PITY_4STAR}`} label={t('tracker.conveneSim.statsPity4Label')} />
+        <StatTile accentClass="kuro-stat-cyan" value={stats.totalPulls} label={t('tracker.conveneSim.statsTotalPulls')} />
+        <StatTile accentClass="kuro-stat-cyan" value={avgPity5} label={t('tracker.conveneSim.statsAvgPity5')} />
+        <StatTile accentClass="kuro-stat-emerald" value={stats.won50} label={t('tracker.conveneSim.stats50Won')} />
+        <StatTile accentClass="kuro-stat-red" value={stats.lost50} label={t('tracker.conveneSim.stats50Lost')} />
+        <StatTile accentClass="kuro-stat-gray" value={`×1 ${stats.x1Pulls} · ×10 ${stats.x10Pulls}`} label={t('tracker.conveneSim.statsPullBreakdown')} wide />
+        <StatTile accentClass="kuro-stat-pink" value={`5★${stats.weaponsByRarity[5]} 4★${stats.weaponsByRarity[4]} 3★${stats.weaponsByRarity[3]}`} label={t('tracker.conveneSim.statsWeapons')} wide />
+        <StatTile accentClass="kuro-stat-gold" value={`5★${stats.charactersByRarity[5]} 4★${stats.charactersByRarity[4]}`} label={t('tracker.conveneSim.statsCharacters')} wide />
+      </div>
     </div>
   );
 };
 
 const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, featured4Stars, startPity5, startPity4, startGuaranteed, startGuaranteed4, visualSettings, setDetailModal }) => {
-  const [phase, setPhase] = useState('rarity'); // 'rarity' | 'itemVideo' | 'itemReveal' | 'summary'
+  const [phase, setPhase] = useState('rarity'); // 'rarity' | 'fiveStarReveal' | 'itemVideo' | 'itemReveal' | 'summary'
   const [itemIndex, setItemIndex] = useState(0);
   const { getImageFraming } = useImageFramingContext();
   const muted = !visualSettings?.soundEnabled;
   const { stats, record, reset } = useConveneSimStats(kind);
+  const musicRef = useRef(null);
+
+  // Background music loop, independent of the rarity/item videos' own
+  // audio tracks — plays for as long as the modal is open, gated on both
+  // the master sound toggle and its own Sound-section switch.
+  useEffect(() => {
+    if (!isOpen || muted || !visualSettings?.conveneMusicEnabled) {
+      musicRef.current?.pause();
+      return;
+    }
+    const audio = musicRef.current || new Audio(new URL(CONVENE_MUSIC_SRC, window.location.href).href);
+    audio.loop = true;
+    audio.volume = CONVENE_MUSIC_VOLUME;
+    musicRef.current = audio;
+    audio.play().catch(() => {});
+    return () => { audio.pause(); };
+  }, [isOpen, muted, visualSettings?.conveneMusicEnabled]);
 
   // Simulated pity persists across pulls (useConveneSimStats) instead of
   // resetting to the real live pity every time — seeded from the real
@@ -210,13 +249,16 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
     if (isOpen) { setPhase('rarity'); setItemIndex(0); }
   }, [isOpen]);
 
-  // Advances to item `idx`'s turn — its own convene video first if it has
-  // one, otherwise straight to its full reveal. Past the last item, moves
-  // to the summary screen.
+  // Advances to item `idx`'s turn. A 5★ item gets the reveal beat
+  // (FIVE_STAR_REVEAL_SRC) first, then its own character convene video if
+  // it has one; other items go straight to their video (if any) or the
+  // full reveal. Past the last item, moves to the summary screen.
   const goToItem = useCallback((idx) => {
     if (!sim || idx >= sim.results.length) { setPhase('summary'); return; }
     setItemIndex(idx);
-    const hasVideo = itemVideoFor(sim.results[idx]);
+    const result = sim.results[idx];
+    const hasVideo = itemVideoFor(result);
+    if (result.rarity === 5) { setPhase('fiveStarReveal'); return; }
     setPhase(hasVideo ? 'itemVideo' : 'itemReveal');
     if (!hasVideo && !muted) playItemRevealChime();
   }, [sim, muted]);
@@ -227,6 +269,11 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   const currentItemVideoUrl = phase === 'itemVideo' ? itemVideoFor(currentResult) : null;
 
   const handleRarityEnded = () => goToItem(0);
+  const handleFiveStarRevealEnded = () => {
+    const hasVideo = itemVideoFor(currentResult);
+    setPhase(hasVideo ? 'itemVideo' : 'itemReveal');
+    if (!hasVideo && !muted) playItemRevealChime();
+  };
   const handleItemVideoEnded = () => {
     setPhase('itemReveal');
     if (!muted) playItemRevealChime();
@@ -248,6 +295,13 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
         {phase === 'rarity' && (
           <div className="relative aspect-square bg-black">
             <ConveneVideo videoUrl={VIDEO_SRC[sim.video]} onEnded={handleRarityEnded} onError={handleRarityEnded} muted={muted} gain={sim.video === '5star' ? FIVE_STAR_GAIN : 1} className="absolute inset-0" />
+            <button onClick={() => setPhase('summary')} className="kuro-btn kuro-btn-sm absolute bottom-3 right-3 z-20">{t('tracker.conveneSim.skip')}</button>
+          </div>
+        )}
+
+        {phase === 'fiveStarReveal' && (
+          <div className="relative aspect-square bg-black">
+            <ConveneVideo videoUrl={FIVE_STAR_REVEAL_SRC} onEnded={handleFiveStarRevealEnded} onError={handleFiveStarRevealEnded} muted={muted} gain={FIVE_STAR_GAIN} className="absolute inset-0" />
             <button onClick={() => setPhase('summary')} className="kuro-btn kuro-btn-sm absolute bottom-3 right-3 z-20">{t('tracker.conveneSim.skip')}</button>
           </div>
         )}

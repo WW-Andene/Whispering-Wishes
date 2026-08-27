@@ -143,9 +143,6 @@
     "swipeNavigationDesc": "Balayez à gauche/droite pour changer d'onglet",
     "toggleSwipe": "Activer/désactiver la navigation par balayage",
     "swipeActive": "Balayez à gauche ou à droite sur la zone de contenu pour naviguer",
-    "sound": "Son",
-    "soundDesc": "Joue le son sur la vidéo de démarrage et le simulateur de tirage convene",
-    "toggleSound": "Activer/désactiver le son",
     "animations": "Animations",
     "animationsDesc": "Effets d'arrière-plan, transitions et lueur",
     "animationsOff": "Désactivé - Aucune animation",
@@ -174,6 +171,21 @@
     "install": "Installer",
     "installSuccess": "Application installée avec succès !",
     "installed": "L'application est installée sur votre appareil"
+  },
+  "sound": {
+    "title": "Son",
+    "master": "Son",
+    "masterDesc": "Joue le son sur la vidéo de démarrage et le simulateur de tirage convene",
+    "toggleMaster": "Activer/désactiver le son",
+    "ambient": "Musique d'ambiance",
+    "ambientDesc": "Musique de fond en boucle pendant l'utilisation de l'application",
+    "trackOff": "Désactivée",
+    "track1": "Piste 1",
+    "track2": "Piste 2",
+    "track3": "Piste 3",
+    "convene": "Musique de Convier",
+    "conveneDesc": "Musique de fond pendant que le simulateur de tirage est ouvert",
+    "toggleConvene": "Activer/désactiver la musique de Convier"
   },
   "importInfo": {
     "title": "Informations d'importation",

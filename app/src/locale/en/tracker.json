@@ -84,13 +84,14 @@
     "disclaimer": "Simulated for preview only — does not spend Astrite/Tides or affect your tracked pity.",
     "statsTitle": "Simulator Stats",
     "statsReset": "Reset",
-    "statsCurrentPity": "Current simulated pity",
+    "statsPity5Label": "5★ pity",
+    "statsPity4Label": "4★ pity",
     "statsTotalPulls": "Total pulls",
     "statsPullBreakdown": "Pull breakdown",
     "statsWeapons": "Weapons obtained",
     "statsCharacters": "Resonators obtained",
-    "stats5050": "50/50",
-    "stats5050Value": "{{won}} won / {{lost}} lost",
+    "stats50Won": "50/50 won",
+    "stats50Lost": "50/50 lost",
     "statsAvgPity5": "Avg. pulls per 5★"
   }
 }

@@ -143,9 +143,6 @@
     "swipeNavigationDesc": "Swipe left/right to switch tabs",
     "toggleSwipe": "Toggle swipe navigation",
     "swipeActive": "Swipe left or right on content area to navigate",
-    "sound": "Sound",
-    "soundDesc": "Play sound on the boot video and convene pull simulator",
-    "toggleSound": "Toggle sound",
     "animations": "Animations",
     "animationsDesc": "Background effects, transitions & glow",
     "animationsOff": "Off - No animation at all",
@@ -174,6 +171,21 @@
     "install": "Install",
     "installSuccess": "App installed successfully!",
     "installed": "App is installed on your device"
+  },
+  "sound": {
+    "title": "Sound",
+    "master": "Sound",
+    "masterDesc": "Play sound on the boot video and convene pull simulator",
+    "toggleMaster": "Toggle sound",
+    "ambient": "Ambient Music",
+    "ambientDesc": "Background music loop while using the app",
+    "trackOff": "Off",
+    "track1": "Track 1",
+    "track2": "Track 2",
+    "track3": "Track 3",
+    "convene": "Convene Music",
+    "conveneDesc": "Background music while the pull simulator is open",
+    "toggleConvene": "Toggle convene music"
   },
   "importInfo": {
     "title": "Import Info",
