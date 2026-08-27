@@ -9,10 +9,12 @@
 // convene-animations/, same asset as BannerCard's ▶️ preview), that video
 // plays first — right as we arrive at THAT item's turn, not eagerly after
 // the rarity clip — then the item itself reveals. A Skip button (visible
-// during either video) jumps straight to the summary. After the last item,
-// a summary screen shows every result at a glance plus a persistent
-// per-banner-kind stats tally (useConveneSimStats.js, localStorage-backed)
-// with its own Reset button.
+// during either video) jumps straight to the summary. Each item's reveal
+// plays a small synthesized chime (chime.js — a bell tone plus a scatter of
+// sparkle ticks, built from Web Audio oscillators, no audio file). After the
+// last item, a summary screen shows every result at a glance plus a
+// persistent per-banner-kind stats tally (useConveneSimStats.js,
+// localStorage-backed) with its own Reset button.
 //
 // This is a display-only simulator (core/conveneSimulator.js) — no wallet
 // is spent, no pity/history is written to state.profile. The stats summary
@@ -29,6 +31,7 @@ import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banne
 import { hideOnError } from '../utils/imageHelpers.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useConveneSimStats } from '../../hooks/useConveneSimStats.js';
+import { playItemRevealChime } from '../utils/chime.js';
 import { t } from '../../utils/i18n.js';
 
 const VIDEO_SRC = {
@@ -200,8 +203,10 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   const goToItem = useCallback((idx) => {
     if (!sim || idx >= sim.results.length) { setPhase('summary'); return; }
     setItemIndex(idx);
-    setPhase(itemVideoFor(sim.results[idx]) ? 'itemVideo' : 'itemReveal');
-  }, [sim]);
+    const hasVideo = itemVideoFor(sim.results[idx]);
+    setPhase(hasVideo ? 'itemVideo' : 'itemReveal');
+    if (!hasVideo && !muted) playItemRevealChime();
+  }, [sim, muted]);
 
   if (!sim) return null;
 
@@ -209,7 +214,10 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   const currentItemVideoUrl = phase === 'itemVideo' ? itemVideoFor(currentResult) : null;
 
   const handleRarityEnded = () => goToItem(0);
-  const handleItemVideoEnded = () => setPhase('itemReveal');
+  const handleItemVideoEnded = () => {
+    setPhase('itemReveal');
+    if (!muted) playItemRevealChime();
+  };
   const handleItemTap = () => goToItem(itemIndex + 1);
 
   const openDetail = (result) => {
