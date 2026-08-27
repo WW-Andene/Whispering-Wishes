@@ -118,13 +118,18 @@ const PullResultTile = ({ result, getImageFraming, onOpenDetail }) => {
 const RARITY_GLOW_RGB = { 5: FIVE_STAR_GLOW_RGB, 4: '168,85,247', 3: '56,189,248' };
 
 // One-at-a-time full reveal — the icon fills the entire reveal stage (vs
-// the summary grid's small 48px tile), same object-contain + collection-
-// <name> framing so the sprite sits identically to everywhere else it's
-// shown. A quick white flash (keyed per item so it retriggers every
-// reveal) plus the rarity glow sell the "card flips face-up" moment.
+// the summary grid's small 48px tile). Characters show the raw sprite
+// (object-contain, no collection-<name> framing crop — that framing is
+// tuned for the app's square thumbnails and was clipping full-body art
+// here). Weapons keep the framing crop (their icons are meant to be zoomed
+// to that box), but the crop's hard edge is softened with a feathered mask
+// + a tiny blur (convene-weapon-feather, kuro.css) instead of a bare cutoff.
+// A quick white flash (keyed per item so it retriggers every reveal) plus
+// the rarity glow sell the "card flips face-up" moment.
 const ItemRevealFull = ({ result, getImageFraming }) => {
   const imgUrl = result.name ? DEFAULT_COLLECTION_IMAGES[result.name] : null;
-  const framing = result.name ? getImageFraming(`collection-${result.name}`) : null;
+  const isWeapon = result.type === 'weapon';
+  const framing = (isWeapon && result.name) ? getImageFraming(`collection-${result.name}`) : null;
   const glowRgb = RARITY_GLOW_RGB[result.rarity];
   return (
     <div
@@ -133,12 +138,12 @@ const ItemRevealFull = ({ result, getImageFraming }) => {
     >
       {imgUrl ? (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-[75%] h-[75%] overflow-hidden">
+          <div className={`relative w-[75%] h-[75%] overflow-hidden ${isWeapon ? 'convene-weapon-feather' : ''}`}>
             <img
               src={imgUrl}
               alt={result.name}
               className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-              style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
+              style={isWeapon ? { transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` } : undefined}
               onError={hideOnError}
             />
           </div>

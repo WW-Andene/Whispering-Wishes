@@ -81,18 +81,23 @@
          is ready, which read as its own distinct "first screen" glitching
          in before playback. No loop — main.jsx waits for the 'ended' event
          (with a timeout fallback in case autoplay is blocked) before
-         revealing the app underneath. -->
+         revealing the app underneath. Always muted — the clip's own audio
+         track is never played; the Log Screen ambient track (script below)
+         is the boot audio instead. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <video id="splash-video" src="./splash-intro.mp4" poster="./splash-intro-poster.jpg" preload="auto" autoplay muted playsinline disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen" style="width:100%;height:100%;object-fit:cover"></video>
     </div>
-    <!-- Unmute the boot video when the sound setting (Profile > Display,
-         visualSettings.soundEnabled, defaults true) allows it — has to run
-         as an inline script reading localStorage directly, synchronously,
-         before React (and useVisualSettings) has mounted. Runs right after
-         the video element so it sets `.muted` before playback actually
-         starts (autoplay only begins once enough data has buffered — this
-         script executes well before that). Browsers may still silently
-         block unmuted autoplay with no prior user gesture (platform
+    <!-- The boot video itself is always silent now (stays .muted — see the
+         <video> tag's muted attribute) — no unmuting. In its place, the
+         selected Log Screen ambient track (Profile > Display > Sound,
+         visualSettings.logScreenTrack, defaults '2') starts playing right
+         here at boot, synced with the splash video rather than only once
+         React mounts, and is handed off to useAmbientMusic.js (via
+         window.__bootAmbientAudio) so it continues seamlessly — no restart,
+         no gap — once the splash fades and React takes over managing it.
+         Has to run as an inline script reading localStorage directly,
+         synchronously, before React has mounted. Browsers may still
+         silently block autoplay with no prior user gesture (platform
          policy, not something this can override) — that's an accepted
          limitation, not a bug. -->
     <script>
@@ -101,9 +106,14 @@
           var raw = localStorage.getItem('whispering-wishes-visual-settings-v3');
           var settings = raw ? JSON.parse(raw) : null;
           var soundOn = !settings || settings.soundEnabled !== false;
-          if (soundOn) {
-            var v = document.getElementById('splash-video');
-            if (v) v.muted = false;
+          var track = (settings && settings.logScreenTrack) || '2';
+          if (soundOn && track !== 'off') {
+            var audio = new Audio('./audio/log-screen-' + track + '.m4a');
+            audio.loop = true;
+            audio.volume = 0.35;
+            audio.play().catch(function () {});
+            window.__bootAmbientAudio = audio;
+            window.__bootAmbientTrack = track;
           }
         } catch (e) {}
       })();

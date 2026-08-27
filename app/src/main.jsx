@@ -13,11 +13,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 // Reveal the app once the boot video has faded out — a fixed fallback delay
 // covers the case where autoplay is blocked or the video fails to load, so
 // the app never stays hidden behind a splash that isn't going anywhere.
+// The video itself is always silent (index.html keeps it .muted — the
+// ambient Log Screen track, started in index.html and handed off to
+// useAmbientMusic.js, is the audio now), so this fade is visual-only.
 const SPLASH_FALLBACK_MS = 6000;
-// Both the video's own opacity and its volume ramp to 0 over this window
-// BEFORE the clip's natural end, then the #splash wrapper fades out at the
-// same time — one continuous fade (picture + sound together) rather than
-// playing to an abrupt last-frame cut and only fading the wrapper after.
+// The video's opacity ramps to 0 over this window BEFORE the clip's natural
+// end, then the #splash wrapper fades out at the same time — one continuous
+// fade rather than playing to an abrupt last-frame cut.
 const SPLASH_FADE_SECONDS = 0.6;
 (() => {
   const splash = document.getElementById('splash');
@@ -46,10 +48,7 @@ const SPLASH_FADE_SECONDS = 0.6;
     video.addEventListener('timeupdate', () => {
       if (!video.duration) return;
       const remaining = video.duration - video.currentTime;
-      if (remaining <= SPLASH_FADE_SECONDS) {
-        beginFade();
-        if (!video.muted) video.volume = Math.max(0, remaining / SPLASH_FADE_SECONDS);
-      }
+      if (remaining <= SPLASH_FADE_SECONDS) beginFade();
     });
   }
   setTimeout(beginFade, SPLASH_FALLBACK_MS);

@@ -484,7 +484,20 @@
       0% { opacity: 0.85; }
       100% { opacity: 0; }
     }
-    
+
+    /* ConvenePullSimModal's item reveal — a weapon's icon is cropped/zoomed
+       to fill its box (unlike a character's raw sprite), so its box edge is
+       a hard cutoff. Feather it with a radial mask (fades to transparent
+       near the edge) plus a tiny blur on the image itself, so the crop
+       reads as a soft vignette instead of a bare clip line. */
+    .convene-weapon-feather {
+      mask-image: radial-gradient(circle at 50% 50%, black 70%, transparent 100%);
+      -webkit-mask-image: radial-gradient(circle at 50% 50%, black 70%, transparent 100%);
+    }
+    .convene-weapon-feather img {
+      filter: blur(1px);
+    }
+
     @keyframes borderGlow {
       0%, 100% { border-color: rgba(237, 175, 24, 0.5); }
       50% { border-color: rgba(237, 175, 24, 0.9); }

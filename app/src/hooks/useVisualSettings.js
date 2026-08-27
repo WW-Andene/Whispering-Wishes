@@ -38,10 +38,15 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   dyslexicFont: false,
   colorBlindMode: false,
   soundEnabled: true,
-  // Sound section (Profile > Display > Sound): 'off' or '1'/'2'/'3' — which
-  // of the 3 Log Screen ambient tracks (public/audio/log-screen-*.m4a)
-  // loops quietly in the background while the app is open.
-  logScreenTrack: 'off',
+  // Profile > Display > Sound: 'off' or '1'/'2'/'3' — which of the 3 Log
+  // Screen ambient tracks (public/audio/log-screen-*.m4a) loops quietly in
+  // the background while the app is open. Defaults to '2' ("2.0 Login
+  // Screen") — index.html starts this same track at boot (before React
+  // mounts) so it's already playing the instant the splash video appears,
+  // and useAmbientMusic.js adopts that same <audio> element rather than
+  // starting a second one, so it carries on with no restart/gap once React
+  // takes over.
+  logScreenTrack: '2',
   // Background music loop for the convene pull simulator modal (public/
   // audio/convene-screen.m4a) — independent of the master sound toggle's
   // videos/chime so it can be turned off on its own.

@@ -180,9 +180,9 @@
     "ambient": "Ambient Music",
     "ambientDesc": "Background music loop while using the app",
     "trackOff": "Off",
-    "track1": "Track 1",
-    "track2": "Track 2",
-    "track3": "Track 3",
+    "track1": "1.0 Login Screen",
+    "track2": "2.0 Login Screen",
+    "track3": "3.0 Login Screen",
     "convene": "Convene Music",
     "conveneDesc": "Background music while the pull simulator is open",
     "toggleConvene": "Toggle convene music"

@@ -4,6 +4,12 @@
 // muted via Profile > Display > Sound (visualSettings.logScreenTrack,
 // visualSettings.soundEnabled). A single <audio> element is reused across
 // track switches so playback doesn't restart just from a re-render.
+//
+// index.html already starts this same default track (window.__bootAmbientAudio)
+// synchronously at boot, before React mounts, so it's already playing under
+// the splash video. On first mount here we adopt that exact <audio> element
+// instead of creating a new one, so the track carries on with no restart or
+// gap once React takes over managing it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useRef } from 'react';
@@ -27,7 +33,7 @@ export function useAmbientMusic(visualSettings) {
 
   useEffect(() => {
     if (!audioRef.current) {
-      const audio = new Audio();
+      const audio = window.__bootAmbientAudio || new Audio();
       audio.loop = true;
       audio.volume = AMBIENT_VOLUME;
       audioRef.current = audio;

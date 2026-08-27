@@ -899,45 +899,14 @@ function ProfileTab({
                   </div>
                 </div>
 
-                {/* Install App on Device */}
-                {pwa?.canInstall && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-[30px] h-[30px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
-                        <Download size={16} />
-                      </div>
-                      <div>
-                        <div className="text-white text-base font-medium">{t('profile.display.installApp')}</div>
-                        <div className="text-gray-400 text-sm">{t('profile.display.installAppDesc')}</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        const accepted = await pwa.promptInstall();
-                        if (accepted) toast?.addToast?.(t('profile.display.installSuccess'), 'success');
-                      }}
-                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-base font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
-                    >
-                      {t('profile.display.install')}
-                    </button>
+                {/* Sound — subsection within Display Settings: master toggle
+                    + ambient/convene music tracks */}
+                <div className="pt-1 border-t border-white/10">
+                  <div className="flex items-center gap-2 text-gray-300 text-sm font-semibold uppercase tracking-wider mb-3 mt-3">
+                    <Music size={14} className="text-gray-400" /> {t('profile.sound.title')}
                   </div>
-                )}
-                {pwa?.isInstalled && (
-                  <p className="text-emerald-400 text-sm text-center">✓ {t('profile.display.installed')}</p>
-                )}
-              </CardBody>
-            </Card>
+                </div>
 
-            <ImportFlow
-              processImportData={processImportData}
-              toast={toast}
-            />
-            </div>{/* end desktop-grid-2 */}
-
-            {/* Sound Settings — master toggle + ambient/convene music tracks */}
-            <Card>
-              <CardHeader><Music size={14} className="text-gray-400" /> {t('profile.sound.title')}</CardHeader>
-              <CardBody className="space-y-3">
                 {/* Master Sound Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
@@ -961,7 +930,7 @@ function ProfileTab({
                   </button>
                 </div>
 
-                {/* Ambient Music track picker — Off / Track 1 / 2 / 3 */}
+                {/* Ambient Music track picker — Off / 1.0 / 2.0 / 3.0 Login Screen */}
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5 space-y-2">
                   <div>
                     <div className="text-white text-base font-medium">{t('profile.sound.ambient')}</div>
@@ -1003,8 +972,41 @@ function ProfileTab({
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.conveneMusicEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
+
+                {/* Install App on Device */}
+                {pwa?.canInstall && (
+                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-[30px] h-[30px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
+                        <Download size={16} />
+                      </div>
+                      <div>
+                        <div className="text-white text-base font-medium">{t('profile.display.installApp')}</div>
+                        <div className="text-gray-400 text-sm">{t('profile.display.installAppDesc')}</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        const accepted = await pwa.promptInstall();
+                        if (accepted) toast?.addToast?.(t('profile.display.installSuccess'), 'success');
+                      }}
+                      className="px-3 py-1.5 bg-[rgba(237,175,24,0.9)] text-black rounded-lg text-base font-medium hover:bg-[rgba(237,175,24,1)] transition-colors"
+                    >
+                      {t('profile.display.install')}
+                    </button>
+                  </div>
+                )}
+                {pwa?.isInstalled && (
+                  <p className="text-emerald-400 text-sm text-center">✓ {t('profile.display.installed')}</p>
+                )}
               </CardBody>
             </Card>
+
+            <ImportFlow
+              processImportData={processImportData}
+              toast={toast}
+            />
+            </div>{/* end desktop-grid-2 */}
 
             {state.profile.importedAt && (
               <Card>
