@@ -86,8 +86,6 @@ body::before {
 #root {
   min-height: 100dvh;
   isolation: isolate;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Accessible focus outlines — BT-F1: Extended to a, [role="button"] */
