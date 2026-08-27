@@ -953,20 +953,21 @@ CHARACTER_THEMES.sort((a, b) => {
   if (rarityDiff !== 0) return rarityDiff;
   return RELEASE_ORDER.indexOf(b.name) - RELEASE_ORDER.indexOf(a.name);
 });
-// Hsin isn't released yet — no CHARACTER_DATA/RELEASE_ORDER entry to sort her
-// by by rarity/release order like every other theme above (and she doesn't
-// get a fabricated one here just to satisfy that sort — CHARACTER_DATA feeds
-// real gameplay calculators elsewhere in the app). Pinned at the very front
-// instead, ahead of Jingran (who doesn't have his own theme entry yet
-// either — the whole v3.6 P2 banner is one shared bannerArt, not per-character).
-CHARACTER_THEMES.unshift({ id: 'hsin', name: 'Hsin', bannerArt: './characters/hsin/Hsin_Banner.jpg', pos: { header: '50% 29%', nav: '50% 31%', bg: '50% 50%' } });
 // Qingxiao IS released and has real CHARACTER_DATA/RELEASE_ORDER, but no
 // individual splash art yet (see BANNER_HISTORY v3.6-p1's own comment) —
 // just the shared convene banner she debuted on alongside Denia — so she's
 // pinned here too rather than joining the sorted list above with a banner
-// that isn't really hers alone. Unshifted after Hsin so she lands in front
-// of her, per explicit request.
+// that isn't really hers alone.
 CHARACTER_THEMES.unshift({ id: 'qingxiao', name: 'Qingxiao', element: 'Aero', bannerArt: './banners/_shared/8nvgqZKC-e7478-17840855867105-1920.jpg', pos: { header: '50% 31%', nav: '50% 31%', bg: '60% 50%' } });
+// Hsin isn't released yet — no CHARACTER_DATA/RELEASE_ORDER entry to sort her
+// by rarity/release order like every other theme above (and she doesn't get
+// a fabricated one here just to satisfy that sort — CHARACTER_DATA feeds
+// real gameplay calculators elsewhere in the app). Unshifted after Qingxiao
+// so she lands in front of her, per explicit request.
+CHARACTER_THEMES.unshift({ id: 'hsin', name: 'Hsin', bannerArt: './characters/hsin/Hsin_Banner.jpg', pos: { header: '50% 29%', nav: '50% 29%', bg: '66% 50%' } });
+// Suoming — also unreleased, same no-CHARACTER_DATA situation as Hsin.
+// Unshifted last so she lands in front of Hsin, per explicit request.
+CHARACTER_THEMES.unshift({ id: 'suoming', name: 'Suoming', bannerArt: './characters/suoming/Suoming_Banner.webp', pos: { header: '50% 29%', nav: '50% 31%', bg: '50% 50%' } });
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WEAPON THEMES — Real "Featured Weapon Convene" splash art per 5★ weapon
@@ -1057,10 +1058,7 @@ const OTHER_BACKGROUNDS = [
   { id: 'tacet-field', name: 'Tacet Field', art: './banner-history/tacet-field.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
   { id: 'three-two-one-cheese', name: 'Three Two One Cheese', art: './banner-history/three-two-one-cheese.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
   { id: 'here-come-the-woolies', name: 'Here Come the Woolies', art: './banner-history/here-come-the-woolies.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
-  // pos values are this array's own average across all 35 prior entries (header
-  // ~29%, nav ~31%, bg centered) — a neutral starting framing since this specific
-  // composition hasn't been hand-tuned against the real header/nav crop yet.
-  { id: 'when-the-night-knocks', name: 'When the Night Knocks', art: './Background/When-the-Night-Knocks-Background.jpeg', pos: { header: '50% 29%', nav: '50% 31%', bg: '50% 50%' } },
+  { id: 'when-the-night-knocks', name: 'When the Night Knocks', art: './Background/When-the-Night-Knocks-Background.jpeg', pos: { header: '50% 55%', nav: '50% 57%', bg: '40% 50%' } },
   { id: '1-2-moon-chasing-festival', name: '1.2 Moon Chasing Festival @mafuin_da', art: './banner-history/1-2-moon-chasing-festival.jpg', pos: { header: '50% 30%', nav: '50% 30%', bg: '50% 50%' } },
   { id: '1st-anniv-festival-akihabara', name: '1st Anniv Festival Akihabara', art: './banner-history/1st-anniv-festival-akihabara.jpg', pos: { header: '50% 10%', nav: '50% 12%', bg: '50% 50%' } },
   { id: '2nd-anniv', name: '2nd Anniv', art: './banner-history/2nd-anniv.jpg', pos: { header: '50% 44%', nav: '50% 40%', bg: '50% 50%' } },

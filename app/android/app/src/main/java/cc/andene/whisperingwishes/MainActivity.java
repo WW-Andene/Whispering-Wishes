@@ -147,17 +147,17 @@ public class MainActivity extends BridgeActivity {
                 Class<?> builderClass = Class.forName("android.os.VibrationEffect$WaveformEnvelopeBuilder");
                 Object builder = builderClass.getConstructor().newInstance();
                 Method addControlPoint = builderClass.getMethod("addControlPoint", float.class, float.class, long.class);
-                // A near-instant snap to the actuator's own resonant frequency
-                // (its sharpest, most efficient response point) and straight
-                // back to zero — meant to read as a harder edge than a flat
-                // single-frequency pulse, not a texture sweep across
-                // frequencies (a single tap has nothing to sweep across).
-                // 2026-08-27: shortened 6ms/2ms -> 3ms/1ms — requested feel
-                // was "short, dry, hard, like a nail on glass"; a faster
-                // attack and shorter hold reads as more of an instant
-                // transient click and less of a brief buzz.
-                addControlPoint.invoke(builder, 1.0f, resonantHz, 3L);
-                addControlPoint.invoke(builder, 0.0f, resonantHz, 1L);
+                // 2026-08-27: dropped from the full resonant frequency (1.0x)
+                // to 0.45x — requested feel was "drier, harder, and hollow".
+                // The full-resonance snap was tuned for "nail on glass"
+                // (thin, sharp, bright); a lower frequency multiple reads as
+                // a rounder, hollower knock instead — like rapping on an
+                // empty box rather than tapping glass — while keeping the
+                // same short attack/decay (5ms/1ms, still no lingering ring)
+                // so it stays dry rather than a longer, softer buzz. Full
+                // amplitude (1.0) throughout for the "hard" half of the ask.
+                addControlPoint.invoke(builder, 1.0f, resonantHz * 0.45f, 5L);
+                addControlPoint.invoke(builder, 0.0f, resonantHz * 0.45f, 1L);
 
                 Object effect = builderClass.getMethod("build").invoke(builder);
                 Vibrator.class.getMethod("vibrate", VibrationEffect.class).invoke(vibrator, effect);
