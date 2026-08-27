@@ -852,18 +852,24 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
                 <LayoutGrid size={14} className="text-gray-300" /> {t('modals.characterDetail.assetsSection')}
               </h3>
-              <div className="grid grid-cols-3 gap-2">
+              {/* Vertical stack, not a row of forced-square crops — each tile
+                  keeps the aspect ratio its actual content is shot at: the
+                  Sprite is a tall full-body cutout (1:2, matching the full
+                  Spine viewer's own aspect), Banner Art/Animation are the
+                  wide gacha-banner crop (16:9, matching the theme picker's
+                  own background tiles in ProfileTab.jsx). */}
+              <div className="flex flex-col gap-2">
                 {imageUrl && (
-                  <FullSpineViewerButton name={name} imageUrl={imageUrl} variant="tile" label={t('modals.characterDetail.assetSprite')} className="aspect-square" />
+                  <FullSpineViewerButton name={name} imageUrl={imageUrl} variant="tile" label={t('modals.characterDetail.assetSprite')} className="w-full aspect-[1/2]" />
                 )}
                 {bannerArtUrl && (
-                  <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-square">
+                  <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-video">
                     <img src={bannerArtUrl} alt="" className="w-full h-full object-cover" onError={hideOnError} />
                     <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg">{t('modals.characterDetail.assetBannerArt')}</span>
                   </div>
                 )}
                 {bannerArtUrl && conveneVideoUrl && (
-                  <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-square">
+                  <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-video">
                     {assetBannerVideoPlaying ? (
                       <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setAssetBannerVideoPlaying(false)} className="absolute inset-0" />
                     ) : (
