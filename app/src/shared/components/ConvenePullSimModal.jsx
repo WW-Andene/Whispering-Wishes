@@ -98,37 +98,46 @@ const PullResultTile = ({ result, getImageFraming, onOpenDetail }) => {
   );
 };
 
-// One-at-a-time full reveal — 128px icon (vs the summary grid's 48px tile),
-// same object-contain + collection-<name> framing so the sprite sits
-// identically to everywhere else it's shown.
+// Ambient backdrop tint per rarity — replaces flat black so the reveal
+// stage doesn't read as "video ended, black screen" (the same rgb
+// triplets driving the rarity badges/glow).
+const RARITY_GLOW_RGB = { 5: FIVE_STAR_GLOW_RGB, 4: '168,85,247', 3: '56,189,248' };
+
+// One-at-a-time full reveal — the icon fills the entire reveal stage (vs
+// the summary grid's small 48px tile), same object-contain + collection-
+// <name> framing so the sprite sits identically to everywhere else it's
+// shown. A quick white flash (keyed per item so it retriggers every
+// reveal) plus the rarity glow sell the "card flips face-up" moment.
 const ItemRevealFull = ({ result, getImageFraming }) => {
   const imgUrl = result.name ? DEFAULT_COLLECTION_IMAGES[result.name] : null;
   const framing = result.name ? getImageFraming(`collection-${result.name}`) : null;
-  const box = (
-    <div className={`relative w-32 h-32 rounded-xl overflow-hidden border-2 bg-black/25 ${RARITY_RING[result.rarity]}`}>
+  const glowRgb = RARITY_GLOW_RGB[result.rarity];
+  return (
+    <div
+      className="absolute inset-0 animate-[scaleIn_0.3s_cubic-bezier(0.16,1,0.3,1)]"
+      style={{ background: `radial-gradient(circle at 50% 40%, rgba(${glowRgb},0.22), rgba(8,12,20,0.96) 75%)` }}
+    >
       {imgUrl ? (
         <img
           src={imgUrl}
           alt={result.name}
-          className="w-full h-full object-contain pointer-events-none"
+          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
           style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
           onError={hideOnError}
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-cyan-300"><Sparkles size={48} /></div>
+        <div className="absolute inset-0 flex items-center justify-center text-cyan-300"><Sparkles size={72} /></div>
       )}
       {result.isFeatured && (
-        <span className="absolute top-1 right-1 text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold">{t('tracker.conveneSim.featuredBadge')}</span>
+        <span className="absolute top-3 right-3 z-10 text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold">{t('tracker.conveneSim.featuredBadge')}</span>
       )}
-    </div>
-  );
-  return (
-    <div className="flex flex-col items-center gap-2 animate-[scaleIn_0.25s_cubic-bezier(0.16,1,0.3,1)]">
-      {result.rarity === 5
-        ? <div className="banner-card-glow rounded-xl" style={{ '--glow-color': FIVE_STAR_GLOW_RGB }}>{box}</div>
-        : box}
-      {result.name && <span className="text-gray-100 text-lg font-bold">{result.name}</span>}
-      <span className={`kuro-badge ${RARITY_BADGE[result.rarity]}`}>{result.rarity}★</span>
+      {/* Name/rarity overlay — same bottom gradient scrim as BannerCard's text overlay */}
+      <div className="absolute inset-x-0 bottom-0 z-10 flex flex-col items-center gap-1 px-4 pb-4 pt-10" style={{ background: 'linear-gradient(to top, rgba(8,12,20,0.9) 40%, transparent)' }}>
+        {result.name && <span className="text-gray-100 text-xl font-bold text-center">{result.name}</span>}
+        <span className={`kuro-badge ${RARITY_BADGE[result.rarity]}`}>{result.rarity}★</span>
+      </div>
+      {/* Flash — bright pulse on arrival, fading out fast */}
+      <div className="absolute inset-0 pointer-events-none animate-[itemRevealFlash_0.5s_ease-out_forwards]" style={{ background: '#fff' }} />
     </div>
   );
 };
@@ -247,12 +256,11 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
         )}
 
         {phase === 'itemReveal' && (
-          <div className="relative aspect-square bg-black flex items-center justify-center cursor-pointer select-none" onClick={handleItemTap} role="button" tabIndex={0} aria-label={t('tracker.conveneSim.tapToContinue')}>
+          <div key={itemIndex} className="relative aspect-square overflow-hidden cursor-pointer select-none" onClick={handleItemTap} role="button" tabIndex={0} aria-label={t('tracker.conveneSim.tapToContinue')}>
             <ItemRevealFull result={currentResult} getImageFraming={getImageFraming} />
-            <div className="absolute bottom-3 left-0 right-0 flex flex-col items-center gap-1 pointer-events-none">
-              <span className="text-gray-400 text-sm">{t('tracker.conveneSim.tapToContinue')}</span>
-              <span className="text-gray-500 text-2xs kuro-number">{itemIndex + 1} / {sim.results.length}</span>
-            </div>
+            <span className="absolute top-3 left-0 right-0 z-10 text-center text-gray-300 text-sm pointer-events-none" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
+              {t('tracker.conveneSim.tapToContinue')}
+            </span>
           </div>
         )}
 
