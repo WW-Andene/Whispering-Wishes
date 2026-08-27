@@ -81,7 +81,7 @@ const generateMaskGradient = (fadePos, fadeIntensity) => {
   return result;
 };
 
-const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, timerColor, collectionImages, setDetailModal, pity }) => {
+const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, timerColor, collectionImages, setDetailModal, pity, calc }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
@@ -215,7 +215,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
           weapon banners regardless of whether a convene-video preview
           exists for this item. */}
       <div className="absolute bottom-2 right-2 z-20 flex items-center gap-1">
-        <ConvenePullPills kind={isChar ? 'character' : 'weapon'} onPull={setPullSim} />
+        <ConvenePullPills kind={isChar ? 'character' : 'weapon'} onPull={setPullSim} showTide={isChar ? (calc?.radiant > 0) : (calc?.forging > 0)} />
         {isChar && (conveneVideoUrl
           ? (
             <button

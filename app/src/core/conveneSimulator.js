@@ -37,6 +37,9 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const ALL_5STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 5);
 const ALL_4STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 4);
+// 3★ pulls are always weapons in WuWa (no 3★ resonators exist), regardless
+// of whether the banner itself is a character or weapon convene.
+const ALL_3STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 3);
 
 /**
  * @param {object} opts
@@ -85,7 +88,7 @@ export function simulateConvenePulls({ count, kind, featuredNames = [], featured
       results.push(rollFourStar());
       pity4 = 0;
     } else {
-      results.push({ name: null, rarity: 3, isFeatured: false }); // 3★ filler — not modeled by specific item
+      results.push({ name: pick(ALL_3STAR_WEAPONS), rarity: 3, isFeatured: false });
     }
   }
 

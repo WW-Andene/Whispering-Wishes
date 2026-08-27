@@ -129,7 +129,7 @@ const StandardBannerOverlay = memo(() => {
 StandardBannerOverlay.displayName = 'StandardBannerOverlay';
 
 // Standard banner card — eliminates ~110 lines of copy-paste between standard char/weap banners
-const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings, imagePosition, kind }) => {
+const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings, imagePosition, kind, calc }) => {
   const stdMask = generateMaskGradient(visualSettings.standardFadePosition ?? 50, visualSettings.standardFadeIntensity ?? 100);
   const stdOpacity = (visualSettings.standardOpacity ?? 100) / 100;
   const hasStats = profileData?.history?.length > 0;
@@ -152,7 +152,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           a ▶️ button this section doesn't have) — avoids overlapping the
           pity-stat bar pinned to the bottom when hasStats is true. */}
       <div className="absolute top-2 right-2 z-20">
-        <ConvenePullPills kind={kind} onPull={setPullSim} />
+        <ConvenePullPills kind={kind} onPull={setPullSim} showTide={calc?.lustrous > 0} />
       </div>
       <ConvenePullSimModal
         isOpen={pullSim != null}

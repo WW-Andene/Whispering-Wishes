@@ -169,6 +169,7 @@ function TrackerTab({
                     collectionImages={collectionImages}
                     setDetailModal={setDetailModal}
                     pity={state.profile.featured}
+                    calc={state.calc}
                   />
                 )) : (
                   <div className="kuro-empty-state text-center py-8">
@@ -194,6 +195,7 @@ function TrackerTab({
                     collectionImages={collectionImages}
                     setDetailModal={setDetailModal}
                     pity={state.profile.weapon}
+                    calc={state.calc}
                   />
                 )) : (
                   <div className="kuro-empty-state text-center py-8">
@@ -215,6 +217,7 @@ function TrackerTab({
                   items={activeBanners.standardCharacters} itemKey="name"
                   profileData={state.profile.standardChar} visualSettings={visualSettings}
                   kind="standardChar"
+                  calc={state.calc}
                 />
 
                 {/* Standard Weapon Banner */}
@@ -225,6 +228,7 @@ function TrackerTab({
                   profileData={state.profile.standardWeap} visualSettings={visualSettings}
                   imagePosition="65% top"
                   kind="standardWeap"
+                  calc={state.calc}
                 />
               </div>
             )}
