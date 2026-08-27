@@ -859,8 +859,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   wide gacha-banner crop (16:9, matching the theme picker's
                   own background tiles in ProfileTab.jsx). */}
               <div className="flex flex-col gap-2">
+                {/* Was aspect-[1/2] — shortened ~35% (1:2 -> 1:1.3) to
+                    crop off the bottom gap the -20% ty raise opened up,
+                    matching it back against the top. */}
                 {imageUrl && (
-                  <FullSpineViewerButton name={name} imageUrl={imageUrl} variant="tile" label={t('modals.characterDetail.assetSprite')} className="w-full aspect-[1/2]" />
+                  <FullSpineViewerButton name={name} imageUrl={imageUrl} variant="tile" label={t('modals.characterDetail.assetSprite')} className="w-full aspect-[1/1.3]" />
                 )}
                 {/* Banner Art and Banner Animation fused into one tile — the
                     art is what's shown either way, the video (when this
