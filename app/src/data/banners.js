@@ -946,6 +946,13 @@ CHARACTER_THEMES.sort((a, b) => {
 // instead, ahead of Jingran (who doesn't have his own theme entry yet
 // either — the whole v3.6 P2 banner is one shared bannerArt, not per-character).
 CHARACTER_THEMES.unshift({ id: 'hsin', name: 'Hsin', bannerArt: './characters/hsin/Hsin_Banner.jpg', pos: { header: '50% 29%', nav: '50% 31%', bg: '50% 50%' } });
+// Qingxiao IS released and has real CHARACTER_DATA/RELEASE_ORDER, but no
+// individual splash art yet (see BANNER_HISTORY v3.6-p1's own comment) —
+// just the shared convene banner she debuted on alongside Denia — so she's
+// pinned here too rather than joining the sorted list above with a banner
+// that isn't really hers alone. Unshifted after Hsin so she lands in front
+// of her, per explicit request.
+CHARACTER_THEMES.unshift({ id: 'qingxiao', name: 'Qingxiao', element: 'Aero', bannerArt: './banners/_shared/8nvgqZKC-e7478-17840855867105-1920.jpg', pos: { header: '50% 31%', nav: '50% 31%', bg: '60% 50%' } });
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // WEAPON THEMES — Real "Featured Weapon Convene" splash art per 5★ weapon
