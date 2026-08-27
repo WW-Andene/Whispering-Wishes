@@ -26,6 +26,30 @@ const TRACK_SRC = {
 
 const AMBIENT_VOLUME = 0.35;
 
+// Shared reference to the one ambient <audio> element (set below whenever
+// useAmbientMusic's own ref is), so other components can duck it without
+// needing their own copy of this hook's state — ConvenePullSimModal calls
+// suspendAmbientMusic() while its rarity/item videos are playing (their own
+// audio would otherwise layer over the ambient track) and resumeAmbientMusic()
+// when it closes.
+let sharedAmbientAudio = null;
+
+export function suspendAmbientMusic() {
+  sharedAmbientAudio?.pause();
+}
+
+// Re-checks the current settings itself rather than blindly playing — the
+// track may have been paused because it's genuinely disabled (sound off,
+// or track set to 'off'), not just ducked, and resuming unconditionally
+// would start music back up against the user's own setting.
+export function resumeAmbientMusic(visualSettings) {
+  if (!sharedAmbientAudio) return;
+  const track = visualSettings?.logScreenTrack;
+  if (visualSettings?.soundEnabled && TRACK_SRC[track]) {
+    sharedAmbientAudio.play().catch(() => {});
+  }
+}
+
 export function useAmbientMusic(visualSettings) {
   const audioRef = useRef(null);
   const track = visualSettings?.logScreenTrack;
@@ -37,10 +61,12 @@ export function useAmbientMusic(visualSettings) {
       audio.loop = true;
       audio.volume = AMBIENT_VOLUME;
       audioRef.current = audio;
+      sharedAmbientAudio = audio;
     }
     return () => {
       audioRef.current?.pause();
       audioRef.current = null;
+      sharedAmbientAudio = null;
     };
   }, []);
 

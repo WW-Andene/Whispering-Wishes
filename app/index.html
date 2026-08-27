@@ -90,16 +90,26 @@
     <!-- The boot video itself is always silent now (stays .muted — see the
          <video> tag's muted attribute) — no unmuting. In its place, the
          selected Log Screen ambient track (Profile > Display > Sound,
-         visualSettings.logScreenTrack, defaults '2') starts playing right
-         here at boot, synced with the splash video rather than only once
-         React mounts, and is handed off to useAmbientMusic.js (via
+         visualSettings.logScreenTrack, defaults '2') starts playing here at
+         boot, synced with the splash video rather than only once React
+         mounts, and is handed off to useAmbientMusic.js (via
          window.__bootAmbientAudio) so it continues seamlessly — no restart,
          no gap — once the splash fades and React takes over managing it.
          Has to run as an inline script reading localStorage directly,
-         synchronously, before React has mounted. Browsers may still
-         silently block autoplay with no prior user gesture (platform
-         policy, not something this can override) — that's an accepted
-         limitation, not a bug. -->
+         synchronously, before React has mounted.
+         Constructing the Audio (and its immediate network fetch) is
+         deliberately deferred until the video's own 'playing' event —
+         doing it in the same tick as the video element being created
+         made the video's first frames choppy on weaker Android devices
+         (APK builds), since both compete for CPU/network right as the
+         WebView process is still cold-starting; a 'playing' listener only
+         adds a delay of however long the video itself already took to
+         start, which is imperceptible for background music. A fallback
+         timer covers the case where the video never fires 'playing'
+         (autoplay blocked, load error) so the ambient track still starts.
+         Browsers may still silently block audio autoplay with no prior
+         user gesture (platform policy, not something this can override)
+         — that's an accepted limitation, not a bug. -->
     <script>
       (function () {
         try {
@@ -107,14 +117,26 @@
           var settings = raw ? JSON.parse(raw) : null;
           var soundOn = !settings || settings.soundEnabled !== false;
           var track = (settings && settings.logScreenTrack) || '2';
-          if (soundOn && track !== 'off') {
+          if (!soundOn || track === 'off') return;
+
+          var started = false;
+          var startAmbient = function () {
+            if (started) return;
+            started = true;
             var audio = new Audio('./audio/log-screen-' + track + '.m4a');
             audio.loop = true;
             audio.volume = 0.35;
             audio.play().catch(function () {});
             window.__bootAmbientAudio = audio;
             window.__bootAmbientTrack = track;
+          };
+
+          var video = document.getElementById('splash-video');
+          if (video) {
+            video.addEventListener('playing', startAmbient, { once: true });
+            video.addEventListener('error', startAmbient, { once: true });
           }
+          setTimeout(startAmbient, 1500);
         } catch (e) {}
       })();
     </script>

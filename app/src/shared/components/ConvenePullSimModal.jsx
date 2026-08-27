@@ -33,6 +33,7 @@ import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banne
 import { hideOnError } from '../utils/imageHelpers.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useConveneSimStats } from '../../hooks/useConveneSimStats.js';
+import { suspendAmbientMusic, resumeAmbientMusic } from '../../hooks/useAmbientMusic.js';
 import { playItemRevealChime } from '../utils/chime.js';
 import { t } from '../../utils/i18n.js';
 
@@ -56,10 +57,12 @@ const FIVE_STAR_REVEAL_SRC = './convene-sim/5star-reveal.mp4';
 const CONVENE_MUSIC_SRC = `${import.meta.env.BASE_URL || './'}audio/convene-screen.m4a`;
 const CONVENE_MUSIC_VOLUME = 0.25;
 
-// +20% past the HTML5 <video> element's normal 100% ceiling (ConveneVideoLayer's
-// GainNode boost) — the 5★ rarity clip and a 5★'s own character convene clip
-// read as noticeably quieter than everything else at native volume.
-const FIVE_STAR_GAIN = 1.2;
+// +50% past the HTML5 <video> element's normal 100% ceiling (ConveneVideoLayer's
+// GainNode boost) — the 5★ rarity clip, the 5★ reveal beat, and a 5★'s own
+// character convene clip read as noticeably quieter than everything else at
+// native volume. Was 1.2 (+20%); bumped another +25% on top of that per
+// user feedback (1.2 * 1.25 = 1.5).
+const FIVE_STAR_GAIN = 1.5;
 
 // kuro-badge-* color variants (kuro.css) — same rarity→color mapping used
 // throughout the app (WeaponDetailModal's WEAPON_RARITY_COLORS).
@@ -242,6 +245,17 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
     audio.play().catch(() => {});
     return () => { audio.pause(); };
   }, [isOpen, muted, visualSettings?.conveneMusicEnabled]);
+
+  // Duck the app's own ambient Log Screen track (useAmbientMusic.js) for as
+  // long as this modal is open — its rarity/item videos (and the convene
+  // music loop above) would otherwise play on top of it. Resumed on close,
+  // but only if the ambient track is still actually enabled by then.
+  useEffect(() => {
+    if (!isOpen) return;
+    suspendAmbientMusic();
+    return () => resumeAmbientMusic(visualSettings);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   // Simulated pity persists across pulls (useConveneSimStats) instead of
   // resetting to the real live pity every time — seeded from the real
