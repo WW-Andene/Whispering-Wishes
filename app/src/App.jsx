@@ -215,15 +215,23 @@ function WhisperingWishesInner() {
 
   // "Display over other apps" has no runtime permission dialog — the user
   // grants it in a Settings screen, then returns to the app on their own,
-  // with no callback telling us it happened. If the user turned the
-  // floating banner on in Profile before granting it (requestPermission
-  // just opens Settings, it doesn't wait), this catches that: every time
-  // the app comes back to the foreground, re-check permission and start
-  // the overlay if it's now granted and the setting is still on.
+  // with no callback telling us it happened. Two moments need to (re)start
+  // the overlay when the setting is on and permission is granted:
+  //  1. Right now, on this very mount — covers a fresh/cold app launch with
+  //     the setting already on from a previous session (the Service isn't
+  //     necessarily still running: Android can kill it, or the app could
+  //     have been force-closed). Without this, the overlay only ever came
+  //     back after backgrounding+foregrounding at least once, never on a
+  //     plain cold start.
+  //  2. Every time the app comes back to the foreground (App's 'resume'
+  //     event) — covers the user granting permission mid-session (they left
+  //     for Settings, granted it, came back) with no other signal telling
+  //     us that happened.
   useEffect(() => {
     if (!isNativePlatformForFloatingBanner() || !visualSettings.floatingBannerEnabled) return;
     let handle;
     let cancelled = false;
+    (async () => { if (await hasFloatingBannerPermission()) startFloatingBanner(); })();
     import('@capacitor/app').then(({ App }) =>
       App.addListener('resume', async () => {
         if (await hasFloatingBannerPermission()) startFloatingBanner();

@@ -121,8 +121,14 @@
 
           var started = false;
           var startAmbient = function () {
-            if (started) return;
+            if (started || window.__bootAmbientStarted) return;
+            // React (useAmbientMusic.js) mounts almost immediately — well
+            // before this deferred callback fires — and creates its own
+            // Audio + sets window.__bootAmbientStarted if it gets here
+            // first. Without this check, both sides would create their own
+            // Audio for the same track and play them on top of each other.
             started = true;
+            window.__bootAmbientStarted = true;
             var audio = new Audio('./audio/log-screen-' + track + '.m4a');
             audio.loop = true;
             audio.volume = 0.35;

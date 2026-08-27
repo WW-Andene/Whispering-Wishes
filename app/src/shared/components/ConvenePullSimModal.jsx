@@ -249,12 +249,18 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   // Duck the app's own ambient Log Screen track (useAmbientMusic.js) for as
   // long as this modal is open — its rarity/item videos (and the convene
   // music loop above) would otherwise play on top of it. Resumed on close,
-  // but only if the ambient track is still actually enabled by then.
+  // but only if the ambient track is still actually enabled by then — read
+  // through a ref (kept fresh below) rather than closing over `visualSettings`
+  // directly, since this effect only depends on `isOpen`: if the user
+  // changed a sound setting while the modal was still open, the cleanup
+  // would otherwise fire with whatever `visualSettings` was at the moment
+  // the modal opened, not the current one.
+  const visualSettingsRef = useRef(visualSettings);
+  useEffect(() => { visualSettingsRef.current = visualSettings; }, [visualSettings]);
   useEffect(() => {
     if (!isOpen) return;
     suspendAmbientMusic();
-    return () => resumeAmbientMusic(visualSettings);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => resumeAmbientMusic(visualSettingsRef.current);
   }, [isOpen]);
 
   // Simulated pity persists across pulls (useConveneSimStats) instead of
