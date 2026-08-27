@@ -38,14 +38,19 @@ const FullSpineViewerButton = ({ name, imageUrl, className = '', variant = 'butt
               scale/position pipeline either way, so the static and
               animated states now look consistent by construction instead
               of by separately tuning two different renderers.
-              No zoom (scale 1, as requested) + ty -20 to raise the figure
-              20%. Per SpinePlayer.jsx's own fit math, positive ty is a
-              translateY(+ty%) equivalent (moves content DOWN, opening a
-              gap at top) — a first attempt used +14 and got exactly that
-              backwards result. Negative ty moves it up instead, opening a
-              gap at the BOTTOM instead of the top — left as-is since the
-              tile's own aspect ratio is getting shortened separately to
-              absorb that gap rather than compensating for it here. */}
+              ty back to 0 (2026-08-27): -20 (an earlier "raise 20%"
+              request, made before this static/animated unification, back
+              when the static view was a differently-framed plain <img>)
+              overshot badly once actually applied to this pipeline —
+              screenshot showed ~2% gap at top vs ~30% at bottom, not
+              centered at all. At scale 1 (no zoom, as requested), ty can
+              only trade one edge's gap for the other's, not add margin to
+              both — so true even top/bottom centering isn't reachable
+              through ty alone without reintroducing zoom. Left at 0 (the
+              character's own natural composition, which is close to
+              centered already) rather than guess another coefficient;
+              revisit with the admin Spine panel for live visual tuning if
+              still off. */}
           <SpinePlayer
             characterId={fullSpineId}
             context="full"
@@ -54,7 +59,7 @@ const FullSpineViewerButton = ({ name, imageUrl, className = '', variant = 'butt
             backgroundColor="#00000000"
             scaleOverride={1}
             txOverride={0}
-            tyOverride={-20}
+            tyOverride={0}
             fallbackImgUrl={imageUrl}
             fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
           />
