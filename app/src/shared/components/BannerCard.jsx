@@ -15,6 +15,7 @@ import { CountdownTimer } from './CountdownTimer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
+import { ConveneVideo } from './ConveneVideoLayer.jsx';
 import { t } from '../../utils/i18n.js';
 
 const BANNER_GRADIENT_MAP = {
@@ -141,18 +142,11 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
           static image/Spine layer) rather than opening a separate modal —
           same card, same frame, just swapping what's showing in it. z-index
           3 so it sits above both the image and Spine layers but still below
-          the text overlay (z-10) and the play/stop button (z-20). */}
+          the text overlay (z-10) and the play/stop button (z-20). Fades out
+          over its last ~1.5s (see ConveneVideoLayer.jsx) instead of cutting
+          straight to the static image. */}
       {conveneVideoPlaying && conveneVideoUrl && (
-        <div className="absolute inset-0" style={{ zIndex: 3 }}>
-          <video
-            key={conveneVideoUrl}
-            src={conveneVideoUrl}
-            className="w-full h-full object-cover"
-            autoPlay
-            playsInline
-            onEnded={() => setConveneVideoPlaying(false)}
-          />
-        </div>
+        <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setConveneVideoPlaying(false)} zIndex={3} />
       )}
 
       {endDate && (

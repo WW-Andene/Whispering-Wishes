@@ -19,6 +19,7 @@ import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
 import { FullSpineViewerButton } from '../components/FullSpineViewerButton.jsx';
+import { ConveneVideo } from '../components/ConveneVideoLayer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 
@@ -189,18 +190,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           )}
           {/* Convene video plays directly in the header itself (same spot as
               the image/Spine layer above) rather than a separate modal —
-              matches BannerCard.jsx's treatment of the same ▶ button. */}
+              matches BannerCard.jsx's treatment of the same ▶ button, fading
+              out over its last ~1.5s instead of cutting to the static image
+              (see ConveneVideoLayer.jsx). */}
           {conveneVideoPlaying && conveneVideoUrl && (
-            <div className="absolute inset-0">
-              <video
-                key={conveneVideoUrl}
-                src={conveneVideoUrl}
-                className="w-full h-full object-cover"
-                autoPlay
-                playsInline
-                onEnded={() => setConveneVideoPlaying(false)}
-              />
-            </div>
+            <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setConveneVideoPlaying(false)} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
