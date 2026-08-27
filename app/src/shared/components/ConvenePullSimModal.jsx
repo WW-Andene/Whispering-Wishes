@@ -118,8 +118,8 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
         {phase !== 'revealed' ? (
           <div className="relative aspect-square bg-black">
             {phase === 'rarity'
-              ? <ConveneVideo key="rarity" videoUrl={VIDEO_SRC[sim.video]} onEnded={handleRarityEnded} muted={muted} className="absolute inset-0" />
-              : <ConveneVideo key="character" videoUrl={characterVideoUrl} onEnded={handleCharacterEnded} muted={muted} className="absolute inset-0" />}
+              ? <ConveneVideo key="rarity" videoUrl={VIDEO_SRC[sim.video]} onEnded={handleRarityEnded} onError={handleRarityEnded} muted={muted} className="absolute inset-0" />
+              : <ConveneVideo key="character" videoUrl={characterVideoUrl} onEnded={handleCharacterEnded} onError={handleCharacterEnded} muted={muted} className="absolute inset-0" />}
           </div>
         ) : (
           <div className="p-4">

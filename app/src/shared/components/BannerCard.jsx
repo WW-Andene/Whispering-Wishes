@@ -88,6 +88,11 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
   const [spineFailed, setSpineFailed] = useState(false);
   const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
   const [pullSim, setPullSim] = useState(null); // count of the in-progress pull sim, or null
+  // Bumped on every pull request so <ConvenePullSimModal> below gets a fresh
+  // `key` and fully remounts — otherwise closing early (before the video/
+  // reveal finishes) and pulling again reused the same component instance,
+  // and its memoized sim result never rerolled.
+  const [pullSimId, setPullSimId] = useState(0);
 
   // Use unified mask generator
   const maskGradient = visualSettings
@@ -215,7 +220,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
           weapon banners regardless of whether a convene-video preview
           exists for this item. */}
       <div className="absolute bottom-2 right-2 z-20 flex items-center gap-1">
-        <ConvenePullPills kind={isChar ? 'character' : 'weapon'} onPull={setPullSim} showTide={isChar ? (calc?.radiant > 0) : (calc?.forging > 0)} />
+        <ConvenePullPills kind={isChar ? 'character' : 'weapon'} onPull={(c) => { setPullSim(c); setPullSimId(id => id + 1); }} showTide={isChar ? (calc?.radiant > 0) : (calc?.forging > 0)} />
         {isChar && (conveneVideoUrl
           ? (
             <button
@@ -230,6 +235,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
         )}
       </div>
       <ConvenePullSimModal
+        key={pullSimId}
         isOpen={pullSim != null}
         onClose={() => setPullSim(null)}
         kind={isChar ? 'character' : 'weapon'}

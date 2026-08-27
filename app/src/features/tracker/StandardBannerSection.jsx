@@ -135,6 +135,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
   const hasStats = profileData?.history?.length > 0;
   const isFull = visualSettings?.animationsEnabled === 'full';
   const [pullSim, setPullSim] = useState(null);
+  const [pullSimId, setPullSimId] = useState(0);
   return (
     <div className="relative overflow-hidden rounded-xl border border-cyan-500/30 kuro-shadow-standard-banner" style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', zIndex: 5 }}>
       {bannerImage && (
@@ -152,9 +153,10 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           a ▶️ button this section doesn't have) — avoids overlapping the
           pity-stat bar pinned to the bottom when hasStats is true. */}
       <div className="absolute top-2 right-2 z-20">
-        <ConvenePullPills kind={kind} onPull={setPullSim} showTide={calc?.lustrous > 0} />
+        <ConvenePullPills kind={kind} onPull={(c) => { setPullSim(c); setPullSimId(id => id + 1); }} showTide={calc?.lustrous > 0} />
       </div>
       <ConvenePullSimModal
+        key={pullSimId}
         isOpen={pullSim != null}
         onClose={() => setPullSim(null)}
         kind={kind}

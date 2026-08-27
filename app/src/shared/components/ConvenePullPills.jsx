@@ -6,11 +6,13 @@
 // left of BannerCard's convene-video ▶️ button, or standalone on
 // StandardBannerSection (which has no ▶️ button at all).
 //
-// The tide icon only shows when the player has actually entered that
-// currency in the Calculator tab (state.calc.radiant/forging/lustrous) —
-// showTide is that boolean, passed down from TrackerTab. With no tide
-// input the pill just shows the Astrite cost, since showing a tide count
-// the player hasn't told the app they have would be misleading.
+// Shows the tide currency OR Astrite, never both — the tide only when the
+// player has actually entered that currency in the Calculator tab
+// (state.calc.radiant/forging/lustrous) — showTide is that boolean, passed
+// down from TrackerTab. With no tide input the pill falls back to the
+// Astrite cost, since showing a tide count the player hasn't told the app
+// they have would be misleading; once they have tides registered, the
+// Astrite-equivalent is redundant information so it's hidden instead.
 //
 // Sizing follows the project's PerfectSuite scale (CLAUDE.md): reuses
 // .kuro-btn-sm as-is (30px min-height, 8px radius — 0.24×30=7.2, nearest
@@ -39,13 +41,17 @@ const PullPill = ({ tideIcon, count, onClick }) => (
     className="kuro-btn kuro-btn-sm flex items-center gap-1"
     aria-label={t('tracker.conveneSim.pullAria', { count })}
   >
-    {tideIcon && (<>
-      <img src={tideIcon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
-      <span className="text-2xs text-gray-200 kuro-number">×{count}</span>
-      <span className="text-2xs text-gray-500">/</span>
-    </>)}
-    <img src={ASTRITE_ICON} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
-    <span className="text-2xs text-gray-200 kuro-number">×{count * ASTRITE_PER_PULL}</span>
+    {tideIcon ? (
+      <>
+        <img src={tideIcon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
+        <span className="text-2xs text-gray-200 kuro-number">×{count}</span>
+      </>
+    ) : (
+      <>
+        <img src={ASTRITE_ICON} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
+        <span className="text-2xs text-gray-200 kuro-number">×{count * ASTRITE_PER_PULL}</span>
+      </>
+    )}
   </button>
 );
 
