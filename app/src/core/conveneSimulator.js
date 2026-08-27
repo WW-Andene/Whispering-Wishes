@@ -36,13 +36,17 @@
 // can drop 4★ weapons and (by symmetry) a weapon banner can drop 4★
 // characters. Previously this only drew from the matching-type pool.
 //
-// 3★ pool confirmed (same reference page, exact 15-weapon list for
-// Qingxiao's banner): the Voyager, Night, and Originite series — NOT the
-// Guardian series (in-file documented as "Craftable in Jinzhou") or
-// Beguiling Melody ("Quest Reward"), which are excluded below by name.
-// Rate confirmed too: 5★ 0.8%, 4★ 6.0% flat, 3★ takes the 93.2%
-// remainder — exactly BASE_5STAR_RATE/FLAT_4STAR_RATE below, validating
-// both as correct rather than estimates.
+// 3★ pool — REVISED after web verification (a prior pass here restricted
+// this to just Voyager/Night/Originite, based on one banner's listed
+// drops; that undercounted). The Guardian series is also convene-obtainable
+// (multiple independent sources confirm it drops from convenes, not just
+// craftable) so it's included. Beguiling Melody stays excluded — every
+// source describing it agrees it's a one-time quest reward (a side quest
+// in Chapter 1 Act 7) with no source ever mentioning a convene drop.
+// Still a best-effort conclusion, not a primary-source guarantee — flagged
+// per the user's own caution that none of this is proven beyond doubt.
+// Rate confirmed: 5★ 0.8%, 4★ 6.0% flat, 3★ takes the 93.2% remainder —
+// exactly BASE_5STAR_RATE/FLAT_4STAR_RATE below.
 //
 // Standard Weapon Convene ("Winter Brume") has its own mechanic, distinct
 // from every other banner here: the player picks a Target Weapon ahead of
@@ -76,10 +80,11 @@ const getPullRate5 = (pity) => {
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const ALL_4STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 4);
-// Confirmed convene-drop 3★ weapons (see file header) — the Guardian
-// series and Beguiling Melody are craft/quest-only and excluded.
+// Best-effort convene-drop 3★ weapons (see file header) — only Beguiling
+// Melody (quest-exclusive) is excluded; the Guardian series is included
+// alongside Voyager/Night/Originite.
 const CONVENE_3STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n =>
-  WEAPON_DATA[n].rarity === 3 && !n.startsWith('Guardian ') && n !== 'Beguiling Melody'
+  WEAPON_DATA[n].rarity === 3 && n !== 'Beguiling Melody'
 );
 
 /**
