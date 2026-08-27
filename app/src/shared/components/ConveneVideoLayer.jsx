@@ -19,10 +19,39 @@ const FADE_OUT_SECONDS = 1.5;
 // than the fade-out rather than a matching 1.5s.
 const FADE_IN_SECONDS = 0.4;
 
-const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0', muted = false, onError }) => {
+const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0', muted = false, onError, gain = 1 }) => {
   const [visible, setVisible] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const firedRef = useRef(false);
+  const videoRef = useRef(null);
+
+  // Boost playback volume past the HTML5 <video> element's hard 1.0 (100%)
+  // ceiling via a Web Audio GainNode — the only way to go louder than
+  // "max volume" without re-encoding the source file. Routing a video
+  // element through Web Audio permanently hands its audio output to that
+  // graph, so this only runs once per mounted <video> (remounts on every
+  // videoUrl change via the key below, so each play gets a fresh node —
+  // reusing one across remounts would throw "already connected to a
+  // different MediaElementSourceNode").
+  useEffect(() => {
+    if (gain === 1 || muted || !videoRef.current) return;
+    let ctx;
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      ctx = new AudioCtx();
+      const source = ctx.createMediaElementSource(videoRef.current);
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = gain;
+      source.connect(gainNode).connect(ctx.destination);
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    } catch {
+      // Web Audio unavailable/blocked (some webviews) — video just plays
+      // at its normal max volume instead of the boosted one. Never worth
+      // failing playback over.
+    }
+    return () => { ctx?.close?.().catch(() => {}); };
+  }, [videoUrl, gain, muted]);
 
   // Reset per videoUrl (the `key={videoUrl}` below already remounts the
   // <video>, but this component instance itself is reused across plays).
@@ -53,6 +82,7 @@ const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0
     <div className={className} style={zIndex != null ? { zIndex } : undefined}>
       <video
         key={videoUrl}
+        ref={videoRef}
         src={videoUrl}
         className="w-full h-full object-cover"
         style={{

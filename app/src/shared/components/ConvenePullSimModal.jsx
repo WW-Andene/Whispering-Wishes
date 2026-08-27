@@ -2,14 +2,17 @@
 // WHISPERING WISHES — shared/components/ConvenePullSimModal.jsx
 // Floating kuro-style panel opened by ConvenePullPills: plays the
 // convene-sim video for the best rarity rolled (public/convene-sim/
-// {common,4star,5star}.mp4), then — if a 5★ or 4★ landed on a specific
-// character with its own convene clip (public/convene-animations/, same
-// asset as BannerCard's ▶️ preview) — that character's video plays next,
-// before finally revealing the 1 or 10 items. A Skip button (visible
-// during either video) jumps straight to the reveal. Below the reveal, a
-// persistent per-banner-kind stats summary (useConveneSimStats.js,
-// localStorage-backed) tallies every pull ever rolled here, with its own
-// Reset button.
+// {common,4star,5star}.mp4), then reveals the 1 or 10 items ONE AT A TIME
+// — full-size icon, tap-to-continue, like a real convene or a trading-card
+// unboxing rather than a stat sheet dumped all at once. If the item being
+// revealed is a 4★/5★ character with its own convene clip (public/
+// convene-animations/, same asset as BannerCard's ▶️ preview), that video
+// plays first — right as we arrive at THAT item's turn, not eagerly after
+// the rarity clip — then the item itself reveals. A Skip button (visible
+// during either video) jumps straight to the summary. After the last item,
+// a summary screen shows every result at a glance plus a persistent
+// per-banner-kind stats tally (useConveneSimStats.js, localStorage-backed)
+// with its own Reset button.
 //
 // This is a display-only simulator (core/conveneSimulator.js) — no wallet
 // is spent, no pity/history is written to state.profile. The stats summary
@@ -17,7 +20,7 @@
 // from the real tracked pity/history.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { ConveneVideo } from './ConveneVideoLayer.jsx';
@@ -34,6 +37,11 @@ const VIDEO_SRC = {
   '5star': './convene-sim/5star.mp4',
 };
 
+// +20% past the HTML5 <video> element's normal 100% ceiling (ConveneVideoLayer's
+// GainNode boost) — the 5★ rarity clip and a 5★'s own character convene clip
+// read as noticeably quieter than everything else at native volume.
+const FIVE_STAR_GAIN = 1.2;
+
 // kuro-badge-* color variants (kuro.css) — same rarity→color mapping used
 // throughout the app (WeaponDetailModal's WEAPON_RARITY_COLORS).
 const RARITY_BADGE = { 5: 'kuro-badge-yellow', 4: 'kuro-badge-purple', 3: 'kuro-badge-cyan' };
@@ -43,15 +51,16 @@ const RARITY_RING = { 5: 'border-yellow-500/50', 4: 'border-purple-500/50', 3: '
 // outline (kuro.css: bannerGlow/bannerBorderGlow keyframes).
 const FIVE_STAR_GLOW_RGB = '234,179,8';
 
-// Item icon box mirrors BannerCard's "Featured 4★" preview tile exactly —
-// same w-12 h-12 rounded-md bordered box, object-contain, and the
-// collection-<name> framing (zoom/x/y) from useImageFraming.js, so a
-// character's sprite sits identically here as it does on the banner card.
-// The rarity badge below is stretched to the tile's own width (w-12)
-// rather than sizing to its own content.
-const PullResultIcon = ({ result, getImageFraming, onOpenDetail }) => {
-  // 3★ results have no confirmed real name yet (see conveneSimulator.js's
-  // file header) — rendered as a plain rarity placeholder, not clickable.
+// A 4★/5★ character result gets its own convene video played right as its
+// turn comes up in the one-by-one reveal — not every 4★/5★ has one yet.
+const itemVideoFor = (result) => {
+  if (!result || result.rarity < 4 || result.type !== 'character') return null;
+  return getConveneAnimation(result.name);
+};
+
+// Small tile used on the final summary grid — same w-12 h-12 bordered box
+// BannerCard uses for its "Featured 4★" preview.
+const PullResultTile = ({ result, getImageFraming, onOpenDetail }) => {
   const imgUrl = result.name ? DEFAULT_COLLECTION_IMAGES[result.name] : null;
   const framing = result.name ? getImageFraming(`collection-${result.name}`) : null;
   const box = (
@@ -86,9 +95,43 @@ const PullResultIcon = ({ result, getImageFraming, onOpenDetail }) => {
   );
 };
 
-// Persistent per-banner summary (useConveneSimStats) shown under the
-// results grid — "Reset" clears only this banner kind's simulator tally,
-// never anything in state.profile.
+// One-at-a-time full reveal — 128px icon (vs the summary grid's 48px tile),
+// same object-contain + collection-<name> framing so the sprite sits
+// identically to everywhere else it's shown.
+const ItemRevealFull = ({ result, getImageFraming }) => {
+  const imgUrl = result.name ? DEFAULT_COLLECTION_IMAGES[result.name] : null;
+  const framing = result.name ? getImageFraming(`collection-${result.name}`) : null;
+  const box = (
+    <div className={`relative w-32 h-32 rounded-xl overflow-hidden border-2 bg-black/25 ${RARITY_RING[result.rarity]}`}>
+      {imgUrl ? (
+        <img
+          src={imgUrl}
+          alt={result.name}
+          className="w-full h-full object-contain pointer-events-none"
+          style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
+          onError={hideOnError}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-cyan-300"><Sparkles size={48} /></div>
+      )}
+      {result.isFeatured && (
+        <span className="absolute top-1 right-1 text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold">{t('tracker.conveneSim.featuredBadge')}</span>
+      )}
+    </div>
+  );
+  return (
+    <div className="flex flex-col items-center gap-2 animate-[scaleIn_0.25s_cubic-bezier(0.16,1,0.3,1)]">
+      {result.rarity === 5
+        ? <div className="banner-card-glow rounded-xl" style={{ '--glow-color': FIVE_STAR_GLOW_RGB }}>{box}</div>
+        : box}
+      {result.name && <span className="text-gray-100 text-lg font-bold">{result.name}</span>}
+      <span className={`kuro-badge ${RARITY_BADGE[result.rarity]}`}>{result.rarity}★</span>
+    </div>
+  );
+};
+
+// Persistent per-banner summary (useConveneSimStats) — "Reset" clears only
+// this banner kind's simulator tally, never anything in state.profile.
 const StatRow = ({ label, value }) => (
   <div className="flex items-center justify-between">
     <span className="text-gray-400 text-sm">{label}</span>
@@ -116,9 +159,9 @@ const ConveneSimStatsSummary = ({ stats, onReset }) => {
 };
 
 const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, featured4Stars, startPity5, startPity4, startGuaranteed, startGuaranteed4, visualSettings, setDetailModal }) => {
-  const [phase, setPhase] = useState('rarity'); // 'rarity' | 'character' | 'revealed'
+  const [phase, setPhase] = useState('rarity'); // 'rarity' | 'itemVideo' | 'itemReveal' | 'summary'
+  const [itemIndex, setItemIndex] = useState(0);
   const { getImageFraming } = useImageFramingContext();
-  const isWeaponKind = kind === 'weapon' || kind === 'standardWeap';
   const muted = !visualSettings?.soundEnabled;
   const { stats, record, reset } = useConveneSimStats(kind);
 
@@ -139,38 +182,35 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   }, [isOpen]);
 
   // Tallied the moment a pull is rolled (not gated on watching the video or
-  // reaching the reveal) — once initiated, a pull "happened" the same way a
-  // real convene commits immediately, matching the fix that makes closing
+  // reaching the summary) — once initiated, a pull "happened" the same way
+  // a real convene commits immediately, matching the fix that makes closing
   // early always reroll on the next attempt rather than replaying this one.
   useEffect(() => {
     if (sim) record(sim, count);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sim]);
 
-  // The specific character whose own convene video plays after the rarity
-  // clip — the highest-rarity result (5★ preferred, then 4★) that both
-  // isn't a weapon pull and actually has a recorded convene video (not
-  // every character has one yet, at either rarity).
-  const characterVideoUrl = useMemo(() => {
-    if (!sim || isWeaponKind) return null;
-    for (const rarity of [5, 4]) {
-      for (const r of sim.results) {
-        if (r.rarity !== rarity) continue;
-        const url = getConveneAnimation(r.name);
-        if (url) return url;
-      }
-    }
-    return null;
-  }, [sim, isWeaponKind]);
-
   useEffect(() => {
-    if (isOpen) setPhase('rarity');
+    if (isOpen) { setPhase('rarity'); setItemIndex(0); }
   }, [isOpen]);
+
+  // Advances to item `idx`'s turn — its own convene video first if it has
+  // one, otherwise straight to its full reveal. Past the last item, moves
+  // to the summary screen.
+  const goToItem = useCallback((idx) => {
+    if (!sim || idx >= sim.results.length) { setPhase('summary'); return; }
+    setItemIndex(idx);
+    setPhase(itemVideoFor(sim.results[idx]) ? 'itemVideo' : 'itemReveal');
+  }, [sim]);
 
   if (!sim) return null;
 
-  const handleRarityEnded = () => setPhase(characterVideoUrl ? 'character' : 'revealed');
-  const handleCharacterEnded = () => setPhase('revealed');
+  const currentResult = sim.results[itemIndex];
+  const currentItemVideoUrl = phase === 'itemVideo' ? itemVideoFor(currentResult) : null;
+
+  const handleRarityEnded = () => goToItem(0);
+  const handleItemVideoEnded = () => setPhase('itemReveal');
+  const handleItemTap = () => goToItem(itemIndex + 1);
 
   const openDetail = (result) => {
     if (!result.name) return;
@@ -184,22 +224,34 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
           <X size={16} />
         </button>
 
-        {phase !== 'revealed' ? (
+        {phase === 'rarity' && (
           <div className="relative aspect-square bg-black">
-            {phase === 'rarity'
-              ? <ConveneVideo key="rarity" videoUrl={VIDEO_SRC[sim.video]} onEnded={handleRarityEnded} onError={handleRarityEnded} muted={muted} className="absolute inset-0" />
-              : <ConveneVideo key="character" videoUrl={characterVideoUrl} onEnded={handleCharacterEnded} onError={handleCharacterEnded} muted={muted} className="absolute inset-0" />}
-            <button
-              onClick={() => setPhase('revealed')}
-              className="kuro-btn kuro-btn-sm absolute bottom-3 right-3 z-20"
-            >
-              {t('tracker.conveneSim.skip')}
-            </button>
+            <ConveneVideo videoUrl={VIDEO_SRC[sim.video]} onEnded={handleRarityEnded} onError={handleRarityEnded} muted={muted} gain={sim.video === '5star' ? FIVE_STAR_GAIN : 1} className="absolute inset-0" />
+            <button onClick={() => setPhase('summary')} className="kuro-btn kuro-btn-sm absolute bottom-3 right-3 z-20">{t('tracker.conveneSim.skip')}</button>
           </div>
-        ) : (
+        )}
+
+        {phase === 'itemVideo' && (
+          <div className="relative aspect-square bg-black">
+            <ConveneVideo key={itemIndex} videoUrl={currentItemVideoUrl} onEnded={handleItemVideoEnded} onError={handleItemVideoEnded} muted={muted} gain={currentResult.rarity === 5 ? FIVE_STAR_GAIN : 1} className="absolute inset-0" />
+            <button onClick={() => setPhase('summary')} className="kuro-btn kuro-btn-sm absolute bottom-3 right-3 z-20">{t('tracker.conveneSim.skip')}</button>
+          </div>
+        )}
+
+        {phase === 'itemReveal' && (
+          <div className="relative aspect-square bg-black flex items-center justify-center cursor-pointer select-none" onClick={handleItemTap} role="button" tabIndex={0} aria-label={t('tracker.conveneSim.tapToContinue')}>
+            <ItemRevealFull result={currentResult} getImageFraming={getImageFraming} />
+            <div className="absolute bottom-3 left-0 right-0 flex flex-col items-center gap-1 pointer-events-none">
+              <span className="text-gray-400 text-sm">{t('tracker.conveneSim.tapToContinue')}</span>
+              <span className="text-gray-500 text-2xs kuro-number">{itemIndex + 1} / {sim.results.length}</span>
+            </div>
+          </div>
+        )}
+
+        {phase === 'summary' && (
           <div className="p-4">
             <div className={`grid gap-2 ${count === 1 ? 'grid-cols-1 max-w-[64px] mx-auto' : 'grid-cols-5'}`}>
-              {sim.results.map((r, i) => <PullResultIcon key={i} result={r} getImageFraming={getImageFraming} onOpenDetail={() => openDetail(r)} />)}
+              {sim.results.map((r, i) => <PullResultTile key={i} result={r} getImageFraming={getImageFraming} onOpenDetail={() => openDetail(r)} />)}
             </div>
             <p className="text-gray-500 text-sm text-center mt-3">{t('tracker.conveneSim.disclaimer')}</p>
             <ConveneSimStatsSummary stats={stats} onReset={reset} />

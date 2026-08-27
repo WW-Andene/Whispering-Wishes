@@ -78,6 +78,7 @@
     "resultsTitle": "Résultat du tirage ×{{count}}",
     "featuredBadge": "★",
     "skip": "Passer",
+    "tapToContinue": "Toucher pour continuer",
     "targetWeaponLabel": "Arme cible (touchez pour sélectionner)",
     "targetWeaponHint": "Votre prochain 5★ simulé sera garanti être cette arme",
     "disclaimer": "Simulation à titre d'aperçu uniquement — ne dépense pas d'Astrite/Marées et n'affecte pas votre pitié suivie.",
