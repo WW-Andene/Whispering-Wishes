@@ -10,38 +10,47 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   </React.StrictMode>,
 );
 
-// Reveal the app only once the boot video has actually finished playing
-// (not just once React has rendered underneath it) — a fixed fallback delay
+// Reveal the app once the boot video has faded out — a fixed fallback delay
 // covers the case where autoplay is blocked or the video fails to load, so
 // the app never stays hidden behind a splash that isn't going anywhere.
 const SPLASH_FALLBACK_MS = 6000;
-// Matches the #splash div's own `transition: opacity 0.4s` (index.html) so
-// the audio fade-out and the visual fade-out land together.
-const SPLASH_AUDIO_FADE_SECONDS = 0.4;
+// Both the video's own opacity and its volume ramp to 0 over this window
+// BEFORE the clip's natural end, then the #splash wrapper fades out at the
+// same time — one continuous fade (picture + sound together) rather than
+// playing to an abrupt last-frame cut and only fading the wrapper after.
+const SPLASH_FADE_SECONDS = 0.6;
 (() => {
   const splash = document.getElementById('splash');
   if (!splash) return;
   const video = document.getElementById('splash-video');
-  let done = false;
+  let fading = false, done = false;
   const reveal = () => {
     if (done) return;
     done = true;
     splash.style.opacity = '0';
     splash.addEventListener('transitionend', () => splash.remove(), { once: true });
   };
+  const beginFade = () => {
+    if (fading) return;
+    fading = true;
+    if (video) {
+      video.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
+      video.style.opacity = '0';
+    }
+    splash.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
+    reveal();
+  };
   if (video) {
-    video.addEventListener('ended', reveal, { once: true });
-    video.addEventListener('error', reveal, { once: true });
-    // Ramp volume to 0 over the last SPLASH_AUDIO_FADE_SECONDS instead of
-    // cutting the audio abruptly on 'ended' — only relevant when unmuted
-    // (see the sound-setting inline script above this video's markup).
+    video.addEventListener('ended', beginFade, { once: true });
+    video.addEventListener('error', beginFade, { once: true });
     video.addEventListener('timeupdate', () => {
-      if (video.muted || !video.duration) return;
+      if (!video.duration) return;
       const remaining = video.duration - video.currentTime;
-      if (remaining <= SPLASH_AUDIO_FADE_SECONDS) {
-        video.volume = Math.max(0, remaining / SPLASH_AUDIO_FADE_SECONDS);
+      if (remaining <= SPLASH_FADE_SECONDS) {
+        beginFade();
+        if (!video.muted) video.volume = Math.max(0, remaining / SPLASH_FADE_SECONDS);
       }
     });
   }
-  setTimeout(reveal, SPLASH_FALLBACK_MS);
+  setTimeout(beginFade, SPLASH_FALLBACK_MS);
 })();

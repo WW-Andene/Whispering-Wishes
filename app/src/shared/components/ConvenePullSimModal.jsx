@@ -2,10 +2,11 @@
 // WHISPERING WISHES — shared/components/ConvenePullSimModal.jsx
 // Floating kuro-style panel opened by ConvenePullPills: plays the
 // convene-sim video for the best rarity rolled (public/convene-sim/
-// {common,4star,5star}.mp4), then — if a 4★+ tier landed on a specific
+// {common,4star,5star}.mp4), then — if a 5★ or 4★ landed on a specific
 // character with its own convene clip (public/convene-animations/, same
 // asset as BannerCard's ▶️ preview) — that character's video plays next,
-// before finally revealing the 1 or 10 items.
+// before finally revealing the 1 or 10 items. A Skip button (visible
+// during either video) jumps straight to the reveal.
 //
 // This is a display-only simulator (core/conveneSimulator.js) — no wallet
 // is spent, no pity/history is written to state.profile.
@@ -86,12 +87,19 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   }, [isOpen]);
 
   // The specific character whose own convene video plays after the rarity
-  // clip — the first 5★ result that both isn't a weapon pull and actually
-  // has a recorded convene video (some characters don't).
+  // clip — the highest-rarity result (5★ preferred, then 4★) that both
+  // isn't a weapon pull and actually has a recorded convene video (not
+  // every character has one yet, at either rarity).
   const characterVideoUrl = useMemo(() => {
     if (!sim || isWeaponKind) return null;
-    const fiveStar = sim.results.find(r => r.rarity === 5);
-    return fiveStar ? getConveneAnimation(fiveStar.name) : null;
+    for (const rarity of [5, 4]) {
+      for (const r of sim.results) {
+        if (r.rarity !== rarity) continue;
+        const url = getConveneAnimation(r.name);
+        if (url) return url;
+      }
+    }
+    return null;
   }, [sim, isWeaponKind]);
 
   useEffect(() => {
@@ -120,6 +128,12 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
             {phase === 'rarity'
               ? <ConveneVideo key="rarity" videoUrl={VIDEO_SRC[sim.video]} onEnded={handleRarityEnded} onError={handleRarityEnded} muted={muted} className="absolute inset-0" />
               : <ConveneVideo key="character" videoUrl={characterVideoUrl} onEnded={handleCharacterEnded} onError={handleCharacterEnded} muted={muted} className="absolute inset-0" />}
+            <button
+              onClick={() => setPhase('revealed')}
+              className="kuro-btn kuro-btn-sm absolute bottom-3 right-3 z-20"
+            >
+              {t('tracker.conveneSim.skip')}
+            </button>
           </div>
         ) : (
           <div className="p-4">
