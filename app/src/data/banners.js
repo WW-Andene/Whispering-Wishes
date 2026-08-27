@@ -1071,6 +1071,19 @@ const OTHER_BACKGROUNDS = [
 // and <video poster>.
 const ANIMATED_BACKGROUNDS = [
   {
+    // Same version tier as 'v2-0' below (user-supplied, 2026-08-27) — placed
+    // first since it's the earlier teaser-style "Log" screen, not the story
+    // splash. pos is this array's own average across its other 18 entries
+    // (header ~29%, nav ~31%) — a neutral starting framing, not hand-tuned
+    // against this clip's real crop yet.
+    id: 'v2-0-log',
+    version: 2.0,
+    name: 'v2.0 Log',
+    art: './animated-bg/2.0-Log-Animated.mp4',
+    poster: './Background/2.0-Log-Background.jpg',
+    pos: { header: '50% 29%', nav: '50% 31%', bg: '50% 50%' },
+  },
+  {
     id: 'v2-0',
     version: 2.0,
     name: 'v2.0 All Silent Souls Can Sing',
