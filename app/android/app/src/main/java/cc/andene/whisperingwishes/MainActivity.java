@@ -152,8 +152,12 @@ public class MainActivity extends BridgeActivity {
                 // back to zero — meant to read as a harder edge than a flat
                 // single-frequency pulse, not a texture sweep across
                 // frequencies (a single tap has nothing to sweep across).
-                addControlPoint.invoke(builder, 1.0f, resonantHz, 6L);
-                addControlPoint.invoke(builder, 0.0f, resonantHz, 2L);
+                // 2026-08-27: shortened 6ms/2ms -> 3ms/1ms — requested feel
+                // was "short, dry, hard, like a nail on glass"; a faster
+                // attack and shorter hold reads as more of an instant
+                // transient click and less of a brief buzz.
+                addControlPoint.invoke(builder, 1.0f, resonantHz, 3L);
+                addControlPoint.invoke(builder, 0.0f, resonantHz, 1L);
 
                 Object effect = builderClass.getMethod("build").invoke(builder);
                 Vibrator.class.getMethod("vibrate", VibrationEffect.class).invoke(vibrator, effect);
@@ -171,8 +175,11 @@ public class MainActivity extends BridgeActivity {
             // necessarily the main thread — performHapticFeedback/Vibrator
             // calls expect it.
             webView.post(() -> {
+                // Falls back to CONTEXT_CLICK (not KEYBOARD_TAP) below API 35
+                // or when the envelope reflection call fails — same
+                // "short, dry, hard" reasoning as GlassHapticsPlugin.light().
                 if (!tryFrequencySnap(getVibrator())) {
-                    webView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+                    webView.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK);
                 }
             });
         }

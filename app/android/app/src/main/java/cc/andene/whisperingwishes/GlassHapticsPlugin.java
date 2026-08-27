@@ -49,15 +49,27 @@ public class GlassHapticsPlugin extends Plugin {
         }, delayMs);
     }
 
+    // 2026-08-27: switched from KEYBOARD_TAP to CONTEXT_CLICK — requested
+    // feel was "short, dry, hard, like a nail on glass". KEYBOARD_TAP is
+    // tuned by OEMs for the soft feel of typing; CONTEXT_CLICK is the
+    // documented sharper, more percussive constant (a definite click, not a
+    // typing tap) and is the closer match. Falls back to KEYBOARD_TAP below
+    // API 23 (CONTEXT_CLICK's minimum), same guard already used by medium().
     @PluginMethod
     public void light(PluginCall call) {
-        fire(HapticFeedbackConstants.KEYBOARD_TAP, 0);
+        fire(Build.VERSION.SDK_INT >= 23 ? HapticFeedbackConstants.CONTEXT_CLICK : HapticFeedbackConstants.KEYBOARD_TAP, 0);
         call.resolve();
     }
 
+    // Now that light() also uses CONTEXT_CLICK (see above), a single one here
+    // would be indistinguishable from a light tap — fired twice, 40ms apart,
+    // instead, so medium still reads as a firmer double-click rather than
+    // needing a whole different (and likely softer) constant.
     @PluginMethod
     public void medium(PluginCall call) {
-        fire(Build.VERSION.SDK_INT >= 23 ? HapticFeedbackConstants.CONTEXT_CLICK : HapticFeedbackConstants.KEYBOARD_TAP, 0);
+        int click = Build.VERSION.SDK_INT >= 23 ? HapticFeedbackConstants.CONTEXT_CLICK : HapticFeedbackConstants.KEYBOARD_TAP;
+        fire(click, 0);
+        fire(click, 40);
         call.resolve();
     }
 
