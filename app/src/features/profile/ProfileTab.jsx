@@ -901,12 +901,11 @@ function ProfileTab({
                 </div>
 
                 {/* Sound — subsection within Display Settings: master toggle
-                    + ambient/convene music tracks */}
-                <div className="pt-1 border-t border-white/10">
-                  <div className="flex items-center gap-2 text-gray-300 text-sm font-semibold uppercase tracking-wider mb-3 mt-3">
-                    <Music size={14} className="text-gray-400" /> {t('profile.sound.title')}
-                  </div>
-                </div>
+                    + ambient/convene music tracks. No separate divider/label
+                    above it — matches every other subsection in this same
+                    card (Animations, Backgrounds, Accent Theme): each one is
+                    just another row, self-labeled by its own bold title,
+                    with no section header of its own. */}
 
                 {/* Master Sound Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
@@ -921,7 +920,7 @@ function ProfileTab({
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, soundEnabled: !visualSettings.soundEnabled })}
-                    className={`relative w-[48px] h-[24px] rounded-full transition-colors ${visualSettings.soundEnabled ? 'bg-cyan-500' : ''}`}
+                    className={`relative w-[48px] h-[24px] rounded-full transition-colors flex-shrink-0 ${visualSettings.soundEnabled ? 'bg-cyan-500' : ''}`}
                     style={!visualSettings.soundEnabled ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.soundEnabled}
@@ -964,7 +963,7 @@ function ProfileTab({
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, conveneMusicEnabled: !visualSettings.conveneMusicEnabled })}
-                    className={`relative w-[48px] h-[24px] rounded-full transition-colors ${visualSettings.conveneMusicEnabled ? 'bg-purple-500' : ''}`}
+                    className={`relative w-[48px] h-[24px] rounded-full transition-colors flex-shrink-0 ${visualSettings.conveneMusicEnabled ? 'bg-purple-500' : ''}`}
                     style={!visualSettings.conveneMusicEnabled ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.conveneMusicEnabled}
@@ -999,7 +998,7 @@ function ProfileTab({
                           requestFloatingBannerPermission();
                         }
                       }}
-                      className={`relative w-[48px] h-[24px] rounded-full transition-colors ${visualSettings.floatingBannerEnabled ? 'bg-fuchsia-500' : ''}`}
+                      className={`relative w-[48px] h-[24px] rounded-full transition-colors flex-shrink-0 ${visualSettings.floatingBannerEnabled ? 'bg-fuchsia-500' : ''}`}
                       style={!visualSettings.floatingBannerEnabled ? { background: 'var(--bg-btn)' } : undefined}
                       role="switch"
                       aria-checked={visualSettings.floatingBannerEnabled}
