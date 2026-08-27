@@ -862,31 +862,32 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 {imageUrl && (
                   <FullSpineViewerButton name={name} imageUrl={imageUrl} variant="tile" label={t('modals.characterDetail.assetSprite')} className="w-full aspect-[1/2]" />
                 )}
+                {/* Banner Art and Banner Animation fused into one tile — the
+                    art is what's shown either way, the video (when this
+                    character has one) just plays inline over it instead of
+                    getting a whole separate duplicate-art tile. */}
                 {bannerArtUrl && (
-                  <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-video">
-                    <img src={bannerArtUrl} alt="" className="w-full h-full object-cover" onError={hideOnError} />
-                    <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg">{t('modals.characterDetail.assetBannerArt')}</span>
-                  </div>
-                )}
-                {bannerArtUrl && conveneVideoUrl && (
                   <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-video">
                     {assetBannerVideoPlaying ? (
                       <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setAssetBannerVideoPlaying(false)} className="absolute inset-0" />
                     ) : (
                       <img src={bannerArtUrl} alt="" className="w-full h-full object-cover" onError={hideOnError} />
                     )}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); setAssetBannerVideoPlaying(p => !p); }}
-                      className="absolute inset-0 flex items-center justify-center"
-                      aria-label={assetBannerVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name })}
-                    >
-                      {!assetBannerVideoPlaying && (
-                        <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
-                          <Play size={12} className="fill-current text-white ml-0.5" />
-                        </div>
-                      )}
-                    </button>
-                    <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg pointer-events-none">{t('modals.characterDetail.assetBannerAnimation')}</span>
+                    {conveneVideoUrl && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setAssetBannerVideoPlaying(p => !p); }}
+                        className="absolute inset-0 flex items-center justify-center"
+                        aria-label={assetBannerVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name })}
+                      >
+                        {!assetBannerVideoPlaying && (
+                          <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+                            <Play size={12} className="fill-current text-white ml-0.5" />
+                          </div>
+                        )}
+                      </button>
+                    )}
+                    {!assetBannerVideoPlaying && <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg pointer-events-none">{t('modals.characterDetail.assetBanner')}</span>}
+
                   </div>
                 )}
               </div>

@@ -13,11 +13,13 @@ import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 import { t } from '../../utils/i18n.js';
 
 // variant="tile": renders the Sprite asset tile shown in the character
-// detail modal's Assets section (a labeled thumbnail with a play icon
-// overlay) instead of the small round button used everywhere else — same
-// open state and modal panel underneath either way.
+// detail modal's Assets section — a labeled thumbnail that animates the
+// Spine sprite directly in place when pressed (toggling to a stop button),
+// instead of the small round button used everywhere else which opens a
+// separate full-screen panel.
 const FullSpineViewerButton = ({ name, imageUrl, className = '', variant = 'button', label }) => {
   const [open, setOpen] = React.useState(false);
+  const [tilePlaying, setTilePlaying] = React.useState(false);
   const fullSpineId = getSpineId(name, { surface: 'collection' });
 
   if (!imageUrl) return null;
@@ -27,19 +29,47 @@ const FullSpineViewerButton = ({ name, imageUrl, className = '', variant = 'butt
   return (
     <>
       {variant === 'tile' ? (
-        <button
-          onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-          className={`relative rounded-lg overflow-hidden border border-[var(--border-medium)] hover:border-gray-500 transition-colors ${className}`}
-          aria-label={ariaLabel}
-        >
-          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
-              <Play size={12} className="fill-current text-white ml-0.5" />
+        <div className={`relative rounded-lg overflow-hidden border border-[var(--border-medium)] ${className}`}>
+          {tilePlaying ? (
+            <SpinePlayer
+              characterId={fullSpineId}
+              context="full"
+              className="absolute inset-0"
+              backgroundColor="#00000000"
+              scaleOverride={1}
+              txOverride={0}
+              tyOverride={0}
+              fallbackImgUrl={imageUrl}
+              fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
+            />
+          ) : (
+            // scale(1.3): these "Full Sprite" cutouts ship with a good chunk
+            // of plain empty canvas above/below the actual figure (a wiki
+            // sourcing convention, not specific to this character) — plain
+            // object-cover leaves that margin fully visible instead of the
+            // art reaching the tile's own edges. Cropped in by this fixed
+            // scale via the card's own overflow-hidden rather than resizing
+            // the card itself.
+            <img src={imageUrl} alt="" className="w-full h-full object-cover" style={{ transform: 'scale(1.3)' }} />
+          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); setTilePlaying(p => !p); }}
+            className="absolute inset-0 flex items-center justify-center"
+            aria-label={tilePlaying ? t('modals.characterDetail.closeFullSpineAria') : ariaLabel}
+          >
+            {!tilePlaying && (
+              <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+                <Play size={12} className="fill-current text-white ml-0.5" />
+              </div>
+            )}
+          </button>
+          {tilePlaying && (
+            <div className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/50 flex items-center justify-center pointer-events-none">
+              <X size={12} className="text-white" />
             </div>
-          </div>
-          {label && <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg">{label}</span>}
-        </button>
+          )}
+          {label && !tilePlaying && <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg pointer-events-none">{label}</span>}
+        </div>
       ) : (
         <button
           onClick={(e) => { e.stopPropagation(); setOpen(true); }}
