@@ -180,3 +180,5 @@ export function simulateConvenePulls({ count, kind, featuredNames = [], featured
 
   return { results, video, endPity5: pity5, endPity4: pity4, endGuaranteed: guaranteed, endGuaranteed4: guaranteed4 };
 }
+
+export { HARD_PITY, HARD_PITY_4STAR };

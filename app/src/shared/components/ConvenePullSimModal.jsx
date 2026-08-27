@@ -21,7 +21,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { ConveneVideo } from './ConveneVideoLayer.jsx';
-import { simulateConvenePulls } from '../../core/conveneSimulator.js';
+import { simulateConvenePulls, HARD_PITY, HARD_PITY_4STAR } from '../../core/conveneSimulator.js';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banners.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
@@ -104,7 +104,7 @@ const ConveneSimStatsSummary = ({ stats, onReset }) => {
         <span className="text-gray-300 text-sm font-semibold uppercase tracking-wider">{t('tracker.conveneSim.statsTitle')}</span>
         <button type="button" onClick={onReset} className="kuro-btn kuro-btn-sm">{t('tracker.conveneSim.statsReset')}</button>
       </div>
-      <StatRow label={t('tracker.conveneSim.statsCurrentPity')} value={`5★ ${stats.pity5}/80 · 4★ ${stats.pity4}/10`} />
+      <StatRow label={t('tracker.conveneSim.statsCurrentPity')} value={`5★ ${stats.pity5}/${HARD_PITY} · 4★ ${stats.pity4}/${HARD_PITY_4STAR}`} />
       <StatRow label={t('tracker.conveneSim.statsTotalPulls')} value={stats.totalPulls} />
       <StatRow label={t('tracker.conveneSim.statsPullBreakdown')} value={`×1: ${stats.x1Pulls} · ×10: ${stats.x10Pulls}`} />
       <StatRow label={t('tracker.conveneSim.statsWeapons')} value={`5★ ${stats.weaponsByRarity[5]} · 4★ ${stats.weaponsByRarity[4]} · 3★ ${stats.weaponsByRarity[3]}`} />
