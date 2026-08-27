@@ -10,8 +10,8 @@
 // plays first — right as we arrive at THAT item's turn, not eagerly after
 // the rarity clip — then the item itself reveals. A Skip button (visible
 // during either video) jumps straight to the summary. Each item's reveal
-// plays a small synthesized chime (chime.js — a bell tone plus a scatter of
-// sparkle ticks, built from Web Audio oscillators, no audio file). After the
+// plays a small chime (chime.js — public/convene-sim/item-reveal-chime.mp3).
+// After the
 // last item, a summary screen shows every result at a glance plus a
 // persistent per-banner-kind stats tally (useConveneSimStats.js,
 // localStorage-backed) with its own Reset button.
