@@ -7,7 +7,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from '
 import { Info, X } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
-import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banners.js';
 import { haptic } from '../../utils/haptics.js';
 import { getElementIcon, getWeaponTypeIcon } from '../utils/elementVisuals.js';
 import { hideOnError } from '../utils/imageHelpers.js';
@@ -15,6 +15,7 @@ import { CountdownTimer } from './CountdownTimer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
+import { ConveneVideoButton } from './ConveneVideoButton.jsx';
 import { t } from '../../utils/i18n.js';
 
 const BANNER_GRADIENT_MAP = {
@@ -91,6 +92,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   const isFull = visualSettings?.animationsEnabled === 'full';
   const spineId = isChar ? getSpineId(item.name) : null;
+  const conveneVideoUrl = isChar ? getConveneAnimation(item.name) : null;
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   // Spine banners disabled app-wide (kept encapsulated here, not removed, for easy re-enable).
   const useSpine = SPINE_BANNERS_ENABLED && isFull && spineId && !spineFailed;
@@ -192,7 +194,10 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
         </div>
       </div>
       
-      {isChar && <FullSpineViewerButton name={item.name} imageUrl={imgUrl} className="absolute bottom-2 right-2 z-20" />}
+      {isChar && (conveneVideoUrl
+        ? <ConveneVideoButton name={item.name} videoUrl={conveneVideoUrl} className="absolute bottom-2 right-2 z-20" />
+        : <FullSpineViewerButton name={item.name} imageUrl={imgUrl} className="absolute bottom-2 right-2 z-20" />
+      )}
     </div>
     </div>
   );
