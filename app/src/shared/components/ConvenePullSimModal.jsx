@@ -104,6 +104,7 @@ const ConveneSimStatsSummary = ({ stats, onReset }) => {
         <span className="text-gray-300 text-sm font-semibold uppercase tracking-wider">{t('tracker.conveneSim.statsTitle')}</span>
         <button type="button" onClick={onReset} className="kuro-btn kuro-btn-sm">{t('tracker.conveneSim.statsReset')}</button>
       </div>
+      <StatRow label={t('tracker.conveneSim.statsCurrentPity')} value={`5★ ${stats.pity5}/80 · 4★ ${stats.pity4}/10`} />
       <StatRow label={t('tracker.conveneSim.statsTotalPulls')} value={stats.totalPulls} />
       <StatRow label={t('tracker.conveneSim.statsPullBreakdown')} value={`×1: ${stats.x1Pulls} · ×10: ${stats.x10Pulls}`} />
       <StatRow label={t('tracker.conveneSim.statsWeapons')} value={`5★ ${stats.weaponsByRarity[5]} · 4★ ${stats.weaponsByRarity[4]} · 3★ ${stats.weaponsByRarity[3]}`} />
@@ -121,9 +122,19 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   const muted = !visualSettings?.soundEnabled;
   const { stats, record, reset } = useConveneSimStats(kind);
 
+  // Simulated pity persists across pulls (useConveneSimStats) instead of
+  // resetting to the real live pity every time — seeded from the real
+  // pity only on the very first pull ever made in this banner's
+  // simulator (stats.seeded===false), same as a fresh pity counter would
+  // be. See useConveneSimStats.js's file header for why this matters:
+  // without it, soft pity (66+) was essentially unreachable.
   const sim = useMemo(() => {
     if (!isOpen) return null;
-    return simulateConvenePulls({ count, kind, featuredNames, featured4Stars, startPity5, startPity4, startGuaranteed, startGuaranteed4 });
+    const seedPity5 = stats.seeded ? stats.pity5 : startPity5;
+    const seedPity4 = stats.seeded ? stats.pity4 : startPity4;
+    const seedGuaranteed = stats.seeded ? stats.guaranteed : startGuaranteed;
+    const seedGuaranteed4 = stats.seeded ? stats.guaranteed4 : startGuaranteed4;
+    return simulateConvenePulls({ count, kind, featuredNames, featured4Stars, startPity5: seedPity5, startPity4: seedPity4, startGuaranteed: seedGuaranteed, startGuaranteed4: seedGuaranteed4 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 

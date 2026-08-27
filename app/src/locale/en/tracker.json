@@ -83,6 +83,7 @@
     "disclaimer": "Simulated for preview only — does not spend Astrite/Tides or affect your tracked pity.",
     "statsTitle": "Simulator Stats",
     "statsReset": "Reset",
+    "statsCurrentPity": "Current simulated pity",
     "statsTotalPulls": "Total pulls",
     "statsPullBreakdown": "Pull breakdown",
     "statsWeapons": "Weapons obtained",

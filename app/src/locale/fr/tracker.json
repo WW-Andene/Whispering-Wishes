@@ -83,6 +83,7 @@
     "disclaimer": "Simulation à titre d'aperçu uniquement — ne dépense pas d'Astrite/Marées et n'affecte pas votre pitié suivie.",
     "statsTitle": "Statistiques du simulateur",
     "statsReset": "Réinitialiser",
+    "statsCurrentPity": "Pitié simulée actuelle",
     "statsTotalPulls": "Tirages totaux",
     "statsPullBreakdown": "Répartition des tirages",
     "statsWeapons": "Armes obtenues",

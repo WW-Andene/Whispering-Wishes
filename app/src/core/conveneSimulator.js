@@ -97,7 +97,7 @@ const CONVENE_3STAR_WEAPONS = Object.keys(WEAPON_DATA).filter(n =>
  * @param {number} [opts.startPity4]
  * @param {boolean} [opts.startGuaranteed] - live 50/50-loss guarantee flag (character banner only)
  * @param {boolean} [opts.startGuaranteed4] - live 4★-rate-up-loss guarantee flag (character/weapon only)
- * @returns {{ results: Array<{name: string|null, rarity: 3|4|5, type: 'character'|'weapon', isFeatured: boolean, pity?: number, won50?: boolean|null}>, video: 'common'|'4star'|'5star' }}
+ * @returns {{ results: Array<{name: string|null, rarity: 3|4|5, type: 'character'|'weapon', isFeatured: boolean, pity?: number, won50?: boolean|null}>, video: 'common'|'4star'|'5star', endPity5: number, endPity4: number, endGuaranteed: boolean, endGuaranteed4: boolean }}
  */
 export function simulateConvenePulls({ count, kind, featuredNames = [], featured4Stars = [], startPity5 = 0, startPity4 = 0, startGuaranteed = false, startGuaranteed4 = false }) {
   const isWeapon = kind === 'weapon' || kind === 'standardWeap';
@@ -178,5 +178,5 @@ export function simulateConvenePulls({ count, kind, featuredNames = [], featured
   const bestRarity = results.reduce((m, r) => Math.max(m, r.rarity), 3);
   const video = bestRarity >= 5 ? '5star' : bestRarity === 4 ? '4star' : 'common';
 
-  return { results, video };
+  return { results, video, endPity5: pity5, endPity4: pity4, endGuaranteed: guaranteed, endGuaranteed4: guaranteed4 };
 }
