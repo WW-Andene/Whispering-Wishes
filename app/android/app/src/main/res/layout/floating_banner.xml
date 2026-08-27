@@ -19,7 +19,14 @@
         android:scaleType="centerCrop"
         android:contentDescription="@null" />
 
-    <VideoView
+    <!-- TextureView, not VideoView — VideoView is backed by a SurfaceView,
+         which renders on its own compositor surface and ignores the parent's
+         clipToOutline (its content punches straight through the rounded
+         corners, and it doesn't cover-scale to a fixed size reliably).
+         TextureView is a normal View, so it's clipped like anything else,
+         and FloatingBannerService.java scales it into this box itself
+         (cover-fit, matching the video's own aspect ratio) via setTransform. -->
+    <TextureView
         android:id="@+id/floating_video"
         android:layout_width="260dp"
         android:layout_height="120dp"

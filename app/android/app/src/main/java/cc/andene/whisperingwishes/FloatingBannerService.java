@@ -9,7 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
+import android.graphics.SurfaceTexture;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
@@ -17,22 +20,27 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.Surface;
+import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.VideoView;
 
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 // The "make the widget actually play video in place" feature — this is NOT
-// a home-screen AppWidget (RemoteViews genuinely cannot host a VideoView; see
-// BannerWidget.java's file header). This is a WindowManager overlay window —
-// the same mechanism chat-bubble/floating-control apps use — holding a real
-// View hierarchy, so a real VideoView plays inline, in the same window, with
-// no separate screen opening.
+// a home-screen AppWidget (RemoteViews genuinely cannot host a video view;
+// see BannerWidget.java's file header). This is a WindowManager overlay
+// window — the same mechanism chat-bubble/floating-control apps use —
+// holding a real View hierarchy, so a video plays inline, in the same
+// window, with no separate screen opening. Played via TextureView + a
+// manual MediaPlayer rather than the higher-level VideoView widget —
+// VideoView is backed by a SurfaceView, which composites on its own
+// separate surface and ignores this window's rounded-corner clipping (see
+// playConveneVideo()'s comment for the full explanation).
 //
 // Requires the user to grant "Display over other apps"
 // (Settings.ACTION_MANAGE_OVERLAY_PERMISSION) — there is no runtime
@@ -65,6 +73,7 @@ public class FloatingBannerService extends Service {
     private View overlayView;
     private WindowManager.LayoutParams layoutParams;
     private SharedPreferences prefs;
+    private MediaPlayer mediaPlayer;
 
     @Nullable
     @Override
@@ -91,6 +100,7 @@ public class FloatingBannerService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        releaseMediaPlayer();
         if (overlayView != null && windowManager != null) {
             try {
                 windowManager.removeView(overlayView);
@@ -181,34 +191,111 @@ public class FloatingBannerService extends Service {
         close.setOnClickListener(v -> stopSelf());
     }
 
+    // Plays via a manual MediaPlayer + TextureView instead of the high-level
+    // VideoView widget — see floating_banner.xml's comment on floating_video
+    // for why (VideoView's SurfaceView ignores clipToOutline and doesn't
+    // reliably fill a fixed-size box). The TextureView itself is a plain
+    // (fixed 260x120dp) box; once the video's real dimensions are known,
+    // applyCoverTransform scales+centers it to fill that box without
+    // distorting its aspect ratio, same idea as CSS's object-fit: cover.
     private void playConveneVideo(String url) {
         ImageView art = overlayView.findViewById(R.id.floating_art);
-        VideoView videoView = overlayView.findViewById(R.id.floating_video);
+        TextureView textureView = overlayView.findViewById(R.id.floating_video);
         ImageButton play = overlayView.findViewById(R.id.floating_play);
 
         art.setVisibility(View.GONE);
         play.setVisibility(View.GONE);
-        videoView.setVisibility(View.VISIBLE);
-        try {
-            videoView.setVideoURI(Uri.parse(url));
-            videoView.setOnPreparedListener(mp -> {
-                mp.setLooping(false);
-                videoView.start();
+        textureView.setVisibility(View.VISIBLE);
+
+        if (textureView.isAvailable()) {
+            startPlayback(url, textureView.getSurfaceTexture(), textureView);
+        } else {
+            textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+                @Override
+                public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+                    startPlayback(url, surface, textureView);
+                }
+
+                @Override
+                public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+                    return true;
+                }
+
+                @Override
+                public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {}
+
+                @Override
+                public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
             });
-            Runnable revert = () -> {
-                videoView.setVisibility(View.GONE);
-                art.setVisibility(View.VISIBLE);
-                play.setVisibility(View.VISIBLE);
-            };
-            videoView.setOnCompletionListener(mp -> revert.run());
-            videoView.setOnErrorListener((mp, what, extra) -> {
-                revert.run();
+        }
+    }
+
+    private void startPlayback(String url, SurfaceTexture surfaceTexture, TextureView textureView) {
+        releaseMediaPlayer();
+        try {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setSurface(new Surface(surfaceTexture));
+            mediaPlayer.setDataSource(this, Uri.parse(url));
+            // Fires as soon as the real dimensions are known — usually before
+            // onPrepared, but applying it again there too covers players/
+            // formats where it doesn't fire until playback actually starts.
+            mediaPlayer.setOnVideoSizeChangedListener((mp, width, height) ->
+                    applyCoverTransform(textureView, width, height));
+            mediaPlayer.setOnPreparedListener(mp -> {
+                applyCoverTransform(textureView, mp.getVideoWidth(), mp.getVideoHeight());
+                mp.start();
+            });
+            mediaPlayer.setOnCompletionListener(mp -> revertToArt());
+            mediaPlayer.setOnErrorListener((mp, what, extra) -> {
+                revertToArt();
                 return true;
             });
+            mediaPlayer.prepareAsync();
         } catch (Exception e) {
-            videoView.setVisibility(View.GONE);
-            art.setVisibility(View.VISIBLE);
-            play.setVisibility(View.VISIBLE);
+            revertToArt();
+        }
+    }
+
+    // CSS object-fit: cover, by hand — scales (from its center) whichever
+    // axis is needed so the video fills the TextureView's box completely,
+    // cropping the overflow rather than letterboxing or stretching/
+    // distorting the aspect ratio.
+    private void applyCoverTransform(TextureView textureView, int videoWidth, int videoHeight) {
+        int viewWidth = textureView.getWidth();
+        int viewHeight = textureView.getHeight();
+        if (viewWidth == 0 || viewHeight == 0 || videoWidth == 0 || videoHeight == 0) return;
+
+        float viewRatio = (float) viewWidth / viewHeight;
+        float videoRatio = (float) videoWidth / videoHeight;
+        float scaleX = 1f, scaleY = 1f;
+        if (videoRatio > viewRatio) {
+            scaleX = videoRatio / viewRatio;
+        } else {
+            scaleY = viewRatio / videoRatio;
+        }
+
+        Matrix matrix = new Matrix();
+        matrix.setScale(scaleX, scaleY, viewWidth / 2f, viewHeight / 2f);
+        textureView.setTransform(matrix);
+    }
+
+    private void revertToArt() {
+        if (overlayView == null) return;
+        View art = overlayView.findViewById(R.id.floating_art);
+        View videoView = overlayView.findViewById(R.id.floating_video);
+        View play = overlayView.findViewById(R.id.floating_play);
+        videoView.setVisibility(View.GONE);
+        art.setVisibility(View.VISIBLE);
+        play.setVisibility(View.VISIBLE);
+        releaseMediaPlayer();
+    }
+
+    private void releaseMediaPlayer() {
+        if (mediaPlayer != null) {
+            try {
+                mediaPlayer.release();
+            } catch (Exception ignored) {}
+            mediaPlayer = null;
         }
     }
 
