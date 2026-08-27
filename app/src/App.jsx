@@ -201,6 +201,18 @@ function WhisperingWishesInner() {
   useEffect(() => {
     syncBannerWidget(activeBanners);
   }, [activeBanners]);
+  // One-time global listener for the glass-touch press effect (see glassTouch.js)
+  useEffect(() => {
+    initGlassTouch();
+  }, []);
+  const [trophyOverrides, setTrophyOverrides] = useState(() => {
+    try { const s = localStorage.getItem(TROPHY_OVERRIDES_KEY); return s ? JSON.parse(s) : {}; } catch (err) { silentCatch(err, 'trophy overrides init'); return {}; }
+  });
+  
+  // ── Extracted hooks ──────────────────────────────────────────────────────
+  const { visualSettings, setVisualSettings, saveVisualSettings } = useVisualSettings();
+  useAmbientMusic(visualSettings);
+
   // "Display over other apps" has no runtime permission dialog — the user
   // grants it in a Settings screen, then returns to the app on their own,
   // with no callback telling us it happened. If the user turned the
@@ -222,19 +234,6 @@ function WhisperingWishesInner() {
     });
     return () => { cancelled = true; handle?.remove(); };
   }, [visualSettings.floatingBannerEnabled]);
-  // One-time global listener for the glass-touch press effect (see glassTouch.js)
-  useEffect(() => {
-    initGlassTouch();
-  }, []);
-  const [trophyOverrides, setTrophyOverrides] = useState(() => {
-    try { const s = localStorage.getItem(TROPHY_OVERRIDES_KEY); return s ? JSON.parse(s) : {}; } catch (err) { silentCatch(err, 'trophy overrides init'); return {}; }
-  });
-  
-  // ── Extracted hooks ──────────────────────────────────────────────────────
-  const { visualSettings, setVisualSettings, saveVisualSettings } = useVisualSettings();
-  useAmbientMusic(visualSettings);
-
-  
 
   // Image framing — provided by ImageFramingProvider context
   const {
