@@ -70,5 +70,13 @@
     "noFiftyFiftyValue": "Arme en vedette",
     "noFiftyFiftyDesc": "L'arme en vedette est garantie dès que vous obtenez un 5★. Le compteur de pitié est conservé pour la prochaine bannière d'arme en vedette.",
     "footerNote": "Chaque type de bannière a son propre compteur de pitié indépendant"
+  },
+  "conveneSim": {
+    "pullAria": "Simuler un tirage ×{{count}}",
+    "modalAria": "Simulation de tirage convene",
+    "closeAria": "Fermer la simulation de tirage",
+    "resultsTitle": "Résultat du tirage ×{{count}}",
+    "featuredBadge": "★",
+    "disclaimer": "Simulation à titre d'aperçu uniquement — ne dépense pas d'Astrite/Marées et n'affecte pas votre pitié suivie."
   }
 }

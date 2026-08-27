@@ -70,5 +70,13 @@
     "noFiftyFiftyValue": "Featured Weapon",
     "noFiftyFiftyDesc": "The featured weapon is guaranteed when you pull a 5★. Pity counter carries over to the next featured weapon banner.",
     "footerNote": "Each banner type has its own independent pity counter"
+  },
+  "conveneSim": {
+    "pullAria": "Simulate a {{count}}× pull",
+    "modalAria": "Convene pull simulation",
+    "closeAria": "Close pull simulation",
+    "resultsTitle": "{{count}}× Pull Result",
+    "featuredBadge": "★",
+    "disclaimer": "Simulated for preview only — does not spend Astrite/Tides or affect your tracked pity."
   }
 }

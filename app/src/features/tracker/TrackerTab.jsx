@@ -168,6 +168,7 @@ function TrackerTab({
                     timerColor="yellow"
                     collectionImages={collectionImages}
                     setDetailModal={setDetailModal}
+                    pity={state.profile.featured}
                   />
                 )) : (
                   <div className="kuro-empty-state text-center py-8">
@@ -192,6 +193,7 @@ function TrackerTab({
                     timerColor="pink"
                     collectionImages={collectionImages}
                     setDetailModal={setDetailModal}
+                    pity={state.profile.weapon}
                   />
                 )) : (
                   <div className="kuro-empty-state text-center py-8">
@@ -212,6 +214,7 @@ function TrackerTab({
                   altText="Tidal Chorus" title="Tidal Chorus" subtitle={t('tracker.standardResonatorLabel')}
                   items={activeBanners.standardCharacters} itemKey="name"
                   profileData={state.profile.standardChar} visualSettings={visualSettings}
+                  kind="standardChar"
                 />
 
                 {/* Standard Weapon Banner */}
@@ -221,6 +224,7 @@ function TrackerTab({
                   items={activeBanners.standardWeapons} itemKey="name"
                   profileData={state.profile.standardWeap} visualSettings={visualSettings}
                   imagePosition="65% top"
+                  kind="standardWeap"
                 />
               </div>
             )}

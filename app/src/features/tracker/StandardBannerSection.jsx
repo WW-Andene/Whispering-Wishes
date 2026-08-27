@@ -9,6 +9,8 @@ import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
+import { ConvenePullPills } from '../../shared/components/ConvenePullPills.jsx';
+import { ConvenePullSimModal } from '../../shared/components/ConvenePullSimModal.jsx';
 import { t } from '../../utils/i18n.js';
 
 const StandardBannerOverlay = memo(() => {
@@ -127,11 +129,12 @@ const StandardBannerOverlay = memo(() => {
 StandardBannerOverlay.displayName = 'StandardBannerOverlay';
 
 // Standard banner card — eliminates ~110 lines of copy-paste between standard char/weap banners
-const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings, imagePosition }) => {
+const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings, imagePosition, kind }) => {
   const stdMask = generateMaskGradient(visualSettings.standardFadePosition ?? 50, visualSettings.standardFadeIntensity ?? 100);
   const stdOpacity = (visualSettings.standardOpacity ?? 100) / 100;
   const hasStats = profileData?.history?.length > 0;
   const isFull = visualSettings?.animationsEnabled === 'full';
+  const [pullSim, setPullSim] = useState(null);
   return (
     <div className="relative overflow-hidden rounded-xl border border-cyan-500/30 kuro-shadow-standard-banner" style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', zIndex: 5 }}>
       {bannerImage && (
@@ -145,6 +148,20 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
         />
       )}
       {bannerImage && isFull && <StandardBannerOverlay w={0} h={0} />}
+      {/* Top-right (not bottom-right like BannerCard's pills, which sit next to
+          a ▶️ button this section doesn't have) — avoids overlapping the
+          pity-stat bar pinned to the bottom when hasStats is true. */}
+      <div className="absolute top-2 right-2 z-20">
+        <ConvenePullPills kind={kind} onPull={setPullSim} />
+      </div>
+      <ConvenePullSimModal
+        isOpen={pullSim != null}
+        onClose={() => setPullSim(null)}
+        kind={kind}
+        count={pullSim || 1}
+        startPity5={profileData?.pity5 ?? 0}
+        startPity4={profileData?.pity4 ?? 0}
+      />
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">

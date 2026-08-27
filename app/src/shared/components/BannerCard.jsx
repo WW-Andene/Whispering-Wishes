@@ -16,6 +16,8 @@ import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx
 import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 import { FullSpineViewerButton } from './FullSpineViewerButton.jsx';
 import { ConveneVideo } from './ConveneVideoLayer.jsx';
+import { ConvenePullPills } from './ConvenePullPills.jsx';
+import { ConvenePullSimModal } from './ConvenePullSimModal.jsx';
 import { t } from '../../utils/i18n.js';
 
 const BANNER_GRADIENT_MAP = {
@@ -79,12 +81,13 @@ const generateMaskGradient = (fadePos, fadeIntensity) => {
   return result;
 };
 
-const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, timerColor, collectionImages, setDetailModal }) => {
+const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, timerColor, collectionImages, setDetailModal, pity }) => {
   const isChar = type === 'character';
   const style = BANNER_GRADIENT_MAP[item.element] || BANNER_GRADIENT_MAP.Fusion;
   const imgUrl = item.imageUrl || bannerImage;
   const [spineFailed, setSpineFailed] = useState(false);
   const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
+  const [pullSim, setPullSim] = useState(null); // count of the in-progress pull sim, or null
 
   // Use unified mask generator
   const maskGradient = visualSettings
@@ -206,18 +209,37 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
         </div>
       </div>
       
-      {isChar && (conveneVideoUrl
-        ? (
-          <button
-            onClick={(e) => { e.stopPropagation(); setConveneVideoPlaying(p => !p); }}
-            className="kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center absolute bottom-2 right-2 z-20"
-            aria-label={conveneVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name: item.name })}
-          >
-            {conveneVideoPlaying ? <X size={14} /> : <Play size={12} className="fill-current ml-0.5" />}
-          </button>
-        )
-        : <FullSpineViewerButton name={item.name} imageUrl={imgUrl} className="absolute bottom-2 right-2 z-20" />
-      )}
+      {/* Pull simulator pills (display-only — see core/conveneSimulator.js) sit
+          immediately left of the ▶️ convene-video preview button. The two
+          are independent features: pills appear for both character and
+          weapon banners regardless of whether a convene-video preview
+          exists for this item. */}
+      <div className="absolute bottom-2 right-2 z-20 flex items-center gap-1">
+        <ConvenePullPills kind={isChar ? 'character' : 'weapon'} onPull={setPullSim} />
+        {isChar && (conveneVideoUrl
+          ? (
+            <button
+              onClick={(e) => { e.stopPropagation(); setConveneVideoPlaying(p => !p); }}
+              className="kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center"
+              aria-label={conveneVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name: item.name })}
+            >
+              {conveneVideoPlaying ? <X size={14} /> : <Play size={12} className="fill-current ml-0.5" />}
+            </button>
+          )
+          : <FullSpineViewerButton name={item.name} imageUrl={imgUrl} />
+        )}
+      </div>
+      <ConvenePullSimModal
+        isOpen={pullSim != null}
+        onClose={() => setPullSim(null)}
+        kind={isChar ? 'character' : 'weapon'}
+        count={pullSim || 1}
+        featuredNames={[item.name]}
+        featured4Stars={item.featured4Stars || []}
+        startPity5={pity?.pity5 ?? 0}
+        startPity4={pity?.pity4 ?? 0}
+        startGuaranteed={!!pity?.guaranteed}
+      />
     </div>
     </div>
   );
