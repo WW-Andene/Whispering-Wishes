@@ -949,7 +949,6 @@ function WhisperingWishesInner() {
   return (
     <CloudStorageProvider getBackupPayload={getBackupPayload} onRestoreData={handleRestoreData}>
     <ThemeColor />
-    <div className="status-bar-overlay" aria-hidden="true" />
     <div data-reference-device={isReferenceDevice} className={`min-h-screen ${visualSettings.oledMode ? 'oled-mode' : ''} ${visualSettings.animationsEnabled === 'off' ? 'no-animations' : ''} ${visualSettings.animationsEnabled === 'full' ? 'animations-full' : ''}`}>
       {appBgUrl && (
         // Explicit top/left/right/bottom (not just the inset-0 class) so this
