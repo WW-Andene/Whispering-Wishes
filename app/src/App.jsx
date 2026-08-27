@@ -962,19 +962,7 @@ function WhisperingWishesInner() {
         // doesn't paint over UI cards — an earlier attempt bumped this to
         // z-index 6 to also sit above TabBackground's vignette, but that
         // made every card render underneath it instead, washing them out.
-        //
-        // width/height fixed to 100vw/100lvh (not left/right/bottom: -20,
-        // which resolve as percentages of the CURRENT viewport) — on mobile
-        // browsers the address bar collapses/reappears while scrolling,
-        // resizing the layout viewport by 50-100px mid-scroll. That resize
-        // changes this box's height, which shifts the object-cover crop
-        // (object-position is a % of the box), reading as the whole
-        // background jumping up/down while scrolling. 100lvh is the "large
-        // viewport height" unit — the size once the address bar is fully
-        // hidden — so the box's dimensions stay constant through that
-        // transition; only its position can move, which fixed positioning
-        // already pins to the viewport regardless.
-        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: -20, left: -20, width: 'calc(100vw + 40px)', height: 'calc(100lvh + 40px)', zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
+        <div className={`fixed ${bgFramingMode ? 'pointer-events-auto cursor-pointer' : 'pointer-events-none'}`} style={{ top: -20, left: -20, right: -20, bottom: -20, zIndex: 3 }} aria-hidden={!bgFramingMode} onClick={bgFramingMode ? () => setEditingBgTarget('bg') : undefined}>
           {appBgType === 'animated' ? (
             <video
               src={appBgUrl}
