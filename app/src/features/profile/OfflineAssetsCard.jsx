@@ -1,18 +1,21 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — OfflineAssetsCard
 // "Download for offline" for every downloadable resource category
-// (ASSET_CATEGORY_LABELS in assetSW.js): all local asset directories the
-// native (Capacitor) app build excludes from its bundle to stay a
-// reasonable size (see CAPACITOR_APP.md) — character animations
-// (portraits/, spine/), banner videos (animated-bg/), and every other
-// locally-shipped icon/art directory (characters/, banners/, echoes/,
-// materials/, misc-assets/, achievements/, ui-icons/) — plus whatever
+// (ASSET_CATEGORY_LABELS in assetSW.js): character animations
+// (portraits/, spine/), banner videos (animated-bg/), and convene
+// animations (convene-animations/) — the directories the native
+// (Capacitor) app build actually excludes from its bundle to stay a
+// reasonable size (see CAPACITOR_APP.md, capacitor-build/build.mjs's
+// EXCLUDED_DIRS) — plus every other locally-shipped icon/art directory
+// (characters/, banners/, echoes/, materials/, misc-assets/,
+// achievements/, ui-icons/), which already ship inside the native bundle
+// but are still lazily fetched on the web build, plus whatever
 // character/weapon/echo/skill icons are still hotlinked from third-party
-// hosts rather than shipped locally (see build-asset-manifest.mjs).
-// On the web build the local directories are already served same-origin, so
-// this is equally useful there for anyone who wants the PWA to work fully
-// offline (e.g. before a flight) rather than lazily fetching art the first
-// time each screen is visited.
+// hosts rather than shipped locally at all (see build-asset-manifest.mjs).
+// So on the native app, only the first group actually reduces first-run
+// network use; on the web build every category here is useful for anyone
+// who wants the PWA to work fully offline (e.g. before a flight) rather
+// than lazily fetching art the first time each screen is visited.
 //
 // Map tiles have their own dedicated download UI already (MapTab.jsx) — not
 // duplicated here.
