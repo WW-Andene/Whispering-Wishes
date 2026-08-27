@@ -46,11 +46,9 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   // and useAmbientMusic.js adopts that same <audio> element rather than
   // starting a second one, so it carries on with no restart/gap once React
   // takes over.
+  // 'convene' is a valid value too — the pull-simulator's own loop, now
+  // just another ambient track choice rather than a separate toggle.
   logScreenTrack: '2',
-  // Background music loop for the convene pull simulator modal (public/
-  // audio/convene-screen.m4a) — independent of the master sound toggle's
-  // videos/chime so it can be turned off on its own.
-  conveneMusicEnabled: true,
 });
 
 export { DEFAULT_VISUAL_SETTINGS };

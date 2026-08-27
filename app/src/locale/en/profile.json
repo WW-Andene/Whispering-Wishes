@@ -183,9 +183,7 @@
     "track1": "1.0 Login Screen",
     "track2": "2.0 Login Screen",
     "track3": "3.0 Login Screen",
-    "convene": "Convene Music",
-    "conveneDesc": "Background music while the pull simulator is open",
-    "toggleConvene": "Toggle convene music"
+    "trackConvene": "Convene"
   },
   "importInfo": {
     "title": "Import Info",

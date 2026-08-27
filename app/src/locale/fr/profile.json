@@ -183,9 +183,7 @@
     "track1": "1.0 Login Screen",
     "track2": "2.0 Login Screen",
     "track3": "3.0 Login Screen",
-    "convene": "Musique de Convier",
-    "conveneDesc": "Musique de fond pendant que le simulateur de tirage est ouvert",
-    "toggleConvene": "Activer/désactiver la musique de Convier"
+    "trackConvene": "Convier"
   },
   "importInfo": {
     "title": "Informations d'importation",

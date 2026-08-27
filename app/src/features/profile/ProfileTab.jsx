@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Music, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { HEADER_ICON, SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
@@ -934,47 +934,27 @@ function ProfileTab({
                   </button>
                 </div>
 
-                {/* Ambient Music track picker — Off / 1.0 / 2.0 / 3.0 Login Screen */}
+                {/* Ambient Music track picker — Off / 1.0 / 2.0 / 3.0 Login
+                    Screen / Convene (the pull-simulator's own loop, folded
+                    in here as just another track choice rather than a
+                    separate always-on toggle scoped to that one modal). */}
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5 space-y-2">
                   <div>
                     <div className="text-white text-base font-medium">{t('profile.sound.ambient')}</div>
                     <div className="text-gray-400 text-sm">{t('profile.sound.ambientDesc')}</div>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {['off', '1', '2', '3'].map((track) => (
+                    {['off', '1', '2', '3', 'convene'].map((track) => (
                       <button
                         key={track}
                         type="button"
                         onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: track })}
                         className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === track ? 'active-gold' : ''}`}
                       >
-                        {track === 'off' ? t('profile.sound.trackOff') : t(`profile.sound.track${track}`)}
+                        {track === 'off' ? t('profile.sound.trackOff') : track === 'convene' ? t('profile.sound.trackConvene') : t(`profile.sound.track${track}`)}
                       </button>
                     ))}
                   </div>
-                </div>
-
-                {/* Convene Music Toggle */}
-                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.conveneMusicEnabled ? 'bg-purple-500 text-white' : 'text-gray-400'}`} style={!visualSettings.conveneMusicEnabled ? { background: 'var(--bg-btn)' } : undefined}>
-                      <Music size={16} />
-                    </div>
-                    <div>
-                      <div className="text-white text-base font-medium">{t('profile.sound.convene')}</div>
-                      <div className="text-gray-400 text-sm">{t('profile.sound.conveneDesc')}</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => saveVisualSettings({ ...visualSettings, conveneMusicEnabled: !visualSettings.conveneMusicEnabled })}
-                    className={`relative w-[48px] h-[24px] rounded-full transition-colors flex-shrink-0 ${visualSettings.conveneMusicEnabled ? 'bg-purple-500' : ''}`}
-                    style={!visualSettings.conveneMusicEnabled ? { background: 'var(--bg-btn)' } : undefined}
-                    role="switch"
-                    aria-checked={visualSettings.conveneMusicEnabled}
-                    aria-label={t('profile.sound.toggleConvene')}
-                  >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.conveneMusicEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
-                  </button>
                 </div>
 
                 {/* Install App on Device */}

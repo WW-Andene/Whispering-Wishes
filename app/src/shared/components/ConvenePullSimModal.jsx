@@ -49,13 +49,6 @@ const VIDEO_SRC = {
 // rarity video preceding the item-by-item reveal.
 const FIVE_STAR_REVEAL_SRC = './convene-sim/5star-reveal.mp4';
 
-// Background music loop for the whole modal (public/audio/convene-screen.m4a)
-// — separate from the rarity/item videos' own audio, gated on both the
-// master sound toggle and its own Sound-section switch. Resolved against
-// BASE_URL, not window.location.href — Vite's base is './' (relative, for
-// subpath/native file:// builds), same fix as chime.js/useAmbientMusic.js.
-const CONVENE_MUSIC_SRC = `${import.meta.env.BASE_URL || './'}audio/convene-screen.m4a`;
-const CONVENE_MUSIC_VOLUME = 0.25;
 
 // +100% (double) past the HTML5 <video> element's normal 100% ceiling
 // (ConveneVideoLayer's GainNode boost) — the 5★ rarity clip, the 5★ reveal
@@ -231,27 +224,11 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   const { getImageFraming } = useImageFramingContext();
   const muted = !visualSettings?.soundEnabled;
   const { stats, record, reset } = useConveneSimStats(kind);
-  const musicRef = useRef(null);
 
-  // Background music loop, independent of the rarity/item videos' own
-  // audio tracks — plays for as long as the modal is open, gated on both
-  // the master sound toggle and its own Sound-section switch.
-  useEffect(() => {
-    if (!isOpen || muted || !visualSettings?.conveneMusicEnabled) {
-      musicRef.current?.pause();
-      return;
-    }
-    const audio = musicRef.current || new Audio(CONVENE_MUSIC_SRC);
-    audio.loop = true;
-    audio.volume = CONVENE_MUSIC_VOLUME;
-    musicRef.current = audio;
-    audio.play().catch(() => {});
-    return () => { audio.pause(); };
-  }, [isOpen, muted, visualSettings?.conveneMusicEnabled]);
-
-  // Duck the app's own ambient Log Screen track (useAmbientMusic.js) for as
-  // long as this modal is open — its rarity/item videos (and the convene
-  // music loop above) would otherwise play on top of it. Resumed on close,
+  // Duck the app's own ambient track (useAmbientMusic.js — "Convene" is
+  // now just one of its choices, same as the Log Screen tracks) for as
+  // long as this modal is open — its rarity/item videos would otherwise
+  // play on top of it. Resumed on close,
   // but only if the ambient track is still actually enabled by then — read
   // through a ref (kept fresh below) rather than closing over `visualSettings`
   // directly, since this effect only depends on `isOpen`: if the user

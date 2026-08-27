@@ -22,6 +22,12 @@ const TRACK_SRC = {
   '1': `${BASE}audio/log-screen-1.m4a`,
   '2': `${BASE}audio/log-screen-2.m4a`,
   '3': `${BASE}audio/log-screen-3.m4a`,
+  // "Convene" — the pull-simulator's background loop — is just another
+  // ambient track choice now, not a separate always-on toggle scoped to
+  // the modal (that's what it used to be; folded in here per user
+  // request). Same duck/resume behavior as every other track: paused
+  // while ConvenePullSimModal's videos are playing, resumed after.
+  convene: `${BASE}audio/convene-screen.m4a`,
 };
 
 const AMBIENT_VOLUME = 0.35;

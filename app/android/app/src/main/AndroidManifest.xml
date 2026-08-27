@@ -47,10 +47,22 @@
             android:launchMode="singleInstance"
             android:configChanges="orientation|screenSize" />
 
+        <!-- exported="true" is required here, unlike every other Activity in
+             this file — this one is launched directly by the LAUNCHER app
+             (a separate process/app, e.g. Pixel Launcher) via
+             ACTION_APPWIDGET_CONFIGURE the moment the widget is placed, not
+             via a PendingIntent our own app created (PendingIntents run
+             with their creating app's identity regardless of exported, which
+             is why ConveneAnimationActivity/WidgetPullActivity above are
+             correctly exported="false" — they're only ever started that
+             way). A cross-app Intent naming this component directly needs
+             exported="true", or Android silently refuses to start it and
+             the whole widget-placement flow fails — this was very likely
+             why the widget "didn't work at all". -->
         <activity
             android:name=".BannerWidgetConfigureActivity"
             android:theme="@style/AppTheme.NoActionBar"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
