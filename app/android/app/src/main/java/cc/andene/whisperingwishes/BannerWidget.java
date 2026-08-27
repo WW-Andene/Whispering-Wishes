@@ -7,22 +7,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BitmapShader;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.Shader;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 // Home-screen "gacha banner" widget — the featured character banner (art,
 // name, Featured 4★ row, ▶️ convene-animation button), mirroring
@@ -50,9 +40,6 @@ public class BannerWidget extends AppWidgetProvider {
     private static final String KEY_ART_ASSET = "widget_banner_art_asset";
     private static final String KEY_FEATURED4 = "widget_banner_featured4";
     private static final String KEY_CONVENE_URL = "widget_banner_convene_url";
-    // Capacitor's webDir (dist-native) is bundled at android_asset/public/ —
-    // see capacitor.config.json's "webDir" and capacitor-build/build.mjs.
-    private static final String ASSET_PREFIX = "public/";
     private static final int THUMB_PX = 96; // decode target for the 30dp featured-4★ thumbnails
 
     @Override
@@ -80,7 +67,7 @@ public class BannerWidget extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_banner_element, "");
         }
 
-        Bitmap art = decodeAsset(context, artAsset, 800);
+        Bitmap art = WidgetAssetUtils.decodeAsset(context, artAsset, 800);
         if (art != null) {
             views.setImageViewBitmap(R.id.widget_art, art);
         }
@@ -92,9 +79,9 @@ public class BannerWidget extends AppWidgetProvider {
                 JSONArray arr = new JSONArray(featured4Json);
                 for (int i = 0; i < arr.length() && i < slotIds.length; i++) {
                     JSONObject entry = arr.getJSONObject(i);
-                    Bitmap thumb = decodeAsset(context, entry.optString("asset", null), THUMB_PX);
+                    Bitmap thumb = WidgetAssetUtils.decodeAsset(context, entry.optString("asset", null), THUMB_PX);
                     if (thumb != null) {
-                        views.setImageViewBitmap(slotIds[i], roundedCorners(thumb, 6f));
+                        views.setImageViewBitmap(slotIds[i], WidgetAssetUtils.roundedCorners(thumb, 6f * 2.75f));
                         views.setViewVisibility(slotIds[i], android.view.View.VISIBLE);
                     }
                 }
@@ -126,54 +113,6 @@ public class BannerWidget extends AppWidgetProvider {
         views.setOnClickPendingIntent(R.id.widget_root, pendingIntent);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
-    }
-
-    // Reads a bundled web asset (public/<assetPath>) and decodes it downsampled
-    // to roughly targetPx on its longest side — RemoteViews Bitmaps are sent
-    // through a Binder transaction with a size limit, so full-resolution
-    // character sprites (some multiple MB) would risk a
-    // TransactionTooLargeException; a decode-bounds pass picks an inSampleSize
-    // first so the full bitmap is never held in memory just to downscale it after.
-    private static Bitmap decodeAsset(Context context, String assetPath, int targetPx) {
-        if (assetPath == null || assetPath.isEmpty()) return null;
-        AssetManager am = context.getAssets();
-        String fullPath = ASSET_PREFIX + assetPath;
-        try {
-            BitmapFactory.Options bounds = new BitmapFactory.Options();
-            bounds.inJustDecodeBounds = true;
-            try (InputStream boundsStream = am.open(fullPath)) {
-                BitmapFactory.decodeStream(boundsStream, null, bounds);
-            }
-            int sample = 1;
-            int longest = Math.max(bounds.outWidth, bounds.outHeight);
-            while (longest / (sample * 2) >= targetPx) sample *= 2;
-
-            BitmapFactory.Options opts = new BitmapFactory.Options();
-            opts.inSampleSize = sample;
-            try (InputStream stream = am.open(fullPath)) {
-                return BitmapFactory.decodeStream(stream, null, opts);
-            }
-        } catch (IOException e) {
-            // Expected for characters without local art, or if the asset was
-            // renamed — widgetSync.js writes whatever DEFAULT_COLLECTION_IMAGES
-            // resolves to, which this class doesn't independently validate.
-            Log.w(TAG, "Asset not found: " + fullPath);
-            return null;
-        }
-    }
-
-    // Rounds a bitmap's corners by radius (dp, pre-scaled to px by the caller's
-    // density) — RemoteViews ImageViews can't clip to a rounded drawable
-    // themselves pre-API 31, so this bakes the rounding into the pixels.
-    private static Bitmap roundedCorners(Bitmap src, float radiusDp) {
-        float radius = radiusDp * 2.75f; // ~mdpi-independent approximation, matches THUMB_PX's fixed decode target
-        Bitmap output = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setShader(new BitmapShader(src, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
-        RectF rect = new RectF(0, 0, src.getWidth(), src.getHeight());
-        canvas.drawRoundRect(rect, radius, radius, paint);
-        return output;
     }
 
     // Called from MainActivity.onResume() so reopening the app refreshes the

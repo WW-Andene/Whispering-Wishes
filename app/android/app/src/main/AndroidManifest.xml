@@ -50,6 +50,22 @@
             android:launchMode="singleInstance"
             android:configChanges="orientation|screenSize" />
 
+        <!-- The floating "video plays inside the widget" overlay — see
+             FloatingBannerService.java's file header. specialUse is the only
+             foregroundServiceType that fits (none of the standard types —
+             mediaPlayback, location, camera, etc. — describe "persistent
+             draggable home-screen-like overlay"); Android 14+ (API 34)
+             requires both this type AND the matching manifest property
+             below, or the service is stopped by the OS on start. -->
+        <service
+            android:name=".FloatingBannerService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Persistent draggable banner overlay showing the featured gacha banner and playing its convene animation, started only when the user enables it in Profile settings" />
+        </service>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -71,4 +87,13 @@
          (including FCM push) can be shown — requested at runtime via
          PushNotifications.requestPermissions() in src/utils/pushNotifications.js. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- "Display over other apps" — required for FloatingBannerService's
+         overlay window. Declaring it here is necessary but not sufficient:
+         the user must also grant it via Settings.ACTION_MANAGE_OVERLAY_PERMISSION
+         (FloatingBannerPlugin.requestOverlayPermission), since this is one of
+         the permissions Android only grants through its own Settings screen,
+         never a runtime dialog. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 </manifest>

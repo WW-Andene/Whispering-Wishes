@@ -187,6 +187,12 @@
     "conveneDesc": "Musique de fond pendant que le simulateur de tirage est ouvert",
     "toggleConvene": "Activer/désactiver la musique de Convier"
   },
+  "floatingBanner": {
+    "title": "Bannière Gacha Flottante",
+    "desc": "Une fenêtre flottante déplaçable montrant la bannière en vedette, avec son animation de convier jouée directement dedans",
+    "toggleAria": "Activer/désactiver la bannière gacha flottante",
+    "permissionToast": "Vous allez être redirigé vers les Réglages pour autoriser « Affichage par-dessus les autres applications » — activez-la, puis revenez"
+  },
   "importInfo": {
     "title": "Informations d'importation",
     "uid": "UID",

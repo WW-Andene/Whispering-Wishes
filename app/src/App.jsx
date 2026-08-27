@@ -83,6 +83,7 @@ import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
 import { t, formatDate, useAppLocale } from './utils/i18n.js';
 import { useIsReferenceDevice, useUiScale } from './hooks/useIsReferenceDevice.js';
 import { syncHomeScreenWidget, syncBannerWidget } from './utils/widgetSync.js';
+import { hasFloatingBannerPermission, startFloatingBanner, isNativePlatform as isNativePlatformForFloatingBanner } from './utils/floatingBanner.js';
 import { initGlassTouch } from './utils/glassTouch.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
@@ -200,6 +201,27 @@ function WhisperingWishesInner() {
   useEffect(() => {
     syncBannerWidget(activeBanners);
   }, [activeBanners]);
+  // "Display over other apps" has no runtime permission dialog — the user
+  // grants it in a Settings screen, then returns to the app on their own,
+  // with no callback telling us it happened. If the user turned the
+  // floating banner on in Profile before granting it (requestPermission
+  // just opens Settings, it doesn't wait), this catches that: every time
+  // the app comes back to the foreground, re-check permission and start
+  // the overlay if it's now granted and the setting is still on.
+  useEffect(() => {
+    if (!isNativePlatformForFloatingBanner() || !visualSettings.floatingBannerEnabled) return;
+    let handle;
+    let cancelled = false;
+    import('@capacitor/app').then(({ App }) =>
+      App.addListener('resume', async () => {
+        if (await hasFloatingBannerPermission()) startFloatingBanner();
+      })
+    ).then((h) => {
+      if (cancelled) h.remove();
+      else handle = h;
+    });
+    return () => { cancelled = true; handle?.remove(); };
+  }, [visualSettings.floatingBannerEnabled]);
   // One-time global listener for the glass-touch press effect (see glassTouch.js)
   useEffect(() => {
     initGlassTouch();

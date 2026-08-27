@@ -54,6 +54,7 @@ public class MainActivity extends BridgeActivity {
         // while the Bridge is being constructed there.
         registerPlugin(SystemSettingsPlugin.class);
         registerPlugin(GlassHapticsPlugin.class);
+        registerPlugin(FloatingBannerPlugin.class);
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {

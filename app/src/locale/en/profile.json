@@ -187,6 +187,12 @@
     "conveneDesc": "Background music while the pull simulator is open",
     "toggleConvene": "Toggle convene music"
   },
+  "floatingBanner": {
+    "title": "Floating Gacha Banner",
+    "desc": "A draggable overlay showing the featured banner, with its convene animation playing right in it",
+    "toggleAria": "Toggle floating gacha banner",
+    "permissionToast": "You'll be taken to Settings to allow “Display over other apps” — turn it on, then come back"
+  },
   "importInfo": {
     "title": "Import Info",
     "uid": "UID",

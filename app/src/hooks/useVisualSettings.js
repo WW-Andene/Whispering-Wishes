@@ -51,6 +51,12 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   // audio/convene-screen.m4a) — independent of the master sound toggle's
   // videos/chime so it can be turned off on its own.
   conveneMusicEnabled: true,
+  // Native Android only — FloatingBannerService.java's draggable overlay
+  // showing the featured banner with an inline convene-animation player.
+  // Requires the user to separately grant "Display over other apps"; this
+  // flag just records the user's *intent* to have it on, since the actual
+  // service is started/stopped natively (see floatingBanner.js).
+  floatingBannerEnabled: false,
 });
 
 export { DEFAULT_VISUAL_SETTINGS };

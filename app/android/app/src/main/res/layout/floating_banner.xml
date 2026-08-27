@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Content of FloatingBannerService's overlay window — unlike widget_banner.xml
+     (RemoteViews), this is a REAL View hierarchy in a WindowManager overlay, so
+     it can hold a real VideoView. Tapping ▶️ swaps the art ImageView for the
+     VideoView in place — the convene animation genuinely plays inside this
+     floating "widget" rather than opening a separate screen. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/floating_root"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/floating_banner_bg"
+    android:clipToOutline="true"
+    android:elevation="8dp">
+
+    <ImageView
+        android:id="@+id/floating_art"
+        android:layout_width="260dp"
+        android:layout_height="120dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
+
+    <VideoView
+        android:id="@+id/floating_video"
+        android:layout_width="260dp"
+        android:layout_height="120dp"
+        android:visibility="gone" />
+
+    <View
+        android:layout_width="260dp"
+        android:layout_height="120dp"
+        android:background="@drawable/widget_banner_scrim" />
+
+    <TextView
+        android:id="@+id/floating_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="10dp"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:maxWidth="180dp" />
+
+    <ImageButton
+        android:id="@+id/floating_play"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="8dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_play_widget"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/banner_widget_play_aria" />
+
+    <ImageButton
+        android:id="@+id/floating_close"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="4dp"
+        android:background="@android:color/transparent"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:scaleType="fitCenter"
+        android:alpha="0.7"
+        android:contentDescription="@string/floating_banner_close_aria" />
+
+</FrameLayout>
