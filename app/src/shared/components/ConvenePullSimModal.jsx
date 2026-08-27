@@ -118,13 +118,17 @@ const ItemRevealFull = ({ result, getImageFraming }) => {
       style={{ background: `radial-gradient(circle at 50% 40%, rgba(${glowRgb},0.22), rgba(8,12,20,0.96) 75%)` }}
     >
       {imgUrl ? (
-        <img
-          src={imgUrl}
-          alt={result.name}
-          className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-          style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
-          onError={hideOnError}
-        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative w-[75%] h-[75%] overflow-hidden">
+            <img
+              src={imgUrl}
+              alt={result.name}
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+              style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
+              onError={hideOnError}
+            />
+          </div>
+        </div>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center text-cyan-300"><Sparkles size={72} /></div>
       )}
