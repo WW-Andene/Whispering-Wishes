@@ -9,7 +9,7 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS
 import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { getSonataLoadouts } from '../../data/echoes.js';
-import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banners.js';
+import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
@@ -88,9 +88,11 @@ const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filt
 const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData, visualSettings }) => {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
+  const [assetBannerVideoPlaying, setAssetBannerVideoPlaying] = useState(false);
   const data = CHARACTER_DATA[name];
   if (!data) return null;
   const conveneVideoUrl = getConveneAnimation(name);
+  const bannerArtUrl = getCharacterBannerArt(name);
 
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
   const bestWeapon = data.bestWeapon || null;
@@ -839,6 +841,51 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               ))}
             </div>
           </div>
+
+          {/* Assets — Sprite (▶ opens the same full Spine viewer as the
+              header's own button), Banner Art, and Banner Animation (the
+              convene video, playable right in its own tile). 2026-08-27:
+              starting with Qingxiao; every asset here is null-safe and
+              simply omits a tile when that character doesn't have it yet. */}
+          {(imageUrl || bannerArtUrl) && (
+            <div>
+              <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
+                <LayoutGrid size={14} className="text-gray-300" /> {t('modals.characterDetail.assetsSection')}
+              </h3>
+              <div className="grid grid-cols-3 gap-2">
+                {imageUrl && (
+                  <FullSpineViewerButton name={name} imageUrl={imageUrl} variant="tile" label={t('modals.characterDetail.assetSprite')} className="aspect-square" />
+                )}
+                {bannerArtUrl && (
+                  <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-square">
+                    <img src={bannerArtUrl} alt="" className="w-full h-full object-cover" onError={hideOnError} />
+                    <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg">{t('modals.characterDetail.assetBannerArt')}</span>
+                  </div>
+                )}
+                {bannerArtUrl && conveneVideoUrl && (
+                  <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-square">
+                    {assetBannerVideoPlaying ? (
+                      <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setAssetBannerVideoPlaying(false)} className="absolute inset-0" />
+                    ) : (
+                      <img src={bannerArtUrl} alt="" className="w-full h-full object-cover" onError={hideOnError} />
+                    )}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setAssetBannerVideoPlaying(p => !p); }}
+                      className="absolute inset-0 flex items-center justify-center"
+                      aria-label={assetBannerVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name })}
+                    >
+                      {!assetBannerVideoPlaying && (
+                        <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+                          <Play size={12} className="fill-current text-white ml-0.5" />
+                        </div>
+                      )}
+                    </button>
+                    <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg pointer-events-none">{t('modals.characterDetail.assetBannerAnimation')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
        </div>
       </div>

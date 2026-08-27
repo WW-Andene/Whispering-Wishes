@@ -62,6 +62,20 @@ const CURRENT_BANNERS = {
   ],
 };
 
+// Real gacha-banner splash art for a character, for display purposes (the
+// "Assets" section in CharacterDetailModal.jsx) — checks the currently live
+// banner first (CURRENT_BANNERS.characters), then CHARACTER_THEMES (past
+// banners' art, reused there for the theme picker). Returns null rather
+// than a placeholder when neither has one — the caller decides how to
+// handle "no banner art yet" (e.g. a brand-new debut sharing a banner with
+// someone else, like Qingxiao/Denia both using the same v3.6-p1 image).
+const getCharacterBannerArt = (name) => {
+  const live = CURRENT_BANNERS.characters.find(c => c.name === name);
+  if (live?.imageUrl) return live.imageUrl;
+  const theme = CHARACTER_THEMES.find(t => t.name === name);
+  return theme?.bannerArt || null;
+};
+
 // [SECTION:HISTORY]
 
 const BANNER_HISTORY = [
@@ -1493,5 +1507,6 @@ export {
   ANIMATED_BACKGROUNDS,
   CONVENE_ANIMATIONS,
   getConveneAnimation,
+  getCharacterBannerArt,
   preloadBannerHistoryArt,
 };

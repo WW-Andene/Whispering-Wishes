@@ -12,22 +12,44 @@ import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { SpinePlayer, getSpineId } from './SpinePlayer.jsx';
 import { t } from '../../utils/i18n.js';
 
-const FullSpineViewerButton = ({ name, imageUrl, className = '' }) => {
+// variant="tile": renders the Sprite asset tile shown in the character
+// detail modal's Assets section (a labeled thumbnail with a play icon
+// overlay) instead of the small round button used everywhere else — same
+// open state and modal panel underneath either way.
+const FullSpineViewerButton = ({ name, imageUrl, className = '', variant = 'button', label }) => {
   const [open, setOpen] = React.useState(false);
   const fullSpineId = getSpineId(name, { surface: 'collection' });
 
   if (!imageUrl) return null;
 
+  const ariaLabel = t('modals.characterDetail.viewFullSpineAria', { name });
+
   return (
     <>
-      <button
-        onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-        className={`kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center ${className}`}
-        aria-label={t('modals.characterDetail.viewFullSpineAria', { name })}
-      >
-        <Play size={12} className="fill-current ml-0.5" />
-      </button>
-      <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} onClick={() => setOpen(false)} ariaLabel={t('modals.characterDetail.viewFullSpineAria', { name })} centered padding="p-3">
+      {variant === 'tile' ? (
+        <button
+          onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+          className={`relative rounded-lg overflow-hidden border border-[var(--border-medium)] hover:border-gray-500 transition-colors ${className}`}
+          aria-label={ariaLabel}
+        >
+          <img src={imageUrl} alt="" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+              <Play size={12} className="fill-current text-white ml-0.5" />
+            </div>
+          </div>
+          {label && <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg">{label}</span>}
+        </button>
+      ) : (
+        <button
+          onClick={(e) => { e.stopPropagation(); setOpen(true); }}
+          className={`kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center ${className}`}
+          aria-label={ariaLabel}
+        >
+          <Play size={12} className="fill-current ml-0.5" />
+        </button>
+      )}
+      <FocusTrapModal isOpen={open} onClose={() => setOpen(false)} onClick={() => setOpen(false)} ariaLabel={ariaLabel} centered padding="p-3">
         <div className="relative" style={{ width: 'min(90vw, calc(85vh / 2))' }} onClick={e => e.stopPropagation()}>
           <div className="relative w-full aspect-[1/2]" style={{ filter: 'drop-shadow(0 20px 45px rgba(0,0,0,0.6))' }}>
             <SpinePlayer
