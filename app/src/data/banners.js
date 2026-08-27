@@ -1257,6 +1257,7 @@ ANIMATED_BACKGROUNDS.sort((a, b) => b.version - a.version);
 // ══════════════════════════════════════════════════════════════════════════════
 const CONVENE_ANIMATIONS = {
   Qingxiao: './convene-animations/qingxiao-convene.mp4',
+  Denia: './convene-animations/denia-convene.mp4',
 };
 const getConveneAnimation = (name) => CONVENE_ANIMATIONS[name] || null;
 
