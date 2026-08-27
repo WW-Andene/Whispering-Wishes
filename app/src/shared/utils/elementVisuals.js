@@ -234,6 +234,15 @@ const COMBAT_ROLE_ICONS = {
   'Hack Response':                         './ui-icons/i.ibb.co-jPFyVDzn-Role-Hack-Response.webp',
 };
 const getCombatRoleIcon = (tag) => COMBAT_ROLE_ICONS[tag] || null;
+// Gacha currency icons — user-supplied assets, filed 2026-08-27.
+const CURRENCY_ICONS = {
+  Astrite:      './ui-icons/Currency-Astrite.webp',
+  Lunite:       './ui-icons/Currency-Lunite.webp',
+  'Radiant Tide':   './ui-icons/Currency-Radiant-Tide.webp',
+  'Forging Tide':   './ui-icons/Currency-Forging-Tide.webp',
+  'Lustrous Tide':  './ui-icons/Currency-Lustrous-Tide.webp',
+};
+const getCurrencyIcon = (currency) => CURRENCY_ICONS[currency] || null;
 
 // P2-01 + P5-08 / P11-03 audit fixes:
 //   P2-01: optional-chain documentElement.classList so the SSR render path
@@ -318,4 +327,6 @@ export {
   getRegionIcon,
   COMBAT_ROLE_ICONS,
   getCombatRoleIcon,
+  CURRENCY_ICONS,
+  getCurrencyIcon,
 };
