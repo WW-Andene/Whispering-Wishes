@@ -890,7 +890,9 @@ function WhisperingWishesInner() {
 
   const {
     activeTheme, themeAccent,
-    headerBgUrl, headerBgPos, headerBgType, navBgUrl, navBgPos, navBgType, appBgUrl, appBgPos, appBgType,
+    headerBgUrl, headerBgPos, headerBgType, headerBgPoster,
+    navBgUrl, navBgPos, navBgType, navBgPoster,
+    appBgUrl, appBgPos, appBgType, appBgPoster,
   } = useThemeAccent(visualSettings);
 
   const headerControlBg = { backgroundColor: 'rgba(15, 20, 28, 0.9)' };
@@ -966,6 +968,8 @@ function WhisperingWishesInner() {
           {appBgType === 'animated' ? (
             <video
               src={appBgUrl}
+              poster={appBgPoster || undefined}
+              preload="auto"
               autoPlay
               loop
               muted
@@ -1002,7 +1006,7 @@ function WhisperingWishesInner() {
         {/* Theme banner art background */}
         {headerBgUrl && (
           headerBgType === 'animated' ? (
-            <video src={headerBgUrl} autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: headerBgPos }} />
+            <video src={headerBgUrl} poster={headerBgPoster || undefined} preload="auto" autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: headerBgPos }} />
           ) : (
             <img src={headerBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: headerBgPos }} loading="eager" />
           )
@@ -1092,7 +1096,7 @@ function WhisperingWishesInner() {
         }}>
         {navBgUrl && (
           navBgType === 'animated' ? (
-            <video src={navBgUrl} autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: navBgPos }} />
+            <video src={navBgUrl} poster={navBgPoster || undefined} preload="auto" autoPlay loop muted playsInline aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: navBgPos }} />
           ) : (
             <img src={navBgUrl} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" style={{ opacity: 0.75, pointerEvents: 'none', objectPosition: navBgPos }} />
           )

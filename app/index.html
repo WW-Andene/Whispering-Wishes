@@ -66,18 +66,22 @@
     <a href="#root" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm">
       Skip to main content
     </a>
-    <!-- Boot splash screen — the Intro_MRover clip (2026-08-27, upscaled 2x via
+    <!-- Boot splash screen — the Intro_FRover clip (2026-08-27, upscaled 2x via
          ffmpeg lanczos to 960x1704 — this environment has no AI
          super-resolution available, so this is a resolution upscale only,
          not a detail-restoring one) plays once and is the ONLY thing shown
-         on boot. poster is a frame extracted from the video itself (not a
-         separate design), so it's visually identical to the video's own
-         first frame while it decodes — a plain <video> with no poster shows
-         a generic media-player glyph on some mobile browsers until the
-         first frame is ready, which read as its own distinct "first
-         screen" glitching in before playback. No loop — main.jsx waits for
-         the 'ended' event (with a timeout fallback in case autoplay is
-         blocked) before revealing the app underneath. -->
+         on boot. Lives at app/public/splash-intro.mp4, a root-level file —
+         NOT inside any of capacitor-build/build.mjs's EXCLUDED_DIRS, so it
+         ships fully bundled in the native (APK) build too and plays with
+         no network dependency, by default, on every launch. poster is a
+         frame extracted from the video itself (not a separate design), so
+         it's visually identical to the video's own first frame while it
+         decodes — a plain <video> with no poster shows a generic
+         media-player glyph on some mobile browsers until the first frame
+         is ready, which read as its own distinct "first screen" glitching
+         in before playback. No loop — main.jsx waits for the 'ended' event
+         (with a timeout fallback in case autoplay is blocked) before
+         revealing the app underneath. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <video id="splash-video" src="./splash-intro.mp4" poster="./splash-intro-poster.jpg" preload="auto" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video>
     </div>

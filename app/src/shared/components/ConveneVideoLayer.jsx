@@ -24,15 +24,22 @@ const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0
   const [fadingOut, setFadingOut] = useState(false);
   const firedRef = useRef(false);
 
-  // Starts at opacity 0 and transitions to 1 right after mount — setting
-  // both the initial and target opacity in the same render wouldn't
-  // animate, since there'd be nothing for the transition to interpolate
-  // from. One rAF is enough to let the browser paint the 0-opacity frame
-  // first.
+  // Reset per videoUrl (the `key={videoUrl}` below already remounts the
+  // <video>, but this component instance itself is reused across plays).
   useEffect(() => {
-    const raf = requestAnimationFrame(() => setVisible(true));
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    setVisible(false);
+    setFadingOut(false);
+    firedRef.current = false;
+  }, [videoUrl]);
+
+  // Fade in only once the video actually has a decodable frame ready
+  // (onLoadedData), not just on mount — on a slow connection (native app
+  // fetching convene-animations/ from the hosted deployment, see
+  // capacitor-build/build.mjs) a video with no data yet renders as the
+  // browser's generic media-player glyph; staying invisible until then
+  // just leaves the static art underneath showing, which is what was
+  // already visible before this video layer mounted anyway.
+  const handleLoadedData = useCallback(() => setVisible(true), []);
 
   const handleTimeUpdate = useCallback((e) => {
     const v = e.currentTarget;
@@ -52,8 +59,10 @@ const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0
           opacity: fadingOut ? 0 : (visible ? 1 : 0),
           transition: `opacity ${fadingOut ? FADE_OUT_SECONDS : FADE_IN_SECONDS}s linear`,
         }}
+        preload="auto"
         autoPlay
         playsInline
+        onLoadedData={handleLoadedData}
         onTimeUpdate={handleTimeUpdate}
         onEnded={onEnded}
       />

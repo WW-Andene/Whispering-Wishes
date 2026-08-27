@@ -739,7 +739,7 @@ function ProfileTab({
                   const targetKey = bgTarget === 'header' ? 'headerBg' : bgTarget === 'navigation' ? 'navBg' : 'appBg';
                   const currentBg = visualSettings[targetKey];
 
-                  const selectImage = (type, id, url, pos) => {
+                  const selectImage = (type, id, url, pos, poster) => {
                     if (currentBg?.id === id && currentBg?.type === type) {
                       saveVisualSettings({ ...visualSettings, [targetKey]: null });
                     } else {
@@ -748,7 +748,11 @@ function ProfileTab({
                       const customPos = getCustomBgPosition(posKey, id);
                       const rawPos = customPos || pos?.[posKey] || 'center center';
                       const objectPosition = typeof rawPos === 'string' ? rawPos : 'center center';
-                      saveVisualSettings({ ...visualSettings, [targetKey]: { type, id, url, objectPosition } });
+                      // poster (animated backgrounds only) is stored alongside the video URL so
+                      // App.jsx's <video poster> can show the extracted first frame immediately
+                      // instead of the browser's generic media-player glyph while the video
+                      // itself is still buffering — see ANIMATED_BACKGROUNDS in banners.js.
+                      saveVisualSettings({ ...visualSettings, [targetKey]: { type, id, url, objectPosition, poster: poster || null } });
                     }
                   };
 
@@ -853,7 +857,7 @@ function ProfileTab({
                       {bgCategory === 'animated' && ANIMATED_BACKGROUNDS.map(a => (
                         <button
                           key={a.id}
-                          onClick={() => selectImage('animated', a.id, a.art, a.pos)}
+                          onClick={() => selectImage('animated', a.id, a.art, a.pos, a.poster)}
                           className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('animated', a.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
                           style={{ aspectRatio: '16/9' }}
                         >

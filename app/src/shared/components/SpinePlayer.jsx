@@ -323,6 +323,14 @@ function SpinePlayerComponent({
   const prerenderEntry = context === 'full' ? null : getPrerenderedIdle(charDataLookup, characterId);
   const [prerenderFailed, setPrerenderFailed] = useState(false);
   const usePrerender = !!prerenderEntry && !prerenderFailed;
+  // Gates the MP4/WebM prerender <video>'s opacity until it actually has a
+  // decodable frame — portraits/spine (this data) are excluded from the
+  // native bundle (see capacitor-build/build.mjs) and fetched over the
+  // network at runtime, so on a slow connection a <video> with no data yet
+  // renders as the browser's generic media-player glyph instead of staying
+  // invisible over the static art behind it.
+  const [videoReady, setVideoReady] = useState(false);
+  const lastVideoSrcRef = useRef(null);
 
   // Tier 1 gating — WebGL spine is expensive (one context per instance);
   // browsers cap concurrent contexts. We only mount it when the wrapper is
@@ -536,6 +544,13 @@ function SpinePlayerComponent({
       // margins anyway since the character is centered, so nothing visible
       // is lost.
       const isMp4 = /\.mp4(?:$|\?)/i.test(rawUrl);
+      // Adjust videoReady when the source changes — the officially
+      // sanctioned "reset state on prop change during render" pattern
+      // (see videoReady's declaration above for why).
+      if (lastVideoSrcRef.current !== absUrl) {
+        lastVideoSrcRef.current = absUrl;
+        if (videoReady) setVideoReady(false);
+      }
       inner = (
         <video
           src={absUrl}
@@ -549,9 +564,12 @@ function SpinePlayerComponent({
             objectFit: 'contain',
             transform: 'scale(1.5)',
             transformOrigin: 'center',
+            opacity: videoReady ? 1 : 0,
+            transition: 'opacity 0.3s ease',
             ...(isMp4 ? { filter: `url(#${SVG_FILTER_ID})` } : null),
             ...prerenderFill,
           }}
+          onLoadedData={() => setVideoReady(true)}
           onLoadedMetadata={(e) => { e.currentTarget.playbackRate = 0.5; }}
           onError={() => setPrerenderFailed(true)}
         />
