@@ -350,8 +350,12 @@ function SpinePlayerComponent({
     if (!charData) { setFailed(true); return; }
     // Sprite-spine assets (skelUrl) are exported from Spine 4.1 and need the
     // secondary runtime at window.spine41. Banner-spine JSONs run on 4.2.
-    // Both runtimes are loaded synchronously in index.html, so they're always
-    // present here.
+    // Both runtimes are loaded dynamically (main.jsx's loadSpineRuntimes,
+    // kicked off once the boot splash starts fading) rather than as static
+    // synchronous <script> tags now — normally long done loading by the
+    // time a user reaches any Spine-animated view, but the !spineLib check
+    // right below is the real guard for the rare case they aren't yet
+    // (falls back to setFailed rather than throwing).
     const spineLib = charData.skelUrl ? window.spine41 : window.spine;
     if (!spineLib?.SpinePlayer) {
       setFailed(true);

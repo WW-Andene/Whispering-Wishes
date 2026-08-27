@@ -8,15 +8,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.RemoteViews;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-// Home-screen "gacha banner" widget — the featured character banner (art,
-// name, Featured 4★ row, ▶️ convene-animation button), mirroring
-// BannerCard.jsx as closely as RemoteViews allows.
+// Home-screen "gacha banner" widget — the featured character/weapon banner
+// (art, name, Featured 4★ row, ×1/×10 pull-sim buttons, ▶️ convene-
+// animation button), mirroring BannerCard.jsx as closely as RemoteViews
+// allows. Which banner category a given widget instance shows is picked at
+// placement time (BannerWidgetConfigureActivity.java, android:configure in
+// banner_widget_info.xml) and changeable afterward via the widget's own
+// gear icon — stored per-appWidgetId (widget_category_<id>), since more
+// than one of these widgets can be placed at once, each independently
+// configured.
+//
+// Resizing a widget tall enough (onAppWidgetOptionsChanged below) also
+// reveals a second, secondary banner block showing whichever category
+// ISN'T the configured primary one — display-only, no pull-sim buttons on
+// that block, just art/name/Featured-4★/▶️.
 //
 // RemoteViews platform limits (this is not a guess — it's enforced by the
 // OS itself, since a widget is drawn by the launcher app's process, not
@@ -31,16 +44,20 @@ import org.json.JSONObject;
 //
 // Data comes from @capacitor/preferences's "CapacitorStorage" SharedPreferences
 // file, written by src/utils/widgetSync.js's syncBannerWidget() whenever the
-// featured banner changes — this class only reads it.
+// featured banners change — this class only reads it.
 public class BannerWidget extends AppWidgetProvider {
     private static final String TAG = "BannerWidget";
     private static final String PREFS_NAME = "CapacitorStorage";
-    private static final String KEY_NAME = "widget_banner_name";
-    private static final String KEY_TITLE = "widget_banner_title";
-    private static final String KEY_ART_ASSET = "widget_banner_art_asset";
-    private static final String KEY_FEATURED4 = "widget_banner_featured4";
-    private static final String KEY_CONVENE_URL = "widget_banner_convene_url";
     private static final int THUMB_PX = 96; // decode target for the 30dp featured-4★ thumbnails
+    private static final int PILL_ICON_PX = 40; // decode target for the 14dp ×1/×10 currency icons
+    // Same bundled asset ConvenePullPills.jsx's ASTRITE_ICON constant uses —
+    // always shown here (unlike the in-app pill, this doesn't know whether
+    // the player has a tide currency entered in Calculator) since it's
+    // always a valid fallback.
+    private static final String ASTRITE_ICON_ASSET = "ui-icons/Currency-Astrite.webp";
+    // Height (dp) a widget needs before the secondary banner block is worth
+    // showing — two ~130dp blocks plus some breathing room.
+    private static final int SECONDARY_MIN_HEIGHT_DP = 260;
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -49,15 +66,52 @@ public class BannerWidget extends AppWidgetProvider {
         }
     }
 
+    @Override
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
+        // Fires whenever the user resizes the widget — re-render so the
+        // secondary block can appear/disappear based on the new size.
+        updateWidget(context, appWidgetManager, appWidgetId);
+    }
+
     private void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String name = prefs.getString(KEY_NAME, null);
-        String title = prefs.getString(KEY_TITLE, null);
-        String artAsset = prefs.getString(KEY_ART_ASSET, null);
-        String featured4Json = prefs.getString(KEY_FEATURED4, null);
-        String conveneUrl = prefs.getString(KEY_CONVENE_URL, null);
+        String primaryCategory = prefs.getString("widget_category_" + appWidgetId, "character");
+        String secondaryCategory = "character".equals(primaryCategory) ? "weapon" : "character";
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_banner);
+
+        renderPrimaryBlock(context, views, prefs, appWidgetId, primaryCategory);
+
+        Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
+        int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
+        boolean showSecondary = heightDp >= SECONDARY_MIN_HEIGHT_DP && prefs.getString("widget_banner_" + secondaryCategory + "_name", null) != null;
+        views.setViewVisibility(R.id.widget_secondary_block, showSecondary ? View.VISIBLE : View.GONE);
+        if (showSecondary) {
+            renderSecondaryBlock(context, views, prefs, appWidgetId, secondaryCategory);
+        }
+
+        // Gear icon reopens BannerWidgetConfigureActivity for this exact
+        // widget instance — a plain Activity launch, not the system's
+        // placement-time ACTION_APPWIDGET_CONFIGURE flow, but the same
+        // Activity handles both identically.
+        Intent configureIntent = new Intent(context, BannerWidgetConfigureActivity.class);
+        configureIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        configureIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent configurePendingIntent = PendingIntent.getActivity(
+                context, appWidgetId * 10, configureIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        views.setOnClickPendingIntent(R.id.widget_settings, configurePendingIntent);
+
+        appWidgetManager.updateAppWidget(appWidgetId, views);
+    }
+
+    private void renderPrimaryBlock(Context context, RemoteViews views, SharedPreferences prefs, int appWidgetId, String category) {
+        String p = "widget_banner_" + category + "_";
+        String name = prefs.getString(p + "name", null);
+        String title = prefs.getString(p + "title", null);
+        String artAsset = prefs.getString(p + "art_asset", null);
+        String featured4Json = prefs.getString(p + "featured4", null);
+        String conveneUrl = prefs.getString(p + "convene_url", null);
 
         if (name != null) {
             views.setTextViewText(R.id.widget_banner_name, name);
@@ -68,62 +122,124 @@ public class BannerWidget extends AppWidgetProvider {
         }
 
         Bitmap art = WidgetAssetUtils.decodeAsset(context, artAsset, 800);
-        if (art != null) {
-            views.setImageViewBitmap(R.id.widget_art, art);
-        }
+        if (art != null) views.setImageViewBitmap(R.id.widget_art, art);
 
-        int[] slotIds = { R.id.widget_f4_1, R.id.widget_f4_2, R.id.widget_f4_3 };
-        for (int id : slotIds) views.setViewVisibility(id, android.view.View.GONE);
-        if (featured4Json != null) {
-            try {
-                JSONArray arr = new JSONArray(featured4Json);
-                for (int i = 0; i < arr.length() && i < slotIds.length; i++) {
-                    JSONObject entry = arr.getJSONObject(i);
-                    Bitmap thumb = WidgetAssetUtils.decodeAsset(context, entry.optString("asset", null), THUMB_PX);
-                    if (thumb != null) {
-                        views.setImageViewBitmap(slotIds[i], WidgetAssetUtils.roundedCorners(thumb, 6f * 2.75f));
-                        views.setViewVisibility(slotIds[i], android.view.View.VISIBLE);
-                    }
-                }
-            } catch (Exception e) {
-                Log.w(TAG, "Failed to parse widget_banner_featured4", e);
-            }
-        }
+        setFeatured4(context, views, new int[]{R.id.widget_f4_1, R.id.widget_f4_2, R.id.widget_f4_3}, featured4Json);
 
         if (conveneUrl != null) {
-            views.setViewVisibility(R.id.widget_play, android.view.View.VISIBLE);
+            views.setViewVisibility(R.id.widget_play, View.VISIBLE);
             Intent playIntent = new Intent(context, ConveneAnimationActivity.class);
             playIntent.putExtra(ConveneAnimationActivity.EXTRA_VIDEO_URL, conveneUrl);
             playIntent.putExtra(ConveneAnimationActivity.EXTRA_CHAR_NAME, name);
             playIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            PendingIntent playPendingIntent = PendingIntent.getActivity(
+            views.setOnClickPendingIntent(R.id.widget_play, PendingIntent.getActivity(
                     context, appWidgetId * 10 + 1, playIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            views.setOnClickPendingIntent(R.id.widget_play, playPendingIntent);
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         } else {
-            views.setViewVisibility(R.id.widget_play, android.view.View.GONE);
+            views.setViewVisibility(R.id.widget_play, View.GONE);
         }
 
-        // Tapping anywhere else on the banner opens the app itself, same as
-        // the countdown widget.
-        Intent launchIntent = new Intent(context, MainActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                context, appWidgetId, launchIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        views.setOnClickPendingIntent(R.id.widget_root, pendingIntent);
+        Bitmap astriteIcon = WidgetAssetUtils.decodeAsset(context, ASTRITE_ICON_ASSET, PILL_ICON_PX);
+        if (astriteIcon != null) {
+            views.setImageViewBitmap(R.id.widget_pull_x1_icon, astriteIcon);
+            views.setImageViewBitmap(R.id.widget_pull_x10_icon, astriteIcon);
+        }
+        views.setOnClickPendingIntent(R.id.widget_pull_x1, pullPendingIntent(context, appWidgetId, category, 1));
+        views.setOnClickPendingIntent(R.id.widget_pull_x10, pullPendingIntent(context, appWidgetId, category, 10));
 
-        appWidgetManager.updateAppWidget(appWidgetId, views);
+        // Tapping the art/scrim background (not the pills/▶️/gear, which
+        // consume their own touches) opens the app itself, same as the old
+        // countdown widget used to.
+        Intent launchIntent = new Intent(context, MainActivity.class);
+        views.setOnClickPendingIntent(R.id.widget_art, PendingIntent.getActivity(
+                context, appWidgetId, launchIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+    }
+
+    private void renderSecondaryBlock(Context context, RemoteViews views, SharedPreferences prefs, int appWidgetId, String category) {
+        String p = "widget_banner_" + category + "_";
+        String name = prefs.getString(p + "name", null);
+        String title = prefs.getString(p + "title", null);
+        String artAsset = prefs.getString(p + "art_asset", null);
+        String featured4Json = prefs.getString(p + "featured4", null);
+        String conveneUrl = prefs.getString(p + "convene_url", null);
+
+        views.setTextViewText(R.id.widget_secondary_name, name != null ? name : "");
+        views.setTextViewText(R.id.widget_secondary_element, title != null ? title.toUpperCase() : "");
+
+        Bitmap art = WidgetAssetUtils.decodeAsset(context, artAsset, 800);
+        if (art != null) views.setImageViewBitmap(R.id.widget_secondary_art, art);
+
+        setFeatured4(context, views, new int[]{R.id.widget_secondary_f4_1, R.id.widget_secondary_f4_2, R.id.widget_secondary_f4_3}, featured4Json);
+
+        if (conveneUrl != null) {
+            views.setViewVisibility(R.id.widget_secondary_play, View.VISIBLE);
+            Intent playIntent = new Intent(context, ConveneAnimationActivity.class);
+            playIntent.putExtra(ConveneAnimationActivity.EXTRA_VIDEO_URL, conveneUrl);
+            playIntent.putExtra(ConveneAnimationActivity.EXTRA_CHAR_NAME, name);
+            playIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            views.setOnClickPendingIntent(R.id.widget_secondary_play, PendingIntent.getActivity(
+                    context, appWidgetId * 10 + 4, playIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+        } else {
+            views.setViewVisibility(R.id.widget_secondary_play, View.GONE);
+        }
+
+        Intent launchIntent = new Intent(context, MainActivity.class);
+        views.setOnClickPendingIntent(R.id.widget_secondary_art, PendingIntent.getActivity(
+                context, appWidgetId * 10 + 5, launchIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+    }
+
+    private void setFeatured4(Context context, RemoteViews views, int[] slotIds, String featured4Json) {
+        for (int id : slotIds) views.setViewVisibility(id, View.GONE);
+        if (featured4Json == null) return;
+        try {
+            JSONArray arr = new JSONArray(featured4Json);
+            for (int i = 0; i < arr.length() && i < slotIds.length; i++) {
+                JSONObject entry = arr.getJSONObject(i);
+                Bitmap thumb = WidgetAssetUtils.decodeAsset(context, entry.optString("asset", null), THUMB_PX);
+                if (thumb != null) {
+                    views.setImageViewBitmap(slotIds[i], WidgetAssetUtils.roundedCorners(thumb, 6f * 2.75f));
+                    views.setViewVisibility(slotIds[i], View.VISIBLE);
+                }
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Failed to parse featured4 JSON", e);
+        }
+    }
+
+    private static PendingIntent pullPendingIntent(Context context, int appWidgetId, String category, int count) {
+        Intent intent = new Intent(context, WidgetPullActivity.class);
+        intent.putExtra(WidgetPullActivity.EXTRA_COUNT, count);
+        intent.putExtra(WidgetPullActivity.EXTRA_CATEGORY, category);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        // Distinct request codes per (widget instance × count) so the two
+        // pills' PendingIntents don't collide/overwrite each other.
+        int requestCode = appWidgetId * 10 + 2 + (count == 1 ? 0 : 1);
+        return PendingIntent.getActivity(context, requestCode, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     // Called from MainActivity.onResume() so reopening the app refreshes the
     // widget sooner than the OS's own 30-minute floor.
     public static void requestUpdate(Context context) {
-        Intent intent = new Intent(context, BannerWidget.class);
-        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         int[] ids = manager.getAppWidgetIds(new ComponentName(context, BannerWidget.class));
         if (ids.length == 0) return;
+        Intent intent = new Intent(context, BannerWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+        context.sendBroadcast(intent);
+    }
+
+    // Called by BannerWidgetConfigureActivity right after saving a new
+    // category choice, so that one widget instance refreshes immediately
+    // instead of waiting for the next broadcast.
+    public static void requestUpdateSingle(Context context, int appWidgetId) {
+        Intent intent = new Intent(context, BannerWidget.class);
+        intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{appWidgetId});
         context.sendBroadcast(intent);
     }
 }

@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Music, PictureInPicture2, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Music, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { HEADER_ICON, SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
@@ -31,8 +31,6 @@ import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
 import PushNotificationsCard from './PushNotificationsCard.jsx';
 import { openSoundSettings, isNativePlatform as isNativePlatformForSettings } from '../../utils/systemSettings.js';
-import { hasFloatingBannerPermission, requestFloatingBannerPermission, startFloatingBanner, stopFloatingBanner } from '../../utils/floatingBanner.js';
-import HapticLabCard from './HapticLabCard.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
@@ -156,7 +154,11 @@ function ProfileTab({
   // ── Background picker state ─────────────────────────────────────────────
   const [bgTarget, setBgTarget] = useState('header');
   const [bgCategory, setBgCategory] = useState('resonators');
-  const [bgSectionCollapsed, setBgSectionCollapsed] = useState(false);
+  // Closed by default — the full category grid is a lot to show before the
+  // user's even asked to browse it. The 3-target preview row (header/
+  // navigation/background) stays visible even while collapsed, below, since
+  // it's the "what's currently set" summary this section is for.
+  const [bgSectionCollapsed, setBgSectionCollapsed] = useState(true);
   const [activePlayersCount, setActivePlayersCount] = useState(null);
   const [activePlayersHistory, setActivePlayersHistory] = useState([]);
   const [presenceError, setPresenceError] = useState(null);
@@ -777,10 +779,10 @@ function ProfileTab({
                       <ChevronDown size={16} className={`text-gray-400 transition-transform flex-shrink-0 ${bgSectionCollapsed ? '-rotate-90' : ''}`} />
                     </button>
 
-                    {!bgSectionCollapsed && (
-                    <>
-                    {/* Target buttons with previews */}
-                    <div className="flex gap-1.5 mb-3">
+                    {/* Target buttons with previews — visible even while
+                        collapsed: the "what's currently set" summary this
+                        section is for, not just an entry into the picker. */}
+                    <div className={`flex gap-1.5 ${bgSectionCollapsed ? 'mt-3' : 'mb-3'}`}>
                       {[
                         { key: 'header', label: t('profile.display.targetHeader'), settingKey: 'headerBg' },
                         { key: 'navigation', label: t('profile.display.targetNavigation'), settingKey: 'navBg' },
@@ -788,7 +790,7 @@ function ProfileTab({
                       ].map(t => {
                         const bg = visualSettings[t.settingKey];
                         return (
-                          <button key={t.key} onClick={() => { setBgTarget(t.key); setEditingBgTarget(t.key === 'header' ? 'header' : t.key === 'navigation' ? 'nav' : 'bg'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
+                          <button key={t.key} onClick={() => { setBgSectionCollapsed(false); setBgTarget(t.key); setEditingBgTarget(t.key === 'header' ? 'header' : t.key === 'navigation' ? 'nav' : 'bg'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key && !bgSectionCollapsed ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
                             {bg?.url && bg?.type !== 'animated' && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />}
                             {bg?.type === 'animated' && <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/40 to-purple-900/40 opacity-50" />}
                             <span className="relative z-10">{t.label}</span>
@@ -798,6 +800,8 @@ function ProfileTab({
                       })}
                     </div>
 
+                    {!bgSectionCollapsed && (
+                    <>
                     {/* Category tabs */}
                     <div className="flex gap-1.5 mb-3">
                       {['resonators', 'version', 'others', 'animated'].map(c => (
@@ -901,12 +905,11 @@ function ProfileTab({
                 </div>
 
                 {/* Sound — subsection within Display Settings: master toggle
-                    + ambient/convene music tracks */}
-                <div className="pt-1 border-t border-white/10">
-                  <div className="flex items-center gap-2 text-gray-300 text-sm font-semibold uppercase tracking-wider mb-3 mt-3">
-                    <Music size={14} className="text-gray-400" /> {t('profile.sound.title')}
-                  </div>
-                </div>
+                    + ambient/convene music tracks. No separate divider/label
+                    above it — matches every other subsection in this same
+                    card (Animations, Backgrounds, Accent Theme): each one is
+                    just another row, self-labeled by its own bold title,
+                    with no section header of its own. */}
 
                 {/* Master Sound Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
@@ -921,7 +924,7 @@ function ProfileTab({
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, soundEnabled: !visualSettings.soundEnabled })}
-                    className={`relative w-[48px] h-[24px] rounded-full transition-colors ${visualSettings.soundEnabled ? 'bg-cyan-500' : ''}`}
+                    className={`relative w-[48px] h-[24px] rounded-full transition-colors flex-shrink-0 ${visualSettings.soundEnabled ? 'bg-cyan-500' : ''}`}
                     style={!visualSettings.soundEnabled ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.soundEnabled}
@@ -964,7 +967,7 @@ function ProfileTab({
                   </div>
                   <button
                     onClick={() => saveVisualSettings({ ...visualSettings, conveneMusicEnabled: !visualSettings.conveneMusicEnabled })}
-                    className={`relative w-[48px] h-[24px] rounded-full transition-colors ${visualSettings.conveneMusicEnabled ? 'bg-purple-500' : ''}`}
+                    className={`relative w-[48px] h-[24px] rounded-full transition-colors flex-shrink-0 ${visualSettings.conveneMusicEnabled ? 'bg-purple-500' : ''}`}
                     style={!visualSettings.conveneMusicEnabled ? { background: 'var(--bg-btn)' } : undefined}
                     role="switch"
                     aria-checked={visualSettings.conveneMusicEnabled}
@@ -973,42 +976,6 @@ function ProfileTab({
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.conveneMusicEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
-
-                {/* Floating Banner Overlay — Android-only, needs "Display over
-                    other apps" (no runtime dialog, only a Settings screen) */}
-                {isNativePlatformForSettings() && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.floatingBannerEnabled ? 'bg-fuchsia-500 text-white' : 'text-gray-400'}`} style={!visualSettings.floatingBannerEnabled ? { background: 'var(--bg-btn)' } : undefined}>
-                        <PictureInPicture2 size={16} />
-                      </div>
-                      <div>
-                        <div className="text-white text-base font-medium">{t('profile.floatingBanner.title')}</div>
-                        <div className="text-gray-400 text-sm">{t('profile.floatingBanner.desc')}</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        const next = !visualSettings.floatingBannerEnabled;
-                        saveVisualSettings({ ...visualSettings, floatingBannerEnabled: next });
-                        if (!next) { stopFloatingBanner(); return; }
-                        if (await hasFloatingBannerPermission()) {
-                          startFloatingBanner();
-                        } else {
-                          toast?.addToast?.(t('profile.floatingBanner.permissionToast'), 'info');
-                          requestFloatingBannerPermission();
-                        }
-                      }}
-                      className={`relative w-[48px] h-[24px] rounded-full transition-colors ${visualSettings.floatingBannerEnabled ? 'bg-fuchsia-500' : ''}`}
-                      style={!visualSettings.floatingBannerEnabled ? { background: 'var(--bg-btn)' } : undefined}
-                      role="switch"
-                      aria-checked={visualSettings.floatingBannerEnabled}
-                      aria-label={t('profile.floatingBanner.toggleAria')}
-                    >
-                      <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.floatingBannerEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
-                    </button>
-                  </div>
-                )}
 
                 {/* Install App on Device */}
                 {pwa?.canInstall && (
@@ -1059,7 +1026,6 @@ function ProfileTab({
             {/* ── App maintenance: updates + offline asset downloads ────────── */}
             <AppUpdateCard toast={toast} />
             <PushNotificationsCard toast={toast} />
-            <HapticLabCard />
             {isNativePlatformForSettings() && <OfflineAssetsCard toast={toast} />}
 
             {/* ── Cloud Backup ──────────────────────────────────── */}

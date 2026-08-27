@@ -54,7 +54,6 @@ public class MainActivity extends BridgeActivity {
         // while the Bridge is being constructed there.
         registerPlugin(SystemSettingsPlugin.class);
         registerPlugin(GlassHapticsPlugin.class);
-        registerPlugin(FloatingBannerPlugin.class);
         super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
@@ -190,11 +189,9 @@ public class MainActivity extends BridgeActivity {
     public void onResume() {
         super.onResume();
         // Nudge the home-screen widget to refresh now rather than waiting for
-        // Android's own 30-minute floor — this is the only other moment
-        // widget_end_millis could have changed (widgetSync.js runs on app
-        // mount/server change), so it's the natural place to ask for a
-        // sooner update.
-        EventCountdownWidget.requestUpdate(this);
+        // Android's own 30-minute floor — this is the only other moment its
+        // data could have changed (widgetSync.js runs on app mount/banner
+        // change), so it's the natural place to ask for a sooner update.
         BannerWidget.requestUpdate(this);
     }
 }

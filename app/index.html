@@ -121,8 +121,14 @@
 
           var started = false;
           var startAmbient = function () {
-            if (started) return;
+            if (started || window.__bootAmbientStarted) return;
+            // React (useAmbientMusic.js) mounts almost immediately — well
+            // before this deferred callback fires — and creates its own
+            // Audio + sets window.__bootAmbientStarted if it gets here
+            // first. Without this check, both sides would create their own
+            // Audio for the same track and play them on top of each other.
             started = true;
+            window.__bootAmbientStarted = true;
             var audio = new Audio('./audio/log-screen-' + track + '.m4a');
             audio.loop = true;
             audio.volume = 0.35;
@@ -140,36 +146,21 @@
         } catch (e) {}
       })();
     </script>
-    <!-- Spine player runtime (IIFE) — loaded from CDN for WebGL texture compatibility.
-         Moved here (was in <head>) so these synchronous, network-fetched scripts
-         don't block the browser from reaching/starting the boot splash video
-         above on a cold launch. Not needed until a Spine-animated character tab
-         is actually opened, well after boot, so parsing them this much later
-         costs nothing.
-         P3-02 audit fix: Subresource Integrity hashes pinned to version 4.2.109.
-         Regenerate on version bump:
-           curl -sSL "<url>" | openssl dgst -sha384 -binary | openssl base64 -A -->
-    <link rel="stylesheet"
-          href="https://unpkg.com/@esotericsoftware/spine-player@4.2.109/dist/spine-player.css"
-          integrity="sha384-SAzRnvZaanzeQyV9076wVkiVpz8Ps2uicu0yff7GJdBU2Pr65zYUg5tYbXT8Uzaz"
-          crossorigin="anonymous" />
-    <script src="https://unpkg.com/@esotericsoftware/spine-player@4.2.109/dist/iife/spine-player.js"
-            integrity="sha384-C2uhee9ZK7jve2lChHRuBQ0OqZjzZSNaxmRiBY9Y0fHA6yFLUZjPQyE7ogX3kJZg"
-            crossorigin="anonymous"></script>
-    <!-- Secondary spine-player runtime @4.1.55 for Spine 4.1-exported assets
-         (e.g. sprite-spine portraits from nanoka). Spine runtimes are not
-         backward-compatible across minor versions, so the 4.2 runtime above
-         cannot read a 4.1 .skel. We stash 4.2's globals, let 4.1 install onto
-         window.spine, then capture as window.spine41 and restore 4.2. Both
-         runtimes are loaded synchronously so SpinePlayer never has to wait
-         for a "ready" signal.
-         SRI regenerated via:
-           curl -sSL "<url>" | openssl dgst -sha384 -binary | openssl base64 -A -->
-    <script>window.__spine42 = window.spine; window.spine = undefined;</script>
-    <script src="https://unpkg.com/@esotericsoftware/spine-player@4.1.55/dist/iife/spine-player.js"
-            integrity="sha384-JmJJLCJBXRw87w7ce9AOcL7EqR8Km9mzuu0MDsbSaceHZEeB+0QstgcQ6a076u8Q"
-            crossorigin="anonymous"></script>
-    <script>window.spine41 = window.spine; window.spine = window.__spine42; delete window.__spine42;</script>
+    <!-- Spine player runtimes used to load here as static synchronous
+         <script src> tags. That avoided blocking the boot video from
+         STARTING (they'd been moved out of <head> for that), but a
+         synchronous <script src> still blocks the main thread for however
+         long it takes to fetch+parse+execute — and that was happening
+         WHILE the boot video was actively playing, autoplay having already
+         started before the parser even reached these tags. On a mid/low-
+         end Android device that main-thread contention is exactly the kind
+         of thing that reads as a choppy, stuttering video. They're loaded
+         dynamically instead now — src/main.jsx's loadSpineRuntimes() kicks
+         them off once the splash starts fading out, so the video's entire
+         active playback window has the main thread to itself. Not needed
+         until a Spine-animated character tab is actually opened, well
+         after boot either way, so the few extra seconds before they're
+         ready costs nothing. -->
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
     <script type="module" src="/src/main.jsx"></script>

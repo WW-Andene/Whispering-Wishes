@@ -57,11 +57,24 @@ export function useAmbientMusic(visualSettings) {
 
   useEffect(() => {
     if (!audioRef.current) {
+      // React mounts (and this effect runs) essentially immediately on
+      // load — well before index.html's boot script fires, since that one
+      // deliberately waits for the splash video's 'playing' event (or a
+      // 1.5s fallback) before starting its own Audio, to avoid contending
+      // with the video's decode. So window.__bootAmbientAudio is normally
+      // still unset here, and this creates the audio itself instead.
+      // Registering it back onto window.__bootAmbientAudio (and setting a
+      // "someone already started this" flag) is what lets the boot
+      // script's later, deferred check skip creating a second, overlapping
+      // Audio for the same track once it does fire — without this, both
+      // sides raced to create their own and played on top of each other.
       const audio = window.__bootAmbientAudio || new Audio();
       audio.loop = true;
       audio.volume = AMBIENT_VOLUME;
       audioRef.current = audio;
       sharedAmbientAudio = audio;
+      window.__bootAmbientAudio = audio;
+      window.__bootAmbientStarted = true;
     }
     return () => {
       audioRef.current?.pause();

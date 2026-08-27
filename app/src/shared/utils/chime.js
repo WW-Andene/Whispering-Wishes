@@ -11,9 +11,10 @@
 // 404s in both cases, which is why the chime was silent.
 const CHIME_URL = `${import.meta.env.BASE_URL || './'}convene-sim/item-reveal-chime.mp3`;
 
-// -15% off the source clip's native volume per user feedback (it read too
-// loud relative to the rest of the reveal flow).
-const CHIME_GAIN = 0.85;
+// Off the source clip's native volume per user feedback (it read too loud
+// relative to the rest of the reveal flow) — first -15% (0.85), lowered
+// further to -45% (0.55) on a second pass.
+const CHIME_GAIN = 0.55;
 
 /**
  * Plays the item-reveal sound. No-op if playback is unavailable/blocked
