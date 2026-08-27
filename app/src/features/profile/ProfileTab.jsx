@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Music, PictureInPicture2, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Music, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { HEADER_ICON, SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
@@ -31,7 +31,6 @@ import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
 import PushNotificationsCard from './PushNotificationsCard.jsx';
 import { openSoundSettings, isNativePlatform as isNativePlatformForSettings } from '../../utils/systemSettings.js';
-import { hasFloatingBannerPermission, requestFloatingBannerPermission, startFloatingBanner, stopFloatingBanner } from '../../utils/floatingBanner.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
@@ -977,42 +976,6 @@ function ProfileTab({
                     <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.conveneMusicEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
-
-                {/* Floating Banner Overlay — Android-only, needs "Display over
-                    other apps" (no runtime dialog, only a Settings screen) */}
-                {isNativePlatformForSettings() && (
-                  <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.floatingBannerEnabled ? 'bg-fuchsia-500 text-white' : 'text-gray-400'}`} style={!visualSettings.floatingBannerEnabled ? { background: 'var(--bg-btn)' } : undefined}>
-                        <PictureInPicture2 size={16} />
-                      </div>
-                      <div>
-                        <div className="text-white text-base font-medium">{t('profile.floatingBanner.title')}</div>
-                        <div className="text-gray-400 text-sm">{t('profile.floatingBanner.desc')}</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        const next = !visualSettings.floatingBannerEnabled;
-                        saveVisualSettings({ ...visualSettings, floatingBannerEnabled: next });
-                        if (!next) { stopFloatingBanner(); return; }
-                        if (await hasFloatingBannerPermission()) {
-                          startFloatingBanner();
-                        } else {
-                          toast?.addToast?.(t('profile.floatingBanner.permissionToast'), 'info');
-                          requestFloatingBannerPermission();
-                        }
-                      }}
-                      className={`relative w-[48px] h-[24px] rounded-full transition-colors flex-shrink-0 ${visualSettings.floatingBannerEnabled ? 'bg-fuchsia-500' : ''}`}
-                      style={!visualSettings.floatingBannerEnabled ? { background: 'var(--bg-btn)' } : undefined}
-                      role="switch"
-                      aria-checked={visualSettings.floatingBannerEnabled}
-                      aria-label={t('profile.floatingBanner.toggleAria')}
-                    >
-                      <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.floatingBannerEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
-                    </button>
-                  </div>
-                )}
 
                 {/* Install App on Device */}
                 {pwa?.canInstall && (

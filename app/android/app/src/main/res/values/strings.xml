@@ -10,8 +10,4 @@
     <string name="banner_widget_description">Shows the featured gacha banner — art, Featured 4★s, and a button to play the convene animation</string>
     <string name="banner_widget_play_aria">Play convene animation</string>
     <string name="convene_widget_playback_error">Couldn\'t play the convene animation — check your connection</string>
-    <string name="floating_banner_close_aria">Close floating banner</string>
-    <string name="floating_banner_notif_channel">Floating banner</string>
-    <string name="floating_banner_notif_title">Whispering Wishes</string>
-    <string name="floating_banner_notif_text">Floating gacha banner is active — tap to open the app, drag the banner to move it</string>
 </resources>
