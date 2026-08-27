@@ -1313,6 +1313,13 @@ const CONVENE_ANIMATIONS = {
   Youhu: './convene-animations/youhu-convene.mp4',
   Zani: './convene-animations/zani-convene.mp4',
   Zhezhi: './convene-animations/zhezhi-convene.mp4',
+  // One generic Rover clip (not element-specific) shared across all four
+  // playable elements — CHARACTER_DATA has no plain "Rover" key, only the
+  // four "Rover: X" element variants.
+  'Rover: Spectro': './convene-animations/rover-convene.mp4',
+  'Rover: Havoc': './convene-animations/rover-convene.mp4',
+  'Rover: Aero': './convene-animations/rover-convene.mp4',
+  'Rover: Electro': './convene-animations/rover-convene.mp4',
 };
 const getConveneAnimation = (name) => CONVENE_ANIMATIONS[name] || null;
 
