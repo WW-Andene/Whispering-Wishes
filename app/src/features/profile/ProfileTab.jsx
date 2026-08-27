@@ -945,7 +945,7 @@ function ProfileTab({
             <AppUpdateCard toast={toast} />
             <PushNotificationsCard toast={toast} />
             <HapticLabCard />
-            <OfflineAssetsCard toast={toast} />
+            {isNativePlatformForSettings() && <OfflineAssetsCard toast={toast} />}
 
             {/* ── Cloud Backup ──────────────────────────────────── */}
             <Card>

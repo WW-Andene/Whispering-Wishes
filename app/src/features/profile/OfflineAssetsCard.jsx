@@ -9,13 +9,14 @@
 // EXCLUDED_DIRS) — plus every other locally-shipped icon/art directory
 // (characters/, banners/, echoes/, materials/, misc-assets/,
 // achievements/, ui-icons/), which already ship inside the native bundle
-// but are still lazily fetched on the web build, plus whatever
-// character/weapon/echo/skill icons are still hotlinked from third-party
-// hosts rather than shipped locally at all (see build-asset-manifest.mjs).
-// So on the native app, only the first group actually reduces first-run
-// network use; on the web build every category here is useful for anyone
-// who wants the PWA to work fully offline (e.g. before a flight) rather
-// than lazily fetching art the first time each screen is visited.
+// but were still fetched over the network at runtime rather than served
+// from the bundle, plus whatever character/weapon/echo/skill icons are
+// still hotlinked from third-party hosts rather than shipped locally at
+// all (see build-asset-manifest.mjs).
+//
+// Native-only (see the isNativePlatform gate in ProfileTab.jsx) — the web
+// build has no use for a manual bulk-download step here, so this card is
+// hidden there entirely rather than just left inert.
 //
 // Map tiles have their own dedicated download UI already (MapTab.jsx) — not
 // duplicated here.
