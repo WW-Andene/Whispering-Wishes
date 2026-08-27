@@ -13,6 +13,7 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import java.lang.reflect.Method;
 
 // Complete rewrite — every earlier version of this plugin (raw
 // createWaveform, VibrationEffect.Composition primitives, short/long raw
@@ -61,50 +62,156 @@ public class GlassHapticsPlugin extends Plugin {
         call.resolve();
     }
 
+    // 2026-08-27: on API 35+ (this device included), each level below now
+    // tries a real frequency/amplitude envelope first — MainActivity's
+    // low-latency tap bridge already proved this path (not the old
+    // Composition-primitive/createWaveform attempts referenced in the class
+    // comment above) can shape a genuinely distinct, textured feel on this
+    // hardware, not just "loud vs quiet, long vs short". Frequency here is
+    // expressed as a multiple of the actuator's own resonant frequency —
+    // lower multiples read as a duller/heavier thud, the full 1.0x as the
+    // sharpest, thinnest click (used by light's snap). Falls through to the
+    // existing performHapticFeedback sequence below API 35 or if the
+    // reflection call fails for any reason (unsupported hardware, wrong
+    // method signature on this OS build, etc).
+    private static final class EnvPoint {
+        final float amp, freqMul; final long ms;
+        EnvPoint(float amp, float freqMul, long ms) { this.amp = amp; this.freqMul = freqMul; this.ms = ms; }
+    }
+
+    private boolean tryEnvelope(EnvPoint[] points) {
+        try {
+            if (Build.VERSION.SDK_INT < 35) return false;
+            Vibrator vibrator = getVibrator();
+            if (vibrator == null) return false;
+
+            Method supportedMethod = Vibrator.class.getMethod("areEnvelopeEffectsSupported");
+            if (!(Boolean) supportedMethod.invoke(vibrator)) return false;
+
+            float resonantHz = 150f; // typical phone LRA resonant frequency, used as a fallback
+            try {
+                Method resonantMethod = Vibrator.class.getMethod("getResonantFrequency");
+                float reported = (float) resonantMethod.invoke(vibrator);
+                if (reported > 0) resonantHz = reported;
+            } catch (Exception ignored) {
+                // getResonantFrequency() not available/reported — keep the fallback.
+            }
+
+            Class<?> builderClass = Class.forName("android.os.VibrationEffect$WaveformEnvelopeBuilder");
+            Object builder = builderClass.getConstructor().newInstance();
+            Method addControlPoint = builderClass.getMethod("addControlPoint", float.class, float.class, long.class);
+            for (EnvPoint p : points) {
+                addControlPoint.invoke(builder, p.amp, resonantHz * p.freqMul, p.ms);
+            }
+
+            Object effect = builderClass.getMethod("build").invoke(builder);
+            Vibrator.class.getMethod("vibrate", VibrationEffect.class).invoke(vibrator, effect);
+            return true;
+        } catch (Throwable t) {
+            // Wrong method name/signature for this OS build, unsupported
+            // hardware, or any other reflection failure — fall through.
+            return false;
+        }
+    }
+
+    // Firmer double-snap than light's single one — same 1.0x-resonance snap
+    // shape repeated with a silent gap in between, encoded as one precise
+    // envelope instead of two separately-scheduled performHapticFeedback
+    // calls (removes Handler/JS-bridge timing jitter between the two hits).
+    private static final EnvPoint[] MEDIUM_ENVELOPE = {
+        new EnvPoint(1.0f, 1.0f, 3), new EnvPoint(0.0f, 1.0f, 1),
+        new EnvPoint(0.0f, 1.0f, 36),
+        new EnvPoint(1.0f, 1.0f, 3), new EnvPoint(0.0f, 1.0f, 1),
+    };
+
     // Now that light() also uses CONTEXT_CLICK (see above), a single one here
     // would be indistinguishable from a light tap — fired twice, 40ms apart,
     // instead, so medium still reads as a firmer double-click rather than
     // needing a whole different (and likely softer) constant.
     @PluginMethod
     public void medium(PluginCall call) {
-        int click = Build.VERSION.SDK_INT >= 23 ? HapticFeedbackConstants.CONTEXT_CLICK : HapticFeedbackConstants.KEYBOARD_TAP;
-        fire(click, 0);
-        fire(click, 40);
+        if (!tryEnvelope(MEDIUM_ENVELOPE)) {
+            int click = Build.VERSION.SDK_INT >= 23 ? HapticFeedbackConstants.CONTEXT_CLICK : HapticFeedbackConstants.KEYBOARD_TAP;
+            fire(click, 0);
+            fire(click, 40);
+        }
         call.resolve();
     }
+
+    // A single low-frequency (0.5x resonance) punch, held longer than
+    // light/medium's snaps — lower frequency reads as deeper/heavier, the
+    // longer hold as more deliberate than a quick click.
+    private static final EnvPoint[] HEAVY_ENVELOPE = {
+        new EnvPoint(1.0f, 0.5f, 8), new EnvPoint(0.0f, 0.5f, 3),
+    };
 
     @PluginMethod
     public void heavy(PluginCall call) {
-        fire(HapticFeedbackConstants.LONG_PRESS, 0);
+        if (!tryEnvelope(HEAVY_ENVELOPE)) {
+            fire(HapticFeedbackConstants.LONG_PRESS, 0);
+        }
         call.resolve();
     }
+
+    // A low thud followed by a bright full-resonance click — a rising,
+    // two-tone "confirm" texture rather than two identical hits.
+    private static final EnvPoint[] SUCCESS_ENVELOPE = {
+        new EnvPoint(1.0f, 0.5f, 6), new EnvPoint(0.0f, 0.5f, 2),
+        new EnvPoint(0.0f, 0.5f, 60),
+        new EnvPoint(1.0f, 1.0f, 3), new EnvPoint(0.0f, 1.0f, 1),
+    };
 
     // Keyboard-tap, then a firmer confirm ~90ms later — a light-then-hard
-    // double tap.
+    // double tap. (Fallback for below API 35 / no envelope support.)
     @PluginMethod
     public void success(PluginCall call) {
-        int confirm = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.LONG_PRESS;
-        fire(HapticFeedbackConstants.KEYBOARD_TAP, 0);
-        fire(confirm, 90);
+        if (!tryEnvelope(SUCCESS_ENVELOPE)) {
+            int confirm = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.LONG_PRESS;
+            fire(HapticFeedbackConstants.KEYBOARD_TAP, 0);
+            fire(confirm, 90);
+        }
         call.resolve();
     }
 
-    // Three keyboard-taps 80ms apart.
+    // Three mid-frequency (0.7x resonance) pulses — a rattling texture
+    // distinct from success/error's cleaner hits.
+    private static final EnvPoint[] WARNING_ENVELOPE = {
+        new EnvPoint(1.0f, 0.7f, 4), new EnvPoint(0.0f, 0.7f, 2), new EnvPoint(0.0f, 0.7f, 44),
+        new EnvPoint(1.0f, 0.7f, 4), new EnvPoint(0.0f, 0.7f, 2), new EnvPoint(0.0f, 0.7f, 44),
+        new EnvPoint(1.0f, 0.7f, 4), new EnvPoint(0.0f, 0.7f, 2),
+    };
+
+    // Three keyboard-taps 80ms apart. (Fallback for below API 35 / no
+    // envelope support.)
     @PluginMethod
     public void warning(PluginCall call) {
-        fire(HapticFeedbackConstants.KEYBOARD_TAP, 0);
-        fire(HapticFeedbackConstants.KEYBOARD_TAP, 80);
-        fire(HapticFeedbackConstants.KEYBOARD_TAP, 160);
+        if (!tryEnvelope(WARNING_ENVELOPE)) {
+            fire(HapticFeedbackConstants.KEYBOARD_TAP, 0);
+            fire(HapticFeedbackConstants.KEYBOARD_TAP, 80);
+            fire(HapticFeedbackConstants.KEYBOARD_TAP, 160);
+        }
         call.resolve();
     }
+
+    // Two sharp, deep (0.35x resonance) hits close together — the lowest,
+    // buzziest texture of the set, meant to read as more urgent/negative
+    // than heavy's single mid-low punch.
+    private static final EnvPoint[] ERROR_ENVELOPE = {
+        new EnvPoint(1.0f, 0.35f, 10), new EnvPoint(0.0f, 0.35f, 3),
+        new EnvPoint(0.0f, 0.35f, 40),
+        new EnvPoint(1.0f, 0.35f, 10), new EnvPoint(0.0f, 0.35f, 3),
+    };
 
     // A dedicated "reject" feedback where available, repeated 70ms later —
     // tighter spacing than success so it still reads as more urgent.
+    // (Fallback for below API 35 / no envelope support.)
     @PluginMethod
     public void error(PluginCall call) {
-        int reject = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.REJECT : HapticFeedbackConstants.LONG_PRESS;
-        fire(reject, 0);
-        fire(reject, 70);
+        if (!tryEnvelope(ERROR_ENVELOPE)) {
+            int reject = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.REJECT : HapticFeedbackConstants.LONG_PRESS;
+            fire(reject, 0);
+            fire(reject, 70);
+        }
         call.resolve();
     }
 
