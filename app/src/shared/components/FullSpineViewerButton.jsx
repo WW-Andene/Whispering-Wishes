@@ -38,19 +38,17 @@ const FullSpineViewerButton = ({ name, imageUrl, className = '', variant = 'butt
               scale/position pipeline either way, so the static and
               animated states now look consistent by construction instead
               of by separately tuning two different renderers.
-              ty back to 0 (2026-08-27): -20 (an earlier "raise 20%"
-              request, made before this static/animated unification, back
-              when the static view was a differently-framed plain <img>)
-              overshot badly once actually applied to this pipeline —
-              screenshot showed ~2% gap at top vs ~30% at bottom, not
-              centered at all. At scale 1 (no zoom, as requested), ty can
-              only trade one edge's gap for the other's, not add margin to
-              both — so true even top/bottom centering isn't reachable
-              through ty alone without reintroducing zoom. Left at 0 (the
-              character's own natural composition, which is close to
-              centered already) rather than guess another coefficient;
-              revisit with the admin Spine panel for live visual tuning if
-              still off. */}
+              ty +4 (2026-08-27): measured directly off the user's own
+              screenshot at ty=-20 — top gap ~0%, bottom gap ~29% of card
+              height, i.e. character occupies ~71%. At scale 1, top_gap and
+              bottom_gap move 1:1 in opposite directions as ty changes
+              (top_gap = max(0, ty), the rest goes to the bottom), so
+              working back from that one data point: the figure's own
+              natural top/bottom margins are ~2%/~9% before any ty shift.
+              Solving top+ty = bottom-ty for equal margins gives ty ≈
+              (9-2)/2 = 3.5, rounded to 4. Re-derive the same way from a
+              fresh screenshot if this aspect ratio or the underlying art
+              ever changes — this number is specific to both. */}
           <SpinePlayer
             characterId={fullSpineId}
             context="full"
@@ -59,7 +57,7 @@ const FullSpineViewerButton = ({ name, imageUrl, className = '', variant = 'butt
             backgroundColor="#00000000"
             scaleOverride={1}
             txOverride={0}
-            tyOverride={0}
+            tyOverride={4}
             fallbackImgUrl={imageUrl}
             fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
           />
