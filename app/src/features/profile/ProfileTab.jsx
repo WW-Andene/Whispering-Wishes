@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { HEADER_ICON, SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
@@ -686,6 +686,29 @@ function ProfileTab({
                 {visualSettings.swipeNavigation && (
                   <p className="text-cyan-300 text-base text-center">{t('profile.display.swipeActive')}</p>
                 )}
+
+                {/* Sound Toggle — boot splash video + convene pull simulator videos */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.soundEnabled ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.soundEnabled ? { background: 'var(--bg-btn)' } : undefined}>
+                      {visualSettings.soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
+                    </div>
+                    <div>
+                      <div className="text-white text-base font-medium">{t('profile.display.sound')}</div>
+                      <div className="text-gray-400 text-sm">{t('profile.display.soundDesc')}</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => saveVisualSettings({ ...visualSettings, soundEnabled: !visualSettings.soundEnabled })}
+                    className={`relative w-[48px] h-[24px] rounded-full transition-colors ${visualSettings.soundEnabled ? 'bg-cyan-500' : ''}`}
+                    style={!visualSettings.soundEnabled ? { background: 'var(--bg-btn)' } : undefined}
+                    role="switch"
+                    aria-checked={visualSettings.soundEnabled}
+                    aria-label={t('profile.display.toggleSound')}
+                  >
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.soundEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                  </button>
+                </div>
 
                 {/* Animations Toggle — 3-state: off < on < full */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">

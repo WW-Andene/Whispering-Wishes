@@ -129,7 +129,7 @@ const StandardBannerOverlay = memo(() => {
 StandardBannerOverlay.displayName = 'StandardBannerOverlay';
 
 // Standard banner card — eliminates ~110 lines of copy-paste between standard char/weap banners
-const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings, imagePosition, kind, calc }) => {
+const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings, imagePosition, kind, calc, setDetailModal }) => {
   const stdMask = generateMaskGradient(visualSettings.standardFadePosition ?? 50, visualSettings.standardFadeIntensity ?? 100);
   const stdOpacity = (visualSettings.standardOpacity ?? 100) / 100;
   const hasStats = profileData?.history?.length > 0;
@@ -161,6 +161,8 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
         count={pullSim || 1}
         startPity5={profileData?.pity5 ?? 0}
         startPity4={profileData?.pity4 ?? 0}
+        visualSettings={visualSettings}
+        setDetailModal={setDetailModal}
       />
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>

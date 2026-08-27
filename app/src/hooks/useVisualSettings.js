@@ -37,6 +37,7 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   appBg: { type: 'other', id: 'log-2-0', url: './Background/Kc8q8mYt-Log-2-0.jpg', objectPosition: '50% 50%' },
   dyslexicFont: false,
   colorBlindMode: false,
+  soundEnabled: true,
 });
 
 export { DEFAULT_VISUAL_SETTINGS };

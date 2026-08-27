@@ -239,6 +239,8 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
         startPity5={pity?.pity5 ?? 0}
         startPity4={pity?.pity4 ?? 0}
         startGuaranteed={!!pity?.guaranteed}
+        visualSettings={visualSettings}
+        setDetailModal={setDetailModal}
       />
     </div>
     </div>

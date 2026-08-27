@@ -218,6 +218,7 @@ function TrackerTab({
                   profileData={state.profile.standardChar} visualSettings={visualSettings}
                   kind="standardChar"
                   calc={state.calc}
+                  setDetailModal={setDetailModal}
                 />
 
                 {/* Standard Weapon Banner */}
@@ -229,6 +230,7 @@ function TrackerTab({
                   imagePosition="65% top"
                   kind="standardWeap"
                   calc={state.calc}
+                  setDetailModal={setDetailModal}
                 />
               </div>
             )}

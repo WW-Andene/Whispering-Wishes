@@ -85,6 +85,29 @@
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <video id="splash-video" src="./splash-intro.mp4" poster="./splash-intro-poster.jpg" preload="auto" autoplay muted playsinline style="width:100%;height:100%;object-fit:cover"></video>
     </div>
+    <!-- Unmute the boot video when the sound setting (Profile > Display,
+         visualSettings.soundEnabled, defaults true) allows it — has to run
+         as an inline script reading localStorage directly, synchronously,
+         before React (and useVisualSettings) has mounted. Runs right after
+         the video element so it sets `.muted` before playback actually
+         starts (autoplay only begins once enough data has buffered — this
+         script executes well before that). Browsers may still silently
+         block unmuted autoplay with no prior user gesture (platform
+         policy, not something this can override) — that's an accepted
+         limitation, not a bug. -->
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('whispering-wishes-visual-settings-v3');
+          var settings = raw ? JSON.parse(raw) : null;
+          var soundOn = !settings || settings.soundEnabled !== false;
+          if (soundOn) {
+            var v = document.getElementById('splash-video');
+            if (v) v.muted = false;
+          }
+        } catch (e) {}
+      })();
+    </script>
     <!-- Spine player runtime (IIFE) — loaded from CDN for WebGL texture compatibility.
          Moved here (was in <head>) so these synchronous, network-fetched scripts
          don't block the browser from reaching/starting the boot splash video

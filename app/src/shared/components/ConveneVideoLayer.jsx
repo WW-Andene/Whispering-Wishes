@@ -19,7 +19,7 @@ const FADE_OUT_SECONDS = 1.5;
 // than the fade-out rather than a matching 1.5s.
 const FADE_IN_SECONDS = 0.4;
 
-const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0' }) => {
+const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0', muted = false }) => {
   const [visible, setVisible] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const firedRef = useRef(false);
@@ -61,6 +61,7 @@ const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0
         }}
         preload="auto"
         autoPlay
+        muted={muted}
         playsInline
         onLoadedData={handleLoadedData}
         onTimeUpdate={handleTimeUpdate}
