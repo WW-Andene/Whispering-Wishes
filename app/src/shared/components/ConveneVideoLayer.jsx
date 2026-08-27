@@ -11,6 +11,32 @@
 
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 
+// Shared, persistent AudioContext for every gain-boosted convene video —
+// NOT one created fresh per video mount. A fresh AudioContext starts
+// 'suspended' under the browser's autoplay policy until a real user
+// gesture resumes it; the rarity video that opens the pull sim is (fine,
+// it mounts synchronously inside the pull-pill's own click), but every
+// video AFTER that (the 5★ reveal beat, a 5★/4★'s own convene clip) auto-
+// plays from a video's 'ended' event — not a click — so a brand new
+// context created right there had a real chance of staying suspended for
+// that entire clip, which reads as "the gain boost did nothing" (reported
+// twice now) even though the code was technically wired correctly. Reusing
+// one context that's resumed as early and as often as there's a real click
+// nearby (resumeConveneAudioContext, called from ConvenePullSimModal's tap
+// handlers) means it's very likely already 'running' by the time any of
+// these auto-chained videos need it.
+let sharedCtx = null;
+const getConveneAudioContext = () => {
+  const AudioCtx = typeof window !== 'undefined' && (window.AudioContext || window.webkitAudioContext);
+  if (!AudioCtx) return null;
+  if (!sharedCtx) sharedCtx = new AudioCtx();
+  return sharedCtx;
+};
+export const resumeConveneAudioContext = () => {
+  const ctx = getConveneAudioContext();
+  if (ctx?.state === 'suspended') ctx.resume().catch(() => {});
+};
+
 // How long before the clip actually ends its opacity starts easing to 0,
 // so playback doesn't just cut to the static image mid-frame — requested
 // explicitly as a 1-2s fade, not an instant stop.
@@ -27,19 +53,18 @@ const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0
 
   // Boost playback volume past the HTML5 <video> element's hard 1.0 (100%)
   // ceiling via a Web Audio GainNode — the only way to go louder than
-  // "max volume" without re-encoding the source file. Routing a video
-  // element through Web Audio permanently hands its audio output to that
-  // graph, so this only runs once per mounted <video> (remounts on every
-  // videoUrl change via the key below, so each play gets a fresh node —
-  // reusing one across remounts would throw "already connected to a
-  // different MediaElementSourceNode").
+  // "max volume" without re-encoding the source file. Uses the shared,
+  // persistent context above (see its comment for why NOT a fresh one per
+  // video) — only the source node and gain node are created fresh per
+  // mount, which is required (a <video> element can only ever be connected
+  // to one MediaElementSourceNode for its lifetime, which is why this
+  // still needs the `key={videoUrl}` below to force a genuinely new
+  // <video> element per clip).
   useEffect(() => {
     if (gain === 1 || muted || !videoRef.current) return;
-    let ctx;
     try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      ctx = new AudioCtx();
+      const ctx = getConveneAudioContext();
+      if (!ctx) return;
       const source = ctx.createMediaElementSource(videoRef.current);
       const gainNode = ctx.createGain();
       gainNode.gain.value = gain;
@@ -50,7 +75,6 @@ const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0
       // at its normal max volume instead of the boosted one. Never worth
       // failing playback over.
     }
-    return () => { ctx?.close?.().catch(() => {}); };
   }, [videoUrl, gain, muted]);
 
   // Reset per videoUrl (the `key={videoUrl}` below already remounts the

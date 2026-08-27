@@ -27,7 +27,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { X, Sparkles } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
-import { ConveneVideo } from './ConveneVideoLayer.jsx';
+import { ConveneVideo, resumeConveneAudioContext } from './ConveneVideoLayer.jsx';
 import { simulateConvenePulls, HARD_PITY, HARD_PITY_4STAR } from '../../core/conveneSimulator.js';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banners.js';
 import { hideOnError } from '../utils/imageHelpers.js';
@@ -57,12 +57,15 @@ const FIVE_STAR_REVEAL_SRC = './convene-sim/5star-reveal.mp4';
 const CONVENE_MUSIC_SRC = `${import.meta.env.BASE_URL || './'}audio/convene-screen.m4a`;
 const CONVENE_MUSIC_VOLUME = 0.25;
 
-// +50% past the HTML5 <video> element's normal 100% ceiling (ConveneVideoLayer's
-// GainNode boost) — the 5★ rarity clip, the 5★ reveal beat, and a 5★'s own
-// character convene clip read as noticeably quieter than everything else at
-// native volume. Was 1.2 (+20%); bumped another +25% on top of that per
-// user feedback (1.2 * 1.25 = 1.5).
-const FIVE_STAR_GAIN = 1.5;
+// +100% (double) past the HTML5 <video> element's normal 100% ceiling
+// (ConveneVideoLayer's GainNode boost) — the 5★ rarity clip, the 5★ reveal
+// beat, and a 5★'s own character convene clip read as noticeably quieter
+// than everything else at native volume. Was 1.2, then 1.5 — raised again
+// to 2.0 per user feedback that the earlier bumps weren't audible; the
+// real fix for that was ConveneVideoLayer.jsx's AudioContext (see its
+// comment — a fresh, likely-still-suspended context per auto-chained video
+// meant the boost may not have actually been applying at all before now).
+const FIVE_STAR_GAIN = 2.0;
 
 // kuro-badge-* color variants (kuro.css) — same rarity→color mapping used
 // throughout the app (WeaponDetailModal's WEAPON_RARITY_COLORS).
@@ -289,7 +292,15 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
   }, [sim]);
 
   useEffect(() => {
-    if (isOpen) { setPhase('rarity'); setItemIndex(0); }
+    if (isOpen) {
+      setPhase('rarity');
+      setItemIndex(0);
+      // Opening the modal is itself the direct result of the pull-pill
+      // click — the best chance the shared convene AudioContext gets to
+      // actually resume, since every video after the first one plays
+      // automatically from a previous video's 'ended' event, not a click.
+      resumeConveneAudioContext();
+    }
   }, [isOpen]);
 
   // Advances to item `idx`'s turn. A 5★ item gets the reveal beat
@@ -321,7 +332,7 @@ const ConvenePullSimModal = ({ isOpen, onClose, kind, count, featuredNames, feat
     setPhase('itemReveal');
     if (!muted) playItemRevealChime();
   };
-  const handleItemTap = () => goToItem(itemIndex + 1);
+  const handleItemTap = () => { resumeConveneAudioContext(); goToItem(itemIndex + 1); };
 
   const openDetail = (result) => {
     if (!result.name) return;

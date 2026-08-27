@@ -32,7 +32,6 @@ import AppUpdateCard from './AppUpdateCard.jsx';
 import PushNotificationsCard from './PushNotificationsCard.jsx';
 import { openSoundSettings, isNativePlatform as isNativePlatformForSettings } from '../../utils/systemSettings.js';
 import { hasFloatingBannerPermission, requestFloatingBannerPermission, startFloatingBanner, stopFloatingBanner } from '../../utils/floatingBanner.js';
-import HapticLabCard from './HapticLabCard.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
@@ -156,7 +155,11 @@ function ProfileTab({
   // ── Background picker state ─────────────────────────────────────────────
   const [bgTarget, setBgTarget] = useState('header');
   const [bgCategory, setBgCategory] = useState('resonators');
-  const [bgSectionCollapsed, setBgSectionCollapsed] = useState(false);
+  // Closed by default — the full category grid is a lot to show before the
+  // user's even asked to browse it. The 3-target preview row (header/
+  // navigation/background) stays visible even while collapsed, below, since
+  // it's the "what's currently set" summary this section is for.
+  const [bgSectionCollapsed, setBgSectionCollapsed] = useState(true);
   const [activePlayersCount, setActivePlayersCount] = useState(null);
   const [activePlayersHistory, setActivePlayersHistory] = useState([]);
   const [presenceError, setPresenceError] = useState(null);
@@ -777,10 +780,10 @@ function ProfileTab({
                       <ChevronDown size={16} className={`text-gray-400 transition-transform flex-shrink-0 ${bgSectionCollapsed ? '-rotate-90' : ''}`} />
                     </button>
 
-                    {!bgSectionCollapsed && (
-                    <>
-                    {/* Target buttons with previews */}
-                    <div className="flex gap-1.5 mb-3">
+                    {/* Target buttons with previews — visible even while
+                        collapsed: the "what's currently set" summary this
+                        section is for, not just an entry into the picker. */}
+                    <div className={`flex gap-1.5 ${bgSectionCollapsed ? 'mt-3' : 'mb-3'}`}>
                       {[
                         { key: 'header', label: t('profile.display.targetHeader'), settingKey: 'headerBg' },
                         { key: 'navigation', label: t('profile.display.targetNavigation'), settingKey: 'navBg' },
@@ -788,7 +791,7 @@ function ProfileTab({
                       ].map(t => {
                         const bg = visualSettings[t.settingKey];
                         return (
-                          <button key={t.key} onClick={() => { setBgTarget(t.key); setEditingBgTarget(t.key === 'header' ? 'header' : t.key === 'navigation' ? 'nav' : 'bg'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
+                          <button key={t.key} onClick={() => { setBgSectionCollapsed(false); setBgTarget(t.key); setEditingBgTarget(t.key === 'header' ? 'header' : t.key === 'navigation' ? 'nav' : 'bg'); }} className={`kuro-btn flex-1 text-sm relative overflow-hidden ${bgTarget === t.key && !bgSectionCollapsed ? 'active-gold' : ''}`} style={{ minHeight: bg?.url ? '48px' : undefined }}>
                             {bg?.url && bg?.type !== 'animated' && <img src={bg.url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-30" />}
                             {bg?.type === 'animated' && <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/40 to-purple-900/40 opacity-50" />}
                             <span className="relative z-10">{t.label}</span>
@@ -798,6 +801,8 @@ function ProfileTab({
                       })}
                     </div>
 
+                    {!bgSectionCollapsed && (
+                    <>
                     {/* Category tabs */}
                     <div className="flex gap-1.5 mb-3">
                       {['resonators', 'version', 'others', 'animated'].map(c => (
@@ -1058,7 +1063,6 @@ function ProfileTab({
             {/* ── App maintenance: updates + offline asset downloads ────────── */}
             <AppUpdateCard toast={toast} />
             <PushNotificationsCard toast={toast} />
-            <HapticLabCard />
             {isNativePlatformForSettings() && <OfflineAssetsCard toast={toast} />}
 
             {/* ── Cloud Backup ──────────────────────────────────── */}

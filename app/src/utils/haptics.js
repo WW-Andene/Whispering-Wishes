@@ -2,10 +2,12 @@
 // WHISPERING WISHES — utils/haptics.js
 // Extracted from the former utils/helpers.js grab-bag (2026-08-26 restructuring):
 // this file owns the app's single haptic-feedback bridge. Previously
-// features/profile/HapticLabCard.jsx independently called
+// features/profile/HapticLabCard.jsx (a Profile settings card for testing
+// haptic patterns, since removed) independently called
 // registerPlugin('GlassHaptics') a second time — a duplicate bridge to the
-// same native plugin — instead of importing this one; that duplication is
-// fixed by having it import `haptic`/GlassHaptics from here now.
+// same native plugin — instead of importing this one; that duplication was
+// fixed by having it import `haptic`/GlassHaptics from here, before the
+// card itself was removed entirely.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { registerPlugin } from '@capacitor/core';

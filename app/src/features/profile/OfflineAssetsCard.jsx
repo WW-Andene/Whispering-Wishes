@@ -23,7 +23,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Download, Trash2, HardDriveDownload } from 'lucide-react';
+import { Download, Trash2, HardDriveDownload, ChevronDown } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { loadAssetManifest, downloadAssets, purgeAssets, queryAssets, ASSET_CATEGORY_LABELS, serviceWorkerAvailable } from '../../core/assetSW.js';
 import { haptic } from '../../utils/haptics.js';
@@ -43,6 +43,9 @@ export default function OfflineAssetsCard({ toast }) {
   // Per-category state: { cached, total, progress: {done,total}|null, busy }
   const [status, setStatus] = useState({});
   const swReady = serviceWorkerAvailable();
+  // Closed by default — a bulk-download list of every asset category isn't
+  // something most visits to Profile need to see open.
+  const [collapsed, setCollapsed] = useState(true);
 
   const refreshCounts = useCallback(async () => {
     for (const cat of CATEGORIES) {
@@ -110,7 +113,7 @@ export default function OfflineAssetsCard({ toast }) {
 
   return (
     <Card>
-      <CardHeader action={
+      <CardHeader action={!collapsed && (
         <button
           onClick={runDownloadAll}
           disabled={anyBusy || !manifest}
@@ -118,9 +121,13 @@ export default function OfflineAssetsCard({ toast }) {
         >
           <Download size={12} /> Download All{manifest ? ` (${fmtMB(totalBytes)})` : ''}
         </button>
-      }>
-        <HardDriveDownload size={14} className="text-cyan-400" /> Download for Offline
+      )}>
+        <button type="button" onClick={() => setCollapsed(c => !c)} className="flex items-center gap-2 w-full text-left" aria-expanded={!collapsed}>
+          <HardDriveDownload size={14} className="text-cyan-400 flex-shrink-0" /> Download for Offline
+          <ChevronDown size={14} className={`text-gray-400 transition-transform flex-shrink-0 ml-auto ${collapsed ? '-rotate-90' : ''}`} />
+        </button>
       </CardHeader>
+      {!collapsed && (
       <CardBody className="space-y-2">
         <p className="text-gray-400 text-sm mb-1">
           Character animations and banner backgrounds normally load as you browse. Download them ahead of time to use the app with no connection at all — handy on the native app (these are the assets kept off the app's own download to stay small) or before a flight on the web version.
@@ -153,6 +160,7 @@ export default function OfflineAssetsCard({ toast }) {
           );
         })}
       </CardBody>
+      )}
     </Card>
   );
 }
