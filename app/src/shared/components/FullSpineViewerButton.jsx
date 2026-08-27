@@ -30,28 +30,30 @@ const FullSpineViewerButton = ({ name, imageUrl, className = '', variant = 'butt
     <>
       {variant === 'tile' ? (
         <div className={`relative rounded-lg overflow-hidden border border-[var(--border-medium)] ${className}`}>
-          {tilePlaying ? (
-            <SpinePlayer
-              characterId={fullSpineId}
-              context="full"
-              className="absolute inset-0"
-              backgroundColor="#00000000"
-              scaleOverride={1}
-              txOverride={0}
-              tyOverride={0}
-              fallbackImgUrl={imageUrl}
-              fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
-            />
-          ) : (
-            // scale(1.3): these "Full Sprite" cutouts ship with a good chunk
-            // of plain empty canvas above/below the actual figure (a wiki
-            // sourcing convention, not specific to this character) — plain
-            // object-cover leaves that margin fully visible instead of the
-            // art reaching the tile's own edges. Cropped in by this fixed
-            // scale via the card's own overflow-hidden rather than resizing
-            // the card itself.
-            <img src={imageUrl} alt="" className="w-full h-full object-cover" style={{ transform: 'scale(1.3)' }} />
-          )}
+          {/* Always the same SpinePlayer instance, paused vs playing — was
+              a plain <img> (object-cover) when not playing, which used a
+              completely different framing math than the animated view and
+              didn't reach the card's edges the same way. `paused` only
+              freezes the animation; it renders through the identical
+              scale/position pipeline either way, so the static and
+              animated states now look consistent by construction instead
+              of by separately tuning two different renderers.
+              scale 1.4 / ty 14 (2026-08-27): raises the framing ~20% —
+              enough overhang at this scale for the shift not to expose any
+              empty edge (top = 50*(1-scale) + ty*scale ≈ 0%, right at the
+              limit). Tune further via the admin Spine panel if needed. */}
+          <SpinePlayer
+            characterId={fullSpineId}
+            context="full"
+            paused={!tilePlaying}
+            className="absolute inset-0"
+            backgroundColor="#00000000"
+            scaleOverride={1.4}
+            txOverride={0}
+            tyOverride={14}
+            fallbackImgUrl={imageUrl}
+            fallbackImgStyle={{ objectFit: 'cover', objectPosition: 'center' }}
+          />
           <button
             onClick={(e) => { e.stopPropagation(); setTilePlaying(p => !p); }}
             className="absolute inset-0 flex items-center justify-center"
