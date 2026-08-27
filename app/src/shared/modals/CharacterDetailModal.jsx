@@ -3,13 +3,13 @@
 // CharacterDetailModal
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
-import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
 import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { getSonataLoadouts } from '../../data/echoes.js';
-import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banners.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS } from '../../data/constants.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
@@ -86,8 +86,10 @@ const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filt
 
 const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData, visualSettings }) => {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
+  const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
   const data = CHARACTER_DATA[name];
   if (!data) return null;
+  const conveneVideoUrl = getConveneAnimation(name);
 
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
   const bestWeapon = data.bestWeapon || null;
@@ -185,11 +187,36 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               )}
             </div>
           )}
+          {/* Convene video plays directly in the header itself (same spot as
+              the image/Spine layer above) rather than a separate modal —
+              matches BannerCard.jsx's treatment of the same ▶ button. */}
+          {conveneVideoPlaying && conveneVideoUrl && (
+            <div className="absolute inset-0">
+              <video
+                key={conveneVideoUrl}
+                src={conveneVideoUrl}
+                className="w-full h-full object-cover"
+                autoPlay
+                playsInline
+                onEnded={() => setConveneVideoPlaying(false)}
+              />
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
             <X size={16} />
           </button>
-          <FullSpineViewerButton name={name} imageUrl={imageUrl} className="absolute bottom-3 right-3 z-20" />
+          {conveneVideoUrl ? (
+            <button
+              onClick={(e) => { e.stopPropagation(); setConveneVideoPlaying(p => !p); }}
+              className="kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center absolute bottom-3 right-3 z-20"
+              aria-label={conveneVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name })}
+            >
+              {conveneVideoPlaying ? <X size={14} /> : <Play size={12} className="fill-current ml-0.5" />}
+            </button>
+          ) : (
+            <FullSpineViewerButton name={name} imageUrl={imageUrl} className="absolute bottom-3 right-3 z-20" />
+          )}
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`kuro-badge ${colors.bg} ${colors.text} border ${colors.border} inline-flex items-center gap-1`}>
