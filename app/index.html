@@ -48,7 +48,6 @@
       <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
     </noscript>
     <style>html,body{background:#080c14;color:#e2e8f0;margin:0}</style>
-    <link rel="stylesheet" href="/src/styles/kuro.css" />
     <title>Whispering Wishes | Wuthering Waves Companion</title>
   </head>
   <body>
@@ -56,13 +55,170 @@
     <a href="#root" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm">
       Skip to main content
     </a>
-    <!-- html/body's own background color (above) is what's visible until
-         #root renders; the boot intro (poster + video, see BootIntro.jsx)
-         is a React-rendered overlay mounted alongside <App/> in main.jsx,
-         not a static overlay here — it needs component state to know when
-         the video has actually finished playing before fading out. -->
+    <!-- Boot intro — plays Boot_Intro_FRover (app/public/boot-intro/boot-intro.mp4),
+         poster Intro_FRover_Poster (boot-intro-poster.gif). Deliberately inline
+         here rather than a React component (an earlier attempt did that, see
+         git history) — React doesn't mount and paint until after the JS bundle
+         has fetched/parsed/executed, which left the plain navy html/body
+         background visible for a beat before the poster ever appeared. This
+         version is part of the same synchronous initial parse as everything
+         else in <body>, so the poster is what's on screen from the very first
+         frame, no gap.
+
+         z-index 99999 — deliberately above FocusTrapModal's z-[10000] (the
+         first-run OnboardingModal uses it) so the modal can't render on top
+         of the intro on a first boot; #root (and everything React mounts
+         into it, onboarding included) still mounts and renders underneath
+         in parallel this whole time, so it's instantly there the moment
+         this overlay is gone.
+
+         No autoplay attribute — playback is explicitly driven by the script
+         below, which waits for the buffered range to cover the full clip
+         (not just 'canplaythrough', an estimate that playback won't stall,
+         not a guarantee the whole file is down) before calling play(). The
+         poster stays visible for a short fixed dwell after play() starts:
+         some WebViews switch the video element from painting a static
+         decoded frame to an active hardware video-decoding surface the
+         moment playback begins, and that surface can flash/mis-scale for
+         an instant before settling — the exact 1-2 frame "stutter" at the
+         poster→video switch. Playback is already running underneath, out
+         of view, by the time the poster is hidden — so what's revealed is
+         already-stable video, not the transient surface swap.
+
+         width/height match the assets' real pixel dimensions (480×852) —
+         without them, the browser doesn't know the aspect ratio until the
+         first frame decodes, so object-fit:cover has nothing to crop
+         against yet and recalculates once it does, which is its own
+         separate visible snap.
+
+         document.write blocks the parser until it runs, guaranteeing the
+         <video>/overlay exist as part of the same synchronous parse as the
+         rest of this page, no extra tick. Always muted — the clip's own
+         audio track is never played; the Log Screen ambient track (next
+         script down) is the boot audio instead, started in sync with the
+         video's 'playing' event rather than only once React mounts. -->
+    <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 1s ease">
+      <script>
+        document.write(
+          '<video id="splash-video" poster="./boot-intro/boot-intro-poster.gif" width="480" height="852"' +
+          ' preload="auto" muted playsinline' +
+          ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
+          ' style="width:100%;height:100%;object-fit:cover" src="./boot-intro/boot-intro.mp4"></video>' +
+          '<img id="splash-poster-overlay" alt="" src="./boot-intro/boot-intro-poster.gif"' +
+          ' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />'
+        );
+      </script>
+      <script>
+        (function () {
+          var splash = document.getElementById('splash');
+          var video = document.getElementById('splash-video');
+          var overlay = document.getElementById('splash-poster-overlay');
+          if (!splash || !video) return;
+
+          // How long to keep the poster overlay up after play() starts —
+          // masking the static-frame → hardware-playback-surface reframe
+          // described above. Playback is already running underneath.
+          var OVERLAY_HOLD_MS = 500;
+          var started = false;
+          var isFullyBuffered = function () {
+            if (!video.duration || !isFinite(video.duration)) return false;
+            var buf = video.buffered;
+            return buf.length > 0 && buf.end(buf.length - 1) >= video.duration - 0.05;
+          };
+          var tryStart = function () {
+            if (started || !isFullyBuffered()) return;
+            started = true;
+            video.play().catch(function () {});
+            if (overlay) {
+              setTimeout(function () {
+                overlay.style.display = 'none';
+              }, OVERLAY_HOLD_MS);
+            }
+          };
+          // 'progress' fires repeatedly as data downloads — keep checking
+          // the actual buffered range until it covers the whole clip.
+          video.addEventListener('progress', tryStart);
+          // Fully local file, but these two also catch it in case
+          // 'progress' stops firing right at the end on some WebView.
+          video.addEventListener('canplaythrough', tryStart);
+          video.addEventListener('loadeddata', tryStart);
+
+          // End of the clip — fade the whole overlay out over 1s, then
+          // remove it so it stops intercepting input. Also covers a load
+          // error or the video simply never becoming playable, so a boot
+          // never gets stuck behind this overlay.
+          var finished = false;
+          var fadeOutAndRemove = function () {
+            if (finished) return;
+            finished = true;
+            splash.style.opacity = '0';
+            setTimeout(function () {
+              splash.remove();
+            }, 1000);
+          };
+          video.addEventListener('ended', fadeOutAndRemove);
+          video.addEventListener('error', fadeOutAndRemove);
+          // Absolute ceiling in case buffering/playback never completes at
+          // all (e.g. the file fails to load) — never leave the intro up
+          // forever.
+          setTimeout(fadeOutAndRemove, 8000);
+        })();
+      </script>
+    </div>
+    <!-- The boot video itself is always silent (muted attribute above) — no
+         unmuting. In its place, the selected Log Screen ambient track
+         (Profile > Display > Sound, visualSettings.logScreenTrack, defaults
+         '2') starts playing here at boot, synced with the splash video's
+         'playing' event rather than only once React mounts, and is handed
+         off to useAmbientMusic.js (via window.__bootAmbientAudio) so it
+         continues seamlessly — no restart, no gap — once the splash fades
+         and React takes over managing it. Has to run as an inline script
+         reading localStorage directly, synchronously, before React has
+         mounted. Browsers may still silently block audio autoplay with no
+         prior user gesture (platform policy, not something this can
+         override) — that's an accepted limitation, not a bug. -->
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('whispering-wishes-visual-settings-v3');
+          var settings = raw ? JSON.parse(raw) : null;
+          var soundOn = !settings || settings.soundEnabled !== false;
+          var track = (settings && settings.logScreenTrack) || '2';
+          if (!soundOn || track === 'off') return;
+
+          var started = false;
+          var startAmbient = function () {
+            if (started || window.__bootAmbientStarted) return;
+            // React (useAmbientMusic.js) mounts almost immediately — well
+            // before this deferred callback fires — and creates its own
+            // Audio + sets window.__bootAmbientStarted if it gets here
+            // first. Without this check, both sides would create their own
+            // Audio for the same track and play them on top of each other.
+            started = true;
+            window.__bootAmbientStarted = true;
+            var audio = new Audio('./audio/log-screen-' + track + '.m4a');
+            audio.loop = true;
+            audio.volume = 0.35;
+            audio.play().catch(function () {});
+            window.__bootAmbientAudio = audio;
+            window.__bootAmbientTrack = track;
+          };
+
+          var video = document.getElementById('splash-video');
+          if (video) {
+            video.addEventListener('playing', startAmbient, { once: true });
+            video.addEventListener('error', startAmbient, { once: true });
+          }
+          setTimeout(startAmbient, 1500);
+        } catch (e) {}
+      })();
+    </script>
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
+    <!-- Moved here from <head> so it no longer blocks the boot splash's
+         inline <script> (and therefore the video's first frame) on its
+         own fetch+parse. -->
+    <link rel="stylesheet" href="/src/styles/kuro.css" />
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
