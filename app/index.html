@@ -56,14 +56,11 @@
     <a href="#root" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm">
       Skip to main content
     </a>
-    <!-- Boot splash removed entirely, per explicit instruction — full
-         reset after several rounds of video/GIF/poster attempts all
-         showed the same reframe/zoom, which turned out to be rooted in
-         Android's native window/WebView boot-time behavior rather than
-         anything fixable from the HTML/CSS/JS side. The app now just
-         boots straight to React with no custom splash overlay of any
-         kind — html/body's own background color (above) is what's
-         visible until #root renders. -->
+    <!-- html/body's own background color (above) is what's visible until
+         #root renders; the boot intro (poster + video, see BootIntro.jsx)
+         is a React-rendered overlay mounted alongside <App/> in main.jsx,
+         not a static overlay here — it needs component state to know when
+         the video has actually finished playing before fading out. -->
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
     <script type="module" src="/src/main.jsx"></script>
