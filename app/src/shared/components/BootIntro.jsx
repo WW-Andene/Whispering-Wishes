@@ -76,12 +76,23 @@ export default function BootIntro() {
 
   if (done) return null;
 
+  // 48px overscan past every edge, matching #boot-poster in index.html —
+  // MainActivity.java documents the WebView's content area briefly
+  // shrinking by the status/nav bar height as Android's edge-to-edge
+  // insets settle mid-boot; overscanning keeps both the poster and video
+  // covering the full screen even during that transient smaller area,
+  // rather than showing a status-bar-height gap.
+  const overscanStyle = { position: 'absolute', top: -48, left: -48, right: -48, bottom: -48, width: 'calc(100% + 96px)', height: 'calc(100% + 96px)', objectFit: 'cover' };
+
   return (
     <div
       aria-hidden="true"
       style={{
         position: 'fixed',
-        inset: 0,
+        top: -48,
+        left: -48,
+        right: -48,
+        bottom: -48,
         zIndex: 9999,
         background: '#080c14',
         opacity: fadingOut ? 0 : 1,
@@ -93,11 +104,7 @@ export default function BootIntro() {
         src="/boot-intro/boot-intro-poster.gif"
         alt=""
         style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
+          ...overscanStyle,
           opacity: canPlay ? 0 : 1,
           transition: 'opacity 0.2s ease-out',
         }}
@@ -109,11 +116,7 @@ export default function BootIntro() {
         playsInline
         preload="auto"
         style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
+          ...overscanStyle,
           opacity: canPlay ? 1 : 0,
           transition: 'opacity 0.2s ease-out',
         }}
