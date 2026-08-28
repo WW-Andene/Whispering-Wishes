@@ -4,6 +4,22 @@ import App from "./App.jsx";
 import "./index.css";
 import "leaflet/dist/leaflet.css";
 
+// The header/bottom nav (see .boot-frozen-ui in kuro.css) stay hidden until
+// <html> carries data-safe-area-ready="1" — on Android, MainActivity.java
+// sets that once it's injected the real safe-area inset values, so they only
+// ever appear already in their final place. On any platform/situation where
+// that native call never happens (web, iOS, or a failure on-device), this is
+// the fallback that reveals them anyway rather than leaving them hidden
+// forever — env(safe-area-inset-*)'s CSS default is already correct there,
+// so there's nothing to wait for.
+if (!document.documentElement.hasAttribute('data-safe-area-ready')) {
+  setTimeout(() => {
+    if (!document.documentElement.hasAttribute('data-safe-area-ready')) {
+      document.documentElement.setAttribute('data-safe-area-ready', '1');
+    }
+  }, 300);
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />
