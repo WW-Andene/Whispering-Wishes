@@ -54,31 +54,34 @@ public class MainActivity extends BridgeActivity {
         // while the Bridge is being constructed there.
         registerPlugin(SystemSettingsPlugin.class);
         registerPlugin(GlassHapticsPlugin.class);
-        // Reverted: moving setDecorFitsSystemWindows()/the insets listener
-        // to before super.onCreate() was tried here as a fix for the boot
-        // splash zoom/dezoom, on the theory that switching edge-to-edge
-        // AFTER the WebView's first layout caused a real resize. In
-        // practice it made things worse (intermittently blocked the video
-        // outright) rather than fixing the zoom, so it's undone — back to
-        // running after super.onCreate(), as it was before.
+        // Also disabled Android's SplashScreen exit-zoom animation
+        // (below) as a separate fix attempt — didn't fully resolve the
+        // boot splash reframe either. Confirmed since (switching the
+        // splash to an animated GIF, a plain <img> with none of
+        // <video>'s decode/playback-surface machinery, still showed the
+        // exact same reframe) that this was never about the media
+        // element at all: it's the WebView's own content-area SIZE
+        // changing mid-boot, as edge-to-edge insets settle — status bar
+        // + nav bar together are a genuine ~9-12% of screen height, and
+        // whatever's on screen when that area gets included/excluded
+        // rides along with the resize, regardless of what it is.
         //
-        // Real cause of the zoom, addressed below instead: this Activity's
-        // launch theme (AppTheme.NoActionBarLaunch, parent Theme.SplashScreen)
-        // means Android 12+ shows its OWN mandatory system splash screen
-        // before any app content, and that system splash has a DEFAULT
-        // EXIT ANIMATION — it scales/zooms the app's first frame in when
-        // handing off. That's a platform-level animation, nothing to do
-        // with the WebView, insets, or this page's own CSS/JS — and it's
-        // APK-only for the same reason as everything else in this
-        // category: a plain web page has no Android SplashScreen system to
-        // hand off from at all. Overriding the exit listener to remove the
-        // splash view immediately (no animation) is what actually disables
-        // that platform zoom.
+        // A prior attempt at THIS specific fix (setDecorFitsSystemWindows
+        // AND the insets listener, both moved before super.onCreate())
+        // made things worse — intermittently blocked the video outright.
+        // Narrower this time: only setDecorFitsSystemWindows() moves
+        // earlier, so the WebView's very first layout pass already
+        // happens in the final edge-to-edge state — nothing to resize
+        // into afterward. The insets listener itself (which reads
+        // getBridge().getWebView() and pushes CSS custom properties into
+        // it) stays exactly where it already worked, after
+        // super.onCreate(), since that's what the earlier regression was
+        // actually tied to, not this call.
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             getSplashScreen().setOnExitAnimationListener(splashScreenView -> splashScreenView.remove());
         }
         super.onCreate(savedInstanceState);
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
             Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
             Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
