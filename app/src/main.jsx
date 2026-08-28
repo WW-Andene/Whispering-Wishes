@@ -11,10 +11,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
 );
 
 // Loads the two spine-player CDN runtimes dynamically instead of as static
-// <script src> tags in index.html, so fetching these two real libraries
-// doesn't block initial parse/paint — not needed until a Spine-animated
-// character tab is actually opened, well after boot either way. Kicked off
-// below via requestIdleCallback once the initial render is out of the way.
+// <script src> tags in index.html — see the removed tags' old spot there
+// for the full "why" (synchronous <script src> blocking the main thread
+// WHILE the boot video plays was very likely the cause of reported
+// stutter). Called once from beginFade() below, so the fetch+parse+execute
+// of these two real libraries only starts once the video's active
+// playback window is already ending.
 //
 // Dynamically created <script> elements fetch in parallel by default but
 // execute in insertion order as long as `.async = false` is set on each —
@@ -69,8 +71,47 @@ const loadSpineRuntimes = () => {
   addInline('window.spine41 = window.spine; window.spine = window.__spine42; delete window.__spine42;');
 };
 
-if (typeof requestIdleCallback === 'function') {
-  requestIdleCallback(loadSpineRuntimes);
-} else {
-  setTimeout(loadSpineRuntimes, 0);
-}
+// Reveal the app once the boot video has faded out — a fixed fallback delay
+// covers the case where autoplay is blocked or the video fails to load, so
+// the app never stays hidden behind a splash that isn't going anywhere.
+// The video itself is always silent (index.html keeps it .muted — the
+// ambient Log Screen track, started in index.html and handed off to
+// useAmbientMusic.js, is the audio now), so this fade is visual-only.
+const SPLASH_FALLBACK_MS = 6000;
+// The video's opacity ramps to 0 over this window BEFORE the clip's natural
+// end, then the #splash wrapper fades out at the same time — one continuous
+// fade rather than playing to an abrupt last-frame cut.
+const SPLASH_FADE_SECONDS = 1;
+(() => {
+  const splash = document.getElementById('splash');
+  if (!splash) return;
+  const video = document.getElementById('splash-video');
+  let fading = false, done = false;
+  const reveal = () => {
+    if (done) return;
+    done = true;
+    splash.style.opacity = '0';
+    splash.addEventListener('transitionend', () => splash.remove(), { once: true });
+  };
+  const beginFade = () => {
+    if (fading) return;
+    fading = true;
+    loadSpineRuntimes();
+    if (video) {
+      video.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
+      video.style.opacity = '0';
+    }
+    splash.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
+    reveal();
+  };
+  if (video) {
+    video.addEventListener('ended', beginFade, { once: true });
+    video.addEventListener('error', beginFade, { once: true });
+    video.addEventListener('timeupdate', () => {
+      if (!video.duration) return;
+      const remaining = video.duration - video.currentTime;
+      if (remaining <= SPLASH_FADE_SECONDS) beginFade();
+    });
+  }
+  setTimeout(beginFade, SPLASH_FALLBACK_MS);
+})();

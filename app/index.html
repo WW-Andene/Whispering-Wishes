@@ -44,12 +44,15 @@
     <link rel="dns-prefetch" href="https://i.ibb.co" />
     <link rel="dns-prefetch" href="https://i.imgur.com" />
     <link rel="dns-prefetch" href="https://cdn.discordapp.com" />
-    <!-- Spine player runtimes are loaded dynamically from src/main.jsx
-         (loadSpineRuntimes()) shortly after mount, rather than as static
-         synchronous <script src> tags here — they're real, sizeable
-         libraries and not needed until a Spine-animated character tab is
-         actually opened, so there's no reason to block initial parse/paint
-         on fetching them. -->
+    <!-- Spine player runtime <script> tags used to live here, in <head> — they're
+         synchronous, network-fetched (unpkg.com CDN, no local fallback), and were
+         parse-blocking, which meant the browser wouldn't even construct the boot
+         splash <video> in <body> below until those two external scripts finished
+         downloading. On a cold app launch (exactly when network is often still
+         settling), that delayed the "instant" video visibly. Moved to just after
+         the splash video's markup instead — same synchronous loading behavior
+         and ordering, just no longer gating the one thing that needs to start
+         immediately. See there for the full rationale/SRI regen instructions. -->
     <noscript>
       <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
     </noscript>
@@ -63,16 +66,117 @@
     <a href="#root" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm">
       Skip to main content
     </a>
-    <!-- No boot splash video here anymore. The cinematic boot clip is now a
-         native Android splash (SplashVideoActivity.java, plays before the
-         WebView/Capacitor bridge even starts) — that's the only build this
-         app ships to users, per explicit direction. This web entry point is
-         test/debug-only, so it isn't worth maintaining a second, separate
-         boot-splash implementation just for parity; the app boots straight
-         to the real UI here, and useAmbientMusic.js starts the Log Screen
-         ambient track itself once React mounts (it's self-sufficient — see
-         that hook — no boot-time handoff needed without a splash to hand
-         off from). -->
+    <!-- Boot splash screen — plays one of the two boot clips the user
+         uploaded directly (Boot_Intro_FRover.mp4 / Boot_Intro_MRover.mp4,
+         app/public/, root-level files so they ship bundled in the native
+         APK with no network dependency), picked at random each launch.
+         Used exactly as uploaded — no re-encode, no re-render, no GIF
+         conversion (those were all tried and made things worse, per
+         explicit instruction not to modify these).
+         Two things fixed here: (1) poster is a 2x2 solid swatch matching
+         the #splash background (#080c14) — without ANY poster, a <video>
+         shows the browser/WebView's generic media-player glyph for
+         however long it takes to decode a first frame, even though the
+         clip is a local bundled asset with no network delay; a poster
+         (even a blank one) suppresses that fallback icon entirely.
+         (2) the src is written directly into the tag via document.write,
+         picked randomly right here, instead of a separate <script> after
+         the element assigning .src on a later tick — that follow-up-script
+         pattern is a two-step init (parse empty <video> → next tick, run
+         script → assign src → THEN the browser starts reading the file),
+         which is strictly slower to first frame than having src be part
+         of the same synchronous parse the element itself comes from.
+         document.write here blocks the parser until it runs, guaranteeing
+         order without an extra tick. No loop — main.jsx waits for the
+         'ended' event (with a timeout fallback in case autoplay is
+         blocked) before revealing the app underneath. Always muted — the
+         clip's own audio track is never played; the Log Screen ambient
+         track (next script down) is the boot audio instead. -->
+    <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
+      <script>
+        document.write(
+          '<video id="splash-video" poster="./splash-poster.jpg" preload="auto" autoplay muted playsinline' +
+          ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
+          ' style="width:100%;height:100%;object-fit:cover" src="' +
+          (Math.random() < 0.5 ? './Boot_Intro_FRover.mp4' : './Boot_Intro_MRover.mp4') +
+          '"></video>'
+        );
+      </script>
+    </div>
+    <!-- The boot video itself is always silent now (stays .muted — see the
+         <video> tag's muted attribute) — no unmuting. In its place, the
+         selected Log Screen ambient track (Profile > Display > Sound,
+         visualSettings.logScreenTrack, defaults '2') starts playing here at
+         boot, synced with the splash video rather than only once React
+         mounts, and is handed off to useAmbientMusic.js (via
+         window.__bootAmbientAudio) so it continues seamlessly — no restart,
+         no gap — once the splash fades and React takes over managing it.
+         Has to run as an inline script reading localStorage directly,
+         synchronously, before React has mounted.
+         Constructing the Audio (and its immediate network fetch) is
+         deliberately deferred until the video's own 'playing' event —
+         doing it in the same tick as the video element being created
+         made the video's first frames choppy on weaker Android devices
+         (APK builds), since both compete for CPU/network right as the
+         WebView process is still cold-starting; a 'playing' listener only
+         adds a delay of however long the video itself already took to
+         start, which is imperceptible for background music. A fallback
+         timer covers the case where the video never fires 'playing'
+         (autoplay blocked, load error) so the ambient track still starts.
+         Browsers may still silently block audio autoplay with no prior
+         user gesture (platform policy, not something this can override)
+         — that's an accepted limitation, not a bug. -->
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('whispering-wishes-visual-settings-v3');
+          var settings = raw ? JSON.parse(raw) : null;
+          var soundOn = !settings || settings.soundEnabled !== false;
+          var track = (settings && settings.logScreenTrack) || '2';
+          if (!soundOn || track === 'off') return;
+
+          var started = false;
+          var startAmbient = function () {
+            if (started || window.__bootAmbientStarted) return;
+            // React (useAmbientMusic.js) mounts almost immediately — well
+            // before this deferred callback fires — and creates its own
+            // Audio + sets window.__bootAmbientStarted if it gets here
+            // first. Without this check, both sides would create their own
+            // Audio for the same track and play them on top of each other.
+            started = true;
+            window.__bootAmbientStarted = true;
+            var audio = new Audio('./audio/log-screen-' + track + '.m4a');
+            audio.loop = true;
+            audio.volume = 0.35;
+            audio.play().catch(function () {});
+            window.__bootAmbientAudio = audio;
+            window.__bootAmbientTrack = track;
+          };
+
+          var video = document.getElementById('splash-video');
+          if (video) {
+            video.addEventListener('playing', startAmbient, { once: true });
+            video.addEventListener('error', startAmbient, { once: true });
+          }
+          setTimeout(startAmbient, 1500);
+        } catch (e) {}
+      })();
+    </script>
+    <!-- Spine player runtimes used to load here as static synchronous
+         <script src> tags. That avoided blocking the boot video from
+         STARTING (they'd been moved out of <head> for that), but a
+         synchronous <script src> still blocks the main thread for however
+         long it takes to fetch+parse+execute — and that was happening
+         WHILE the boot video was actively playing, autoplay having already
+         started before the parser even reached these tags. On a mid/low-
+         end Android device that main-thread contention is exactly the kind
+         of thing that reads as a choppy, stuttering video. They're loaded
+         dynamically instead now — src/main.jsx's loadSpineRuntimes() kicks
+         them off once the splash starts fading out, so the video's entire
+         active playback window has the main thread to itself. Not needed
+         until a Spine-animated character tab is actually opened, well
+         after boot either way, so the few extra seconds before they're
+         ready costs nothing. -->
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
     <script type="module" src="/src/main.jsx"></script>
