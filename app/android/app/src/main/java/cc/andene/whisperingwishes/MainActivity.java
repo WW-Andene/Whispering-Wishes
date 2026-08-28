@@ -10,10 +10,7 @@ import android.os.VibratorManager;
 import android.view.HapticFeedbackConstants;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
-import androidx.core.view.WindowInsetsCompat;
 import com.getcapacitor.BridgeActivity;
 import java.lang.reflect.Method;
 
@@ -24,17 +21,16 @@ import java.lang.reflect.Method;
 // line ever touches that: it stays fixed regardless of insets.
 //
 // The "page" (header + bottom nav content) is a separate concern, laid out
-// on top of that fixed border, and adapts to the real device shape:
-//  - top: displayCutout() only, not statusBars() — displayCutout() is
-//    genuinely zero on a device with no notch/punch-hole camera (so the
-//    header sits at its normal position, a "classic full" layout), and only
-//    reports space where an actual camera physically is on one that has it.
-//    statusBars() is always non-zero on every phone regardless of a cutout,
-//    which is why it doesn't belong here.
-//  - bottom: navigationBars(), same as before — the gesture/button nav area.
-// Both are bridged into the WebView as CSS custom properties via
-// evaluateJavascript rather than trusted from the WebView's own
-// env(safe-area-inset-*), which has proven unreliable for this on-device.
+// on top of that fixed border, and adapts to the real device shape. Its
+// top/bottom offsets come from the platform's own status_bar_height /
+// navigation_bar_height dimension resources — read ONCE in onCreate() below,
+// synchronously, from static Resources rather than a WindowInsetsCompat
+// listener (which only fires once the decor view has gone through a layout
+// pass, some time after first paint — that gap between an initial fallback
+// value and the real one arriving is what produced the boot-time header/nav
+// reframe). Bridged into the WebView as CSS custom properties via
+// evaluateJavascript, exactly once, rather than trusted from the WebView's
+// own env(safe-area-inset-*), which has proven unreliable for this on-device.
 public class MainActivity extends BridgeActivity {
     @Override
     @SuppressLint("JavascriptInterface")
@@ -82,37 +78,35 @@ public class MainActivity extends BridgeActivity {
             getSplashScreen().setOnExitAnimationListener(splashScreenView -> splashScreenView.remove());
         }
         super.onCreate(savedInstanceState);
-        // Ask the platform to (re)compute insets immediately rather than
-        // waiting for whatever triggers its next natural layout pass —
-        // requestApplyInsets() is what actually schedules the
-        // setOnApplyWindowInsetsListener callback below to run; without
-        // this nudge that callback can land a visible frame or more after
-        // the WebView's first paint, which is what produced the
-        // 0-inset-then-real-inset "reframe" on cold boot (the CSS fallback
-        // above now also softens that same gap from the other side).
-        getWindow().getDecorView().requestApplyInsets();
-        ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
-            Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
-            Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
-            float density = getResources().getDisplayMetrics().density;
-            // Defensive caps — no real device has a camera cutout or gesture nav area
-            // taller than this, regardless of what a given OEM's inset APIs report.
-            float topDp = Math.min(cutout.top / density, 60f);
-            float bottomDp = Math.min(navBar.bottom / density, 48f);
-            WebView webView = getBridge() != null ? getBridge().getWebView() : null;
-            if (webView != null) {
-                // data-safe-area-ready tells the header/bottom nav (hidden
-                // until this fires — see .boot-frozen-ui in kuro.css) that
-                // the values above are the real ones, not the fallback —
-                // they only ever become visible already in their final
-                // place, instead of appearing early and being moved.
-                String js = "document.documentElement.style.setProperty('--safe-area-top','" + topDp + "px');"
-                        + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');"
-                        + "document.documentElement.setAttribute('data-safe-area-ready','1');";
-                webView.evaluateJavascript(js, null);
-            }
-            return insets;
-        });
+        // Computed ONCE, synchronously, from the device's own static system
+        // resources — NOT from a WindowInsetsCompat listener, which only
+        // fires once the decor view has actually gone through a layout pass.
+        // That listener-based approach is what produced the boot-time
+        // reframe: the header/nav rendered at a fallback margin immediately,
+        // then got moved once the listener eventually fired with the real
+        // value some time after first paint. Reading the platform's own
+        // status_bar_height/navigation_bar_height dimension resources needs
+        // no layout pass at all — they're just static values for the current
+        // screen/density, available the instant Resources exists. Setting
+        // them into the WebView exactly once here, with nothing left to ever
+        // update them again afterward, is what actually locks the header/nav
+        // to their final position from the very first frame instead of
+        // reacting to a later correction.
+        int statusBarResId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        int statusBarPx = statusBarResId > 0 ? getResources().getDimensionPixelSize(statusBarResId) : 0;
+        int navBarResId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
+        int navBarPx = navBarResId > 0 ? getResources().getDimensionPixelSize(navBarResId) : 0;
+        float density = getResources().getDisplayMetrics().density;
+        // Defensive caps — no real device has a status/nav bar taller than
+        // this, regardless of what these resource lookups return.
+        float topDp = Math.min(statusBarPx / density, 60f);
+        float bottomDp = Math.min(navBarPx / density, 48f);
+        WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+        if (webView != null) {
+            String js = "document.documentElement.style.setProperty('--safe-area-top','" + topDp + "px');"
+                    + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');";
+            webView.evaluateJavascript(js, null);
+        }
         // Boot splash (index.html) autoplays a muted <video> the instant
         // the app starts — no user gesture has happened yet at that point,
         // by definition. Android's WebView has its OWN gesture-based

@@ -29,25 +29,6 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Header/bottom-nav are placed using --safe-area-top/--safe-area-bottom
-       (below), whose real value on Android only arrives via an async native
-       call some time after first paint (see MainActivity.java) — rendering
-       them immediately at the fallback position and then moving them once
-       the real value lands is exactly the boot-time "reframe" reported
-       on-device. Hiding them until that real value is confirmed, instead of
-       showing then correcting, means there's nothing to visibly reposition:
-       they simply don't appear until they're already in their final place.
-       data-safe-area-ready is set on <html> by MainActivity.java once the
-       real inset has been injected, with a JS-side fallback (main.jsx) for
-       any platform/situation where that native call never happens. */
-    .boot-frozen-ui {
-      opacity: 0;
-    }
-    html[data-safe-area-ready="1"] .boot-frozen-ui {
-      opacity: 1;
-      transition: opacity 0.15s var(--ease-branded, ease);
-    }
-
     /* ── OLED Mode Overrides ─────────────────────────────────────────────── */
     /* Applied via .oled-mode class on root div (toggled by visualSettings.oledMode) */
     .oled-mode, .oled-mode html, .oled-mode body { background: #000000; }
