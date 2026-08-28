@@ -27,19 +27,6 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
-        <!-- Without these, this splash window renders as a classic
-             non-edge-to-edge window (opaque status bar, content "contained"
-             beneath it) while AppTheme.NoActionBar below — the real app
-             theme MainActivity switches to in onCreate() — is edge-to-edge
-             with transparent bars. That mismatch is a real native window
-             mode change, visible as a "contained -> edge-to-edge" jump the
-             instant the theme switches, on top of (and separate from) the
-             header/nav margin correction already fixed via safe-area inset
-             timing. Matching these here so the splash window already looks
-             edge-to-edge/transparent removes that first jump entirely. -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar">false</item>
     </style>
 
     <!-- ConveneAnimationActivity — full-screen black, no action bar/title,
