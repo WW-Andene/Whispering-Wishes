@@ -55,6 +55,21 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(SystemSettingsPlugin.class);
         registerPlugin(GlassHapticsPlugin.class);
         super.onCreate(savedInstanceState);
+        // Boot splash (index.html) autoplays a muted <video> the instant
+        // the app starts — no user gesture has happened yet at that point,
+        // by definition. Android's WebView has its OWN gesture-based
+        // autoplay policy (WebSettings.setMediaPlaybackRequiresUserGesture),
+        // completely separate from the HTML autoplay attribute and from
+        // desktop/mobile Chrome's autoplay rules — Capacitor's Bridge is
+        // *supposed* to already disable this by default, but every attempt
+        // at fixing the splash from the JS/HTML side alone has failed to
+        // produce any visible change on-device, which is consistent with
+        // this WebView-level gesture requirement silently blocking
+        // autoplay entirely regardless of what the page's own script does.
+        // Set explicitly rather than trusted to Capacitor's default.
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
+        }
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
             Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
