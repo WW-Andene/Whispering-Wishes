@@ -170,9 +170,22 @@
          Default to the standard CSS env() (web/iOS); on the Capacitor
          Android build MainActivity overrides both with an inline style on
          <html> from real WindowInsets values, since env() has proven
-         unreliable for positioning in that WebView. */
-      --safe-area-top: env(safe-area-inset-top, 0px);
-      --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+         unreliable for positioning in that WebView.
+         The fallback here is NOT 0 — on Android, MainActivity's real inset
+         value only reaches the WebView via an async evaluateJavascript()
+         call that lands a frame or more after first paint (WindowInsets
+         aren't available until the decor view's first layout pass
+         completes). Defaulting to 0px meant every cold boot rendered the
+         header/nav flush against the edges for that first frame, then
+         visibly jumped down/up by the real inset once it arrived — this
+         was the actual "reframe" reported on-device, not anything in the
+         splash content itself (confirmed by it persisting after the splash
+         was removed entirely). Defaulting close to a typical device's real
+         values instead shrinks that jump to a sub-pixel correction in the
+         common case; see the paired margin transition below for the
+         remaining cases. */
+      --safe-area-top: env(safe-area-inset-top, 24px);
+      --safe-area-bottom: env(safe-area-inset-bottom, 16px);
       /* DC3-SH1 + DP-F1: Ambient light model (0-offset blur-only) with subtle gold glow */
       --shadow-sm: 0 0 4px rgba(6, 10, 24, 0.5), 0 0 4px rgba(var(--color-gold), 0.03);
       --shadow-md: 0 0 12px rgba(6, 10, 24, 0.6), 0 0 8px rgba(var(--color-gold), 0.04);

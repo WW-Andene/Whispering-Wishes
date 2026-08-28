@@ -82,6 +82,15 @@ public class MainActivity extends BridgeActivity {
             getSplashScreen().setOnExitAnimationListener(splashScreenView -> splashScreenView.remove());
         }
         super.onCreate(savedInstanceState);
+        // Ask the platform to (re)compute insets immediately rather than
+        // waiting for whatever triggers its next natural layout pass —
+        // requestApplyInsets() is what actually schedules the
+        // setOnApplyWindowInsetsListener callback below to run; without
+        // this nudge that callback can land a visible frame or more after
+        // the WebView's first paint, which is what produced the
+        // 0-inset-then-real-inset "reframe" on cold boot (the CSS fallback
+        // above now also softens that same gap from the other side).
+        getWindow().getDecorView().requestApplyInsets();
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
             Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
             Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
