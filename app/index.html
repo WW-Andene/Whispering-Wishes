@@ -82,44 +82,74 @@
          Used exactly as uploaded — no re-encode, no re-render, no GIF
          conversion (those were all tried and made things worse, per
          explicit instruction not to modify these).
-         Two things fixed here: (1) poster is a 2x2 solid swatch matching
-         the #splash background (#080c14) — without ANY poster, a <video>
-         shows the browser/WebView's generic media-player glyph for
-         however long it takes to decode a first frame, even though the
-         clip is a local bundled asset with no network delay; a poster
-         (even a blank one) suppresses that fallback icon entirely.
-         (2) the src is written directly into the tag via document.write,
-         picked randomly right here, instead of a separate <script> after
-         the element assigning .src on a later tick — that follow-up-script
-         pattern is a two-step init (parse empty <video> → next tick, run
-         script → assign src → THEN the browser starts reading the file),
-         which is strictly slower to first frame than having src be part
-         of the same synchronous parse the element itself comes from.
-         document.write here blocks the parser until it runs, guaranteeing
-         order without an extra tick. No loop — main.jsx waits for the
-         'ended' event (with a timeout fallback in case autoplay is
-         blocked) before revealing the app underneath. Always muted — the
-         clip's own audio track is never played; the Log Screen ambient
-         track (next script down) is the boot audio instead.
-         (3) Plain autoplay, nothing layered on top. A prior version of
-         this tried a "pause immediately, resume once buffered" trick to
-         hold on a frozen first frame — untested on real devices, and it
-         made things worse in practice (reports of the video starting even
-         later, with no visible frozen frame at all — consistent with
-         pause() also halting the browser's own buffering on some mobile
-         WebViews, not just deferring playback). Reliability matters more
-         here than a cosmetic hold-on-first-frame effect: plain autoplay is
-         the one thing in this whole file's history that has actually,
-         verifiably started playback immediately and consistently. -->
+
+         Per explicit instruction, this is now: background (a real
+         pre-rendered first frame of whichever clip got picked, not a
+         solid navy swatch) → do nothing but load the video in the
+         background → once it's genuinely fully loaded, play seamlessly.
+         Not before, not after.
+
+         The poster images (splash-poster-frover.jpg / -mrover.jpg) are
+         actual frame-0 extracts of the two clips (ffmpeg -vframes 1),
+         not a blank swatch — so the "background" the user sees while
+         waiting is a real frame of the video, matched to whichever one
+         was picked, not a gap.
+
+         No autoplay attribute at all: the video is not supposed to play
+         until it's fully loaded, so there's nothing for autoplay to
+         (mis)trigger early. Loading is driven entirely by preload="auto"
+         plus the script below, which explicitly waits for the buffered
+         range to cover the full duration — not just 'canplaythrough'
+         (which only means "enough to play through without stalling",
+         an estimate, not a guarantee the whole file is down) — before
+         calling play(). Playback then starts at true frame 0 with the
+         entire clip already local, so it runs straight through with
+         nothing left to buffer.
+
+         document.write blocks the parser until it runs, guaranteeing the
+         <video> (and its matching poster/src) exist as part of the same
+         synchronous parse, no extra tick. main.jsx still waits for the
+         'ended' event, with its own timeout fallback in case the browser
+         never fires the events this script needs, before revealing the
+         app underneath. Always muted — the clip's own audio track is
+         never played; the Log Screen ambient track (next script down) is
+         the boot audio instead. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <script>
         document.write(
-          '<video id="splash-video" poster="./splash-poster.jpg" preload="auto" autoplay muted playsinline' +
-          ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
-          ' style="width:100%;height:100%;object-fit:cover" src="' +
-          (Math.random() < 0.5 ? './Boot_Intro_FRover.mp4' : './Boot_Intro_MRover.mp4') +
-          '"></video>'
+          (function () {
+            var pick = Math.random() < 0.5
+              ? { src: './Boot_Intro_FRover.mp4', poster: './splash-poster-frover.jpg' }
+              : { src: './Boot_Intro_MRover.mp4', poster: './splash-poster-mrover.jpg' };
+            return '<video id="splash-video" poster="' + pick.poster + '" preload="auto" muted playsinline' +
+              ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
+              ' style="width:100%;height:100%;object-fit:cover" src="' + pick.src + '"></video>';
+          })()
         );
+      </script>
+      <script>
+        (function () {
+          var video = document.getElementById('splash-video');
+          if (!video) return;
+          var started = false;
+          var isFullyBuffered = function () {
+            if (!video.duration || !isFinite(video.duration)) return false;
+            var buf = video.buffered;
+            return buf.length > 0 && buf.end(buf.length - 1) >= video.duration - 0.05;
+          };
+          var tryStart = function () {
+            if (started || !isFullyBuffered()) return;
+            started = true;
+            video.play().catch(function () {});
+          };
+          // 'progress' fires repeatedly as data downloads — keep checking
+          // the actual buffered range until it covers the whole clip.
+          video.addEventListener('progress', tryStart);
+          // Fully local file, but these two also catch it in case
+          // 'progress' stops firing right at the end on some WebView.
+          video.addEventListener('canplaythrough', tryStart);
+          video.addEventListener('loadeddata', tryStart);
+        })();
       </script>
     </div>
     <!-- The boot video itself is always silent now (stays .muted — see the
