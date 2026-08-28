@@ -83,52 +83,82 @@
          conversion (those were all tried and made things worse, per
          explicit instruction not to modify these).
 
-         Per explicit instruction: no separate static "frame" image at
-         all — a prior version used a pre-rendered poster JPG (one per
-         clip) as the background while loading, but swapping from that
-         still image to the real video once decoded is itself a visible
-         reframe/jump (different rendering path/surface for the poster
-         vs. the video). Removed the poster attribute and both JPGs
-         entirely — the <video> element now shows its own real, live
-         first frame directly (paused, since nothing plays it until
-         fully loaded) the moment it's decoded, with no separate asset
-         and no handoff between two different things on screen. Do
-         nothing but load the video in the background → once it's
-         genuinely fully loaded, play seamlessly. Not before, not after.
+         Per explicit instruction, this version combines both a poster
+         and a fix for the reframe it used to expose, rather than
+         choosing one or the other:
 
-         No autoplay attribute at all: the video is not supposed to play
-         until it's fully loaded, so there's nothing for autoplay to
-         (mis)trigger early. Loading is driven entirely by preload="auto"
-         plus the script below, which explicitly waits for the buffered
-         range to cover the full duration — not just 'canplaythrough'
-         (which only means "enough to play through without stalling",
-         an estimate, not a guarantee the whole file is down) — before
-         calling play(). Playback then starts at true frame 0 with the
-         entire clip already local, so it runs straight through with
-         nothing left to buffer.
+         (1) poster is back — splash-poster-frover.jpg / -mrover.jpg,
+         real frame-0 extracts of the two clips (ffmpeg -vframes 1),
+         matched to whichever clip gets picked below. Without ANY
+         poster, a bare <video> shows the browser/WebView's own generic
+         media-player glyph until it has a real frame to paint, even for
+         a local file — the poster gives it something real immediately.
+
+         (2) width="480" height="852" on the <video> itself — the two
+         clips' real dimensions. Without these, the browser doesn't know
+         the video's aspect ratio until the first frame decodes, so
+         object-fit:cover has nothing to crop against yet and recalculates
+         once it does — visible as the content snapping from a small
+         centered icon to a full-bleed crop. Declaring the real
+         dimensions up front removes that particular reframe at the
+         source, before any workaround is even needed.
+
+         (3) a separate #splash-poster-overlay <img> (same picked poster
+         image) sits ON TOP of the <video>, covering it completely, for
+         at least 500ms after play() is called. (2) fixes the
+         icon→cropped-image snap, but a second, different reframe still
+         happens purely from starting playback: some WebViews switch the
+         video element from painting a static decoded frame to an active
+         hardware video-decoding surface the moment playback begins, and
+         that surface can flash/mis-scale for an instant before settling
+         into the element's actual CSS box. That one isn't something
+         width/height or object-fit can prevent — it's the renderer
+         swapping its own internal painting path. Keeping the poster
+         overlay up for a short, fixed dwell after play() starts hides
+         that moment: playback is already running underneath, out of
+         view, by the time the overlay is removed and the video becomes
+         visible again.
+
+         No autoplay attribute: the video isn't supposed to play until
+         fully loaded, so nothing should trigger it early. Loading is
+         driven by preload="auto" plus the script below, which explicitly
+         waits for the buffered range to cover the full duration — not
+         just 'canplaythrough' (an estimate that playback won't stall,
+         not a guarantee the whole file is down) — before calling play().
 
          document.write blocks the parser until it runs, guaranteeing the
-         <video> (and its src) exist as part of the same synchronous
-         parse, no extra tick. main.jsx still waits for the 'ended'
-         event, with its own timeout fallback in case the browser never
-         fires the events this script needs, before revealing the app
-         underneath. Always muted — the clip's own audio track is never
-         played; the Log Screen ambient track (next script down) is the
-         boot audio instead. -->
+         <video>/overlay exist as part of the same synchronous parse, no
+         extra tick. main.jsx still waits for the 'ended' event, with its
+         own timeout fallback in case the browser never fires the events
+         this script needs, before revealing the app underneath. Always
+         muted — the clip's own audio track is never played; the Log
+         Screen ambient track (next script down) is the boot audio
+         instead. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <script>
         document.write(
-          '<video id="splash-video" preload="auto" muted playsinline' +
-          ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
-          ' style="width:100%;height:100%;object-fit:cover" src="' +
-          (Math.random() < 0.5 ? './Boot_Intro_FRover.mp4' : './Boot_Intro_MRover.mp4') +
-          '"></video>'
+          (function () {
+            var pick = Math.random() < 0.5
+              ? { src: './Boot_Intro_FRover.mp4', poster: './splash-poster-frover.jpg' }
+              : { src: './Boot_Intro_MRover.mp4', poster: './splash-poster-mrover.jpg' };
+            return '<video id="splash-video" poster="' + pick.poster + '" width="480" height="852"' +
+              ' preload="auto" muted playsinline' +
+              ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
+              ' style="width:100%;height:100%;object-fit:cover" src="' + pick.src + '"></video>' +
+              '<img id="splash-poster-overlay" alt="" src="' + pick.poster + '"' +
+              ' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />';
+          })()
         );
       </script>
       <script>
         (function () {
           var video = document.getElementById('splash-video');
+          var overlay = document.getElementById('splash-poster-overlay');
           if (!video) return;
+          // How long to keep the poster overlay up after play() starts —
+          // masking the static-frame → hardware-playback-surface reframe
+          // described above. Playback is already running underneath.
+          var OVERLAY_HOLD_MS = 500;
           var started = false;
           var isFullyBuffered = function () {
             if (!video.duration || !isFinite(video.duration)) return false;
@@ -139,6 +169,11 @@
             if (started || !isFullyBuffered()) return;
             started = true;
             video.play().catch(function () {});
+            if (overlay) {
+              setTimeout(function () {
+                overlay.style.display = 'none';
+              }, OVERLAY_HOLD_MS);
+            }
           };
           // 'progress' fires repeatedly as data downloads — keep checking
           // the actual buffered range until it covers the whole clip.
