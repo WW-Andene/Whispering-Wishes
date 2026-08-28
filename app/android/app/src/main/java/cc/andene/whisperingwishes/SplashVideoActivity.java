@@ -1,12 +1,12 @@
 package cc.andene.whisperingwishes;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.VideoView;
-import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.Random;
 
@@ -23,7 +23,14 @@ import java.util.Random;
 // because that's the fastest, purely-local playback path a VideoView has,
 // with no asset-directory indirection) picked at random, fades it out over
 // FADE_MS right before handing off to MainActivity.
-public class SplashVideoActivity extends AppCompatActivity {
+// Plain Activity, not AppCompatActivity — this Activity needs no AppCompat
+// features (no action bar, no fragments), and AppTheme.NoActionBarLaunch's
+// parent (Theme.SplashScreen) isn't a Theme.AppCompat descendant, which
+// AppCompatActivity.setContentView() requires and throws on otherwise.
+// MainActivity gets away with the same theme because it's a Capacitor
+// BridgeActivity, not AppCompatActivity — this crashed on launch until
+// switched to match.
+public class SplashVideoActivity extends Activity {
 
     private static final long FADE_MS = 1000;
     private static final long FALLBACK_MS = 6000;
