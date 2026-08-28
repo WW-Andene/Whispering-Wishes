@@ -101,14 +101,8 @@ public class MainActivity extends BridgeActivity {
             float bottomDp = Math.min(navBar.bottom / density, 48f);
             WebView webView = getBridge() != null ? getBridge().getWebView() : null;
             if (webView != null) {
-                // data-safe-area-ready tells the header/bottom nav (hidden
-                // until this fires — see .boot-frozen-ui in kuro.css) that
-                // the values above are the real ones, not the fallback —
-                // they only ever become visible already in their final
-                // place, instead of appearing early and being moved.
                 String js = "document.documentElement.style.setProperty('--safe-area-top','" + topDp + "px');"
-                        + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');"
-                        + "document.documentElement.setAttribute('data-safe-area-ready','1');";
+                        + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');";
                 webView.evaluateJavascript(js, null);
             }
             return insets;
