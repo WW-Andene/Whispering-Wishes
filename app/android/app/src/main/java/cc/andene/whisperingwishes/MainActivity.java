@@ -17,20 +17,24 @@ import androidx.core.view.WindowInsetsCompat;
 import com.getcapacitor.BridgeActivity;
 import java.lang.reflect.Method;
 
-// The app deliberately opts OUT of edge-to-edge (windowOptOutEdgeToEdgeEnforcement
-// in styles.xml + setDecorFitsSystemWindows(true) below) rather than trying to
-// live with it: on targetSdk 35+, edge-to-edge is enforced by the platform, and
-// having the WebView draw full-bleed underneath the status/nav bars meant its
-// content area only got its real, final size once WindowInsets settled — a
-// visible resize on every cold boot, regardless of what was on screen at the
-// time (confirmed across several splash-content variants, including none at
-// all). With the opt-out in place, the system reserves real, static space for
-// the status/nav bars from the very first frame, so there's nothing for the
-// WebView to resize into later.
+// The app's own border/background is always full-screen edge-to-edge,
+// unconditionally — setDecorFitsSystemWindows(false) forces that on every
+// API level this app supports (24+), independent of what a given OEM's
+// platform does on its own for apps targeting SDK 35+. Nothing below this
+// line ever touches that: it stays fixed regardless of insets.
 //
-// The "page" (header + bottom nav) still separately dodges display cutouts
-// (e.g. a notch/punch-hole camera) via the insets listener below — that's a
-// narrower, orthogonal concern from edge-to-edge and is kept regardless.
+// The "page" (header + bottom nav content) is a separate concern, laid out
+// on top of that fixed border, and adapts to the real device shape:
+//  - top: displayCutout() only, not statusBars() — displayCutout() is
+//    genuinely zero on a device with no notch/punch-hole camera (so the
+//    header sits at its normal position, a "classic full" layout), and only
+//    reports space where an actual camera physically is on one that has it.
+//    statusBars() is always non-zero on every phone regardless of a cutout,
+//    which is why it doesn't belong here.
+//  - bottom: navigationBars(), same as before — the gesture/button nav area.
+// Both are bridged into the WebView as CSS custom properties via
+// evaluateJavascript rather than trusted from the WebView's own
+// env(safe-area-inset-*), which has proven unreliable for this on-device.
 public class MainActivity extends BridgeActivity {
     @Override
     @SuppressLint("JavascriptInterface")
@@ -55,36 +59,38 @@ public class MainActivity extends BridgeActivity {
         // boot splash reframe either. Confirmed since (switching the
         // splash to an animated GIF, a plain <img> with none of
         // <video>'s decode/playback-surface machinery, still showed the
-        // exact same reframe, and it persisted even with no custom splash
-        // content at all) that this was never about the media element:
-        // it was the WebView's own content-area SIZE changing mid-boot,
-        // as edge-to-edge insets settled — status bar + nav bar together
-        // are a genuine ~9-12% of screen height, and whatever's on screen
-        // when that area gets included/excluded rides along with the
-        // resize, regardless of what it is.
+        // exact same reframe) that this was never about the media
+        // element at all: it's the WebView's own content-area SIZE
+        // changing mid-boot, as edge-to-edge insets settle — status bar
+        // + nav bar together are a genuine ~9-12% of screen height, and
+        // whatever's on screen when that area gets included/excluded
+        // rides along with the resize, regardless of what it is.
         //
-        // FORCING OUT of edge-to-edge entirely is the actual fix, not
-        // another attempt at timing the transition better: targetSdk 35+
-        // enforces edge-to-edge by default (the platform ignores
-        // setDecorFitsSystemWindows(false)/(true) toggling on its own),
-        // and windowOptOutEdgeToEdgeEnforcement (set on both themes in
-        // styles.xml) is the only sanctioned opt-out. With that opt-out in
-        // place, setDecorFitsSystemWindows(true) here is what it takes to
-        // get the system to actually reserve real, static space for the
-        // status/nav bars from the very first frame — nothing for the
-        // WebView to resize into later, because insets never move it in
-        // the first place.
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
+        // A prior attempt at THIS specific fix (setDecorFitsSystemWindows
+        // AND the insets listener, both moved before super.onCreate())
+        // made things worse — intermittently blocked the video outright.
+        // Narrower this time: only setDecorFitsSystemWindows() moves
+        // earlier, so the WebView's very first layout pass already
+        // happens in the final edge-to-edge state — nothing to resize
+        // into afterward. The insets listener itself (which reads
+        // getBridge().getWebView() and pushes CSS custom properties into
+        // it) stays exactly where it already worked, after
+        // super.onCreate(), since that's what the earlier regression was
+        // actually tied to, not this call.
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             getSplashScreen().setOnExitAnimationListener(splashScreenView -> splashScreenView.remove());
         }
         super.onCreate(savedInstanceState);
-        // Kept as a defensive fallback for display-cutout dodging only
-        // (e.g. a landscape-rotated notch that a plain status-bar
-        // reservation wouldn't otherwise account for) — navigationBars()
-        // is read here too but should resolve to 0 now that the window is
-        // no longer edge-to-edge and the system already reserves that
-        // space on its own.
+        // Ask the platform to (re)compute insets immediately rather than
+        // waiting for whatever triggers its next natural layout pass —
+        // requestApplyInsets() is what actually schedules the
+        // setOnApplyWindowInsetsListener callback below to run; without
+        // this nudge that callback can land a visible frame or more after
+        // the WebView's first paint, which is what produced the
+        // 0-inset-then-real-inset "reframe" on cold boot (the CSS fallback
+        // above now also softens that same gap from the other side).
+        getWindow().getDecorView().requestApplyInsets();
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
             Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
             Insets navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars());
