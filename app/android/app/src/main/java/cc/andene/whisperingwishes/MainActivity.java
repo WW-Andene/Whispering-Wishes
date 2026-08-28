@@ -143,7 +143,6 @@ public class MainActivity extends BridgeActivity {
         // prefers this over the GlassHaptics plugin for the "light" tap
         // specifically (the one fired on every button press) to test the
         // timing hypothesis; success/warning/error stay on the plugin path.
-        WebView webView = getBridge() != null ? getBridge().getWebView() : null;
         if (webView != null) {
             webView.addJavascriptInterface(new NativeHapticsBridge(webView), "AndroidHaptics");
         }
