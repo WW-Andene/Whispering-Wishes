@@ -71,47 +71,22 @@ const loadSpineRuntimes = () => {
   addInline('window.spine41 = window.spine; window.spine = window.__spine42; delete window.__spine42;');
 };
 
-// Reveal the app once the boot video has faded out — a fixed fallback delay
-// covers the case where autoplay is blocked or the video fails to load, so
-// the app never stays hidden behind a splash that isn't going anywhere.
-// The video itself is always silent (index.html keeps it .muted — the
-// ambient Log Screen track, started in index.html and handed off to
-// useAmbientMusic.js, is the audio now), so this fade is visual-only.
-const SPLASH_FALLBACK_MS = 6000;
-// The video's opacity ramps to 0 over this window BEFORE the clip's natural
-// end, then the #splash wrapper fades out at the same time — one continuous
-// fade rather than playing to an abrupt last-frame cut.
+// Reveal the app after the boot splash (now a static poster image, no
+// video/GIF) has been shown for a fixed dwell — there's no natural
+// "ended" event for a still image to wait on, so this is timer-driven.
+const SPLASH_DWELL_MS = 1500;
 const SPLASH_FADE_SECONDS = 1;
 (() => {
   const splash = document.getElementById('splash');
   if (!splash) return;
-  const video = document.getElementById('splash-video');
-  let fading = false, done = false;
+  let done = false;
   const reveal = () => {
     if (done) return;
     done = true;
+    loadSpineRuntimes();
+    splash.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
     splash.style.opacity = '0';
     splash.addEventListener('transitionend', () => splash.remove(), { once: true });
   };
-  const beginFade = () => {
-    if (fading) return;
-    fading = true;
-    loadSpineRuntimes();
-    if (video) {
-      video.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
-      video.style.opacity = '0';
-    }
-    splash.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
-    reveal();
-  };
-  if (video) {
-    video.addEventListener('ended', beginFade, { once: true });
-    video.addEventListener('error', beginFade, { once: true });
-    video.addEventListener('timeupdate', () => {
-      if (!video.duration) return;
-      const remaining = video.duration - video.currentTime;
-      if (remaining <= SPLASH_FADE_SECONDS) beginFade();
-    });
-  }
-  setTimeout(beginFade, SPLASH_FALLBACK_MS);
+  setTimeout(reveal, SPLASH_DWELL_MS);
 })();
