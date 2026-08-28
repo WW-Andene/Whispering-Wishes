@@ -101,22 +101,29 @@
          blocked) before revealing the app underneath. Always muted — the
          clip's own audio track is never played; the Log Screen ambient
          track (next script down) is the boot audio instead.
-         (3) No autoplay attribute. Autoplaying the instant the element
-         exists meant playback (and its decode work) started while the
-         WebView was still mid cold-start — competing for the same CPU —
-         which is what read as choppy/stuttering. Instead the video sits on
-         its own first decoded frame (a real frame, not the poster) until
-         'canplaythrough' says the browser has buffered enough to play
-         through without needing to pause for more data, THEN play() is
-         called — so the visible motion only starts once playback can be
-         smooth. Held on the first frame is a static, no-cost wait; a
-         mid-playback stall is the visible, jarring one. A short fallback
-         timer still forces playback to start even if canplaythrough never
-         fires on some WebView build. -->
+         (3) autoplay is back (a prior version of this file removed it,
+         waiting to call play() ourselves once buffered — but several
+         mobile WebViews only start actually loading/decoding a <video> at
+         all once autoplay is present or play() is called explicitly, so
+         waiting for a "buffered enough" event before ever calling play()
+         meant the video never started loading in the first place: it sat
+         on the poster — a solid swatch matching the background, so this
+         looked like a plain navy screen — until main.jsx's own outer
+         timeout gave up on it and revealed the app underneath, video
+         never having played at all).
+         What still happens: the moment the first real frame is decoded
+         ('loadeddata'), we immediately pause — so playback never runs
+         un-buffered — then resume with play() once 'canplaythrough' says
+         enough is buffered to play through smoothly (or a short fallback
+         timer, in case that event is late/never fires on some WebView
+         build). autoplay is what guarantees loading/decoding starts
+         immediately either way; this just inserts a brief, invisible
+         freeze-then-resume around it instead of letting it play straight
+         through un-buffered. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <script>
         document.write(
-          '<video id="splash-video" poster="./splash-poster.jpg" preload="auto" muted playsinline' +
+          '<video id="splash-video" poster="./splash-poster.jpg" preload="auto" autoplay muted playsinline' +
           ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
           ' style="width:100%;height:100%;object-fit:cover" src="' +
           (Math.random() < 0.5 ? './Boot_Intro_FRover.mp4' : './Boot_Intro_MRover.mp4') +
@@ -127,20 +134,25 @@
         (function () {
           var video = document.getElementById('splash-video');
           if (!video) return;
-          var started = false;
-          var startPlayback = function () {
-            if (started) return;
-            started = true;
+          var paused = false, resumed = false;
+          var pauseOnFirstFrame = function () {
+            if (paused || resumed) return;
+            paused = true;
+            video.pause();
+          };
+          var resumePlayback = function () {
+            if (resumed) return;
+            resumed = true;
             video.play().catch(function () {});
           };
-          // 'canplaythrough' = enough buffered to play to the end without
-          // stalling for more data — for a local bundled file this fires
-          // almost immediately, but still after decode/buffer setup is
-          // actually done, which is the whole point.
-          video.addEventListener('canplaythrough', startPlayback, { once: true });
-          // Covers a WebView that never fires canplaythrough for a local
-          // resource:// style source — never leave the frame frozen forever.
-          setTimeout(startPlayback, 1200);
+          // First real decoded frame — freeze right there instead of
+          // letting autoplay carry on un-buffered.
+          video.addEventListener('loadeddata', pauseOnFirstFrame, { once: true });
+          // Enough buffered to play through without stalling — resume.
+          video.addEventListener('canplaythrough', resumePlayback, { once: true });
+          // In case loadeddata/canplaythrough never fire on some WebView
+          // build — never leave the frame frozen (or never-paused) forever.
+          setTimeout(resumePlayback, 1200);
         })();
       </script>
     </div>
