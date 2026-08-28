@@ -48,6 +48,20 @@ import org.json.JSONObject;
 public class BannerWidget extends AppWidgetProvider {
     private static final String TAG = "BannerWidget";
     private static final String PREFS_NAME = "CapacitorStorage";
+    // Longest-side decode target for the banner art background. This used to
+    // be 800 — at ARGB_8888 (4 bytes/px) that's up to ~2.4MB for ONE bitmap,
+    // and RemoteViews.setImageViewBitmap() serializes it whole into the
+    // Binder IPC transaction sent to the launcher process (~1MB combined
+    // ceiling across everything in that transaction — easily two art
+    // bitmaps at once, primary + secondary block). Past that ceiling the
+    // launcher's own apply of the RemoteViews throws
+    // TransactionTooLargeException and the widget is left showing Android's
+    // generic "couldn't load this widget" placeholder — which reads as the
+    // widget being completely broken, and tapping that placeholder is what
+    // removes it. 240px + RGB_565 (see decodeAsset's config param below)
+    // keeps a single art bitmap safely under ~115KB while still looking
+    // sharp at the size this widget actually renders art at.
+    private static final int ART_PX = 240;
     private static final int THUMB_PX = 96; // decode target for the 30dp featured-4★ thumbnails
     private static final int PILL_ICON_PX = 40; // decode target for the 14dp ×1/×10 currency icons
     // Same bundled asset ConvenePullPills.jsx's ASTRITE_ICON constant uses —
@@ -121,7 +135,7 @@ public class BannerWidget extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_banner_element, "");
         }
 
-        Bitmap art = WidgetAssetUtils.decodeAsset(context, artAsset, 800);
+        Bitmap art = WidgetAssetUtils.decodeAsset(context, artAsset, ART_PX, Bitmap.Config.RGB_565);
         if (art != null) views.setImageViewBitmap(R.id.widget_art, art);
 
         setFeatured4(context, views, new int[]{R.id.widget_f4_1, R.id.widget_f4_2, R.id.widget_f4_3}, featured4Json);
@@ -167,7 +181,7 @@ public class BannerWidget extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_secondary_name, name != null ? name : "");
         views.setTextViewText(R.id.widget_secondary_element, title != null ? title.toUpperCase() : "");
 
-        Bitmap art = WidgetAssetUtils.decodeAsset(context, artAsset, 800);
+        Bitmap art = WidgetAssetUtils.decodeAsset(context, artAsset, ART_PX, Bitmap.Config.RGB_565);
         if (art != null) views.setImageViewBitmap(R.id.widget_secondary_art, art);
 
         setFeatured4(context, views, new int[]{R.id.widget_secondary_f4_1, R.id.widget_secondary_f4_2, R.id.widget_secondary_f4_3}, featured4Json);

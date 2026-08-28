@@ -28,13 +28,29 @@ final class WidgetAssetUtils {
 
     private WidgetAssetUtils() {}
 
+    static Bitmap decodeAsset(Context context, String assetPath, int targetPx) {
+        return decodeAsset(context, assetPath, targetPx, Bitmap.Config.ARGB_8888);
+    }
+
     // Reads a bundled web asset (public/<assetPath>) and decodes it downsampled
     // to roughly targetPx on its longest side — both callers pass this through
     // RemoteViews (Binder-size-limited) or hold it in a long-lived overlay
     // view, so a decode-bounds pass picks an inSampleSize first rather than
     // holding a full-resolution character sprite (some multiple MB) just to
     // downscale it after.
-    static Bitmap decodeAsset(Context context, String assetPath, int targetPx) {
+    // config lets a caller ask for RGB_565 (2 bytes/px, no alpha channel)
+    // instead of the default ARGB_8888 (4 bytes/px) — halves the decoded
+    // bitmap's memory footprint, which matters a lot here: every Bitmap
+    // passed through RemoteViews.setImageViewBitmap() gets serialized whole
+    // into the Binder IPC transaction sent to the launcher's process, and
+    // that transaction has a combined ~1MB ceiling (throws
+    // TransactionTooLargeException past it — the launcher then shows its
+    // generic "couldn't load this widget" placeholder, which is what a
+    // broken/undeliverable RemoteViews update looks like from the outside).
+    // Use RGB_565 for anything opaque (banner art backgrounds); ARGB_8888
+    // stays the default for anything that needs a transparent background
+    // (icons) to render correctly.
+    static Bitmap decodeAsset(Context context, String assetPath, int targetPx, Bitmap.Config config) {
         if (assetPath == null || assetPath.isEmpty()) return null;
         AssetManager am = context.getAssets();
         String fullPath = ASSET_PREFIX + assetPath;
@@ -50,6 +66,7 @@ final class WidgetAssetUtils {
 
             BitmapFactory.Options opts = new BitmapFactory.Options();
             opts.inSampleSize = sample;
+            opts.inPreferredConfig = config;
             try (InputStream stream = am.open(fullPath)) {
                 return BitmapFactory.decodeStream(stream, null, opts);
             }
