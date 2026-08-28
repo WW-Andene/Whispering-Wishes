@@ -76,23 +76,48 @@
       Skip to main content
     </a>
     <!-- Boot splash screen — per explicit instruction, the video is
-         removed entirely; this now just shows a static poster image (one
-         of splash-poster-frover.jpg / -mrover.jpg, picked at random,
-         real frame extracts of the old boot clips) for a fixed duration,
-         then fades into the app. No <video>/GIF, so no decode, no
-         playback surface, no buffering wait, and — the whole reason for
-         this change — no reframe: a plain <img> painted once and never
-         touched again can't visibly resize itself the way active
-         video/GIF playback did, regardless of what was actually causing
-         that (still being investigated on the native side independently
-         of this change). Silent, same as the video always was — the Log
-         Screen ambient track (next script down) is the boot audio. -->
-    <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
+         removed entirely; this shows a static poster image (one of
+         splash-poster-frover.jpg / -mrover.jpg, picked at random, real
+         frame extracts of the old boot clips) for a fixed duration, then
+         fades into the app.
+
+         The previous version of this still reframed — turned out to be
+         a real bug, not the underlying native cause: the image was
+         sized with width:100%/height:100% inside a position:fixed;
+         inset:0 container. Those are ALL live, viewport-relative values
+         — the browser recomputes them on every single viewport resize,
+         forever, by definition of what fixed positioning + percentage
+         sizing mean. That's not "a picture on top of the navy
+         background" at all — it's a picture inside a box that's still
+         being told to track the current viewport the entire time. If
+         the WebView's real content area changes size mid-boot (the
+         edge-to-edge insets-settling theory), that box resizes too, and
+         the <img> inside it recrops right along with it — same
+         mechanism as the video and the GIF before it, just one layer
+         further removed.
+
+         Fixed by freezing real PIXEL dimensions once, synchronously, the
+         moment this script runs — not %, not vw/vh, not inset — so
+         nothing here can ever recompute again regardless of what the
+         WebView's content area does afterward. screen.width/height (the
+         device's actual physical display size) rather than
+         window.innerWidth/innerHeight (the WebView's current content
+         area — exactly the thing observed resizing) is the stable
+         number, generously max()'d with the current innerWidth/Height in
+         case the WebView is ever larger than the reported screen size on
+         some device. Silent — the Log Screen ambient track (next script
+         down) is the boot audio. -->
+    <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;transition:opacity 0.4s ease">
       <script>
         document.write(
-          '<img id="splash-poster" alt="" style="width:100%;height:100%;object-fit:cover" src="' +
-          (Math.random() < 0.5 ? './splash-poster-frover.jpg' : './splash-poster-mrover.jpg') +
-          '" />'
+          (function () {
+            var w = Math.max(window.innerWidth || 0, screen.width || 0);
+            var h = Math.max(window.innerHeight || 0, screen.height || 0);
+            var pick = Math.random() < 0.5 ? './splash-poster-frover.jpg' : './splash-poster-mrover.jpg';
+            return '<img id="splash-poster" alt=""' +
+              ' style="position:fixed;top:0;left:0;width:' + w + 'px;height:' + h + 'px;object-fit:cover"' +
+              ' src="' + pick + '" />';
+          })()
         );
       </script>
     </div>
