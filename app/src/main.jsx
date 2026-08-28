@@ -10,13 +10,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   </React.StrictMode>,
 );
 
-// Loads the two spine-player CDN runtimes dynamically instead of as static
-// <script src> tags in index.html — see the removed tags' old spot there
-// for the full "why" (synchronous <script src> blocking the main thread
-// WHILE the boot video plays was very likely the cause of reported
-// stutter). Called once from beginFade() below, so the fetch+parse+execute
-// of these two real libraries only starts once the video's active
-// playback window is already ending.
+// Loads the two spine-player CDN runtimes dynamically rather than as static
+// <script src> tags in index.html, so they don't block the initial page
+// parse/paint — not needed until a Spine-animated character view is
+// actually opened, well after boot, so the short delay before they're
+// ready costs nothing. Called once, directly below.
 //
 // Dynamically created <script> elements fetch in parallel by default but
 // execute in insertion order as long as `.async = false` is set on each —
@@ -71,22 +69,4 @@ const loadSpineRuntimes = () => {
   addInline('window.spine41 = window.spine; window.spine = window.__spine42; delete window.__spine42;');
 };
 
-// Reveal the app after the boot splash (now a static poster image, no
-// video/GIF) has been shown for a fixed dwell — there's no natural
-// "ended" event for a still image to wait on, so this is timer-driven.
-const SPLASH_DWELL_MS = 1500;
-const SPLASH_FADE_SECONDS = 1;
-(() => {
-  const splash = document.getElementById('splash');
-  if (!splash) return;
-  let done = false;
-  const reveal = () => {
-    if (done) return;
-    done = true;
-    loadSpineRuntimes();
-    splash.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
-    splash.style.opacity = '0';
-    splash.addEventListener('transitionend', () => splash.remove(), { once: true });
-  };
-  setTimeout(reveal, SPLASH_DWELL_MS);
-})();
+loadSpineRuntimes();
