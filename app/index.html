@@ -101,36 +101,16 @@
          blocked) before revealing the app underneath. Always muted — the
          clip's own audio track is never played; the Log Screen ambient
          track (next script down) is the boot audio instead.
-         (3) autoplay is back (a prior version of this file removed it,
-         waiting to call play() ourselves once buffered — but several
-         mobile WebViews only start actually loading/decoding a <video> at
-         all once autoplay is present or play() is called explicitly, so
-         waiting for a "buffered enough" event before ever calling play()
-         meant the video never started loading in the first place: it sat
-         on the poster — a solid swatch matching the background, so this
-         looked like a plain navy screen — until main.jsx's own outer
-         timeout gave up on it and revealed the app underneath, video
-         never having played at all).
-         What still happens, and why it's done this specific way: the very
-         next line below calls video.pause() SYNCHRONOUSLY, immediately
-         after the element is created — before the browser has fetched any
-         data at all. Per spec, calling pause() while still at HAVE_NOTHING
-         sets the paused flag, which the autoplay/resource-fetch algorithm
-         respects once data does arrive — so autoplay never gets to render
-         even a single frame of real playback, and currentTime stays
-         pinned at exactly 0 the whole time. (An earlier version of this
-         instead paused on the 'loadeddata' event — but that races the
-         browser's own autoplay kickoff, which can already have advanced
-         playback by the time the event fires and our JS reacts to it;
-         the visible symptom was the video appearing to skip its first
-         ~1s, having silently played through it while "frozen".) Once
-         'loadeddata' fires here, decode has produced frame 0 and paused
-         playback displays exactly that — the frozen first frame that
-         masks the navy background instead of leaving it looking like a
-         gap. play() is called once 'canplaythrough' says enough is
-         buffered to run through smoothly (or a short fallback timer, in
-         case that event is late/never fires on some WebView build) — from
-         true frame 0, so nothing of the clip is skipped. -->
+         (3) Plain autoplay, nothing layered on top. A prior version of
+         this tried a "pause immediately, resume once buffered" trick to
+         hold on a frozen first frame — untested on real devices, and it
+         made things worse in practice (reports of the video starting even
+         later, with no visible frozen frame at all — consistent with
+         pause() also halting the browser's own buffering on some mobile
+         WebViews, not just deferring playback). Reliability matters more
+         here than a cosmetic hold-on-first-frame effect: plain autoplay is
+         the one thing in this whole file's history that has actually,
+         verifiably started playback immediately and consistently. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <script>
         document.write(
@@ -140,31 +120,6 @@
           (Math.random() < 0.5 ? './Boot_Intro_FRover.mp4' : './Boot_Intro_MRover.mp4') +
           '"></video>'
         );
-      </script>
-      <script>
-        (function () {
-          var video = document.getElementById('splash-video');
-          if (!video) return;
-          // Synchronous, before any data has loaded — see the comment
-          // above for why this (not a 'loadeddata' listener) is what
-          // actually keeps currentTime pinned at 0 instead of racing
-          // autoplay's own kickoff.
-          video.pause();
-          var resumed = false;
-          var resumePlayback = function () {
-            if (resumed) return;
-            resumed = true;
-            // Defensive — should already be 0, but guarantees the resumed
-            // playback starts at the true first frame regardless.
-            try { video.currentTime = 0; } catch (e) {}
-            video.play().catch(function () {});
-          };
-          // Enough buffered to play through without stalling — resume.
-          video.addEventListener('canplaythrough', resumePlayback, { once: true });
-          // In case canplaythrough never fires on some WebView build —
-          // never leave the frame frozen forever.
-          setTimeout(resumePlayback, 1200);
-        })();
       </script>
     </div>
     <!-- The boot video itself is always silent now (stays .muted — see the
