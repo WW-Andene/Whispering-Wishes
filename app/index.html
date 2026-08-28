@@ -75,136 +75,93 @@
     <a href="#root" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm">
       Skip to main content
     </a>
-    <!-- Boot splash screen — plays one of the two boot clips the user
-         uploaded directly (Boot_Intro_FRover.mp4 / Boot_Intro_MRover.mp4,
-         app/public/, root-level files so they ship bundled in the native
-         APK with no network dependency), picked at random each launch.
-         Used exactly as uploaded — no re-encode, no re-render, no GIF
-         conversion (those were all tried and made things worse, per
-         explicit instruction not to modify these).
+    <!-- Boot splash screen — plays one of two pre-rendered animated GIFs
+         (Boot_Intro_FRover.gif / Boot_Intro_MRover.gif, app/public/,
+         root-level files so they ship bundled in the native APK with no
+         network dependency), picked at random each launch. Full
+         resolution (480x852) and full frame rate (~30fps) — an earlier
+         GIF attempt in this project's history downscaled to 480px/15fps
+         and was reverted for looking worse; this one doesn't repeat that.
 
-         Per explicit instruction, this version combines both a poster
-         and a fix for the reframe it used to expose, rather than
-         choosing one or the other:
+         Switched from <video> to GIF specifically to eliminate a
+         video-only, APK-only reframe/zoom that several targeted fixes
+         (poster, explicit width/height, WebView insets timing, Android's
+         SplashScreen exit animation) failed to resolve. The common
+         thread ruling all of those out: a static picture on the same
+         screen never reframed, only the video did — which points at
+         something inherent to how <video> specifically gets rendered/
+         composited in the WebView (most likely a separate hardware
+         video-decoding surface, switched to only for active video
+         playback) rather than any of the layout-level causes those
+         fixes targeted. A GIF is fundamentally not a <video> — it's
+         decoded as an <img>, through the exact same rendering path as
+         every other picture in the app, with no separate media element,
+         no container/codec init, no autoplay-gesture policy, and no
+         hardware playback surface to switch to. The whole category of
+         problem doesn't exist for it.
 
-         (1) poster is back — splash-poster-frover.jpg / -mrover.jpg,
-         real frame-0 extracts of the two clips (ffmpeg -vframes 1),
-         matched to whichever clip gets picked below. Without ANY
-         poster, a bare <video> shows the browser/WebView's own generic
-         media-player glyph until it has a real frame to paint, even for
-         a local file — the poster gives it something real immediately.
-
-         (2) width="480" height="852" on the <video> itself — the two
-         clips' real dimensions. Without these, the browser doesn't know
-         the video's aspect ratio until the first frame decodes, so
-         object-fit:cover has nothing to crop against yet and recalculates
-         once it does — visible as the content snapping from a small
-         centered icon to a full-bleed crop. Declaring the real
-         dimensions up front removes that particular reframe at the
-         source, before any workaround is even needed.
-
-         (3) a separate #splash-poster-overlay <img> (same picked poster
-         image) sits ON TOP of the <video>, covering it completely, for
-         at least 500ms after play() is called. (2) fixes the
-         icon→cropped-image snap, but a second, different reframe still
-         happens purely from starting playback: some WebViews switch the
-         video element from painting a static decoded frame to an active
-         hardware video-decoding surface the moment playback begins, and
-         that surface can flash/mis-scale for an instant before settling
-         into the element's actual CSS box. That one isn't something
-         width/height or object-fit can prevent — it's the renderer
-         swapping its own internal painting path. Keeping the poster
-         overlay up for a short, fixed dwell after play() starts hides
-         that moment: playback is already running underneath, out of
-         view, by the time the overlay is removed and the video becomes
-         visible again.
-
-         No autoplay attribute: the video isn't supposed to play until
-         fully loaded, so nothing should trigger it early. Loading is
-         driven by preload="auto" plus the script below, which explicitly
-         waits for the buffered range to cover the full duration — not
-         just 'canplaythrough' (an estimate that playback won't stall,
-         not a guarantee the whole file is down) — before calling play().
-
-         document.write blocks the parser until it runs, guaranteeing the
-         <video>/overlay exist as part of the same synchronous parse, no
-         extra tick. main.jsx still waits for the 'ended' event, with its
-         own timeout fallback in case the browser never fires the events
-         this script needs, before revealing the app underneath. Always
-         muted — the clip's own audio track is never played; the Log
-         Screen ambient track (next script down) is the boot audio
-         instead. -->
+         Preloaded via a plain JS Image() and only inserted into the DOM
+         (visible) once it has actually finished loading (or errors) —
+         "wait, then show it fully-formed" carries over from the video
+         version, just simpler here: a GIF doesn't have a separate
+         buffered/duration concept to poll, it's either loaded or not.
+         Starts animating immediately once inserted (that's just how an
+         animated GIF works) — main.jsx below times the fade-out off a
+         fixed duration per clip (window.__splashGifDurationMs) rather
+         than an 'ended' event, since <img> has no such event. Always
+         silent — GIF has no audio track at all; the Log Screen ambient
+         track (next script down) is the boot audio, same as before. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <script>
-        document.write(
-          (function () {
-            var pick = Math.random() < 0.5
-              ? { src: './Boot_Intro_FRover.mp4', poster: './splash-poster-frover.jpg' }
-              : { src: './Boot_Intro_MRover.mp4', poster: './splash-poster-mrover.jpg' };
-            return '<video id="splash-video" poster="' + pick.poster + '" width="480" height="852"' +
-              ' preload="auto" muted playsinline' +
-              ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
-              ' style="width:100%;height:100%;object-fit:cover" src="' + pick.src + '"></video>' +
-              '<img id="splash-poster-overlay" alt="" src="' + pick.poster + '"' +
-              ' style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover" />';
-          })()
-        );
-      </script>
-      <script>
         (function () {
-          var video = document.getElementById('splash-video');
-          var overlay = document.getElementById('splash-poster-overlay');
-          if (!video) return;
-          // How long to keep the poster overlay up after play() starts —
-          // masking the static-frame → hardware-playback-surface reframe
-          // described above. Playback is already running underneath.
-          var OVERLAY_HOLD_MS = 500;
-          var started = false;
-          var isFullyBuffered = function () {
-            if (!video.duration || !isFinite(video.duration)) return false;
-            var buf = video.buffered;
-            return buf.length > 0 && buf.end(buf.length - 1) >= video.duration - 0.05;
+          var pick = Math.random() < 0.5
+            ? { src: './Boot_Intro_FRover.gif', durationMs: 2100 }
+            : { src: './Boot_Intro_MRover.gif', durationMs: 2230 };
+          window.__splashGifDurationMs = pick.durationMs;
+          var finish = function () {
+            var img = document.createElement('img');
+            img.id = 'splash-gif';
+            img.alt = '';
+            img.src = pick.src;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            var splash = document.getElementById('splash');
+            if (splash) splash.appendChild(img);
+            window.__splashGifReady = true;
+            window.dispatchEvent(new Event('whispering-wishes:splash-ready'));
           };
-          var tryStart = function () {
-            if (started || !isFullyBuffered()) return;
-            started = true;
-            video.play().catch(function () {});
-            if (overlay) {
-              setTimeout(function () {
-                overlay.style.display = 'none';
-              }, OVERLAY_HOLD_MS);
-            }
+          var preload = new Image();
+          preload.onload = finish;
+          preload.onerror = function () {
+            // Load failed — don't insert a broken image, but still signal
+            // ready (with effectively zero remaining duration) so
+            // main.jsx's fade logic below doesn't wait on something that
+            // will never arrive.
+            window.__splashGifDurationMs = 0;
+            window.__splashGifReady = true;
+            window.dispatchEvent(new Event('whispering-wishes:splash-ready'));
           };
-          // 'progress' fires repeatedly as data downloads — keep checking
-          // the actual buffered range until it covers the whole clip.
-          video.addEventListener('progress', tryStart);
-          // Fully local file, but these two also catch it in case
-          // 'progress' stops firing right at the end on some WebView.
-          video.addEventListener('canplaythrough', tryStart);
-          video.addEventListener('loadeddata', tryStart);
+          preload.src = pick.src;
         })();
       </script>
     </div>
     <!-- The boot video itself is always silent now (stays .muted — see the
-         <video> tag's muted attribute) — no unmuting. In its place, the
-         selected Log Screen ambient track (Profile > Display > Sound,
-         visualSettings.logScreenTrack, defaults '2') starts playing here at
-         boot, synced with the splash video rather than only once React
-         mounts, and is handed off to useAmbientMusic.js (via
-         window.__bootAmbientAudio) so it continues seamlessly — no restart,
-         no gap — once the splash fades and React takes over managing it.
-         Has to run as an inline script reading localStorage directly,
-         synchronously, before React has mounted.
+         GIF has no audio track at all) — the selected Log Screen ambient
+         track (Profile > Display > Sound, visualSettings.logScreenTrack,
+         defaults '2') is the boot audio, started here at boot rather than
+         only once React mounts, and handed off to useAmbientMusic.js (via
+         window.__bootAmbientAudio) so it continues seamlessly — no
+         restart, no gap — once the splash fades and React takes over
+         managing it. Has to run as an inline script reading localStorage
+         directly, synchronously, before React has mounted.
          Constructing the Audio (and its immediate network fetch) is
-         deliberately deferred until the video's own 'playing' event —
-         doing it in the same tick as the video element being created
-         made the video's first frames choppy on weaker Android devices
-         (APK builds), since both compete for CPU/network right as the
-         WebView process is still cold-starting; a 'playing' listener only
-         adds a delay of however long the video itself already took to
-         start, which is imperceptible for background music. A fallback
-         timer covers the case where the video never fires 'playing'
-         (autoplay blocked, load error) so the ambient track still starts.
+         deliberately deferred until the splash GIF's own ready signal
+         (window.__splashGifReady / the 'whispering-wishes:splash-ready'
+         event dispatched above) rather than doing it in the same tick as
+         the splash script — keeps the two from competing for CPU/network
+         right as the WebView process is still cold-starting. A fallback
+         timer covers the case where that signal is somehow never fired.
          Browsers may still silently block audio autoplay with no prior
          user gesture (platform policy, not something this can override)
          — that's an accepted limitation, not a bug. -->
@@ -235,10 +192,10 @@
             window.__bootAmbientTrack = track;
           };
 
-          var video = document.getElementById('splash-video');
-          if (video) {
-            video.addEventListener('playing', startAmbient, { once: true });
-            video.addEventListener('error', startAmbient, { once: true });
+          if (window.__splashGifReady) {
+            startAmbient();
+          } else {
+            window.addEventListener('whispering-wishes:splash-ready', startAmbient, { once: true });
           }
           setTimeout(startAmbient, 1500);
         } catch (e) {}
