@@ -164,17 +164,6 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
 
-  // Boot splash video → never intercept. <video> streams this via chunked
-  // Range requests as it plays; every other route here (and the
-  // networkFirst catch-all below) calls the plain `fetch(request)` without
-  // any Range-aware handling, and 206 Partial Content responses are
-  // explicitly skipped from caching. Letting these requests fall through
-  // un-intercepted (no event.respondWith) hands them straight to the
-  // browser/WebView's own native Range-request handling instead.
-  if (/\/Boot_Intro_(FRover|MRover)\.mp4$/.test(url.pathname)) {
-    return;
-  }
-
   // Map overlay tiles + base world map tiles → dedicated persistent cache,
   // cache-first. Matched BEFORE the generic image route so these don't get
   // evicted by the 250-entry image LRU. Users can pre-warm via the
