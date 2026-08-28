@@ -20,9 +20,18 @@
             </intent-filter>
         </activity>
 
+        <!-- Must be exported="true" — the system server (AppWidgetManager, a
+             different process/app) is what sends APPWIDGET_UPDATE broadcasts
+             to this receiver; that's a cross-app caller like the configure
+             Activity below, not something our own app broadcasts to itself.
+             With exported="false" the system's broadcasts are silently
+             dropped: the widget never receives its first update, never
+             renders, and never refreshes — this was very likely the real
+             "doesn't work at all" root cause, more fundamental than the
+             configure-Activity exported fix already applied below. -->
         <receiver
             android:name=".BannerWidget"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
