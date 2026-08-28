@@ -72,24 +72,37 @@
          APK with no network dependency), picked at random each launch.
          Used exactly as uploaded — no re-encode, no re-render, no GIF
          conversion (those were all tried and made things worse, per
-         explicit instruction not to modify these). The <script> right
-         after this element picks the src and sets it immediately, before
-         anything else on the page loads, so the video is the first thing
-         the WebView has to do any work for. No loop — main.jsx waits for
-         the 'ended' event (with a timeout fallback in case autoplay is
+         explicit instruction not to modify these).
+         Two things fixed here: (1) poster is a 2x2 solid swatch matching
+         the #splash background (#080c14) — without ANY poster, a <video>
+         shows the browser/WebView's generic media-player glyph for
+         however long it takes to decode a first frame, even though the
+         clip is a local bundled asset with no network delay; a poster
+         (even a blank one) suppresses that fallback icon entirely.
+         (2) the src is written directly into the tag via document.write,
+         picked randomly right here, instead of a separate <script> after
+         the element assigning .src on a later tick — that follow-up-script
+         pattern is a two-step init (parse empty <video> → next tick, run
+         script → assign src → THEN the browser starts reading the file),
+         which is strictly slower to first frame than having src be part
+         of the same synchronous parse the element itself comes from.
+         document.write here blocks the parser until it runs, guaranteeing
+         order without an extra tick. No loop — main.jsx waits for the
+         'ended' event (with a timeout fallback in case autoplay is
          blocked) before revealing the app underneath. Always muted — the
          clip's own audio track is never played; the Log Screen ambient
          track (next script down) is the boot audio instead. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
-      <video id="splash-video" preload="auto" autoplay muted playsinline disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen" style="width:100%;height:100%;object-fit:cover"></video>
+      <script>
+        document.write(
+          '<video id="splash-video" poster="./splash-poster.jpg" preload="auto" autoplay muted playsinline' +
+          ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
+          ' style="width:100%;height:100%;object-fit:cover" src="' +
+          (Math.random() < 0.5 ? './Boot_Intro_FRover.mp4' : './Boot_Intro_MRover.mp4') +
+          '"></video>'
+        );
+      </script>
     </div>
-    <script>
-      (function () {
-        var clips = ['./Boot_Intro_FRover.mp4', './Boot_Intro_MRover.mp4'];
-        var video = document.getElementById('splash-video');
-        if (video) video.src = clips[Math.floor(Math.random() * clips.length)];
-      })();
-    </script>
     <!-- The boot video itself is always silent now (stays .muted — see the
          <video> tag's muted attribute) — no unmuting. In its place, the
          selected Log Screen ambient track (Profile > Display > Sound,
