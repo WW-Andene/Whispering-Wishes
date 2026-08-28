@@ -8,6 +8,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.widget.VideoView;
 
+import androidx.core.splashscreen.SplashScreen;
+
 import java.util.Random;
 
 // Real launcher Activity now (see AndroidManifest.xml) — replaces the old
@@ -40,6 +42,11 @@ public class SplashVideoActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Must run before super.onCreate() — this is what makes the
+        // AppTheme.NoActionBarLaunch windowSplashScreen* attributes actually
+        // take effect consistently pre- and post-API 31 (core-splashscreen
+        // was already a declared dependency but nothing ever called this).
+        SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_video);
 

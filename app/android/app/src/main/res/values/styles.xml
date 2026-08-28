@@ -25,8 +25,20 @@
     </style>
 
 
+    <!-- android:windowBackground (not android:background — a View attribute
+         that theme inflation silently ignores) is what actually paints the
+         window before any Activity draws; without it this never showed
+         @drawable/splash on any API level. Android 12+ (API 31) additionally
+         enforces its own mandatory cold-start splash that reads only the
+         android:windowSplashScreen* attributes below — leaving those unset
+         made the OS fall back to masking the raw, edge-to-edge launcher icon
+         into a circle (the jagged icon the app opened to instead of the
+         video). -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
+        <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:windowSplashScreenBackground">@color/app_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash</item>
+        <item name="android:windowSplashScreenAnimationDuration">200</item>
     </style>
 
     <!-- ConveneAnimationActivity — full-screen black, no action bar/title,
