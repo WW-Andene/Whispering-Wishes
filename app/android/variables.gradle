@@ -1,17 +1,7 @@
 ext {
     minSdkVersion = 24
     compileSdkVersion = 36
-    // Deliberately one below compileSdkVersion — Android 16 (API 36) removed
-    // android:windowOptOutEdgeToEdgeEnforcement (styles.xml) entirely: for an
-    // app targeting SDK 36, edge-to-edge becomes mandatory with no opt-out at
-    // all, which is exactly why that flag (added to force the app OUT of
-    // edge-to-edge, to stop the boot-time header/nav reframe as insets
-    // settled) had no real effect on-device. The opt-out is only honored for
-    // apps targeting SDK 35, so that's what this needs to stay on. Still
-    // compiles against the newer 36 SDK (compileSdkVersion is unaffected —
-    // that only gates which APIs are available to reference, not runtime
-    // enforcement).
-    targetSdkVersion = 35
+    targetSdkVersion = 36
     androidxActivityVersion = '1.11.0'
     androidxAppCompatVersion = '1.7.1'
     androidxCoordinatorLayoutVersion = '1.3.0'
