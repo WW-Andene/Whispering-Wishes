@@ -7,18 +7,30 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <!-- The real launcher now — see SplashVideoActivity.java. Plays the
+             boot video natively (no WebView, no JS, no Capacitor bridge
+             sharing the process with it), then starts MainActivity itself.
+             Keeps AppTheme.NoActionBarLaunch (the OS-level static @drawable/
+             splash cold-start background) so there's no flash between
+             process launch and this Activity's first frame. -->
         <activity
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
-            android:name=".MainActivity"
-            android:label="@string/title_activity_main"
+            android:name=".SplashVideoActivity"
             android:theme="@style/AppTheme.NoActionBarLaunch"
-            android:launchMode="singleTask"
-            android:exported="true">
+            android:exported="true"
+            android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTask"
+            android:exported="true" />
 
         <!-- Must be exported="true" — the system server (AppWidgetManager, a
              different process/app) is what sends APPWIDGET_UPDATE broadcasts
