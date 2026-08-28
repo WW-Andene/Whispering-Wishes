@@ -71,20 +71,21 @@ const loadSpineRuntimes = () => {
   addInline('window.spine41 = window.spine; window.spine = window.__spine42; delete window.__spine42;');
 };
 
-// Reveal the app once the boot splash GIF has played through — a fixed
-// fallback delay covers the case where it somehow never becomes ready, so
+// Reveal the app once the boot video has faded out — a fixed fallback delay
+// covers the case where autoplay is blocked or the video fails to load, so
 // the app never stays hidden behind a splash that isn't going anywhere.
-// The splash is always silent (a GIF has no audio track at all — the
+// The video itself is always silent (index.html keeps it .muted — the
 // ambient Log Screen track, started in index.html and handed off to
 // useAmbientMusic.js, is the audio now), so this fade is visual-only.
 const SPLASH_FALLBACK_MS = 6000;
-// The GIF's opacity ramps to 0 over this window BEFORE its own natural
+// The video's opacity ramps to 0 over this window BEFORE the clip's natural
 // end, then the #splash wrapper fades out at the same time — one continuous
-// fade rather than an abrupt last-frame cut.
+// fade rather than playing to an abrupt last-frame cut.
 const SPLASH_FADE_SECONDS = 1;
 (() => {
   const splash = document.getElementById('splash');
   if (!splash) return;
+  const video = document.getElementById('splash-video');
   let fading = false, done = false;
   const reveal = () => {
     if (done) return;
@@ -96,29 +97,21 @@ const SPLASH_FADE_SECONDS = 1;
     if (fading) return;
     fading = true;
     loadSpineRuntimes();
-    const gif = document.getElementById('splash-gif');
-    if (gif) {
-      gif.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
-      gif.style.opacity = '0';
+    if (video) {
+      video.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
+      video.style.opacity = '0';
     }
     splash.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
     reveal();
   };
-  // index.html's splash script sets window.__splashGifDurationMs (per-clip,
-  // known ahead of time — a GIF has no 'ended' event to listen for the way
-  // <video> did) and fires 'whispering-wishes:splash-ready' once the GIF
-  // is actually in the DOM and animating (or immediately, with duration 0,
-  // if it failed to load) — schedule the fade off that, not off script
-  // load time, since the GIF doesn't start animating until then.
-  const scheduleFadeFromReady = () => {
-    const durationMs = typeof window.__splashGifDurationMs === 'number' ? window.__splashGifDurationMs : 0;
-    const delay = Math.max(0, durationMs - SPLASH_FADE_SECONDS * 1000);
-    setTimeout(beginFade, delay);
-  };
-  if (window.__splashGifReady) {
-    scheduleFadeFromReady();
-  } else {
-    window.addEventListener('whispering-wishes:splash-ready', scheduleFadeFromReady, { once: true });
+  if (video) {
+    video.addEventListener('ended', beginFade, { once: true });
+    video.addEventListener('error', beginFade, { once: true });
+    video.addEventListener('timeupdate', () => {
+      if (!video.duration) return;
+      const remaining = video.duration - video.currentTime;
+      if (remaining <= SPLASH_FADE_SECONDS) beginFade();
+    });
   }
   setTimeout(beginFade, SPLASH_FALLBACK_MS);
 })();
