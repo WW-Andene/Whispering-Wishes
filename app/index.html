@@ -57,8 +57,17 @@
       <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
     </noscript>
     <style>html,body{background:#080c14;color:#e2e8f0;margin:0}</style>
-    <!-- Design system CSS (extracted from KuroStyles.jsx — OLED overrides via .oled-mode class) -->
-    <link rel="stylesheet" href="/src/styles/kuro.css" />
+    <!-- kuro.css used to be linked right here in <head>. A parser hitting a
+         <script> right after a still-loading <link rel="stylesheet"> must
+         block that script until the stylesheet finishes (it might query
+         computed styles) — so the boot splash's own inline <script> below,
+         the one that document.writes the <video> tag, was waiting on this
+         whole design-system stylesheet to fetch+parse before the video
+         could even start decoding, stacking on top of the WebView's own
+         cold-start CPU usage. Moved past the splash markup instead (see
+         further down, right before main.jsx) — the splash's own elements
+         are all inline-styled and never needed it, and #root stays hidden
+         under the splash until React mounts anyway, well after this loads. -->
     <title>Whispering Wishes | Wuthering Waves Companion</title>
   </head>
   <body>
@@ -179,6 +188,10 @@
          ready costs nothing. -->
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
+    <!-- Design system CSS (extracted from KuroStyles.jsx — OLED overrides via .oled-mode class).
+         Moved here from <head> — see the note there — so it no longer blocks the boot splash's
+         inline <script> (and therefore the video's first frame) on its own fetch+parse. -->
+    <link rel="stylesheet" href="/src/styles/kuro.css" />
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
