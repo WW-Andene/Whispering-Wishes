@@ -66,32 +66,30 @@
     <a href="#root" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm">
       Skip to main content
     </a>
-    <!-- Boot splash screen — was an .mp4 (Intro_FRover clip), replaced by a
-         pre-rendered animated GIF (app/public/splash-intro.gif) after two
-         separate video-container/SW fixes still didn't stop reported
-         stutter on device. A <video> needs a decode pipeline (container
-         parsing, hardware/software codec init, an audio/autoplay policy
-         path even when muted) that has to spin up fresh on every cold
-         WebView launch — real cost that's highly device-dependent and not
-         reliably fixable without a device to profile on. A GIF has none of
-         that: it's just an <img>, decoded by the same image pipeline that
-         already handles every other picture in the app, painted frame-by-
-         frame with no separate media element, no Range-request streaming,
-         no autoplay-policy interaction at all. Downscaled to 480px wide
-         and re-timed to ~15fps (from the source's 2160x3834 @ ~30fps) to
-         keep the file small — this is a 2-second boot splash, not a
-         detail shot. Regenerate from the source clip with:
-           python3 -c "import cv2; from PIL import Image; ..." (see git
-           history on this file for the exact one-off script used).
-         No loop — main.jsx fades the splash out on a fixed timer sized to
-         the GIF's own total playback time (with the same fallback-timeout
-         safety net as before, in case the image fails to load at all).
-         There's no audio track to worry about here (GIFs can't carry one);
-         the Log Screen ambient track (script below) is the boot audio,
-         same as when this was a muted video. -->
+    <!-- Boot splash screen — plays one of the two boot clips the user
+         uploaded directly (Boot_Intro_FRover.mp4 / Boot_Intro_MRover.mp4,
+         app/public/, root-level files so they ship bundled in the native
+         APK with no network dependency), picked at random each launch.
+         Used exactly as uploaded — no re-encode, no re-render, no GIF
+         conversion (those were all tried and made things worse, per
+         explicit instruction not to modify these). The <script> right
+         after this element picks the src and sets it immediately, before
+         anything else on the page loads, so the video is the first thing
+         the WebView has to do any work for. No loop — main.jsx waits for
+         the 'ended' event (with a timeout fallback in case autoplay is
+         blocked) before revealing the app underneath. Always muted — the
+         clip's own audio track is never played; the Log Screen ambient
+         track (next script down) is the boot audio instead. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
-      <img id="splash-video" src="./splash-intro.gif" alt="" style="width:100%;height:100%;object-fit:cover" />
+      <video id="splash-video" preload="auto" autoplay muted playsinline disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen" style="width:100%;height:100%;object-fit:cover"></video>
     </div>
+    <script>
+      (function () {
+        var clips = ['./Boot_Intro_FRover.mp4', './Boot_Intro_MRover.mp4'];
+        var video = document.getElementById('splash-video');
+        if (video) video.src = clips[Math.floor(Math.random() * clips.length)];
+      })();
+    </script>
     <!-- The boot video itself is always silent now (stays .muted — see the
          <video> tag's muted attribute) — no unmuting. In its place, the
          selected Log Screen ambient track (Profile > Display > Sound,
@@ -142,10 +140,10 @@
             window.__bootAmbientTrack = track;
           };
 
-          var splashImg = document.getElementById('splash-video');
-          if (splashImg) {
-            splashImg.addEventListener('load', startAmbient, { once: true });
-            splashImg.addEventListener('error', startAmbient, { once: true });
+          var video = document.getElementById('splash-video');
+          if (video) {
+            video.addEventListener('playing', startAmbient, { once: true });
+            video.addEventListener('error', startAmbient, { once: true });
           }
           setTimeout(startAmbient, 1500);
         } catch (e) {}
