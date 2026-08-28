@@ -93,7 +93,12 @@ export default function BootIntro() {
         left: -48,
         right: -48,
         bottom: -48,
-        zIndex: 9999,
+        // Above FocusTrapModal's z-[10000] (OnboardingModal uses it) — on a
+        // first boot the modal mounts underneath immediately (it renders as
+        // soon as <App/> decides to show it, in parallel with this intro),
+        // so without this it could paint on top of the video instead of
+        // waiting behind it until the intro fades out.
+        zIndex: 100000,
         background: '#080c14',
         opacity: fadingOut ? 0 : 1,
         transition: 'opacity 1s ease-out',
