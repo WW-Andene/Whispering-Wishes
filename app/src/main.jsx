@@ -71,21 +71,26 @@ const loadSpineRuntimes = () => {
   addInline('window.spine41 = window.spine; window.spine = window.__spine42; delete window.__spine42;');
 };
 
-// Reveal the app once the boot video has faded out — a fixed fallback delay
-// covers the case where autoplay is blocked or the video fails to load, so
-// the app never stays hidden behind a splash that isn't going anywhere.
-// The video itself is always silent (index.html keeps it .muted — the
-// ambient Log Screen track, started in index.html and handed off to
-// useAmbientMusic.js, is the audio now), so this fade is visual-only.
+// Reveal the app once the boot splash has faded out — a fixed fallback
+// delay covers the case where the GIF fails to load, so the app never
+// stays hidden behind a splash that isn't going anywhere. The splash has
+// no audio of its own (a GIF can't carry a track) — the ambient Log Screen
+// track (started in index.html and handed off to useAmbientMusic.js) is
+// the boot audio, so this fade is visual-only.
 const SPLASH_FALLBACK_MS = 6000;
-// The video's opacity ramps to 0 over this window BEFORE the clip's natural
+// splash-intro.gif is 29 frames re-timed to ~15fps (67ms/frame) — see the
+// regeneration note on the <img> tag in index.html. Unlike the old <video>,
+// an <img> has no 'ended'/'timeupdate'/duration to hook into, so the play-
+// once timing is just this fixed duration instead: 29 * 67 = 1943ms.
+const GIF_PLAY_MS = 1943;
+// The splash's opacity ramps to 0 over this window BEFORE the GIF's natural
 // end, then the #splash wrapper fades out at the same time — one continuous
-// fade rather than playing to an abrupt last-frame cut.
+// fade rather than a hard cut on the last frame.
 const SPLASH_FADE_SECONDS = 0.6;
 (() => {
   const splash = document.getElementById('splash');
   if (!splash) return;
-  const video = document.getElementById('splash-video');
+  const splashImg = document.getElementById('splash-video');
   let fading = false, done = false;
   const reveal = () => {
     if (done) return;
@@ -97,21 +102,16 @@ const SPLASH_FADE_SECONDS = 0.6;
     if (fading) return;
     fading = true;
     loadSpineRuntimes();
-    if (video) {
-      video.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
-      video.style.opacity = '0';
+    if (splashImg) {
+      splashImg.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
+      splashImg.style.opacity = '0';
     }
     splash.style.transition = `opacity ${SPLASH_FADE_SECONDS}s ease`;
     reveal();
   };
-  if (video) {
-    video.addEventListener('ended', beginFade, { once: true });
-    video.addEventListener('error', beginFade, { once: true });
-    video.addEventListener('timeupdate', () => {
-      if (!video.duration) return;
-      const remaining = video.duration - video.currentTime;
-      if (remaining <= SPLASH_FADE_SECONDS) beginFade();
-    });
+  if (splashImg) {
+    splashImg.addEventListener('error', beginFade, { once: true });
   }
+  setTimeout(beginFade, Math.max(0, GIF_PLAY_MS - SPLASH_FADE_SECONDS * 1000));
   setTimeout(beginFade, SPLASH_FALLBACK_MS);
 })();

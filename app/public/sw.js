@@ -14,7 +14,7 @@
 // actually sent that message — a dead mechanism that let this drift
 // indefinitely while every other fix silently kept serving a stale
 // manifest.webmanifest to already-installed clients.
-let APP_VERSION = '3.5.10';
+let APP_VERSION = '3.5.11';
 let APP_CACHE = `ww-app-v${APP_VERSION}`;
 let IMG_CACHE = `ww-images-v${APP_VERSION}`;
 let CDN_CACHE = `ww-cdn-v${APP_VERSION}`;
@@ -163,23 +163,6 @@ self.addEventListener('fetch', (event) => {
   if (!event.request.url.startsWith('http')) return;
 
   const url = new URL(event.request.url);
-
-  // Boot splash video → never intercept. <video> streams this via chunked
-  // Range requests as it plays; every other route here (and the
-  // networkFirst catch-all below) calls the plain `fetch(request)` without
-  // any Range-aware handling, and 206 Partial Content responses are
-  // explicitly skipped from caching — so each Range chunk the video asks
-  // for was being re-fetched through the SW with no partial-content
-  // shortcut, which on a slow/cold first fetch can come back as a full
-  // re-download instead of the requested slice. That reads exactly like
-  // "the video replaces itself before playing" — a stutter/restart right
-  // as playback is trying to advance. Letting these requests fall through
-  // un-intercepted (no event.respondWith) hands them straight to the
-  // browser/WebView's own native Range-request handling, which is what a
-  // <video> element needs.
-  if (/\/splash-intro\.mp4$/.test(url.pathname)) {
-    return;
-  }
 
   // Map overlay tiles + base world map tiles → dedicated persistent cache,
   // cache-first. Matched BEFORE the generic image route so these don't get
