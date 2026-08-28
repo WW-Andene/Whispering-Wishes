@@ -57,8 +57,17 @@
       <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
     </noscript>
     <style>html,body{background:#080c14;color:#e2e8f0;margin:0}</style>
-    <!-- Design system CSS (extracted from KuroStyles.jsx — OLED overrides via .oled-mode class) -->
-    <link rel="stylesheet" href="/src/styles/kuro.css" />
+    <!-- kuro.css used to be linked right here in <head>. A parser hitting a
+         <script> right after a still-loading <link rel="stylesheet"> must
+         block that script until the stylesheet finishes (it might query
+         computed styles) — so the boot splash's own inline <script> below,
+         the one that document.writes the <video> tag, was waiting on this
+         whole design-system stylesheet to fetch+parse before the video
+         could even start decoding, stacking on top of the WebView's own
+         cold-start CPU usage. Moved past the splash markup instead (see
+         further down, right before main.jsx) — the splash's own elements
+         are all inline-styled and never needed it, and #root stays hidden
+         under the splash until React mounts anyway, well after this loads. -->
     <title>Whispering Wishes | Wuthering Waves Companion</title>
   </head>
   <body>
@@ -91,16 +100,48 @@
          'ended' event (with a timeout fallback in case autoplay is
          blocked) before revealing the app underneath. Always muted — the
          clip's own audio track is never played; the Log Screen ambient
-         track (next script down) is the boot audio instead. -->
+         track (next script down) is the boot audio instead.
+         (3) No autoplay attribute. Autoplaying the instant the element
+         exists meant playback (and its decode work) started while the
+         WebView was still mid cold-start — competing for the same CPU —
+         which is what read as choppy/stuttering. Instead the video sits on
+         its own first decoded frame (a real frame, not the poster) until
+         'canplaythrough' says the browser has buffered enough to play
+         through without needing to pause for more data, THEN play() is
+         called — so the visible motion only starts once playback can be
+         smooth. Held on the first frame is a static, no-cost wait; a
+         mid-playback stall is the visible, jarring one. A short fallback
+         timer still forces playback to start even if canplaythrough never
+         fires on some WebView build. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <script>
         document.write(
-          '<video id="splash-video" poster="./splash-poster.jpg" preload="auto" autoplay muted playsinline' +
+          '<video id="splash-video" poster="./splash-poster.jpg" preload="auto" muted playsinline' +
           ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
           ' style="width:100%;height:100%;object-fit:cover" src="' +
           (Math.random() < 0.5 ? './Boot_Intro_FRover.mp4' : './Boot_Intro_MRover.mp4') +
           '"></video>'
         );
+      </script>
+      <script>
+        (function () {
+          var video = document.getElementById('splash-video');
+          if (!video) return;
+          var started = false;
+          var startPlayback = function () {
+            if (started) return;
+            started = true;
+            video.play().catch(function () {});
+          };
+          // 'canplaythrough' = enough buffered to play to the end without
+          // stalling for more data — for a local bundled file this fires
+          // almost immediately, but still after decode/buffer setup is
+          // actually done, which is the whole point.
+          video.addEventListener('canplaythrough', startPlayback, { once: true });
+          // Covers a WebView that never fires canplaythrough for a local
+          // resource:// style source — never leave the frame frozen forever.
+          setTimeout(startPlayback, 1200);
+        })();
       </script>
     </div>
     <!-- The boot video itself is always silent now (stays .muted — see the
@@ -179,6 +220,10 @@
          ready costs nothing. -->
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
+    <!-- Design system CSS (extracted from KuroStyles.jsx — OLED overrides via .oled-mode class).
+         Moved here from <head> — see the note there — so it no longer blocks the boot splash's
+         inline <script> (and therefore the video's first frame) on its own fetch+parse. -->
+    <link rel="stylesheet" href="/src/styles/kuro.css" />
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
