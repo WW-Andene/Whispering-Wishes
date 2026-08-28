@@ -8,13 +8,16 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.view.HapticFeedbackConstants;
+import android.view.View;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import com.getcapacitor.BridgeActivity;
+import com.getcapacitor.BridgeWebChromeClient;
 import java.lang.reflect.Method;
 
 // The app's own border/background is always full-screen edge-to-edge,
@@ -109,6 +112,35 @@ public class MainActivity extends BridgeActivity {
         // Set explicitly rather than trusted to Capacitor's default.
         if (getBridge() != null && getBridge().getWebView() != null) {
             getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
+        }
+        // The boot splash <video> already has playsinline set, which is
+        // supposed to tell the browser engine to never escalate it to
+        // Android's native fullscreen video surface — but WebView has a
+        // real history of doing this anyway for an autoplaying video right
+        // at cold start. That native surface (shown via
+        // WebChromeClient.onShowCustomView) is a completely separate
+        // rendering path from the page's own DOM/CSS: it computes its own
+        // scale-to-fit independently of object-fit/width/height, which
+        // would explain a video-only, APK-only reframe that a static
+        // <img> on the same page would never show (images never go
+        // through this path at all). Subclassing Capacitor's own
+        // BridgeWebChromeClient (not replacing it outright, which would
+        // drop Capacitor's file-upload/permission handling) and no-op'ing
+        // the custom-view callbacks refuses that escalation unconditionally
+        // — video can only ever render inline, through normal CSS layout.
+        if (getBridge() != null) {
+            getBridge().setWebChromeClient(new BridgeWebChromeClient(this) {
+                @Override
+                public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+                    // Intentionally does nothing — never let a <video>
+                    // leave the inline DOM/CSS layout path.
+                }
+
+                @Override
+                public void onHideCustomView() {
+                    // Intentionally does nothing — nothing was ever shown.
+                }
+            });
         }
 
         // Experimental low-latency haptic path — see GlassHapticsPlugin.java's
