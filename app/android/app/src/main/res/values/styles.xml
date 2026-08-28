@@ -13,34 +13,32 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowBackground">@color/app_background</item>
-        <!-- Forced OUT of edge-to-edge entirely (see MainActivity.java's
-             setDecorFitsSystemWindows(true) + windowOptOutEdgeToEdgeEnforcement
-             below) — targetSdk 35+ enforces edge-to-edge by default and this
-             attribute is the only sanctioned opt-out. With the system
-             reserving real, static space for the status/nav bars from the
-             very first frame, there's no WindowInsets round-trip for the
-             WebView to wait on and nothing to visually resize into later —
-             the whole contained -> edge-to-edge -> settled sequence this was
-             chasing simply can't happen if the window is never edge-to-edge
-             in the first place. Bars painted opaque in the app's own
-             background color (not transparent) since content no longer
-             draws underneath them. -->
-        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
-        <item name="android:statusBarColor">@color/app_background</item>
-        <item name="android:navigationBarColor">@color/app_background</item>
+        <!-- Explicit transparent status/nav bars — MainActivity already calls
+             setDecorFitsSystemWindows(false) so the WebView draws full-bleed
+             underneath them, but that alone doesn't stop the OS from painting
+             an opaque default color there too; without this, whatever
+             AppCompat.DayNight.NoActionBar falls back to (not this app's navy)
+             sits on top of the content instead of letting it show through. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
-        <!-- Matches AppTheme.NoActionBar above — same opt-out, same opaque
-             bar colors — so the splash window and the real app window are
-             in the same (non-edge-to-edge) mode from the very first frame,
-             with nothing for MainActivity.onCreate() to switch. -->
-        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
-        <item name="android:statusBarColor">@color/app_background</item>
-        <item name="android:navigationBarColor">@color/app_background</item>
+        <!-- Without these, this splash window renders as a classic
+             non-edge-to-edge window (opaque status bar, content "contained"
+             beneath it) while AppTheme.NoActionBar below — the real app
+             theme MainActivity switches to in onCreate() — is edge-to-edge
+             with transparent bars. That mismatch is a real native window
+             mode change, visible as a "contained -> edge-to-edge" jump the
+             instant the theme switches, on top of (and separate from) the
+             header/nav margin correction already fixed via safe-area inset
+             timing. Matching these here so the splash window already looks
+             edge-to-edge/transparent removes that first jump entirely. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 
