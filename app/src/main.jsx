@@ -81,7 +81,7 @@ const SPLASH_FALLBACK_MS = 6000;
 // The video's opacity ramps to 0 over this window BEFORE the clip's natural
 // end, then the #splash wrapper fades out at the same time — one continuous
 // fade rather than playing to an abrupt last-frame cut.
-const SPLASH_FADE_SECONDS = 0.6;
+const SPLASH_FADE_SECONDS = 1;
 (() => {
   const splash = document.getElementById('splash');
   if (!splash) return;
