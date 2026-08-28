@@ -83,17 +83,18 @@
          conversion (those were all tried and made things worse, per
          explicit instruction not to modify these).
 
-         Per explicit instruction, this is now: background (a real
-         pre-rendered first frame of whichever clip got picked, not a
-         solid navy swatch) → do nothing but load the video in the
-         background → once it's genuinely fully loaded, play seamlessly.
-         Not before, not after.
-
-         The poster images (splash-poster-frover.jpg / -mrover.jpg) are
-         actual frame-0 extracts of the two clips (ffmpeg -vframes 1),
-         not a blank swatch — so the "background" the user sees while
-         waiting is a real frame of the video, matched to whichever one
-         was picked, not a gap.
+         Per explicit instruction: no separate static "frame" image at
+         all — a prior version used a pre-rendered poster JPG (one per
+         clip) as the background while loading, but swapping from that
+         still image to the real video once decoded is itself a visible
+         reframe/jump (different rendering path/surface for the poster
+         vs. the video). Removed the poster attribute and both JPGs
+         entirely — the <video> element now shows its own real, live
+         first frame directly (paused, since nothing plays it until
+         fully loaded) the moment it's decoded, with no separate asset
+         and no handoff between two different things on screen. Do
+         nothing but load the video in the background → once it's
+         genuinely fully loaded, play seamlessly. Not before, not after.
 
          No autoplay attribute at all: the video is not supposed to play
          until it's fully loaded, so there's nothing for autoplay to
@@ -107,24 +108,21 @@
          nothing left to buffer.
 
          document.write blocks the parser until it runs, guaranteeing the
-         <video> (and its matching poster/src) exist as part of the same
-         synchronous parse, no extra tick. main.jsx still waits for the
-         'ended' event, with its own timeout fallback in case the browser
-         never fires the events this script needs, before revealing the
-         app underneath. Always muted — the clip's own audio track is
-         never played; the Log Screen ambient track (next script down) is
-         the boot audio instead. -->
+         <video> (and its src) exist as part of the same synchronous
+         parse, no extra tick. main.jsx still waits for the 'ended'
+         event, with its own timeout fallback in case the browser never
+         fires the events this script needs, before revealing the app
+         underneath. Always muted — the clip's own audio track is never
+         played; the Log Screen ambient track (next script down) is the
+         boot audio instead. -->
     <div id="splash" style="position:fixed;inset:0;z-index:99999;background:#080c14;display:flex;align-items:center;justify-content:center;transition:opacity 0.4s ease">
       <script>
         document.write(
-          (function () {
-            var pick = Math.random() < 0.5
-              ? { src: './Boot_Intro_FRover.mp4', poster: './splash-poster-frover.jpg' }
-              : { src: './Boot_Intro_MRover.mp4', poster: './splash-poster-mrover.jpg' };
-            return '<video id="splash-video" poster="' + pick.poster + '" preload="auto" muted playsinline' +
-              ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
-              ' style="width:100%;height:100%;object-fit:cover" src="' + pick.src + '"></video>';
-          })()
+          '<video id="splash-video" preload="auto" muted playsinline' +
+          ' disablePictureInPicture disableRemotePlayback controlsList="nodownload noremoteplayback nofullscreen"' +
+          ' style="width:100%;height:100%;object-fit:cover" src="' +
+          (Math.random() < 0.5 ? './Boot_Intro_FRover.mp4' : './Boot_Intro_MRover.mp4') +
+          '"></video>'
         );
       </script>
       <script>
