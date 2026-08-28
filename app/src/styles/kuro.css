@@ -184,8 +184,15 @@
          values instead shrinks that jump to a sub-pixel correction in the
          common case; see the paired margin transition below for the
          remaining cases. */
-      --safe-area-top: env(safe-area-inset-top, 24px);
-      --safe-area-bottom: env(safe-area-inset-bottom, 16px);
+      /* Plain defaults, NOT env(safe-area-inset-*, ...) — Android's WebView
+         recognizes safe-area-inset-top/bottom as valid env() values and
+         resolves them to 0 rather than falling through to the fallback,
+         so the env()-wrapped version put the header flush against the
+         status bar for the first frame regardless of the fallback given
+         here. A plain default is never 0, so the header/nav never touch
+         the status/nav bar even before MainActivity's native push arrives. */
+      --safe-area-top: 24px;
+      --safe-area-bottom: 16px;
       /* DC3-SH1 + DP-F1: Ambient light model (0-offset blur-only) with subtle gold glow */
       --shadow-sm: 0 0 4px rgba(6, 10, 24, 0.5), 0 0 4px rgba(var(--color-gold), 0.03);
       --shadow-md: 0 0 12px rgba(6, 10, 24, 0.6), 0 0 8px rgba(var(--color-gold), 0.04);
