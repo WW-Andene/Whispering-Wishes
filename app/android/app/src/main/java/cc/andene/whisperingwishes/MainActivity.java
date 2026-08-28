@@ -54,21 +54,30 @@ public class MainActivity extends BridgeActivity {
         // while the Bridge is being constructed there.
         registerPlugin(SystemSettingsPlugin.class);
         registerPlugin(GlassHapticsPlugin.class);
-        // Also must run before super.onCreate() — this is what switches the
-        // window to edge-to-edge. super.onCreate() is where Capacitor's
-        // BridgeActivity creates and lays out the WebView; if edge-to-edge
-        // is switched on AFTER that first layout pass, the WebView's actual
-        // content area is a different size before vs. after — a real
-        // resize of the native View the whole page lives in, not just a
-        // CSS change. The boot splash video, sized to fill that view
-        // (width:100%/height:100% + object-fit:cover), would then have its
-        // crop recalculated when the resize happens — visible as the video
-        // appearing to zoom/dezoom right at boot. This is APK-only because
-        // it's Android's own window-inset system doing the resizing; a
-        // plain web page in a browser tab never goes through this at all.
-        // Doing this before super.onCreate() means the WebView's very first
-        // layout pass already happens in the final, edge-to-edge state —
-        // nothing to resize into afterward.
+        // Reverted: moving setDecorFitsSystemWindows()/the insets listener
+        // to before super.onCreate() was tried here as a fix for the boot
+        // splash zoom/dezoom, on the theory that switching edge-to-edge
+        // AFTER the WebView's first layout caused a real resize. In
+        // practice it made things worse (intermittently blocked the video
+        // outright) rather than fixing the zoom, so it's undone — back to
+        // running after super.onCreate(), as it was before.
+        //
+        // Real cause of the zoom, addressed below instead: this Activity's
+        // launch theme (AppTheme.NoActionBarLaunch, parent Theme.SplashScreen)
+        // means Android 12+ shows its OWN mandatory system splash screen
+        // before any app content, and that system splash has a DEFAULT
+        // EXIT ANIMATION — it scales/zooms the app's first frame in when
+        // handing off. That's a platform-level animation, nothing to do
+        // with the WebView, insets, or this page's own CSS/JS — and it's
+        // APK-only for the same reason as everything else in this
+        // category: a plain web page has no Android SplashScreen system to
+        // hand off from at all. Overriding the exit listener to remove the
+        // splash view immediately (no animation) is what actually disables
+        // that platform zoom.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            getSplashScreen().setOnExitAnimationListener(splashScreenView -> splashScreenView.remove());
+        }
+        super.onCreate(savedInstanceState);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
             Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
@@ -86,7 +95,6 @@ public class MainActivity extends BridgeActivity {
             }
             return insets;
         });
-        super.onCreate(savedInstanceState);
         // Boot splash (index.html) autoplays a muted <video> the instant
         // the app starts — no user gesture has happened yet at that point,
         // by definition. Android's WebView has its OWN gesture-based
