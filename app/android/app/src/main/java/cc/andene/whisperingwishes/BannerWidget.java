@@ -88,6 +88,27 @@ public class BannerWidget extends AppWidgetProvider {
     }
 
     private void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
+        // Temporary diagnostic wrapper — this widget was observed stuck on
+        // Android's own generic "couldn't load this widget" placeholder on
+        // an affected device, with no way to pull logcat off it. Any
+        // exception in here previously failed silently (the launcher just
+        // never got a valid RemoteViews); this catches it and pushes a
+        // fallback RemoteViews that shows the actual exception as the
+        // widget's own name text, so the failure is visible directly on the
+        // home screen without adb. Remove once the real cause is found.
+        try {
+            renderWidget(context, appWidgetManager, appWidgetId);
+        } catch (Throwable t) {
+            Log.e(TAG, "updateWidget crashed", t);
+            RemoteViews fallback = new RemoteViews(context.getPackageName(), R.layout.widget_banner);
+            fallback.setTextViewText(R.id.widget_banner_name, "Widget error");
+            fallback.setTextViewText(R.id.widget_banner_element, String.valueOf(t));
+            fallback.setViewVisibility(R.id.widget_secondary_block, View.GONE);
+            appWidgetManager.updateAppWidget(appWidgetId, fallback);
+        }
+    }
+
+    private void renderWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String primaryCategory = prefs.getString("widget_category_" + appWidgetId, "character");
         String secondaryCategory = "character".equals(primaryCategory) ? "weapon" : "character";
