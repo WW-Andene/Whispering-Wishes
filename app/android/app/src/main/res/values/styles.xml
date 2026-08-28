@@ -25,8 +25,19 @@
     </style>
 
 
+    <!-- Splash theme's bar treatment must match AppTheme.NoActionBar's
+         exactly (transparent status/nav, dark icons) — otherwise the switch
+         from this theme to the real one at the end of onCreate() is a real
+         compositor-level transition (opaque bars -> transparent, contained
+         -> edge-to-edge), which is what produced the visible reframe/jump
+         even after the WebView-side inset fix below. Matching them here
+         means there's no bar-state change left to animate through. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
     </style>
 
     <!-- ConveneAnimationActivity — full-screen black, no action bar/title,
