@@ -54,22 +54,21 @@ public class MainActivity extends BridgeActivity {
         // while the Bridge is being constructed there.
         registerPlugin(SystemSettingsPlugin.class);
         registerPlugin(GlassHapticsPlugin.class);
-        super.onCreate(savedInstanceState);
-        // Boot splash (index.html) autoplays a muted <video> the instant
-        // the app starts — no user gesture has happened yet at that point,
-        // by definition. Android's WebView has its OWN gesture-based
-        // autoplay policy (WebSettings.setMediaPlaybackRequiresUserGesture),
-        // completely separate from the HTML autoplay attribute and from
-        // desktop/mobile Chrome's autoplay rules — Capacitor's Bridge is
-        // *supposed* to already disable this by default, but every attempt
-        // at fixing the splash from the JS/HTML side alone has failed to
-        // produce any visible change on-device, which is consistent with
-        // this WebView-level gesture requirement silently blocking
-        // autoplay entirely regardless of what the page's own script does.
-        // Set explicitly rather than trusted to Capacitor's default.
-        if (getBridge() != null && getBridge().getWebView() != null) {
-            getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
-        }
+        // Also must run before super.onCreate() — this is what switches the
+        // window to edge-to-edge. super.onCreate() is where Capacitor's
+        // BridgeActivity creates and lays out the WebView; if edge-to-edge
+        // is switched on AFTER that first layout pass, the WebView's actual
+        // content area is a different size before vs. after — a real
+        // resize of the native View the whole page lives in, not just a
+        // CSS change. The boot splash video, sized to fill that view
+        // (width:100%/height:100% + object-fit:cover), would then have its
+        // crop recalculated when the resize happens — visible as the video
+        // appearing to zoom/dezoom right at boot. This is APK-only because
+        // it's Android's own window-inset system doing the resizing; a
+        // plain web page in a browser tab never goes through this at all.
+        // Doing this before super.onCreate() means the WebView's very first
+        // layout pass already happens in the final, edge-to-edge state —
+        // nothing to resize into afterward.
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         ViewCompat.setOnApplyWindowInsetsListener(getWindow().getDecorView(), (view, insets) -> {
             Insets cutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout());
@@ -87,6 +86,22 @@ public class MainActivity extends BridgeActivity {
             }
             return insets;
         });
+        super.onCreate(savedInstanceState);
+        // Boot splash (index.html) autoplays a muted <video> the instant
+        // the app starts — no user gesture has happened yet at that point,
+        // by definition. Android's WebView has its OWN gesture-based
+        // autoplay policy (WebSettings.setMediaPlaybackRequiresUserGesture),
+        // completely separate from the HTML autoplay attribute and from
+        // desktop/mobile Chrome's autoplay rules — Capacitor's Bridge is
+        // *supposed* to already disable this by default, but every attempt
+        // at fixing the splash from the JS/HTML side alone has failed to
+        // produce any visible change on-device, which is consistent with
+        // this WebView-level gesture requirement silently blocking
+        // autoplay entirely regardless of what the page's own script does.
+        // Set explicitly rather than trusted to Capacitor's default.
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
+        }
 
         // Experimental low-latency haptic path — see GlassHapticsPlugin.java's
         // history: performHapticFeedback(KEYBOARD_TAP) called through
