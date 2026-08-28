@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -24,6 +25,7 @@ import org.json.JSONArray;
 // user can place more than one of these widgets, each showing a different
 // banner — not a single global setting.
 public class BannerWidgetConfigureActivity extends Activity {
+    private static final String TAG = "BannerWidgetConfigure";
     private static final String PREFS_NAME = "CapacitorStorage";
     private int appWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
 
@@ -34,11 +36,30 @@ public class BannerWidgetConfigureActivity extends Activity {
         // standard AppWidget configure-Activity contract.
         setResult(RESULT_CANCELED);
 
+        // Temporary diagnostic wrapper: this Activity was observed rendering
+        // as a totally blank navy screen (theme's windowBackground painted,
+        // but zero views) with no way to pull logcat off the affected
+        // device. Any exception here previously failed silently from the
+        // user's perspective — this surfaces it as an on-screen Toast (which
+        // outlives finish(), unlike the Activity's own views) so the actual
+        // failure is visible without adb. Remove once the real cause here is
+        // found and fixed.
+        try {
+            setUpContent();
+        } catch (Throwable t) {
+            Log.e(TAG, "Configure activity crashed", t);
+            Toast.makeText(this, "Widget config error: " + t, Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+    private void setUpContent() {
         Intent intent = getIntent();
         if (intent != null) {
             appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         }
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            Toast.makeText(this, "Widget config error: no appWidgetId in intent", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
