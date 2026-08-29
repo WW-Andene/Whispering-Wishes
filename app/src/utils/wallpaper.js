@@ -48,3 +48,19 @@ export async function setWallpaper(imageUrl, target = 'both') {
     return { ok: false, error: err.message };
   }
 }
+
+// Applies a looping video as an actual Android Live Wallpaper (LiveVideoWallpaperService),
+// unlike setWallpaper() above which only ever sets a static bitmap. The plugin downloads/caches
+// the video, then opens Android's own live-wallpaper confirmation screen (ACTION_CHANGE_LIVE_WALLPAPER)
+// — that system UI step can't be skipped, so this resolves ok:true once the intent is launched,
+// not once the user has actually confirmed it.
+export async function setAnimatedWallpaper(videoUrl) {
+  if (!isNativePlatform()) return { ok: false, error: 'not-native' };
+  if (!videoUrl) return { ok: false, error: 'no-video' };
+  try {
+    await Wallpaper.setLiveWallpaper({ videoUrl });
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}

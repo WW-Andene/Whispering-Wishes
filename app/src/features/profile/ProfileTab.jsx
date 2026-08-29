@@ -15,7 +15,7 @@ import { getElementColor, getElementBg } from '../../shared/utils/elementVisuals
 import { storageAvailable } from '../../core/storage.js';
 import { clearAllAuxKeys } from '../../core/storageKeys.js';
 import { renderIdCard } from './idCardRenderer.js';
-import { useFocusTrap } from '../../shared/components/FocusTrapModal.jsx';
+import { useFocusTrap, FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -32,7 +32,7 @@ import AppUpdateCard from './AppUpdateCard.jsx';
 import PullBubbleCard from './PullBubbleCard.jsx';
 import PushNotificationsCard from './PushNotificationsCard.jsx';
 import { openSoundSettings, isNativePlatform as isNativePlatformForSettings } from '../../utils/systemSettings.js';
-import { setWallpaper } from '../../utils/wallpaper.js';
+import { setWallpaper, setAnimatedWallpaper } from '../../utils/wallpaper.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
@@ -161,6 +161,8 @@ function ProfileTab({
   // navigation/background) stays visible even while collapsed, below, since
   // it's the "what's currently set" summary this section is for.
   const [bgSectionCollapsed, setBgSectionCollapsed] = useState(true);
+  // Target-picker modal (Home/Lock/Both) shown before crowning a static wallpaper image.
+  const [wallpaperTargetPrompt, setWallpaperTargetPrompt] = useState(null); // { url } | null
   const [activePlayersCount, setActivePlayersCount] = useState(null);
   const [activePlayersHistory, setActivePlayersHistory] = useState([]);
   const [presenceError, setPresenceError] = useState(null);
@@ -768,10 +770,9 @@ function ProfileTab({
                   // WallpaperPlugin.java, independent of picking it as an in-app background
                   // above. Native-only; a video's poster frame is used since an actual wallpaper
                   // can't be a video.
-                  const applyWallpaper = async (e, url) => {
-                    e.stopPropagation();
+                  const doSetWallpaper = async (url, target) => {
                     haptic.light();
-                    const res = await setWallpaper(url, 'both');
+                    const res = await setWallpaper(url, target);
                     if (res.ok) {
                       toast?.addToast?.(t('profile.display.wallpaperApplied'), 'success');
                       haptic.success();
@@ -779,18 +780,41 @@ function ProfileTab({
                       toast?.addToast?.(t('profile.display.wallpaperError', { error: res.error }), 'error');
                     }
                   };
+                  // Opens the Home/Lock/Both target picker instead of applying straight to
+                  // 'both' — the user asked to choose a target before a static wallpaper crown
+                  // takes effect.
+                  const applyWallpaper = (e, url) => {
+                    e.stopPropagation();
+                    setWallpaperTargetPrompt({ url });
+                  };
+                  const applyAnimatedWallpaper = async (e, bg) => {
+                    e.stopPropagation();
+                    haptic.light();
+                    const res = await setAnimatedWallpaper(bg.art);
+                    if (res.ok) {
+                      haptic.success();
+                    } else if (res.error !== 'cancelled') {
+                      toast?.addToast?.(t('profile.display.wallpaperError', { error: res.error }), 'error');
+                    }
+                  };
+                  // Same size/position treatment as Collection's profile-pic crown
+                  // (CollectionGrid.jsx) — top-right corner, shared --size-icon-btn/--radius-sm
+                  // tokens, instead of a mismatched ad-hoc Tailwind w-5/h-5 top-left box.
+                  const wallpaperCrownStyle = { top: '4px', right: '4px', width: 'var(--size-icon-btn)', height: 'var(--size-icon-btn)', minHeight: 'var(--size-icon-btn)', borderRadius: 'var(--radius-sm)', padding: 0 };
                   const WallpaperCrown = ({ url }) => !isNativePlatformForSettings() ? null : (
                     <button
                       onClick={(e) => applyWallpaper(e, url)}
-                      className="absolute top-0.5 left-0.5 z-10 w-5 h-5 rounded flex items-center justify-center bg-black/70 text-gray-300 hover:bg-yellow-500/30 hover:text-yellow-300"
+                      className="absolute z-10 flex items-center justify-center bg-black/70 text-gray-300 hover:bg-yellow-500/30 hover:text-yellow-300"
+                      style={wallpaperCrownStyle}
                       title={t('profile.display.setWallpaper')}
                       aria-label={t('profile.display.setWallpaperAria')}
                     >
-                      <Crown size={11} />
+                      <Crown size={14} />
                     </button>
                   );
 
                   return (
+                  <>
                   <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                     <button
                       type="button"
@@ -918,12 +942,13 @@ function ProfileTab({
                                   actually gets applied, same as everywhere else. */}
                               {!isNativePlatformForSettings() ? null : (
                                 <button
-                                  onClick={(e) => applyWallpaper(e, a.poster)}
-                                  className="absolute top-0.5 right-6 z-10 w-5 h-5 rounded flex items-center justify-center bg-black/70 text-gray-300 hover:bg-yellow-500/30 hover:text-yellow-300"
+                                  onClick={(e) => applyAnimatedWallpaper(e, a)}
+                                  className="absolute top-0.5 z-10 flex items-center justify-center bg-black/70 text-gray-300 hover:bg-yellow-500/30 hover:text-yellow-300"
+                                  style={{ right: 'calc(var(--size-icon-btn) + 4px)', width: 'var(--size-icon-btn)', height: 'var(--size-icon-btn)', minHeight: 'var(--size-icon-btn)', borderRadius: 'var(--radius-sm)', padding: 0 }}
                                   title={t('profile.display.setWallpaper')}
                                   aria-label={t('profile.display.setWallpaperAria')}
                                 >
-                                  <Crown size={11} />
+                                  <Crown size={14} />
                                 </button>
                               )}
                               {isSelected('animated', a.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
@@ -933,6 +958,35 @@ function ProfileTab({
                       );
                     })()}
                   </div>
+                  {/* Home/Lock/Both target picker — shown before a static wallpaper crown
+                      click actually applies, instead of always forcing 'both'. */}
+                  <FocusTrapModal
+                    isOpen={!!wallpaperTargetPrompt}
+                    onClose={() => setWallpaperTargetPrompt(null)}
+                    ariaLabel={t('profile.display.setWallpaper')}
+                    centered
+                    onClick={(e) => { if (e.target === e.currentTarget) setWallpaperTargetPrompt(null); }}
+                  >
+                    <div className="kuro-card p-4 rounded-lg w-full max-w-xs mx-auto" style={{ background: 'var(--bg-card)' }} onClick={(e) => e.stopPropagation()}>
+                      <div className="text-white text-base font-medium mb-3">{t('profile.display.setWallpaper')}</div>
+                      <div className="flex flex-col gap-1.5">
+                        {[
+                          { target: 'home', label: t('profile.display.wallpaperTargetHome') },
+                          { target: 'lock', label: t('profile.display.wallpaperTargetLock') },
+                          { target: 'both', label: t('profile.display.wallpaperTargetBoth') },
+                        ].map(({ target, label }) => (
+                          <button
+                            key={target}
+                            className="kuro-btn w-full text-sm"
+                            onClick={() => { const url = wallpaperTargetPrompt?.url; setWallpaperTargetPrompt(null); if (url) doSetWallpaper(url, target); }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </FocusTrapModal>
+                  </>
                   );
                 })()}
 
