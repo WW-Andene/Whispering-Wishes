@@ -101,67 +101,6 @@ export function parseGachaUrl(raw) {
 }
 
 /**
- * Fetch a single page from the gacha API.
- * @param {{ playerId: string, serverId: string, recordId: string, cardPoolId: string, lang: string }} params
- * @param {number} cardPoolType
- * @param {AbortSignal} [signal]
- * @returns {Promise<Array>} Array of pull records for this page
- */
-async function fetchPage(params, cardPoolType, signal) {
-  const FETCH_TIMEOUT = 10000;
-  const body = {
-    playerId: String(params.playerId),
-    serverId: params.serverId || '',
-    cardPoolType: Number(cardPoolType),
-    cardPoolId: params.cardPoolId || '',
-    // Always request English from Kuro's API, regardless of the player's own client language
-    // (params.lang, taken straight from whatever the pasted Convene-history URL encodes — a French/
-    // German/Chinese/etc. client sends lang=fr/de/zh/... and the API happily returns pull.name/
-    // resourceName localized in that language). Every internal name-keyed lookup this app does
-    // (collectionImages portraits, ALL_CHARACTERS/STANDARD_5STAR_CHARACTERS owned/50-50 checks,
-    // CHARACTER_DATA/WEAPON_DATA itself) is keyed in English — IMPORT_NAME_ALIASES only normalizes
-    // two English-name variants (Rover forms, "The Shorekeeper"), not real translations, so a
-    // non-English import silently missed portraits AND silently broke owned-character/50-50
-    // detection for every pull. Requesting English directly from the source is far more robust than
-    // trying to build and maintain full name tables for every supported client language.
-    languageCode: 'en',
-    recordId: params.recordId || '',
-  };
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-  const mergedSignal = signal ? AbortSignal.any?.([signal, controller.signal]) ?? controller.signal : controller.signal;
-
-  let res;
-  try {
-    res = await fetch(apiUrl('/api/gacha/record/query'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: mergedSignal,
-    });
-    clearTimeout(timeout);
-  } catch (err) {
-    clearTimeout(timeout);
-    if (err.name === 'AbortError') throw err;
-    throw new Error('Network error');
-  }
-
-  if (!res.ok) {
-    const errBody = await res.json().catch(() => ({}));
-    throw new Error(errBody?.error || `HTTP ${res.status}`);
-  }
-
-  const json = await res.json();
-  if (json?.code !== 0) {
-    throw new Error(json?.message || json?.msg || `API error (code ${json?.code})`);
-  }
-
-  // Return full response so caller can check for pagination metadata
-  return json;
-}
-
-/**
  * Build fetch params from parsed URL or manual IDs.
  * @param {string} rawUrl - Original URL (or empty for manual input)
  * @param {string} playerId
@@ -235,26 +174,26 @@ async function fetchOnePage(params, poolType, signal) {
 }
 
 /**
- * Paginate a single pool type until exhausted.
+ * Fetch one pool type's full history. A single request, not a paginated loop: Kuro's
+ * gacha/record/query endpoint (unlike miHoYo-style APIs) has no cursor/pagination
+ * parameter and returns that pool's complete history in one response.
  */
-const MAX_PER_POOL = 5000;
-
-async function fetchPoolFull(params, poolType, signal, onProgress) {
-  const pageLog = [];
+async function fetchPool(params, poolType, signal, onProgress) {
+  const fetchLog = [];
 
   const { list, error, rawJson } = await fetchOnePage(params, poolType, signal);
 
   if (error || !list.length) {
-    pageLog.push(`${error || 'empty'} (code=${rawJson?.code})`);
-    return { items: [], pageLog };
+    fetchLog.push(`${error || 'empty'} (code=${rawJson?.code})`);
+    return { items: [], fetchLog };
   }
 
   const newest = list[0]?.time || '?';
   const oldest = list[list.length - 1]?.time || '?';
-  pageLog.push(`${list.length} items (${newest} → ${oldest})`);
+  fetchLog.push(`${list.length} items (${newest} → ${oldest})`);
   onProgress?.(poolType, 'fetching', list.length);
 
-  return { items: list, pageLog };
+  return { items: list, fetchLog };
 }
 
 /**
@@ -274,7 +213,7 @@ export async function fetchAllPools(params, signal, onProgress) {
     onProgress?.(poolType, 'fetching', 0);
 
     try {
-      const { items, pageLog } = await fetchPoolFull(params, poolType, signal, onProgress);
+      const { items, fetchLog } = await fetchPool(params, poolType, signal, onProgress);
 
       const label = POOL_LABELS[poolType] || `Pool ${poolType}`;
       if (items.length > 0) {
@@ -283,7 +222,7 @@ export async function fetchAllPools(params, signal, onProgress) {
       }
 
       const fiveStars = items.filter(i => parseInt(i.qualityLevel, 10) === 5).map(i => i.name);
-      debug.push({ poolType, label, count: items.length, fiveStars, pageLog });
+      debug.push({ poolType, label, count: items.length, fiveStars, fetchLog });
       onProgress?.(poolType, 'done', items.length);
     } catch (err) {
       if (err.name === 'AbortError') throw err;
@@ -467,8 +406,8 @@ export function convertToImportFormat(fetchResult) {
     .map(([pt, d]) => `Pool ${pt} (${POOL_LABELS[pt] || '?'}): ${d.count} pulls${d.fiveStars.length ? ' — 5★: ' + d.fiveStars.join(', ') : ''}`)
     .join('\n');
 
-  const pageLogs = (fetchResult.debug || [])
-    .map(d => `\n── Pool ${d.poolType} (${d.label}) ──\n${(d.pageLog || []).join('\n')}`)
+  const fetchLogs = (fetchResult.debug || [])
+    .map(d => `\n── Pool ${d.poolType} (${d.label}) ──\n${(d.fetchLog || []).join('\n')}`)
     .join('\n');
 
   // Log the exact params we sent so user can verify OCR accuracy
@@ -477,7 +416,7 @@ export function convertToImportFormat(fetchResult) {
   return JSON.stringify({
     pulls: allPulls,
     uid: fetchResult.playerId || '',
-    _diagnostic: `Total: ${allPulls.length} pulls\n${poolSummary}\n\n=== PAGE LOGS ===${pageLogs}${paramDump}`,
+    _diagnostic: `Total: ${allPulls.length} pulls\n${poolSummary}\n\n=== FETCH LOG ===${fetchLogs}${paramDump}`,
     _source: 'api',
   });
 }
