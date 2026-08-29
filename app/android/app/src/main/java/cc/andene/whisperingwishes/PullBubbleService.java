@@ -953,8 +953,13 @@ public class PullBubbleService extends Service {
         FrameLayout circle = new FrameLayout(this);
         circle.setBackground(circleDrawable("#40000000", "#99FFFFFF"));
         clipToCircle(circle);
+        // BOTTOM|END, paired with positionPocketIcon() shifting the whole (bigger) window up-left
+        // by the overflow margin below — together those put the circle's own footprint exactly
+        // where a plain sizePx tile would sit in the row, with the extra margin opening up only
+        // above and to the right of it (empty space for pocketBadge, added TOP|END below, to
+        // spill into unclipped instead of being cut off).
         FrameLayout.LayoutParams circleLp = new FrameLayout.LayoutParams(sizePx, sizePx);
-        circleLp.gravity = Gravity.BOTTOM | Gravity.START;
+        circleLp.gravity = Gravity.BOTTOM | Gravity.END;
         root.addView(circle, circleLp);
 
         Bitmap bagIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Bag.png", (int) (sizePx * 0.6f));
@@ -984,7 +989,7 @@ public class PullBubbleService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
-        positionResultIcon(params, 0, outerSizePx);
+        positionPocketIcon(params, outerSizePx);
         root.setTag(params);
         root.setOnClickListener(v -> togglePocketPanel());
 
@@ -1007,7 +1012,7 @@ public class PullBubbleService extends Service {
     private void renumberResultSlots(int sizePx) {
         if (pocketIcon != null) {
             WindowManager.LayoutParams pp = (WindowManager.LayoutParams) pocketIcon.getTag();
-            animateTileToSlot(pocketIcon, pp, 0, pp.width);
+            animatePocketToSlot(pocketIcon, pp);
         }
         int offset = (pocketIcon != null) ? 1 : 0;
         for (int i = 0; i < resultIcons.size(); i++) {
@@ -1035,6 +1040,36 @@ public class PullBubbleService extends Service {
         v.setTranslationX(dx);
         v.setTranslationY(dy);
         v.animate().translationX(0).translationY(0).setDuration(220).start();
+    }
+
+    // Same slide-into-slot-0 animation as animateTileToSlot, but via positionPocketIcon — the
+    // pocket's window is padded larger than a plain tile (outerSizePx, for the badge's overflow
+    // room) and needs the shifted placement that method does, not the plain grid math.
+    private void animatePocketToSlot(View v, WindowManager.LayoutParams p) {
+        int oldX = p.x, oldY = p.y;
+        positionPocketIcon(p, p.width);
+        if (oldX == p.x && oldY == p.y) {
+            windowManager.updateViewLayout(v, p);
+            return;
+        }
+        int dx = oldX - p.x, dy = oldY - p.y;
+        windowManager.updateViewLayout(v, p);
+        v.setTranslationX(dx);
+        v.setTranslationY(dy);
+        v.animate().translationX(0).translationY(0).setDuration(220).start();
+    }
+
+    // Places the pocket's (bigger, outerSizePx) window so its BOTTOM|END sizePx sub-region —
+    // where createPocket() anchors the visible circle — lands exactly on the plain sizePx slot
+    // a normal tile would occupy, by first computing that plain slot then shifting the window's
+    // origin up-left by the same overflow margin the window is padded by.
+    private void positionPocketIcon(WindowManager.LayoutParams params, int outerSizePx) {
+        float density = getResources().getDisplayMetrics().density;
+        int overflowPx = (int) (POCKET_BADGE_OVERFLOW_DP * density);
+        int sizePx = outerSizePx - overflowPx;
+        positionResultIcon(params, 0, sizePx);
+        params.x -= overflowPx;
+        params.y -= overflowPx;
     }
 
     // A separate, larger translucent circle in the item's own rarity color, added just behind
@@ -1105,7 +1140,7 @@ public class PullBubbleService extends Service {
     private void repositionResultIcons() {
         if (pocketIcon != null) {
             WindowManager.LayoutParams pp = (WindowManager.LayoutParams) pocketIcon.getTag();
-            positionResultIcon(pp, 0, pp.width);
+            positionPocketIcon(pp, pp.width);
             windowManager.updateViewLayout(pocketIcon, pp);
         }
         int offset = (pocketIcon != null) ? 1 : 0;
