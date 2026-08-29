@@ -130,7 +130,12 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   const substatIconCache = {};
   const allSubstatTypes = new Set();
   echoSlots.forEach(entry => { if (entry && typeof entry === 'object') (entry.substats || []).forEach(s => allSubstatTypes.add(s)); });
-  await Promise.all([...allSubstatTypes].map(async s => { substatIconCache[s] = await loadImage(getStatIcon(s)); }));
+  // Base-stat + weapon-row icons — reuse the app's own official stat-icon assets (elementVisuals.js's
+  // getStatIcon) so this card shows HP/ATK/DEF/Crit Rate/Crit DMG/Energy Regen icons the same way
+  // they're represented everywhere else in the app, instead of drawing new canvas glyphs.
+  const baseStatIconKeys = ['HP', 'ATK', 'DEF', 'Crit Rate', 'Crit DMG', 'Energy Regen'];
+  await Promise.all([...allSubstatTypes, ...baseStatIconKeys].map(async s => { substatIconCache[s] = await loadImage(getStatIcon(s)); }));
+  const baseStatIcons = Object.fromEntries(baseStatIconKeys.map(k => [k, substatIconCache[k]]));
 
   // ═══ DRAWING PRIMITIVES (copied from idCardRenderer.js for visual consistency) ═══
   const drawShell = (x, y, w, h) => {
@@ -220,52 +225,89 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   const rx = bx + portraitW + gap, rw = bw - portraitW - gap;
   let ry = by;
 
-  // Weapon + progression panel
-  const wpH = 96;
-  const wpOff = drawPanel(rx, ry, rw, wpH, 'Weapon & Progression');
+  // Weapon row — plain, no bordered box (matches wuwaflex.com reference): icon sits directly on the
+  // card background, name/level/refinement/ATK+Crit follow it as plain text with small stat icons.
+  const wpH = 62; // PerfectSuite tertiary
+  const iconSz = 48; // PerfectSuite primary
   const equippedWeap = member.weapon;
-  if (weaponImg) { ctx.save(); rr(rx + 15, ry + wpOff, 56, 56, 10); ctx.clip(); ctx.drawImage(weaponImg, rx + 15, ry + wpOff, 56, 56); ctx.restore(); }
-  const wtx = rx + 15 + (weaponImg ? 68 : 0);
-  ctx.fillStyle = equippedWeap ? (equippedWeap.rarity === 5 ? '#facc15' : '#c084fc') : '#6b7280';
-  ctx.font = 'bold 20px sans-serif'; ctx.fillText(eq?.weapon || 'No Weapon Equipped', wtx, ry + wpOff + 18);
+  if (weaponImg) { ctx.save(); rr(rx, ry, iconSz, iconSz, 8); ctx.clip(); ctx.drawImage(weaponImg, rx, ry, iconSz, iconSz); ctx.restore(); }
+  const wtx = rx + (weaponImg ? iconSz + 12 : 0);
+  ctx.fillStyle = equippedWeap ? '#edaf18' : '#6b7280';
+  ctx.font = 'bold 20px sans-serif'; ctx.fillText(eq?.weapon || 'No Weapon Equipped', wtx, ry + 18);
   ctx.fillStyle = '#9ca3af'; ctx.font = '14px sans-serif';
-  ctx.fillText(equippedWeap ? `${'★'.repeat(equippedWeap.rarity)} · ${equippedWeap.stat} ${equippedWeap.subStatValue}` : '', wtx, ry + wpOff + 38);
-  ctx.fillStyle = '#edaf18'; ctx.font = '14px monospace';
-  ctx.fillText(`S${eq?.sequence || 0}  R${eq?.refinement || 1}`, wtx, ry + wpOff + 56);
+  ctx.fillText(`Lv. 90/90`, wtx, ry + 38);
+  // Refinement pill badge
+  const pillW = 30, pillH = 16, pillX = wtx + 62, pillY = ry + 28;
+  ctx.fillStyle = 'rgba(237,175,24,0.16)'; rr(pillX, pillY, pillW, pillH, 8); ctx.fill();
+  ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1; rr(pillX, pillY, pillW, pillH, 8); ctx.stroke();
+  ctx.fillStyle = '#edaf18'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center';
+  ctx.fillText(`R${eq?.refinement || 1}`, pillX + pillW / 2, pillY + 12); ctx.textAlign = 'left';
+  // Base ATK + a headline crit stat, icon-led, plain text — no panel
+  const wStatY = ry + 56;
+  let wsx = wtx;
+  const atkIcon = baseStatIcons['ATK'];
+  if (atkIcon) { ctx.drawImage(atkIcon, wsx, wStatY - 11, 14, 14); wsx += 18; }
+  ctx.fillStyle = '#e2e8f0'; ctx.font = '13px sans-serif';
+  ctx.fillText(equippedWeap ? `${equippedWeap.subStatValue ? equippedWeap.subStatValue : ''}`.trim() || `${'★'.repeat(equippedWeap.rarity || 0)}` : '', wsx, wStatY);
+  wsx += ctx.measureText(equippedWeap ? (equippedWeap.subStatValue || `${'★'.repeat(equippedWeap.rarity || 0)}`) : '').width + 16;
+  if (equippedWeap?.stat) {
+    const critIcon = baseStatIcons[equippedWeap.stat] || null;
+    if (critIcon) { ctx.drawImage(critIcon, wsx, wStatY - 11, 14, 14); wsx += 18; }
+    ctx.fillStyle = '#edaf18'; ctx.font = '13px sans-serif';
+    ctx.fillText(`${equippedWeap.stat} ${equippedWeap.subStatValue || ''}`.trim(), wsx, wStatY);
+  }
   ry += wpH + gap;
 
-  // Stat block
-  const statH = 60;
-  drawPanel(rx, ry, rw, statH * 2 + 8 + 39, 'Build Stats');
-  const statCellY = ry + 39;
-  const elDmgLabel = element ? `${element} DMG` : 'DMG';
-  const statList = [
-    { v: built.finalHp.toLocaleString('en-US'), l: 'HP', c: '#4ade80' },
-    { v: built.finalAtk.toLocaleString('en-US'), l: 'ATK', c: '#f87171' },
-    { v: built.finalDef.toLocaleString('en-US'), l: 'DEF', c: '#60a5fa' },
-    { v: built.cr.toFixed(1) + '%', l: 'Crit Rate', c: '#22d3ee' },
-    { v: built.cd.toFixed(1) + '%', l: 'Crit DMG', c: '#22d3ee' },
-    { v: built.er + '%', l: 'Energy Regen', c: '#a78bfa' },
-    { v: '+' + built.elemDmg.toFixed(0) + '%', l: elDmgLabel, c: elColor },
+  // ── Base stat rows — icon-led, row-based list (no colored tiles, no per-stat color-coding).
+  // Flat numeric stats (HP/ATK/DEF/ER) render in neutral white; percentage/bonus stats
+  // (Crit Rate/Crit DMG/elemental DMG bonus) render in the app's own accent gold — at most two
+  // text colors total, matching the wuwaflex.com reference instead of a distinct color per stat.
+  const NEUTRAL = '#e2e8f0';
+  const GOLD = '#edaf18';
+  const elDmgLabel = element ? `${element} DMG Bonus` : 'DMG Bonus';
+  const statRows = [
+    { icon: baseStatIcons['HP'], v: built.finalHp.toLocaleString('en-US'), l: 'HP', c: NEUTRAL },
+    { icon: baseStatIcons['ATK'], v: built.finalAtk.toLocaleString('en-US'), l: 'ATK', c: NEUTRAL },
+    { icon: baseStatIcons['DEF'], v: built.finalDef.toLocaleString('en-US'), l: 'DEF', c: NEUTRAL },
+    { icon: baseStatIcons['Crit Rate'], v: built.cr.toFixed(1) + '%', l: 'Crit Rate', c: GOLD },
+    { icon: baseStatIcons['Crit DMG'], v: built.cd.toFixed(1) + '%', l: 'Crit DMG', c: GOLD },
+    { icon: baseStatIcons['Energy Regen'], v: built.er + '%', l: 'Energy Regen', c: NEUTRAL },
+    { icon: elIcon, v: '+' + built.elemDmg.toFixed(0) + '%', l: elDmgLabel, c: GOLD },
   ];
-  const scCols = 4, scGap = 8, scW = (rw - 30 - (scCols - 1) * scGap) / scCols;
-  statList.forEach((s, i) => {
-    const col = i % scCols, row = Math.floor(i / scCols);
-    drawStat(rx + 15 + col * (scW + scGap), statCellY + row * (statH + scGap), scW, statH, s.v, s.l, s.c, 20);
+  const rowH = 30; // PerfectSuite secondary
+  const statBlockH = statRows.length * rowH;
+  statRows.forEach((s, i) => {
+    const sy = ry + i * rowH;
+    if (i > 0) { ctx.strokeStyle = 'rgba(255,255,255,0.10)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(rx, sy); ctx.lineTo(rx + rw, sy); ctx.stroke(); }
+    const midY = sy + rowH / 2;
+    let ix = rx;
+    if (s.icon) { ctx.drawImage(s.icon, ix, midY - 8, 16, 16); ix += 24; }
+    ctx.fillStyle = '#9ca3af'; ctx.font = '13px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(s.l, ix, midY + 4);
+    ctx.fillStyle = s.c; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(s.v, rx + rw, midY + 5);
+    ctx.textAlign = 'left';
   });
-  ry += statH * 2 + 8 + 39 + gap;
+  ry += statBlockH + gap;
 
-  // ── Echo panel (fills remaining height) ──
+  // ── Echo strip (fills remaining height) — one continuous full-width strip with thin 1px vertical
+  // dividers between the 5 columns instead of 5 separately-bordered panels, matching the reference.
   const echoPanelH = by + bh - ry;
-  const echoOff = drawPanel(rx, ry, rw, echoPanelH, 'Equipped Echoes');
-  const echoGap = 8, echoCols = 5;
-  const echoCellW = (rw - 30 - (echoCols - 1) * echoGap) / echoCols;
+  ctx.fillStyle = 'rgba(10,14,22,0.55)'; rr(rx, ry, rw, echoPanelH, 16); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1.5; rr(rx, ry, rw, echoPanelH, 16); ctx.stroke();
+  const echoOff = 14;
+  const echoCols = 5;
+  const echoCellW = rw / echoCols;
   const echoCellH = echoPanelH - echoOff - 12;
+  // Vertical dividers between columns (not around each one)
+  for (let i = 1; i < echoCols; i++) {
+    const dx = rx + i * echoCellW;
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(dx, ry + 10); ctx.lineTo(dx, ry + echoPanelH - 10); ctx.stroke();
+  }
   echoSlots.forEach((entry, i) => {
-    const ex = rx + 15 + i * (echoCellW + echoGap);
+    const ex = rx + i * echoCellW;
     const ey = ry + echoOff;
-    ctx.fillStyle = 'rgba(10,14,22,0.8)'; rr(ex, ey, echoCellW, echoCellH, 10); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1; rr(ex, ey, echoCellW, echoCellH, 10); ctx.stroke();
     const n = entry && typeof entry === 'object' ? entry.name : null;
     if (!n) {
       ctx.fillStyle = '#4b5563'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
