@@ -8,8 +8,10 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
 import android.view.HapticFeedbackConstants;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
+import android.widget.ImageView;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -34,6 +36,10 @@ import java.lang.reflect.Method;
 // evaluateJavascript, exactly once, rather than trusted from the WebView's
 // own env(safe-area-inset-*), which has proven unreliable for this on-device.
 public class MainActivity extends BridgeActivity {
+    // Kept as a field so NativeBootBridge.posterReady() (below) can remove
+    // it once the WebView's own poster has actually painted.
+    private ImageView bootPosterView;
+
     @Override
     @SuppressLint("JavascriptInterface")
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +114,36 @@ public class MainActivity extends BridgeActivity {
             getSplashScreen().setOnExitAnimationListener(splashScreenView -> splashScreenView.remove());
         }
         super.onCreate(savedInstanceState);
+        // A REAL native ImageView, not part of the WebView's own content
+        // area at all — so unlike the WebView's HTML poster (which, no
+        // matter how it's sized in CSS, is still content the WebView is
+        // responsible for laying out, and the WebView's own content area
+        // is exactly what resizes mid-boot as edge-to-edge insets settle),
+        // this view is laid out directly by Android's normal View system
+        // against the real window size, synchronously, with nothing
+        // equivalent to that WebView renegotiation to be subject to.
+        // Added on top of the WebView (addContentView appends after
+        // Capacitor's own setContentView call inside super.onCreate()
+        // above, so it paints last/on top) and removed once the WebView's
+        // own poster has actually painted (NativeBootBridge.posterReady(),
+        // below) — until then, this is what's on screen.
+        //
+        // scaleType="centerCrop" is the exact native equivalent of the
+        // WebView poster's own CSS object-fit:cover — the two scale
+        // identically, so there's nothing to mismatch at the handoff (the
+        // earlier attempt at a native poster, PR #213, used a
+        // BitmapDrawable windowBackground instead, which only offers
+        // default stretch/fill scaling — a different shape of the same
+        // picture at that handoff, which is why it got reverted).
+        // boot_poster.png (drawable-nodpi, so it's never density-scaled)
+        // is a static first-frame extract of boot-intro-poster.gif — real
+        // ImageViews can't play an animated GIF the way the WebView can,
+        // so this is a static stand-in, not the animated poster.
+        bootPosterView = new ImageView(this);
+        bootPosterView.setImageResource(R.drawable.boot_poster);
+        bootPosterView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        addContentView(bootPosterView, new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         // Computed ONCE, synchronously, from the device's own static system
         // resources — NOT from a WindowInsetsCompat listener, which only
         // fires once the decor view has actually gone through a layout pass.
@@ -220,6 +256,24 @@ public class MainActivity extends BridgeActivity {
                 WindowInsetsControllerCompat controller =
                         new WindowInsetsControllerCompat(activity.getWindow(), activity.getWindow().getDecorView());
                 controller.show(WindowInsetsCompat.Type.statusBars());
+            });
+        }
+
+        // Called from index.html right after its own document.write()
+        // poster markup has been written — at that point the WebView's own
+        // poster exists in the DOM and is about to paint, so the native
+        // ImageView overlay has done its job (covering the gap before the
+        // WebView had anything to show) and can come down. Overlap between
+        // the two isn't a visible risk either way — same picture, so a
+        // removal called a frame early or late reads the same on screen.
+        @JavascriptInterface
+        public void posterReady() {
+            activity.runOnUiThread(() -> {
+                if (activity.bootPosterView != null) {
+                    ViewGroup parent = (ViewGroup) activity.bootPosterView.getParent();
+                    if (parent != null) parent.removeView(activity.bootPosterView);
+                    activity.bootPosterView = null;
+                }
             });
         }
     }

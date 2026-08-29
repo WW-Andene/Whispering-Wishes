@@ -99,6 +99,19 @@
             '<div style="' + tint + '"></div>' +
           '</div>'
         );
+        // MainActivity.java shows a native ImageView poster on top of the
+        // WebView from the moment the Activity is created — genuinely
+        // immune to the WebView content-area resize this whole file exists
+        // to work around, since it's not part of the WebView at all. Now
+        // that this static poster's own markup has just been written
+        // (about to paint, same picture), the native one has done its job
+        // and can come down — a frame early or late doesn't matter here,
+        // since both show the identical image.
+        try {
+          window.AndroidBoot?.posterReady?.();
+        } catch (e) {
+          // Not running in the Android WebView (e.g. plain web) — no-op.
+        }
       })();
 
       // Removes this static poster as soon as MainActivity.java's native
