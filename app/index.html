@@ -67,17 +67,12 @@
          is visually seamless — same image, same place, nothing to notice —
          and BootIntro then owns the video/fade sequence from there since
          that needs component state to know when the video has finished. -->
-    <!-- Two-piece split, cut at a fixed status-bar-height guess (24px —
-         matches BootIntro.jsx's own fallback) — not one element spanning
-         the whole screen. MainActivity.java documents the WebView's own
-         content-area actually resizing mid-boot as edge-to-edge insets
-         settle. Each box below is fixed-size and never recomputed; both
-         show the same full-size image, each clipped to its own slice via
-         a fixed offset — see BootIntro.jsx's own file-level comment for
-         the full rationale (this static poster uses a fixed 24px guess
-         rather than the real native value, since MainActivity's
-         evaluateJavascript push may not have landed yet this early,
-         before React has even mounted). -->
+    <!-- Two-piece split — VERTICAL (left/right at screen midpoint), only
+         on this static pre-React poster. BootIntro.jsx's own poster is a
+         single unsplit full-screen piece; the split is specific to this
+         element. Each box below is fixed-size and never recomputed; both
+         show the same full-size image, each clipped to its own left/right
+         half via a fixed horizontal offset. -->
     <script>
       // document.write, not markup + a follow-up script correcting inline
       // styles afterward — a prior version here set width:100% (viewport-
@@ -90,32 +85,21 @@
       // ever have — there's no intermediate percentage-sized state for the
       // parser to paint before a script corrects it.
       (function () {
-        var w = window.screen.width, h = window.screen.height, bar = 24;
-        // 1px overlap between the bar/page pieces — two independently
-        // composited fixed-position layers, exactly abutting at "bar" with
-        // zero overlap, can leave a hairline gap on-device (subpixel
-        // rounding between the two layers' own compositing, worse on
-        // non-integer device pixel ratios) that shows as a thin seam/split
-        // right through the poster. The page piece starts 1px earlier and
-        // is 1px taller to close that gap; it's the same image content in
-        // both pieces, so the 1px overlap is invisible, unlike the gap.
-        var overlap = 1;
-        var pageTop = bar - overlap;
-        var pageH = h - bar + overlap;
+        var w = window.screen.width, h = window.screen.height, mid = Math.round(w / 2);
         // DIAGNOSTIC: red overlay (mix-blend-mode:multiply, reliable
         // regardless of the poster image's own colors, unlike a CSS
         // filter) — marks THIS static pre-React poster specifically, so
         // on-device it's visually distinguishable from BootIntro.jsx's own
-        // React-rendered poster (tinted green). Remove both once the
+        // React-rendered poster (unsplit, untinted). Remove once the
         // reframe is confirmed fixed.
         var tint = 'position:absolute;top:0;left:0;width:100%;height:100%;background:red;mix-blend-mode:multiply;pointer-events:none';
         document.write(
-          '<div id="boot-poster" style="position:fixed;top:0;left:0;width:' + w + 'px;height:' + bar + 'px;overflow:hidden;z-index:2147483647;background:#080c14">' +
+          '<div id="boot-poster" style="position:fixed;top:0;left:0;width:' + mid + 'px;height:' + h + 'px;overflow:hidden;z-index:2147483647;background:#080c14">' +
             '<img src="./boot-intro/boot-intro-poster.gif" alt="" style="position:absolute;top:0;left:0;width:' + w + 'px;height:' + h + 'px;object-fit:cover" />' +
             '<div style="' + tint + '"></div>' +
           '</div>' +
-          '<div id="boot-poster-page" style="position:fixed;top:' + pageTop + 'px;left:0;width:' + w + 'px;height:' + pageH + 'px;overflow:hidden;z-index:2147483647;background:#080c14">' +
-            '<img src="./boot-intro/boot-intro-poster.gif" alt="" style="position:absolute;top:' + (-pageTop) + 'px;left:0;width:' + w + 'px;height:' + h + 'px;object-fit:cover" />' +
+          '<div id="boot-poster-page" style="position:fixed;top:0;left:' + mid + 'px;width:' + (w - mid) + 'px;height:' + h + 'px;overflow:hidden;z-index:2147483647;background:#080c14">' +
+            '<img src="./boot-intro/boot-intro-poster.gif" alt="" style="position:absolute;top:0;left:' + (-mid) + 'px;width:' + w + 'px;height:' + h + 'px;object-fit:cover" />' +
             '<div style="' + tint + '"></div>' +
           '</div>'
         );

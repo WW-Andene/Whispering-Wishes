@@ -13,42 +13,18 @@ import { useEffect, useRef, useState } from 'react';
 // blocking or delaying the app underneath, which mounts and renders in
 // parallel the entire time.
 //
-// TWO-PIECE SPLIT, cut at the real status bar height — not one element
-// spanning the whole screen. MainActivity.java documents the WebView's own
-// content-area actually resizing mid-boot as edge-to-edge insets settle;
-// every previous attempt sized a single full-screen element and hoped it
-// wouldn't be affected. This sidesteps that entirely: cut the poster/video
-// into a "bar" piece (top, exactly the status bar's height) and a "page"
-// piece (everything below), each a fixed-size, non-overlapping clipping
-// box that never changes size once mounted. Both boxes show the SAME
-// full-size image — like a sprite sheet — each one just clipping to its
-// own slice via a fixed pixel offset. Neither box's own dimensions are
-// ever touched by anything, so neither can visibly reframe, regardless of
-// what the OS does with the window around them.
-//
-// The cut line itself is the real status_bar_height MainActivity already
-// computes synchronously and pushes as the --safe-area-top CSS custom
-// property (same value the header/nav margin uses elsewhere in the app).
-// Read once, synchronously, on mount — not re-read afterward — with a
-// same 24px fallback used by the rest of the app.
-function readStatusBarPx() {
-  try {
-    const raw = getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top').trim();
-    const parsed = parseFloat(raw);
-    if (Number.isFinite(parsed) && parsed > 0) return parsed;
-  } catch {
-    // getComputedStyle unavailable — fall through to the default.
-  }
-  return 24;
-}
-
+// This component's own poster is a single, unsplit full-screen piece — the
+// two-piece split lives only on index.html's static pre-React poster now
+// (and there, it's a vertical left/right split, not horizontal). Sized off
+// window.screen.width/height (a fixed physical value), not a CSS
+// viewport-relative unit, so this box's own dimensions are never
+// recomputed as MainActivity.java's edge-to-edge insets settle mid-boot.
 export default function BootIntro() {
   const videoRef = useRef(null);
   const [canPlay, setCanPlay] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const [done, setDone] = useState(false);
   const [screenSize] = useState(() => ({ w: window.screen.width, h: window.screen.height }));
-  const [statusBarPx] = useState(readStatusBarPx);
 
   useEffect(() => {
     document.getElementById('boot-poster')?.remove();
@@ -119,15 +95,6 @@ export default function BootIntro() {
 
   if (done) return null;
 
-  // Two clipping boxes for the POSTER only, cut at statusBarPx. Neither
-  // box's own size is ever recomputed — only which slice of the full-size
-  // image is currently scrolled into view via each image's fixed top
-  // offset. The VIDEO stays a single full-screen layer (not split): it
-  // only starts playing after buffering, well after the native transition
-  // has already settled — the very reason it was never the element that
-  // reframed in the first place — and two independently-decoding <video>
-  // elements playing the "same" source could not be guaranteed to stay
-  // frame-aligned the way two <img> crops of one static picture can.
   // zIndex 2147483647 (max signed 32-bit int, the practical CSS ceiling),
   // not 9999 — PWAProvider's offline banner (and anything else in the app
   // reaching for a "big enough" number) also used z-[9999], and since it
@@ -138,51 +105,18 @@ export default function BootIntro() {
   // through the "still playing" video. Matches index.html's static poster,
   // which had the same fix applied for the same reason.
   const OVERLAY_Z = 2147483647;
-  // 1px overlap between the bar/page pieces — see index.html's matching
-  // comment on its own static poster split (same geometry, same fix): two
-  // independently-composited fixed-position layers, abutting with zero
-  // overlap, can leave a hairline subpixel gap on-device that shows as a
-  // visible seam splitting the poster. Same image content in both pieces,
-  // so the 1px overlap itself is invisible.
-  const overlap = 1;
-  const pageTop = Math.max(0, statusBarPx - overlap);
-  const barBoxStyle = { position: 'fixed', top: 0, left: 0, width: screenSize.w, height: statusBarPx, overflow: 'hidden', zIndex: OVERLAY_Z };
-  const pageBoxStyle = { position: 'fixed', top: pageTop, left: 0, width: screenSize.w, height: screenSize.h - pageTop, overflow: 'hidden', zIndex: OVERLAY_Z };
-  const barImgOffset = { position: 'absolute', top: 0, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover' };
-  const pageImgOffset = { position: 'absolute', top: -pageTop, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover' };
-  const posterOpacity = { opacity: canPlay ? 0 : 1, transition: 'opacity 0.2s ease-out' };
-  // DIAGNOSTIC: green overlay (mix-blend-mode:multiply) marking THIS
-  // React-rendered poster, distinguishable on-device from index.html's own
-  // static poster (tinted red) — so which element is showing during a
-  // reframe is visible at a glance. Remove both tints once confirmed fixed.
-  const tintOverlay = { position: 'absolute', inset: 0, background: 'lime', mixBlendMode: 'multiply', pointerEvents: 'none' };
+  const posterBoxStyle = { position: 'fixed', top: 0, left: 0, width: screenSize.w, height: screenSize.h, overflow: 'hidden', zIndex: OVERLAY_Z };
+  const posterImgStyle = { position: 'absolute', top: 0, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover', opacity: canPlay ? 0 : 1, transition: 'opacity 0.2s ease-out' };
 
   return (
     <>
-      {/* Bar piece — exactly the status bar's height, fixed, never resized. */}
-      <div aria-hidden="true" style={{ ...barBoxStyle, background: '#080c14', opacity: fadingOut ? 0 : 1, transition: 'opacity 1s ease-out', pointerEvents: 'none' }}>
-        <img src="/boot-intro/boot-intro-poster.gif" alt="" style={{ ...barImgOffset, ...posterOpacity }} />
-        <div style={tintOverlay} />
+      {/* Poster — single unsplit full-screen piece, fixed, never resized. */}
+      <div aria-hidden="true" style={{ ...posterBoxStyle, background: '#080c14', opacity: fadingOut ? 0 : 1, transition: 'opacity 1s ease-out', pointerEvents: 'none' }}>
+        <img src="/boot-intro/boot-intro-poster.gif" alt="" style={posterImgStyle} />
       </div>
-      {/* Page piece — everything below the bar, fixed, never resized. */}
-      <div
-        aria-hidden="true"
-        style={{
-          ...pageBoxStyle,
-          background: '#080c14',
-          opacity: fadingOut ? 0 : 1,
-          transition: 'opacity 1s ease-out',
-          pointerEvents: 'none',
-        }}
-      >
-        <img src="/boot-intro/boot-intro-poster.gif" alt="" style={{ ...pageImgOffset, ...posterOpacity }} />
-        <div style={tintOverlay} />
-      </div>
-      {/* Video — a single full-screen layer, a sibling of both poster
-          pieces rather than nested in either (not split — see the
-          comment above for why). Owns the fade-out/audio state; both
-          poster pieces above just mirror its fade-out opacity so
-          everything cuts away together. */}
+      {/* Video — a single full-screen layer, a sibling of the poster.
+          Owns the fade-out/audio state; the poster above just mirrors its
+          fade-out opacity so everything cuts away together. */}
       <video
         ref={videoRef}
         src="/boot-intro/boot-intro.mp4"
