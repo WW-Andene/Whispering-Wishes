@@ -69,6 +69,14 @@ public class LiveVideoWallpaperService extends WallpaperService {
                 MediaPlayer player = new MediaPlayer();
                 player.setDataSource(path);
                 player.setSurface(holder.getSurface());
+                // Default scaling mode (SCALE_TO_FIT) stretches the video non-uniformly to
+                // exactly fill the surface — since the surface is the full (portrait) screen
+                // and this source video is landscape banner/splash footage, that's the
+                // "squished into 9:16" look. SCALE_TO_FIT_WITH_CROPPING instead scales
+                // uniformly (preserving aspect ratio) and centers, going edge-to-edge on
+                // whichever axis fits first and cropping the overflow on the other — the same
+                // "cover" behavior as a regular picture wallpaper.
+                player.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
                 player.setLooping(true);
                 // A wallpaper plays silently — it's a background, not media playback the user
                 // deliberately started.
