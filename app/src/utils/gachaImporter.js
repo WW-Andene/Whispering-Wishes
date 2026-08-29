@@ -351,6 +351,14 @@ async function getOcrWorker() {
         workerPath: `${TESSERACT_VENDOR_PATH}/worker.min.js`,
         corePath: `${TESSERACT_VENDOR_PATH}/tesseract-core-lstm.wasm.js`,
         langPath: TESSERACT_VENDOR_PATH,
+        // Disables tesseract.js's own IndexedDB-based traineddata cache (idb-keyval). Its
+        // loadLanguage step tries an IndexedDB read BEFORE ever touching the network — if
+        // IndexedDB hangs (a known failure mode in some WebViews and storage-partitioned
+        // browser states, e.g. inside a dedicated Worker), that await never resolves OR
+        // rejects, which exactly matches "stuck at loading language traineddata (0%)" forever
+        // on both web and native. Redundant anyway: the service worker already cache-firsts
+        // these files (see sw.js's OCR_CACHE), so tesseract.js doesn't need its own cache layer.
+        cacheMethod: 'none',
         // tesseract.js's own init chain swallows real errors on failure (see the comment
         // below), so this progress callback is otherwise the only visibility into which stage
         // a hang actually happens at.
