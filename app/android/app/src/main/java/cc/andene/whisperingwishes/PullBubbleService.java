@@ -637,7 +637,7 @@ public class PullBubbleService extends Service {
         TextView x = new TextView(this);
         x.setText("✕");
         x.setTextColor(Color.WHITE);
-        x.setTextSize(20);
+        x.setTextSize(16);
         x.setGravity(Gravity.CENTER);
         root.setContentDescription(getString(R.string.pull_bubble_remove_aria));
         root.addView(x, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
@@ -966,7 +966,7 @@ public class PullBubbleService extends Service {
         int badgeSizePx = (int) (16 * density);
         pocketBadge = new TextView(this);
         pocketBadge.setTextColor(Color.WHITE);
-        pocketBadge.setTextSize(9);
+        pocketBadge.setTextSize(8);
         pocketBadge.setGravity(Gravity.CENTER);
         pocketBadge.setBackground(circleDrawable("#FFEF4444", "#FFFFFFFF"));
         FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(badgeSizePx, badgeSizePx);
@@ -1267,7 +1267,7 @@ public class PullBubbleService extends Service {
         TextView title = new TextView(this);
         title.setText(getString(R.string.pull_bubble_pocket_title, allPulledResults.size()));
         title.setTextColor(Color.WHITE);
-        title.setTextSize(13);
+        title.setTextSize(12);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
         header.addView(title, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
         TextView close = new TextView(this);
