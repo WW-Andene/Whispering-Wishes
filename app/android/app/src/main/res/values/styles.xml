@@ -12,7 +12,21 @@
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <item name="android:windowBackground">@color/app_background</item>
+        <!-- The boot poster's own first frame (app/public/boot-intro/boot-intro-poster.gif,
+             extracted to drawable-nodpi/boot_poster.png) — not @color/app_background.
+             MainActivity.java documents the WebView's own render surface briefly
+             resizing as edge-to-edge insets settle; anything painted BY THE WEBVIEW
+             during that window (the HTML poster included) can catch that resize and
+             visibly snap. This windowBackground is a different, unrelated layer —
+             painted directly by the OS at the Activity window/DecorView level,
+             before the WebView even exists inside it, sized to the real window
+             bounds from the first frame the OS ever draws. It isn't subject to the
+             WebView's internal resize at all. So instead of showing a plain color
+             (or nothing) underneath while the WebView's own poster is still
+             potentially catching that resize, what's visible for those first few
+             frames is already the right image — no separate "default boot screen"
+             moment for the WebView content to visibly replace. -->
+        <item name="android:windowBackground">@drawable/boot_poster</item>
         <!-- Explicit transparent status/nav bars — MainActivity already calls
              setDecorFitsSystemWindows(false) so the WebView draws full-bleed
              underneath them, but that alone doesn't stop the OS from painting
