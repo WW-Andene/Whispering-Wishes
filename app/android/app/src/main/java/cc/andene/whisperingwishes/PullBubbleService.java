@@ -24,6 +24,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -35,12 +36,14 @@ import java.util.List;
 // widget, it stays on screen over every app until dragged onto the ✕ target that appears
 // while dragging it, at which point it fully deactivates.
 //
-// Flow: tap the main bubble → it expands into two small sub-bubbles (×1/×10) → tapping one
+// Flow: tap the main bubble → it arcs open into five sub-bubbles around it (banner picker,
+// ×80, ×10, ×1, and a hide/minimize arrow — see SUB_BUBBLE_ANGLES_DEG) → tapping ×1/×10/×80
 // rolls a pull (WidgetPullSimulator, same math/pity engine PulseBannerWidget's own pull
-// button used) and plays the matching rarity clip in FloatingVideoOverlayService's floating
-// video window (the same mechanism PulseBannerWidget's ▶️ uses) → each pulled item then
-// appears as its own small icon bubble clustered near the main bubble — NOT baked into the
-// video — individually dismissible by a tap, not drag.
+// button used, pinned to whichever banner the picker last cycled to) and steps through the
+// rarity clip + each item's own reveal beat/convene clip in FloatingVideoOverlayService's
+// floating video window (the same mechanism PulseBannerWidget's ▶️ uses) → each pulled item
+// then appears as its own small icon bubble clustered near the main bubble — NOT baked into
+// the video — individually dismissible by a tap, not drag.
 //
 // Requires SYSTEM_ALERT_WINDOW (same permission FloatingVideoOverlayService already needs;
 // requested the same way if missing) AND runs as a genuine FOREGROUND service with a
@@ -66,6 +69,7 @@ public class PullBubbleService extends Service {
     private static final int SUB_BUBBLE_SIZE_DP = 44;
     private static final int RESULT_ICON_SIZE_DP = 36;
     private static final int REMOVE_TARGET_SIZE_DP = 72;
+    private static final int HIDDEN_TAB_SIZE_DP = 28;
     private static final int CLICK_SLOP_PX = 20; // beyond this, a touch is a drag, not a tap
     private static final int RESULT_ICON_PX = 96; // WidgetAssetUtils decode target
 
@@ -80,10 +84,14 @@ public class PullBubbleService extends Service {
     private WindowManager windowManager;
     private View mainBubble;
     private View removeTarget;
+    private View hiddenTab;
     private final List<View> subBubbles = new ArrayList<>();
     private final List<View> resultIcons = new ArrayList<>();
     private WindowManager.LayoutParams mainBubbleParams;
     private boolean expanded = false;
+    // -1 = "first active" (the same default a pre-choice roll always used) — cycled by the
+    // banner-picker sub-bubble through WidgetPullSimulator.listActiveBannerNames("character").
+    private int pinnedBannerIndex = -1;
 
     // Drag-tracking state for the main bubble's own touch listener.
     private float touchDownRawX, touchDownRawY;
@@ -172,24 +180,31 @@ public class PullBubbleService extends Service {
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
-        mainBubbleParams = new WindowManager.LayoutParams(
-                sizePx, sizePx, overlayType,
-                // FLAG_NOT_FOCUSABLE is what actually keeps a bubble/sub-bubble/result-icon
-                // window from interfering with whatever's underneath it — WITHOUT it, a
-                // TYPE_APPLICATION_OVERLAY window is focusable by default and can steal input
-                // focus from other apps/the keyboard even outside its own small bounds (this
-                // was likely the "blocks touch on screen" report — a focusable overlay affects
-                // routing well beyond its visible pixels, unlike a purely visual widget). Also
-                // implies FLAG_NOT_TOUCH_MODAL per the platform docs, but both are kept
-                // explicit for clarity. removeTarget already had this; these didn't.
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                PixelFormat.TRANSLUCENT);
-        mainBubbleParams.gravity = Gravity.TOP | Gravity.START;
-        // Starting position: right edge, vertically centered — see file header's
-        // POSITIONING note on why this can't be tied to the old widget button's location.
-        android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
-        mainBubbleParams.x = dm.widthPixels - sizePx - (int) (12 * density);
-        mainBubbleParams.y = dm.heightPixels / 2 - sizePx / 2;
+        // Reuse the existing mainBubbleParams object (position and all) if this is a restore
+        // from hideBubble() rather than the very first show — only a brand-new instance gets
+        // the fixed starting position below; restoring should reappear exactly where it was
+        // hidden from, not jump back to the screen edge.
+        boolean isRestore = mainBubbleParams != null;
+        if (!isRestore) {
+            mainBubbleParams = new WindowManager.LayoutParams(
+                    sizePx, sizePx, overlayType,
+                    // FLAG_NOT_FOCUSABLE is what actually keeps a bubble/sub-bubble/result-icon
+                    // window from interfering with whatever's underneath it — WITHOUT it, a
+                    // TYPE_APPLICATION_OVERLAY window is focusable by default and can steal input
+                    // focus from other apps/the keyboard even outside its own small bounds (this
+                    // was likely the "blocks touch on screen" report — a focusable overlay affects
+                    // routing well beyond its visible pixels, unlike a purely visual widget). Also
+                    // implies FLAG_NOT_TOUCH_MODAL per the platform docs, but both are kept
+                    // explicit for clarity. removeTarget already had this; these didn't.
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                    PixelFormat.TRANSLUCENT);
+            mainBubbleParams.gravity = Gravity.TOP | Gravity.START;
+            // Starting position: right edge, vertically centered — see file header's
+            // POSITIONING note on why this can't be tied to the old widget button's location.
+            android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+            mainBubbleParams.x = dm.widthPixels - sizePx - (int) (12 * density);
+            mainBubbleParams.y = dm.heightPixels / 2 - sizePx / 2;
+        }
 
         mainBubble.setOnTouchListener(this::onMainBubbleTouch);
         windowManager.addView(mainBubble, mainBubbleParams);
@@ -233,7 +248,16 @@ public class PullBubbleService extends Service {
         return false;
     }
 
-    // ── Sub-bubbles (×1 / ×10) ───────────────────────────────────────────────
+    // ── Sub-bubbles (banner picker / ×80 / ×10 / ×1 / hide) ──────────────────
+    //
+    // Arch-placed around the main bubble (not stacked in a straight line) — five bubbles at
+    // 45° steps sweeping clockwise from directly above (90°, standard math convention: 0° =
+    // right, angle increases counterclockwise) down to directly below (270°/-90°) via the left
+    // side (180°): banner-picker (90°, topmost) → ×80 (135°) → ×10 (180°) → ×1 (225°/-135°) →
+    // hide (270°/-90°, bottommost). The sweep goes via the LEFT side deliberately: the bubble
+    // starts docked at the right screen edge, so arcing left keeps every sub-bubble over
+    // actual screen space instead of off past the edge.
+    private static final double[] SUB_BUBBLE_ANGLES_DEG = {90, 135, 180, 225, 270};
 
     private void toggleExpanded() {
         if (expanded) {
@@ -245,23 +269,49 @@ public class PullBubbleService extends Service {
     }
 
     private void showSubBubbles() {
-        addSubBubble(getString(R.string.widget_pull_x1), 1, 0);
-        addSubBubble(getString(R.string.widget_pull_x10), 10, 1);
+        float density = getResources().getDisplayMetrics().density;
+        int iconPx = (int) (SUB_BUBBLE_SIZE_DP * density * 0.5f); // icon itself, smaller than the bubble it sits in
+        Bitmap resonatorIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Resonator.png", iconPx);
+
+        addSubBubble(null, resonatorIcon, SUB_BUBBLE_ANGLES_DEG[0], getString(R.string.pull_bubble_banner_picker_aria), this::cycleBannerChoice);
+        addSubBubble(getString(R.string.widget_pull_x80), null, SUB_BUBBLE_ANGLES_DEG[1], null, () -> startRoll(80));
+        addSubBubble(getString(R.string.widget_pull_x10), null, SUB_BUBBLE_ANGLES_DEG[2], null, () -> startRoll(10));
+        addSubBubble(getString(R.string.widget_pull_x1), null, SUB_BUBBLE_ANGLES_DEG[3], null, () -> startRoll(1));
+        addSubBubble("➡️", null, SUB_BUBBLE_ANGLES_DEG[4], getString(R.string.pull_bubble_hide_aria), this::hideBubble);
     }
 
-    private void addSubBubble(String label, int count, int stackIndex) {
+    // Collapses the arc and rolls — shared by the ×1/×10/×80 sub-bubbles, split out of their
+    // onClickListener since there are now three of them.
+    private void startRoll(int count) {
+        if (rolling) return; // a reveal sequence is already stepping through its videos
+        collapseSubBubbles();
+        expanded = false;
+        rollAndPlay(count);
+    }
+
+    // label OR icon (whichever is non-null) is shown; icon wins if both are somehow given.
+    // Passing null for both `aria` collapses is fine too — content descriptions are optional.
+    private void addSubBubble(String label, Bitmap icon, double angleDeg, String aria, Runnable onTap) {
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (SUB_BUBBLE_SIZE_DP * density);
 
         FrameLayout root = new FrameLayout(this);
         root.setBackground(circleDrawable("#40000000", "#99FFFFFF"));
         clipToCircle(root);
-        TextView text = new TextView(this);
-        text.setText(label);
-        text.setTextColor(Color.WHITE);
-        text.setTextSize(11);
-        text.setGravity(Gravity.CENTER);
-        root.addView(text, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        if (icon != null) {
+            ImageView img = new ImageView(this);
+            img.setImageBitmap(icon);
+            img.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        } else {
+            TextView text = new TextView(this);
+            text.setText(label);
+            text.setTextColor(Color.WHITE);
+            text.setTextSize(11);
+            text.setGravity(Gravity.CENTER);
+            root.addView(text, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        }
+        if (aria != null) root.setContentDescription(aria);
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -279,37 +329,68 @@ public class PullBubbleService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
-        positionSubBubble(params, stackIndex, (int) (BUBBLE_SIZE_DP * density), sizePx);
+        positionSubBubbleArc(params, angleDeg, mainBubbleParams.width, sizePx);
 
-        root.setTag(params);
-        root.setOnClickListener(v -> {
-            if (rolling) return; // a reveal sequence is already stepping through its videos
-            collapseSubBubbles();
-            expanded = false;
-            rollAndPlay(count);
-        });
+        root.setTag(new SubBubbleTag(params, angleDeg));
+        root.setOnClickListener(v -> onTap.run());
 
         windowManager.addView(root, params);
         subBubbles.add(root);
     }
 
-    // Stacked above the main bubble, spaced vertically — simplest layout that never
-    // overlaps the main bubble itself and reads clearly as "options above the thing you
-    // tapped", matching common chat-heads/quick-action bubble conventions.
-    private void positionSubBubble(WindowManager.LayoutParams params, int stackIndex, int mainSizePx, int subSizePx) {
+    // Bundles a sub-bubble's own LayoutParams with the angle it's arc-positioned at, so
+    // repositionSubBubbles() (fired on every drag frame) can recompute around the main
+    // bubble's new location without needing a second parallel list.
+    private static final class SubBubbleTag {
+        final WindowManager.LayoutParams params;
+        final double angleDeg;
+        SubBubbleTag(WindowManager.LayoutParams params, double angleDeg) { this.params = params; this.angleDeg = angleDeg; }
+    }
+
+    // Places a sub-bubble on the arc around the main bubble at angleDeg (standard math
+    // convention: 0° = right, 90° = up, increasing counterclockwise) — radius is just far
+    // enough that the two bubbles' edges sit a small gap apart, same spacing the old straight
+    // stack used.
+    private void positionSubBubbleArc(WindowManager.LayoutParams params, double angleDeg, int mainSizePx, int subSizePx) {
         float density = getResources().getDisplayMetrics().density;
         int gap = (int) (10 * density);
-        params.x = mainBubbleParams.x + (mainSizePx - subSizePx) / 2;
-        params.y = mainBubbleParams.y - (stackIndex + 1) * (subSizePx + gap);
+        int radius = mainSizePx / 2 + gap + subSizePx / 2;
+        double rad = Math.toRadians(angleDeg);
+        int dx = (int) Math.round(radius * Math.cos(rad));
+        int dy = (int) Math.round(-radius * Math.sin(rad)); // screen Y grows downward — "up" is negative dy
+        params.x = mainBubbleParams.x + mainSizePx / 2 - subSizePx / 2 + dx;
+        params.y = mainBubbleParams.y + mainSizePx / 2 - subSizePx / 2 + dy;
     }
 
     private void repositionSubBubbles() {
-        for (int i = 0; i < subBubbles.size(); i++) {
-            View v = subBubbles.get(i);
-            WindowManager.LayoutParams p = (WindowManager.LayoutParams) v.getTag();
-            positionSubBubble(p, i, mainBubbleParams.width, v.getLayoutParams() != null ? p.width : (int) (SUB_BUBBLE_SIZE_DP * getResources().getDisplayMetrics().density));
-            windowManager.updateViewLayout(v, p);
+        for (View v : subBubbles) {
+            SubBubbleTag tag = (SubBubbleTag) v.getTag();
+            positionSubBubbleArc(tag.params, tag.angleDeg, mainBubbleParams.width, tag.params.width);
+            windowManager.updateViewLayout(v, tag.params);
         }
+    }
+
+    // Cycles through every currently-active character banner (tap to advance, wrapping back to
+    // "default"/first-active after the last one) — WidgetPullSimulator.roll's own pinnedName
+    // parameter already supports exactly this pinning, this just picks which name to pass it.
+    // Stays selected across pulls until cycled again or the bubble is torn down; not persisted
+    // across restarts, same as the bubble's own position.
+    private void cycleBannerChoice() {
+        List<String> names = WidgetPullSimulator.listActiveBannerNames(getSharedPreferences(PREFS_NAME, MODE_PRIVATE), "character");
+        if (names.isEmpty()) {
+            Toast.makeText(this, getString(R.string.pull_bubble_banner_picker_default), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        pinnedBannerIndex++;
+        if (pinnedBannerIndex >= names.size()) pinnedBannerIndex = -1;
+        String label = pinnedBannerIndex < 0 ? getString(R.string.pull_bubble_banner_picker_default) : names.get(pinnedBannerIndex);
+        Toast.makeText(this, label, Toast.LENGTH_SHORT).show();
+    }
+
+    private String currentPinnedBannerName() {
+        if (pinnedBannerIndex < 0) return null;
+        List<String> names = WidgetPullSimulator.listActiveBannerNames(getSharedPreferences(PREFS_NAME, MODE_PRIVATE), "character");
+        return pinnedBannerIndex < names.size() ? names.get(pinnedBannerIndex) : null;
     }
 
     private void collapseSubBubbles() {
@@ -317,6 +398,70 @@ public class PullBubbleService extends Service {
             try { windowManager.removeView(v); } catch (Exception ignored) {}
         }
         subBubbles.clear();
+    }
+
+    // ── Hide / restore ───────────────────────────────────────────────────────
+    //
+    // The ➡️ sub-bubble MINIMIZES the bubble rather than removing it (that's still only via
+    // drag-to-✕) — the main bubble (and any open arc/result icons) disappears, replaced by a
+    // small edge tab at the same position; tapping the tab brings the full bubble straight
+    // back. The service keeps running throughout (foreground notification included) — this is
+    // a visibility toggle, not a lifecycle one.
+
+    private void hideBubble() {
+        if (hiddenTab != null) return; // already hidden
+        collapseSubBubbles();
+        expanded = false;
+        clearResultIcons();
+        if (mainBubble != null && windowManager != null) {
+            try { windowManager.removeView(mainBubble); } catch (Exception ignored) {}
+        }
+        mainBubble = null; // mainBubbleParams is DELIBERATELY kept — showMainBubble() reuses its
+                           // position on restore instead of resetting to the screen edge.
+        showHiddenTab();
+    }
+
+    private void showHiddenTab() {
+        float density = getResources().getDisplayMetrics().density;
+        int sizePx = (int) (HIDDEN_TAB_SIZE_DP * density);
+
+        FrameLayout root = new FrameLayout(this);
+        root.setBackground(circleDrawable("#40FFFFFF", "#80FFFFFF"));
+        clipToCircle(root);
+        TextView arrow = new TextView(this);
+        arrow.setText("⬅️");
+        arrow.setTextSize(12);
+        arrow.setGravity(Gravity.CENTER);
+        root.addView(arrow, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        root.setContentDescription(getString(R.string.pull_bubble_restore_aria));
+
+        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_PHONE;
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                sizePx, sizePx, overlayType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.TOP | Gravity.START;
+        // Same top-left corner the main bubble was hidden from — mainBubbleParams still holds
+        // that position (see hideBubble()'s own comment).
+        params.x = mainBubbleParams.x;
+        params.y = mainBubbleParams.y;
+        root.setOnClickListener(v -> restoreBubble());
+
+        hiddenTab = root;
+        windowManager.addView(hiddenTab, params);
+    }
+
+    private void restoreBubble() {
+        hideHiddenTab();
+        showMainBubble(); // reuses mainBubbleParams' existing position — see its own comment
+    }
+
+    private void hideHiddenTab() {
+        if (hiddenTab == null) return;
+        try { windowManager.removeView(hiddenTab); } catch (Exception ignored) {}
+        hiddenTab = null;
     }
 
     // ── Remove (✕) target ────────────────────────────────────────────────────
@@ -390,11 +535,9 @@ public class PullBubbleService extends Service {
     private void rollAndPlay(int count) {
         WidgetPullSimulator.PullSimResult sim;
         try {
-            // Rolls against the first currently-active character banner — this bubble has
-            // no per-instance banner choice the way PulseBannerWidget's picker does (there's
-            // only ever one bubble system-wide), so it always targets the same default a
-            // pre-custom-choice widget would have.
-            sim = WidgetPullSimulator.roll(this, "character", null, count);
+            // Pinned to whichever banner the resonator-icon sub-bubble last cycled to, or the
+            // category's first active banner (pinnedBannerIndex == -1) by default.
+            sim = WidgetPullSimulator.roll(this, "character", currentPinnedBannerName(), count);
         } catch (Throwable t) {
             Log.w(TAG, "Pull roll failed", t);
             return;
@@ -423,6 +566,18 @@ public class PullBubbleService extends Service {
         playVideosThen(rarityVideo, () -> playItemStep(sim.results, 0, finalAssetMap));
     }
 
+    // Top of the arc (angle 90°, directly above the main bubble) minus a small gap — see
+    // playVideosThen's own comment on why the video card anchors here instead of at the main
+    // bubble's own height.
+    private int videoAnchorY() {
+        float density = getResources().getDisplayMetrics().density;
+        int subSizePx = (int) (SUB_BUBBLE_SIZE_DP * density);
+        int gap = (int) (10 * density);
+        int radius = mainBubbleParams.width / 2 + gap + subSizePx / 2;
+        int arcTopY = mainBubbleParams.y + mainBubbleParams.width / 2 - subSizePx / 2 - radius;
+        return arcTopY - gap;
+    }
+
     // Plays `urls` (via FloatingVideoOverlayService, chained/anchored the same way as before)
     // and calls `onDone` once they've ALL finished — or immediately, synchronously, if there's
     // nothing to play, so callers don't need two separate branches for "has a video" vs. not.
@@ -434,10 +589,15 @@ public class PullBubbleService extends Service {
         // Anchored to the main bubble's own current position — unlike a home-screen widget's
         // ▶️ button, this service DOES know exactly where its own trigger is on screen, so the
         // video plays visibly connected to the bubble you just tapped ("on the side" of it)
-        // instead of a fixed, unrelated screen corner.
+        // instead of a fixed, unrelated screen corner. Y is shifted up past the arc's own
+        // topmost point (90°, the banner-picker sub-bubble's position) rather than sitting at
+        // the main bubble's own height — the sub-bubbles are already collapsed by the time
+        // this plays, but visually anchoring here keeps the card clear of where they WERE
+        // (and where they'll be again next time the bubble is tapped) instead of overlapping
+        // that space.
         if (mainBubbleParams != null) {
             playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_X, mainBubbleParams.x);
-            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_Y, mainBubbleParams.y);
+            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_Y, videoAnchorY());
         }
         startService(playIntent);
     }
@@ -485,18 +645,20 @@ public class PullBubbleService extends Service {
         String assetPath = result.name != null ? assetMap.optString(result.name, null) : null;
         Bitmap bitmap = assetPath != null ? WidgetAssetUtils.decodeAsset(this, assetPath, RESULT_ICON_PX) : null;
         if (bitmap != null) {
+            // 50% dark mask BEHIND the portrait — added first (so it's the bottom layer),
+            // sitting between root's own rarity-colored circleDrawable background and the
+            // portrait on top of it. On any icon whose art has real transparency (rather than
+            // a fully opaque square crop) this dims what shows through around the character
+            // instead of the character itself, which is what darkening the BACKDROP behind an
+            // icon (vs. darkening the icon's own art) is supposed to look like.
+            FrameLayout mask = new FrameLayout(this);
+            mask.setBackgroundColor(Color.parseColor("#80000000"));
+            root.addView(mask, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+
             ImageView img = new ImageView(this);
             img.setImageBitmap(bitmap);
             img.setScaleType(ImageView.ScaleType.CENTER_CROP);
             root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-
-            // 50% dark mask ON TOP of the portrait — a solid circleDrawable fill sits
-            // BEHIND the opaque ImageView and would never actually show through it;
-            // this is a second, transparent-black FrameLayout drawn after (so on top
-            // of) the image, which is what actually darkens/tints the visible icon.
-            FrameLayout mask = new FrameLayout(this);
-            mask.setBackgroundColor(Color.parseColor("#80000000"));
-            root.addView(mask, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         }
         root.setContentDescription(getString(R.string.pull_bubble_result_dismiss_aria));
 
@@ -637,6 +799,7 @@ public class PullBubbleService extends Service {
         collapseSubBubbles();
         clearResultIcons();
         hideRemoveTarget();
+        hideHiddenTab();
         if (mainBubble != null && windowManager != null) {
             try { windowManager.removeView(mainBubble); } catch (Exception ignored) {}
         }

@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- FloatingVideoOverlayService's floating window content — a small rounded card
-     (overlay_video_bg background + View.setClipToOutline(true) in code, since a
-     background alone doesn't clip a VideoView's actual video surface) added
-     directly to WindowManager, not inflated as part of any Activity. -->
+     (overlay_video_bg background + View.setClipToOutline(true) in code) added directly to
+     WindowManager, not inflated as part of any Activity.
+
+     TextureView, NOT VideoView/SurfaceView — a SurfaceView (what VideoView uses internally)
+     punches a hole straight through the window and composites its video frames on a separate
+     native layer, bypassing the normal view hierarchy's clipping entirely: clipToOutline (or
+     any other view-level clip) never actually applies to it, which is why the card kept
+     rendering as a plain square regardless of overlay_video_bg's rounded corners or the
+     outline clip below. TextureView draws into the normal view hierarchy like any other View,
+     so the same clipToOutline call actually rounds it. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/overlay_root"
     android:layout_width="match_parent"
@@ -11,7 +18,10 @@
     android:clickable="true"
     android:focusable="false">
 
-    <VideoView
+    <!-- Fully-qualified tag required — TextureView lives in android.view, and
+         LayoutInflater's default widget-tag search only covers android.widget/webkit/app,
+         not android.view; a bare <TextureView> tag would fail to inflate. -->
+    <android.view.TextureView
         android:id="@+id/overlay_video"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

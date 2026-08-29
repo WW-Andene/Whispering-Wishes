@@ -108,6 +108,29 @@ final class WidgetPullSimulator {
         return list.get(rand.nextInt(list.size()));
     }
 
+    // Lists every currently-active banner NAME in `category`, in the order widget_banners_data
+    // has them — used by PullBubbleService's own banner-picker sub-bubble to cycle through
+    // choices (tap to advance, wrapping back to "first active" / null after the last one),
+    // the same category+name pinning findBannerEntry/roll() already understand elsewhere in
+    // this class. Empty (not null) when there's no synced data or no active banner at all, so
+    // callers can safely iterate without a null check.
+    static List<String> listActiveBannerNames(SharedPreferences prefs, String category) {
+        List<String> names = new ArrayList<>();
+        String json = prefs.getString("widget_banners_data", null);
+        if (json == null) return names;
+        try {
+            JSONObject blob = new JSONObject(json);
+            if (blob.optInt("v", -1) != WIDGET_SCHEMA_VERSION) return names;
+            JSONArray arr = blob.optJSONArray(category + "s");
+            if (arr == null) return names;
+            for (int i = 0; i < arr.length(); i++) {
+                String name = arr.getJSONObject(i).optString("name", null);
+                if (name != null) names.add(name);
+            }
+        } catch (Exception ignored) {}
+        return names;
+    }
+
     // Looks up ONE banner entry by exact name inside widget_banners_data's <category>s array
     // (mirrors PulseBannerWidget.findEntry's fallback behavior: a null/no-longer-active name
     // resolves to that array's first entry instead of an empty pull). Returns null only when

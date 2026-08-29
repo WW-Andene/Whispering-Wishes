@@ -15,6 +15,11 @@
          label text so it's translatable the same way every other user-facing string here is. -->
     <string name="widget_pull_x1">×1</string>
     <string name="widget_pull_x10">×10</string>
+    <string name="widget_pull_x80">×80</string>
+    <string name="pull_bubble_banner_picker_aria">Choose which banner to pull from</string>
+    <string name="pull_bubble_banner_picker_default">Default banner</string>
+    <string name="pull_bubble_hide_aria">Hide the pull bubble (tap the small tab to bring it back)</string>
+    <string name="pull_bubble_restore_aria">Show the pull bubble</string>
     <string name="pull_bubble_notification_channel_name">Pull Bubble</string>
     <string name="pull_bubble_notification_title">Pull bubble is active</string>
     <string name="pull_bubble_notification_text">Tap to open the app, or drag the bubble to ✕ to turn it off</string>

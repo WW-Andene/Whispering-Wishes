@@ -1,7 +1,10 @@
 package cc.andene.whisperingwishes;
 
 import android.content.Intent;
+import android.graphics.Matrix;
 import android.graphics.Outline;
+import android.graphics.SurfaceTexture;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
@@ -10,10 +13,11 @@ import android.app.Service;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Surface;
+import android.view.TextureView;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.WindowManager;
-import android.widget.VideoView;
 
 import java.util.ArrayList;
 
@@ -72,6 +76,10 @@ public class FloatingVideoOverlayService extends Service {
 
     private WindowManager windowManager;
     private View overlayView;
+    private TextureView textureView;
+    private MediaPlayer mediaPlayer;
+    private Surface surface;
+    private boolean surfaceReady;
     private final ArrayList<String> queue = new ArrayList<>();
     private int queueIndex = 0;
     private boolean hasAnchor;
@@ -116,8 +124,11 @@ public class FloatingVideoOverlayService extends Service {
         }
 
         try {
+            // playAt(0) is NOT called here — it fires from the TextureView's own
+            // SurfaceTextureListener once its Surface actually exists (see showOverlay()).
+            // A MediaPlayer needs a real Surface to attach to; calling setSurface(null) before
+            // the TextureView has produced one would just silently fail to render.
             showOverlay();
-            playAt(0);
         } catch (Throwable t) {
             Log.w(TAG, "Floating overlay failed, falling back to fullscreen player", t);
             removeOverlay();
@@ -174,9 +185,11 @@ public class FloatingVideoOverlayService extends Service {
         overlayView = LayoutInflater.from(this).inflate(R.layout.overlay_floating_video, null);
 
         View root = overlayView.findViewById(R.id.overlay_root);
-        // clipToOutline + a rounded-rect outline is what actually clips the child
-        // VideoView's video surface to rounded corners — the background drawable alone
-        // only shows through the corners, it doesn't clip content drawn on top of it.
+        // clipToOutline + a rounded-rect outline is what actually clips the child TextureView's
+        // video content to rounded corners — the background drawable alone only shows through
+        // the corners, it doesn't clip content drawn on top of it. This only works because the
+        // child is a TextureView, not VideoView's SurfaceView — see overlay_floating_video.xml's
+        // own comment on why that swap was necessary for rounding to have any effect at all.
         root.setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View view, Outline outline) {
@@ -187,6 +200,28 @@ public class FloatingVideoOverlayService extends Service {
         root.setClipToOutline(true);
         // Tap the floating card to skip the whole queue, same as the fullscreen player.
         root.setOnClickListener(v -> { removeOverlay(); finish(); });
+
+        textureView = overlayView.findViewById(R.id.overlay_video);
+        textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+            @Override
+            public void onSurfaceTextureAvailable(SurfaceTexture st, int width, int height) {
+                surface = new Surface(st);
+                surfaceReady = true;
+                playAt(0);
+            }
+
+            @Override
+            public void onSurfaceTextureSizeChanged(SurfaceTexture st, int width, int height) {}
+
+            @Override
+            public boolean onSurfaceTextureDestroyed(SurfaceTexture st) {
+                surfaceReady = false;
+                return true; // this service owns releasing it — see releasePlayer()
+            }
+
+            @Override
+            public void onSurfaceTextureUpdated(SurfaceTexture st) {}
+        });
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -220,29 +255,64 @@ public class FloatingVideoOverlayService extends Service {
     private void playAt(int index) {
         queueIndex = index;
         if (queueIndex >= queue.size()) { removeOverlay(); finish(); return; }
-        if (overlayView == null) return;
+        if (overlayView == null || !surfaceReady || surface == null) return; // resumes from onSurfaceTextureAvailable if not ready yet
 
-        VideoView videoView = overlayView.findViewById(R.id.overlay_video);
+        releasePlayer();
         try {
-            videoView.setVideoURI(Uri.parse(queue.get(queueIndex)));
-            videoView.setOnPreparedListener(mp -> {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setSurface(surface);
+            mediaPlayer.setDataSource(queue.get(queueIndex));
+            mediaPlayer.setOnPreparedListener(mp -> {
+                adjustTextureAspect(mp.getVideoWidth(), mp.getVideoHeight());
                 mp.setLooping(false);
-                videoView.start();
+                mp.start();
             });
-            videoView.setOnCompletionListener(mp -> playAt(queueIndex + 1));
-            videoView.setOnErrorListener((mp, what, extra) -> {
+            mediaPlayer.setOnCompletionListener(mp -> playAt(queueIndex + 1));
+            mediaPlayer.setOnErrorListener((mp, what, extra) -> {
                 removeOverlay();
                 finish();
                 return true;
             });
-            videoView.setMediaController(null);
+            mediaPlayer.prepareAsync();
         } catch (Exception e) {
             removeOverlay();
             finish();
         }
     }
 
+    // TextureView (unlike VideoView) does NOT auto-scale-and-letterbox its content to the
+    // video's own aspect ratio — it just stretches to fill its bounds, distorting anything that
+    // doesn't already match the card's exact aspect ratio. This applies a center-crop transform
+    // (scale up whichever axis is short, keep centered) once the video's real dimensions are
+    // known, matching how VideoView's own default scaling used to look.
+    private void adjustTextureAspect(int videoWidth, int videoHeight) {
+        if (textureView == null || videoWidth <= 0 || videoHeight <= 0) return;
+        int viewWidth = textureView.getWidth();
+        int viewHeight = textureView.getHeight();
+        if (viewWidth <= 0 || viewHeight <= 0) return;
+        float viewRatio = (float) viewWidth / viewHeight;
+        float videoRatio = (float) videoWidth / videoHeight;
+        float scaleX = 1f, scaleY = 1f;
+        if (videoRatio > viewRatio) {
+            scaleX = videoRatio / viewRatio;
+        } else {
+            scaleY = viewRatio / videoRatio;
+        }
+        Matrix matrix = new Matrix();
+        matrix.setScale(scaleX, scaleY, viewWidth / 2f, viewHeight / 2f);
+        textureView.setTransform(matrix);
+    }
+
+    private void releasePlayer() {
+        if (mediaPlayer != null) {
+            try { mediaPlayer.stop(); } catch (Exception ignored) {}
+            try { mediaPlayer.release(); } catch (Exception ignored) {}
+            mediaPlayer = null;
+        }
+    }
+
     private void removeOverlay() {
+        releasePlayer();
         if (overlayView != null && windowManager != null) {
             try {
                 windowManager.removeView(overlayView);
@@ -252,6 +322,9 @@ public class FloatingVideoOverlayService extends Service {
             }
         }
         overlayView = null;
+        textureView = null;
+        surface = null;
+        surfaceReady = false;
     }
 
     @Override
