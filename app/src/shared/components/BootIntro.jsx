@@ -138,10 +138,18 @@ export default function BootIntro() {
   // through the "still playing" video. Matches index.html's static poster,
   // which had the same fix applied for the same reason.
   const OVERLAY_Z = 2147483647;
+  // 1px overlap between the bar/page pieces — see index.html's matching
+  // comment on its own static poster split (same geometry, same fix): two
+  // independently-composited fixed-position layers, abutting with zero
+  // overlap, can leave a hairline subpixel gap on-device that shows as a
+  // visible seam splitting the poster. Same image content in both pieces,
+  // so the 1px overlap itself is invisible.
+  const overlap = 1;
+  const pageTop = Math.max(0, statusBarPx - overlap);
   const barBoxStyle = { position: 'fixed', top: 0, left: 0, width: screenSize.w, height: statusBarPx, overflow: 'hidden', zIndex: OVERLAY_Z };
-  const pageBoxStyle = { position: 'fixed', top: statusBarPx, left: 0, width: screenSize.w, height: screenSize.h - statusBarPx, overflow: 'hidden', zIndex: OVERLAY_Z };
+  const pageBoxStyle = { position: 'fixed', top: pageTop, left: 0, width: screenSize.w, height: screenSize.h - pageTop, overflow: 'hidden', zIndex: OVERLAY_Z };
   const barImgOffset = { position: 'absolute', top: 0, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover' };
-  const pageImgOffset = { position: 'absolute', top: -statusBarPx, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover' };
+  const pageImgOffset = { position: 'absolute', top: -pageTop, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover' };
   const posterOpacity = { opacity: canPlay ? 0 : 1, transition: 'opacity 0.2s ease-out' };
   // DIAGNOSTIC: green overlay (mix-blend-mode:multiply) marking THIS
   // React-rendered poster, distinguishable on-device from index.html's own
