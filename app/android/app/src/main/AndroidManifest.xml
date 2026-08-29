@@ -56,6 +56,18 @@
             android:launchMode="singleInstance"
             android:configChanges="orientation|screenSize" />
 
+        <!-- Started via PendingIntent.getService() from PulseBannerWidget's own ▶️ buttons
+             (our own app, so exported="false" is correct — same reasoning as the two
+             Activities above). Deliberately a PLAIN service, not a foreground one: the whole
+             job is a few seconds of frame decoding triggered directly by a user tap, which
+             gets Android's short temporary background-execution allowance regardless of
+             Doze/App-Standby — see WidgetVideoPlaybackService's file header for why a
+             foreground service (with its notification + targetSdk 34+ foregroundServiceType
+             requirement) was deliberately not used here. -->
+        <service
+            android:name=".WidgetVideoPlaybackService"
+            android:exported="false" />
+
         <!-- exported="true" is required here, unlike every other Activity in
              this file — this one is launched directly by the LAUNCHER app
              (a separate process/app, e.g. Pixel Launcher) via

@@ -38,9 +38,14 @@ import org.json.JSONObject;
 // Bitmap (via setImageViewBitmap) or a resource id — a widget process can't
 // load arbitrary URLs/paths itself, so this class decodes bitmaps here
 // (from the app's own bundled assets, since it runs in the app's process)
-// and hands the launcher finished pixels. That's also why the ▶️ button
-// can't play video in place — it launches ConveneAnimationActivity instead,
-// a real Activity (VideoView works fine there).
+// and hands the launcher finished pixels. The ▶️ button's video is the same
+// constraint worked around a different way: WidgetVideoPlaybackService
+// decodes the clip into a short sequence of these same kind of bitmaps and
+// flips R.id.widget_art/widget_secondary_art through them on a timer — no
+// video surface is ever drawn by the widget itself, but real frames of the
+// real clip play right on it. ConveneAnimationActivity (a real Activity,
+// VideoView works fine there) is kept only as that service's fallback if
+// frame decoding fails.
 //
 // Data comes from @capacitor/preferences's "CapacitorStorage" SharedPreferences
 // file, written by src/utils/widgetSync.js's syncBannerWidget() whenever the
@@ -162,6 +167,17 @@ public class PulseBannerWidget extends AppWidgetProvider {
     }
 
     private void renderWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
+        RemoteViews views = buildBaseViews(context, appWidgetManager, appWidgetId);
+        appWidgetManager.updateAppWidget(appWidgetId, views);
+    }
+
+    // Package-private so WidgetVideoPlaybackService can grab a fully-rendered RemoteViews for
+    // this widget instance, then keep overwriting just R.id.widget_art with successive decoded
+    // frames on top of it — this is the ONLY reason renderWidget's body is split out into its own
+    // method instead of just building+applying inline: the frame-playback loop needs the same
+    // "everything else" (name, element, pills, gear button, etc.) as a starting point every frame,
+    // not just the art bitmap in isolation.
+    static RemoteViews buildBaseViews(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String primaryCategory = prefs.getString("widget_category_" + appWidgetId, "character");
         String secondaryCategory = "character".equals(primaryCategory) ? "weapon" : "character";
@@ -196,10 +212,10 @@ public class PulseBannerWidget extends AppWidgetProvider {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widget_settings, configurePendingIntent);
 
-        appWidgetManager.updateAppWidget(appWidgetId, views);
+        return views;
     }
 
-    private void renderPrimaryBlock(Context context, RemoteViews views, SharedPreferences prefs, int appWidgetId, String category, boolean compact) {
+    private static void renderPrimaryBlock(Context context, RemoteViews views, SharedPreferences prefs, int appWidgetId, String category, boolean compact) {
         BannerData data = readBannerData(prefs, category);
         String name = data != null ? data.name : null;
 
@@ -225,11 +241,15 @@ public class PulseBannerWidget extends AppWidgetProvider {
         String conveneUrl = data != null ? data.conveneUrl : null;
         if (conveneUrl != null) {
             views.setViewVisibility(R.id.widget_play, View.VISIBLE);
-            Intent playIntent = new Intent(context, ConveneAnimationActivity.class);
-            playIntent.putExtra(ConveneAnimationActivity.EXTRA_VIDEO_URL, conveneUrl);
-            playIntent.putExtra(ConveneAnimationActivity.EXTRA_CHAR_NAME, name);
-            playIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            views.setOnClickPendingIntent(R.id.widget_play, PendingIntent.getActivity(
+            // Plays directly on the widget's own surface (frame-by-frame — see
+            // WidgetVideoPlaybackService's file header for how) instead of launching
+            // ConveneAnimationActivity, which stays only as that service's own fallback
+            // if frame decoding fails (bad/unreachable stream, unsupported format, etc.).
+            Intent playIntent = new Intent(context, WidgetVideoPlaybackService.class);
+            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_APP_WIDGET_ID, appWidgetId);
+            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_VIDEO_SOURCE, conveneUrl);
+            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_FALLBACK_CHAR_NAME, name);
+            views.setOnClickPendingIntent(R.id.widget_play, PendingIntent.getService(
                     context, appWidgetId * 10 + 1, playIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         } else {
@@ -253,7 +273,7 @@ public class PulseBannerWidget extends AppWidgetProvider {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
     }
 
-    private void renderSecondaryBlock(Context context, RemoteViews views, SharedPreferences prefs, int appWidgetId, String category) {
+    private static void renderSecondaryBlock(Context context, RemoteViews views, SharedPreferences prefs, int appWidgetId, String category) {
         BannerData data = readBannerData(prefs, category);
         String name = data != null ? data.name : null;
 
@@ -268,11 +288,12 @@ public class PulseBannerWidget extends AppWidgetProvider {
         String conveneUrl = data != null ? data.conveneUrl : null;
         if (conveneUrl != null) {
             views.setViewVisibility(R.id.widget_secondary_play, View.VISIBLE);
-            Intent playIntent = new Intent(context, ConveneAnimationActivity.class);
-            playIntent.putExtra(ConveneAnimationActivity.EXTRA_VIDEO_URL, conveneUrl);
-            playIntent.putExtra(ConveneAnimationActivity.EXTRA_CHAR_NAME, name);
-            playIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            views.setOnClickPendingIntent(R.id.widget_secondary_play, PendingIntent.getActivity(
+            Intent playIntent = new Intent(context, WidgetVideoPlaybackService.class);
+            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_APP_WIDGET_ID, appWidgetId);
+            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_VIDEO_SOURCE, conveneUrl);
+            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_TARGET_VIEW_ID, R.id.widget_secondary_art);
+            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_FALLBACK_CHAR_NAME, name);
+            views.setOnClickPendingIntent(R.id.widget_secondary_play, PendingIntent.getService(
                     context, appWidgetId * 10 + 4, playIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         } else {
@@ -304,7 +325,7 @@ public class PulseBannerWidget extends AppWidgetProvider {
         }
     }
 
-    private BannerData readBannerData(SharedPreferences prefs, String category) {
+    private static BannerData readBannerData(SharedPreferences prefs, String category) {
         String json = prefs.getString("widget_banner_" + category + "_data", null);
         if (json == null) return null;
         try {
@@ -322,7 +343,7 @@ public class PulseBannerWidget extends AppWidgetProvider {
         }
     }
 
-    private void setFeatured4(Context context, RemoteViews views, int[] slotIds, String featured4Json) {
+    private static void setFeatured4(Context context, RemoteViews views, int[] slotIds, String featured4Json) {
         for (int id : slotIds) views.setViewVisibility(id, View.GONE);
         if (featured4Json == null) return;
         try {
