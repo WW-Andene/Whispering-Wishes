@@ -485,7 +485,7 @@ public class PullBubbleService extends Service {
             TextView text = new TextView(this);
             text.setText(label);
             text.setTextColor(Color.WHITE);
-            text.setTextSize(11);
+            text.setTextSize(8);
             text.setGravity(Gravity.CENTER);
             root.addView(text, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         }
