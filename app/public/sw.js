@@ -49,6 +49,10 @@ const ASSET_DIR_RE = /^\/(portraits|animated-bg|spine)\//;
 const OCR_CACHE_VERSION = 'v1';
 const OCR_CACHE = `ww-ocr-${OCR_CACHE_VERSION}`;
 const OCR_DIR_RE = /^\/vendor\/tesseract\//;
+// Precached on install (not just cache-first on first use) — ~7MB is negligible against the
+// app's own footprint, and this way OCR is instantly available offline from the very first
+// launch instead of needing the import screen to be opened once first.
+const OCR_PRECACHE = ['/vendor/tesseract/worker.min.js', '/vendor/tesseract/tesseract-core-lstm.wasm.js', '/vendor/tesseract/eng.traineddata.gz'];
 
 // Core app shell to precache
 // NOTE: Vite hashed assets are cache-busted automatically via networkFirst strategy.
@@ -60,12 +64,15 @@ const CDN_DOMAINS = ['cdnjs.cloudflare.com', 'unpkg.com', 'cdn.jsdelivr.net', 'f
 // Image domains — stale-while-revalidate
 const IMG_DOMAINS = ['i.ibb.co', 'i.imgur.com', 'ibb.co', 'cdn.discordapp.com', 'media.discordapp.net', 'pbs.twimg.com', 'raw.githubusercontent.com', 'i.postimg.cc', 'wuwa.gg', 'wuwatracker.com'];
 
-// Install — precache app shell
+// Install — precache app shell + OCR assets. The two run in parallel and each has its own
+// cache.addAll error handling implicitly (a rejected promise here fails the whole install), so
+// a broken OCR asset URL doesn't get silently swallowed — same rigor as the app-shell precache.
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(APP_CACHE)
-      .then(cache => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
+    Promise.all([
+      caches.open(APP_CACHE).then(cache => cache.addAll(PRECACHE)),
+      caches.open(OCR_CACHE).then(cache => cache.addAll(OCR_PRECACHE)),
+    ]).then(() => self.skipWaiting())
   );
 });
 
