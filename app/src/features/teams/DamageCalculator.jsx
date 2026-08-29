@@ -233,12 +233,15 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10`, '--element-glow': `${getElementColor(m.d.element)}30` }}>
 
                   {/* ── Section 1: Character Header ── */}
-                  {/* flex-wrap: the action buttons (Export/Auto Equip/Reset — Reset only appears
-                      once equipment exists, so this row's total button width grows the moment
-                      Auto Equip is used) are flex-shrink-0 and previously squeezed the name block
-                      down to near-zero width instead of yielding space. Wrapping lets the buttons
-                      drop to their own line instead of crushing the name. */}
-                  <div className="flex items-center gap-3 flex-wrap">
+                  {/* Name/badges and the action buttons are now two SEPARATE flex rows (were one
+                      row together) — a flex-1 item with the default flex-basis:0 contributes ~0
+                      to flex-wrap's own "does this line overflow" test, so wrapping never actually
+                      triggered when the button row grew (Reset appearing after Auto Equip); the
+                      buttons just kept shrinking the name toward invisible instead of moving to a
+                      new line. Splitting them into two independent rows means the name/badges
+                      block always gets the card's full width, completely decoupled from how many
+                      action buttons exist or how wide they get. */}
+                  <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
                       style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
                       {collectionImages[m.name] ? (
@@ -265,6 +268,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         </span>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Action buttons — own row, wraps freely without ever touching the name/badges
+                      row above. */}
+                  <div className="flex items-center gap-2 flex-wrap">
                     {/* Export Build Card button */}
                     <button
                       className="kuro-btn text-sm px-2 py-1 flex-shrink-0 self-start"
