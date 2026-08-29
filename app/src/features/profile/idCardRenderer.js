@@ -6,6 +6,7 @@
 
 import { ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/weaponLists.js';
+import { CHARACTER_THEMES } from '../../data/banners.js';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
 
 // Trophy tier sort order — duplicated from IdCardModal.jsx's own local const (not exported
@@ -50,6 +51,12 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
     if (picUrl) { try { pImg = new Image(); pImg.crossOrigin = 'anonymous'; await new Promise((r,j)=>{const t=setTimeout(j,3000);pImg.onload=()=>{clearTimeout(t);r();};pImg.onerror=()=>{clearTimeout(t);j();};pImg.src=picUrl;}); } catch { pImg = null; } }
     let appIco = null;
     try { appIco = new Image(); await new Promise((r,j)=>{const t=setTimeout(j,2000);appIco.onload=()=>{clearTimeout(t);r();};appIco.onerror=()=>{clearTimeout(t);j();};appIco.src=APP_ICON;}); } catch { appIco = null; }
+
+    // The favorite (profile-pic) character's own banner art, used as the card's full
+    // background — same asset ProfileTab's Backgrounds picker offers under "Resonators".
+    let bgImg = null;
+    const bgBannerArt = picName ? CHARACTER_THEMES.find(th => th.name === picName)?.bannerArt : null;
+    if (bgBannerArt) { try { bgImg = new Image(); bgImg.crossOrigin = 'anonymous'; await new Promise((r,j)=>{const t=setTimeout(j,3000);bgImg.onload=()=>{clearTimeout(t);r();};bgImg.onerror=()=>{clearTimeout(t);j();};bgImg.src=bgBannerArt;}); } catch { bgImg = null; } }
 
     // Preload resonator portrait images
     const resImgs = {};
@@ -433,6 +440,16 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
 
     // ═══ RENDER ═══
     ctx.fillStyle='#080810';ctx.fillRect(0,0,W,H);
+    if (bgImg) {
+      // Favorite character's banner art, cover-cropped to the full card (same "center, crop
+      // the overflow" behavior as a regular background picture) and dimmed so the panels and
+      // text drawn on top of it stay legible.
+      const imgAR=bgImg.naturalWidth/bgImg.naturalHeight, cardAR=W/H;
+      let dw,dh;
+      if (imgAR>cardAR) { dh=H; dw=H*imgAR; } else { dw=W; dh=W/imgAR; }
+      ctx.drawImage(bgImg, (W-dw)/2, (H-dh)/2, dw, dh);
+      ctx.fillStyle='rgba(8,8,16,0.72)';ctx.fillRect(0,0,W,H);
+    }
     const bgG=ctx.createRadialGradient(W*0.5,H*0.4,0,W*0.5,H*0.4,W*0.5);
     bgG.addColorStop(0,'rgba(237,175,24,0.008)');bgG.addColorStop(1,'transparent');
     ctx.fillStyle=bgG;ctx.fillRect(0,0,W,H);
