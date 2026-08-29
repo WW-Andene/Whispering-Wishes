@@ -3,17 +3,45 @@
 // PityCounterInput component
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { PityRing } from './PityRing.jsx';
 import { SOFT_PITY_START } from '../../data/constants.js';
 import { t } from '../../utils/i18n.js';
 
-// Deferred by one tick (setTimeout 0) rather than called synchronously —
-// see the Target-input comment below for why a bare e.target.select() in
-// onFocus doesn't reliably stick on Android WebView.
-function selectOnFocus(e) {
-  const el = e.target;
-  setTimeout(() => el.select(), 0);
+// Clears the field to blank the instant it's focused, rather than trying to
+// select() the existing value so the next keystroke overwrites it — two
+// earlier attempts at that (type="number" + select(), then type="text" +
+// a setTimeout-deferred select()) both still lost to real-device timing:
+// typing fast enough after tapping in landed the keystroke before the
+// selection actually took effect, so it inserted next to the old digit
+// instead of replacing it (typing "3" into an existing "1" produced "13",
+// which then clamped to this field's max — "1 then 3 = 13, clamped to
+// max" was the exact reported symptom). Clearing on focus needs no browser
+// selection API and no timing window to race at all: there's simply
+// nothing left in the field for a keystroke to combine with by the time
+// any digit can be typed. draft is local, separate from the value prop —
+// it's what's actually displayed while focused; blurring drops it back to
+// showing the (by then already-clamped, already-committed) prop value.
+function TargetInput({ value, min, max, onChange, ariaLabel, className }) {
+  const [draft, setDraft] = useState(null);
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      value={draft !== null ? draft : value}
+      onFocus={() => setDraft('')}
+      onBlur={() => setDraft(null)}
+      onChange={(e) => {
+        const raw = e.target.value;
+        setDraft(raw);
+        const v = parseInt(raw, 10);
+        if (Number.isFinite(v)) onChange(Math.max(min, Math.min(max, v)));
+      }}
+      className={className}
+      aria-label={ariaLabel}
+    />
+  );
 }
 
 // P8-FIX: HIGH-15 — Extracted pity counter input component (eliminates ~120 lines of duplication across 4 banners)
@@ -31,41 +59,14 @@ const PityCounterInput = memo(({ label, pity, onPityChange, copies, maxCopies, o
         <span className="text-gray-200 text-md ml-0.5">/80</span>
       </div>
     </div>
-    {/* type="text" + inputMode="numeric", NOT type="number" — this is the
-        actual root cause the previous two attempts both missed. Per the
-        HTML living standard, HTMLInputElement.select() and
-        setSelectionRange() are only defined for text-like input types
-        (text, search, tel, url, password); for type="number" (what this
-        was until now) they're explicitly unsupported and are a silent
-        no-op — or throw — in WebView/Chromium. So the select-on-focus
-        call below was never actually selecting anything on a
-        type="number" input, regardless of the setTimeout deferral: there
-        was nothing wrong with the DEFERRAL, the input type itself
-        couldn't be selected via script at all. inputMode="numeric" still
-        gets the numeric soft keyboard on Android without that
-        selection-API restriction, since the underlying element is a real
-        text input.
-        Tapping into either field selects its whole current value so the
-        very next keystroke replaces it — these are fields with an
-        already-nonzero default (usually 1) that people actively retype,
-        unlike astrite/lunite which start at 0 and are rarely edited more
-        than once, so "typing 2 after an existing 1 appends to 12 instead
-        of replacing it" is far more visible here. The select() itself is
-        still deferred by one tick (setTimeout 0): a bare synchronous call
-        in onFocus loses to the browser's own default cursor placement,
-        which runs after the focus handler and overrides an immediate
-        select() — deferring runs it after that placement instead of
-        racing it. onMouseUp/onTouchEnd re-select too, since re-tapping an
-        ALREADY-focused input doesn't fire onFocus again on some WebView
-        builds. */}
     <div className="grid grid-cols-2 gap-2 text-base">
       <div className="flex items-center justify-between">
         <span style={{ color }}>5★ Target:</span>
-        <input type="text" inputMode="numeric" pattern="[0-9]*" value={copies} onFocus={selectOnFocus} onMouseUp={selectOnFocus} onTouchEnd={selectOnFocus} onChange={e => { const v = parseInt(e.target.value, 10) || 1; onCopiesChange(Math.max(1, Math.min(maxCopies, v))); }} className="kuro-input kuro-input-sm" aria-label={`${ariaPrefix} 5-star copies`} />
+        <TargetInput value={copies} min={1} max={maxCopies} onChange={onCopiesChange} className="kuro-input kuro-input-sm" ariaLabel={`${ariaPrefix} 5-star copies`} />
       </div>
       <div className="flex items-center justify-between">
         <span className="text-purple-400">4★ Target:</span>
-        <input type="text" inputMode="numeric" pattern="[0-9]*" value={fourStarCopies} onFocus={selectOnFocus} onMouseUp={selectOnFocus} onTouchEnd={selectOnFocus} onChange={e => { const v = parseInt(e.target.value, 10) || 0; onFourStarChange(Math.max(0, Math.min(maxFourStar, v))); }} className="kuro-input kuro-input-sm" aria-label={`${ariaPrefix} 4-star copies`} />
+        <TargetInput value={fourStarCopies} min={0} max={maxFourStar} onChange={onFourStarChange} className="kuro-input kuro-input-sm" ariaLabel={`${ariaPrefix} 4-star copies`} />
       </div>
     </div>
   </div>
