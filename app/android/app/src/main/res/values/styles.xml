@@ -36,6 +36,20 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
+        <!-- On-device screenshots showed solid opaque black bars over the
+             boot poster, not transparent ones — even with statusBarColor
+             declared transparent above. Root cause: statusBarColor only
+             controls what color shows THROUGH the bar; it does nothing if
+             the window's content area doesn't extend behind the bar in the
+             first place. windowFitsSystemWindows (the classic, declarative,
+             pre-insets-API boolean — applied by the OS at window creation,
+             before any code runs, unlike MainActivity's
+             WindowCompat.setDecorFitsSystemWindows(false) Java call) is
+             what actually controls whether the DecorView reserves space for
+             the bars at all. Without this set to false here, the reserved
+             bar area has no app content behind it to show through — a
+             "transparent" bar over nothing just renders as black. -->
+        <item name="android:windowFitsSystemWindows">false</item>
     </style>
 
 
@@ -45,13 +59,27 @@
          compositor-level transition (opaque bars -> transparent, contained
          -> edge-to-edge), which is what produced the visible reframe/jump
          even after the WebView-side inset fix below. Matching them here
-         means there's no bar-state change left to animate through. -->
+         means there's no bar-state change left to animate through.
+
+         android:background was @drawable/splash — an old, unrelated navy
+         placeholder asset from before the boot poster/video existed. This
+         theme is what the OS actually shows FIRST, before MainActivity's
+         onCreate() (and therefore setTheme(AppTheme_NoActionBar)) has run
+         at all, so leaving the old asset here meant the very first thing
+         on screen was never the poster, no matter what AppTheme.NoActionBar
+         declared. Pointed at the same @drawable/boot_poster now. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/splash</item>
+        <item name="android:background">@drawable/boot_poster</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- Same reasoning as AppTheme.NoActionBar's own windowFitsSystemWindows
+             — without it, statusBarColor="transparent" has no app content
+             behind it to show through and renders as solid black instead,
+             exactly what the on-device screenshots showed for this exact
+             theme's boot phase. -->
+        <item name="android:windowFitsSystemWindows">false</item>
     </style>
 
     <!-- ConveneAnimationActivity — full-screen black, no action bar/title,
