@@ -608,10 +608,33 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       drawFooter(bx,bottomY,bw);
     }
 
+    const filename='resonator-id-'+(profile.username||profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
     try {
-      canvas.toBlob(blob=>{
-        if(!blob){toast?.addToast?.('ID Card export failed — image may be blocked by CORS','error');return;}const url=URL.createObjectURL(blob);const a=document.createElement('a');
-        a.href=url;a.download='resonator-id-'+(profile.username||profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
+      canvas.toBlob(async blob=>{
+        if(!blob){toast?.addToast?.('ID Card export failed — image may be blocked by CORS','error');return;}
+        // An <a download> click silently does nothing in the Capacitor Android WebView — there's
+        // no default handler for a blob: URL "download", unlike a real desktop browser, so the
+        // old code here reported "ID Card saved!" even though nothing was ever written to disk.
+        // On native, write the file for real via @capacitor/filesystem instead.
+        if (window.Capacitor?.isNativePlatform?.()) {
+          try {
+            const base64 = await new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result.split(',')[1]);
+              reader.onerror = reject;
+              reader.readAsDataURL(blob);
+            });
+            const { Filesystem, Directory } = await import('@capacitor/filesystem');
+            await Filesystem.writeFile({ path: filename, data: base64, directory: Directory.Documents });
+            toast?.addToast?.('ID Card saved to Documents!', 'success');
+          } catch (e) {
+            console.error('ID card export failed (native Filesystem write):', e);
+            toast?.addToast?.(`Failed to save ID card${e?.message ? ': ' + e.message : ''}`, 'error');
+          }
+          return;
+        }
+        const url=URL.createObjectURL(blob);const a=document.createElement('a');
+        a.href=url;a.download=filename;
         a.click();setTimeout(() => URL.revokeObjectURL(url), 100);toast?.addToast?.('ID Card saved!','success');
       },'image/png');
     } catch (e) {
