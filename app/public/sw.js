@@ -68,11 +68,16 @@ const IMG_DOMAINS = ['i.ibb.co', 'i.imgur.com', 'ibb.co', 'cdn.discordapp.com', 
 // cache.addAll error handling implicitly (a rejected promise here fails the whole install), so
 // a broken OCR asset URL doesn't get silently swallowed — same rigor as the app-shell precache.
 self.addEventListener('install', (event) => {
+  // OCR_CACHE precache is intentionally NOT in the awaited Promise.all below — Cache Storage
+  // API calls (caches.open/addAll) are a known hang risk in some WebViews/storage-partitioned
+  // contexts (same underlying storage layer as IndexedDB; see gachaImporter.js's getOcrWorker
+  // for the same class of bug found there). If it hung here, install() would never resolve,
+  // skipWaiting() would never fire, and this service worker — including every fix in it — would
+  // never actually take effect on the device. Fired best-effort instead: it either succeeds in
+  // the background or it doesn't, but it can never block the app shell from updating.
+  caches.open(OCR_CACHE).then(cache => cache.addAll(OCR_PRECACHE)).catch(() => {});
   event.waitUntil(
-    Promise.all([
-      caches.open(APP_CACHE).then(cache => cache.addAll(PRECACHE)),
-      caches.open(OCR_CACHE).then(cache => cache.addAll(OCR_PRECACHE)),
-    ]).then(() => self.skipWaiting())
+    caches.open(APP_CACHE).then(cache => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
   );
 });
 
@@ -118,6 +123,23 @@ async function cacheFirst(request, cacheName) {
   } catch {
     return new Response('', { status: 503 });
   }
+}
+
+// Strategy: Cache-first, but never let a hung Cache Storage API call (caches.match/caches.open —
+// same underlying storage layer as IndexedDB, which is a known hang risk in some WebViews/
+// storage-partitioned contexts, especially for a request originating from inside a dedicated
+// Worker — see gachaImporter.js's getOcrWorker) block the response forever. Races cacheFirst
+// against a plain direct fetch(request) with NO Cache Storage calls at all; whichever settles
+// first wins. Used only for OCR_CACHE below — the other cache-first routes (tiles/CDN/assets)
+// aren't reported as hanging, so they're left on the plain strategy rather than risking a
+// behavior change there too.
+async function cacheFirstOrPlainFetch(request, cacheName) {
+  // Both branches get their own clone — a GET Request has no body to conflict over, but cloning
+  // avoids relying on that implementation detail holding across browsers.
+  return Promise.race([
+    cacheFirst(request.clone(), cacheName),
+    fetch(request.clone()).catch(() => new Response('', { status: 503 })),
+  ]);
 }
 
 // Strategy: Stale-while-revalidate (for images)
@@ -204,7 +226,7 @@ self.addEventListener('fetch', (event) => {
   // only ever pays the download cost once instead of racing it against getOcrWorker's timeout
   // on every scan attempt.
   if (OCR_DIR_RE.test(url.pathname)) {
-    event.respondWith(cacheFirst(event.request, OCR_CACHE));
+    event.respondWith(cacheFirstOrPlainFetch(event.request, OCR_CACHE));
     return;
   }
 
