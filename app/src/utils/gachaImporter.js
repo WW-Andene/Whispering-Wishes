@@ -320,6 +320,17 @@ function withTimeout(promise, ms, message) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
+// This scan only ever needs to read ONE thing — the Convene History URL — never free-form
+// prose, so the recognizer is whitelisted down to exactly the characters that can legally
+// appear in it: the scheme/host/path (letters, digits, ':', '/', '.', '-', '_', '#'), the query
+// string's own structure ('?', '=', '&'), and '%' for percent-encoded octets. Every ID this app
+// actually needs (svr_id, player_id, gacha_id, resources_id — record_id/lang/svr_area/gacha_type
+// are read too but are secondary) is a bare 'key=value' segment that always ends at the next
+// '&' or end of string, per parseGachaUrl's own param-splitting — so a whitelist this tight has
+// no legitimate character to exclude, only ambiguous glyphs (quotes, spaces, CJK UI text
+// elsewhere in the screenshot) it can now no longer mis-recognize a real ID character as.
+const URL_CHAR_WHITELIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789:/?=&.#-_%';
+
 // Lazily-created, reused Tesseract worker — avoids paying the ~10MB wasm +
 // trained-data load cost more than once per session. Terminated only on
 // page unload (there's no good "done forever" signal from the UI side).
@@ -333,7 +344,10 @@ async function getOcrWorker() {
         workerPath: `${TESSERACT_VENDOR_PATH}/worker.min.js`,
         corePath: `${TESSERACT_VENDOR_PATH}/tesseract-core-lstm.wasm.js`,
         langPath: TESSERACT_VENDOR_PATH,
-      })),
+      })).then(async (worker) => {
+        await worker.setParameters({ tessedit_char_whitelist: URL_CHAR_WHITELIST });
+        return worker;
+      }),
       OCR_INIT_TIMEOUT_MS,
       `OCR engine failed to start (timed out after ${OCR_INIT_TIMEOUT_MS / 1000}s, likely a slow connection downloading the OCR assets). Try again on a better connection, or paste the URL manually.`
     ).catch(err => {
