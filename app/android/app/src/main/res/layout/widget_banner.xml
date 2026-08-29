@@ -12,7 +12,21 @@
      pull pills/gear) and is hidden by default — PulseBannerWidget.java's
      onAppWidgetOptionsChanged shows it once the widget is resized tall
      enough to fit both, displaying whichever banner category ISN'T the
-     one configured as primary (BannerWidgetConfigureActivity.java). -->
+     one configured as primary (BannerWidgetConfigureActivity.java).
+
+     No plain <View> anywhere in this file (even as a scrim overlay or a
+     weighted spacer) — RemoteViews' own supported-class allowlist is
+     FrameLayout/LinearLayout/RelativeLayout/GridLayout for layouts and a
+     fixed set of leaf widgets (ImageView, TextView, Button, etc.); plain
+     android.view.View is NOT on that list. Inflating a layout containing
+     one throws in the LAUNCHER's process (not this app's), which is what
+     actually produces Android's generic "Couldn't load this widget"
+     placeholder — and since PulseBannerWidget.java's own crash-fallback
+     RemoteViews reuses this same layout resource, that safety net can't
+     rescue a structural inflation failure like this one either. Scrim
+     overlays use FrameLayout (a supported layout class) with the
+     background attribute instead of a bare View; spacers use TextView
+     with empty text (a supported leaf widget, invisible at zero content). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -32,7 +46,7 @@
             android:scaleType="centerCrop"
             android:contentDescription="@null" />
 
-        <View
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/widget_banner_scrim" />
@@ -182,10 +196,11 @@
                 android:visibility="gone"
                 android:contentDescription="@null" />
 
-            <View
+            <TextView
                 android:layout_width="0dp"
                 android:layout_height="1dp"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:text="" />
 
             <ImageButton
                 android:id="@+id/widget_play"
@@ -213,7 +228,7 @@
             android:scaleType="centerCrop"
             android:contentDescription="@null" />
 
-        <View
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/widget_banner_scrim" />
@@ -280,10 +295,11 @@
                 android:visibility="gone"
                 android:contentDescription="@null" />
 
-            <View
+            <TextView
                 android:layout_width="0dp"
                 android:layout_height="1dp"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:text="" />
 
             <ImageButton
                 android:id="@+id/widget_secondary_play"
