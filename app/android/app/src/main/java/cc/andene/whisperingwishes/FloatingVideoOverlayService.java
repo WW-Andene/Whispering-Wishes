@@ -18,9 +18,9 @@ import android.widget.VideoView;
 import java.util.ArrayList;
 
 // Plays convene-animation clip(s) in a small floating, rounded window over the home
-// screen instead of a fullscreen Activity or a decoded-bitmap-frame trick like
-// WidgetPullPlaybackService uses for pull results — real VideoView, real quality/audio,
-// requested explicitly in place of both.
+// screen instead of a fullscreen Activity — real VideoView, real quality/audio, requested
+// explicitly in place of one. Also reused as-is by PullBubbleService for its own rarity-
+// video playback (same floating-window mechanism, different caller).
 //
 // Requires android.permission.SYSTEM_ALERT_WINDOW ("draw over other apps"), which the
 // user must grant manually via a dedicated system settings screen (not a normal

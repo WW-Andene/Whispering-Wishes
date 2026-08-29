@@ -48,55 +48,43 @@
             android:launchMode="singleInstance"
             android:configChanges="orientation|screenSize" />
 
-        <activity
-            android:name=".WidgetPullActivity"
-            android:theme="@style/AppTheme.ConveneOverlay"
-            android:exported="false"
-            android:excludeFromRecents="true"
-            android:launchMode="singleInstance"
-            android:configChanges="orientation|screenSize" />
-
         <!-- Plays the convene animation in a small floating, rounded window over the home
              screen (real VideoView, real quality/audio) — requested explicitly in place of
-             both a fullscreen Activity and a frame-decoded-bitmap trick like
-             WidgetPullPlaybackService below uses for pull results. Needs
-             android.permission.SYSTEM_ALERT_WINDOW (declared below); falls back to
-             ConveneAnimationActivity when that isn't granted or overlay playback fails for
-             any reason — see the service's own file header. Started via
-             PendingIntent.getService() from PulseBannerWidget's own ▶️ buttons (our own
-             app, so exported="false" is correct). Deliberately a PLAIN service, not a
-             foreground one: the whole job is a few seconds of playback triggered directly
-             by a user tap, which gets Android's short temporary background-execution
-             allowance regardless of Doze/App-Standby — a foreground service would need a
-             persistent notification and a targetSdk 34+ foregroundServiceType that doesn't
-             cleanly fit this use case anyway. -->
+             a fullscreen Activity. Needs android.permission.SYSTEM_ALERT_WINDOW (declared
+             below); falls back to ConveneAnimationActivity when that isn't granted or
+             overlay playback fails for any reason — see the service's own file header.
+             Started via PendingIntent.getService() from PulseBannerWidget's own ▶️ buttons
+             and PullBubbleService's own sub-bubbles (our own app, so exported="false" is
+             correct). Deliberately a PLAIN service, not a foreground one: the whole job is
+             a few seconds of playback triggered directly by a user tap, which gets
+             Android's short temporary background-execution allowance regardless of
+             Doze/App-Standby. -->
         <service
             android:name=".FloatingVideoOverlayService"
             android:exported="false" />
 
-        <!-- Same reasoning as FloatingVideoOverlayService above (plain, non-foreground,
-             started via PendingIntent.getService() from PulseBannerWidget's ×1/×10 pills) —
-             this one owns the whole native pull sequence: rarity video frames (played as
-             decoded bitmap frames directly on the widget's own art slot, since — unlike
-             the convene animation's floating window — this needs to render ON the widget
-             itself, not in a separate window), then each pulled item's own portrait, then
-             the colored-pills results summary. -->
+        <!-- Chat-heads-style persistent floating pull bubble — replaces PulseBannerWidget's
+             old ×1/×10 pull-sim pills entirely (see PullBubbleService's own file header for
+             the full roll → sub-bubbles → floating video → dismissible result-icon flow).
+             UNLIKE every other Service in this file, this one is a genuine, always-on
+             FOREGROUND service (declared foregroundServiceType="specialUse" — a floating
+             chat-heads-style bubble doesn't cleanly fit any of Android's other standard FGS
+             types — with the required PROPERTY_SPECIAL_USE_FGS_SUBTYPE justification below)
+             since it stays on screen until the user drags it onto its own ✕ target, not just
+             for a few seconds after a tap. Needs android.permission.SYSTEM_ALERT_WINDOW
+             (shared with FloatingVideoOverlayService above) plus FOREGROUND_SERVICE and (API
+             34+) FOREGROUND_SERVICE_SPECIAL_USE, both declared below. Toggled on/off via
+             PendingIntent.getService() from PulseBannerWidget's bubble-toggle button
+             (ACTION_TOGGLE), so exported="false" is correct — nothing outside this app ever
+             starts it directly. -->
         <service
-            android:name=".WidgetPullPlaybackService"
-            android:exported="false" />
-
-        <!-- Backs widget_banner.xml's widget_pull_results_list (set via
-             RemoteViews.setRemoteAdapter in WidgetPullPlaybackService). The launcher process
-             binds to this to fetch row views, so android.permission.BIND_REMOTEVIEWS is
-             required here specifically — without it, any app could bind arbitrary
-             RemoteViewsFactory data into this app's widget. exported="true" only in the sense
-             that the OS-enforced permission gates who can actually bind, the same pattern
-             every RemoteViewsService on Android uses (this is NOT the same "cross-app
-             component" reasoning as BannerWidgetConfigureActivity's exported="true" below). -->
-        <service
-            android:name=".PullResultsRemoteViewsService"
-            android:permission="android.permission.BIND_REMOTEVIEWS"
-            android:exported="true" />
+            android:name=".PullBubbleService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Persistent floating bubble the user explicitly enables to roll gacha pulls and play the result animation without switching apps; the user disables it by dragging it onto its own on-screen dismiss target." />
+        </service>
 
         <!-- exported="true" is required here, unlike every other Activity in
              this file — this one is launched directly by the LAUNCHER app
@@ -104,8 +92,8 @@
              ACTION_APPWIDGET_CONFIGURE the moment the widget is placed, not
              via a PendingIntent our own app created (PendingIntents run
              with their creating app's identity regardless of exported, which
-             is why ConveneAnimationActivity/WidgetPullActivity above are
-             correctly exported="false" — they're only ever started that
+             is why ConveneAnimationActivity above (and the other plain
+             Services in this file) are correctly exported="false" — they're only ever started that
              way). A cross-app Intent naming this component directly needs
              exported="true", or Android silently refuses to start it and
              the whole widget-placement flow fails — this was very likely
@@ -172,4 +160,11 @@
          opens it), and Google Play requires a declared justification for apps using it. Until
          granted, playback falls back to the fullscreen ConveneAnimationActivity instead. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- Required (API 28+) to run ANY foreground service — PullBubbleService's persistent
+         floating bubble. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- Required (API 34+) specifically for a foregroundServiceType="specialUse" service —
+         PullBubbleService, see its own manifest entry's comment for why "specialUse" rather
+         than one of the other standard types. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 </manifest>

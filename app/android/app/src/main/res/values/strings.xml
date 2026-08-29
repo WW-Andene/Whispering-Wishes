@@ -4,7 +4,7 @@
     <string name="title_activity_main">Whispering Wishes</string>
     <string name="package_name">cc.andene.whisperingwishes</string>
     <string name="custom_url_scheme">cc.andene.whisperingwishes</string>
-    <string name="banner_widget_description">Shows the featured gacha banner — art, Featured 4★s, ×1/×10 pull-simulator buttons, and a button to play the convene animation</string>
+    <string name="banner_widget_description">Shows the featured gacha banner — art, Featured 4★s, a button to toggle the floating pull bubble, and a button to play the convene animation</string>
     <string name="convene_player_widget_description">Pick a character and play their convene animation — a small, dedicated video player, no banner or pull-sim data</string>
     <string name="widget_configure_title">Choose a banner</string>
     <string name="widget_configure_unavailable">No active banners right now</string>
@@ -13,6 +13,11 @@
     <string name="convene_widget_playback_error">Couldn\'t play the convene animation — check your connection</string>
     <string name="widget_pull_x1">×1</string>
     <string name="widget_pull_x10">×10</string>
-    <string name="widget_pull_results_title">%1$d× Pull Result</string>
-    <string name="widget_pull_disclaimer">Simulated for preview only — does not spend Astrite/Tides or affect your tracked pity.</string>
+    <string name="widget_bubble_toggle_on">Bubble on</string>
+    <string name="widget_bubble_toggle_off">Bubble off</string>
+    <string name="pull_bubble_notification_channel_name">Pull Bubble</string>
+    <string name="pull_bubble_notification_title">Pull bubble is active</string>
+    <string name="pull_bubble_notification_text">Tap to open the app, or drag the bubble to ✕ to turn it off</string>
+    <string name="pull_bubble_remove_aria">Drag here to turn off the pull bubble</string>
+    <string name="pull_bubble_result_dismiss_aria">Dismiss this pull result</string>
 </resources>

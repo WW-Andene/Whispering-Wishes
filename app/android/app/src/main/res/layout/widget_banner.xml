@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Home-screen "gacha banner" widget — mirrors BannerCard.jsx's layout:
      banner art as background, name/element top-left, Featured 4★ row +
-     ▶️ convene-animation button bottom-right, ×1/×10 pull-sim pills top-
-     right on the primary block. RemoteViews only supports a small
+     ▶️ convene-animation button bottom-right, a bubble on/off toggle top-
+     right on the primary block (see widget_bubble_toggle below — replaces
+     the old ×1/×10 pull-sim pills; pulling now happens via PullBubbleService's
+     persistent floating bubble, not this widget directly). RemoteViews only supports a small
      whitelisted set of views/attributes (no ConstraintLayout, no custom
      Views, no video) — see PulseBannerWidget.java's file header for the
      platform limits this works within.
@@ -96,76 +98,43 @@
                     android:text="@string/app_name" />
             </LinearLayout>
 
-            <!-- ×1 / ×10 pull-simulator pills — see WidgetPullSimulator.java
-                 for the native probability engine and WidgetPullActivity.java
-                 for the rarity-video + result-screen flow they launch.
-                 Astrite icon (public/ui-icons/, bundled locally like the
-                 banner art) matches ConvenePullPills.jsx's own fallback
-                 icon in-app. Primary block only — see file header.
+            <!-- Single toggle for PullBubbleService's persistent floating bubble — replaces
+                 the old ×1/×10 pull-sim pills entirely (see PulseBannerWidget.java's file
+                 header for why: a chat-heads-style bubble is a fundamentally different,
+                 always-on-screen UI, not something that fits as widget content at all).
+                 Tapping starts the bubble if it isn't running, or stops/removes it if it
+                 is — PulseBannerWidget.java reads PullBubbleService.isRunning() to label
+                 and icon this correctly each render. Primary block only — see file header.
                  Hidden in compact (very short, e.g. 1-row) sizes — see
                  PulseBannerWidget.java's COMPACT_MAX_HEIGHT_DP. -->
             <LinearLayout
-                android:id="@+id/widget_pull_pills"
+                android:id="@+id/widget_bubble_toggle"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="end">
+                android:layout_height="24dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="6dp"
+                android:paddingEnd="8dp"
+                android:background="@drawable/widget_pill_bg">
 
-                <LinearLayout
-                    android:id="@+id/widget_pull_x1"
+                <ImageView
+                    android:id="@+id/widget_bubble_toggle_icon"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginEnd="3dp"
+                    android:contentDescription="@null" />
+
+                <TextView
+                    android:id="@+id/widget_bubble_toggle_label"
                     android:layout_width="wrap_content"
-                    android:layout_height="24dp"
-                    android:layout_marginBottom="4dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="8dp"
-                    android:background="@drawable/widget_pill_bg">
-
-                    <ImageView
-                        android:id="@+id/widget_pull_x1_icon"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:layout_marginEnd="3dp"
-                        android:contentDescription="@null" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/widget_pull_x1"
-                        android:textColor="#E5E7EB"
-                        android:textSize="11sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/widget_pull_x10"
-                    android:layout_width="wrap_content"
-                    android:layout_height="24dp"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingStart="6dp"
-                    android:paddingEnd="8dp"
-                    android:background="@drawable/widget_pill_bg">
-
-                    <ImageView
-                        android:id="@+id/widget_pull_x10_icon"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:layout_marginEnd="3dp"
-                        android:contentDescription="@null" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/widget_pull_x10"
-                        android:textColor="#E5E7EB"
-                        android:textSize="11sp" />
-                </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:textColor="#E5E7EB"
+                    android:textSize="11sp" />
             </LinearLayout>
         </LinearLayout>
 
         <!-- Featured-4★ row + ▶️ — hidden in compact (very short) sizes,
-             same threshold as widget_pull_pills above. -->
+             same threshold as widget_bubble_toggle above. -->
         <LinearLayout
             android:id="@+id/widget_bottom_row"
             android:layout_width="match_parent"
@@ -218,24 +187,6 @@
                 android:visibility="gone"
                 android:contentDescription="@string/banner_widget_play_aria" />
         </LinearLayout>
-
-        <!-- Pull-results summary — shown only during WidgetPullPlaybackService's results
-             phase (art/name/pills/bottom row all still present underneath, but this list's
-             own opaque background fully covers them while visible). ListView is one of
-             RemoteViews' actually-supported leaf widgets for a VARIABLE-length list (unlike
-             a GridLayout, which doesn't flex cleanly to an arbitrary ×1/×10 pull count here)
-             — content comes from PullResultsRemoteViewsService, one small colored-by-rarity
-             name pill per pulled item (widget_pull_pill_item.xml), wrapped naturally
-             regardless of whether there are 1 or 10. -->
-        <ListView
-            android:id="@+id/widget_pull_results_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#E6141824"
-            android:divider="@null"
-            android:scrollbars="none"
-            android:padding="8dp"
-            android:visibility="gone" />
     </FrameLayout>
 
     <FrameLayout
