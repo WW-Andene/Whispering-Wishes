@@ -14,12 +14,33 @@
 // regardless of what's requested), so data can be up to ~30 minutes stale;
 // MainActivity.onResume() also nudges an immediate update so reopening the
 // app refreshes it sooner in practice.
+//
+// ATOMICITY: every field BannerWidget.java's own render needs for one
+// category (name/title/art/featured4/convene url) is serialized into ONE
+// JSON blob under ONE key (`${p}data`), written with a single Preferences.set
+// call, rather than as separate keys the way this used to work. That
+// previous shape had a real race: MainActivity.onResume()'s widget-refresh
+// request and this function's own multi-key write are two independent,
+// unsynchronized triggers, and a refresh landing mid-write could render a
+// mix of old+new fields (new art with the old name, etc.) — nothing here
+// signaled the native side "sync in progress" or "sync complete." A single
+// atomic blob makes that moot: whatever's in SharedPreferences at any given
+// moment is always either the fully-old or fully-new payload, never a mix,
+// regardless of when a render happens to land relative to a write.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { Preferences } from '@capacitor/preferences';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../data/banners.js';
 import { STANDARD_5STAR_CHARACTERS, ALL_4STAR_RESONATORS } from '../data/characters.js';
 import { WEAPON_DATA } from '../data/weapons.js';
+
+// Bumped whenever the shape of the `${p}data` payload changes.
+// BannerWidget.java checks this before trusting a blob's fields — an
+// updated app writing a new shape and an un-updated widget instance
+// reading it (or vice versa, mid-update) fails closed (renders the
+// "no banner configured" default) instead of NPEing on a field that
+// changed meaning or disappeared.
+const WIDGET_SCHEMA_VERSION = 1;
 
 // Same VITE_API_BASE_URL used by apiBase.js/assetSW.js — needed here because
 // convene-animations/ is one of capacitor-build/build.mjs's EXCLUDED_DIRS
@@ -59,8 +80,11 @@ export async function syncBannerWidget(activeBanners) {
     if (activeBanners?.weapons?.[0]) categories.push('weapon');
     await Preferences.set({ key: 'widget_cfg_available', value: JSON.stringify(categories) });
 
-    await syncBannerCategory('character', activeBanners?.characters?.[0], activeBanners?.characterBannerImage);
-    await syncBannerCategory('weapon', activeBanners?.weapons?.[0], activeBanners?.weaponBannerImage);
+    const charItem = activeBanners?.characters?.[0];
+    const weapItem = activeBanners?.weapons?.[0];
+    await syncBannerCategory('character', charItem, activeBanners?.characterBannerImage);
+    await syncBannerCategory('weapon', weapItem, activeBanners?.weaponBannerImage);
+    await syncPullAssetMap(charItem, weapItem);
   } catch (err) {
     console.warn('Banner widget sync failed:', err);
   }
@@ -69,25 +93,32 @@ export async function syncBannerWidget(activeBanners) {
 async function syncBannerCategory(category, item, bannerImage) {
   const p = `widget_banner_${category}_`;
   if (!item) {
+    await Preferences.remove({ key: `${p}data` });
+    // WidgetPullSimulator.java reads this one field directly (it only
+    // needs the featured name, not the rest of the display payload) — a
+    // single string has nothing to be internally inconsistent with, so it
+    // stays its own key rather than folding into the JSON blob below.
     await Preferences.remove({ key: `${p}name` });
     return;
   }
   await Preferences.set({ key: `${p}name`, value: item.name });
-  await Preferences.set({ key: `${p}title`, value: item.title || item.element || item.type || '' });
-  const artRel = item.imageUrl || bannerImage || '';
-  await Preferences.set({ key: `${p}art_asset`, value: stripRelative(artRel) });
 
   const featured4Preview = (item.featured4Stars || []).slice(0, 3)
     .map((n) => ({ name: n, asset: stripRelative(DEFAULT_COLLECTION_IMAGES[n]) }))
     .filter((f) => f.asset);
-  await Preferences.set({ key: `${p}featured4`, value: JSON.stringify(featured4Preview) });
 
   const conveneRel = getConveneAnimation(item.name);
-  if (conveneRel && API_BASE_URL) {
-    await Preferences.set({ key: `${p}convene_url`, value: `${API_BASE_URL}/${stripRelative(conveneRel)}` });
-  } else {
-    await Preferences.remove({ key: `${p}convene_url` });
-  }
+  const conveneUrl = conveneRel && API_BASE_URL ? `${API_BASE_URL}/${stripRelative(conveneRel)}` : null;
+
+  const payload = {
+    v: WIDGET_SCHEMA_VERSION,
+    name: item.name,
+    title: item.title || item.element || item.type || '',
+    artAsset: stripRelative(item.imageUrl || bannerImage || ''),
+    featured4: featured4Preview,
+    conveneUrl,
+  };
+  await Preferences.set({ key: `${p}data`, value: JSON.stringify(payload) });
 
   await syncPullSimPools(category, item);
 }
@@ -96,16 +127,14 @@ async function syncBannerCategory(category, item, bannerImage) {
 // for whichever category is configured as primary) with everything it
 // needs to roll a pull entirely natively, with no app launch involved: the
 // full (unsliced — odds depend on the real count, unlike the 3-thumbnail
-// preview above) featured-4★ list, the four static name pools
+// preview above) featured-4★ list and the four static name pools
 // core/conveneSimulator.js draws from for this banner kind (standard 5★s,
-// off-rate 4★ characters, off-rate 4★ weapons, 3★ weapons), and one
-// combined name->asset map covering every name across both categories'
-// pools plus their featured items — everything the native result screen
-// could ever need a portrait for. Kept as plain JSON of the pools/images
-// this app already computes in JS, rather than also hand-porting these
-// same name lists into Java where they'd inevitably drift out of sync with
-// characters.js/weapons.js over time — only the roll *math* (pity curve,
-// 50/50, guarantee) is duplicated in WidgetPullSimulator.java, not the data.
+// off-rate 4★ characters, off-rate 4★ weapons, 3★ weapons). Kept as plain
+// JSON of the pools this app already computes in JS, rather than also
+// hand-porting these same name lists into Java where they'd inevitably
+// drift out of sync with characters.js/weapons.js over time — only the
+// roll *math* (pity curve, 50/50, guarantee) is duplicated in
+// WidgetPullSimulator.java, not the data.
 async function syncPullSimPools(category, item) {
   const p = `widget_pull_${category}_`;
   await Preferences.set({ key: `${p}featured4`, value: JSON.stringify(item.featured4Stars || []) });
@@ -118,14 +147,27 @@ async function syncPullSimPools(category, item) {
   await Preferences.set({ key: `${p}pool_4star_chars`, value: JSON.stringify(ALL_4STAR_RESONATORS) });
   await Preferences.set({ key: `${p}pool_4star_weapons`, value: JSON.stringify(fourStarWeapons) });
   await Preferences.set({ key: `${p}pool_3star_weapons`, value: JSON.stringify(threeStarWeapons) });
+}
 
-  // Shared across both categories (a name only ever maps to one asset
-  // regardless of which banner it showed up on) — merged into the existing
-  // map rather than overwritten, so syncing weapon after character doesn't
-  // drop the character-side entries.
-  const raw = await Preferences.get({ key: 'widget_pull_asset_map' });
-  const assetMap = raw?.value ? JSON.parse(raw.value) : {};
-  const allNames = [item.name, ...(item.featured4Stars || []), ...standard5, ...ALL_4STAR_RESONATORS, ...fourStarWeapons, ...threeStarWeapons];
+// name->asset map covering every name either category's pull-sim could
+// ever need a portrait for (standard 5★s, off-rate 4★s, 3★ weapons, plus
+// both categories' own featured items) — shared across categories since a
+// name only ever maps to one asset regardless of which banner it showed up
+// on. Rebuilt FULLY from the current banners every sync (not merged into
+// whatever was there before): the previous "add if missing" merge meant an
+// entry for a retired/renamed character could never be corrected or
+// removed, only ever added to — this map could only grow, never heal.
+async function syncPullAssetMap(charItem, weapItem) {
+  const standard5 = [...STANDARD_5STAR_CHARACTERS];
+  const fourStarWeapons = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 4);
+  const threeStarWeapons = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 3 && n !== 'Beguiling Melody');
+  const allNames = [
+    charItem?.name, ...(charItem?.featured4Stars || []),
+    weapItem?.name, ...(weapItem?.featured4Stars || []),
+    ...standard5, ...ALL_4STAR_RESONATORS, ...fourStarWeapons, ...threeStarWeapons,
+  ].filter(Boolean);
+
+  const assetMap = {};
   for (const name of allNames) {
     if (assetMap[name]) continue;
     const asset = stripRelative(DEFAULT_COLLECTION_IMAGES[name]);
