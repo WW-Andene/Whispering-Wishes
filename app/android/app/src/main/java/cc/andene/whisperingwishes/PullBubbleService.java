@@ -1079,14 +1079,17 @@ public class PullBubbleService extends Service {
     private void addGlowBurst(WindowManager.LayoutParams iconParams, int iconSizePx, String colorHex) {
         int glowSizePx = (int) (iconSizePx * 2.2f);
         FrameLayout glow = new FrameLayout(this);
-        // Radial gradient fading to transparent, not a flat translucent disc — a solid color
-        // reads as a hard-edged sharp circle rather than an actual soft glow.
+        // Transparent-color-transparent (not color-transparent) — a gradient that's brightest at
+        // the CENTER puts its most opaque point right where the icon itself sits, and since this
+        // window gets added (and so stacked) on top of the tile's own window, that washes the
+        // icon out instead of glowing around it. Transparent in the middle keeps the icon
+        // visible no matter the stacking order; the color only shows in a ring further out.
         int glowColor = Color.parseColor(colorHex.replace("#FF", "#B3"));
         GradientDrawable ring = new GradientDrawable();
         ring.setShape(GradientDrawable.OVAL);
         ring.setGradientType(GradientDrawable.RADIAL_GRADIENT);
         ring.setGradientRadius(glowSizePx / 2f);
-        ring.setColors(new int[]{glowColor, glowColor & 0x00FFFFFF});
+        ring.setColors(new int[]{Color.TRANSPARENT, glowColor, glowColor & 0x00FFFFFF});
         glow.setBackground(ring);
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
@@ -1208,17 +1211,23 @@ public class PullBubbleService extends Service {
     // archived/cleared (see removeTileGlow). Deliberately separate from addGlowBurst's one-shot
     // arrival flash, which stays exactly as it was.
     private void addPersistentHalo(View tile, WindowManager.LayoutParams tileParams, int sizePx, int rarity) {
-        int haloSizePx = (int) (sizePx * 1.5f);
+        // 2.4x (not 1.5x) so the tile's own edge sits well inside the gradient's transparent
+        // inner half (GradientDrawable's 3-stop radial puts its color peak at 50% radius, with
+        // no API-24-compatible way to move that stop further out) — a tighter halo would still
+        // meaningfully tint the icon it's supposed to only glow around.
+        int haloSizePx = (int) (sizePx * 2.4f);
         FrameLayout halo = new FrameLayout(this);
-        // A solid translucent disc reads as a hard-edged sharp circle behind the tile. A radial
-        // gradient fading the same color down to fully transparent at the rim gives an actual
-        // soft "glow" look instead.
+        // Transparent-color-transparent (a true glow RING), not color-transparent — this window
+        // is added (and so stacked) on top of the tile's own window, so a gradient that peaks at
+        // the center would sit directly over the icon and wash it out instead of glowing around
+        // it. Staying transparent through the middle keeps the icon visible no matter the
+        // stacking order; the color only shows in a ring further out, past the icon's own edge.
         int glowColor = Color.parseColor(rarityHex(rarity).replace("#FF", "#99"));
         GradientDrawable ring = new GradientDrawable();
         ring.setShape(GradientDrawable.OVAL);
         ring.setGradientType(GradientDrawable.RADIAL_GRADIENT);
         ring.setGradientRadius(haloSizePx / 2f);
-        ring.setColors(new int[]{glowColor, glowColor & 0x00FFFFFF});
+        ring.setColors(new int[]{Color.TRANSPARENT, glowColor, glowColor & 0x00FFFFFF});
         halo.setBackground(ring);
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
