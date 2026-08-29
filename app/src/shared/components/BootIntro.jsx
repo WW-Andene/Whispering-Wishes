@@ -144,7 +144,18 @@ export default function BootIntro() {
         zIndex: OVERLAY_Z,
         objectFit: 'cover',
         opacity: canPlay ? (fadingOut ? 0 : 1) : 0,
-        transition: canPlay ? 'opacity 1s ease-out' : 'opacity 0.2s ease-out',
+        // The reveal (canPlay flipping true) must be an instant cut, not a
+        // fade — this used to crossfade against a poster fading out
+        // underneath it at the same rate (opacity summed to 1 the whole
+        // time, so nothing showed through), but that poster is gone now
+        // (PR #237): the video is the only thing covering the app while
+        // canPlay is true, so animating its own opacity up from 0 spent a
+        // full second semi-transparent with nothing behind it but the real
+        // app content, which is exactly the "main menu clips through the
+        // start of the intro video" bug. Only the fade-OUT at the very end
+        // (fadingOut true) is still meant to be gradual — that one really
+        // is revealing the app on purpose.
+        transition: fadingOut ? 'opacity 1s ease-out' : 'none',
         pointerEvents: fadingOut ? 'none' : 'auto',
       }}
     />
