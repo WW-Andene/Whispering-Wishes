@@ -1093,7 +1093,7 @@ function WhisperingWishesInner() {
                         </div>
                       );
                     })()
-                  : <img src="./app-title-icon/icon-192x192.png" alt="" className={`w-6 h-6 rounded-full ${activeTab === 'profile' ? 'opacity-100' : 'opacity-90'}`} />
+                  : <img src="./navicon/Icon_Setting.png" alt="" className={`w-6 h-6 ${activeTab === 'profile' ? 'opacity-100' : 'opacity-90'}`} />
                 }
               </button>
             </div>
