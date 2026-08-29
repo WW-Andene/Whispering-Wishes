@@ -312,10 +312,13 @@ export function prefetchOcrAssets() {
   });
 }
 
+// `message` may be a function so the timeout text can include whatever's actually known at the
+// moment it fires (e.g. the last progress stage reached) instead of only what was known when
+// withTimeout was first called.
 function withTimeout(promise, ms, message) {
   let timer;
   const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error(message)), ms);
+    timer = setTimeout(() => reject(new Error(typeof message === 'function' ? message() : message)), ms);
   });
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
@@ -339,17 +342,25 @@ const URL_CHAR_WHITELIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 let _ocrWorkerPromise = null;
 async function getOcrWorker() {
   if (!_ocrWorkerPromise) {
+    // Tracked so the ON-SCREEN timeout message itself can say which stage it got stuck at
+    // (never started / fetching core / loading language / initializing) — devtools aren't
+    // always available to read the console.log below, but the toast/error text always is.
+    let lastStage = 'never started';
     _ocrWorkerPromise = withTimeout(
       import('tesseract.js').then(({ createWorker }) => createWorker('eng', undefined, {
         workerPath: `${TESSERACT_VENDOR_PATH}/worker.min.js`,
         corePath: `${TESSERACT_VENDOR_PATH}/tesseract-core-lstm.wasm.js`,
         langPath: TESSERACT_VENDOR_PATH,
-      })).then(async (worker) => {
-        await worker.setParameters({ tessedit_char_whitelist: URL_CHAR_WHITELIST });
-        return worker;
-      }),
+        // tesseract.js's own init chain swallows real errors on failure (see the comment
+        // below), so this progress callback is otherwise the only visibility into which stage
+        // a hang actually happens at.
+        logger: (m) => {
+          lastStage = `${m.status} (${Math.round((m.progress || 0) * 100)}%)`;
+          console.log('[OCR]', lastStage);
+        },
+      })),
       OCR_INIT_TIMEOUT_MS,
-      `OCR engine failed to start (timed out after ${OCR_INIT_TIMEOUT_MS / 1000}s, likely a slow connection downloading the OCR assets). Try again on a better connection, or paste the URL manually.`
+      () => `OCR engine failed to start (timed out after ${OCR_INIT_TIMEOUT_MS / 1000}s, stuck at: ${lastStage}). Try again, or paste the URL manually.`
     ).catch(err => {
       _ocrWorkerPromise = null;
       // Logged here (not just thrown) so the real failure reason — timeout vs. an actual
@@ -359,7 +370,18 @@ async function getOcrWorker() {
       throw err;
     });
   }
-  return _ocrWorkerPromise;
+  const worker = await _ocrWorkerPromise;
+  // Character whitelist applied AFTER the worker is confirmed ready, and deliberately NOT
+  // awaited/allowed to block or fail worker readiness: tesseract.js's own createWorker() chain
+  // has a bare `.catch(() => {})` on its internal load/init promise (see its source), which
+  // silently swallows real errors and leaves the returned promise hanging forever instead of
+  // rejecting — exactly the "always times out, every attempt, every platform" symptom this was
+  // causing when setParameters() was awaited in that same chain. If it fails now, OCR still
+  // runs (just without the whitelist) instead of never starting at all.
+  worker.setParameters({ tessedit_char_whitelist: URL_CHAR_WHITELIST }).catch(err => {
+    console.error('[OCR] setParameters failed (continuing without whitelist):', err);
+  });
+  return worker;
 }
 
 /**
