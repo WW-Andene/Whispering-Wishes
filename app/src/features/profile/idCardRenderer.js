@@ -158,7 +158,7 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
 
     // Header
     const drawHeader = (x,y,w) => {
-      const hH=54;
+      const hH=48; // PerfectSuite: 54 -> nearest primary+primary (32+16)
       const hg=ctx.createLinearGradient(x,y,x+w,y);
       hg.addColorStop(0,'rgba(255,255,255,0.02)');hg.addColorStop(0.4,'transparent');hg.addColorStop(0.6,'transparent');hg.addColorStop(1,'rgba(255,255,255,0.02)');
       ctx.fillStyle=hg;ctx.fillRect(x,y,w,hH);
@@ -168,13 +168,15 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       ctx.shadowColor='rgba(237,175,24,0.3)';ctx.shadowBlur=12;rr(x+18,y+15,4,26,2);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
       ctx.fillStyle='#f1f5f9';ctx.font='600 18px sans-serif';ctx.fillText('RESONATOR ID',x+32,y+34);
       ctx.fillStyle='#4b5563';ctx.font='14px sans-serif';ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w-18,y+34);ctx.textAlign='left';
+      // App icon watermark — small brand mark in header, PerfectSuite 24px (secondary tier)
+      if(appIco){ctx.save();ctx.globalAlpha=0.85;ctx.drawImage(appIco,x+w/2-12,y+(hH-24)/2,24,24);ctx.restore();}
       return hH;
     };
 
     // Section panel with gold bar label
     const drawPanel = (x,y,w,h,label) => {
-      ctx.fillStyle='rgba(10,14,22,0.55)';rr(x,y,w,h,15);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1.5;rr(x,y,w,h,15);ctx.stroke();
+      ctx.fillStyle='rgba(10,14,22,0.55)';rr(x,y,w,h,16);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1.5;rr(x,y,w,h,16);ctx.stroke();
       const ps=ctx.createLinearGradient(x,0,x+w,0);ps.addColorStop(0,'transparent');ps.addColorStop(0.3,'rgba(255,255,255,0.18)');ps.addColorStop(0.5,'rgba(255,255,255,0.3)');ps.addColorStop(0.7,'rgba(255,255,255,0.18)');ps.addColorStop(1,'transparent');
       ctx.fillStyle=ps;ctx.fillRect(x+12,y,w-24,1.5);
       ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1;
@@ -298,8 +300,8 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
 
     // Hero profile image — large, with collection-style framing and gradient fade
     const drawHero = (x,y,w,h) => {
-      ctx.fillStyle='rgba(8,12,18,0.95)';rr(x,y,w,h,15);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;rr(x,y,w,h,15);ctx.stroke();
+      ctx.fillStyle='rgba(8,12,18,0.95)';rr(x,y,w,h,16);ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;rr(x,y,w,h,16);ctx.stroke();
       if(pImg){
         ctx.save();rr(x+2,y+2,w-4,h-4,14);ctx.clip();
         const f=picName?getImageFraming('collection-'+picName):{zoom:100,x:0,y:0};
@@ -448,23 +450,29 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       let dw,dh;
       if (imgAR>cardAR) { dh=H; dw=H*imgAR; } else { dw=W; dh=W/imgAR; }
       ctx.drawImage(bgImg, (W-dw)/2, (H-dh)/2, dw, dh);
-      ctx.fillStyle='rgba(8,8,16,0.72)';ctx.fillRect(0,0,W,H);
+      // Lighter full-bleed dim than before: the shell (rgba(12,16,24,0.8)) and every panel on
+      // top of this already darken it further, so stacking a heavy dim HERE too made the banner
+      // read as almost fully swallowed under the shell/panels (only the undrawn 16px margin
+      // outside the shell stayed bright) — i.e. banner "in a thin border strip", not "behind the
+      // card". A lighter base dim lets the translucent shell/panels do the darkening work while
+      // still leaving the backdrop visibly present underneath them.
+      ctx.fillStyle='rgba(8,8,16,0.45)';ctx.fillRect(0,0,W,H);
     }
     const bgG=ctx.createRadialGradient(W*0.5,H*0.4,0,W*0.5,H*0.4,W*0.5);
     bgG.addColorStop(0,'rgba(237,175,24,0.008)');bgG.addColorStop(1,'transparent');
     ctx.fillStyle=bgG;ctx.fillRect(0,0,W,H);
 
-    const M=18,ox=M,oy=M,ow=W-M*2,oh=H-M*2;
+    const M=16,ox=M,oy=M,ow=W-M*2,oh=H-M*2; // PerfectSuite: 18 -> 16 (primary)
     drawShell(ox,oy,ow,oh);
     const hH=drawHeader(ox+1,oy+1,ow-2);
-    const P=15,bx=ox+P,bw=ow-P*2;
+    const P=16,bx=ox+P,bw=ow-P*2; // PerfectSuite: 15 -> 16 (tie: primary beats tertiary)
     const footH=30;
     let Y=oy+1+hH+P;
     const bottomY=oy+oh-footH-P;
 
     if(!isPortrait){
       // ═══ LANDSCAPE 1920x1080 — content-adaptive ═══
-      const gap=9;
+      const gap=8; // PerfectSuite: 9 -> 8 (primary)
       const leftW=Math.floor(bw*0.35);
       const rightX=bx+leftW+gap;
       const rightW=bw-leftW-gap;
@@ -505,7 +513,7 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       }
 
       // ── Right column: Collection → Resonators → Trophies → Banner Breakdown ──
-      const panelPad=39;
+      const panelPad=40; // PerfectSuite: 39 -> primary(32) + closest primary(8)
       const collH=panelPad+48+6;
       const trophyCols=Math.max(tList.length,1),trophyGap=8;
       const trophyCellSize=Math.min(160,Math.floor((rightW-18-(trophyCols-1)*trophyGap)/trophyCols));
@@ -546,13 +554,13 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
 
     } else {
       // ═══ PORTRAIT 1080x1920 — content-adaptive ═══
-      const gap=9;
+      const gap=8; // PerfectSuite: 9 -> 8 (primary)
       const contentH=bottomY-Y;
 
       // ── Top: Hero + Profile (with stats inside) side by side ──
       const heroW=Math.floor(bw*0.38);
       // Profile needs: panelPad(39) + name(30) + UID(24) + Server(24) + luck(27+18) + meta(18) + stats(2 rows * (51+8) - 8) = ~280
-      const pStatCellH=51,pPad=39;
+      const pStatCellH=48,pPad=40; // PerfectSuite: 51->48 (primary+primary), 39->40
       const profileMinH=pPad+30+24+24+(lr?45:0)+18+(pStatCellH+8)*2-8+15;
       const heroH=Math.max(Math.floor(contentH*0.22),profileMinH);
       drawHero(bx,Y,heroW,heroH);
@@ -588,7 +596,7 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       const pResRows=Math.ceil(Math.max(pResMax,1)/pResCols);
       const pResContentH=pPad+pResRows*(pResCellH+pResGap2)-pResGap2+6+(newestRes.length>pResMax?21:0);
       const pTrophyCols=Math.max(tList.length,1),pTrophyGap=8;
-      const pTrophySize=Math.min(200,Math.floor((bw-18-(pTrophyCols-1)*pTrophyGap)/pTrophyCols));
+      const pTrophySize=Math.min(192,Math.floor((bw-18-(pTrophyCols-1)*pTrophyGap)/pTrophyCols)); // PerfectSuite: 200->192
       const pTrophyPanelH=pPad+pTrophySize+6;
       const pBannerH=pPad+80+6; // banner breakdown
 
@@ -625,7 +633,13 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       drawFooter(bx,bottomY,bw);
     }
 
-    const filename='resonator-id-'+(profile.username||profile.uid||'card')+(isPortrait?'-portrait':'')+'.png';
+    // Every export gets its own unique filename (timestamp suffix) regardless of format. Before
+    // this, landscape saved to a FIXED path with no suffix while portrait always got '-portrait'
+    // appended — on native Android, Filesystem.writeFile to a fixed path can collide with a
+    // stale/locked file already there from an earlier export (scoped-storage permission/ownership
+    // quirk) and fail, while a differently-named path never collides. A unique name per save
+    // makes this whole class of failure permanently impossible, for every format.
+    const filename='resonator-id-'+(profile.username||profile.uid||'card')+(isPortrait?'-portrait':'-landscape')+'-'+Date.now()+'.png';
     try {
       canvas.toBlob(async blob=>{
         if(!blob){toast?.addToast?.('ID Card export failed — image may be blocked by CORS','error');return;}

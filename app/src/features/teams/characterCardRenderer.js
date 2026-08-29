@@ -15,6 +15,10 @@ import {
   calcEnergyCycles,
 } from './calcEngine.js';
 
+// Real Android launcher icon (same source as idCardRenderer.js's APP_ICON) used as a small
+// brand watermark in this card's header — not the PWA icon or the currency icon.
+const APP_ICON = './app-title-icon/app_home_icon.png';
+
 const loadImage = (src, timeoutMs = 3000) => new Promise((resolve) => {
   if (!src) { resolve(null); return; }
   const img = new Image();
@@ -111,11 +115,12 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
 
   // ── Preload images ──
   const bannerArt = CHARACTER_THEMES.find(th => th.name === name)?.bannerArt || null;
-  const [bgImg, portraitImg, weaponImg, elIcon] = await Promise.all([
+  const [bgImg, portraitImg, weaponImg, elIcon, appIco] = await Promise.all([
     loadImage(bannerArt),
     loadImage(collectionImages[name]),
     loadImage(eq?.weapon ? collectionImages[eq.weapon] : null),
     loadImage(getElementIcon(element)),
+    loadImage(APP_ICON),
   ]);
   const echoSlots = [0, 1, 2, 3, 4].map(i => eq?.echoes?.[i] || null);
   const echoImgs = await Promise.all(echoSlots.map(entry => {
@@ -143,8 +148,8 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   };
 
   const drawPanel = (x, y, w, h, label) => {
-    ctx.fillStyle = 'rgba(10,14,22,0.55)'; rr(x, y, w, h, 15); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1.5; rr(x, y, w, h, 15); ctx.stroke();
+    ctx.fillStyle = 'rgba(10,14,22,0.55)'; rr(x, y, w, h, 16); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1.5; rr(x, y, w, h, 16); ctx.stroke();
     const ps = ctx.createLinearGradient(x, 0, x + w, 0); ps.addColorStop(0, 'transparent'); ps.addColorStop(0.3, 'rgba(255,255,255,0.18)'); ps.addColorStop(0.5, 'rgba(255,255,255,0.3)'); ps.addColorStop(0.7, 'rgba(255,255,255,0.18)'); ps.addColorStop(1, 'transparent');
     ctx.fillStyle = ps; ctx.fillRect(x + 12, y, w - 24, 1.5);
     if (label) {
@@ -173,17 +178,21 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     let dw, dh;
     if (imgAR > cardAR) { dh = H; dw = H * imgAR; } else { dw = W; dh = W / imgAR; }
     ctx.drawImage(bgImg, (W - dw) / 2, (H - dh) / 2, dw, dh);
-    ctx.fillStyle = 'rgba(8,8,16,0.72)'; ctx.fillRect(0, 0, W, H);
+    // Lighter full-bleed dim (see idCardRenderer.js for the full reasoning): the shell and every
+    // panel drawn on top already darken this further, so a heavy dim here on top of THAT made the
+    // banner read as swallowed under the shell/panels — visible only as a thin strip in the
+    // undrawn margin outside the shell, i.e. "in the card" rather than "behind" it.
+    ctx.fillStyle = 'rgba(8,8,16,0.45)'; ctx.fillRect(0, 0, W, H);
   }
 
-  const M = 18, ox = M, oy = M, ow = W - M * 2, oh = H - M * 2;
+  const M = 16, ox = M, oy = M, ow = W - M * 2, oh = H - M * 2; // PerfectSuite: 18 -> 16
   drawShell(ox, oy, ow, oh);
-  const P = 15, bx = ox + P, bw = ow - P * 2, by = oy + P, bh = oh - P * 2;
+  const P = 16, bx = ox + P, bw = ow - P * 2, by = oy + P, bh = oh - P * 2; // PerfectSuite: 15 -> 16
 
   // ── Left: character portrait (large, object-contain framed) ──
   const portraitW = Math.floor(bw * 0.36);
-  ctx.fillStyle = 'rgba(8,12,18,0.95)'; rr(bx, by, portraitW, bh, 15); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1.5; rr(bx, by, portraitW, bh, 15); ctx.stroke();
+  ctx.fillStyle = 'rgba(8,12,18,0.95)'; rr(bx, by, portraitW, bh, 16); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)'; ctx.lineWidth = 1.5; rr(bx, by, portraitW, bh, 16); ctx.stroke();
   if (portraitImg) {
     ctx.save(); rr(bx + 2, by + 2, portraitW - 4, bh - 4, 14); ctx.clip();
     const f = getImageFraming('collection-' + name);
@@ -294,12 +303,16 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     });
   });
 
-  // Footer
+  // Footer — small app-icon brand mark (16px, PerfectSuite primary) beside the site text
   ctx.fillStyle = '#4b5563'; ctx.font = '13px monospace';
   ctx.fillText('Generated ' + new Date().toLocaleDateString(), bx, by + bh + 4);
   ctx.textAlign = 'right'; ctx.fillText('whisperingwishes.app', bx + bw, by + bh + 4); ctx.textAlign = 'left';
+  if (appIco) { ctx.save(); ctx.globalAlpha = 0.85; ctx.drawImage(appIco, bx + bw / 2 - 8, by + bh - 12, 16, 16); ctx.restore(); }
 
-  const filename = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-build.png';
+  // Every export gets a unique filename (timestamp suffix) — see idCardRenderer.js for why: a
+  // fixed path can collide with a stale/locked file from an earlier export on native Android and
+  // fail Filesystem.writeFile with a scoped-storage permission error.
+  const filename = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '-build-' + Date.now() + '.png';
   try {
     canvas.toBlob(async blob => {
       if (!blob) { toast?.addToast?.('Build card export failed — image may be blocked by CORS', 'error'); return; }
