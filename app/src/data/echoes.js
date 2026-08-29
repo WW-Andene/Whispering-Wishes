@@ -561,29 +561,41 @@ export function getSonataLoadouts(bestEchoes, statScaling, element) {
     // the cost-3/cost-1 slots still fill in rather than being left empty.
     const primarySet = primarySetName;
 
-    const cost4Name = main ? main.text : (primarySet ? findEchoOfSet(primarySet, ALL_4COST_ECHOES) : null);
+    const mainName = main ? main.text : (primarySet ? findEchoOfSet(primarySet, ALL_4COST_ECHOES) : null);
+    // The curated main echo isn't always a 4-cost piece — several sonata centerpieces (e.g.
+    // 'Capitaneus') are 3-cost Elite echoes, and a small number are 1-cost. Look up its real cost
+    // tier instead of assuming 4, or the UI badges a 3-cost boss echo as "4-cost" in the main slot.
+    const mainCost = mainName
+      ? (ALL_4COST_ECHOES.includes(mainName) ? 4 : ALL_3COST_ECHOES.includes(mainName) ? 3 : ALL_1COST_ECHOES.includes(mainName) ? 1 : 4)
+      : null;
     const c3Stats = cost3MainStats(statScaling, element);
     const c1Stats = cost1MainStats(statScaling);
+    const mainStatFor = (cost) => cost === 4 ? cost4MainStat(statScaling) : cost === 3 ? c3Stats[0] : c1Stats[0];
     const slots = [];
-    if (cost4Name) slots.push({ cost: 4, name: cost4Name, iconUrl: ECHO_DATA[cost4Name]?.iconUrl || null, mainStat: cost4MainStat(statScaling), generic: !main });
+    if (mainName) slots.push({ cost: mainCost, name: mainName, iconUrl: ECHO_DATA[mainName]?.iconUrl || null, mainStat: mainStatFor(mainCost), generic: !main });
     // `used` accumulates every echo name already placed in THIS build — seeded
-    // with cost4Name so a generic cost-3/cost-1 slot can never re-pick the
+    // with mainName so a generic cost-3/cost-1 slot can never re-pick the
     // curated main echo itself (e.g. "Capitaneus" is both a valid main echo
     // AND a valid ALL_3COST_ECHOES entry) — and shared across both tiers so
     // the second slot in each tier never lands on the same echo as the first
     // either. Must stay ONE list across the whole build, not per-tier: a
     // per-tier list (the earlier fix) only ever prevented same-tier repeats,
     // never a main-vs-generic collision.
-    const used = cost4Name ? [cost4Name] : [];
-    [0, 1].forEach((n) => {
+    const used = mainName ? [mainName] : [];
+    // Remaining 4 slots must sum to whatever the main slot didn't already spend out of the
+    // standard 4/3/3/1/1 = 11-cost loadout. A 4-cost main leaves 3/3/1/1; a 3-cost main leaves
+    // 4/3/1/1 (one more 3-cost echo of the set, if one exists, else another 4-cost); a 1-cost
+    // main (rare) leaves 4/3/3/1.
+    const remainingCosts = mainCost === 4 ? [3, 3, 1, 1] : mainCost === 3 ? [4, 3, 1, 1] : mainCost === 1 ? [4, 3, 3, 1] : [3, 3, 1, 1];
+    const poolFor = (cost) => cost === 4 ? ALL_4COST_ECHOES : cost === 3 ? ALL_3COST_ECHOES : ALL_1COST_ECHOES;
+    const statFor = (cost, slotIdxWithinCost) => cost === 4 ? cost4MainStat(statScaling) : cost === 3 ? c3Stats[slotIdxWithinCost] ?? c3Stats[0] : c1Stats[slotIdxWithinCost] ?? c1Stats[0];
+    const seenCostCount = {};
+    remainingCosts.forEach((cost, n) => {
       const setName = setQueue[n] || primarySet;
-      const name = setName ? findEchoOfSet(setName, ALL_3COST_ECHOES, used) : null;
-      if (name) { used.push(name); slots.push({ cost: 3, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c3Stats[n], generic: true }); }
-    });
-    [2, 3].forEach((n) => {
-      const setName = setQueue[n] || primarySet;
-      const name = setName ? findEchoOfSet(setName, ALL_1COST_ECHOES, used) : null;
-      if (name) { used.push(name); slots.push({ cost: 1, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c1Stats[n - 2], generic: true }); }
+      const name = setName ? findEchoOfSet(setName, poolFor(cost), used) : null;
+      const idxWithinCost = seenCostCount[cost] || 0;
+      seenCostCount[cost] = idxWithinCost + 1;
+      if (name) { used.push(name); slots.push({ cost, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: statFor(cost, idxWithinCost), generic: true }); }
     });
     return { sonataName, sonataElement, sonataSetName: primarySetName, label, slots };
   });
