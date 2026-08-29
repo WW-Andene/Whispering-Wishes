@@ -74,6 +74,19 @@ public class MainActivity extends BridgeActivity {
         // super.onCreate(), since that's what the earlier regression was
         // actually tied to, not this call.
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        // Redundant with statusBarColor/navigationBarColor/windowTranslucentStatus
+        // already declared in AppTheme.NoActionBar's XML — set again here,
+        // in code, because AppCompat's own window-feature setup (triggered
+        // by super.onCreate() below) is a known source of overriding or
+        // delaying declarative bar attributes from the theme, which is
+        // consistent with the boot poster being reported as visibly
+        // reframing in stages (contained -> partially expanded -> full)
+        // rather than being edge-to-edge from the first frame. Setting
+        // these directly on the Window object here, before super.onCreate()
+        // triggers that AppCompat setup, means there's nothing left for it
+        // to override.
+        getWindow().setStatusBarColor(android.graphics.Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(android.graphics.Color.TRANSPARENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             getSplashScreen().setOnExitAnimationListener(splashScreenView -> splashScreenView.remove());
         }
