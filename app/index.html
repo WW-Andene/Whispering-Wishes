@@ -91,12 +91,21 @@
       // parser to paint before a script corrects it.
       (function () {
         var w = window.screen.width, h = window.screen.height, bar = 24;
+        // DIAGNOSTIC: red overlay (mix-blend-mode:multiply, reliable
+        // regardless of the poster image's own colors, unlike a CSS
+        // filter) — marks THIS static pre-React poster specifically, so
+        // on-device it's visually distinguishable from BootIntro.jsx's own
+        // React-rendered poster (tinted green). Remove both once the
+        // reframe is confirmed fixed.
+        var tint = 'position:absolute;top:0;left:0;width:100%;height:100%;background:red;mix-blend-mode:multiply;pointer-events:none';
         document.write(
-          '<div id="boot-poster" style="position:fixed;top:0;left:0;width:' + w + 'px;height:' + bar + 'px;overflow:hidden;z-index:9999;background:#080c14">' +
+          '<div id="boot-poster" style="position:fixed;top:0;left:0;width:' + w + 'px;height:' + bar + 'px;overflow:hidden;z-index:2147483647;background:#080c14">' +
             '<img src="./boot-intro/boot-intro-poster.gif" alt="" style="position:absolute;top:0;left:0;width:' + w + 'px;height:' + h + 'px;object-fit:cover" />' +
+            '<div style="' + tint + '"></div>' +
           '</div>' +
-          '<div id="boot-poster-page" style="position:fixed;top:' + bar + 'px;left:0;width:' + w + 'px;height:' + (h - bar) + 'px;overflow:hidden;z-index:9999;background:#080c14">' +
+          '<div id="boot-poster-page" style="position:fixed;top:' + bar + 'px;left:0;width:' + w + 'px;height:' + (h - bar) + 'px;overflow:hidden;z-index:2147483647;background:#080c14">' +
             '<img src="./boot-intro/boot-intro-poster.gif" alt="" style="position:absolute;top:' + (-bar) + 'px;left:0;width:' + w + 'px;height:' + h + 'px;object-fit:cover" />' +
+            '<div style="' + tint + '"></div>' +
           '</div>'
         );
       })();
