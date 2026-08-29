@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -88,9 +89,28 @@ public class ConvenePlayerWidget extends AppWidgetProvider {
                 Intent playIntent = new Intent(context, ConvenePlayerPlaybackService.class);
                 playIntent.putExtra(ConvenePlayerPlaybackService.EXTRA_APP_WIDGET_ID, appWidgetId);
                 playIntent.putExtra(ConvenePlayerPlaybackService.EXTRA_VIDEO_URL, entry.conveneUrl);
-                PendingIntent playPendingIntent = PendingIntent.getService(
-                        context, appWidgetId * 10, playIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                // PendingIntent.getService() fires the target via a plain Context.startService()
+                // call, not startForegroundService() — fine for this app's other widget-tap
+                // services since they're plain (non-foreground) services, but
+                // ConvenePlayerPlaybackService calls Service.startForeground() the moment it
+                // starts (it has to, to loop indefinitely — see its own file header). A widget
+                // tap IS one of Android's documented background-start exemptions, but it's an
+                // exemption for calling startForegroundService(), not for a plain startService()
+                // that then tries to self-promote to foreground — which is exactly why this
+                // button did nothing at all: the fired PendingIntent's startService() call itself
+                // is what needs the exemption path, and getService() doesn't take it.
+                // getForegroundService() (API 26+, the same API level foreground services and
+                // this restriction were introduced in) is the correct, documented PendingIntent
+                // constructor for exactly this case — it fires via startForegroundService()
+                // instead. Below API 26 there's no foreground-service-start distinction at all,
+                // so plain getService() is equivalent and safe there.
+                PendingIntent playPendingIntent = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                        ? PendingIntent.getForegroundService(
+                                context, appWidgetId * 10, playIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE)
+                        : PendingIntent.getService(
+                                context, appWidgetId * 10, playIntent,
+                                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
                 views.setOnClickPendingIntent(R.id.convene_player_play, playPendingIntent);
                 // The ▶️ glyph is only a small 48dp circle centered over the FULL-BLEED art
                 // ImageView beneath it — before this, convene_player_art had its own separate
