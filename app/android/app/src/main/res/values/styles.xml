@@ -22,22 +22,6 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
-        <!-- Declared here, not just via MainActivity's
-             WindowCompat.setDecorFitsSystemWindows(false) call — theme
-             attributes are applied by the OS the instant it creates the
-             window, before ANY Activity code runs, which is strictly
-             earlier than even the first line of onCreate(). Without these,
-             there's a real (if brief) first frame where the window is
-             still in its default "contained under the status bar" size,
-             before the Java call takes effect a moment later — anything
-             that paints during that gap (e.g. the boot poster, which
-             paints on literally the first frame) lays out for the smaller
-             area and then visibly doesn't fill the final one. Declaring
-             translucent status/nav here means the window is already
-             edge-to-edge from the very first frame the OS ever draws, so
-             there's no smaller size left for anything to get caught in. -->
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
 
@@ -54,12 +38,6 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <!-- Matches AppTheme.NoActionBar's own translucent flags (see there
-             for the full rationale) — keeps this theme edge-to-edge from
-             its own first frame too, so the swap to the real theme has one
-             less thing to change. -->
-        <item name="android:windowTranslucentStatus">true</item>
-        <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
     <!-- ConveneAnimationActivity — full-screen black, no action bar/title,
