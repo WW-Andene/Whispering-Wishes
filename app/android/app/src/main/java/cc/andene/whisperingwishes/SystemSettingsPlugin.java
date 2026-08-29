@@ -7,7 +7,9 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.google.firebase.FirebaseApp;
+
+import java.lang.reflect.Method;
+import java.util.List;
 
 // Small in-project Capacitor plugin (no separate npm package) — opens the
 // OS-level Sound & Vibration settings screen. Exists because some OEM
@@ -42,16 +44,31 @@ public class SystemSettingsPlugin extends Plugin {
     // since pushNotifications.js persists the opt-in flag and auto-calls register()
     // on every ProfileTab mount once opted in, this became a crash-on-every-launch
     // loop. JS checks this before ever calling register()/requestPermissions().
+    //
+    // Reflection, not a direct `import com.google.firebase.FirebaseApp` + Gradle
+    // dependency, because :app's own build.gradle has no compile-time dependency on
+    // Firebase at all — only capacitor-push-notifications' OWN build.gradle (a
+    // separate Gradle module) declares one, as an `implementation` dependency that
+    // doesn't propagate to :app's compile classpath. FirebaseApp's class file still
+    // ends up in the final APK (dexing merges every module's runtime classpath), so
+    // it's safely loadable by name at runtime — it just isn't something :app can
+    // `import` and compile against directly without adding a redundant, versionable
+    // duplicate Firebase dependency here purely for this one check.
     @PluginMethod
     public void isFirebaseAvailable(PluginCall call) {
         JSObject ret = new JSObject();
-        boolean available;
-        try {
-            available = !FirebaseApp.getApps(getContext()).isEmpty();
-        } catch (Throwable t) {
-            available = false;
-        }
-        ret.put("available", available);
+        ret.put("available", firebaseAppsPresent());
         call.resolve(ret);
+    }
+
+    private boolean firebaseAppsPresent() {
+        try {
+            Class<?> firebaseApp = Class.forName("com.google.firebase.FirebaseApp");
+            Method getApps = firebaseApp.getMethod("getApps", android.content.Context.class);
+            List<?> apps = (List<?>) getApps.invoke(null, getContext());
+            return apps != null && !apps.isEmpty();
+        } catch (Throwable t) {
+            return false;
+        }
     }
 }
