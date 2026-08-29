@@ -8,13 +8,13 @@ import android.view.WindowManager;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-// Full-screen player launched from BannerWidget.java's ▶️ button — plays a
+// Full-screen player launched from GachaBannerWidget.java's ▶️ button — plays a
 // single character's convene-animation clip (same asset ConveneVideoLayer.jsx
 // plays in-app for BannerCard's ▶️ preview), then closes.
 //
 // This exists ONLY because a home-screen widget itself can't do this: a
 // widget is RemoteViews, drawn by the launcher app's process, and RemoteViews
-// has no VideoView support at all (see BannerWidget.java's file header for
+// has no VideoView support at all (see GachaBannerWidget.java's file header for
 // the platform-enforced reasoning). A real Activity has no such limit, so
 // this is a real Activity — the ▶️ tap opens it instead of playing inline.
 //
@@ -22,7 +22,7 @@ import android.widget.VideoView;
 // the native app's bundled assets — see capacitor-build/build.mjs's
 // EXCLUDED_DIRS — so this streams it like any other network video), passed
 // in by widgetSync.js's syncBannerWidget() via SharedPreferences and handed
-// to BannerWidget.java as an Intent extra.
+// to GachaBannerWidget.java as an Intent extra.
 public class ConveneAnimationActivity extends Activity {
     public static final String EXTRA_VIDEO_URL = "convene_video_url";
     public static final String EXTRA_CHAR_NAME = "convene_char_name";
