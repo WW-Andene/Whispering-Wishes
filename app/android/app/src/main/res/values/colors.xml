@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="app_background">#0c0818</color>
+    <!-- Edge-tone average of boot-intro-poster.gif's first frame — used as
+         the native window background during boot instead of the poster
+         image itself. See AppTheme.NoActionBar's own comment for why. -->
+    <color name="boot_poster_bg">#1e222e</color>
 </resources>

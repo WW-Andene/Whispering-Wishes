@@ -12,21 +12,26 @@
     <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-        <!-- The boot poster's own first frame (app/public/boot-intro/boot-intro-poster.gif,
-             extracted to drawable-nodpi/boot_poster.png) — not @color/app_background.
-             MainActivity.java documents the WebView's own render surface briefly
-             resizing as edge-to-edge insets settle; anything painted BY THE WEBVIEW
-             during that window (the HTML poster included) can catch that resize and
-             visibly snap. This windowBackground is a different, unrelated layer —
-             painted directly by the OS at the Activity window/DecorView level,
-             before the WebView even exists inside it, sized to the real window
-             bounds from the first frame the OS ever draws. It isn't subject to the
-             WebView's internal resize at all. So instead of showing a plain color
-             (or nothing) underneath while the WebView's own poster is still
-             potentially catching that resize, what's visible for those first few
-             frames is already the right image — no separate "default boot screen"
-             moment for the WebView content to visibly replace. -->
-        <item name="android:windowBackground">@drawable/boot_poster</item>
+        <!-- A flat color sampled from the boot poster's own edge tone
+             (@color/boot_poster_bg), NOT the poster image itself
+             (@drawable/boot_poster — tried in PR #213). The image version
+             created a worse problem than it solved: a BitmapDrawable used
+             as windowBackground scales with default "fill" (stretch)
+             behavior, while the WebView's own HTML poster scales with CSS
+             object-fit:cover (crop). Two independently-scaled copies of the
+             same source image, at different mappings — wherever the
+             hand-off between this native layer and the WebView's own
+             content becomes visible (the status bar strip especially,
+             which may only ever show this native layer), there's a visible
+             seam/reframe between the two, purely from the scaling
+             mismatch. The video never has this problem: it's the ONLY
+             representation of itself, rendered exclusively by the WebView,
+             with nothing else to hand off from or mismatch against. A flat
+             color has no scaling to mismatch — matching the poster's own
+             tone means the moment before the WebView's content paints is
+             just imperceptible, not visually "wrong" the way a
+             differently-cropped copy of the same picture is. -->
+        <item name="android:windowBackground">@color/boot_poster_bg</item>
         <!-- Explicit transparent status/nav bars — MainActivity already calls
              setDecorFitsSystemWindows(false) so the WebView draws full-bleed
              underneath them, but that alone doesn't stop the OS from painting
@@ -36,17 +41,6 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
-        <!-- windowTranslucentStatus/Navigation — real, valid, declarative
-             attributes (unlike windowFitsSystemWindows, which doesn't exist
-             and broke CI). These are what actually control whether the
-             window reserves space for the bars, applied by the OS at
-             window creation, with zero code lag — unlike MainActivity's
-             WindowCompat.setDecorFitsSystemWindows(false) call, which can
-             only run a frame after the window already exists. Tried once
-             before (reverted) while windowBackground still pointed at the
-             wrong placeholder asset — that test was confounded by an
-             unrelated bug, not a real result. Retrying now that the asset
-             is actually correct. -->
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
@@ -60,22 +54,18 @@
          even after the WebView-side inset fix below. Matching them here
          means there's no bar-state change left to animate through.
 
-         android:background was @drawable/splash — an old, unrelated navy
-         placeholder asset from before the boot poster/video existed. This
-         theme is what the OS actually shows FIRST, before MainActivity's
-         onCreate() (and therefore setTheme(AppTheme_NoActionBar)) has run
-         at all, so leaving the old asset here meant the very first thing
-         on screen was never the poster, no matter what AppTheme.NoActionBar
-         declared. Pointed at the same @drawable/boot_poster now. -->
+         android:background was @drawable/splash, then @drawable/boot_poster
+         (PR #213) — same flat-color reasoning as AppTheme.NoActionBar's own
+         windowBackground applies here too: a stretched native copy of the
+         poster and the WebView's cropped copy don't match, and this theme
+         is what the OS shows before MainActivity.onCreate() has run at
+         all, so any mismatch here is the very first thing on screen. -->
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
-        <item name="android:background">@drawable/boot_poster</item>
+        <item name="android:background">@color/boot_poster_bg</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <!-- Same reasoning as AppTheme.NoActionBar's own translucent flags —
-             retrying now that this theme's own windowBackground is
-             actually the boot poster instead of the old placeholder. -->
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
