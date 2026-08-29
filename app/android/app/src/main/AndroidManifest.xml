@@ -56,22 +56,31 @@
             android:launchMode="singleInstance"
             android:configChanges="orientation|screenSize" />
 
-        <!-- Started via PendingIntent.getService() from PulseBannerWidget's own ▶️ buttons
-             (our own app, so exported="false" is correct — same reasoning as the two
-             Activities above). Deliberately a PLAIN service, not a foreground one: the whole
-             job is a few seconds of frame decoding triggered directly by a user tap, which
-             gets Android's short temporary background-execution allowance regardless of
-             Doze/App-Standby — see WidgetVideoPlaybackService's file header for why a
-             foreground service (with its notification + targetSdk 34+ foregroundServiceType
-             requirement) was deliberately not used here. -->
+        <!-- Plays the convene animation in a small floating, rounded window over the home
+             screen (real VideoView, real quality/audio) — requested explicitly in place of
+             both a fullscreen Activity and a frame-decoded-bitmap trick like
+             WidgetPullPlaybackService below uses for pull results. Needs
+             android.permission.SYSTEM_ALERT_WINDOW (declared below); falls back to
+             ConveneAnimationActivity when that isn't granted or overlay playback fails for
+             any reason — see the service's own file header. Started via
+             PendingIntent.getService() from PulseBannerWidget's own ▶️ buttons (our own
+             app, so exported="false" is correct). Deliberately a PLAIN service, not a
+             foreground one: the whole job is a few seconds of playback triggered directly
+             by a user tap, which gets Android's short temporary background-execution
+             allowance regardless of Doze/App-Standby — a foreground service would need a
+             persistent notification and a targetSdk 34+ foregroundServiceType that doesn't
+             cleanly fit this use case anyway. -->
         <service
-            android:name=".WidgetVideoPlaybackService"
+            android:name=".FloatingVideoOverlayService"
             android:exported="false" />
 
-        <!-- Same reasoning as WidgetVideoPlaybackService above (plain, non-foreground,
+        <!-- Same reasoning as FloatingVideoOverlayService above (plain, non-foreground,
              started via PendingIntent.getService() from PulseBannerWidget's ×1/×10 pills) —
-             this one owns the whole native pull sequence: rarity video frames, then each
-             pulled item's own portrait, then the colored-pills results summary. -->
+             this one owns the whole native pull sequence: rarity video frames (played as
+             decoded bitmap frames directly on the widget's own art slot, since — unlike
+             the convene animation's floating window — this needs to render ON the widget
+             itself, not in a separate window), then each pulled item's own portrait, then
+             the colored-pills results summary. -->
         <service
             android:name=".WidgetPullPlaybackService"
             android:exported="false" />
@@ -131,4 +140,10 @@
          (including FCM push) can be shown — requested at runtime via
          PushNotifications.requestPermissions() in src/utils/pushNotifications.js. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- "Draw over other apps" — required by FloatingVideoOverlayService's floating convene-
+         animation window. NOT a normal runtime prompt: the user grants this manually via a
+         dedicated system settings screen (FloatingVideoOverlayService.requestOverlayPermission()
+         opens it), and Google Play requires a declared justification for apps using it. Until
+         granted, playback falls back to the fullscreen ConveneAnimationActivity instead. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 </manifest>

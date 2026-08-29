@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FloatingVideoOverlayService's floating window content — a small rounded card
+     (overlay_video_bg background + View.setClipToOutline(true) in code, since a
+     background alone doesn't clip a VideoView's actual video surface) added
+     directly to WindowManager, not inflated as part of any Activity. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/overlay_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/overlay_video_bg"
+    android:clickable="true"
+    android:focusable="false">
+
+    <VideoView
+        android:id="@+id/overlay_video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</FrameLayout>

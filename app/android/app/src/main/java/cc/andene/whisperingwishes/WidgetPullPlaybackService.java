@@ -19,18 +19,22 @@ import java.util.List;
 
 // Rolls a pull entirely natively (WidgetPullSimulator.java, no app launch) and plays the
 // WHOLE result directly on the widget's own surface, requested explicitly in place of the
-// old fullscreen WidgetPullActivity: (1) the matching rarity clip, played as real frames
-// the same way WidgetVideoPlaybackService plays the convene animation — RemoteViews can't
-// host a VideoView at all (see PulseBannerWidget.java's file header); (2) each pulled
-// item's own portrait, one at a time, held briefly in the same R.id.widget_art slot the
-// video frames just used; (3) a short-lived summary of small colored-by-rarity name pills
+// old fullscreen WidgetPullActivity: (1) the matching rarity clip, played as decoded bitmap
+// frames flipped through R.id.widget_art on a timer (WidgetFrameUtils) — this has to render
+// ON the widget's own surface, and RemoteViews can't host a VideoView at all (see
+// PulseBannerWidget.java's file header), unlike FloatingVideoOverlayService's convene
+// animation, which plays in its own separate floating window instead; (2) each pulled
+// item's own portrait, one at a time, held briefly in that same widget_art slot the video
+// frames just used; (3) a short-lived summary of small colored-by-rarity name pills
 // (PullResultsRemoteViewsService backing a ListView — the actually-supported RemoteViews
 // mechanism for a variable-length list, since a GridLayout can't flex cleanly to an
 // arbitrary ×1/×10 count). The widget then reverts to its normal static render.
 //
-// Runs as a PLAIN (non-foreground) Service — same reasoning as WidgetVideoPlaybackService's
-// file header: the whole sequence is only a handful of seconds, started directly from a
-// user tap, well within Android's temporary background-execution allowance for that.
+// Runs as a PLAIN (non-foreground) Service: the whole sequence is only a handful of
+// seconds, started directly from a user tap, well within Android's temporary
+// background-execution allowance for that — a foreground service would need a persistent
+// notification and a targetSdk 34+ foregroundServiceType that doesn't cleanly fit this use
+// case anyway.
 public class WidgetPullPlaybackService extends Service {
     private static final String TAG = "WidgetPullPlayback";
     private static final String PREFS_NAME = "CapacitorStorage";

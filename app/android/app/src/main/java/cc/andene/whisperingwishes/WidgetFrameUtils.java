@@ -8,12 +8,15 @@ import android.media.MediaMetadataRetriever;
 import java.util.ArrayList;
 import java.util.List;
 
-// Shared frame-decoding helper for WidgetVideoPlaybackService (convene animation) and
-// WidgetPullPlaybackService (pull rarity video) — both need the same "decode a short clip
-// into N downsampled bitmaps, evenly spaced across its duration" logic to flip a widget's
-// ImageView through on a timer, since RemoteViews cannot host a VideoView at all (see
-// PulseBannerWidget.java's file header). Split out once a second caller needed it rather
-// than copy-pasting the same decode loop twice.
+// Frame-decoding helper for WidgetPullPlaybackService's rarity-video playback: "decode a
+// short clip into N downsampled bitmaps, evenly spaced across its duration" so they can be
+// flipped through a widget's ImageView on a timer, since RemoteViews cannot host a
+// VideoView at all (see PulseBannerWidget.java's file header). Kept as its own class
+// (rather than inlined into that one caller) since the convene animation used this same
+// approach too before FloatingVideoOverlayService replaced it with a real floating
+// VideoView window — this stays the reference for anything that ever needs the
+// bitmap-frame-swap trick again for content that must render ON the widget's own surface
+// (a floating window, unlike this, isn't part of the widget's RemoteViews at all).
 final class WidgetFrameUtils {
     private WidgetFrameUtils() {}
 

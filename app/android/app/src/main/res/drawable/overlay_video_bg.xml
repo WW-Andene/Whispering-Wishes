@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FloatingVideoOverlayService's floating card background — rounded corners
+     provide the outline the container clips its VideoView child to (via
+     View.setClipToOutline(true) in code; a plain background alone doesn't
+     clip video content, only the outline-based clip does). Solid black so
+     there's no visible seam before the video's first frame decodes. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#000000" />
+    <corners android:radius="16dp" />
+</shape>

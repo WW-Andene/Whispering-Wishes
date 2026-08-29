@@ -41,14 +41,18 @@ import org.json.JSONObject;
 // Bitmap (via setImageViewBitmap) or a resource id — a widget process can't
 // load arbitrary URLs/paths itself, so this class decodes bitmaps here
 // (from the app's own bundled assets, since it runs in the app's process)
-// and hands the launcher finished pixels. The ▶️ button's video is the same
-// constraint worked around a different way: WidgetVideoPlaybackService
-// decodes the clip into a short sequence of these same kind of bitmaps and
-// flips R.id.widget_art/widget_secondary_art through them on a timer — no
-// video surface is ever drawn by the widget itself, but real frames of the
-// real clip play right on it. ConveneAnimationActivity (a real Activity,
-// VideoView works fine there) is kept only as that service's fallback if
-// frame decoding fails.
+// and hands the launcher finished pixels. The ▶️ button's video sidesteps this
+// differently: FloatingVideoOverlayService plays it in a small floating,
+// rounded WINDOW over the home screen (added via WindowManager, not part of
+// this widget's own RemoteViews at all) — a real VideoView, real quality/audio,
+// since that window is a genuine Activity-adjacent surface, not RemoteViews.
+// WidgetPullPlaybackService's rarity-video/portrait slideshow still uses the
+// bitmap-frame-swap trick (decode into a short sequence of bitmaps, flip
+// R.id.widget_art through them on a timer) since THAT content needs to render
+// ON the widget's own art slot, not in a separate window. ConveneAnimationActivity
+// (a real fullscreen Activity, VideoView works fine there) is kept only as
+// FloatingVideoOverlayService's fallback if the overlay permission isn't
+// granted or playback fails.
 //
 // Data comes from @capacitor/preferences's "CapacitorStorage" SharedPreferences
 // file, written by src/utils/widgetSync.js's syncBannerWidget() whenever the
@@ -184,7 +188,7 @@ public class PulseBannerWidget extends AppWidgetProvider {
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    // Package-private so WidgetVideoPlaybackService can grab a fully-rendered RemoteViews for
+    // Package-private so WidgetPullPlaybackService can grab a fully-rendered RemoteViews for
     // this widget instance, then keep overwriting just R.id.widget_art with successive decoded
     // frames on top of it — this is the ONLY reason renderWidget's body is split out into its own
     // method instead of just building+applying inline: the frame-playback loop needs the same
@@ -256,14 +260,13 @@ public class PulseBannerWidget extends AppWidgetProvider {
         String conveneUrl = data != null ? data.conveneUrl : null;
         if (conveneUrl != null) {
             views.setViewVisibility(R.id.widget_play, View.VISIBLE);
-            // Plays directly on the widget's own surface (frame-by-frame — see
-            // WidgetVideoPlaybackService's file header for how) instead of launching
-            // ConveneAnimationActivity, which stays only as that service's own fallback
-            // if frame decoding fails (bad/unreachable stream, unsupported format, etc.).
-            Intent playIntent = new Intent(context, WidgetVideoPlaybackService.class);
-            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_APP_WIDGET_ID, appWidgetId);
-            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_VIDEO_SOURCE, conveneUrl);
-            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_FALLBACK_CHAR_NAME, name);
+            // Plays in a small floating, rounded window over the home screen — real
+            // VideoView, real quality/audio (see FloatingVideoOverlayService's file
+            // header) — instead of a fullscreen ConveneAnimationActivity, which stays
+            // as that service's own fallback if the overlay permission isn't granted
+            // or playback fails.
+            Intent playIntent = new Intent(context, FloatingVideoOverlayService.class);
+            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_VIDEO_URL, conveneUrl);
             views.setOnClickPendingIntent(R.id.widget_play, PendingIntent.getService(
                     context, appWidgetId * 10 + 1, playIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
@@ -302,11 +305,8 @@ public class PulseBannerWidget extends AppWidgetProvider {
         String conveneUrl = data != null ? data.conveneUrl : null;
         if (conveneUrl != null) {
             views.setViewVisibility(R.id.widget_secondary_play, View.VISIBLE);
-            Intent playIntent = new Intent(context, WidgetVideoPlaybackService.class);
-            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_APP_WIDGET_ID, appWidgetId);
-            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_VIDEO_SOURCE, conveneUrl);
-            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_TARGET_VIEW_ID, R.id.widget_secondary_art);
-            playIntent.putExtra(WidgetVideoPlaybackService.EXTRA_FALLBACK_CHAR_NAME, name);
+            Intent playIntent = new Intent(context, FloatingVideoOverlayService.class);
+            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_VIDEO_URL, conveneUrl);
             views.setOnClickPendingIntent(R.id.widget_secondary_play, PendingIntent.getService(
                     context, appWidgetId * 10 + 4, playIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
