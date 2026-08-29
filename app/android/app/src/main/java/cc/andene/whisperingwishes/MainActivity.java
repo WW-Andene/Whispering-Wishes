@@ -103,6 +103,20 @@ public class MainActivity extends BridgeActivity {
         float bottomDp = Math.min(navBarPx / density, 48f);
         WebView webView = getBridge() != null ? getBridge().getWebView() : null;
         if (webView != null) {
+            // WebView defaults to an opaque white background the instant it's
+            // created — before it has painted any of its own content at all.
+            // AppTheme.NoActionBar's windowBackground (the boot poster,
+            // painted directly by the OS at the window level, underneath
+            // the WebView) only shows through the thin strips the WebView
+            // itself never draws into — the status/nav bar insets. Across
+            // the rest of the screen, that default opaque paint sits on top
+            // of it and hides it completely until the WebView's own content
+            // (the HTML poster, then the video) finishes loading. Making the
+            // WebView transparent here — as early as it can possibly be
+            // called, immediately once the reference exists — means the
+            // native poster is what's visible everywhere on screen for
+            // those first frames, not just the bar insets.
+            webView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
             String js = "document.documentElement.style.setProperty('--safe-area-top','" + topDp + "px');"
                     + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');";
             webView.evaluateJavascript(js, null);
