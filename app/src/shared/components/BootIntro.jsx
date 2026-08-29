@@ -28,7 +28,6 @@ export default function BootIntro() {
 
   useEffect(() => {
     document.getElementById('boot-poster')?.remove();
-    document.getElementById('boot-poster-page')?.remove();
   }, []);
 
   useEffect(() => {
@@ -47,6 +46,16 @@ export default function BootIntro() {
         // not just ones already listening when the event fires.
         window.__bootIntroDone = true;
         window.dispatchEvent(new Event('boot-intro-done'));
+        // MainActivity.java hides the status bar entirely at boot (not
+        // just transparent — actually hidden, so there's no status-bar
+        // region left for the poster to align with or reframe against).
+        // Restore it now that the intro has fully finished and layout has
+        // long settled, so bringing it back isn't itself a reframe risk.
+        try {
+          window.AndroidBoot?.showStatusBar?.();
+        } catch {
+          // Not running in the Android WebView (e.g. plain web) — no-op.
+        }
       }, 1000);
     };
 

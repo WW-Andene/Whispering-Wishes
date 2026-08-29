@@ -11,6 +11,8 @@ import android.view.HapticFeedbackConstants;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 import java.lang.reflect.Method;
 
@@ -74,6 +76,21 @@ public class MainActivity extends BridgeActivity {
         // super.onCreate(), since that's what the earlier regression was
         // actually tied to, not this call.
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        // Actually HIDE the status bar for boot, not just make it
+        // transparent. Transparent still leaves the bar existing — the OS
+        // still reserves its inset and still draws the clock/battery/
+        // notification icons in it — so there's still a status-bar-shaped
+        // region for the boot poster to align with or show through, and
+        // that region's own inset is part of what settles asynchronously
+        // as edge-to-edge insets negotiate (the whole source of the boot
+        // reframe this file's other comments document at length). Hiding
+        // it outright removes the region entirely: nothing to align with,
+        // nothing to reframe. Shown again once BootIntro.jsx's intro
+        // finishes (window.AndroidBoot.showStatusBar(), below) — by then
+        // layout has long settled, so restoring it isn't a new reframe
+        // risk the way removing it mid-boot would have been.
+        WindowInsetsControllerCompat insetsController = new WindowInsetsControllerCompat(getWindow(), getWindow().getDecorView());
+        insetsController.hide(WindowInsetsCompat.Type.statusBars());
         // Redundant with statusBarColor/navigationBarColor/windowTranslucentStatus
         // already declared in AppTheme.NoActionBar's XML — set again here,
         // in code, because AppCompat's own window-feature setup (triggered
@@ -183,6 +200,27 @@ public class MainActivity extends BridgeActivity {
         // timing hypothesis; success/warning/error stay on the plugin path.
         if (webView != null) {
             webView.addJavascriptInterface(new NativeHapticsBridge(webView), "AndroidHaptics");
+            webView.addJavascriptInterface(new NativeBootBridge(this), "AndroidBoot");
+        }
+    }
+
+    // Exposed as window.AndroidBoot.showStatusBar() — called from
+    // BootIntro.jsx once its fade-out actually completes, to restore the
+    // status bar hidden at the top of onCreate() above. Same
+    // addJavascriptInterface pattern as NativeHapticsBridge: a real Java
+    // method called directly from JS, no plugin-bridge round trip needed
+    // for something this simple.
+    private static class NativeBootBridge {
+        private final MainActivity activity;
+        NativeBootBridge(MainActivity activity) { this.activity = activity; }
+
+        @JavascriptInterface
+        public void showStatusBar() {
+            activity.runOnUiThread(() -> {
+                WindowInsetsControllerCompat controller =
+                        new WindowInsetsControllerCompat(activity.getWindow(), activity.getWindow().getDecorView());
+                controller.show(WindowInsetsCompat.Type.statusBars());
+            });
         }
     }
 
