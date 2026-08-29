@@ -33,7 +33,6 @@ function CollectionTab({
   withCacheBuster,
   refreshImages,
   handleSetProfilePic,
-  handleSetWallpaperAsset,
 }) {
   const { framingMode, editingImage, setEditingImage, getImageFraming } = useImageFramingContext();
   // Localized weapon names for grid card display — dataLookup passed to the grid is otherwise the
@@ -724,7 +723,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 4 })}
                 dataLookup={localizedEchoData} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 collapsible
               />
             </CardBody>
@@ -746,7 +744,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 3 })}
                 dataLookup={localizedEchoData} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 collapsible
               />
             </CardBody>
@@ -768,7 +765,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 1 })}
                 dataLookup={localizedEchoData} dataType="echo" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 collapsible
               />
             </CardBody>
@@ -792,7 +788,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
                 onLongPress={showCounterWidget}
                 isFullAnim={visualSettings?.animationsEnabled === 'full'}
@@ -817,7 +812,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
                 onLongPress={showCounterWidget}
                 isFullAnim={visualSettings?.animationsEnabled === 'full'}
@@ -844,7 +838,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 onLongPress={showCounterWidget}
                 collapsible
               />
@@ -867,7 +860,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 onLongPress={showCounterWidget}
                 collapsible
               />
@@ -890,7 +882,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 onLongPress={showCounterWidget}
                 collapsible
               />
@@ -913,7 +904,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 onLongPress={showCounterWidget}
                 collapsible
               />
@@ -936,7 +926,6 @@ function CollectionTab({
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
                 profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
-                wallpaperAsset={state.profile.wallpaperAsset} onSetWallpaperAsset={handleSetWallpaperAsset}
                 onLongPress={showCounterWidget}
                 collapsible
               />

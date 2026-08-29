@@ -1007,12 +1007,7 @@ function ProfileTab({
 
             {/* ── App maintenance: updates + offline asset downloads ────────── */}
             <AppUpdateCard toast={toast} />
-            <WallpaperCard
-              assetName={state.profile.wallpaperAsset}
-              assetUrl={state.profile.wallpaperAsset ? collectionImages[state.profile.wallpaperAsset] : null}
-              onClear={() => dispatch({ type: 'SET_WALLPAPER_ASSET', value: '' })}
-              toast={toast}
-            />
+            <WallpaperCard toast={toast} />
             <PullBubbleCard toast={toast} />
             <PushNotificationsCard toast={toast} />
             {isNativePlatformForSettings() && <OfflineAssetsCard toast={toast} />}

@@ -13,14 +13,13 @@
   },
   "wallpaper": {
     "title": "Fond d'écran",
-    "description": "Choisissez un personnage ou une arme dans Collection (l'icône image à côté de la couronne de photo de profil), puis appliquez-le ici comme fond d'écran d'accueil et/ou de verrouillage.",
-    "hint": "Rien n'est encore sélectionné — choisissez-en un dans Collection.",
+    "description": "Choisissez l'une des images de fond thématiques de l'application ci-dessous, puis appliquez-la comme fond d'écran d'accueil et/ou de verrouillage.",
+    "hint": "Choisissez une image ci-dessus, puis appliquez-la.",
     "setHome": "Écran d'accueil",
     "setLock": "Écran verrouillé",
     "setBoth": "Les deux",
     "applied": "Fond d'écran défini.",
-    "error": "Impossible de définir le fond d'écran : {{error}}",
-    "clearAria": "Effacer la sélection de fond d'écran"
+    "error": "Impossible de définir le fond d'écran : {{error}}"
   },
   "pullBubble": {
     "title": "Bulle d'invocation",

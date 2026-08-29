@@ -13,14 +13,13 @@
   },
   "wallpaper": {
     "title": "Wallpaper",
-    "description": "Pick a character or weapon in Collection (the image icon next to the profile-picture crown), then apply it here as your home and/or lock screen wallpaper.",
-    "hint": "Nothing selected yet — pick one from Collection.",
+    "description": "Pick one of the app's theme background images below, then apply it as your home and/or lock screen wallpaper.",
+    "hint": "Pick an image above, then apply it.",
     "setHome": "Home Screen",
     "setLock": "Lock Screen",
     "setBoth": "Both",
     "applied": "Wallpaper set.",
-    "error": "Couldn't set wallpaper: {{error}}",
-    "clearAria": "Clear wallpaper selection"
+    "error": "Couldn't set wallpaper: {{error}}"
   },
   "pullBubble": {
     "title": "Pull Bubble",

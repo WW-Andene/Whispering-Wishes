@@ -101,10 +101,7 @@
     "newBadge": "New",
     "currentProfilePicTitle": "Current profile picture",
     "setProfilePic": "Set as profile picture",
-    "setProfilePicAria": "Set {{name}} as profile picture",
-    "currentWallpaperAssetTitle": "Selected for wallpaper",
-    "setWallpaperAsset": "Select for wallpaper",
-    "setWallpaperAssetAria": "Select {{name}} for wallpaper"
+    "setProfilePicAria": "Set {{name}} as profile picture"
   },
   "widget": {
     "removeOne": "Remove 1 copy",

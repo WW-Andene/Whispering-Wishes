@@ -8,8 +8,6 @@
   "dataSyncedTab": "Data synced from another tab",
   "profilePicRemoved": "Profile picture removed",
   "profilePicSet": "Profile picture set to {{name}}",
-  "wallpaperAssetCleared": "Wallpaper selection cleared",
-  "wallpaperAssetSelected": "{{name}} selected — apply it from Settings → Wallpaper",
   "confirmRestoreBackupTitle": "Restore full backup?",
   "confirmRestoreBackupMessage": "This will replace ALL current data (Convenes, teams, settings) with the backup. Continue?",
   "confirmRestoreBackupConfirmLabel": "Restore",
