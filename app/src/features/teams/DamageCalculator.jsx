@@ -233,7 +233,12 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   style={{ background: 'var(--bg-stat)', borderColor: `${getElementColor(m.d.element)}25`, boxShadow: `0 0 12px ${getElementColor(m.d.element)}10`, '--element-glow': `${getElementColor(m.d.element)}30` }}>
 
                   {/* ── Section 1: Character Header ── */}
-                  <div className="flex items-center gap-3">
+                  {/* flex-wrap: the action buttons (Export/Auto Equip/Reset — Reset only appears
+                      once equipment exists, so this row's total button width grows the moment
+                      Auto Equip is used) are flex-shrink-0 and previously squeezed the name block
+                      down to near-zero width instead of yielding space. Wrapping lets the buttons
+                      drop to their own line instead of crushing the name. */}
+                  <div className="flex items-center gap-3 flex-wrap">
                     <div className={`w-12 h-12 rounded-lg overflow-hidden border border-white/15 flex-shrink-0${rarity5 ? ' holo-5star' : ''}`}
                       style={{ background: 'rgba(0,0,0,0.3)', position: 'relative' }}>
                       {collectionImages[m.name] ? (

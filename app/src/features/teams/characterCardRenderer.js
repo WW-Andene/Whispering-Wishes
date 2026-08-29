@@ -8,7 +8,7 @@
 
 import { CHARACTER_THEMES } from '../../data/banners.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
-import { CHAIN_NODE_ICONS } from '../../data/characters.js';
+import { CHAIN_NODE_ICONS, SKILL_MULTIPLIERS, getSkillIcon } from '../../data/characters.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { getElementColor, getElementIcon, getStatIcon, getSetIcon } from '../../shared/utils/elementVisuals.js';
 import {
@@ -154,6 +154,19 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   const chainNodeImgs = chainNodeMap
     ? await Promise.all(chainRanks.map(r => loadImage(chainNodeMap[r])))
     : chainRanks.map(() => null);
+
+  // Skill row icons — one representative move per category (Normal/Skill/Forte/Liberation/
+  // Intro), same real per-move icon assets CharacterDetailModal.jsx uses (getSkillIcon), picked
+  // from this character's own SKILL_MULTIPLIERS entries rather than drawn as generic glyphs.
+  const skillTypeToCategory = { 'Basic ATK': 'N', 'Skill': 'S', 'Forte': 'F', 'Liberation': 'L', 'Intro': 'I' };
+  const skillIconUrls = { N: null, S: null, F: null, L: null, I: null };
+  (SKILL_MULTIPLIERS[name] || []).forEach(([type, skillName]) => {
+    const cat = skillTypeToCategory[type];
+    if (cat && !skillIconUrls[cat]) skillIconUrls[cat] = getSkillIcon(name, skillName);
+  });
+  const skillIconImgs = Object.fromEntries(
+    await Promise.all(Object.entries(skillIconUrls).map(async ([cat, url]) => [cat, await loadImage(url)]))
+  );
 
   // Sonata (echo set) icons — one per equipped echo slot, keyed off that echo's own set(s) in
   // ECHO_DATA, falling back to the character's active forced/detected set (member.echoSet).
@@ -358,9 +371,9 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   // horizontal row of the 5 combat skill types. This app doesn't track individual skill levels
   // anywhere in its data model (checked calcEngine.js/DamageCalculator.jsx — every skill is
   // simply assumed maxed, same as the wuwaflex.com reference this card follows), so each shows
-  // a fixed "Lv. 10". No per-move icon assets exist for a generic "skill type" (getSkillIcon only
-  // resolves a specific move NAME, not a category) — drawn as simple gold-ring badges with a
-  // short type initial instead of inventing new icon assets.
+  // a fixed "Lv. 10". Each badge shows that category's real move icon (skillIconImgs, resolved
+  // above from this character's own SKILL_MULTIPLIERS) when one exists, falling back to the type
+  // initial for characters/categories with no audited icon asset.
   {
     drawBannerPanel(q1x, skillsY, qw, skillsH, 'Skills');
     const qx = q1x + PAD, qy = skillsY + PAD, qh = skillsH - 2 * PAD, cw = qw - 2 * PAD;
@@ -380,9 +393,17 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
       ctx.beginPath(); ctx.arc(ix + badgeSz / 2, iy + badgeSz / 2, badgeSz / 2, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.arc(ix + badgeSz / 2, iy + badgeSz / 2, badgeSz / 2, 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = GOLD; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText(s.k, ix + badgeSz / 2, iy + badgeSz / 2 + 8);
-      ctx.fillStyle = NEUTRAL; ctx.font = '600 16px sans-serif';
+      const icon = skillIconImgs[s.k];
+      if (icon) {
+        const pad = 10; const iconD = badgeSz - pad * 2;
+        ctx.save(); ctx.beginPath(); ctx.arc(ix + badgeSz / 2, iy + badgeSz / 2, iconD / 2, 0, Math.PI * 2); ctx.clip();
+        ctx.drawImage(icon, ix + pad, iy + pad, iconD, iconD);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = GOLD; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(s.k, ix + badgeSz / 2, iy + badgeSz / 2 + 8); ctx.textAlign = 'left';
+      }
+      ctx.fillStyle = NEUTRAL; ctx.font = '600 16px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('Lv. 10', ix + badgeSz / 2, iy + badgeSz + 24);
       ctx.textAlign = 'left';
       ix += badgeSz + iGap;
