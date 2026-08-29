@@ -136,9 +136,11 @@ public class MainActivity extends BridgeActivity {
         // default stretch/fill scaling — a different shape of the same
         // picture at that handoff, which is why it got reverted).
         // boot_poster.png (drawable-nodpi, so it's never density-scaled)
-        // is a static first-frame extract of boot-intro-poster.gif — real
-        // ImageViews can't play an animated GIF the way the WebView can,
-        // so this is a static stand-in, not the animated poster.
+        // is just a PNG re-encode of boot-intro-poster.gif — that GIF is
+        // itself a single still frame (n_frames=1, not actually animated),
+        // so this isn't extracting anything out of an animation; it's the
+        // same picture in a format Android's ImageView can decode as a
+        // resource.
         bootPosterView = new ImageView(this);
         bootPosterView.setImageResource(R.drawable.boot_poster);
         bootPosterView.setScaleType(ImageView.ScaleType.CENTER_CROP);
