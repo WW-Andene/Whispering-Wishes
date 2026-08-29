@@ -111,17 +111,11 @@ export default function BootIntro() {
         pointerEvents: fadingOut ? 'none' : 'auto',
       }}
     >
-      {/* GREEN tint (temporary, diagnostic) — see index.html's #boot-poster
-          for the full rationale. This is the React-rendered poster (red is
-          the static pre-React one) — the color difference makes the exact
-          hand-off moment between them visible on-device instead of guessed
-          at blind. Remove once the reframe is actually diagnosed. */}
       <img
         src="/boot-intro/boot-intro-poster.gif"
         alt=""
         style={{
           ...fillStyle,
-          filter: 'sepia(1) saturate(6) hue-rotate(60deg)',
           opacity: canPlay ? 0 : 1,
           transition: 'opacity 0.2s ease-out',
         }}
