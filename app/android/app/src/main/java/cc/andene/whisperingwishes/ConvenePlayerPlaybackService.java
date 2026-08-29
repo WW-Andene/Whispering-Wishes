@@ -16,6 +16,7 @@ import android.util.LruCache;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -213,11 +214,13 @@ public class ConvenePlayerPlaybackService extends Service {
     }
 
     // videoUrl is always a plain http(s) URL here (convene-animations/ clips are streamed,
-    // not bundled — see capacitor-build/build.mjs's EXCLUDED_DIRS).
+    // not bundled — see capacitor-build/build.mjs's EXCLUDED_DIRS). extractFrames still needs
+    // a LOCAL file, though — see downloadToCache's own comment on why.
     private List<Bitmap> extractFrames(String videoUrl) throws Exception {
+        File localFile = downloadToCache(videoUrl);
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         try {
-            retriever.setDataSource(videoUrl, new HashMap<>());
+            retriever.setDataSource(localFile.getAbsolutePath());
 
             String durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
             long durationMs = durationStr != null ? Long.parseLong(durationStr) : 0;
@@ -237,6 +240,45 @@ public class ConvenePlayerPlaybackService extends Service {
         } finally {
             retriever.release();
         }
+    }
+
+    // MediaMetadataRetriever.getFrameAtTime() called directly against a remote http(s)
+    // dataSource (as this used to do) makes a fresh network seek for EVERY single frame
+    // requested — up to MAX_FRAMES of them — which is slow and, depending on the server/CDN's
+    // range-request support, frequently fails outright partway through (or never completes
+    // its first frame at all). That's the actual reason this widget kept falling back to
+    // ConveneAnimationActivity's fullscreen player on every attempt instead of ever looping
+    // in place: extractFrames was throwing before a single frame decoded, not occasionally
+    // failing mid-loop. FloatingVideoOverlayService's VideoView (PulseBannerWidget's ▶️) never
+    // hit this because progressive streaming playback is a completely different code path
+    // from frame-by-frame random-access seeking.
+    // Downloading once into the cache dir first means every getFrameAtTime call afterward is
+    // a fast local-file seek, exactly like WidgetAssetUtils.cachedAssetVideoUri's own reasoning
+    // for PullBubbleService's clips (a different unplayable-URI-scheme problem, same "give
+    // MediaMetadataRetriever/VideoView a real local file" fix shape). Filename is a hash of the
+    // URL, not the URL itself — arbitrary URL text isn't a safe filename.
+    private File downloadToCache(String videoUrl) throws Exception {
+        File outFile = new File(getCacheDir(), "convene-clip-" + Math.abs(videoUrl.hashCode()) + ".mp4");
+        if (outFile.exists() && outFile.length() > 0) return outFile;
+
+        java.net.URL url = new java.net.URL(videoUrl);
+        java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+        try {
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(15000);
+            try (java.io.InputStream in = conn.getInputStream();
+                 java.io.OutputStream out = new java.io.FileOutputStream(outFile)) {
+                byte[] buf = new byte[8192];
+                int n;
+                while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+            }
+        } catch (Exception e) {
+            outFile.delete(); // don't leave a partial/corrupt file behind for the next attempt to wrongly reuse
+            throw e;
+        } finally {
+            conn.disconnect();
+        }
+        return outFile;
     }
 
     private Bitmap downscale(Bitmap src, int targetPx) {
