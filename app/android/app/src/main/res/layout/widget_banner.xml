@@ -101,8 +101,11 @@
                  for the rarity-video + result-screen flow they launch.
                  Astrite icon (public/ui-icons/, bundled locally like the
                  banner art) matches ConvenePullPills.jsx's own fallback
-                 icon in-app. Primary block only — see file header. -->
+                 icon in-app. Primary block only — see file header.
+                 Hidden in compact (very short, e.g. 1-row) sizes — see
+                 PulseBannerWidget.java's COMPACT_MAX_HEIGHT_DP. -->
             <LinearLayout
+                android:id="@+id/widget_pull_pills"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -161,7 +164,10 @@
             </LinearLayout>
         </LinearLayout>
 
+        <!-- Featured-4★ row + ▶️ — hidden in compact (very short) sizes,
+             same threshold as widget_pull_pills above. -->
         <LinearLayout
+            android:id="@+id/widget_bottom_row"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"

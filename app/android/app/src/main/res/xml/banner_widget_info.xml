@@ -3,12 +3,25 @@
      (70dp * cells - 30dp), not the web app's PerfectSuite scale — that
      scale is scoped to the Tailwind/CSS web UI (see CLAUDE.md), and the
      home-screen grid is a distinct system with its own fixed cell math.
-     4x3 cells (bumped from 4x2 when the ×1/×10 pull pills were added to
-     the top row — 2 cells' worth of height started crowding the top text
-     column against the bottom Featured-4★/▶️ row). -->
+     targetCellWidth/Height (4x3) is only the INITIAL placement size — 2
+     cells' worth of height was needed there so the ×1/×10 pull pills don't
+     crowd the top text column against the bottom Featured-4★/▶️ row.
+     minWidth/minHeight is the SMALLEST the user can resize down to, which
+     is a separate concern: it used to be pinned to the same 4x3 floor,
+     which made a 1-row ("1x2") placement impossible to select at all — the
+     launcher simply never offers a resize handle below minHeight. Dropped
+     to 2x1 cells (110dp x 70dp) so a short/1-row widget is selectable;
+     PulseBannerWidget.java's updateWidget hides the pull pills and
+     Featured-4★/▶️ row below COMPACT_MAX_HEIGHT_DP so the remaining art +
+     name/element still fits and isn't clipped mid-row. minResizeWidth/
+     Height are set explicitly to the same floor — some launchers otherwise
+     fall back to minWidth/minHeight only for the INITIAL size and use a
+     different (often larger) default resize floor. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="250dp"
-    android:minHeight="180dp"
+    android:minWidth="110dp"
+    android:minHeight="70dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="70dp"
     android:targetCellWidth="4"
     android:targetCellHeight="3"
     android:updatePeriodMillis="1800000"

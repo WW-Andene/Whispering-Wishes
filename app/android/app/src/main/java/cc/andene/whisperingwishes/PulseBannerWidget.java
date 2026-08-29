@@ -111,6 +111,14 @@ public class PulseBannerWidget extends AppWidgetProvider {
     // Height (dp) a widget needs before the secondary banner block is worth
     // showing — two ~130dp blocks plus some breathing room.
     private static final int SECONDARY_MIN_HEIGHT_DP = 260;
+    // Height (dp) below which the primary block switches to a compact
+    // layout — just art + name/element, no ×1/×10 pull pills and no
+    // Featured-4★/▶️ row, since neither fits in a 1-row ("1x2") placement
+    // now that banner_widget_info.xml's minHeight allows resizing that
+    // short. Threshold picked just under the original 180dp minHeight (the
+    // old floor, back when this layout was assumed to always be at least
+    // that tall) so nothing already-placed at a "normal" size changes.
+    private static final int COMPACT_MAX_HEIGHT_DP = 130;
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -160,10 +168,16 @@ public class PulseBannerWidget extends AppWidgetProvider {
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_banner);
 
-        renderPrimaryBlock(context, views, prefs, appWidgetId, primaryCategory);
-
         Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
         int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
+        // A host that hasn't reported real dimensions yet (heightDp == 0, e.g. the very first
+        // render right after placement, before onAppWidgetOptionsChanged has fired even once)
+        // should NOT be treated as compact — that would hide the pills/bottom row on every normal
+        // widget until the first resize event. Only an explicitly-reported small height counts.
+        boolean compact = heightDp > 0 && heightDp < COMPACT_MAX_HEIGHT_DP;
+
+        renderPrimaryBlock(context, views, prefs, appWidgetId, primaryCategory, compact);
+
         boolean showSecondary = heightDp >= SECONDARY_MIN_HEIGHT_DP && prefs.getString("widget_banner_" + secondaryCategory + "_name", null) != null;
         views.setViewVisibility(R.id.widget_secondary_block, showSecondary ? View.VISIBLE : View.GONE);
         if (showSecondary) {
@@ -185,9 +199,15 @@ public class PulseBannerWidget extends AppWidgetProvider {
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }
 
-    private void renderPrimaryBlock(Context context, RemoteViews views, SharedPreferences prefs, int appWidgetId, String category) {
+    private void renderPrimaryBlock(Context context, RemoteViews views, SharedPreferences prefs, int appWidgetId, String category, boolean compact) {
         BannerData data = readBannerData(prefs, category);
         String name = data != null ? data.name : null;
+
+        // Compact (short/1-row) sizes: hide the ×1/×10 pull pills and the Featured-4★/▶️ row
+        // entirely — neither fits in a 1-row placement, and a clipped-mid-row pill/thumbnail
+        // reads as broken rather than just "smaller". Art + name/element still shows.
+        views.setViewVisibility(R.id.widget_pull_pills, compact ? View.GONE : View.VISIBLE);
+        views.setViewVisibility(R.id.widget_bottom_row, compact ? View.GONE : View.VISIBLE);
 
         if (data != null) {
             views.setTextViewText(R.id.widget_banner_name, data.name);
