@@ -43,6 +43,8 @@
     "selectWeapon": "Select weapon",
     "weapon": "Weapon",
     "selectEcho": "Select {{cost}} echo",
+    "exportCard": "Export",
+    "exportCardAria": "Export build card image for {{name}}",
     "autoEquip": "Auto Equip",
     "autoEquipAria": "Auto equip best build for {{name}}",
     "reset": "Reset",

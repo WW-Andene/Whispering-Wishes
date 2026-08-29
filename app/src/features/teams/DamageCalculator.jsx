@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react';
-import { AlertTriangle, ChevronDown, Diamond, Sparkles, Sword, Users, X, Zap } from 'lucide-react';
+import { AlertTriangle, ChevronDown, Diamond, Download, Sparkles, Sword, Users, X, Zap } from 'lucide-react';
 
 import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_DATA, getEnemyStatsAtLevel } from '../../data/echoes.js';
@@ -18,6 +18,7 @@ import { RELEASE_ORDER } from '../../data/characters.js';
 import { RotationGuideCard } from './RotationGuideCard.jsx';
 import { EnemyTargetCard, EnemyTargetModal } from './EnemyTargetSection.jsx';
 import { calcTeamStats as calcTeamStatsImpl } from './calcTeamStats.js';
+import { renderCharacterCard } from './characterCardRenderer.js';
 import { t, formatNumber } from '../../utils/i18n.js';
 
 const DamageCalculator = forwardRef(function DamageCalculator({
@@ -34,6 +35,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
   onOpenWeaponSelector,
   onOpenEchoSelector,
   onOpenEchoStatPanel,
+  getImageFraming,
   // Enemy target state is owned by TeamsTab (not local here) so the sibling "Team Suggestions"
   // card there can also read the same selected enemy and rank its list against it, instead of
   // that card being structurally unable to ever know which enemy is selected.
@@ -258,6 +260,23 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         </span>
                       </div>
                     </div>
+                    {/* Export Build Card button */}
+                    <button
+                      className="kuro-btn text-sm px-2 py-1 flex-shrink-0 self-start"
+                      aria-label={t('teams.damageCalc.exportCardAria', { name: m.name })}
+                      onClick={() => {
+                        const eqKeyExp = state.activeTeamIndex + ':' + m.name;
+                        const eqExp = teamEquipment[eqKeyExp] || { weapon: null, echoes: [null, null, null, null, null] };
+                        renderCharacterCard({ member: m, eq: eqExp, teamIdx: state.activeTeamIndex, collectionImages, getImageFraming, toast })
+                          .catch(err => {
+                            console.error('Build card export failed:', err);
+                            toast?.addToast?.(`Failed to save build card${err?.message ? ': ' + err.message : ''}`, 'error');
+                          });
+                        haptic.light();
+                      }}
+                    >
+                      <Download size={12} className="inline mr-0.5" />{t('teams.damageCalc.exportCard')}
+                    </button>
                     {/* Auto Equip button */}
                     <button
                       className="kuro-btn text-sm px-2 py-1 flex-shrink-0 self-start"

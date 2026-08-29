@@ -813,6 +813,7 @@ function TeamsTab({
                     onOpenEchoStatPanel={(teamIdx, charName, slotIdx, echoName) => {
                       setEchoStatPanel({ teamIdx, charName, slotIdx, echoName });
                     }}
+                    getImageFraming={getImageFraming}
                     enemyLevel={enemyLevel} setEnemyLevel={setEnemyLevel}
                     enemyEcho={enemyEcho} setEnemyEcho={setEnemyEcho}
                     enemyEchoModalOpen={enemyEchoModalOpen} setEnemyEchoModalOpen={setEnemyEchoModalOpen}
