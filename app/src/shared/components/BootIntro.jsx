@@ -12,26 +12,47 @@ import { useEffect, useRef, useState } from 'react';
 // hook takes over managing it), then fades the whole overlay out over 1s
 // once the video finishes and unmounts — never blocking or delaying the
 // app underneath, which mounts and renders in parallel the entire time.
+//
+// Two-stage poster, cut instantly between them — not one poster forced to
+// survive the OS's own contained -> edge-to-edge window transition without
+// visibly moving. Every attempt at that (native windowBackground image,
+// WebView transparency, window.screen-based sizing, translucent-status
+// theme flags, redundant Window color calls — see git history) either
+// didn't fully work or couldn't be verified without device access. This
+// sidesteps the problem instead of chasing its timing: Stage 1 renders
+// correctly FOR the contained state (plain viewport-relative sizing — the
+// viewport is genuinely stable for this stage's entire lifetime, since
+// nothing here ever tries to resize across the transition); once
+// MainActivity signals onCreate() has actually run
+// (window.__bootInsetsReady, set alongside the safe-area CSS vars — see
+// MainActivity.java), Stage 2 replaces it outright with the
+// window.screen-based full-bleed treatment. A hard cut between two
+// correct pictures, not one picture asked to be correct in two different
+// window states at once.
 export default function BootIntro() {
   const videoRef = useRef(null);
   const [canPlay, setCanPlay] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const [done, setDone] = useState(false);
+  const [insetsReady, setInsetsReady] = useState(() => !!window.__bootInsetsReady);
   // Read once, synchronously, on mount — not derived from CSS percentages.
-  // MainActivity.java documents the WebView's own content-area SIZE briefly
-  // changing mid-boot as edge-to-edge insets settle; width:100%/height:100%
-  // is relative to the CSS layout viewport, which resizes right along with
-  // that content area, so the poster/video's own box was recomputing (and
-  // visibly reframing) at the same moment. window.screen.width/height
-  // reflect the physical device screen in CSS px, which doesn't change as
-  // insets settle, so sizing against it directly skips the reframe instead
-  // of chasing its timing. Matches index.html's #boot-poster, which does
-  // the same thing before React ever mounts.
+  // Only relevant once insetsReady (Stage 2) — see the component-level
+  // comment above for why. window.screen.width/height reflect the
+  // physical device screen in CSS px, which doesn't change as insets
+  // settle, unlike a viewport percentage.
   const [screenSize] = useState(() => ({ w: window.screen.width, h: window.screen.height }));
 
   useEffect(() => {
     document.getElementById('boot-poster')?.remove();
   }, []);
+
+  useEffect(() => {
+    if (insetsReady) return;
+    window.__onBootInsetsReady = () => setInsetsReady(true);
+    return () => {
+      if (window.__onBootInsetsReady) delete window.__onBootInsetsReady;
+    };
+  }, [insetsReady]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -87,15 +108,22 @@ export default function BootIntro() {
 
   if (done) return null;
 
+  // Stage 1 (contained): plain viewport-relative box — correct and stable
+  // for the whole time this stage is shown, since it's never asked to
+  // resize across the edge-to-edge transition; it's simply replaced.
+  // Stage 2 (edge-to-edge): window.screen-based full-bleed box.
+  const boxStyle = insetsReady
+    ? { position: 'fixed', top: 0, left: 0, width: screenSize.w, height: screenSize.h }
+    : { position: 'fixed', inset: 0 };
+  const fillStyle = insetsReady
+    ? { position: 'absolute', top: 0, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover' }
+    : { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' };
+
   return (
     <div
       aria-hidden="true"
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: screenSize.w,
-        height: screenSize.h,
+        ...boxStyle,
         zIndex: 9999,
         background: '#080c14',
         opacity: fadingOut ? 0 : 1,
@@ -107,12 +135,7 @@ export default function BootIntro() {
         src="/boot-intro/boot-intro-poster.gif"
         alt=""
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: screenSize.w,
-          height: screenSize.h,
-          objectFit: 'cover',
+          ...fillStyle,
           opacity: canPlay ? 0 : 1,
           transition: 'opacity 0.2s ease-out',
         }}
@@ -124,12 +147,7 @@ export default function BootIntro() {
         playsInline
         preload="auto"
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: screenSize.w,
-          height: screenSize.h,
-          objectFit: 'cover',
+          ...fillStyle,
           opacity: canPlay ? 1 : 0,
           transition: 'opacity 0.2s ease-out',
         }}
