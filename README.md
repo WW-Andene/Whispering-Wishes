@@ -131,9 +131,3 @@ All game data is maintained in `app/src/data/`:
 - **`constants.js`** — Version, server configs, stat tables
 
 Data is updated each patch.
-
----
-
-## License
-
-Closed source. All rights reserved — this repository is not open source and is not licensed for reuse, redistribution, or modification.
