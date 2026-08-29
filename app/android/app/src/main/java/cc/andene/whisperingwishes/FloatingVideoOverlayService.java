@@ -49,11 +49,20 @@ public class FloatingVideoOverlayService extends Service {
 
     public static final String EXTRA_VIDEO_URL = "overlay_video_url";
     public static final String EXTRA_VIDEO_URLS = "overlay_video_urls"; // ArrayList<String>, queue mode
+    // Optional top-left screen position (px) for the video card — when a caller actually
+    // knows where its own trigger is on screen (PullBubbleService's main bubble does; a
+    // home-screen widget's ▶️ button does NOT, see the POSITIONING note above), this
+    // anchors the video "on the side" of that trigger instead of the fixed bottom-end
+    // corner default. Clamped to stay fully on-screen either way.
+    public static final String EXTRA_ANCHOR_X = "overlay_anchor_x";
+    public static final String EXTRA_ANCHOR_Y = "overlay_anchor_y";
 
     private WindowManager windowManager;
     private View overlayView;
     private final ArrayList<String> queue = new ArrayList<>();
     private int queueIndex = 0;
+    private boolean hasAnchor;
+    private int anchorX, anchorY;
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
@@ -71,6 +80,10 @@ public class FloatingVideoOverlayService extends Service {
             if (single != null && !single.isEmpty()) queue.add(single);
         }
         if (queue.isEmpty()) { stopSelf(startId); return START_NOT_STICKY; }
+
+        hasAnchor = intent.hasExtra(EXTRA_ANCHOR_X) && intent.hasExtra(EXTRA_ANCHOR_Y);
+        anchorX = intent.getIntExtra(EXTRA_ANCHOR_X, 0);
+        anchorY = intent.getIntExtra(EXTRA_ANCHOR_Y, 0);
 
         if (!Settings.canDrawOverlays(this)) {
             Log.w(TAG, "Overlay permission not granted — falling back and prompting for it");
@@ -137,15 +150,27 @@ public class FloatingVideoOverlayService extends Service {
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
         float density = getResources().getDisplayMetrics().density;
+        int cardWidthPx = (int) (CARD_WIDTH_DP * density);
+        int cardHeightPx = (int) (CARD_HEIGHT_DP * density);
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                (int) (CARD_WIDTH_DP * density),
-                (int) (CARD_HEIGHT_DP * density),
-                overlayType,
+                cardWidthPx, cardHeightPx, overlayType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 android.graphics.PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.BOTTOM | Gravity.END;
-        params.x = (int) (CARD_MARGIN_DP * density);
-        params.y = (int) (CARD_MARGIN_DP * density);
+
+        if (hasAnchor) {
+            // "On the side" of whatever triggered this (PullBubbleService's main bubble) —
+            // to the anchor's left with a small gap, vertically aligned with it, clamped so
+            // the whole card stays on-screen regardless of how close to an edge the anchor is.
+            android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+            int gap = (int) (12 * density);
+            params.gravity = Gravity.TOP | Gravity.START;
+            params.x = Math.max(0, Math.min(anchorX - cardWidthPx - gap, dm.widthPixels - cardWidthPx));
+            params.y = Math.max(0, Math.min(anchorY, dm.heightPixels - cardHeightPx));
+        } else {
+            params.gravity = Gravity.BOTTOM | Gravity.END;
+            params.x = (int) (CARD_MARGIN_DP * density);
+            params.y = (int) (CARD_MARGIN_DP * density);
+        }
 
         windowManager.addView(overlayView, params);
     }

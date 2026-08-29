@@ -373,6 +373,14 @@ public class PullBubbleService extends Service {
         Intent playIntent = new Intent(this, FloatingVideoOverlayService.class);
         playIntent.putExtra(FloatingVideoOverlayService.EXTRA_VIDEO_URL,
                 "file:///android_asset/public/convene-sim/" + sim.video + ".mp4");
+        // Anchored to the main bubble's own current position — unlike a home-screen
+        // widget's ▶️ button, this service DOES know exactly where its own trigger is on
+        // screen, so the video plays visibly connected to the bubble you just tapped
+        // ("on the side" of it) instead of a fixed, unrelated screen corner.
+        if (mainBubbleParams != null) {
+            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_X, mainBubbleParams.x);
+            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_Y, mainBubbleParams.y);
+        }
         startService(playIntent);
 
         showResultIcons(sim.results);
@@ -408,6 +416,14 @@ public class PullBubbleService extends Service {
             img.setImageBitmap(bitmap);
             img.setScaleType(ImageView.ScaleType.CENTER_CROP);
             root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+
+            // 50% dark mask ON TOP of the portrait — a solid circleDrawable fill sits
+            // BEHIND the opaque ImageView and would never actually show through it;
+            // this is a second, transparent-black FrameLayout drawn after (so on top
+            // of) the image, which is what actually darkens/tints the visible icon.
+            FrameLayout mask = new FrameLayout(this);
+            mask.setBackgroundColor(Color.parseColor("#80000000"));
+            root.addView(mask, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         }
         root.setContentDescription(getString(R.string.pull_bubble_result_dismiss_aria));
 
