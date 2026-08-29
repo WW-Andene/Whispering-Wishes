@@ -26,6 +26,7 @@ const ACTION = Object.freeze({
   SET_UID: 'SET_UID',
   SET_USERNAME: 'SET_USERNAME',
   SET_PROFILE_PIC: 'SET_PROFILE_PIC',
+  SET_WALLPAPER_ASSET: 'SET_WALLPAPER_ASSET',
   CLEAR_PROFILE: 'CLEAR_PROFILE',
   SAVE_BOOKMARK: 'SAVE_BOOKMARK',
   LOAD_BOOKMARK: 'LOAD_BOOKMARK',
@@ -314,6 +315,11 @@ const reducer = (state, action) => {
     case ACTION.SET_UID: return { ...state, profile: { ...state.profile, uid: action.uid } };
     case ACTION.SET_USERNAME: return { ...state, profile: { ...state.profile, username: action.value } };
     case ACTION.SET_PROFILE_PIC: return { ...state, profile: { ...state.profile, profilePic: action.value } };
+    // Picked via a small icon on a CollectionGrid card (mirrors profilePic's own crown icon)
+    // — just remembers WHICH asset is selected; actually applying it to the phone's home/lock
+    // screen happens from ProfileTab's WallpaperCard, since that's a native one-shot action
+    // (WallpaperManager.setBitmap), not app state to keep in sync with.
+    case ACTION.SET_WALLPAPER_ASSET: return { ...state, profile: { ...state.profile, wallpaperAsset: action.value } };
     case ACTION.CLEAR_PROFILE: return { ...state, profile: { ...initialState.profile, username: state.profile.username, profilePic: state.profile.profilePic } };
     case ACTION.SAVE_BOOKMARK: return { ...state, bookmarks: [...state.bookmarks, { id: generateUniqueId(), name: action.name, timestamp: new Date().toISOString(), ...state.calc }] };
     case ACTION.LOAD_BOOKMARK: {

@@ -8,6 +8,8 @@
   "dataSyncedTab": "Données synchronisées depuis un autre onglet",
   "profilePicRemoved": "Photo de profil supprimée",
   "profilePicSet": "Photo de profil définie sur {{name}}",
+  "wallpaperAssetCleared": "Sélection de fond d'écran effacée",
+  "wallpaperAssetSelected": "{{name}} sélectionné — appliquez-le depuis Paramètres → Fond d'écran",
   "confirmRestoreBackupTitle": "Restaurer la sauvegarde complète ?",
   "confirmRestoreBackupMessage": "Cela remplacera TOUTES les données actuelles (Conviers, équipes, paramètres) par la sauvegarde. Continuer ?",
   "confirmRestoreBackupConfirmLabel": "Restaurer",

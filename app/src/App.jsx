@@ -558,6 +558,16 @@ function WhisperingWishesInner() {
     }
   }, [state.profile.profilePic, toast]);
 
+  const handleSetWallpaperAsset = useCallback((name) => {
+    if (state.profile.wallpaperAsset === name) {
+      dispatch({ type: 'SET_WALLPAPER_ASSET', value: '' });
+      toast?.addToast?.(t('app.wallpaperAssetCleared'), 'info');
+    } else {
+      dispatch({ type: 'SET_WALLPAPER_ASSET', value: name });
+      toast?.addToast?.(t('app.wallpaperAssetSelected', { name }), 'success');
+    }
+  }, [state.profile.wallpaperAsset, toast]);
+
   // Pre-compute all collection data in one pass
   // File import handler
   // P4: Memoized collection data - avoids recomputing 5x per render
@@ -1252,6 +1262,7 @@ function WhisperingWishesInner() {
                 withCacheBuster={withCacheBuster}
                 refreshImages={refreshImages}
                 handleSetProfilePic={handleSetProfilePic}
+                handleSetWallpaperAsset={handleSetWallpaperAsset}
               />
 
             </Suspense>

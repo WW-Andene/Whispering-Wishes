@@ -11,6 +11,17 @@
     "downloadStarted": "Opening download — install it once it finishes.",
     "downloadFailed": "Couldn't open download: {{error}}"
   },
+  "wallpaper": {
+    "title": "Wallpaper",
+    "description": "Pick a character or weapon in Collection (the image icon next to the profile-picture crown), then apply it here as your home and/or lock screen wallpaper.",
+    "hint": "Nothing selected yet — pick one from Collection.",
+    "setHome": "Home Screen",
+    "setLock": "Lock Screen",
+    "setBoth": "Both",
+    "applied": "Wallpaper set.",
+    "error": "Couldn't set wallpaper: {{error}}",
+    "clearAria": "Clear wallpaper selection"
+  },
   "pullBubble": {
     "title": "Pull Bubble",
     "description": "A small floating bubble you can drag anywhere on your screen — tap it to roll a ×1 or ×10 pull and watch the result animation, without opening the app or placing a widget. Requires a one-time \"draw over other apps\" permission grant. Drag the bubble onto the ✕ that appears while dragging it to turn it off.",

@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useRef, useCallback, memo } from 'react';
-import { Crown } from 'lucide-react';
+import { Crown, Image as ImageIcon } from 'lucide-react';
 
 import { haptic } from '../../utils/haptics.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -37,7 +37,7 @@ function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
 }
 
 // Internal: CollectionGridCard
-const CollectionGridCard = memo(({ name, label, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isCharOwned, onToggleOwned, isEcho, noBgProcess, onLongPress, isCharacter, isFullAnim }) => {
+const CollectionGridCard = memo(({ name, label, count, imgUrl, framing, isSelected, owned, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countLabel, countColor, onClickCard, framingMode, setEditingImage, imageKey, isNew, isProfilePic, onSetProfilePic, isWallpaperAsset, onSetWallpaperAsset, isCharOwned, onToggleOwned, isEcho, noBgProcess, onLongPress, isCharacter, isFullAnim }) => {
   const displayLabel = label || name;
   // Pixel-level background removal for echo images (skip if pre-processed)
   const processedUrl = imgUrl;
@@ -133,6 +133,23 @@ const CollectionGridCard = memo(({ name, label, count, imgUrl, framing, isSelect
         <Crown size={14} />
       </button>
     )}
+    {/* Wallpaper picker — same corner as the profile-pic crown, offset one icon-width to its
+        left so both can coexist; picking here only SELECTS the asset (state.profile.
+        wallpaperAsset) — actually applying it to the phone's home/lock screen happens from
+        ProfileTab's WallpaperCard, a native one-shot WallpaperManager call, not app state. */}
+    {!framingMode && onSetWallpaperAsset && (
+      <button
+        className={`profile-pic-btn absolute z-20 flex items-center justify-center transition-all ${isWallpaperAsset ? 'text-black shadow-lg' : 'bg-black/70 text-gray-500 hover:bg-cyan-500/30 hover:text-cyan-300'}`}
+        style={{ top: '4px', right: 'calc(var(--size-icon-btn) + 8px)', width: 'var(--size-icon-btn)', height: 'var(--size-icon-btn)', minHeight: 'var(--size-icon-btn)', borderRadius: 'var(--radius-sm)', padding: 0, ...(isWallpaperAsset ? { background: '#22d3ee', boxShadow: '0 0 10px rgba(34,211,238,0.5)' } : {}) }}
+        onPointerDown={(e) => e.stopPropagation()}
+        onPointerUp={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); onSetWallpaperAsset(name); }}
+        title={isWallpaperAsset ? t('collection.grid.currentWallpaperAssetTitle') : t('collection.grid.setWallpaperAsset')}
+        aria-label={isWallpaperAsset ? t('collection.grid.currentWallpaperAssetTitle') : t('collection.grid.setWallpaperAssetAria', { name })}
+      >
+        <ImageIcon size={14} />
+      </button>
+    )}
     {isSelected && (
       <div className="absolute top-1 right-1 z-20 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
         <span className="text-black text-sm">✓</span>
@@ -152,13 +169,13 @@ const CollectionGridCard = memo(({ name, label, count, imgUrl, framing, isSelect
   prev.name === next.name && prev.label === next.label && prev.count === next.count && prev.imgUrl === next.imgUrl &&
   prev.isSelected === next.isSelected && prev.owned === next.owned && prev.collMask === next.collMask &&
   prev.collOpacity === next.collOpacity && prev.framingMode === next.framingMode && prev.isNew === next.isNew &&
-  prev.isProfilePic === next.isProfilePic && prev.isFullAnim === next.isFullAnim &&
+  prev.isProfilePic === next.isProfilePic && prev.isWallpaperAsset === next.isWallpaperAsset && prev.isFullAnim === next.isFullAnim &&
   prev.framing.zoom === next.framing.zoom && prev.framing.x === next.framing.x && prev.framing.y === next.framing.y
 );
 CollectionGridCard.displayName = 'CollectionGridCard';
 
 // Collection grid section — eliminates ~170 lines of copy-paste across 5 grids
-const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, ownedChars, toggleOwned, onLongPress, collapsible = false, isFullAnim = false }) => {
+const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpacity, glowClass, ownedBg, ownedBorder, countColor, countPrefix, totalCount, hasActiveFilters, onClearFilters, collectionImages, withCacheBuster, activeBanners, setDetailModal, dataLookup, dataType, isCharacter, profilePic, onSetProfilePic, wallpaperAsset, onSetWallpaperAsset, ownedChars, toggleOwned, onLongPress, collapsible = false, isFullAnim = false }) => {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [expanded, setExpanded] = useState(false);
   if (items.length === 0) return (
@@ -199,6 +216,8 @@ const CollectionGridSection = memo(({ title, starColor, items, collMask, collOpa
               isNew={isNew}
               isProfilePic={profilePic === name}
               onSetProfilePic={onSetProfilePic}
+              isWallpaperAsset={wallpaperAsset === name}
+              onSetWallpaperAsset={onSetWallpaperAsset}
               isCharOwned={ownedChars ? ownedChars.includes(name) : undefined}
               onToggleOwned={toggleOwned}
               isEcho={dataType === 'echo'}

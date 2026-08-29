@@ -101,7 +101,10 @@
     "newBadge": "Nouveau",
     "currentProfilePicTitle": "Photo de profil actuelle",
     "setProfilePic": "Définir comme photo de profil",
-    "setProfilePicAria": "Définir {{name}} comme photo de profil"
+    "setProfilePicAria": "Définir {{name}} comme photo de profil",
+    "currentWallpaperAssetTitle": "Sélectionné pour le fond d'écran",
+    "setWallpaperAsset": "Sélectionner pour le fond d'écran",
+    "setWallpaperAssetAria": "Sélectionner {{name}} pour le fond d'écran"
   },
   "widget": {
     "removeOne": "Retirer 1 exemplaire",

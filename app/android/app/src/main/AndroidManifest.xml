@@ -141,4 +141,8 @@
          PullBubbleService, see its own manifest entry's comment for why "specialUse" rather
          than one of the other standard types. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- Normal (not dangerous) permission — no runtime prompt needed, just this declaration.
+         Required for WallpaperManager.setBitmap(), used by WallpaperPlugin to set a collection
+         asset as the phone's home/lock screen wallpaper. -->
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
 </manifest>

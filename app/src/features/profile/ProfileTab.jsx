@@ -30,6 +30,7 @@ import AboutSection from './AboutSection.jsx';
 import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
 import PullBubbleCard from './PullBubbleCard.jsx';
+import WallpaperCard from './WallpaperCard.jsx';
 import PushNotificationsCard from './PushNotificationsCard.jsx';
 import { openSoundSettings, isNativePlatform as isNativePlatformForSettings } from '../../utils/systemSettings.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
@@ -1006,6 +1007,12 @@ function ProfileTab({
 
             {/* ── App maintenance: updates + offline asset downloads ────────── */}
             <AppUpdateCard toast={toast} />
+            <WallpaperCard
+              assetName={state.profile.wallpaperAsset}
+              assetUrl={state.profile.wallpaperAsset ? collectionImages[state.profile.wallpaperAsset] : null}
+              onClear={() => dispatch({ type: 'SET_WALLPAPER_ASSET', value: '' })}
+              toast={toast}
+            />
             <PullBubbleCard toast={toast} />
             <PushNotificationsCard toast={toast} />
             {isNativePlatformForSettings() && <OfflineAssetsCard toast={toast} />}
