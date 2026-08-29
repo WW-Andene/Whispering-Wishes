@@ -119,6 +119,32 @@
             </intent-filter>
         </activity>
 
+        <!-- Dedicated "convene player" widget — separate from PulseBannerWidget above by
+             design (a single-purpose video player vs. a full banner dashboard). Same
+             exported="true" reasoning as PulseBannerWidget's own receiver: the system
+             server sends APPWIDGET_UPDATE broadcasts cross-app. -->
+        <receiver
+            android:name=".ConvenePlayerWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/convene_player_widget_info" />
+        </receiver>
+
+        <!-- Same exported="true" reasoning as BannerWidgetConfigureActivity above — launched
+             directly by the launcher via ACTION_APPWIDGET_CONFIGURE at placement time. -->
+        <activity
+            android:name=".ConvenePlayerConfigureActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

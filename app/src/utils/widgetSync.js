@@ -39,7 +39,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { Preferences } from '@capacitor/preferences';
-import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../data/banners.js';
+import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, CONVENE_ANIMATIONS } from '../data/banners.js';
 import { STANDARD_5STAR_CHARACTERS, ALL_4STAR_RESONATORS } from '../data/characters.js';
 import { WEAPON_DATA } from '../data/weapons.js';
 
@@ -120,9 +120,28 @@ export async function syncBannerWidget(activeBanners) {
 
     await syncGlobalPullPools();
     await syncPullAssetMap(characters, weapons);
+    await syncConveneRoster();
   } catch (err) {
     console.warn('Banner widget sync failed:', err);
   }
+}
+
+// Feeds ConvenePlayerWidget.java's configure-screen picker — every character that HAS a
+// convene animation at all (CONVENE_ANIMATIONS' full key list), not just whoever's on an
+// active banner right now, since that widget is a dedicated single-purpose "play this
+// character's convene clip" player, unrelated to what's currently featured. Piggybacks on
+// syncBannerWidget's own trigger (App.jsx's activeBanners effect) rather than needing a
+// separate call site — the roster barely changes (only grows on new character release),
+// so re-writing it on every banner-sync pass is cheap and keeps this one function as the
+// single place anything native-widget-related gets refreshed from.
+async function syncConveneRoster() {
+  const roster = Object.keys(CONVENE_ANIMATIONS).map((name) => ({
+    name,
+    artAsset: stripRelative(DEFAULT_COLLECTION_IMAGES[name] || ''),
+    conveneUrl: API_BASE_URL ? `${API_BASE_URL}/${stripRelative(CONVENE_ANIMATIONS[name])}` : null,
+  })).filter((e) => e.conveneUrl); // no usable entry without a resolvable URL
+
+  await Preferences.set({ key: 'widget_convene_roster', value: JSON.stringify({ v: WIDGET_SCHEMA_VERSION, roster }) });
 }
 
 // The four static name pools core/conveneSimulator.js draws from (standard

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ConvenePlayerWidget — a dedicated, single-purpose widget: pick ONE character (any
+     character with a convene animation, not tied to what's currently on a banner — see
+     ConvenePlayerConfigureActivity/widgetSync.js's syncConveneRoster) and play their convene
+     animation, nothing else. No banner art/Featured-4★/pull-sim — that's PulseBannerWidget's
+     job, kept as a separate widget entirely. Same RemoteViews platform limits apply (see
+     PulseBannerWidget.java's file header) — no plain <View>, only supported leaf/layout
+     classes. The ▶️ button launches FloatingVideoOverlayService (shared with
+     PulseBannerWidget's own ▶️), same floating rounded window either way. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background">
+
+    <ImageView
+        android:id="@+id/convene_player_art"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/widget_banner_scrim" />
+
+    <ImageButton
+        android:id="@+id/convene_player_settings"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="top|start"
+        android:layout_margin="10dp"
+        android:background="@android:color/transparent"
+        android:src="@android:drawable/ic_menu_preferences"
+        android:scaleType="fitCenter"
+        android:alpha="0.7"
+        android:contentDescription="@string/widget_configure_title" />
+
+    <ImageButton
+        android:id="@+id/convene_player_play"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_play_widget"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        android:contentDescription="@string/banner_widget_play_aria" />
+
+    <TextView
+        android:id="@+id/convene_player_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:padding="10dp"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="@string/app_name" />
+
+</FrameLayout>
