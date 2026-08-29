@@ -22,15 +22,19 @@ import org.json.JSONObject;
 // conversation history for why: two different use cases (a full gacha-banner dashboard vs.
 // a single-purpose video player) that don't share a natural single layout.
 //
-// Reuses FloatingVideoOverlayService for playback (the same floating rounded video window
-// PulseBannerWidget's own ▶️ uses) and WidgetAssetUtils for bitmap decoding — no new
-// platform-limit reasoning here beyond what PulseBannerWidget.java's file header already
-// documents (RemoteViews can't host a VideoView, images must be delivered as bitmaps, etc).
+// Unlike PulseBannerWidget's ▶️ (a small button on a dashboard, where popping open a
+// separate floating window for the clip is a reasonable, minor interruption),
+// this widget's ENTIRE purpose is playing a character's clip — a "media player" widget
+// that opens something else to actually play media defeats the point. So this one uses
+// ConvenePlayerPlaybackService's bitmap-frame-swap technique (same platform-limit
+// reasoning as PulseBannerWidget.java's file header: RemoteViews can't host a VideoView
+// at all) to play the clip directly on convene_player_art, not FloatingVideoOverlayService's
+// separate floating window.
 public class ConvenePlayerWidget extends AppWidgetProvider {
     private static final String TAG = "ConvenePlayerWidget";
     private static final String PREFS_NAME = "CapacitorStorage";
     private static final int WIDGET_SCHEMA_VERSION = 2; // must match widgetSync.js's syncConveneRoster
-    private static final int ART_PX = 240; // matches PulseBannerWidget.ART_PX's Binder-transaction reasoning
+    static final int ART_PX = 240; // matches PulseBannerWidget.ART_PX's Binder-transaction reasoning; also ConvenePlayerPlaybackService's frame size
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -50,7 +54,12 @@ public class ConvenePlayerWidget extends AppWidgetProvider {
         }
     }
 
-    private RemoteViews buildViews(Context context, int appWidgetId) {
+    // Package-private so ConvenePlayerPlaybackService can grab a fully-rendered RemoteViews
+    // for this widget instance, then keep overwriting just R.id.convene_player_art with
+    // successive decoded frames on top of it — the frame-playback loop needs the same
+    // "everything else" (name, gear button, etc.) as a starting point every frame, not just
+    // the art bitmap in isolation.
+    static RemoteViews buildViews(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String chosenName = prefs.getString("widget_convene_choice_" + appWidgetId, null);
         Entry entry = findEntry(prefs, chosenName);
@@ -76,8 +85,9 @@ public class ConvenePlayerWidget extends AppWidgetProvider {
 
             if (entry.conveneUrl != null) {
                 views.setViewVisibility(R.id.convene_player_play, View.VISIBLE);
-                Intent playIntent = new Intent(context, FloatingVideoOverlayService.class);
-                playIntent.putExtra(FloatingVideoOverlayService.EXTRA_VIDEO_URL, entry.conveneUrl);
+                Intent playIntent = new Intent(context, ConvenePlayerPlaybackService.class);
+                playIntent.putExtra(ConvenePlayerPlaybackService.EXTRA_APP_WIDGET_ID, appWidgetId);
+                playIntent.putExtra(ConvenePlayerPlaybackService.EXTRA_VIDEO_URL, entry.conveneUrl);
                 views.setOnClickPendingIntent(R.id.convene_player_play, PendingIntent.getService(
                         context, appWidgetId * 10, playIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));

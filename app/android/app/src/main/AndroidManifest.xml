@@ -133,6 +133,18 @@
             </intent-filter>
         </activity>
 
+        <!-- Plays ConvenePlayerWidget's clip directly ON the widget's own art slot (bitmap-
+             frame-swap, same technique WidgetPullPlaybackService used to use for the pull
+             bubble's rarity video before that moved to a floating window) rather than opening
+             a separate window — a dedicated "media player" widget should actually play media
+             on itself. Started via PendingIntent.getService() from ConvenePlayerWidget's own
+             ▶️ button (our own app, so exported="false" is correct). Deliberately a PLAIN
+             service, not a foreground one — same reasoning as this app's other short-lived
+             tap-triggered services. -->
+        <service
+            android:name=".ConvenePlayerPlaybackService"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
