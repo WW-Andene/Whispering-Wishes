@@ -299,6 +299,19 @@ const TESSERACT_VENDOR_PATH = '/vendor/tesseract';
 const OCR_INIT_TIMEOUT_MS = 45000;
 const OCR_RECOGNIZE_TIMEOUT_MS = 30000;
 
+/**
+ * Fire-and-forget prefetch of the vendored OCR assets. The service worker caches
+ * /vendor/tesseract/* cache-first (own persistent bucket, see sw.js's OCR_CACHE), so calling
+ * this as soon as the import screen mounts — well before the user taps "scan" — lets the ~7MB
+ * download happen in the background with no timeout pressure, instead of racing it against
+ * getOcrWorker's init timeout at the moment OCR is actually needed.
+ */
+export function prefetchOcrAssets() {
+  ['worker.min.js', 'tesseract-core-lstm.wasm.js', 'eng.traineddata.gz'].forEach(f => {
+    fetch(`${TESSERACT_VENDOR_PATH}/${f}`).catch(() => {});
+  });
+}
+
 function withTimeout(promise, ms, message) {
   let timer;
   const timeout = new Promise((_, reject) => {

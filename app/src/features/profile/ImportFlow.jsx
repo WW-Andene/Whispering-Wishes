@@ -6,7 +6,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Camera, Check, ClipboardList, Download, Gamepad2, Link, Loader, Monitor, Smartphone, Upload, X } from 'lucide-react';
-import { parseGachaUrl, buildFetchParams, fetchAllPools, convertToImportFormat, compressImage, extractIdsFromImage, POOL_LABELS } from '../../utils/gachaImporter.js';
+import { parseGachaUrl, buildFetchParams, fetchAllPools, convertToImportFormat, compressImage, extractIdsFromImage, prefetchOcrAssets, POOL_LABELS } from '../../utils/gachaImporter.js';
 import { MAX_IMPORT_SIZE_MB } from '../../data/constants.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { ImportGuide } from './ImportGuide.jsx';
@@ -42,6 +42,11 @@ export default function ImportFlow({
   const directVideoRef = useRef(null);
   const directStreamRef = useRef(null);
   const cameraTimerRef = useRef(null);
+
+  // Warm the service worker's OCR asset cache as soon as this screen mounts, well before the
+  // user taps "Scan" — see prefetchOcrAssets' own doc for why (removes the download from the
+  // OCR init timeout's critical path on both this and every future visit).
+  useEffect(() => { prefetchOcrAssets(); }, []);
 
   const handleDirectUrlChange = useCallback((val) => {
     setDirectUrl(val);

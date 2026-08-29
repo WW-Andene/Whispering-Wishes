@@ -41,6 +41,15 @@ const ASSET_CACHE_VERSION = 'v1';
 const ASSET_CACHE = `ww-assets-${ASSET_CACHE_VERSION}`;
 const ASSET_DIR_RE = /^\/(portraits|animated-bg|spine)\//;
 
+// Vendored Tesseract.js OCR assets (worker script, wasm core, trained data — see
+// gachaImporter.js's getOcrWorker) — cache-first and in their own version-independent bucket
+// like TILE_CACHE/ASSET_CACHE, so once fetched once they never need a live network round-trip
+// again. These never change unless the vendored files themselves are updated, so unlike
+// APP_CACHE this survives app version bumps too.
+const OCR_CACHE_VERSION = 'v1';
+const OCR_CACHE = `ww-ocr-${OCR_CACHE_VERSION}`;
+const OCR_DIR_RE = /^\/vendor\/tesseract\//;
+
 // Core app shell to precache
 // NOTE: Vite hashed assets are cache-busted automatically via networkFirst strategy.
 const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/app-title-icon/favicon.svg'];
@@ -64,7 +73,7 @@ self.addEventListener('install', (event) => {
 // version-suffixed name matches TILE_CACHE; older ww-tiles-* buckets get
 // cleaned so user-downloaded tiles aren't orphaned on the device.
 self.addEventListener('activate', (event) => {
-  const currentCaches = [APP_CACHE, IMG_CACHE, CDN_CACHE, TILE_CACHE, ASSET_CACHE];
+  const currentCaches = [APP_CACHE, IMG_CACHE, CDN_CACHE, TILE_CACHE, ASSET_CACHE, OCR_CACHE];
   event.waitUntil(
     caches.keys().then(names =>
       Promise.all(names.filter(n => !currentCaches.includes(n)).map(n => caches.delete(n)))
@@ -180,6 +189,15 @@ self.addEventListener('fetch', (event) => {
   // image LRU quietly evict something the user asked to keep.
   if (ASSET_DIR_RE.test(url.pathname)) {
     event.respondWith(cacheFirst(event.request, ASSET_CACHE));
+    return;
+  }
+
+  // Vendored OCR assets → cache-first, own persistent bucket (see OCR_CACHE above). Matched
+  // before the generic "everything else" network-first route so a slow/cellular connection
+  // only ever pays the download cost once instead of racing it against getOcrWorker's timeout
+  // on every scan attempt.
+  if (OCR_DIR_RE.test(url.pathname)) {
+    event.respondWith(cacheFirst(event.request, OCR_CACHE));
     return;
   }
 
