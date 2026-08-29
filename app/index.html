@@ -67,11 +67,18 @@
          is visually seamless — same image, same place, nothing to notice —
          and BootIntro then owns the video/fade sequence from there since
          that needs component state to know when the video has finished. -->
+    <!-- RED tint (temporary, diagnostic) — filter: sepia+hue-rotate+saturate
+         is the standard CSS trick for tinting an image toward a target hue.
+         Lets red (this static pre-React poster) be visually distinguished
+         on-device from green (BootIntro.jsx's own poster, see there) to
+         see exactly when the handoff between them happens, rather than
+         guessing at it blind. Remove once the reframe is actually
+         diagnosed. -->
     <img
       id="boot-poster"
       src="./boot-intro/boot-intro-poster.gif"
       alt=""
-      style="position:fixed;top:0;left:0;z-index:9999;object-fit:cover"
+      style="position:fixed;top:0;left:0;z-index:9999;object-fit:cover;filter:sepia(1) saturate(6) hue-rotate(-50deg)"
     />
     <script>
       // Sized off window.screen (the physical screen, in CSS px) — a fixed
