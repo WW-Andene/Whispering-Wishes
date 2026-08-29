@@ -20,63 +20,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Must be exported="true" — the system server (AppWidgetManager, a
-             different process/app) is what sends APPWIDGET_UPDATE broadcasts
-             to this receiver; that's a cross-app caller like the configure
-             Activity below, not something our own app broadcasts to itself.
-             With exported="false" the system's broadcasts are silently
-             dropped: the widget never receives its first update, never
-             renders, and never refreshes — this was very likely the real
-             "doesn't work at all" root cause, more fundamental than the
-             configure-Activity exported fix already applied below. -->
-        <receiver
-            android:name=".GachaBannerWidget"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/banner_widget_info" />
-        </receiver>
-
-        <activity
-            android:name=".ConveneAnimationActivity"
-            android:theme="@style/AppTheme.ConveneOverlay"
-            android:exported="false"
-            android:excludeFromRecents="true"
-            android:launchMode="singleInstance"
-            android:configChanges="orientation|screenSize" />
-
-        <activity
-            android:name=".WidgetPullActivity"
-            android:theme="@style/AppTheme.ConveneOverlay"
-            android:exported="false"
-            android:excludeFromRecents="true"
-            android:launchMode="singleInstance"
-            android:configChanges="orientation|screenSize" />
-
-        <!-- exported="true" is required here, unlike every other Activity in
-             this file — this one is launched directly by the LAUNCHER app
-             (a separate process/app, e.g. Pixel Launcher) via
-             ACTION_APPWIDGET_CONFIGURE the moment the widget is placed, not
-             via a PendingIntent our own app created (PendingIntents run
-             with their creating app's identity regardless of exported, which
-             is why ConveneAnimationActivity/WidgetPullActivity above are
-             correctly exported="false" — they're only ever started that
-             way). A cross-app Intent naming this component directly needs
-             exported="true", or Android silently refuses to start it and
-             the whole widget-placement flow fails — this was very likely
-             why the widget "didn't work at all". -->
-        <activity
-            android:name=".BannerWidgetConfigureActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
-        </activity>
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
