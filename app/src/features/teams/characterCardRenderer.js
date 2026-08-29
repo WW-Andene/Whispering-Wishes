@@ -506,7 +506,8 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     ctx.fillStyle = '#9ca3af'; ctx.font = '600 16px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText('ECHOES', q2x + 12, echoesY + 13);
     const titleH = 24; // PerfectSuite secondary — reserves space for the title row above the boxes
-    const echoGap = 8; // PerfectSuite primary — tighter than qGap since 5 must fit in echoesH
+    const echoGap = PAD; // matches the Weapon box's own inner padding above, so the gap between
+    // echo boxes reads evenly with the weapon panel's padding instead of looking tighter
     const echoBoxH = (echoesH - titleH - 4 * echoGap) / 5;
     echoSlots.forEach((entry, i) => {
       const boxY = echoesY + titleH + i * (echoBoxH + echoGap);
