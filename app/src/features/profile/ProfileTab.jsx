@@ -471,8 +471,12 @@ function ProfileTab({
         getImageFraming,
         toast,
       });
-    } catch {
-      toast?.addToast?.('Failed to save ID card. Try a different profile image', 'error');
+    } catch (e) {
+      // Logged with the real error/stack — the generic toast text below was previously the
+      // ONLY signal a failure ever produced (no console detail at all), which made a genuine
+      // rendering bug indistinguishable from a real CORS-blocked image.
+      console.error('ID card export failed:', e);
+      toast?.addToast?.(`Failed to save ID card${e?.message ? ': ' + e.message : ''}`, 'error');
     }
   }, [state.profile, state.server, overallStats, luckRating, ownedCharNames, collectionImages, toast, idCardFormat, trophies, getImageFraming]);
 

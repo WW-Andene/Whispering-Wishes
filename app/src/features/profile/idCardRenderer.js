@@ -4,7 +4,13 @@
 // Pure async function: takes data, produces downloadable canvas image.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { ALL_CHARACTERS } from '../../data/characters.js';
+import { ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
+import { ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from '../../data/weaponLists.js';
+import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
+
+// Trophy tier sort order — duplicated from IdCardModal.jsx's own local const (not exported
+// there) since both need the exact same ordering for a consistent Trophies row.
+const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4, pink: 5, cyan: 6, red: 7, green: 8, blue: 9, gray: 10 };
 
 // The real Android home-screen launcher icon (copied from
 // android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png), used as the ID card's default
