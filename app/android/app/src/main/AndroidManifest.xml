@@ -68,6 +68,27 @@
             android:name=".WidgetVideoPlaybackService"
             android:exported="false" />
 
+        <!-- Same reasoning as WidgetVideoPlaybackService above (plain, non-foreground,
+             started via PendingIntent.getService() from PulseBannerWidget's ×1/×10 pills) —
+             this one owns the whole native pull sequence: rarity video frames, then each
+             pulled item's own portrait, then the colored-pills results summary. -->
+        <service
+            android:name=".WidgetPullPlaybackService"
+            android:exported="false" />
+
+        <!-- Backs widget_banner.xml's widget_pull_results_list (set via
+             RemoteViews.setRemoteAdapter in WidgetPullPlaybackService). The launcher process
+             binds to this to fetch row views, so android.permission.BIND_REMOTEVIEWS is
+             required here specifically — without it, any app could bind arbitrary
+             RemoteViewsFactory data into this app's widget. exported="true" only in the sense
+             that the OS-enforced permission gates who can actually bind, the same pattern
+             every RemoteViewsService on Android uses (this is NOT the same "cross-app
+             component" reasoning as BannerWidgetConfigureActivity's exported="true" below). -->
+        <service
+            android:name=".PullResultsRemoteViewsService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:exported="true" />
+
         <!-- exported="true" is required here, unlike every other Activity in
              this file — this one is launched directly by the LAUNCHER app
              (a separate process/app, e.g. Pixel Launcher) via

@@ -424,18 +424,22 @@ public class PulseBannerWidget extends AppWidgetProvider {
     }
 
     private static PendingIntent pullPendingIntent(Context context, int appWidgetId, String category, String name, int count) {
-        Intent intent = new Intent(context, WidgetPullActivity.class);
-        intent.putExtra(WidgetPullActivity.EXTRA_COUNT, count);
-        intent.putExtra(WidgetPullActivity.EXTRA_CATEGORY, category);
+        // Plays entirely on the widget's own surface (video frames, then each pulled item's
+        // portrait one at a time, then a colored-pills results summary — see
+        // WidgetPullPlaybackService's file header) instead of launching WidgetPullActivity,
+        // which stays only as that service's own fallback if the native roll/decode fails.
+        Intent intent = new Intent(context, WidgetPullPlaybackService.class);
+        intent.putExtra(WidgetPullPlaybackService.EXTRA_APP_WIDGET_ID, appWidgetId);
+        intent.putExtra(WidgetPullPlaybackService.EXTRA_COUNT, count);
+        intent.putExtra(WidgetPullPlaybackService.EXTRA_CATEGORY, category);
         // The SPECIFIC banner this widget is configured to (not just its category) — two widgets
         // both set to "character" can now point at two different currently-active character
         // banners, so the pull-sim needs to know exactly which one to roll odds/featured4 against.
-        intent.putExtra(WidgetPullActivity.EXTRA_NAME, name);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(WidgetPullPlaybackService.EXTRA_NAME, name);
         // Distinct request codes per (widget instance × count) so the two
         // pills' PendingIntents don't collide/overwrite each other.
         int requestCode = appWidgetId * 10 + 2 + (count == 1 ? 0 : 1);
-        return PendingIntent.getActivity(context, requestCode, intent,
+        return PendingIntent.getService(context, requestCode, intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 

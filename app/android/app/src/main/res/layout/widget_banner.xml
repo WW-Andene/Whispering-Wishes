@@ -218,6 +218,24 @@
                 android:visibility="gone"
                 android:contentDescription="@string/banner_widget_play_aria" />
         </LinearLayout>
+
+        <!-- Pull-results summary — shown only during WidgetPullPlaybackService's results
+             phase (art/name/pills/bottom row all still present underneath, but this list's
+             own opaque background fully covers them while visible). ListView is one of
+             RemoteViews' actually-supported leaf widgets for a VARIABLE-length list (unlike
+             a GridLayout, which doesn't flex cleanly to an arbitrary ×1/×10 pull count here)
+             — content comes from PullResultsRemoteViewsService, one small colored-by-rarity
+             name pill per pulled item (widget_pull_pill_item.xml), wrapped naturally
+             regardless of whether there are 1 or 10. -->
+        <ListView
+            android:id="@+id/widget_pull_results_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#E6141824"
+            android:divider="@null"
+            android:scrollbars="none"
+            android:padding="8dp"
+            android:visibility="gone" />
     </FrameLayout>
 
     <FrameLayout

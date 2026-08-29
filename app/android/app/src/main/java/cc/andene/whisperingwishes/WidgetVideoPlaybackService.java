@@ -4,13 +4,10 @@ import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.media.MediaMetadataRetriever;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import java.util.ArrayList;
 import java.util.List;
 
 // Plays a video "directly on" the widget's own surface by decoding it into a short
@@ -54,11 +51,9 @@ public class WidgetVideoPlaybackService extends Service {
     // Which ImageView gets the frame swaps — R.id.widget_art (primary block) by default, or
     // R.id.widget_secondary_art for the secondary block's own ▶️ button.
     public static final String EXTRA_TARGET_VIEW_ID = "widget_video_target_view_id";
-    // When set, the fallback on decode failure is WidgetPullActivity (with these two
-    // extras) instead of ConveneAnimationActivity — used by the pull-pill path.
-    public static final String EXTRA_FALLBACK_PULL_COUNT = "widget_video_fallback_pull_count";
-    public static final String EXTRA_FALLBACK_PULL_CATEGORY = "widget_video_fallback_pull_category";
-    // Used by the ▶️ convene-animation path's fallback only.
+    // Used by the fallback (ConveneAnimationActivity) on decode failure — this service is
+    // only ever used for the ▶️ convene-animation path; the pull-pill path has its own
+    // WidgetPullPlaybackService with its own fallback to WidgetPullActivity.
     public static final String EXTRA_FALLBACK_CHAR_NAME = "widget_video_fallback_char_name";
 
     private Thread worker;
@@ -98,7 +93,7 @@ public class WidgetVideoPlaybackService extends Service {
     }
 
     private void runPlayback(int appWidgetId, String source, int targetViewId) throws Exception {
-        List<Bitmap> frames = extractFrames(source);
+        List<Bitmap> frames = WidgetFrameUtils.extractFrames(this, source, MAX_FRAMES, FRAME_INTERVAL_MS, FRAME_PX);
         if (frames.isEmpty()) throw new IllegalStateException("No frames decoded from " + source);
 
         AppWidgetManager manager = AppWidgetManager.getInstance(this);
@@ -117,62 +112,7 @@ public class WidgetVideoPlaybackService extends Service {
         }
     }
 
-    // source is either an http(s) URL (convene-animations/ streamed clips — see
-    // widgetSync.js) or "asset:<path>" for a bundled local clip (the convene-sim/
-    // rarity clips WidgetPullSimulator's results play). MediaMetadataRetriever
-    // supports both a network Uri and an AssetFileDescriptor as a data source.
-    private List<Bitmap> extractFrames(String source) throws Exception {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        try {
-            if (source.startsWith("asset:")) {
-                String assetPath = "public/" + source.substring("asset:".length());
-                try (android.content.res.AssetFileDescriptor afd = getAssets().openFd(assetPath)) {
-                    retriever.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
-                }
-            } else {
-                retriever.setDataSource(source, new java.util.HashMap<>());
-            }
-
-            String durationStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            long durationMs = durationStr != null ? Long.parseLong(durationStr) : 0;
-            if (durationMs <= 0) durationMs = 3000; // sane fallback for a metadata-less source
-
-            int frameCount = Math.min(MAX_FRAMES, Math.max(1, (int) (durationMs / FRAME_INTERVAL_MS)));
-            List<Bitmap> frames = new ArrayList<>(frameCount);
-            for (int i = 0; i < frameCount; i++) {
-                long timeUs = (durationMs * i / frameCount) * 1000L;
-                Bitmap raw = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-                if (raw == null) continue;
-                frames.add(downscale(raw, FRAME_PX));
-            }
-            return frames;
-        } finally {
-            retriever.release();
-        }
-    }
-
-    private Bitmap downscale(Bitmap src, int targetPx) {
-        int longest = Math.max(src.getWidth(), src.getHeight());
-        if (longest <= targetPx) return src;
-        float scale = (float) targetPx / longest;
-        Matrix m = new Matrix();
-        m.postScale(scale, scale);
-        Bitmap scaled = Bitmap.createBitmap(src, 0, 0, src.getWidth(), src.getHeight(), m, true);
-        if (scaled != src) src.recycle();
-        return scaled;
-    }
-
     private void launchFallback(Intent originalIntent, int appWidgetId) {
-        String pullCategory = originalIntent.getStringExtra(EXTRA_FALLBACK_PULL_CATEGORY);
-        if (pullCategory != null) {
-            int count = originalIntent.getIntExtra(EXTRA_FALLBACK_PULL_COUNT, 1);
-            Intent fallback = new Intent(this, WidgetPullActivity.class);
-            fallback.putExtra(WidgetPullActivity.EXTRA_COUNT, count);
-            fallback.putExtra(WidgetPullActivity.EXTRA_CATEGORY, pullCategory);
-            fallback.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(fallback);
-            return;
-        }
         String videoUrl = originalIntent.getStringExtra(EXTRA_VIDEO_SOURCE);
         Intent fallback = new Intent(this, ConveneAnimationActivity.class);
         fallback.putExtra(ConveneAnimationActivity.EXTRA_VIDEO_URL, videoUrl);
