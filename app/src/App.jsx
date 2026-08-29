@@ -82,7 +82,6 @@ import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storag
 import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
 import { t, formatDate, useAppLocale } from './utils/i18n.js';
 import { useIsReferenceDevice, useUiScale } from './hooks/useIsReferenceDevice.js';
-import { syncBannerWidget } from './utils/widgetSync.js';
 import { initGlassTouch } from './utils/glassTouch.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
@@ -204,12 +203,6 @@ function WhisperingWishesInner() {
       dispatch({ type: 'SET_SERVER', server: 'Europe' });
     }
   }, [state.server, toast]);
-  // Keep the Android home-screen banner widget (art, featured 4★s, convene
-  // video) in sync with whichever character banner is currently featured —
-  // no-op on web
-  useEffect(() => {
-    syncBannerWidget(activeBanners);
-  }, [activeBanners]);
   // One-time global listener for the glass-touch press effect (see glassTouch.js)
   useEffect(() => {
     initGlassTouch();
