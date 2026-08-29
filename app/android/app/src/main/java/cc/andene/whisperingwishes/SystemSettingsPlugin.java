@@ -2,10 +2,12 @@ package cc.andene.whisperingwishes;
 
 import android.content.Intent;
 import android.provider.Settings;
+import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.google.firebase.FirebaseApp;
 
 // Small in-project Capacitor plugin (no separate npm package) — opens the
 // OS-level Sound & Vibration settings screen. Exists because some OEM
@@ -27,5 +29,29 @@ public class SystemSettingsPlugin extends Plugin {
         } catch (Exception e) {
             call.reject("Could not open sound settings: " + e.getMessage());
         }
+    }
+
+    // Without android/app/google-services.json, no FirebaseApp instance ever gets
+    // initialized (build.gradle's `apply plugin: 'com.google.gms.google-services'`
+    // above is conditional on that file existing). @capacitor/push-notifications'
+    // register() calls FirebaseMessaging.getInstance() internally, which throws
+    // IllegalStateException("Default FirebaseApp is not initialized") when no
+    // FirebaseApp exists — and that throw happens off the plugin-call stack (inside
+    // the Firebase SDK's own background task dispatch), so it becomes an uncaught
+    // exception that crashes the whole app rather than a rejected JS promise. Worse,
+    // since pushNotifications.js persists the opt-in flag and auto-calls register()
+    // on every ProfileTab mount once opted in, this became a crash-on-every-launch
+    // loop. JS checks this before ever calling register()/requestPermissions().
+    @PluginMethod
+    public void isFirebaseAvailable(PluginCall call) {
+        JSObject ret = new JSObject();
+        boolean available;
+        try {
+            available = !FirebaseApp.getApps(getContext()).isEmpty();
+        } catch (Throwable t) {
+            available = false;
+        }
+        ret.put("available", available);
+        call.resolve(ret);
     }
 }

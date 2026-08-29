@@ -43,6 +43,8 @@ export default function PushNotificationsCard({ toast }) {
         if (res.granted) {
           setEnabled(true);
           haptic.success();
+        } else if (res.unavailable) {
+          toast?.addToast?.(t('profile.pushNotifications.unavailable'), 'warning');
         } else {
           toast?.addToast?.(t('profile.pushNotifications.permissionDenied'), 'warning');
         }

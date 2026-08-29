@@ -29,3 +29,19 @@ export async function openSoundSettings() {
     return false;
   }
 }
+
+// Whether a real Firebase project (android/app/google-services.json) was present
+// at build time. When it's missing, FirebaseApp never initializes and calling
+// @capacitor/push-notifications' register() crashes the app natively instead of
+// rejecting the JS promise — see SystemSettingsPlugin.java's isFirebaseAvailable
+// for why. pushNotifications.js checks this before ever touching that plugin.
+export async function isFirebaseAvailable() {
+  if (!isNativePlatform()) return false;
+  try {
+    const res = await SystemSettings.isFirebaseAvailable();
+    return !!res.available;
+  } catch (err) {
+    console.warn('isFirebaseAvailable check failed:', err.message);
+    return false;
+  }
+}

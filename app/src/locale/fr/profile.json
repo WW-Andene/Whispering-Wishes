@@ -25,6 +25,7 @@
     "enable": "Activer les notifications",
     "disable": "Désactiver les notifications",
     "permissionDenied": "Permission refusée — activez-la dans les paramètres Android de l'application.",
+    "unavailable": "Les notifications push ne sont pas encore configurées dans cette version.",
     "error": "Impossible de configurer les notifications : {{error}}",
     "registering": "Enregistrement…",
     "copyToken": "Copier le jeton de l'appareil",

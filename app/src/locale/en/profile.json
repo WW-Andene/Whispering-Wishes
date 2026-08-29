@@ -25,6 +25,7 @@
     "enable": "Enable Notifications",
     "disable": "Disable Notifications",
     "permissionDenied": "Notification permission denied — enable it in Android's app settings.",
+    "unavailable": "Push notifications aren't set up in this build yet.",
     "error": "Couldn't set up notifications: {{error}}",
     "registering": "Registering…",
     "copyToken": "Copy Device Token",

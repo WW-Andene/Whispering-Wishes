@@ -23,6 +23,7 @@
 
 import { PushNotifications } from '@capacitor/push-notifications';
 import { apiUrl } from './apiBase.js';
+import { isFirebaseAvailable } from './systemSettings.js';
 
 export const isNativePlatform = () =>
   typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
@@ -88,6 +89,17 @@ function attachListeners(onToken, onNotification) {
 // against attaching the JS listeners more than once.
 export async function initPushNotifications({ onToken, onNotification } = {}) {
   if (!isNativePlatform()) return { supported: false };
+
+  // No android/app/google-services.json at build time means no FirebaseApp ever
+  // initializes — calling PushNotifications.register() (or even requestPermissions,
+  // which touches the same FirebaseMessaging instance on some plugin versions) in
+  // that state throws natively and crashes the whole app rather than rejecting a
+  // promise, so this must be checked before touching the plugin at all. See
+  // SystemSettingsPlugin.java's isFirebaseAvailable for the full explanation.
+  if (!(await isFirebaseAvailable())) {
+    try { localStorage.setItem(OPT_IN_STORAGE_KEY, '0'); } catch {}
+    return { supported: true, granted: false, unavailable: true };
+  }
 
   attachListeners(onToken, onNotification);
 
