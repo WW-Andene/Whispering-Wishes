@@ -130,8 +130,19 @@ public class MainActivity extends BridgeActivity {
             // native poster is what's visible everywhere on screen for
             // those first frames, not just the bar insets.
             webView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            // __bootInsetsReady is a plain boolean flag, not a callback
+            // invocation (window.__onBootInsetsReady(), tried previously —
+            // reported by on-device testing to crash the boot poster; most
+            // likely because that function isn't guaranteed to exist yet at
+            // this exact point in the WebView's script execution, and
+            // calling a possibly-undefined global from injected JS is fatal
+            // to this evaluateJavascript call rather than a caught error on
+            // the page side). index.html just polls this flag on a plain
+            // interval instead — reading a boolean can never throw, so
+            // there's nothing here for the page side to crash on.
             String js = "document.documentElement.style.setProperty('--safe-area-top','" + topDp + "px');"
-                    + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');";
+                    + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');"
+                    + "window.__bootInsetsReady = true;";
             webView.evaluateJavascript(js, null);
         }
         // Boot splash (index.html) autoplays a muted <video> the instant

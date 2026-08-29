@@ -100,6 +100,55 @@
           '</div>'
         );
       })();
+
+      // Removes this static poster as soon as MainActivity.java's native
+      // code confirms the real "frame switch" moment (edge-to-edge insets
+      // settled) instead of waiting on BootIntro.jsx's own mount, which can
+      // lag behind it by however long the JS bundle takes to fetch/parse/
+      // execute — the gap this poster is up for the reframe to appear in.
+      //
+      // A prior attempt at this (window.__onBootInsetsReady(), a callback
+      // invoked directly from Java-injected JS) reportedly crashed the
+      // poster on-device — most likely because evaluateJavascript's own
+      // script can run before this function has been defined yet, and
+      // calling an undefined global from injected JS throws there rather
+      // than anywhere this page's own try/catch can see it. This version
+      // only ever reads a boolean (window.__bootInsetsReady) from a plain
+      // interval on the page's own side — reading a boolean can't throw,
+      // so there's nothing for the previous failure mode to repeat. Wrapped
+      // in try/catch anyway, and capped with a fallback timeout in case the
+      // native signal never arrives at all (older WebView, injection
+      // failure, etc.) so the poster is never stuck up forever.
+      (function () {
+        var removed = false;
+        function removeStaticPoster() {
+          if (removed) return;
+          removed = true;
+          try {
+            var bar = document.getElementById('boot-poster');
+            var page = document.getElementById('boot-poster-page');
+            if (bar) bar.remove();
+            if (page) page.remove();
+          } catch (e) {
+            // Nothing to do — worst case the static poster stays until
+            // BootIntro.jsx's own unconditional removal-on-mount runs.
+          }
+        }
+        var pollId = setInterval(function () {
+          try {
+            if (window.__bootInsetsReady) {
+              clearInterval(pollId);
+              removeStaticPoster();
+            }
+          } catch (e) {
+            clearInterval(pollId);
+          }
+        }, 16);
+        setTimeout(function () {
+          clearInterval(pollId);
+          removeStaticPoster();
+        }, 2000);
+      })();
     </script>
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
