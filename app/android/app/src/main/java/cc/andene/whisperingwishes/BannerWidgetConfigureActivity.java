@@ -16,7 +16,7 @@ import org.json.JSONArray;
 // and the ACTION_APPWIDGET_CONFIGURE intent-filter in the manifest) — lets
 // the user pick which banner category (Resonator or Weapon) this widget
 // instance shows. Reopened later, the exact same way, by the widget's own
-// gear icon (BannerWidget.java's widget_settings PendingIntent) so the
+// gear icon (GachaBannerWidget.java's widget_settings PendingIntent) so the
 // choice can be changed afterward too — that second entry point isn't part
 // of the system placement flow, it's just a normal Activity launch with
 // the same appWidgetId passed straight through.
@@ -113,7 +113,7 @@ public class BannerWidgetConfigureActivity extends Activity {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         prefs.edit().putString("widget_category_" + appWidgetId, category).apply();
 
-        BannerWidget.requestUpdateSingle(this, appWidgetId);
+        GachaBannerWidget.requestUpdateSingle(this, appWidgetId);
 
         Intent resultValue = new Intent();
         resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);

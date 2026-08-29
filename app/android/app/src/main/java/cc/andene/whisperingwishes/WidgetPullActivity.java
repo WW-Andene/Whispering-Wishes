@@ -24,7 +24,7 @@ import org.json.JSONObject;
 import java.util.List;
 import java.util.Locale;
 
-// Launched by the widget's ×1/×10 buttons (BannerWidget.java) — rolls a
+// Launched by the widget's ×1/×10 buttons (GachaBannerWidget.java) — rolls a
 // pull entirely natively (WidgetPullSimulator.java, no app launch), plays
 // the matching rarity clip (bundled locally under public/convene-sim/,
 // unlike convene-animations/ — see capacitor-build/build.mjs's

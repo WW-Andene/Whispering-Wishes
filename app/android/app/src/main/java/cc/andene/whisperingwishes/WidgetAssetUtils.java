@@ -14,11 +14,11 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 
-// Used by BannerWidget.java to turn a bundled web asset path (from
+// Used by GachaBannerWidget.java to turn a bundled web asset path (from
 // DEFAULT_COLLECTION_IMAGES/banner art, written into SharedPreferences by
 // widgetSync.js) into a Bitmap, since RemoteViews can't load an image by
-// path/URL itself — see BannerWidget.java's file header for the platform
-// reasoning. Split out of BannerWidget.java on its own since an earlier,
+// path/URL itself — see GachaBannerWidget.java's file header for the platform
+// reasoning. Split out of GachaBannerWidget.java on its own since an earlier,
 // since-removed floating-overlay feature needed the exact same logic too.
 final class WidgetAssetUtils {
     private static final String TAG = "WidgetAssetUtils";

@@ -386,6 +386,6 @@ public class MainActivity extends BridgeActivity {
         // Android's own 30-minute floor — this is the only other moment its
         // data could have changed (widgetSync.js runs on app mount/banner
         // change), so it's the natural place to ask for a sooner update.
-        BannerWidget.requestUpdate(this);
+        GachaBannerWidget.requestUpdate(this);
     }
 }

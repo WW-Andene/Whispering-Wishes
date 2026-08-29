@@ -71,7 +71,7 @@
     </style>
 
     <!-- ConveneAnimationActivity — full-screen black, no action bar/title,
-         launched from BannerWidget.java's ▶️ button. -->
+         launched from GachaBannerWidget.java's ▶️ button. -->
     <style name="AppTheme.ConveneOverlay" parent="Theme.AppCompat.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
