@@ -182,10 +182,10 @@ final class WidgetAssetUtils {
     }
 
     // Same rounding as roundedCorners, PLUS widget_banner_scrim.xml's own bottom-to-top dark
-    // gradient baked into the SAME bitmap — matching PulseBannerWidget.java/
-    // ConvenePlayerWidget.java's own layouts, which used to draw that gradient as a SEPARATE,
-    // square-cornered FrameLayout stacked on top of the (rounded) art ImageView instead. A
-    // near-opaque square overlay drawn over an already-rounded image paints right back over
+    // gradient baked into the SAME bitmap — matching PulseBannerWidget.java's layout, which
+    // used to draw that gradient as a SEPARATE, square-cornered FrameLayout stacked on top of
+    // the (rounded) art ImageView instead. A near-opaque square overlay drawn over an
+    // already-rounded image paints right back over
     // whichever corners sit under its darkest edge — the art looked rounded, the widget itself
     // didn't. Since canvas.drawRoundRect() only ever paints within the rounded-rect shape
     // regardless of the Paint's shader, drawing the gradient with a SECOND drawRoundRect call

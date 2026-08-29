@@ -126,14 +126,15 @@ export async function syncBannerWidget(activeBanners) {
   }
 }
 
-// Feeds ConvenePlayerWidget.java's configure-screen picker — every character that HAS a
+// Feeds ConveneRoster.java's native lookup (PullBubbleService plays a pulled 4★/5★
+// character's own convene clip as part of its reveal sequence) — every character that HAS a
 // convene animation at all (CONVENE_ANIMATIONS' full key list), not just whoever's on an
-// active banner right now, since that widget is a dedicated single-purpose "play this
-// character's convene clip" player, unrelated to what's currently featured. Piggybacks on
-// syncBannerWidget's own trigger (App.jsx's activeBanners effect) rather than needing a
-// separate call site — the roster barely changes (only grows on new character release),
-// so re-writing it on every banner-sync pass is cheap and keeps this one function as the
-// single place anything native-widget-related gets refreshed from.
+// active banner right now, since a pull can land on any released character regardless of
+// what's currently featured. Piggybacks on syncBannerWidget's own trigger (App.jsx's
+// activeBanners effect) rather than needing a separate call site — the roster barely changes
+// (only grows on new character release), so re-writing it on every banner-sync pass is cheap
+// and keeps this one function as the single place anything native-widget-related gets
+// refreshed from.
 async function syncConveneRoster() {
   const roster = Object.keys(CONVENE_ANIMATIONS).map((name) => ({
     name,

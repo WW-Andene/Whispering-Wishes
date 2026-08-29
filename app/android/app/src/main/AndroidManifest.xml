@@ -107,54 +107,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Dedicated "convene player" widget — separate from PulseBannerWidget above by
-             design (a single-purpose video player vs. a full banner dashboard). Same
-             exported="true" reasoning as PulseBannerWidget's own receiver: the system
-             server sends APPWIDGET_UPDATE broadcasts cross-app. -->
-        <receiver
-            android:name=".ConvenePlayerWidget"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/convene_player_widget_info" />
-        </receiver>
-
-        <!-- Same exported="true" reasoning as BannerWidgetConfigureActivity above — launched
-             directly by the launcher via ACTION_APPWIDGET_CONFIGURE at placement time. -->
-        <activity
-            android:name=".ConvenePlayerConfigureActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
-        </activity>
-
-        <!-- Plays ConvenePlayerWidget's clip directly ON the widget's own art slot (bitmap-
-             frame-swap — RemoteViews still can't host a VideoView), looping it INDEFINITELY
-             at 30fps until tapped again — a dedicated "media player" widget should actually
-             play media on itself, on a loop, not once and stop. UNLIKE this app's other
-             short-lived tap-triggered services, this one is a genuine FOREGROUND service
-             (foregroundServiceType="specialUse", reusing the same declared justification as
-             PullBubbleService below — a persistent, user-toggled convenience the user
-             explicitly started and stops the same way): an infinite loop in a plain service
-             would get killed by Android's background-execution limits after a short grace
-             period regardless of what the code does. Started via PendingIntent.getService()
-             from ConvenePlayerWidget's own ▶️ button (our own app, so exported="false" is
-             correct); the same intent target toggles the loop off if that widget instance is
-             already playing. -->
-        <service
-            android:name=".ConvenePlayerPlaybackService"
-            android:exported="false"
-            android:foregroundServiceType="specialUse">
-            <property
-                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Persistent looping playback of a convene animation on a home-screen widget the user explicitly started; the user stops it by tapping the widget's play control again." />
-        </service>
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

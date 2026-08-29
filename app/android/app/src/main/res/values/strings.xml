@@ -5,7 +5,6 @@
     <string name="package_name">cc.andene.whisperingwishes</string>
     <string name="custom_url_scheme">cc.andene.whisperingwishes</string>
     <string name="banner_widget_description">Shows the featured gacha banner — art, Featured 4★s, and a button to play the convene animation</string>
-    <string name="convene_player_widget_description">Pick a character and play their convene animation — a small, dedicated video player, no banner or pull-sim data</string>
     <string name="widget_configure_title">Choose a banner</string>
     <string name="widget_configure_unavailable">No active banners right now</string>
     <string name="widget_configure_confirm">Add Widget</string>
@@ -17,9 +16,6 @@
     <string name="widget_pull_x1">×1</string>
     <string name="widget_pull_x10">×10</string>
     <string name="pull_bubble_notification_channel_name">Pull Bubble</string>
-    <string name="convene_player_notification_channel_name">Convene Player</string>
-    <string name="convene_player_notification_title">Convene animation looping</string>
-    <string name="convene_player_notification_text">Tap the widget\'s ▶️ again to stop it</string>
     <string name="pull_bubble_notification_title">Pull bubble is active</string>
     <string name="pull_bubble_notification_text">Tap to open the app, or drag the bubble to ✕ to turn it off</string>
     <string name="pull_bubble_remove_aria">Drag here to turn off the pull bubble</string>

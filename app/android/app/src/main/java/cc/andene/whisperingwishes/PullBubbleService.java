@@ -376,8 +376,8 @@ public class PullBubbleService extends Service {
     //
     // Sequenced like ConvenePullSimModal.jsx's web reveal, not "roll everything and dump it
     // all on screen at once": rarity clip first, then each item gets its OWN turn — a 5★ gets
-    // the 5star-reveal beat, a 4★/5★ character with its own convene clip (same data
-    // ConvenePlayerWidget reads) plays that clip — and only once an item's own video(s) finish
+    // the 5star-reveal beat, a 4★/5★ character with its own convene clip (via ConveneRoster's
+    // lookup) plays that clip — and only once an item's own video(s) finish
     // does that item's icon actually appear (with a colored glow burst), before moving on to
     // the next one. An item with no video of its own still waits its turn in the same
     // sequence, just with a short stagger instead of a video, so the whole reveal reads as one
@@ -453,9 +453,8 @@ public class PullBubbleService extends Service {
             if (revealUri != null) videos.add(revealUri.toString());
         }
         if (result.rarity >= 4 && "character".equals(result.type) && result.name != null) {
-            // Same widget_convene_roster data ConvenePlayerWidget's own picker reads — a
-            // character's own convene clip, not the generic per-rarity convene-sim reveal.
-            ConvenePlayerWidget.Entry entry = ConvenePlayerWidget.findEntry(
+            // A character's own convene clip, not the generic per-rarity convene-sim reveal.
+            ConveneRoster.Entry entry = ConveneRoster.findEntry(
                     getSharedPreferences(PREFS_NAME, MODE_PRIVATE), result.name);
             if (entry != null && entry.conveneUrl != null) videos.add(entry.conveneUrl);
         }
