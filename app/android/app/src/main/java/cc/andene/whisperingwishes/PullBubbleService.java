@@ -174,7 +174,15 @@ public class PullBubbleService extends Service {
                 : WindowManager.LayoutParams.TYPE_PHONE;
         mainBubbleParams = new WindowManager.LayoutParams(
                 sizePx, sizePx, overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                // FLAG_NOT_FOCUSABLE is what actually keeps a bubble/sub-bubble/result-icon
+                // window from interfering with whatever's underneath it — WITHOUT it, a
+                // TYPE_APPLICATION_OVERLAY window is focusable by default and can steal input
+                // focus from other apps/the keyboard even outside its own small bounds (this
+                // was likely the "blocks touch on screen" report — a focusable overlay affects
+                // routing well beyond its visible pixels, unlike a purely visual widget). Also
+                // implies FLAG_NOT_TOUCH_MODAL per the platform docs, but both are kept
+                // explicit for clarity. removeTarget already had this; these didn't.
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         mainBubbleParams.gravity = Gravity.TOP | Gravity.START;
         // Starting position: right edge, vertically centered — see file header's
@@ -260,13 +268,22 @@ public class PullBubbleService extends Service {
                 : WindowManager.LayoutParams.TYPE_PHONE;
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 sizePx, sizePx, overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                // FLAG_NOT_FOCUSABLE is what actually keeps a bubble/sub-bubble/result-icon
+                // window from interfering with whatever's underneath it — WITHOUT it, a
+                // TYPE_APPLICATION_OVERLAY window is focusable by default and can steal input
+                // focus from other apps/the keyboard even outside its own small bounds (this
+                // was likely the "blocks touch on screen" report — a focusable overlay affects
+                // routing well beyond its visible pixels, unlike a purely visual widget). Also
+                // implies FLAG_NOT_TOUCH_MODAL per the platform docs, but both are kept
+                // explicit for clarity. removeTarget already had this; these didn't.
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
         positionSubBubble(params, stackIndex, (int) (BUBBLE_SIZE_DP * density), sizePx);
 
         root.setTag(params);
         root.setOnClickListener(v -> {
+            if (rolling) return; // a reveal sequence is already stepping through its videos
             collapseSubBubbles();
             expanded = false;
             rollAndPlay(count);
@@ -356,6 +373,19 @@ public class PullBubbleService extends Service {
     }
 
     // ── Roll + play + result icons ───────────────────────────────────────────
+    //
+    // Sequenced like ConvenePullSimModal.jsx's web reveal, not "roll everything and dump it
+    // all on screen at once": rarity clip first, then each item gets its OWN turn — a 5★ gets
+    // the 5star-reveal beat, a 4★/5★ character with its own convene clip (same data
+    // ConvenePlayerWidget reads) plays that clip — and only once an item's own video(s) finish
+    // does that item's icon actually appear (with a colored glow burst), before moving on to
+    // the next one. An item with no video of its own still waits its turn in the same
+    // sequence, just with a short stagger instead of a video, so the whole reveal reads as one
+    // continuous wave rather than a video for some items and an instant dump for the rest.
+
+    private final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private boolean rolling;
+    private static final long WAVE_STAGGER_MS = 220; // pacing for an item with no video of its own
 
     private void rollAndPlay(int count) {
         WidgetPullSimulator.PullSimResult sim;
@@ -370,33 +400,6 @@ public class PullBubbleService extends Service {
             return;
         }
 
-        // NOT a plain "file:///android_asset/..." string — VideoView/MediaPlayer can't
-        // actually play that URI scheme at all (see WidgetAssetUtils.cachedAssetVideoUri's
-        // own comment); this copies the bundled clip into the cache dir once and hands back
-        // a real file:// Uri VideoView can actually open.
-        Uri videoUri = WidgetAssetUtils.cachedAssetVideoUri(this, "convene-sim/" + sim.video + ".mp4");
-        if (videoUri != null) {
-            Intent playIntent = new Intent(this, FloatingVideoOverlayService.class);
-            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_VIDEO_URL, videoUri.toString());
-            // Anchored to the main bubble's own current position — unlike a home-screen
-            // widget's ▶️ button, this service DOES know exactly where its own trigger is on
-            // screen, so the video plays visibly connected to the bubble you just tapped
-            // ("on the side" of it) instead of a fixed, unrelated screen corner.
-            if (mainBubbleParams != null) {
-                playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_X, mainBubbleParams.x);
-                playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_Y, mainBubbleParams.y);
-            }
-            startService(playIntent);
-        } else {
-            Log.w(TAG, "Could not resolve pull result video: " + sim.video);
-        }
-
-        // Result icons still show even if the video failed to resolve — the pull itself
-        // happened either way, and this is the only visible record of what was pulled.
-        showResultIcons(sim.results);
-    }
-
-    private void showResultIcons(List<WidgetPullSimulator.PullResult> results) {
         clearResultIcons();
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         JSONObject assetMap;
@@ -406,14 +409,75 @@ public class PullBubbleService extends Service {
             assetMap = new JSONObject();
         }
 
-        for (int i = 0; i < results.size(); i++) {
-            addResultIcon(results.get(i), assetMap, i);
+        rolling = true;
+        List<String> rarityVideo = new ArrayList<>();
+        // NOT a plain "file:///android_asset/..." string — VideoView/MediaPlayer can't
+        // actually play that URI scheme at all (see WidgetAssetUtils.cachedAssetVideoUri's
+        // own comment); this copies the bundled clip into the cache dir once and hands back
+        // a real file:// Uri VideoView can actually open.
+        Uri rarityUri = WidgetAssetUtils.cachedAssetVideoUri(this, "convene-sim/" + sim.video + ".mp4");
+        if (rarityUri != null) rarityVideo.add(rarityUri.toString());
+        else Log.w(TAG, "Could not resolve pull rarity video: " + sim.video);
+
+        JSONObject finalAssetMap = assetMap;
+        playVideosThen(rarityVideo, () -> playItemStep(sim.results, 0, finalAssetMap));
+    }
+
+    // Plays `urls` (via FloatingVideoOverlayService, chained/anchored the same way as before)
+    // and calls `onDone` once they've ALL finished — or immediately, synchronously, if there's
+    // nothing to play, so callers don't need two separate branches for "has a video" vs. not.
+    private void playVideosThen(List<String> urls, Runnable onDone) {
+        if (urls.isEmpty()) { onDone.run(); return; }
+        FloatingVideoOverlayService.setCallback(() -> handler.post(onDone));
+        Intent playIntent = new Intent(this, FloatingVideoOverlayService.class);
+        playIntent.putStringArrayListExtra(FloatingVideoOverlayService.EXTRA_VIDEO_URLS, new ArrayList<>(urls));
+        // Anchored to the main bubble's own current position — unlike a home-screen widget's
+        // ▶️ button, this service DOES know exactly where its own trigger is on screen, so the
+        // video plays visibly connected to the bubble you just tapped ("on the side" of it)
+        // instead of a fixed, unrelated screen corner.
+        if (mainBubbleParams != null) {
+            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_X, mainBubbleParams.x);
+            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_Y, mainBubbleParams.y);
+        }
+        startService(playIntent);
+    }
+
+    // Steps through sim.results one at a time — mirrors ConvenePullSimModal.jsx's goToItem.
+    private void playItemStep(List<WidgetPullSimulator.PullResult> results, int index, JSONObject assetMap) {
+        if (index >= results.size()) { rolling = false; return; }
+        WidgetPullSimulator.PullResult result = results.get(index);
+
+        List<String> videos = new ArrayList<>();
+        if (result.rarity == 5) {
+            Uri revealUri = WidgetAssetUtils.cachedAssetVideoUri(this, "convene-sim/5star-reveal.mp4");
+            if (revealUri != null) videos.add(revealUri.toString());
+        }
+        if (result.rarity >= 4 && "character".equals(result.type) && result.name != null) {
+            // Same widget_convene_roster data ConvenePlayerWidget's own picker reads — a
+            // character's own convene clip, not the generic per-rarity convene-sim reveal.
+            ConvenePlayerWidget.Entry entry = ConvenePlayerWidget.findEntry(
+                    getSharedPreferences(PREFS_NAME, MODE_PRIVATE), result.name);
+            if (entry != null && entry.conveneUrl != null) videos.add(entry.conveneUrl);
+        }
+
+        Runnable reveal = () -> {
+            addResultIcon(result, assetMap, index);
+            playItemStep(results, index + 1, assetMap);
+        };
+        if (videos.isEmpty()) {
+            // No video for this item — still waits its turn in the sequence, just paced by a
+            // short stagger instead, so the whole reveal reads as one continuous wave rather
+            // than "some items pop in after a video, the rest dump in instantly".
+            handler.postDelayed(reveal, WAVE_STAGGER_MS);
+        } else {
+            playVideosThen(videos, reveal);
         }
     }
 
     private void addResultIcon(WidgetPullSimulator.PullResult result, JSONObject assetMap, int index) {
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (RESULT_ICON_SIZE_DP * density);
+        boolean glow = result.rarity >= 4;
 
         FrameLayout root = new FrameLayout(this);
         root.setBackground(circleDrawable("#40000000", rarityHex(result.rarity)));
@@ -442,7 +506,15 @@ public class PullBubbleService extends Service {
                 : WindowManager.LayoutParams.TYPE_PHONE;
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 sizePx, sizePx, overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                // FLAG_NOT_FOCUSABLE is what actually keeps a bubble/sub-bubble/result-icon
+                // window from interfering with whatever's underneath it — WITHOUT it, a
+                // TYPE_APPLICATION_OVERLAY window is focusable by default and can steal input
+                // focus from other apps/the keyboard even outside its own small bounds (this
+                // was likely the "blocks touch on screen" report — a focusable overlay affects
+                // routing well beyond its visible pixels, unlike a purely visual widget). Also
+                // implies FLAG_NOT_TOUCH_MODAL per the platform docs, but both are kept
+                // explicit for clarity. removeTarget already had this; these didn't.
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
         positionResultIcon(params, index, sizePx);
@@ -457,6 +529,53 @@ public class PullBubbleService extends Service {
 
         windowManager.addView(root, params);
         resultIcons.add(root);
+
+        // "BOOM" — a quick colored glow burst behind 4★/5★ icons only, plus a small pop-in
+        // scale on every icon so the whole sequence reads as items arriving one by one rather
+        // than silently appearing.
+        if (glow) addGlowBurst(params, sizePx, rarityHex(result.rarity));
+        root.setScaleX(0.4f);
+        root.setScaleY(0.4f);
+        root.setAlpha(0f);
+        root.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(220)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(2.5f)).start();
+    }
+
+    // A separate, larger translucent circle in the item's own rarity color, added just behind
+    // it and animated from a small bright flash out to a bigger fully-faded ring — the "glow
+    // of colors around" burst — then removed once it's done (it's a one-shot effect, not a
+    // persistent view like the icon itself).
+    private void addGlowBurst(WindowManager.LayoutParams iconParams, int iconSizePx, String colorHex) {
+        int glowSizePx = (int) (iconSizePx * 2.2f);
+        FrameLayout glow = new FrameLayout(this);
+        GradientDrawable ring = new GradientDrawable();
+        ring.setShape(GradientDrawable.OVAL);
+        ring.setColor(Color.parseColor(colorHex.replace("#FF", "#80")));
+        glow.setBackground(ring);
+        clipToCircle(glow);
+
+        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_PHONE;
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                glowSizePx, glowSizePx, overlayType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.TOP | Gravity.START;
+        params.x = iconParams.x - (glowSizePx - iconSizePx) / 2;
+        params.y = iconParams.y - (glowSizePx - iconSizePx) / 2;
+
+        try {
+            windowManager.addView(glow, params);
+        } catch (Exception e) {
+            return;
+        }
+        glow.setScaleX(0.3f);
+        glow.setScaleY(0.3f);
+        glow.setAlpha(0.9f);
+        glow.animate().scaleX(1f).scaleY(1f).alpha(0f).setDuration(450)
+                .withEndAction(() -> { try { windowManager.removeView(glow); } catch (Exception ignored) {} })
+                .start();
     }
 
     // Small fanned cluster below-and-around the main bubble — up to 10 items, wrapped into
@@ -525,6 +644,11 @@ public class PullBubbleService extends Service {
         mainBubble = null;
         expanded = false;
         running = false;
+        // Drops any still-pending reveal step (a wave-stagger delay, or a callback from a
+        // FloatingVideoOverlayService still playing) so a sequence in progress when the bubble
+        // is dragged onto ✕ doesn't keep posting to views that no longer exist.
+        handler.removeCallbacksAndMessages(null);
+        rolling = false;
         stopForeground(true);
     }
 

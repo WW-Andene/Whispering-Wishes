@@ -57,19 +57,41 @@ public class FloatingVideoOverlayService extends Service {
     public static final String EXTRA_ANCHOR_X = "overlay_anchor_x";
     public static final String EXTRA_ANCHOR_Y = "overlay_anchor_y";
 
+    // Lets a caller that started this service know when its ENTIRE queue is actually done
+    // playing (or gave up), instead of firing-and-forgetting — PullBubbleService needs this to
+    // sequence its own multi-step reveal (rarity clip, then each item's own reveal beat/convene
+    // clip, one step at a time) rather than showing every pulled item immediately alongside a
+    // video that hasn't finished yet. Static + set-right-before-starting rather than a
+    // Parcelable extra since caller and this service always run in the same app process here
+    // (no :process declared) — a real cross-process IPC callback (ResultReceiver etc.) would be
+    // overkill for that. Only one playback is ever active at a time by design (PullBubbleService
+    // guards against overlapping rolls), so a single static slot is enough.
+    private static Callback callback;
+    interface Callback { void onFinished(); }
+    static void setCallback(Callback c) { callback = c; }
+
     private WindowManager windowManager;
     private View overlayView;
     private final ArrayList<String> queue = new ArrayList<>();
     private int queueIndex = 0;
     private boolean hasAnchor;
     private int anchorX, anchorY;
+    private boolean finished; // guards against double-firing the callback/stopSelf
+    private Callback myCallback; // this instance's own snapshot of the static slot above
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent == null) { stopSelf(startId); return START_NOT_STICKY; }
+        // Snapshot-and-clear the static slot immediately, before any early return below —
+        // whatever caller started THIS instance owns this callback, and clearing it now means
+        // a later, unrelated start (e.g. a plain widget ▶️ press with no caller waiting) can't
+        // accidentally reuse a stale one.
+        myCallback = callback;
+        callback = null;
+
+        if (intent == null) { finish(startId); return START_NOT_STICKY; }
 
         ArrayList<String> urls = intent.getStringArrayListExtra(EXTRA_VIDEO_URLS);
         queue.clear();
@@ -79,7 +101,7 @@ public class FloatingVideoOverlayService extends Service {
             String single = intent.getStringExtra(EXTRA_VIDEO_URL);
             if (single != null && !single.isEmpty()) queue.add(single);
         }
-        if (queue.isEmpty()) { stopSelf(startId); return START_NOT_STICKY; }
+        if (queue.isEmpty()) { finish(startId); return START_NOT_STICKY; }
 
         hasAnchor = intent.hasExtra(EXTRA_ANCHOR_X) && intent.hasExtra(EXTRA_ANCHOR_Y);
         anchorX = intent.getIntExtra(EXTRA_ANCHOR_X, 0);
@@ -89,7 +111,7 @@ public class FloatingVideoOverlayService extends Service {
             Log.w(TAG, "Overlay permission not granted — falling back and prompting for it");
             requestOverlayPermission();
             launchFallbackActivity();
-            stopSelf(startId);
+            finish(startId);
             return START_NOT_STICKY;
         }
 
@@ -100,9 +122,29 @@ public class FloatingVideoOverlayService extends Service {
             Log.w(TAG, "Floating overlay failed, falling back to fullscreen player", t);
             removeOverlay();
             launchFallbackActivity();
-            stopSelf(startId);
+            finish(startId);
         }
         return START_NOT_STICKY;
+    }
+
+    // Single place every termination path routes through — fires the caller's callback (if
+    // any) exactly once, then stops the service. Called instead of a bare stopSelf() so a
+    // caller sequencing multi-step playback (PullBubbleService) always hears back, whether
+    // this run finished cleanly, hit an error, or never got to play at all (permission missing,
+    // empty queue).
+    private void finish(int startId) {
+        if (finished) return;
+        finished = true;
+        if (myCallback != null) myCallback.onFinished();
+        stopSelf(startId);
+    }
+
+    // Same as finish(int) for call sites (playAt, listeners) that don't have a startId handy.
+    private void finish() {
+        if (finished) return;
+        finished = true;
+        if (myCallback != null) myCallback.onFinished();
+        stopSelf();
     }
 
     // Sends the user to the dedicated "draw over other apps" settings screen for this
@@ -144,7 +186,7 @@ public class FloatingVideoOverlayService extends Service {
         });
         root.setClipToOutline(true);
         // Tap the floating card to skip the whole queue, same as the fullscreen player.
-        root.setOnClickListener(v -> { removeOverlay(); stopSelf(); });
+        root.setOnClickListener(v -> { removeOverlay(); finish(); });
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -177,7 +219,7 @@ public class FloatingVideoOverlayService extends Service {
 
     private void playAt(int index) {
         queueIndex = index;
-        if (queueIndex >= queue.size()) { removeOverlay(); stopSelf(); return; }
+        if (queueIndex >= queue.size()) { removeOverlay(); finish(); return; }
         if (overlayView == null) return;
 
         VideoView videoView = overlayView.findViewById(R.id.overlay_video);
@@ -190,13 +232,13 @@ public class FloatingVideoOverlayService extends Service {
             videoView.setOnCompletionListener(mp -> playAt(queueIndex + 1));
             videoView.setOnErrorListener((mp, what, extra) -> {
                 removeOverlay();
-                stopSelf();
+                finish();
                 return true;
             });
             videoView.setMediaController(null);
         } catch (Exception e) {
             removeOverlay();
-            stopSelf();
+            finish();
         }
     }
 
@@ -216,5 +258,9 @@ public class FloatingVideoOverlayService extends Service {
     public void onDestroy() {
         super.onDestroy();
         removeOverlay();
+        // Safety net: if the service got torn down some other way (task killed, system
+        // reclaim) without going through finish() first, a caller sequencing multi-step
+        // playback would otherwise wait forever for a callback that never comes.
+        finish();
     }
 }
