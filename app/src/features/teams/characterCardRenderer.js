@@ -105,7 +105,12 @@ function computeBuildStats(member, eq, teamIdx) {
  */
 export async function renderCharacterCard({ member, eq, teamIdx, collectionImages, getImageFraming, toast }) {
   const canvas = document.createElement('canvas');
-  const W = 1600, H = 900;
+  // Canvas resolution intentionally exceeds PerfectSuite's max primary (1024) — this is the
+  // downloadable PNG's export resolution, not a UI element dimension, and the prior 1600x900
+  // canvas didn't leave enough room for legible 4-quadrant text/icons (see task history). Every
+  // font-size/icon-size/padding/gap/radius constant inside the card IS kept on the PerfectSuite
+  // scale below.
+  const W = 1920, H = 1440; // 4:3 — grown taller to fit the weapon/echo icons at 3x their prior size
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r); ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath(); };
@@ -158,7 +163,8 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
 
   // ═══ DRAWING PRIMITIVES (copied from idCardRenderer.js for visual consistency) ═══
   const drawShell = (x, y, w, h) => {
-    ctx.fillStyle = 'rgba(12,16,24,0.8)'; rr(x, y, w, h, 24); ctx.fill();
+    // Left un-filled (or filled by the caller before this runs): the banner shows through the
+    // shell body itself, in the gaps between panels — only the panels/portrait are opaque cards.
     ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1.5; rr(x, y, w, h, 24); ctx.stroke();
     const il = ctx.createLinearGradient(x, y, x, y + 3); il.addColorStop(0, 'rgba(255,255,255,0.07)'); il.addColorStop(1, 'transparent');
     ctx.fillStyle = il; ctx.fillRect(x + 24, y + 1, w - 48, 2);
@@ -197,16 +203,18 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
 
   // ═══ RENDER ═══
   ctx.fillStyle = '#080810'; ctx.fillRect(0, 0, W, H);
+  // Precomputed cover-fit placement for the banner.
+  let bgDrawX = 0, bgDrawY = 0, bgDrawW = W, bgDrawH = H;
   if (bgImg) {
     const imgAR = bgImg.naturalWidth / bgImg.naturalHeight, cardAR = W / H;
     let dw, dh;
     if (imgAR > cardAR) { dh = H; dw = H * imgAR; } else { dw = W; dh = W / imgAR; }
-    ctx.drawImage(bgImg, (W - dw) / 2, (H - dh) / 2, dw, dh);
-    // Lighter full-bleed dim (see idCardRenderer.js for the full reasoning): the shell and every
-    // panel drawn on top already darken this further, so a heavy dim here on top of THAT made the
-    // banner read as swallowed under the shell/panels — visible only as a thin strip in the
-    // undrawn margin outside the shell, i.e. "in the card" rather than "behind" it.
-    ctx.fillStyle = 'rgba(8,8,16,0.45)'; ctx.fillRect(0, 0, W, H);
+    bgDrawX = (W - dw) / 2; bgDrawY = (H - dh) / 2; bgDrawW = dw; bgDrawH = dh;
+    // Exposed (undimmed) banner drawn across the whole canvas — this is what shows through the
+    // shell body and the gaps between panels, which should read as the banner itself, not a flat
+    // color. Each panel/portrait below draws its own OPAQUE card on top, hiding the banner only
+    // inside its own bounds.
+    ctx.drawImage(bgImg, bgDrawX, bgDrawY, bgDrawW, bgDrawH);
   }
 
   const M = 16, ox = M, oy = M, ow = W - M * 2, oh = H - M * 2; // PerfectSuite: 18 -> 16
@@ -231,21 +239,26 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     const dy2 = by + (bh - dh2) / 2 - (f.y / 100) * bh2 * sc;
     ctx.drawImage(portraitImg, dx2, dy2, dw2, dh2);
     ctx.restore();
-    const fade = ctx.createLinearGradient(0, by + bh - 90, 0, by + bh);
-    fade.addColorStop(0, 'rgba(8,12,18,0)'); fade.addColorStop(1, 'rgba(8,12,18,0.9)');
-    ctx.fillStyle = fade; ctx.fillRect(bx + 2, by + bh - 90, portraitW - 4, 88);
+    // Fade at the TOP of the portrait (not the bottom) — the name/level/element overlay now
+    // lives up there per the user's request.
+    const fade = ctx.createLinearGradient(0, by, 0, by + 96);
+    fade.addColorStop(0, 'rgba(8,12,18,0.9)'); fade.addColorStop(1, 'rgba(8,12,18,0)');
+    ctx.fillStyle = fade; ctx.fillRect(bx + 2, by + 2, portraitW - 4, 94);
   }
-  // Name + element/role overlay on portrait
+  // Name + level + element/role overlay — moved to the TOP of the portrait per user request
+  // (was previously bottom-anchored). "Lv. 90/90" shown fixed, same rationale as the Skills
+  // section's "Lv. 10": this app doesn't track individual character level anywhere.
   const elColor = getElementColor(element) || '#e2e8f0';
-  ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 34px sans-serif'; ctx.fillText(name, bx + 18, by + bh - 48);
-  if (elIcon) ctx.drawImage(elIcon, bx + 18, by + bh - 34, 20, 20);
-  ctx.fillStyle = elColor; ctx.font = '600 18px sans-serif'; ctx.fillText(`${element || ''} · ${d.role || ''}`, bx + (elIcon ? 44 : 18), by + bh - 17);
+  ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 34px sans-serif'; ctx.fillText(name, bx + 18, by + 42);
+  ctx.fillStyle = '#9ca3af'; ctx.font = '16px sans-serif'; ctx.fillText('Lv. 90/90', bx + 18, by + 64);
+  if (elIcon) ctx.drawImage(elIcon, bx + 18, by + 76, 20, 20);
+  ctx.fillStyle = elColor; ctx.font = '600 18px sans-serif'; ctx.fillText(`${element || ''} · ${d.role || ''}`, bx + (elIcon ? 44 : 18), by + 93);
 
-  // ── Right column: a literal 2×2 quadrant grid (per user feedback) ──
-  // Q1 top-left = character stats (vertical), Q2 top-right = Resonance Chain sequence (horizontal),
-  // Q3 bottom-left = weapon (vertical), Q4 bottom-right = echoes (vertical). Thin divider lines
-  // separate the quadrants — no bordered panel boxes, consistent with the rest of this restyle.
-  const gap = 12; // PerfectSuite secondary
+  // ── Right column: left stack = Stats / Skills / Sequence, right stack = Weapon / Echoes ──
+  // (per user's follow-up: swap Weapon and Sequence from the original 2x2, and insert a new
+  // Skills row between Stats and Sequence in the left column). No bordered panel boxes — thin
+  // divider lines separate sections, consistent with the rest of this restyle.
+  const gap = 16; // PerfectSuite primary
   const rx = bx + portraitW + gap, rw = bw - portraitW - gap;
   const ry = by, rh = bh;
 
@@ -253,36 +266,57 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   const GOLD = '#edaf18';
   const DIM = 'rgba(255,255,255,0.12)';
 
-  const qGap = 12; // PerfectSuite secondary
+  const qGap = 16; // PerfectSuite primary
   const qw = Math.floor((rw - qGap) / 2);
   const qw2 = rw - qw - qGap;
-  const topH = 192; // PerfectSuite secondary — fits the 7-row stat list (Q1) with room to breathe
-  const bottomH = rh - topH - qGap;
   const q1x = rx, q2x = rx + qw + qGap;
-  const q3y = ry + topH + qGap;
   const midX = rx + qw + qGap / 2;
-  const midY = ry + topH + qGap / 2;
 
-  // Divider lines between the four quadrants (thin, not boxes)
-  ctx.strokeStyle = DIM; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(midX, ry); ctx.lineTo(midX, ry + rh); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(rx, midY); ctx.lineTo(rx + rw, midY); ctx.stroke();
+  // Left column: Stats / Skills / Sequence, split into equal thirds.
+  const leftH = Math.floor((rh - 2 * qGap) / 3);
+  const statsH = leftH, skillsH = leftH, seqH = rh - statsH - skillsH - 2 * qGap;
+  const statsY = ry, skillsY = statsY + statsH + qGap, seqY = skillsY + skillsH + qGap;
 
-  // Small gold-tick quadrant header, matching the app's existing label convention but with no
-  // background box behind it (see drawPanel's label for the box version used elsewhere).
-  const drawQuadLabel = (x, y, label) => {
-    const gb = ctx.createLinearGradient(0, y, 0, y + 14);
+  // Right column: Weapon (fixed height, just enough for its 3x-larger icon) / Echoes (the rest).
+  const weaponH = 384; // PerfectSuite secondary
+  const echoesH = rh - weaponH - qGap;
+  const weaponY = ry, echoesY = weaponY + weaponH + qGap;
+
+  // Each block is its own rounded-corner panel — clipped to a rounded rect, with the SAME
+  // banner+dim "mask" drawn inside it (so the background still shows through, just bounded to
+  // that block's own shape) and a border stroke around it. This replaces the earlier "cut" gaps
+  // between blocks entirely: a real bordered box is a cleaner, more legible separator than trying
+  // to carve gaps out of a continuous background.
+  const drawBannerPanel = (x, y, w, h, label) => {
+    // Plain solid dark card, NOT a cropped window into the banner: since the banner's own
+    // character figure spans most of its frame, windowing it per-panel duplicated the same
+    // face/torso across Stats/Weapon/Skills/Sequence instead of showing varied art. The banner
+    // stays visible only behind the portrait, where it belongs as a backdrop.
+    ctx.save(); rr(x, y, w, h, 16); ctx.clip();
+    ctx.fillStyle = 'rgba(10,14,22,0.85)'; ctx.fillRect(x, y, w, h);
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(x, y, w, h, 16); ctx.stroke();
+    if (!label) return 12;
+    const gb = ctx.createLinearGradient(0, y + 12, 0, y + 12 + 16);
     gb.addColorStop(0, 'rgba(237,175,24,0.85)'); gb.addColorStop(1, 'rgba(237,175,24,0.35)');
-    ctx.fillStyle = gb; rr(x, y, 3, 14, 1.5); ctx.fill();
-    ctx.fillStyle = '#9ca3af'; ctx.font = '600 12px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(label.toUpperCase(), x + 10, y + 11);
-    return 24; // header height offset
+    ctx.fillStyle = gb; rr(x + 14, y + 12, 4, 16, 2); ctx.fill();
+    ctx.fillStyle = '#9ca3af'; ctx.font = '600 16px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(label.toUpperCase(), x + 26, y + 25);
+    return 40; // header height offset — PerfectSuite secondary
   };
+  // Portrait gets the same border treatment for visual consistency with the panels beside it —
+  // its own clip/fade/framing stays exactly as it was, this only adds the outline on top.
+  ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(bx + 2, by + 2, portraitW - 4, bh - 4, 16); ctx.stroke();
+
+  // Small inset padding applied inside every block below, so each quadrant reads as its own
+  // padded card/block instead of content sitting flush against the thin divider lines.
+  const PAD = 16; // PerfectSuite primary
 
   // ── Q1 (top-left): character stat rows — icon-led, vertical list ──
   {
-    const qx = q1x, qy = ry, qh = topH;
-    const hOff = drawQuadLabel(qx, qy, 'Stats');
+    drawBannerPanel(q1x, statsY, qw, statsH, 'Stats');
+    const qx = q1x + PAD, qy = statsY + PAD, qh = statsH - 2 * PAD, cw = qw - 2 * PAD;
+    const hOff = 40;
     const elDmgLabel = element ? `${element} DMG` : 'DMG Bonus';
     const statRows = [
       { icon: baseStatIcons['HP'], v: built.finalHp.toLocaleString('en-US'), l: 'HP', c: NEUTRAL },
@@ -296,56 +330,93 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     const rowH = Math.floor((qh - hOff) / statRows.length);
     statRows.forEach((s, i) => {
       const sy = qy + hOff + i * rowH;
-      if (i > 0) { ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(qx, sy); ctx.lineTo(qx + qw, sy); ctx.stroke(); }
+      if (i > 0) { ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(qx, sy); ctx.lineTo(qx + cw, sy); ctx.stroke(); }
       const midYr = sy + rowH / 2;
       let ix = qx;
-      if (s.icon) { ctx.drawImage(s.icon, ix, midYr - 8, 16, 16); ix += 24; }
-      ctx.fillStyle = '#9ca3af'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText(s.l, ix, midYr + 4);
-      ctx.fillStyle = s.c; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'right';
-      ctx.fillText(s.v, qx + qw, midYr + 5);
+      if (s.icon) { ctx.drawImage(s.icon, ix, midYr - 12, 24, 24); ix += 32; }
+      ctx.fillStyle = '#9ca3af'; ctx.font = '16px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(s.l, ix, midYr + 6);
+      ctx.fillStyle = s.c; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'right';
+      ctx.fillText(s.v, qx + cw, midYr + 9);
       ctx.textAlign = 'left';
     });
   }
 
-  // ── Q2 (top-right): Resonance Chain sequence — horizontal S1-S6, white=unlocked / grey=locked ──
+  // ── Skills (new, per user's request — sits between Stats and Sequence in the left column):
+  // horizontal row of the 5 combat skill types. This app doesn't track individual skill levels
+  // anywhere in its data model (checked calcEngine.js/DamageCalculator.jsx — every skill is
+  // simply assumed maxed, same as the wuwaflex.com reference this card follows), so each shows
+  // a fixed "Lv. 10". No per-move icon assets exist for a generic "skill type" (getSkillIcon only
+  // resolves a specific move NAME, not a category) — drawn as simple gold-ring badges with a
+  // short type initial instead of inventing new icon assets.
   {
-    const qx = q2x, qy = ry, qh = topH;
-    const hOff = drawQuadLabel(qx, qy, 'Sequence');
+    drawBannerPanel(q1x, skillsY, qw, skillsH, 'Skills');
+    const qx = q1x + PAD, qy = skillsY + PAD, qh = skillsH - 2 * PAD, cw = qw - 2 * PAD;
+    const hOff = 40;
+    const skillTypes = [
+      { k: 'N', l: 'Normal' }, { k: 'S', l: 'Skill' }, { k: 'F', l: 'Forte' },
+      { k: 'L', l: 'Liberation' }, { k: 'I', l: 'Intro' },
+    ];
+    const n = skillTypes.length;
+    const badgeSz = 62; // PerfectSuite tertiary — matches the Sequence row's icon size below
+    const iGap = 16; // PerfectSuite primary
+    const totalW = n * badgeSz + (n - 1) * iGap;
+    let ix = qx + Math.max(0, (cw - totalW) / 2);
+    const iy = qy + hOff + (qh - hOff - badgeSz - 24) / 2;
+    skillTypes.forEach(s => {
+      ctx.fillStyle = 'rgba(237,175,24,0.14)';
+      ctx.beginPath(); ctx.arc(ix + badgeSz / 2, iy + badgeSz / 2, badgeSz / 2, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(ix + badgeSz / 2, iy + badgeSz / 2, badgeSz / 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = GOLD; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(s.k, ix + badgeSz / 2, iy + badgeSz / 2 + 8);
+      ctx.fillStyle = NEUTRAL; ctx.font = '600 16px sans-serif';
+      ctx.fillText('Lv. 10', ix + badgeSz / 2, iy + badgeSz + 24);
+      ctx.textAlign = 'left';
+      ix += badgeSz + iGap;
+    });
+  }
+
+  // ── Sequence (now bottom-left, per user's swap-with-weapon request): horizontal S1-S6,
+  // white=unlocked / grey=locked ──
+  {
+    drawBannerPanel(q1x, seqY, qw, seqH, 'Sequence');
+    const qx = q1x + PAD, qy = seqY + PAD, qh = seqH - 2 * PAD, cw = qw - 2 * PAD;
+    const hOff = 40;
     const seq = eq?.sequence || 0;
     const hasChainIcons = chainNodeImgs.some(Boolean);
     const n = 6;
     if (hasChainIcons) {
-      const iconSz = 48; // PerfectSuite primary
-      const iGap = 8; // PerfectSuite primary
+      const iconSz = 62; // PerfectSuite tertiary — largest that fits 6-across within the quadrant width
+      const iGap = 16; // PerfectSuite primary
       const totalW = n * iconSz + (n - 1) * iGap;
-      let ix = qx + Math.max(0, (qw2 - totalW) / 2);
-      const iy = qy + hOff + (qh - hOff - iconSz - 16) / 2;
+      let ix = qx + Math.max(0, (cw - totalW) / 2);
+      const iy = qy + hOff + (qh - hOff - iconSz - 24) / 2;
       chainNodeImgs.forEach((img, i) => {
         const rank = i + 1;
         const unlocked = rank <= seq;
         if (img) {
           ctx.save();
           if (!unlocked) ctx.globalAlpha = 0.32;
-          rr(ix, iy, iconSz, iconSz, 8); ctx.clip(); ctx.drawImage(img, ix, iy, iconSz, iconSz);
+          rr(ix, iy, iconSz, iconSz, 12); ctx.clip(); ctx.drawImage(img, ix, iy, iconSz, iconSz);
           ctx.restore();
-          if (!unlocked) { ctx.fillStyle = 'rgba(8,8,16,0.45)'; rr(ix, iy, iconSz, iconSz, 8); ctx.fill(); }
+          if (!unlocked) { ctx.fillStyle = 'rgba(8,8,16,0.45)'; rr(ix, iy, iconSz, iconSz, 12); ctx.fill(); }
         } else {
           ctx.fillStyle = unlocked ? 'rgba(237,175,24,0.18)' : 'rgba(255,255,255,0.06)';
-          rr(ix, iy, iconSz, iconSz, 8); ctx.fill();
+          rr(ix, iy, iconSz, iconSz, 12); ctx.fill();
         }
         ctx.fillStyle = unlocked ? NEUTRAL : '#6b7280';
-        ctx.font = '600 12px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('S' + rank, ix + iconSz / 2, iy + iconSz + 14);
+        ctx.font = '600 16px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('S' + rank, ix + iconSz / 2, iy + iconSz + 24);
         ctx.textAlign = 'left';
         ix += iconSz + iGap;
       });
     } else {
       // Fallback: plain numbered pips when this character has no audited chain-node assets yet.
-      const pipSz = 30; // PerfectSuite tertiary
-      const iGap = 8;
+      const pipSz = 62; // PerfectSuite tertiary
+      const iGap = 16;
       const totalW = n * pipSz + (n - 1) * iGap;
-      let ix = qx + Math.max(0, (qw2 - totalW) / 2);
+      let ix = qx + Math.max(0, (cw - totalW) / 2);
       const iy = qy + hOff + (qh - hOff - pipSz) / 2;
       for (let i = 0; i < n; i++) {
         const rank = i + 1;
@@ -354,125 +425,145 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
         ctx.beginPath(); ctx.arc(ix + pipSz / 2, iy + pipSz / 2, pipSz / 2, 0, Math.PI * 2); ctx.fill();
         ctx.strokeStyle = unlocked ? 'rgba(237,175,24,0.6)' : 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.arc(ix + pipSz / 2, iy + pipSz / 2, pipSz / 2, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = unlocked ? GOLD : '#6b7280'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(String(rank), ix + pipSz / 2, iy + pipSz / 2 + 5);
+        ctx.fillStyle = unlocked ? GOLD : '#6b7280'; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(String(rank), ix + pipSz / 2, iy + pipSz / 2 + 8);
         ctx.textAlign = 'left';
         ix += pipSz + iGap;
       }
     }
   }
 
-  // ── Q3 (bottom-left): weapon — vertical stack, icon on level/stat/refinement ──
+  // ── Weapon (now top-right, per user's swap-with-sequence request): vertical stack, icon on
+  // level/stat/refinement ──
   {
-    const qx = q1x, qy = q3y, qh = bottomH;
-    const hOff = drawQuadLabel(qx, qy, 'Weapon');
+    drawBannerPanel(q2x, weaponY, qw2, weaponH, 'Weapon');
+    const qx = q2x + PAD, qy = weaponY + PAD, qh = weaponH - 2 * PAD;
+    const hOff = 40;
     const equippedWeap = member.weapon;
-    const iconSz = 48; // PerfectSuite primary
-    if (weaponImg) { ctx.save(); rr(qx, qy + hOff, iconSz, iconSz, 8); ctx.clip(); ctx.drawImage(weaponImg, qx, qy + hOff, iconSz, iconSz); ctx.restore(); }
+    // Icon sized to fill the whole quadrant's available height (not a fixed small size sitting
+    // in a mostly-empty box) — per user feedback the weapon section must actually use its case.
+    const availH = qh - hOff - 16;
+    const iconSz = availH >= 256 ? 256 : availH >= 192 ? 192 : 128; // snapped to PerfectSuite primaries
+    const iconY = qy + hOff + (qh - hOff - iconSz) / 2;
+    if (weaponImg) { ctx.save(); rr(qx, iconY, iconSz, iconSz, 62); ctx.clip(); ctx.drawImage(weaponImg, qx, iconY, iconSz, iconSz); ctx.restore(); }
+    // Info block sits to the RIGHT of the icon (not below it), vertically centered against the
+    // icon's own height — same "icon | centered info block" arrangement as the Echoes rows.
+    // Font sizes scaled up to match the larger icon instead of looking small next to it.
+    const infoX = qx + iconSz + 32;
+    const vRowH = 40; // PerfectSuite secondary
+    const blockH = vRowH * 4;
+    let vy = iconY + (iconSz - blockH) / 2 + vRowH - 10;
     ctx.fillStyle = equippedWeap ? GOLD : '#6b7280';
-    ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText(eq?.weapon || 'No Weapon Equipped', qx, qy + hOff + iconSz + 20);
-    let vy = qy + hOff + iconSz + 44;
-    const vRowH = 24; // PerfectSuite secondary
+    ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(eq?.weapon || 'No Weapon Equipped', infoX, vy);
+    vy += vRowH;
     // Level row — small "level meter" glyph (3 ascending bars) drawn in-canvas since no dedicated
     // level icon asset exists elsewhere in the app to reuse (checked DamageCalculator/EchoSelector).
     ctx.fillStyle = '#9ca3af';
     [0, 1, 2].forEach(bi => {
-      const bw3 = 3, bh3 = 4 + bi * 4;
-      ctx.fillRect(qx + bi * (bw3 + 2), vy - bh3, bw3, bh3);
+      const bw3 = 6, bh3 = 8 + bi * 8;
+      ctx.fillRect(infoX + bi * (bw3 + 3), vy - bh3, bw3, bh3);
     });
-    ctx.font = '12px sans-serif'; ctx.fillText('Lv. 90/90', qx + 18, vy);
+    ctx.font = '24px sans-serif'; ctx.fillText('Lv. 90/90', infoX + 32, vy);
     vy += vRowH;
     // Stat row — reuse the weapon's own stat icon (getStatIcon convention, same as Q1)
     if (equippedWeap) {
       const statVal = `${equippedWeap.subStatValue ? equippedWeap.subStatValue : '★'.repeat(equippedWeap.rarity || 0)}`.trim();
       const critIcon = baseStatIcons['ATK'];
-      let tx = qx;
-      if (critIcon) { ctx.drawImage(critIcon, tx, vy - 12, 14, 14); tx += 18; }
-      ctx.fillStyle = NEUTRAL; ctx.font = '12px sans-serif'; ctx.fillText(statVal, tx, vy);
+      let tx = infoX;
+      if (critIcon) { ctx.drawImage(critIcon, tx, vy - 24, 32, 32); tx += 40; }
+      ctx.fillStyle = NEUTRAL; ctx.font = '24px sans-serif'; ctx.fillText(statVal, tx, vy);
       vy += vRowH;
       if (equippedWeap.stat) {
         const sIcon = baseStatIcons[equippedWeap.stat] || null;
-        let tx2 = qx;
-        if (sIcon) { ctx.drawImage(sIcon, tx2, vy - 12, 14, 14); tx2 += 18; }
-        ctx.fillStyle = GOLD; ctx.font = '12px sans-serif';
+        let tx2 = infoX;
+        if (sIcon) { ctx.drawImage(sIcon, tx2, vy - 24, 32, 32); tx2 += 40; }
+        ctx.fillStyle = GOLD; ctx.font = '24px sans-serif';
         ctx.fillText(`${equippedWeap.stat} ${equippedWeap.subStatValue || ''}`.trim(), tx2, vy);
         vy += vRowH;
       }
     }
     // Refinement — pill badge (existing app convention, see DamageCalculator's own R1-R5 pills)
-    const pillW = 30, pillH = 16;
-    ctx.fillStyle = 'rgba(237,175,24,0.16)'; rr(qx, vy - 12, pillW, pillH, 8); ctx.fill();
-    ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1; rr(qx, vy - 12, pillW, pillH, 8); ctx.stroke();
-    ctx.fillStyle = GOLD; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(`R${eq?.refinement || 1}`, qx + pillW / 2, vy - 1); ctx.textAlign = 'left';
+    const pillW = 62, pillH = 32;
+    ctx.fillStyle = 'rgba(237,175,24,0.16)'; rr(infoX, vy - 24, pillW, pillH, 8); ctx.fill();
+    ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1; rr(infoX, vy - 24, pillW, pillH, 8); ctx.stroke();
+    ctx.fillStyle = GOLD; ctx.font = 'bold 24px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(`R${eq?.refinement || 1}`, infoX + pillW / 2, vy - 2); ctx.textAlign = 'left';
   }
 
-  // ── Q4 (bottom-right): echoes — vertical, 5 stacked rows: icon, name, sonata icon, main+sub stats ──
+  // ── Echoes (bottom-right, unchanged column, shifted down below Weapon): 5 stacked, EACH its
+  // own bordered rounded box (its own drawBannerPanel call) — not one big panel with hairlines,
+  // per user feedback each echo needs its own visually distinct card.
   {
-    const qx = q2x, qy = q3y, qh = bottomH;
-    const hOff = drawQuadLabel(qx, qy, 'Echoes');
-    const echoRowH = (qh - hOff) / 5;
+    // Section title drawn directly above the stack (no longer a wrapping panel of its own,
+    // since each echo below now gets its own individual bordered box).
+    const gb3 = ctx.createLinearGradient(0, echoesY, 0, echoesY + 16);
+    gb3.addColorStop(0, 'rgba(237,175,24,0.85)'); gb3.addColorStop(1, 'rgba(237,175,24,0.35)');
+    ctx.fillStyle = gb3; rr(q2x, echoesY, 4, 16, 2); ctx.fill();
+    ctx.fillStyle = '#9ca3af'; ctx.font = '600 16px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('ECHOES', q2x + 12, echoesY + 13);
+    const titleH = 24; // PerfectSuite secondary — reserves space for the title row above the boxes
+    const echoGap = 8; // PerfectSuite primary — tighter than qGap since 5 must fit in echoesH
+    const echoBoxH = (echoesH - titleH - 4 * echoGap) / 5;
     echoSlots.forEach((entry, i) => {
-      const ey = qy + hOff + i * echoRowH;
-      if (i > 0) { ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(qx, ey); ctx.lineTo(qx + qw2, ey); ctx.stroke(); }
+      const boxY = echoesY + titleH + i * (echoBoxH + echoGap);
       const n = entry && typeof entry === 'object' ? entry.name : null;
+      drawBannerPanel(q2x, boxY, qw2, echoBoxH, null);
+      const qx = q2x + PAD, qy = boxY + PAD, qh = echoBoxH - 2 * PAD, cw2 = qw2 - 2 * PAD;
       if (!n) {
-        ctx.fillStyle = '#4b5563'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left';
-        ctx.fillText('Empty', qx, ey + echoRowH / 2 + 4);
+        ctx.fillStyle = '#4b5563'; ctx.font = '14px sans-serif'; ctx.textAlign = 'left';
+        ctx.fillText('Empty', qx, qy + qh / 2 + 5);
         return;
       }
-      const iconSize = 32; // PerfectSuite primary
-      // Vertically center the whole info block (icon + name + main stat + 2 rows of substats)
-      // within the generous ~120px row height instead of anchoring everything to the top.
-      const blockH = 14 + 4 + 12 + 6 + 12 + 4 + 12; // name / gap / mainstat / gap / sub-row1 / gap / sub-row2
-      const blockY = ey + Math.max(6, (echoRowH - Math.max(blockH, iconSize)) / 2);
-      const iy = ey + (echoRowH - iconSize) / 2;
-      if (echoImgs[i]) { ctx.save(); rr(qx, iy, iconSize, iconSize, 6); ctx.clip(); ctx.drawImage(echoImgs[i], qx, iy, iconSize, iconSize); ctx.restore(); }
-      const infoX = qx + iconSize + 8;
-      const infoW = qw2 - iconSize - 8;
+      const iconSize = Math.min(192, Math.floor(qh)); // PerfectSuite primary, capped to the box's own height
+      const iy = qy + (qh - iconSize) / 2;
+      // Info block is centered against the ICON's own height (not the whole row) — same
+      // "icon | centered info block" arrangement as the Weapon section.
+      const subCount = Math.min((entry.substats || []).length, 5);
+      const blockH = 16 + 6 + 24 + 6 + subCount * 22; // name / gap / mainstat / gap / one row per substat (a real list, not wrapped columns)
+      const blockY = iy + (iconSize - blockH) / 2;
+      if (echoImgs[i]) { ctx.save(); rr(qx, iy, iconSize, iconSize, 30); ctx.clip(); ctx.drawImage(echoImgs[i], qx, iy, iconSize, iconSize); ctx.restore(); }
+      const infoX = qx + iconSize + 12;
+      const infoW = cw2 - iconSize - 12;
       // Name + sonata (set) icon
       const setName = echoSetNames[i];
       const setIcon = setName ? setIconCache[setName] : null;
       let nx = infoX;
-      if (setIcon) { ctx.drawImage(setIcon, nx, blockY, 12, 12); nx += 15; }
-      ctx.fillStyle = '#e5e7eb'; ctx.font = '12px sans-serif'; ctx.textAlign = 'left';
-      const nameMaxLen = Math.max(6, Math.floor((infoW - (setIcon ? 15 : 0)) / 6.5));
-      ctx.fillText(n.length > nameMaxLen ? n.slice(0, nameMaxLen - 1) + '.' : n, nx, blockY + 10);
-      // Main stat
+      if (setIcon) { ctx.drawImage(setIcon, nx, blockY, 16, 16); nx += 20; }
+      ctx.fillStyle = '#e5e7eb'; ctx.font = '16px sans-serif'; ctx.textAlign = 'left';
+      const nameMaxLen = Math.max(6, Math.floor((infoW - (setIcon ? 20 : 0)) / 8.5));
+      ctx.fillText(n.length > nameMaxLen ? n.slice(0, nameMaxLen - 1) + '.' : n, nx, blockY + 14);
+      // Main stat — a "primary stat value" per the readability baseline, sized accordingly
       let mainStatText = '';
       if (entry.mainStat) {
         const cost = i === 0 ? 4 : i < 3 ? 3 : 1;
         const mv = ECHO_MAIN_STAT_VALUES[cost]?.[entry.mainStat];
         mainStatText = `${entry.mainStat}${mv ? ' ' + mv : ''}`;
       }
-      const mainStatY = blockY + 14 + 4 + 10;
-      ctx.fillStyle = GOLD; ctx.font = '12px sans-serif';
+      const mainStatY = blockY + 16 + 6 + 18;
+      ctx.fillStyle = GOLD; ctx.font = 'bold 24px sans-serif';
       ctx.fillText(mainStatText, infoX, mainStatY);
-      // Substats — small icon + abbreviated value, wrapped across 2 rows (3 then 2) within the row
+      // Substats — a real vertical LIST, one per row (not wrapped into columns).
       const subs = (entry.substats || []).slice(0, 5);
-      const subColW = Math.max(60, infoW / 3);
-      const subRowH = 16;
+      const subRowH = 22;
       subs.forEach((sub, si) => {
-        const col = si % 3, line = Math.floor(si / 3);
-        const sx = infoX + col * subColW;
-        const sy = mainStatY + 14 + line * subRowH;
+        const sy = mainStatY + 20 + si * subRowH;
         const icon = substatIconCache[sub];
-        let tx = sx;
-        if (icon) { ctx.drawImage(icon, tx, sy - 9, 12, 12); tx += 14; }
+        let tx = infoX;
+        if (icon) { ctx.drawImage(icon, tx, sy - 13, 16, 16); tx += 20; }
         const sv = ECHO_SUB_STAT_VALUES[sub];
-        ctx.fillStyle = '#9ca3af'; ctx.font = '10px sans-serif';
+        ctx.fillStyle = '#9ca3af'; ctx.font = '14px sans-serif';
         const label = `${sub}${sv ? ' +' + sv : ''}`;
-        const maxChars = 12;
+        const maxChars = Math.max(10, Math.floor(infoW / 8));
         ctx.fillText(label.length > maxChars ? label.slice(0, maxChars - 1) + '.' : label, tx, sy);
       });
     });
   }
 
   // Footer — small app-icon brand mark (16px, PerfectSuite primary) beside the site text
-  ctx.fillStyle = '#4b5563'; ctx.font = '13px monospace';
-  ctx.fillText('Generated ' + new Date().toLocaleDateString(), bx, by + bh + 4);
-  ctx.textAlign = 'right'; ctx.fillText('whisperingwishes.app', bx + bw, by + bh + 4); ctx.textAlign = 'left';
+  ctx.fillStyle = '#4b5563'; ctx.font = '14px monospace';
+  ctx.fillText('Generated ' + new Date().toLocaleDateString(), bx, by + bh + 6);
+  ctx.textAlign = 'right'; ctx.fillText('whisperingwishes.app', bx + bw, by + bh + 6); ctx.textAlign = 'left';
   if (appIco) { ctx.save(); ctx.globalAlpha = 0.85; ctx.drawImage(appIco, bx + bw / 2 - 8, by + bh - 12, 16, 16); ctx.restore(); }
 
   // Every export gets a unique filename (timestamp suffix) — see idCardRenderer.js for why: a
