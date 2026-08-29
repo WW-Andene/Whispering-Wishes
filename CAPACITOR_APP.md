@@ -44,7 +44,8 @@ Résultat mesuré : **APK de 7 MB** (contre 1 GB en bundlant tout).
 | Carte interactive | ❌ tuiles chargées depuis ton hosting |
 | Animations Spine des personnages | ❌ chargées depuis ton hosting |
 | Fonds animés des bannières | ❌ chargées depuis ton hosting |
-| Suppression de fond d'image, OCR gacha, proxy gacha | ❌ appellent `/api/*` sur ton hosting (choix fait : pas de clé API perso embarquée) |
+| Suppression de fond d'image, proxy gacha (récupération de l'historique) | ❌ appellent `/api/*` sur ton hosting (choix fait : pas de clé API perso embarquée) |
+| OCR gacha (lecture de l'URL depuis une capture d'écran) | ✅ 100% sur l'appareil via Tesseract.js (assets vendorisés dans `public/vendor/tesseract/`, précachés à l'install) — aucun appel réseau pour l'OCR lui-même ; seule la récupération de l'historique APRÈS extraction de l'URL a besoin du réseau |
 | Notifications push | ❌ nécessite `google-services.json` + config Firebase côté serveur (voir ci-dessous) |
 
 ## Notifications push
