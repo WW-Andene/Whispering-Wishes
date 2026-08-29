@@ -6,9 +6,7 @@
     <string name="custom_url_scheme">cc.andene.whisperingwishes</string>
     <string name="banner_widget_description">Shows the featured gacha banner — art, Featured 4★s, ×1/×10 pull-simulator buttons, and a button to play the convene animation</string>
     <string name="widget_configure_title">Choose a banner</string>
-    <string name="widget_configure_character">Resonator Banner</string>
-    <string name="widget_configure_weapon">Weapon Banner</string>
-    <string name="widget_configure_unavailable">No active banner of this type right now</string>
+    <string name="widget_configure_unavailable">No active banners right now</string>
     <string name="widget_configure_confirm">Add Widget</string>
     <string name="banner_widget_play_aria">Play convene animation</string>
     <string name="convene_widget_playback_error">Couldn\'t play the convene animation — check your connection</string>

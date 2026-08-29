@@ -52,7 +52,8 @@ public class WidgetPullActivity extends Activity {
         int count = getIntent().getIntExtra(EXTRA_COUNT, 1);
         String category = getIntent().getStringExtra(EXTRA_CATEGORY);
         if (category == null) category = "character";
-        simResult = WidgetPullSimulator.roll(this, category, count);
+        String name = getIntent().getStringExtra(EXTRA_NAME);
+        simResult = WidgetPullSimulator.roll(this, category, name, count);
 
         View root = findViewById(R.id.pull_root);
         root.setOnClickListener(v -> {
@@ -162,4 +163,8 @@ public class WidgetPullActivity extends Activity {
 
     public static final String EXTRA_COUNT = "widget_pull_count";
     public static final String EXTRA_CATEGORY = "widget_pull_category";
+    // The specific banner name this widget instance is configured to (may be null for a
+    // pre-custom-choice widget with no pinned name — WidgetPullSimulator falls back to the
+    // category's first active banner in that case).
+    public static final String EXTRA_NAME = "widget_pull_name";
 }

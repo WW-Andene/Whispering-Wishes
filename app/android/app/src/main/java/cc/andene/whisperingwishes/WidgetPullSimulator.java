@@ -4,33 +4,45 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 // Native Java port of core/conveneSimulator.js's character- and weapon-
-// banner branches (whichever the widget instance is configured to show —
-// see BannerWidgetConfigureActivity.java) — the widget's ×1/×10 buttons
-// need to roll a pull with NO app launch
-// involved (see PulseBannerWidget.java/widget_banner.xml's comments), and
-// there's no reliable way to run the real JS engine in the background
-// without the app's WebView actually being active. This duplicates the
-// probability MATH only (base rate, soft/hard pity, 50/50, guarantee, 4★
-// rate-up+guarantee) — the actual name pools and portrait images are never
-// hand-copied here, they're synced as plain JSON by widgetSync.js's
-// syncPullSimPools() every time the featured banner changes, so this stays
-// in sync with characters.js/weapons.js automatically.
+// banner branches — rolls against the ONE SPECIFIC banner this widget
+// instance is configured to (category + exact name, picked via
+// BannerWidgetConfigureActivity.java's picker grid; two different
+// "character" widgets can point at two different currently-active
+// character banners) — the widget's ×1/×10 buttons need to roll a pull
+// with NO app launch involved (see PulseBannerWidget.java/widget_banner.xml's
+// comments), and there's no reliable way to run the real JS engine in the
+// background without the app's WebView actually being active. This
+// duplicates the probability MATH only (base rate, soft/hard pity, 50/50,
+// guarantee, 4★ rate-up+guarantee) — the actual name pools and portrait
+// images are never hand-copied here: the per-banner featured4 list and
+// every active banner's own name/art live in widget_banners_data
+// (widgetSync.js's syncBannerWidget()), and the four standard/off-rate name
+// pools — identical regardless of which banner is showing — are synced
+// once by syncGlobalPullPools(), so this stays in sync with
+// characters.js/weapons.js automatically.
 //
 // Known, accepted tradeoff (this was a deliberate choice, not an oversight):
 // this simulator keeps its OWN pity counter, entirely separate from both
 // the real tracked pity (state.profile) and the in-app simulator's pity
 // (useConveneSimStats.js) — it starts at 0/false the first time the widget
-// is used, like a fresh account, and only ever advances from its own
-// prior rolls. There is no cheap way to read the real pity from here
-// without launching the app.
+// is used, like a fresh account, and only ever advances from its own prior
+// rolls. It IS still kept per-category (not per-specific-banner): the real
+// game's own Character/Weapon Event Convene pity is shared across whichever
+// specific banner/phase is currently running within that category, not
+// reset per banner, so two different character banners pulled from two
+// different widgets correctly share one "widget_pull_character_*" pity
+// counter rather than each starting fresh. There is no cheap way to read
+// the real pity from here without launching the app.
 final class WidgetPullSimulator {
     private static final String PREFS_NAME = "CapacitorStorage";
+    private static final int WIDGET_SCHEMA_VERSION = 2; // must match PulseBannerWidget/widgetSync.js
     private static final double BASE_5STAR_RATE = 0.008;
     private static final int SOFT_PITY_START = 66;
     private static final int HARD_PITY = 80;
@@ -96,22 +108,66 @@ final class WidgetPullSimulator {
         return list.get(rand.nextInt(list.size()));
     }
 
+    // Looks up ONE banner entry by exact name inside widget_banners_data's <category>s array
+    // (mirrors PulseBannerWidget.findEntry's fallback behavior: a null/no-longer-active name
+    // resolves to that array's first entry instead of an empty pull). Returns null only when
+    // there's no synced data at all or no active banner in that category.
+    private static JSONObject findBannerEntry(SharedPreferences prefs, String category, String name) {
+        String json = prefs.getString("widget_banners_data", null);
+        if (json == null) return null;
+        try {
+            JSONObject blob = new JSONObject(json);
+            if (blob.optInt("v", -1) != WIDGET_SCHEMA_VERSION) return null;
+            JSONArray arr = blob.optJSONArray(category + "s");
+            if (arr == null || arr.length() == 0) return null;
+            if (name != null) {
+                for (int i = 0; i < arr.length(); i++) {
+                    JSONObject entry = arr.getJSONObject(i);
+                    if (name.equals(entry.optString("name", null))) return entry;
+                }
+            }
+            return arr.getJSONObject(0);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static List<String> readJsonArrayField(JSONObject obj, String key) {
+        List<String> out = new ArrayList<>();
+        if (obj == null) return out;
+        JSONArray arr = obj.optJSONArray(key);
+        if (arr == null) return out;
+        try {
+            for (int i = 0; i < arr.length(); i++) out.add(arr.getString(i));
+        } catch (Exception ignored) {}
+        return out;
+    }
+
     // category: "character" | "weapon" — mirrors conveneSimulator.js's
     // isWeapon split. Character banners have a real 50/50 (guaranteed on
     // loss); weapon banners don't — every 5★ hit is instantly the featured
     // weapon (no randomness, no guarantee flag involved at all), matching
     // "Weapon banners have no 50/50" in the JS engine's own comments.
-    static PullSimResult roll(Context context, String category, int count) {
+    // `name` pins this roll to one SPECIFIC active banner within `category` (this widget
+    // instance's own custom choice — two different "character" widgets can point at two
+    // different currently-active character banners) — null falls back to that category's
+    // first active banner, same as a pre-custom-choice widget.
+    static PullSimResult roll(Context context, String category, String name, int count) {
         boolean isWeapon = "weapon".equals(category);
         String featuredType = isWeapon ? "weapon" : "character";
 
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        String featuredName = prefs.getString("widget_banner_" + category + "_name", null);
-        List<String> featured4 = readJsonArray(prefs, "widget_pull_" + category + "_featured4");
-        List<String> standard5 = readJsonArray(prefs, "widget_pull_" + category + "_pool_standard5");
-        List<String> fourStarChars = readJsonArray(prefs, "widget_pull_" + category + "_pool_4star_chars");
-        List<String> fourStarWeapons = readJsonArray(prefs, "widget_pull_" + category + "_pool_4star_weapons");
-        List<String> threeStarWeapons = readJsonArray(prefs, "widget_pull_" + category + "_pool_3star_weapons");
+        JSONObject entry = findBannerEntry(prefs, category, name);
+        String featuredName = entry != null ? entry.optString("name", null) : null;
+        List<String> featured4 = readJsonArrayField(entry, "featured4Full");
+        // Global pools — the same standard-5★/off-rate-4★/3★ rosters regardless of which
+        // specific banner is showing, synced once by widgetSync.js's syncGlobalPullPools()
+        // rather than duplicated per category (an earlier version of this file kept identical
+        // copies under a "widget_pull_<category>_pool_*" key for each category).
+        List<String> standard5 = readJsonArray(prefs, "widget_pull_pool_standard5");
+        List<String> fourStarChars = readJsonArray(prefs, "widget_pull_pool_4star_chars");
+        List<String> fourStarWeapons = readJsonArray(prefs, "widget_pull_pool_4star_weapons");
+        List<String> threeStarWeapons = readJsonArray(prefs, "widget_pull_pool_3star_weapons");
 
         List<NameType> pool4Rest = new ArrayList<>();
         for (String n : fourStarChars) if (!featured4.contains(n)) pool4Rest.add(new NameType(n, "character"));
