@@ -471,7 +471,9 @@ public class PullBubbleService extends Service {
         if (icon != null) {
             ImageView img = new ImageView(this);
             img.setImageBitmap(icon);
-            img.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            // CENTER_CROP (not CENTER_INSIDE) so the artwork fills the circular sub-bubble
+            // edge-to-edge instead of letterboxing when its aspect ratio doesn't match.
+            img.setScaleType(ImageView.ScaleType.CENTER_CROP);
             root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         } else if (iconRes != 0) {
             ImageView img = new ImageView(this);
@@ -1042,11 +1044,15 @@ public class PullBubbleService extends Service {
     private void addGlowBurst(WindowManager.LayoutParams iconParams, int iconSizePx, String colorHex) {
         int glowSizePx = (int) (iconSizePx * 2.2f);
         FrameLayout glow = new FrameLayout(this);
+        // Radial gradient fading to transparent, not a flat translucent disc — a solid color
+        // reads as a hard-edged sharp circle rather than an actual soft glow.
+        int glowColor = Color.parseColor(colorHex.replace("#FF", "#B3"));
         GradientDrawable ring = new GradientDrawable();
         ring.setShape(GradientDrawable.OVAL);
-        ring.setColor(Color.parseColor(colorHex.replace("#FF", "#80")));
+        ring.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        ring.setGradientRadius(glowSizePx / 2f);
+        ring.setColors(new int[]{glowColor, glowColor & 0x00FFFFFF});
         glow.setBackground(ring);
-        clipToCircle(glow);
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -1169,11 +1175,16 @@ public class PullBubbleService extends Service {
     private void addPersistentHalo(View tile, WindowManager.LayoutParams tileParams, int sizePx, int rarity) {
         int haloSizePx = (int) (sizePx * 1.5f);
         FrameLayout halo = new FrameLayout(this);
+        // A solid translucent disc reads as a hard-edged sharp circle behind the tile. A radial
+        // gradient fading the same color down to fully transparent at the rim gives an actual
+        // soft "glow" look instead.
+        int glowColor = Color.parseColor(rarityHex(rarity).replace("#FF", "#99"));
         GradientDrawable ring = new GradientDrawable();
         ring.setShape(GradientDrawable.OVAL);
-        ring.setColor(Color.parseColor(rarityHex(rarity).replace("#FF", "#66")));
+        ring.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        ring.setGradientRadius(haloSizePx / 2f);
+        ring.setColors(new int[]{glowColor, glowColor & 0x00FFFFFF});
         halo.setBackground(ring);
-        clipToCircle(halo);
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
