@@ -312,13 +312,14 @@ public class PullBubbleService extends Service {
     // Top level: banner picker (enters CATEGORY) / ×80 / ×10 / ×1 / hide.
     private void showRollArc() {
         float density = getResources().getDisplayMetrics().density;
-        int iconPx = (int) (SUB_BUBBLE_SIZE_DP * density * 0.5f); // icon itself, smaller than the bubble it sits in
+        // 16dp — one PerfectSuite primary step down from the ~24dp the old 0.5x ratio produced.
+        int iconPx = (int) (16 * density);
         Bitmap resonatorIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Resonator.png", iconPx);
 
         addSubBubble(null, resonatorIcon, 0, SUB_BUBBLE_ANGLES_DEG[0], getString(R.string.pull_bubble_banner_picker_aria), this::enterCategoryMode);
-        addSubBubble(getString(R.string.widget_pull_x80), null, 0, SUB_BUBBLE_ANGLES_DEG[1], null, () -> startRoll(80));
-        addSubBubble(getString(R.string.widget_pull_x10), null, 0, SUB_BUBBLE_ANGLES_DEG[2], null, () -> startRoll(10));
-        addSubBubble(getString(R.string.widget_pull_x1), null, 0, SUB_BUBBLE_ANGLES_DEG[3], null, () -> startRoll(1));
+        addSubBubble(getString(R.string.widget_pull_x80), null, 0, 12f, 0f, SUB_BUBBLE_ANGLES_DEG[1], null, () -> startRoll(80));
+        addSubBubble(getString(R.string.widget_pull_x10), null, 0, 12f, 0f, SUB_BUBBLE_ANGLES_DEG[2], null, () -> startRoll(10));
+        addSubBubble(getString(R.string.widget_pull_x1), null, 0, 12f, 0f, SUB_BUBBLE_ANGLES_DEG[3], null, () -> startRoll(1));
         addHideButton();
     }
 
@@ -390,7 +391,8 @@ public class PullBubbleService extends Service {
         addBackButton(() -> enterMode(ArcMode.CATEGORY));
         double[] angles = midAngles(2);
         float density = getResources().getDisplayMetrics().density;
-        int iconPx = (int) (SUB_BUBBLE_SIZE_DP * density * 0.5f);
+        // 16dp — same one-step-down PerfectSuite reduction as showRollArc()'s resonator icon.
+        int iconPx = (int) (16 * density);
         Bitmap resonatorIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Resonator.png", iconPx);
         Bitmap weaponIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Weapons.webp", iconPx);
         String charLabel = getString(R.string.pull_bubble_category_character);
@@ -454,7 +456,7 @@ public class PullBubbleService extends Service {
     // 0 = none) should be given; checked in that priority order. Passing null for `aria` is
     // fine too — content descriptions are optional.
     private void addSubBubble(String label, Bitmap icon, int iconRes, double angleDeg, String aria, Runnable onTap) {
-        addSubBubble(label, icon, iconRes, 0f, angleDeg, aria, onTap);
+        addSubBubble(label, icon, iconRes, 8f, 0f, angleDeg, aria, onTap);
     }
 
     // iconRotationDeg only applies to the iconRes (vector drawable) branch — used to point a
@@ -462,6 +464,12 @@ public class PullBubbleService extends Service {
     // restore tab, see addHideButton/showHiddenTab) instead of needing a separate drawable per
     // direction.
     private void addSubBubble(String label, Bitmap icon, int iconRes, float iconRotationDeg, double angleDeg, String aria, Runnable onTap) {
+        addSubBubble(label, icon, iconRes, 8f, iconRotationDeg, angleDeg, aria, onTap);
+    }
+
+    // textSizeSp only applies to the plain-label (no icon) branch — ×1/×10/×80 want a bigger
+    // 12sp than every other text sub-bubble (category names, banner-list labels).
+    private void addSubBubble(String label, Bitmap icon, int iconRes, float textSizeSp, float iconRotationDeg, double angleDeg, String aria, Runnable onTap) {
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (SUB_BUBBLE_SIZE_DP * density);
 
@@ -487,7 +495,7 @@ public class PullBubbleService extends Service {
             TextView text = new TextView(this);
             text.setText(label);
             text.setTextColor(Color.WHITE);
-            text.setTextSize(8);
+            text.setTextSize(textSizeSp);
             text.setGravity(Gravity.CENTER);
             root.addView(text, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         }

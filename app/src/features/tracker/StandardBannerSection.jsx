@@ -168,10 +168,10 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
         />
       )}
       {bannerImage && isFull && <StandardBannerOverlay w={0} h={0} />}
-      {/* Top-right (not bottom-right like BannerCard's pills, which sit next to
-          a ▶️ button this section doesn't have) — avoids overlapping the
-          pity-stat bar pinned to the bottom when hasStats is true. */}
-      <div className="absolute top-2 right-2 z-20">
+      {/* Bottom-right, same as BannerCard's pills elsewhere — not top-right like this
+          section used to have it. Sits above the pity-stat bar (not flush at bottom-2)
+          when hasStats reserves that bottom strip, so the two never overlap. */}
+      <div className={`absolute right-2 z-20 ${hasStats ? 'bottom-16' : 'bottom-2'}`}>
         <ConvenePullPills kind={kind} onPull={(c) => { setPullSim(c); setPullSimId(id => id + 1); }} showTide={calc?.lustrous > 0} />
       </div>
       <ConvenePullSimModal
