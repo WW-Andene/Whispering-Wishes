@@ -566,22 +566,24 @@ export function getSonataLoadouts(bestEchoes, statScaling, element) {
     const c1Stats = cost1MainStats(statScaling);
     const slots = [];
     if (cost4Name) slots.push({ cost: 4, name: cost4Name, iconUrl: ECHO_DATA[cost4Name]?.iconUrl || null, mainStat: cost4MainStat(statScaling), generic: !main });
-    // usedCost3/usedCost1 accumulate names already picked within THIS tier
-    // so the second slot never lands on the same echo as the first — see
-    // findEchoOfSet's own comment for why calling it twice without this
-    // tracking always produced a duplicate whenever both slots share a set
-    // (the normal case for any single-set 4pc/5pc build).
-    const usedCost3 = [];
+    // `used` accumulates every echo name already placed in THIS build — seeded
+    // with cost4Name so a generic cost-3/cost-1 slot can never re-pick the
+    // curated main echo itself (e.g. "Capitaneus" is both a valid main echo
+    // AND a valid ALL_3COST_ECHOES entry) — and shared across both tiers so
+    // the second slot in each tier never lands on the same echo as the first
+    // either. Must stay ONE list across the whole build, not per-tier: a
+    // per-tier list (the earlier fix) only ever prevented same-tier repeats,
+    // never a main-vs-generic collision.
+    const used = cost4Name ? [cost4Name] : [];
     [0, 1].forEach((n) => {
       const setName = setQueue[n] || primarySet;
-      const name = setName ? findEchoOfSet(setName, ALL_3COST_ECHOES, usedCost3) : null;
-      if (name) { usedCost3.push(name); slots.push({ cost: 3, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c3Stats[n], generic: true }); }
+      const name = setName ? findEchoOfSet(setName, ALL_3COST_ECHOES, used) : null;
+      if (name) { used.push(name); slots.push({ cost: 3, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c3Stats[n], generic: true }); }
     });
-    const usedCost1 = [];
     [2, 3].forEach((n) => {
       const setName = setQueue[n] || primarySet;
-      const name = setName ? findEchoOfSet(setName, ALL_1COST_ECHOES, usedCost1) : null;
-      if (name) { usedCost1.push(name); slots.push({ cost: 1, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c1Stats[n - 2], generic: true }); }
+      const name = setName ? findEchoOfSet(setName, ALL_1COST_ECHOES, used) : null;
+      if (name) { used.push(name); slots.push({ cost: 1, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c1Stats[n - 2], generic: true }); }
     });
     return { sonataName, sonataElement, sonataSetName: primarySetName, label, slots };
   });
