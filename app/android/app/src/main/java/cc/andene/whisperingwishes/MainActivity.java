@@ -130,22 +130,8 @@ public class MainActivity extends BridgeActivity {
             // native poster is what's visible everywhere on screen for
             // those first frames, not just the bar insets.
             webView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-            // Also signals "native onCreate() has run" to the boot poster —
-            // see BootIntro.jsx/index.html's #boot-poster. Rather than
-            // fighting to make one poster survive the contained->edge-to-edge
-            // window transition without ever visibly moving (four separate
-            // attempts at that all failed or were unverifiable), the boot
-            // poster now renders deliberately differently in each state and
-            // cuts between them on this exact signal: offset below the
-            // bars while this hasn't fired yet (a correct, stable rendering
-            // of the contained state, not a bug to hide), full edge-to-edge
-            // once it has. window.__bootInsetsReady may already be
-            // true if a listener defined by the page hasn't registered
-            // itself yet — checked defensively either direction.
             String js = "document.documentElement.style.setProperty('--safe-area-top','" + topDp + "px');"
-                    + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');"
-                    + "window.__bootInsetsReady = true;"
-                    + "if (window.__onBootInsetsReady) { window.__onBootInsetsReady(); }";
+                    + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');";
             webView.evaluateJavascript(js, null);
         }
         // Boot splash (index.html) autoplays a muted <video> the instant
