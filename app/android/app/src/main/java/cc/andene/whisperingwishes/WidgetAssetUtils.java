@@ -2,6 +2,7 @@ package cc.andene.whisperingwishes;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
@@ -9,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.os.Build;
 import android.util.Log;
 
 import java.io.IOException;
@@ -107,6 +109,30 @@ final class WidgetAssetUtils {
             Log.w(TAG, "Asset not found: " + fullPath);
             return null;
         }
+    }
+
+    // Android 12+ (S) draws its OWN themed outer widget container/frame on top of whatever this
+    // app's own widget_background.xml supplies, clipped to the system's own corner radius
+    // (android.R.dimen.system_app_widget_background_radius) — which is a launcher/device value
+    // (commonly larger than this app's 16dp), NOT the 16dp this app bakes into its art bitmaps
+    // via roundedCorners(). Baking a fixed 16dp radius into the art regardless of that system
+    // value is exactly why the art's own corners and the widget's outer frame corners visibly
+    // don't match on API 31+: the frame is one radius, the art inside it is another. Below API
+    // 31 there's no such system-drawn frame at all — widget_background.xml's own 16dp IS the
+    // whole rounded look, so the art should match THAT instead.
+    static float widgetCornerRadiusPx(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Resources res = Resources.getSystem();
+            int resId = res.getIdentifier("system_app_widget_background_radius", "dimen", "android");
+            if (resId != 0) {
+                try {
+                    return res.getDimension(resId);
+                } catch (Resources.NotFoundException ignored) {
+                    // Fall through to the pre-S fallback below.
+                }
+            }
+        }
+        return 16f * context.getResources().getDisplayMetrics().density; // matches widget_background.xml's 16dp
     }
 
     // Rounds a bitmap's corners by radiusPx — RemoteViews ImageViews can't

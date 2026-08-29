@@ -247,11 +247,14 @@ public class PulseBannerWidget extends AppWidgetProvider {
         // RemoteViews has no setClipToOutline, so a full-bleed art ImageView's own square
         // corners would otherwise paint right over that rounded background on any Android
         // version that doesn't apply its own system-wide widget corner clip (12+ does; this
-        // app can't rely on that for every device/version it supports).
+        // app can't rely on that for every device/version it supports). The radius itself
+        // comes from WidgetAssetUtils.widgetCornerRadiusPx — on 12+ that's the SAME radius the
+        // system uses for its own outer widget frame, not a fixed value, so the art's corners
+        // actually line up with the frame around it instead of one being more/less rounded
+        // than the other.
         Bitmap art = data != null ? WidgetAssetUtils.decodeAsset(context, data.artAsset, ART_PX, Bitmap.Config.RGB_565) : null;
         if (art != null) {
-            float radiusPx = 16 * context.getResources().getDisplayMetrics().density; // matches widget_background.xml's 16dp
-            views.setImageViewBitmap(R.id.widget_art, WidgetAssetUtils.roundedCorners(art, radiusPx));
+            views.setImageViewBitmap(R.id.widget_art, WidgetAssetUtils.roundedCorners(art, WidgetAssetUtils.widgetCornerRadiusPx(context)));
         }
 
         setFeatured4(context, views, new int[]{R.id.widget_f4_1, R.id.widget_f4_2, R.id.widget_f4_3}, data != null ? data.featured4PreviewJson : null);
@@ -290,8 +293,7 @@ public class PulseBannerWidget extends AppWidgetProvider {
 
         Bitmap art = data != null ? WidgetAssetUtils.decodeAsset(context, data.artAsset, ART_PX, Bitmap.Config.RGB_565) : null;
         if (art != null) {
-            float radiusPx = 16 * context.getResources().getDisplayMetrics().density;
-            views.setImageViewBitmap(R.id.widget_secondary_art, WidgetAssetUtils.roundedCorners(art, radiusPx));
+            views.setImageViewBitmap(R.id.widget_secondary_art, WidgetAssetUtils.roundedCorners(art, WidgetAssetUtils.widgetCornerRadiusPx(context)));
         }
 
         setFeatured4(context, views, new int[]{R.id.widget_secondary_f4_1, R.id.widget_secondary_f4_2, R.id.widget_secondary_f4_3}, data != null ? data.featured4PreviewJson : null);
