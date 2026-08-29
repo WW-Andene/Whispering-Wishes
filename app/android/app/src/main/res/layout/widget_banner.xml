@@ -4,12 +4,12 @@
      ▶️ convene-animation button bottom-right, ×1/×10 pull-sim pills top-
      right on the primary block. RemoteViews only supports a small
      whitelisted set of views/attributes (no ConstraintLayout, no custom
-     Views, no video) — see GachaBannerWidget.java's file header for the
+     Views, no video) — see PulseBannerWidget.java's file header for the
      platform limits this works within.
 
      Two stacked blocks, not one: widget_secondary_block mirrors
      widget_primary_block (same structure, "_secondary"-suffixed ids, no
-     pull pills/gear) and is hidden by default — GachaBannerWidget.java's
+     pull pills/gear) and is hidden by default — PulseBannerWidget.java's
      onAppWidgetOptionsChanged shows it once the widget is resized tall
      enough to fit both, displaying whichever banner category ISN'T the
      one configured as primary (BannerWidgetConfigureActivity.java). -->

@@ -14,11 +14,11 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 
-// Used by GachaBannerWidget.java to turn a bundled web asset path (from
+// Used by PulseBannerWidget.java to turn a bundled web asset path (from
 // DEFAULT_COLLECTION_IMAGES/banner art, written into SharedPreferences by
 // widgetSync.js) into a Bitmap, since RemoteViews can't load an image by
-// path/URL itself — see GachaBannerWidget.java's file header for the platform
-// reasoning. Split out of GachaBannerWidget.java on its own since an earlier,
+// path/URL itself — see PulseBannerWidget.java's file header for the platform
+// reasoning. Split out of PulseBannerWidget.java on its own since an earlier,
 // since-removed floating-overlay feature needed the exact same logic too.
 final class WidgetAssetUtils {
     private static final String TAG = "WidgetAssetUtils";
@@ -67,9 +67,39 @@ final class WidgetAssetUtils {
             BitmapFactory.Options opts = new BitmapFactory.Options();
             opts.inSampleSize = sample;
             opts.inPreferredConfig = config;
+            Bitmap decoded;
             try (InputStream stream = am.open(fullPath)) {
-                return BitmapFactory.decodeStream(stream, null, opts);
+                decoded = BitmapFactory.decodeStream(stream, null, opts);
             }
+            if (decoded == null) return null;
+            // inSampleSize only halves (it's a power-of-2 subsample, not an
+            // exact target) — the loop above stops as soon as one more
+            // halving would undershoot targetPx, so the decoded bitmap's
+            // longest side can land anywhere in [targetPx, 2*targetPx), not
+            // AT targetPx. At RGB_565 that's up to ~4x the intended byte
+            // budget in the worst case (double the side length on both
+            // axes) — this class exists specifically to keep every bitmap
+            // that goes through RemoteViews.setImageViewBitmap() under the
+            // combined Binder transaction ceiling documented above, so an
+            // up-to-4x-over decode defeats the whole point of picking a
+            // small targetPx in the first place, and was very likely
+            // contributing to real on-device TransactionTooLargeException
+            // ("couldn't load this widget") reports depending on which
+            // character's source art happened to hit an unlucky size
+            // relative to the next power of 2. One more precise resize
+            // closes that gap — only when actually needed (a same-size
+            // rescale is a wasted allocation+copy), and only when it would
+            // meaningfully shrink things (a few px over isn't worth it).
+            int decodedLongest = Math.max(decoded.getWidth(), decoded.getHeight());
+            if (decodedLongest > targetPx * 5 / 4) {
+                float scale = (float) targetPx / decodedLongest;
+                int w = Math.max(1, Math.round(decoded.getWidth() * scale));
+                int h = Math.max(1, Math.round(decoded.getHeight() * scale));
+                Bitmap resized = Bitmap.createScaledBitmap(decoded, w, h, true);
+                if (resized != decoded) decoded.recycle();
+                return resized;
+            }
+            return decoded;
         } catch (IOException e) {
             // Expected for characters without local art, or if the asset was
             // renamed — widgetSync.js writes whatever DEFAULT_COLLECTION_IMAGES

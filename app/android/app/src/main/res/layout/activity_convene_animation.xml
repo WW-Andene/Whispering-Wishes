@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Full-screen convene-animation player launched from GachaBannerWidget.java's
+<!-- Full-screen convene-animation player launched from PulseBannerWidget.java's
      ▶️ button — a real Activity, unlike the widget itself, so VideoView
      (unsupported in RemoteViews) can actually play here. Tapping anywhere
      skips/closes, same as the app's own convene video preview. -->

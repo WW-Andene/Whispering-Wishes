@@ -13,7 +13,7 @@ import java.util.Random;
 // banner branches (whichever the widget instance is configured to show —
 // see BannerWidgetConfigureActivity.java) — the widget's ×1/×10 buttons
 // need to roll a pull with NO app launch
-// involved (see GachaBannerWidget.java/widget_banner.xml's comments), and
+// involved (see PulseBannerWidget.java/widget_banner.xml's comments), and
 // there's no reliable way to run the real JS engine in the background
 // without the app's WebView actually being active. This duplicates the
 // probability MATH only (base rate, soft/hard pity, 50/50, guarantee, 4★

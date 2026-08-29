@@ -30,7 +30,7 @@
              "doesn't work at all" root cause, more fundamental than the
              configure-Activity exported fix already applied below. -->
         <receiver
-            android:name=".GachaBannerWidget"
+            android:name=".PulseBannerWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

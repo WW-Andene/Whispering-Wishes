@@ -60,22 +60,31 @@ import org.json.JSONObject;
 // missing/wrong version is treated the same as no data at all rather than
 // risking a field access that no longer means what this code expects.
 //
-// Renamed from BannerWidget — an unrelated, already-removed provider
-// (EventCountdownWidget, deleted in an earlier commit) kept showing up
-// as a second, broken entry in the home-screen widget picker on at
-// least one real device, confirmed via a byte-level read of the exact
-// installed APK to contain no second <receiver> and none of that old
-// provider's strings anywhere in resources.arsc — so whatever was
-// holding onto it lives in OS/launcher-side widget-host state keyed by
-// component name, not in this app's own code or data (a full app data
-// wipe didn't clear it either). A stale reference to a component
-// necessarily points at that component's exact name; renaming this
-// class means the OLD name (cc.andene.whisperingwishes.BannerWidget)
-// no longer resolves to anything at all, so nothing can bind a stale
-// picker entry to it — the picker can only ever find this one, under
-// its new identity.
-public class GachaBannerWidget extends AppWidgetProvider {
-    private static final String TAG = "GachaBannerWidget";
+// History of this class's name, for whoever reads this next: originally
+// BannerWidget. An unrelated, already-removed provider (EventCountdownWidget,
+// deleted well before any of this) kept showing up as a second, broken entry
+// in the home-screen widget picker on a real device — confirmed via a
+// byte-level read of the exact installed APK to contain no second <receiver>
+// and none of that old provider's strings anywhere in resources.arsc, and
+// confirmed NOT to be a second app install (Settings -> Apps showed exactly
+// one entry) — ruling out everything except OS/launcher-side widget-host
+// state keyed by component name, something neither an app data wipe nor a
+// full phone cache wipe reaches. Renamed to GachaBannerWidget on that theory
+// (a stale reference necessarily points at the exact old component name, so
+// a new name can't be bound to it) — that did NOT fix it; the duplicate
+// entry persisted under the new name too, meaning whatever was holding onto
+// it wasn't actually keyed to the specific old class name the way that
+// theory assumed. The whole feature was deleted entirely at that point to
+// confirm the picker entry really was code, not device state — deleting it
+// DID make the duplicate go away, proving it was real. This is the
+// reimplementation, restoring the same code (which already had the
+// TransactionTooLargeException/atomic-payload/asset-map hardening below)
+// under yet another new name (PulseBannerWidget) as a precaution, since the
+// true mechanism connecting a component name to that stale picker state was
+// never actually identified — only worked around once, by removing the
+// component whose name it was keyed to entirely.
+public class PulseBannerWidget extends AppWidgetProvider {
+    private static final String TAG = "PulseBannerWidget";
     private static final String PREFS_NAME = "CapacitorStorage";
     private static final int WIDGET_SCHEMA_VERSION = 1;
     // Longest-side decode target for the banner art background. This used to
@@ -327,9 +336,9 @@ public class GachaBannerWidget extends AppWidgetProvider {
     // widget sooner than the OS's own 30-minute floor.
     public static void requestUpdate(Context context) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
-        int[] ids = manager.getAppWidgetIds(new ComponentName(context, GachaBannerWidget.class));
+        int[] ids = manager.getAppWidgetIds(new ComponentName(context, PulseBannerWidget.class));
         if (ids.length == 0) return;
-        Intent intent = new Intent(context, GachaBannerWidget.class);
+        Intent intent = new Intent(context, PulseBannerWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         context.sendBroadcast(intent);
@@ -339,7 +348,7 @@ public class GachaBannerWidget extends AppWidgetProvider {
     // category choice, so that one widget instance refreshes immediately
     // instead of waiting for the next broadcast.
     public static void requestUpdateSingle(Context context, int appWidgetId) {
-        Intent intent = new Intent(context, GachaBannerWidget.class);
+        Intent intent = new Intent(context, PulseBannerWidget.class);
         intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, new int[]{appWidgetId});
         context.sendBroadcast(intent);
