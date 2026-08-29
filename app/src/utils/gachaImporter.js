@@ -291,7 +291,12 @@ export function compressImage(source) {
 // succeeds" symptom. Pointing at a specific *.wasm.js file (ends in "js")
 // skips that detection path entirely; see tesseract.js's getCore.js.
 const TESSERACT_VENDOR_PATH = '/vendor/tesseract';
-const OCR_INIT_TIMEOUT_MS = 20000;
+// Worker init has to download all ~7MB of vendored assets (2.9MB traineddata + 3.9MB core +
+// worker script) before it can resolve — 20s required >350KB/s sustained just to fit inside the
+// window, which a slow/cellular connection routinely misses even with nothing actually broken.
+// Raised so a real device on a weak connection gets a fair shot instead of always tripping the
+// timeout during download.
+const OCR_INIT_TIMEOUT_MS = 45000;
 const OCR_RECOGNIZE_TIMEOUT_MS = 30000;
 
 function withTimeout(promise, ms, message) {
@@ -317,8 +322,15 @@ async function getOcrWorker() {
         langPath: TESSERACT_VENDOR_PATH,
       })),
       OCR_INIT_TIMEOUT_MS,
-      'OCR engine failed to start. Try again, or paste the URL manually.'
-    ).catch(err => { _ocrWorkerPromise = null; throw err; });
+      `OCR engine failed to start (timed out after ${OCR_INIT_TIMEOUT_MS / 1000}s, likely a slow connection downloading the OCR assets). Try again on a better connection, or paste the URL manually.`
+    ).catch(err => {
+      _ocrWorkerPromise = null;
+      // Logged here (not just thrown) so the real failure reason — timeout vs. an actual
+      // createWorker rejection (missing/blocked asset, worker spawn failure, etc.) — is visible
+      // in the console even when the caller's own catch only surfaces err.message in a toast.
+      console.error('[OCR] Worker init failed:', err);
+      throw err;
+    });
   }
   return _ocrWorkerPromise;
 }
