@@ -36,6 +36,19 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
+        <!-- windowTranslucentStatus/Navigation — real, valid, declarative
+             attributes (unlike windowFitsSystemWindows, which doesn't exist
+             and broke CI). These are what actually control whether the
+             window reserves space for the bars, applied by the OS at
+             window creation, with zero code lag — unlike MainActivity's
+             WindowCompat.setDecorFitsSystemWindows(false) call, which can
+             only run a frame after the window already exists. Tried once
+             before (reverted) while windowBackground still pointed at the
+             wrong placeholder asset — that test was confounded by an
+             unrelated bug, not a real result. Retrying now that the asset
+             is actually correct. -->
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
 
@@ -60,6 +73,11 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <!-- Same reasoning as AppTheme.NoActionBar's own translucent flags —
+             retrying now that this theme's own windowBackground is
+             actually the boot poster instead of the old placeholder. -->
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
     <!-- ConveneAnimationActivity — full-screen black, no action bar/title,
