@@ -4660,7 +4660,12 @@ const SKILL_ICONS = {
     'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
     'Heavy ATK: Conjuration': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Heavy Attack's own name on the wiki, no dedicated icon — generic weapon icon
     'Manifestation': './characters/zhezhi/DDNMwsCy-Skill-Manifestation.webp',
-    'Stroke of Genius / Creation\'s Zenith': './characters/zhezhi/DDNMwsCy-Skill-Manifestation.webp', // named cast-states of the same Resonance Skill (Manifestation), no separate wiki icon
+    // Split from a single combined key: getSkillIcon() does `skillName.includes(key)`, so a rotation
+    // step naming just "Stroke of Genius" (the real in-game move name, shorter than the combined
+    // string) never contained it and silently got no icon. Both are named cast-states of the same
+    // Resonance Skill (Manifestation), no separate wiki icon.
+    'Stroke of Genius': './characters/zhezhi/DDNMwsCy-Skill-Manifestation.webp',
+    'Creation\'s Zenith': './characters/zhezhi/DDNMwsCy-Skill-Manifestation.webp',
     'Ink and Wash': './characters/zhezhi/8DYg2f8z-Skill-Ink-and-Wash.webp',
     'Living Canvas': './characters/zhezhi/Vc7cVKF1-Skill-Living-Canvas.webp',
     'Radiant Ruin': './characters/zhezhi/LX3NLrxP-Skill-Radiant-Ruin.webp', // Intro Skill
@@ -4725,6 +4730,7 @@ const SKILL_ICONS = {
     'Silent Execution': './characters/_shared/NG3jXXG-skill-pistols.webp',
     'Standard': './characters/_shared/NG3jXXG-skill-pistols.webp',
     'Necessary Measures': './characters/_shared/NG3jXXG-skill-pistols.webp', // Moldable-Crystal Basic ATK replacement, same generic weapon icon
+    'Plunging Attack': './characters/_shared/NG3jXXG-skill-pistols.webp', // Mid-air Basic ATK finisher, same generic weapon icon (no dedicated wiki asset)
     'Art of Violence': './characters/carlotta/JwZzgLS1-skill-artofviolence.webp',
     'Chromatic Splendor': './characters/carlotta/JwZzgLS1-skill-artofviolence.webp', // 2nd-press of the same Resonance Skill, no separate wiki icon
     'Lethal Repertoire': './characters/carlotta/d49NGW0G-skill-lethalrepertoire.webp',
@@ -4843,6 +4849,7 @@ const SKILL_ICONS = {
     'Sword to Carve My Forms': './characters/_shared/x86mmjbD-skill-sword.webp',
     'Standard': './characters/_shared/x86mmjbD-skill-sword.webp',
     'Base Form': './characters/_shared/x86mmjbD-skill-sword.webp', // Fleurdelys/base-form Basic-Heavy-Mid-air variants share the generic icon
+    'Plunging Attack': './characters/_shared/x86mmjbD-skill-sword.webp', // matches "Cartethyia Plunging Attack" rotation step via includes(); Mid-air Basic ATK finisher, no dedicated wiki asset
     'Fleurdelys': './characters/_shared/x86mmjbD-skill-sword.webp',
     'Sword to Bear Their Names': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp',
     'Sword to Answer Waves': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp', // Fleurdelys Resonance Skill replacement, same wiki icon

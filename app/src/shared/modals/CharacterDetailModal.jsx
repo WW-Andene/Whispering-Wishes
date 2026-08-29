@@ -559,10 +559,19 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   const row = (SKILL_MULTIPLIERS[name] || []).find(([t, n]) => t === step.type && n.includes(step.skill));
                   const dmg = row?.[2];
                   const stepIcon = getSkillIcon(name, step.skill);
+                  // 'Echo' steps (e.g. "Use Echo", "Swap Cancel") aren't a character skill at all —
+                  // they're whatever echo the player has equipped, so they can never resolve to a
+                  // per-character skill icon. Show a generic echo glyph instead of leaving the row
+                  // silently iconless.
+                  const isEchoStep = step.type === 'Echo';
                   return (
                     <div key={i} className="flex items-start gap-2 px-2 py-1.5 rounded bg-white/5">
                       <span className="text-sm font-medium text-gray-600 shrink-0 w-4 text-right">{i + 1}</span>
-                      {stepIcon && <img src={stepIcon} alt="" className="w-4 h-4 rounded shrink-0 mt-0.5" onError={hideOnError} />}
+                      {stepIcon ? (
+                        <img src={stepIcon} alt="" className="w-4 h-4 rounded shrink-0 mt-0.5" onError={hideOnError} />
+                      ) : isEchoStep ? (
+                        <LayoutGrid size={14} className="text-gray-500 shrink-0 mt-0.5" />
+                      ) : null}
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-baseline gap-x-1.5">
                           <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border shrink-0 ${sty.cls}`}>{sty.label}</span>
