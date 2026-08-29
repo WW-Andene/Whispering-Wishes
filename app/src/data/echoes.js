@@ -472,11 +472,28 @@ const splitEchoLabel = (s) => {
   const m = /^(.*?)\s*\(([^)]+)\)\s*$/.exec(s || '');
   return m ? { text: m[1].trim(), label: m[2].trim() } : { text: (s || '').trim(), label: null };
 };
-const findEchoOfSet = (setName, costList) => {
-  const inTier = costList.find(e => ECHO_DATA[e]?.sets?.includes(setName));
+// `exclude` — names already picked for an earlier slot in this same build. A
+// real Wuthering Waves loadout can never equip two echoes with the same
+// name, but the two cost-3 slots (and separately the two cost-1 slots)
+// almost always belong to the same set — without this, calling this
+// function twice with identical (setName, costList) arguments is
+// deterministic and returns the same echo both times, producing an
+// impossible "duplicate echo" build.
+const findEchoOfSet = (setName, costList, exclude = []) => {
+  const inTier = costList.find(e => ECHO_DATA[e]?.sets?.includes(setName) && !exclude.includes(e));
   if (inTier) return inTier;
-  // Fallback: the set has no echo at this cost tier — use whatever tier it does have one in.
-  return [ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES].flat().find(e => ECHO_DATA[e]?.sets?.includes(setName)) || null;
+  // No unused echo of this set at this cost tier — look across every tier
+  // before giving up, still excluding names already used elsewhere in this
+  // build (a name from a different cost tier is never actually equippable
+  // in this slot anyway, but excluding it here keeps the search honest).
+  const anyTier = [ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES].flat()
+    .find(e => ECHO_DATA[e]?.sets?.includes(setName) && !exclude.includes(e));
+  if (anyTier) return anyTier;
+  // Truly only one echo of this set exists anywhere (rare) — reusing it is
+  // still better than leaving the slot empty; this is the only path that
+  // can still produce a duplicate, and only when no alternative exists at
+  // all, not because nothing tried to avoid it.
+  return costList.find(e => ECHO_DATA[e]?.sets?.includes(setName)) || null;
 };
 // Standard WW main-stat convention: the cost-4 slot (largest guaranteed roll) carries Crit DMG, one
 // cost-3 slot carries Crit Rate (targeting the ~1:2 Crit Rate:Crit DMG ratio), and the other cost-3
@@ -546,15 +563,22 @@ export function getSonataLoadouts(bestEchoes, statScaling, element) {
     const c1Stats = cost1MainStats(statScaling);
     const slots = [];
     if (cost4Name) slots.push({ cost: 4, name: cost4Name, iconUrl: ECHO_DATA[cost4Name]?.iconUrl || null, mainStat: cost4MainStat(statScaling), generic: !main });
+    // usedCost3/usedCost1 accumulate names already picked within THIS tier
+    // so the second slot never lands on the same echo as the first — see
+    // findEchoOfSet's own comment for why calling it twice without this
+    // tracking always produced a duplicate whenever both slots share a set
+    // (the normal case for any single-set 4pc/5pc build).
+    const usedCost3 = [];
     [0, 1].forEach((n) => {
       const setName = setQueue[n] || primarySet;
-      const name = setName ? findEchoOfSet(setName, ALL_3COST_ECHOES) : null;
-      if (name) slots.push({ cost: 3, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c3Stats[n], generic: true });
+      const name = setName ? findEchoOfSet(setName, ALL_3COST_ECHOES, usedCost3) : null;
+      if (name) { usedCost3.push(name); slots.push({ cost: 3, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c3Stats[n], generic: true }); }
     });
+    const usedCost1 = [];
     [2, 3].forEach((n) => {
       const setName = setQueue[n] || primarySet;
-      const name = setName ? findEchoOfSet(setName, ALL_1COST_ECHOES) : null;
-      if (name) slots.push({ cost: 1, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c1Stats[n - 2], generic: true });
+      const name = setName ? findEchoOfSet(setName, ALL_1COST_ECHOES, usedCost1) : null;
+      if (name) { usedCost1.push(name); slots.push({ cost: 1, name, iconUrl: ECHO_DATA[name]?.iconUrl || null, mainStat: c1Stats[n - 2], generic: true }); }
     });
     return { sonataName, sonataElement, sonataSetName: primarySetName, label, slots };
   });
