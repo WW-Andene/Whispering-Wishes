@@ -17,12 +17,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 // Home-screen "gacha banner" widget — the featured character/weapon banner
-// (art, name, Featured 4★ row, a bubble on/off toggle, ▶️ convene-
-// animation button), mirroring BannerCard.jsx as closely as RemoteViews
-// allows. Pulling no longer happens on this widget directly — the toggle
-// starts/stops PullBubbleService's persistent floating bubble instead (see
-// that class's own file header for the whole roll → sub-bubbles → floating
-// video → dismissible result-icon flow). Which SPECIFIC banner a given widget instance shows (not just
+// (art, name, Featured 4★ row, ▶️ convene-animation button), mirroring
+// BannerCard.jsx as closely as RemoteViews allows. Pulling doesn't happen on
+// this widget at all — PullBubbleService's persistent floating bubble owns
+// that entirely now, toggled from ProfileTab's in-app PullBubbleCard (or the
+// bubble's own drag-to-✕ dismiss), deliberately with NO dependency on this
+// widget existing/being placed. Which SPECIFIC banner a given widget instance shows (not just
 // "character vs weapon" — an exact banner by name, e.g. "character"/
 // "Jinhsi") is picked via BannerWidgetConfigureActivity.java's picker grid
 // at placement time (android:configure in banner_widget_info.xml) and
@@ -123,12 +123,6 @@ public class PulseBannerWidget extends AppWidgetProvider {
     // sharp at the size this widget actually renders art at.
     private static final int ART_PX = 240;
     private static final int THUMB_PX = 96; // decode target for the 30dp featured-4★ thumbnails
-    private static final int PILL_ICON_PX = 40; // decode target for the 14dp bubble-toggle currency icon
-    // Same bundled asset ConvenePullPills.jsx's ASTRITE_ICON constant uses —
-    // always shown here (unlike the in-app pill, this doesn't know whether
-    // the player has a tide currency entered in Calculator) since it's
-    // always a valid fallback.
-    private static final String ASTRITE_ICON_ASSET = "ui-icons/Currency-Astrite.webp";
     // Height (dp) a widget needs before the secondary banner block is worth
     // showing — two ~130dp blocks plus some breathing room.
     private static final int SECONDARY_MIN_HEIGHT_DP = 260;
@@ -236,10 +230,9 @@ public class PulseBannerWidget extends AppWidgetProvider {
     private static void renderPrimaryBlock(Context context, RemoteViews views, int appWidgetId, BannerData data, boolean compact) {
         String name = data != null ? data.name : null;
 
-        // Compact (short/1-row) sizes: hide the bubble toggle and the Featured-4★/▶️ row
-        // entirely — neither fits in a 1-row placement, and a clipped-mid-row control/
-        // thumbnail reads as broken rather than just "smaller". Art + name/element still shows.
-        views.setViewVisibility(R.id.widget_bubble_toggle, compact ? View.GONE : View.VISIBLE);
+        // Compact (short/1-row) sizes: hide the Featured-4★/▶️ row entirely — it doesn't fit
+        // in a 1-row placement, and a clipped-mid-row thumbnail reads as broken rather than
+        // just "smaller". Art + name/element still shows.
         views.setViewVisibility(R.id.widget_bottom_row, compact ? View.GONE : View.VISIBLE);
 
         if (data != null) {
@@ -280,23 +273,7 @@ public class PulseBannerWidget extends AppWidgetProvider {
             views.setViewVisibility(R.id.widget_play, View.GONE);
         }
 
-        // Bubble on/off toggle — replaces the old ×1/×10 pull-sim pills. One tap starts
-        // PullBubbleService's persistent floating bubble (main bubble → tap to expand into
-        // ×1/×10 sub-bubbles → roll + floating video + individually-dismissible result
-        // icons), a second tap stops it. Label/icon reflect current state so the toggle
-        // reads correctly without opening anything.
-        boolean bubbleRunning = PullBubbleService.isRunning();
-        views.setTextViewText(R.id.widget_bubble_toggle_label, context.getString(
-                bubbleRunning ? R.string.widget_bubble_toggle_on : R.string.widget_bubble_toggle_off));
-        Bitmap astriteIcon = WidgetAssetUtils.decodeAsset(context, ASTRITE_ICON_ASSET, PILL_ICON_PX);
-        if (astriteIcon != null) views.setImageViewBitmap(R.id.widget_bubble_toggle_icon, astriteIcon);
-        Intent toggleIntent = new Intent(context, PullBubbleService.class);
-        toggleIntent.setAction(PullBubbleService.ACTION_TOGGLE);
-        views.setOnClickPendingIntent(R.id.widget_bubble_toggle, PendingIntent.getService(
-                context, appWidgetId * 10 + 3, toggleIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-
-        // Tapping the art/scrim background (not the pills/▶️/gear, which
+        // Tapping the art/scrim background (not the ▶️/gear, which
         // consume their own touches) opens the app itself, same as the old
         // countdown widget used to.
         Intent launchIntent = new Intent(context, MainActivity.class);

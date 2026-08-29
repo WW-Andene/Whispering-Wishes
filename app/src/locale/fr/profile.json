@@ -11,6 +11,14 @@
     "downloadStarted": "Ouverture du téléchargement — installez-la une fois terminée.",
     "downloadFailed": "Impossible d'ouvrir le téléchargement : {{error}}"
   },
+  "pullBubble": {
+    "title": "Bulle d'invocation",
+    "description": "Une petite bulle flottante que vous pouvez déplacer n'importe où à l'écran — appuyez dessus pour lancer une invocation ×1 ou ×10 et voir l'animation du résultat, sans ouvrir l'application ni ajouter de widget. Nécessite une autorisation ponctuelle « afficher par-dessus les autres applications ». Faites glisser la bulle sur le ✕ qui apparaît pendant le déplacement pour la désactiver.",
+    "enable": "Activer la bulle",
+    "disable": "Désactiver la bulle",
+    "permissionNeeded": "Autorisez « afficher par-dessus les autres applications » dans l'écran qui vient de s'ouvrir, puis réessayez.",
+    "error": "Impossible de configurer la bulle : {{error}}"
+  },
   "pushNotifications": {
     "title": "Notifications push",
     "description": "Soyez averti quand un événement se termine ou qu'une mise à jour de version sort. Nécessite une autorisation ponctuelle.",

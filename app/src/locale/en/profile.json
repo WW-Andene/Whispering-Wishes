@@ -11,6 +11,14 @@
     "downloadStarted": "Opening download — install it once it finishes.",
     "downloadFailed": "Couldn't open download: {{error}}"
   },
+  "pullBubble": {
+    "title": "Pull Bubble",
+    "description": "A small floating bubble you can drag anywhere on your screen — tap it to roll a ×1 or ×10 pull and watch the result animation, without opening the app or placing a widget. Requires a one-time \"draw over other apps\" permission grant. Drag the bubble onto the ✕ that appears while dragging it to turn it off.",
+    "enable": "Enable Pull Bubble",
+    "disable": "Disable Pull Bubble",
+    "permissionNeeded": "Grant \"draw over other apps\" in the screen that just opened, then try again.",
+    "error": "Couldn't set up the pull bubble: {{error}}"
+  },
   "pushNotifications": {
     "title": "Push Notifications",
     "description": "Get notified when events end or version updates drop. Requires a one-time permission grant.",

@@ -61,6 +61,7 @@ public class MainActivity extends BridgeActivity {
         // while the Bridge is being constructed there.
         registerPlugin(SystemSettingsPlugin.class);
         registerPlugin(GlassHapticsPlugin.class);
+        registerPlugin(PullBubblePlugin.class);
         // Also disabled Android's SplashScreen exit-zoom animation
         // (below) as a separate fix attempt — didn't fully resolve the
         // boot splash reframe either. Confirmed since (switching the
