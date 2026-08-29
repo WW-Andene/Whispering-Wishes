@@ -148,16 +148,19 @@ final class WidgetPullSimulator {
     // loss); weapon banners don't — every 5★ hit is instantly the featured
     // weapon (no randomness, no guarantee flag involved at all), matching
     // "Weapon banners have no 50/50" in the JS engine's own comments.
-    // `name` pins this roll to one SPECIFIC active banner within `category` (this widget
-    // instance's own custom choice — two different "character" widgets can point at two
-    // different currently-active character banners) — null falls back to that category's
-    // first active banner, same as a pre-custom-choice widget.
-    static PullSimResult roll(Context context, String category, String name, int count) {
+    // `pinnedName` pins this roll to one SPECIFIC active banner within `category` (this
+    // widget instance's own custom choice — two different "character" widgets can point at
+    // two different currently-active character banners) — null falls back to that
+    // category's first active banner, same as a pre-custom-choice widget. Named distinctly
+    // from the per-pull-result "name" locals used further down in this same method (the
+    // actual name of whatever THIS specific pull rolled) — they're a different concept and
+    // Java won't allow a local to shadow a parameter anyway.
+    static PullSimResult roll(Context context, String category, String pinnedName, int count) {
         boolean isWeapon = "weapon".equals(category);
         String featuredType = isWeapon ? "weapon" : "character";
 
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        JSONObject entry = findBannerEntry(prefs, category, name);
+        JSONObject entry = findBannerEntry(prefs, category, pinnedName);
         String featuredName = entry != null ? entry.optString("name", null) : null;
         List<String> featured4 = readJsonArrayField(entry, "featured4Full");
         // Global pools — the same standard-5★/off-rate-4★/3★ rosters regardless of which
