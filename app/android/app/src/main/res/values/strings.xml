@@ -19,7 +19,7 @@
     <string name="pull_bubble_notification_channel_name">Pull Bubble</string>
     <string name="convene_player_notification_channel_name">Convene Player</string>
     <string name="convene_player_notification_title">Convene animation looping</string>
-    <string name="convene_player_notification_text">Tap the widget's ▶️ again to stop it</string>
+    <string name="convene_player_notification_text">Tap the widget\'s ▶️ again to stop it</string>
     <string name="pull_bubble_notification_title">Pull bubble is active</string>
     <string name="pull_bubble_notification_text">Tap to open the app, or drag the bubble to ✕ to turn it off</string>
     <string name="pull_bubble_remove_aria">Drag here to turn off the pull bubble</string>
