@@ -67,24 +67,12 @@
          is visually seamless — same image, same place, nothing to notice —
          and BootIntro then owns the video/fade sequence from there since
          that needs component state to know when the video has finished. -->
-    <!-- Two posters SUPERPOSED — not split, not offset. Both boxes and both
-         images are IDENTICAL: full-screen, top:0/left:0, same w×h, same
-         object-fit:cover. Neither image is ever cropped-and-shifted (the
-         previous split techniques needed a per-piece pixel offset — e.g.
-         "top:-bar" — to keep the two pieces' content aligned, and that
-         offset math is exactly where a seam/rounding gap could creep in).
-         Here the two copies need no such alignment: since they're pixel-
-         identical in position and size, they already agree everywhere.
-         clip-path is the only thing that differs between them — it just
-         decides which one is allowed to be visible in a given strip,
-         nothing about where either one's content sits.
-         "under" is clipped to show ONLY the status-bar strip (top bar px)
-         — hidden by the status bar, effectively, for everything below it.
-         "over" stacks on top of it (z-index) and is clipped to show
-         everything BELOW that strip, hiding "under" everywhere it's
-         visible. Together they cover the full screen with the exact same
-         pixels a single unclipped poster would — so it reads as one
-         continuous poster, even though it's drawn by two layers. -->
+    <!-- Single unsplit full-screen poster — no split/superposition trick
+         needed anymore. MainActivity.java now HIDES the status bar
+         entirely for boot (not just makes it transparent), so there's no
+         status-bar-shaped region left to align a piece against or reframe
+         around; the poster can just be one plain full-screen element. The
+         status bar is restored once BootIntro.jsx's intro finishes. -->
     <script>
       // document.write, not markup + a follow-up script correcting inline
       // styles afterward — a prior version here set width:100% (viewport-
@@ -97,9 +85,7 @@
       // ever have — there's no intermediate percentage-sized state for the
       // parser to paint before a script corrects it.
       (function () {
-        var w = window.screen.width, h = window.screen.height, bar = 24;
-        var fullBox = 'position:fixed;top:0;left:0;width:' + w + 'px;height:' + h + 'px';
-        var fullImg = 'position:absolute;top:0;left:0;width:' + w + 'px;height:' + h + 'px;object-fit:cover';
+        var w = window.screen.width, h = window.screen.height;
         // DIAGNOSTIC: red overlay (mix-blend-mode:multiply, reliable
         // regardless of the poster image's own colors, unlike a CSS
         // filter) — marks THIS static pre-React poster specifically, so
@@ -108,12 +94,8 @@
         // reframe is confirmed fixed.
         var tint = 'position:absolute;top:0;left:0;width:100%;height:100%;background:red;mix-blend-mode:multiply;pointer-events:none';
         document.write(
-          '<div id="boot-poster" style="' + fullBox + ';z-index:2147483646;clip-path:inset(0 0 ' + (h - bar) + 'px 0);background:#080c14">' +
-            '<img src="./boot-intro/boot-intro-poster.gif" alt="" style="' + fullImg + '" />' +
-            '<div style="' + tint + '"></div>' +
-          '</div>' +
-          '<div id="boot-poster-page" style="' + fullBox + ';z-index:2147483647;clip-path:inset(' + bar + 'px 0 0 0);background:#080c14">' +
-            '<img src="./boot-intro/boot-intro-poster.gif" alt="" style="' + fullImg + '" />' +
+          '<div id="boot-poster" style="position:fixed;top:0;left:0;width:' + w + 'px;height:' + h + 'px;overflow:hidden;z-index:2147483647;background:#080c14">' +
+            '<img src="./boot-intro/boot-intro-poster.gif" alt="" style="position:absolute;top:0;left:0;width:' + w + 'px;height:' + h + 'px;object-fit:cover" />' +
             '<div style="' + tint + '"></div>' +
           '</div>'
         );
@@ -143,10 +125,8 @@
           if (removed) return;
           removed = true;
           try {
-            var bar = document.getElementById('boot-poster');
-            var page = document.getElementById('boot-poster-page');
-            if (bar) bar.remove();
-            if (page) page.remove();
+            var poster = document.getElementById('boot-poster');
+            if (poster) poster.remove();
           } catch (e) {
             // Nothing to do — worst case the static poster stays until
             // BootIntro.jsx's own unconditional removal-on-mount runs.
