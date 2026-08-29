@@ -504,7 +504,11 @@ const findEchoOfSet = (setName, costList, exclude = []) => {
 // Energy Regen, a standard real second cost-3 pick. Cost-1 echoes can't roll Crit or Elemental
 // DMG% at all, so they default to ATK% (or the character's scaling stat).
 const cost4MainStat = (statScaling) => statScaling === 'HP' ? 'Healing Bonus' : 'Crit DMG';
-const cost3MainStats = (statScaling, element) => statScaling === 'HP' ? ['Healing Bonus', 'Energy Regen'] : ['Energy Regen', element ? `${element} DMG` : 'ATK%'];
+// Healing Bonus is a cost-4-only main stat (see the pool note above) — it can't appear on a cost-3
+// echo at all, so an HP-scaling character's two cost-3 slots go to HP% / HP% instead, matching the
+// standard healer convention (healing scales off HP for most healers) rather than a fabricated
+// cost-3 Healing Bonus roll.
+const cost3MainStats = (statScaling, element) => statScaling === 'HP' ? ['HP%', 'HP%'] : ['Energy Regen', element ? `${element} DMG` : 'ATK%'];
 const cost1MainStats = (statScaling) => statScaling === 'HP' ? ['HP%', 'HP%'] : statScaling === 'DEF' ? ['DEF%', 'DEF%'] : ['ATK%', 'ATK%'];
 
 /**

@@ -249,7 +249,7 @@ export default function EchoSelector({
               ? ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen']
               : costNum === 3
               ? ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen']
-              : ['ATK%', 'HP%', 'DEF%'];
+              : ['ATK%', 'HP%', 'DEF%', 'ATK', 'HP', 'DEF'];
             const substatOptions = ['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'];
             // Recommended stats based on character role/element
             const cd = CHARACTER_DATA[charName];
@@ -272,10 +272,15 @@ export default function EchoSelector({
               });
             });
             if (isHealer) {
+              // Healing Bonus is cost-4-only — it can't roll on a cost-3 echo at all. Healing scales
+              // off HP for most healers (Verina, Baizhi, Shorekeeper), so both cost-3 slots go to HP%.
               if (costNum === 4) { recMainStats.add('Healing Bonus'); }
-              else if (costNum === 3) { if (elDmgStat) recMainStats.add(elDmgStat); recMainStats.add('ATK%'); }
+              else if (costNum === 3) { recMainStats.add('HP%'); }
               else { recMainStats.add('HP%'); }
-              ['HP%', 'ATK%', 'Energy Regen'].forEach(s => recSubstats.add(s));
+              // ATK% carries zero effective weight for a healer's substat priority (per
+              // wuwa.uk's per-role substat weight table) — HP%, Energy Regen and flat HP
+              // are the ones that actually matter.
+              ['HP%', 'Energy Regen', 'HP'].forEach(s => recSubstats.add(s));
             } else if (isSupport) {
               if (costNum === 4) { recMainStats.add('Energy Regen'); recMainStats.add('ATK%'); }
               else if (costNum === 3) { if (elDmgStat) recMainStats.add(elDmgStat); recMainStats.add('ATK%'); }
