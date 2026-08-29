@@ -48,10 +48,19 @@
             android:scaleType="centerCrop"
             android:contentDescription="@null" />
 
+        <!-- GONE by default, kept only as a pre-widgetCornerRadiusPx-fix fallback view id —
+             see PulseBannerWidget.java's renderPrimaryBlock: the scrim is now baked directly
+             into widget_art's own bitmap (WidgetAssetUtils.roundedCornersWithScrim) instead of
+             layered on top as its own square-cornered view. A square, near-opaque overlay
+             drawn OVER an already-rounded art bitmap paints right back over its rounded
+             corners at whichever edge the gradient is darkest — this view being separate from
+             the art is exactly why the art looked rounded but the widget itself didn't. -->
         <FrameLayout
+            android:id="@+id/widget_scrim"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/widget_banner_scrim" />
+            android:background="@drawable/widget_banner_scrim"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -171,10 +180,13 @@
             android:scaleType="centerCrop"
             android:contentDescription="@null" />
 
+        <!-- GONE by default — see widget_primary_block's own widget_scrim comment above. -->
         <FrameLayout
+            android:id="@+id/widget_secondary_scrim"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@drawable/widget_banner_scrim" />
+            android:background="@drawable/widget_banner_scrim"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="match_parent"

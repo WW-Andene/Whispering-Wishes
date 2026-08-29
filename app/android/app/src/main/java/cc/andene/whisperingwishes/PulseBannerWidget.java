@@ -254,7 +254,7 @@ public class PulseBannerWidget extends AppWidgetProvider {
         // than the other.
         Bitmap art = data != null ? WidgetAssetUtils.decodeAsset(context, data.artAsset, ART_PX, Bitmap.Config.RGB_565) : null;
         if (art != null) {
-            views.setImageViewBitmap(R.id.widget_art, WidgetAssetUtils.roundedCorners(art, WidgetAssetUtils.widgetCornerRadiusPx(context)));
+            views.setImageViewBitmap(R.id.widget_art, WidgetAssetUtils.roundedCornersWithScrim(art, WidgetAssetUtils.widgetCornerRadiusPx(context)));
         }
 
         setFeatured4(context, views, new int[]{R.id.widget_f4_1, R.id.widget_f4_2, R.id.widget_f4_3}, data != null ? data.featured4PreviewJson : null);
@@ -293,7 +293,7 @@ public class PulseBannerWidget extends AppWidgetProvider {
 
         Bitmap art = data != null ? WidgetAssetUtils.decodeAsset(context, data.artAsset, ART_PX, Bitmap.Config.RGB_565) : null;
         if (art != null) {
-            views.setImageViewBitmap(R.id.widget_secondary_art, WidgetAssetUtils.roundedCorners(art, WidgetAssetUtils.widgetCornerRadiusPx(context)));
+            views.setImageViewBitmap(R.id.widget_secondary_art, WidgetAssetUtils.roundedCornersWithScrim(art, WidgetAssetUtils.widgetCornerRadiusPx(context)));
         }
 
         setFeatured4(context, views, new int[]{R.id.widget_secondary_f4_1, R.id.widget_secondary_f4_2, R.id.widget_secondary_f4_3}, data != null ? data.featured4PreviewJson : null);

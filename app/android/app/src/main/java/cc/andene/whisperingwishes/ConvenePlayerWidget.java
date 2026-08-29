@@ -80,7 +80,7 @@ public class ConvenePlayerWidget extends AppWidgetProvider {
             // launcher behavior this app can't rely on for every device/version.
             Bitmap art = WidgetAssetUtils.decodeAsset(context, entry.artAsset, ART_PX, Bitmap.Config.RGB_565);
             if (art != null) {
-                views.setImageViewBitmap(R.id.convene_player_art, WidgetAssetUtils.roundedCorners(art, WidgetAssetUtils.widgetCornerRadiusPx(context)));
+                views.setImageViewBitmap(R.id.convene_player_art, WidgetAssetUtils.roundedCornersWithScrim(art, WidgetAssetUtils.widgetCornerRadiusPx(context)));
             }
 
             if (entry.conveneUrl != null) {

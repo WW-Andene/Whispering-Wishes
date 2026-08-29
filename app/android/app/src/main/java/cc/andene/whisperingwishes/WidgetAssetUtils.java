@@ -7,6 +7,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -176,6 +178,30 @@ final class WidgetAssetUtils {
         paint.setShader(new BitmapShader(src, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP));
         RectF rect = new RectF(0, 0, src.getWidth(), src.getHeight());
         canvas.drawRoundRect(rect, radiusPx, radiusPx, paint);
+        return output;
+    }
+
+    // Same rounding as roundedCorners, PLUS widget_banner_scrim.xml's own bottom-to-top dark
+    // gradient baked into the SAME bitmap — matching PulseBannerWidget.java/
+    // ConvenePlayerWidget.java's own layouts, which used to draw that gradient as a SEPARATE,
+    // square-cornered FrameLayout stacked on top of the (rounded) art ImageView instead. A
+    // near-opaque square overlay drawn over an already-rounded image paints right back over
+    // whichever corners sit under its darkest edge — the art looked rounded, the widget itself
+    // didn't. Since canvas.drawRoundRect() only ever paints within the rounded-rect shape
+    // regardless of the Paint's shader, drawing the gradient with a SECOND drawRoundRect call
+    // (same rect/radius) confines it to the exact same rounded bounds as the art beneath it,
+    // with no separate clip path needed.
+    static Bitmap roundedCornersWithScrim(Bitmap src, float radiusPx) {
+        Bitmap output = roundedCorners(src, radiusPx);
+        Canvas canvas = new Canvas(output);
+        RectF rect = new RectF(0, 0, output.getWidth(), output.getHeight());
+        Paint gradientPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        gradientPaint.setShader(new LinearGradient(
+                0, output.getHeight(), 0, 0,
+                new int[]{Color.parseColor("#00080c14"), Color.parseColor("#B3080c14"), Color.parseColor("#E6080c14")},
+                new float[]{0f, 0.5f, 1f},
+                Shader.TileMode.CLAMP));
+        canvas.drawRoundRect(rect, radiusPx, radiusPx, gradientPaint);
         return output;
     }
 }

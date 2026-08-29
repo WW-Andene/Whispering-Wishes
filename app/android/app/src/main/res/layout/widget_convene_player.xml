@@ -22,10 +22,15 @@
         android:scaleType="centerCrop"
         android:contentDescription="@null" />
 
+    <!-- GONE by default — the scrim is baked directly into convene_player_art's own bitmap
+         (WidgetAssetUtils.roundedCornersWithScrim) instead of layered on top as its own
+         square-cornered view; see widget_banner.xml's widget_scrim for the full reasoning. -->
     <FrameLayout
+        android:id="@+id/convene_player_scrim"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/widget_banner_scrim" />
+        android:background="@drawable/widget_banner_scrim"
+        android:visibility="gone" />
 
     <ImageButton
         android:id="@+id/convene_player_settings"

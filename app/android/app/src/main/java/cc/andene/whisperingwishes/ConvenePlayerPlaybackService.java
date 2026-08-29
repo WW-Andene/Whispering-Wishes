@@ -229,12 +229,18 @@ public class ConvenePlayerPlaybackService extends Service {
             // "Full length" — every frame the clip's own duration calls for at TARGET_FPS,
             // capped only by MAX_FRAMES as a sanity ceiling, not an artificial short clip cap.
             int frameCount = Math.min(MAX_FRAMES, Math.max(1, (int) (durationMs / FRAME_INTERVAL_MS)));
+            // Rounded once here at decode time (not per-display-frame in runLoop's loop) since
+            // every frame of a given clip shares the same radius — same reasoning as
+            // WidgetAssetUtils.roundedCorners elsewhere: without this, each played frame's own
+            // square corners paint right over the static art's rounded corners the instant
+            // playback starts, so the widget would look rounded only while idle.
+            float radiusPx = WidgetAssetUtils.widgetCornerRadiusPx(this);
             List<Bitmap> frames = new ArrayList<>(frameCount);
             for (int i = 0; i < frameCount; i++) {
                 long timeUs = (durationMs * i / frameCount) * 1000L;
                 Bitmap raw = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
                 if (raw == null) continue;
-                frames.add(downscale(raw, FRAME_PX));
+                frames.add(WidgetAssetUtils.roundedCorners(downscale(raw, FRAME_PX), radiusPx));
             }
             return frames;
         } finally {
