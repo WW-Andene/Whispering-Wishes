@@ -495,13 +495,16 @@ const findEchoOfSet = (setName, costList, exclude = []) => {
   // all, not because nothing tried to avoid it.
   return costList.find(e => ECHO_DATA[e]?.sets?.includes(setName)) || null;
 };
-// Standard WW main-stat convention: the cost-4 slot (largest guaranteed roll) carries Crit DMG, one
-// cost-3 slot carries Crit Rate (targeting the ~1:2 Crit Rate:Crit DMG ratio), and the other cost-3
-// carries the build's own Elemental DMG% (echoes can't roll their own set's DMG% as a main stat, so
-// this is always the *character's* element, not necessarily the sonata's). Cost-1 echoes can't roll
-// Crit or Elemental DMG% at all, so they default to ATK% (or the character's scaling stat).
+// Standard WW main-stat convention. Crit Rate/Crit DMG are ONLY rollable on cost-4 echoes — the
+// previous version of this file had 'Crit Rate' as one of the two cost-3 slots below, which isn't
+// a real cost-3 main stat at all and can't actually appear on an in-game echo at that cost. The
+// cost-3 pool is Elemental DMG% / Energy Regen / ATK% / DEF% / HP% — this fills one cost-3 slot
+// with the build's own Elemental DMG% (echoes can't roll their own set's DMG% as a main stat, so
+// this is always the *character's* element, not necessarily the sonata's) and the other with
+// Energy Regen, a standard real second cost-3 pick. Cost-1 echoes can't roll Crit or Elemental
+// DMG% at all, so they default to ATK% (or the character's scaling stat).
 const cost4MainStat = (statScaling) => statScaling === 'HP' ? 'Healing Bonus' : 'Crit DMG';
-const cost3MainStats = (statScaling, element) => statScaling === 'HP' ? ['Healing Bonus', 'Energy Regen'] : ['Crit Rate', element ? `${element} DMG` : 'ATK%'];
+const cost3MainStats = (statScaling, element) => statScaling === 'HP' ? ['Healing Bonus', 'Energy Regen'] : ['Energy Regen', element ? `${element} DMG` : 'ATK%'];
 const cost1MainStats = (statScaling) => statScaling === 'HP' ? ['HP%', 'HP%'] : statScaling === 'DEF' ? ['DEF%', 'DEF%'] : ['ATK%', 'ATK%'];
 
 /**
