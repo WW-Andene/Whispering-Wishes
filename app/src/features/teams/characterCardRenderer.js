@@ -229,6 +229,9 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   const portraitW = Math.floor(bw * 0.36);
   if (portraitImg) {
     ctx.save(); rr(bx + 2, by + 2, portraitW - 4, bh - 4, 14); ctx.clip();
+    // Backing mask fill — matches the same rgba(10,14,22,0.50) mask used by the other 9 boxes
+    // (Stats/Skills/Sequence/Weapon/5 Echoes) so all 10 boxes share the same mask opacity.
+    ctx.fillStyle = 'rgba(10,14,22,0.50)'; ctx.fillRect(bx + 2, by + 2, portraitW - 4, bh - 4);
     const f = getImageFraming('collection-' + name);
     const sc = f.zoom / 100;
     const imgAR = portraitImg.naturalWidth / portraitImg.naturalHeight, cellAR = portraitW / bh;
