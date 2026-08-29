@@ -58,7 +58,11 @@ export async function setAnimatedWallpaper(videoUrl) {
   if (!isNativePlatform()) return { ok: false, error: 'not-native' };
   if (!videoUrl) return { ok: false, error: 'no-video' };
   try {
-    await Wallpaper.setLiveWallpaper({ videoUrl });
+    const res = await fetch(videoUrl);
+    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+    const blob = await res.blob();
+    const base64 = await blobToBase64(blob);
+    await Wallpaper.setLiveWallpaper({ base64 });
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };

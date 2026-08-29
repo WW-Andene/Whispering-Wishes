@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home-screen long-press App Shortcut — one static entry that toggles the floating pull
+     bubble on/off via PullBubbleShortcutActivity's trampoline, without needing to open the app
+     or find PulseBannerWidget's own toggle button first. Icon reuses the launcher icon — no
+     dedicated shortcut glyph exists yet, and a shortcut icon is required. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="toggle_pull_bubble"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/pull_bubble_shortcut_short_label"
+        android:shortcutLongLabel="@string/pull_bubble_shortcut_long_label">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="cc.andene.whisperingwishes"
+            android:targetClass="cc.andene.whisperingwishes.PullBubbleShortcutActivity" />
+    </shortcut>
+</shortcuts>

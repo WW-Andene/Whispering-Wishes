@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Descriptor for LiveVideoWallpaperService, required by the android.service.wallpaper
+     meta-data pointing here (see AndroidManifest.xml). thumbnail reuses the launcher icon —
+     there's no dedicated live-wallpaper preview asset. -->
+<wallpaper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:thumbnail="@mipmap/ic_launcher" />

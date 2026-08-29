@@ -18,7 +18,22 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Home-screen long-press App Shortcuts — see res/xml/shortcuts.xml and
+                 PullBubbleShortcutActivity. -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- Pure trampoline target for the App Shortcut above — see its own file header.
+             exported="true" is required: App Shortcuts are launched by the launcher app (a
+             separate process), the same cross-app-caller reasoning as
+             BannerWidgetConfigureActivity below. -->
+        <activity
+            android:name=".PullBubbleShortcutActivity"
+            android:theme="@style/AppTheme.Trampoline"
+            android:excludeFromRecents="true"
+            android:exported="true" />
 
         <!-- Must be exported="true" — the system server (AppWidgetManager, a
              different process/app) is what sends APPWIDGET_UPDATE broadcasts
@@ -106,6 +121,26 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
+
+        <!-- Real Android Live Wallpaper — renders a looping video onto the wallpaper surface
+             via MediaPlayer (LiveVideoWallpaperService.Engine), unlike WallpaperPlugin's static
+             WallpaperManager.setBitmap() which can never animate. Applied via
+             WallpaperPlugin.setLiveWallpaper() firing ACTION_CHANGE_LIVE_WALLPAPER, which opens
+             Android's own live-wallpaper confirmation screen naming this component — that
+             system UI step is required and can't be skipped. BIND_WALLPAPER is a signature/
+             system permission the OS itself holds, not something an app requests at runtime;
+             declaring it here is what lets the system bind to this service as a wallpaper. -->
+        <service
+            android:name=".LiveVideoWallpaperService"
+            android:exported="true"
+            android:permission="android.permission.BIND_WALLPAPER">
+            <intent-filter>
+                <action android:name="android.service.wallpaper.WallpaperService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.service.wallpaper"
+                android:resource="@xml/live_wallpaper" />
+        </service>
 
         <provider
             android:name="androidx.core.content.FileProvider"
