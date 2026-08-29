@@ -93,9 +93,22 @@ export default function BootIntro() {
     };
 
     const onCanPlay = () => {
-      dismissNativePoster();
       setCanPlay(true);
       video.play().catch(() => startFadeOut());
+      // Wait for the video's own opacity flip (triggered by setCanPlay
+      // above) to actually paint before dismissing the native poster —
+      // calling dismissNativePoster() immediately, as before, raced two
+      // independent async operations against each other: a native View
+      // removal posted to the Android UI thread, and a React state update
+      // that still needs its own render+commit+paint. When the native
+      // removal lands in an earlier frame than the video's opacity paint,
+      // there's a gap frame where neither one is covering the app — the
+      // rare "main menu clips through the video" report. Double rAF is
+      // the standard trick for "wait until the browser has completed a
+      // paint": the first callback fires before the next paint, the
+      // second fires after it, so by the time dismissNativePoster() runs,
+      // the video is guaranteed to already be the thing on screen.
+      requestAnimationFrame(() => requestAnimationFrame(dismissNativePoster));
     };
     const onEnded = () => startFadeOut();
     const onError = () => {
