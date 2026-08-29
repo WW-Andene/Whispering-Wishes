@@ -3,7 +3,8 @@
   "version": "3.5.1",
   "description": "Wuthering Waves gacha calculator, planner & collection tracker. Probability engine, pity tracking, and resource planning.",
   "homepage": "https://whispering-wishes.vercel.app",
-  "license": "MIT",
+  "private": true,
+  "license": "UNLICENSED",
   "author": "WW_Andene",
   "type": "module",
   "scripts": {

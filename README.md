@@ -8,7 +8,7 @@ Live at **[whispering-wishes.vercel.app](https://whispering-wishes.vercel.app)**
 
 ## What is Whispering Wishes?
 
-Whispering Wishes is a free, open-source web app for Wuthering Waves players. It runs entirely in your browser with no sign-up, no ads, and no data collection. Everything is stored locally on your device.
+Whispering Wishes is a web app for Wuthering Waves players. It runs entirely in your browser with no sign-up and no ads. Everything is stored locally on your device by default, with optional cloud backup for cross-device sync.
 
 **Pull Tracker** — Import your convene history and see exactly where you stand. Pity counters, guarantee status, 50/50 tracking, and banner history at a glance.
 
@@ -16,7 +16,7 @@ Whispering Wishes is a free, open-source web app for Wuthering Waves players. It
 
 **Resource Planner** — Plan ahead for upcoming banners. See how many pulls you'll have by banner end, track Astrite income from events, and budget your resources.
 
-**Team Builder & Damage Calculator** — Build teams, equip weapons and echoes, configure stats, and compare DPS across different loadouts.
+**Team Builder & Damage Calculator** — Build teams, equip weapons and echoes, configure stats, and compare DPS across different loadouts. Export a shareable build card per character.
 
 **Collection Tracker** — Track every Resonator, weapon, and echo you own. See your completion rate, manage duplicates, and showcase your collection.
 
@@ -28,16 +28,19 @@ Whispering Wishes is a free, open-source web app for Wuthering Waves players. It
 
 ## Features
 
-- 9 tabs: Tracker, Events, Map, Planner, Calculator, Stats, Teams, Collection, Profile
-- 184 Resonators, 107 weapons, 224 echoes — all up to date
+- 9 sections: Tracker, Events, Map, Planner, Calculator, Stats, Teams, Collection, Profile
+- 58 Resonators, 122 weapons, 181 echoes — kept in sync with the current game patch
 - 5 server regions with timezone-aware countdowns
 - Convene history import (URL paste or QR scan)
-- ID card generator for sharing your profile
-- Cloud backup & cross-device sync
+- ID card and build card generators for sharing your profile/team
+- Optional cloud backup & cross-device sync, plus push notifications
 - PWA — installable on mobile, works offline
+- Native Android app (Capacitor wrapper) for fully offline use
+- Self-hostable — run your own instance instead of/alongside the hosted deployment (see `SELF_HOSTING.md`)
+- English and French localization
 - Dark theme with customizable accent colors and banner art backgrounds
 - Colorblind mode and accessibility features
-- No tracking, no ads, no account required
+- No tracking, no ads
 
 ---
 
@@ -51,6 +54,7 @@ Whispering Wishes is a free, open-source web app for Wuthering Waves players. It
 | Icons | Lucide React |
 | Map | Leaflet + custom tile pyramid |
 | Animation | Spine Player |
+| Native wrapper | Capacitor (Android) |
 | Testing | Vitest + Testing Library |
 | Hosting | Vercel |
 
@@ -61,6 +65,9 @@ Whispering Wishes is a free, open-source web app for Wuthering Waves players. It
 ```
 Whispering-Wishes/
   app/                          # Main web application
+    api/                        # Serverless functions (gacha record, push notifications)
+    android/                    # Capacitor native Android project
+    self-host/                  # Self-hosting config/scripts
     public/
       map-tiles/                # Tiled game map (webp, 7 zoom levels)
     src/
@@ -109,6 +116,8 @@ npm run build
 npm test
 ```
 
+For running your own persistent instance instead of just a local dev server, see `SELF_HOSTING.md`. For building the native Android app, see `CAPACITOR_APP.md`.
+
 ---
 
 ## Game Data
@@ -121,10 +130,10 @@ All game data is maintained in `app/src/data/`:
 - **`echoes.js`** — All echoes with sonata sets, buff types, skill descriptions, icons
 - **`constants.js`** — Version, server configs, stat tables
 
-Data is updated each patch. Contributions welcome.
+Data is updated each patch.
 
 ---
 
 ## License
 
-MIT
+Closed source. All rights reserved — this repository is not open source and is not licensed for reuse, redistribution, or modification.
