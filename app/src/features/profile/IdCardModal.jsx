@@ -6,7 +6,6 @@
 import React from 'react';
 import { Crown, Download, Monitor, Smartphone, Star, X } from 'lucide-react';
 import { CHARACTER_DATA, ALL_CHARACTERS } from '../../data/characters.js';
-import { HEADER_ICON } from '../../data/constants.js';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -81,7 +80,7 @@ export default function IdCardModal({
                             return <div className="absolute inset-0 breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} /></div>;
                           })() : (
                             <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
-                              <img src={HEADER_ICON} alt="Default" className="w-12 h-12 object-contain opacity-60" />
+                              <img src="./app-title-icon/icon-192x192.png" alt="Default" className="w-12 h-12 object-contain opacity-60" />
                             </div>
                           )}
                           <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none idcard-img-fade" />

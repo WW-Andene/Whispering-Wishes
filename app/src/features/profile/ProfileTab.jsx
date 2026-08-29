@@ -7,7 +7,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
-import { HEADER_ICON, SERVERS, getServerOffset } from '../../data/constants.js';
+import { SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
 import { haptic } from '../../utils/haptics.js';
@@ -469,6 +469,7 @@ function ProfileTab({
         collectionImages,
         trophies,
         getImageFraming,
+        toast,
       });
     } catch {
       toast?.addToast?.('Failed to save ID card. Try a different profile image', 'error');
@@ -511,7 +512,7 @@ function ProfileTab({
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
                         return <div className="w-full h-full breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} /></div>;
                       })() : (
-                        <img src={HEADER_ICON} alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" loading="lazy" onError={hideOnError} />
+                        <img src="./app-title-icon/icon-192x192.png" alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" loading="lazy" onError={hideOnError} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

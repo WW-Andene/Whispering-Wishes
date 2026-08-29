@@ -4,8 +4,12 @@
 // Pure async function: takes data, produces downloadable canvas image.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { HEADER_ICON } from '../../data/constants.js';
 import { ALL_CHARACTERS } from '../../data/characters.js';
+
+// The real home-screen app icon (also the PWA/manifest icon), used as the ID card's default
+// avatar watermark when no profile picture is set — deliberately not HEADER_ICON, which is a
+// different (Radiant Tide currency) image despite the name.
+const APP_ICON = './app-title-icon/icon-192x192.png';
 
 /**
  * Render and download an ID card as PNG.
@@ -19,8 +23,9 @@ import { ALL_CHARACTERS } from '../../data/characters.js';
  * @param {Object} params.collectionImages - character image URLs
  * @param {Object} params.trophies - trophy data
  * @param {Function} params.getImageFraming - image framing function
+ * @param {Object} [params.toast] - toast provider, for the export-result notifications below
  */
-export async function renderIdCard({ format, profile, server, overallStats, luckRating, ownedCharNames, collectionImages, trophies, getImageFraming }) {
+export async function renderIdCard({ format, profile, server, overallStats, luckRating, ownedCharNames, collectionImages, trophies, getImageFraming, toast }) {
     const isPortrait = format === 'portrait';
     const canvas = document.createElement('canvas');
     const W = isPortrait ? 1080 : 1920;
@@ -36,7 +41,7 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
     // AUDIT-FIX H1: Clear timeouts to prevent leaks on image preload
     if (picUrl) { try { pImg = new Image(); pImg.crossOrigin = 'anonymous'; await new Promise((r,j)=>{const t=setTimeout(j,3000);pImg.onload=()=>{clearTimeout(t);r();};pImg.onerror=()=>{clearTimeout(t);j();};pImg.src=picUrl;}); } catch { pImg = null; } }
     let appIco = null;
-    try { appIco = new Image(); await new Promise((r,j)=>{const t=setTimeout(j,2000);appIco.onload=()=>{clearTimeout(t);r();};appIco.onerror=()=>{clearTimeout(t);j();};appIco.src=HEADER_ICON;}); } catch { appIco = null; }
+    try { appIco = new Image(); await new Promise((r,j)=>{const t=setTimeout(j,2000);appIco.onload=()=>{clearTimeout(t);r();};appIco.onerror=()=>{clearTimeout(t);j();};appIco.src=APP_ICON;}); } catch { appIco = null; }
 
     // Preload resonator portrait images
     const resImgs = {};
