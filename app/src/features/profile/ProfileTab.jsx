@@ -30,9 +30,9 @@ import AboutSection from './AboutSection.jsx';
 import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
 import PullBubbleCard from './PullBubbleCard.jsx';
-import WallpaperCard from './WallpaperCard.jsx';
 import PushNotificationsCard from './PushNotificationsCard.jsx';
 import { openSoundSettings, isNativePlatform as isNativePlatformForSettings } from '../../utils/systemSettings.js';
+import { setWallpaper } from '../../utils/wallpaper.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 import { t, useAppLocale, setAppLocale, formatDate } from '../../utils/i18n.js';
@@ -763,6 +763,33 @@ function ProfileTab({
 
                   const isSelected = (type, id) => currentBg?.type === type && currentBg?.id === id;
 
+                  // Crown button on each theme thumbnail (Collection's own profile-pic crown is
+                  // the visual model) — sets that image directly as the phone's wallpaper via
+                  // WallpaperPlugin.java, independent of picking it as an in-app background
+                  // above. Native-only; a video's poster frame is used since an actual wallpaper
+                  // can't be a video.
+                  const applyWallpaper = async (e, url) => {
+                    e.stopPropagation();
+                    haptic.light();
+                    const res = await setWallpaper(url, 'both');
+                    if (res.ok) {
+                      toast?.addToast?.(t('profile.display.wallpaperApplied'), 'success');
+                      haptic.success();
+                    } else {
+                      toast?.addToast?.(t('profile.display.wallpaperError', { error: res.error }), 'error');
+                    }
+                  };
+                  const WallpaperCrown = ({ url }) => !isNativePlatformForSettings() ? null : (
+                    <button
+                      onClick={(e) => applyWallpaper(e, url)}
+                      className="absolute top-0.5 left-0.5 z-10 w-5 h-5 rounded flex items-center justify-center bg-black/70 text-gray-300 hover:bg-yellow-500/30 hover:text-yellow-300"
+                      title={t('profile.display.setWallpaper')}
+                      aria-label={t('profile.display.setWallpaperAria')}
+                    >
+                      <Crown size={11} />
+                    </button>
+                  );
+
                   return (
                   <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                     <button
@@ -803,81 +830,108 @@ function ProfileTab({
                     </div>
 
                     {!bgSectionCollapsed && (
-                    <>
-                    {/* Category tabs */}
-                    <div className="flex gap-1.5 mb-3">
-                      {['resonators', 'version', 'others', 'animated'].map(c => (
-                        <button key={c} onClick={() => setBgCategory(c)} className={`kuro-btn flex-1 text-sm ${bgCategory === c ? 'active-cyan' : ''}`}>
-                          {c === 'resonators' ? t('profile.display.categoryResonators') : c === 'version' ? t('profile.display.categoryVersion') : c === 'others' ? t('profile.display.categoryOthers') : c === 'animated' ? t('profile.display.categoryAnimated') : t('profile.display.categoryCustom')}
-                        </button>
-                      ))}
-                    </div>
+                      <div className="flex gap-1.5 mb-3">
+                        {['resonators', 'version', 'others', 'animated'].map(c => (
+                          <button key={c} onClick={() => setBgCategory(c)} className={`kuro-btn flex-1 text-sm ${bgCategory === c ? 'active-cyan' : ''}`}>
+                            {c === 'resonators' ? t('profile.display.categoryResonators') : c === 'version' ? t('profile.display.categoryVersion') : c === 'others' ? t('profile.display.categoryOthers') : c === 'animated' ? t('profile.display.categoryAnimated') : t('profile.display.categoryCustom')}
+                          </button>
+                        ))}
+                      </div>
+                    )}
 
-                    {/* Clear current target */}
-                    {currentBg && (
+                    {/* Clear current target — hidden while collapsed, same as the category tabs */}
+                    {!bgSectionCollapsed && currentBg && (
                       <button onClick={() => saveVisualSettings({ ...visualSettings, [targetKey]: null })} className="kuro-btn w-full text-sm mb-2 text-red-400 border-red-500/20 hover:bg-red-500/10">
                         {t('profile.display.clearImage', { target: bgTarget })}
                       </button>
                     )}
 
-                    {/* Image grid */}
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
-                      {bgCategory === 'resonators' && CHARACTER_THEMES.map(t => (
-                        <button
-                          key={t.id}
-                          onClick={() => selectImage('resonator', t.id, t.bannerArt, t.pos)}
-                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('resonator', t.id) ? 'ring-1' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                          style={{ aspectRatio: '16/9', borderColor: isSelected('resonator', t.id) ? getElementColor(t.element) : undefined, boxShadow: isSelected('resonator', t.id) ? `0 0 8px ${getElementColor(t.element)}40` : undefined }}
-                        >
-                          <img src={t.bannerArt} alt={t.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{t.name}</span>
-                          {isSelected('resonator', t.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(t.element) }}><Check size={12} className="text-black" /></div>}
-                        </button>
-                      ))}
-                      {bgCategory === 'version' && VERSION_SPLASH_SCREENS.map(v => (
-                        <button
-                          key={v.id}
-                          onClick={() => selectImage('version', v.id, v.art, v.pos)}
-                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('version', v.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                          style={{ aspectRatio: '16/9' }}
-                        >
-                          <img src={v.art} alt={v.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">v{v.version}{v.id.includes('-cyberpunk') ? ' (Cyberpunk)' : ''}</span>
-                          {isSelected('version', v.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
-                        </button>
-                      ))}
-                      {bgCategory === 'others' && OTHER_BACKGROUNDS.map(o => (
-                        <button
-                          key={o.id}
-                          onClick={() => selectImage('other', o.id, o.art, o.pos)}
-                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('other', o.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                          style={{ aspectRatio: '16/9' }}
-                        >
-                          <img src={o.art} alt={o.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{o.name}</span>
-                          {isSelected('other', o.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
-                        </button>
-                      ))}
-                      {bgCategory === 'animated' && ANIMATED_BACKGROUNDS.map(a => (
-                        <button
-                          key={a.id}
-                          onClick={() => selectImage('animated', a.id, a.art, a.pos, a.poster)}
-                          className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('animated', a.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
-                          style={{ aspectRatio: '16/9' }}
-                        >
-                          <img src={a.poster} alt={a.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                          <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{a.name}</span>
-                          <div className="absolute top-0.5 left-0.5 text-2xs bg-black/70 text-cyan-300 px-1 py-0.5 rounded">VIDEO</div>
-                          {isSelected('animated', a.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
-                        </button>
-                      ))}
-                    </div>
-                    </>
-                    )}
+                    {/* Image grid — stays visible (capped to a few rows) even while the section
+                        header above is collapsed, rather than disappearing entirely: this IS
+                        the picker, not just an expanded-only extra, and the wallpaper crown on
+                        each thumbnail should stay reachable without expanding first. */}
+                    {(() => {
+                      const allItems = bgCategory === 'resonators' ? CHARACTER_THEMES
+                        : bgCategory === 'version' ? VERSION_SPLASH_SCREENS
+                        : bgCategory === 'others' ? OTHER_BACKGROUNDS
+                        : ANIMATED_BACKGROUNDS;
+                      // 12 = a full 3-row grid at the widest column count (4 cols × 3 rows) —
+                      // still comfortably 3+ rows at 3 cols too. Only applied while collapsed.
+                      const items = bgSectionCollapsed ? allItems.slice(0, 12) : allItems;
+                      return (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                          {bgCategory === 'resonators' && items.map(th => (
+                            <button
+                              key={th.id}
+                              onClick={() => selectImage('resonator', th.id, th.bannerArt, th.pos)}
+                              className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('resonator', th.id) ? 'ring-1' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                              style={{ aspectRatio: '16/9', borderColor: isSelected('resonator', th.id) ? getElementColor(th.element) : undefined, boxShadow: isSelected('resonator', th.id) ? `0 0 8px ${getElementColor(th.element)}40` : undefined }}
+                            >
+                              <img src={th.bannerArt} alt={th.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                              <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{th.name}</span>
+                              <WallpaperCrown url={th.bannerArt} />
+                              {isSelected('resonator', th.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: getElementColor(th.element) }}><Check size={12} className="text-black" /></div>}
+                            </button>
+                          ))}
+                          {bgCategory === 'version' && items.map(v => (
+                            <button
+                              key={v.id}
+                              onClick={() => selectImage('version', v.id, v.art, v.pos)}
+                              className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('version', v.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                              style={{ aspectRatio: '16/9' }}
+                            >
+                              <img src={v.art} alt={v.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                              <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">v{v.version}{v.id.includes('-cyberpunk') ? ' (Cyberpunk)' : ''}</span>
+                              <WallpaperCrown url={v.art} />
+                              {isSelected('version', v.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
+                            </button>
+                          ))}
+                          {bgCategory === 'others' && items.map(o => (
+                            <button
+                              key={o.id}
+                              onClick={() => selectImage('other', o.id, o.art, o.pos)}
+                              className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('other', o.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                              style={{ aspectRatio: '16/9' }}
+                            >
+                              <img src={o.art} alt={o.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                              <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{o.name}</span>
+                              <WallpaperCrown url={o.art} />
+                              {isSelected('other', o.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
+                            </button>
+                          ))}
+                          {bgCategory === 'animated' && items.map(a => (
+                            <button
+                              key={a.id}
+                              onClick={() => selectImage('animated', a.id, a.art, a.pos, a.poster)}
+                              className={`relative rounded-lg overflow-hidden border transition-all ${isSelected('animated', a.id) ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                              style={{ aspectRatio: '16/9' }}
+                            >
+                              <img src={a.poster} alt={a.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                              <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{a.name}</span>
+                              <div className="absolute top-0.5 left-0.5 text-2xs bg-black/70 text-cyan-300 px-1 py-0.5 rounded">VIDEO</div>
+                              {/* Wallpaper crown moved to the right (top-0.5 left-0.5 would collide
+                                  with the VIDEO badge above) — the still poster frame is what
+                                  actually gets applied, same as everywhere else. */}
+                              {!isNativePlatformForSettings() ? null : (
+                                <button
+                                  onClick={(e) => applyWallpaper(e, a.poster)}
+                                  className="absolute top-0.5 right-6 z-10 w-5 h-5 rounded flex items-center justify-center bg-black/70 text-gray-300 hover:bg-yellow-500/30 hover:text-yellow-300"
+                                  title={t('profile.display.setWallpaper')}
+                                  aria-label={t('profile.display.setWallpaperAria')}
+                                >
+                                  <Crown size={11} />
+                                </button>
+                              )}
+                              {isSelected('animated', a.id) && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                   );
                 })()}
@@ -1007,7 +1061,6 @@ function ProfileTab({
 
             {/* ── App maintenance: updates + offline asset downloads ────────── */}
             <AppUpdateCard toast={toast} />
-            <WallpaperCard toast={toast} />
             <PullBubbleCard toast={toast} />
             <PushNotificationsCard toast={toast} />
             {isNativePlatformForSettings() && <OfflineAssetsCard toast={toast} />}

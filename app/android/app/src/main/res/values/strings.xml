@@ -25,4 +25,6 @@
     <string name="pull_bubble_notification_text">Tap to open the app, or drag the bubble to ✕ to turn it off</string>
     <string name="pull_bubble_remove_aria">Drag here to turn off the pull bubble</string>
     <string name="pull_bubble_result_dismiss_aria">Dismiss this pull result</string>
+    <string name="pull_bubble_pocket_aria">Older pull results — tap to see all of them</string>
+    <string name="pull_bubble_pocket_title">All pulls (%1$d)</string>
 </resources>

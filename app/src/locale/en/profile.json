@@ -11,16 +11,6 @@
     "downloadStarted": "Opening download — install it once it finishes.",
     "downloadFailed": "Couldn't open download: {{error}}"
   },
-  "wallpaper": {
-    "title": "Wallpaper",
-    "description": "Pick one of the app's theme background images below, then apply it as your home and/or lock screen wallpaper.",
-    "hint": "Pick an image above, then apply it.",
-    "setHome": "Home Screen",
-    "setLock": "Lock Screen",
-    "setBoth": "Both",
-    "applied": "Wallpaper set.",
-    "error": "Couldn't set wallpaper: {{error}}"
-  },
   "pullBubble": {
     "title": "Pull Bubble",
     "description": "A small floating bubble you can drag anywhere on your screen — tap it to roll a ×1 or ×10 pull and watch the result animation, without opening the app or placing a widget. Requires a one-time \"draw over other apps\" permission grant. Drag the bubble onto the ✕ that appears while dragging it to turn it off.",
@@ -182,6 +172,10 @@
     "categoryAnimated": "Animated",
     "categoryCustom": "Custom",
     "clearImage": "Clear {{target}} image",
+    "setWallpaper": "Set as phone wallpaper",
+    "setWallpaperAria": "Set this image as your phone wallpaper",
+    "wallpaperApplied": "Wallpaper set.",
+    "wallpaperError": "Couldn't set wallpaper: {{error}}",
     "accentTheme": "Accent Theme",
     "accentThemeDesc": "Changes accent colors across the app",
     "default": "Default",

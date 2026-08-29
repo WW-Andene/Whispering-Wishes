@@ -23,6 +23,8 @@ import android.view.ViewOutlineProvider;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -273,11 +275,12 @@ public class PullBubbleService extends Service {
         int iconPx = (int) (SUB_BUBBLE_SIZE_DP * density * 0.5f); // icon itself, smaller than the bubble it sits in
         Bitmap resonatorIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Resonator.png", iconPx);
 
-        addSubBubble(null, resonatorIcon, SUB_BUBBLE_ANGLES_DEG[0], getString(R.string.pull_bubble_banner_picker_aria), this::cycleBannerChoice);
-        addSubBubble(getString(R.string.widget_pull_x80), null, SUB_BUBBLE_ANGLES_DEG[1], null, () -> startRoll(80));
-        addSubBubble(getString(R.string.widget_pull_x10), null, SUB_BUBBLE_ANGLES_DEG[2], null, () -> startRoll(10));
-        addSubBubble(getString(R.string.widget_pull_x1), null, SUB_BUBBLE_ANGLES_DEG[3], null, () -> startRoll(1));
-        addSubBubble("➡️", null, SUB_BUBBLE_ANGLES_DEG[4], getString(R.string.pull_bubble_hide_aria), this::hideBubble);
+        addSubBubble(null, resonatorIcon, 0, SUB_BUBBLE_ANGLES_DEG[0], getString(R.string.pull_bubble_banner_picker_aria), this::cycleBannerChoice);
+        addSubBubble(getString(R.string.widget_pull_x80), null, 0, SUB_BUBBLE_ANGLES_DEG[1], null, () -> startRoll(80));
+        addSubBubble(getString(R.string.widget_pull_x10), null, 0, SUB_BUBBLE_ANGLES_DEG[2], null, () -> startRoll(10));
+        addSubBubble(getString(R.string.widget_pull_x1), null, 0, SUB_BUBBLE_ANGLES_DEG[3], null, () -> startRoll(1));
+        // Real vector arrow, not a "➡️" emoji glyph.
+        addSubBubble(null, null, R.drawable.ic_arrow_hide, SUB_BUBBLE_ANGLES_DEG[4], getString(R.string.pull_bubble_hide_aria), this::hideBubble);
     }
 
     // Collapses the arc and rolls — shared by the ×1/×10/×80 sub-bubbles, split out of their
@@ -289,9 +292,10 @@ public class PullBubbleService extends Service {
         rollAndPlay(count);
     }
 
-    // label OR icon (whichever is non-null) is shown; icon wins if both are somehow given.
-    // Passing null for both `aria` collapses is fine too — content descriptions are optional.
-    private void addSubBubble(String label, Bitmap icon, double angleDeg, String aria, Runnable onTap) {
+    // Exactly one of label / icon (a decoded asset Bitmap) / iconRes (a drawable resource id,
+    // 0 = none) should be given; checked in that priority order. Passing null for `aria` is
+    // fine too — content descriptions are optional.
+    private void addSubBubble(String label, Bitmap icon, int iconRes, double angleDeg, String aria, Runnable onTap) {
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (SUB_BUBBLE_SIZE_DP * density);
 
@@ -302,6 +306,13 @@ public class PullBubbleService extends Service {
             ImageView img = new ImageView(this);
             img.setImageBitmap(icon);
             img.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        } else if (iconRes != 0) {
+            ImageView img = new ImageView(this);
+            img.setImageResource(iconRes);
+            int pad = (int) (10 * density);
+            img.setPadding(pad, pad, pad, pad);
+            img.setScaleType(ImageView.ScaleType.FIT_CENTER);
             root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         } else {
             TextView text = new TextView(this);
@@ -543,16 +554,17 @@ public class PullBubbleService extends Service {
             return;
         }
 
-        clearResultIcons();
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        JSONObject assetMap;
-        try {
-            assetMap = new JSONObject(prefs.getString("widget_pull_asset_map", "{}"));
-        } catch (Exception e) {
-            assetMap = new JSONObject();
-        }
+        // NOT cleared here any more — result tiles/pocket now persist and slide across
+        // multiple rolls in the same session (see addResultIcon's own header comment), rather
+        // than being wiped at the start of every new roll.
+        JSONObject assetMap = loadPullAssetMap();
 
         rolling = true;
+        // Keeps the video card from ever overlapping the bubble while it plays — simpler and
+        // more reliable than trying to position the card to dodge a bubble that itself might
+        // still be mid-drag; the bubble reappears the instant the whole reveal sequence ends
+        // (see playItemStep's terminal branch).
+        if (mainBubble != null) mainBubble.setVisibility(View.INVISIBLE);
         List<String> rarityVideo = new ArrayList<>();
         // NOT a plain "file:///android_asset/..." string — VideoView/MediaPlayer can't
         // actually play that URI scheme at all (see WidgetAssetUtils.cachedAssetVideoUri's
@@ -602,9 +614,22 @@ public class PullBubbleService extends Service {
         startService(playIntent);
     }
 
+    private JSONObject loadPullAssetMap() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        try {
+            return new JSONObject(prefs.getString("widget_pull_asset_map", "{}"));
+        } catch (Exception e) {
+            return new JSONObject();
+        }
+    }
+
     // Steps through sim.results one at a time — mirrors ConvenePullSimModal.jsx's goToItem.
     private void playItemStep(List<WidgetPullSimulator.PullResult> results, int index, JSONObject assetMap) {
-        if (index >= results.size()) { rolling = false; return; }
+        if (index >= results.size()) {
+            rolling = false;
+            if (mainBubble != null) mainBubble.setVisibility(View.VISIBLE); // see rollAndPlay's own comment
+            return;
+        }
         WidgetPullSimulator.PullResult result = results.get(index);
 
         List<String> videos = new ArrayList<>();
@@ -633,11 +658,60 @@ public class PullBubbleService extends Service {
         }
     }
 
-    private void addResultIcon(WidgetPullSimulator.PullResult result, JSONObject assetMap, int index) {
+    // Result tiles are capped at MAX_TOTAL_TILE_WINDOWS real floating windows — each one is its
+    // own always-composited overlay, so letting a long session (many ×80 pulls) grow this
+    // unbounded is a genuine, ever-growing CPU/compositor cost, not just visual clutter. Once
+    // the cap is hit, the oldest individual tile is archived into a "pocket" tile (the app's
+    // own bag icon, badge-counted) instead of getting its own window — every NEW pull still
+    // slides in as its own tile, it just pushes the oldest existing one into the pocket to stay
+    // within budget. allPulledResults is the permanent record (never capped) backing the
+    // pocket's own "view all" panel.
+    private static final int MAX_TOTAL_TILE_WINDOWS = 9;
+    private final List<WidgetPullSimulator.PullResult> allPulledResults = new ArrayList<>();
+    private View pocketIcon;
+    private TextView pocketBadge;
+    private int archivedCount;
+    private View pocketPanel;
+
+    private void addResultIcon(WidgetPullSimulator.PullResult result, JSONObject assetMap, int revealIndexUnused) {
+        allPulledResults.add(result);
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (RESULT_ICON_SIZE_DP * density);
         boolean glow = result.rarity >= 4;
 
+        // Spawns at the main bubble's own position (its "origin") rather than its eventual grid
+        // slot — renumberResultSlots() below immediately slides it (and everything else) into
+        // place, so this reads as the new item popping out of the bubble and sliding into its
+        // spot, not appearing directly in the grid.
+        View newTile = addTileView(result, assetMap, sizePx);
+
+        int individualCap = (pocketIcon != null) ? MAX_TOTAL_TILE_WINDOWS - 1 : MAX_TOTAL_TILE_WINDOWS;
+        while (resultIcons.size() > individualCap) {
+            if (pocketIcon == null) {
+                createPocket(sizePx);
+                individualCap = MAX_TOTAL_TILE_WINDOWS - 1;
+            }
+            View oldest = resultIcons.remove(0);
+            try { windowManager.removeView(oldest); } catch (Exception ignored) {}
+            archivedCount++;
+        }
+        if (pocketIcon != null) updatePocketBadge();
+        renumberResultSlots(sizePx);
+
+        // Entrance pop + glow burst AFTER renumbering, so both use the tile's real final slot
+        // (not the spawn-point placeholder position it briefly held above).
+        WindowManager.LayoutParams finalParams = (WindowManager.LayoutParams) newTile.getTag();
+        if (glow) addGlowBurst(finalParams, sizePx, rarityHex(result.rarity));
+        newTile.setScaleX(0.4f);
+        newTile.setScaleY(0.4f);
+        newTile.animate().scaleX(1f).scaleY(1f).setDuration(220)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(2.5f)).start();
+    }
+
+    // Builds one result tile (rarity ring + dark mask + portrait), adds it to the window at a
+    // placeholder position (the main bubble's own spot — see addResultIcon's own comment), and
+    // registers its tap-to-dismiss handler. Positioning/animation-in is the caller's job.
+    private View addTileView(WidgetPullSimulator.PullResult result, JSONObject assetMap, int sizePx) {
         FrameLayout root = new FrameLayout(this);
         root.setBackground(circleDrawable("#40000000", rarityHex(result.rarity)));
         clipToCircle(root);
@@ -667,22 +741,16 @@ public class PullBubbleService extends Service {
                 : WindowManager.LayoutParams.TYPE_PHONE;
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 sizePx, sizePx, overlayType,
-                // FLAG_NOT_FOCUSABLE is what actually keeps a bubble/sub-bubble/result-icon
-                // window from interfering with whatever's underneath it — WITHOUT it, a
-                // TYPE_APPLICATION_OVERLAY window is focusable by default and can steal input
-                // focus from other apps/the keyboard even outside its own small bounds (this
-                // was likely the "blocks touch on screen" report — a focusable overlay affects
-                // routing well beyond its visible pixels, unlike a purely visual widget). Also
-                // implies FLAG_NOT_TOUCH_MODAL per the platform docs, but both are kept
-                // explicit for clarity. removeTarget already had this; these didn't.
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
-        positionResultIcon(params, index, sizePx);
+        params.x = mainBubbleParams.x;
+        params.y = mainBubbleParams.y;
 
         root.setTag(params);
         // Tap-to-dismiss ONLY — unlike the main bubble, result icons never need drag
-        // handling, they just disappear individually when tapped.
+        // handling, they just disappear individually when tapped. Purely visual (removes this
+        // one window); the pull itself stays in allPulledResults/the pocket's own tally.
         root.setOnClickListener(v -> {
             try { windowManager.removeView(root); } catch (Exception ignored) {}
             resultIcons.remove(root);
@@ -690,16 +758,90 @@ public class PullBubbleService extends Service {
 
         windowManager.addView(root, params);
         resultIcons.add(root);
+        return root;
+    }
 
-        // "BOOM" — a quick colored glow burst behind 4★/5★ icons only, plus a small pop-in
-        // scale on every icon so the whole sequence reads as items arriving one by one rather
-        // than silently appearing.
-        if (glow) addGlowBurst(params, sizePx, rarityHex(result.rarity));
-        root.setScaleX(0.4f);
-        root.setScaleY(0.4f);
-        root.setAlpha(0f);
-        root.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(220)
-                .setInterpolator(new android.view.animation.OvershootInterpolator(2.5f)).start();
+    // The bag icon (app's own navicon/Icon_Bag.png) standing in for every archived-out tile,
+    // badge-counted — tapping it opens the "view all pulls" panel.
+    private void createPocket(int sizePx) {
+        FrameLayout root = new FrameLayout(this);
+        root.setBackground(circleDrawable("#40000000", "#99FFFFFF"));
+        clipToCircle(root);
+
+        Bitmap bagIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Bag.png", (int) (sizePx * 0.6f));
+        if (bagIcon != null) {
+            ImageView img = new ImageView(this);
+            img.setImageBitmap(bagIcon);
+            img.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        }
+
+        float density = getResources().getDisplayMetrics().density;
+        int badgeSizePx = (int) (16 * density);
+        pocketBadge = new TextView(this);
+        pocketBadge.setTextColor(Color.WHITE);
+        pocketBadge.setTextSize(9);
+        pocketBadge.setGravity(Gravity.CENTER);
+        pocketBadge.setBackground(circleDrawable("#FFEF4444", "#FFFFFFFF"));
+        FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(badgeSizePx, badgeSizePx);
+        badgeParams.gravity = Gravity.TOP | Gravity.END;
+        root.addView(pocketBadge, badgeParams);
+        root.setContentDescription(getString(R.string.pull_bubble_pocket_aria));
+
+        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_PHONE;
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                sizePx, sizePx, overlayType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.TOP | Gravity.START;
+        positionResultIcon(params, 0, sizePx);
+        root.setTag(params);
+        root.setOnClickListener(v -> togglePocketPanel());
+
+        windowManager.addView(root, params);
+        pocketIcon = root;
+        updatePocketBadge();
+    }
+
+    private void updatePocketBadge() {
+        if (pocketBadge != null) pocketBadge.setText(String.valueOf(archivedCount));
+    }
+
+    // Slides the pocket (if any, always slot 0) and every remaining individual tile into their
+    // correct sequential slots — called after every add/evict so the grid never has gaps.
+    // Tiles that are already at their target position just no-op (animateTileToSlot skips the
+    // animation when old/new positions match).
+    private void renumberResultSlots(int sizePx) {
+        if (pocketIcon != null) {
+            WindowManager.LayoutParams pp = (WindowManager.LayoutParams) pocketIcon.getTag();
+            animateTileToSlot(pocketIcon, pp, 0, pp.width);
+        }
+        int offset = (pocketIcon != null) ? 1 : 0;
+        for (int i = 0; i < resultIcons.size(); i++) {
+            View v = resultIcons.get(i);
+            WindowManager.LayoutParams p = (WindowManager.LayoutParams) v.getTag();
+            animateTileToSlot(v, p, i + offset, sizePx);
+        }
+    }
+
+    // Repositions one tile's window params to `slot`, then plays a short slide from wherever it
+    // WAS to there — the translateX/Y-then-animate-to-zero trick (window params jump instantly,
+    // the View's own transform hides that jump and animates it away) since WindowManager itself
+    // has no animated-move API.
+    private void animateTileToSlot(View v, WindowManager.LayoutParams p, int slot, int sizePx) {
+        int oldX = p.x, oldY = p.y;
+        positionResultIcon(p, slot, sizePx);
+        if (oldX == p.x && oldY == p.y) {
+            windowManager.updateViewLayout(v, p);
+            return;
+        }
+        int dx = oldX - p.x, dy = oldY - p.y;
+        windowManager.updateViewLayout(v, p);
+        v.setTranslationX(dx);
+        v.setTranslationY(dy);
+        v.animate().translationX(0).translationY(0).setDuration(220).start();
     }
 
     // A separate, larger translucent circle in the item's own rarity color, added just behind
@@ -739,8 +881,9 @@ public class PullBubbleService extends Service {
                 .start();
     }
 
-    // Small fanned cluster below-and-around the main bubble — up to 10 items, wrapped into
-    // rows of 4 so a ×10 pull doesn't run off-screen in one long line.
+    // Fanned cluster wrapped into rows of 4, starting BELOW the whole arc's own bottom edge
+    // (the hide sub-bubble's position, angle 270°) rather than right under the main bubble
+    // itself — so results never overlap the bubble or where the arc opens back up next time.
     private void positionResultIcon(WindowManager.LayoutParams params, int index, int sizePx) {
         float density = getResources().getDisplayMetrics().density;
         int gap = (int) (6 * density);
@@ -748,23 +891,150 @@ public class PullBubbleService extends Service {
         int col = index % perRow;
         int row = index / perRow;
         params.x = mainBubbleParams.x - (col * (sizePx + gap));
-        params.y = mainBubbleParams.y + mainBubbleParams.height + gap + row * (sizePx + gap);
+        params.y = resultGridTopY() + row * (sizePx + gap);
+    }
+
+    // Bottom of the arc (angle 270°, directly below the main bubble) plus a small gap — see
+    // positionResultIcon's own comment.
+    private int resultGridTopY() {
+        float density = getResources().getDisplayMetrics().density;
+        int subSizePx = (int) (SUB_BUBBLE_SIZE_DP * density);
+        int gap = (int) (10 * density);
+        int radius = mainBubbleParams.width / 2 + gap + subSizePx / 2;
+        int arcBottomY = mainBubbleParams.y + mainBubbleParams.width / 2 - subSizePx / 2 + radius + subSizePx;
+        return arcBottomY + gap;
     }
 
     private void repositionResultIcons() {
+        if (pocketIcon != null) {
+            WindowManager.LayoutParams pp = (WindowManager.LayoutParams) pocketIcon.getTag();
+            positionResultIcon(pp, 0, pp.width);
+            windowManager.updateViewLayout(pocketIcon, pp);
+        }
+        int offset = (pocketIcon != null) ? 1 : 0;
         for (int i = 0; i < resultIcons.size(); i++) {
             View v = resultIcons.get(i);
             WindowManager.LayoutParams p = (WindowManager.LayoutParams) v.getTag();
-            positionResultIcon(p, i, p.width);
+            positionResultIcon(p, i + offset, p.width);
             windowManager.updateViewLayout(v, p);
         }
     }
 
+    // Wipes both the visible tiles AND the underlying pull record (allPulledResults/pocket) —
+    // used when the bubble is minimized or torn down. Simpler than trying to preserve/rebuild
+    // the pocket's history across a hide→restore cycle, and not something this was asked for.
     private void clearResultIcons() {
         for (View v : resultIcons) {
             try { windowManager.removeView(v); } catch (Exception ignored) {}
         }
         resultIcons.clear();
+        if (pocketIcon != null) {
+            try { windowManager.removeView(pocketIcon); } catch (Exception ignored) {}
+            pocketIcon = null;
+            pocketBadge = null;
+        }
+        hidePocketPanel();
+        archivedCount = 0;
+        allPulledResults.clear();
+    }
+
+    // ── Pocket "view all pulls" panel ────────────────────────────────────────
+
+    private void togglePocketPanel() {
+        if (pocketPanel != null) hidePocketPanel();
+        else showPocketPanel();
+    }
+
+    private void hidePocketPanel() {
+        if (pocketPanel == null) return;
+        try { windowManager.removeView(pocketPanel); } catch (Exception ignored) {}
+        pocketPanel = null;
+    }
+
+    // A small scrollable card listing EVERY pull this session (allPulledResults, not just the
+    // still-visible individual tiles) — small rarity-ringed thumbnails in a wrapped grid, tap
+    // the ✕ or the pocket again to dismiss.
+    private void showPocketPanel() {
+        float density = getResources().getDisplayMetrics().density;
+        int panelWidthPx = (int) (260 * density);
+        int panelHeightPx = (int) (320 * density);
+
+        LinearLayout outer = new LinearLayout(this);
+        outer.setOrientation(LinearLayout.VERTICAL);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(Color.parseColor("#E6111827"));
+        bg.setCornerRadius(16 * density);
+        bg.setStroke((int) density, Color.parseColor("#40FFFFFF"));
+        outer.setBackground(bg);
+        int pad = (int) (10 * density);
+        outer.setPadding(pad, pad, pad, pad);
+
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        TextView title = new TextView(this);
+        title.setText(getString(R.string.pull_bubble_pocket_title, allPulledResults.size()));
+        title.setTextColor(Color.WHITE);
+        title.setTextSize(13);
+        title.setTypeface(null, android.graphics.Typeface.BOLD);
+        header.addView(title, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+        TextView close = new TextView(this);
+        close.setText("✕");
+        close.setTextColor(Color.WHITE);
+        close.setPadding(pad, 0, 0, 0);
+        close.setOnClickListener(v -> hidePocketPanel());
+        header.addView(close);
+        outer.addView(header);
+
+        ScrollView scroll = new ScrollView(this);
+        LinearLayout grid = new LinearLayout(this);
+        grid.setOrientation(LinearLayout.VERTICAL);
+        JSONObject assetMap = loadPullAssetMap();
+        int perRow = 6;
+        int tileSizePx = (int) (32 * density);
+        int tileGap = (int) (4 * density);
+        LinearLayout row = null;
+        for (int i = 0; i < allPulledResults.size(); i++) {
+            if (i % perRow == 0) {
+                row = new LinearLayout(this);
+                row.setOrientation(LinearLayout.HORIZONTAL);
+                LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                rowLp.topMargin = tileGap;
+                grid.addView(row, rowLp);
+            }
+            WidgetPullSimulator.PullResult r = allPulledResults.get(i);
+            FrameLayout tile = new FrameLayout(this);
+            tile.setBackground(circleDrawable("#40000000", rarityHex(r.rarity)));
+            clipToCircle(tile);
+            String assetPath = r.name != null ? assetMap.optString(r.name, null) : null;
+            Bitmap bmp = assetPath != null ? WidgetAssetUtils.decodeAsset(this, assetPath, tileSizePx) : null;
+            if (bmp != null) {
+                ImageView img = new ImageView(this);
+                img.setImageBitmap(bmp);
+                img.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                tile.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+            }
+            LinearLayout.LayoutParams tileLp = new LinearLayout.LayoutParams(tileSizePx, tileSizePx);
+            tileLp.leftMargin = tileGap;
+            row.addView(tile, tileLp);
+        }
+        scroll.addView(grid);
+        outer.addView(scroll, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f));
+
+        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_PHONE;
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                panelWidthPx, panelHeightPx, overlayType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.TOP | Gravity.START;
+        android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+        params.x = Math.max(0, Math.min(mainBubbleParams.x - panelWidthPx / 2, dm.widthPixels - panelWidthPx));
+        params.y = Math.max(0, Math.min(videoAnchorY() - panelHeightPx - (int) (10 * density), dm.heightPixels - panelHeightPx));
+
+        pocketPanel = outer;
+        windowManager.addView(outer, params);
     }
 
     private String rarityHex(int rarity) {

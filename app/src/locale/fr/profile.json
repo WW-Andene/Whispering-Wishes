@@ -11,16 +11,6 @@
     "downloadStarted": "Ouverture du téléchargement — installez-la une fois terminée.",
     "downloadFailed": "Impossible d'ouvrir le téléchargement : {{error}}"
   },
-  "wallpaper": {
-    "title": "Fond d'écran",
-    "description": "Choisissez l'une des images de fond thématiques de l'application ci-dessous, puis appliquez-la comme fond d'écran d'accueil et/ou de verrouillage.",
-    "hint": "Choisissez une image ci-dessus, puis appliquez-la.",
-    "setHome": "Écran d'accueil",
-    "setLock": "Écran verrouillé",
-    "setBoth": "Les deux",
-    "applied": "Fond d'écran défini.",
-    "error": "Impossible de définir le fond d'écran : {{error}}"
-  },
   "pullBubble": {
     "title": "Bulle d'invocation",
     "description": "Une petite bulle flottante que vous pouvez déplacer n'importe où à l'écran — appuyez dessus pour lancer une invocation ×1 ou ×10 et voir l'animation du résultat, sans ouvrir l'application ni ajouter de widget. Nécessite une autorisation ponctuelle « afficher par-dessus les autres applications ». Faites glisser la bulle sur le ✕ qui apparaît pendant le déplacement pour la désactiver.",
@@ -182,6 +172,10 @@
     "categoryAnimated": "Animé",
     "categoryCustom": "Personnalisé",
     "clearImage": "Effacer l'image {{target}}",
+    "setWallpaper": "Définir comme fond d'écran du téléphone",
+    "setWallpaperAria": "Définir cette image comme fond d'écran de votre téléphone",
+    "wallpaperApplied": "Fond d'écran défini.",
+    "wallpaperError": "Impossible de définir le fond d'écran : {{error}}",
     "accentTheme": "Thème d'accent",
     "accentThemeDesc": "Change les couleurs d'accent dans toute l'application",
     "default": "Défaut",
