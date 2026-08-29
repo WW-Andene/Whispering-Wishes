@@ -3,9 +3,14 @@ import { useEffect, useRef, useState } from 'react';
 // Renders on top of the app the instant React mounts. index.html already
 // shows the identical poster image, statically, from the very first paint
 // (see #boot-poster there) — this component's own poster <img> below
-// renders at the same position so the handoff is seamless, then this one
-// removes the static element once mounted (no functional need to keep both
-// in the DOM). Plays the intro video once it has actually loaded enough to
+// renders at the same position so the handoff is seamless. The static one
+// is removed on MainActivity's native "insets ready" signal specifically,
+// not just on this component mounting (see the effect below) — mounting
+// only reflects how fast the JS bundle loaded, which has nothing to do
+// with when the native window transition actually happens; tying removal
+// to mount alone left the static poster visibly lingering well past the
+// point where it was already stale, on any device where JS load outpaced
+// native setup. Plays the intro video once it has actually loaded enough to
 // run without stalling, starts the Log Screen ambient track in sync with
 // the video's own 'playing' event (handed off to useAmbientMusic.js via
 // window.__bootAmbientAudio so it continues with no restart once React's
@@ -36,7 +41,22 @@ export default function BootIntro() {
   const [screenSize] = useState(() => ({ w: window.screen.width, h: window.screen.height }));
 
   useEffect(() => {
-    document.getElementById('boot-poster')?.remove();
+    // Removed on MainActivity's native "insets ready" signal (see there),
+    // not just on this component mounting — mounting only means the JS
+    // bundle has loaded, which has nothing to do with when the native
+    // window transition actually happens. If the signal already fired
+    // (fast native, slower JS load) this component's own poster below is
+    // already rendered and ready, so removing the static one immediately
+    // is safe; if it hasn't fired yet, wait for it rather than guessing.
+    const removeStaticPoster = () => document.getElementById('boot-poster')?.remove();
+    if (window.__bootInsetsReady) {
+      removeStaticPoster();
+      return;
+    }
+    window.__onBootInsetsReady = removeStaticPoster;
+    return () => {
+      if (window.__onBootInsetsReady === removeStaticPoster) delete window.__onBootInsetsReady;
+    };
   }, []);
 
   useEffect(() => {
