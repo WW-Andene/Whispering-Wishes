@@ -59,8 +59,20 @@ public class ConvenePlayerWidget extends AppWidgetProvider {
 
         if (entry != null) {
             views.setTextViewText(R.id.convene_player_name, entry.name);
+            // RemoteViews has no setClipToOutline (or any generic view-property setter) —
+            // there is no way to clip a widget's ImageView to rounded corners at all except
+            // baking the rounding into the bitmap itself before setImageViewBitmap, same as
+            // WidgetAssetUtils.roundedCorners already does for the Featured-4★ thumbnails
+            // elsewhere. Without this, the art's own square corners paint right over
+            // widget_background's rounded corners underneath (a background drawable only
+            // shows through GAPS, it doesn't clip content drawn on top of it) — on Android
+            // 12+ the launcher's own system-wide corner clip usually hides this, but that's
+            // launcher behavior this app can't rely on for every device/version.
             Bitmap art = WidgetAssetUtils.decodeAsset(context, entry.artAsset, ART_PX, Bitmap.Config.RGB_565);
-            if (art != null) views.setImageViewBitmap(R.id.convene_player_art, art);
+            if (art != null) {
+                float radiusPx = 16 * context.getResources().getDisplayMetrics().density; // matches widget_background.xml's 16dp
+                views.setImageViewBitmap(R.id.convene_player_art, WidgetAssetUtils.roundedCorners(art, radiusPx));
+            }
 
             if (entry.conveneUrl != null) {
                 views.setViewVisibility(R.id.convene_player_play, View.VISIBLE);

@@ -250,8 +250,16 @@ public class PulseBannerWidget extends AppWidgetProvider {
             views.setTextViewText(R.id.widget_banner_element, "");
         }
 
+        // Baked into the bitmap itself, not left to widget_background's drawable corners —
+        // RemoteViews has no setClipToOutline, so a full-bleed art ImageView's own square
+        // corners would otherwise paint right over that rounded background on any Android
+        // version that doesn't apply its own system-wide widget corner clip (12+ does; this
+        // app can't rely on that for every device/version it supports).
         Bitmap art = data != null ? WidgetAssetUtils.decodeAsset(context, data.artAsset, ART_PX, Bitmap.Config.RGB_565) : null;
-        if (art != null) views.setImageViewBitmap(R.id.widget_art, art);
+        if (art != null) {
+            float radiusPx = 16 * context.getResources().getDisplayMetrics().density; // matches widget_background.xml's 16dp
+            views.setImageViewBitmap(R.id.widget_art, WidgetAssetUtils.roundedCorners(art, radiusPx));
+        }
 
         setFeatured4(context, views, new int[]{R.id.widget_f4_1, R.id.widget_f4_2, R.id.widget_f4_3}, data != null ? data.featured4PreviewJson : null);
 
@@ -304,7 +312,10 @@ public class PulseBannerWidget extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_secondary_element, data != null ? data.title.toUpperCase() : "");
 
         Bitmap art = data != null ? WidgetAssetUtils.decodeAsset(context, data.artAsset, ART_PX, Bitmap.Config.RGB_565) : null;
-        if (art != null) views.setImageViewBitmap(R.id.widget_secondary_art, art);
+        if (art != null) {
+            float radiusPx = 16 * context.getResources().getDisplayMetrics().density;
+            views.setImageViewBitmap(R.id.widget_secondary_art, WidgetAssetUtils.roundedCorners(art, radiusPx));
+        }
 
         setFeatured4(context, views, new int[]{R.id.widget_secondary_f4_1, R.id.widget_secondary_f4_2, R.id.widget_secondary_f4_3}, data != null ? data.featured4PreviewJson : null);
 

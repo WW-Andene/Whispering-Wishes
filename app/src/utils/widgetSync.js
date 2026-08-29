@@ -39,7 +39,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { Preferences } from '@capacitor/preferences';
-import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, CONVENE_ANIMATIONS } from '../data/banners.js';
+import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt, CONVENE_ANIMATIONS } from '../data/banners.js';
 import { STANDARD_5STAR_CHARACTERS, ALL_4STAR_RESONATORS } from '../data/characters.js';
 import { WEAPON_DATA } from '../data/weapons.js';
 
@@ -137,7 +137,14 @@ export async function syncBannerWidget(activeBanners) {
 async function syncConveneRoster() {
   const roster = Object.keys(CONVENE_ANIMATIONS).map((name) => ({
     name,
-    artAsset: stripRelative(DEFAULT_COLLECTION_IMAGES[name] || ''),
+    // Real gacha banner splash art (getCharacterBannerArt — the same source
+    // BannerCard.jsx and PulseBannerWidget's own art use), not
+    // DEFAULT_COLLECTION_IMAGES' full-body collection sprite: a dedicated
+    // "play this character's convene clip" widget should look like the actual
+    // banner the clip is promoting, not the collection-grid artwork. Falls
+    // back to the collection sprite only for a character with no banner art
+    // on file at all, rather than showing nothing.
+    artAsset: stripRelative(getCharacterBannerArt(name) || DEFAULT_COLLECTION_IMAGES[name] || ''),
     conveneUrl: API_BASE_URL ? `${API_BASE_URL}/${stripRelative(CONVENE_ANIMATIONS[name])}` : null,
   })).filter((e) => e.conveneUrl); // no usable entry without a resolvable URL
 
