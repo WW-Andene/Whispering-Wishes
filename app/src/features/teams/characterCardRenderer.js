@@ -305,8 +305,11 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     return 40; // header height offset — PerfectSuite secondary
   };
   // Portrait gets the same border treatment for visual consistency with the panels beside it —
-  // its own clip/fade/framing stays exactly as it was, this only adds the outline on top.
-  ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(bx + 2, by + 2, portraitW - 4, bh - 4, 16); ctx.stroke();
+  // its own clip/fade/framing stays exactly as it was, this only adds the outline on top. Radius
+  // must match the clip rect above (14) — a mismatched radius here left the border's corners
+  // cutting across the sprite's clipped rounded corner instead of tracing it, making the portrait's
+  // mask box look incomplete/cut off.
+  ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(bx + 2, by + 2, portraitW - 4, bh - 4, 14); ctx.stroke();
 
   // Small inset padding applied inside every block below, so each quadrant reads as its own
   // padded card/block instead of content sitting flush against the thin divider lines.
