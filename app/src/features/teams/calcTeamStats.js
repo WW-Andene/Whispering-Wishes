@@ -17,7 +17,7 @@ import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import { STAT_LABELS_FULL } from './RotationTimeline.jsx';
 import {
   ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
-  ECHO_MAIN_STAT_VALUES, ECHO_SUB_STAT_VALUES, ECHO_FLAT_SUB_STAT_VALUES,
+  ECHO_MAIN_STAT_VALUES, getSubstatGradeValue,
   createStats, parsePassive, getWeaponPv,
   applyFullEchoSet, applyEchoStats,
   countTeamElements, routeTypeBonuses, applyResonanceChain,
@@ -619,7 +619,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const mainEl = (mainDps.d.element || '').toLowerCase();
       const elDmgKey = mainEl ? mainEl.charAt(0).toUpperCase() + mainEl.slice(1) + ' DMG' : '';
       const mainStatVals = ECHO_MAIN_STAT_VALUES;
-      const subVals = ECHO_SUB_STAT_VALUES;
       const applyStat = (stat, val) => {
         if (stat === mainStatKey) atkPct += val;
         else if (stat === 'Crit Rate') cr += val;
@@ -649,14 +648,14 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
             // Flat ATK/HP/DEF substat: converts to %-of-base-stat, and only actually helps the
             // main DPS if it matches their own scaling stat (see calcEngine.js flatSubToPct for
             // the full reasoning — no partial credit here, unlike teamwide ATK% buffs elsewhere).
-            const flatVal = ECHO_FLAT_SUB_STAT_VALUES[sub];
+            const flatVal = getSubstatGradeValue(sub, echo.substatRolls?.[sub]);
             const baseForSub = sub === 'ATK' ? mainDps.totalBaseAtk : sub === 'HP' ? mainDps.d.baseHp : mainDps.d.baseDef;
             if (flatVal && sub === mainDps.scaling && baseForSub) {
               atkPct += (flatVal / baseForSub) * 100;
             }
             return;
           }
-          const val = subVals[sub];
+          const val = getSubstatGradeValue(sub, echo.substatRolls?.[sub]);
           if (val) applyStat(sub, val);
         });
       });

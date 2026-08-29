@@ -94,6 +94,59 @@ export const ECHO_FLAT_SUB_STAT_VALUES = {
   'ATK': 43.7, 'HP': 438.3, 'DEF': 53.5,
 };
 
+// Every real, discrete roll grade for each substat — same source as ECHO_SUB_STAT_VALUES/
+// ECHO_FLAT_SUB_STAT_VALUES above (wutheringwaves.fandom.com/wiki/Echo/Stats § "Detailed substat
+// values distribution", Kuro's own KR-law-mandated disclosure), lowest grade first. ATK/DEF
+// (flat) only have 4 real grades; every other substat has 8. Lets a specific echo store which
+// grade it actually rolled instead of always using the probability-weighted average above.
+export const ECHO_SUBSTAT_GRADES = {
+  'ATK': [30, 40, 50, 60],
+  'DEF': [40, 50, 60, 70],
+  'HP': [320, 360, 390, 430, 470, 510, 540, 580],
+  'DEF%': [8.1, 9.0, 10.0, 10.9, 11.8, 12.8, 13.8, 14.7],
+  'ATK%': [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+  'HP%': [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+  'Energy Regen': [6.8, 7.6, 8.4, 9.2, 10.0, 10.8, 11.6, 12.4],
+  'Crit Rate': [6.3, 6.9, 7.5, 8.1, 8.7, 9.3, 9.9, 10.5],
+  'Crit DMG': [12.6, 13.8, 15.0, 16.2, 17.4, 18.6, 19.8, 21.0],
+  'Basic ATK DMG': [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+  'Heavy ATK DMG': [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+  'Resonance Skill DMG': [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+  'Resonance Liberation DMG': [6.4, 7.1, 7.9, 8.6, 9.4, 10.1, 10.9, 11.6],
+};
+
+// Resolves a specific echo substat's stored roll grade (1-based index into ECHO_SUBSTAT_GRADES)
+// to its real numeric value. Falls back to the probability-weighted average (ECHO_SUB_STAT_VALUES/
+// ECHO_FLAT_SUB_STAT_VALUES) when no grade was ever recorded for this substat — this is what keeps
+// every echo saved before per-roll tracking existed computing exactly the same stats as before.
+export function getSubstatGradeValue(sub, grade) {
+  const grades = ECHO_SUBSTAT_GRADES[sub];
+  if (!grades || !grade) return ECHO_SUB_STAT_VALUES[sub] ?? ECHO_FLAT_SUB_STAT_VALUES[sub] ?? 0;
+  const idx = Math.min(Math.max(1, grade), grades.length) - 1;
+  return grades[idx];
+}
+
+// The grade (1-based) whose real value sits closest to the probability-weighted average — the
+// sane default for a substat that was just toggled on and has no explicit roll recorded yet.
+export function getDefaultSubstatGrade(sub) {
+  const grades = ECHO_SUBSTAT_GRADES[sub];
+  const avg = ECHO_SUB_STAT_VALUES[sub] ?? ECHO_FLAT_SUB_STAT_VALUES[sub];
+  if (!grades || avg == null) return 1;
+  let best = 1, bestDist = Infinity;
+  grades.forEach((v, i) => { const d = Math.abs(v - avg); if (d < bestDist) { bestDist = d; best = i + 1; } });
+  return best;
+}
+
+// Low/Medium/High/Max tier (0-3) for a given roll grade, splitting the substat's real grade list
+// into 4 even bands (grades 1-2 of 8 = Low, 3-4 = Medium, 5-6 = High, 7-8 = Max; each of the 4
+// ATK/DEF grades is its own band). Used purely for the build card's roll-value coloring.
+export function getSubstatTier(sub, grade) {
+  const grades = ECHO_SUBSTAT_GRADES[sub];
+  if (!grades || !grade) return 3; // untracked roll (legacy data) — read as the average, shown as Max/neutral-gold
+  const n = grades.length;
+  return Math.min(3, Math.floor((Math.min(Math.max(1, grade), n) - 1) * 4 / n));
+}
+
 // ── Stat accumulator: replaces 50+ loose variables per tier ──
 export function createStats() {
   return {
@@ -226,9 +279,9 @@ export function applyFullEchoSet(stats, echoSet, echoSet2, element, scaling) {
 // convention used elsewhere in this file for off-scaling *team* ATK% buffs (those raise the
 // character's actual ATK stat, which can still feed unrelated mechanics; a mismatched flat
 // substat conversion has no such secondary use, so partial credit isn't warranted here).
-function flatSubToPct(sub, scaling, baseStats) {
+function flatSubToPct(sub, scaling, baseStats, grade) {
   if (!baseStats) return 0;
-  const val = ECHO_FLAT_SUB_STAT_VALUES[sub];
+  const val = getSubstatGradeValue(sub, grade);
   if (!val) return 0;
   if (sub === 'ATK' && scaling === 'ATK' && baseStats.atk) return (val / baseStats.atk) * 100;
   if (sub === 'HP' && scaling === 'HP' && baseStats.hp) return (val / baseStats.hp) * 100;
@@ -273,11 +326,12 @@ export function applyEchoStats(stats, echoes, element, scaling, baseStats) {
     (echo.substats || []).slice(0, 5).forEach(sub => {
       if (seenSubs.has(sub)) return;
       seenSubs.add(sub);
+      const grade = echo.substatRolls?.[sub];
       if (sub === 'ATK' || sub === 'HP' || sub === 'DEF') {
-        stats.atkPct += flatSubToPct(sub, scaling, baseStats);
+        stats.atkPct += flatSubToPct(sub, scaling, baseStats, grade);
         return;
       }
-      const val = ECHO_SUB_STAT_VALUES[sub];
+      const val = getSubstatGradeValue(sub, grade);
       if (!val) return;
       if (sub === scalingStat) stats.atkPct += val;
       else if (sub === 'Crit Rate') stats.cr += val;

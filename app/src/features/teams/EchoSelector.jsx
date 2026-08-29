@@ -5,7 +5,7 @@ import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_D
 import { haptic } from '../../utils/haptics.js';
 import { getSetIcon, getElementIcon } from '../../shared/utils/elementVisuals.js';
 import { getLocale } from '../../utils/i18n.js';
-import { isHealerRole, isSupportRole } from './calcEngine.js';
+import { isHealerRole, isSupportRole, ECHO_SUBSTAT_GRADES, getDefaultSubstatGrade, getSubstatGradeValue } from './calcEngine.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -242,6 +242,7 @@ export default function EchoSelector({
             const echoEntry = eq.echoes?.[slotIdx];
             const currentMainStat = (typeof echoEntry === 'object' && echoEntry) ? echoEntry.mainStat : null;
             const currentSubstats = (typeof echoEntry === 'object' && echoEntry) ? (echoEntry.substats || []) : [];
+            const currentSubstatRolls = (typeof echoEntry === 'object' && echoEntry) ? (echoEntry.substatRolls || {}) : {};
             const costNum = slotIdx === 0 ? 4 : slotIdx < 3 ? 3 : 1;
             const costColor = costNum === 4 ? 'yellow' : costNum === 3 ? 'purple' : 'cyan';
             const echoData = ECHO_DATA[echoName];
@@ -424,8 +425,14 @@ export default function EchoSelector({
                             className={`px-2 py-1.5 rounded-lg text-base text-left transition-all border ${isActive ? 'bg-white/10 border-white/30 text-white font-medium' : atMax ? 'border-[var(--border-medium)] text-gray-600 cursor-not-allowed' : isRec ? 'border-orange-500/30 bg-orange-500/5 text-orange-300/80 hover:bg-orange-500/10' : 'border-[var(--border-medium)] text-gray-400 hover:border-white/20 hover:text-gray-200'}`}
                             onClick={() => {
                               if (atMax) return;
-                              const newSubs = isActive ? currentSubstats.filter(s => s !== stat) : [...currentSubstats, stat];
-                              updateEchoData({ substats: newSubs });
+                              if (isActive) {
+                                const newSubs = currentSubstats.filter(s => s !== stat);
+                                const newRolls = { ...currentSubstatRolls }; delete newRolls[stat];
+                                updateEchoData({ substats: newSubs, substatRolls: newRolls });
+                              } else {
+                                const newRolls = { ...currentSubstatRolls, [stat]: getDefaultSubstatGrade(stat) };
+                                updateEchoData({ substats: [...currentSubstats, stat], substatRolls: newRolls });
+                              }
                               haptic.light();
                             }}
                           >
@@ -435,6 +442,41 @@ export default function EchoSelector({
                       })}
                     </div>
                   </div>
+
+                  {/* Roll Grade — real per-substat roll, not just which stat was hit. Only the
+                      grades that actually exist on this stat (4 for flat ATK/DEF, 8 for everything
+                      else) are offered, sourced from the same disclosed-probability table the
+                      damage calc itself reads (ECHO_SUBSTAT_GRADES). */}
+                  {currentSubstats.length > 0 && (
+                    <div>
+                      <div className="kuro-section-label">Roll Value</div>
+                      <div className="flex flex-col gap-1">
+                        {currentSubstats.map(stat => {
+                          const grades = ECHO_SUBSTAT_GRADES[stat];
+                          if (!grades) return null;
+                          const grade = currentSubstatRolls[stat] || getDefaultSubstatGrade(stat);
+                          const value = getSubstatGradeValue(stat, grade);
+                          const isFlat = stat === 'ATK' || stat === 'HP' || stat === 'DEF';
+                          const setGrade = (g) => {
+                            const clamped = Math.min(Math.max(1, g), grades.length);
+                            updateEchoData({ substatRolls: { ...currentSubstatRolls, [stat]: clamped } });
+                            haptic.light();
+                          };
+                          return (
+                            <div key={stat} className="flex items-center justify-between gap-2 px-2 py-1 rounded-lg border border-[var(--border-medium)]">
+                              <span className="text-sm text-gray-400 truncate">{stat}</span>
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <button type="button" className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 text-gray-300 disabled:opacity-30" disabled={grade <= 1} onClick={() => setGrade(grade - 1)}>−</button>
+                                <span className="text-sm font-semibold text-white tabular-nums w-14 text-center">{isFlat ? value : value + '%'}</span>
+                                <button type="button" className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 text-gray-300 disabled:opacity-30" disabled={grade >= grades.length} onClick={() => setGrade(grade + 1)}>+</button>
+                                <span className="text-2xs text-gray-600 w-8 text-right">{grade}/{grades.length}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Actions */}
                   <div className="flex gap-2">

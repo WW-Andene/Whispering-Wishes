@@ -12,14 +12,17 @@ import { CHAIN_NODE_ICONS } from '../../data/characters.js';
 import { ECHO_DATA } from '../../data/echoes.js';
 import { getElementColor, getElementIcon, getStatIcon, getSetIcon } from '../../shared/utils/elementVisuals.js';
 import {
-  ECHO_MAIN_STAT_VALUES, ECHO_SUB_STAT_VALUES,
+  ECHO_MAIN_STAT_VALUES,
   createStats, parsePassive, applyFullEchoSet, applyEchoStats,
-  calcEnergyCycles,
+  calcEnergyCycles, getSubstatGradeValue, getSubstatTier,
 } from './calcEngine.js';
 
 // Real Android launcher icon (same source as idCardRenderer.js's APP_ICON) used as a small
 // brand watermark in this card's header — not the PWA icon or the currency icon.
 const APP_ICON = './app-title-icon/app_home_icon.png';
+
+// Roll-tier colors for echo substats, indexed by getSubstatTier's 0-3 result: Low/Medium/High/Max.
+const SUBSTAT_TIER_COLORS = ['#4ade80', '#60a5fa', '#c084fc', '#edaf18'];
 
 const loadImage = (src, timeoutMs = 3000) => new Promise((resolve) => {
   if (!src) { resolve(null); return; }
@@ -178,7 +181,7 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   };
 
   const drawPanel = (x, y, w, h, label) => {
-    ctx.fillStyle = 'rgba(10,14,22,0.50)'; rr(x, y, w, h, 16); ctx.fill();
+    ctx.fillStyle = 'rgba(10,14,22,0.75)'; rr(x, y, w, h, 16); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1.5; rr(x, y, w, h, 16); ctx.stroke();
     const ps = ctx.createLinearGradient(x, 0, x + w, 0); ps.addColorStop(0, 'transparent'); ps.addColorStop(0.3, 'rgba(255,255,255,0.18)'); ps.addColorStop(0.5, 'rgba(255,255,255,0.3)'); ps.addColorStop(0.7, 'rgba(255,255,255,0.18)'); ps.addColorStop(1, 'transparent');
     ctx.fillStyle = ps; ctx.fillRect(x + 12, y, w - 24, 1.5);
@@ -192,7 +195,7 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   };
 
   const drawStat = (x, y, w, h, val, lab, col, fs) => {
-    ctx.fillStyle = 'rgba(10,14,22,0.50)'; rr(x, y, w, h, 12); ctx.fill();
+    ctx.fillStyle = 'rgba(10,14,22,0.75)'; rr(x, y, w, h, 12); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.20)'; ctx.lineWidth = 1; rr(x, y, w, h, 12); ctx.stroke();
     const ss = ctx.createLinearGradient(x, 0, x + w, 0); ss.addColorStop(0, 'transparent'); ss.addColorStop(0.5, 'rgba(255,255,255,0.40)'); ss.addColorStop(1, 'transparent');
     ctx.fillStyle = ss; ctx.fillRect(x + 6, y, w - 12, 1.5);
@@ -229,9 +232,9 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   const portraitW = Math.floor(bw * 0.36);
   if (portraitImg) {
     ctx.save(); rr(bx + 2, by + 2, portraitW - 4, bh - 4, 14); ctx.clip();
-    // Backing mask fill — matches the same rgba(10,14,22,0.50) mask used by the other 9 boxes
+    // Backing mask fill — matches the same rgba(10,14,22,0.75) mask used by the other 9 boxes
     // (Stats/Skills/Sequence/Weapon/5 Echoes) so all 10 boxes share the same mask opacity.
-    ctx.fillStyle = 'rgba(10,14,22,0.50)'; ctx.fillRect(bx + 2, by + 2, portraitW - 4, bh - 4);
+    ctx.fillStyle = 'rgba(10,14,22,0.75)'; ctx.fillRect(bx + 2, by + 2, portraitW - 4, bh - 4);
     const f = getImageFraming('collection-' + name);
     const sc = f.zoom / 100;
     const imgAR = portraitImg.naturalWidth / portraitImg.naturalHeight, cellAR = portraitW / bh;
@@ -296,7 +299,7 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     // face/torso across Stats/Weapon/Skills/Sequence instead of showing varied art. The banner
     // stays visible only behind the portrait, where it belongs as a backdrop.
     ctx.save(); rr(x, y, w, h, 16); ctx.clip();
-    ctx.fillStyle = 'rgba(10,14,22,0.50)'; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = 'rgba(10,14,22,0.75)'; ctx.fillRect(x, y, w, h);
     ctx.restore();
     ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(x, y, w, h, 16); ctx.stroke();
     if (!label) return 12;
@@ -340,11 +343,14 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
       const midYr = sy + rowH / 2;
       let ix = qx;
       if (s.icon) { ctx.drawImage(s.icon, ix, midYr - 12, 24, 24); ix += 32; }
-      ctx.fillStyle = '#9ca3af'; ctx.font = '16px sans-serif'; ctx.textAlign = 'left';
+      // Label in white (was grey) — and the value sits right after the label with a fixed gap
+      // instead of being pinned to the box's right edge, so it reads as close to its stat name
+      // even when a longer/dynamic label (e.g. the element DMG row) is shown.
+      ctx.fillStyle = '#f1f5f9'; ctx.font = '16px sans-serif'; ctx.textAlign = 'left';
       ctx.fillText(s.l, ix, midYr + 6);
-      ctx.fillStyle = s.c; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'right';
-      ctx.fillText(s.v, qx + cw, midYr + 9);
-      ctx.textAlign = 'left';
+      const labelW = ctx.measureText(s.l).width;
+      ctx.fillStyle = s.c; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(s.v, ix + labelW + 16, midYr + 9);
     });
   }
 
@@ -383,59 +389,48 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     });
   }
 
-  // ── Sequence (now bottom-left, per user's swap-with-weapon request): horizontal S1-S6,
-  // white=unlocked / grey=locked ──
+  // ── Sequence (now bottom-left, per user's swap-with-weapon request): 2 rows x 3 columns
+  // (S1-S3 top, S4-S6 bottom) instead of a single row of 6, so each node can render bigger ──
   {
     drawBannerPanel(q1x, seqY, qw, seqH, 'Sequence');
     const qx = q1x + PAD, qy = seqY + PAD, qh = seqH - 2 * PAD, cw = qw - 2 * PAD;
     const hOff = 40;
     const seq = eq?.sequence || 0;
     const hasChainIcons = chainNodeImgs.some(Boolean);
-    const n = 6;
-    if (hasChainIcons) {
-      const iconSz = 62; // PerfectSuite tertiary — largest that fits 6-across within the quadrant width
-      const iGap = 16; // PerfectSuite primary
-      const totalW = n * iconSz + (n - 1) * iGap;
-      let ix = qx + Math.max(0, (cw - totalW) / 2);
-      const iy = qy + hOff + (qh - hOff - iconSz - 24) / 2;
-      chainNodeImgs.forEach((img, i) => {
-        const rank = i + 1;
-        const unlocked = rank <= seq;
-        if (img) {
-          ctx.save();
-          if (!unlocked) ctx.globalAlpha = 0.32;
-          rr(ix, iy, iconSz, iconSz, 12); ctx.clip(); ctx.drawImage(img, ix, iy, iconSz, iconSz);
-          ctx.restore();
-          if (!unlocked) { ctx.fillStyle = 'rgba(8,8,16,0.45)'; rr(ix, iy, iconSz, iconSz, 12); ctx.fill(); }
-        } else {
-          ctx.fillStyle = unlocked ? 'rgba(237,175,24,0.18)' : 'rgba(255,255,255,0.06)';
-          rr(ix, iy, iconSz, iconSz, 12); ctx.fill();
-        }
-        ctx.fillStyle = unlocked ? NEUTRAL : '#6b7280';
-        ctx.font = '600 16px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText('S' + rank, ix + iconSz / 2, iy + iconSz + 24);
-        ctx.textAlign = 'left';
-        ix += iconSz + iGap;
-      });
-    } else {
-      // Fallback: plain numbered pips when this character has no audited chain-node assets yet.
-      const pipSz = 62; // PerfectSuite tertiary
-      const iGap = 16;
-      const totalW = n * pipSz + (n - 1) * iGap;
-      let ix = qx + Math.max(0, (cw - totalW) / 2);
-      const iy = qy + hOff + (qh - hOff - pipSz) / 2;
-      for (let i = 0; i < n; i++) {
-        const rank = i + 1;
-        const unlocked = rank <= seq;
-        ctx.fillStyle = unlocked ? 'rgba(237,175,24,0.22)' : 'rgba(255,255,255,0.06)';
-        ctx.beginPath(); ctx.arc(ix + pipSz / 2, iy + pipSz / 2, pipSz / 2, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = unlocked ? 'rgba(237,175,24,0.6)' : 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.arc(ix + pipSz / 2, iy + pipSz / 2, pipSz / 2, 0, Math.PI * 2); ctx.stroke();
+    const cols = 3, rows = 2;
+    const iGap = 16; // PerfectSuite primary
+    const labelH = 24; // PerfectSuite secondary — room for the "S#" caption under each node
+    const availW = cw, availH = qh - hOff;
+    const cellW = (availW - (cols - 1) * iGap) / cols;
+    const cellH = (availH - (rows - 1) * iGap) / rows;
+    const iconSz = Math.min(96, Math.floor(cellW), Math.floor(cellH - labelH)); // PerfectSuite primary
+    const gridW = cols * iconSz + (cols - 1) * iGap, gridH = rows * (iconSz + labelH) + (rows - 1) * iGap;
+    const gx0 = qx + Math.max(0, (availW - gridW) / 2), gy0 = qy + hOff + Math.max(0, (availH - gridH) / 2);
+    for (let i = 0; i < 6; i++) {
+      const rank = i + 1;
+      const col = i % cols, row = Math.floor(i / cols);
+      const ix = gx0 + col * (iconSz + iGap);
+      const iy = gy0 + row * (iconSz + labelH + iGap);
+      const unlocked = rank <= seq;
+      const img = chainNodeImgs[i];
+      if (hasChainIcons && img) {
+        ctx.save();
+        if (!unlocked) ctx.globalAlpha = 0.32;
+        rr(ix, iy, iconSz, iconSz, 12); ctx.clip(); ctx.drawImage(img, ix, iy, iconSz, iconSz);
+        ctx.restore();
+        if (!unlocked) { ctx.fillStyle = 'rgba(8,8,16,0.45)'; rr(ix, iy, iconSz, iconSz, 12); ctx.fill(); }
+      } else {
+        ctx.fillStyle = unlocked ? 'rgba(237,175,24,0.18)' : 'rgba(255,255,255,0.06)';
+        rr(ix, iy, iconSz, iconSz, 12); ctx.fill();
+        ctx.strokeStyle = unlocked ? 'rgba(237,175,24,0.5)' : 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1;
+        rr(ix, iy, iconSz, iconSz, 12); ctx.stroke();
         ctx.fillStyle = unlocked ? GOLD : '#6b7280'; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(String(rank), ix + pipSz / 2, iy + pipSz / 2 + 8);
-        ctx.textAlign = 'left';
-        ix += pipSz + iGap;
+        ctx.fillText(String(rank), ix + iconSz / 2, iy + iconSz / 2 + 8); ctx.textAlign = 'left';
       }
+      ctx.fillStyle = unlocked ? NEUTRAL : '#6b7280';
+      ctx.font = '600 16px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('S' + rank, ix + iconSz / 2, iy + iconSz + 18);
+      ctx.textAlign = 'left';
     }
   }
 
@@ -459,16 +454,28 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     const vRowH = 40; // PerfectSuite secondary
     const blockH = vRowH * 4;
     let vy = iconY + (iconSz - blockH) / 2 + vRowH - 10;
+    // Name row — refinement pill now sits on the SAME line, to the right of the name (was its
+    // own row at the bottom). Both the name and the pill's own label are vertically centered
+    // against this row's own line height (vy - rowCenterOffset) instead of bottom-anchored.
+    const nameRowCenter = vy - 8;
     ctx.fillStyle = equippedWeap ? GOLD : '#6b7280';
     ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'left';
     ctx.fillText(eq?.weapon || 'No Weapon Equipped', infoX, vy);
+    const nameW = ctx.measureText(eq?.weapon || 'No Weapon Equipped').width;
+    const pillW = 62, pillH = 32;
+    const pillX = infoX + nameW + 16, pillY = nameRowCenter - pillH / 2;
+    ctx.fillStyle = 'rgba(237,175,24,0.16)'; rr(pillX, pillY, pillW, pillH, 8); ctx.fill();
+    ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1; rr(pillX, pillY, pillW, pillH, 8); ctx.stroke();
+    ctx.fillStyle = GOLD; ctx.font = 'bold 24px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(`R${eq?.refinement || 1}`, pillX + pillW / 2, pillY + pillH / 2 + 8); ctx.textAlign = 'left';
     vy += vRowH;
     // Level row — small "level meter" glyph (3 ascending bars) drawn in-canvas since no dedicated
     // level icon asset exists elsewhere in the app to reuse (checked DamageCalculator/EchoSelector).
+    // Bars and text centered against this row's own line, not bottom-anchored to the baseline.
     ctx.fillStyle = '#9ca3af';
     [0, 1, 2].forEach(bi => {
       const bw3 = 6, bh3 = 8 + bi * 8;
-      ctx.fillRect(infoX + bi * (bw3 + 3), vy - bh3, bw3, bh3);
+      ctx.fillRect(infoX + bi * (bw3 + 3), vy - 4 - bh3, bw3, bh3);
     });
     ctx.font = '24px sans-serif'; ctx.fillText('Lv. 90/90', infoX + 32, vy);
     vy += vRowH;
@@ -489,12 +496,6 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
         vy += vRowH;
       }
     }
-    // Refinement — pill badge (existing app convention, see DamageCalculator's own R1-R5 pills)
-    const pillW = 62, pillH = 32;
-    ctx.fillStyle = 'rgba(237,175,24,0.16)'; rr(infoX, vy - 24, pillW, pillH, 8); ctx.fill();
-    ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1; rr(infoX, vy - 24, pillW, pillH, 8); ctx.stroke();
-    ctx.fillStyle = GOLD; ctx.font = 'bold 24px monospace'; ctx.textAlign = 'center';
-    ctx.fillText(`R${eq?.refinement || 1}`, infoX + pillW / 2, vy - 2); ctx.textAlign = 'left';
   }
 
   // ── Echoes (bottom-right, unchanged column, shifted down below Weapon): 5 stacked, EACH its
@@ -524,15 +525,18 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
       }
       const iconSize = Math.min(192, Math.floor(qh)); // PerfectSuite primary, capped to the box's own height
       const iy = qy + (qh - iconSize) / 2;
-      // Info block is centered against the ICON's own height (not the whole row) — same
-      // "icon | centered info block" arrangement as the Weapon section.
-      const subCount = Math.min((entry.substats || []).length, 5);
-      const blockH = 16 + 6 + 24 + 6 + subCount * 22; // name / gap / mainstat / gap / one row per substat (a real list, not wrapped columns)
+      // Info block is two rows: row 1 = sonata icon + echo name, row 2 = mainstat + substats.
+      // Substats are laid out as a 2-column grid (was a single narrow column) so each one gets
+      // more width and can render at a bigger font instead of being cramped into one column.
+      const subs = (entry.substats || []).slice(0, 5);
+      const subRows = Math.ceil(subs.length / 2);
+      const subRowH = 26;
+      const blockH = 16 + 8 + 24 + 8 + subRows * subRowH; // name row / gap / mainstat row / gap / substat grid rows
       const blockY = iy + (iconSize - blockH) / 2;
       if (echoImgs[i]) { ctx.save(); rr(qx, iy, iconSize, iconSize, 30); ctx.clip(); ctx.drawImage(echoImgs[i], qx, iy, iconSize, iconSize); ctx.restore(); }
       const infoX = qx + iconSize + 12;
       const infoW = cw2 - iconSize - 12;
-      // Name + sonata (set) icon
+      // Row 1: sonata (set) icon + echo name
       const setName = echoSetNames[i];
       const setIcon = setName ? setIconCache[setName] : null;
       let nx = infoX;
@@ -540,28 +544,40 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
       ctx.fillStyle = '#e5e7eb'; ctx.font = '16px sans-serif'; ctx.textAlign = 'left';
       const nameMaxLen = Math.max(6, Math.floor((infoW - (setIcon ? 20 : 0)) / 8.5));
       ctx.fillText(n.length > nameMaxLen ? n.slice(0, nameMaxLen - 1) + '.' : n, nx, blockY + 14);
-      // Main stat — a "primary stat value" per the readability baseline, sized accordingly
+      // Row 2a: main stat — underlined instead of gold-colored, so it reads as a highlighted
+      // label rather than competing with the substat roll-tier colors below.
       let mainStatText = '';
       if (entry.mainStat) {
         const cost = i === 0 ? 4 : i < 3 ? 3 : 1;
         const mv = ECHO_MAIN_STAT_VALUES[cost]?.[entry.mainStat];
         mainStatText = `${entry.mainStat}${mv ? ' ' + mv : ''}`;
       }
-      const mainStatY = blockY + 16 + 6 + 18;
-      ctx.fillStyle = GOLD; ctx.font = 'bold 24px sans-serif';
+      const mainStatY = blockY + 16 + 8 + 18;
+      ctx.fillStyle = NEUTRAL; ctx.font = 'bold 24px sans-serif';
       ctx.fillText(mainStatText, infoX, mainStatY);
-      // Substats — a real vertical LIST, one per row (not wrapped into columns).
-      const subs = (entry.substats || []).slice(0, 5);
-      const subRowH = 22;
+      if (mainStatText) {
+        const mw = ctx.measureText(mainStatText).width;
+        ctx.strokeStyle = NEUTRAL; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(infoX, mainStatY + 4); ctx.lineTo(infoX + mw, mainStatY + 4); ctx.stroke();
+      }
+      // Row 2b: substats — 2-column grid, colored by roll tier (Low=green/Medium=blue/High=purple/
+      // Max=gold) using each substat's own recorded roll grade (falls back to the averaged value,
+      // shown as Max/gold, for echoes saved before per-roll tracking existed).
+      const subColW = infoW / 2;
       subs.forEach((sub, si) => {
-        const sy = mainStatY + 20 + si * subRowH;
+        const col = si % 2, row = Math.floor(si / 2);
+        const sx = infoX + col * subColW;
+        const sy = mainStatY + 24 + row * subRowH;
         const icon = substatIconCache[sub];
-        let tx = infoX;
-        if (icon) { ctx.drawImage(icon, tx, sy - 13, 16, 16); tx += 20; }
-        const sv = ECHO_SUB_STAT_VALUES[sub];
-        ctx.fillStyle = '#9ca3af'; ctx.font = '14px sans-serif';
-        const label = `${sub}${sv ? ' +' + sv : ''}`;
-        const maxChars = Math.max(10, Math.floor(infoW / 8));
+        let tx = sx;
+        if (icon) { ctx.drawImage(icon, tx, sy - 14, 18, 18); tx += 22; }
+        const grade = entry.substatRolls?.[sub];
+        const sv = getSubstatGradeValue(sub, grade);
+        const tier = getSubstatTier(sub, grade);
+        const isFlat = sub === 'ATK' || sub === 'HP' || sub === 'DEF';
+        ctx.fillStyle = SUBSTAT_TIER_COLORS[tier]; ctx.font = '600 16px sans-serif';
+        const label = `${sub}${sv ? ' +' + sv + (isFlat ? '' : '%') : ''}`;
+        const maxChars = Math.max(8, Math.floor((subColW - 22) / 9));
         ctx.fillText(label.length > maxChars ? label.slice(0, maxChars - 1) + '.' : label, tx, sy);
       });
     });
