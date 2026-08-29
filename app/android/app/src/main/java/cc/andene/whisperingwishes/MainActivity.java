@@ -130,8 +130,19 @@ public class MainActivity extends BridgeActivity {
             // native poster is what's visible everywhere on screen for
             // those first frames, not just the bar insets.
             webView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+            // Also signals "native has the real values now" to
+            // index.html/BootIntro.jsx's boot poster swap — see there. The
+            // static pre-React poster used to be removed purely on React
+            // mount, which has nothing to do with when the native
+            // transition actually happens; if the JS bundle is slow to
+            // load, the static poster lingers well past the point where
+            // it's already stale. window.__bootInsetsReady may already be
+            // true if a listener defined by the page hasn't registered
+            // itself yet — checked defensively either direction.
             String js = "document.documentElement.style.setProperty('--safe-area-top','" + topDp + "px');"
-                    + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');";
+                    + "document.documentElement.style.setProperty('--safe-area-bottom','" + bottomDp + "px');"
+                    + "window.__bootInsetsReady = true;"
+                    + "if (window.__onBootInsetsReady) { window.__onBootInsetsReady(); }";
             webView.evaluateJavascript(js, null);
         }
         // Boot splash (index.html) autoplays a muted <video> the instant
