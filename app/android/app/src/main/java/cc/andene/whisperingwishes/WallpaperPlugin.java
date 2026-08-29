@@ -7,9 +7,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.Point;
 import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Display;
+import android.view.WindowManager;
 
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -53,6 +57,15 @@ public class WallpaperPlugin extends Plugin {
             return;
         }
 
+        // The source asset is banner art (16:9 landscape); handing it to setBitmap() as-is
+        // lets the system stretch it to the screen's own (typically ~9:16 portrait) aspect
+        // ratio instead of cropping it — the "squished" look. Center-crop it to the actual
+        // screen's aspect ratio ourselves first (same object-fit:cover behavior the web app
+        // uses for these same images) so what lands on the device is an edge-to-edge,
+        // centered crop rather than a stretched copy.
+        Bitmap cropped = centerCropToScreenAspect(bitmap);
+        if (cropped != bitmap) bitmap.recycle();
+
         try {
             WallpaperManager manager = WallpaperManager.getInstance(getContext());
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -62,16 +75,53 @@ public class WallpaperPlugin extends Plugin {
                 int flags = "home".equals(target) ? WallpaperManager.FLAG_SYSTEM
                         : "lock".equals(target) ? WallpaperManager.FLAG_LOCK
                         : (WallpaperManager.FLAG_SYSTEM | WallpaperManager.FLAG_LOCK);
-                manager.setBitmap(bitmap, null, true, flags);
+                manager.setBitmap(cropped, null, true, flags);
             } else {
-                manager.setBitmap(bitmap);
+                manager.setBitmap(cropped);
             }
             call.resolve();
         } catch (Exception e) {
             call.reject("Could not set wallpaper: " + e.getMessage());
         } finally {
-            bitmap.recycle();
+            cropped.recycle();
         }
+    }
+
+    // Center-crop (CSS object-fit:cover equivalent) `src` down to the device's real screen
+    // aspect ratio, scaling up first if the source is smaller than the screen in the
+    // cover-relevant dimension. Returns `src` unchanged if the screen size can't be read.
+    private Bitmap centerCropToScreenAspect(Bitmap src) {
+        WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+        if (wm == null) return src;
+        Display display = wm.getDefaultDisplay();
+        if (display == null) return src;
+        Point size = new Point();
+        display.getRealSize(size);
+        int screenW = size.x;
+        int screenH = size.y;
+        if (screenW <= 0 || screenH <= 0) return src;
+
+        int srcW = src.getWidth();
+        int srcH = src.getHeight();
+        float screenRatio = (float) screenW / screenH;
+        float srcRatio = (float) srcW / srcH;
+
+        // Scale up so the source fully covers the screen in both dimensions, then crop the
+        // centered screenW x screenH window out of it.
+        float scale = srcRatio > screenRatio ? (float) screenH / srcH : (float) screenW / srcW;
+        int scaledW = Math.round(srcW * scale);
+        int scaledH = Math.round(srcH * scale);
+        Matrix matrix = new Matrix();
+        matrix.setScale(scale, scale);
+        Bitmap scaled = Bitmap.createBitmap(src, 0, 0, srcW, srcH, matrix, true);
+
+        int cropW = Math.min(screenW, scaledW);
+        int cropH = Math.min(screenH, scaledH);
+        int left = Math.max(0, (scaledW - cropW) / 2);
+        int top = Math.max(0, (scaledH - cropH) / 2);
+        Bitmap cropped = Bitmap.createBitmap(scaled, left, top, cropW, cropH);
+        if (cropped != scaled) scaled.recycle();
+        return cropped;
     }
 
     // Applies a real Android Live Wallpaper (LiveVideoWallpaperService) instead of a static

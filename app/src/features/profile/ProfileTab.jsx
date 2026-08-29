@@ -835,7 +835,7 @@ function ProfileTab({
                     {/* Target buttons with previews — visible even while
                         collapsed: the "what's currently set" summary this
                         section is for, not just an entry into the picker. */}
-                    <div className={`flex gap-1.5 ${bgSectionCollapsed ? 'mt-3' : 'mb-3'}`}>
+                    <div className={`flex gap-1.5 mb-3 ${bgSectionCollapsed ? 'mt-3' : ''}`}>
                       {[
                         { key: 'header', label: t('profile.display.targetHeader'), settingKey: 'headerBg' },
                         { key: 'navigation', label: t('profile.display.targetNavigation'), settingKey: 'navBg' },
