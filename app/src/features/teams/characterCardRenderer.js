@@ -178,7 +178,7 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   };
 
   const drawPanel = (x, y, w, h, label) => {
-    ctx.fillStyle = 'rgba(10,14,22,0.55)'; rr(x, y, w, h, 16); ctx.fill();
+    ctx.fillStyle = 'rgba(10,14,22,0.50)'; rr(x, y, w, h, 16); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.14)'; ctx.lineWidth = 1.5; rr(x, y, w, h, 16); ctx.stroke();
     const ps = ctx.createLinearGradient(x, 0, x + w, 0); ps.addColorStop(0, 'transparent'); ps.addColorStop(0.3, 'rgba(255,255,255,0.18)'); ps.addColorStop(0.5, 'rgba(255,255,255,0.3)'); ps.addColorStop(0.7, 'rgba(255,255,255,0.18)'); ps.addColorStop(1, 'transparent');
     ctx.fillStyle = ps; ctx.fillRect(x + 12, y, w - 24, 1.5);
@@ -192,7 +192,7 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   };
 
   const drawStat = (x, y, w, h, val, lab, col, fs) => {
-    ctx.fillStyle = 'rgba(10,14,22,0.8)'; rr(x, y, w, h, 12); ctx.fill();
+    ctx.fillStyle = 'rgba(10,14,22,0.50)'; rr(x, y, w, h, 12); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.20)'; ctx.lineWidth = 1; rr(x, y, w, h, 12); ctx.stroke();
     const ss = ctx.createLinearGradient(x, 0, x + w, 0); ss.addColorStop(0, 'transparent'); ss.addColorStop(0.5, 'rgba(255,255,255,0.40)'); ss.addColorStop(1, 'transparent');
     ctx.fillStyle = ss; ctx.fillRect(x + 6, y, w - 12, 1.5);
@@ -293,7 +293,7 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     // face/torso across Stats/Weapon/Skills/Sequence instead of showing varied art. The banner
     // stays visible only behind the portrait, where it belongs as a backdrop.
     ctx.save(); rr(x, y, w, h, 16); ctx.clip();
-    ctx.fillStyle = 'rgba(10,14,22,0.85)'; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = 'rgba(10,14,22,0.50)'; ctx.fillRect(x, y, w, h);
     ctx.restore();
     ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(x, y, w, h, 16); ctx.stroke();
     if (!label) return 12;
