@@ -1,24 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
 
-// Renders on top of the app the instant React mounts. index.html already
-// shows the identical poster image, statically, from the very first paint
-// (see #boot-poster there) — this component's own poster renders at the
-// same position so the handoff is seamless, then this one removes the
-// static element once mounted. Plays the intro video once it has actually
-// loaded enough to run without stalling, starts the Log Screen ambient
-// track in sync with the video's own 'playing' event (handed off to
-// useAmbientMusic.js via window.__bootAmbientAudio so it continues with no
-// restart once React's hook takes over managing it), then fades the whole
-// overlay out over 1s once the video finishes and unmounts — never
-// blocking or delaying the app underneath, which mounts and renders in
-// parallel the entire time.
+// Renders on top of the app the instant React mounts. Unlike earlier
+// versions of this component, it renders NO poster of its own anymore —
+// MainActivity.java's native ImageView poster (added on top of the WebView
+// from the moment the Activity is created) covers the entire boot phase by
+// itself, all the way up to the moment the intro video is actually ready to
+// play. That native poster isn't part of the WebView's content area at all,
+// so it's immune to the WebView content-area resize that every previous
+// WebView-rendered poster (static in index.html, then React-rendered here)
+// had to work around with split/superposition/status-bar tricks. None of
+// that is needed once nothing poster-shaped is rendered by the WebView in
+// the first place.
 //
-// This component's own poster is a single, unsplit full-screen piece — the
-// two-piece split lives only on index.html's static pre-React poster now
-// (and there, it's a vertical left/right split, not horizontal). Sized off
-// window.screen.width/height (a fixed physical value), not a CSS
-// viewport-relative unit, so this box's own dimensions are never
-// recomputed as MainActivity.java's edge-to-edge insets settle mid-boot.
+// This component's only job now: wait for the video to be ready, dismiss
+// the native poster at that exact moment (window.AndroidBoot.
+// dismissBootPoster()), play the video, start the Log Screen ambient track
+// in sync with the video's own 'playing' event (handed off to
+// useAmbientMusic.js via window.__bootAmbientAudio so it continues with no
+// restart once React's hook takes over managing it), then fade the video
+// out over 1s once it finishes and unmount — never blocking or delaying the
+// app underneath, which mounts and renders in parallel the entire time.
 export default function BootIntro() {
   const videoRef = useRef(null);
   const [canPlay, setCanPlay] = useState(false);
@@ -27,12 +28,20 @@ export default function BootIntro() {
   const [screenSize] = useState(() => ({ w: window.screen.width, h: window.screen.height }));
 
   useEffect(() => {
-    document.getElementById('boot-poster')?.remove();
-  }, []);
-
-  useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    // Called on both the normal path (video ready to play) and the error
+    // path (video failed before ever becoming ready) — either way, the
+    // native poster can't be left on screen once this component has given
+    // up trying to show it something else.
+    const dismissNativePoster = () => {
+      try {
+        window.AndroidBoot?.dismissBootPoster?.();
+      } catch {
+        // Not running in the Android WebView (e.g. plain web) — no-op.
+      }
+    };
 
     const startFadeOut = () => {
       setFadingOut(true);
@@ -84,11 +93,15 @@ export default function BootIntro() {
     };
 
     const onCanPlay = () => {
+      dismissNativePoster();
       setCanPlay(true);
       video.play().catch(() => startFadeOut());
     };
     const onEnded = () => startFadeOut();
-    const onError = () => startFadeOut();
+    const onError = () => {
+      dismissNativePoster();
+      startFadeOut();
+    };
 
     video.addEventListener('canplaythrough', onCanPlay);
     video.addEventListener('playing', startAmbient, { once: true });
@@ -111,41 +124,29 @@ export default function BootIntro() {
   // <BootIntro/> before <App/>), an equal z-index tie is broken by DOM
   // order in the *later* element's favor — so that banner could paint on
   // top of this boot overlay, letting the app underneath visibly show
-  // through the "still playing" video. Matches index.html's static poster,
-  // which had the same fix applied for the same reason.
+  // through the "still playing" video.
   const OVERLAY_Z = 2147483647;
-  const posterBoxStyle = { position: 'fixed', top: 0, left: 0, width: screenSize.w, height: screenSize.h, overflow: 'hidden', zIndex: OVERLAY_Z };
-  const posterImgStyle = { position: 'absolute', top: 0, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover', opacity: canPlay ? 0 : 1, transition: 'opacity 0.2s ease-out' };
 
   return (
-    <>
-      {/* Poster — single unsplit full-screen piece, fixed, never resized. */}
-      <div aria-hidden="true" style={{ ...posterBoxStyle, background: '#080c14', opacity: fadingOut ? 0 : 1, transition: 'opacity 1s ease-out', pointerEvents: 'none' }}>
-        <img src="/boot-intro/boot-intro-poster.gif" alt="" style={posterImgStyle} />
-      </div>
-      {/* Video — a single full-screen layer, a sibling of the poster.
-          Owns the fade-out/audio state; the poster above just mirrors its
-          fade-out opacity so everything cuts away together. */}
-      <video
-        ref={videoRef}
-        src="/boot-intro/boot-intro.mp4"
-        muted
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: screenSize.w,
-          height: screenSize.h,
-          zIndex: OVERLAY_Z,
-          objectFit: 'cover',
-          opacity: canPlay ? (fadingOut ? 0 : 1) : 0,
-          transition: canPlay ? 'opacity 1s ease-out' : 'opacity 0.2s ease-out',
-          pointerEvents: fadingOut ? 'none' : 'auto',
-        }}
-      />
-    </>
+    <video
+      ref={videoRef}
+      src="/boot-intro/boot-intro.mp4"
+      muted
+      playsInline
+      preload="auto"
+      aria-hidden="true"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: screenSize.w,
+        height: screenSize.h,
+        zIndex: OVERLAY_Z,
+        objectFit: 'cover',
+        opacity: canPlay ? (fadingOut ? 0 : 1) : 0,
+        transition: canPlay ? 'opacity 1s ease-out' : 'opacity 0.2s ease-out',
+        pointerEvents: fadingOut ? 'none' : 'auto',
+      }}
+    />
   );
 }

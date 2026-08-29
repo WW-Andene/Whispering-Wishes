@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
@@ -36,8 +38,9 @@ import java.lang.reflect.Method;
 // evaluateJavascript, exactly once, rather than trusted from the WebView's
 // own env(safe-area-inset-*), which has proven unreliable for this on-device.
 public class MainActivity extends BridgeActivity {
-    // Kept as a field so NativeBootBridge.posterReady() (below) can remove
-    // it once the WebView's own poster has actually painted.
+    // Kept as a field so dismissBootPosterView() (below, called from both
+    // NativeBootBridge.dismissBootPoster() and the safety-timeout
+    // fallback) can remove it once the intro video is ready.
     private ImageView bootPosterView;
 
     @Override
@@ -124,9 +127,16 @@ public class MainActivity extends BridgeActivity {
         // equivalent to that WebView renegotiation to be subject to.
         // Added on top of the WebView (addContentView appends after
         // Capacitor's own setContentView call inside super.onCreate()
-        // above, so it paints last/on top) and removed once the WebView's
-        // own poster has actually painted (NativeBootBridge.posterReady(),
-        // below) — until then, this is what's on screen.
+        // above, so it paints last/on top) and stays up for the ENTIRE
+        // boot phase — index.html/BootIntro.jsx render no poster of their
+        // own at all anymore, so there's nothing for this one to hand off
+        // to until the intro video is actually ready to play
+        // (NativeBootBridge.dismissBootPoster(), below), which is also
+        // when it comes down. A 15s safety-timeout fallback (further
+        // below) removes it regardless, in case that JS call never
+        // arrives (video load failure before any of its own error/ended
+        // handlers fire, bridge injection failure, etc.) — this view must
+        // never be able to get permanently stuck on screen.
         //
         // scaleType="centerCrop" is the exact native equivalent of the
         // WebView poster's own CSS object-fit:cover — the two scale
@@ -146,6 +156,7 @@ public class MainActivity extends BridgeActivity {
         bootPosterView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         addContentView(bootPosterView, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        new Handler(Looper.getMainLooper()).postDelayed(this::dismissBootPosterView, 15000);
         // Computed ONCE, synchronously, from the device's own static system
         // resources — NOT from a WindowInsetsCompat listener, which only
         // fires once the decor view has actually gone through a layout pass.
@@ -242,6 +253,17 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
+    // Shared by NativeBootBridge.dismissBootPoster() and the 15s
+    // safety-timeout fallback above — either can be the one that actually
+    // removes the view; whichever runs first wins, the other is a no-op
+    // (bootPosterView is already null by then).
+    private void dismissBootPosterView() {
+        if (bootPosterView == null) return;
+        ViewGroup parent = (ViewGroup) bootPosterView.getParent();
+        if (parent != null) parent.removeView(bootPosterView);
+        bootPosterView = null;
+    }
+
     // Exposed as window.AndroidBoot.showStatusBar() — called from
     // BootIntro.jsx once its fade-out actually completes, to restore the
     // status bar hidden at the top of onCreate() above. Same
@@ -261,22 +283,13 @@ public class MainActivity extends BridgeActivity {
             });
         }
 
-        // Called from index.html right after its own document.write()
-        // poster markup has been written — at that point the WebView's own
-        // poster exists in the DOM and is about to paint, so the native
-        // ImageView overlay has done its job (covering the gap before the
-        // WebView had anything to show) and can come down. Overlap between
-        // the two isn't a visible risk either way — same picture, so a
-        // removal called a frame early or late reads the same on screen.
+        // Called from BootIntro.jsx once the intro video is actually ready
+        // to play (or has failed trying) — until that moment, this native
+        // poster is the only thing rendering a poster at all; index.html
+        // and BootIntro.jsx render none of their own anymore.
         @JavascriptInterface
-        public void posterReady() {
-            activity.runOnUiThread(() -> {
-                if (activity.bootPosterView != null) {
-                    ViewGroup parent = (ViewGroup) activity.bootPosterView.getParent();
-                    if (parent != null) parent.removeView(activity.bootPosterView);
-                    activity.bootPosterView = null;
-                }
-            });
+        public void dismissBootPoster() {
+            activity.runOnUiThread(activity::dismissBootPosterView);
         }
     }
 

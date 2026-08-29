@@ -56,111 +56,19 @@
     <a href="#root" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm">
       Skip to main content
     </a>
-    <!-- Static poster, shown from the very first paint — plain markup, part
-         of the same synchronous initial parse as everything else here, so
-         there's no gap where html/body's plain navy background is visible
-         before the poster appears (that gap is what a React-mounted-only
-         poster had: React can't paint anything until the JS bundle has
-         fetched/parsed/executed). BootIntro.jsx (mounted alongside <App/>
-         in main.jsx) renders the identical poster image at the same
-         position on mount, so the handoff from this static one to React's
-         is visually seamless — same image, same place, nothing to notice —
-         and BootIntro then owns the video/fade sequence from there since
-         that needs component state to know when the video has finished. -->
-    <!-- Single unsplit full-screen poster — no split/superposition trick
-         needed anymore. MainActivity.java now HIDES the status bar
-         entirely for boot (not just makes it transparent), so there's no
-         status-bar-shaped region left to align a piece against or reframe
-         around; the poster can just be one plain full-screen element. The
-         status bar is restored once BootIntro.jsx's intro finishes. -->
-    <script>
-      // document.write, not markup + a follow-up script correcting inline
-      // styles afterward — a prior version here set width:100% (viewport-
-      // relative — the exact thing this whole approach exists to avoid)
-      // in the initial markup, then overwrote it with the real fixed px
-      // value a moment later. That correction was itself a visible reframe,
-      // in the "first poster," independent of anything about the switch to
-      // BootIntro.jsx. document.write blocks the parser until it runs, so
-      // the fixed pixel dimensions below are the ONLY size these boxes
-      // ever have — there's no intermediate percentage-sized state for the
-      // parser to paint before a script corrects it.
-      (function () {
-        var w = window.screen.width, h = window.screen.height;
-        // DIAGNOSTIC: red overlay (mix-blend-mode:multiply, reliable
-        // regardless of the poster image's own colors, unlike a CSS
-        // filter) — marks THIS static pre-React poster specifically, so
-        // on-device it's visually distinguishable from BootIntro.jsx's own
-        // React-rendered poster (unsplit, untinted). Remove once the
-        // reframe is confirmed fixed.
-        var tint = 'position:absolute;top:0;left:0;width:100%;height:100%;background:red;mix-blend-mode:multiply;pointer-events:none';
-        document.write(
-          '<div id="boot-poster" style="position:fixed;top:0;left:0;width:' + w + 'px;height:' + h + 'px;overflow:hidden;z-index:2147483647;background:#080c14">' +
-            '<img src="./boot-intro/boot-intro-poster.gif" alt="" style="position:absolute;top:0;left:0;width:' + w + 'px;height:' + h + 'px;object-fit:cover" />' +
-            '<div style="' + tint + '"></div>' +
-          '</div>'
-        );
-        // MainActivity.java shows a native ImageView poster on top of the
-        // WebView from the moment the Activity is created — genuinely
-        // immune to the WebView content-area resize this whole file exists
-        // to work around, since it's not part of the WebView at all. Now
-        // that this static poster's own markup has just been written
-        // (about to paint, same picture), the native one has done its job
-        // and can come down — a frame early or late doesn't matter here,
-        // since both show the identical image.
-        try {
-          window.AndroidBoot?.posterReady?.();
-        } catch (e) {
-          // Not running in the Android WebView (e.g. plain web) — no-op.
-        }
-      })();
-
-      // Removes this static poster as soon as MainActivity.java's native
-      // code confirms the real "frame switch" moment (edge-to-edge insets
-      // settled) instead of waiting on BootIntro.jsx's own mount, which can
-      // lag behind it by however long the JS bundle takes to fetch/parse/
-      // execute — the gap this poster is up for the reframe to appear in.
-      //
-      // A prior attempt at this (window.__onBootInsetsReady(), a callback
-      // invoked directly from Java-injected JS) reportedly crashed the
-      // poster on-device — most likely because evaluateJavascript's own
-      // script can run before this function has been defined yet, and
-      // calling an undefined global from injected JS throws there rather
-      // than anywhere this page's own try/catch can see it. This version
-      // only ever reads a boolean (window.__bootInsetsReady) from a plain
-      // interval on the page's own side — reading a boolean can't throw,
-      // so there's nothing for the previous failure mode to repeat. Wrapped
-      // in try/catch anyway, and capped with a fallback timeout in case the
-      // native signal never arrives at all (older WebView, injection
-      // failure, etc.) so the poster is never stuck up forever.
-      (function () {
-        var removed = false;
-        function removeStaticPoster() {
-          if (removed) return;
-          removed = true;
-          try {
-            var poster = document.getElementById('boot-poster');
-            if (poster) poster.remove();
-          } catch (e) {
-            // Nothing to do — worst case the static poster stays until
-            // BootIntro.jsx's own unconditional removal-on-mount runs.
-          }
-        }
-        var pollId = setInterval(function () {
-          try {
-            if (window.__bootInsetsReady) {
-              clearInterval(pollId);
-              removeStaticPoster();
-            }
-          } catch (e) {
-            clearInterval(pollId);
-          }
-        }, 16);
-        setTimeout(function () {
-          clearInterval(pollId);
-          removeStaticPoster();
-        }, 2000);
-      })();
-    </script>
+    <!-- No WebView-rendered poster here anymore — every version of it (the
+         static pre-React one that used to live in this file, and
+         BootIntro.jsx's own React one) went through the WebView's content
+         area, which is exactly what resizes mid-boot as edge-to-edge
+         insets settle; that's the root cause this whole file used to work
+         around. MainActivity.java's native ImageView poster (added on top
+         of the WebView from the moment the Activity is created — see its
+         own comments) now covers this entire phase by itself, since it's
+         laid out by Android's View system directly and isn't part of the
+         WebView's content area at all. It's dismissed by BootIntro.jsx
+         once the intro video is actually ready to play
+         (window.AndroidBoot.dismissBootPoster()) — there's nothing left
+         for this file to render or remove in the meantime. -->
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
     <script type="module" src="/src/main.jsx"></script>
