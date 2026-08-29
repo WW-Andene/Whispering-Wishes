@@ -3,11 +3,13 @@
 // WeaponDetailModal
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
-import { Swords, Star, TrendingUp, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Swords, Star, TrendingUp, X, Play } from 'lucide-react';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
+import { getConveneAnimation } from '../../data/banners.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
+import { ConveneVideo } from '../components/ConveneVideoLayer.jsx';
 import { getWeaponTypeIcon, getStatIcon } from '../utils/elementVisuals.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
@@ -23,8 +25,10 @@ const WEAPON_RARITY_COLORS = {
 };
 const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionData }) => {
   const { framingMode, editingImage, setEditingImage } = useImageFramingContext();
+  const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
   const data = getLocalizedWeaponData(getLocale())[name] || WEAPON_DATA[name];
   if (!data) return null;
+  const conveneVideoUrl = getConveneAnimation(name);
 
   const ownsChar = (n) => {
     if (!collectionData) return true;
@@ -58,10 +62,24 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
               transformOrigin: 'center',
             }} />
           )}
+          {/* Convene video plays directly in the header, same treatment as
+              CharacterDetailModal's own ▶ button (BannerCard.jsx's pattern). */}
+          {conveneVideoPlaying && conveneVideoUrl && (
+            <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setConveneVideoPlaying(false)} />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.weaponDetail.closeAria')}>
             <X size={16} />
           </button>
+          {conveneVideoUrl && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setConveneVideoPlaying(p => !p); }}
+              className="kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center absolute bottom-3 right-3 z-20"
+              aria-label={conveneVideoPlaying ? t('modals.weaponDetail.closeConveneVideoAria') : t('modals.weaponDetail.viewConveneVideoAria', { name: displayName })}
+            >
+              {conveneVideoPlaying ? <X size={14} /> : <Play size={12} className="fill-current ml-0.5" />}
+            </button>
+          )}
           <div className="absolute bottom-3 left-4">
             <div className="flex items-center gap-2 mb-1">
               <span className={`kuro-badge ${colors.bg} ${colors.text} ${colors.border} inline-flex items-center gap-1`}>

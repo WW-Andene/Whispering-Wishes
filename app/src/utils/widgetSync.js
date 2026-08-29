@@ -39,7 +39,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { Preferences } from '@capacitor/preferences';
-import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt, CONVENE_ANIMATIONS, CURRENT_BANNERS } from '../data/banners.js';
+import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt, getWeaponBannerArt, CONVENE_ANIMATIONS, CURRENT_BANNERS } from '../data/banners.js';
 import { STANDARD_5STAR_CHARACTERS, ALL_4STAR_RESONATORS } from '../data/characters.js';
 import { WEAPON_DATA } from '../data/weapons.js';
 import { DEFAULT_IMAGE_FRAMING } from '../hooks/useImageFraming.js';
@@ -148,25 +148,24 @@ export async function syncBannerWidget(activeBanners) {
 }
 
 // Feeds ConveneRoster.java's native lookup (PullBubbleService plays a pulled 4★/5★
-// character's own convene clip as part of its reveal sequence) — every character that HAS a
-// convene animation at all (CONVENE_ANIMATIONS' full key list), not just whoever's on an
-// active banner right now, since a pull can land on any released character regardless of
-// what's currently featured. Piggybacks on syncBannerWidget's own trigger (App.jsx's
-// activeBanners effect) rather than needing a separate call site — the roster barely changes
-// (only grows on new character release), so re-writing it on every banner-sync pass is cheap
-// and keeps this one function as the single place anything native-widget-related gets
+// character/weapon's own convene clip as part of its reveal sequence) — every name that HAS a
+// convene animation at all (CONVENE_ANIMATIONS' full key list, characters AND weapons), not
+// just whoever's on an active banner right now, since a pull can land on any released
+// character/weapon regardless of what's currently featured. Piggybacks on syncBannerWidget's
+// own trigger (App.jsx's activeBanners effect) rather than needing a separate call site — the
+// roster barely changes (only grows on new release), so re-writing it on every banner-sync pass
+// is cheap and keeps this one function as the single place anything native-widget-related gets
 // refreshed from.
 async function syncConveneRoster() {
   const roster = Object.keys(CONVENE_ANIMATIONS).map((name) => ({
     name,
-    // Real gacha banner splash art (getCharacterBannerArt — the same source
-    // BannerCard.jsx and PulseBannerWidget's own art use), not
+    // Real gacha banner splash art (getCharacterBannerArt / getWeaponBannerArt — the same
+    // source BannerCard.jsx and PulseBannerWidget's own art use), not
     // DEFAULT_COLLECTION_IMAGES' full-body collection sprite: a dedicated
-    // "play this character's convene clip" widget should look like the actual
-    // banner the clip is promoting, not the collection-grid artwork. Falls
-    // back to the collection sprite only for a character with no banner art
-    // on file at all, rather than showing nothing.
-    artAsset: stripRelative(getCharacterBannerArt(name) || DEFAULT_COLLECTION_IMAGES[name] || ''),
+    // "play this character/weapon's convene clip" widget should look like the actual banner
+    // the clip is promoting, not the collection-grid artwork. Falls back to the collection
+    // sprite only when no banner art is on file at all, rather than showing nothing.
+    artAsset: stripRelative(getCharacterBannerArt(name) || getWeaponBannerArt(name) || DEFAULT_COLLECTION_IMAGES[name] || ''),
     conveneUrl: API_BASE_URL ? `${API_BASE_URL}/${stripRelative(CONVENE_ANIMATIONS[name])}` : null,
   })).filter((e) => e.conveneUrl); // no usable entry without a resolvable URL
 

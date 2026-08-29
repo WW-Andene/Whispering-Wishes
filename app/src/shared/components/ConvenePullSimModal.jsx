@@ -69,10 +69,12 @@ const RARITY_RING = { 5: 'border-yellow-500/50', 4: 'border-purple-500/50', 3: '
 // outline (kuro.css: bannerGlow/bannerBorderGlow keyframes).
 const FIVE_STAR_GLOW_RGB = '234,179,8';
 
-// A 4★/5★ character result gets its own convene video played right as its
-// turn comes up in the one-by-one reveal — not every 4★/5★ has one yet.
+// A 4★/5★ result (character OR weapon) gets its own convene video played right as its turn
+// comes up in the one-by-one reveal — not every 4★/5★ has one yet. Was character-only before
+// any weapon convene clips existed; getConveneAnimation itself already returns null for
+// anything without a clip, so no separate type check is needed here anymore.
 const itemVideoFor = (result) => {
-  if (!result || result.rarity < 4 || result.type !== 'character') return null;
+  if (!result || result.rarity < 4) return null;
   return getConveneAnimation(result.name);
 };
 

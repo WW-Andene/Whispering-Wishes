@@ -76,6 +76,16 @@ const getCharacterBannerArt = (name) => {
   return theme?.bannerArt || null;
 };
 
+// Same as getCharacterBannerArt above, but for a weapon (CURRENT_BANNERS.weapons, then
+// WEAPON_THEMES) — used wherever a weapon needs the same "real gacha splash art" treatment a
+// character already gets (WeaponDetailModal's Assets section, the native convene-roster widget).
+const getWeaponBannerArt = (name) => {
+  const live = CURRENT_BANNERS.weapons.find(w => w.name === name);
+  if (live?.imageUrl) return live.imageUrl;
+  const theme = WEAPON_THEMES.find(t => t.name === name);
+  return theme?.bannerArt || null;
+};
+
 // [SECTION:HISTORY]
 
 const BANNER_HISTORY = [
@@ -1326,6 +1336,11 @@ const CONVENE_ANIMATIONS = {
   'Rover: Havoc': './convene-animations/rover-convene.mp4',
   'Rover: Aero': './convene-animations/rover-convene.mp4',
   'Rover: Electro': './convene-animations/rover-convene.mp4',
+  // First two weapon convene clips (everything above is characters) — keyed by the exact
+  // WEAPON_DATA name, same convention as the character keys above. 'Glint of Clouds' (plural
+  // "Clouds") is the real WEAPON_DATA key; the uploaded file was named with the singular.
+  'Glint of Clouds': './convene-animations/glint-of-clouds-convene.mp4',
+  'Forged Dwarf Star': './convene-animations/forged-dwarf-star-convene.mp4',
 };
 const getConveneAnimation = (name) => CONVENE_ANIMATIONS[name] || null;
 
@@ -1562,5 +1577,6 @@ export {
   CONVENE_ANIMATIONS,
   getConveneAnimation,
   getCharacterBannerArt,
+  getWeaponBannerArt,
   preloadBannerHistoryArt,
 };

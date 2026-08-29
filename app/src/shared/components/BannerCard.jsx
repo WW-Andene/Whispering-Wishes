@@ -101,7 +101,9 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
   const pictureOpacity = visualSettings ? visualSettings.pictureOpacity / 100 : 0.9;
   const isFull = visualSettings?.animationsEnabled === 'full';
   const spineId = isChar ? getSpineId(item.name) : null;
-  const conveneVideoUrl = isChar ? getConveneAnimation(item.name) : null;
+  // No longer isChar-gated — weapon convene clips exist now too (getConveneAnimation
+  // already returns null for anything with no clip, character or weapon).
+  const conveneVideoUrl = getConveneAnimation(item.name);
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   // Spine banners disabled app-wide (kept encapsulated here, not removed, for easy re-enable).
   const useSpine = SPINE_BANNERS_ENABLED && isFull && spineId && !spineFailed;
@@ -221,18 +223,19 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
           exists for this item. */}
       <div className="absolute bottom-2 right-2 z-20 flex items-center gap-1">
         <ConvenePullPills kind={isChar ? 'character' : 'weapon'} onPull={(c) => { setPullSim(c); setPullSimId(id => id + 1); }} showTide={isChar ? (calc?.radiant > 0) : (calc?.forging > 0)} />
-        {isChar && (conveneVideoUrl
-          ? (
-            <button
-              onClick={(e) => { e.stopPropagation(); setConveneVideoPlaying(p => !p); }}
-              className="kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center"
-              aria-label={conveneVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name: item.name })}
-            >
-              {conveneVideoPlaying ? <X size={14} /> : <Play size={12} className="fill-current ml-0.5" />}
-            </button>
-          )
-          : <FullSpineViewerButton name={item.name} imageUrl={imgUrl} />
-        )}
+        {conveneVideoUrl ? (
+          <button
+            onClick={(e) => { e.stopPropagation(); setConveneVideoPlaying(p => !p); }}
+            className="kuro-btn w-8 h-8 !p-0 rounded-full flex items-center justify-center"
+            aria-label={conveneVideoPlaying ? t('modals.characterDetail.closeConveneVideoAria') : t('modals.characterDetail.viewConveneVideoAria', { name: item.name })}
+          >
+            {conveneVideoPlaying ? <X size={14} /> : <Play size={12} className="fill-current ml-0.5" />}
+          </button>
+        ) : isChar ? (
+          // Spine fallback preview is character-only — weapons never had one, so an
+          // isChar-but-no-convene-clip weapon (still most of them) shows nothing here.
+          <FullSpineViewerButton name={item.name} imageUrl={imgUrl} />
+        ) : null}
       </div>
       <ConvenePullSimModal
         key={pullSimId}

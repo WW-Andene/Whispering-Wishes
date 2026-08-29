@@ -143,6 +143,8 @@
   "weaponDetail": {
     "weaponDetailsAria": "{{name}} weapon details",
     "closeAria": "Close weapon details",
+    "viewConveneVideoAria": "Play {{name}}'s convene video",
+    "closeConveneVideoAria": "Close convene video",
     "statAtk": "ATK",
     "passive": "Passive",
     "refinementScaling": "Refinement Scaling",

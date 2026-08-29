@@ -143,6 +143,8 @@
   "weaponDetail": {
     "weaponDetailsAria": "Détails de l'arme {{name}}",
     "closeAria": "Fermer les détails de l'arme",
+    "viewConveneVideoAria": "Lire la vidéo de convocation de {{name}}",
+    "closeConveneVideoAria": "Fermer la vidéo de convocation",
     "statAtk": "ATQ",
     "passive": "Passif",
     "refinementScaling": "Scaling du raffinement",
