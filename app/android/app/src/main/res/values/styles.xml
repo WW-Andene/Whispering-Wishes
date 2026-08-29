@@ -85,5 +85,5 @@
          Shortcut (toggles PullBubbleService and finishes immediately, see that Activity's own
          header), so it must render nothing visible at all rather than a normal Activity theme's
          brief flash. -->
-    <style name="AppTheme.Trampoline" parent="Theme.AppCompat.NoDisplay" />
+    <style name="AppTheme.Trampoline" parent="android:Theme.Translucent.NoTitleBar" />
 </resources>
