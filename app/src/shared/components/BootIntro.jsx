@@ -61,7 +61,17 @@ export default function BootIntro() {
 
     const startFadeOut = () => {
       setFadingOut(true);
-      setTimeout(() => setDone(true), 1000);
+      setTimeout(() => {
+        setDone(true);
+        // App.jsx's onboarding modal gates its own render on this — it was
+        // mounting immediately on first launch regardless of the intro
+        // video still playing underneath it. window.__bootIntroDone is set
+        // synchronously (not just via a dispatched event) so a component
+        // that mounts/checks after this point still sees the right value,
+        // not just ones already listening when the event fires.
+        window.__bootIntroDone = true;
+        window.dispatchEvent(new Event('boot-intro-done'));
+      }, 1000);
     };
 
     // Reads settings directly rather than via useVisualSettings/context —
