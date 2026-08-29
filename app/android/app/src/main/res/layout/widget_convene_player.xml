@@ -5,8 +5,11 @@
      animation, nothing else. No banner art/Featured-4★/pull-sim — that's PulseBannerWidget's
      job, kept as a separate widget entirely. Same RemoteViews platform limits apply (see
      PulseBannerWidget.java's file header) — no plain <View>, only supported leaf/layout
-     classes. The ▶️ button launches FloatingVideoOverlayService (shared with
-     PulseBannerWidget's own ▶️), same floating rounded window either way. -->
+     classes. The ▶️ button (and, per ConvenePlayerWidget.java, the full-bleed
+     convene_player_art beneath it — they share the same PendingIntent, since the icon
+     is a small centered circle and this widget's whole purpose is playing this one
+     clip) starts ConvenePlayerPlaybackService's bitmap-frame-swap loop directly on
+     convene_player_art, not FloatingVideoOverlayService's separate floating window. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"

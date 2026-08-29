@@ -88,15 +88,35 @@ public class ConvenePlayerWidget extends AppWidgetProvider {
                 Intent playIntent = new Intent(context, ConvenePlayerPlaybackService.class);
                 playIntent.putExtra(ConvenePlayerPlaybackService.EXTRA_APP_WIDGET_ID, appWidgetId);
                 playIntent.putExtra(ConvenePlayerPlaybackService.EXTRA_VIDEO_URL, entry.conveneUrl);
-                views.setOnClickPendingIntent(R.id.convene_player_play, PendingIntent.getService(
+                PendingIntent playPendingIntent = PendingIntent.getService(
                         context, appWidgetId * 10, playIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                views.setOnClickPendingIntent(R.id.convene_player_play, playPendingIntent);
+                // The ▶️ glyph is only a small 48dp circle centered over the FULL-BLEED art
+                // ImageView beneath it — before this, convene_player_art had its own separate
+                // click target that opened MainActivity, so tapping anywhere on "the video"
+                // OUTSIDE that small circle silently launched the app instead of playing,
+                // while only a precise tap on the tiny centered icon actually worked. Since
+                // this widget's entire purpose is playing that one clip (see this class's file
+                // header), the art itself should be an equally-valid play/stop target, not a
+                // trap door into the app.
+                views.setOnClickPendingIntent(R.id.convene_player_art, playPendingIntent);
             } else {
                 views.setViewVisibility(R.id.convene_player_play, View.GONE);
+                // No clip to play for this entry — fall back to opening the app, same as
+                // tapping any other widget with nothing more specific to do.
+                Intent launchIntent = new Intent(context, MainActivity.class);
+                views.setOnClickPendingIntent(R.id.convene_player_art, PendingIntent.getActivity(
+                        context, appWidgetId * 10 + 2, launchIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
             }
         } else {
             views.setTextViewText(R.id.convene_player_name, context.getString(R.string.app_name));
             views.setViewVisibility(R.id.convene_player_play, View.GONE);
+            Intent launchIntent = new Intent(context, MainActivity.class);
+            views.setOnClickPendingIntent(R.id.convene_player_art, PendingIntent.getActivity(
+                    context, appWidgetId * 10 + 2, launchIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
         }
 
         Intent configureIntent = new Intent(context, ConvenePlayerConfigureActivity.class);
@@ -104,11 +124,6 @@ public class ConvenePlayerWidget extends AppWidgetProvider {
         configureIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         views.setOnClickPendingIntent(R.id.convene_player_settings, PendingIntent.getActivity(
                 context, appWidgetId * 10 + 1, configureIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
-
-        Intent launchIntent = new Intent(context, MainActivity.class);
-        views.setOnClickPendingIntent(R.id.convene_player_art, PendingIntent.getActivity(
-                context, appWidgetId * 10 + 2, launchIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE));
 
         return views;
