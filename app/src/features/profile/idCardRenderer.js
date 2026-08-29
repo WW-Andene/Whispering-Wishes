@@ -175,7 +175,9 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
 
     // Section panel with gold bar label
     const drawPanel = (x,y,w,h,label) => {
-      ctx.fillStyle='rgba(10,14,22,0.55)';rr(x,y,w,h,16);ctx.fill();
+      // Mask opacity matches the build card's own panel mask (characterCardRenderer.js) —
+      // was 0.55, raised to 0.75 for the same reading here.
+      ctx.fillStyle='rgba(10,14,22,0.75)';rr(x,y,w,h,16);ctx.fill();
       ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1.5;rr(x,y,w,h,16);ctx.stroke();
       const ps=ctx.createLinearGradient(x,0,x+w,0);ps.addColorStop(0,'transparent');ps.addColorStop(0.3,'rgba(255,255,255,0.18)');ps.addColorStop(0.5,'rgba(255,255,255,0.3)');ps.addColorStop(0.7,'rgba(255,255,255,0.18)');ps.addColorStop(1,'transparent');
       ctx.fillStyle=ps;ctx.fillRect(x+12,y,w-24,1.5);
@@ -193,18 +195,20 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
 
     // .kuro-stat cell
     const drawStat = (x,y,w,h,val,lab,col,fs) => {
-      ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,w,h,12);ctx.fill();
+      // Mask opacity matches the build card's own stat-cell mask — was 0.8, raised to 0.75.
+      ctx.fillStyle='rgba(10,14,22,0.75)';rr(x,y,w,h,12);ctx.fill();
       ctx.strokeStyle='rgba(255,255,255,0.20)';ctx.lineWidth=1;rr(x,y,w,h,12);ctx.stroke();
       const ss=ctx.createLinearGradient(x,0,x+w,0);ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.40)');ss.addColorStop(1,'transparent');
       ctx.fillStyle=ss;ctx.fillRect(x+6,y,w-12,1.5);
       const f=Math.round((fs||24)*1.1);
       ctx.fillStyle=col;ctx.font=`bold ${f}px monospace`;ctx.textAlign='center';ctx.fillText(val,x+w/2,y+h*0.48);
-      ctx.fillStyle='#9ca3af';ctx.font=`${Math.max(11,Math.round(f*0.5))}px sans-serif`;ctx.fillText(lab,x+w/2,y+h*0.78);ctx.textAlign='left';
+      // Label in white (was grey) — matches the build card's Stats block label fix.
+      ctx.fillStyle='#f1f5f9';ctx.font=`${Math.max(11,Math.round(f*0.5))}px sans-serif`;ctx.fillText(lab,x+w/2,y+h*0.78);ctx.textAlign='left';
     };
 
     // Resonator portrait — collection-panel style: tall card with image + gradient name overlay
     const drawResPortrait = (x,y,cellW,cellH,name,img) => {
-      ctx.fillStyle='rgba(10,14,22,0.9)';rr(x,y,cellW,cellH,9);ctx.fill();
+      ctx.fillStyle='rgba(10,14,22,0.75)';rr(x,y,cellW,cellH,9);ctx.fill();
       ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=1;rr(x,y,cellW,cellH,9);ctx.stroke();
       if(img){
         ctx.save();rr(x+1,y+1,cellW-2,cellH-2,8);ctx.clip();
@@ -268,7 +272,7 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
     const drawTrophy = (x,y,size,t) => {
       const tc=t.color||'#9ca3af';
       // Dark fill base
-      ctx.fillStyle='rgba(10,14,22,0.8)';rr(x,y,size,size,12);ctx.fill();
+      ctx.fillStyle='rgba(10,14,22,0.75)';rr(x,y,size,size,12);ctx.fill();
       // Colored gradient overlay (stronger tint so color is clearly visible)
       const bg2=ctx.createLinearGradient(x,y,x+size,y+size);
       bg2.addColorStop(0,tc+'30');bg2.addColorStop(1,tc+'12');
@@ -328,13 +332,13 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
     // Luck bar
     const drawLuck = (x,y,w) => {
       if(!lr)return 0;
-      rr(x,y,w,12,6);ctx.fillStyle='rgba(10,14,22,0.8)';ctx.fill();
+      rr(x,y,w,12,6);ctx.fillStyle='rgba(10,14,22,0.75)';ctx.fill();
       ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;rr(x,y,w,12,6);ctx.stroke();
       const fw=Math.max(6,Math.min(lr.percentile||50,100)/100*w);
       ctx.save();rr(x,y,w,12,6);ctx.clip();
       const g=ctx.createLinearGradient(x,0,x+w,0);g.addColorStop(0,'#f87171');g.addColorStop(0.5,'#edaf18');g.addColorStop(1,'#34d399');
       ctx.fillStyle=g;rr(x,y,fw,12,6);ctx.fill();ctx.restore();
-      ctx.fillStyle='rgba(10,14,22,0.85)';rr(x+w+9,y-5,105,21,6);ctx.fill();
+      ctx.fillStyle='rgba(10,14,22,0.75)';rr(x+w+9,y-5,105,21,6);ctx.fill();
       ctx.strokeStyle=(lr.color||'#edaf18')+'60';ctx.lineWidth=1;rr(x+w+9,y-5,105,21,6);ctx.stroke();
       ctx.fillStyle=lr.color||'#edaf18';ctx.font='bold 14px monospace';ctx.textAlign='center';ctx.fillText(lr.tier+' '+lr.rating,x+w+61,y+10);ctx.textAlign='left';
       return 27;
@@ -415,7 +419,7 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       bannerStats.forEach((bs,i)=>{
         const sx=bx2+i*(iw+g2);
         // stat cell background
-        ctx.fillStyle='rgba(10,14,22,0.8)';rr(sx,by2,iw,bh2,12);ctx.fill();
+        ctx.fillStyle='rgba(10,14,22,0.75)';rr(sx,by2,iw,bh2,12);ctx.fill();
         ctx.strokeStyle='rgba(255,255,255,0.20)';ctx.lineWidth=1;rr(sx,by2,iw,bh2,12);ctx.stroke();
         const ss=ctx.createLinearGradient(sx,0,sx+iw,0);ss.addColorStop(0,'transparent');ss.addColorStop(0.5,'rgba(255,255,255,0.40)');ss.addColorStop(1,'transparent');
         ctx.fillStyle=ss;ctx.fillRect(sx+6,by2,iw-12,1.5);
