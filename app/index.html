@@ -67,18 +67,31 @@
          is visually seamless — same image, same place, nothing to notice —
          and BootIntro then owns the video/fade sequence from there since
          that needs component state to know when the video has finished. -->
-    <!-- Plain viewport-relative sizing — this static poster only ever
-         exists during the "contained" window state (BootIntro.jsx removes
-         it the instant React mounts, well before onCreate() would ever
-         signal edge-to-edge readiness), so there's no transition for it to
-         survive; see BootIntro.jsx's own file-level comment for the full
-         two-stage rationale. -->
     <img
       id="boot-poster"
       src="./boot-intro/boot-intro-poster.gif"
       alt=""
-      style="position:fixed;inset:0;z-index:9999;width:100%;height:100%;object-fit:cover"
+      style="position:fixed;top:0;left:0;z-index:9999;object-fit:cover"
     />
+    <script>
+      // Sized off window.screen (the physical screen, in CSS px) — a fixed
+      // value, at its final full-screen framing, read once here. NOT
+      // width:100%/height:100% — MainActivity.java documents the WebView's
+      // own content-area actually resizing mid-boot as edge-to-edge insets
+      // settle; a percentage size tracks that resize and visibly reframes
+      // right along with it. Sizing at the final dimensions up front means
+      // this element's own box never recomputes — the WebView's growing
+      // content area just reveals more of the same already-correctly-framed
+      // picture, matching BootIntro.jsx's own reasoning (see there) once
+      // React takes over.
+      (function () {
+        var el = document.getElementById('boot-poster');
+        if (el) {
+          el.style.width = window.screen.width + 'px';
+          el.style.height = window.screen.height + 'px';
+        }
+      })();
+    </script>
     <div id="root" role="main" aria-label="Whispering Wishes application"></div>
     <noscript><p role="alert" style="color:#fff;text-align:center;padding:2rem;font-family:sans-serif;background:#080c14;min-height:100vh;margin:0;display:flex;align-items:center;justify-content:center">Whispering Wishes requires JavaScript to run.</p></noscript>
     <script type="module" src="/src/main.jsx"></script>
