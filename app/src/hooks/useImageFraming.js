@@ -13,7 +13,11 @@ const MIN_ZOOM = 100;
 const MAX_ZOOM = 300;
 
 // Default framing values per character per context (collection-, team-, info-)
-const DEFAULT_IMAGE_FRAMING = Object.freeze({
+// Exported so widgetSync.js can bake a character's own 'collection-<name>' crop into the
+// pull bubble's native banner-picker icons (PullBubbleService.java) — those need a
+// face-centered crop the same way the in-app Collection grid does, but native code has no
+// access to this file's own state/context, only whatever gets synced into SharedPreferences.
+export const DEFAULT_IMAGE_FRAMING = Object.freeze({
   // Collection framing
   'collection-Jiyan': { x: 8, y: -26, zoom: 260 },
   'collection-Calcharo': { x: -2, y: -28, zoom: 230 },

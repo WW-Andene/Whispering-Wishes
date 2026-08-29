@@ -131,6 +131,57 @@ final class WidgetPullSimulator {
         return names;
     }
 
+    // One row for PullBubbleService's banner-picker sub-arc — either a character banner (label
+    // = the character's own name) or a weapon banner (label = the character it's FOR, per
+    // widgetSync.js's buildBannerEntry — the user picks "Qingxiao", not the weapon's own name,
+    // for a weapon-banner row). framing is only meaningful for character art; weapon art
+    // (a banner splash, not a full-body sprite) doesn't need the same face-centered crop.
+    static final class BannerOption {
+        final String label;
+        final String pinName; // the exact name to pass back into roll()'s pinnedName
+        final String artAsset;
+        final float framingZoom, framingX, framingY;
+
+        BannerOption(String label, String pinName, String artAsset, float framingZoom, float framingX, float framingY) {
+            this.label = label;
+            this.pinName = pinName;
+            this.artAsset = artAsset;
+            this.framingZoom = framingZoom;
+            this.framingX = framingX;
+            this.framingY = framingY;
+        }
+    }
+
+    // Every currently-active banner in `category`, with enough to render a picker row
+    // (label+art+framing) — listActiveBannerNames() above only gave PullBubbleService's old
+    // cycle-through-names picker bare names; this full-entry version backs its new
+    // category>list arc UI.
+    static List<BannerOption> listBannerOptions(SharedPreferences prefs, String category) {
+        List<BannerOption> options = new ArrayList<>();
+        String json = prefs.getString("widget_banners_data", null);
+        if (json == null) return options;
+        boolean isWeapon = "weapon".equals(category);
+        try {
+            JSONObject blob = new JSONObject(json);
+            if (blob.optInt("v", -1) != WIDGET_SCHEMA_VERSION) return options;
+            JSONArray arr = blob.optJSONArray(category + "s");
+            if (arr == null) return options;
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject entry = arr.getJSONObject(i);
+                String name = entry.optString("name", null);
+                if (name == null) continue;
+                String label = isWeapon ? entry.optString("forCharacter", name) : name;
+                JSONObject framing = entry.optJSONObject("framing");
+                options.add(new BannerOption(label, name,
+                        entry.isNull("artAsset") ? null : entry.optString("artAsset", null),
+                        framing != null ? (float) framing.optDouble("zoom", 100) : 100f,
+                        framing != null ? (float) framing.optDouble("x", 0) : 0f,
+                        framing != null ? (float) framing.optDouble("y", 0) : 0f));
+            }
+        } catch (Exception ignored) {}
+        return options;
+    }
+
     // Looks up ONE banner entry by exact name inside widget_banners_data's <category>s array
     // (mirrors PulseBannerWidget.findEntry's fallback behavior: a null/no-longer-active name
     // resolves to that array's first entry instead of an empty pull). Returns null only when
@@ -261,6 +312,60 @@ final class WidgetPullSimulator {
                 .putInt(pityKeyPrefix + "pity4", pity4)
                 .putBoolean(pityKeyPrefix + "guaranteed", guaranteed)
                 .putBoolean(pityKeyPrefix + "guaranteed4", guaranteed4)
+                .apply();
+
+        String video = bestRarity >= 5 ? "5star" : bestRarity == 4 ? "4star" : "common";
+        return new PullSimResult(results, video);
+    }
+
+    // "Standard" banner pull — genuinely different math from roll() above, not just another
+    // pinned name: a standard banner has no single "featured" item to rate-up/guarantee toward
+    // at all, every hit at a given rarity is a uniform pick across that whole rarity's pool.
+    // No 50/50, no guarantee/guaranteed4 flags — those only exist BECAUSE a limited banner has
+    // a featured item to win or lose against. Kept as its own pity counter
+    // ("widget_pull_standard_<category>_") entirely separate from roll()'s per-category
+    // counters, matching how the real game's Standard and Character/Weapon Event Convenes
+    // never share pity.
+    static PullSimResult rollStandard(Context context, String category, int count) {
+        boolean isWeapon = "weapon".equals(category);
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+
+        List<String> pool5 = readJsonArray(prefs, isWeapon ? "widget_pull_pool_standard_weapons" : "widget_pull_pool_standard5");
+        List<String> pool4 = readJsonArray(prefs, isWeapon ? "widget_pull_pool_4star_weapons" : "widget_pull_pool_4star_chars");
+        List<String> threeStarWeapons = readJsonArray(prefs, "widget_pull_pool_3star_weapons");
+        String fourStarType = isWeapon ? "weapon" : "character";
+
+        String pityKeyPrefix = "widget_pull_standard_" + category + "_";
+        int pity5 = prefs.getInt(pityKeyPrefix + "pity5", 0);
+        int pity4 = prefs.getInt(pityKeyPrefix + "pity4", 0);
+
+        Random rand = new Random();
+        List<PullResult> results = new ArrayList<>();
+        int bestRarity = 3;
+
+        for (int i = 0; i < count; i++) {
+            pity5++;
+            pity4++;
+            if (rand.nextDouble() < pullRate5(pity5)) {
+                String name = pool5.isEmpty() ? null : pick(pool5, rand);
+                results.add(new PullResult(name, 5, category, true));
+                bestRarity = 5;
+                pity5 = 0;
+                pity4 = 0;
+            } else if (pity4 >= HARD_PITY_4STAR || rand.nextDouble() < FLAT_4STAR_RATE) {
+                String name = pool4.isEmpty() ? null : pick(pool4, rand);
+                results.add(new PullResult(name, 4, fourStarType, false));
+                if (bestRarity < 4) bestRarity = 4;
+                pity4 = 0;
+            } else {
+                String name = threeStarWeapons.isEmpty() ? null : pick(threeStarWeapons, rand);
+                results.add(new PullResult(name, 3, "weapon", false));
+            }
+        }
+
+        prefs.edit()
+                .putInt(pityKeyPrefix + "pity5", pity5)
+                .putInt(pityKeyPrefix + "pity4", pity4)
                 .apply();
 
         String video = bestRarity >= 5 ? "5star" : bestRarity == 4 ? "4star" : "common";

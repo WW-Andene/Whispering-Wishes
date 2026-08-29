@@ -117,6 +117,40 @@ final class WidgetAssetUtils {
         }
     }
 
+    // Decodes a full-body character sprite (DEFAULT_COLLECTION_IMAGES — tall, lots of empty
+    // space above/below the character) and crops it down to a face-centered square icon, using
+    // the same 'collection-<name>' framing (zoom/x/y) widgetSync.js bakes into
+    // widget_banners_data — see its own framingFor() comment for why this uses only the
+    // hardcoded default, not per-user customization. Approximates (doesn't exactly replicate)
+    // the web app's CSS `scale(zoom%) translate(-x%,-y%)` transform: crops a square window of
+    // side (shortestSide / (zoom/100)) out of the source, centered but shifted by x/y percent
+    // of that window's own size, then scales the crop up to targetPx. Good enough for a small
+    // floating-bubble picker icon — not worth chasing pixel-exact CSS transform-order parity for.
+    static Bitmap decodeFramedIcon(Context context, String assetPath, int targetPx, float zoomPct, float xPct, float yPct) {
+        Bitmap src = decodeAsset(context, assetPath, targetPx * 3); // decode larger than target so the crop still has real detail
+        if (src == null) return null;
+        try {
+            int shortSide = Math.min(src.getWidth(), src.getHeight());
+            float zoom = zoomPct <= 0 ? 100f : zoomPct;
+            int cropSide = Math.max(1, Math.min(shortSide, Math.round(shortSide * 100f / zoom)));
+
+            float cx = src.getWidth() / 2f - (xPct / 100f) * (cropSide / 2f);
+            float cy = src.getHeight() / 2f - (yPct / 100f) * (cropSide / 2f);
+            int left = Math.round(cx - cropSide / 2f);
+            int top = Math.round(cy - cropSide / 2f);
+            left = Math.max(0, Math.min(left, src.getWidth() - cropSide));
+            top = Math.max(0, Math.min(top, src.getHeight() - cropSide));
+
+            Bitmap cropped = Bitmap.createBitmap(src, left, top, cropSide, cropSide);
+            if (cropped == src) return Bitmap.createScaledBitmap(cropped, targetPx, targetPx, true);
+            Bitmap scaled = Bitmap.createScaledBitmap(cropped, targetPx, targetPx, true);
+            cropped.recycle();
+            return scaled;
+        } finally {
+            src.recycle();
+        }
+    }
+
     // Android 12+ (S) draws its OWN themed outer widget container/frame on top of whatever this
     // app's own widget_background.xml supplies, clipped to the system's own corner radius
     // (android.R.dimen.system_app_widget_background_radius) — which is a launcher/device value

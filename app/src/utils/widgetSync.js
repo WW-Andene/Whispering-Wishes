@@ -39,9 +39,10 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { Preferences } from '@capacitor/preferences';
-import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt, CONVENE_ANIMATIONS } from '../data/banners.js';
+import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt, CONVENE_ANIMATIONS, CURRENT_BANNERS } from '../data/banners.js';
 import { STANDARD_5STAR_CHARACTERS, ALL_4STAR_RESONATORS } from '../data/characters.js';
 import { WEAPON_DATA } from '../data/weapons.js';
+import { DEFAULT_IMAGE_FRAMING } from '../hooks/useImageFraming.js';
 
 // Bumped whenever the shape of the widget_banners_data payload changes.
 // BannerWidget.java checks this before trusting a blob's fields — an
@@ -69,16 +70,32 @@ export const isNativePlatform = () =>
 // into the app's WebView.
 const stripRelative = (path) => (path || '').replace(/^\.\//, '');
 
+// 'collection-<name>' crop values (zoom/x/y) — the same face-centered crop the in-app
+// Collection grid uses, baked in here so PullBubbleService.java's banner-picker icons can
+// replicate it natively (WidgetAssetUtils.decodeFramedIcon) instead of showing the raw,
+// zoomed-out full-body sprite. Defaults (no framing tuned yet) match useImageFraming.js's own
+// defaultFramingBase. Deliberately the HARDCODED default only, not any per-user customization
+// (that lives in localStorage, which native code can't reach) — a reasonable simplification
+// for a small picker icon.
+function framingFor(name) {
+  const f = DEFAULT_IMAGE_FRAMING[`collection-${name}`];
+  return { x: f?.x ?? 0, y: f?.y ?? 0, zoom: f?.zoom ?? 100 };
+}
+
 // Builds one banner's full render+pull-sim payload. `bannerImage` is the
 // category-wide fallback background (activeBanners.characterBannerImage /
 // .weaponBannerImage) used when an individual item has no imageUrl of its
-// own.
-function buildBannerEntry(item, bannerImage) {
+// own. `isWeapon` adds the weapon-only `forCharacter` field (PullBubbleService's banner-picker
+// labels a weapon banner by the character it's for, e.g. "Qingxiao", not the weapon's own
+// name) and its framing (the character-icon look reused for weapon-list rows too).
+function buildBannerEntry(item, bannerImage, isWeapon) {
   const featured4Names = item.featured4Stars || [];
   return {
     name: item.name,
     title: item.title || item.element || item.type || '',
     artAsset: stripRelative(item.imageUrl || bannerImage || ''),
+    framing: framingFor(isWeapon ? item.forCharacter : item.name),
+    ...(isWeapon ? { forCharacter: item.forCharacter || null } : {}),
     // Display-only preview (max 3 thumbnails, with resolved art) for the
     // widget's own Featured-4★ row.
     featured4Preview: featured4Names.slice(0, 3)
@@ -100,11 +117,15 @@ function buildBannerEntry(item, bannerImage) {
 // each) — BannerWidgetConfigureActivity.java's picker lets the user choose
 // one specific banner per widget instance, and a resized/tall widget shows
 // a second one at once (PulseBannerWidget.onAppWidgetOptionsChanged).
-// Standard banners aren't synced here — they're a rotating roster with no
-// single "featured" item the way a limited character/weapon banner has, so
-// they don't fit this same art+name+featured4 shape without a materially
-// different display; out of scope for now rather than forced into a shape
-// that doesn't fit. Native-only.
+// Standard banners get no per-name entry here — they're a rotating roster
+// with no single "featured" item the way a limited character/weapon banner
+// has, so they don't fit this art+name+featured4 shape at all. What DOES
+// get synced for them is just the plain pool name lists (syncGlobalPullPools'
+// widget_pull_pool_standard5/_standard_weapons) — enough for
+// WidgetPullSimulator.rollStandard()'s own uniform-pick math, and for
+// PullBubbleService's "Standard" banner-picker option, which only ever offers
+// "roll the whole Characters pool" / "roll the whole Weapons pool" as two
+// fixed choices, never an individual name within either. Native-only.
 export async function syncBannerWidget(activeBanners) {
   if (!isNativePlatform()) return;
   try {
@@ -113,8 +134,8 @@ export async function syncBannerWidget(activeBanners) {
 
     const payload = {
       v: WIDGET_SCHEMA_VERSION,
-      characters: characters.map((c) => buildBannerEntry(c, activeBanners?.characterBannerImage)),
-      weapons: weapons.map((w) => buildBannerEntry(w, activeBanners?.weaponBannerImage)),
+      characters: characters.map((c) => buildBannerEntry(c, activeBanners?.characterBannerImage, false)),
+      weapons: weapons.map((w) => buildBannerEntry(w, activeBanners?.weaponBannerImage, true)),
     };
     await Preferences.set({ key: 'widget_banners_data', value: JSON.stringify(payload) });
 
@@ -168,10 +189,15 @@ async function syncGlobalPullPools() {
   const fourStarWeapons = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 4);
   const threeStarWeapons = Object.keys(WEAPON_DATA).filter(n => WEAPON_DATA[n].rarity === 3 && n !== 'Beguiling Melody');
 
+  const standardWeaponNames = (CURRENT_BANNERS.standardWeapons || []).map((w) => w.name);
+
   await Preferences.set({ key: 'widget_pull_pool_standard5', value: JSON.stringify(standard5) });
   await Preferences.set({ key: 'widget_pull_pool_4star_chars', value: JSON.stringify(ALL_4STAR_RESONATORS) });
   await Preferences.set({ key: 'widget_pull_pool_4star_weapons', value: JSON.stringify(fourStarWeapons) });
   await Preferences.set({ key: 'widget_pull_pool_3star_weapons', value: JSON.stringify(threeStarWeapons) });
+  // Standard-weapon-banner equivalent of standard5 above — PullBubbleService's "Standard >
+  // Weapon" pick rolls WidgetPullSimulator.rollStandard('weapon', ...) against this pool.
+  await Preferences.set({ key: 'widget_pull_pool_standard_weapons', value: JSON.stringify(standardWeaponNames) });
 }
 
 // name->asset map covering every name any active banner's pull-sim could

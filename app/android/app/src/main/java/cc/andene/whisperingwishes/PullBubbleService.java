@@ -90,10 +90,25 @@ public class PullBubbleService extends Service {
     private final List<View> subBubbles = new ArrayList<>();
     private final List<View> resultIcons = new ArrayList<>();
     private WindowManager.LayoutParams mainBubbleParams;
+    private ImageView mainBubbleIcon; // kept so pin changes can swap the currency icon in place
     private boolean expanded = false;
-    // -1 = "first active" (the same default a pre-choice roll always used) — cycled by the
-    // banner-picker sub-bubble through WidgetPullSimulator.listActiveBannerNames("character").
-    private int pinnedBannerIndex = -1;
+
+    // Which sub-arc is currently showing — the banner-picker's own top slot navigates through
+    // ROLL -> CATEGORY -> one of the LIST_* arcs (see showSubBubbles' dispatch and each
+    // show*Arc() method). Always reset to ROLL when the arc is freshly opened from the main
+    // bubble (toggleExpanded), never persisted — this is transient UI state, not a setting.
+    private enum ArcMode { ROLL, CATEGORY, LIST_CHARACTER, LIST_WEAPON, LIST_STANDARD }
+    private ArcMode arcMode = ArcMode.ROLL;
+
+    // The current pin — null category = default (first active character banner, the same
+    // behavior a pre-picker roll always had). "character"/"weapon" + a specific pinName rolls
+    // WidgetPullSimulator.roll() against that exact active banner; "standard-character"/
+    // "standard-weapon" (pinName always null then) rolls rollStandard() instead — genuinely
+    // different math, not just another pinned name (see rollStandard's own comment). Only ONE
+    // of these is ever active, by construction (plain fields, not a set) — picking a new one
+    // always replaces whatever was pinned before.
+    private String pinnedCategory;
+    private String pinnedName;
 
     // Drag-tracking state for the main bubble's own touch listener.
     private float touchDownRawX, touchDownRawY;
@@ -170,13 +185,13 @@ public class PullBubbleService extends Service {
         FrameLayout root = new FrameLayout(this);
         root.setBackground(circleDrawable("#33FFFFFF", "#80FFFFFF"));
         clipToCircle(root);
-        Bitmap icon = WidgetAssetUtils.decodeAsset(this, "ui-icons/Currency-Astrite.webp", sizePx);
-        if (icon != null) {
-            ImageView img = new ImageView(this);
-            img.setImageBitmap(icon);
-            img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        }
+        // Radiant Tide (the real character/weapon-banner convene currency) by default, swapped
+        // to Lustrous Tide whenever a Standard pick is pinned — see updateMainBubbleIcon(),
+        // called right below once mainBubbleIcon exists to set the correct one immediately
+        // (a fresh bubble might already have a pin from earlier this session).
+        mainBubbleIcon = new ImageView(this);
+        mainBubbleIcon.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        root.addView(mainBubbleIcon, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         mainBubble = root;
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
@@ -210,6 +225,17 @@ public class PullBubbleService extends Service {
 
         mainBubble.setOnTouchListener(this::onMainBubbleTouch);
         windowManager.addView(mainBubble, mainBubbleParams);
+        updateMainBubbleIcon();
+    }
+
+    // Radiant Tide by default, Lustrous Tide whenever a Standard banner is pinned — the app's
+    // own currency icons for exactly this distinction, not a generic placeholder.
+    private void updateMainBubbleIcon() {
+        if (mainBubbleIcon == null) return;
+        boolean standard = pinnedCategory != null && pinnedCategory.startsWith("standard");
+        String asset = standard ? "ui-icons/Currency-Lustrous-Tide.webp" : "ui-icons/Currency-Radiant-Tide.webp";
+        Bitmap icon = WidgetAssetUtils.decodeAsset(this, asset, mainBubbleParams.width);
+        if (icon != null) mainBubbleIcon.setImageBitmap(icon);
     }
 
     private boolean onMainBubbleTouch(View v, MotionEvent event) {
@@ -265,22 +291,139 @@ public class PullBubbleService extends Service {
         if (expanded) {
             collapseSubBubbles();
         } else {
+            arcMode = ArcMode.ROLL; // always reopen at the top level, never mid-navigation
             showSubBubbles();
         }
         expanded = !expanded;
     }
 
     private void showSubBubbles() {
+        switch (arcMode) {
+            case ROLL: showRollArc(); break;
+            case CATEGORY: showCategoryArc(); break;
+            case LIST_CHARACTER: showBannerListArc("character"); break;
+            case LIST_WEAPON: showBannerListArc("weapon"); break;
+            case LIST_STANDARD: showStandardArc(); break;
+        }
+    }
+
+    // Top level: banner picker (enters CATEGORY) / ×80 / ×10 / ×1 / hide.
+    private void showRollArc() {
         float density = getResources().getDisplayMetrics().density;
         int iconPx = (int) (SUB_BUBBLE_SIZE_DP * density * 0.5f); // icon itself, smaller than the bubble it sits in
         Bitmap resonatorIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Resonator.png", iconPx);
 
-        addSubBubble(null, resonatorIcon, 0, SUB_BUBBLE_ANGLES_DEG[0], getString(R.string.pull_bubble_banner_picker_aria), this::cycleBannerChoice);
+        addSubBubble(null, resonatorIcon, 0, SUB_BUBBLE_ANGLES_DEG[0], getString(R.string.pull_bubble_banner_picker_aria), this::enterCategoryMode);
         addSubBubble(getString(R.string.widget_pull_x80), null, 0, SUB_BUBBLE_ANGLES_DEG[1], null, () -> startRoll(80));
         addSubBubble(getString(R.string.widget_pull_x10), null, 0, SUB_BUBBLE_ANGLES_DEG[2], null, () -> startRoll(10));
         addSubBubble(getString(R.string.widget_pull_x1), null, 0, SUB_BUBBLE_ANGLES_DEG[3], null, () -> startRoll(1));
-        // Real vector arrow, not a "➡️" emoji glyph.
+        addHideButton();
+    }
+
+    private void enterCategoryMode() {
+        collapseSubBubbles();
+        arcMode = ArcMode.CATEGORY;
+        showSubBubbles();
+    }
+
+    // Second level: Characters / Weapon / Standard, replacing ×1/×10/×80 in the same 3 middle
+    // slots — banner-picker's own top slot becomes a back arrow instead of the resonator icon
+    // while navigating any sub-level, hide stays put at the bottom regardless of level.
+    private void showCategoryArc() {
+        addBackButton(() -> enterMode(ArcMode.ROLL));
+        double[] angles = midAngles(3);
+        addSubBubble(getString(R.string.pull_bubble_category_character), null, 0, angles[0], null, () -> enterMode(ArcMode.LIST_CHARACTER));
+        addSubBubble(getString(R.string.pull_bubble_category_weapon), null, 0, angles[1], null, () -> enterMode(ArcMode.LIST_WEAPON));
+        addSubBubble(getString(R.string.pull_bubble_category_standard), null, 0, angles[2], null, () -> enterMode(ArcMode.LIST_STANDARD));
+        addHideButton();
+    }
+
+    private void enterMode(ArcMode mode) {
+        collapseSubBubbles();
+        arcMode = mode;
+        showSubBubbles();
+    }
+
+    // Third level (Characters/Weapon): one row per currently-active banner in that category,
+    // each showing its own art — face-framed for characters (WidgetAssetUtils.decodeFramedIcon,
+    // matching the in-app Collection grid's crop), plain for weapons (their art is already a
+    // banner splash, not a full-body sprite needing that treatment). Labeled by the character's
+    // own name for a character banner, or by the character it's FOR for a weapon banner (per
+    // widgetSync.js's buildBannerEntry — matches how the real game names its weapon banners).
+    //
+    // Reads whatever widget_banners_data currently holds, which is only ever as fresh as the
+    // last time the app itself was open (syncBannerWidget's own trigger) — there's no way for
+    // this floating bubble, running with no app process backing it, to pull fresher banner data
+    // on its own. An empty list here means either no active banner in this category right now,
+    // or the app simply hasn't been opened since one went live.
+    private void showBannerListArc(String category) {
+        addBackButton(() -> enterMode(ArcMode.CATEGORY));
+        List<WidgetPullSimulator.BannerOption> options = WidgetPullSimulator.listBannerOptions(
+                getSharedPreferences(PREFS_NAME, MODE_PRIVATE), category);
+        if (options.isEmpty()) {
+            Toast.makeText(this, getString(R.string.pull_bubble_banner_picker_default), Toast.LENGTH_SHORT).show();
+        } else {
+            float density = getResources().getDisplayMetrics().density;
+            int iconPx = (int) (SUB_BUBBLE_SIZE_DP * density * 0.85f);
+            boolean framed = "character".equals(category);
+            double[] angles = midAngles(options.size());
+            for (int i = 0; i < options.size(); i++) {
+                WidgetPullSimulator.BannerOption opt = options.get(i);
+                Bitmap icon = opt.artAsset == null ? null
+                        : framed ? WidgetAssetUtils.decodeFramedIcon(this, opt.artAsset, iconPx, opt.framingZoom, opt.framingX, opt.framingY)
+                                 : WidgetAssetUtils.decodeAsset(this, opt.artAsset, iconPx);
+                addSubBubble(opt.label, icon, 0, angles[i],
+                        getString(R.string.pull_bubble_pin_aria, opt.label),
+                        () -> pinBanner(category, opt.pinName, opt.label));
+            }
+        }
+        addHideButton();
+    }
+
+    // Third level (Standard): exactly two fixed rows — Characters/Weapon are the WHOLE standard
+    // pool as one unit each (the real game doesn't let you pick an individual name within
+    // Standard the way a limited banner's Character list above does), so picking either pins
+    // directly — there's no further fourth level.
+    private void showStandardArc() {
+        addBackButton(() -> enterMode(ArcMode.CATEGORY));
+        double[] angles = midAngles(2);
+        float density = getResources().getDisplayMetrics().density;
+        int iconPx = (int) (SUB_BUBBLE_SIZE_DP * density * 0.5f);
+        Bitmap resonatorIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Resonator.png", iconPx);
+        Bitmap weaponIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Weapons.webp", iconPx);
+        String charLabel = getString(R.string.pull_bubble_category_character);
+        String weapLabel = getString(R.string.pull_bubble_category_weapon);
+        addSubBubble(null, resonatorIcon, 0, angles[0], charLabel, () -> pinBanner("standard-character", null, charLabel));
+        addSubBubble(null, weaponIcon, 0, angles[1], weapLabel, () -> pinBanner("standard-weapon", null, weapLabel));
+        addHideButton();
+    }
+
+    // Evenly spaces `count` items strictly between the top (90°, reserved for the back/picker
+    // button) and bottom (270°, reserved for hide) — e.g. count=3 gives 135/180/225, exactly
+    // the old fixed ×80/×10/×1 slots; count=2 gives 120/240; any count fits the same arc.
+    private double[] midAngles(int count) {
+        double[] angles = new double[count];
+        for (int i = 0; i < count; i++) angles[i] = 90 + (i + 1) * (180.0 / (count + 1));
+        return angles;
+    }
+
+    private void addBackButton(Runnable action) {
+        addSubBubble(null, null, R.drawable.ic_arrow_back, SUB_BUBBLE_ANGLES_DEG[0], getString(R.string.pull_bubble_back_aria), action);
+    }
+
+    private void addHideButton() {
         addSubBubble(null, null, R.drawable.ic_arrow_hide, SUB_BUBBLE_ANGLES_DEG[4], getString(R.string.pull_bubble_hide_aria), this::hideBubble);
+    }
+
+    // Commits a pin (specific banner, or a whole Standard pool) and returns to the normal roll
+    // arc so the user can immediately tap ×1/×10/×80 against it — only one pin is ever active,
+    // by construction (plain fields get overwritten, never added to a set).
+    private void pinBanner(String category, String name, String label) {
+        pinnedCategory = category;
+        pinnedName = name;
+        updateMainBubbleIcon();
+        Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, label), Toast.LENGTH_SHORT).show();
+        enterMode(ArcMode.ROLL);
     }
 
     // Collapses the arc and rolls — shared by the ×1/×10/×80 sub-bubbles, split out of their
@@ -379,29 +522,6 @@ public class PullBubbleService extends Service {
             positionSubBubbleArc(tag.params, tag.angleDeg, mainBubbleParams.width, tag.params.width);
             windowManager.updateViewLayout(v, tag.params);
         }
-    }
-
-    // Cycles through every currently-active character banner (tap to advance, wrapping back to
-    // "default"/first-active after the last one) — WidgetPullSimulator.roll's own pinnedName
-    // parameter already supports exactly this pinning, this just picks which name to pass it.
-    // Stays selected across pulls until cycled again or the bubble is torn down; not persisted
-    // across restarts, same as the bubble's own position.
-    private void cycleBannerChoice() {
-        List<String> names = WidgetPullSimulator.listActiveBannerNames(getSharedPreferences(PREFS_NAME, MODE_PRIVATE), "character");
-        if (names.isEmpty()) {
-            Toast.makeText(this, getString(R.string.pull_bubble_banner_picker_default), Toast.LENGTH_SHORT).show();
-            return;
-        }
-        pinnedBannerIndex++;
-        if (pinnedBannerIndex >= names.size()) pinnedBannerIndex = -1;
-        String label = pinnedBannerIndex < 0 ? getString(R.string.pull_bubble_banner_picker_default) : names.get(pinnedBannerIndex);
-        Toast.makeText(this, label, Toast.LENGTH_SHORT).show();
-    }
-
-    private String currentPinnedBannerName() {
-        if (pinnedBannerIndex < 0) return null;
-        List<String> names = WidgetPullSimulator.listActiveBannerNames(getSharedPreferences(PREFS_NAME, MODE_PRIVATE), "character");
-        return pinnedBannerIndex < names.size() ? names.get(pinnedBannerIndex) : null;
     }
 
     private void collapseSubBubbles() {
@@ -546,9 +666,16 @@ public class PullBubbleService extends Service {
     private void rollAndPlay(int count) {
         WidgetPullSimulator.PullSimResult sim;
         try {
-            // Pinned to whichever banner the resonator-icon sub-bubble last cycled to, or the
-            // category's first active banner (pinnedBannerIndex == -1) by default.
-            sim = WidgetPullSimulator.roll(this, "character", currentPinnedBannerName(), count);
+            if (pinnedCategory != null && pinnedCategory.startsWith("standard")) {
+                String subCategory = "standard-weapon".equals(pinnedCategory) ? "weapon" : "character";
+                sim = WidgetPullSimulator.rollStandard(this, subCategory, count);
+            } else {
+                // "weapon" pin rolls that category's pinned banner; anything else (null =
+                // default, or "character") rolls the character category — pinnedName is null
+                // for the default case, matching the pre-picker behavior exactly.
+                String category = "weapon".equals(pinnedCategory) ? "weapon" : "character";
+                sim = WidgetPullSimulator.roll(this, category, pinnedName, count);
+            }
         } catch (Throwable t) {
             Log.w(TAG, "Pull roll failed", t);
             return;

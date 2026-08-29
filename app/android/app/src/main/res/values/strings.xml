@@ -17,7 +17,13 @@
     <string name="widget_pull_x10">×10</string>
     <string name="widget_pull_x80">×80</string>
     <string name="pull_bubble_banner_picker_aria">Choose which banner to pull from</string>
-    <string name="pull_bubble_banner_picker_default">Default banner</string>
+    <string name="pull_bubble_banner_picker_default">No active banners — open the app to refresh</string>
+    <string name="pull_bubble_category_character">Characters</string>
+    <string name="pull_bubble_category_weapon">Weapon</string>
+    <string name="pull_bubble_category_standard">Standard</string>
+    <string name="pull_bubble_pin_aria">Pull from %1$s\'s banner</string>
+    <string name="pull_bubble_pinned_toast">Pinned to %1$s</string>
+    <string name="pull_bubble_back_aria">Back</string>
     <string name="pull_bubble_hide_aria">Hide the pull bubble (tap the small tab to bring it back)</string>
     <string name="pull_bubble_restore_aria">Show the pull bubble</string>
     <string name="pull_bubble_notification_channel_name">Pull Bubble</string>
