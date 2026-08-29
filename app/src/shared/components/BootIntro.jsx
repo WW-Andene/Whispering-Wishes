@@ -128,17 +128,33 @@ export default function BootIntro() {
   // reframed in the first place — and two independently-decoding <video>
   // elements playing the "same" source could not be guaranteed to stay
   // frame-aligned the way two <img> crops of one static picture can.
-  const barBoxStyle = { position: 'fixed', top: 0, left: 0, width: screenSize.w, height: statusBarPx, overflow: 'hidden', zIndex: 9999 };
-  const pageBoxStyle = { position: 'fixed', top: statusBarPx, left: 0, width: screenSize.w, height: screenSize.h - statusBarPx, overflow: 'hidden', zIndex: 9999 };
+  // zIndex 2147483647 (max signed 32-bit int, the practical CSS ceiling),
+  // not 9999 — PWAProvider's offline banner (and anything else in the app
+  // reaching for a "big enough" number) also used z-[9999], and since it
+  // mounts later in the DOM than this component (main.jsx renders
+  // <BootIntro/> before <App/>), an equal z-index tie is broken by DOM
+  // order in the *later* element's favor — so that banner could paint on
+  // top of this boot overlay, letting the app underneath visibly show
+  // through the "still playing" video. Matches index.html's static poster,
+  // which had the same fix applied for the same reason.
+  const OVERLAY_Z = 2147483647;
+  const barBoxStyle = { position: 'fixed', top: 0, left: 0, width: screenSize.w, height: statusBarPx, overflow: 'hidden', zIndex: OVERLAY_Z };
+  const pageBoxStyle = { position: 'fixed', top: statusBarPx, left: 0, width: screenSize.w, height: screenSize.h - statusBarPx, overflow: 'hidden', zIndex: OVERLAY_Z };
   const barImgOffset = { position: 'absolute', top: 0, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover' };
   const pageImgOffset = { position: 'absolute', top: -statusBarPx, left: 0, width: screenSize.w, height: screenSize.h, objectFit: 'cover' };
   const posterOpacity = { opacity: canPlay ? 0 : 1, transition: 'opacity 0.2s ease-out' };
+  // DIAGNOSTIC: green overlay (mix-blend-mode:multiply) marking THIS
+  // React-rendered poster, distinguishable on-device from index.html's own
+  // static poster (tinted red) — so which element is showing during a
+  // reframe is visible at a glance. Remove both tints once confirmed fixed.
+  const tintOverlay = { position: 'absolute', inset: 0, background: 'lime', mixBlendMode: 'multiply', pointerEvents: 'none' };
 
   return (
     <>
       {/* Bar piece — exactly the status bar's height, fixed, never resized. */}
       <div aria-hidden="true" style={{ ...barBoxStyle, background: '#080c14', opacity: fadingOut ? 0 : 1, transition: 'opacity 1s ease-out', pointerEvents: 'none' }}>
         <img src="/boot-intro/boot-intro-poster.gif" alt="" style={{ ...barImgOffset, ...posterOpacity }} />
+        <div style={tintOverlay} />
       </div>
       {/* Page piece — everything below the bar, fixed, never resized. */}
       <div
@@ -152,6 +168,7 @@ export default function BootIntro() {
         }}
       >
         <img src="/boot-intro/boot-intro-poster.gif" alt="" style={{ ...pageImgOffset, ...posterOpacity }} />
+        <div style={tintOverlay} />
       </div>
       {/* Video — a single full-screen layer, a sibling of both poster
           pieces rather than nested in either (not split — see the
@@ -171,7 +188,7 @@ export default function BootIntro() {
           left: 0,
           width: screenSize.w,
           height: screenSize.h,
-          zIndex: 9999,
+          zIndex: OVERLAY_Z,
           objectFit: 'cover',
           opacity: canPlay ? (fadingOut ? 0 : 1) : 0,
           transition: canPlay ? 'opacity 1s ease-out' : 'opacity 0.2s ease-out',
