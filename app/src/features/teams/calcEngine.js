@@ -60,10 +60,16 @@ export const ER_THRESHOLD_HEALER = 140;    // ER threshold for 175-cost healers
 // "Mainstats" (fetched 2026-08-25). DEF% is deliberately rolled higher than ATK%/HP% at every
 // tier to compensate for it being the weaker stat, and 1-cost HP% is rolled higher than its own
 // ATK%/DEF% — both real, confirmed asymmetries, not typos.
+// NOTE: Energy Regen is a valid main stat ONLY on 3-cost echoes — 4-cost (Overlord/Calamity)
+// echoes never roll it, so it's deliberately absent from the 4-cost table below. Flat ATK (3-cost)
+// and flat HP (1-cost) ARE real main-stat rolls too (unlike their % counterparts they need the
+// wearer's own base stat to convert into a %-of-base contribution — see the flat-mainstat handling
+// in applyEchoStats/calcTeamStats.js, which mirrors the flat-SUBSTAT conversion already used
+// there). Flat ATK/DEF are NOT valid 1-cost main stats (only flat HP is).
 export const ECHO_MAIN_STAT_VALUES = {
-  4: { 'ATK%': 33, 'HP%': 33, 'DEF%': 41.5, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26, 'Energy Regen': 32 },
-  3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 38, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32 },
-  1: { 'ATK%': 18, 'HP%': 22.8, 'DEF%': 18 },
+  4: { 'ATK%': 33, 'HP%': 33, 'DEF%': 41.5, 'Crit Rate': 22, 'Crit DMG': 44, 'Healing Bonus': 26 },
+  3: { 'ATK%': 30, 'HP%': 30, 'DEF%': 38, 'Glacio DMG': 30, 'Fusion DMG': 30, 'Electro DMG': 30, 'Aero DMG': 30, 'Spectro DMG': 30, 'Havoc DMG': 30, 'Energy Regen': 32, 'ATK': 100 },
+  1: { 'ATK%': 18, 'HP%': 22.8, 'DEF%': 18, 'HP': 2280 },
 };
 
 // Echo substat values — probability-weighted average of each stat's real roll grades, using
@@ -279,14 +285,16 @@ export function applyFullEchoSet(stats, echoSet, echoSet2, element, scaling) {
 // convention used elsewhere in this file for off-scaling *team* ATK% buffs (those raise the
 // character's actual ATK stat, which can still feed unrelated mechanics; a mismatched flat
 // substat conversion has no such secondary use, so partial credit isn't warranted here).
-function flatSubToPct(sub, scaling, baseStats, grade) {
-  if (!baseStats) return 0;
-  const val = getSubstatGradeValue(sub, grade);
-  if (!val) return 0;
+// Shared by both flat substats and the flat mainstat (echoes can roll flat ATK/HP/DEF as either).
+function flatToPct(sub, scaling, baseStats, val) {
+  if (!baseStats || !val) return 0;
   if (sub === 'ATK' && scaling === 'ATK' && baseStats.atk) return (val / baseStats.atk) * 100;
   if (sub === 'HP' && scaling === 'HP' && baseStats.hp) return (val / baseStats.hp) * 100;
   if (sub === 'DEF' && scaling === 'DEF' && baseStats.def) return (val / baseStats.def) * 100;
   return 0;
+}
+function flatSubToPct(sub, scaling, baseStats, grade) {
+  return flatToPct(sub, scaling, baseStats, getSubstatGradeValue(sub, grade));
 }
 
 // ── Apply echo main stats and substats to accumulator ──
@@ -306,7 +314,13 @@ export function applyEchoStats(stats, echoes, element, scaling, baseStats) {
     const cost = i === 0 ? 4 : i < 3 ? 3 : 1;
     if (echo.mainStat) {
       const val = ECHO_MAIN_STAT_VALUES[cost]?.[echo.mainStat] || 0;
-      if (echo.mainStat === scalingStat) stats.atkPct += val;
+      if (echo.mainStat === 'ATK' || echo.mainStat === 'HP' || echo.mainStat === 'DEF') {
+        // Flat ATK (3-cost) / flat HP (1-cost) main stat — same %-of-base conversion as a flat
+        // substat (see flatToPct above): full credit only when it matches the wearer's own
+        // scaling stat, 0 otherwise.
+        stats.atkPct += flatToPct(echo.mainStat, scaling, baseStats, val);
+      }
+      else if (echo.mainStat === scalingStat) stats.atkPct += val;
       else if (echo.mainStat === 'Crit Rate') stats.cr += val;
       else if (echo.mainStat === 'Crit DMG') stats.cd += val;
       else if (echo.mainStat === elDmgKey) stats.elemDmg += val;

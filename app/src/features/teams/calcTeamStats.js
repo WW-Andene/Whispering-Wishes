@@ -634,7 +634,15 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         const cost = i === 0 ? 4 : i < 3 ? 3 : 1;
         if (echo.mainStat) {
           const val = mainStatVals[cost]?.[echo.mainStat] || 0;
-          applyStat(echo.mainStat, val);
+          if (echo.mainStat === 'ATK' || echo.mainStat === 'HP' || echo.mainStat === 'DEF') {
+            // Flat ATK (3-cost) / flat HP (1-cost) main stat — same %-of-base conversion as a flat
+            // substat below, same reasoning (calcEngine.js's flatToPct): full credit only when it
+            // matches the main DPS's own scaling stat.
+            const baseForSub = echo.mainStat === 'ATK' ? mainDps.totalBaseAtk : echo.mainStat === 'HP' ? mainDps.d.baseHp : mainDps.d.baseDef;
+            if (val && echo.mainStat === mainDps.scaling && baseForSub) atkPct += (val / baseForSub) * 100;
+          } else {
+            applyStat(echo.mainStat, val);
+          }
         }
         // Same duplicate-substat guard as calcEngine.js's applyEchoStats (a real echo can never
         // carry the same substat type twice or more than 5 total) -- this block hand-duplicates

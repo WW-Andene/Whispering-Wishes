@@ -246,11 +246,15 @@ export default function EchoSelector({
             const costNum = slotIdx === 0 ? 4 : slotIdx < 3 ? 3 : 1;
             const costColor = costNum === 4 ? 'yellow' : costNum === 3 ? 'purple' : 'cyan';
             const echoData = ECHO_DATA[echoName];
+            // Per-cost main stat options — Energy Regen is a 3-cost-only main stat (never rolls on
+            // 4-cost), and only flat ATK (3-cost) / flat HP (1-cost) are real flat-stat main stat
+            // rolls; flat ATK/DEF are NOT valid on 1-cost echoes (wutheringwaves.fandom.com/wiki/
+            // Echo/Stats § "Mainstats").
             const mainStatOptions = costNum === 4
-              ? ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus', 'Energy Regen']
+              ? ['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Healing Bonus']
               : costNum === 3
-              ? ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen']
-              : ['ATK%', 'HP%', 'DEF%', 'ATK', 'HP', 'DEF'];
+              ? ['ATK%', 'HP%', 'DEF%', 'Glacio DMG', 'Fusion DMG', 'Electro DMG', 'Aero DMG', 'Spectro DMG', 'Havoc DMG', 'Energy Regen', 'ATK']
+              : ['ATK%', 'HP%', 'DEF%', 'HP'];
             const substatOptions = ['ATK', 'ATK%', 'HP', 'HP%', 'DEF', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen', 'Basic ATK DMG', 'Heavy ATK DMG', 'Resonance Skill DMG', 'Resonance Liberation DMG'];
             // Recommended stats based on character role/element
             const cd = CHARACTER_DATA[charName];

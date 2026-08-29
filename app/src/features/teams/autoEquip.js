@@ -123,14 +123,17 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
   const scaling = d.statScaling || 'ATK';
   const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
   const elDmgKey = d.element ? d.element.charAt(0).toUpperCase() + d.element.slice(1).toLowerCase() + ' DMG' : '';
+  // Energy Regen is a 3-cost-ONLY main stat — 4-cost (Overlord/Calamity) echoes never roll it
+  // (wutheringwaves.fandom.com/wiki/Echo/Stats § "Mainstats"), so the 4-cost branches below fall
+  // back to Crit Rate / Healing Bonus instead of an ER roll that can't actually exist.
   const getMainStat = (cost) => {
     if (preset === 'er') {
-      if (cost === 4) return 'Energy Regen';
+      if (cost === 4) return 'Crit Rate';
       if (cost === 3) return 'Energy Regen';
       return scalingStat;
     }
     if (preset === 'support') {
-      if (cost === 4) return isHealerRole(d.role) ? 'Healing Bonus' : 'Energy Regen';
+      if (cost === 4) return isHealerRole(d.role) ? 'Healing Bonus' : 'Crit Rate';
       if (cost === 3) return elDmgKey || scalingStat;
       return scaling === 'HP' ? 'HP%' : scalingStat;
     }
