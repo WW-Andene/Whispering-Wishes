@@ -937,14 +937,14 @@ function ProfileTab({
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                               <span className="absolute bottom-0.5 left-1 text-white text-sm font-medium drop-shadow-lg">{a.name}</span>
                               <div className="absolute top-0.5 left-0.5 text-2xs bg-black/70 text-cyan-300 px-1 py-0.5 rounded">VIDEO</div>
-                              {/* Wallpaper crown moved to the right (top-0.5 left-0.5 would collide
-                                  with the VIDEO badge above) — the still poster frame is what
-                                  actually gets applied, same as everywhere else. */}
+                              {/* Same top-right corner as every other crown (wallpaperCrownStyle) —
+                                  the VIDEO badge lives at top-left, so there's no collision to
+                                  dodge; a stale left-shift here used to push this one off-corner. */}
                               {!isNativePlatformForSettings() ? null : (
                                 <button
                                   onClick={(e) => applyAnimatedWallpaper(e, a)}
-                                  className="absolute top-0.5 z-10 flex items-center justify-center bg-black/70 text-gray-300 hover:bg-yellow-500/30 hover:text-yellow-300"
-                                  style={{ right: 'calc(var(--size-icon-btn) + 4px)', width: 'var(--size-icon-btn)', height: 'var(--size-icon-btn)', minHeight: 'var(--size-icon-btn)', borderRadius: 'var(--radius-sm)', padding: 0 }}
+                                  className="absolute z-10 flex items-center justify-center bg-black/70 text-gray-300 hover:bg-yellow-500/30 hover:text-yellow-300"
+                                  style={wallpaperCrownStyle}
                                   title={t('profile.display.setWallpaper')}
                                   aria-label={t('profile.display.setWallpaperAria')}
                                 >
