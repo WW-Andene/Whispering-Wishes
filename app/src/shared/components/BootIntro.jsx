@@ -17,6 +17,17 @@ export default function BootIntro() {
   const [canPlay, setCanPlay] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const [done, setDone] = useState(false);
+  // Read once, synchronously, on mount — not derived from CSS percentages.
+  // MainActivity.java documents the WebView's own content-area SIZE briefly
+  // changing mid-boot as edge-to-edge insets settle; width:100%/height:100%
+  // is relative to the CSS layout viewport, which resizes right along with
+  // that content area, so the poster/video's own box was recomputing (and
+  // visibly reframing) at the same moment. window.screen.width/height
+  // reflect the physical device screen in CSS px, which doesn't change as
+  // insets settle, so sizing against it directly skips the reframe instead
+  // of chasing its timing. Matches index.html's #boot-poster, which does
+  // the same thing before React ever mounts.
+  const [screenSize] = useState(() => ({ w: window.screen.width, h: window.screen.height }));
 
   useEffect(() => {
     document.getElementById('boot-poster')?.remove();
@@ -81,7 +92,10 @@ export default function BootIntro() {
       aria-hidden="true"
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 0,
+        left: 0,
+        width: screenSize.w,
+        height: screenSize.h,
         zIndex: 9999,
         background: '#080c14',
         opacity: fadingOut ? 0 : 1,
@@ -94,9 +108,10 @@ export default function BootIntro() {
         alt=""
         style={{
           position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
+          top: 0,
+          left: 0,
+          width: screenSize.w,
+          height: screenSize.h,
           objectFit: 'cover',
           opacity: canPlay ? 0 : 1,
           transition: 'opacity 0.2s ease-out',
@@ -110,9 +125,10 @@ export default function BootIntro() {
         preload="auto"
         style={{
           position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
+          top: 0,
+          left: 0,
+          width: screenSize.w,
+          height: screenSize.h,
           objectFit: 'cover',
           opacity: canPlay ? 1 : 0,
           transition: 'opacity 0.2s ease-out',
