@@ -58,9 +58,18 @@ public class ConvenePlayerPlaybackService extends Service {
     private static final int TARGET_FPS = 30;
     private static final long FRAME_INTERVAL_MS = 1000L / TARGET_FPS;
     // Ceiling on decoded frames — this extracts everything before playback starts, it
-    // doesn't stream. 300 frames = 10s of clip at 30fps, comfortably covers a full convene
-    // clip (typically a few seconds) without an unbounded decode on a malformed/long source.
-    private static final int MAX_FRAMES = 300;
+    // doesn't stream. 90 frames = 3s of clip at 30fps; lowered from an earlier 300 (10s)
+    // once real devices showed decode taking close to a full MINUTE before ever falling back
+    // to fullscreen — MediaMetadataRetriever.getFrameAtTime() is a full seek+decode per call,
+    // not a cheap operation, and 300 of them back-to-back is genuinely slow on real hardware.
+    // DECODE_BUDGET_MS below is the actual hard cap now; this is just a secondary ceiling.
+    private static final int MAX_FRAMES = 90;
+    // Hard wall-clock cap on the frame-extraction loop — breaks out and plays whatever's been
+    // decoded SO FAR (still a real, if shorter, loop) rather than grinding through the rest of
+    // MAX_FRAMES. Combined with the download step's own 10s/15s connect/read timeouts, this
+    // bounds worst-case time-to-first-play to well under the ~60s users were actually seeing,
+    // instead of only bailing to the fullscreen fallback after nearly a minute of silence.
+    private static final long DECODE_BUDGET_MS = 6000;
     // How long after a loop starts before the ▶️ icon hides itself.
     private static final long PLAY_ICON_HIDE_DELAY_MS = 3000;
 
@@ -236,7 +245,13 @@ public class ConvenePlayerPlaybackService extends Service {
             // playback starts, so the widget would look rounded only while idle.
             float radiusPx = WidgetAssetUtils.widgetCornerRadiusPx(this);
             List<Bitmap> frames = new ArrayList<>(frameCount);
+            long decodeDeadline = System.currentTimeMillis() + DECODE_BUDGET_MS;
             for (int i = 0; i < frameCount; i++) {
+                // Bail out with whatever's been decoded so far rather than grinding through
+                // the rest of frameCount — a shorter-but-real loop beats forcing the caller to
+                // wait out the full budget on every single play, and beats throwing away
+                // everything just because the tail end ran long.
+                if (System.currentTimeMillis() > decodeDeadline) break;
                 long timeUs = (durationMs * i / frameCount) * 1000L;
                 Bitmap raw = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
                 if (raw == null) continue;
