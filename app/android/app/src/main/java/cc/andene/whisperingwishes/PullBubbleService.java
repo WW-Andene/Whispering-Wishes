@@ -31,7 +31,9 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // Chat-heads-style persistent floating bubble — replaces PulseBannerWidget's old ×1/×10
 // pull-sim pills entirely (requested explicitly in place of them). Once toggled on from the
@@ -411,8 +413,21 @@ public class PullBubbleService extends Service {
         addSubBubble(null, null, R.drawable.ic_arrow_back, SUB_BUBBLE_ANGLES_DEG[0], getString(R.string.pull_bubble_back_aria), action);
     }
 
+    // Points OUTWARD toward whichever horizontal screen edge the bubble is actually nearest —
+    // reuses ic_arrow_back's chevron (which points left by default) rotated 180° when the
+    // bubble sits on the right half of the screen, instead of ic_arrow_hide's old fixed
+    // chevron-down that ignored where the bubble actually was.
     private void addHideButton() {
-        addSubBubble(null, null, R.drawable.ic_arrow_hide, SUB_BUBBLE_ANGLES_DEG[4], getString(R.string.pull_bubble_hide_aria), this::hideBubble);
+        float rotation = isNearRightEdge() ? 180f : 0f;
+        addSubBubble(null, null, R.drawable.ic_arrow_back, rotation, SUB_BUBBLE_ANGLES_DEG[4], getString(R.string.pull_bubble_hide_aria), this::hideBubble);
+    }
+
+    // Nearest horizontal screen edge to the main bubble's current position — drives both the
+    // hide button's outward rotation and the restore tab's inward (opposite) one.
+    private boolean isNearRightEdge() {
+        android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
+        int centerX = mainBubbleParams.x + mainBubbleParams.width / 2;
+        return centerX >= dm.widthPixels / 2;
     }
 
     // Commits a pin (specific banner, or a whole Standard pool) and returns to the normal roll
@@ -439,6 +454,14 @@ public class PullBubbleService extends Service {
     // 0 = none) should be given; checked in that priority order. Passing null for `aria` is
     // fine too — content descriptions are optional.
     private void addSubBubble(String label, Bitmap icon, int iconRes, double angleDeg, String aria, Runnable onTap) {
+        addSubBubble(label, icon, iconRes, 0f, angleDeg, aria, onTap);
+    }
+
+    // iconRotationDeg only applies to the iconRes (vector drawable) branch — used to point a
+    // shared chevron drawable toward whichever screen edge is actually relevant (hide button /
+    // restore tab, see addHideButton/showHiddenTab) instead of needing a separate drawable per
+    // direction.
+    private void addSubBubble(String label, Bitmap icon, int iconRes, float iconRotationDeg, double angleDeg, String aria, Runnable onTap) {
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (SUB_BUBBLE_SIZE_DP * density);
 
@@ -456,6 +479,7 @@ public class PullBubbleService extends Service {
             int pad = (int) (10 * density);
             img.setPadding(pad, pad, pad, pad);
             img.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            img.setRotation(iconRotationDeg);
             root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         } else {
             TextView text = new TextView(this);
@@ -559,10 +583,15 @@ public class PullBubbleService extends Service {
         FrameLayout root = new FrameLayout(this);
         root.setBackground(circleDrawable("#40FFFFFF", "#80FFFFFF"));
         clipToCircle(root);
-        TextView arrow = new TextView(this);
-        arrow.setText("⬅️");
-        arrow.setTextSize(12);
-        arrow.setGravity(Gravity.CENTER);
+        // Same shared chevron drawable as the hide sub-bubble, matching its visual style
+        // (bg circle etc.) instead of a fixed-direction emoji glyph — rotated to point INWARD,
+        // back toward center, the opposite of the hide button's own outward rotation.
+        ImageView arrow = new ImageView(this);
+        arrow.setImageResource(R.drawable.ic_arrow_back);
+        int arrowPad = (int) (6 * density);
+        arrow.setPadding(arrowPad, arrowPad, arrowPad, arrowPad);
+        arrow.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        arrow.setRotation(isNearRightEdge() ? 0f : 180f);
         root.addView(arrow, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         root.setContentDescription(getString(R.string.pull_bubble_restore_aria));
 
@@ -664,6 +693,10 @@ public class PullBubbleService extends Service {
     private static final long WAVE_STAGGER_MS = 220; // pacing for an item with no video of its own
 
     private void rollAndPlay(int count) {
+        // A fresh roll means the just-settled tiles are no longer "just settled" — drop any
+        // pending auto-archive timer from the PREVIOUS roll so rapid re-rolls don't stack
+        // multiple timers that all fire later.
+        handler.removeCallbacks(autoArchiveRunnable);
         WidgetPullSimulator.PullSimResult sim;
         try {
             if (pinnedCategory != null && pinnedCategory.startsWith("standard")) {
@@ -755,6 +788,10 @@ public class PullBubbleService extends Service {
         if (index >= results.size()) {
             rolling = false;
             if (mainBubble != null) mainBubble.setVisibility(View.VISIBLE); // see rollAndPlay's own comment
+            // Auto-archive whatever's still sitting out as individual tiles 5s after the whole
+            // reveal sequence settles, unless a new roll starts first (cancelled at the top of
+            // rollAndPlay).
+            handler.postDelayed(autoArchiveRunnable, 5000);
             return;
         }
         WidgetPullSimulator.PullResult result = results.get(index);
@@ -794,11 +831,20 @@ public class PullBubbleService extends Service {
     // within budget. allPulledResults is the permanent record (never capped) backing the
     // pocket's own "view all" panel.
     private static final int MAX_TOTAL_TILE_WINDOWS = 9;
+    // Extra outer padding (a PerfectSuite (Secondary) value) added around the pocket's own
+    // circular icon so its corner badge has room to render fully outside the circle's clip
+    // instead of being cut off by it — see createPocket()'s own header comment.
+    private static final int POCKET_BADGE_OVERFLOW_DP = 12;
     private final List<WidgetPullSimulator.PullResult> allPulledResults = new ArrayList<>();
     private View pocketIcon;
     private TextView pocketBadge;
-    private int archivedCount;
     private View pocketPanel;
+    // Persistent (non-one-shot) halo paired to each still-visible 4★/5★ result tile — kept
+    // separate from addGlowBurst's one-shot arrival flash, which stays unchanged. A 5★'s halo
+    // also gets an entry in tileGlowAnimators so its infinite pulse can be cancelled on cleanup.
+    private final Map<View, View> tileGlows = new HashMap<>();
+    private final Map<View, android.animation.ObjectAnimator> tileGlowAnimators = new HashMap<>();
+    private final Runnable autoArchiveRunnable = this::autoArchiveAllTiles;
 
     private void addResultIcon(WidgetPullSimulator.PullResult result, JSONObject assetMap, int revealIndexUnused) {
         allPulledResults.add(result);
@@ -814,13 +860,8 @@ public class PullBubbleService extends Service {
 
         int individualCap = (pocketIcon != null) ? MAX_TOTAL_TILE_WINDOWS - 1 : MAX_TOTAL_TILE_WINDOWS;
         while (resultIcons.size() > individualCap) {
-            if (pocketIcon == null) {
-                createPocket(sizePx);
-                individualCap = MAX_TOTAL_TILE_WINDOWS - 1;
-            }
-            View oldest = resultIcons.remove(0);
-            try { windowManager.removeView(oldest); } catch (Exception ignored) {}
-            archivedCount++;
+            evictTileToPocket(resultIcons.get(0), sizePx);
+            individualCap = MAX_TOTAL_TILE_WINDOWS - 1;
         }
         if (pocketIcon != null) updatePocketBadge();
         renumberResultSlots(sizePx);
@@ -828,7 +869,10 @@ public class PullBubbleService extends Service {
         // Entrance pop + glow burst AFTER renumbering, so both use the tile's real final slot
         // (not the spawn-point placeholder position it briefly held above).
         WindowManager.LayoutParams finalParams = (WindowManager.LayoutParams) newTile.getTag();
-        if (glow) addGlowBurst(finalParams, sizePx, rarityHex(result.rarity));
+        if (glow) {
+            addGlowBurst(finalParams, sizePx, rarityHex(result.rarity));
+            addPersistentHalo(newTile, finalParams, sizePx, result.rarity);
+        }
         newTile.setScaleX(0.4f);
         newTile.setScaleY(0.4f);
         newTile.animate().scaleX(1f).scaleY(1f).setDuration(220)
@@ -879,6 +923,7 @@ public class PullBubbleService extends Service {
         // handling, they just disappear individually when tapped. Purely visual (removes this
         // one window); the pull itself stays in allPulledResults/the pocket's own tally.
         root.setOnClickListener(v -> {
+            removeTileGlow(root);
             try { windowManager.removeView(root); } catch (Exception ignored) {}
             resultIcons.remove(root);
         });
@@ -890,20 +935,34 @@ public class PullBubbleService extends Service {
 
     // The bag icon (app's own navicon/Icon_Bag.png) standing in for every archived-out tile,
     // badge-counted — tapping it opens the "view all pulls" panel.
+    //
+    // `root` here is a deliberately UNCLIPPED outer FrameLayout, sized sizePx + a small overflow
+    // margin — ONLY the inner `circle` FrameLayout (holding the bag icon) gets clipToCircle;
+    // `pocketBadge` is a sibling of `circle`, added directly to the unclipped `root`, so it
+    // renders fully in that overflow margin instead of being cut off by the circular mask the
+    // way it was when the badge and the icon shared the same clipped root.
     private void createPocket(int sizePx) {
+        float density = getResources().getDisplayMetrics().density;
+        int overflowPx = (int) (POCKET_BADGE_OVERFLOW_DP * density);
+        int outerSizePx = sizePx + overflowPx;
+
         FrameLayout root = new FrameLayout(this);
-        root.setBackground(circleDrawable("#40000000", "#99FFFFFF"));
-        clipToCircle(root);
+
+        FrameLayout circle = new FrameLayout(this);
+        circle.setBackground(circleDrawable("#40000000", "#99FFFFFF"));
+        clipToCircle(circle);
+        FrameLayout.LayoutParams circleLp = new FrameLayout.LayoutParams(sizePx, sizePx);
+        circleLp.gravity = Gravity.BOTTOM | Gravity.START;
+        root.addView(circle, circleLp);
 
         Bitmap bagIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Bag.png", (int) (sizePx * 0.6f));
         if (bagIcon != null) {
             ImageView img = new ImageView(this);
             img.setImageBitmap(bagIcon);
             img.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-            root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+            circle.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         }
 
-        float density = getResources().getDisplayMetrics().density;
         int badgeSizePx = (int) (16 * density);
         pocketBadge = new TextView(this);
         pocketBadge.setTextColor(Color.WHITE);
@@ -919,11 +978,11 @@ public class PullBubbleService extends Service {
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                sizePx, sizePx, overlayType,
+                outerSizePx, outerSizePx, overlayType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
-        positionResultIcon(params, 0, sizePx);
+        positionResultIcon(params, 0, outerSizePx);
         root.setTag(params);
         root.setOnClickListener(v -> togglePocketPanel());
 
@@ -932,8 +991,11 @@ public class PullBubbleService extends Service {
         updatePocketBadge();
     }
 
+    // Total pulls this session (matches pull_bubble_pocket_title's own count), NOT just the
+    // tiles that have been evicted out of the individual-tile grid — those are two different
+    // numbers, and the badge should read the same as the "view all" panel's own title.
     private void updatePocketBadge() {
-        if (pocketBadge != null) pocketBadge.setText(String.valueOf(archivedCount));
+        if (pocketBadge != null) pocketBadge.setText(String.valueOf(allPulledResults.size()));
     }
 
     // Slides the pocket (if any, always slot 0) and every remaining individual tile into their
@@ -962,10 +1024,12 @@ public class PullBubbleService extends Service {
         positionResultIcon(p, slot, sizePx);
         if (oldX == p.x && oldY == p.y) {
             windowManager.updateViewLayout(v, p);
+            repositionTileGlow(v, p, sizePx);
             return;
         }
         int dx = oldX - p.x, dy = oldY - p.y;
         windowManager.updateViewLayout(v, p);
+        repositionTileGlow(v, p, sizePx);
         v.setTranslationX(dx);
         v.setTranslationY(dy);
         v.animate().translationX(0).translationY(0).setDuration(220).start();
@@ -1044,6 +1108,7 @@ public class PullBubbleService extends Service {
             WindowManager.LayoutParams p = (WindowManager.LayoutParams) v.getTag();
             positionResultIcon(p, i + offset, p.width);
             windowManager.updateViewLayout(v, p);
+            repositionTileGlow(v, p, p.width);
         }
     }
 
@@ -1052,6 +1117,7 @@ public class PullBubbleService extends Service {
     // the pocket's history across a hide→restore cycle, and not something this was asked for.
     private void clearResultIcons() {
         for (View v : resultIcons) {
+            removeTileGlow(v);
             try { windowManager.removeView(v); } catch (Exception ignored) {}
         }
         resultIcons.clear();
@@ -1061,8 +1127,107 @@ public class PullBubbleService extends Service {
             pocketBadge = null;
         }
         hidePocketPanel();
-        archivedCount = 0;
         allPulledResults.clear();
+        // Safety net in case any tile slipped through without going via removeTileGlow above.
+        for (View halo : tileGlows.values()) { try { windowManager.removeView(halo); } catch (Exception ignored) {} }
+        tileGlows.clear();
+        for (android.animation.ObjectAnimator anim : tileGlowAnimators.values()) anim.cancel();
+        tileGlowAnimators.clear();
+    }
+
+    // ── Auto-archive (item 9) / persistent halos (item 10) ──────────────────
+
+    // Force-evicts every still-visible individual result tile into the pocket, 5s after a
+    // reveal sequence settles (scheduled from playItemStep's terminal branch) — reuses the same
+    // per-tile eviction step the overflow cap in addResultIcon() uses, rather than duplicating
+    // it here.
+    private void autoArchiveAllTiles() {
+        if (resultIcons.isEmpty()) return;
+        float density = getResources().getDisplayMetrics().density;
+        int sizePx = (int) (RESULT_ICON_SIZE_DP * density);
+        // Snapshot first — evictTileToPocket mutates resultIcons as it iterates.
+        List<View> toEvict = new ArrayList<>(resultIcons);
+        for (View tile : toEvict) evictTileToPocket(tile, sizePx);
+        updatePocketBadge();
+        renumberResultSlots(sizePx);
+    }
+
+    // Shared by both eviction paths (the overflow cap in addResultIcon() and the auto-archive
+    // timer above): creates the pocket if it doesn't exist yet, cleans up the tile's own
+    // persistent halo (if any), then drops the tile's window.
+    private void evictTileToPocket(View tile, int sizePx) {
+        if (pocketIcon == null) createPocket(sizePx);
+        removeTileGlow(tile);
+        try { windowManager.removeView(tile); } catch (Exception ignored) {}
+        resultIcons.remove(tile);
+    }
+
+    // Persistent (non-one-shot) halo behind a settled 4★/5★ tile — a static glow ring for 4★,
+    // an infinitely alpha-pulsing one for 5★ — kept alive until the tile itself is dismissed/
+    // archived/cleared (see removeTileGlow). Deliberately separate from addGlowBurst's one-shot
+    // arrival flash, which stays exactly as it was.
+    private void addPersistentHalo(View tile, WindowManager.LayoutParams tileParams, int sizePx, int rarity) {
+        int haloSizePx = (int) (sizePx * 1.5f);
+        FrameLayout halo = new FrameLayout(this);
+        GradientDrawable ring = new GradientDrawable();
+        ring.setShape(GradientDrawable.OVAL);
+        ring.setColor(Color.parseColor(rarityHex(rarity).replace("#FF", "#66")));
+        halo.setBackground(ring);
+        clipToCircle(halo);
+
+        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                : WindowManager.LayoutParams.TYPE_PHONE;
+        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                haloSizePx, haloSizePx, overlayType,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                PixelFormat.TRANSLUCENT);
+        params.gravity = Gravity.TOP | Gravity.START;
+        params.x = tileParams.x - (haloSizePx - sizePx) / 2;
+        params.y = tileParams.y - (haloSizePx - sizePx) / 2;
+        halo.setTag(params);
+
+        try {
+            // Added BEFORE the tile is touched again so it stays visually behind it — the tile
+            // window itself was already added earlier in addResultIcon(), so this simply relies
+            // on the halo's own smaller/lower z-order not covering the icon on top.
+            windowManager.addView(halo, params);
+        } catch (Exception e) {
+            return;
+        }
+
+        tileGlows.put(tile, halo);
+        if (rarity >= 5) {
+            android.animation.ObjectAnimator anim = android.animation.ObjectAnimator.ofFloat(halo, "alpha", 0.35f, 0.9f);
+            anim.setDuration(700);
+            anim.setRepeatMode(android.animation.ValueAnimator.REVERSE);
+            anim.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+            anim.start();
+            tileGlowAnimators.put(tile, anim);
+        } else {
+            halo.setAlpha(0.6f);
+        }
+    }
+
+    // Moves a tile's paired halo (if it has one) in lockstep whenever the tile itself moves —
+    // called from every place a tile's WindowManager params change (drag-follow, slot renumber).
+    private void repositionTileGlow(View tile, WindowManager.LayoutParams tileParams, int sizePx) {
+        View halo = tileGlows.get(tile);
+        if (halo == null) return;
+        WindowManager.LayoutParams hp = (WindowManager.LayoutParams) halo.getTag();
+        int haloSizePx = hp.width;
+        hp.x = tileParams.x - (haloSizePx - sizePx) / 2;
+        hp.y = tileParams.y - (haloSizePx - sizePx) / 2;
+        try { windowManager.updateViewLayout(halo, hp); } catch (Exception ignored) {}
+    }
+
+    // Removes a tile's persistent halo + cancels its pulse animator (if any) — called wherever a
+    // tile itself is removed: tap-dismiss, pocket eviction (both paths), and clearResultIcons().
+    private void removeTileGlow(View tile) {
+        View halo = tileGlows.remove(tile);
+        android.animation.ObjectAnimator anim = tileGlowAnimators.remove(tile);
+        if (anim != null) anim.cancel();
+        if (halo != null) { try { windowManager.removeView(halo); } catch (Exception ignored) {} }
     }
 
     // ── Pocket "view all pulls" panel ────────────────────────────────────────

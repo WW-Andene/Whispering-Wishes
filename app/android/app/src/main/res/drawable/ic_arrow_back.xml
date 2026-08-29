@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Plain chevron-left arrow — the pull bubble's "back" affordance (PullBubbleService.java)
      when navigating out of its banner-picker's Category/List sub-arcs, back toward the normal
-     ×1/×10/×80 arc. Same real-vector-drawable treatment as ic_arrow_hide.xml, not an emoji. -->
+     ×1/×10/×80 arc. Also reused (rotated via ImageView.setRotation) as the hide sub-bubble's
+     outward-pointing icon and the restore tab's inward-pointing one, so hide/restore/back all
+     share this one chevron drawable instead of separate fixed-direction assets. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
