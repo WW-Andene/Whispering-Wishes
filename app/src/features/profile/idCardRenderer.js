@@ -173,24 +173,21 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       return hH;
     };
 
-    // Section panel with gold bar label
+    // Section panel — same block as characterCardRenderer.js's drawBannerPanel: clipped
+    // rounded-rect mask fill + border + gold accent bar + uppercase label, instead of this
+    // card's previous own (shimmer-line + corner-bracket) variant.
     const drawPanel = (x,y,w,h,label) => {
-      // Mask opacity matches the build card's own panel mask (characterCardRenderer.js) —
-      // was 0.55, raised to 0.75 for the same reading here.
-      ctx.fillStyle='rgba(10,14,22,0.75)';rr(x,y,w,h,16);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1.5;rr(x,y,w,h,16);ctx.stroke();
-      const ps=ctx.createLinearGradient(x,0,x+w,0);ps.addColorStop(0,'transparent');ps.addColorStop(0.3,'rgba(255,255,255,0.18)');ps.addColorStop(0.5,'rgba(255,255,255,0.3)');ps.addColorStop(0.7,'rgba(255,255,255,0.18)');ps.addColorStop(1,'transparent');
-      ctx.fillStyle=ps;ctx.fillRect(x+12,y,w-24,1.5);
-      ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(x+w-9-12,y+6);ctx.lineTo(x+w-9,y+6);ctx.lineTo(x+w-9,y+6+12);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(x+9+12,y+h-6);ctx.lineTo(x+9,y+h-6);ctx.lineTo(x+9,y+h-6-12);ctx.stroke();
-      if(label){
-        const gb2=ctx.createLinearGradient(0,y+12,0,y+12+20);gb2.addColorStop(0,'rgba(237,175,24,0.8)');gb2.addColorStop(1,'rgba(237,175,24,0.3)');
-        ctx.fillStyle=gb2;rr(x+15,y+12,3.5,20,1.5);ctx.fill();
-        ctx.fillStyle='#e2e8f0';ctx.font='600 17px sans-serif';ctx.fillText(label,x+26,y+28);
-        return 39;
-      }
-      return 9;
+      ctx.save(); rr(x,y,w,h,16); ctx.clip();
+      ctx.fillStyle='rgba(10,14,22,0.75)'; ctx.fillRect(x,y,w,h);
+      ctx.restore();
+      ctx.strokeStyle='rgba(255,255,255,0.16)'; ctx.lineWidth=1.5; rr(x,y,w,h,16); ctx.stroke();
+      if(!label) return 12;
+      const gb=ctx.createLinearGradient(0,y+12,0,y+12+16);
+      gb.addColorStop(0,'rgba(237,175,24,0.85)'); gb.addColorStop(1,'rgba(237,175,24,0.35)');
+      ctx.fillStyle=gb; rr(x+14,y+12,4,16,2); ctx.fill();
+      ctx.fillStyle='#9ca3af'; ctx.font='600 16px sans-serif'; ctx.textAlign='left';
+      ctx.fillText(label.toUpperCase(),x+26,y+25);
+      return 40;
     };
 
     // .kuro-stat cell
