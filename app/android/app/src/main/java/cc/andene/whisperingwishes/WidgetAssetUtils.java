@@ -10,11 +10,15 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 // Used by PulseBannerWidget.java to turn a bundled web asset path (from
 // DEFAULT_COLLECTION_IMAGES/banner art, written into SharedPreferences by
@@ -133,6 +137,32 @@ final class WidgetAssetUtils {
             }
         }
         return 16f * context.getResources().getDisplayMetrics().density; // matches widget_background.xml's 16dp
+    }
+
+    // android.widget.VideoView (and MediaPlayer underneath it) does NOT understand the
+    // "file:///android_asset/..." URI scheme at all — that's a WebView-only convention.
+    // Handing it one doesn't throw up front; setVideoURI() accepts it, but the underlying
+    // MediaPlayer.setDataSource() fails once playback is actually attempted, firing
+    // VideoView's onError listener (typically near-instantly) instead of ever playing — from
+    // the outside that just looks like the play button doing nothing. The only reliable way
+    // to hand VideoView a bundled asset is a real filesystem path, so this copies the asset
+    // into the app's cache dir once (skipped on every later call once the same file exists)
+    // and returns a plain file:// Uri pointing at that real, VideoView-playable file.
+    static Uri cachedAssetVideoUri(Context context, String assetPath) {
+        File outFile = new File(context.getCacheDir(), "widget-video-" + assetPath.replace('/', '_'));
+        if (!outFile.exists() || outFile.length() == 0) {
+            String fullPath = ASSET_PREFIX + assetPath;
+            try (InputStream in = context.getAssets().open(fullPath);
+                 OutputStream out = new FileOutputStream(outFile)) {
+                byte[] buf = new byte[8192];
+                int n;
+                while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+            } catch (IOException e) {
+                Log.w(TAG, "Failed to cache asset video: " + fullPath, e);
+                return null;
+            }
+        }
+        return Uri.fromFile(outFile);
     }
 
     // Rounds a bitmap's corners by radiusPx — RemoteViews ImageViews can't

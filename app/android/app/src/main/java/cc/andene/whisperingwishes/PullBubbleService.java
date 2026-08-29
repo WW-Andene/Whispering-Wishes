@@ -370,19 +370,29 @@ public class PullBubbleService extends Service {
             return;
         }
 
-        Intent playIntent = new Intent(this, FloatingVideoOverlayService.class);
-        playIntent.putExtra(FloatingVideoOverlayService.EXTRA_VIDEO_URL,
-                "file:///android_asset/public/convene-sim/" + sim.video + ".mp4");
-        // Anchored to the main bubble's own current position — unlike a home-screen
-        // widget's ▶️ button, this service DOES know exactly where its own trigger is on
-        // screen, so the video plays visibly connected to the bubble you just tapped
-        // ("on the side" of it) instead of a fixed, unrelated screen corner.
-        if (mainBubbleParams != null) {
-            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_X, mainBubbleParams.x);
-            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_Y, mainBubbleParams.y);
+        // NOT a plain "file:///android_asset/..." string — VideoView/MediaPlayer can't
+        // actually play that URI scheme at all (see WidgetAssetUtils.cachedAssetVideoUri's
+        // own comment); this copies the bundled clip into the cache dir once and hands back
+        // a real file:// Uri VideoView can actually open.
+        Uri videoUri = WidgetAssetUtils.cachedAssetVideoUri(this, "convene-sim/" + sim.video + ".mp4");
+        if (videoUri != null) {
+            Intent playIntent = new Intent(this, FloatingVideoOverlayService.class);
+            playIntent.putExtra(FloatingVideoOverlayService.EXTRA_VIDEO_URL, videoUri.toString());
+            // Anchored to the main bubble's own current position — unlike a home-screen
+            // widget's ▶️ button, this service DOES know exactly where its own trigger is on
+            // screen, so the video plays visibly connected to the bubble you just tapped
+            // ("on the side" of it) instead of a fixed, unrelated screen corner.
+            if (mainBubbleParams != null) {
+                playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_X, mainBubbleParams.x);
+                playIntent.putExtra(FloatingVideoOverlayService.EXTRA_ANCHOR_Y, mainBubbleParams.y);
+            }
+            startService(playIntent);
+        } else {
+            Log.w(TAG, "Could not resolve pull result video: " + sim.video);
         }
-        startService(playIntent);
 
+        // Result icons still show even if the video failed to resolve — the pull itself
+        // happened either way, and this is the only visible record of what was pulled.
         showResultIcons(sim.results);
     }
 
