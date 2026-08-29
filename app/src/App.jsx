@@ -126,6 +126,20 @@ function WhisperingWishesInner() {
   }, [rawDispatch, toast]);
   const [storageLoaded, setStorageLoaded] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  // The native boot intro (poster + video, BootIntro.jsx) renders as a
+  // separate top-level sibling in main.jsx, not inside App — so without
+  // this, the onboarding modal below could mount and show underneath/over
+  // it while the intro video was still playing. Gated on the same
+  // window.__bootIntroDone flag BootIntro.jsx sets once its fade-out
+  // completes; lazy-initialized so a slow app mount that happens after the
+  // intro has already finished doesn't miss the flag having flipped.
+  const [bootIntroDone, setBootIntroDone] = useState(() => !!window.__bootIntroDone);
+  useEffect(() => {
+    if (bootIntroDone) return;
+    const onDone = () => setBootIntroDone(true);
+    window.addEventListener('boot-intro-done', onDone);
+    return () => window.removeEventListener('boot-intro-done', onDone);
+  }, [bootIntroDone]);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showServerDropdown, setShowServerDropdown] = useState(false);
   // Admin panel state lifted to App so mini panel survives tab switches
@@ -992,7 +1006,7 @@ function WhisperingWishesInner() {
       {/* KuroStyles removed — CSS loaded via <link> in index.html, OLED via .oled-mode class */}
 
       {/* Onboarding Modal */}
-      {showOnboarding && <OnboardingModal onComplete={handleOnboardingComplete} />}
+      {showOnboarding && bootIntroDone && <OnboardingModal onComplete={handleOnboardingComplete} />}
       
       <ColorblindFilterDefs />
 
