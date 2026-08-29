@@ -80,7 +80,7 @@ export default function IdCardModal({
                             return <div className="absolute inset-0 breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} /></div>;
                           })() : (
                             <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
-                              <img src="./app-title-icon/icon-192x192.png" alt="Default" className="w-12 h-12 object-contain opacity-60" />
+                              <img src="./app-title-icon/app_home_icon.png" alt="Default" className="w-12 h-12 object-contain opacity-60" />
                             </div>
                           )}
                           <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none idcard-img-fade" />

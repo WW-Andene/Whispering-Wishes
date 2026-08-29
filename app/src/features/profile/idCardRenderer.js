@@ -6,10 +6,12 @@
 
 import { ALL_CHARACTERS } from '../../data/characters.js';
 
-// The real home-screen app icon (also the PWA/manifest icon), used as the ID card's default
+// The real Android home-screen launcher icon (copied from
+// android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png), used as the ID card's default
 // avatar watermark when no profile picture is set — deliberately not HEADER_ICON, which is a
-// different (Radiant Tide currency) image despite the name.
-const APP_ICON = './app-title-icon/icon-192x192.png';
+// different (Radiant Tide currency) image despite the name, and not the PWA/manifest icon
+// either (a different image again, not used anywhere else in the app).
+const APP_ICON = './app-title-icon/app_home_icon.png';
 
 /**
  * Render and download an ID card as PNG.
