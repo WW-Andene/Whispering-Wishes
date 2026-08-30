@@ -1055,13 +1055,19 @@ function ProfileTab({
                         </div>
                         <div className="grid grid-cols-3 gap-1 w-24 mx-auto mb-3">
                           <div />
-                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.max(0, p.y - 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveUpAria')}>▲</button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.min(100, p.y + 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveUpAria')}>▲</button>
                           <div />
-                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.max(0, p.x - 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveLeftAria')}>◀</button>
+                          {/* object-position's X% pans the CROP WINDOW across the source image, not
+                              the content itself — increasing it reveals more of the image's right
+                              side, which makes the visible content appear to slide left (camera-pan
+                              semantics). That reads backwards on a d-pad, where ▶ should move the
+                              content right like dragging a photo — so the buttons apply the opposite
+                              delta from their direction to get that "drag the content" feel. */}
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.min(100, p.x + 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveLeftAria')}>◀</button>
                           <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: 50, y: 50 }))} className="bg-red-500/20 text-red-400 rounded p-1 flex items-center justify-center hover:bg-red-500/30 active:scale-95" aria-label={t('profile.display.wallpaperResetPositionAria')} title={t('profile.display.resetPosition')}><Crosshair size={14} /></button>
-                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.min(100, p.x + 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveRightAria')}>▶</button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.max(0, p.x - 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveRightAria')}>▶</button>
                           <div />
-                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.min(100, p.y + 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveDownAria')}>▼</button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.max(0, p.y - 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveDownAria')}>▼</button>
                           <div />
                         </div>
                         <div className="flex gap-1.5">
