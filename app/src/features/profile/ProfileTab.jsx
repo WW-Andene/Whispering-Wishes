@@ -11,7 +11,7 @@ import { SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
 import { haptic } from '../../utils/haptics.js';
-import { AMBIENT_OST_TRACKS } from '../../hooks/useAmbientMusic.js';
+import { AMBIENT_OST_TRACKS, AMBIENT_OST_CATEGORIES } from '../../hooks/useAmbientMusic.js';
 import { getElementColor, getElementBg } from '../../shared/utils/elementVisuals.js';
 import { storageAvailable } from '../../core/storage.js';
 import { clearAllAuxKeys } from '../../core/storageKeys.js';
@@ -1175,7 +1175,19 @@ function ProfileTab({
                     <ChevronDown size={16} className={`text-gray-400 transition-transform flex-shrink-0 ${ambientSectionCollapsed ? '-rotate-90' : ''}`} />
                   </button>
 
+                  {/* Off leads the list, then the Login quick-picks — both stay
+                      visible even while collapsed. Everything below (Convene +
+                      the categorized OST library) is buttons flowing directly in
+                      this section, no dropdown — same flex-wrap treatment
+                      throughout rather than visually separate rows. */}
                   <div className={`flex flex-wrap gap-2 ${ambientSectionCollapsed ? 'mt-3' : 'mb-2'}`}>
+                    <button
+                      type="button"
+                      onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: 'off' })}
+                      className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === 'off' ? 'active-gold' : ''}`}
+                    >
+                      {t('profile.sound.trackOff')}
+                    </button>
                     {['1', '2', '3'].map((track) => (
                       <button
                         key={track}
@@ -1186,45 +1198,51 @@ function ProfileTab({
                         {t(`profile.sound.track${track}`)}
                       </button>
                     ))}
-                    <button
-                      type="button"
-                      onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: '3_5_login' })}
-                      className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === '3_5_login' ? 'active-gold' : ''}`}
-                    >
-                      {AMBIENT_OST_TRACKS.find(t2 => t2.key === '3_5_login')?.label}
-                    </button>
+                    {AMBIENT_OST_TRACKS.filter(t2 => t2.category === 'login').map(({ key, label }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: key })}
+                        className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === key ? 'active-gold' : ''}`}
+                      >
+                        {label}
+                      </button>
+                    ))}
                   </div>
 
                   {!ambientSectionCollapsed && (
-                    <>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {['off', 'convene'].map((track) => (
-                          <button
-                            key={track}
-                            type="button"
-                            onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: track })}
-                            className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === track ? 'active-gold' : ''}`}
-                          >
-                            {track === 'off' ? t('profile.sound.trackOff') : t('profile.sound.trackConvene')}
-                          </button>
-                        ))}
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: 'convene' })}
+                          className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === 'convene' ? 'active-gold' : ''}`}
+                        >
+                          {t('profile.sound.trackConvene')}
+                        </button>
                       </div>
-                      {/* Full OST library (36 tracks, same list as the native Soundtrack
-                          widget) — a native <select> rather than more buttons, since a
-                          flat button row doesn't scale past the 6 above. Track names are
-                          proper nouns, not run through t(). */}
-                      <select
-                        value={AMBIENT_OST_TRACKS.some(t2 => t2.key === visualSettings.logScreenTrack) ? visualSettings.logScreenTrack : ''}
-                        onChange={(e) => { if (e.target.value) saveVisualSettings({ ...visualSettings, logScreenTrack: e.target.value }); }}
-                        className="kuro-btn kuro-btn-sm w-full"
-                        aria-label={t('profile.sound.ostLibraryAria')}
-                      >
-                        <option value="" disabled>{t('profile.sound.ostLibraryPlaceholder')}</option>
-                        {AMBIENT_OST_TRACKS.map(({ key, label }) => (
-                          <option key={key} value={key}>{label}</option>
-                        ))}
-                      </select>
-                    </>
+                      {AMBIENT_OST_CATEGORIES.filter(cat => cat !== 'login').map((cat) => {
+                        const tracks = AMBIENT_OST_TRACKS.filter(t2 => t2.category === cat);
+                        if (tracks.length === 0) return null;
+                        return (
+                          <div key={cat}>
+                            <div className="text-gray-500 text-2xs uppercase tracking-wide mb-1">{t(`profile.sound.category${cat.charAt(0).toUpperCase()}${cat.slice(1)}`)}</div>
+                            <div className="flex flex-wrap gap-2">
+                              {tracks.map(({ key, label }) => (
+                                <button
+                                  key={key}
+                                  type="button"
+                                  onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: key })}
+                                  className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === key ? 'active-gold' : ''}`}
+                                >
+                                  {label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
 
