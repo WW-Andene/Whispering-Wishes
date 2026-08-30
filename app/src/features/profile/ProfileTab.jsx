@@ -797,10 +797,19 @@ function ProfileTab({
                     e.stopPropagation();
                     setWallpaperTargetPrompt({ url });
                   };
-                  const applyAnimatedWallpaper = async (e, bg) => {
+                  // Opens the SAME position editor the static wallpaper crown flow uses (skips
+                  // straight past the Home/Lock/Both target picker — a live Android wallpaper
+                  // only ever applies to the home screen, there's no separate lock-screen live
+                  // wallpaper surface to choose between) — kind: 'video' tells the shared
+                  // preview/apply logic below to render a <video> instead of an <img> and to
+                  // call setAnimatedWallpaper() instead of doSetWallpaper() once confirmed.
+                  const applyAnimatedWallpaper = (e, bg) => {
                     e.stopPropagation();
+                    setWallpaperPositionPrompt({ url: bg.art, target: 'home', x: 50, y: 50, kind: 'video' });
+                  };
+                  const doSetAnimatedWallpaper = async (url, position) => {
                     haptic.light();
-                    const res = await setAnimatedWallpaper(bg.art);
+                    const res = await setAnimatedWallpaper(url, position);
                     if (res.ok) {
                       haptic.success();
                     } else if (res.error !== 'cancelled') {
@@ -996,13 +1005,21 @@ function ProfileTab({
                       </div>
                     </div>
                   </FocusTrapModal>
-                  {/* Position editor — shown after Home/Lock/Both is picked, right before the crop
-                      actually lands on the phone's real screen. WallpaperPlugin.java always
-                      center-crops the source image to the device's screen aspect ratio; this preview
-                      box is sized to that same aspect ratio and uses object-fit:cover +
-                      object-position, so what's shown here is a pixel-accurate stand-in for what the
-                      native crop will produce — sliding the d-pad changes which part of the source
-                      image that native crop is centered on, instead of it always being dead center. */}
+                  {/* Position editor — shown after Home/Lock/Both is picked (static images) or
+                      right after tapping an animated background's crown (video — always
+                      "home", there's no separate lock-screen live-wallpaper surface to choose
+                      between), right before the crop actually lands on the phone's real
+                      screen. WallpaperPlugin.java's static path center-crops the source image
+                      to the device's screen aspect ratio; LiveVideoWallpaperService's own GL
+                      renderer applies the exact same object-fit:cover + object-position math
+                      to the video every frame instead (see its own file header — the video's
+                      natural size isn't known up front, so it can't be pre-cropped into a
+                      Bitmap the way a static image is). This preview box is sized to that same
+                      screen aspect ratio and uses object-fit:cover + object-position on either
+                      an <img> or a <video> depending on wallpaperPositionPrompt.kind, so what's
+                      shown here is a pixel-accurate stand-in for what the native crop/pan will
+                      produce either way — sliding the d-pad changes which part of the source
+                      that crop is centered on, instead of it always being dead center. */}
                   <FocusTrapModal
                     isOpen={!!wallpaperPositionPrompt}
                     onClose={() => setWallpaperPositionPrompt(null)}
@@ -1017,12 +1034,24 @@ function ProfileTab({
                           className="relative w-full mx-auto rounded-lg overflow-hidden border border-[var(--border-medium)] mb-3"
                           style={{ maxWidth: 160, aspectRatio: `${window.screen.width} / ${window.screen.height}` }}
                         >
-                          <img
-                            src={wallpaperPositionPrompt.url}
-                            alt=""
-                            className="absolute inset-0 w-full h-full object-cover"
-                            style={{ objectPosition: `${wallpaperPositionPrompt.x}% ${wallpaperPositionPrompt.y}%` }}
-                          />
+                          {wallpaperPositionPrompt.kind === 'video' ? (
+                            <video
+                              src={wallpaperPositionPrompt.url}
+                              className="absolute inset-0 w-full h-full object-cover"
+                              style={{ objectPosition: `${wallpaperPositionPrompt.x}% ${wallpaperPositionPrompt.y}%` }}
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                            />
+                          ) : (
+                            <img
+                              src={wallpaperPositionPrompt.url}
+                              alt=""
+                              className="absolute inset-0 w-full h-full object-cover"
+                              style={{ objectPosition: `${wallpaperPositionPrompt.x}% ${wallpaperPositionPrompt.y}%` }}
+                            />
+                          )}
                         </div>
                         <div className="grid grid-cols-3 gap-1 w-24 mx-auto mb-3">
                           <div />
@@ -1040,9 +1069,10 @@ function ProfileTab({
                           <button
                             className="kuro-btn flex-1 text-sm active-emerald"
                             onClick={() => {
-                              const { url, target, x, y } = wallpaperPositionPrompt;
+                              const { url, target, x, y, kind } = wallpaperPositionPrompt;
                               setWallpaperPositionPrompt(null);
-                              doSetWallpaper(url, target, { x, y });
+                              if (kind === 'video') doSetAnimatedWallpaper(url, { x, y });
+                              else doSetWallpaper(url, target, { x, y });
                             }}
                           >
                             {t('profile.display.wallpaperPositionApply')}
