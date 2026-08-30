@@ -15,11 +15,12 @@ import org.json.JSONObject;
 
 // Home-screen "currency log" widget — mode 1 of the Calculator-tab widget series (see
 // CalculatorTab.jsx's Resources card for the web equivalent this mirrors: Astrite,
-// Lunite, Radiant Tide, Lustrous Tide, Forging Tide). Read-only display, single narrow
-// column (1 cell wide), resizable in height from 2 to 5 cells — Astrite/Lunite always
-// shown, Radiant/Lustrous/Forging Tide appear one row at a time as the widget grows
-// taller (onAppWidgetOptionsChanged below), same size-tiered-reveal pattern
-// PulseBannerWidget.java already uses for its secondary block.
+// Lunite, Radiant Tide, Lustrous Tide, Forging Tide). Read-only display, single short
+// row (1 cell tall), resizable in WIDTH from 2 to 5 cells — Astrite/Lunite always shown,
+// Radiant/Lustrous/Forging Tide appear one column at a time as the widget grows wider
+// (onAppWidgetOptionsChanged below), same size-tiered-reveal pattern
+// PulseBannerWidget.java already uses for its secondary block (that one keys off height
+// instead, since its own resizable axis is vertical).
 //
 // Data comes from @capacitor/preferences's "CapacitorStorage" SharedPreferences file,
 // written by src/utils/widgetSync.js's syncCurrencyWidget() whenever the Calculator
@@ -39,12 +40,12 @@ public class CurrencyWidget extends AppWidgetProvider {
     private static final int SCHEMA_VERSION = 4;
     private static final int ICON_PX = 48;
 
-    // Android's own widget-grid formula (70dp * cells - 30dp) for 3/4/5 cells tall —
-    // matches currency_widget_info.xml's minHeight (2 cells = 110dp) as the floor where
-    // only Astrite+Lunite show; each threshold below reveals one more row.
-    private static final int REVEAL_ROW3_DP = 180; // 3 cells
-    private static final int REVEAL_ROW4_DP = 250; // 4 cells
-    private static final int REVEAL_ROW5_DP = 320; // 5 cells
+    // Android's own widget-grid formula (70dp * cells - 30dp) for 3/4/5 cells wide —
+    // matches currency_widget_info.xml's minWidth (2 cells = 110dp) as the floor where
+    // only Astrite+Lunite show; each threshold below reveals one more column.
+    private static final int REVEAL_COL3_DP = 180; // 3 cells
+    private static final int REVEAL_COL4_DP = 250; // 4 cells
+    private static final int REVEAL_COL5_DP = 320; // 5 cells
 
     private static final class Currency {
         final String key;      // JSON field in widget_currency_data
@@ -55,8 +56,9 @@ public class CurrencyWidget extends AppWidgetProvider {
         }
     }
 
-    // Order matches the widget's own top-to-bottom row order (and the reveal thresholds
-    // above) — Astrite/Lunite are the two always-visible rows, the rest reveal in this order.
+    // Order matches the widget's own left-to-right column order (and the reveal
+    // thresholds above) — Astrite/Lunite are the two always-visible columns, the rest
+    // reveal in this order.
     private static final Currency[] CURRENCIES = {
         new Currency("astrite", "ui-icons/Currency-Astrite.webp",
             R.id.widget_currency_row_astrite, R.id.widget_currency_icon_astrite, R.id.widget_currency_value_astrite),
@@ -79,8 +81,8 @@ public class CurrencyWidget extends AppWidgetProvider {
 
     @Override
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
-        // Fires whenever the user resizes the widget — re-render so rows 3-5 can
-        // appear/disappear based on the new height.
+        // Fires whenever the user resizes the widget — re-render so columns 3-5 can
+        // appear/disappear based on the new width.
         updateWidget(context, appWidgetManager, appWidgetId);
     }
 
@@ -107,14 +109,14 @@ public class CurrencyWidget extends AppWidgetProvider {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_currency);
 
         Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
-        int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
+        int widthDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0) : 0;
 
         for (int i = 0; i < CURRENCIES.length; i++) {
             Currency c = CURRENCIES[i];
             boolean visible = i < 2
-                || (i == 2 && heightDp >= REVEAL_ROW3_DP)
-                || (i == 3 && heightDp >= REVEAL_ROW4_DP)
-                || (i == 4 && heightDp >= REVEAL_ROW5_DP);
+                || (i == 2 && widthDp >= REVEAL_COL3_DP)
+                || (i == 3 && widthDp >= REVEAL_COL4_DP)
+                || (i == 4 && widthDp >= REVEAL_COL5_DP);
             views.setViewVisibility(c.rowId, visible ? View.VISIBLE : View.GONE);
             if (!visible) continue;
 

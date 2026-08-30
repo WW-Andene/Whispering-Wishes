@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 1 cell wide, resizable in height only from 2 to 5 cells (see CurrencyWidget.java's
-     REVEAL_ROW3/4/5_DP thresholds, which are this same 70dp*cells-30dp grid formula).
-     minWidth/minResizeWidth pinned to the same 1-cell floor since this widget's whole
-     premise is a single narrow currency column — width resizing isn't part of the
-     design (resizeMode="vertical" only). -->
+<!-- 1 cell tall, resizable in WIDTH only from 2 to 5 cells (see CurrencyWidget.java's
+     REVEAL_COL3/4/5_DP thresholds, which are this same 70dp*cells-30dp grid formula).
+     minHeight/minResizeHeight pinned to the same 1-cell floor since this widget's whole
+     premise is a single short currency strip — height resizing isn't part of the design
+     (resizeMode="horizontal" only). -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:minWidth="40dp"
-    android:minHeight="110dp"
-    android:minResizeWidth="40dp"
-    android:minResizeHeight="110dp"
-    android:maxResizeHeight="320dp"
-    android:targetCellWidth="1"
-    android:targetCellHeight="2"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:maxResizeWidth="320dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
     android:updatePeriodMillis="1800000"
     android:previewImage="@mipmap/ic_launcher"
     android:initialLayout="@layout/widget_currency"
-    android:resizeMode="vertical"
+    android:resizeMode="horizontal"
     android:widgetCategory="home_screen"
     android:description="@string/currency_widget_description">
 </appwidget-provider>

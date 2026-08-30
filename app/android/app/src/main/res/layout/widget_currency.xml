@@ -1,42 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Home-screen "currency log" widget — mode 1 of the planned Calculator-widget series
-     (see CurrencyWidget.java's own header). Single narrow column (1 cell wide),
-     resizable in height only from 2 to 5 cells: row 1 (Astrite) and row 2 (Lunite)
-     are always shown; rows 3-5 (Radiant/Lustrous/Forging Tide) appear one at a time
-     as the widget is resized taller, via CurrencyWidget.onAppWidgetOptionsChanged.
+<!-- Home-screen "currency log" widget — mode 1 of the Calculator-widget series (see
+     CurrencyWidget.java's own header). Single short row (1 cell tall), resizable in
+     WIDTH only from 2 to 5 cells: column 1 (Astrite) and column 2 (Lunite) are always
+     shown; columns 3-5 (Radiant/Lustrous/Forging Tide) appear one at a time as the
+     widget is resized wider, via CurrencyWidget.onAppWidgetOptionsChanged.
 
      No plain <View> anywhere (RemoteViews' allowlist doesn't include it — see
-     widget_banner.xml's own comment on this for the full explanation); rows use
+     widget_banner.xml's own comment on this for the full explanation); columns use
      LinearLayout, icons use ImageView, values use TextView. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:background="@drawable/widget_background"
     android:paddingLeft="8dp"
     android:paddingRight="8dp"
-    android:paddingTop="6dp"
-    android:paddingBottom="6dp">
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp">
 
     <LinearLayout
         android:id="@+id/widget_currency_row_astrite"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center">
         <ImageView
             android:id="@+id/widget_currency_icon_astrite"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:contentDescription="@null" />
         <TextView
             android:id="@+id/widget_currency_value_astrite"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="6dp"
-            android:gravity="end"
+            android:layout_marginLeft="4dp"
             android:textColor="#facc15"
             android:textSize="13sp"
             android:textStyle="bold"
@@ -45,23 +43,21 @@
 
     <LinearLayout
         android:id="@+id/widget_currency_row_lunite"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center">
         <ImageView
             android:id="@+id/widget_currency_icon_lunite"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:contentDescription="@null" />
         <TextView
             android:id="@+id/widget_currency_value_lunite"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="6dp"
-            android:gravity="end"
+            android:layout_marginLeft="4dp"
             android:textColor="#67e8f9"
             android:textSize="13sp"
             android:textStyle="bold"
@@ -70,24 +66,22 @@
 
     <LinearLayout
         android:id="@+id/widget_currency_row_radiant"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:visibility="gone">
         <ImageView
             android:id="@+id/widget_currency_icon_radiant"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:contentDescription="@null" />
         <TextView
             android:id="@+id/widget_currency_value_radiant"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="6dp"
-            android:gravity="end"
+            android:layout_marginLeft="4dp"
             android:textColor="#fde047"
             android:textSize="13sp"
             android:textStyle="bold"
@@ -96,24 +90,22 @@
 
     <LinearLayout
         android:id="@+id/widget_currency_row_lustrous"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:visibility="gone">
         <ImageView
             android:id="@+id/widget_currency_icon_lustrous"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:contentDescription="@null" />
         <TextView
             android:id="@+id/widget_currency_value_lustrous"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="6dp"
-            android:gravity="end"
+            android:layout_marginLeft="4dp"
             android:textColor="#22d3ee"
             android:textSize="13sp"
             android:textStyle="bold"
@@ -122,24 +114,22 @@
 
     <LinearLayout
         android:id="@+id/widget_currency_row_forging"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:gravity="center"
         android:visibility="gone">
         <ImageView
             android:id="@+id/widget_currency_icon_forging"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
             android:contentDescription="@null" />
         <TextView
             android:id="@+id/widget_currency_value_forging"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginLeft="6dp"
-            android:gravity="end"
+            android:layout_marginLeft="4dp"
             android:textColor="#f9a8d4"
             android:textSize="13sp"
             android:textStyle="bold"
