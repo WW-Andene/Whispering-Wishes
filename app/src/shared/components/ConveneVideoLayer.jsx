@@ -10,6 +10,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { suspendAmbientMusic, resumeAmbientMusic } from '../../hooks/useAmbientMusic.js';
 
 // Shared, persistent AudioContext for every gain-boosted convene video —
 // NOT one created fresh per video mount. A fresh AudioContext starts
@@ -45,11 +46,27 @@ const FADE_OUT_SECONDS = 1.5;
 // than the fade-out rather than a matching 1.5s.
 const FADE_IN_SECONDS = 0.4;
 
-const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0', muted = false, onError, gain = 1 }) => {
+const ConveneVideo = ({ videoUrl, onEnded, zIndex, className = 'absolute inset-0', muted = false, onError, gain = 1, visualSettings }) => {
   const [visible, setVisible] = useState(false);
   const [fadingOut, setFadingOut] = useState(false);
   const firedRef = useRef(false);
   const videoRef = useRef(null);
+
+  // Same duck/resume behavior as ConvenePullSimModal's own rarity/item
+  // videos — any convene clip playing here (BannerCard's own ▶, the
+  // character detail modal's header/Assets convene videos) should pause the
+  // ambient "Log Screen" loop too, not just the pull simulator's. Read
+  // through a ref (kept fresh below) rather than closing over
+  // `visualSettings` directly, for the same reason ConvenePullSimModal's own
+  // copy does: the cleanup effect below only runs once, on unmount, and by
+  // then a stale closed-over `visualSettings` could be wrong if the user
+  // toggled sound off/on while the video was still playing.
+  const visualSettingsRef = useRef(visualSettings);
+  useEffect(() => { visualSettingsRef.current = visualSettings; }, [visualSettings]);
+  useEffect(() => {
+    suspendAmbientMusic();
+    return () => resumeAmbientMusic(visualSettingsRef.current);
+  }, []);
 
   // Boost playback volume past the HTML5 <video> element's hard 1.0 (100%)
   // ceiling via a Web Audio GainNode — the only way to go louder than

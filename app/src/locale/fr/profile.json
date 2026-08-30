@@ -209,7 +209,9 @@
     "track1": "1.0 Login Screen",
     "track2": "2.0 Login Screen",
     "track3": "3.0 Login Screen",
-    "trackConvene": "Convier"
+    "trackConvene": "Convier",
+    "ostLibraryPlaceholder": "Ou choisissez dans la bande sonore complète…",
+    "ostLibraryAria": "Choisir une piste de la bande sonore"
   },
   "importInfo": {
     "title": "Informations d'importation",

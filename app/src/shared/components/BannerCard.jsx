@@ -156,7 +156,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
           over its last ~1.5s (see ConveneVideoLayer.jsx) instead of cutting
           straight to the static image. */}
       {conveneVideoPlaying && conveneVideoUrl && (
-        <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setConveneVideoPlaying(false)} zIndex={3} />
+        <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setConveneVideoPlaying(false)} zIndex={3} visualSettings={visualSettings} />
       )}
 
       {endDate && (
