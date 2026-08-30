@@ -9,6 +9,10 @@ import { Camera, Scan, X } from 'lucide-react';
 import { HEADER_ICON } from '../../data/constants.js';
 import { t } from '../../utils/i18n.js';
 
+// Scan zone: 4:3 landscape ratio. Shared with ImportFlow's captureDirectCamera so the captured
+// image is cropped to exactly the rectangle this HUD shows the user, not the full raw frame.
+export const SCAN_ZONE = { top: 38, left: 8, right: 8, height: 24 };
+
 export default function ConveneScanner({
   directCameraOpen,
   closeDirectCamera,
@@ -20,8 +24,7 @@ export default function ConveneScanner({
 
   if (!directCameraOpen) return null;
 
-  // Scan zone: 4:3 landscape ratio
-  const zone = { top: 38, left: 8, right: 8, height: 24 };
+  const zone = SCAN_ZONE;
   const r = 12; // corner radius
   const bracketSize = 32; // bracket arm length
   const bracketOffset = 6; // gap between zone border and bracket

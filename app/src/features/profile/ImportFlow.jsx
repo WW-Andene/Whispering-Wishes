@@ -10,7 +10,7 @@ import { parseGachaUrl, buildFetchParams, fetchAllPools, convertToImportFormat, 
 import { MAX_IMPORT_SIZE_MB } from '../../data/constants.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { ImportGuide } from './ImportGuide.jsx';
-import ConveneScanner from './ConveneScanner.jsx';
+import ConveneScanner, { SCAN_ZONE } from './ConveneScanner.jsx';
 import { t } from '../../utils/i18n.js';
 
 export default function ImportFlow({
@@ -148,9 +148,39 @@ export default function ImportFlow({
     const video = directVideoRef.current;
     if (!video) return;
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
+    // Crop to the same scan-zone rectangle ConveneScanner's HUD shows the user (top 38%, left/
+    // right 8% margin, height 24% of the on-screen video). Capturing the full raw frame instead
+    // of just this zone is why live-camera OCR was so much worse than a pasted screenshot: the
+    // real URL text is a tiny fraction of the full viewport, surrounded by background/UI noise
+    // that Tesseract then has to search through (and frequently misreads into the result).
+    // The video element renders at `object-cover`, so its native resolution (video.videoWidth/
+    // Height) isn't a 1:1 match for the displayed viewport — map the zone's on-screen percentage
+    // rect into source-pixel coordinates using the same scale/center-crop math object-cover uses.
+    const rect = video.getBoundingClientRect();
+    const dw = rect.width, dh = rect.height;
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!dw || !dh || !vw || !vh) return;
+    const scale = Math.max(dw / vw, dh / vh);
+    const offsetX = (dw - vw * scale) / 2;
+    const offsetY = (dh - vh * scale) / 2;
+    const toSrcX = (dx) => (dx - offsetX) / scale;
+    const toSrcY = (dy) => (dy - offsetY) / scale;
+
+    const zone = SCAN_ZONE;
+    const zoneDisplay = {
+      left: dw * (zone.left / 100),
+      right: dw * (1 - zone.right / 100),
+      top: dh * (zone.top / 100),
+      bottom: dh * ((zone.top + zone.height) / 100),
+    };
+    const sx = Math.max(0, toSrcX(zoneDisplay.left));
+    const sy = Math.max(0, toSrcY(zoneDisplay.top));
+    const sw = Math.min(vw, toSrcX(zoneDisplay.right)) - sx;
+    const sh = Math.min(vh, toSrcY(zoneDisplay.bottom)) - sy;
+
+    canvas.width = sw;
+    canvas.height = sh;
+    canvas.getContext('2d').drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
     // Stop stream
     directStreamRef.current?.getTracks().forEach(t => t.stop());
     setDirectCameraOpen(false);
