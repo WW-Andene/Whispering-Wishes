@@ -176,16 +176,16 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     fallbackImgUrl={imageUrl}
                     fallbackImgStyle={{
                       objectFit: 'contain',
-                      objectPosition: 'right bottom',
+                      objectPosition: 'center bottom',
                       transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
-                      transformOrigin: 'right bottom',
+                      transformOrigin: 'center bottom',
                     }}
                   />
                 </div>
               ) : (
-                <img src={imageUrl} alt={name} className="absolute right-0 bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
+                <img src={imageUrl} alt={name} className="absolute inset-x-0 mx-auto bottom-0 h-48 object-contain opacity-80" onError={hideOnError} style={{
                   transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)`,
-                  transformOrigin: 'right bottom'
+                  transformOrigin: 'center bottom'
                 }} />
               )}
             </div>
