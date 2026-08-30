@@ -25,14 +25,12 @@ import java.util.Random;
 // same "tap fires PendingIntent.getService(), which is exempt from the background-start
 // restriction, then this calls startForeground() itself" pattern that already works for it.
 //
-// Tracks are the shared library in SoundtrackTracks.ALL — the original 4 "Log Screen"
-// ambient loops the web app's own useAmbientMusic.js also plays, plus the bulk OST library.
-// None of audio/*'s files are bundled into the native APK (capacitor-build/build.mjs
-// excludes audio/ the same way it excludes portraits/spine/animated-bg/convene-animations —
-// together they'd be a huge chunk of the app binary), so
-// WidgetAssetUtils.streamOrCachedAssetUri() plays straight from a local cache file once one
-// exists, otherwise hands MediaPlayer the real hosted https URL to stream directly while
-// caching it in the background for next time — see that method's own comment.
+// Tracks are the same 4 bundled "Log Screen" ambient music files the web app's own
+// useAmbientMusic.js plays (SoundtrackTracks.ALL) — an .m4a asset isn't directly usable by
+// MediaPlayer as a bundled "public/..." path (same platform limitation
+// WidgetAssetUtils.cachedAssetVideoUri's own comment documents for VideoView/video assets;
+// MediaPlayer has the identical restriction for audio), so WidgetAssetUtils.cachedAssetUri
+// copies it out to a real cached file once before each load.
 //
 // State (current track key, playing/paused) is the source of truth in SharedPreferences (the
 // same "CapacitorStorage" file every widget in this app shares) — this class is the only
@@ -171,7 +169,7 @@ public class SoundtrackPlaybackService extends Service {
         releasePlayer();
         currentTrackKey = trackKey;
 
-        Uri uri = WidgetAssetUtils.streamOrCachedAssetUri(this, SoundtrackTracks.byKey(trackKey).assetPath, "widget-audio-");
+        Uri uri = WidgetAssetUtils.cachedAssetUri(this, SoundtrackTracks.byKey(trackKey).assetPath, "widget-audio-");
         if (uri == null) {
             playing = false;
             persistAndRefresh();
