@@ -26,20 +26,6 @@ export default function BootIntro() {
   const [fadingOut, setFadingOut] = useState(false);
   const [done, setDone] = useState(false);
   const [screenSize] = useState(() => ({ w: window.screen.width, h: window.screen.height }));
-  // Which Rover variant plays this boot. On native, MainActivity.onCreate() already flipped this
-  // coin before the native poster ever painted (has to be decided there — that poster shows
-  // before this component, or any JS at all, has run) and exposes its pick via the same
-  // AndroidBoot bridge dismissBootPoster()/showStatusBar() use, so the video matches whichever
-  // gender the poster already committed to. On plain web (no native poster to stay in sync
-  // with), there's nothing to agree with, so this rolls its own.
-  const [mrover] = useState(() => {
-    try {
-      if (window.AndroidBoot?.isMRoverVariant) return window.AndroidBoot.isMRoverVariant();
-    } catch {
-      // Bridge call failed for some reason — fall through to the web-only random pick.
-    }
-    return Math.random() < 0.5;
-  });
 
   useEffect(() => {
     const video = videoRef.current;
@@ -157,7 +143,7 @@ export default function BootIntro() {
   return (
     <video
       ref={videoRef}
-      src={mrover ? '/boot-intro/boot-intro-mrover.mp4' : '/boot-intro/boot-intro.mp4'}
+      src="/boot-intro/boot-intro.mp4"
       muted
       playsInline
       preload="auto"
