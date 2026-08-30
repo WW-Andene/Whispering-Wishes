@@ -415,5 +415,6 @@ public class MainActivity extends BridgeActivity {
         // data could have changed (widgetSync.js runs on app mount/banner
         // change), so it's the natural place to ask for a sooner update.
         PulseBannerWidget.requestUpdate(this);
+        CurrencyWidget.requestUpdate(this);
     }
 }

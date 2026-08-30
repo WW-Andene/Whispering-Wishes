@@ -55,6 +55,21 @@
                 android:resource="@xml/banner_widget_info" />
         </receiver>
 
+        <!-- Currency-log widget (mode 1 of the Calculator-widget series) — same
+             exported="true" requirement as PulseBannerWidget above: the system's own
+             APPWIDGET_UPDATE broadcast is what drives this receiver, and an
+             exported="false" receiver silently drops it. -->
+        <receiver
+            android:name=".CurrencyWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/currency_widget_info" />
+        </receiver>
+
         <activity
             android:name=".ConveneAnimationActivity"
             android:theme="@style/AppTheme.ConveneOverlay"

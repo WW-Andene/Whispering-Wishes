@@ -147,6 +147,36 @@ export async function syncBannerWidget(activeBanners) {
   }
 }
 
+// Bumped independently from WIDGET_SCHEMA_VERSION above — CurrencyWidget.java
+// reads its own key (widget_currency_data), unrelated to the banner blob, so
+// a shape change to one must never be misread as a shape change to the other.
+const CURRENCY_WIDGET_SCHEMA_VERSION = 1;
+
+// Feeds the Android home-screen currency widget (CurrencyWidget.java) with
+// the Calculator tab's five tracked resource fields — Astrite, Lunite,
+// Radiant Tide, Lustrous Tide, Forging Tide (state.calc.*, see
+// core/reducer.js's initialState.calc). These are stored as strings in
+// state (raw <input> values, '' meaning "empty") — coerced to a plain
+// integer here (empty/non-numeric -> 0) since RemoteViews just needs a
+// number to print, not the input-editing nuances the web UI cares about.
+export async function syncCurrencyWidget(calc) {
+  if (!isNativePlatform()) return;
+  try {
+    const n = (v) => { const num = parseInt(v, 10); return Number.isFinite(num) ? num : 0; };
+    const payload = {
+      v: CURRENCY_WIDGET_SCHEMA_VERSION,
+      astrite: n(calc?.astrite),
+      lunite: n(calc?.lunite),
+      radiant: n(calc?.radiant),
+      lustrous: n(calc?.lustrous),
+      forging: n(calc?.forging),
+    };
+    await Preferences.set({ key: 'widget_currency_data', value: JSON.stringify(payload) });
+  } catch (err) {
+    console.warn('Currency widget sync failed:', err);
+  }
+}
+
 // Feeds ConveneRoster.java's native lookup (PullBubbleService plays a pulled 4★/5★
 // character/weapon's own convene clip as part of its reveal sequence) — every name that HAS a
 // convene animation at all (CONVENE_ANIMATIONS' full key list, characters AND weapons), not
