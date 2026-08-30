@@ -210,8 +210,9 @@
     "track2": "2.0 Login Screen",
     "track3": "3.0 Login Screen",
     "trackConvene": "Convene",
-    "ostLibraryPlaceholder": "Or pick from the full soundtrack…",
-    "ostLibraryAria": "Choose a soundtrack track"
+    "categoryBoss": "Boss",
+    "categoryTheme": "Theme",
+    "categoryClassic": "Classic"
   },
   "importInfo": {
     "title": "Import Info",
