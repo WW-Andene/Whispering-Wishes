@@ -21,7 +21,7 @@
 import React, { useState, useMemo, useCallback, useReducer, useEffect, useRef } from 'react';
 import { Calculator, Download } from 'lucide-react';
 // --- data ---
-import { ALL_CHARACTERS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
+import { ALL_CHARACTERS, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS, STANDARD_5STAR_CHARACTERS, RELEASE_ORDER } from './data/characters.js';
 import { ALL_5STAR_WEAPONS, ALL_4STAR_WEAPONS, ALL_3STAR_WEAPONS, ALL_2STAR_WEAPONS, ALL_1STAR_WEAPONS } from './data/weaponLists.js';
 import { getCurrentBannerAuto, preloadBannerHistoryArt } from './data/banners.js';
 import { APP_VERSION, MAX_IMPORT_SIZE_MB, HEADER_ICON, HARD_PITY, ASTRITE_PER_PULL, BEGINNER_ASTRITE_PER_PULL, SERVERS } from './data/constants.js';
@@ -36,6 +36,7 @@ import { useCollectionImages, COLLECTION_IMAGES_KEY } from './hooks/useCollectio
 import { useTabNavigation } from './hooks/useTabNavigation.js';
 import { usePresenceTracking, checkFirebaseRateLimit } from './hooks/usePresenceTracking.js';
 import { useThemeAccent } from './hooks/useThemeAccent.js';
+import { usePersistedState } from './hooks/usePersistedState.js';
 // --- core ---
 import { UNDOABLE_ACTIONS, createUndoReducer, initialState, reducer } from './core/reducer.js';
 import { STORAGE_KEY, storageAvailable, loadFromStorage, saveToStorage, sanitizeStateObj, sanitizeImportedState } from './core/storage.js';
@@ -558,6 +559,13 @@ function WhisperingWishesInner() {
     }
   }, [state.profile.profilePic, toast]);
 
+  // Characters marked owned manually in CollectionTab (long-press toggle / +/- counter) live
+  // entirely outside pull history, in their own persisted keys — read the same keys here so
+  // collectionData (and everything downstream, like Team tab's "only owned" auto-team) counts
+  // them as owned too, instead of only ever seeing gacha pull history.
+  const [manualOwnedChars, setManualOwnedChars] = usePersistedState('ww-owned-chars', []);
+  const [manualCharCounts, setManualCharCounts] = usePersistedState('ww-manual-counts', {});
+
   // Pre-compute all collection data in one pass
   // File import handler
   // P4: Memoized collection data - avoids recomputing 5x per render
@@ -590,14 +598,22 @@ function WhisperingWishesInner() {
     const ROVER_KEYS = ['Rover', 'Rover: Spectro', 'Rover: Havoc', 'Rover: Aero', 'Rover: Electro'];
     const roverOwned = Math.max(1, ...ROVER_KEYS.map(k => chars5[k] || 0));
     ROVER_KEYS.forEach(k => { chars5[k] = roverOwned; });
+    const chars4 = countItems(charHistory, 4, true);
+    // Fold in characters marked owned manually (long-press toggle / +/- counter in CollectionTab)
+    // that pull history alone wouldn't show — otherwise every consumer of collectionData (e.g.
+    // Team tab's "only owned" auto-team) treats them as unowned.
+    manualOwnedChars.forEach((name) => {
+      if (ALL_5STAR_RESONATORS.includes(name) && !chars5[name]) chars5[name] = manualCharCounts[name] || 1;
+      else if (ALL_4STAR_RESONATORS.includes(name) && !chars4[name]) chars4[name] = manualCharCounts[name] || 1;
+    });
     return {
-      chars5Counts: chars5, chars4Counts: countItems(charHistory, 4, true),
+      chars5Counts: chars5, chars4Counts: chars4,
       weaps5Counts: countItems(weapHistory, 5, false), weaps4Counts: countItems(weapHistory, 4, false),
       weaps3Counts: countItems(weapHistory, 3, false),
       weaps2Counts: countItems(weapHistory, 2, false),
       weaps1Counts: countItems(weapHistory, 1, false), sortItems
     };
-  }, [state.profile.featured.history, state.profile.standardChar?.history, state.profile.weapon.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
+  }, [state.profile.featured.history, state.profile.standardChar?.history, state.profile.weapon.history, state.profile.standardWeap?.history, state.profile.beginner?.history, manualOwnedChars, manualCharCounts]);
 
   // collectionMaskData moved to CollectionTab component
 
@@ -1252,6 +1268,10 @@ function WhisperingWishesInner() {
                 withCacheBuster={withCacheBuster}
                 refreshImages={refreshImages}
                 handleSetProfilePic={handleSetProfilePic}
+                ownedChars={manualOwnedChars}
+                setOwnedChars={setManualOwnedChars}
+                manualCounts={manualCharCounts}
+                setManualCounts={setManualCharCounts}
               />
 
             </Suspense>

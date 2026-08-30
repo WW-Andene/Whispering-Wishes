@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSessionState } from '../../hooks/useSessionState.js';
-import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
@@ -33,6 +32,10 @@ function CollectionTab({
   withCacheBuster,
   refreshImages,
   handleSetProfilePic,
+  ownedChars,
+  setOwnedChars,
+  manualCounts,
+  setManualCounts,
 }) {
   const { framingMode, editingImage, setEditingImage, getImageFraming } = useImageFramingContext();
   // Localized weapon names for grid card display — dataLookup passed to the grid is otherwise the
@@ -80,17 +83,10 @@ function CollectionTab({
     return () => clearTimeout(timer);
   }, []);
 
-  // ── Owned characters tracking (persisted to localStorage) ────────────────────
-  const [ownedChars, setOwnedChars] = usePersistedState('ww-owned-chars', []);
-  // ── Manual copy count overrides (long-press to add copies) ─────────────────
-  const [manualCounts, setManualCounts] = usePersistedState('ww-manual-counts', {});
-  // Re-sync from localStorage when profile is cleared (importedAt becomes null)
-  useEffect(() => {
-    if (!state.profile.importedAt) {
-      try { setOwnedChars(JSON.parse(localStorage.getItem('ww-owned-chars') || '[]')); } catch { setOwnedChars([]); }
-      try { setManualCounts(JSON.parse(localStorage.getItem('ww-manual-counts') || '{}')); } catch { setManualCounts({}); }
-    }
-  }, [state.profile.importedAt]);
+  // ── Owned characters tracking + manual copy count overrides ─────────────────
+  // Both now lifted to App.jsx (single `usePersistedState` instance per key) so collectionData —
+  // computed once in App.jsx and consumed by every tab, not just this one — sees manually-added
+  // characters as owned too (e.g. Team tab's "only owned" auto-team was ignoring them before).
   const toggleOwned = useCallback((name) => setOwnedChars(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]), []);
   // Floating +/- counter widget (replaces long-press +1 only)
   const [counterWidget, setCounterWidget] = useState(null); // { name, isCharacter, x, y }
