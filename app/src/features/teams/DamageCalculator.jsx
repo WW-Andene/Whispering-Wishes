@@ -160,7 +160,11 @@ const DamageCalculator = forwardRef(function DamageCalculator({
           }, 0);
         }}
         disabled={autoTeamBusy}
-        className="action-btn flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs text-cyan-400/80 hover:text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+        // Fixed min-width sized to the longer of the two labels ("Building…" vs "Auto Team") so
+        // swapping between them on click doesn't reflow the select/chevron sitting next to it in
+        // the card header — that reflow is what used to visibly "break" the row when triggered.
+        className="action-btn flex items-center justify-center gap-1 px-1.5 py-0.5 rounded text-2xs text-cyan-400/80 hover:text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+        style={{ minWidth: 96 }}
         aria-label={t('teams.damageCalc.autoTeamAria')}
         title={enemyEcho ? t('teams.damageCalc.autoTeamAria') : t('teams.damageCalc.autoTeamNoEnemy')}
       >
