@@ -218,7 +218,11 @@ public class CalculatorWidget extends AppWidgetProvider {
     // Tide (1:1, weapon track only) — Lustrous Tide (standard banner) is left out, since
     // it isn't governed by the Resonator/Weapon target picker at all. That total is shown
     // against the pulls still needed to close out charPity5/weapPity5 to hard pity for
-    // whichever track(s) are selected.
+    // whichever track(s) are selected, worst-cased out across the copy target (section 4's
+    // tappable pill, same readCopies() source): the first copy needs whatever's left of the
+    // current pity, every copy after that needs a full hardPity worth of pulls (no
+    // carry-over pity between 5-stars) — so the gauge visibly grows/shrinks as either the
+    // target picker or the copy target changes, not just as currency counts change.
     private void renderProgressSection(Context context, RemoteViews views, JSONObject data, String targetMode) {
         int hardPity = data != null ? data.optInt("hardPity", DEFAULT_HARD_PITY) : DEFAULT_HARD_PITY;
         int astritePerPull = data != null ? data.optInt("astritePerPull", DEFAULT_ASTRITE_PER_PULL) : DEFAULT_ASTRITE_PER_PULL;
@@ -228,7 +232,12 @@ public class CalculatorWidget extends AppWidgetProvider {
         int weapPullsLeft = Math.max(0, hardPity - weapPity);
         boolean wantChar = "char".equals(targetMode) || "both".equals(targetMode);
         boolean wantWeap = "weap".equals(targetMode) || "both".equals(targetMode);
-        int pullsNeeded = (wantChar ? charPullsLeft : 0) + (wantWeap ? weapPullsLeft : 0);
+
+        int charCopies = readCopies(context, "char", data);
+        int weapCopies = readCopies(context, "weap", data);
+        int charPullsNeeded = wantChar ? charPullsLeft + (charCopies - 1) * hardPity : 0;
+        int weapPullsNeeded = wantWeap ? weapPullsLeft + (weapCopies - 1) * hardPity : 0;
+        int pullsNeeded = charPullsNeeded + weapPullsNeeded;
 
         long astrite = data != null ? data.optLong("astrite", 0) : 0;
         long lunite = data != null ? data.optLong("lunite", 0) : 0;
