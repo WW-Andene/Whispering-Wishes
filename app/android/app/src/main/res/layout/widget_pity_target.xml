@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Home-screen "pity + copy target" widget — mode 4 of the Calculator-widget series
-     (see PityTargetWidget.java's own header). Fixed 4x5 size, not resizable — same fixed-
-     size reasoning as mode 3's target widget. Read-only display (RemoteViews has no
-     input view at all, and this is just a status readout, not a control).
+     (see PityTargetWidget.java's own header). Fixed 4 cells tall x 5 cells wide, not
+     resizable — same fixed-size reasoning as mode 3's target widget. Read-only display
+     (RemoteViews has no input view at all, and this is just a status readout, not a
+     control).
 
-     Both blocks exist in the layout at all times; PityTargetWidget.java toggles which
-     one(s) are VISIBLE based on TargetWidget.java's (mode 3) current Resonator/Both/
-     Weapon choice — when both are visible they split the widget evenly (layout_weight),
-     when only one is visible it fills the whole widget. -->
+     Both blocks exist in the layout at all times, side by side; PityTargetWidget.java
+     toggles which one(s) are VISIBLE based on TargetWidget.java's (mode 3) current
+     Resonator/Both/Weapon choice — when both are visible they split the widget evenly
+     (layout_weight), when only one is visible it fills the whole widget. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:background="@drawable/widget_background"
     android:padding="10dp">
 
     <LinearLayout
         android:id="@+id/widget_pity_block_char"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center">
@@ -48,8 +49,8 @@
 
     <LinearLayout
         android:id="@+id/widget_pity_block_weap"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center">

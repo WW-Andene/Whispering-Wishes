@@ -1,127 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Home-screen "currency progress" widget — mode 2 of the Calculator-widget series (see
-     CurrencyProgressWidget.java's own header). 2 cells wide (room for icon + value text +
-     a readable progress bar), resizable in height only from 2 to 5 cells — same
-     always-shown-first-two / reveal-one-row-per-resize-step pattern as widget_currency.xml
-     (CurrencyWidget.java, mode 1).
-
-     ProgressBar IS on RemoteViews' supported-view allowlist (unlike a plain View — see
-     widget_banner.xml's own comment on that) via the platform's dedicated
-     RemoteViews.setProgressBar()/setProgressBarProgressTintList() methods. -->
+     CurrencyProgressWidget.java's own header). Fixed 2 cells tall x 5 cells wide, NOT
+     resizable (same H x W convention as modes 1/3/4 — see CurrencyWidget.java's own
+     history for why this app now reads "NxM" as height-by-width) — all five currencies
+     shown side by side at once as columns, each column stacking its icon/value line over
+     its own progress bar within the fixed 2-cell height. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:background="@drawable/widget_background"
-    android:paddingLeft="10dp"
-    android:paddingRight="10dp"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
     android:paddingTop="6dp"
     android:paddingBottom="6dp">
 
     <LinearLayout
-        android:id="@+id/widget_progress_row_astrite"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:gravity="center_vertical">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-            <ImageView android:id="@+id/widget_progress_icon_astrite" android:layout_width="16dp" android:layout_height="16dp" android:contentDescription="@null" />
-            <TextView android:id="@+id/widget_progress_value_astrite" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginLeft="5dp" android:gravity="end" android:textColor="#facc15" android:textSize="11sp" android:textStyle="bold" android:singleLine="true" />
+        android:gravity="center_vertical"
+        android:layout_marginRight="6dp">
+        <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
+            <ImageView android:id="@+id/widget_progress_icon_astrite" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
         </LinearLayout>
+        <TextView android:id="@+id/widget_progress_value_astrite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#facc15" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
         <ProgressBar
             android:id="@+id/widget_progress_bar_astrite"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="6dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="3dp"
             android:max="100"
             android:progress="0" />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/widget_progress_row_lunite"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:gravity="center_vertical">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-            <ImageView android:id="@+id/widget_progress_icon_lunite" android:layout_width="16dp" android:layout_height="16dp" android:contentDescription="@null" />
-            <TextView android:id="@+id/widget_progress_value_lunite" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginLeft="5dp" android:gravity="end" android:textColor="#67e8f9" android:textSize="11sp" android:textStyle="bold" android:singleLine="true" />
-        </LinearLayout>
+        android:gravity="center_vertical"
+        android:layout_marginRight="6dp">
+        <ImageView android:id="@+id/widget_progress_icon_lunite" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
+        <TextView android:id="@+id/widget_progress_value_lunite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#67e8f9" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
         <ProgressBar
             android:id="@+id/widget_progress_bar_lunite"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="6dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="3dp"
             android:max="100"
             android:progress="0" />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/widget_progress_row_radiant"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center_vertical"
-        android:visibility="gone">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-            <ImageView android:id="@+id/widget_progress_icon_radiant" android:layout_width="16dp" android:layout_height="16dp" android:contentDescription="@null" />
-            <TextView android:id="@+id/widget_progress_value_radiant" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginLeft="5dp" android:gravity="end" android:textColor="#fde047" android:textSize="11sp" android:textStyle="bold" android:singleLine="true" />
-        </LinearLayout>
+        android:layout_marginRight="6dp">
+        <ImageView android:id="@+id/widget_progress_icon_radiant" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
+        <TextView android:id="@+id/widget_progress_value_radiant" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#fde047" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
         <ProgressBar
             android:id="@+id/widget_progress_bar_radiant"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="6dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="3dp"
             android:max="100"
             android:progress="0" />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/widget_progress_row_lustrous"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="vertical"
         android:gravity="center_vertical"
-        android:visibility="gone">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-            <ImageView android:id="@+id/widget_progress_icon_lustrous" android:layout_width="16dp" android:layout_height="16dp" android:contentDescription="@null" />
-            <TextView android:id="@+id/widget_progress_value_lustrous" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginLeft="5dp" android:gravity="end" android:textColor="#22d3ee" android:textSize="11sp" android:textStyle="bold" android:singleLine="true" />
-        </LinearLayout>
+        android:layout_marginRight="6dp">
+        <ImageView android:id="@+id/widget_progress_icon_lustrous" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
+        <TextView android:id="@+id/widget_progress_value_lustrous" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#22d3ee" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
         <ProgressBar
             android:id="@+id/widget_progress_bar_lustrous"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="6dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="3dp"
             android:max="100"
             android:progress="0" />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/widget_progress_row_forging"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:gravity="center_vertical"
-        android:visibility="gone">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-            <ImageView android:id="@+id/widget_progress_icon_forging" android:layout_width="16dp" android:layout_height="16dp" android:contentDescription="@null" />
-            <TextView android:id="@+id/widget_progress_value_forging" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginLeft="5dp" android:gravity="end" android:textColor="#f9a8d4" android:textSize="11sp" android:textStyle="bold" android:singleLine="true" />
-        </LinearLayout>
+        android:gravity="center_vertical">
+        <ImageView android:id="@+id/widget_progress_icon_forging" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
+        <TextView android:id="@+id/widget_progress_value_forging" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#f9a8d4" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
         <ProgressBar
             android:id="@+id/widget_progress_bar_forging"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="6dp"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="3dp"
             android:max="100"
             android:progress="0" />
     </LinearLayout>

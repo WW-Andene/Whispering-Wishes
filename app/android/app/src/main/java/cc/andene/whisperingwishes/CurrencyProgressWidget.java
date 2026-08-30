@@ -7,19 +7,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.RemoteViews;
 
 import org.json.JSONObject;
 
 // Home-screen "currency progress" widget — mode 2 of the Calculator-tab widget series
-// (see CurrencyWidget.java, mode 1, for the plain-log version this builds on). 2 cells
-// wide (room for icon + value text + a readable bar), resizable in height from 2 to 5
-// cells — Astrite/Lunite always shown, the three Tides reveal one row at a time as the
-// widget grows, same size-tiered-reveal pattern as mode 1 and PulseBannerWidget.java's
-// own secondary block.
+// (see CurrencyWidget.java, mode 1, for the plain-log version this builds on). Fixed 2
+// cells tall x 5 cells wide, NOT resizable (same H x W convention as modes 1/3/4) — all
+// five currencies shown side by side at once as columns, each stacking its icon/value
+// line over its own progress bar within the fixed 2-cell height.
 //
 // Each bar's 100% mark is, in priority order:
 //   1. DYNAMIC — "currency needed to reach the guaranteed pity pull" for whichever pity
@@ -52,11 +49,6 @@ public class CurrencyProgressWidget extends AppWidgetProvider {
     private static final int DEFAULT_HARD_PITY = 80;
     private static final int DEFAULT_ASTRITE_PER_PULL = 160;
 
-    // Same 70dp*cells-30dp grid math as CurrencyWidget.java's reveal thresholds.
-    private static final int REVEAL_ROW3_DP = 180; // 3 cells
-    private static final int REVEAL_ROW4_DP = 250; // 4 cells
-    private static final int REVEAL_ROW5_DP = 320; // 5 cells
-
     // Which pity track(s) a currency's dynamic goal draws from — see this class's own
     // header for why Astrite/Lunite pull from whichever track(s) mode 3 selected, while
     // Radiant/Forging Tide are pinned to one specific track regardless of mode 3's choice.
@@ -65,24 +57,26 @@ public class CurrencyProgressWidget extends AppWidgetProvider {
     private static final class Currency {
         final String key, goalKey, asset;
         final PityTrack track;
-        final int rowId, iconId, valueId, barId;
-        Currency(String key, String goalKey, String asset, PityTrack track, int rowId, int iconId, int valueId, int barId) {
+        final int iconId, valueId, barId;
+        Currency(String key, String goalKey, String asset, PityTrack track, int iconId, int valueId, int barId) {
             this.key = key; this.goalKey = goalKey; this.asset = asset; this.track = track;
-            this.rowId = rowId; this.iconId = iconId; this.valueId = valueId; this.barId = barId;
+            this.iconId = iconId; this.valueId = valueId; this.barId = barId;
         }
     }
 
+    // Fixed size means all five always render — no reveal thresholds needed (unlike mode
+    // 1, whose resizable width still uses one).
     private static final Currency[] CURRENCIES = {
         new Currency("astrite", "astriteGoal", "ui-icons/Currency-Astrite.webp", PityTrack.EITHER,
-            R.id.widget_progress_row_astrite, R.id.widget_progress_icon_astrite, R.id.widget_progress_value_astrite, R.id.widget_progress_bar_astrite),
+            R.id.widget_progress_icon_astrite, R.id.widget_progress_value_astrite, R.id.widget_progress_bar_astrite),
         new Currency("lunite", "luniteGoal", "ui-icons/Currency-Lunite.webp", PityTrack.EITHER,
-            R.id.widget_progress_row_lunite, R.id.widget_progress_icon_lunite, R.id.widget_progress_value_lunite, R.id.widget_progress_bar_lunite),
+            R.id.widget_progress_icon_lunite, R.id.widget_progress_value_lunite, R.id.widget_progress_bar_lunite),
         new Currency("radiant", "radiantGoal", "ui-icons/Currency-Radiant-Tide.webp", PityTrack.CHAR_ONLY,
-            R.id.widget_progress_row_radiant, R.id.widget_progress_icon_radiant, R.id.widget_progress_value_radiant, R.id.widget_progress_bar_radiant),
+            R.id.widget_progress_icon_radiant, R.id.widget_progress_value_radiant, R.id.widget_progress_bar_radiant),
         new Currency("lustrous", "lustrousGoal", "ui-icons/Currency-Lustrous-Tide.webp", PityTrack.NONE,
-            R.id.widget_progress_row_lustrous, R.id.widget_progress_icon_lustrous, R.id.widget_progress_value_lustrous, R.id.widget_progress_bar_lustrous),
+            R.id.widget_progress_icon_lustrous, R.id.widget_progress_value_lustrous, R.id.widget_progress_bar_lustrous),
         new Currency("forging", "forgingGoal", "ui-icons/Currency-Forging-Tide.webp", PityTrack.WEAP_ONLY,
-            R.id.widget_progress_row_forging, R.id.widget_progress_icon_forging, R.id.widget_progress_value_forging, R.id.widget_progress_bar_forging),
+            R.id.widget_progress_icon_forging, R.id.widget_progress_value_forging, R.id.widget_progress_bar_forging),
     };
 
     @Override
@@ -90,11 +84,6 @@ public class CurrencyProgressWidget extends AppWidgetProvider {
         for (int appWidgetId : appWidgetIds) {
             updateWidget(context, appWidgetManager, appWidgetId);
         }
-    }
-
-    @Override
-    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager, int appWidgetId, Bundle newOptions) {
-        updateWidget(context, appWidgetManager, appWidgetId);
     }
 
     private void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
@@ -131,18 +120,7 @@ public class CurrencyProgressWidget extends AppWidgetProvider {
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_currency_progress);
 
-        Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
-        int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
-
-        for (int i = 0; i < CURRENCIES.length; i++) {
-            Currency c = CURRENCIES[i];
-            boolean visible = i < 2
-                || (i == 2 && heightDp >= REVEAL_ROW3_DP)
-                || (i == 3 && heightDp >= REVEAL_ROW4_DP)
-                || (i == 4 && heightDp >= REVEAL_ROW5_DP);
-            views.setViewVisibility(c.rowId, visible ? View.VISIBLE : View.GONE);
-            if (!visible) continue;
-
+        for (Currency c : CURRENCIES) {
             long value = data != null ? data.optLong(c.key, 0) : 0;
             long manualGoal = data != null ? data.optLong(c.goalKey, 0) : 0;
 
