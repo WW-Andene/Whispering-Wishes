@@ -161,10 +161,15 @@ public class CalculatorWidget extends AppWidgetProvider {
 
         // "Log 2.0" theme art as the widget's own background — rounded the same way
         // PulseBannerWidget.java rounds its banner art, so the corners line up with
-        // widget_background's own radius/the system-drawn widget frame on API 31+.
+        // widget_background's own radius/the system-drawn widget frame on API 31+. The
+        // darkening scrim is baked into this SAME bitmap (uniform, not gradient — this
+        // widget's rows span the full height) rather than a separate square overlay, which
+        // would paint back over the rounded corners this call just drew — see
+        // roundedCornersWithUniformScrim's own comment.
         Bitmap bgArt = WidgetAssetUtils.decodeAsset(context, BG_ART_ASSET, BG_ART_PX, Bitmap.Config.RGB_565);
         if (bgArt != null) {
-            views.setImageViewBitmap(R.id.widget_bg_art, WidgetAssetUtils.roundedCorners(bgArt, WidgetAssetUtils.widgetCornerRadiusPx(context)));
+            views.setImageViewBitmap(R.id.widget_bg_art, WidgetAssetUtils.roundedCornersWithUniformScrim(
+                bgArt, WidgetAssetUtils.widgetCornerRadiusPx(context), 0xB3080c14));
         }
 
         Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);

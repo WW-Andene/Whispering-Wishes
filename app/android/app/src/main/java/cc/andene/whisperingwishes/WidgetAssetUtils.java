@@ -225,6 +225,24 @@ final class WidgetAssetUtils {
     // regardless of the Paint's shader, drawing the gradient with a SECOND drawRoundRect call
     // (same rect/radius) confines it to the exact same rounded bounds as the art beneath it,
     // with no separate clip path needed.
+    // Same rounding as roundedCorners, PLUS a flat, uniform darkening tint baked into the
+    // SAME bitmap — for a background that has to stay readable under content spread across
+    // its WHOLE area (CalculatorWidget.java's stacked rows), not just along one edge the
+    // way roundedCornersWithScrim's bottom-to-top gradient is built for. Baking it in
+    // (rather than a separate square FrameLayout drawn on top) is required, not just
+    // tidier: a square overlay over an already-rounded bitmap paints right back over
+    // whichever corners sit under it, which is exactly what roundedCornersWithScrim's own
+    // comment above documents for the gradient case.
+    static Bitmap roundedCornersWithUniformScrim(Bitmap src, float radiusPx, int scrimColor) {
+        Bitmap output = roundedCorners(src, radiusPx);
+        Canvas canvas = new Canvas(output);
+        RectF rect = new RectF(0, 0, output.getWidth(), output.getHeight());
+        Paint scrimPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        scrimPaint.setColor(scrimColor);
+        canvas.drawRoundRect(rect, radiusPx, radiusPx, scrimPaint);
+        return output;
+    }
+
     static Bitmap roundedCornersWithScrim(Bitmap src, float radiusPx) {
         Bitmap output = roundedCorners(src, radiusPx);
         Canvas canvas = new Canvas(output);
