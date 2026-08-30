@@ -301,7 +301,7 @@ function CalculatorTab({ state, dispatch }) {
                         <div>
                           <label className="text-base mb-2 flex items-center gap-1 font-medium text-yellow-400"><img src={getCurrencyIcon('Radiant Tide')} alt="" className="w-4 h-4" onError={hideOnError} />{t('calculator.radiantTides')}</label>
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.radiantTides')} />
-                          <div className="flex gap-1 mt-1.5">
+                          <div className="flex gap-1 mt-1.5 flex-wrap">
                             {[1, 5, 10].map(amt => (
                               <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={t('calculator.addRadiantAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-gold" style={{ paddingLeft: 8, paddingRight: 8 }}>+{amt}</button>
                             ))}
@@ -313,7 +313,7 @@ function CalculatorTab({ state, dispatch }) {
                         <div>
                           <label className="text-base mb-2 flex items-center gap-1 font-medium text-pink-400"><img src={getCurrencyIcon('Forging Tide')} alt="" className="w-4 h-4" onError={hideOnError} />{t('calculator.forgingTides')}</label>
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.forgingTides')} />
-                          <div className="flex gap-1 mt-1.5">
+                          <div className="flex gap-1 mt-1.5 flex-wrap">
                             {[1, 5, 10].map(amt => (
                               <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={t('calculator.addForgingAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-pink" style={{ paddingLeft: 8, paddingRight: 8 }}>+{amt}</button>
                             ))}

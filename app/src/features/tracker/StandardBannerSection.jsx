@@ -5,10 +5,8 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
 
-import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
-
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { generateMaskGradient, BANNER_CARD_OVERLAY_STYLE, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
+import { generateMaskGradient, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
 import { ConvenePullPills } from '../../shared/components/ConvenePullPills.jsx';
 import { ConvenePullSimModal } from '../../shared/components/ConvenePullSimModal.jsx';
 import { storageAvailable } from '../../core/storage.js';
@@ -134,7 +132,6 @@ StandardBannerOverlay.displayName = 'StandardBannerOverlay';
 const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings, imagePosition, kind, calc, setDetailModal }) => {
   const stdMask = generateMaskGradient(visualSettings.standardFadePosition ?? 50, visualSettings.standardFadeIntensity ?? 100);
   const stdOpacity = (visualSettings.standardOpacity ?? 100) / 100;
-  const hasStats = profileData?.history?.length > 0;
   const isFull = visualSettings?.animationsEnabled === 'full';
   const [pullSim, setPullSim] = useState(null);
   const [pullSimId, setPullSimId] = useState(0);
@@ -168,10 +165,11 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
         />
       )}
       {bannerImage && isFull && <StandardBannerOverlay w={0} h={0} />}
-      {/* Bottom-right, same as BannerCard's pills elsewhere — not top-right like this
-          section used to have it. Sits above the pity-stat bar (not flush at bottom-2)
-          when hasStats reserves that bottom strip, so the two never overlap. */}
-      <div className={`absolute right-2 z-20 ${hasStats ? 'bottom-16' : 'bottom-2'}`}>
+      {/* Bottom-right, same as BannerCard's pills elsewhere. The pity/convene stat bar this
+          used to share the banner card with now lives in TrackerTab's header row instead
+          (see PityTrackerCompact usage there), so the pills no longer need to reserve space
+          above it. */}
+      <div className="absolute right-2 bottom-2 z-20">
         <ConvenePullPills kind={kind} onPull={(c) => { setPullSim(c); setPullSimId(id => id + 1); }} showTide={calc?.lustrous > 0} />
       </div>
       <ConvenePullSimModal
@@ -193,7 +191,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           </div>
           <h4 className="font-bold text-xl text-white leading-tight">{title}</h4>
         </div>
-        <div className={hasStats ? 'mb-14' : ''}>
+        <div>
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">
             {kind === 'standardWeap' ? t('tracker.conveneSim.targetWeaponLabel') : 'Available 5★'}
           </div>
@@ -216,26 +214,6 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           </div>
         </div>
       </div>
-      {hasStats && (
-        <div className="absolute bottom-0 left-0 right-0 z-10 border-t border-white/15" style={BANNER_CARD_OVERLAY_STYLE}>
-          <div className="flex items-center gap-3">
-            <div className="flex-1 flex items-center gap-3">
-              <div className="text-center">
-                <div className={`font-bold text-xl kuro-number ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold animate-pulse' : profileData.pity5 >= 75 ? 'text-red-400' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400' : 'text-cyan-400'}`}>{profileData.pity5}<span className="text-gray-400 text-sm">/{HARD_PITY}</span></div>
-                <div className={`text-sm mt-0.5 ${profileData.pity5 >= HARD_PITY ? 'text-red-500 font-bold' : profileData.pity5 >= 75 ? 'text-red-400 font-medium' : profileData.pity5 >= SOFT_PITY_START ? 'text-amber-400 font-medium' : 'text-gray-400'}`}>{profileData.pity5 >= HARD_PITY ? '★ GUARANTEED!' : profileData.pity5 >= 75 ? '⚠ High Pity!' : profileData.pity5 >= SOFT_PITY_START ? 'Soft Pity!' : '5★ Pity'}</div>
-              </div>
-              <div className="text-center">
-                <div className="text-purple-400 font-bold text-xl kuro-number">{profileData.pity4}<span className="text-gray-400 text-sm">/10</span></div>
-                <div className="text-gray-400 text-sm mt-0.5">4★ Pity</div>
-              </div>
-              <div className="text-center">
-                <div className="text-white font-bold text-xl kuro-number">{profileData.history.length}</div>
-                <div className="text-gray-400 text-sm mt-0.5">{t('tracker.convenesLabel')}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 });

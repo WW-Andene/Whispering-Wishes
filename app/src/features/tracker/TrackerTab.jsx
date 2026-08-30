@@ -150,6 +150,27 @@ function TrackerTab({
                     } : null}
                   />
                 )}
+                {trackerCategory === 'standard' && (
+                  // Two independent pity counters (Standard Resonator + Standard Weapon each
+                  // have their own history) sit here above the banners, same as the character/
+                  // weapon categories' single tracker — not overlaid on the banner art itself,
+                  // which is where these used to live before StandardBannerSection's own
+                  // in-image stat bar was retired in favor of this shared header spot.
+                  <div className="flex flex-col items-end gap-0.5">
+                    {state.profile.standardChar?.history?.length > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-500 text-2xs uppercase tracking-wider">{t('tracker.standardResonatorLabel')}</span>
+                        <PityTrackerCompact isChar showGuaranteed={false} stats={{ pity5: state.profile.standardChar.pity5, pity4: state.profile.standardChar.pity4 }} />
+                      </div>
+                    )}
+                    {state.profile.standardWeap?.history?.length > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-gray-500 text-2xs uppercase tracking-wider">{t('tracker.standardWeaponLabel')}</span>
+                        <PityTrackerCompact isChar={false} showGuaranteed={false} stats={{ pity5: state.profile.standardWeap.pity5, pity4: state.profile.standardWeap.pity4 }} />
+                      </div>
+                    )}
+                  </div>
+                )}
                 <GachaInfoButton isChar={trackerCategory !== 'weapon'} />
               </div>
             </div>

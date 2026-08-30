@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
+import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Move, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
@@ -750,12 +750,13 @@ function ProfileTab({
                 {(() => {
                   const targetKey = bgTarget === 'header' ? 'headerBg' : bgTarget === 'navigation' ? 'navBg' : 'appBg';
                   const currentBg = visualSettings[targetKey];
+                  const posKey = bgTarget === 'header' ? 'header' : bgTarget === 'navigation' ? 'nav' : 'bg';
+                  const isRepositioning = bgFramingMode && editingBgTarget === posKey;
 
                   const selectImage = (type, id, url, pos, poster) => {
                     if (currentBg?.id === id && currentBg?.type === type) {
                       saveVisualSettings({ ...visualSettings, [targetKey]: null });
                     } else {
-                      const posKey = bgTarget === 'header' ? 'header' : bgTarget === 'navigation' ? 'nav' : 'bg';
                       // Use custom position if user adjusted it before, otherwise fall back to hardcoded default
                       const customPos = getCustomBgPosition(posKey, id);
                       const rawPos = customPos || pos?.[posKey] || 'center center';
@@ -868,11 +869,42 @@ function ProfileTab({
                       </div>
                     )}
 
-                    {/* Clear current target — hidden while collapsed, same as the category tabs */}
+                    {/* Reposition / Clear current target — hidden while collapsed, same as the category tabs.
+                        Reposition opens the same d-pad-driven objectPosition editor this app already has
+                        (previously reachable only through the hidden admin mini panel) so any user can
+                        conveniently nudge a chosen image into place instead of being stuck with it however
+                        it happened to crop by default. */}
                     {!bgSectionCollapsed && currentBg && (
-                      <button onClick={() => saveVisualSettings({ ...visualSettings, [targetKey]: null })} className="kuro-btn w-full text-sm mb-2 text-red-400 border-red-500/20 hover:bg-red-500/10">
-                        {t('profile.display.clearImage', { target: bgTarget })}
-                      </button>
+                      <div className="flex gap-1.5 mb-2">
+                        <button
+                          onClick={() => { if (isRepositioning) { setBgFramingMode(false); setEditingBgTarget(null); } else { setBgFramingMode(true); setEditingBgTarget(posKey); } }}
+                          className={`kuro-btn flex-1 text-sm ${isRepositioning ? 'active-cyan' : ''}`}
+                          aria-label={t('profile.display.repositionAria', { target: bgTarget })}
+                        >
+                          <Move size={12} className="inline mr-1" />{isRepositioning ? t('profile.display.repositionDone') : t('profile.display.reposition')}
+                        </button>
+                        <button onClick={() => saveVisualSettings({ ...visualSettings, [targetKey]: null })} className="kuro-btn flex-1 text-sm text-red-400 border-red-500/20 hover:bg-red-500/10">
+                          {t('profile.display.clearImage', { target: bgTarget })}
+                        </button>
+                      </div>
+                    )}
+
+                    {!bgSectionCollapsed && isRepositioning && currentBg && (
+                      <div className="p-2 mb-3 rounded-lg border border-cyan-500/30 bg-cyan-500/10">
+                        <div className="text-cyan-400 text-sm font-medium mb-2 text-center">{t('profile.display.repositioningTarget', { target: bgTarget })}</div>
+                        <div className="text-gray-400 text-2xs mb-2 font-mono text-center">{getBgPositionLabel()}</div>
+                        <div className="grid grid-cols-3 gap-1 w-24 mx-auto">
+                          <div />
+                          <button onClick={() => updateBgPosition(0, -2)} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.moveUpAria')}>▲</button>
+                          <div />
+                          <button onClick={() => updateBgPosition(-2, 0)} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.moveLeftAria')}>◀</button>
+                          <button onClick={() => saveVisualSettings({ ...visualSettings, [targetKey]: { ...currentBg, objectPosition: '50% 50%' } })} className="bg-red-500/20 text-red-400 rounded p-1 text-2xs hover:bg-red-500/30 active:scale-95" aria-label={t('profile.display.resetPositionAria')}>{t('profile.display.resetPosition')}</button>
+                          <button onClick={() => updateBgPosition(2, 0)} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.moveRightAria')}>▶</button>
+                          <div />
+                          <button onClick={() => updateBgPosition(0, 2)} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.moveDownAria')}>▼</button>
+                          <div />
+                        </div>
+                      </div>
                     )}
 
                     {/* Image grid — stays visible (capped to a few rows) even while the section

@@ -268,7 +268,7 @@ BannerCard.displayName = 'BannerCard';
 // once per card. Sized to sit inline at the same ~28px row height as that button (w-7 h-7) —
 // text-sm/text-xs here, versus the old overlay's text-xl, since this is now a compact summary
 // next to an icon rather than a full-width bar of its own.
-const PityTrackerCompact = memo(({ stats, isChar }) => {
+const PityTrackerCompact = memo(({ stats, isChar, showGuaranteed = true }) => {
   if (!stats) return null;
   const pity5Color = stats.pity5 >= HARD_PITY
     ? 'text-red-500'
@@ -285,8 +285,14 @@ const PityTrackerCompact = memo(({ stats, isChar }) => {
       <span className={`font-bold kuro-number ${pity5Color}`}>{stats.pity5}<span className="text-gray-400 font-normal">/{HARD_PITY}</span></span>
       <span className="text-gray-600">·</span>
       <span className="text-purple-400 font-medium kuro-number">{stats.pity4}<span className="text-gray-400">/10</span></span>
-      <span className="text-gray-600">·</span>
-      <span className={`font-semibold ${guaranteed.cls}`}>{guaranteed.text}</span>
+      {/* Standard banners have no 50/50 rate-up mechanic — nothing to be "guaranteed" out
+          of — so this segment only makes sense for the featured character/weapon banners. */}
+      {showGuaranteed && (
+        <>
+          <span className="text-gray-600">·</span>
+          <span className={`font-semibold ${guaranteed.cls}`}>{guaranteed.text}</span>
+        </>
+      )}
     </div>
   );
 });

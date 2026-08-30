@@ -94,6 +94,7 @@ export const DEFAULT_IMAGE_FRAMING = Object.freeze({
   'team-Rover: Spectro': { x: 22, y: -16, zoom: 240 },
   'team-Rover: Aero': { x: 22, y: -16, zoom: 230 },
   'team-Rover: Havoc': { x: 24, y: -16, zoom: 230 },
+  'team-Rover: Electro': { x: 24, y: -16, zoom: 260 },
   'team-Encore': { x: 0, y: -14, zoom: 150 },
   'team-Jianxin': { x: 2, y: -18, zoom: 180 },
   'team-Lingyang': { x: -4, y: -12, zoom: 160 },
