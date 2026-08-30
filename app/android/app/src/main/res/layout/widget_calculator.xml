@@ -102,7 +102,20 @@
                 <ImageView android:id="@+id/widget_progress_icon" android:layout_width="32dp" android:layout_height="32dp" android:contentDescription="@null" />
                 <TextView android:id="@+id/widget_progress_value" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginLeft="6dp" android:textColor="#e4e7ee" android:textSize="16sp" android:textStyle="bold" android:singleLine="true" />
             </LinearLayout>
-            <ProgressBar android:id="@+id/widget_progress_bar" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="12dp" android:layout_marginTop="4dp" android:max="100" android:progress="0" />
+            <!-- 5 stacked bars, not 1 — RemoteViews can't tint a ProgressBar's fill color
+                 per-instance below API 31 (setProgressTintList only exists from API 31, and
+                 minSdkVersion here is 24), so each rarity-tier color is its own pre-styled
+                 ProgressBar (progressDrawable baked in at build time) and
+                 CalculatorWidget.renderProgressSection shows only the one matching the
+                 current percent, hiding the rest — same stacked-overlay pattern already
+                 used for the target picker's own selected/unselected backgrounds. -->
+            <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp">
+                <ProgressBar android:id="@+id/widget_progress_bar_default" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_default" android:max="100" android:progress="0" />
+                <ProgressBar android:id="@+id/widget_progress_bar_green" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_green" android:max="100" android:progress="0" android:visibility="gone" />
+                <ProgressBar android:id="@+id/widget_progress_bar_blue" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_blue" android:max="100" android:progress="0" android:visibility="gone" />
+                <ProgressBar android:id="@+id/widget_progress_bar_purple" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_purple" android:max="100" android:progress="0" android:visibility="gone" />
+                <ProgressBar android:id="@+id/widget_progress_bar_gold" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_gold" android:max="100" android:progress="0" android:visibility="gone" />
+            </FrameLayout>
         </LinearLayout>
 
         <!-- ═══ Row 3 — Pull target picker (revealed at height >= 3 cells) ═══ -->

@@ -291,10 +291,34 @@ public class CalculatorWidget extends AppWidgetProvider {
         int percent = pullsNeeded > 0 ? (int) Math.min(100, Math.round(pullsOwned * 100.0 / pullsNeeded)) : 0;
         views.setTextViewText(R.id.widget_progress_value,
             pullsNeeded > 0 ? pullsOwned + " / " + pullsNeeded + " pulls" : pullsOwned + " pulls");
-        views.setProgressBar(R.id.widget_progress_bar, 100, percent, false);
+        setProgressTier(views, percent);
 
         Bitmap icon = WidgetAssetUtils.decodeAsset(context, "ui-icons/Currency-Astrite.webp", GAUGE_ICON_PX);
         if (icon != null) views.setImageViewBitmap(R.id.widget_progress_icon, icon);
+    }
+
+    // 5 stacked ProgressBars, not 1 — RemoteViews can't tint a ProgressBar's fill color
+    // per-instance below API 31 (setProgressTintList is API 31+; minSdkVersion here is 24),
+    // so each rarity-tier color is baked into its own progressDrawable at build time
+    // (widget_progress_default/green/blue/purple/gold) and this shows only the one
+    // matching the current percent, hiding the rest. Same 20/40/60/80% rarity-tier
+    // thresholds as the app's own 2/3/4/5-star gacha rarities.
+    private static void setProgressTier(RemoteViews views, int percent) {
+        int visibleId;
+        if (percent >= 80) visibleId = R.id.widget_progress_bar_gold;
+        else if (percent >= 60) visibleId = R.id.widget_progress_bar_purple;
+        else if (percent >= 40) visibleId = R.id.widget_progress_bar_blue;
+        else if (percent >= 20) visibleId = R.id.widget_progress_bar_green;
+        else visibleId = R.id.widget_progress_bar_default;
+
+        int[] allIds = {
+            R.id.widget_progress_bar_default, R.id.widget_progress_bar_green,
+            R.id.widget_progress_bar_blue, R.id.widget_progress_bar_purple, R.id.widget_progress_bar_gold,
+        };
+        for (int id : allIds) {
+            views.setViewVisibility(id, id == visibleId ? View.VISIBLE : View.GONE);
+            views.setProgressBar(id, 100, percent, false);
+        }
     }
 
     // ── Section 3 — pull target picker ────────────────────────────────────────────────
