@@ -84,6 +84,33 @@
                 android:resource="@xml/calculator_widget_info" />
         </receiver>
 
+        <!-- Soundtrack widget — plays the app's own ambient "Log Screen" music tracks. Same
+             exported="true" requirement as the other widget receivers above; needs no extra
+             intent-filter beyond APPWIDGET_UPDATE since its buttons talk directly to
+             SoundtrackPlaybackService (PendingIntent.getService()), not back to this
+             receiver. -->
+        <receiver
+            android:name=".SoundtrackWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/soundtrack_widget_info" />
+        </receiver>
+
+        <!-- Real playback engine behind the Soundtrack widget above — see its own file header
+             for why a genuine FOREGROUND service (foregroundServiceType="mediaPlayback",
+             the standard type for this, unlike PullBubbleService's "specialUse") is required
+             rather than a plain one. Toggled/skipped via PendingIntent.getService() from
+             SoundtrackWidget's own buttons (our own app, so exported="false" is correct —
+             same reasoning as every other plain Service in this file). -->
+        <service
+            android:name=".SoundtrackPlaybackService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+
         <!-- Small floating dialog opened via PendingIntent.getActivity() from
              CalculatorWidget's own row-1 currency taps — same cross-app-caller reasoning as
              ConveneAnimationActivity below (PendingIntents run with their creating app's
@@ -215,6 +242,9 @@
          PullBubbleService, see its own manifest entry's comment for why "specialUse" rather
          than one of the other standard types. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- Required (API 34+) specifically for a foregroundServiceType="mediaPlayback" service —
+         SoundtrackPlaybackService. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <!-- Normal (not dangerous) permission — no runtime prompt needed, just this declaration.
          Required for WallpaperManager.setBitmap(), used by WallpaperPlugin to set a collection
          asset as the phone's home/lock screen wallpaper. -->

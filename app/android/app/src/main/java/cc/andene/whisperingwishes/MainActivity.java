@@ -416,5 +416,6 @@ public class MainActivity extends BridgeActivity {
         // change), so it's the natural place to ask for a sooner update.
         PulseBannerWidget.requestUpdate(this);
         CalculatorWidget.requestUpdate(this);
+        SoundtrackWidget.requestUpdate(this);
     }
 }

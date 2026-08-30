@@ -207,17 +207,19 @@ final class WidgetAssetUtils {
         return 16f * context.getResources().getDisplayMetrics().density; // matches widget_background.xml's 16dp
     }
 
-    // android.widget.VideoView (and MediaPlayer underneath it) does NOT understand the
-    // "file:///android_asset/..." URI scheme at all — that's a WebView-only convention.
-    // Handing it one doesn't throw up front; setVideoURI() accepts it, but the underlying
-    // MediaPlayer.setDataSource() fails once playback is actually attempted, firing
-    // VideoView's onError listener (typically near-instantly) instead of ever playing — from
-    // the outside that just looks like the play button doing nothing. The only reliable way
-    // to hand VideoView a bundled asset is a real filesystem path, so this copies the asset
-    // into the app's cache dir once (skipped on every later call once the same file exists)
-    // and returns a plain file:// Uri pointing at that real, VideoView-playable file.
-    static Uri cachedAssetVideoUri(Context context, String assetPath) {
-        File outFile = new File(context.getCacheDir(), "widget-video-" + assetPath.replace('/', '_'));
+    // android.widget.VideoView/MediaPlayer does NOT understand the "file:///android_asset/..."
+    // URI scheme at all — that's a WebView-only convention. Handing it one doesn't throw up
+    // front; setVideoURI()/setDataSource() accept it, but resolving it fails once playback is
+    // actually attempted, firing an error listener (typically near-instantly) instead of ever
+    // playing — from the outside that just looks like the play button doing nothing. The only
+    // reliable way to hand VideoView/MediaPlayer a bundled asset is a real filesystem path, so
+    // this copies the asset into the app's cache dir once (skipped on every later call once
+    // the same file exists) and returns a plain file:// Uri pointing at that real, playable
+    // file. Shared by cachedAssetVideoUri (below) and SoundtrackPlaybackService's own track
+    // playback — same underlying problem for audio as for video, just a different MediaPlayer
+    // consumer.
+    static Uri cachedAssetUri(Context context, String assetPath, String cachePrefix) {
+        File outFile = new File(context.getCacheDir(), cachePrefix + assetPath.replace('/', '_'));
         if (!outFile.exists() || outFile.length() == 0) {
             String fullPath = ASSET_PREFIX + assetPath;
             try (InputStream in = context.getAssets().open(fullPath);
@@ -226,11 +228,15 @@ final class WidgetAssetUtils {
                 int n;
                 while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
             } catch (IOException e) {
-                Log.w(TAG, "Failed to cache asset video: " + fullPath, e);
+                Log.w(TAG, "Failed to cache asset: " + fullPath, e);
                 return null;
             }
         }
         return Uri.fromFile(outFile);
+    }
+
+    static Uri cachedAssetVideoUri(Context context, String assetPath) {
+        return cachedAssetUri(context, assetPath, "widget-video-");
     }
 
     // Rounds a bitmap's corners by radiusPx — RemoteViews ImageViews can't
