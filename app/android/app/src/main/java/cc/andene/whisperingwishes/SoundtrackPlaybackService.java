@@ -14,6 +14,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import java.util.Random;
+
 // Real playback engine behind the Soundtrack home-screen widget (SoundtrackWidget.java) — a
 // widget's RemoteViews click can only ever fire a PendingIntent, it can't run a MediaPlayer
 // itself or keep one alive once the tap is handled, so actually playing a looping audio track
@@ -44,11 +46,15 @@ public class SoundtrackPlaybackService extends Service {
     public static final String ACTION_NEXT = "cc.andene.whisperingwishes.action.SOUNDTRACK_NEXT";
     public static final String ACTION_PREV = "cc.andene.whisperingwishes.action.SOUNDTRACK_PREV";
     public static final String ACTION_TOGGLE_LOOP = "cc.andene.whisperingwishes.action.SOUNDTRACK_TOGGLE_LOOP";
+    public static final String ACTION_TOGGLE_SHUFFLE = "cc.andene.whisperingwishes.action.SOUNDTRACK_TOGGLE_SHUFFLE";
+
+    private final Random random = new Random();
 
     private MediaPlayer mediaPlayer;
     private String currentTrackKey = SoundtrackTracks.DEFAULT_KEY;
     private boolean playing = false;
     private boolean looping = SoundtrackTracks.DEFAULT_LOOP;
+    private boolean shuffle = SoundtrackTracks.DEFAULT_SHUFFLE;
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
@@ -59,6 +65,7 @@ public class SoundtrackPlaybackService extends Service {
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         currentTrackKey = prefs.getString(SoundtrackTracks.PREF_TRACK_KEY, SoundtrackTracks.DEFAULT_KEY);
         looping = prefs.getBoolean(SoundtrackTracks.PREF_LOOP_KEY, SoundtrackTracks.DEFAULT_LOOP);
+        shuffle = prefs.getBoolean(SoundtrackTracks.PREF_SHUFFLE_KEY, SoundtrackTracks.DEFAULT_SHUFFLE);
         // playing always starts false on a fresh process — a paused/never-started MediaPlayer
         // isn't recreated just because the last session happened to be mid-playback; the user
         // taps Play again rather than audio starting up unannounced in the background.
@@ -81,6 +88,8 @@ public class SoundtrackPlaybackService extends Service {
                 changeTrack(-1);
             } else if (ACTION_TOGGLE_LOOP.equals(action)) {
                 toggleLoop();
+            } else if (ACTION_TOGGLE_SHUFFLE.equals(action)) {
+                toggleShuffle();
             }
         } catch (Throwable t) {
             // A malformed cached file, a MediaPlayer in a bad internal state, etc. — never let
@@ -123,14 +132,35 @@ public class SoundtrackPlaybackService extends Service {
         persistAndRefresh();
     }
 
+    // Live-toggles shuffle the same way toggleLoop() does — takes effect on the NEXT
+    // changeTrack() call (prev/next/the track-name tap), not the currently loaded track.
+    private void toggleShuffle() {
+        shuffle = !shuffle;
+        persistAndRefresh();
+    }
+
     private void changeTrack(int delta) {
-        int nextIndex = SoundtrackTracks.indexOf(currentTrackKey) + delta;
         int len = SoundtrackTracks.ALL.length;
-        nextIndex = ((nextIndex % len) + len) % len; // wrap both directions
+        String nextKey;
+        if (shuffle && len > 1) {
+            // Picks any OTHER track at random, ignoring delta's direction entirely — shuffle
+            // means "something different," not "the Nth-next track in some hidden random
+            // order," so prev/next/the track-name tap all do the same thing while it's on.
+            int currentIndex = SoundtrackTracks.indexOf(currentTrackKey);
+            int randomIndex;
+            do {
+                randomIndex = random.nextInt(len);
+            } while (randomIndex == currentIndex);
+            nextKey = SoundtrackTracks.ALL[randomIndex].key;
+        } else {
+            int nextIndex = SoundtrackTracks.indexOf(currentTrackKey) + delta;
+            nextIndex = ((nextIndex % len) + len) % len; // wrap both directions
+            nextKey = SoundtrackTracks.ALL[nextIndex].key;
+        }
         // Switching tracks keeps whatever playing/paused state was already true — a track
         // skip while paused stays paused (browsing, not committing to play it yet); while
         // playing, the new track picks up immediately.
-        loadTrack(SoundtrackTracks.ALL[nextIndex].key, playing);
+        loadTrack(nextKey, playing);
     }
 
     // autoPlay: whether the new track should start immediately once prepared, vs. just being
@@ -211,6 +241,7 @@ public class SoundtrackPlaybackService extends Service {
             .putString(SoundtrackTracks.PREF_TRACK_KEY, currentTrackKey)
             .putBoolean(SoundtrackTracks.PREF_PLAYING_KEY, playing)
             .putBoolean(SoundtrackTracks.PREF_LOOP_KEY, looping)
+            .putBoolean(SoundtrackTracks.PREF_SHUFFLE_KEY, shuffle)
             .apply();
         SoundtrackWidget.requestUpdate(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
