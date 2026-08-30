@@ -339,20 +339,24 @@ const URL_CHAR_WHITELIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 // page unload (there's no good "done forever" signal from the UI side).
 // Reset to null on failure so a transient/first-run glitch doesn't
 // permanently poison every retry with the same rejected promise.
-// Fetches eng.traineddata.gz ourselves, on the main thread, with a real timeout we control.
-// Necessary because tesseract.js's OWN internal langPath fetch (worker-script/index.js) is a
-// bare `await fetch(fetchUrl)` with NO timeout or abort logic of its own — when that hangs
-// (confirmed: stuck at "loading language traineddata (0%)" forever, even after disabling its
-// IndexedDB cache check that runs before it), there is no way to time it out from outside,
-// since it's deep inside the vendored worker bundle. Pre-fetching and handing tesseract.js the
-// raw bytes directly (as {code, data} instead of a plain 'eng' string) skips that internal fetch
-// entirely — see loadLanguageInternal/loadAndGunzipFile in tesseract.js's own source: `typeof
-// _lang === 'string'` triggers the internal fetch, anything else uses `_lang.data` as-is. gzip
-// detection/decompression happens unconditionally after, so gzipped bytes work fine either way.
-async function fetchTrainedData(signal) {
-  const res = await fetch(`${TESSERACT_VENDOR_PATH}/eng.traineddata.gz`, { signal });
-  if (!res.ok) throw new Error(`Failed to fetch OCR language data: HTTP ${res.status}`);
-  return new Uint8Array(await res.arrayBuffer());
+// The English OCR trained-data file, base64-embedded directly into the JS bundle
+// (src/data/generated/engTrainedDataBase64.js) — NOT fetched at all, not even from a
+// local/bundled URL. tesseract.js's own internal langPath fetch (worker-script/index.js) is a
+// bare `await fetch(fetchUrl)` with no timeout of its own, and even OUR OWN pre-fetch of it
+// (fetch() against the vendored file's local URL) was still going through the same fetch/Cache
+// Storage machinery already proven to hang in this environment (see sw.js's OCR_CACHE fix and
+// this file's cacheMethod:'none' fix — neither alone was enough). Decoding a same-bundle base64
+// string is synchronous and touches no network/storage/worker-fetch API at all, so there is
+// nothing left in this step that can hang.
+// Dynamically imported (not a static top-level import) so its ~3.9MB base64 string only loads
+// as its own chunk when OCR actually runs, instead of bloating the bundle every visitor to the
+// import screen pays for just parsing URLs.
+async function getEmbeddedTrainedData() {
+  const { ENG_TRAINEDDATA_GZ_BASE64 } = await import('../data/generated/engTrainedDataBase64.js');
+  const binary = atob(ENG_TRAINEDDATA_GZ_BASE64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
 }
 
 let _ocrWorkerPromise = null;
@@ -364,15 +368,8 @@ async function getOcrWorker() {
     let lastStage = 'never started';
     _ocrWorkerPromise = withTimeout(
       (async () => {
-        lastStage = 'fetching language data (main thread)';
-        const controller = new AbortController();
-        const langTimeout = setTimeout(() => controller.abort(), OCR_INIT_TIMEOUT_MS - 2000);
-        let trainedData;
-        try {
-          trainedData = await fetchTrainedData(controller.signal);
-        } finally {
-          clearTimeout(langTimeout);
-        }
+        lastStage = 'decoding embedded language data';
+        const trainedData = await getEmbeddedTrainedData();
         const { createWorker } = await import('tesseract.js');
         return createWorker([{ code: 'eng', data: trainedData }], undefined, {
           workerPath: `${TESSERACT_VENDOR_PATH}/worker.min.js`,
