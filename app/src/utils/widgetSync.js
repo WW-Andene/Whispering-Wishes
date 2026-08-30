@@ -147,28 +147,30 @@ export async function syncBannerWidget(activeBanners) {
   }
 }
 
-// Bumped independently from WIDGET_SCHEMA_VERSION above — CurrencyWidget.java
-// and CurrencyProgressWidget.java read this one key (widget_currency_data),
-// unrelated to the banner blob, so a shape change to one must never be
-// misread as a shape change to the other. v2 added the *Goal fields (mode 2's
-// manual progress-bar targets); v3 added pity/hardPity/astritePerPull so mode
-// 2 can compute a "currency needed to reach guaranteed" goal automatically
-// instead of relying only on a manually-typed number — see
-// CurrencyProgressWidget.java's own header for how that combines with
-// TargetWidget.java's (mode 3) Resonator/Both/Weapon choice.
-const CURRENCY_WIDGET_SCHEMA_VERSION = 3;
+// Bumped independently from WIDGET_SCHEMA_VERSION above — CurrencyWidget.java,
+// CurrencyProgressWidget.java, and PityTargetWidget.java all read this one key
+// (widget_currency_data), unrelated to the banner blob, so a shape change to
+// one must never be misread as a shape change to the other. v2 added the
+// *Goal fields (mode 2's manual progress-bar targets); v3 added pity/
+// hardPity/astritePerPull so mode 2 can compute a "currency needed to reach
+// guaranteed" goal automatically instead of relying only on a manually-typed
+// number; v4 added charCopies/weapCopies for mode 4's copy-target display —
+// see CurrencyProgressWidget.java's and PityTargetWidget.java's own headers.
+const CURRENCY_WIDGET_SCHEMA_VERSION = 4;
 
 // Feeds the Android home-screen currency widgets (CurrencyWidget.java mode 1,
-// CurrencyProgressWidget.java mode 2) with the Calculator tab's five tracked
-// resource fields — Astrite, Lunite, Radiant Tide, Lustrous Tide, Forging
-// Tide — plus their optional per-currency goal fields (state.calc.*, see
-// core/reducer.js's initialState.calc), plus enough pity context (current
-// character/weapon pity, HARD_PITY, ASTRITE_PER_PULL) for mode 2 to work out
-// "how much currency until this pity track is guaranteed" on its own. These
-// are stored as strings in state (raw <input> values, '' meaning "empty") —
-// coerced to a plain integer here (empty/non-numeric -> 0) since RemoteViews
-// just needs a number to print, not the input-editing nuances the web UI
-// cares about.
+// CurrencyProgressWidget.java mode 2, PityTargetWidget.java mode 4) with the
+// Calculator tab's five tracked resource fields — Astrite, Lunite, Radiant
+// Tide, Lustrous Tide, Forging Tide — plus their optional per-currency goal
+// fields (state.calc.*, see core/reducer.js's initialState.calc), plus
+// enough pity/copy-target context (current character/weapon pity, HARD_PITY,
+// ASTRITE_PER_PULL, charCopies/weapCopies) for mode 2 to work out "how much
+// currency until this pity track is guaranteed" and mode 4 to display the
+// same pity alongside the copy target the user's aiming for, both on their
+// own with no extra round trip through JS. These are stored as strings in
+// state (raw <input> values, '' meaning "empty") — coerced to a plain
+// integer here (empty/non-numeric -> 0) since RemoteViews just needs a
+// number to print, not the input-editing nuances the web UI cares about.
 export async function syncCurrencyWidget(calc, pityContext) {
   if (!isNativePlatform()) return;
   try {
@@ -189,6 +191,8 @@ export async function syncCurrencyWidget(calc, pityContext) {
       weapPity5: n(pityContext?.weapPity5),
       hardPity: n(pityContext?.hardPity),
       astritePerPull: n(pityContext?.astritePerPull),
+      charCopies: n(pityContext?.charCopies),
+      weapCopies: n(pityContext?.weapCopies),
     };
     await Preferences.set({ key: 'widget_currency_data', value: JSON.stringify(payload) });
   } catch (err) {

@@ -418,5 +418,6 @@ public class MainActivity extends BridgeActivity {
         CurrencyWidget.requestUpdate(this);
         CurrencyProgressWidget.requestUpdate(this);
         TargetWidget.requestUpdate(this);
+        PityTargetWidget.requestUpdate(this);
     }
 }

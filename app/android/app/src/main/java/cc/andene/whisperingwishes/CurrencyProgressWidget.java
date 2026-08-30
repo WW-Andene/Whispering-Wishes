@@ -45,7 +45,7 @@ public class CurrencyProgressWidget extends AppWidgetProvider {
     private static final String PREFS_NAME = "CapacitorStorage";
     private static final String DATA_KEY = "widget_currency_data";
     // Kept in sync with widgetSync.js's CURRENCY_WIDGET_SCHEMA_VERSION.
-    private static final int SCHEMA_VERSION = 3;
+    private static final int SCHEMA_VERSION = 4;
     private static final int ICON_PX = 40;
     // Defaults used only if an old/missing payload has no pity context at all — real
     // values always come from the synced blob once the app has run at least once.

@@ -11,6 +11,7 @@
     <string name="widget_target_resonator">Resonator</string>
     <string name="widget_target_both">Both</string>
     <string name="widget_target_weapon">Weapon</string>
+    <string name="pity_target_widget_description">Shows current pity and your copy target for whichever track the pull-target widget has selected</string>
     <string name="widget_configure_title">Choose a banner</string>
     <string name="widget_configure_unavailable">No active banners right now</string>
     <string name="widget_configure_confirm">Add Widget</string>

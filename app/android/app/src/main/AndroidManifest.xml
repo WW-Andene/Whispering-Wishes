@@ -100,6 +100,19 @@
                 android:resource="@xml/target_widget_info" />
         </receiver>
 
+        <!-- Pity + copy-target widget (mode 4 of the Calculator-widget series) — same
+             exported="true" requirement as the other widget receivers above. -->
+        <receiver
+            android:name=".PityTargetWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/pity_target_widget_info" />
+        </receiver>
+
         <activity
             android:name=".ConveneAnimationActivity"
             android:theme="@style/AppTheme.ConveneOverlay"

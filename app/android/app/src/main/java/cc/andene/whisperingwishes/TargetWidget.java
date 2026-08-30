@@ -55,9 +55,10 @@ public class TargetWidget extends AppWidgetProvider {
                 for (int id : mgr.getAppWidgetIds(new ComponentName(context, TargetWidget.class))) {
                     renderWidget(context, mgr, id);
                 }
-                // The whole point of this widget: tell mode 2 to recompute its bars
+                // The whole point of this widget: tell modes 2 and 4 to recompute/redraw
                 // against the newly-selected pity track(s) right away.
                 CurrencyProgressWidget.requestUpdate(context);
+                PityTargetWidget.requestUpdate(context);
             }
             return;
         }

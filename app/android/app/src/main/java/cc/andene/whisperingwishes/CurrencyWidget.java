@@ -32,10 +32,11 @@ public class CurrencyWidget extends AppWidgetProvider {
     private static final String TAG = "CurrencyWidget";
     private static final String PREFS_NAME = "CapacitorStorage";
     private static final String DATA_KEY = "widget_currency_data";
-    // Kept in sync with widgetSync.js's CURRENCY_WIDGET_SCHEMA_VERSION (currently 3 — bumped
-    // for CurrencyProgressWidget.java's *Goal and pity-context fields; this widget doesn't
-    // read any of those, but still must accept the version they're written under).
-    private static final int SCHEMA_VERSION = 3;
+    // Kept in sync with widgetSync.js's CURRENCY_WIDGET_SCHEMA_VERSION (currently 4 — bumped
+    // for CurrencyProgressWidget.java's/PityTargetWidget.java's *Goal, pity-context, and
+    // copy-target fields; this widget doesn't read any of those, but still must accept the
+    // version they're written under).
+    private static final int SCHEMA_VERSION = 4;
     private static final int ICON_PX = 48;
 
     // Android's own widget-grid formula (70dp * cells - 30dp) for 3/4/5 cells tall —
