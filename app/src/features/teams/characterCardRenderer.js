@@ -19,7 +19,7 @@ import {
 
 // Real Android launcher icon (same source as idCardRenderer.js's APP_ICON) used as a small
 // brand watermark in this card's header — not the PWA icon or the currency icon.
-const APP_ICON = './app-title-icon/app_home_icon.png';
+const APP_ICON = './app-title-icon/Abby_app_home_icon.png';
 
 // Roll-tier colors for echo substats, indexed by getSubstatTier's 0-3 result: Low/Medium/High/Max.
 const SUBSTAT_TIER_COLORS = ['#4ade80', '#60a5fa', '#c084fc', '#edaf18'];
