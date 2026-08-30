@@ -9,6 +9,7 @@
      being cut by a second centerCrop), widget_background as the root's own drawable
      fallback, PerfectSuite-compliant sizes throughout, and the same tap-to-cycle
      interaction the copy-target pill uses — tapping the track name cycles to the next one.
+     Conventional transport row: skip-backward / play-pause / skip-forward / loop toggle.
 
      No plain <View> anywhere (RemoteViews' allowlist doesn't include it — see
      widget_banner.xml's own comment on this) — background layers use empty FrameLayouts
@@ -91,6 +92,31 @@
                 android:src="@android:drawable/ic_media_next"
                 android:scaleType="fitCenter"
                 android:contentDescription="@string/widget_soundtrack_next_aria" />
+
+            <!-- Loop toggle — stacked selected/unselected background overlay, same convention
+                 as CalculatorWidget's own target picker (widget_target_char_selected etc.):
+                 RemoteViews can't runtime-swap a view's background drawable resource
+                 directly, so the "on" highlight is a second view whose visibility toggles. -->
+            <FrameLayout
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginLeft="12dp">
+                <FrameLayout
+                    android:id="@+id/widget_soundtrack_loop_selected"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/widget_target_selected_emerald"
+                    android:visibility="gone" />
+                <ImageButton
+                    android:id="@+id/widget_soundtrack_loop"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_loop_widget"
+                    android:scaleType="fitCenter"
+                    android:padding="4dp"
+                    android:contentDescription="@string/widget_soundtrack_loop_aria" />
+            </FrameLayout>
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

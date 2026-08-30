@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.RemoteViews;
 
 // Home-screen "Soundtrack" widget — plays the app's own ambient "Log Screen" music tracks
@@ -51,6 +52,7 @@ public class SoundtrackWidget extends AppWidgetProvider {
 
         String trackKey = prefs.getString(SoundtrackTracks.PREF_TRACK_KEY, SoundtrackTracks.DEFAULT_KEY);
         boolean playing = prefs.getBoolean(SoundtrackTracks.PREF_PLAYING_KEY, false);
+        boolean looping = prefs.getBoolean(SoundtrackTracks.PREF_LOOP_KEY, SoundtrackTracks.DEFAULT_LOOP);
         SoundtrackTracks.Track track = SoundtrackTracks.byKey(trackKey);
 
         views.setTextViewText(R.id.widget_soundtrack_track_name, context.getString(track.labelResId));
@@ -58,6 +60,10 @@ public class SoundtrackWidget extends AppWidgetProvider {
             playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
         views.setContentDescription(R.id.widget_soundtrack_play,
             context.getString(playing ? R.string.widget_soundtrack_pause_aria : R.string.widget_soundtrack_play_aria));
+        // Same stacked selected/unselected background overlay as CalculatorWidget's own
+        // target picker — RemoteViews can't runtime-swap a view's background drawable
+        // resource, so the "on" highlight is a second view toggled by visibility.
+        views.setViewVisibility(R.id.widget_soundtrack_loop_selected, looping ? View.VISIBLE : View.GONE);
 
         // Same background treatment as CalculatorWidget.renderWidget: crop/scale to the
         // widget's own current pixel size FIRST, then round — widget_soundtrack_bg_art's own
@@ -82,6 +88,7 @@ public class SoundtrackWidget extends AppWidgetProvider {
         setServicePendingIntent(context, views, appWidgetId, R.id.widget_soundtrack_play, SoundtrackPlaybackService.ACTION_PLAY_PAUSE);
         setServicePendingIntent(context, views, appWidgetId, R.id.widget_soundtrack_prev, SoundtrackPlaybackService.ACTION_PREV);
         setServicePendingIntent(context, views, appWidgetId, R.id.widget_soundtrack_next, SoundtrackPlaybackService.ACTION_NEXT);
+        setServicePendingIntent(context, views, appWidgetId, R.id.widget_soundtrack_loop, SoundtrackPlaybackService.ACTION_TOGGLE_LOOP);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
     }

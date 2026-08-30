@@ -26,6 +26,8 @@ final class SoundtrackTracks {
     static final String DEFAULT_KEY = "1";
     static final String PREF_TRACK_KEY = "widget_soundtrack_track";
     static final String PREF_PLAYING_KEY = "widget_soundtrack_playing";
+    static final String PREF_LOOP_KEY = "widget_soundtrack_loop";
+    static final boolean DEFAULT_LOOP = true; // matches this widget's original always-loop behavior
 
     private SoundtrackTracks() {}
 
