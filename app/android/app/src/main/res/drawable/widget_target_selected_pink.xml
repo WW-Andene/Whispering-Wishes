@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selected overlay for TargetWidget.java's Weapon choice — matches kuro-btn's own
+     .active-pink treatment (kuro.css): #ec4899 fill + border. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#2eec4899" />
+    <stroke android:width="1.5dp" android:color="#b3ec4899" />
+    <corners android:radius="10dp" />
+</shape>

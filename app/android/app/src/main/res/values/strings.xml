@@ -7,6 +7,10 @@
     <string name="banner_widget_description">Shows the featured gacha banner — art, Featured 4★s, and a button to play the convene animation</string>
     <string name="currency_widget_description">Shows your tracked Astrite, Lunite, and Tide counts from the Calculator tab</string>
     <string name="currency_progress_widget_description">Shows progress bars toward the currency goals set in the Calculator tab</string>
+    <string name="target_widget_description">Pick which pity track (Resonator, Both, or Weapon) the currency-progress widget tracks toward guaranteed</string>
+    <string name="widget_target_resonator">Resonator</string>
+    <string name="widget_target_both">Both</string>
+    <string name="widget_target_weapon">Weapon</string>
     <string name="widget_configure_title">Choose a banner</string>
     <string name="widget_configure_unavailable">No active banners right now</string>
     <string name="widget_configure_confirm">Add Widget</string>

@@ -83,6 +83,23 @@
                 android:resource="@xml/currency_progress_widget_info" />
         </receiver>
 
+        <!-- Pull-target widget (mode 3 of the Calculator-widget series) — same
+             exported="true" requirement as the other widget receivers above; also needs
+             to receive its own ACTION_SET_TARGET broadcast (TargetWidget.java's button
+             taps), which has no intent-filter here since it's only ever sent explicitly
+             via PendingIntent.getBroadcast() targeting this exact component, not
+             broadcast system-wide. -->
+        <receiver
+            android:name=".TargetWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/target_widget_info" />
+        </receiver>
+
         <activity
             android:name=".ConveneAnimationActivity"
             android:theme="@style/AppTheme.ConveneOverlay"

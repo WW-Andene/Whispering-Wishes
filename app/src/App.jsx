@@ -212,15 +212,22 @@ function WhisperingWishesInner() {
     syncBannerWidget(activeBanners);
   }, [activeBanners]);
   // Keep the Android home-screen currency widgets (mode 1's plain counts, mode 2's
-  // progress bars) in sync with the Calculator tab's own resource + goal fields — no-op
-  // on web. Depends on these 10 primitive fields directly (rather than `state.calc` as a
-  // whole) so unrelated calc-state churn (pity, allocation sliders, etc.) doesn't trigger
-  // a pointless native sync.
+  // progress bars) in sync with the Calculator tab's own resource + goal fields, plus
+  // current pity — no-op on web. Depends on these primitive fields directly (rather than
+  // `state.calc`/`state.profile` as a whole) so unrelated state churn doesn't trigger a
+  // pointless native sync. The pity fields let mode 2's widget compute "currency needed
+  // to reach guaranteed" on its own once mode 3's target widget picks Resonator/Weapon/Both.
   useEffect(() => {
-    syncCurrencyWidget(state.calc);
+    syncCurrencyWidget(state.calc, {
+      charPity5: state.profile.featured?.pity5 ?? 0,
+      weapPity5: state.profile.weapon?.pity5 ?? 0,
+      hardPity: HARD_PITY,
+      astritePerPull: ASTRITE_PER_PULL,
+    });
   }, [
     state.calc.astrite, state.calc.lunite, state.calc.radiant, state.calc.lustrous, state.calc.forging,
     state.calc.astriteGoal, state.calc.luniteGoal, state.calc.radiantGoal, state.calc.lustrousGoal, state.calc.forgingGoal,
+    state.profile.featured?.pity5, state.profile.weapon?.pity5,
   ]);
   // One-time global listener for the glass-touch press effect (see glassTouch.js)
   useEffect(() => {

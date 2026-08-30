@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selected overlay for TargetWidget.java's Resonator choice — matches kuro-btn's own
+     .active-gold treatment (kuro.css): #edaf18 fill + border. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#2eedaf18" />
+    <stroke android:width="1.5dp" android:color="#b3edaf18" />
+    <corners android:radius="10dp" />
+</shape>

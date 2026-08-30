@@ -150,22 +150,26 @@ export async function syncBannerWidget(activeBanners) {
 // Bumped independently from WIDGET_SCHEMA_VERSION above — CurrencyWidget.java
 // and CurrencyProgressWidget.java read this one key (widget_currency_data),
 // unrelated to the banner blob, so a shape change to one must never be
-// misread as a shape change to the other. Bumped to 2 when the *Goal fields
-// were added (mode 2's progress bars) — both widgets tolerate the older
-// shape fine (optLong/optInt default to 0 for missing fields), but the
-// version bump documents that this payload now carries more than mode 1
-// alone ever needed.
-const CURRENCY_WIDGET_SCHEMA_VERSION = 2;
+// misread as a shape change to the other. v2 added the *Goal fields (mode 2's
+// manual progress-bar targets); v3 added pity/hardPity/astritePerPull so mode
+// 2 can compute a "currency needed to reach guaranteed" goal automatically
+// instead of relying only on a manually-typed number — see
+// CurrencyProgressWidget.java's own header for how that combines with
+// TargetWidget.java's (mode 3) Resonator/Both/Weapon choice.
+const CURRENCY_WIDGET_SCHEMA_VERSION = 3;
 
 // Feeds the Android home-screen currency widgets (CurrencyWidget.java mode 1,
 // CurrencyProgressWidget.java mode 2) with the Calculator tab's five tracked
 // resource fields — Astrite, Lunite, Radiant Tide, Lustrous Tide, Forging
 // Tide — plus their optional per-currency goal fields (state.calc.*, see
-// core/reducer.js's initialState.calc). These are stored as strings in state
-// (raw <input> values, '' meaning "empty") — coerced to a plain integer here
-// (empty/non-numeric -> 0) since RemoteViews just needs a number to print,
-// not the input-editing nuances the web UI cares about.
-export async function syncCurrencyWidget(calc) {
+// core/reducer.js's initialState.calc), plus enough pity context (current
+// character/weapon pity, HARD_PITY, ASTRITE_PER_PULL) for mode 2 to work out
+// "how much currency until this pity track is guaranteed" on its own. These
+// are stored as strings in state (raw <input> values, '' meaning "empty") —
+// coerced to a plain integer here (empty/non-numeric -> 0) since RemoteViews
+// just needs a number to print, not the input-editing nuances the web UI
+// cares about.
+export async function syncCurrencyWidget(calc, pityContext) {
   if (!isNativePlatform()) return;
   try {
     const n = (v) => { const num = parseInt(v, 10); return Number.isFinite(num) ? num : 0; };
@@ -181,6 +185,10 @@ export async function syncCurrencyWidget(calc) {
       radiantGoal: n(calc?.radiantGoal),
       lustrousGoal: n(calc?.lustrousGoal),
       forgingGoal: n(calc?.forgingGoal),
+      charPity5: n(pityContext?.charPity5),
+      weapPity5: n(pityContext?.weapPity5),
+      hardPity: n(pityContext?.hardPity),
+      astritePerPull: n(pityContext?.astritePerPull),
     };
     await Preferences.set({ key: 'widget_currency_data', value: JSON.stringify(payload) });
   } catch (err) {

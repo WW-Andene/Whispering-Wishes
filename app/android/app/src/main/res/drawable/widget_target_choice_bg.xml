@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Unselected base for each TargetWidget.java choice row — a faint neutral card, same
+     idea as kuro-btn's own resting (non-.active-*) state. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#14ffffff" />
+    <corners android:radius="10dp" />
+</shape>

@@ -417,5 +417,6 @@ public class MainActivity extends BridgeActivity {
         PulseBannerWidget.requestUpdate(this);
         CurrencyWidget.requestUpdate(this);
         CurrencyProgressWidget.requestUpdate(this);
+        TargetWidget.requestUpdate(this);
     }
 }
