@@ -61,8 +61,9 @@ loadEnvFile(path.join(APP_ROOT, '.env'));
 const HOST_URL = (process.env.CAPACITOR_HOST_URL || process.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 if (!HOST_URL) {
   console.error('\nCAPACITOR_HOST_URL (or VITE_API_BASE_URL) is not set — the native app needs to know');
-  console.error('where your hosted deployment lives to fetch the heavy media folders (map tiles,');
-  console.error('character animations, banner videos) and to call /api/* features.');
+  console.error('where your hosted deployment lives to fetch map tiles (MapTab\'s own offline-tile');
+  console.error('system) and to call /api/* features. Every other excluded media folder (character');
+  console.error('animations, banner videos, soundtrack) streams from the repo itself via jsDelivr now.');
   console.error('Set it in app/.env.local, e.g.:');
   console.error('  VITE_API_BASE_URL=https://whispering-wishes.vercel.app');
   console.error('See CAPACITOR_APP.md.\n');
@@ -96,10 +97,20 @@ function copyFiltered(src, dest) {
 }
 copyFiltered(DIST_DIR, DIST_NATIVE_DIR);
 
-// Patch the service worker so requests for the excluded directories are
+// Patch the service worker so requests for map-tiles/ (the one excluded
+// directory still not handled generically by public/sw.js itself — see that
+// file's own JSDELIVR_ASSET_BASE comment for portraits/spine/animated-bg/
+// convene-animations/audio, which no longer need this patch at all) are
 // redirected to the hosted deployment instead of 404ing against local
 // (now-missing) files. Only dist-native/sw.js is touched — the real dist/
 // used for the web deployment is never modified by this script.
+//
+// map-tiles/ stays on VITE_API_BASE_URL rather than moving to jsDelivr like
+// the others, deliberately: it's MapTab's own offline-download system
+// (useOfflineTiles.js, tileSW.js) and this project's standing rule is to
+// never touch anything connected to MapTab without being told to explicitly
+// — so its existing behavior is preserved byte-for-byte here, just with the
+// other 5 directory names dropped out of NATIVE_REMOTE_DIRS below.
 const swPath = path.join(DIST_NATIVE_DIR, 'sw.js');
 let sw = fs.readFileSync(swPath, 'utf-8');
 // stopImmediatePropagation() is essential here — public/sw.js registers its own unconditional
@@ -125,7 +136,7 @@ const patch = `
 // ─── Injected by capacitor-build/build.mjs — DO NOT hand-edit dist-native/sw.js directly,
 // re-run \`npm run build:native\` instead; this file is regenerated from public/sw.js each time. ───
 const NATIVE_REMOTE_BASE = ${JSON.stringify(HOST_URL)};
-const NATIVE_REMOTE_DIRS = ${JSON.stringify(EXCLUDED_DIRS)};
+const NATIVE_REMOTE_DIRS = ${JSON.stringify(['map-tiles'])};
 self.addEventListener('fetch', (event) => {
   const u = new URL(event.request.url);
   const dir = NATIVE_REMOTE_DIRS.find(d => u.pathname.startsWith('/' + d + '/'));
@@ -155,5 +166,5 @@ self.addEventListener('fetch', (event) => {
 sw = patch + sw;
 fs.writeFileSync(swPath, sw);
 
-console.log(`\ndist-native/ ready — pointing map-tiles/portraits/animated-bg/spine at ${HOST_URL}`);
+console.log(`\ndist-native/ ready — map-tiles points at ${HOST_URL}, everything else excluded from the bundle streams from the repo via jsDelivr`);
 console.log('Next: npx cap sync android   (capacitor.config.json already points webDir at dist-native)');

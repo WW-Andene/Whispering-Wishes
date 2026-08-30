@@ -1,7 +1,7 @@
 // "Download for offline" API — every local asset directory (portraits/,
-// spine/, animated-bg/, convene-animations/ — excluded from the native
-// (Capacitor) app bundle, see capacitor-build/build.mjs's EXCLUDED_DIRS —
-// plus characters/, banners/, echoes/, materials/, misc-assets/,
+// spine/, animated-bg/, convene-animations/, audio/ — excluded from the
+// native (Capacitor) app bundle, see capacitor-build/build.mjs's
+// EXCLUDED_DIRS — plus characters/, banners/, echoes/, materials/, misc-assets/,
 // achievements/, ui-icons/, which *are* already bundled natively but are
 // still lazily fetched on the web build) plus hotlinked third-party icon
 // URLs, into the service worker's ASSET_CACHE. Thin wrapper reusing the
@@ -18,23 +18,18 @@
 
 const BASE_URL = (import.meta.env.BASE_URL || '/');
 
-// Same fix apiBase.js applies to /api/*: inside the Capacitor native app the
-// bundle is served from capacitor://localhost (iOS) / https://localhost
-// (Android), which has no files under it at all — a relative '/portraits/...'
-// fetch 404s instantly against that origin. portraits/spine/animated-bg were
-// deliberately left out of the native bundle (see CAPACITOR_APP.md) and
-// dist-native/sw.js's *fetch* listener already redirects normal page loads
-// of those paths to VITE_API_BASE_URL, but handleDownloadOverlay's bulk
-// fetch() calls run inside the SW script itself and never go through that
-// listener, so they need the absolute URL up front. Icon URLs from
-// src/data/*.js are already absolute (hotlinked from third-party hosts) and
-// pass through untouched.
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
-const isNativePlatform = () =>
-  typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
-
+// portraits/spine/animated-bg/convene-animations/audio are too large to trust
+// to whatever's hosting the app itself (left out of the native bundle
+// entirely — see capacitor-build/build.mjs's EXCLUDED_DIRS — and, on the web
+// build, still fetched from the repo rather than the deploy for the same
+// reason). That redirect is entirely the SW's own job now (see
+// public/sw.js's JSDELIVR_ASSET_BASE / fetchTileWithRetry's own comments) —
+// it resolves the real fetch URL itself while keeping this file's plain
+// relative URL as the cache key throughout, so a track/animation downloaded
+// here and one loaded normally while browsing land in the exact same cache
+// entry instead of two different ones. This file no longer needs to know
+// jsDelivr exists at all — every URL it sends the SW stays untouched.
 function resolveDownloadUrl(u) {
-  if (isNativePlatform() && API_BASE_URL && u.startsWith('/')) return API_BASE_URL + u;
   return u;
 }
 
