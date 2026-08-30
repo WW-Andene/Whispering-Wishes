@@ -81,6 +81,18 @@
         <item name="android:navigationBarColor">@android:color/black</item>
     </style>
 
+    <!-- CurrencyInputActivity — small floating dialog opened from CalculatorWidget's row-1
+         currency taps, letting the user type a value in by hand since RemoteViews
+         home-screen widgets can't host a real EditText themselves. Floating + dimmed
+         background instead of a full-screen Activity like BannerWidgetConfigureActivity
+         above, since this is a single quick numeric edit, not a picker grid. -->
+    <style name="AppTheme.WidgetInputDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
     <!-- PullBubbleShortcutActivity — a pure trampoline for the home-screen long-press App
          Shortcut (toggles PullBubbleService and finishes immediately, see that Activity's own
          header), so it must render nothing visible at all rather than a normal Activity theme's
