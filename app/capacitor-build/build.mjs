@@ -121,20 +121,23 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method === 'GET' && dir) {
     event.stopImmediatePropagation();
     const cacheName = dir === 'map-tiles' ? TILE_CACHE : ASSET_CACHE;
-    event.respondWith((async () => {
+    // Races the cache-first lookup against a plain direct fetch with ZERO Cache Storage calls —
+    // same fix as the OCR route in public/sw.js (see its own comment): caches.match/caches.open
+    // are a known hang risk in some WebViews (this handler runs in exactly that context, for
+    // every map-tile/portrait/animated-bg/spine/convene-animation request), and a hang here
+    // previously meant the request just never resolved — no error, no timeout, forever.
+    const cacheFirst = (async () => {
       const cached = await caches.match(event.request, { cacheName });
       if (cached) return cached;
-      try {
-        const resp = await fetch(NATIVE_REMOTE_BASE + u.pathname + u.search);
-        if (resp.ok) {
-          const cache = await caches.open(cacheName);
-          cache.put(event.request, resp.clone()).catch(() => {});
-        }
-        return resp;
-      } catch (err) {
-        return new Response('', { status: 503 });
+      const resp = await fetch(NATIVE_REMOTE_BASE + u.pathname + u.search);
+      if (resp.ok) {
+        const cache = await caches.open(cacheName);
+        cache.put(event.request, resp.clone()).catch(() => {});
       }
-    })());
+      return resp;
+    })().catch(() => new Response('', { status: 503 }));
+    const plainFetch = fetch(NATIVE_REMOTE_BASE + u.pathname + u.search).catch(() => new Response('', { status: 503 }));
+    event.respondWith(Promise.race([cacheFirst, plainFetch]));
   }
 });
 `;
