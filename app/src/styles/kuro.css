@@ -2710,9 +2710,7 @@
     /* ═══ CHIP RADIO BUTTONS (§E5-BT / §DCO5) ═══ */
     /* Compact radio-style chip selectors for Sequence, Refinement, stats */
     .kuro-chip {
-      padding: var(--space-xs) 0;
-      padding-top: 6px;
-      padding-bottom: 6px;
+      padding: 6px var(--space-md);
       border-radius: var(--radius-xs);
       font-size: var(--font-sm);
       font-weight: 700;
