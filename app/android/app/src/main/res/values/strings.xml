@@ -5,7 +5,7 @@
     <string name="package_name">cc.andene.whisperingwishes</string>
     <string name="custom_url_scheme">cc.andene.whisperingwishes</string>
     <string name="banner_widget_description">Shows the featured gacha banner — art, Featured 4★s, and a button to play the convene animation</string>
-    <string name="calculator_widget_description">Calculator widget — resize it to reveal currency counts, progress bars, pull target, and pity + copy target</string>
+    <string name="calculator_widget_description">Calculator widget — resize it to reveal currency counts, a goal gauge, pull target, and a tappable copy target</string>
     <string name="widget_target_resonator">Resonator</string>
     <string name="widget_target_both">Both</string>
     <string name="widget_target_weapon">Weapon</string>
