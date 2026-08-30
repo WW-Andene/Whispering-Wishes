@@ -100,7 +100,6 @@ function AboutSection({ handleAdminTap, adminTapCount, dispatch, toast }) {
           <li><a href="https://www.prydwen.gg/wuthering-waves/" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Prydwen.gg</a> — {t('profile.about.sourcePrydwen')}</li>
           <li><a href="https://nanoka.cc" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">Nanoka.cc</a> — {t('profile.about.sourceNanoka')}</li>
           <li><a href="https://x.com/KiriyumeBun" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">@KiriyumeBun</a> — {t('profile.about.sourceKiriyumeBun')}</li>
-          <li><a href="https://x.com/naruVT" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">@naruVT</a> — {t('profile.about.sourceNaruVT')}</li>
         </ul>
         <p className="mt-1">{t('profile.about.sourcesOutro')}</p>
       </div>

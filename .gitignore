@@ -5,7 +5,6 @@ dist/
 # (local.properties, .gradle/, build/, the copied assets/public) separately.
 app/dist-native/
 app/ios/
-app/android/app/src/main/res/values/remote_config.xml
 
 # Environment files (secrets, API keys)
 .env
