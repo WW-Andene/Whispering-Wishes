@@ -9,7 +9,8 @@
      being cut by a second centerCrop), widget_background as the root's own drawable
      fallback, PerfectSuite-compliant sizes throughout, and the same tap-to-cycle
      interaction the copy-target pill uses — tapping the track name cycles to the next one.
-     Conventional transport row: skip-backward / play-pause / skip-forward / loop toggle.
+     Conventional transport row: skip-backward / play-pause / skip-forward / loop toggle /
+     shuffle toggle.
 
      TWO alternate content blocks, not one — widget_soundtrack_content_normal (stacked:
      label, track name, transport row) reads fine down to 2 cells tall, but the same stack
@@ -74,11 +75,35 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
+            <!-- Shuffle toggle — same stacked selected/unselected background overlay as the
+                 loop toggle further along this row (RemoteViews can't runtime-swap a view's
+                 background drawable resource directly). -->
+            <FrameLayout
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginRight="8dp">
+                <FrameLayout
+                    android:id="@+id/widget_soundtrack_shuffle_selected"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/widget_target_selected_emerald"
+                    android:visibility="gone" />
+                <ImageButton
+                    android:id="@+id/widget_soundtrack_shuffle"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_shuffle_widget"
+                    android:scaleType="fitCenter"
+                    android:padding="4dp"
+                    android:contentDescription="@string/widget_soundtrack_shuffle_aria" />
+            </FrameLayout>
+
             <ImageButton
                 android:id="@+id/widget_soundtrack_prev"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:layout_marginRight="12dp"
+                android:layout_marginRight="8dp"
                 android:background="@android:color/transparent"
                 android:src="@android:drawable/ic_media_previous"
                 android:scaleType="fitCenter"
@@ -98,7 +123,7 @@
                 android:id="@+id/widget_soundtrack_next"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:layout_marginLeft="12dp"
+                android:layout_marginLeft="8dp"
                 android:background="@android:color/transparent"
                 android:src="@android:drawable/ic_media_next"
                 android:scaleType="fitCenter"
@@ -111,7 +136,7 @@
             <FrameLayout
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:layout_marginLeft="12dp">
+                android:layout_marginLeft="8dp">
                 <FrameLayout
                     android:id="@+id/widget_soundtrack_loop_selected"
                     android:layout_width="match_parent"
@@ -154,10 +179,31 @@
             android:maxLines="1"
             android:ellipsize="end" />
 
+        <FrameLayout
+            android:layout_width="24dp"
+            android:layout_height="24dp">
+            <FrameLayout
+                android:id="@+id/widget_soundtrack_shuffle_selected_compact"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/widget_target_selected_emerald"
+                android:visibility="gone" />
+            <ImageButton
+                android:id="@+id/widget_soundtrack_shuffle_compact"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_shuffle_widget"
+                android:scaleType="fitCenter"
+                android:padding="2dp"
+                android:contentDescription="@string/widget_soundtrack_shuffle_aria" />
+        </FrameLayout>
+
         <ImageButton
             android:id="@+id/widget_soundtrack_prev_compact"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:layout_marginLeft="6dp"
             android:background="@android:color/transparent"
             android:src="@android:drawable/ic_media_previous"
             android:scaleType="fitCenter"

@@ -22,7 +22,7 @@ import android.widget.RemoteViews;
 // as CalculatorWidget, plus a compact 1-cell-tall layout that switches in below
 // HEIGHT_COMPACT_MAX_DP (the stacked normal layout doesn't fit that short at all).
 //
-// State (current track + playing/paused/looping) lives in SharedPreferences (the same
+// State (current track + playing/paused/looping/shuffle) lives in SharedPreferences (the same
 // "CapacitorStorage" file every widget in this app shares), written by
 // SoundtrackPlaybackService whenever it changes something and read fresh here on every
 // render — this class holds no playback state of its own, it's purely a remote control +
@@ -45,19 +45,22 @@ public class SoundtrackWidget extends AppWidgetProvider {
     // applies the exact same track/playing/looping data and PendingIntents to whichever set
     // is passed in, so both blocks always agree regardless of which one is actually visible.
     private static final class ControlIds {
-        final int trackName, play, prev, next, loop, loopSelected;
-        ControlIds(int trackName, int play, int prev, int next, int loop, int loopSelected) {
+        final int trackName, play, prev, next, loop, loopSelected, shuffle, shuffleSelected;
+        ControlIds(int trackName, int play, int prev, int next, int loop, int loopSelected, int shuffle, int shuffleSelected) {
             this.trackName = trackName; this.play = play; this.prev = prev;
             this.next = next; this.loop = loop; this.loopSelected = loopSelected;
+            this.shuffle = shuffle; this.shuffleSelected = shuffleSelected;
         }
     }
 
     private static final ControlIds NORMAL_IDS = new ControlIds(
         R.id.widget_soundtrack_track_name, R.id.widget_soundtrack_play, R.id.widget_soundtrack_prev,
-        R.id.widget_soundtrack_next, R.id.widget_soundtrack_loop, R.id.widget_soundtrack_loop_selected);
+        R.id.widget_soundtrack_next, R.id.widget_soundtrack_loop, R.id.widget_soundtrack_loop_selected,
+        R.id.widget_soundtrack_shuffle, R.id.widget_soundtrack_shuffle_selected);
     private static final ControlIds COMPACT_IDS = new ControlIds(
         R.id.widget_soundtrack_track_name_compact, R.id.widget_soundtrack_play_compact, R.id.widget_soundtrack_prev_compact,
-        R.id.widget_soundtrack_next_compact, R.id.widget_soundtrack_loop_compact, R.id.widget_soundtrack_loop_selected_compact);
+        R.id.widget_soundtrack_next_compact, R.id.widget_soundtrack_loop_compact, R.id.widget_soundtrack_loop_selected_compact,
+        R.id.widget_soundtrack_shuffle_compact, R.id.widget_soundtrack_shuffle_selected_compact);
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -87,11 +90,12 @@ public class SoundtrackWidget extends AppWidgetProvider {
         String trackKey = prefs.getString(SoundtrackTracks.PREF_TRACK_KEY, SoundtrackTracks.DEFAULT_KEY);
         boolean playing = prefs.getBoolean(SoundtrackTracks.PREF_PLAYING_KEY, false);
         boolean looping = prefs.getBoolean(SoundtrackTracks.PREF_LOOP_KEY, SoundtrackTracks.DEFAULT_LOOP);
+        boolean shuffle = prefs.getBoolean(SoundtrackTracks.PREF_SHUFFLE_KEY, SoundtrackTracks.DEFAULT_SHUFFLE);
         SoundtrackTracks.Track track = SoundtrackTracks.byKey(trackKey);
         String trackLabel = context.getString(track.labelResId);
 
-        renderControls(context, views, appWidgetId, NORMAL_IDS, trackLabel, playing, looping);
-        renderControls(context, views, appWidgetId, COMPACT_IDS, trackLabel, playing, looping);
+        renderControls(context, views, appWidgetId, NORMAL_IDS, trackLabel, playing, looping, shuffle);
+        renderControls(context, views, appWidgetId, COMPACT_IDS, trackLabel, playing, looping, shuffle);
 
         // Same background treatment as CalculatorWidget.renderWidget: crop/scale to the
         // widget's own current pixel size FIRST, then round — widget_soundtrack_bg_art's own
@@ -121,7 +125,7 @@ public class SoundtrackWidget extends AppWidgetProvider {
     }
 
     private void renderControls(Context context, RemoteViews views, int appWidgetId, ControlIds ids,
-                                 String trackLabel, boolean playing, boolean looping) {
+                                 String trackLabel, boolean playing, boolean looping, boolean shuffle) {
         views.setTextViewText(ids.trackName, trackLabel);
         views.setImageViewResource(ids.play,
             playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
@@ -131,15 +135,18 @@ public class SoundtrackWidget extends AppWidgetProvider {
         // target picker — RemoteViews can't runtime-swap a view's background drawable
         // resource, so the "on" highlight is a second view toggled by visibility.
         views.setViewVisibility(ids.loopSelected, looping ? View.VISIBLE : View.GONE);
+        views.setViewVisibility(ids.shuffleSelected, shuffle ? View.VISIBLE : View.GONE);
 
         // Tapping the track name cycles forward — same tap-to-cycle interaction as
         // CalculatorWidget's own copy-target pill; the dedicated prev/next buttons give
-        // finer transport control alongside it.
+        // finer transport control alongside it. Under shuffle, "forward" from either one
+        // picks a random other track instead (see SoundtrackPlaybackService.changeTrack()).
         setServicePendingIntent(context, views, appWidgetId, ids.trackName, SoundtrackPlaybackService.ACTION_NEXT);
         setServicePendingIntent(context, views, appWidgetId, ids.play, SoundtrackPlaybackService.ACTION_PLAY_PAUSE);
         setServicePendingIntent(context, views, appWidgetId, ids.prev, SoundtrackPlaybackService.ACTION_PREV);
         setServicePendingIntent(context, views, appWidgetId, ids.next, SoundtrackPlaybackService.ACTION_NEXT);
         setServicePendingIntent(context, views, appWidgetId, ids.loop, SoundtrackPlaybackService.ACTION_TOGGLE_LOOP);
+        setServicePendingIntent(context, views, appWidgetId, ids.shuffle, SoundtrackPlaybackService.ACTION_TOGGLE_SHUFFLE);
     }
 
     // A tap on a RemoteViews button is exactly the kind of user-initiated event Android
