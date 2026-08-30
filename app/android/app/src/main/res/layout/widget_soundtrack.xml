@@ -13,11 +13,11 @@
      shuffle toggle.
 
      TWO alternate content blocks, not one — widget_soundtrack_content_normal (stacked:
-     label, track name, transport row) reads fine down to 2 cells tall, but the same stack
+     track name, transport row) reads fine down to 2 cells tall, but the same stack
      doesn't fit in a 1-cell-tall placement at all; widget_soundtrack_content_compact (one
-     horizontal row: track name + smaller transport controls, no "Now Playing" label) is
-     what SoundtrackWidget.java switches to below its own height threshold — same
-     compact-mode pattern PulseBannerWidget.java already uses for its own short placements.
+     horizontal row: track name + smaller transport controls) is what SoundtrackWidget.java
+     switches to below its own height threshold — same compact-mode pattern
+     PulseBannerWidget.java already uses for its own short placements.
      Both blocks' equivalent views get the SAME data/PendingIntents every render; only
      whichever one is actually visible matters.
 
@@ -44,16 +44,6 @@
         android:orientation="vertical"
         android:gravity="center"
         android:padding="8dp">
-
-        <TextView
-            android:id="@+id/widget_soundtrack_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/widget_soundtrack_label"
-            android:textColor="#8892a4"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:letterSpacing="0.08" />
 
         <!-- Tap to cycle to the next track — same interaction as the Calculator widget's
              own copy-target pill (CalculatorWidget's setCyclePendingIntent). -->

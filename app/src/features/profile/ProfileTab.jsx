@@ -11,6 +11,7 @@ import { SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
 import { haptic } from '../../utils/haptics.js';
+import { AMBIENT_OST_TRACKS } from '../../hooks/useAmbientMusic.js';
 import { getElementColor, getElementBg } from '../../shared/utils/elementVisuals.js';
 import { storageAvailable } from '../../core/storage.js';
 import { clearAllAuxKeys } from '../../core/storageKeys.js';
@@ -1166,6 +1167,21 @@ function ProfileTab({
                       </button>
                     ))}
                   </div>
+                  {/* Full OST library (36 tracks, same list as the native Soundtrack
+                      widget) — a native <select> rather than more buttons, since a
+                      flat button row doesn't scale past the 5 above. Track names are
+                      proper nouns, not run through t(). */}
+                  <select
+                    value={AMBIENT_OST_TRACKS.some(t2 => t2.key === visualSettings.logScreenTrack) ? visualSettings.logScreenTrack : ''}
+                    onChange={(e) => { if (e.target.value) saveVisualSettings({ ...visualSettings, logScreenTrack: e.target.value }); }}
+                    className="kuro-btn kuro-btn-sm w-full"
+                    aria-label={t('profile.sound.ostLibraryAria')}
+                  >
+                    <option value="" disabled>{t('profile.sound.ostLibraryPlaceholder')}</option>
+                    {AMBIENT_OST_TRACKS.map(({ key, label }) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Install App on Device */}

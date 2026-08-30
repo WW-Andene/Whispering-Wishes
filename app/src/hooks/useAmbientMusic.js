@@ -18,6 +18,52 @@ import { useEffect, useRef } from 'react';
 // leading-slash path, so this still 404s correctly on a subpath deploy or
 // the native file:// build (see chime.js for the same fix).
 const BASE = import.meta.env.BASE_URL || './';
+
+// The bulk OST library — same 36 tracks as the native Soundtrack widget's
+// own SoundtrackTracks.java, filenames kept identical (including the " OST"
+// suffix — only the *label* shown to the user drops it, same reasoning as
+// that file's own comment) so both sides stay trivially in sync by eye.
+// Labels are proper nouns (track/boss names) — not run through t(), same
+// as the widget's own strings.xml entries not needing a French variant.
+const OST_TRACKS = [
+  ['3_5_login', '3.5 Login', '3.5 Login OST.mp3'],
+  ['aleph_1_boss', 'Aleph 1 Boss', 'Aleph 1 Boss OST.mp3'],
+  ['arsinosa_boss', 'Arsinosa Boss', 'Arsinosa Boss OST.mp3'],
+  ['bell_borne_geochelone_boss', 'Bell Borne Geochelone Boss', 'Bell Borne Geochelone Boss OST.mp3'],
+  ['calmity_effigy_boss', 'Calmity Effigy Boss', 'Calmity Effigy Boss OST.mp3'],
+  ['crownless_boss', 'Crownless Boss', 'Crownless Boss OST.mp3'],
+  ['denia_boss', 'Denia Boss', 'Denia Boss OST.mp3'],
+  ['depths_of_illusive_realm', 'Depths of Illusive Realm', 'Depths of Illusive Realm OST.mp3'],
+  ['dragon_of_dirge', 'Dragon of Dirge', 'Dragon of Dirge OST.mp3'],
+  ['dreamless_boss', 'Dreamless Boss', 'Dreamless Boss OST.mp3'],
+  ['feilian_beringal_boss', 'Feilian Beringal Boss', 'Feilian Beringal Boss OST.mp3'],
+  ['fenrico_boss', 'Fenrico Boss', 'Fenrico Boss OST.mp3'],
+  ['fleurdelys', 'Fleurdelys', 'Fleurdelys OST.mp3'],
+  ['hecate_boss', 'Hecate Boss', 'Hecate Boss OST.mp3'],
+  ['hyvita_full_boss', 'Hyvita Full Boss', 'Hyvita Full Boss OST.mp3'],
+  ['impermanence_heron_boss', 'Impermanence Heron Boss', 'Impermanence Heron Boss OST.mp3'],
+  ['impermanence_heron_boss_renewed', 'Impermanence Heron Boss Renewed', 'Impermanence Heron Boss Renewed OST.mp3'],
+  ['inferno_rider_boss', 'Inferno Rider Boss', 'Inferno Rider Boss OST.mp3'],
+  ['ju_boss', 'Jué Boss', 'Jué Boss OST.mp3'],
+  ['lady_of_the_sea_boss', 'Lady of the Sea Boss', 'Lady of the Sea Boss OST.mp3'],
+  ['leviathan_threnodian_boss', 'Leviathan Threnodian Boss', 'Leviathan Threnodian Boss OST.mp3'],
+  ['lorelei', 'Lorelei', 'Lorelei OST.mp3'],
+  ['mech_abomination_boss', 'Mech Abomination Boss', 'Mech Abomination Boss OST.mp3'],
+  ['mephis_alter_boss', 'Mephis Alter Boss', 'Mephis Alter Boss OST.mp3'],
+  ['mephis_boss', 'Mephis Boss', 'Mephis Boss OST.mp3'],
+  ['mourning_aix_boss', 'Mourning Aix Boss', 'Mourning Aix Boss OST.mp3'],
+  ['myriad_snare_boss', 'Myriad Snare Boss', 'Myriad Snare Boss OST.mp3'],
+  ['nameless_explorer_boss', 'Nameless Explorer Boss', 'Nameless Explorer Boss OST.mp3'],
+  ['rector_husk_boss', 'Rector Husk Boss', 'Rector Husk Boss OST.mp3'],
+  ['scar_boss', 'Scar Boss', 'Scar Boss OST.mp3'],
+  ['scar_phase_2_boss', 'Scar Phase 2 Boss', 'Scar Phase 2 Boss OST.mp3'],
+  ['sentry_construct', 'Sentry Construct', 'Sentry Construct OST.mp3'],
+  ['sigillum_boss', 'Sigillum Boss', 'Sigillum Boss OST.mp3'],
+  ['the_false_sovereign_boss', 'The False Sovereign Boss', 'The False Sovereign Boss OST.mp3'],
+  ['where_wind_returns_to_celestial_realm', 'Where Wind Returns to Celestial Realm', 'Where Wind Returns to Celestial Realm OST.mp3'],
+  ['whimpering_wastes', 'Whimpering Wastes', 'Whimpering Wastes OST.mp3'],
+];
+
 const TRACK_SRC = {
   '1': `${BASE}audio/log-screen-1.m4a`,
   '2': `${BASE}audio/log-screen-2.m4a`,
@@ -28,7 +74,13 @@ const TRACK_SRC = {
   // request). Same duck/resume behavior as every other track: paused
   // while ConvenePullSimModal's videos are playing, resumed after.
   convene: `${BASE}audio/convene-screen.m4a`,
+  ...Object.fromEntries(OST_TRACKS.map(([key, , filename]) => [key, `${BASE}audio/${encodeURIComponent(filename)}`])),
 };
+
+// Ordered {key, label} list for the picker UI (ProfileTab's Ambient Music
+// section) — the original 4 keep their translated labels (via t()) since
+// those predate this list; only the OST entries are exposed here.
+export const AMBIENT_OST_TRACKS = OST_TRACKS.map(([key, label]) => ({ key, label }));
 
 const AMBIENT_VOLUME = 0.35;
 

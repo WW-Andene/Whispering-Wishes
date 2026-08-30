@@ -196,7 +196,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               out over its last ~1.5s instead of cutting to the static image
               (see ConveneVideoLayer.jsx). */}
           {conveneVideoPlaying && conveneVideoUrl && (
-            <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setConveneVideoPlaying(false)} />
+            <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setConveneVideoPlaying(false)} visualSettings={visualSettings} />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(12,16,24,0.95)] via-transparent to-transparent" />
           <button onClick={onClose} className="absolute top-3 right-3 p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg bg-black/50 text-white hover:bg-black/70 modal-close-btn" aria-label={t('modals.characterDetail.closeAria')}>
@@ -881,7 +881,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 {bannerArtUrl && (
                   <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-video">
                     {assetBannerVideoPlaying ? (
-                      <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setAssetBannerVideoPlaying(false)} className="absolute inset-0" />
+                      <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setAssetBannerVideoPlaying(false)} className="absolute inset-0" visualSettings={visualSettings} />
                     ) : (
                       <img src={bannerArtUrl} alt="" className="w-full h-full object-cover" onError={hideOnError} />
                     )}
