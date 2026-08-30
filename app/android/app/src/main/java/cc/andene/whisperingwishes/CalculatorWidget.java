@@ -63,7 +63,6 @@ public class CalculatorWidget extends AppWidgetProvider {
     private static final int SCHEMA_VERSION = 4;
     private static final int ROW1_ICON_PX = 48;
     private static final int GAUGE_ICON_PX = 48;
-    private static final int BG_ART_PX = 384;
     private static final int DEFAULT_HARD_PITY = 80;
     private static final int DEFAULT_ASTRITE_PER_PULL = 160;
     private static final int MAX_CHAR_COPIES = 7; // C0-C6
@@ -170,22 +169,29 @@ public class CalculatorWidget extends AppWidgetProvider {
 
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_calculator);
 
-        // "Log 2.0" theme art as the widget's own background — rounded the same way
-        // PulseBannerWidget.java rounds its banner art, so the corners line up with
-        // widget_background's own radius/the system-drawn widget frame on API 31+. The
-        // darkening scrim is baked into this SAME bitmap (uniform, not gradient — this
-        // widget's rows span the full height) rather than a separate square overlay, which
-        // would paint back over the rounded corners this call just drew — see
-        // roundedCornersWithUniformScrim's own comment.
-        Bitmap bgArt = WidgetAssetUtils.decodeAsset(context, BG_ART_ASSET, BG_ART_PX, Bitmap.Config.RGB_565);
+        Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
+        int widthDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0) : 0;
+        int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
+
+        // "Log 2.0" theme art as the widget's own background, cropped/scaled to the WIDGET'S
+        // OWN current pixel size before its corners are rounded (widget_bg_art's own
+        // scaleType is "fitXY", not "centerCrop") — rounding a bitmap first and letting
+        // ImageView's centerCrop scale/crop it afterward doesn't work: centerCrop's crop can
+        // (and on this widget's own wide/short aspect ratios routinely does) cut straight
+        // through the corner arcs baked into the bitmap, leaving square-looking corners
+        // where the crop removed the rounded region entirely. Pre-cropping to the exact
+        // target size means the radius baked in afterward is the ONLY thing that touches
+        // those pixels from then on. Falls back to WIDTH_COL3_DP x HEIGHT_ROW3_DP (a
+        // reasonable mid-size default) when the host hasn't reported real dimensions yet
+        // (e.g. the very first render right after placement).
+        float density = context.getResources().getDisplayMetrics().density;
+        int artWidthPx = Math.round((widthDp > 0 ? widthDp : WIDTH_COL3_DP) * density);
+        int artHeightPx = Math.round((heightDp > 0 ? heightDp : HEIGHT_ROW3_DP) * density);
+        Bitmap bgArt = WidgetAssetUtils.decodeAssetExactCrop(context, BG_ART_ASSET, artWidthPx, artHeightPx, Bitmap.Config.RGB_565);
         if (bgArt != null) {
             views.setImageViewBitmap(R.id.widget_bg_art, WidgetAssetUtils.roundedCornersWithUniformScrim(
                 bgArt, WidgetAssetUtils.widgetCornerRadiusPx(context), 0xB3080c14));
         }
-
-        Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
-        int widthDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0) : 0;
-        int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
 
         renderRow1(context, views, data, widthDp, appWidgetId);
 
@@ -246,9 +252,11 @@ public class CalculatorWidget extends AppWidgetProvider {
     // ── Section 2 — ONE gauge toward the chosen goal ──────────────────────────────────
     // Everything the player owns that counts toward the currently selected pull target
     // (Resonator/Both/Weapon) collapses into a single "pulls toward goal" number: Astrite
-    // (÷ astritePerPull) + Lunite (1:1) + Radiant Tide (1:1, char track only) + Forging
-    // Tide (1:1, weapon track only) — Lustrous Tide (standard banner) is left out, since
-    // it isn't governed by the Resonator/Weapon target picker at all. That total is shown
+    // + Lunite (Lunite converts to Astrite 1:1, same as the app's own calculator — NOT 1
+    // Lunite = 1 pull) combined, then ÷ astritePerPull, + Radiant Tide (1:1 pulls, char
+    // track only) + Forging Tide (1:1 pulls, weapon track only) — Lustrous Tide (standard
+    // banner) is left out, since it isn't governed by the Resonator/Weapon target picker at
+    // all. That total is shown
     // against the pulls still needed to close out charPity5/weapPity5 to hard pity for
     // whichever track(s) are selected, worst-cased out across the copy target (section 4's
     // tappable pill, same readCopies() source): the first copy needs whatever's left of the
@@ -275,7 +283,10 @@ public class CalculatorWidget extends AppWidgetProvider {
         long lunite = readCurrencyValue(context, "lunite", data);
         long radiant = wantChar ? readCurrencyValue(context, "radiant", data) : 0;
         long forging = wantWeap ? readCurrencyValue(context, "forging", data) : 0;
-        long pullsOwned = astrite / Math.max(1, astritePerPull) + lunite + radiant + forging;
+        // Astrite and Lunite share ONE conversion to pulls (astritePerPull each, since
+        // Lunite converts to Astrite 1:1 first) — summed before dividing, not divided
+        // separately, so a partial pull's worth of each doesn't get truncated away twice.
+        long pullsOwned = (astrite + lunite) / Math.max(1, astritePerPull) + radiant + forging;
 
         int percent = pullsNeeded > 0 ? (int) Math.min(100, Math.round(pullsOwned * 100.0 / pullsNeeded)) : 0;
         views.setTextViewText(R.id.widget_progress_value,

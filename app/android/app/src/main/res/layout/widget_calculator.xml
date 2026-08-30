@@ -34,11 +34,16 @@
     android:layout_height="match_parent"
     android:background="@drawable/widget_background">
 
+    <!-- fitXY, not centerCrop — CalculatorWidget.java's WidgetAssetUtils.decodeAssetExactCrop
+         already crops/scales this bitmap to this exact view's own pixel size before rounding
+         its corners; centerCrop scaling it a SECOND time here would cut back through those
+         rounded corner arcs on this widget's own wide/short aspect ratios. See
+         decodeAssetExactCrop's own comment. -->
     <ImageView
         android:id="@+id/widget_bg_art"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
+        android:scaleType="fitXY"
         android:contentDescription="@null" />
 
     <LinearLayout

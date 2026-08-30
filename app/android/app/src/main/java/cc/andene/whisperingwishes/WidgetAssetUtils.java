@@ -117,6 +117,38 @@ final class WidgetAssetUtils {
         }
     }
 
+    // Decodes a bundled web asset and center-crop-scales it to EXACTLY targetWidthPx x
+    // targetHeightPx — same visual result as an ImageView's own scaleType="centerCrop", but
+    // done here, in pixels this class controls, instead of left to the ImageView at render
+    // time. That distinction matters for a bitmap a caller is about to round the corners
+    // of (CalculatorWidget.java's own background art): baking a round-rect into a bitmap
+    // and THEN letting an ImageView's centerCrop scale/crop it can (and on a wide/short
+    // widget aspect ratio routinely does) cut straight through the corner arcs, leaving
+    // square-looking corners wherever the crop removed the rounded region. Doing the
+    // crop/scale to the final pixel size FIRST, so rounding is the only thing that touches
+    // those pixels afterward, avoids that entirely — the caller's ImageView should use
+    // scaleType="fitXY" (an exact 1:1 blit, no further scaling/cropping) for this bitmap.
+    static Bitmap decodeAssetExactCrop(Context context, String assetPath, int targetWidthPx, int targetHeightPx, Bitmap.Config config) {
+        if (targetWidthPx <= 0 || targetHeightPx <= 0) return null;
+        Bitmap src = decodeAsset(context, assetPath, Math.max(targetWidthPx, targetHeightPx), config);
+        if (src == null) return null;
+
+        float scale = Math.max((float) targetWidthPx / src.getWidth(), (float) targetHeightPx / src.getHeight());
+        int scaledW = Math.max(targetWidthPx, Math.round(src.getWidth() * scale));
+        int scaledH = Math.max(targetHeightPx, Math.round(src.getHeight() * scale));
+        Bitmap scaled = (scaledW == src.getWidth() && scaledH == src.getHeight())
+            ? src : Bitmap.createScaledBitmap(src, scaledW, scaledH, true);
+
+        int left = Math.min(Math.max(0, (scaledW - targetWidthPx) / 2), scaledW - targetWidthPx);
+        int top = Math.min(Math.max(0, (scaledH - targetHeightPx) / 2), scaledH - targetHeightPx);
+        Bitmap cropped = (left == 0 && top == 0 && scaledW == targetWidthPx && scaledH == targetHeightPx)
+            ? scaled : Bitmap.createBitmap(scaled, left, top, targetWidthPx, targetHeightPx);
+
+        if (scaled != src && scaled != cropped) scaled.recycle();
+        if (src != cropped && src != scaled) src.recycle();
+        return cropped;
+    }
+
     // Decodes a full-body character sprite (DEFAULT_COLLECTION_IMAGES — tall, lots of empty
     // space above/below the character) and crops it down to a face-centered square icon, using
     // the same 'collection-<name>' framing (zoom/x/y) widgetSync.js bakes into
