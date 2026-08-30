@@ -162,6 +162,13 @@ function ProfileTab({
   // navigation/background) stays visible even while collapsed, below, since
   // it's the "what's currently set" summary this section is for.
   const [bgSectionCollapsed, setBgSectionCollapsed] = useState(true);
+  // Same collapse pattern as bgSectionCollapsed above — closed by default now
+  // that the full 36-track OST library lives in here too. The 4 Login Screen
+  // tracks (1.0/2.0/3.0/3.5) stay visible even while collapsed, same
+  // reasoning as the backgrounds section's own target-preview row: those are
+  // the everyday quick-picks, Convene and the rest of the OST library are
+  // the "browse" part.
+  const [ambientSectionCollapsed, setAmbientSectionCollapsed] = useState(true);
   // Target-picker modal (Home/Lock/Both) shown before crowning a static wallpaper image.
   const [wallpaperTargetPrompt, setWallpaperTargetPrompt] = useState(null); // { url } | null
   // Position editor shown after the Home/Lock/Both target is chosen — lets the user slide the
@@ -1146,42 +1153,79 @@ function ProfileTab({
                   </button>
                 </div>
 
-                {/* Ambient Music track picker — Off / 1.0 / 2.0 / 3.0 Login
+                {/* Ambient Music track picker — Off / 1.0 / 2.0 / 3.0 / 3.5 Login
                     Screen / Convene (the pull-simulator's own loop, folded
                     in here as just another track choice rather than a
-                    separate always-on toggle scoped to that one modal). */}
-                <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5 space-y-2">
-                  <div>
-                    <div className="text-white text-base font-medium">{t('profile.sound.ambient')}</div>
-                    <div className="text-gray-400 text-sm">{t('profile.sound.ambientDesc')}</div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {['off', '1', '2', '3', 'convene'].map((track) => (
+                    separate always-on toggle scoped to that one modal) / the
+                    full 36-track OST library. Same collapse pattern as the
+                    Backgrounds section above — the 4 Login Screen tracks stay
+                    visible even while collapsed (the everyday quick-picks),
+                    Off/Convene/the full library are the "browse" part. */}
+                <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <button
+                    type="button"
+                    onClick={() => setAmbientSectionCollapsed(prev => !prev)}
+                    className={`flex items-center gap-3 w-full text-left ${ambientSectionCollapsed ? '' : 'mb-3'}`}
+                    aria-expanded={!ambientSectionCollapsed}
+                  >
+                    <div className="flex-1">
+                      <div className="text-white text-base font-medium">{t('profile.sound.ambient')}</div>
+                      <div className="text-gray-400 text-sm">{t('profile.sound.ambientDesc')}</div>
+                    </div>
+                    <ChevronDown size={16} className={`text-gray-400 transition-transform flex-shrink-0 ${ambientSectionCollapsed ? '-rotate-90' : ''}`} />
+                  </button>
+
+                  <div className={`flex flex-wrap gap-2 ${ambientSectionCollapsed ? 'mt-3' : 'mb-2'}`}>
+                    {['1', '2', '3'].map((track) => (
                       <button
                         key={track}
                         type="button"
                         onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: track })}
                         className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === track ? 'active-gold' : ''}`}
                       >
-                        {track === 'off' ? t('profile.sound.trackOff') : track === 'convene' ? t('profile.sound.trackConvene') : t(`profile.sound.track${track}`)}
+                        {t(`profile.sound.track${track}`)}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: '3_5_login' })}
+                      className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === '3_5_login' ? 'active-gold' : ''}`}
+                    >
+                      {AMBIENT_OST_TRACKS.find(t2 => t2.key === '3_5_login')?.label}
+                    </button>
                   </div>
-                  {/* Full OST library (36 tracks, same list as the native Soundtrack
-                      widget) — a native <select> rather than more buttons, since a
-                      flat button row doesn't scale past the 5 above. Track names are
-                      proper nouns, not run through t(). */}
-                  <select
-                    value={AMBIENT_OST_TRACKS.some(t2 => t2.key === visualSettings.logScreenTrack) ? visualSettings.logScreenTrack : ''}
-                    onChange={(e) => { if (e.target.value) saveVisualSettings({ ...visualSettings, logScreenTrack: e.target.value }); }}
-                    className="kuro-btn kuro-btn-sm w-full"
-                    aria-label={t('profile.sound.ostLibraryAria')}
-                  >
-                    <option value="" disabled>{t('profile.sound.ostLibraryPlaceholder')}</option>
-                    {AMBIENT_OST_TRACKS.map(({ key, label }) => (
-                      <option key={key} value={key}>{label}</option>
-                    ))}
-                  </select>
+
+                  {!ambientSectionCollapsed && (
+                    <>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {['off', 'convene'].map((track) => (
+                          <button
+                            key={track}
+                            type="button"
+                            onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: track })}
+                            className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === track ? 'active-gold' : ''}`}
+                          >
+                            {track === 'off' ? t('profile.sound.trackOff') : t('profile.sound.trackConvene')}
+                          </button>
+                        ))}
+                      </div>
+                      {/* Full OST library (36 tracks, same list as the native Soundtrack
+                          widget) — a native <select> rather than more buttons, since a
+                          flat button row doesn't scale past the 6 above. Track names are
+                          proper nouns, not run through t(). */}
+                      <select
+                        value={AMBIENT_OST_TRACKS.some(t2 => t2.key === visualSettings.logScreenTrack) ? visualSettings.logScreenTrack : ''}
+                        onChange={(e) => { if (e.target.value) saveVisualSettings({ ...visualSettings, logScreenTrack: e.target.value }); }}
+                        className="kuro-btn kuro-btn-sm w-full"
+                        aria-label={t('profile.sound.ostLibraryAria')}
+                      >
+                        <option value="" disabled>{t('profile.sound.ostLibraryPlaceholder')}</option>
+                        {AMBIENT_OST_TRACKS.map(({ key, label }) => (
+                          <option key={key} value={key}>{label}</option>
+                        ))}
+                      </select>
+                    </>
+                  )}
                 </div>
 
                 {/* Install App on Device */}
