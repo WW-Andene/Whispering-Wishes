@@ -32,6 +32,12 @@ import org.json.JSONObject;
 // (TARGET_MODE_KEY, "char"|"weap"|"both") is written directly by this widget's own
 // Resonator/Both/Weapon button taps, independent of the app's sync cadence — see the old
 // TargetWidget.java history (now merged into this class) for why that one stays native-only.
+// Row 1's own currency values, and the copy-target pill, are ALSO directly editable on the
+// widget itself despite that same one-way sync: tapping a currency opens
+// CurrencyInputActivity (a real Activity, since RemoteViews can't host an EditText) and
+// tapping the copy-target pill cycles it — both write a widget-local override
+// (CURRENCY_OVERRIDE_PREFIX+key / CHAR_COPIES_OVERRIDE_KEY / WEAP_COPIES_OVERRIDE_KEY) that
+// every render prefers over the synced value, until the app's own next sync overwrites it.
 public class CalculatorWidget extends AppWidgetProvider {
     private static final String TAG = "CalculatorWidget";
     private static final String PREFS_NAME = "CapacitorStorage";
@@ -43,6 +49,11 @@ public class CalculatorWidget extends AppWidgetProvider {
     // widget; -1 (readCopies' default) means "no override yet, use the synced value".
     private static final String CHAR_COPIES_OVERRIDE_KEY = "widget_char_copies_override";
     private static final String WEAP_COPIES_OVERRIDE_KEY = "widget_weap_copies_override";
+    // Widget-local override of one currency's count, set by CurrencyInputActivity when the
+    // user types a value in by hand (row 1's currency taps) — key is this prefix + the
+    // Currency's own key ("astrite", "lunite", ...). Uses SharedPreferences.contains()
+    // rather than a sentinel default, since 0 is itself a valid value a user might type.
+    private static final String CURRENCY_OVERRIDE_PREFIX = "widget_currency_override_";
     private static final String ACTION_SET_TARGET = "cc.andene.whisperingwishes.ACTION_SET_TARGET";
     private static final String ACTION_CYCLE_COPIES = "cc.andene.whisperingwishes.ACTION_CYCLE_COPIES";
     private static final String EXTRA_MODE = "mode";
@@ -73,10 +84,10 @@ public class CalculatorWidget extends AppWidgetProvider {
     private static final int HEIGHT_ROW5_DP = 320;
 
     private static final class Currency {
-        final String key, asset;
+        final String key, displayName, asset;
         final int row1Id, row1IconId, row1ValueId;
-        Currency(String key, String asset, int row1Id, int row1IconId, int row1ValueId) {
-            this.key = key; this.asset = asset;
+        Currency(String key, String displayName, String asset, int row1Id, int row1IconId, int row1ValueId) {
+            this.key = key; this.displayName = displayName; this.asset = asset;
             this.row1Id = row1Id; this.row1IconId = row1IconId; this.row1ValueId = row1ValueId;
         }
     }
@@ -84,15 +95,15 @@ public class CalculatorWidget extends AppWidgetProvider {
     // Order matches row 1's own left-to-right column order (and its width reveal
     // thresholds) — Astrite/Lunite are the two always-visible columns.
     private static final Currency[] CURRENCIES = {
-        new Currency("astrite", "ui-icons/Currency-Astrite.webp",
+        new Currency("astrite", "Astrite", "ui-icons/Currency-Astrite.webp",
             R.id.widget_currency_row_astrite, R.id.widget_currency_icon_astrite, R.id.widget_currency_value_astrite),
-        new Currency("lunite", "ui-icons/Currency-Lunite.webp",
+        new Currency("lunite", "Lunite", "ui-icons/Currency-Lunite.webp",
             R.id.widget_currency_row_lunite, R.id.widget_currency_icon_lunite, R.id.widget_currency_value_lunite),
-        new Currency("radiant", "ui-icons/Currency-Radiant-Tide.webp",
+        new Currency("radiant", "Radiant Tide", "ui-icons/Currency-Radiant-Tide.webp",
             R.id.widget_currency_row_radiant, R.id.widget_currency_icon_radiant, R.id.widget_currency_value_radiant),
-        new Currency("lustrous", "ui-icons/Currency-Lustrous-Tide.webp",
+        new Currency("lustrous", "Lustrous Tide", "ui-icons/Currency-Lustrous-Tide.webp",
             R.id.widget_currency_row_lustrous, R.id.widget_currency_icon_lustrous, R.id.widget_currency_value_lustrous),
-        new Currency("forging", "ui-icons/Currency-Forging-Tide.webp",
+        new Currency("forging", "Forging Tide", "ui-icons/Currency-Forging-Tide.webp",
             R.id.widget_currency_row_forging, R.id.widget_currency_icon_forging, R.id.widget_currency_value_forging),
     };
 
@@ -176,7 +187,7 @@ public class CalculatorWidget extends AppWidgetProvider {
         int widthDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, 0) : 0;
         int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
 
-        renderRow1(context, views, data, widthDp);
+        renderRow1(context, views, data, widthDp, appWidgetId);
 
         boolean showProgress = heightDp >= HEIGHT_ROW2_DP;
         views.setViewVisibility(R.id.widget_section_progress, showProgress ? View.VISIBLE : View.GONE);
@@ -199,7 +210,13 @@ public class CalculatorWidget extends AppWidgetProvider {
     }
 
     // ── Row 1 — currency log ──────────────────────────────────────────────────────────
-    private void renderRow1(Context context, RemoteViews views, JSONObject data, int widthDp) {
+    // Each currency value is also a tappable button: RemoteViews can't host a real
+    // EditText itself (not on its supported-view allowlist), so a tap opens
+    // CurrencyInputActivity — a small floating dialog Activity — to type a value in by
+    // hand. That value is stored as a widget-local override (readCurrencyValue below),
+    // exactly like the copy-target pill's own override, until the app's next sync
+    // overwrites the underlying widget_currency_data value.
+    private void renderRow1(Context context, RemoteViews views, JSONObject data, int widthDp, int appWidgetId) {
         for (int i = 0; i < CURRENCIES.length; i++) {
             Currency c = CURRENCIES[i];
             boolean visible = i < 2
@@ -209,10 +226,20 @@ public class CalculatorWidget extends AppWidgetProvider {
             views.setViewVisibility(c.row1Id, visible ? View.VISIBLE : View.GONE);
             if (!visible) continue;
 
-            long value = data != null ? data.optLong(c.key, 0) : 0;
+            long value = readCurrencyValue(context, c.key, data);
             views.setTextViewText(c.row1ValueId, String.valueOf(value));
             Bitmap icon = WidgetAssetUtils.decodeAsset(context, c.asset, ROW1_ICON_PX);
             if (icon != null) views.setImageViewBitmap(c.row1IconId, icon);
+
+            Intent editIntent = new Intent(context, CurrencyInputActivity.class);
+            editIntent.putExtra(CurrencyInputActivity.EXTRA_CURRENCY_KEY, c.key);
+            editIntent.putExtra(CurrencyInputActivity.EXTRA_CURRENCY_LABEL, c.displayName);
+            editIntent.putExtra(CurrencyInputActivity.EXTRA_CURRENT_VALUE, value);
+            editIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            int requestCode = appWidgetId * 10 + c.row1Id % 10;
+            PendingIntent editPending = PendingIntent.getActivity(context, requestCode, editIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            views.setOnClickPendingIntent(c.row1Id, editPending);
         }
     }
 
@@ -244,10 +271,10 @@ public class CalculatorWidget extends AppWidgetProvider {
         int weapPullsNeeded = wantWeap ? weapPullsLeft + (weapCopies - 1) * hardPity : 0;
         int pullsNeeded = charPullsNeeded + weapPullsNeeded;
 
-        long astrite = data != null ? data.optLong("astrite", 0) : 0;
-        long lunite = data != null ? data.optLong("lunite", 0) : 0;
-        long radiant = wantChar && data != null ? data.optLong("radiant", 0) : 0;
-        long forging = wantWeap && data != null ? data.optLong("forging", 0) : 0;
+        long astrite = readCurrencyValue(context, "astrite", data);
+        long lunite = readCurrencyValue(context, "lunite", data);
+        long radiant = wantChar ? readCurrencyValue(context, "radiant", data) : 0;
+        long forging = wantWeap ? readCurrencyValue(context, "forging", data) : 0;
         long pullsOwned = astrite / Math.max(1, astritePerPull) + lunite + radiant + forging;
 
         int percent = pullsNeeded > 0 ? (int) Math.min(100, Math.round(pullsOwned * 100.0 / pullsNeeded)) : 0;
@@ -326,6 +353,17 @@ public class CalculatorWidget extends AppWidgetProvider {
         PendingIntent pending = PendingIntent.getBroadcast(context, requestCode, intent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(pillId, pending);
+    }
+
+    // A currency's count, widget-local override first (set by CurrencyInputActivity when
+    // the user types a value in by hand via row 1's own tap), falling back to whatever the
+    // app last synced into widget_currency_data, then to 0. contains() rather than a
+    // sentinel default since a typed 0 is itself a valid override, not "no override".
+    private static long readCurrencyValue(Context context, String key, JSONObject data) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String overrideKey = CURRENCY_OVERRIDE_PREFIX + key;
+        if (prefs.contains(overrideKey)) return prefs.getLong(overrideKey, 0);
+        return data != null ? data.optLong(key, 0) : 0;
     }
 
     // "char"/"weap" copy target, widget-local override first (set by a tap on this

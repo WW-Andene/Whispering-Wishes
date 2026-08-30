@@ -74,6 +74,16 @@
                 android:resource="@xml/calculator_widget_info" />
         </receiver>
 
+        <!-- Small floating dialog opened via PendingIntent.getActivity() from
+             CalculatorWidget's own row-1 currency taps — same cross-app-caller reasoning as
+             ConveneAnimationActivity below (PendingIntents run with their creating app's
+             identity regardless of exported), so exported="false" is correct. -->
+        <activity
+            android:name=".CurrencyInputActivity"
+            android:theme="@style/AppTheme.WidgetInputDialog"
+            android:exported="false"
+            android:excludeFromRecents="true" />
+
         <activity
             android:name=".ConveneAnimationActivity"
             android:theme="@style/AppTheme.ConveneOverlay"
