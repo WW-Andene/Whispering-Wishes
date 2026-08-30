@@ -150,6 +150,14 @@ public class WallpaperPlugin extends Plugin {
     @PluginMethod
     public void setLiveWallpaper(PluginCall call) {
         String base64 = call.getString("base64");
+        // Same 0-100 object-position-style percentages as setWallpaper() above (50/50 =
+        // center, the old fixed behavior) — LiveVideoWallpaperService's GL renderer reads
+        // these back out of SharedPreferences on every (re)start of playback and applies
+        // them as a pan within the video frame, recomputed against the video's own natural
+        // size once MediaPlayer reports it (unlike the static path, this can't be baked into
+        // a pre-cropped Bitmap up front — the video's size isn't known until playback starts).
+        double offsetX = call.getDouble("offsetX", 50.0);
+        double offsetY = call.getDouble("offsetY", 50.0);
         if (base64 == null || base64.isEmpty()) {
             call.reject("Missing video data");
             return;
@@ -185,7 +193,11 @@ public class WallpaperPlugin extends Plugin {
 
         SharedPreferences prefs = context.getSharedPreferences(
                 LiveVideoWallpaperService.PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putString(LiveVideoWallpaperService.PREF_VIDEO_PATH, outFile.getAbsolutePath()).apply();
+        prefs.edit()
+                .putString(LiveVideoWallpaperService.PREF_VIDEO_PATH, outFile.getAbsolutePath())
+                .putFloat(LiveVideoWallpaperService.PREF_OFFSET_X, (float) Math.max(0.0, Math.min(100.0, offsetX)))
+                .putFloat(LiveVideoWallpaperService.PREF_OFFSET_Y, (float) Math.max(0.0, Math.min(100.0, offsetY)))
+                .apply();
 
         // Tell an already-active instance of our own live wallpaper to reload right away — see
         // ACTION_REFRESH's own comment for why this is needed: the OS has no built-in signal for

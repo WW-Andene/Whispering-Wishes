@@ -59,7 +59,14 @@ export async function setWallpaper(imageUrl, target = 'both', position) {
 // the video, then opens Android's own live-wallpaper confirmation screen (ACTION_CHANGE_LIVE_WALLPAPER)
 // — that system UI step can't be skipped, so this resolves ok:true once the intent is launched,
 // not once the user has actually confirmed it.
-export async function setAnimatedWallpaper(videoUrl) {
+// position: { x, y } object-position-style percentages (0-100, 50/50 = center, default) — same
+// convention as setWallpaper()'s own `position` above, from the same position-editor d-pad in
+// ProfileTab.jsx's wallpaper crown flow (a live <video> preview instead of an <img> one, but the
+// exact same object-fit:cover + object-position math). LiveVideoWallpaperService's GL renderer
+// applies this as a pan within the video frame every draw, not a one-time pixel crop the way the
+// static path bakes it into a Bitmap — the video's own natural size isn't known until playback
+// starts, so it can't be pre-cropped the same way.
+export async function setAnimatedWallpaper(videoUrl, position) {
   if (!isNativePlatform()) return { ok: false, error: 'not-native' };
   if (!videoUrl) return { ok: false, error: 'no-video' };
   try {
@@ -67,7 +74,9 @@ export async function setAnimatedWallpaper(videoUrl) {
     if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
     const blob = await res.blob();
     const base64 = await blobToBase64(blob);
-    await Wallpaper.setLiveWallpaper({ base64 });
+    const offsetX = typeof position?.x === 'number' ? position.x : 50;
+    const offsetY = typeof position?.y === 'number' ? position.y : 50;
+    await Wallpaper.setLiveWallpaper({ base64, offsetX, offsetY });
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };
