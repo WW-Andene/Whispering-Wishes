@@ -811,8 +811,12 @@ public class PullBubbleService extends Service {
             Uri revealUri = WidgetAssetUtils.cachedAssetVideoUri(this, "convene-sim/5star-reveal.mp4");
             if (revealUri != null) videos.add(revealUri.toString());
         }
-        if (result.rarity >= 4 && "character".equals(result.type) && result.name != null) {
-            // A character's own convene clip, not the generic per-rarity convene-sim reveal.
+        if (result.rarity >= 4 && result.name != null) {
+            // A character/weapon's own convene clip, not the generic per-rarity convene-sim
+            // reveal. Was hardcoded to "character".equals(result.type) only — ConveneRoster is a
+            // plain name->entry lookup with no type field at all (see ConveneRoster.java), so
+            // this check was excluding every weapon convene clip regardless of whether the JS
+            // side (widgetSync.js's syncConveneRoster) had actually written one for it.
             ConveneRoster.Entry entry = ConveneRoster.findEntry(
                     getSharedPreferences(PREFS_NAME, MODE_PRIVATE), result.name);
             if (entry != null && entry.conveneUrl != null) videos.add(entry.conveneUrl);
