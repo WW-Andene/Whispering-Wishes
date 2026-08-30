@@ -7,22 +7,27 @@
 // vs a few MB for everything else). convene-animations/ added 2026-08-27 once
 // it grew to ~40 per-character videos (~300MB+); audio/ added once the OST
 // library grew from 4 small ambient loops to ~40 tracks (~200MB+).
-// Those directories are still fetched at runtime, just from the hosted
-// deployment (VITE_API_BASE_URL / CAPACITOR_HOST_URL) instead of from local
-// files — patched into dist-native/sw.js below. Everything else (calculator,
-// planner, collection, teams, tracker — all app logic and small UI assets)
-// ships fully bundled and works with zero network connection, forever,
-// independent of whether that hosting is even still running.
+// Those directories are still fetched at runtime, just not from wherever's
+// hosting the app build itself: map-tiles/ is the one exception still routed
+// through the hosted deployment (VITE_API_BASE_URL / CAPACITOR_HOST_URL) —
+// patched into dist-native/sw.js below, and left alone deliberately since
+// it's MapTab's own offline-tile system (see that patch's own comment for
+// why). The other five (portraits/animated-bg/spine/convene-animations/
+// audio) stream straight from the GitHub repo itself via the jsDelivr GitHub
+// CDN instead — see public/sw.js's own JSDELIVR_ASSET_BASE comment — so the
+// hosting platform is only ever asked to serve the app shell, map tiles, and
+// /api/* routes, never any of these ~1GB of media files. Everything else
+// (calculator, planner, collection, teams, tracker — all app logic and
+// small UI assets) ships fully bundled and works with zero network
+// connection, forever, independent of whether any of this hosting is even
+// still running.
 //
-// audio/ is the one exception to "fetched from the hosted deployment": the
-// Soundtrack widget's playback (SoundtrackPlaybackService.java) is a plain
-// Android Service outside the WebView, so it has no access to that hosted
-// deployment or its own Service Worker cache at all. Rather than depend on a
-// SEPARATE hosting deployment being live and up to date, it streams straight
-// from the GitHub repo itself via the jsDelivr GitHub CDN
-// (cdn.jsdelivr.net/gh/<owner>/<repo>@<branch>/...) — the repo IS the
-// source of truth for every audio file already, so there's nothing else to
-// keep in sync. See WidgetAssetUtils.streamOrCachedAssetUri()'s own comment.
+// audio/ specifically ALSO needs a native-Java-side (not just WebView-side)
+// version of this: the Soundtrack widget's playback
+// (SoundtrackPlaybackService.java) is a plain Android Service outside the
+// WebView, so it has no access to the WebView's own Service Worker cache at
+// all. It streams straight from the same jsDelivr URL independently — see
+// WidgetAssetUtils.streamOrCachedAssetUri()'s own comment.
 //
 // Usage: npm run build:native   (see package.json)
 // Requires VITE_API_BASE_URL (or CAPACITOR_HOST_URL) set to wherever the app
@@ -70,7 +75,7 @@ if (!HOST_URL) {
   process.exit(1);
 }
 
-// The four directories excluded from the native bundle — see file header.
+// The directories excluded from the native bundle — see file header.
 const EXCLUDED_DIRS = ['map-tiles', 'portraits', 'animated-bg', 'spine', 'convene-animations', 'audio'];
 
 console.log('Building web bundle...');
