@@ -92,10 +92,19 @@ const OCR_PARAM_KEY_PARTS = {
   record_id: ['record', 'id'],
   lang: ['lang'],
 };
-function repairOcrParamKeys(text) {
+// `loose` additionally tolerates the trailing "id" losing its "d" entirely (and the "=" right
+// after it along with it) — e.g. "svr_i6eb2a" instead of "svr_id=6eb2a". That's scoped to only
+// run on the already-isolated param string (after the hash/record split below), never on the
+// full raw OCR text: a bare "i" is common enough elsewhere (e.g. "gacha/index" in the URL path)
+// that matching it loosely against the whole text produces false positives.
+function repairOcrParamKeys(text, { loose = false } = {}) {
   let out = text;
   for (const [canon, parts] of Object.entries(OCR_PARAM_KEY_PARTS)) {
-    const re = new RegExp(parts.join('[^0-9a-zA-Z&]{0,2}') + '[^0-9a-zA-Z&]{1,3}', 'gi');
+    const fuzzyParts = loose ? parts.map((p) => (p === 'id' ? 'i[^0-9a-zA-Z&]{0,1}d?' : p)) : parts;
+    // When the "d" of "id" was dropped, the "=" right after it is frequently swallowed too (the
+    // whole "d=" reads as nothing), leaving the key run straight into the value with zero
+    // separator chars — so under `loose` the trailing separator has to tolerate 0, not just 1-3.
+    const re = new RegExp(fuzzyParts.join('[^0-9a-zA-Z&]{0,2}') + `[^0-9a-zA-Z&]{${loose ? 0 : 1},3}`, 'gi');
     out = out.replace(re, `${canon}=`);
   }
   return out;
@@ -117,7 +126,14 @@ export function parseGachaUrl(raw) {
     if (hashIdx !== -1) {
       const afterHash = trimmed.slice(hashIdx + 1);
       const qIdx = afterHash.indexOf('?');
-      paramStr = qIdx !== -1 ? afterHash.slice(qIdx + 1) : afterHash;
+      // OCR sometimes drops the "?" itself too, leaving "record" glued straight onto the first
+      // param key (e.g. "/recordsvr_id=..."). Strip a leading (optionally slash-prefixed)
+      // "record" word in that case so the literal fragment marker text doesn't get treated as
+      // part of the param string.
+      paramStr = qIdx !== -1 ? afterHash.slice(qIdx + 1) : afterHash.replace(/^\/?record/i, '');
+      // Now that the param string is isolated from the rest of the URL, it's safe to also repair
+      // keys whose trailing "id" lost its "d" entirely — see repairOcrParamKeys' `loose` comment.
+      paramStr = repairOcrParamKeys(paramStr, { loose: true });
     }
     // Also check normal query string as fallback
     let href = trimmed;
