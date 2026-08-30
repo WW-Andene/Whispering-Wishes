@@ -61,6 +61,32 @@ export function useAmbientMusic(visualSettings) {
   const track = visualSettings?.logScreenTrack;
   const enabled = !!visualSettings?.soundEnabled && !!TRACK_SRC[track];
 
+  // Backgrounding the app (home button, app switcher, screen lock) leaves
+  // the process — and this <audio> element — running, so without this the
+  // ambient track keeps playing under whatever the user switched to. Same
+  // appStateChange listener pattern PullBubbleCard.jsx already uses.
+  // Re-checks current settings on foreground rather than blindly resuming,
+  // same reasoning as resumeAmbientMusic() above.
+  useEffect(() => {
+    let listenerHandle;
+    let cancelled = false;
+    (async () => {
+      const { App } = await import('@capacitor/app');
+      if (cancelled) return;
+      listenerHandle = await App.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) {
+          resumeAmbientMusic(visualSettings);
+        } else {
+          suspendAmbientMusic();
+        }
+      });
+    })();
+    return () => {
+      cancelled = true;
+      listenerHandle?.remove();
+    };
+  }, [visualSettings]);
+
   useEffect(() => {
     if (!audioRef.current) {
       // React mounts (and this effect runs) essentially immediately on
