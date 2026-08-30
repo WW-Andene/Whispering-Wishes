@@ -56,7 +56,7 @@ const OCR_PRECACHE = ['/vendor/tesseract/worker.min.js', '/vendor/tesseract/tess
 
 // Core app shell to precache
 // NOTE: Vite hashed assets are cache-busted automatically via networkFirst strategy.
-const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/app-title-icon/favicon.svg'];
+const PRECACHE = ['/', '/index.html', '/manifest.webmanifest', '/app-title-icon/Abby_app_home_icon.png'];
 
 // CDN domains — cache-first (these rarely change)
 const CDN_DOMAINS = ['cdnjs.cloudflare.com', 'unpkg.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];

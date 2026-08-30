@@ -18,7 +18,7 @@ const TROPHY_TIER_ORDER = { legendary: 0, epic: 1, gold: 2, purple: 3, orange: 4
 // avatar watermark when no profile picture is set — deliberately not HEADER_ICON, which is a
 // different (Radiant Tide currency) image despite the name, and not the PWA/manifest icon
 // either (a different image again, not used anywhere else in the app).
-const APP_ICON = './app-title-icon/app_home_icon.png';
+const APP_ICON = './app-title-icon/Abby_app_home_icon.png';
 
 /**
  * Render and download an ID card as PNG.
