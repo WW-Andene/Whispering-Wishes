@@ -71,15 +71,36 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * @param {string} raw - The raw URL string
  * @returns {{ playerId: string|null, recordId: string|null, svrId: string|null, lang: string, valid: boolean, href?: string }}
  */
-// OCR commonly misreads '=' as ':' at small screenshot-text sizes (the two glyphs are visually
-// close in most UI fonts) — repairs it ONLY right after one of the real query param names, so a
-// misread 'player_id:604976175' becomes 'player_id=604976175' without touching the scheme's own
-// 'https://' or the '#/record?' fragment colon, neither of which is followed by one of these names.
-const OCR_COLON_FIX_RE = /\b(playerId|player_id|recordId|record_id|svr_id|svrId|svr_area|resources_id|gacha_id|gacha_type|lang):/g;
+// OCR misreads small screenshot-text glyphs in two recurring ways, both confirmed from real
+// failures: '=' read as ':' or doubled as '==', and '_' (inside a param name like player_id)
+// read as '.' or '-'. Fixed together per known param name: the name's own underscore(s) are
+// matched loosely (any of '_.-', or none at all if OCR dropped the separator entirely), and
+// whatever glyph(s) follow as the assignment operator ('=', ':', or repeats of either) are
+// collapsed to a single real '='. Case-insensitive since OCR also sometimes miscapitalizes.
+// Scoped tightly to right after one of these specific multi-part names, so it can't touch the
+// scheme's own 'https://' or the '#/record?' fragment marker.
+const OCR_PARAM_KEY_PARTS = {
+  player_id: ['player', 'id'],
+  svr_id: ['svr', 'id'],
+  svr_area: ['svr', 'area'],
+  resources_id: ['resources', 'id'],
+  gacha_id: ['gacha', 'id'],
+  gacha_type: ['gacha', 'type'],
+  record_id: ['record', 'id'],
+  lang: ['lang'],
+};
+function repairOcrParamKeys(text) {
+  let out = text;
+  for (const [canon, parts] of Object.entries(OCR_PARAM_KEY_PARTS)) {
+    const re = new RegExp(parts.join('[_.-]?') + '[=:]+', 'gi');
+    out = out.replace(re, `${canon}=`);
+  }
+  return out;
+}
 
 export function parseGachaUrl(raw) {
   try {
-    const trimmed = raw.trim().replace(OCR_COLON_FIX_RE, '$1=');
+    const trimmed = repairOcrParamKeys(raw.trim());
     // WuWa URLs have params after #/record? — extract them from the hash fragment
     let paramStr = '';
     const hashIdx = trimmed.indexOf('#');
