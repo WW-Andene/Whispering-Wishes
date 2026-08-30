@@ -90,6 +90,11 @@ const initialState = {
     stdWeapPity: 0, stdWeapCopies: 1,
     char4StarCopies: 1, weap4StarCopies: 1, stdChar4StarCopies: 1, stdWeap4StarCopies: 1,
     astrite: '', lunite: '', radiant: '', forging: '', lustrous: '',
+    // Per-currency targets for the home-screen progress-bar widget (mode 2) only — how
+    // much of each currency the user wants to reach, not used by any pull-calculation
+    // logic on this tab. Empty string ('') means "no goal set", same convention as the
+    // currency fields themselves above.
+    astriteGoal: '', luniteGoal: '', radiantGoal: '', lustrousGoal: '', forgingGoal: '',
     allocPriority: 50, // 0-100: 0=all weapon, 50=balanced, 100=all char (featured banners)
     stdAllocPriority: 50, // Same for standard banners — independent control
   },

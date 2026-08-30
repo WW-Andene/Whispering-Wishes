@@ -211,14 +211,17 @@ function WhisperingWishesInner() {
   useEffect(() => {
     syncBannerWidget(activeBanners);
   }, [activeBanners]);
-  // Keep the Android home-screen currency widget (Astrite/Lunite/Radiant/
-  // Lustrous/Forging counts) in sync with the Calculator tab's own resource
-  // fields — no-op on web. Depends on the 5 primitive fields directly
-  // (rather than `state.calc` as a whole) so unrelated calc-state churn
-  // (pity, allocation sliders, etc.) doesn't trigger a pointless native sync.
+  // Keep the Android home-screen currency widgets (mode 1's plain counts, mode 2's
+  // progress bars) in sync with the Calculator tab's own resource + goal fields — no-op
+  // on web. Depends on these 10 primitive fields directly (rather than `state.calc` as a
+  // whole) so unrelated calc-state churn (pity, allocation sliders, etc.) doesn't trigger
+  // a pointless native sync.
   useEffect(() => {
     syncCurrencyWidget(state.calc);
-  }, [state.calc.astrite, state.calc.lunite, state.calc.radiant, state.calc.lustrous, state.calc.forging]);
+  }, [
+    state.calc.astrite, state.calc.lunite, state.calc.radiant, state.calc.lustrous, state.calc.forging,
+    state.calc.astriteGoal, state.calc.luniteGoal, state.calc.radiantGoal, state.calc.lustrousGoal, state.calc.forgingGoal,
+  ]);
   // One-time global listener for the glass-touch press effect (see glassTouch.js)
   useEffect(() => {
     initGlassTouch();

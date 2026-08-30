@@ -70,6 +70,19 @@
                 android:resource="@xml/currency_widget_info" />
         </receiver>
 
+        <!-- Currency-progress widget (mode 2 of the Calculator-widget series) — same
+             exported="true" requirement as the other widget receivers above. -->
+        <receiver
+            android:name=".CurrencyProgressWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/currency_progress_widget_info" />
+        </receiver>
+
         <activity
             android:name=".ConveneAnimationActivity"
             android:theme="@style/AppTheme.ConveneOverlay"
