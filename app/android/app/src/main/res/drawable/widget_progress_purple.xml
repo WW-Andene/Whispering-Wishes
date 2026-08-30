@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Goal gauge fill at >= 60% — 4-star purple, matches kuro.css's own --rarity-4star /
-     --accent-purple token (#c084fc). See CalculatorWidget.renderProgressSection for the
+<!-- Goal gauge fill at >= 60% — 4-star purple, matches kuro.css's own "rarity-4star" /
+     "accent-purple" token (#c084fc). See CalculatorWidget.renderProgressSection for the
      percent thresholds. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@android:id/background">

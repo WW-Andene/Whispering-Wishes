@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Goal gauge fill at >= 80% — 5-star gold, matches kuro.css's own --color-gold token
+<!-- Goal gauge fill at >= 80% — 5-star gold, matches kuro.css's own "color-gold" token
      (#edaf18), same color widget_target_selected_gold.xml already uses for the Resonator
      target choice. See CalculatorWidget.renderProgressSection for the percent thresholds. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
