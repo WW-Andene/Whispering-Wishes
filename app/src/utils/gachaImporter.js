@@ -351,12 +351,49 @@ const URL_CHAR_WHITELIST = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 // Dynamically imported (not a static top-level import) so its ~3.9MB base64 string only loads
 // as its own chunk when OCR actually runs, instead of bloating the bundle every visitor to the
 // import screen pays for just parsing URLs.
-async function getEmbeddedTrainedData() {
+async function getEmbeddedTrainedDataBase64() {
   const { ENG_TRAINEDDATA_GZ_BASE64 } = await import('../data/generated/engTrainedDataBase64.js');
-  const binary = atob(ENG_TRAINEDDATA_GZ_BASE64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return bytes;
+  return ENG_TRAINEDDATA_GZ_BASE64;
+}
+
+// Builds a small bootstrap worker script (as a blob: URL) that:
+//  1. Shims self.fetch so a request for eng.traineddata.gz resolves instantly, from the
+//     base64 embedded in THIS bundle, with zero real network/fetch I/O.
+//  2. importScripts()s the real vendored worker.min.js, completely unmodified, after that.
+//
+// Why not just pass langs as [{code:'eng', data: bytes}] to createWorker (the "official" way
+// to hand tesseract.js pre-fetched data)? Confirmed a real bug in tesseract.js v7's own
+// worker-script/index.js: its `initialize()` step rebuilds a langs string for the final
+// api.Init() call via `_langs.map(l => typeof l==='string' ? l : l.data).join('+')` — for a
+// {code,data} entry this uses `.data` (the raw Uint8Array) instead of `.code`, and Array.join()
+// stringifies it via its default toString(), producing a garbage multi-megabyte
+// comma-separated-byte-values string passed straight into the native Init() call. That's what
+// was hanging at "initializing api (100%)" — language data itself loaded fully (confirmed via
+// the stage tracker), but the C++/WASM init call was fed nonsense.
+// Shimming fetch instead lets the worker run its completely normal, unmodified, well-tested
+// code path — langs stays the plain string 'eng' the whole way through (correct for both the
+// load step AND the init step) — while still never touching the network for it.
+async function buildOcrWorkerScriptUrl() {
+  const base64 = await getEmbeddedTrainedDataBase64();
+  const bootstrap = `
+self.__ENG_TRAINEDDATA_GZ_BASE64 = ${JSON.stringify(base64)};
+(function () {
+  var realFetch = self.fetch.bind(self);
+  self.fetch = function (input, init) {
+    var url = typeof input === 'string' ? input : (input && input.url) || '';
+    if (url.indexOf('eng.traineddata.gz') !== -1) {
+      var binary = atob(self.__ENG_TRAINEDDATA_GZ_BASE64);
+      var bytes = new Uint8Array(binary.length);
+      for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return Promise.resolve(new Response(bytes, { status: 200, headers: { 'Content-Type': 'application/gzip' } }));
+    }
+    return realFetch(input, init);
+  };
+})();
+importScripts(${JSON.stringify(new URL(`${TESSERACT_VENDOR_PATH}/worker.min.js`, window.location.href).href)});
+`;
+  const blob = new Blob([bootstrap], { type: 'application/javascript' });
+  return URL.createObjectURL(blob);
 }
 
 let _ocrWorkerPromise = null;
@@ -368,14 +405,17 @@ async function getOcrWorker() {
     let lastStage = 'never started';
     _ocrWorkerPromise = withTimeout(
       (async () => {
-        lastStage = 'decoding embedded language data';
-        const trainedData = await getEmbeddedTrainedData();
+        lastStage = 'building worker bootstrap';
+        const bootstrapUrl = await buildOcrWorkerScriptUrl();
         const { createWorker } = await import('tesseract.js');
-        return createWorker([{ code: 'eng', data: trainedData }], undefined, {
-          workerPath: `${TESSERACT_VENDOR_PATH}/worker.min.js`,
+        // langs stays the plain string 'eng' — see buildOcrWorkerScriptUrl's own comment for
+        // why the {code,data} object form is NOT used here despite avoiding it being the whole
+        // point of the fetch shim: it triggers a real bug in tesseract.js v7's initialize().
+        return createWorker('eng', undefined, {
+          workerPath: bootstrapUrl,
+          workerBlobURL: false, // our own bootstrap IS already the worker script; don't double-wrap it
           corePath: `${TESSERACT_VENDOR_PATH}/tesseract-core-lstm.wasm.js`,
-          // No langPath needed — the language data above is already fetched and passed
-          // directly, so tesseract.js's own internal langPath fetch never runs.
+          langPath: TESSERACT_VENDOR_PATH,
           cacheMethod: 'none',
           // tesseract.js's own init chain swallows real errors on failure (see the comment
           // below), so this progress callback is otherwise the only visibility into which stage
