@@ -43,6 +43,14 @@ public class MainActivity extends BridgeActivity {
     // fallback) can remove it once the intro video is ready.
     private ImageView bootPosterView;
 
+    // Decided once per cold start, before the poster is even shown, so the native poster and
+    // BootIntro.jsx's video always agree on which Rover variant is playing this boot — the
+    // native poster paints first (before the WebView/JS has even loaded), so it has to be the
+    // one making this call; JS then reads it back via NativeBootBridge.isMRoverVariant() rather
+    // than rolling its own independent coin flip, which could disagree with what the poster
+    // already committed to on screen.
+    private boolean bootVariantMRover;
+
     @Override
     @SuppressLint("JavascriptInterface")
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,8 +161,12 @@ public class MainActivity extends BridgeActivity {
         // so this isn't extracting anything out of an animation; it's the
         // same picture in a format Android's ImageView can decode as a
         // resource.
+        // Coin flip between the default (female) Rover boot intro and its MRover (male Rover)
+        // equivalent — decided once, here, before either the poster or the video ever renders,
+        // so both sides of the boot sequence show the same Rover for this launch.
+        bootVariantMRover = new java.util.Random().nextBoolean();
         bootPosterView = new ImageView(this);
-        bootPosterView.setImageResource(R.drawable.boot_poster);
+        bootPosterView.setImageResource(bootVariantMRover ? R.drawable.boot_poster_mrover : R.drawable.boot_poster);
         bootPosterView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         addContentView(bootPosterView, new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -292,6 +304,14 @@ public class MainActivity extends BridgeActivity {
         @JavascriptInterface
         public void dismissBootPoster() {
             activity.runOnUiThread(activity::dismissBootPosterView);
+        }
+
+        // Read by BootIntro.jsx to pick the matching video file for whichever Rover variant
+        // onCreate() already committed the native poster to — see bootVariantMRover's own
+        // comment for why the decision has to originate here rather than in JS.
+        @JavascriptInterface
+        public boolean isMRoverVariant() {
+            return activity.bootVariantMRover;
         }
     }
 
