@@ -7,9 +7,26 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { TAB_ORDER } from '../data/constants.js';
 import { haptic } from '../utils/haptics.js';
 export function useTabNavigation(swipeEnabled) {
-  const [activeTab, setActiveTabRaw] = useState('tracker');
+  // '#calculator' opens straight to the Calculator tab — set by MainActivity's
+  // handleOpenTabIntent() when the "Quick Calc" home-screen App Shortcut is tapped (see
+  // MainActivity.java's own comment), same window.location.hash convention as the
+  // '#spine-tune' dev-panel shortcut in App.jsx. Checked at both mount (cold start, hash
+  // already present before React runs) and via 'hashchange' (warm start — MainActivity is
+  // singleTask, so a shortcut tap while the app's already running reaches this through
+  // onNewIntent()'s own evaluateJavascript call instead of a fresh page load).
+  const [activeTab, setActiveTabRaw] = useState(() => (
+    typeof window !== 'undefined' && window.location.hash === '#calculator' ? 'calculator' : 'tracker'
+  ));
   const tabNavRef = useRef(null);
   const [navPadding, setNavPadding] = useState(80);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      if (window.location.hash === '#calculator') setActiveTabRaw('calculator');
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
 
   // Measure nav height for bottom padding
   useEffect(() => {
