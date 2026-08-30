@@ -239,6 +239,78 @@ final class WidgetAssetUtils {
         return cachedAssetUri(context, assetPath, "widget-video-");
     }
 
+    // Soundtrack tracks (audio/*.mp3) are NOT bundled into the native APK —
+    // capacitor-build/build.mjs excludes audio/ the same way it already excludes
+    // portraits/spine/animated-bg/convene-animations, since ~200MB of OSTs would
+    // bloat the app binary the same way those would. SoundtrackPlaybackService
+    // needs an equivalent of the web build's own "fetch from the hosted
+    // deployment, cache-first" pattern (see that script's own sw.js patch), but
+    // Java has no access to the WebView's Service Worker/Cache Storage — and
+    // unlike those other directories, this doesn't go through any separate
+    // hosting deployment at all (no server to configure, nothing that can drift
+    // out of sync with what's actually in the repo, no deploy step that has to
+    // succeed first): the jsDelivr GitHub CDN serves files straight out of this
+    // GitHub repo by tag/branch, so the repo itself IS the host. Plays from a
+    // local cache file if one already exists (instant, works offline),
+    // otherwise hands MediaPlayer the real jsDelivr URL directly — it streams
+    // progressively over HTTP with its own internal buffering, no custom
+    // streaming code needed — while a background thread downloads the same
+    // file into that cache slot for next time.
+    private static final String JSDELIVR_BASE = "https://cdn.jsdelivr.net/gh/WW-Andene/Whispering-Wishes@main/app/public";
+
+    static Uri streamOrCachedAssetUri(Context context, String assetPath, String cachePrefix) {
+        File outFile = new File(context.getCacheDir(), cachePrefix + assetPath.replace('/', '_'));
+        if (outFile.exists() && outFile.length() > 0) {
+            return Uri.fromFile(outFile);
+        }
+        String remoteUrl = JSDELIVR_BASE + "/" + encodeAssetPath(assetPath);
+        downloadToCacheInBackground(remoteUrl, outFile);
+        return Uri.parse(remoteUrl);
+    }
+
+    // Percent-encodes each path segment on its own (Uri.encode would also encode
+    // the '/' separators between them if given the whole path at once) — track
+    // filenames routinely contain spaces and accented characters (e.g. "Jué Boss
+    // OST.mp3") that aren't valid raw URL bytes.
+    private static String encodeAssetPath(String assetPath) {
+        String[] parts = assetPath.split("/");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) sb.append('/');
+            sb.append(Uri.encode(parts[i]));
+        }
+        return sb.toString();
+    }
+
+    // Fire-and-forget: doesn't block or affect the caller's own playback, which
+    // is already streaming from remoteUrl directly. Writes to a .part sibling
+    // file first and renames atomically on success, so a half-downloaded file
+    // (network drop, app killed mid-download) is never mistaken for a complete
+    // cache entry by the exists()-check at the top of streamOrCachedAssetUri.
+    private static void downloadToCacheInBackground(String remoteUrl, File outFile) {
+        new Thread(() -> {
+            File tmp = new File(outFile.getParentFile(), outFile.getName() + ".part");
+            try {
+                java.net.URL url = new java.net.URL(remoteUrl);
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setConnectTimeout(15000);
+                conn.setReadTimeout(15000);
+                try (InputStream in = conn.getInputStream();
+                     OutputStream out = new FileOutputStream(tmp)) {
+                    byte[] buf = new byte[8192];
+                    int n;
+                    while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                } finally {
+                    conn.disconnect();
+                }
+                if (!tmp.renameTo(outFile)) tmp.delete();
+            } catch (Exception e) {
+                Log.w(TAG, "Background soundtrack cache download failed: " + remoteUrl, e);
+                tmp.delete();
+            }
+        }, "SoundtrackCacheDownload").start();
+    }
+
     // Rounds a bitmap's corners by radiusPx — RemoteViews ImageViews can't
     // clip to a rounded drawable pre-API 31, so this bakes the rounding into
     // the pixels; the floating overlay could use a drawable clip instead
