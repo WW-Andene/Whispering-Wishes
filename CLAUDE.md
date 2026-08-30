@@ -10,6 +10,8 @@ Hygiene, ownership clarity, coherence, and above all **consistency** — of enti
 
 **Enforcement cadence:** run the `app-restructuring` skill (`claude_skill/app-restructuring-SKILL.md`) and a code-audit pass regularly — as a floor, every ~50 commits to the repo — to keep the codebase in a clean, correctly-organized state rather than letting drift accumulate. Treat this as scheduled maintenance, not something to wait for the user to request.
 
+**Standing exception — MapTab:** Absolutely never touch `MapTab.jsx` or anything connected to it (its hooks, sub-components, map-specific state/utils), for any reason — including this hygiene cadence, an unrelated bug fix, or a "quick" adjacent change — except when given direct, clear, and absolute instructions to do so.
+
 ## PerfectSuite — the only valid numeric scale
 
 > **Updated.** This replaces the prior version of the scale and its tie-break rules. The suite is now smaller and organized in three explicit tiers per power-of-2 octave: `[Primary]`, `(Secondary)`, `{Tertiary}`.
