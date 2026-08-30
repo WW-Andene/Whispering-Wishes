@@ -108,13 +108,17 @@ export default function ImportFlow({
     try {
       const base64 = await compressImage(file);
       const ids = await extractIdsFromImage(base64);
-      if (ids.player_id) setDirectPlayerId(ids.player_id);
-      if (ids.record_id) setDirectRecordId(ids.record_id);
-      if (ids.svr_id) setDirectSvrId(ids.svr_id);
-      if (ids.resources_id) setDirectResourcesId(ids.resources_id);
-      if (ids.gacha_id) setDirectGachaId(ids.gacha_id);
-      if (ids.gacha_type) setDirectGachaType(ids.gacha_type);
-      if (ids.lang) setDirectLang(ids.lang);
+      // A freshly scanned image always reflects the current session's IDs — clear any stale
+      // pasted URL first, since buildFetchParams prefers a valid directUrl over these fields
+      // and would otherwise keep fetching against the old (likely expired) URL's params.
+      setDirectUrl('');
+      setDirectPlayerId(ids.player_id || '');
+      setDirectRecordId(ids.record_id || '');
+      setDirectSvrId(ids.svr_id || '');
+      setDirectResourcesId(ids.resources_id || '');
+      setDirectGachaId(ids.gacha_id || '');
+      setDirectGachaType(ids.gacha_type || '');
+      setDirectLang(ids.lang || 'en');
       setDirectScanStatus('done');
       toast?.addToast?.(t('profile.importFlow.toast.idsExtracted'), 'success');
     } catch (err) {
