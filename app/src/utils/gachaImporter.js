@@ -103,18 +103,31 @@ function repairOcrParamKeys(text) {
 
 export function parseGachaUrl(raw) {
   try {
-    const trimmed = repairOcrParamKeys(raw.trim());
-    // WuWa URLs have params after #/record? — extract them from the hash fragment
+    let trimmed = repairOcrParamKeys(raw.trim());
+    // OCR from a live camera frame routinely picks up unrelated on-screen UI text (breadcrumbs,
+    // menu labels, etc.) *before* the actual URL — strip anything before the first "http(s)://"
+    // so that garbage prefix can't derail parsing below, same as a human eye would just skip it.
+    const httpIdx = trimmed.search(/https?:\/\//i);
+    if (httpIdx > 0) trimmed = trimmed.slice(httpIdx);
+    // WuWa URLs have params after #/record? — extract them from the hash fragment. Also tolerate
+    // OCR dropping the "?" entirely (e.g. "record" running straight into "svr_id=...") by falling
+    // back to whatever comes after "record" once a known param key shows up.
     let paramStr = '';
     const hashIdx = trimmed.indexOf('#');
     if (hashIdx !== -1) {
       const afterHash = trimmed.slice(hashIdx + 1);
       const qIdx = afterHash.indexOf('?');
-      if (qIdx !== -1) paramStr = afterHash.slice(qIdx + 1);
+      paramStr = qIdx !== -1 ? afterHash.slice(qIdx + 1) : afterHash;
     }
     // Also check normal query string as fallback
-    const u = new URL(trimmed);
-    const params = new URLSearchParams(paramStr || u.search);
+    let href = trimmed;
+    try {
+      href = new URL(trimmed).href;
+    } catch {
+      // The prefix up to the params may still be malformed (missing "?", stray chars from OCR) —
+      // that's fine, we don't need a valid URL object, only the param string parsed below.
+    }
+    const params = new URLSearchParams(paramStr);
     const get = (...keys) => keys.map((k) => params.get(k)).find(Boolean) ?? null;
     const playerId = get('playerId', 'player_id');
     const recordId = get('recordId', 'record_id');
@@ -124,7 +137,7 @@ export function parseGachaUrl(raw) {
     const gachaId = get('gacha_id');
     const gachaType = get('gacha_type');
     const lang = get('lang') ?? 'en';
-    return { playerId, recordId, svrId, svrArea, resourcesId, gachaId, gachaType, lang, valid: !!(playerId), href: u.href };
+    return { playerId, recordId, svrId, svrArea, resourcesId, gachaId, gachaType, lang, valid: !!(playerId), href };
   } catch {
     return { valid: false };
   }
@@ -482,7 +495,10 @@ async function getOcrWorker() {
     // misjudge which region is actually the target line among all that other UI. SPARSE_TEXT
     // looks for text wherever it is, in no particular layout, which fits a screenshot better
     // than assuming one structured document/page.
-    tessedit_pageseg_mode: '11',
+    // SPARSE_TEXT ('11') has no guaranteed reading order, which let unrelated on-screen UI text
+    // (breadcrumbs, menu labels) get interleaved with or placed before the actual URL — AUTO ('3')
+    // treats the frame as one block and reads it in visual order, so the URL comes out contiguous.
+    tessedit_pageseg_mode: '3',
   }).catch(err => {
     console.error('[OCR] setParameters failed (continuing without whitelist):', err);
   });
