@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home-screen "Calculator" widget — ONE widget, ONE AppWidgetProvider
+     (CalculatorWidget.java), that reveals more of itself as the user resizes it bigger,
+     rather than five separate widgets the user would have to place one at a time. Two
+     independent resize axes:
+       WIDTH (2-5 cells) — how many of the 5 currency columns show in the always-visible
+       top row (Astrite/Lunite always shown, Radiant/Lustrous/Forging Tide reveal one at
+       a time as it widens).
+       HEIGHT (1-5 cells) — how many of the 5 stacked sections below show at all:
+         1 cell:  currency log only (row_currency)
+         2 cells: + progress bars toward pity/goals (row_progress)
+         3 cells: + pull target picker: Resonator/Both/Weapon (row_target)
+         4 cells: + pity counter & copy target (row_pity)
+         5 cells: + probability/statistics (row_stats — not yet implemented, stays empty)
+     CalculatorWidget.onAppWidgetOptionsChanged reads both axes and toggles visibility
+     accordingly; each visible row shares the available height evenly (layout_weight).
+
+     No plain <View> anywhere (RemoteViews' allowlist doesn't include it — see
+     widget_banner.xml's own comment on this) — background layers use empty FrameLayouts
+     instead. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="8dp">
+
+    <!-- ═══ Row 1 — Currency log (always visible; column count driven by WIDTH) ═══ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <LinearLayout android:id="@+id/widget_currency_row_astrite" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center">
+            <ImageView android:id="@+id/widget_currency_icon_astrite" android:layout_width="18dp" android:layout_height="18dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_currency_value_astrite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="4dp" android:textColor="#facc15" android:textSize="13sp" android:textStyle="bold" android:singleLine="true" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/widget_currency_row_lunite" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center">
+            <ImageView android:id="@+id/widget_currency_icon_lunite" android:layout_width="18dp" android:layout_height="18dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_currency_value_lunite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="4dp" android:textColor="#67e8f9" android:textSize="13sp" android:textStyle="bold" android:singleLine="true" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/widget_currency_row_radiant" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center" android:visibility="gone">
+            <ImageView android:id="@+id/widget_currency_icon_radiant" android:layout_width="18dp" android:layout_height="18dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_currency_value_radiant" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="4dp" android:textColor="#fde047" android:textSize="13sp" android:textStyle="bold" android:singleLine="true" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/widget_currency_row_lustrous" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center" android:visibility="gone">
+            <ImageView android:id="@+id/widget_currency_icon_lustrous" android:layout_width="18dp" android:layout_height="18dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_currency_value_lustrous" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="4dp" android:textColor="#22d3ee" android:textSize="13sp" android:textStyle="bold" android:singleLine="true" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/widget_currency_row_forging" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center" android:visibility="gone">
+            <ImageView android:id="@+id/widget_currency_icon_forging" android:layout_width="18dp" android:layout_height="18dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_currency_value_forging" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="4dp" android:textColor="#f9a8d4" android:textSize="13sp" android:textStyle="bold" android:singleLine="true" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ═══ Row 2 — Progress bars toward pity/goal (revealed at height >= 2 cells) ═══ -->
+    <LinearLayout
+        android:id="@+id/widget_section_progress"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center_vertical" android:layout_marginRight="6dp">
+            <ImageView android:id="@+id/widget_progress_icon_astrite" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_progress_value_astrite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#facc15" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
+            <ProgressBar android:id="@+id/widget_progress_bar_astrite" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="3dp" android:max="100" android:progress="0" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center_vertical" android:layout_marginRight="6dp">
+            <ImageView android:id="@+id/widget_progress_icon_lunite" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_progress_value_lunite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#67e8f9" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
+            <ProgressBar android:id="@+id/widget_progress_bar_lunite" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="3dp" android:max="100" android:progress="0" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center_vertical" android:layout_marginRight="6dp">
+            <ImageView android:id="@+id/widget_progress_icon_radiant" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_progress_value_radiant" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#fde047" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
+            <ProgressBar android:id="@+id/widget_progress_bar_radiant" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="3dp" android:max="100" android:progress="0" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center_vertical" android:layout_marginRight="6dp">
+            <ImageView android:id="@+id/widget_progress_icon_lustrous" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_progress_value_lustrous" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#22d3ee" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
+            <ProgressBar android:id="@+id/widget_progress_bar_lustrous" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="3dp" android:max="100" android:progress="0" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center_vertical">
+            <ImageView android:id="@+id/widget_progress_icon_forging" android:layout_width="14dp" android:layout_height="14dp" android:contentDescription="@null" />
+            <TextView android:id="@+id/widget_progress_value_forging" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="1dp" android:textColor="#f9a8d4" android:textSize="9sp" android:textStyle="bold" android:singleLine="true" />
+            <ProgressBar android:id="@+id/widget_progress_bar_forging" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="6dp" android:layout_marginTop="3dp" android:max="100" android:progress="0" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ═══ Row 3 — Pull target picker (revealed at height >= 3 cells) ═══ -->
+    <LinearLayout
+        android:id="@+id/widget_section_target"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <FrameLayout android:id="@+id/widget_target_char" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginRight="6dp">
+            <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_choice_bg" />
+            <FrameLayout android:id="@+id/widget_target_char_selected" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_selected_gold" android:visibility="gone" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/widget_target_resonator" android:textColor="#fef08a" android:textSize="12sp" android:textStyle="bold" />
+        </FrameLayout>
+        <FrameLayout android:id="@+id/widget_target_both" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginRight="6dp">
+            <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_choice_bg" />
+            <FrameLayout android:id="@+id/widget_target_both_selected" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_selected_emerald" android:visibility="gone" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/widget_target_both" android:textColor="#86efac" android:textSize="12sp" android:textStyle="bold" />
+        </FrameLayout>
+        <FrameLayout android:id="@+id/widget_target_weap" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
+            <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_choice_bg" />
+            <FrameLayout android:id="@+id/widget_target_weap_selected" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_selected_pink" android:visibility="gone" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/widget_target_weapon" android:textColor="#fbcfe8" android:textSize="12sp" android:textStyle="bold" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <!-- ═══ Row 4 — Pity counter + copy target (revealed at height >= 4 cells) ═══ -->
+    <LinearLayout
+        android:id="@+id/widget_section_pity"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <LinearLayout android:id="@+id/widget_pity_block_char" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_target_resonator" android:textColor="#8892a4" android:textSize="10sp" android:textStyle="bold" android:letterSpacing="0.08" />
+            <TextView android:id="@+id/widget_pity_value_char" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#fef08a" android:textSize="20sp" android:textStyle="bold" />
+            <TextView android:id="@+id/widget_pity_copies_char" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="#c9a84a" android:textSize="10sp" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/widget_pity_block_weap" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_target_weapon" android:textColor="#8892a4" android:textSize="10sp" android:textStyle="bold" android:letterSpacing="0.08" />
+            <TextView android:id="@+id/widget_pity_value_weap" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#fbcfe8" android:textSize="20sp" android:textStyle="bold" />
+            <TextView android:id="@+id/widget_pity_copies_weap" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="#d17ea3" android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ═══ Row 5 — Probability/statistics (revealed at height = 5 cells) ═══ -->
+    <!-- Not yet implemented — CalculatorWidget.java leaves this hidden and empty until
+         that mode is built; the row exists now so the height threshold and layout slot
+         are already in place. -->
+    <LinearLayout
+        android:id="@+id/widget_section_stats"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:visibility="gone">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/widget_stats_placeholder"
+            android:textColor="#5b6478"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+</LinearLayout>

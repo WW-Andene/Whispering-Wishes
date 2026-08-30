@@ -55,62 +55,23 @@
                 android:resource="@xml/banner_widget_info" />
         </receiver>
 
-        <!-- Currency-log widget (mode 1 of the Calculator-widget series) — same
-             exported="true" requirement as PulseBannerWidget above: the system's own
-             APPWIDGET_UPDATE broadcast is what drives this receiver, and an
-             exported="false" receiver silently drops it. -->
+        <!-- Single adaptive Calculator widget — one AppWidgetProvider whose displayed
+             sections react to its current placed size (width for row 1's currency-column
+             reveal, height for which stacked sections exist at all), rather than several
+             separate widgets. Same exported="true" requirement as the other widget
+             receivers above; also needs to receive its own ACTION_SET_TARGET broadcast
+             (the target-picker buttons' taps), which has no intent-filter here since it's
+             only ever sent explicitly via PendingIntent.getBroadcast() targeting this
+             exact component, not broadcast system-wide. -->
         <receiver
-            android:name=".CurrencyWidget"
+            android:name=".CalculatorWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/currency_widget_info" />
-        </receiver>
-
-        <!-- Currency-progress widget (mode 2 of the Calculator-widget series) — same
-             exported="true" requirement as the other widget receivers above. -->
-        <receiver
-            android:name=".CurrencyProgressWidget"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/currency_progress_widget_info" />
-        </receiver>
-
-        <!-- Pull-target widget (mode 3 of the Calculator-widget series) — same
-             exported="true" requirement as the other widget receivers above; also needs
-             to receive its own ACTION_SET_TARGET broadcast (TargetWidget.java's button
-             taps), which has no intent-filter here since it's only ever sent explicitly
-             via PendingIntent.getBroadcast() targeting this exact component, not
-             broadcast system-wide. -->
-        <receiver
-            android:name=".TargetWidget"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/target_widget_info" />
-        </receiver>
-
-        <!-- Pity + copy-target widget (mode 4 of the Calculator-widget series) — same
-             exported="true" requirement as the other widget receivers above. -->
-        <receiver
-            android:name=".PityTargetWidget"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/pity_target_widget_info" />
+                android:resource="@xml/calculator_widget_info" />
         </receiver>
 
         <activity

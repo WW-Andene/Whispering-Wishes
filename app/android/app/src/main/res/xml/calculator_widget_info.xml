@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ONE widget, resizable on BOTH axes independently (see widget_calculator.xml's own
+     header and CalculatorWidget.java for what each size reveals):
+       width  2-5 cells (110dp-320dp) — row 1's own currency-column reveal
+       height 1-5 cells (40dp-320dp)  — which stacked sections exist at all
+     minWidth/minHeight are the smallest placeable size (2x1 cells); maxResizeWidth/Height
+     cap how far a user can drag it out (5x5 cells) — same 70dp*cells-30dp grid formula
+     used everywhere else in this app. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:maxResizeWidth="320dp"
+    android:maxResizeHeight="320dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
+    android:updatePeriodMillis="1800000"
+    android:previewImage="@mipmap/ic_launcher"
+    android:initialLayout="@layout/widget_calculator"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:description="@string/calculator_widget_description">
+</appwidget-provider>
