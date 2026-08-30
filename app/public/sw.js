@@ -39,7 +39,37 @@ const BASE_TILE_RE = /\/map-tiles\/Solaris_3\/\d+\/\d+\/\d+\.webp$/i;
 // explicitly purged instead of silently evicted).
 const ASSET_CACHE_VERSION = 'v1';
 const ASSET_CACHE = `ww-assets-${ASSET_CACHE_VERSION}`;
-const ASSET_DIR_RE = /^\/(portraits|animated-bg|spine)\//;
+const ASSET_DIR_RE = /^\/(portraits|animated-bg|spine|convene-animations|audio)\//;
+
+// These 5 directories are too large to keep in the deployed web bundle
+// itself reliably (together well over 1GB — see capacitor-build/build.mjs's
+// own EXCLUDED_DIRS, which leaves them out of the NATIVE build for the same
+// reason) — instead of trusting whatever's hosting the app (Vercel or
+// otherwise) to also serve these correctly, every request for one of them is
+// redirected straight to this repo via the jsDelivr GitHub CDN. The repo is
+// the only thing that has to stay in sync; the hosting platform is only ever
+// asked to serve the app shell and its API routes. This applies to every
+// existing reference across the whole app (banners.js's convene-animations/
+// and animated-bg/ paths, SpinePlayer.jsx's portraits/ and spine/ URLs,
+// etc.) with no need to touch any of those literal path strings — they're
+// all still same-origin-relative in source, this just catches the request
+// before it leaves the page.
+const JSDELIVR_ASSET_BASE = 'https://cdn.jsdelivr.net/gh/WW-Andene/Whispering-Wishes@main/app/public';
+async function jsDelivrCacheFirst(request, url, cacheName) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const remoteUrl = JSDELIVR_ASSET_BASE + url.pathname + url.search;
+    const response = await fetch(remoteUrl);
+    if (response.ok && request.method === 'GET') {
+      const cache = await caches.open(cacheName);
+      cache.put(request, response.clone()).catch(() => {});
+    }
+    return response;
+  } catch {
+    return new Response('', { status: 503 });
+  }
+}
 
 // Vendored Tesseract.js OCR assets (worker script, wasm core, trained data — see
 // gachaImporter.js's getOcrWorker) — cache-first and in their own version-independent bucket
@@ -212,12 +242,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Character animations / banner videos a user explicitly downloaded for
-  // offline (OfflineAssetsCard) → same dedicated-cache, cache-first
-  // treatment as tiles, and for the same reason: don't let the 250-entry
-  // image LRU quietly evict something the user asked to keep.
+  // Character animations / banner videos / soundtrack — same dedicated-
+  // cache, cache-first treatment as tiles (don't let the 250-entry image LRU
+  // quietly evict something the user asked to keep), but fetched from the
+  // repo itself via jsDelivr rather than trusting the app's own host to
+  // serve these — see JSDELIVR_ASSET_BASE above for why.
   if (ASSET_DIR_RE.test(url.pathname)) {
-    event.respondWith(cacheFirst(event.request, ASSET_CACHE));
+    event.respondWith(jsDelivrCacheFirst(event.request, url, ASSET_CACHE));
     return;
   }
 
@@ -297,11 +328,29 @@ self.addEventListener('message', (event) => {
   }
 });
 
+// Redirects a bulk-download URL to jsDelivr the same way the page-level
+// fetch listener's ASSET_DIR_RE/JSDELIVR_ASSET_BASE does — kept as a
+// separate "what do we actually fetch" step from the cache KEY (still the
+// original `url` throughout this function) so a track/animation downloaded
+// here via handleDownloadOverlay and the exact same file loaded normally
+// while browsing land in the identical cache entry instead of two different
+// ones under different keys.
+function resolveFetchUrl(url) {
+  try {
+    const u = new URL(url, self.location.origin);
+    if (u.origin === self.location.origin && ASSET_DIR_RE.test(u.pathname)) {
+      return JSDELIVR_ASSET_BASE + u.pathname + u.search;
+    }
+  } catch {}
+  return url;
+}
+
 // Download one tile with retries so a transient network blip doesn't leave
 // gaps in the cache. Returns true on success, false if all attempts failed.
 async function fetchTileWithRetry(cache, url, maxAttempts = 3) {
   const existing = await cache.match(url);
   if (existing) return true;
+  const fetchUrl = resolveFetchUrl(url);
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       // no-cors: several icon hosts (wuwatracker.com, i.ibb.co, ...) don't
@@ -310,7 +359,7 @@ async function fetchTileWithRetry(cache, url, maxAttempts = 3) {
       // back to a no-cors load on its own). Same-origin requests are
       // unaffected by the mode and still come back as a normal 'basic'
       // response with a readable status.
-      const resp = await fetch(url, { mode: 'no-cors' });
+      const resp = await fetch(fetchUrl, { mode: 'no-cors' });
       // Opaque = cross-origin no-cors response: status/ok are unreadable by
       // design, but the browser fetched *something* — treat it as success
       // and let cache.put store it (opaque responses are cacheable and
