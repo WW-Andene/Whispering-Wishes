@@ -71,9 +71,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * @param {string} raw - The raw URL string
  * @returns {{ playerId: string|null, recordId: string|null, svrId: string|null, lang: string, valid: boolean, href?: string }}
  */
+// OCR commonly misreads '=' as ':' at small screenshot-text sizes (the two glyphs are visually
+// close in most UI fonts) — repairs it ONLY right after one of the real query param names, so a
+// misread 'player_id:604976175' becomes 'player_id=604976175' without touching the scheme's own
+// 'https://' or the '#/record?' fragment colon, neither of which is followed by one of these names.
+const OCR_COLON_FIX_RE = /\b(playerId|player_id|recordId|record_id|svr_id|svrId|svr_area|resources_id|gacha_id|gacha_type|lang):/g;
+
 export function parseGachaUrl(raw) {
   try {
-    const trimmed = raw.trim();
+    const trimmed = raw.trim().replace(OCR_COLON_FIX_RE, '$1=');
     // WuWa URLs have params after #/record? — extract them from the hash fragment
     let paramStr = '';
     const hashIdx = trimmed.indexOf('#');
