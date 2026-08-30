@@ -140,13 +140,13 @@
             android:visibility="gone">
 
             <LinearLayout android:id="@+id/widget_pity_block_char" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_target_resonator" android:textColor="#8892a4" android:textSize="8sp" android:textStyle="bold" android:letterSpacing="0.08" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_target_resonator" android:textColor="#8892a4" android:textSize="16sp" android:textStyle="bold" android:letterSpacing="0.08" />
                 <FrameLayout android:id="@+id/widget_pity_copies_char" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:background="@drawable/widget_target_choice_bg" android:padding="6dp">
                     <TextView android:id="@+id/widget_pity_copies_char_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#fef08a" android:textSize="16sp" android:textStyle="bold" />
                 </FrameLayout>
             </LinearLayout>
             <LinearLayout android:id="@+id/widget_pity_block_weap" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_target_weapon" android:textColor="#8892a4" android:textSize="8sp" android:textStyle="bold" android:letterSpacing="0.08" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_target_weapon" android:textColor="#8892a4" android:textSize="16sp" android:textStyle="bold" android:letterSpacing="0.08" />
                 <FrameLayout android:id="@+id/widget_pity_copies_weap" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:background="@drawable/widget_target_choice_bg" android:padding="6dp">
                     <TextView android:id="@+id/widget_pity_copies_weap_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#fbcfe8" android:textSize="16sp" android:textStyle="bold" />
                 </FrameLayout>
@@ -171,7 +171,7 @@
                 android:gravity="center"
                 android:text="@string/widget_stats_placeholder"
                 android:textColor="#5b6478"
-                android:textSize="8sp" />
+                android:textSize="16sp" />
         </LinearLayout>
 
     </LinearLayout>
