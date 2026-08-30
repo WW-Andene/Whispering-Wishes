@@ -36,4 +36,18 @@
             android:targetPackage="cc.andene.whisperingwishes"
             android:targetClass="cc.andene.whisperingwishes.QuickCalcShortcutActivity" />
     </shortcut>
+
+    <!-- Same "pin to home screen" flow as Quick Calc above, for SoundtrackWidget instead —
+         see QuickSoundtrackShortcutActivity's own file header. -->
+    <shortcut
+        android:shortcutId="quick_soundtrack"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher_round"
+        android:shortcutShortLabel="@string/quick_soundtrack_shortcut_short_label"
+        android:shortcutLongLabel="@string/quick_soundtrack_shortcut_long_label">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="cc.andene.whisperingwishes"
+            android:targetClass="cc.andene.whisperingwishes.QuickSoundtrackShortcutActivity" />
+    </shortcut>
 </shortcuts>
