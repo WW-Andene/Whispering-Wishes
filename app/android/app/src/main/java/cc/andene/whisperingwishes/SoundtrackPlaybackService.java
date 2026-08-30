@@ -43,10 +43,12 @@ public class SoundtrackPlaybackService extends Service {
     public static final String ACTION_PLAY_PAUSE = "cc.andene.whisperingwishes.action.SOUNDTRACK_PLAY_PAUSE";
     public static final String ACTION_NEXT = "cc.andene.whisperingwishes.action.SOUNDTRACK_NEXT";
     public static final String ACTION_PREV = "cc.andene.whisperingwishes.action.SOUNDTRACK_PREV";
+    public static final String ACTION_TOGGLE_LOOP = "cc.andene.whisperingwishes.action.SOUNDTRACK_TOGGLE_LOOP";
 
     private MediaPlayer mediaPlayer;
     private String currentTrackKey = SoundtrackTracks.DEFAULT_KEY;
     private boolean playing = false;
+    private boolean looping = SoundtrackTracks.DEFAULT_LOOP;
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
@@ -56,6 +58,7 @@ public class SoundtrackPlaybackService extends Service {
         super.onCreate();
         SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         currentTrackKey = prefs.getString(SoundtrackTracks.PREF_TRACK_KEY, SoundtrackTracks.DEFAULT_KEY);
+        looping = prefs.getBoolean(SoundtrackTracks.PREF_LOOP_KEY, SoundtrackTracks.DEFAULT_LOOP);
         // playing always starts false on a fresh process — a paused/never-started MediaPlayer
         // isn't recreated just because the last session happened to be mid-playback; the user
         // taps Play again rather than audio starting up unannounced in the background.
@@ -76,6 +79,8 @@ public class SoundtrackPlaybackService extends Service {
                 changeTrack(1);
             } else if (ACTION_PREV.equals(action)) {
                 changeTrack(-1);
+            } else if (ACTION_TOGGLE_LOOP.equals(action)) {
+                toggleLoop();
             }
         } catch (Throwable t) {
             // A malformed cached file, a MediaPlayer in a bad internal state, etc. — never let
@@ -108,6 +113,16 @@ public class SoundtrackPlaybackService extends Service {
         persistAndRefresh();
     }
 
+    // Live-toggles the CURRENT player's own looping flag (MediaPlayer.setLooping() applies
+    // immediately, no reload needed) so flipping this while a track is playing takes effect
+    // without a restart/gap; loadTrack() below applies the same stored value to every
+    // freshly-created player too, so a track skip picks it up automatically either way.
+    private void toggleLoop() {
+        looping = !looping;
+        if (mediaPlayer != null) mediaPlayer.setLooping(looping);
+        persistAndRefresh();
+    }
+
     private void changeTrack(int delta) {
         int nextIndex = SoundtrackTracks.indexOf(currentTrackKey) + delta;
         int len = SoundtrackTracks.ALL.length;
@@ -136,13 +151,23 @@ public class SoundtrackPlaybackService extends Service {
             .setUsage(AudioAttributes.USAGE_MEDIA)
             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
             .build());
-        player.setLooping(true);
+        player.setLooping(looping);
         player.setOnErrorListener((mp, what, extra) -> {
             Log.w(TAG, "MediaPlayer error what=" + what + " extra=" + extra);
             releasePlayer();
             playing = false;
             persistAndRefresh();
             return true;
+        });
+        // Only actually fires when looping is off — MediaPlayer never reaches "completed"
+        // while setLooping(true) is in effect, it just seeks back to 0 and keeps playing
+        // internally. With looping off, the track plays once and stops; this flips the
+        // widget's play/pause icon back to "play" to match (MediaPlayer itself supports
+        // calling start() again afterward, which replays from the beginning, same as any
+        // normal player's "play again" behavior).
+        player.setOnCompletionListener(mp -> {
+            playing = false;
+            persistAndRefresh();
         });
         // prepareAsync(), not the blocking prepare() — this runs on the service's main-thread
         // onStartCommand, and even a local cached file's decode/buffer setup shouldn't block it.
@@ -185,6 +210,7 @@ public class SoundtrackPlaybackService extends Service {
         getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit()
             .putString(SoundtrackTracks.PREF_TRACK_KEY, currentTrackKey)
             .putBoolean(SoundtrackTracks.PREF_PLAYING_KEY, playing)
+            .putBoolean(SoundtrackTracks.PREF_LOOP_KEY, looping)
             .apply();
         SoundtrackWidget.requestUpdate(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

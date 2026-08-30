@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Loop/repeat toggle for the Soundtrack widget's control row — lucide-react's own "Repeat"
+     glyph (two arrows forming a cycle), redrawn as a stroke-based vector drawable since
+     RemoteViews can't reference the app's SVG icons. Single neutral color regardless of
+     on/off state — SoundtrackWidget toggles widget_soundtrack_loop_selected's own background
+     visibility for the "on" highlight, same stacked-overlay convention CalculatorWidget's
+     target picker already uses. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:strokeColor="#E5E7EB"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M17,2 L21,6 L17,10" />
+    <path
+        android:strokeColor="#E5E7EB"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M3,11 L3,10 A4,4 0 0 1 7,6 L21,6" />
+    <path
+        android:strokeColor="#E5E7EB"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M7,22 L3,18 L7,14" />
+    <path
+        android:strokeColor="#E5E7EB"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M21,13 L21,14 A4,4 0 0 1 17,18 L3,18" />
+</vector>

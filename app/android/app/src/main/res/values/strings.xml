@@ -16,6 +16,7 @@
     <string name="widget_soundtrack_pause_aria">Pause</string>
     <string name="widget_soundtrack_prev_aria">Previous track</string>
     <string name="widget_soundtrack_next_aria">Next track</string>
+    <string name="widget_soundtrack_loop_aria">Toggle loop</string>
     <string name="soundtrack_notification_channel_name">Soundtrack playback</string>
     <string name="soundtrack_notification_text">Tap to open the app, or use the widget\'s own controls</string>
     <string name="widget_target_resonator">Resonator</string>
