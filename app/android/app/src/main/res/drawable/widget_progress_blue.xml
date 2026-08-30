@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Goal gauge fill at >= 40% — 3-star blue, matches kuro.css's own --rarity-3star token
+     (#60a5fa). See CalculatorWidget.renderProgressSection for the percent thresholds. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape>
+            <corners android:radius="6dp" />
+            <solid android:color="#33FFFFFF" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <corners android:radius="6dp" />
+                <solid android:color="#60a5fa" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Goal gauge fill under 20% — neutral gray, not one of the rarity-tier colors below
+     (widget_progress_green/blue/purple/gold), since under 20% isn't "close" to anything
+     yet. See CalculatorWidget.renderProgressSection for the percent thresholds. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape>
+            <corners android:radius="6dp" />
+            <solid android:color="#33FFFFFF" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <corners android:radius="6dp" />
+                <solid android:color="#8892a4" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>
