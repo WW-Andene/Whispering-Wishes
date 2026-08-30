@@ -5,7 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
+import { Award, Check, ChevronDown, Crosshair, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
@@ -1055,13 +1055,13 @@ function ProfileTab({
                         </div>
                         <div className="grid grid-cols-3 gap-1 w-24 mx-auto mb-3">
                           <div />
-                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.max(0, p.y - 10) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveUpAria')}>▲</button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.max(0, p.y - 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveUpAria')}>▲</button>
                           <div />
-                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.max(0, p.x - 10) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveLeftAria')}>◀</button>
-                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: 50, y: 50 }))} className="bg-red-500/20 text-red-400 rounded p-1 text-2xs hover:bg-red-500/30 active:scale-95" aria-label={t('profile.display.wallpaperResetPositionAria')}>{t('profile.display.resetPosition')}</button>
-                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.min(100, p.x + 10) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveRightAria')}>▶</button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.max(0, p.x - 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveLeftAria')}>◀</button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: 50, y: 50 }))} className="bg-red-500/20 text-red-400 rounded p-1 flex items-center justify-center hover:bg-red-500/30 active:scale-95" aria-label={t('profile.display.wallpaperResetPositionAria')} title={t('profile.display.resetPosition')}><Crosshair size={14} /></button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.min(100, p.x + 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveRightAria')}>▶</button>
                           <div />
-                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.min(100, p.y + 10) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveDownAria')}>▼</button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.min(100, p.y + 5) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveDownAria')}>▼</button>
                           <div />
                         </div>
                         <div className="flex gap-1.5">
