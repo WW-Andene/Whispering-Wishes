@@ -798,10 +798,10 @@ public class PullBubbleService extends Service {
         if (index >= results.size()) {
             rolling = false;
             if (mainBubble != null) mainBubble.setVisibility(View.VISIBLE); // see rollAndPlay's own comment
-            // Auto-archive whatever's still sitting out as individual tiles 5s after the whole
+            // Auto-archive whatever's still sitting out as individual tiles 3s after the whole
             // reveal sequence settles, unless a new roll starts first (cancelled at the top of
             // rollAndPlay).
-            handler.postDelayed(autoArchiveRunnable, 5000);
+            handler.postDelayed(autoArchiveRunnable, 3000);
             return;
         }
         WidgetPullSimulator.PullResult result = results.get(index);

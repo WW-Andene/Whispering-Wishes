@@ -12,13 +12,13 @@
     "downloadFailed": "Couldn't open download: {{error}}"
   },
   "pullBubble": {
-    "title": "Pull Bubble",
+    "title": "Pocket Convene",
     "description": "A small floating bubble you can drag anywhere on your screen — tap it to roll a ×1 or ×10 pull and watch the result animation, without opening the app or placing a widget. Requires a one-time \"draw over other apps\" permission grant. Drag the bubble onto the ✕ that appears while dragging it to turn it off.",
-    "enable": "Enable Pull Bubble",
-    "disable": "Disable Pull Bubble",
+    "enable": "Enable Pocket Convene",
+    "disable": "Disable Pocket Convene",
     "permissionNeeded": "Grant \"draw over other apps\" in the screen that just opened — the bubble turns on by itself once you come back.",
-    "permissionGranted": "Permission granted — Pull Bubble is on.",
-    "error": "Couldn't set up the pull bubble: {{error}}"
+    "permissionGranted": "Permission granted — Pocket Convene is on.",
+    "error": "Couldn't set up Pocket Convene: {{error}}"
   },
   "pushNotifications": {
     "title": "Push Notifications",

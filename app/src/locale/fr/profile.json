@@ -12,13 +12,13 @@
     "downloadFailed": "Impossible d'ouvrir le téléchargement : {{error}}"
   },
   "pullBubble": {
-    "title": "Bulle d'invocation",
+    "title": "Invocation de poche",
     "description": "Une petite bulle flottante que vous pouvez déplacer n'importe où à l'écran — appuyez dessus pour lancer une invocation ×1 ou ×10 et voir l'animation du résultat, sans ouvrir l'application ni ajouter de widget. Nécessite une autorisation ponctuelle « afficher par-dessus les autres applications ». Faites glisser la bulle sur le ✕ qui apparaît pendant le déplacement pour la désactiver.",
-    "enable": "Activer la bulle",
-    "disable": "Désactiver la bulle",
+    "enable": "Activer l'invocation de poche",
+    "disable": "Désactiver l'invocation de poche",
     "permissionNeeded": "Autorisez « afficher par-dessus les autres applications » dans l'écran qui vient de s'ouvrir — la bulle s'active toute seule à votre retour.",
-    "permissionGranted": "Autorisation accordée — la bulle est activée.",
-    "error": "Impossible de configurer la bulle : {{error}}"
+    "permissionGranted": "Autorisation accordée — l'invocation de poche est activée.",
+    "error": "Impossible de configurer l'invocation de poche : {{error}}"
   },
   "pushNotifications": {
     "title": "Notifications push",
