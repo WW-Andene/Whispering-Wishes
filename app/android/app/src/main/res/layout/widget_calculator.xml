@@ -15,12 +15,16 @@
      CalculatorWidget.onAppWidgetOptionsChanged reads both axes and toggles visibility
      accordingly; each visible row shares the available height evenly (layout_weight).
 
-     Background is the "Log 2.0" banner art (widget_bg_art, decoded+rounded in
-     CalculatorWidget.java the same way PulseBannerWidget.java handles its own art), with
-     widget_bg_scrim beneath the content stack to keep text legible over it everywhere,
-     not just along one edge — this widget's rows span the full height, unlike the
-     banner widget's bottom-weighted text. widget_background stays as the root's own
-     drawable so a failed art decode still shows the app's normal dark rounded card.
+     Background is the "Log 2.0" banner art (widget_bg_art), with a uniform darkening scrim
+     baked into that SAME bitmap in CalculatorWidget.java
+     (WidgetAssetUtils.roundedCornersWithUniformScrim) rather than layered on top as its own
+     square FrameLayout — a separate square, near-opaque overlay drawn OVER an
+     already-rounded art bitmap paints right back over its rounded corners (see
+     WidgetAssetUtils.roundedCornersWithScrim's own comment on this exact failure mode,
+     which PulseBannerWidget.java's banner art avoids the same way). Unlike that widget's
+     bottom-weighted gradient scrim, this one is uniform — this widget's rows span the full
+     height, not just one edge. widget_background stays as the root's own drawable so a
+     failed art decode still shows the app's normal dark rounded card.
 
      No plain <View> anywhere (RemoteViews' allowlist doesn't include it — see
      widget_banner.xml's own comment on this) — background layers use empty FrameLayouts
@@ -37,12 +41,6 @@
         android:scaleType="centerCrop"
         android:contentDescription="@null" />
 
-    <FrameLayout
-        android:id="@+id/widget_bg_scrim"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#B3080c14" />
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -58,23 +56,23 @@
 
             <LinearLayout android:id="@+id/widget_currency_row_astrite" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center">
                 <ImageView android:id="@+id/widget_currency_icon_astrite" android:layout_width="32dp" android:layout_height="32dp" android:contentDescription="@null" />
-                <TextView android:id="@+id/widget_currency_value_astrite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#facc15" android:textSize="12sp" android:textStyle="bold" android:singleLine="true" />
+                <TextView android:id="@+id/widget_currency_value_astrite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#facc15" android:textSize="16sp" android:textStyle="bold" android:singleLine="true" />
             </LinearLayout>
             <LinearLayout android:id="@+id/widget_currency_row_lunite" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center">
                 <ImageView android:id="@+id/widget_currency_icon_lunite" android:layout_width="32dp" android:layout_height="32dp" android:contentDescription="@null" />
-                <TextView android:id="@+id/widget_currency_value_lunite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#67e8f9" android:textSize="12sp" android:textStyle="bold" android:singleLine="true" />
+                <TextView android:id="@+id/widget_currency_value_lunite" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#67e8f9" android:textSize="16sp" android:textStyle="bold" android:singleLine="true" />
             </LinearLayout>
             <LinearLayout android:id="@+id/widget_currency_row_radiant" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center" android:visibility="gone">
                 <ImageView android:id="@+id/widget_currency_icon_radiant" android:layout_width="32dp" android:layout_height="32dp" android:contentDescription="@null" />
-                <TextView android:id="@+id/widget_currency_value_radiant" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#fde047" android:textSize="12sp" android:textStyle="bold" android:singleLine="true" />
+                <TextView android:id="@+id/widget_currency_value_radiant" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#fde047" android:textSize="16sp" android:textStyle="bold" android:singleLine="true" />
             </LinearLayout>
             <LinearLayout android:id="@+id/widget_currency_row_lustrous" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center" android:visibility="gone">
                 <ImageView android:id="@+id/widget_currency_icon_lustrous" android:layout_width="32dp" android:layout_height="32dp" android:contentDescription="@null" />
-                <TextView android:id="@+id/widget_currency_value_lustrous" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#22d3ee" android:textSize="12sp" android:textStyle="bold" android:singleLine="true" />
+                <TextView android:id="@+id/widget_currency_value_lustrous" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#22d3ee" android:textSize="16sp" android:textStyle="bold" android:singleLine="true" />
             </LinearLayout>
             <LinearLayout android:id="@+id/widget_currency_row_forging" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="horizontal" android:gravity="center" android:visibility="gone">
                 <ImageView android:id="@+id/widget_currency_icon_forging" android:layout_width="32dp" android:layout_height="32dp" android:contentDescription="@null" />
-                <TextView android:id="@+id/widget_currency_value_forging" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#f9a8d4" android:textSize="12sp" android:textStyle="bold" android:singleLine="true" />
+                <TextView android:id="@+id/widget_currency_value_forging" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginLeft="6dp" android:textColor="#f9a8d4" android:textSize="16sp" android:textStyle="bold" android:singleLine="true" />
             </LinearLayout>
         </LinearLayout>
 
@@ -96,8 +94,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical">
-                <ImageView android:id="@+id/widget_progress_icon" android:layout_width="24dp" android:layout_height="24dp" android:contentDescription="@null" />
-                <TextView android:id="@+id/widget_progress_value" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginLeft="6dp" android:textColor="#e4e7ee" android:textSize="12sp" android:textStyle="bold" android:singleLine="true" />
+                <ImageView android:id="@+id/widget_progress_icon" android:layout_width="32dp" android:layout_height="32dp" android:contentDescription="@null" />
+                <TextView android:id="@+id/widget_progress_value" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginLeft="6dp" android:textColor="#e4e7ee" android:textSize="16sp" android:textStyle="bold" android:singleLine="true" />
             </LinearLayout>
             <ProgressBar android:id="@+id/widget_progress_bar" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="12dp" android:layout_marginTop="4dp" android:max="100" android:progress="0" />
         </LinearLayout>
@@ -114,17 +112,17 @@
             <FrameLayout android:id="@+id/widget_target_char" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginRight="6dp">
                 <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_choice_bg" />
                 <FrameLayout android:id="@+id/widget_target_char_selected" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_selected_gold" android:visibility="gone" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/widget_target_resonator" android:textColor="#fef08a" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/widget_target_resonator" android:textColor="#fef08a" android:textSize="16sp" android:textStyle="bold" />
             </FrameLayout>
             <FrameLayout android:id="@+id/widget_target_both" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:layout_marginRight="6dp">
                 <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_choice_bg" />
                 <FrameLayout android:id="@+id/widget_target_both_selected" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_selected_emerald" android:visibility="gone" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/widget_target_both" android:textColor="#86efac" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/widget_target_both" android:textColor="#86efac" android:textSize="16sp" android:textStyle="bold" />
             </FrameLayout>
             <FrameLayout android:id="@+id/widget_target_weap" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
                 <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_choice_bg" />
                 <FrameLayout android:id="@+id/widget_target_weap_selected" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/widget_target_selected_pink" android:visibility="gone" />
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/widget_target_weapon" android:textColor="#fbcfe8" android:textSize="12sp" android:textStyle="bold" />
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:text="@string/widget_target_weapon" android:textColor="#fbcfe8" android:textSize="16sp" android:textStyle="bold" />
             </FrameLayout>
         </LinearLayout>
 
@@ -144,13 +142,13 @@
             <LinearLayout android:id="@+id/widget_pity_block_char" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_target_resonator" android:textColor="#8892a4" android:textSize="8sp" android:textStyle="bold" android:letterSpacing="0.08" />
                 <FrameLayout android:id="@+id/widget_pity_copies_char" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:background="@drawable/widget_target_choice_bg" android:padding="6dp">
-                    <TextView android:id="@+id/widget_pity_copies_char_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#fef08a" android:textSize="12sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/widget_pity_copies_char_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#fef08a" android:textSize="16sp" android:textStyle="bold" />
                 </FrameLayout>
             </LinearLayout>
             <LinearLayout android:id="@+id/widget_pity_block_weap" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/widget_target_weapon" android:textColor="#8892a4" android:textSize="8sp" android:textStyle="bold" android:letterSpacing="0.08" />
                 <FrameLayout android:id="@+id/widget_pity_copies_weap" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:background="@drawable/widget_target_choice_bg" android:padding="6dp">
-                    <TextView android:id="@+id/widget_pity_copies_weap_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#fbcfe8" android:textSize="12sp" android:textStyle="bold" />
+                    <TextView android:id="@+id/widget_pity_copies_weap_text" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#fbcfe8" android:textSize="16sp" android:textStyle="bold" />
                 </FrameLayout>
             </LinearLayout>
         </LinearLayout>
