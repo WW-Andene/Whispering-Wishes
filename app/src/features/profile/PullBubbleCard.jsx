@@ -6,7 +6,7 @@
 // PulseBannerWidget on the home screen — the whole point of asking for it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Circle, CircleOff } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { isNativePlatform, isPullBubbleEnabled, togglePullBubble, canDrawOverlays, requestOverlayPermission } from '../../utils/pullBubble.js';
@@ -17,10 +17,43 @@ export default function PullBubbleCard({ toast }) {
   const [native] = useState(isNativePlatform());
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Set right before sending the user to Settings for "Display over other apps" — Android gives
+  // that permission NO in-app Allow/Deny dialog at all (a deliberate OS restriction since API 23,
+  // to prevent exactly the kind of instant-grant an overlay permission could abuse for
+  // tapjacking; every app hits this same detour, this isn't something we can route around).
+  // What WAS avoidable: without this flag, coming back from Settings left the toggle exactly
+  // where it was, silently requiring a second manual tap even though the permission was already
+  // granted. Now the app-resume listener below finishes the job on its own.
+  const pendingEnableRef = useRef(false);
 
   useEffect(() => {
     if (!native) return;
     isPullBubbleEnabled().then(setEnabled);
+  }, [native]);
+
+  // Finishes enabling the bubble automatically once the user comes back from the overlay
+  // permission Settings screen, instead of requiring them to press the toggle a second time.
+  useEffect(() => {
+    if (!native) return;
+    let listenerHandle;
+    (async () => {
+      const { App } = await import('@capacitor/app');
+      listenerHandle = await App.addListener('appStateChange', async ({ isActive }) => {
+        if (!isActive || !pendingEnableRef.current) return;
+        pendingEnableRef.current = false;
+        if (!(await canDrawOverlays())) return; // still not granted — nothing to finish
+        try {
+          await togglePullBubble();
+          setEnabled(await isPullBubbleEnabled());
+          haptic.success();
+          toast?.addToast?.(t('profile.pullBubble.permissionGranted'), 'success');
+        } catch (err) {
+          toast?.addToast?.(t('profile.pullBubble.error', { error: err.message }), 'error');
+        }
+      });
+    })();
+    return () => { listenerHandle?.remove(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [native]);
 
   if (!native) return null;
@@ -35,6 +68,7 @@ export default function PullBubbleCard({ toast }) {
         // request automatically on first use — asked proactively here so the
         // toggle's own state doesn't flip to "on" for a bubble that can't
         // actually appear yet.
+        pendingEnableRef.current = true;
         await requestOverlayPermission();
         toast?.addToast?.(t('profile.pullBubble.permissionNeeded'), 'warning');
         return;
