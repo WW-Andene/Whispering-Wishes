@@ -39,6 +39,11 @@ public class WallpaperPlugin extends Plugin {
     public void setWallpaper(PluginCall call) {
         String base64 = call.getString("base64");
         String target = call.getString("target", "both");
+        // 0-100 object-position-style percentages (50/50 = center, the old fixed behavior) — which
+        // part of the source image centerCropToScreenAspect() below centers its crop window on,
+        // sent from the position editor in ProfileTab.jsx's wallpaper crown flow.
+        double offsetX = call.getDouble("offsetX", 50.0);
+        double offsetY = call.getDouble("offsetY", 50.0);
         if (base64 == null || base64.isEmpty()) {
             call.reject("Missing image data");
             return;
@@ -63,7 +68,7 @@ public class WallpaperPlugin extends Plugin {
         // screen's aspect ratio ourselves first (same object-fit:cover behavior the web app
         // uses for these same images) so what lands on the device is an edge-to-edge,
         // centered crop rather than a stretched copy.
-        Bitmap cropped = centerCropToScreenAspect(bitmap);
+        Bitmap cropped = centerCropToScreenAspect(bitmap, offsetX, offsetY);
         if (cropped != bitmap) bitmap.recycle();
 
         try {
@@ -87,10 +92,15 @@ public class WallpaperPlugin extends Plugin {
         }
     }
 
-    // Center-crop (CSS object-fit:cover equivalent) `src` down to the device's real screen
-    // aspect ratio, scaling up first if the source is smaller than the screen in the
-    // cover-relevant dimension. Returns `src` unchanged if the screen size can't be read.
-    private Bitmap centerCropToScreenAspect(Bitmap src) {
+    // Crop (CSS object-fit:cover equivalent) `src` down to the device's real screen aspect
+    // ratio, scaling up first if the source is smaller than the screen in the cover-relevant
+    // dimension. offsetX/offsetY (0-100, 50/50 = center) pick where within the scaled image the
+    // crop window sits — same semantics as CSS object-position — instead of it always being
+    // dead center; the position editor in ProfileTab.jsx's wallpaper crown flow supplies these
+    // from a live object-fit:cover preview using this exact same math, so what the user sees
+    // there is a pixel-accurate stand-in for what lands on the device. Returns `src` unchanged
+    // if the screen size can't be read.
+    private Bitmap centerCropToScreenAspect(Bitmap src, double offsetX, double offsetY) {
         WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
         if (wm == null) return src;
         Display display = wm.getDefaultDisplay();
@@ -106,8 +116,8 @@ public class WallpaperPlugin extends Plugin {
         float screenRatio = (float) screenW / screenH;
         float srcRatio = (float) srcW / srcH;
 
-        // Scale up so the source fully covers the screen in both dimensions, then crop the
-        // centered screenW x screenH window out of it.
+        // Scale up so the source fully covers the screen in both dimensions, then crop a
+        // screenW x screenH window out of it, positioned per offsetX/offsetY.
         float scale = srcRatio > screenRatio ? (float) screenH / srcH : (float) screenW / srcW;
         int scaledW = Math.round(srcW * scale);
         int scaledH = Math.round(srcH * scale);
@@ -117,8 +127,12 @@ public class WallpaperPlugin extends Plugin {
 
         int cropW = Math.min(screenW, scaledW);
         int cropH = Math.min(screenH, scaledH);
-        int left = Math.max(0, (scaledW - cropW) / 2);
-        int top = Math.max(0, (scaledH - cropH) / 2);
+        double clampedX = Math.max(0.0, Math.min(100.0, offsetX));
+        double clampedY = Math.max(0.0, Math.min(100.0, offsetY));
+        int maxLeft = Math.max(0, scaledW - cropW);
+        int maxTop = Math.max(0, scaledH - cropH);
+        int left = (int) Math.round(maxLeft * (clampedX / 100.0));
+        int top = (int) Math.round(maxTop * (clampedY / 100.0));
         Bitmap cropped = Bitmap.createBitmap(scaled, left, top, cropW, cropH);
         if (cropped != scaled) scaled.recycle();
         return cropped;

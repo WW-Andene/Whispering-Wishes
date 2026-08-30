@@ -163,6 +163,11 @@ function ProfileTab({
   const [bgSectionCollapsed, setBgSectionCollapsed] = useState(true);
   // Target-picker modal (Home/Lock/Both) shown before crowning a static wallpaper image.
   const [wallpaperTargetPrompt, setWallpaperTargetPrompt] = useState(null); // { url } | null
+  // Position editor shown after the Home/Lock/Both target is chosen — lets the user slide the
+  // crop around before it's actually written to the phone's home/lock screen (WallpaperPlugin.java
+  // always center-crops to the device's screen aspect otherwise, with no way to pick a different
+  // part of the source picture). x/y are 0-100 object-position-style percentages, 50/50 = center.
+  const [wallpaperPositionPrompt, setWallpaperPositionPrompt] = useState(null); // { url, target, x, y } | null
   const [activePlayersCount, setActivePlayersCount] = useState(null);
   const [activePlayersHistory, setActivePlayersHistory] = useState([]);
   const [presenceError, setPresenceError] = useState(null);
@@ -775,9 +780,9 @@ function ProfileTab({
                   // WallpaperPlugin.java, independent of picking it as an in-app background
                   // above. Native-only; a video's poster frame is used since an actual wallpaper
                   // can't be a video.
-                  const doSetWallpaper = async (url, target) => {
+                  const doSetWallpaper = async (url, target, position) => {
                     haptic.light();
-                    const res = await setWallpaper(url, target);
+                    const res = await setWallpaper(url, target, position);
                     if (res.ok) {
                       toast?.addToast?.(t('profile.display.wallpaperApplied'), 'success');
                       haptic.success();
@@ -983,13 +988,68 @@ function ProfileTab({
                           <button
                             key={target}
                             className="kuro-btn w-full text-sm"
-                            onClick={() => { const url = wallpaperTargetPrompt?.url; setWallpaperTargetPrompt(null); if (url) doSetWallpaper(url, target); }}
+                            onClick={() => { const url = wallpaperTargetPrompt?.url; setWallpaperTargetPrompt(null); if (url) setWallpaperPositionPrompt({ url, target, x: 50, y: 50 }); }}
                           >
                             {label}
                           </button>
                         ))}
                       </div>
                     </div>
+                  </FocusTrapModal>
+                  {/* Position editor — shown after Home/Lock/Both is picked, right before the crop
+                      actually lands on the phone's real screen. WallpaperPlugin.java always
+                      center-crops the source image to the device's screen aspect ratio; this preview
+                      box is sized to that same aspect ratio and uses object-fit:cover +
+                      object-position, so what's shown here is a pixel-accurate stand-in for what the
+                      native crop will produce — sliding the d-pad changes which part of the source
+                      image that native crop is centered on, instead of it always being dead center. */}
+                  <FocusTrapModal
+                    isOpen={!!wallpaperPositionPrompt}
+                    onClose={() => setWallpaperPositionPrompt(null)}
+                    ariaLabel={t('profile.display.wallpaperPositionTitle')}
+                    centered
+                    onClick={(e) => { if (e.target === e.currentTarget) setWallpaperPositionPrompt(null); }}
+                  >
+                    {wallpaperPositionPrompt && (
+                      <div className="kuro-card p-4 rounded-lg w-full max-w-xs mx-auto" style={{ background: 'var(--bg-card)' }} onClick={(e) => e.stopPropagation()}>
+                        <div className="text-white text-base font-medium mb-3">{t('profile.display.wallpaperPositionTitle')}</div>
+                        <div
+                          className="relative w-full mx-auto rounded-lg overflow-hidden border border-[var(--border-medium)] mb-3"
+                          style={{ maxWidth: 160, aspectRatio: `${window.screen.width} / ${window.screen.height}` }}
+                        >
+                          <img
+                            src={wallpaperPositionPrompt.url}
+                            alt=""
+                            className="absolute inset-0 w-full h-full object-cover"
+                            style={{ objectPosition: `${wallpaperPositionPrompt.x}% ${wallpaperPositionPrompt.y}%` }}
+                          />
+                        </div>
+                        <div className="grid grid-cols-3 gap-1 w-24 mx-auto mb-3">
+                          <div />
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.max(0, p.y - 10) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveUpAria')}>▲</button>
+                          <div />
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.max(0, p.x - 10) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveLeftAria')}>◀</button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: 50, y: 50 }))} className="bg-red-500/20 text-red-400 rounded p-1 text-2xs hover:bg-red-500/30 active:scale-95" aria-label={t('profile.display.wallpaperResetPositionAria')}>{t('profile.display.resetPosition')}</button>
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, x: Math.min(100, p.x + 10) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveRightAria')}>▶</button>
+                          <div />
+                          <button onClick={() => setWallpaperPositionPrompt(p => ({ ...p, y: Math.min(100, p.y + 10) }))} className="bg-white/10 text-white rounded p-1 text-sm hover:bg-white/20 active:scale-95" aria-label={t('profile.display.wallpaperMoveDownAria')}>▼</button>
+                          <div />
+                        </div>
+                        <div className="flex gap-1.5">
+                          <button className="kuro-btn flex-1 text-sm" onClick={() => setWallpaperPositionPrompt(null)}>{t('profile.display.wallpaperPositionCancel')}</button>
+                          <button
+                            className="kuro-btn flex-1 text-sm active-emerald"
+                            onClick={() => {
+                              const { url, target, x, y } = wallpaperPositionPrompt;
+                              setWallpaperPositionPrompt(null);
+                              doSetWallpaper(url, target, { x, y });
+                            }}
+                          >
+                            {t('profile.display.wallpaperPositionApply')}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </FocusTrapModal>
                   </>
                   );

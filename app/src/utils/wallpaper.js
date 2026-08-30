@@ -34,7 +34,10 @@ function blobToBase64(blob) {
 
 // target: 'home' | 'lock' | 'both' (default). Ignored pre-API 24 (setBitmap(Bitmap) there
 // always sets both — see WallpaperPlugin.java).
-export async function setWallpaper(imageUrl, target = 'both') {
+// position: { x, y } object-position-style percentages (0-100, 50/50 = center, default) — which
+// part of the source image WallpaperPlugin.java's center-crop-to-screen-aspect step is centered
+// on, instead of it always being dead center.
+export async function setWallpaper(imageUrl, target = 'both', position) {
   if (!isNativePlatform()) return { ok: false, error: 'not-native' };
   if (!imageUrl) return { ok: false, error: 'no-image' };
   try {
@@ -42,7 +45,9 @@ export async function setWallpaper(imageUrl, target = 'both') {
     if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
     const blob = await res.blob();
     const base64 = await blobToBase64(blob);
-    await Wallpaper.setWallpaper({ base64, target });
+    const offsetX = typeof position?.x === 'number' ? position.x : 50;
+    const offsetY = typeof position?.y === 'number' ? position.y : 50;
+    await Wallpaper.setWallpaper({ base64, target, offsetX, offsetY });
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };
