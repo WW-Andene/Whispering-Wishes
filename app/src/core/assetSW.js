@@ -60,6 +60,7 @@ export const ASSET_CATEGORY_LABELS = {
   'misc-assets': 'Miscellaneous Assets',
   achievements: 'Achievement Icons',
   'ui-icons': 'UI Icons',
+  audio: 'Soundtrack',
   icons: 'Hotlinked Icons',
 };
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Walks app/public/{portraits,animated-bg,spine,convene-animations,characters,
-// banners,echoes,materials,misc-assets,achievements,ui-icons}/ and emits a flat list of
+// banners,echoes,materials,misc-assets,achievements,ui-icons,audio}/ and emits a flat list of
 // every file's URL path to app/public/dev/asset-manifest.json. Used by the
 // "Download for offline" feature (ProfileTab → OfflineAssetsCard) to bulk-
 // fetch these directories into the service worker's persistent cache.
@@ -34,7 +34,7 @@ const here = path.dirname(url.fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, '..');
 const publicDir = path.join(repoRoot, 'app/public');
 const srcDataDir = path.join(repoRoot, 'app/src/data');
-const DIRS = ['portraits', 'animated-bg', 'spine', 'convene-animations', 'characters', 'banners', 'echoes', 'materials', 'misc-assets', 'achievements', 'ui-icons'];
+const DIRS = ['portraits', 'animated-bg', 'spine', 'convene-animations', 'characters', 'banners', 'echoes', 'materials', 'misc-assets', 'achievements', 'ui-icons', 'audio'];
 const ICON_HOSTS = ['i.ibb.co', 'wuwatracker.com', 'wuwa.gg', 'static.nanoka.cc'];
 const ICON_URL_RE = new RegExp(
   `https?://(?:${ICON_HOSTS.map(h => h.replace(/\./g, '\\.')).join('|')})/[^"'\`)\\s]+?\\.(?:webp|png|jpg|jpeg)`,
