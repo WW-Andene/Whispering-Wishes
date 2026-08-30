@@ -271,41 +271,6 @@ public class MainActivity extends BridgeActivity {
             webView.addJavascriptInterface(new NativeHapticsBridge(webView), "AndroidHaptics");
             webView.addJavascriptInterface(new NativeBootBridge(this), "AndroidBoot");
         }
-
-        handleOpenTabIntent(getIntent());
-    }
-
-    private static final String EXTRA_OPEN_TAB = "open_tab";
-
-    // "Quick Calc" home-screen App Shortcut (shortcuts.xml) launches MainActivity with this
-    // extra set to jump straight to the Calculator tab instead of landing on whatever tab
-    // the app last showed. MainActivity is exported="true" (it's the LAUNCHER activity,
-    // reachable from outside this app), so EXTRA_OPEN_TAB's value is checked against a
-    // fixed whitelist rather than concatenated into evaluateJavascript() as-is — this
-    // method's whole body IS that whitelist, one literal per accepted tab, specifically so
-    // an arbitrary intent from another app can never inject JS into the WebView through
-    // this extra. window.location.hash (not a bridge callback) is the hand-off, same
-    // '#tabname' convention useTabNavigation.js's own '#spine-tune' dev-panel shortcut
-    // already uses — checked there both at mount (cold start) and via 'hashchange' (warm
-    // start, reached through onNewIntent() below since MainActivity is launchMode="singleTask").
-    private void handleOpenTabIntent(android.content.Intent intent) {
-        if (intent == null) return;
-        if (!"calculator".equals(intent.getStringExtra(EXTRA_OPEN_TAB))) return;
-
-        WebView webView = getBridge() != null ? getBridge().getWebView() : null;
-        if (webView != null) {
-            webView.evaluateJavascript("window.location.hash = '#calculator';", null);
-        }
-    }
-
-    // singleTask means a shortcut tap while the app's already running is delivered here,
-    // not to a fresh onCreate() — without this override, "Quick Calc" would silently do
-    // nothing on a warm start.
-    @Override
-    public void onNewIntent(android.content.Intent intent) {
-        super.onNewIntent(intent);
-        setIntent(intent);
-        handleOpenTabIntent(intent);
     }
 
     // Shared by NativeBootBridge.dismissBootPoster() and the 15s

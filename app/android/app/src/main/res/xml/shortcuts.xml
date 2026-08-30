@@ -21,11 +21,10 @@
             android:targetClass="cc.andene.whisperingwishes.PullBubbleShortcutActivity" />
     </shortcut>
 
-    <!-- Opens the app straight to the Calculator tab — MainActivity.handleOpenTabIntent()
-         reads the "open_tab" extra below and hands it to the WebView as a
-         window.location.hash change useTabNavigation.js already listens for. Launches
-         MainActivity itself (not a trampoline like the shortcut above) since there's
-         nothing to toggle here, just a tab to land on. -->
+    <!-- Triggers Android's own "pin to home screen" flow for CalculatorWidget via
+         QuickCalcShortcutActivity's trampoline — NOT a shortcut into the app's own
+         Calculator tab, it puts the actual home-screen widget on the user's home screen
+         directly, without them having to find it in the system widget picker themselves. -->
     <shortcut
         android:shortcutId="quick_calc"
         android:enabled="true"
@@ -35,8 +34,6 @@
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="cc.andene.whisperingwishes"
-            android:targetClass="cc.andene.whisperingwishes.MainActivity">
-            <extra android:name="open_tab" android:value="calculator" />
-        </intent>
+            android:targetClass="cc.andene.whisperingwishes.QuickCalcShortcutActivity" />
     </shortcut>
 </shortcuts>

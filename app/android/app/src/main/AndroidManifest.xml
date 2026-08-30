@@ -35,6 +35,16 @@
             android:excludeFromRecents="true"
             android:exported="true" />
 
+        <!-- Pure trampoline target for the "Quick Calc" App Shortcut — see its own file
+             header. Same cross-app-caller reasoning as PullBubbleShortcutActivity above:
+             App Shortcuts are launched by the launcher app (a separate process), so
+             exported="true" is required. -->
+        <activity
+            android:name=".QuickCalcShortcutActivity"
+            android:theme="@style/AppTheme.Trampoline"
+            android:excludeFromRecents="true"
+            android:exported="true" />
+
         <!-- Must be exported="true" — the system server (AppWidgetManager, a
              different process/app) is what sends APPWIDGET_UPDATE broadcasts
              to this receiver; that's a cross-app caller like the configure
