@@ -445,7 +445,15 @@ async function getOcrWorker() {
   // rejecting — exactly the "always times out, every attempt, every platform" symptom this was
   // causing when setParameters() was awaited in that same chain. If it fails now, OCR still
   // runs (just without the whitelist) instead of never starting at all.
-  worker.setParameters({ tessedit_char_whitelist: URL_CHAR_WHITELIST }).catch(err => {
+  worker.setParameters({
+    tessedit_char_whitelist: URL_CHAR_WHITELIST,
+    // SPARSE_TEXT: the screenshot is a full browser view (address bar + page content, keyboard,
+    // etc.), not a tight crop of just the URL — default full-page layout analysis (AUTO) can
+    // misjudge which region is actually the target line among all that other UI. SPARSE_TEXT
+    // looks for text wherever it is, in no particular layout, which fits a screenshot better
+    // than assuming one structured document/page.
+    tessedit_pageseg_mode: '11',
+  }).catch(err => {
     console.error('[OCR] setParameters failed (continuing without whitelist):', err);
   });
   return worker;
@@ -474,7 +482,11 @@ export async function extractIdsFromImage(base64Image) {
   const cleaned = text.replace(/\s+/g, '');
   const parsed = parseGachaUrl(cleaned);
   if (!parsed.valid || !parsed.playerId) {
-    throw new Error('player_id not found. Try a clearer screenshot.');
+    // Include what OCR actually read (truncated) in the error itself — without this, a bad
+    // recognition is undiagnosable without devtools access, since the only other signal is
+    // this exact same generic message no matter what went wrong.
+    const preview = cleaned.length > 200 ? cleaned.slice(0, 200) + '…' : cleaned;
+    throw new Error(`player_id not found. OCR read: "${preview || '(nothing)'}"`);
   }
   return {
     player_id: parsed.playerId,
