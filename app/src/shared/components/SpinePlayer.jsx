@@ -101,8 +101,15 @@ export const SPRITE_SPINE_CHARACTERS = {
   luokeke:         spriteEntry('Roccia',           'Havoc',   'Luokeke',
                       { tx: -4, ty: 15,
                         detail: { scale: 2.5,  tx: 6,    ty: 20 } }),
-  rover_havoc_m:   spriteEntry('Rover: Havoc (Male)',   'Havoc', 'Male',   { dir: 'rover_male' }),
-  rover_havoc_f:   spriteEntry('Rover: Havoc (Female)', 'Havoc', 'Female', { dir: 'rover_female' }),
+  // Rover has no in-app gender selection — one shared skeleton/atlas per
+  // element, keyed to the plain CHARACTER_DATA name so getSpineId(name)
+  // actually resolves it (a prior "(Male)"/"(Female)" split here never
+  // matched anything, since no call site ever passed a gender-suffixed
+  // name — every Rover sprite lookup silently failed). rover_female is the
+  // richer of the two source folders (3 webp variants vs rover_male's 1),
+  // so it's the one in use; portraits/rover_male/ is kept on disk but
+  // currently unreferenced.
+  rover_havoc:     spriteEntry('Rover: Havoc',   'Havoc', 'Female', { dir: 'rover_female' }),
   chun:            spriteEntry('Camellya',         'Havoc',   'Chun',
                       { scale: 2.5,  tx: -2,  ty: 22.5,
                         detail: { scale: 2.95, tx: 4,    ty: 29.5 } }),
@@ -136,8 +143,7 @@ export const SPRITE_SPINE_CHARACTERS = {
   weilinai:        spriteEntry('Verina',           'Spectro', 'Weilinai',
                       { scale: 1.85, tx: 1,    ty: 17,
                         detail: { scale: 2.3,  tx: 8.5,  ty: 25 } }),
-  rover_spectro_f: spriteEntry('Rover: Spectro (Female)', 'Spectro', 'Female', { dir: 'rover_female' }),
-  rover_spectro_m: spriteEntry('Rover: Spectro (Male)',   'Spectro', 'Male',   { dir: 'rover_male' }),
+  rover_spectro:   spriteEntry('Rover: Spectro', 'Spectro', 'Female', { dir: 'rover_female' }),
   xigelika:        spriteEntry('Sigrika',          'Aero',    'Xigelika',
                       { ty: 22,
                         detail: { scale: 2.7,  tx: 5,    ty: 28.5 } }),
@@ -150,11 +156,10 @@ export const SPRITE_SPINE_CHARACTERS = {
   katixiya:        spriteEntry('Cartethyia',       'Aero',    'Katixiya',
                       { scale: 2.4,  tx: 3.5,  ty: 24.5,
                         detail: { scale: 2.8,  tx: 6.5,  ty: 30 } }),
-  rover_aero_f:    spriteEntry('Rover: Aero (Female)',    'Aero', 'Female', { dir: 'rover_female' }),
+  rover_aero:      spriteEntry('Rover: Aero',      'Aero', 'Female', { dir: 'rover_female' }),
   xiakong:         spriteEntry('Ciaccona',         'Aero',    'Xiakong',
                       { scale: 2.9,  tx: -8,   ty: 19,
                         detail: { scale: 3.25, tx: 1.5,  ty: 24.5 } }),
-  rover_aero_m:    spriteEntry('Rover: Aero (Male)',      'Aero', 'Male',   { dir: 'rover_male' }),
   jianxin:         spriteEntry('Jianxin',          'Aero',    'Jianxin',
                       { ty: 16.5,
                         detail: { scale: 2.65, tx: 6.5,  ty: 22.5 } }),
@@ -188,6 +193,7 @@ export const SPRITE_SPINE_CHARACTERS = {
   kakaluo:         spriteEntry('Calcharo',         'Electro', 'Kakaluo',
                       { scale: 4.85, tx: -16,  ty: 13.5,
                         detail: { scale: 2.75, tx: -3.5, ty: 29.5 } }),
+  rover_electro:   spriteEntry('Rover: Electro',   'Electro', 'Female', { dir: 'rover_female' }),
   // Daniya's webp is stored on nanoka's CDN as Portraits_DaNiYa.webp (mixed
   // case); the atlas references it verbatim and Spine resolves it relative to
   // atlasUrl, so we preserve the exact casing on disk.
