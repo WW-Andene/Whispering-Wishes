@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fixed-size widget (no per-cell reveal logic like CalculatorWidget's own, nothing to
+     progressively show) — same 70dp*cells-30dp grid math as every other widget in this
+     app. 3x2 cells fits the track name + prev/play/next row comfortably without feeling
+     cramped; still resizable, same as banner_widget_info.xml's own reasoning for keeping a
+     resize floor rather than pinning a fixed size outright. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="180dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="70dp"
+    android:targetCellWidth="3"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:previewImage="@mipmap/ic_launcher"
+    android:initialLayout="@layout/widget_soundtrack"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:description="@string/soundtrack_widget_description">
+</appwidget-provider>

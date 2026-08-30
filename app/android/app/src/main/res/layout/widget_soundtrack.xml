@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Home-screen "Soundtrack" widget — plays the app's own ambient "Log Screen" music tracks
+     (the same 4 choices as Profile > Display > Sound > Ambient Music: 1.0/2.0/3.0 Login
+     Screen + Convene) via SoundtrackPlaybackService, a genuine foreground MediaPlayer
+     service so playback survives the widget/app not being on screen. Same look and
+     structure as widget_calculator.xml: "Log 2.0" theme art as the background (rounded +
+     scrimmed the same way, via WidgetAssetUtils.decodeAssetExactCrop /
+     roundedCornersWithUniformScrim so the corners survive scaleType="fitXY" instead of
+     being cut by a second centerCrop), widget_background as the root's own drawable
+     fallback, PerfectSuite-compliant sizes throughout, and the same tap-to-cycle
+     interaction the copy-target pill uses — tapping the track name cycles to the next one.
+
+     No plain <View> anywhere (RemoteViews' allowlist doesn't include it — see
+     widget_banner.xml's own comment on this) — background layers use empty FrameLayouts
+     instead. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background">
+
+    <ImageView
+        android:id="@+id/widget_soundtrack_bg_art"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:contentDescription="@null" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/widget_soundtrack_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/widget_soundtrack_label"
+            android:textColor="#8892a4"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.08" />
+
+        <!-- Tap to cycle to the next track — same interaction as the Calculator widget's
+             own copy-target pill (CalculatorWidget's setCyclePendingIntent). -->
+        <TextView
+            android:id="@+id/widget_soundtrack_track_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#fef08a"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/widget_soundtrack_prev"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginRight="12dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_media_previous"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/widget_soundtrack_prev_aria" />
+
+            <ImageButton
+                android:id="@+id/widget_soundtrack_play"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/widget_target_choice_bg"
+                android:src="@android:drawable/ic_media_play"
+                android:scaleType="fitCenter"
+                android:padding="8dp"
+                android:contentDescription="@string/widget_soundtrack_play_aria" />
+
+            <ImageButton
+                android:id="@+id/widget_soundtrack_next"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginLeft="12dp"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_media_next"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/widget_soundtrack_next_aria" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
