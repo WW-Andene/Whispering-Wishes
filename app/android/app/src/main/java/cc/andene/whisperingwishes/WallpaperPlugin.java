@@ -165,16 +165,38 @@ public class WallpaperPlugin extends Plugin {
 
         Context context = getContext();
         File outFile = new File(context.getFilesDir(), "live_wallpaper_current.mp4");
-        try (FileOutputStream out = new FileOutputStream(outFile)) {
+        // Write to a temp file and rename it over the real one, rather than overwriting outFile's
+        // bytes in place — LiveVideoWallpaperService's MediaPlayer may already have outFile open
+        // for looping playback (this same fixed filename is reused for every animated background
+        // ever applied), and rewriting its content mid-read risks a torn/corrupt frame. A rename
+        // instead re-points the filename at a new inode; any file descriptor already open against
+        // the old one keeps reading its old, complete bytes undisturbed until it's closed.
+        File tempFile = new File(context.getFilesDir(), "live_wallpaper_current.mp4.tmp");
+        try (FileOutputStream out = new FileOutputStream(tempFile)) {
             out.write(bytes);
         } catch (Exception e) {
             call.reject("Could not cache video: " + e.getMessage());
+            return;
+        }
+        if (!tempFile.renameTo(outFile)) {
+            call.reject("Could not finalize cached video");
             return;
         }
 
         SharedPreferences prefs = context.getSharedPreferences(
                 LiveVideoWallpaperService.PREFS_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(LiveVideoWallpaperService.PREF_VIDEO_PATH, outFile.getAbsolutePath()).apply();
+
+        // Tell an already-active instance of our own live wallpaper to reload right away — see
+        // ACTION_REFRESH's own comment for why this is needed: the OS has no built-in signal for
+        // "the file this already-running wallpaper reads from just changed," so without this,
+        // switching from one animated background to another while the first is still active just
+        // kept playing the first one, appearing frozen, until something else happened to recreate
+        // the wallpaper's surface (e.g. re-applying the exact same background again forces that,
+        // which is why that specific workaround seemed to "unstick" it).
+        Intent refreshIntent = new Intent(LiveVideoWallpaperService.ACTION_REFRESH);
+        refreshIntent.setPackage(context.getPackageName());
+        context.sendBroadcast(refreshIntent);
 
         try {
             Intent changeWallpaper = new Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER);

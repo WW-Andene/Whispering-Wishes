@@ -1,10 +1,16 @@
 package cc.andene.whisperingwishes;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.service.wallpaper.WallpaperService;
 import android.util.Log;
 import android.view.SurfaceHolder;
+
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 
@@ -18,6 +24,16 @@ public class LiveVideoWallpaperService extends WallpaperService {
     private static final String TAG = "LiveVideoWallpaper";
     static final String PREFS_NAME = "CapacitorStorage";
     static final String PREF_VIDEO_PATH = "live_wallpaper_video_path";
+    // Sent by WallpaperPlugin.setLiveWallpaper() every time a new animated background is applied
+    // — including while this exact service is already the active live wallpaper. Once a live
+    // wallpaper's Engine surface exists, Android has no reason to recreate it just because the
+    // app overwrote the video file it reads from underneath it (same component, same surface —
+    // nothing about the wallpaper's identity changed from the OS's point of view), so without
+    // this the engine kept playing whatever it had already loaded: picking a second animated
+    // background looked like nothing happened until the surface was recreated some other way
+    // (e.g. re-picking home screen, locking/unlocking). This receiver is the explicit "the file
+    // changed, reload it" signal that case was missing.
+    static final String ACTION_REFRESH = "cc.andene.whisperingwishes.REFRESH_LIVE_WALLPAPER";
 
     @Override
     public Engine onCreateEngine() {
@@ -27,16 +43,35 @@ public class LiveVideoWallpaperService extends WallpaperService {
     private class VideoEngine extends Engine {
         private MediaPlayer mediaPlayer;
         private boolean visible = true;
+        // Kept so the refresh receiver below can re-call startPlayback() against the surface
+        // that's actually current, without waiting for a new onSurfaceCreated/Changed callback
+        // that may never come on its own (see ACTION_REFRESH's own comment for why one is needed).
+        private SurfaceHolder currentHolder;
+        private final BroadcastReceiver refreshReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (currentHolder != null) startPlayback(currentHolder);
+            }
+        };
+
+        @Override
+        public void onCreate(SurfaceHolder surfaceHolder) {
+            super.onCreate(surfaceHolder);
+            ContextCompat.registerReceiver(LiveVideoWallpaperService.this, refreshReceiver,
+                    new IntentFilter(ACTION_REFRESH), ContextCompat.RECEIVER_NOT_EXPORTED);
+        }
 
         @Override
         public void onSurfaceCreated(SurfaceHolder holder) {
             super.onSurfaceCreated(holder);
+            currentHolder = holder;
             startPlayback(holder);
         }
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
+            currentHolder = holder;
             // A changed surface (rotation, resize) needs the player re-bound to the new
             // SurfaceHolder — simplest reliable way is to tear down and start fresh rather than
             // trying to rebind mid-playback.
@@ -108,6 +143,9 @@ public class LiveVideoWallpaperService extends WallpaperService {
         public void onDestroy() {
             super.onDestroy();
             releasePlayer();
+            try { LiveVideoWallpaperService.this.unregisterReceiver(refreshReceiver); } catch (Exception ignored) {
+                // Already unregistered, or never successfully registered — nothing to clean up.
+            }
         }
     }
 }
