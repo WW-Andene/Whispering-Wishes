@@ -11,6 +11,15 @@
      interaction the copy-target pill uses — tapping the track name cycles to the next one.
      Conventional transport row: skip-backward / play-pause / skip-forward / loop toggle.
 
+     TWO alternate content blocks, not one — widget_soundtrack_content_normal (stacked:
+     label, track name, transport row) reads fine down to 2 cells tall, but the same stack
+     doesn't fit in a 1-cell-tall placement at all; widget_soundtrack_content_compact (one
+     horizontal row: track name + smaller transport controls, no "Now Playing" label) is
+     what SoundtrackWidget.java switches to below its own height threshold — same
+     compact-mode pattern PulseBannerWidget.java already uses for its own short placements.
+     Both blocks' equivalent views get the SAME data/PendingIntents every render; only
+     whichever one is actually visible matters.
+
      No plain <View> anywhere (RemoteViews' allowlist doesn't include it — see
      widget_banner.xml's own comment on this) — background layers use empty FrameLayouts
      instead. -->
@@ -26,7 +35,9 @@
         android:scaleType="fitXY"
         android:contentDescription="@null" />
 
+    <!-- ═══ Normal (>= 2 cells tall): stacked label / track name / transport row ═══ -->
     <LinearLayout
+        android:id="@+id/widget_soundtrack_content_normal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
@@ -118,5 +129,80 @@
                     android:contentDescription="@string/widget_soundtrack_loop_aria" />
             </FrameLayout>
         </LinearLayout>
+    </LinearLayout>
+
+    <!-- ═══ Compact (1 cell tall): everything in one horizontal row ═══ -->
+    <LinearLayout
+        android:id="@+id/widget_soundtrack_content_compact"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/widget_soundtrack_track_name_compact"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginRight="6dp"
+            android:textColor="#fef08a"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <ImageButton
+            android:id="@+id/widget_soundtrack_prev_compact"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_media_previous"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/widget_soundtrack_prev_aria" />
+
+        <ImageButton
+            android:id="@+id/widget_soundtrack_play_compact"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginLeft="6dp"
+            android:background="@drawable/widget_target_choice_bg"
+            android:src="@android:drawable/ic_media_play"
+            android:scaleType="fitCenter"
+            android:padding="4dp"
+            android:contentDescription="@string/widget_soundtrack_play_aria" />
+
+        <ImageButton
+            android:id="@+id/widget_soundtrack_next_compact"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginLeft="6dp"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_media_next"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/widget_soundtrack_next_aria" />
+
+        <FrameLayout
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginLeft="6dp">
+            <FrameLayout
+                android:id="@+id/widget_soundtrack_loop_selected_compact"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/widget_target_selected_emerald"
+                android:visibility="gone" />
+            <ImageButton
+                android:id="@+id/widget_soundtrack_loop_compact"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:src="@drawable/ic_loop_widget"
+                android:scaleType="fitCenter"
+                android:padding="2dp"
+                android:contentDescription="@string/widget_soundtrack_loop_aria" />
+        </FrameLayout>
     </LinearLayout>
 </FrameLayout>

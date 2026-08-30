@@ -19,9 +19,10 @@ import android.widget.RemoteViews;
 // own (see SoundtrackPlaybackService's own file header for why this can't just be a
 // MediaPlayer instance owned by this class). See widget_soundtrack.xml's own header for the
 // layout/style rationale — same "Log 2.0" background art, rounding, and PerfectSuite sizing
-// as CalculatorWidget.
+// as CalculatorWidget, plus a compact 1-cell-tall layout that switches in below
+// HEIGHT_COMPACT_MAX_DP (the stacked normal layout doesn't fit that short at all).
 //
-// State (current track + playing/paused) lives in SharedPreferences (the same
+// State (current track + playing/paused/looping) lives in SharedPreferences (the same
 // "CapacitorStorage" file every widget in this app shares), written by
 // SoundtrackPlaybackService whenever it changes something and read fresh here on every
 // render — this class holds no playback state of its own, it's purely a remote control +
@@ -33,6 +34,30 @@ public class SoundtrackWidget extends AppWidgetProvider {
     // reported real dimensions yet — same reasoning as CalculatorWidget's own art sizing.
     private static final int FALLBACK_WIDTH_DP = 180;
     private static final int FALLBACK_HEIGHT_DP = 110;
+    // Below this, the normal stacked layout (label + track name + transport row) doesn't
+    // fit at all — switches to widget_soundtrack_content_compact's single horizontal row
+    // instead. Set just under soundtrack_widget_info.xml's own 2-cell minHeight (110dp), so
+    // a 1-cell-tall placement (its minResizeHeight floor, 70dp) gets the compact layout and
+    // anything 2 cells or taller keeps the normal one.
+    private static final int HEIGHT_COMPACT_MAX_DP = 90;
+
+    // Paired view ids for one content block (normal or compact) — renderControls() below
+    // applies the exact same track/playing/looping data and PendingIntents to whichever set
+    // is passed in, so both blocks always agree regardless of which one is actually visible.
+    private static final class ControlIds {
+        final int trackName, play, prev, next, loop, loopSelected;
+        ControlIds(int trackName, int play, int prev, int next, int loop, int loopSelected) {
+            this.trackName = trackName; this.play = play; this.prev = prev;
+            this.next = next; this.loop = loop; this.loopSelected = loopSelected;
+        }
+    }
+
+    private static final ControlIds NORMAL_IDS = new ControlIds(
+        R.id.widget_soundtrack_track_name, R.id.widget_soundtrack_play, R.id.widget_soundtrack_prev,
+        R.id.widget_soundtrack_next, R.id.widget_soundtrack_loop, R.id.widget_soundtrack_loop_selected);
+    private static final ControlIds COMPACT_IDS = new ControlIds(
+        R.id.widget_soundtrack_track_name_compact, R.id.widget_soundtrack_play_compact, R.id.widget_soundtrack_prev_compact,
+        R.id.widget_soundtrack_next_compact, R.id.widget_soundtrack_loop_compact, R.id.widget_soundtrack_loop_selected_compact);
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
@@ -46,6 +71,15 @@ public class SoundtrackWidget extends AppWidgetProvider {
         updateWidget(context, appWidgetManager, appWidgetId);
     }
 
+    // Fires once the LAST placed instance is removed (not on every individual removal when
+    // more than one is placed — onDeleted is the per-instance one, this is the "none left at
+    // all" one) — playback shouldn't keep running as an orphaned foreground service with no
+    // widget left to control or display it.
+    @Override
+    public void onDisabled(Context context) {
+        context.stopService(new Intent(context, SoundtrackPlaybackService.class));
+    }
+
     private void updateWidget(Context context, AppWidgetManager appWidgetManager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_soundtrack);
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -54,16 +88,10 @@ public class SoundtrackWidget extends AppWidgetProvider {
         boolean playing = prefs.getBoolean(SoundtrackTracks.PREF_PLAYING_KEY, false);
         boolean looping = prefs.getBoolean(SoundtrackTracks.PREF_LOOP_KEY, SoundtrackTracks.DEFAULT_LOOP);
         SoundtrackTracks.Track track = SoundtrackTracks.byKey(trackKey);
+        String trackLabel = context.getString(track.labelResId);
 
-        views.setTextViewText(R.id.widget_soundtrack_track_name, context.getString(track.labelResId));
-        views.setImageViewResource(R.id.widget_soundtrack_play,
-            playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
-        views.setContentDescription(R.id.widget_soundtrack_play,
-            context.getString(playing ? R.string.widget_soundtrack_pause_aria : R.string.widget_soundtrack_play_aria));
-        // Same stacked selected/unselected background overlay as CalculatorWidget's own
-        // target picker — RemoteViews can't runtime-swap a view's background drawable
-        // resource, so the "on" highlight is a second view toggled by visibility.
-        views.setViewVisibility(R.id.widget_soundtrack_loop_selected, looping ? View.VISIBLE : View.GONE);
+        renderControls(context, views, appWidgetId, NORMAL_IDS, trackLabel, playing, looping);
+        renderControls(context, views, appWidgetId, COMPACT_IDS, trackLabel, playing, looping);
 
         // Same background treatment as CalculatorWidget.renderWidget: crop/scale to the
         // widget's own current pixel size FIRST, then round — widget_soundtrack_bg_art's own
@@ -81,16 +109,37 @@ public class SoundtrackWidget extends AppWidgetProvider {
                 bgArt, WidgetAssetUtils.widgetCornerRadiusPx(context), 0xB3080c14));
         }
 
+        // A host that hasn't reported real dimensions yet (heightDp == 0, e.g. the very
+        // first render right after placement) should NOT be treated as compact — only an
+        // explicitly-reported short height counts, same reasoning PulseBannerWidget's own
+        // compact check uses.
+        boolean compact = heightDp > 0 && heightDp < HEIGHT_COMPACT_MAX_DP;
+        views.setViewVisibility(R.id.widget_soundtrack_content_normal, compact ? View.GONE : View.VISIBLE);
+        views.setViewVisibility(R.id.widget_soundtrack_content_compact, compact ? View.VISIBLE : View.GONE);
+
+        appWidgetManager.updateAppWidget(appWidgetId, views);
+    }
+
+    private void renderControls(Context context, RemoteViews views, int appWidgetId, ControlIds ids,
+                                 String trackLabel, boolean playing, boolean looping) {
+        views.setTextViewText(ids.trackName, trackLabel);
+        views.setImageViewResource(ids.play,
+            playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
+        views.setContentDescription(ids.play,
+            context.getString(playing ? R.string.widget_soundtrack_pause_aria : R.string.widget_soundtrack_play_aria));
+        // Same stacked selected/unselected background overlay as CalculatorWidget's own
+        // target picker — RemoteViews can't runtime-swap a view's background drawable
+        // resource, so the "on" highlight is a second view toggled by visibility.
+        views.setViewVisibility(ids.loopSelected, looping ? View.VISIBLE : View.GONE);
+
         // Tapping the track name cycles forward — same tap-to-cycle interaction as
         // CalculatorWidget's own copy-target pill; the dedicated prev/next buttons give
         // finer transport control alongside it.
-        setServicePendingIntent(context, views, appWidgetId, R.id.widget_soundtrack_track_name, SoundtrackPlaybackService.ACTION_NEXT);
-        setServicePendingIntent(context, views, appWidgetId, R.id.widget_soundtrack_play, SoundtrackPlaybackService.ACTION_PLAY_PAUSE);
-        setServicePendingIntent(context, views, appWidgetId, R.id.widget_soundtrack_prev, SoundtrackPlaybackService.ACTION_PREV);
-        setServicePendingIntent(context, views, appWidgetId, R.id.widget_soundtrack_next, SoundtrackPlaybackService.ACTION_NEXT);
-        setServicePendingIntent(context, views, appWidgetId, R.id.widget_soundtrack_loop, SoundtrackPlaybackService.ACTION_TOGGLE_LOOP);
-
-        appWidgetManager.updateAppWidget(appWidgetId, views);
+        setServicePendingIntent(context, views, appWidgetId, ids.trackName, SoundtrackPlaybackService.ACTION_NEXT);
+        setServicePendingIntent(context, views, appWidgetId, ids.play, SoundtrackPlaybackService.ACTION_PLAY_PAUSE);
+        setServicePendingIntent(context, views, appWidgetId, ids.prev, SoundtrackPlaybackService.ACTION_PREV);
+        setServicePendingIntent(context, views, appWidgetId, ids.next, SoundtrackPlaybackService.ACTION_NEXT);
+        setServicePendingIntent(context, views, appWidgetId, ids.loop, SoundtrackPlaybackService.ACTION_TOGGLE_LOOP);
     }
 
     // A tap on a RemoteViews button is exactly the kind of user-initiated event Android

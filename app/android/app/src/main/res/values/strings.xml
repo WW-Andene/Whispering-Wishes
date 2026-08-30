@@ -55,4 +55,6 @@
     <string name="pull_bubble_pocket_title">All pulls (%1$d)</string>
     <string name="quick_calc_shortcut_short_label">Quick Calc</string>
     <string name="quick_calc_shortcut_long_label">Add the Calculator widget to your home screen</string>
+    <string name="quick_soundtrack_shortcut_short_label">Quick Soundtrack</string>
+    <string name="quick_soundtrack_shortcut_long_label">Add the Soundtrack widget to your home screen</string>
 </resources>
