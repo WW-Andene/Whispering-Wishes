@@ -71,14 +71,17 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
  * @param {string} raw - The raw URL string
  * @returns {{ playerId: string|null, recordId: string|null, svrId: string|null, lang: string, valid: boolean, href?: string }}
  */
-// OCR misreads small screenshot-text glyphs in two recurring ways, both confirmed from real
-// failures: '=' read as ':' or doubled as '==', and '_' (inside a param name like player_id)
-// read as '.' or '-'. Fixed together per known param name: the name's own underscore(s) are
-// matched loosely (any of '_.-', or none at all if OCR dropped the separator entirely), and
-// whatever glyph(s) follow as the assignment operator ('=', ':', or repeats of either) are
-// collapsed to a single real '='. Case-insensitive since OCR also sometimes miscapitalizes.
-// Scoped tightly to right after one of these specific multi-part names, so it can't touch the
-// scheme's own 'https://' or the '#/record?' fragment marker.
+// Rather than chase every individual glyph confusion OCR happens to produce (=/: , _/./-, etc —
+// confirmed real examples of both), this recognizes each known param NAME by its distinctive
+// word-parts alone and treats ANY short run of symbol noise around them as the separator/
+// operator OCR mangled — then just forces the canonical 'key=' regardless of what was actually
+// there. Tesseract's own output is whitelist-confined (see URL_CHAR_WHITELIST above), so
+// whatever a misread character turns into, it's still one of that same small symbol set: this
+// covers all of them at once instead of enumerating each. '&' is excluded from the noise class
+// since it's the real param delimiter — swallowing it would eat into the NEXT param's key.
+// Case-insensitive since OCR also sometimes miscapitalizes. Scoped tightly to right after one of
+// these specific multi-part names, so it can't touch the scheme's own 'https://' or the
+// '#/record?' fragment marker.
 const OCR_PARAM_KEY_PARTS = {
   player_id: ['player', 'id'],
   svr_id: ['svr', 'id'],
@@ -92,7 +95,7 @@ const OCR_PARAM_KEY_PARTS = {
 function repairOcrParamKeys(text) {
   let out = text;
   for (const [canon, parts] of Object.entries(OCR_PARAM_KEY_PARTS)) {
-    const re = new RegExp(parts.join('[_.-]?') + '[=:]+', 'gi');
+    const re = new RegExp(parts.join('[^0-9a-zA-Z&]{0,2}') + '[^0-9a-zA-Z&]{1,3}', 'gi');
     out = out.replace(re, `${canon}=`);
   }
   return out;
