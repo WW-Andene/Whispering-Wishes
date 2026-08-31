@@ -732,6 +732,16 @@ const CHARACTER_DATA = {
     // remain genuinely unconfirmed, not guessed.
     bestEchoes: ['Unconfirmed (releases 3.6-p2, ~Sept 2026)'], bestWeapon: 'Thousandfold Deliverance',
     teams: ['Unconfirmed (releases 3.6-p2, ~Sept 2026)'] },
+    // Re-checked 2026-08-31 (deepened rotation/Resonance-Chain data pass): Jingran remains the sole gap
+    // in CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA out of the 58-entry roster, and it is still not
+    // fabricatable — reconfirmed via headless-browser fetch (Chrome UA + google.com referer, load-wait
+    // 8s) against both sources: prydwen.gg/wuthering-waves/characters/jingran explicitly states "Jingran
+    // skills aren't available yet" / "rotation information aren't available yet" (page last updated
+    // 17/July/2026, pre-kit-reveal); wutheringwaves.fandom.com/wiki/Jingran is flagged "This page is
+    // about upcoming content" with an explicit "Jingran doesn't have any Forte yet" / "doesn't have any
+    // Sequence Nodes yet" under its Combat Overview, and gives his release date as September 10, 2026 —
+    // still in the future as of this pass (today: 2026-08-31). No rotation/S1-S6/skill-multiplier entry
+    // has been added for him; do not fill this in until his kit is actually revealed post-release.
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Aero sub-DPS who deals off-field Aero DMG via Coordinated Attacks triggered by his mist clone summon.',
