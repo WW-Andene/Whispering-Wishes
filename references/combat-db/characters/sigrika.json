@@ -1,0 +1,34 @@
+{
+  "name": "Sigrika",
+  "slug": "sigrika",
+  "rarity": 5,
+  "element": "Aero",
+  "weaponType": "Gauntlets",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/sigrika", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Sigrika", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T0 Tower of Adversity, T0 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Aero Gauntlets Echo Skill DMG DPS (similar archetype to Phrolova/Galbrena) built around generating and consuming 'Runes' via enhanced Basic Attacks and Skills to power a big Forte nuke. Considered the strongest Whimpering Wastes DPS in the game, but heavily reliant on Qiuyuan or Lucilla as Echo-focused teammates.",
+    "skills": {
+      "normalAttack": "Basic Attack - One, Two, Three (4 hits) -> Basic Attack: Elucidated (Echo-Skill-DMG, in Decipher state, grants Rune: Trust).",
+      "resonanceSkill": "BOOMY BOOM! (base) / BIG BOOMY BOOM! (Decipher state, grants Rune: Answer).",
+      "forte": "Within Infinity's Embrace - governs Rune (max 4) consumption via Heavy Attack: Schemata of Runes (Outburst/Chain Whip/Soliskin variants) into the Forte finisher Learn My True Name.",
+      "liberation": "Where Trust Leads Me! - Echo-Skill-DMG hit, grants Divergent (next Rune also grants the opposite type).",
+      "intro": "Solsworn Etymology - Aero strike.",
+      "outro": "In This Very Moment - 795% ATK Echo-Skill-DMG hit, grants Encapsulated (stagnates on ally Echo Skill casts)."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Solsworn Ciphers (signature, 100%)", "Blazing Justice (85.4%, Zani sig)", "Pulsation Bracer/Tragicomedy/Daybreaker's Spine (82.1%, best permanent)", "Verity's Handle (81.8%)", "Moongazer's Sigil (78.5%)", "Abyss Surges (76.3%)", "Aether Strike (69.4%, best 4-star, BP)", "Legend of Drunken Hero (best gacha-free, needs Ciaccona active)"],
+    "echoSet": ["Sound of True Name (100%, best - 20% CRIT Rate + 25% Aero DMG Bonus)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "ATK%; ATK% > Energy Regen", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT DMG = CRIT Rate", "Energy Regen (above 125% until 150%)", "ATK%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Sigrika", "Qiuyuan/Lucilla", "The Shorekeeper/Mornye/Verina/Rover (Aero)"], "notes": "Qiuyuan and Lucilla are near-mandatory - Sigrika's damage is almost entirely Echo Skill DMG, which only they buff meaningfully." },
+    { "name": "Phrolova Pairing", "members": ["Sigrika", "Qiuyuan", "Phrolova"], "notes": "Both share Qiuyuan's Echo Skill casts for high tandem damage, excellent for Whimpering Wastes." }
+  ],
+  "rotation": "Intro -> Basic 2,3,4 -> Elucidated -> Heavy: Chain Whip (cancel via Ultimate) -> Ultimate -> Basic 2,3,4 -> Elucidated -> Heavy: Outburst (cancel via hold Skill) -> Hold Skill: Learn My True Name -> Outro. Advanced quickswap unlocks a 'Double Outburst' extended rotation.",
+  "communityNotes": "Prydwen: one of the best overall DPS in the game and arguably the strongest Whimpering Wastes DPS, with built-in stun/grouping utility, but has a significant opportunity cost - near-mandatory reliance on Qiuyuan or Lucilla and no strong F2P weapon alternative, unlike Luuk Herssen or Aemeath.",
+  "lastUpdated": "2026-08-31"
+}

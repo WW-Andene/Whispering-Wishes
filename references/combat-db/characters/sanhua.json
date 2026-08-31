@@ -1,0 +1,35 @@
+{
+  "name": "Sanhua",
+  "slug": "sanhua",
+  "rarity": 4,
+  "element": "Glacio",
+  "weaponType": "Sword",
+  "role": ["Hybrid"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/sanhua", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Sanhua", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Hybrid: T2 Tower of Adversity, T3 Whimpering Wastes" },
+  "kit": {
+    "intro": "Free 4-star Glacio Sword Hybrid with arguably the fastest Concerto rotation in the game, buffing Basic Attack DMG by 38% on Outro. Deploys ice constructs (Thorn/Prism/Glacier) via Intro/Skill/Ultimate then detonates them all at once with a timing-minigame Heavy Attack for huge Concerto gain.",
+    "skills": {
+      "normalAttack": "Basic Attack - Frigid Light (5 hits), Glacio.",
+      "resonanceSkill": "Eternal Frost - creates an Ice Prism, Glacio hit.",
+      "forte": "Clarity of Mind - timing-minigame Heavy Attack (Detonate) that explodes all active ice constructs for big Concerto/Resonance Energy gain, expanded 'Frostbite' hit-window via Clarity stacks.",
+      "liberation": "Glacial Gaze - Glacio hit, creates a Glacier, grants 2 Clarity stacks.",
+      "intro": "Freezing Thorns - creates an Ice Thorn, Glacio hit.",
+      "outro": "Silversnow - 38% Basic Attack DMG Deepen to next character for 14s or until swap."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Blazing Brilliance (108.39%, Changli sig)", "Red Spring (103.32%, Camellya sig)", "Emerald of Genesis (100%, best permanent)", "Commando of Conviction (85.5%)", "Endless Collapse (84.52%)", "Lunar Cutter (83.96%)", "Lumingloss (80.65%)", "Somnoire Anchor (76.66%, best free)"],
+    "echoSet": ["Moonlit Clouds (only meta set - 22.5% ATK to next character on Outro, with Impermanence Heron)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Glacio DMG; Glacio DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied, mostly unneeded on Moonlit Clouds)", "CRIT Rate = CRIT DMG", "ATK%", "ATK"]
+  },
+  "teams": [
+    { "name": "Camellya Team", "members": ["Sanhua", "Camellya", "Verina/The Shorekeeper"], "notes": "Extremely close second to Roccia at a fraction of the cost." },
+    { "name": "Encore Team", "members": ["Sanhua", "Encore", "Verina/The Shorekeeper"], "notes": "Sanhua's single best pairing by far - Encore uses her better than nearly any other partner." },
+    { "name": "Brant Hypercarry Team", "members": ["Sanhua", "Brant", "Verina/The Shorekeeper"], "notes": "Natural fit since Brant deals almost exclusively Basic ATK DMG." }
+  ],
+  "rotation": "Heavy Attack Concerto: Intro -> Ultimate -> Skill -> Heavy: Detonate x2 -> Outro. At S5+, only 1 Detonate is needed before Echo (swap-cancel) -> Outro.",
+  "communityNotes": "Prydwen: one of the strongest and most popular Hybrids in the game thanks to an extremely fast rotation, strong Basic ATK buffing, and being fully free with scalable Sequences; main challenge is nailing the Forte timing minigame consistently under her very fast rotation pace.",
+  "lastUpdated": "2026-08-31"
+}

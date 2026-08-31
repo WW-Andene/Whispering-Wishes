@@ -1,0 +1,35 @@
+{
+  "name": "Rover (Havoc)",
+  "slug": "rover-havoc",
+  "rarity": 5,
+  "element": "Havoc",
+  "weaponType": "Sword",
+  "role": ["Main DPS", "flex Dual DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T3 Tower of Adversity, T4 Whimpering Wastes" },
+  "kit": {
+    "intro": "Free 5-star Havoc Sword DPS unlocked after Act I Chapter 6. Builds Umbra to enter Dark Surge (enhanced Basics, +20% Havoc DMG Bonus, +25% CRIT Rate, refreshed Skill). Extremely cheap Ultimate (125 Energy, 16s CD) and access to the Dreamless 4-cost Echo (highest-damaging Echo skill in the game, +50% within 5s of Ultimate).",
+    "skills": {
+      "normalAttack": "Basic Attack - Tuneslayer (5 hits), Havoc.",
+      "resonanceSkill": "Wingblade - Havoc hit; becomes Lifetaker (enhanced) in Dark Surge.",
+      "forte": "Umbra Eclipse - governs Umbra (max 100) -> Devastation (Heavy Attack, enters Dark Surge, -10% enemy Havoc RES for 20s) -> enhanced Basic/Heavy chain.",
+      "liberation": "Deadening Abyss - big single-target Havoc nuke, 1520% multiplier at level 10, unusually cheap Energy cost.",
+      "intro": "Instant of Annihilation - Havoc strike, restores Umbra (also refills Dark Surge if cast during it).",
+      "outro": "Soundweaver - Havoc field, 143.3% ATK per tick every 2s for 6s."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Red Spring (104.84%, Camellya sig)", "Blazing Brilliance (104.15%, Changli sig)", "Emerald of Genesis (100%, best permanent, near-equal to sigs)", "Somnoire Anchor (91.24%, best free 4-star for extended field time)", "Commando of Conviction (85.25%)", "Lumingloss (83.6%)", "Endless Collapse (83.09%)", "Lunar Cutter (best for short field time)"],
+    "echoSet": ["Havoc Eclipse (best - 10% Havoc DMG + up to 30% ramping, with the Dreamless main echo for burst)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Havoc DMG; Havoc DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied, mostly unneeded outside Dual DPS)", "CRIT Rate = CRIT DMG", "ATK%", "ATK", "Basic DMG%", "Liberation DMG%"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Rover (Havoc)", "Roccia", "Verina/The Shorekeeper"], "notes": "Roccia is the best buffer (20% Havoc + 25% Basic Attack DMG Amplify)." },
+    { "name": "F2P Team", "members": ["Rover (Havoc)", "Danjin/Sanhua", "Verina/The Shorekeeper"], "notes": "Both fully free and strong; Danjin edges out Sanhua slightly." },
+    { "name": "Phrolova Team", "members": ["Rover (Havoc)", "Phrolova", "Danjin/Cantarella"], "notes": "High personal damage and Energy generation make Rover a strong Phrolova teammate alternative." }
+  ],
+  "rotation": "Short Burst: Intro -> Skill -> Heavy: Devastation -> Skill: Lifetaker (swap-cancel) -> Ultimate -> Echo: Dreamless (swap-cancel) -> Outro. Medium/Long Burst variants add 1-3 full Dark Surge Basic chains before the Ultimate for higher total damage at more field time.",
+  "communityNotes": "Prydwen: strong, flexible free Main DPS or burst Dual DPS with a very cheap Ultimate and the game's highest-damaging Echo skill (Dreamless); main weakness is one of the longest on-field times among Main DPS and a damaging (not buffing) Outro that leaves it behind premium quickswap options like Changli/Brant.",
+  "lastUpdated": "2026-08-31"
+}
