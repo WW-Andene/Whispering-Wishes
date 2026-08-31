@@ -30,10 +30,12 @@ body {
   font-family: var(--font-display, 'Rajdhani'), system-ui, -apple-system, sans-serif;
   /* ScaledCanvas.jsx's own inner div is the app's scroll container now (see
      its own comment) — body itself never scrolls, it just hosts the fixed,
-     full-viewport letterbox layer ScaledCanvas renders into. This USED to
-     say "NOT overflow:hidden, body is the only scroll container" — no
-     longer true since the 439x976 scaled-canvas engine replaced direct
-     document-level scrolling. */
+     full-viewport layer ScaledCanvas renders into (which now fills 100% of
+     the real screen exactly, no letterbox gap — see ScaledCanvas.jsx's own
+     comment on why height is elastic rather than a fixed reference value).
+     This USED to say "NOT overflow:hidden, body is the only scroll
+     container" — no longer true since the scaled-canvas engine replaced
+     direct document-level scrolling. */
   overflow: hidden;
 }
 

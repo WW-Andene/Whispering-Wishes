@@ -108,8 +108,9 @@ function WhisperingWishesInner() {
   const appLocale = useAppLocale();
 
   // Multi-format UI now handled by ScaledCanvas.jsx (main.jsx) — the whole
-  // app renders inside a uniformly-scaled 439x976 canvas instead of this
-  // per-token width-only rescale, so useUiScale() is no longer called
+  // app renders inside a uniformly-scaled 439px-wide canvas (elastic
+  // height, see ScaledCanvas.jsx's own comment) instead of this per-token
+  // width-only rescale, so useUiScale() is no longer called
   // (kuro.css's --ui-scale stays frozen at its literal default of 1).
   // isReferenceDevice/the data-reference-device attribute below is kept as
   // a harmless leftover marker — nothing currently reads it — rather than

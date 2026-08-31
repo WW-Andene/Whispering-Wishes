@@ -1,13 +1,15 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — shared/scaling/canvasScale.js
-// The app is authored against a single reference canvas (439×976 CSS px,
-// the design's own reference device) and rendered at ANY real screen size by
-// uniformly scaling that whole canvas — geometric scaling, not responsive
-// reflow — so every pixel value (tokenized or a raw arbitrary value, per
-// CLAUDE.md's PerfectSuite rule) ends up in the exact same proportion on any
-// screen, not just the ones someone remembered to route through a design
-// token. See ScaledCanvas.jsx for the component that applies this and
-// useCanvasScale.js for how the scale factor itself is computed.
+// The app is authored against a single reference WIDTH (439 CSS px, the
+// design's own reference device) and rendered at ANY real screen size by
+// uniformly scaling the whole app by realWidth/439 — geometric scaling, not
+// responsive reflow — so every pixel value (tokenized or a raw arbitrary
+// value, per CLAUDE.md's PerfectSuite rule) ends up in the exact same
+// proportion on any screen, not just the ones someone remembered to route
+// through a design token. See ScaledCanvas.jsx for the component that
+// applies this (including why the canvas's HEIGHT is elastic, not a fixed
+// reference value the way width is) and useCanvasScale.js for how the scale
+// factor itself is computed.
 //
 // This file exists so code far from ScaledCanvas.jsx (portal-rendering
 // components, scroll-position code) doesn't need a prop/context thread all
@@ -17,7 +19,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const CANVAS_WIDTH = 439;
-export const CANVAS_HEIGHT = 976;
 
 let canvasEl = null;
 

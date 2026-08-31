@@ -1,11 +1,15 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — shared/components/ScaledCanvas.jsx
-// Renders `children` (the whole app) inside a fixed 439×976 box, uniformly
-// scaled to fit the real screen — see canvasScale.js's own comment for why.
-// Everything inside sees the exact same 439×976 world regardless of the real
-// device; the only thing that varies is the CSS transform scaling that whole
-// box up or down, and the letterbox bars filling whatever real screen space
-// the 439:976 aspect ratio doesn't cover.
+// Renders `children` (the whole app) inside a 439px-wide box, scaled by
+// availableWidth/439, with its HEIGHT set dynamically to exactly fill the
+// remaining real vertical space (availableHeight/scale) — see
+// useCanvasScale.js's own comment for why this is elastic rather than a
+// fixed 439x976 box: that fixed-box version letterboxed whenever a real
+// screen's aspect ratio didn't exactly match 439:976 (i.e. nearly every
+// device), leaving a visible gap between the bottom nav and the real screen
+// edge. This version always fills 100% of the real screen, both axes, with
+// zero gap — the scale factor alone (uniform on x AND y via `scale(k)`)
+// is what keeps every element's proportions exactly as authored.
 //
 // `position: fixed` descendants (the app's header/nav, this app's modals via
 // getPortalRoot()) resolve relative to THIS div, not the real viewport —
@@ -21,11 +25,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useRef } from 'react';
-import { useCanvasScale, CANVAS_WIDTH, CANVAS_HEIGHT } from '../../hooks/useCanvasScale.js';
+import { useCanvasScale, CANVAS_WIDTH } from '../../hooks/useCanvasScale.js';
 import { setCanvasElement } from '../scaling/canvasScale.js';
 
 export default function ScaledCanvas({ children }) {
-  const scale = useCanvasScale();
+  const { scale, canvasHeight } = useCanvasScale();
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -49,9 +53,9 @@ export default function ScaledCanvas({ children }) {
         position: 'fixed',
         inset: 0,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        background: '#080c14', // matches index.html/index.css's own boot background — the letterbox color
+        background: '#080c14', // matches index.html/index.css's own boot background
         overflow: 'hidden',
       }}
     >
@@ -59,9 +63,10 @@ export default function ScaledCanvas({ children }) {
         ref={canvasRef}
         style={{
           width: CANVAS_WIDTH,
-          height: CANVAS_HEIGHT,
+          height: canvasHeight,
           flex: '0 0 auto',
           transform: `scale(${scale})`,
+          transformOrigin: 'top center',
           position: 'relative',
           overflowY: 'auto',
           overflowX: 'hidden',

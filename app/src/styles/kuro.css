@@ -164,7 +164,7 @@
          at the canvas level instead. */
       --ui-scale: 1;
       /* The single source of truth for ScaledCanvas.jsx's current scale
-         factor (real screen size ÷ the 439x976 reference canvas) — written
+         factor (real screen width ÷ the 439px reference width) — written
          by ScaledCanvas.jsx itself on mount and every resize. Used below to
          convert the real-device-px safe-area values into canvas-space px:
          a real 24px status bar needs to be authored as 24/scale px INSIDE

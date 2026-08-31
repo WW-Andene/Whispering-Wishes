@@ -7,10 +7,8 @@ import "./index.css";
 import "leaflet/dist/leaflet.css";
 
 // BootIntro renders OUTSIDE ScaledCanvas, deliberately — it covers the real
-// physical screen (screenSize.w/h) during boot, letterbox bars included, so
-// there's nothing letterboxed showing underneath while it plays. Once it
-// fades out, ScaledCanvas's own bars become visible for the first time,
-// already in their final position (no boot-time reframe to introduce).
+// physical screen (screenSize.w/h) during boot, so nothing underneath is
+// visible while it plays regardless of how ScaledCanvas ends up sized.
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ScaledCanvas>
