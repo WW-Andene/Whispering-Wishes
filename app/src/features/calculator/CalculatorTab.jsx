@@ -19,7 +19,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { PityCounterInput } from './PityCounterInput.jsx';
 import { CalcResultsCard } from './CalcResults.jsx';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
-import { Crown, Swords, Sword, Star, RefreshCcw, BookmarkPlus, X, Sparkles, Target } from 'lucide-react';
+import { Crown, Swords, Sword, Star, RefreshCcw, BookmarkPlus, X, Sparkles } from 'lucide-react';
 
 import { MAX_BOOKMARK_NAME_LENGTH } from '../../shared/constants/appConstants.js';
 import { useConfirm } from '../../providers/ConfirmProvider.jsx';
@@ -301,11 +301,13 @@ function CalculatorTab({ state, dispatch }) {
                         <div>
                           <label className="text-base mb-2 flex items-center gap-1 font-medium text-yellow-400"><img src={getCurrencyIcon('Radiant Tide')} alt="" className="w-4 h-4" onError={hideOnError} />{t('calculator.radiantTides')}</label>
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.radiantTides')} />
-                          <div className="flex gap-1 mt-1.5 flex-wrap">
-                            {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={t('calculator.addRadiantAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-gold" style={{ paddingLeft: 8, paddingRight: 8 }}>+{amt}</button>
-                            ))}
-                            <button onClick={() => setCalc('radiant', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={t('calculator.clearRadiantAria')}>{t('calculator.clearLabel')}</button>
+                          <div className="flex items-center justify-between gap-1 mt-1.5">
+                            <div className="flex gap-1 flex-wrap">
+                              {[1, 5, 10].map(amt => (
+                                <button key={amt} onClick={() => setCalc('radiant', String(Math.min(MAX_CALC_PULLS, (+state.calc.radiant || 0) + amt)))} aria-label={t('calculator.addRadiantAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-gold" style={{ paddingLeft: 8, paddingRight: 8 }}>+{amt}</button>
+                              ))}
+                            </div>
+                            <button onClick={() => setCalc('radiant', '')} className="kuro-btn kuro-btn-sm active-red flex-shrink-0" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={t('calculator.clearRadiantAria')}>{t('calculator.clearLabel')}</button>
                           </div>
                         </div>
                       )}
@@ -313,11 +315,13 @@ function CalculatorTab({ state, dispatch }) {
                         <div>
                           <label className="text-base mb-2 flex items-center gap-1 font-medium text-pink-400"><img src={getCurrencyIcon('Forging Tide')} alt="" className="w-4 h-4" onError={hideOnError} />{t('calculator.forgingTides')}</label>
                           <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.forgingTides')} />
-                          <div className="flex gap-1 mt-1.5 flex-wrap">
-                            {[1, 5, 10].map(amt => (
-                              <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={t('calculator.addForgingAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-pink" style={{ paddingLeft: 8, paddingRight: 8 }}>+{amt}</button>
-                            ))}
-                            <button onClick={() => setCalc('forging', '')} className="kuro-btn kuro-btn-sm active-red ml-auto" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={t('calculator.clearForgingAria')}>{t('calculator.clearLabel')}</button>
+                          <div className="flex items-center justify-between gap-1 mt-1.5">
+                            <div className="flex gap-1 flex-wrap">
+                              {[1, 5, 10].map(amt => (
+                                <button key={amt} onClick={() => setCalc('forging', String(Math.min(MAX_CALC_PULLS, (+state.calc.forging || 0) + amt)))} aria-label={t('calculator.addForgingAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-pink" style={{ paddingLeft: 8, paddingRight: 8 }}>+{amt}</button>
+                              ))}
+                            </div>
+                            <button onClick={() => setCalc('forging', '')} className="kuro-btn kuro-btn-sm active-red flex-shrink-0" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={t('calculator.clearForgingAria')}>{t('calculator.clearLabel')}</button>
                           </div>
                         </div>
                       )}
@@ -337,38 +341,6 @@ function CalculatorTab({ state, dispatch }) {
                       </div>
                     </div>
                   )}
-
-                  {/* Home-screen currency-progress widget goals (mode 2) — purely a display
-                      target for CurrencyProgressWidget.java's bars; not used by any
-                      pull-calculation logic on this tab. Kept as one always-visible block
-                      (not per-banner-category like the fields above) since a goal is a
-                      standing target the user sets once, not something tied to whichever
-                      banner category happens to be selected right now. */}
-                  <div className="pt-1 border-t border-[var(--border-medium)]">
-                    <label className="kuro-label flex items-center gap-1"><Target size={12} />{t('calculator.widgetGoals')}</label>
-                    <p className="text-gray-500 text-sm mb-2">{t('calculator.widgetGoalsDesc')}</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        ['astriteGoal', 'Astrite', t('calculator.astrite')],
-                        ['luniteGoal', 'Lunite', t('calculator.lunite')],
-                        ['radiantGoal', 'Radiant Tide', t('calculator.radiantTides')],
-                        ['lustrousGoal', 'Lustrous Tide', t('calculator.lustrousTides')],
-                        ['forgingGoal', 'Forging Tide', t('calculator.forgingTides')],
-                      ].map(([field, iconKey, label]) => (
-                        <div key={field} className="flex items-center gap-1.5">
-                          <img src={getCurrencyIcon(iconKey)} alt="" className="w-4 h-4 flex-shrink-0" onError={hideOnError} />
-                          <input
-                            type="number" min="0" max={MAX_CALC_PULLS}
-                            value={state.calc[field]}
-                            onChange={e => setCalc(field, Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))}
-                            className="kuro-input text-sm"
-                            placeholder={t('calculator.widgetGoalPlaceholder')}
-                            aria-label={t('calculator.widgetGoalAria', { currency: label })}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
 
                   {/* P8-FIX: HIGH-20 — Astrite Allocation Priority slider (replaces confusing dual +10% buttons) */}
                   {state.calc.selectedBanner === 'both' && (() => {
