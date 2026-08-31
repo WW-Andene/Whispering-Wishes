@@ -5,7 +5,6 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Sparkles, Calculator, Upload, Target, BarChart3, LayoutGrid, CheckCircle, Users } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { getPortalRoot, toCanvasSpace, toCanvasLength } from '../scaling/canvasScale.js';
 import { t } from '../../utils/i18n.js';
@@ -20,14 +19,14 @@ const TAB_ID_BY_STEP = [null, 'profile', 'tracker', 'gathering', 'teams', 'calcu
 const OnboardingModal = ({ onComplete }) => {
   const [step, setStep] = useState(0);
   const steps = [
-    { title: t('modals.onboarding.step1Title'), icon: <Sparkles size={28} />, desc: t('modals.onboarding.step1Desc'), color: '#edaf18' },
-    { title: t('modals.onboarding.step2Title'), icon: <Upload size={28} />, desc: t('modals.onboarding.step2Desc'), color: '#22d3ee' },
-    { title: t('modals.onboarding.step3Title'), icon: <Target size={28} />, desc: t('modals.onboarding.step3Desc'), color: '#fb923c' },
-    { title: t('modals.onboarding.step4Title'), icon: <LayoutGrid size={28} />, desc: t('modals.onboarding.step4Desc'), color: '#a855f7' },
-    { title: t('modals.onboarding.step5Title'), icon: <Users size={28} />, desc: t('modals.onboarding.step5Desc'), color: '#60a5fa' },
-    { title: t('modals.onboarding.step6Title'), icon: <Calculator size={28} />, desc: t('modals.onboarding.step6Desc'), color: '#34d399' },
-    { title: t('modals.onboarding.step7Title'), icon: <BarChart3 size={28} />, desc: t('modals.onboarding.step7Desc'), color: '#f472b6' },
-    { title: t('modals.onboarding.step8Title'), icon: <CheckCircle size={28} />, desc: t('modals.onboarding.step8Desc'), color: '#edaf18' }
+    { title: t('modals.onboarding.step1Title'), desc: t('modals.onboarding.step1Desc'), color: '#edaf18' },
+    { title: t('modals.onboarding.step2Title'), desc: t('modals.onboarding.step2Desc'), color: '#22d3ee' },
+    { title: t('modals.onboarding.step3Title'), desc: t('modals.onboarding.step3Desc'), color: '#fb923c' },
+    { title: t('modals.onboarding.step4Title'), desc: t('modals.onboarding.step4Desc'), color: '#a855f7' },
+    { title: t('modals.onboarding.step5Title'), desc: t('modals.onboarding.step5Desc'), color: '#60a5fa' },
+    { title: t('modals.onboarding.step6Title'), desc: t('modals.onboarding.step6Desc'), color: '#34d399' },
+    { title: t('modals.onboarding.step7Title'), desc: t('modals.onboarding.step7Desc'), color: '#f472b6' },
+    { title: t('modals.onboarding.step8Title'), desc: t('modals.onboarding.step8Desc'), color: '#edaf18' }
   ];
 
   const s = steps[step];
@@ -81,12 +80,9 @@ const OnboardingModal = ({ onComplete }) => {
           <button onClick={onComplete} className="kuro-btn onboarding-skip-btn absolute top-3 right-4 z-20 min-h-[48px]" style={{ padding: '8px 14px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.skip')}</button>
 
           {/* Content — Abby hosts the tutorial throughout, not just the intro
-              step, so she stays put above the per-step icon/title/desc. */}
+              step, so she stays put above the per-step title/desc. */}
           <div className="kuro-body text-center pt-6" aria-live="polite" aria-atomic="true">
-            <img src="./misc-assets/Abby_Full_Sprite.png" alt="" aria-hidden="true" className="mx-auto w-24 h-16 object-contain object-bottom mb-1" />
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3" style={{ color: s.color, background: `${s.color}20`, border: `1px solid ${s.color}30` }}>
-              {s.icon}
-            </div>
+            <img src="./misc-assets/Abby_Full_Sprite.png" alt="" aria-hidden="true" className="mx-auto w-32 h-24 object-contain object-bottom mb-1" />
             <h4 className="font-bold text-lg" style={{ color: 'var(--text-heading)' }}>{s.title}</h4>
             <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)', marginTop: '4px' }}>{s.desc}</p>
           </div>
