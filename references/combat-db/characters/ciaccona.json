@@ -5,7 +5,7 @@
   "element": "Aero",
   "weaponType": "Pistols",
   "role": ["Hybrid", "Sub DPS", "Main DPS (flex)"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona", "nanoka": "https://ww.nanoka.cc/character/ciaccona", "fandom": "https://wutheringwaves.fandom.com/wiki/Ciaccona", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona", "nanoka": "https://ww.nanoka.cc/character/1407", "fandom": "https://wutheringwaves.fandom.com/wiki/Ciaccona", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0.5 Tower of Adversity, T1 Whimpering Wastes (Hybrid; also viable Main DPS)" },
   "kit": {
     "intro": "5-star Aero Pistols Hybrid known for a very short, flexible rotation and dual Negative-Status application (Aero Erosion and/or Spectro Frazzle via Ultimate). Basic Attack 4 cancel spawns 'Ensemble Sylph' clones granting team-wide 'Solo Concert' (24% Aero DMG Bonus, near-permanent uptime). Forte 'Musical Essence' (max 3) unlocks a pull-in Heavy Attack nuke.",

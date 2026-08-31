@@ -5,7 +5,7 @@
   "element": "Fusion",
   "weaponType": "Broadblade",
   "role": ["Support", "Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/mornye", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Mornye", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/mornye", "nanoka": "https://ww.nanoka.cc/character/1209", "fandom": "https://wutheringwaves.fandom.com/wiki/Mornye", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Support: T0 Tower of Adversity, T1 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Fusion Broadblade Support in the Verina/Shorekeeper mold, specializing in Tune Break-related buffing (Observation Marker -> Interfered Marker, up to 40% DMG Bonus vs marked targets scaling with her own Energy Regen) plus generalist healing, DEF buff, and oneshot/death resistance via Boundedness.",

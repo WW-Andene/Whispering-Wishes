@@ -5,7 +5,7 @@
   "element": "Electro",
   "weaponType": "Gauntlets",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/xiangli-yao", "nanoka": "https://ww.nanoka.cc/character/xiangli-yao", "fandom": "https://wutheringwaves.fandom.com/wiki/Xiangli_Yao", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/xiangli-yao", "nanoka": "https://ww.nanoka.cc/character/1305", "fandom": "https://wutheringwaves.fandom.com/wiki/Xiangli_Yao", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T3 Tower of Adversity, T4 Whimpering Wastes - noted as very accessible/forgiving DPS" },
   "kit": {
     "intro": "5-star Electro Gauntlets DPS with an unusually long (24s) and forgiving Ultimate burst window that grants interruption resistance, reducing reliance on swap-cancels. In Ultimate ('Intuition'), gains 3 'Hypercube' charges spent on enhanced Skill 'Law of Reigns' (costs 5 Performance Capacity each), the core of his damage.",

@@ -5,7 +5,7 @@
   "element": "Aero",
   "weaponType": "Sword",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/cartethyia", "nanoka": "https://ww.nanoka.cc/character/cartethyia", "fandom": "https://wutheringwaves.fandom.com/wiki/Cartethyia", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/cartethyia", "nanoka": "https://ww.nanoka.cc/character/1409", "fandom": "https://wutheringwaves.fandom.com/wiki/Cartethyia", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0.5 Tower of Adversity, T1.5 Whimpering Wastes - regarded as the highest damage-ceiling DPS in the game" },
   "kit": {
     "intro": "5-star Aero Sword Main DPS, uniquely scales off HP instead of ATK. Cartethyia form gathers 3 'Sword Shadows' (Discord/Divinity/Virtue) consumed via Mid-air Attack to buff her transformed 'Fleurdelys' form (Ultimate, 12s Manifest, own Forte 'Conviction' up to 120 unlocking a second Ultimate). Deep Aero Erosion synergy - damage scales with erosion stacks on enemies.",

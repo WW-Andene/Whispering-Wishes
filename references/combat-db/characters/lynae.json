@@ -5,7 +5,7 @@
   "element": "Spectro",
   "weaponType": "Pistols",
   "role": ["Hybrid", "Support"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lynae", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lynae", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lynae", "nanoka": "https://ww.nanoka.cc/character/1509", "fandom": "https://wutheringwaves.fandom.com/wiki/Lynae", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T0 Tower of Adversity, T1 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Spectro Pistols generalist Hybrid buffer, considered the best all-purpose buffer in the game - buffs almost any Main DPS via Outro (15% All DMG + 25% Liberation DMG Amplify) and Ultimate (24% party-wide DMG Bonus), plus Tune Rupture/Tune Strain toggle mode for specialized synergies (e.g. Mornye, Luuk).",

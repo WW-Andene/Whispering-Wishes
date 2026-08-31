@@ -5,7 +5,7 @@
   "element": "Electro",
   "weaponType": "Rectifier",
   "role": ["Support", "Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/buling", "nanoka": "https://ww.nanoka.cc/character/buling", "fandom": "https://wutheringwaves.fandom.com/wiki/Buling", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/buling", "nanoka": "https://ww.nanoka.cc/character/1307", "fandom": "https://wutheringwaves.fandom.com/wiki/Buling", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T2 Tower of Adversity, T3 Whimpering Wastes (Support)" },
   "kit": {
     "intro": "4-star Electro Rectifier support built on 'Trigram' resources (Mountain/Thunder, max 4) consumed via specific Heavy Attacks to reach an enhanced Ultimate that applies Electro Flare and buffs team Skill DMG (up to 25%, 50% at S6). Also heals off-field and buffs ATK via Rejuvenating Glow synergy.",

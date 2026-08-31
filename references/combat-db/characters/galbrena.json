@@ -5,7 +5,7 @@
   "element": "Fusion",
   "weaponType": "Pistols",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/galbrena", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Galbrena", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/galbrena", "nanoka": "https://ww.nanoka.cc/character/1208", "fandom": "https://wutheringwaves.fandom.com/wiki/Galbrena", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T1 Tower of Adversity, T1.5 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Fusion Pistols main DPS built around 'Demon Hypostasis', an enhanced Basic Attack/Dodge Counter cleave stance entered via her enhanced Skill by spending Sinflame (max 100). Also holds a second Forte resource, Afterflame (max 40, replenished by teammates' Echo Skill casts), which raises enemy DMG Taken while in Demon Hypostasis by up to 60%.",

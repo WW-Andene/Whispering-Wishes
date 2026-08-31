@@ -5,7 +5,7 @@
   "element": "Fusion",
   "weaponType": "Rectifier",
   "role": ["Hybrid"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/denia", "nanoka": "https://ww.nanoka.cc/character/denia", "fandom": "https://wutheringwaves.fandom.com/wiki/Denia", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/denia", "nanoka": "https://ww.nanoka.cc/character/1211", "fandom": "https://wutheringwaves.fandom.com/wiki/Denia", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0 Tower of Adversity, T0.5 Whimpering Wastes (Hybrid)" },
   "kit": {
     "intro": "5-star Fusion Rectifier Hybrid highly specialized for exactly 2 archetypes: Fusion Burst (with Aemeath) and Tune Strain (with Luuk Herssen/Qingxiao), selectable via a configurable Resonance Mode. Two forms (Stagecraft -> Breakdown) switched via her two Ultimates; Breakdown Form's second Ultimate drops a persistent 30s 'Erosion Field' that periodically groups enemies and applies Fusion Burst/Tune Strain off-field.",

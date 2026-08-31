@@ -5,7 +5,7 @@
   "element": "Aero",
   "weaponType": "Broadblade",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/jiyan", "nanoka": "https://ww.nanoka.cc/character/jiyan", "fandom": "https://wutheringwaves.fandom.com/wiki/Jiyan", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/jiyan", "nanoka": "https://ww.nanoka.cc/character/1404", "fandom": "https://wutheringwaves.fandom.com/wiki/Jiyan", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T1.5 Tower of Adversity, T1.5 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Aero Broadblade Hypercarry, one of the earliest standard-banner 5-stars, still top-tier. Ultimate transforms him into 'Qingloong Mode' (increased interruption resistance, Basic/Heavy/Dodge Counter replaced by an 8-hit-per-cast 'Lance of Qingloong' Heavy Attack combo that groups and CCs enemies). Forte 'Resolve' (max 60) empowers Skill or the Ultimate's opening draconic strike.",

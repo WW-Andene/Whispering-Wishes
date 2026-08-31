@@ -5,7 +5,7 @@
   "element": "Glacio",
   "weaponType": "Pistols",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/carlotta", "nanoka": "https://ww.nanoka.cc/character/carlotta", "fandom": "https://wutheringwaves.fandom.com/wiki/Carlotta", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/carlotta", "nanoka": "https://ww.nanoka.cc/character/1107", "fandom": "https://wutheringwaves.fandom.com/wiki/Carlotta", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T1 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Glacio Pistols Main DPS, first limited Glacio DPS and first 5-star Pistol user. Ranged Hypercarry whose Resonance Liberation fires 6 charges in sequence (Era of New Wave -> 4x Death Knell -> Fatal Finale, all counted as Resonance Skill DMG). Forte gauge 'Substance' (max 120) built via Moldable Crystals; at full Substance unlocks 'Final Bow' (+80% dmg multiplier on all Liberation hits) and an enhanced Heavy Attack that resets Skill cooldown.",

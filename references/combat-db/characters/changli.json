@@ -5,7 +5,7 @@
   "element": "Fusion",
   "weaponType": "Sword",
   "role": ["Hybrid", "Sub DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/changli", "nanoka": "https://ww.nanoka.cc/character/changli", "fandom": "https://wutheringwaves.fandom.com/wiki/Changli", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/changli", "nanoka": "https://ww.nanoka.cc/character/1205", "fandom": "https://wutheringwaves.fandom.com/wiki/Changli", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T2 Tower of Adversity, T3 Whimpering Wastes (Hybrid/Dual-DPS)" },
   "kit": {
     "intro": "5-star Fusion Sword Hybrid, mid-air focused, defined by extreme Quickswap synergy - nearly every key ability (Basic P4, Skill, True Sight: Conquest, Forte Heavy) can be Swap Cancelled to keep her attacking off-field while playing another character. Forte 'Enflamement' (max 4 stacks, from Ultimate or True Sight attacks) unlocks Forte Heavy 'Flaming Sacrifice' nuke.",

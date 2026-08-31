@@ -5,7 +5,7 @@
   "element": "Spectro",
   "weaponType": "Sword",
   "role": ["Hybrid", "Support/Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-spectro", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-spectro", "nanoka": "https://ww.nanoka.cc/character/1502", "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Support: T1.5 Tower of Adversity, T2 Whimpering Wastes" },
   "kit": {
     "intro": "Free 5-star Spectro Sword jack-of-all-trades (healing, CC, debuff, Sub-DPS) whose only real meta niche is applying Spectro Frazzle for Phoebe (currently mandatory pairing). All Sequence Nodes unlocked for free, including a Spectro RES Shred at S6.",

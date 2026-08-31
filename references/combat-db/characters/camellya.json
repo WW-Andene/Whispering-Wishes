@@ -5,7 +5,7 @@
   "element": "Havoc",
   "weaponType": "Sword",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/camellya", "nanoka": "https://ww.nanoka.cc/character/camellya", "fandom": "https://wutheringwaves.fandom.com/wiki/Camellya", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/camellya", "nanoka": "https://ww.nanoka.cc/character/1603", "fandom": "https://wutheringwaves.fandom.com/wiki/Camellya", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T2 Tower of Adversity, T3 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Havoc Sword Main DPS with the longest rotation of any Main DPS in the game. Forte gauge 'Crimson Pistils' (max 100, restored only by Intro and Forte Skill) fuels a dual-form kit: White Hair (mobile, single-target, better tracking) vs Red Hair 'Blossom Mode' (AoE spin, immobile, faster Pistil consumption).",

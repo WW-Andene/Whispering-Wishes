@@ -5,7 +5,7 @@
   "element": "Glacio",
   "weaponType": "Rectifier",
   "role": ["Hybrid"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/zhezhi", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Zhezhi", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/zhezhi", "nanoka": "https://ww.nanoka.cc/character/1105", "fandom": "https://wutheringwaves.fandom.com/wiki/Zhezhi", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T3 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Glacio Rectifier Hybrid buffing Glacio and Resonance Skill DMG, with strong off-field Coordinated Attack damage via summoned Inklit Spirits. Teleports to placed 'Phantasmic Imprint' markers for quick, consistent, hard-to-interrupt damage. Considered powercrept since her best partners (Jinhsi, Carlotta) have been overshadowed by newer releases.",

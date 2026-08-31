@@ -5,7 +5,7 @@
   "element": "Spectro",
   "weaponType": "Gauntlets",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/zani", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Zani", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/zani", "nanoka": "https://ww.nanoka.cc/character/1507", "fandom": "https://wutheringwaves.fandom.com/wiki/Zani", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T1.5 Tower of Adversity, T2 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Spectro Gauntlets DPS dealing huge Cleave damage in her 'Inferno Mode' Ultimate stance, converting allies' Spectro Frazzle into her own 'Heliacal Ember' Forte resource. Tanky with built-in parries and damage reduction. Best paired with Confession Phoebe, who alone can reliably supply the Spectro Frazzle Zani needs.",

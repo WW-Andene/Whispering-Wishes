@@ -5,7 +5,7 @@
   "element": "Glacio",
   "weaponType": "Rectifier",
   "role": ["Hybrid", "Support"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lucilla", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lucilla", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lucilla", "nanoka": "https://ww.nanoka.cc/character/1109", "fandom": "https://wutheringwaves.fandom.com/wiki/Lucilla", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T0 Tower of Adversity, T0 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Glacio Rectifier Hybrid with dual 'Resonance Mode' identity (Glacio Chafe or Echo Skill) chosen based on team; buffs whichever mode via her Outro and Ultimate (Clear As Day -> Reminiscence). Only 5 inputs needed for a full rotation, one of the easiest Hybrids in the game.",

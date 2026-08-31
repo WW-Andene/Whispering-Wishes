@@ -5,7 +5,7 @@
   "element": "Havoc",
   "weaponType": "Rectifier",
   "role": ["Hybrid", "Sub DPS/Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/cantarella", "nanoka": "https://ww.nanoka.cc/character/cantarella", "fandom": "https://wutheringwaves.fandom.com/wiki/Cantarella", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/cantarella", "nanoka": "https://ww.nanoka.cc/character/1607", "fandom": "https://wutheringwaves.fandom.com/wiki/Cantarella", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T3 Tower of Adversity, T1.5 Whimpering Wastes (Hybrid)" },
   "kit": {
     "intro": "5-star Havoc Rectifier Hybrid combining on/off-field damage (Coordinated Attacks via Diffusion/Dreamweavers), healing, and an Outro buff (20% Havoc DMG + 25% Skill DMG). Two Forte resources: Trance (max 5, unlocks Mirage state via enhanced Heavy Attack) and Shiver (max 3 while in Mirage, unlocks nuke 'Perception Drain').",

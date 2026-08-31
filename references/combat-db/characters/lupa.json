@@ -5,7 +5,7 @@
   "element": "Fusion",
   "weaponType": "Broadblade",
   "role": ["Hybrid", "Support"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lupa", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lupa", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lupa", "nanoka": "https://ww.nanoka.cc/character/1207", "fandom": "https://wutheringwaves.fandom.com/wiki/Lupa", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T0.5 Tower of Adversity, T1 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Fusion Broadblade Mono-Fusion enabler - her Ultimate grants the whole team Pack Hunt (ATK% + Fusion DMG vs Overlord/Calamity) and Glory (Fusion RES Ignore) for 35s, scaling further with more Fusion teammates and Intro Skill casts. Easy to play thanks to 3 free auto-dodges per rotation.",

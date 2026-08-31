@@ -5,7 +5,7 @@
   "element": "Aero",
   "weaponType": "Sword",
   "role": ["Hybrid"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yangyang", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Yangyang", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yangyang", "nanoka": "https://ww.nanoka.cc/character/1402", "fandom": "https://wutheringwaves.fandom.com/wiki/Yangyang", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T4 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "Free 4-star Aero Sword Hybrid with one of the fastest rotations in the game and a unique Outro that funnels Resonance Energy to the incoming character (rather than a DMG buff), making her the only fully quickswap-friendly Hybrid buffer in the game (no Outro effect lost on swap). Low base value; scales heavily with Sequences (S4-S6).",

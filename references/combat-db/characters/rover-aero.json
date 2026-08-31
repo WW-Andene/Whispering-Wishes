@@ -5,7 +5,7 @@
   "element": "Aero",
   "weaponType": "Sword",
   "role": ["Support", "Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero", "nanoka": "https://ww.nanoka.cc/character/1408", "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Support: T1 Tower of Adversity, T1.5 Whimpering Wastes" },
   "kit": {
     "intro": "Free 5-star Aero Sword Support, mid-air combat focused, applying Aero Erosion via debuff conversion (removes other Negative Statuses and converts them 1:1 into Aero Erosion) and healing via Cloudburst Dance mid-air attacks and Ultimate. Currently restricted almost entirely to Cartethyia + Ciaccona teams.",

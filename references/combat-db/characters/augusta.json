@@ -5,7 +5,7 @@
   "element": "Electro",
   "weaponType": "Broadblade",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/augusta", "nanoka": "https://ww.nanoka.cc/character/augusta", "fandom": "https://wutheringwaves.fandom.com/wiki/Augusta", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/augusta", "nanoka": "https://ww.nanoka.cc/character/1306", "fandom": "https://wutheringwaves.fandom.com/wiki/Augusta", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T1 Tower of Adversity, T1 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Electro Broadblade Main DPS built around 3 resources: Prowess (enhanced Heavy Attacks), Ascendancy (enhanced Resonance Skill sequence), and Majesty (2 stacks unlock a time-stopping second Ultimate 'Sublime is the Sun' that lands 9 rapid Heavy Attacks + finisher).",

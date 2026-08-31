@@ -5,7 +5,7 @@
   "element": "Spectro",
   "weaponType": "Rectifier",
   "role": ["Main DPS (Absolution)", "Hybrid (Confession)"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/phoebe", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Phoebe", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/phoebe", "nanoka": "https://ww.nanoka.cc/character/1506", "fandom": "https://wutheringwaves.fandom.com/wiki/Phoebe", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "DPS: T1.5 Tower of Adversity, T3 Whimpering Wastes; Hybrid: T2 Tower of Adversity, T3 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Spectro Rectifier dual-mode character - switches between Absolution (Main DPS, relies on Spectro Frazzle already on enemies) and Confession (Hybrid, applies/buffs Spectro Frazzle for a partner, currently only Zani) via her Forte 'Prayer' resource (120, refills over 24s).",

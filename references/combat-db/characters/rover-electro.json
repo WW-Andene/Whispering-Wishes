@@ -5,7 +5,7 @@
   "element": "Electro",
   "weaponType": "Sword",
   "role": ["Hybrid"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-electro", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-electro", "nanoka": "https://ww.nanoka.cc/character/1310", "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T4 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "Free 5-star Electro Sword Hybrid applying Electro Flare (up to 15 stacks) and buffing Negative Status characters; currently considered close to unusable in the meta pending a future Electro Flare-focused Main DPS to pair with. Has an unused 'Apex Resonance' pseudo-DPS mode (Thrum of All Sounds, multi-element).",

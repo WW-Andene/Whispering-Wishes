@@ -5,7 +5,7 @@
   "element": "Fusion",
   "weaponType": "Sword",
   "role": ["Sub DPS", "Hybrid/Buffer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/brant", "nanoka": "https://ww.nanoka.cc/character/brant", "fandom": "https://wutheringwaves.fandom.com/wiki/Brant", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/brant", "nanoka": "https://ww.nanoka.cc/character/1206", "fandom": "https://wutheringwaves.fandom.com/wiki/Brant", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T1.5 ToA / T4 Whimpering Wastes (DPS role); T1.5 ToA / T2 Whimpering Wastes (Hybrid role)" },
   "kit": {
     "intro": "5-star Fusion Sword Hybrid, plays almost entirely mid-air. Forte gauge 'Bravo' (0-100, filled via Basics/Intro/Skill) unlocks enhanced Resonance Skill 'Returned from Ashes' (big Basic-Attack-type nuke + shield). Also heals/shields the party for free. Ultimate scales flat ATK off excess Energy Regen (up to 280%).",

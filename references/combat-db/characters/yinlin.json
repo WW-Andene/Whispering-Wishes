@@ -5,7 +5,7 @@
   "element": "Electro",
   "weaponType": "Rectifier",
   "role": ["Hybrid"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yinlin", "nanoka": "https://ww.nanoka.cc/character/yinlin", "fandom": "https://wutheringwaves.fandom.com/wiki/Yinlin", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yinlin", "nanoka": "https://ww.nanoka.cc/character/1302", "fandom": "https://wutheringwaves.fandom.com/wiki/Yinlin", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T3 Tower of Adversity, T4 Whimpering Wastes (Hybrid)" },
   "kit": {
     "intro": "5-star Electro Rectifier Hybrid, high AoE damage with strong off-field Coordinated Attack presence via marks. Most attacks apply 'Sinner's Mark'; Forte 'Judgment Points' (max 100) unlocks Heavy Attack 'Chameleon Cipher' converting marks to 'Punishment Mark' (triggers Coordinated Attack Judgment Strikes for 18s, even off-field). Should always run Moonlit Clouds as a Hybrid, never played as Main DPS.",

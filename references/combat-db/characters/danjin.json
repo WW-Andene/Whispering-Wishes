@@ -5,7 +5,7 @@
   "element": "Havoc",
   "weaponType": "Sword",
   "role": ["Hybrid", "Sub DPS/Main DPS (flex)"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/danjin", "nanoka": "https://ww.nanoka.cc/character/danjin", "fandom": "https://wutheringwaves.fandom.com/wiki/Danjin", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/danjin", "nanoka": "https://ww.nanoka.cc/character/1602", "fandom": "https://wutheringwaves.fandom.com/wiki/Danjin", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T3 Tower of Adversity, T3 Whimpering Wastes (Hybrid; flex Main DPS)" },
   "kit": {
     "intro": "4-star Havoc Sword dual-role unit, playable as a fast Hybrid buffer or an extended Main DPS. Resonance Skill has no cooldown and chains into a 'mark' combo (applies Incinerating Will, +20% DMG taken from Danjin) or a longer 3-Basic/3-Skill combo. Forte builds via Skill casts and spends 50%/100% HP-cost Heavy Attacks (Chaoscleave) that heal ~1/3 max HP; her attacks consume her own HP, making her a high-risk/high-reward pick.",

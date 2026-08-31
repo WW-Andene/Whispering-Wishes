@@ -5,7 +5,7 @@
   "element": "Havoc",
   "weaponType": "Gauntlets",
   "role": ["Hybrid"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/roccia", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Roccia", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/roccia", "nanoka": "https://ww.nanoka.cc/character/1606", "fandom": "https://wutheringwaves.fandom.com/wiki/Roccia", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T3 Tower of Adversity, T3 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Havoc Gauntlets Hybrid buffing Basic/Havoc DMG dealers via a fast mid-air 'Real Fantasy' Heavy Attack chain; grants an extra Echo Skill cast via her Outro's Magic Box utility. Considered outclassed by free alternatives (Sanhua, Danjin) in most teams.",

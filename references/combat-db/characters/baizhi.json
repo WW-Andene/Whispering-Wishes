@@ -5,7 +5,7 @@
   "element": "Glacio",
   "weaponType": "Rectifier",
   "role": ["Support", "Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/baizhi", "nanoka": "https://ww.nanoka.cc/character/baizhi", "fandom": "https://wutheringwaves.fandom.com/wiki/Baizhi", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/baizhi", "nanoka": "https://ww.nanoka.cc/character/1103", "fandom": "https://wutheringwaves.fandom.com/wiki/Baizhi", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T3 Tower of Adversity, T4 Whimpering Wastes (Support)" },
   "kit": {
     "intro": "4-star (free) Glacio Rectifier healer/support. Attacks via her companion You'tan. Forte gauge (4 stacks max, gained per Basic Attack) spent via Skill or Heavy Attack for team healing + Concerto generation. Outro grants 15% all-type DMG Deepen + healing over time to next character; Inherent Skill 1 drops a pickup-able 'Euphonia' (+15% ATK to whoever grabs it).",

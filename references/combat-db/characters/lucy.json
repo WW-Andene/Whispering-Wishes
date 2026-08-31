@@ -5,7 +5,7 @@
   "element": "Spectro",
   "weaponType": "Pistols",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lucy", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lucy", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lucy", "nanoka": "https://ww.nanoka.cc/character/1511", "fandom": "https://wutheringwaves.fandom.com/wiki/Lucy", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T1 Tower of Adversity, T2 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Spectro Pistols DPS from the Cyberpunk: Edgerunners collab. Builds TCP -> Root Access to access an enhanced Heavy Attack chain (Dual/Multi-threading), then unleashes a unique freeze-frame Ultimate letting the player pick up to 7 'Spoofing Program' debuffs/damage effects. Uses the 'Hack' mechanic, a Tune Rupture variant exclusive to the collab characters.",

@@ -5,7 +5,7 @@
   "element": "Spectro",
   "weaponType": "Rectifier",
   "role": ["Support", "Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/verina", "nanoka": "https://ww.nanoka.cc/character/verina", "fandom": "https://wutheringwaves.fandom.com/wiki/Verina", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/verina", "nanoka": "https://ww.nanoka.cc/character/1503", "fandom": "https://wutheringwaves.fandom.com/wiki/Verina", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0.5 Tower of Adversity, T1 Whimpering Wastes - one of the two premier generalist Supports" },
   "kit": {
     "intro": "5-star Spectro Rectifier generalist Support/healer with the shortest rotation in the game (as fast as ~2.35s at S2). Forte 'Photosynthesis Energy' (max 4, from Basic 5/Skill/Intro) consumed via Mid-air Attack for healing + Concerto. Notably her Intro Skill is considered unusable (launches her airborne, slows rotation) so it's typically skipped.",

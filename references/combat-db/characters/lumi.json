@@ -5,7 +5,7 @@
   "element": "Electro",
   "weaponType": "Broadblade",
   "role": ["Hybrid", "flex DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lumi", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lumi", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lumi", "nanoka": "https://ww.nanoka.cc/character/1504", "fandom": "https://wutheringwaves.fandom.com/wiki/Lumi", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T4 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "4-star Electro Broadblade Hybrid, the only character to buff Resonance Skill DMG on Outro (38%). Dual Forte gauge (Yellow Light Spark / Red Light Spark) toggled with no cooldown via her Resonance Skill, alternating ranged (Yellow Light) and melee (Red Light) stances.",

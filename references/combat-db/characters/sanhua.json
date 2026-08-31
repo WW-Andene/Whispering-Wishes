@@ -5,7 +5,7 @@
   "element": "Glacio",
   "weaponType": "Sword",
   "role": ["Hybrid"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/sanhua", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Sanhua", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/sanhua", "nanoka": "https://ww.nanoka.cc/character/1102", "fandom": "https://wutheringwaves.fandom.com/wiki/Sanhua", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T2 Tower of Adversity, T3 Whimpering Wastes" },
   "kit": {
     "intro": "Free 4-star Glacio Sword Hybrid with arguably the fastest Concerto rotation in the game, buffing Basic Attack DMG by 38% on Outro. Deploys ice constructs (Thorn/Prism/Glacier) via Intro/Skill/Ultimate then detonates them all at once with a timing-minigame Heavy Attack for huge Concerto gain.",

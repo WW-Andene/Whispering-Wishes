@@ -5,7 +5,7 @@
   "element": "Spectro",
   "weaponType": "Rectifier",
   "role": ["Support", "Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper", "nanoka": "https://ww.nanoka.cc/character/the-shorekeeper", "fandom": "https://wutheringwaves.fandom.com/wiki/The_Shorekeeper", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper", "nanoka": "https://ww.nanoka.cc/character/1505", "fandom": "https://wutheringwaves.fandom.com/wiki/The_Shorekeeper", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0 Tower of Adversity, T0.5 Whimpering Wastes - the other premier generalist Support" },
   "kit": {
     "intro": "5-star Spectro Rectifier generalist Support, buffs are CRIT-based rather than ATK%-based. Resonance Liberation (175 Energy cost) summons a 30s 'Stellarealm' that upgrades through 3 tiers as teammates cast Intro Skills inside it: Outer (team HoT) -> Inner (up to 12.5% CRIT Rate, scaling with her Energy Regen) -> Supernal (up to 25% CRIT DMG, scaling with ER). Needs ~230-250% Energy Regen to hit the caps.",

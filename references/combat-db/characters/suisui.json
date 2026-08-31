@@ -5,7 +5,7 @@
   "element": "Glacio",
   "weaponType": "Rectifier",
   "role": ["Support", "Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/suisui", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Suisui", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/suisui", "nanoka": "https://ww.nanoka.cc/character/1110", "fandom": "https://wutheringwaves.fandom.com/wiki/Suisui", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Support: T0 Tower of Adversity, T0.5 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Glacio Rectifier Support specializing in buffing Negative Status consumers (Hiyuki, Yangyang: Xuanling), a Mornye-type healer/buffer. Alternates Zephyr Stance (opener) and Drizzle Stance (main buffing phase, entered instantly via Intro).",

@@ -5,7 +5,7 @@
   "element": "Electro",
   "weaponType": "Gauntlets",
   "role": ["Support"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yuanwu", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Yuanwu", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yuanwu", "nanoka": "https://ww.nanoka.cc/character/1303", "fandom": "https://wutheringwaves.fandom.com/wiki/Yuanwu", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Support: T4 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "Free 4-star Electro Gauntlets Support with the shortest rotation in the game and zero investment requirement, but almost no buffing kit beyond team-wide Interruption Resistance and Vibration Strength (stagger) damage. Sole niche: highest-uptime Coordinated Attack generator for Jinhsi's Forte stacks.",

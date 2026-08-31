@@ -5,7 +5,7 @@
   "element": "Glacio",
   "weaponType": "Gauntlets",
   "role": ["Support", "Healer"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/youhu", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Youhu", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/youhu", "nanoka": "https://ww.nanoka.cc/character/1106", "fandom": "https://wutheringwaves.fandom.com/wiki/Youhu", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Support: T4 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "4-star Glacio Gauntlets Support with a unique niche: 100% Coordinated Attack DMG Amplification on Outro (the single biggest damage type amplifier in the game), plus full-team healing. Randomized 'Antique' (Chime/Ruyi/Ding/Mask) draw system enhancing her Basic Attacks, building toward a 4-Auspice Forte finisher (Poetic Essence).",

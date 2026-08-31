@@ -5,7 +5,7 @@
   "element": "Aero",
   "weaponType": "Gauntlets",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/sigrika", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Sigrika", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/sigrika", "nanoka": "https://ww.nanoka.cc/character/1412", "fandom": "https://wutheringwaves.fandom.com/wiki/Sigrika", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0 Tower of Adversity, T0 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Aero Gauntlets Echo Skill DMG DPS (similar archetype to Phrolova/Galbrena) built around generating and consuming 'Runes' via enhanced Basic Attacks and Skills to power a big Forte nuke. Considered the strongest Whimpering Wastes DPS in the game, but heavily reliant on Qiuyuan or Lucilla as Echo-focused teammates.",

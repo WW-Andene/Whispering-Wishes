@@ -5,7 +5,7 @@
   "element": "Fusion",
   "weaponType": "Pistols",
   "role": ["Hybrid", "Support"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/mortefi", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Mortefi", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/mortefi", "nanoka": "https://ww.nanoka.cc/character/1204", "fandom": "https://wutheringwaves.fandom.com/wiki/Mortefi", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T1.5 Tower of Adversity, T2 Whimpering Wastes" },
   "kit": {
     "intro": "4-star Fusion Pistols Hybrid, the classic F2P-accessible Heavy Attack DMG buffer (Iuno/Augusta/Jiyan/Galbrena teams). Ultimate applies Burning Rhapsody, letting him launch off-field Coordinated 'Marcato' attacks whenever teammates land Basic/Heavy Attacks (2x per Heavy hit). Very fast Concerto rotation.",

@@ -5,7 +5,7 @@
   "element": "Havoc",
   "weaponType": "Sword",
   "role": ["Main DPS", "flex Dual DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc", "nanoka": "https://ww.nanoka.cc/character/1605", "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T3 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "Free 5-star Havoc Sword DPS unlocked after Act I Chapter 6. Builds Umbra to enter Dark Surge (enhanced Basics, +20% Havoc DMG Bonus, +25% CRIT Rate, refreshed Skill). Extremely cheap Ultimate (125 Energy, 16s CD) and access to the Dreamless 4-cost Echo (highest-damaging Echo skill in the game, +50% within 5s of Ultimate).",

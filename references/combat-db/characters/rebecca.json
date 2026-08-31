@@ -5,7 +5,7 @@
   "element": "Electro",
   "weaponType": "Pistols",
   "role": ["Hybrid"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rebecca", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Rebecca", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rebecca", "nanoka": "https://ww.nanoka.cc/character/1308", "fandom": "https://wutheringwaves.fandom.com/wiki/Rebecca", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T0.5 Tower of Adversity, T1.5 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Electro Pistols Cyberpunk: Edgerunners collab Hybrid, a free 'second Mortefi' who buffs Heavy Attack DPS (best with Lucy, but works with Jiyan/Augusta/Phoebe/Galbrena too). Toggles between Huntress (CRIT DMG) and Guts (DEF Ignore) modes; uses the Hack mechanic (Tune Rupture variant).",

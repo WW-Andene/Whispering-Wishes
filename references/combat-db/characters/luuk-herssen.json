@@ -5,7 +5,7 @@
   "element": "Spectro",
   "weaponType": "Gauntlets",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/luuk-herssen", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Luuk_Herssen", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/luuk-herssen", "nanoka": "https://ww.nanoka.cc/character/1510", "fandom": "https://wutheringwaves.fandom.com/wiki/Luuk_Herssen", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0 Tower of Adversity, T1.5 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Spectro Gauntlets aerial-combat Main DPS with one of the strongest single-hit Ultimate nukes in the game. Casts 3 enhanced Skills (Ring/Breach/Glare) from mid-air attack strings to build Endnotes on the Endgame (+25% Ultimate DMG each, up to 3 stacks), then a plunging Gavel of Earthshaker before unleashing his Ultimate. Fully locked into a single ~24-25s rotation - no quickswap possible.",

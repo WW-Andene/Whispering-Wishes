@@ -5,7 +5,7 @@
   "element": "Havoc",
   "weaponType": "Broadblade",
   "role": ["Support"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/chisa", "nanoka": "https://ww.nanoka.cc/character/chisa", "fandom": "https://wutheringwaves.fandom.com/wiki/Chisa", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/chisa", "nanoka": "https://ww.nanoka.cc/character/1508", "fandom": "https://wutheringwaves.fandom.com/wiki/Chisa", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0 Tower of Adversity, T0 Whimpering Wastes (Support/Negative Status)" },
   "kit": {
     "intro": "5-star Havoc Broadblade Support dedicated to Negative-Status teams. Applies 'Unseen Snare' -> Havoc Bane (DEF Shred) on marked targets; grants Negative-Status appliers/dealers 18% DEF Ignore (Thread of Bane) and, via Outro, +3 max Negative Status stacks. Forte 'Ring of Chainsaw' unlocks a Chainsaw Basic Attack combo ending in the shielding nuke 'Sawring - Eradication'.",

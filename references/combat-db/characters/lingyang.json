@@ -5,7 +5,7 @@
   "element": "Glacio",
   "weaponType": "Gauntlets",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lingyang", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lingyang", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lingyang", "nanoka": "https://ww.nanoka.cc/character/1104", "fandom": "https://wutheringwaves.fandom.com/wiki/Lingyang", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T3 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Glacio Gauntlets Hypercarry with a unique airborne 'Striding Lion' Ultimate stance - flies, juggles non-elite enemies, and alternates Basic Attack/Resonance Skill to exploit his Diligent Practice passive. Deals the bulk of his damage in one long Ultimate-locked burst window; not quickswap-friendly.",

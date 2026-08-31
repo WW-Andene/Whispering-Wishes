@@ -5,7 +5,7 @@
   "element": "Aero",
   "weaponType": "Sword",
   "role": ["Hybrid", "Support"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Qiuyuan", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan", "nanoka": "https://ww.nanoka.cc/character/1411", "fandom": "https://wutheringwaves.fandom.com/wiki/Qiuyuan", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T0 Tower of Adversity, T0 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Aero Sword Hybrid specializing in Echo Skill DMG buffing (Sigrika, Phrolova, Galbrena). Forte 'Swordster's Soliloquy' (max 600) unlocks enhanced Basics at 200, a 30% Echo Skill DMG Bonus to the active character at 400, and 3 Forte Heavy Attacks (each counted as an Echo Skill cast) at 600.",

@@ -5,7 +5,7 @@
   "element": "Electro",
   "weaponType": "Broadblade",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/calcharo", "nanoka": "https://ww.nanoka.cc/character/calcharo", "fandom": "https://wutheringwaves.fandom.com/wiki/Calcharo", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/calcharo", "nanoka": "https://ww.nanoka.cc/character/1301", "fandom": "https://wutheringwaves.fandom.com/wiki/Calcharo", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T4 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Electro Broadblade standard-banner Main DPS. Reputed as the hardest-to-optimize character in the game: gameplay revolves around building 'Killing Intent' (5 stacks via Basic 'Hounds Roar' during Ultimate state) to unleash repeated 'Death Messenger' Heavy Attacks that carry the bulk of his damage but have long, easily-interrupted wind-ups.",

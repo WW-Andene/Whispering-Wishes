@@ -5,7 +5,7 @@
   "element": "Fusion",
   "weaponType": "Rectifier",
   "role": ["Main DPS", "Dual DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/encore", "nanoka": "https://ww.nanoka.cc/character/encore", "fandom": "https://wutheringwaves.fandom.com/wiki/Encore", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/encore", "nanoka": "https://ww.nanoka.cc/character/1203", "fandom": "https://wutheringwaves.fandom.com/wiki/Encore", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T2 Tower of Adversity, T4 Whimpering Wastes (playable as Hypercarry or Dual-DPS)" },
   "kit": {
     "intro": "5-star Fusion Rectifier DPS, very flexible field time (Hypercarry or Quickswap Dual-DPS). Ultimate transforms her into melee-focused 'Cosmos Rampage' state with its own Basic/Heavy/Skill kit. Forte 'Dissonance' (max 100) unlocks an enhanced Heavy Attack (70% DMG reduction while channeling, then a big Liberation-type nuke) usable during Ultimate for maximum effect.",

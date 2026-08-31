@@ -5,7 +5,7 @@
   "element": "Havoc",
   "weaponType": "Sword",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Yangyang", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling", "nanoka": "https://ww.nanoka.cc/character/1610", "fandom": "https://wutheringwaves.fandom.com/wiki/Yangyang", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0 Tower of Adversity, T1 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Havoc Sword Main DPS (Yangyang's alternate awakened form), one of the strongest DPS in the game across all endgame modes. Applies and maintains Havoc Bane constantly, alternating Azure/Feather sword stances, self-buffing CRIT DMG heavily (500%+ achievable).",

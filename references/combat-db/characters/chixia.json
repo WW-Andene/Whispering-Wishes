@@ -5,7 +5,7 @@
   "element": "Fusion",
   "weaponType": "Pistols",
   "role": ["Sub DPS", "Dual DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/chixia", "nanoka": "https://ww.nanoka.cc/character/chixia", "fandom": "https://wutheringwaves.fandom.com/wiki/Chixia", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/chixia", "nanoka": "https://ww.nanoka.cc/character/1202", "fandom": "https://wutheringwaves.fandom.com/wiki/Chixia", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T4 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "4-star free Fusion Pistols DPS with one of the highest-multiplier Ultimates in the game. Forte gauge 'Thermobaric Bullets' (max 60) built via Basics/Intro/Skill, channeled via held Resonance Skill 'DAKA DAKA!' (ideally exactly 30 bullets) then finished with Basic Attack into 'Boom Boom' nuke.",

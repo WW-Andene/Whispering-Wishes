@@ -5,7 +5,7 @@
   "element": "Havoc",
   "weaponType": "Broadblade",
   "role": ["Hybrid"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/taoqi", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Taoqi", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/taoqi", "nanoka": "https://ww.nanoka.cc/character/1601", "fandom": "https://wutheringwaves.fandom.com/wiki/Taoqi", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "Hybrid: T4 Tower of Adversity, T4 Whimpering Wastes" },
   "kit": {
     "intro": "4-star Havoc Broadblade Skill DMG Amplifier/Shielder, considered bottom-tier despite a huge 38% Resonance Skill DMG Deepen Outro (relevant only for Jinhsi and Carlotta). Long, slow-animation rotation and a largely unusable Forte Circuit hurt overall usability.",

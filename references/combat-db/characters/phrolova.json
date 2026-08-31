@@ -5,7 +5,7 @@
   "element": "Havoc",
   "weaponType": "Rectifier",
   "role": ["Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/phrolova", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Phrolova", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/phrolova", "nanoka": "https://ww.nanoka.cc/character/1608", "fandom": "https://wutheringwaves.fandom.com/wiki/Phrolova", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "T0.5 Tower of Adversity, T0.5 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Havoc Rectifier DPS built around her puppet partner Hecate, dealing roughly half her damage on-field and half off-field during her 24s Maestro Ultimate state. Uses a 'Volatile Note' (Strings/Winds/Cadenza) music-themed Forte system feeding a big self-ATK buff and off-field Hecate attacks. No Energy Regen requirement (0 max Energy Ultimate).",

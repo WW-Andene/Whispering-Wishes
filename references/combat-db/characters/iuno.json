@@ -5,7 +5,7 @@
   "element": "Aero",
   "weaponType": "Gauntlets",
   "role": ["Hybrid", "Support/Sub DPS", "flex Main DPS"],
-  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/iuno", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Iuno", "encore": null, "wuwatracker": null },
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/iuno", "nanoka": "https://ww.nanoka.cc/character/1410", "fandom": "https://wutheringwaves.fandom.com/wiki/Iuno", "encore": null, "wuwatracker": null },
   "tierList": { "prydwen": "DPS: T0.5 Tower of Adversity, T4 Whimpering Wastes; Hybrid: T1 Tower of Adversity, T1.5 Whimpering Wastes" },
   "kit": {
     "intro": "5-star Aero Gauntlets jack-of-all-trades: healing, shielding, DMG Amplification (Blessing of the Wan Light, up to 10 stacks of 4%), Heavy Attack buffing on Outro, and a viable Main DPS mode via her Lunar Cycle (Half Moon / New Moon) Forte stances, spending the 'Sentience' resource.",
