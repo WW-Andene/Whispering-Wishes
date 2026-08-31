@@ -986,7 +986,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // damage at all if their dmgFocus actually includes that attack type — routeTypeBonuses in this
     // same file enforces the identical gate for the real damage calc, so scoring has to match it or
     // it'll credit synergy that mechanically does nothing for this specific DPS.
-    const typeFocusMap = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', echoDmg: 'Echo', coordDmg: 'Coordinated ATK', skillDmg: 'Skill' };
+    const typeFocusMap = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', libDmg: 'Liberation', echoDmg: 'Echo', coordDmg: 'Coordinated ATK', skillDmg: 'Skill' };
     const buffApplies = (b) => {
       if (typeFocusMap[b.stat]) return dpsFocus.includes(typeFocusMap[b.stat]);
       // elemDmg is genuinely element-scoped by definition, so it needs the strict check: condition
