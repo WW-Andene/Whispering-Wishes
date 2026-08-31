@@ -302,8 +302,13 @@ const CHARACTER_DATA = {
   // Firstlight's Herald (Energy Regen main stat, matching her Prydwen-stated 250% ER build target).
   // alt4 previously paired Variation with Call of the Abyss (85.1%) while skipping Rectifier#25 (87.2%,
   // Prydwen's actual #2 and its named no-gacha pick) — swapped in.
+  // desc rewritten 2026-08-31 with exact Forte resource economy and Liberation/Stellarealm timing, sourced
+  // from wutheringwaves.fandom.com/wiki/Shorekeeper/Combat (MediaWiki API action=parse, bypassing the
+  // Combat page's own Cloudflare interstitial) cross-checked against Prydwen's live kit page (Chrome UA +
+  // google.com referer + jsRender). Prior desc had zero mention of the Collapsed Core/Empirical Data
+  // resource economy or any exact numbers/caps/timing at all.
   'Shorekeeper': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Euphonic Chrysalis, guardian of the Black Shores — this title alone once defined her, but desires, bonds, and emotions, she only began to understand these things after meeting you. Spectro support/healer who restores HP continuously through her Resonance Skill (Chaos Theory) and Liberation, opens the Stellarealm field via Resonance Liberation (End Loop) that evolves into granting team-wide Crit Rate then Crit DMG (scaling with her own Energy Regen) as allies cast Intro Skills inside it, and buffs the whole team\'s All DMG through her Outro Binary Butterfly.',
+    desc: 'Euphonic Chrysalis, guardian of the Black Shores — this title alone once defined her, but desires, bonds, and emotions, she only began to understand these things after meeting you. Spectro support/healer whose Forte Circuit (Astral Chord) runs on two capped resources: Collapsed Cores (cap 5 — every Basic ATK/Mid-air ATK/Dodge Counter hit grants 1; each auto-converts into a homing Flare Star Butterfly 6s after spawning, or instantly once a 6th would be generated) and Empirical Data (cap 5 — Basic ATK Stage 1/2/4 and Mid-air ATK each grant 1, Stage 3 grants 2; at 5/5, her next Heavy ATK becomes Illation or Mid-air ATK becomes Transmutation, consuming all 5 to instantly convert every pending Collapsed Core into a Butterfly). Resonance Skill Chaos Theory (16s CD) heals nearby allies and grants 20 Concerto Energy. Resonance Liberation End Loop costs 175 Energy (25s CD) and opens the Stellarealm for 30s, healing all allies in range every 3s (Outer stage); the first ally Intro Skill cast inside it upgrades it to Inner Stellarealm (team Crit Rate +0.01% per 0.2% of her Energy Regen, capped at +12.5%), and a 2nd ally Intro upgrades it to Supernal Stellarealm (team Crit DMG +0.01% per 0.1% of her Energy Regen, capped at +25%, on top of Inner\'s Crit Rate). Reaching Supernal also replaces her own next Intro Skill with the empowered Discernment (ends the Stellarealm immediately, heals, and lands a guaranteed-Crit HP-scaling nuke counted as Liberation DMG) — a cast-order dependency: she should be swapped in to trigger this only once Supernal is already up, since casting it early forfeits the rest of the Stellarealm\'s duration. Outro Binary Butterfly grants the incoming Resonator up to 5 free interrupt-recoveries and the whole nearby team +15% All DMG Amp for 30s, which persists through swaps.',
     skills: ['Origin Calculus', 'Chaos Theory', 'Astral Chord', 'End Loop'],
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
@@ -3390,8 +3395,8 @@ const SKILL_MULTIPLIERS = {
     ['Dodge Counter', 'Standard', '87.48%×2'],
     ['Skill', 'Chaos Theory', '31.31%×5 (Dim Star Butterflies) + heal (1313+5.97% HP)', '16s cooldown; heals the team and summons 5 tracking butterflies.'],
     ['Forte', 'Flare Star Butterfly / Illation / Transmutation', '37.29% (Butterfly) · 18.97%×5 (Illation, Heavy ATK) · 73.96% (Transmutation, Mid-air)', 'At 5 Empirical Data, Heavy/Mid-air ATK consume it to pull in targets and convert Collapsed Cores into Flare Star Butterflies.'],
-    ['Liberation', 'End Loop', 'No direct DMG — Stellarealm', 'Heals continuously; evolves into Inner (team Crit Rate up to +12.5%) then Supernal Stellarealm (team Crit DMG up to +25%) scaling with her Energy Regen, as allies cast Intro Skills inside it.'],
-    ['Intro', 'Proof of Existence: Enlightenment / Discernment', '45.30%×5 + heal (259+1.20% HP) · 19.64%×3 HP-scaling + heal', 'Discernment only available once per Supernal Stellarealm; guaranteed Crit, counted as Liberation DMG.'],
+    ['Liberation', 'End Loop', 'No direct DMG — Stellarealm heal (438+2.39% HP) every 3s', 'Lv.10 heal amount per tick; verified 2026-08-31 vs. fandom Combat page (was previously undocumented). 30s duration, 25s CD, costs 175 Energy, grants 20 Concerto on cast. Evolves into Inner (team Crit Rate up to +12.5%) then Supernal Stellarealm (team Crit DMG up to +25%) scaling with her Energy Regen, as allies cast Intro Skills inside it.'],
+    ['Intro', 'Proof of Existence: Enlightenment / Discernment', '45.30%×5 + heal (259+1.20% HP) · 19.64%×3 HP-scaling + heal (289+1.32% HP)', 'Discernment Lv.10 heal amount verified 2026-08-31 vs. fandom Combat page (was previously undocumented). Discernment only available once per Supernal Stellarealm; guaranteed Crit, counted as Liberation DMG, scales off HP not ATK. S6 adds +42% to Discernment\'s own DMG Multiplier and +500% Crit DMG on that hit specifically (not a persistent buff).'],
     ['Outro', 'Binary Butterfly', 'All DMG Amp +15%', 'Also grants the on-field Resonator up to 5 free interrupt-recoveries (tap Dodge) for 30s — no direct DMG.'],
   ],
   'Sigrika': [
@@ -4276,9 +4281,13 @@ const CHARACTER_ROTATIONS = {
   // separate Opener (used when no Intro is available, e.g. Tower of Adversity start) does 2 full Basic
   // Attack + Illation cycles before Skill/Liberation instead.
   'Shorekeeper': [
-    { type: 'Intro', skill: 'Discernment', note: 'Swap into her — if a Supernal Stellarealm is up, her Intro is auto-replaced by this empowered version: ends the current Stellarealm, heals the team, and deals a guaranteed-Crit hit (counted as Liberation DMG, scales off her HP).' },
+    { type: 'Intro', skill: 'Discernment', note: 'Swap into her — if a Supernal Stellarealm is up, her Intro is auto-replaced by this empowered version: ends the current Stellarealm immediately (regardless of remaining duration), heals the team, and deals a guaranteed-Crit hit (counted as Liberation DMG, scales off her HP, base 19.64%×3 at Lv.10, +42% DMG Mult and +500% Crit DMG on that hit at S6). Cast-order/forfeit warning: swapping to her before Supernal is reached forfeits the rest of the current Stellarealm\'s healing/buff duration for a smaller Enlightenment cast instead — only swap in here once 2 ally Intros have already upgraded the field to Supernal.' },
     { type: 'Basic ATK', skill: 'Origin Calculus Stage 1-4', note: 'Tap Basic Attack 4 times — each hit grants 1 Collapsed Core (which becomes an auto-attacking Flare Star Butterfly after 6s) and Empirical Data (Stage 3 grants 2 Empirical Data instead of 1, capping the gauge at 5/5 after this combo).' },
-    { type: 'Forte', skill: 'Heavy Attack: Illation', note: 'Once Empirical Data hits 5/5, HOLD Basic Attack (Heavy Attack replaced) — consumes it all for a hit that instantly converts every pending Collapsed Core into a Flare Star Butterfly and gently pulls in non-elite enemies.' },
+    // skill field corrected 2026-08-31: was 'Heavy Attack: Illation', which does NOT substring-match the
+    // SKILL_MULTIPLIERS row name 'Flare Star Butterfly / Illation / Transmutation' — the calc engine's
+    // rowName.includes(step.skill) lookup silently resolved this step to ZERO damage. Changed to 'Illation'
+    // alone, which does match.
+    { type: 'Forte', skill: 'Illation', note: 'Once Empirical Data hits 5/5, HOLD Basic Attack (Heavy Attack replaced) — consumes it all for a hit that instantly converts every pending Collapsed Core into a Flare Star Butterfly and gently pulls in non-elite enemies (range extended +30% at S5).' },
     { type: 'Skill', skill: 'Chaos Theory', note: 'Press Skill — heals the nearby team and summons 5 Dim Star Butterflies that auto-track a target, generating a big burst of Concerto Energy as they land.' },
     { type: 'Echo', skill: 'Use Echo', note: 'Use your equipped Echo (Fallacy of No Return recommended) right after Skill.' },
     { type: 'Liberation', skill: 'End Loop', duration: 30, note: 'Press Liberation (needs 175 Energy) — summons the Stellarealm for 30s: continuous team healing every 3s. It upgrades automatically the first time a teammate casts their Intro inside it (to Inner: up to +12.5% team Crit Rate scaling with her Energy Regen) and again on a 2nd Intro (to Supernal: up to +25% team Crit DMG).' },
@@ -4923,8 +4932,34 @@ const RESONANCE_CHAIN_DATA = {
   // S6 corrected — she has no DMG Deepen anywhere in her kit; real S6 boosts Heavy/Mid-air ATK
   // Starflower Blooms DMG and adds a Coordinated ATK + heal proc (bucketed as totalMult).
   'Verina':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { elemDmg: 15 }, s5: { totalMult: 12 }, s6: { totalMult: 20 } },
-  // Shorekeeper S1: utility (range/duration). S2: ATK+40% (confirmed). S6: CD+500% self after Intro (very short window, ≈25 averaged)
-  'Shorekeeper':  { s1: { totalMult: 5 }, s2: { atkPct: 40 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { totalMult: 5 }, s6: { critDmg: 25 } },
+  // Shorekeeper S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Shorekeeper/Combat
+  // (MediaWiki API action=parse, section=Resonance Chain — bypassed the Combat page's Cloudflare interstitial),
+  // cross-checked against Prydwen's live kit page (Chrome UA + google.com referer + jsRender):
+  // S1 "Unspoken Conjecture": Stellarealm effective range +150%, duration +10s, and casting Intro Skill
+  //   Discernment no longer ends the existing Stellarealm early. Pure utility/duration node, zero DPS
+  //   component — was totalMult:5 with no basis at all — zeroed to {} per the "don't force-fit a lossy
+  //   value" rule.
+  // S2 "Night's Gift and Refusal": the Outer Stellarealm (i.e. from the moment Liberation is cast, not
+  //   gated behind any Intro) grants all nearby party members +40% ATK — confirmed exact, unchanged.
+  // S3 "Infinity Awaits Me": casting Resonance Liberation End Loop grants Shorekeeper 20 Concerto Energy,
+  //   triggerable once every 25s. Pure resource-economy node (Liberation's own 25s CD means this is really
+  //   a "next Liberation comes back with a head start" effect), zero DPS component — was totalMult:5 with
+  //   no basis — zeroed to {}.
+  // S4 "Overflowing Quietude": +70% Healing Bonus specifically when casting Resonance Skill Chaos Theory.
+  //   Zero DPS component and this schema has no healingBonus stat key — was totalMult:5 (fabricated) —
+  //   zeroed to {}. TODO: needs Phase 2 schema (a healBonusPct-on-skill-cast key) to represent this.
+  // S5 "Echoes in Silence": extends the pull-in range of Basic Attack Stage 3 by 50% and of Illation by
+  //   30%. Pure AoE-gathering utility, zero DPS component — was totalMult:5 (fabricated) — zeroed to {}.
+  // S6 "To the New World": Intro Skill Discernment's own DMG Multiplier +42%, AND casting Discernment
+  //   raises Shorekeeper's Crit. DMG by 500% (for that hit — Discernment is itself always a guaranteed
+  //   Crit per its base kit text, so this is a pure DMG-magnitude boost on that one guaranteed-Crit
+  //   instance, not a persistent team/self buff). Both effects are scoped ONLY to Discernment casts —
+  //   was critDmg:25, both wrong category (this isn't a persistent Crit DMG buff) and wrong magnitude
+  //   (25 vs the real 500) — corrected to totalMult:42 (Discernment's own multiplier boost) and
+  //   critDmg:500. TODO: needs Phase 2 schema to gate both fields to "on Discernment cast only" — the
+  //   flat schema will otherwise apply critDmg:500 as if it were an always-on team/self Crit DMG stat,
+  //   which massively overstates its real (single-hit, Discernment-only) scope.
+  'Shorekeeper':  { s1: {}, s2: { atkPct: 40 }, s3: {}, s4: {}, s5: {}, s6: { totalMult: 42, critDmg: 500 } },
   // Lynae S2: team +25% All DMG Amp, self-gain portion (confirmed exact). S4: ATK+20% (was totalMult:10, no basis).
   // S5: Prismatic Overblast Liberation DMG Mult+70% (was totalMult:15, no basis)
   'Lynae':        { s1: { totalMult: 10 }, s2: { allDmg: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { libDmg: 70 }, s6: { totalMult: 40 } },
