@@ -1,5 +1,22 @@
 apply plugin: 'com.android.application'
 
+// Google's OAuth authorization server rejects a redirect_uri that isn't one of the exact shapes
+// it recognizes for a given client type — for an "iOS"/"Desktop app"/TV-type client (the types
+// that support a non-https redirect at all, per CloudStorageProvider.jsx's own comment), that
+// shape is specifically the CLIENT ID REVERSED INTO REVERSE-DNS NOTATION as the URL scheme:
+// "com.googleusercontent.apps.<client-id-without-the-.apps.googleusercontent.com-suffix>:/...".
+// An arbitrary scheme like the app's own cc.andene.whisperingwishes:// — which is what this used
+// to be — gets "Error 400: invalid_request", not a silent mismatch, because Google validates the
+// scheme itself against this pattern before it ever gets to matching a registered redirect URI.
+// Computed here from the SAME VITE_GOOGLE_CLIENT_ID_NATIVE env var CloudStorageProvider.jsx's
+// getGoogleAccessTokenNative() reads (via import.meta.env, baked in at the Vite build step) —
+// one secret stays the single source of truth for both sides instead of needing a second,
+// easy-to-desync copy of the same value.
+def googleNativeClientId = System.getenv('VITE_GOOGLE_CLIENT_ID_NATIVE') ?: ''
+def googleAuthRedirectScheme = googleNativeClientId
+    ? 'com.googleusercontent.apps.' + googleNativeClientId.replace('.apps.googleusercontent.com', '')
+    : 'cc.andene.whisperingwishes' // harmless placeholder when the secret isn't set — Cloud Backup is already off client-side (FIREBASE_AVAILABLE/nativeClientId checks) in that case, this only needs to be a syntactically valid scheme so the manifest merges.
+
 android {
     namespace = "cc.andene.whisperingwishes"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -15,6 +32,7 @@ android {
         versionCode (project.hasProperty('appVersionCode') ? project.property('appVersionCode').toInteger() : 1)
         versionName (project.hasProperty('appVersionName') ? project.property('appVersionName') : "1.0")
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [googleAuthRedirectScheme: googleAuthRedirectScheme]
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
              // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
