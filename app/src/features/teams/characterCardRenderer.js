@@ -104,9 +104,12 @@ function computeBuildStats(member, eq, teamIdx) {
  * @param {number} params.teamIdx - active team index (needed for the ER calc's teamEquipment key shape)
  * @param {Object} params.collectionImages - character/echo/weapon image URLs
  * @param {Function} params.getImageFraming - image framing function (per-character crop/zoom)
+ * @param {Object} [params.profile] - the app's own player profile (username/uid), shown in the
+ *   portrait's top overlay in place of the character's own name/level — same identity role the
+ *   Resonator ID card's own portrait overlay plays (see idCardRenderer.js's drawHero)
  * @param {Object} [params.toast] - toast provider, for export-result notifications
  */
-export async function renderCharacterCard({ member, eq, teamIdx, collectionImages, getImageFraming, toast }) {
+export async function renderCharacterCard({ member, eq, teamIdx, collectionImages, getImageFraming, profile, toast }) {
   const canvas = document.createElement('canvas');
   // Canvas resolution intentionally exceeds PerfectSuite's max primary (1024) — this is the
   // downloadable PNG's export resolution, not a UI element dimension, and the prior 1600x900
@@ -258,20 +261,46 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     const dy2 = by + (bh - dh2) / 2 - (f.y / 100) * bh2 * sc;
     ctx.drawImage(portraitImg, dx2, dy2, dw2, dh2);
     ctx.restore();
-    // Fade at the TOP of the portrait (not the bottom) — the name/level/element overlay now
-    // lives up there per the user's request.
-    const fade = ctx.createLinearGradient(0, by, 0, by + 96);
-    fade.addColorStop(0, 'rgba(8,12,18,0.9)'); fade.addColorStop(1, 'rgba(8,12,18,0)');
-    ctx.fillStyle = fade; ctx.fillRect(bx + 2, by + 2, portraitW - 4, 94);
+    // Fade at the TOP of the portrait — the player identity overlay (username/UID) lives up
+    // there. A second, smaller fade at the BOTTOM backs the character-name badge/plaque below.
+    const fadeTop = ctx.createLinearGradient(0, by, 0, by + 96);
+    fadeTop.addColorStop(0, 'rgba(8,12,18,0.9)'); fadeTop.addColorStop(1, 'rgba(8,12,18,0)');
+    ctx.fillStyle = fadeTop; ctx.fillRect(bx + 2, by + 2, portraitW - 4, 94);
+    const fadeBottom = ctx.createLinearGradient(0, by + bh - 96, 0, by + bh);
+    fadeBottom.addColorStop(0, 'rgba(8,12,18,0)'); fadeBottom.addColorStop(1, 'rgba(8,12,18,0.9)');
+    ctx.fillStyle = fadeBottom; ctx.fillRect(bx + 2, by + bh - 94, portraitW - 4, 92);
   }
-  // Name + level + element/role overlay — moved to the TOP of the portrait per user request
-  // (was previously bottom-anchored). "Lv. 90/90" shown fixed, same rationale as the Skills
-  // section's "Lv. 10": this app doesn't track individual character level anywhere.
+  // Player identity overlay — username/UID, same role the Resonator ID card's own portrait
+  // overlay plays (idCardRenderer.js's drawHero), swapped in here in place of the character's
+  // own name/level (which moves to the bottom badge below) per user request: this card is a
+  // player's build for a character, not the character's own ID, so the player identity belongs
+  // in the primary (top) overlay slot.
   const elColor = getElementColor(element) || '#e2e8f0';
-  ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 34px sans-serif'; ctx.fillText(name, bx + 18, by + 42);
-  ctx.fillStyle = '#9ca3af'; ctx.font = '16px sans-serif'; ctx.fillText('Lv. 90/90', bx + 18, by + 64);
+  const uname = profile?.username || 'Resonator';
+  const uid = profile?.uid || '--';
+  ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 34px sans-serif'; ctx.fillText(uname, bx + 18, by + 42);
+  ctx.fillStyle = '#9ca3af'; ctx.font = '16px sans-serif'; ctx.fillText('UID ' + uid, bx + 18, by + 64);
   if (elIcon) ctx.drawImage(elIcon, bx + 18, by + 76, 20, 20);
   ctx.fillStyle = elColor; ctx.font = '600 18px sans-serif'; ctx.fillText(`${element || ''} · ${d.role || ''}`, bx + (elIcon ? 44 : 18), by + 93);
+
+  // Character name badge/plaque — bottom-center of the portrait, sitting in the bottom fade
+  // drawn above. A pill same style as the Weapon panel's refinement pill (gold-tinted fill +
+  // border) rather than plain text, so it reads as a nameplate/badge rather than a caption.
+  {
+    ctx.font = 'bold 26px sans-serif';
+    const textW = ctx.measureText(name).width;
+    const padX = 24, plaqueH = 44;
+    const plaqueW = textW + padX * 2;
+    const plaqueX = bx + portraitW / 2 - plaqueW / 2, plaqueY = by + bh - 18 - plaqueH;
+    ctx.fillStyle = 'rgba(10,14,22,0.85)'; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.fill();
+    const pg = ctx.createLinearGradient(plaqueX, 0, plaqueX + plaqueW, 0);
+    pg.addColorStop(0, 'rgba(237,175,24,0.15)'); pg.addColorStop(0.5, 'rgba(237,175,24,0.35)'); pg.addColorStop(1, 'rgba(237,175,24,0.15)');
+    ctx.fillStyle = pg; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(237,175,24,0.6)'; ctx.lineWidth = 1.5; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.stroke();
+    ctx.fillStyle = '#fdf6e3'; ctx.textAlign = 'center';
+    ctx.fillText(name, bx + portraitW / 2, plaqueY + plaqueH / 2 + 9);
+    ctx.textAlign = 'left';
+  }
 
   // ── Right column: left stack = Stats / Skills / Sequence, right stack = Weapon / Echoes ──
   // (per user's follow-up: swap Weapon and Sequence from the original 2x2, and insert a new
