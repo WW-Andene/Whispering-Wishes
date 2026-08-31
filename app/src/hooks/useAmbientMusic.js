@@ -87,6 +87,20 @@ const TRACK_SRC = {
   ...Object.fromEntries(OST_TRACKS.map(([key, , filename]) => [key, `${BASE}audio/${encodeURIComponent(filename)}`])),
 };
 
+// Resolves a logScreenTrack key to its playable URL — the single source of
+// truth BootIntro.jsx's own boot-time bootstrap uses too (see its own
+// comment for the bug this fixed: it used to hardcode a `log-screen-
+// ${track}.m4a` URL pattern that only ever matched '1'/'2'/'3', so picking
+// Convene or any OST track meant the boot audio 404'd silently, and the
+// autoplay permission that only a page-load-time play() call can use was
+// spent on that failed attempt — every later retry (including this hook's
+// own mount effect noticing the wrong src and fixing it) runs without a
+// fresh user gesture, so browsers/WebViews block it, and the track never
+// starts until the user's next tap incidentally satisfies that requirement).
+export function resolveAmbientTrackSrc(key) {
+  return TRACK_SRC[key] || null;
+}
+
 // Ordered {key, label, category} list for the picker UI (ProfileTab's
 // Ambient Music section) — the original 4 keep their translated labels
 // (via t()) since those predate this list; only the OST entries are
