@@ -413,8 +413,30 @@ const CHARACTER_DATA = {
   // missing — added: alt5 uses Tragicomedy (93.7%) and Verity's Handle (85.0%), Prydwen's #2/#3
   // non-signature 5-stars; alt4 uses Aether Strike (72.6%, best 4★) and Celestial Spiral (69.3%, #2 4★);
   // alt3 uses the standard starter Gauntlets of Night.
+  // desc rewritten 2026-08-31 via wutheringwaves.fandom.com/wiki/Zani/Combat (Instructions/Forte/Resonance
+  // Chain sections) cross-checked against prydwen.gg/wuthering-waves/characters/zani "Kit" tab (both live,
+  // Chrome UA + google.com referer + jsRender, loaded 2026-08-31) — exact Forte economy, exact Inferno Mode
+  // entry/exit gate and exact cast-order/timing dependencies added; previous desc was accurate at a high level
+  // but had no real numbers. Confirmed: Redundant Energy caps at 100 (gained from Basic ATK hits, Intro Skill
+  // Immediate Execution, casting Standard Defense Protocol, and casting Pinpoint Strike); once full, Skill is
+  // replaced by Crisis Response Protocol — hold Skill to enter interruption-immune Ready Stance (Inherent Skill
+  // Fear No Pain also cuts DMG taken -40% during it), then EITHER release unhit for Targeted Action OR (if hit
+  // during the hold) it auto-parries into Forcible Riposte instead — both consume all Redundant Energy, apply a
+  // Heliacal Ember stack, grant 10 Blaze, and start Sunburst (+20% Spectro Frazzle DMG for 14s). Liberation
+  // Rekindle (125 Energy, 25s CD) grants 50 Blaze immediately, raises the Blaze cap 100→150, gives Basic ATK
+  // +25% DMG Multiplier, and opens Inferno Mode for up to 20s. At ≥30 Blaze in Inferno Mode, Basic ATK becomes
+  // the Heavy Slash Daybreak→Dawning→Nightfall Forte string (each flagged as both Heavy ATK and Spectro
+  // Frazzle DMG; Nightfall alone consumes up to 40 Blaze, +9.95%/Blaze at max level) — or, if hit while holding
+  // the pre-Daybreak Ready Stance, it auto-parries into Heavy Slash Lightsmash instead (same DMG as Dawning).
+  // Inferno Mode has a genuine forfeit-style exit gate: the 2nd Liberation "The Last Stand" (which ends Inferno
+  // Mode) only becomes castable once Blaze drops below 30 OR 8s have elapsed in Inferno Mode, whichever comes
+  // first — stalling past that point wastes Inferno uptime without adding DPS, since Last Stand doesn\'t scale
+  // with a fresh Rekindle. Zani cannot apply Spectro Frazzle herself at all: her Forte Circuit instantly
+  // converts any teammate-applied Spectro Frazzle stacks into an equal number of Heliacal Embers (60-stack cap,
+  // 6s duration each) and grants 5 Blaze per stack converted, making her fully dependent on a Frazzle-applying
+  // teammate (Phoebe by far the most common pairing).
   'Zani': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Scorched Radiance, a member of Averardo Vault\'s security team and its longtime "Best Employee" — she has plenty of plans for her free time, but for now her biggest mission is simple: clocking out on time. On-field Spectro Main DPS who converts teammates\' Spectro Frazzle into her own Heliacal Ember and Blaze the instant it lands, builds Redundant Energy through Basic Attacks and parries to unlock her enhanced Skill, then dumps everything into Inferno Mode via her Liberation for a string of massive Heavy Slash combos flagged as both Heavy Attack and Spectro Frazzle DMG — entirely dependent on a teammate applying Frazzle for her to convert.',
+    desc: 'Scorched Radiance, a member of Averardo Vault\'s security team and its longtime "Best Employee" — she has plenty of plans for her free time, but for now her biggest mission is simple: clocking out on time. On-field Spectro Main DPS who converts teammates\' Spectro Frazzle into her own Heliacal Ember and Blaze the instant it lands, builds up to 100 Redundant Energy through Basic Attacks/Skill casts to unlock a parry-capable enhanced Skill (Targeted Action / Forcible Riposte), then dumps everything into an up-to-20s Inferno Mode via her Liberation Rekindle for a Heavy Slash: Daybreak→Dawning→Nightfall combo string flagged as both Heavy Attack and Spectro Frazzle DMG — Inferno Mode\'s 2nd Liberation exit (The Last Stand) only unlocks once Blaze drops below 30 or 8s pass, whichever is first — entirely dependent on a teammate applying Frazzle for her to convert.',
     skills: ['Routine Negotiation', 'Restless Watch', 'Between Dawn and Dusk', 'There Will Be A Light'],
     ascension: { boss: 'Platinum Core', common: 'Polygon Core', specialty: 'Sword Acorus' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
@@ -2286,6 +2308,16 @@ const CHAR_BUFF_TABLE = {
   // duplicated Blazing Justice's passive as a hardcoded always-on assumption, double-counting with
   // whatever weapon.pv the calculator already applies for the actually-equipped weapon (and using stale
   // pre-fix numbers besides — Blazing Justice's real passive is ATK+12%/DEF Ignore+8%, not +24%/+16%).
+  // Re-verified 2026-08-31 vs wutheringwaves.fandom.com/wiki/Zani/Combat + prydwen.gg kit tab: outroBuffs
+  // (+20% Spectro DMG Amp/20s to marked-target hits) and Quick Response selfBuff (+12% Spectro DMG/14s on
+  // Intro cast) both confirmed exact, no change. Sunburst (Targeted Action/Forcible Riposte cast → +20%
+  // Spectro Frazzle DMG for 14s) is a real, numeric self-buff confirmed on both sources but intentionally
+  // NOT added as a stat entry here — this schema's BUFF_STAT_TAGS has no "Frazzle DMG amp" category (only
+  // elemDmg/basicDmg/heavyDmg/skillDmg/libDmg/etc., none of which correctly scope to "Frazzle-flagged hits
+  // only" the way Sunburst does), so force-fitting it to e.g. elemDmg would over-apply it to her non-Frazzle
+  // Spectro damage too. TODO: needs Phase 2 schema (a frazzleDmg buff-stat key) to represent Sunburst without
+  // being lossy. Fear No Pain (Ready Stance: -40% DMG taken) is pure mitigation, not a DPS buff — omitted here
+  // for the same reason Augusta/Carlotta's non-DPS defensive Forte effects are omitted from this table.
   'Zani': {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'To allies hitting the Heliacal Ember-marked target' }],
     libBuffs: [],
@@ -3282,6 +3314,16 @@ const SKILL_MULTIPLIERS = {
   // was listed as '68% + 132% (+5% per Blaze)' vs the real 135.20%+262.43% with +9.95% per Blaze), the
   // same halving pattern already found and fixed across Camellya/Carlotta/Roccia/Phoebe/Brant/
   // Cantarella's rows. Outro (150%, matching nanoka's Lv.1 value exactly) was already correct.
+  // Re-verified in full 2026-08-31 against wutheringwaves.fandom.com/wiki/Zani/Combat's "Attribute Scaling"
+  // tables (Lv.10/max-skill-level column, matching this file's existing convention) cross-checked against
+  // prydwen.gg/wuthering-waves/characters/zani's Kit tab — every pre-existing row (Basic ATK, Heavy ATK,
+  // Pinpoint Strike, Targeted Action, Heavy Slash Daybreak/Dawning/Nightfall, Rekindle, The Last Stand,
+  // Immediate Execution, Beacon For the Future) matched source exactly, no numeric corrections needed. One row
+  // was genuinely MISSING, not wrong: Heavy Slash - Lightsmash — a 4th Forte Heavy Slash (the parry payoff of
+  // Scorching Light's Ready Stance, cast automatically if Zani is hit before releasing into Daybreak) that
+  // both sources list as its own Forte multiplier and that Resonance Chain S6 explicitly buffs alongside
+  // Daybreak/Dawning/Nightfall — added below, sharing Dawning's exact DMG value per source (both rows are
+  // numerically identical at every level, including Lv.10's 424.07%).
   'Zani': [
     ['Basic ATK', 'Stage 1-4', '58.9% → 79.5% → 127.3% → 270.4%', 'Standard combo string.'],
     ['Heavy ATK', 'Standard', '41.1%×4', 'Charged combo hit.'],
@@ -3290,6 +3332,9 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'Heavy Slash Daybreak', '198.8%', 'First stage of her Forte-empowered Heavy ATK.'],
     ['Forte', 'Heavy Slash Dawning', '424.1%', 'Second, stronger stage of the Forte Heavy ATK.'],
     ['Forte', 'Heavy Slash Nightfall', '135.2% + 262.4% (+9.95% per Blaze)', 'Forte finisher, scales with consumed Blaze.'],
+    // added 2026-08-31 via wutheringwaves.fandom.com/wiki/Zani/Combat + prydwen.gg cross-check — was missing
+    // entirely; parry payoff of the pre-Daybreak Ready Stance, same DMG as Dawning at every level.
+    ['Forte', 'Heavy Slash Lightsmash', '424.1%', 'Parry counter cast automatically if Zani is hit during Scorching Light\'s Ready Stance, before releasing into Daybreak.'],
     ['Liberation', 'Rekindle', '318.5%', 'Ultimate that raises max Blaze and enters Inferno state.'],
     ['Liberation', 'The Last Stand', '191.1% + 1083.0%', 'Second Ultimate cast inside Inferno, scales with Blaze consumed.'],
     ['Intro', 'Immediate Execution', '24.2%×5 + 80.8%', 'Swap-in opener strike.'],
@@ -3992,20 +4037,35 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Symphonic Poem: Tonic (optional)', note: 'Optionally tap the on-screen prompt once to switch her Recital mode to Spectro Frazzle if your team needs it instead of Aero Erosion — otherwise she stays on Aero Erosion by default.' },
     { type: 'Outro', skill: 'Windcalling Tune', duration: 30, note: 'Swap out to trigger this automatically (Recital persists off-field, still pulsing Tonics on its own). Amplifies Aero Erosion DMG near the active Resonator by +100% for 30s.' },
   ],
-  // Standard DPS Rotation — sourced from Prydwen's "Gameplay and teams" tab for Zani (2026-08-18, Chrome
-  // UA + google.com referer + jsRender). Needs a Spectro Frazzle applier (Phoebe ideally) on the team —
-  // Zani converts their Frazzle into Heliacal Ember/Blaze automatically, she can't apply it herself.
+  // Standard DPS Rotation — re-verified in full 2026-08-31 against wutheringwaves.fandom.com/wiki/Zani/Combat
+  // (Instructions + Forte Details sections) cross-checked against prydwen.gg/wuthering-waves/characters/zani's
+  // Kit + "Gameplay and teams" tabs (Chrome UA + google.com referer + jsRender, both live). Needs a Spectro
+  // Frazzle applier (Phoebe ideally) on the team — Zani converts their Frazzle into Heliacal Ember/Blaze
+  // automatically, she can't apply it herself. Corrections this pass: Standard Defense Protocol's block stance
+  // duration/reduction and its "ends early if swapped off-field" forfeit condition added (was previously just
+  // "up to 2s, 100% reduction for 1 hit" with no swap-cancel note); Targeted Action/Forcible Riposte step now
+  // states the exact Sunburst payoff (+20% Spectro Frazzle DMG, 14s) both casts grant, not just "applies 1
+  // Heliacal Ember and grants Blaze"; Rekindle step now states its exact +25% Basic ATK DMG Multiplier buff
+  // (source: fandom's "Basic Attack Multiplier Increase 25%" Forte attribute) which was previously omitted
+  // entirely; a parry-branch Heavy Slash: Lightsmash step added (was missing — see SKILL_MULTIPLIERS note
+  // above) as an alternative to Daybreak when Zani is hit during the pre-Daybreak Ready Stance; The Last Stand
+  // step's forfeit-window wording tightened to make clear the 8s/Blaze<30 gate is an OR, not an AND. Per-hit
+  // Blaze costs for Daybreak (10) and Dawning (20) are NOT independently confirmed on either source page (only
+  // Nightfall's "up to 40" is explicit primary-source text) — flagged TODO: verify rather than asserted as fact.
   'Zani': [
-    { type: 'Intro', skill: 'Immediate Execution', note: 'Swap into her — fires automatically, builds Redundant Energy.' },
-    { type: 'Skill', skill: 'Standard Defense Protocol', note: 'Press Skill — a small hit that enters a block stance for up to 2s (100% DMG reduction for 1 hit).' },
-    { type: 'Basic ATK', skill: 'Stage 3', note: 'Press Basic Attack to exit the block stance — Stagnates the target and restores 10 Redundant Energy.' },
-    { type: 'Skill', skill: 'Targeted Action / Pinpoint Strike', note: 'Once Redundant Energy hits 100/100, HOLD Skill (Crisis Response Protocol) — if unhit, releasing consumes all Redundant Energy for Targeted Action; if an enemy attacks during the hold, it instead auto-triggers Forcible Riposte (a parry). Either way, applies 1 Heliacal Ember and grants Blaze.' },
-    { type: 'Liberation', skill: 'Rekindle', note: 'Press Liberation — deals a hit and enters Inferno Mode, raising max Blaze from 100 to 150 and granting 50 Blaze immediately.' },
-    { type: 'Forte', skill: 'Heavy Slash: Daybreak', note: 'Now in Inferno Mode, press Basic Attack (auto-replaced) — consumes 10 Blaze, counted as Heavy ATK + Spectro Frazzle DMG.' },
-    { type: 'Forte', skill: 'Heavy Slash: Dawning', note: 'Press Basic Attack again — auto-chains, consuming 20 more Blaze.' },
-    { type: 'Forte', skill: 'Heavy Slash: Nightfall', note: 'Press Basic Attack once more — consumes up to 40 Blaze, each point spent adding more DMG Multiplier (this is her hardest-hitting single attack).' },
-    { type: 'Forte', skill: 'Heavy Slash: Daybreak → Dawning → Nightfall', note: 'Repeat the full 3-hit string a 2nd time — with allies feeding enough Spectro Frazzle, Blaze should refill for another full pass (140 Blaze total spent per pass).' },
-    { type: 'Liberation', skill: 'The Last Stand', duration: 8, note: 'Once Blaze drops below 30 (or 8s have passed in Inferno Mode), press Liberation — her 2nd Ultimate, a big hit that ends Inferno Mode. Note it doesn\'t benefit from Heavy/Frazzle DMG buffs the way Nightfall does, so only use it once Blaze is too low to justify another full string.' },
+    { type: 'Intro', skill: 'Immediate Execution', note: 'Swap into her — fires automatically, builds Redundant Energy, and (Inherent Skill Quick Response) grants Zani +12% Spectro DMG Bonus for 14s.' },
+    { type: 'Skill', skill: 'Standard Defense Protocol', note: 'Press Skill — a small hit that enters a block stance for up to 2s. This state ends EARLY (forfeiting the follow-up window below) if Zani is swapped off-field before it resolves. If hit while blocking, that hit is reduced 100% and Zani auto-casts Pinpoint Strike (a bonus hit) instead of needing Basic Attack to exit.' },
+    { type: 'Basic ATK', skill: 'Stage 3', note: 'Press Basic Attack to exit the block stance manually — Stagnates the target and restores 10 Redundant Energy.' },
+    { type: 'Skill', skill: 'Targeted Action / Forcible Riposte', note: 'Once Redundant Energy hits 100/100 (gained from Basic ATK hits, Intro Skill, Standard Defense Protocol, and Pinpoint Strike — none while in Inferno Mode), HOLD Skill (Crisis Response Protocol) to enter interruption-immune Ready Stance — if unhit, releasing consumes all Redundant Energy for Targeted Action; if an enemy attacks during the hold, it instead auto-triggers Forcible Riposte (a parry) for the same cost. Either way: applies 1 Heliacal Ember stack, grants 10 Blaze, and starts Sunburst — +20% Spectro Frazzle DMG on Zani for 14s.' },
+    { type: 'Liberation', skill: 'Rekindle', note: 'Press Liberation — deals a hit and enters Inferno Mode (up to 20s), raising max Blaze from 100 to 150, granting 50 Blaze immediately, and giving Basic ATK a flat +25% DMG Multiplier for the duration.' },
+    // TODO: verify — neither fandom.com/wiki/Zani/Combat nor prydwen.gg states an exact Blaze cost for
+    // Daybreak or Dawning individually (only Nightfall's "up to 40 Blaze" is explicit primary-source text);
+    // 10/20 here is the commonly-cited community rotation breakdown, not independently confirmed.
+    { type: 'Forte', skill: 'Heavy Slash: Daybreak', note: 'Now in Inferno Mode with ≥30 Blaze, press Basic Attack (auto-replaced) — counted as Heavy ATK + Spectro Frazzle DMG. If Zani is instead hit during this pre-release Ready Stance, it auto-parries into Heavy Slash: Lightsmash (same DMG as Dawning) rather than continuing the Daybreak→Dawning→Nightfall string.' },
+    { type: 'Forte', skill: 'Heavy Slash: Dawning', note: 'Press Basic Attack again — auto-chains at >30 remaining Blaze.' },
+    { type: 'Forte', skill: 'Heavy Slash: Nightfall', note: 'Press Basic Attack once more — consumes up to 40 Blaze, each point adding +9.95% DMG Multiplier (max level); this is her hardest-hitting single attack. If Nightfall Stage 1 gets interrupted, pressing Basic Attack again casts Nightfall Stage 2 instead of restarting the string.' },
+    { type: 'Forte', skill: 'Heavy Slash: Daybreak → Dawning → Nightfall', note: 'Repeat the full 3-hit string a 2nd time — with allies feeding enough Spectro Frazzle, Blaze should refill for another full pass.' },
+    { type: 'Liberation', skill: 'The Last Stand', duration: 8, note: 'Press Liberation once EITHER Blaze drops below 30 OR 8s have passed since entering Inferno Mode (whichever happens first — not both) — her 2nd Ultimate, ending Inferno Mode with a big hit. It doesn\'t benefit from Heavy/Frazzle DMG buffs the way Nightfall does, so only use it once Blaze is too low to justify another full string; stalling past the 8s gate just wastes Inferno Mode uptime for no extra DPS.' },
     { type: 'Outro', skill: 'Beacon For the Future', duration: 20, note: 'Swap out to trigger this automatically — consumes all Heliacal Ember stacks on the target for a scaling hit (+10% DMG per stack, counted as Spectro Frazzle DMG), and grants every other teammate hitting that marked target +20% Spectro DMG Amp for 20s.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Xiangli Yao (2026-08-18,
@@ -4451,6 +4511,24 @@ const RESONANCE_CHAIN_DATA = {
   // s2 +20% Crit Rate + Targeted Action/Forcible Riposte DMG Mult +80% (was critRate:20 + unfounded totalMult:25); s3 The Last Stand DMG Mult scales up to +1200% with full Blaze consumption,
   // used a conservative rotation-representative libDmg:200 instead of the theoretical max (was totalMult:15, no basis); s4 team +20% ATK on Intro cast confirmed correct;
   // s5 Rekindle DMG Mult +120% (was totalMult:40, wrong category); s6 Heavy Slash Daybreak/Dawning/Nightfall/Lightsmash Mult +40% (was totalMult:40 + duplicate heavyDmg:40, consolidated).
+  // Re-verified node-by-node 2026-08-31 via wutheringwaves.fandom.com/wiki/Zani/Combat's "Resonance Chain"
+  // section, cross-checked against prydwen.gg/wuthering-waves/characters/zani's "Resonance Chain (Dupes)" tab
+  // (both live, Chrome UA + google.com referer + jsRender). All six 2026-08-16 values confirmed exact against
+  // primary source, no numeric changes this pass — but two genuinely stateful/threshold effects the flat
+  // {stat: value} schema can't fully capture were found and are left undone rather than force-fit:
+  // - s3: real effect is "+8% Last Stand DMG Mult PER Blaze consumed in Inferno Mode, maxed at +1200%" — a
+  //   per-unit-of-a-consumable-resource scaling stat this schema has no field for (libDmg:200 stays as the
+  //   documented conservative rotation-representative estimate, not the true 0-1200% range).
+  //   TODO: needs Phase 2 schema (a per-resource-point scaling multiplier) to represent s3 exactly.
+  // - s6 also grants two non-DPS utility effects on top of the confirmed +40% Heavy Slash DMG Mult: (a) once
+  //   per Inferno Mode, if Blaze is below 70 when this would matter, instantly restore it to 70, and (b) for
+  //   8s after entering Inferno Mode, Zani survives an otherwise-fatal hit at 1 HP. Both are zeroed/omitted
+  //   from any DPS field per the Phrolova/Brant precedent (pure survivability, no DMG component) — heavyDmg:40
+  //   above already fully represents s6's only damage-relevant effect.
+  // Note: fandom's own S3 text refers to the Liberation by the name "Judgement Day" where prydwen and the
+  // skill's own in-game name is "The Last Stand" — treated as a stale/inconsistent fandom translation label
+  // for the same skill (prydwen and the Forte/Liberation section of fandom's own page agree it's The Last
+  // Stand), not a separate mechanic; does not affect the stored value.
   // Phoebe S1: Liberation mult increase ≈ libDmg 15. S3: Heavy ATK+40%
   'Phoebe':       { s1: { libDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
   // Phrolova R-chain re-verified 2026-08-31 verbatim against wutheringwaves.fandom.com/wiki/Phrolova/Combat
