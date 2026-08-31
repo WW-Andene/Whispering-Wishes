@@ -280,6 +280,28 @@ public class MainActivity extends BridgeActivity {
         if (webView != null) {
             webView.addJavascriptInterface(new NativeHapticsBridge(webView), "AndroidHaptics");
             webView.addJavascriptInterface(new NativeBootBridge(this), "AndroidBoot");
+            // The ambient-track unmute/play-retry fallback in useAmbientMusic.js
+            // (armUnmuteOnFirstInteraction) listens for pointerdown/keydown on
+            // the page — but bootPosterView (above) sits ON TOP of the WebView
+            // as a real native View for the entire boot phase, and can consume
+            // a tap before it ever reaches the WebView's DOM at all. On a
+            // device's genuinely first-ever cold start, the WebView engine
+            // itself can take noticeably longer to spin up, so this poster
+            // stays up longer and is far more likely to eat an impatient
+            // user's first tap — exactly the case reported as "silent on the
+            // very first open, fine every time after" (the poster dismisses
+            // almost instantly on a warm WebView, so this window barely
+            // exists then). Forwarding the touch straight into JS here works
+            // regardless of whether it ever reaches the WebView's own DOM.
+            // Returns false so the event still passes through normally
+            // afterward (this never blocks whatever real behavior the tap
+            // was meant to trigger).
+            bootPosterView.setOnTouchListener((v, event) -> {
+                if (event.getActionMasked() == android.view.MotionEvent.ACTION_DOWN) {
+                    webView.evaluateJavascript("window.__wwUnmuteAmbient && window.__wwUnmuteAmbient();", null);
+                }
+                return false;
+            });
         }
     }
 

@@ -141,27 +141,40 @@ export function suspendAmbientMusic() {
 // pointerdown/keydown happens anywhere in the app, unmute directly inside
 // that handler — a genuine user gesture no autoplay policy variant refuses.
 // A no-op if the .then() below already succeeded first.
+// Also exposed as window.__wwUnmuteAmbient — MainActivity.java's boot
+// poster (a native ImageView sitting ON TOP of the WebView for the entire
+// boot phase) calls this directly via evaluateJavascript on its own first
+// touch, since a tap landing on that native view never generates a DOM
+// pointerdown/keydown event at all — the pointerdown/keydown listeners
+// below only catch a tap that actually reaches the WebView's page content.
+// On a device's genuinely first-ever cold start (the one case this whole
+// file exists for) the poster can stay up long enough for an impatient
+// user's first tap to land on it instead of the page underneath, so the
+// DOM-only listeners alone weren't reaching this same logic.
+function unmuteAndRetryAmbient() {
+  if (!sharedAmbientAudio) return;
+  sharedAmbientAudio.muted = false;
+  // The .then()-based unmute in the effect below assumes play() itself
+  // already succeeded (just muted) and only the unmute got refused — but
+  // on a genuinely first-ever cold boot the ENTIRE play() call can be the
+  // one that's blocked, not just the unmute, leaving .paused true forever.
+  // That left this handler doing nothing observable: flipping .muted on a
+  // track that was never actually playing. A real tap/keydown (or the
+  // native forward above) carries trusted user activation, so retrying
+  // play() here — unconditionally, whenever the track isn't already
+  // playing — is never refused.
+  if (sharedAmbientAudio.paused) {
+    sharedAmbientAudio.play().catch(() => {});
+  }
+}
+window.__wwUnmuteAmbient = unmuteAndRetryAmbient;
+
 let unmuteArmed = false;
 export function armUnmuteOnFirstInteraction() {
   if (unmuteArmed) return;
   unmuteArmed = true;
-  const unmute = () => {
-    if (!sharedAmbientAudio) return;
-    sharedAmbientAudio.muted = false;
-    // The .then()-based unmute above assumes play() itself already
-    // succeeded (just muted) and only the unmute got refused — but on a
-    // genuinely first-ever cold boot the ENTIRE play() call can be the one
-    // that's blocked, not just the unmute, leaving .paused true forever.
-    // That left this handler doing nothing observable: flipping .muted on
-    // a track that was never actually playing. A real tap/keydown is a
-    // trusted user gesture, so retrying play() here — unconditionally,
-    // whenever the track isn't already playing — is never refused.
-    if (sharedAmbientAudio.paused) {
-      sharedAmbientAudio.play().catch(() => {});
-    }
-  };
-  window.addEventListener('pointerdown', unmute, { capture: true, once: true });
-  window.addEventListener('keydown', unmute, { capture: true, once: true });
+  window.addEventListener('pointerdown', unmuteAndRetryAmbient, { capture: true, once: true });
+  window.addEventListener('keydown', unmuteAndRetryAmbient, { capture: true, once: true });
 }
 
 // Re-checks the current settings itself rather than blindly playing — the
