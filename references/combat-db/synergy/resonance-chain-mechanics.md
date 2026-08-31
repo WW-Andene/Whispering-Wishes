@@ -12,12 +12,31 @@ is **not per-character** — it underpins every character's `kit.skills.intro`/`
   in `SOURCES_STATUS.md`.
 - `wutheringwaves.fandom.com/wiki/Resonance_Chain` — reachable this session but the article body itself
   is a thin stub (unlocking method + a link to a separate "List" sub-page); does not contain swap-cancel
-  or energy mechanics detail. Fetched 2026-08-31, confirmed thin rather than assumed.
+  or energy mechanics detail. Fetched 2026-08-31, confirmed thin rather than assumed. Re-fetched again in
+  the cross-check pass (2026-08-31, second session) with the same result — confirms the "maximum of 6
+  Sequence Nodes" cap explicitly in the article's opening line, and confirms the three unlock methods
+  (dupe pull, Waveband purchase from the Aftershocked Coral Store, or story unlock for Rover) verbatim.
+- `wutheringwaves.fandom.com/wiki/Outro_Skill` — **fetched successfully in the cross-check pass**
+  (2026-08-31, second session; 43s load time, `jsRender + waitMs:13000` as documented). Unlike the
+  `Resonance_Chain`/`Combat` pages, this one rendered its full content: an exact-text list of **all 57
+  released characters' Outro Skills** (skill name, character, full effect text with exact %/duration
+  numbers) plus a two-paragraph Tutorial section confirming the Concerto Energy → Outro → Intro chain
+  described in §2–§3 below in the game's own words ("Switch your Resonator when Concerto Energy is full
+  to trigger the exiting Resonator's Outro Skill, and consume all the Concerto Energy to trigger the
+  incoming Resonator's Intro Skill"). Used to cross-check all 57 characters' `intro-outro-chains.json`
+  entries (see that file's `crossCheckedSources`) and to confirm the mechanics claims in this file.
+- `wutheringwaves.fandom.com/wiki/Coordinated_Attack` — fetched successfully in the cross-check pass.
+  Confirms the mechanic's definition ("off-field Resonators automatically execute supplemental attacks
+  alongside the on-field Resonator") and gives the **official closed list of the Coordinated-Attack
+  combat-role tag**: Baizhi, Cantarella, Mortefi, Verina, Yinlin, Yuanwu, Zhezhi (7 characters, patch
+  2.2 cutoff matches the "few new supporting kits since patch 2.2" framing already in §6 below).
 - `wutheringwaves.fandom.com/wiki/Combat` — attempted this session; the JS-rendered fetch returned no
   usable text extract within the time budget (Fandom's Cloudflare challenge + client-side render is the
   slowest of the three sources tried in this whole combat-db effort, consistent with the "very slow"
   finding already logged in `SOURCES_STATUS.md`'s Fandom section). Not used as a source for this file —
-  flagged here rather than silently worked around.
+  flagged here rather than silently worked around. Retried in the cross-check pass with the same
+  `Outro_Skill`/`Coordinated_Attack` technique (which worked on those two pages) — still did not return
+  in the 60s tool budget; treated as consistently unreachable in this session rather than retried further.
 - `app/src/features/teams/calcEngine.js` — read directly (not modified) for the constants/comments that
   document how this repo's own damage engine already numerically models Frazzle, Erosion, Tune Break,
   and ER breakpoints. Cited inline as `calcEngine.js:<line-range concept>`.
@@ -114,6 +133,15 @@ build their own Forte gauge passively without ever being swapped in. Per Prydwen
 early team-building meta but has received few new supporting kits since patch 2.2, making it a
 comparatively dated (though still functional) team-building pattern rather than the current cutting edge
 — see `jinhsi.json`'s `communityNotes` for one documented example of this exact framing.
+
+**Cross-check (2026-08-31):** `wutheringwaves.fandom.com/wiki/Coordinated_Attack` gives the official,
+closed list of characters actually tagged with the Coordinated Attack combat role: **Baizhi, Cantarella,
+Mortefi, Verina, Yinlin, Yuanwu, Zhezhi** — all released 1.0–2.2, confirming both the "dated but
+functional" framing above and that no character released after patch 2.2 carries this role tag as of
+2026-08-31. Youhu's Outro (`Timeless Classics`, "the incoming Resonator's Coordinated Attack DMG
+Amplified by 100% for 28s" — see `intro-outro-chains.json`) *buffs* Coordinated Attack damage without
+Youhu herself being tagged with the role, i.e. she is a CA-team enabler, not a CA-role character — worth
+distinguishing when reading `buff-debuff-taxonomy.json`'s CA-related rows.
 
 ## 7. Negative Status DOTs & Tune Break — the debuff side of rotation
 

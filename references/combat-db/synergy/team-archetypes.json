@@ -1,12 +1,12 @@
 {
-  "$note": "Named team archetypes, sourced from Prydwen's Team Tier List (Tower of Adversity view) archetype labels \u2014 each row on that list names the archetype as '<Character> <Archetype Shape>' (e.g. 'Jinhsi Hypercarry', 'Aemeath Mono Fusion'). The tier-list page itself did not render member-composition text in this session's JS extraction (icon-only team rows) \u2014 example 3-member comps below are instead pulled from that lead character's own characters/<slug>.json 'teams' section (same Prydwen build-page source, cross-referenced by slug), which is more detailed anyway (named sub-variants, budget alternatives, notes on why a slot works).",
+  "$note": "Named team archetypes, sourced from Prydwen's Team Tier List (Tower of Adversity view) archetype labels — each row on that list names the archetype as '<Character> <Archetype Shape>' (e.g. 'Jinhsi Hypercarry', 'Aemeath Mono Fusion'). The tier-list page itself did not render member-composition text in this session's JS extraction (icon-only team rows) — example 3-member comps below are instead pulled from that lead character's own characters/<slug>.json 'teams' section (same Prydwen build-page source, cross-referenced by slug), which is more detailed anyway (named sub-variants, budget alternatives, notes on why a slot works).",
   "toaTierListFetched": "2026-08-31, patch 3.4",
   "toaTierListUrl": "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
   "shapeDefinitions": {
     "Hypercarry": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
     "Dual DPS": "Two damage-dealing characters alternate on-field time roughly evenly (via quickswap or via one triggering the other's burst window), each buffing or debuff-setting for the other through their own Outro/Intro/Liberation, rather than one pure DPS being fed by two pure supports.",
-    "Mono": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
-    "Rupture": "Built around the element-agnostic Tune Break/Tune Rupture stagger mechanic (see resonance-chain-mechanics.md \u00a77): the team's rotation is sequenced to keep breaking the enemy's Tune gauge for repeated Rupture burst damage and the Interfered vulnerability window, rather than around a single character's Forte nuke.",
+    "Mono": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly — trades team-building flexibility for stacking depth on a single damage type.",
+    "Rupture": "Built around the element-agnostic Tune Break/Tune Rupture stagger mechanic (see resonance-chain-mechanics.md §7): the team's rotation is sequenced to keep breaking the enemy's Tune gauge for repeated Rupture burst damage and the Interfered vulnerability window, rather than around a single character's Forte nuke.",
     "Echo": "Named for Phrolova's own kit terminology (her Resonance Liberation/Forte mechanic is explicitly called an 'Echo'-branded stance in her kit); the archetype centers her self-sufficient on-field loop rather than a hypercarry buffer chain.",
     "Fusion Burst": "Named for Aemeath's kit-specific 'Fusion Burst' finisher mechanic; the team is sequenced to detonate her burst payoff rather than a generic elemental-buff hypercarry loop."
   },
@@ -63,7 +63,7 @@
       "toaTier": "T0",
       "coreDamageType": "Fusion",
       "shape": "Rupture",
-      "shapeExplanation": "Built around the element-agnostic Tune Break/Tune Rupture stagger mechanic (see resonance-chain-mechanics.md \u00a77): the team's rotation is sequenced to keep breaking the enemy's Tune gauge for repeated Rupture burst damage and the Interfered vulnerability window, rather than around a single character's Forte nuke.",
+      "shapeExplanation": "Built around the element-agnostic Tune Break/Tune Rupture stagger mechanic (see resonance-chain-mechanics.md §7): the team's rotation is sequenced to keep breaking the enemy's Tune gauge for repeated Rupture burst damage and the Interfered vulnerability window, rather than around a single character's Forte nuke.",
       "leadCharacter": {
         "slug": "aemeath",
         "name": "Aemeath",
@@ -291,7 +291,7 @@
       "toaTier": "T0.5",
       "coreDamageType": "Fusion",
       "shape": "Mono",
-      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
+      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly — trades team-building flexibility for stacking depth on a single damage type.",
       "leadCharacter": {
         "slug": "aemeath",
         "name": "Aemeath",
@@ -637,7 +637,7 @@
       "toaTier": "T1.5",
       "coreDamageType": "Aero",
       "shape": "Mono",
-      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
+      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly — trades team-building flexibility for stacking depth on a single damage type.",
       "leadCharacter": {
         "slug": "jiyan",
         "name": "Jiyan",
@@ -752,7 +752,7 @@
       "toaTier": "T1.5",
       "coreDamageType": "Fusion",
       "shape": "Mono",
-      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
+      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly — trades team-building flexibility for stacking depth on a single damage type.",
       "leadCharacter": {
         "slug": "brant",
         "name": "Brant",
@@ -1209,7 +1209,7 @@
       "toaTier": "T4",
       "coreDamageType": "Fusion",
       "shape": "Mono",
-      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
+      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly — trades team-building flexibility for stacking depth on a single damage type.",
       "leadCharacter": {
         "slug": "chixia",
         "name": "Chixia",
@@ -1243,5 +1243,10 @@
         "https://www.prydwen.gg/wuthering-waves/characters/chixia"
       ]
     }
-  ]
+  ],
+  "communityCrossCheckAttempt": {
+    "reddit": "old.reddit.com/r/Wuthering_Waves — BLOCKED in this pass. Both an unauthenticated fetch (redirected to /login) and a jsRender+stealth fetch (with Google referer, Chrome UA) returned Reddit's own network-policy block page ('whoa there, pardner!... Your request has been blocked due to a network policy'), consistent across two different search URLs tried. Not a transient failure — Reddit is actively filtering this fetch path. No per-archetype communityCrossCheck notes were added from Reddit as a result; the task's Prydwen-sourced 'Meta Position & Conclusion'/community-sentiment summaries already present in each characters/<slug>.json remain the only community-sentiment proxy in this combat-db.",
+    "encoreMoe": "https://encore.moe/ — REACHABLE (jsRender, ~15-40s/page). Has its own Characters DB sharing the same numeric-ID scheme as nanoka.cc (e.g. Jinhsi = /character/1304) and per-character Overview/Skills/Stats/Resonance Chain tabs confirmed present via a spot-check of Jinhsi's page. Does not appear to have a dedicated team-synergy/tier-list section on its main nav (Tower of Adversity/Endstate Matrix/Whimpering Wastes links are damage-ranking leaderboards, not archetype/team-comp pages) — no team-archetypes cross-check data found. Not deep-scraped for per-character kit numbers in this pass because wutheringwaves.fandom.com/wiki/Outro_Skill already yielded exact, official-text numbers for all 57 released characters' Outro effects (see intro-outro-chains.json's crossCheckedSources), making a redundant encore.moe pass lower priority given the time budget.",
+    "wuwatracker": "https://wuwatracker.com/ — REACHABLE (jsRender, ~40s). Front page is a pull/pity tracker and news-article aggregator (guides, opinion pieces) rather than a structured character/team database with its own synergy data model — no team-archetypes or tier-list structured data found on the front page in this pass. A deeper crawl into its 'Wiki'/'Tools' nav sections was not attempted given the time budget after Fandom's Outro Skill page and nanoka's ID map already delivered the highest-value cross-check data for this task."
+  }
 }
