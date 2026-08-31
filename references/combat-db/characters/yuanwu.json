@@ -1,0 +1,33 @@
+{
+  "name": "Yuanwu",
+  "slug": "yuanwu",
+  "rarity": 4,
+  "element": "Electro",
+  "weaponType": "Gauntlets",
+  "role": ["Support"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yuanwu", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Yuanwu", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Support: T4 Tower of Adversity, T4 Whimpering Wastes" },
+  "kit": {
+    "intro": "Free 4-star Electro Gauntlets Support with the shortest rotation in the game and zero investment requirement, but almost no buffing kit beyond team-wide Interruption Resistance and Vibration Strength (stagger) damage. Sole niche: highest-uptime Coordinated Attack generator for Jinhsi's Forte stacks.",
+    "skills": {
+      "normalAttack": "Basic Attack - Leihuangquan (5 hits), Electro.",
+      "resonanceSkill": "Thunder Wedge - summons a field dealing Electro DMG, launches Coordinated Attacks on ally hits (builds Forte off-field).",
+      "forte": "Unassuming Blade - at full Readiness (max 100), Rumbling Spark detonates the Thunder Wedge and enters Lightning Infused (enhanced Basic/Heavy/Dodge Counter, team-wide Interruption Resistance on Ultimate).",
+      "liberation": "Blazing Might - grants Lightning Infused (Anti-interruption) to nearby team for 10s + Electro hit, detonates Thunder Wedge.",
+      "intro": "Thunder Bombardment - Electro strike.",
+      "outro": "Lightning Manipulation - Electro field dealing heavy Vibration Strength (stagger) damage."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Verity's Handle (101.32%, Xiangli Yao sig)", "Amity Accord (100%, best DEF-scaling)", "Stonard (93.03%)", "Guardian Gauntlets (90.36%, best F2P DEF-scaling)", "Originite: Type IV (86.7%, support-build - enables Rejuvenating Glow)", "Gauntlets of Voyager (85.91%)", "Abyss Surges (85.01%)"],
+    "echoSet": ["Rejuvenating Glow (best, with Originite: Type IV weapon for self-healing)", "Moonlit Clouds (alt, 22.5% ATK to next character on Outro)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Electro DMG; Electro DMG > DEF%", "cost1": "DEF%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "DEF%", "Flat DEF"]
+  },
+  "teams": [
+    { "name": "Jinhsi Team", "members": ["Yuanwu", "Jinhsi", "Verina/The Shorekeeper (on Moonlit Clouds)"], "notes": "Only real meta use case - highest Coordinated Attack frequency of any character for filling Jinhsi's Forte, at essentially zero investment (level 1, 3-star weapon, level 0 Echoes still works)." }
+  ],
+  "rotation": "No fixed rotation - place Thunder Wedge, detonate via Ultimate or Forte Skill, replace Wedge, repeat. Priority: Echo -> Intro (if available) -> Skill: place Wedge -> Ultimate (detonate) -> Forte Skill: Rumbling Spark -> Skill: place Wedge -> Outro.",
+  "communityNotes": "Prydwen: the easiest character in the game to play (basic, skill, echo, swap off) with zero build requirements and team-wide anti-interruption utility, but provides almost no damage buffs and is usable in exactly one team (Jinhsi) as a free, low-effort Forte-stack generator.",
+  "lastUpdated": "2026-08-31"
+}

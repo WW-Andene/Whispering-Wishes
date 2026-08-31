@@ -1,0 +1,35 @@
+{
+  "name": "Youhu",
+  "slug": "youhu",
+  "rarity": 4,
+  "element": "Glacio",
+  "weaponType": "Gauntlets",
+  "role": ["Support", "Healer"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/youhu", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Youhu", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Support: T4 Tower of Adversity, T4 Whimpering Wastes" },
+  "kit": {
+    "intro": "4-star Glacio Gauntlets Support with a unique niche: 100% Coordinated Attack DMG Amplification on Outro (the single biggest damage type amplifier in the game), plus full-team healing. Randomized 'Antique' (Chime/Ruyi/Ding/Mask) draw system enhancing her Basic Attacks, building toward a 4-Auspice Forte finisher (Poetic Essence).",
+    "skills": {
+      "normalAttack": "Basic Attack - Frosty Punches (4 hits) / Antique Appraisal (enhanced, consumes drawn Antique).",
+      "resonanceSkill": "Scroll Divination - Glacio hit + party heal + Lucky Draw (random Antique).",
+      "forte": "Poetic Essence - at 4 Auspices, hold Basic Attack for a Glacio AoE heal-hit with bonus effects (Antithesis/Double Pun/Triplet/Perfect Rhyme) based on Auspice combination.",
+      "liberation": "Fortune's Favor - Glacio AoE hit, lets player pick a specific Antique from 4 choices.",
+      "intro": "Scroll of Wonders - Lucky Draw (random Antique).",
+      "outro": "Timeless Classics - 100% Coordinated Attack DMG Amplification to next character for 28s."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Marcato (best - massive Energy Generation + Concerto)", "Gauntlets#21D (2nd best)", "Abyss Surges (3rd)", "Celestial Spiral (4th, flat Resonance Energy)"],
+    "echoSet": ["Rejuvenating Glow (best - 15% team ATK on heal)", "Moonlit Clouds (special, 22.5% ATK to next character on Outro)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Energy Regen / Glacio DMG%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK", "Skill DMG%"]
+  },
+  "teams": [
+    { "name": "Best Team (Yinlin)", "members": ["Youhu", "Yinlin", "any"], "notes": "Yinlin has the highest Coordinated Attack DMG of any character, the most natural pairing." },
+    { "name": "Zhezhi Team", "members": ["Youhu", "Zhezhi", "any"], "notes": "Strong Coordinated Attack synergy." },
+    { "name": "Mortefi Team", "members": ["Youhu", "Mortefi", "any"], "notes": "Viable budget pairing." }
+  ],
+  "rotation": "Rotation 1 (loops indefinitely): Intro -> Antique Appraisal (instant cancel) -> Ultimate -> Antique Appraisal -> Basic 1-4 -> Skill -> Antique Appraisal -> Outro. Rotation 2 (with 2-4 starting Auspice) swaps in Poetic Essence for a faster loop.",
+  "communityNotes": "Prydwen: solid full-team healer with a large but very narrow niche buff (Coordinated Attack DMG), only useful with the small pool of Coordinated Attack-heavy characters (Yinlin, Zhezhi, Mortefi); slower attack animations and Concerto-hungry rotation limit her general appeal versus Verina/Shorekeeper.",
+  "lastUpdated": "2026-08-31"
+}

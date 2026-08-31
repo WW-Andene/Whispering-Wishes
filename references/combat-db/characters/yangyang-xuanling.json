@@ -1,0 +1,34 @@
+{
+  "name": "Yangyang: Xuanling",
+  "slug": "yangyang-xuanling",
+  "rarity": 5,
+  "element": "Havoc",
+  "weaponType": "Sword",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Yangyang", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T0 Tower of Adversity, T1 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Havoc Sword Main DPS (Yangyang's alternate awakened form), one of the strongest DPS in the game across all endgame modes. Applies and maintains Havoc Bane constantly, alternating Azure/Feather sword stances, self-buffing CRIT DMG heavily (500%+ achievable).",
+    "skills": {
+      "normalAttack": "Basic Attack - Azure Sword Stance / Feather Sword Stance (4 hits each), Stage 4 applies Havoc Bane.",
+      "resonanceSkill": "Feather's Edge - switches stance; enhanced Sword Stance Flow (Azure/Feather) restores 100 Melody + 1 Azure Plume when Melody is depleted.",
+      "forte": "The Way of Ten Thousand Voices - governs Melody (max 100), Azure Plume (max 2) feeding Heavy Attack: Azure/Feather Sword Stance and Mid-air Attack: Feather Fall, plus Feathered Oath (Havoc Bane-triggered CRIT DMG stacking, up to 150%).",
+      "liberation": "Hush of a Thousand Voices - consumes all Melody, Heavy-Attack-type Havoc hit, summons Shadow of Xuanling on next Sword Stance Flow cast.",
+      "intro": "Skybound Feather - Havoc hit + Havoc Bane, restores Azure Plume.",
+      "outro": "As the Wind Wills - 300% ATK Havoc hit + grants other Havoc Bane appliers +20% Havoc DMG Amplification after their next Havoc Bane application."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Azure Oath (signature, 100%)", "Emerald Sentence (87.8%)", "Red Spring (80.8%)", "Everbright Polestar (80.5%)", "Frostburn / Emerald of Genesis (80.3%, best permanent)", "Blazing Brilliance (79.9%)", "Lumingloss (73.7%, best 4-star, BP)", "Fables of Wisdom (best gacha-free)"],
+    "echoSet": ["Song of Feathered Trace (100%, best - 20% CRIT Rate + 35% Heavy DMG Bonus for Havoc Bane appliers)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Havoc DMG; ATK% = Havoc DMG", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK% = Heavy DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Yangyang: Xuanling", "Chisa", "Suisui"], "notes": "Chisa is her best 2nd-slot partner (Negative Status buffing + Havoc Bane application), Suisui is the strongest 3rd slot for Havoc Bane consumers." },
+    { "name": "Alternative Premium Teams", "members": ["Yangyang: Xuanling", "Rebecca/Lynae/Phrolova/Iuno/Mortefi", "Mornye/Verina"], "notes": "Phrolova makes an excellent Whimpering Wastes Dual DPS pairing." }
+  ],
+  "rotation": "Intro -> Basic: Azure 1-4 -> Skill (switch to Feather) -> Heavy: Feather -> Mid-air: Feather Fall -> Basic: Havoc in Bloom 1,2,3 (cancel via Ultimate) -> Ultimate -> Skill (switch to Azure) -> Heavy: Azure -> Outro.",
+  "communityNotes": "Prydwen: one of the best DPS characters ever released - excels in every endgame mode (single-target, AoE, single-wave, multi-wave), F2P-friendly via free Rebecca, short rotation for the damage dealt. Her extreme self CRIT buffing makes Shorekeeper's CRIT buffs redundant, narrowing her premium 3rd-slot options somewhat.",
+  "lastUpdated": "2026-08-31"
+}
