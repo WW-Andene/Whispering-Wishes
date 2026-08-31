@@ -208,6 +208,18 @@ export function useAmbientMusic(visualSettings) {
     if (audio.src !== src) {
       audio.src = src;
     }
-    audio.play().catch(() => {});
+    // This effect runs essentially immediately on React mount (App.jsx
+    // calls useAmbientMusic() unconditionally near the top), well before
+    // BootIntro.jsx's own video-gated startAmbient() ever fires — so on a
+    // genuinely first-ever app open, THIS is the play() call that actually
+    // wins the race and claims window.__bootAmbientStarted, leaving
+    // BootIntro's mute/unmute workaround dead code (its own `if
+    // (window.__bootAmbientStarted) return;` guard bails immediately).
+    // A plain unmuted play() here hits the exact same Chromium Media
+    // Engagement Index block BootIntro.jsx's comment documents (blocked on
+    // an origin's first-ever play, silently swallowed by the .catch()
+    // below), so it needs the identical mute-then-unmute-on-resolve trick.
+    audio.muted = true;
+    audio.play().then(() => { audio.muted = false; }).catch(() => {});
   }, [enabled, track]);
 }
