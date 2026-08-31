@@ -83,8 +83,14 @@ jobs:
       # comment) so the in-app update check (src/utils/appUpdate.js) can compare the
       # running app's own build number against the GitHub release published below —
       # tag_name apk-<run number> — with no separate version file to keep in sync.
+      # VITE_GOOGLE_CLIENT_ID_NATIVE also needs to reach THIS step, not just "Build native web
+      # bundle" above — build.gradle's own googleAuthRedirectScheme reads it via
+      # System.getenv() at Gradle configuration time to compute the reversed-client-ID redirect
+      # scheme AndroidManifest.xml's Cloud Backup intent-filter needs (see that file's comment).
       - name: Build debug APK
         working-directory: app/android
+        env:
+          VITE_GOOGLE_CLIENT_ID_NATIVE: ${{ secrets.VITE_GOOGLE_CLIENT_ID_NATIVE }}
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon \

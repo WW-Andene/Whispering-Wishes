@@ -13,11 +13,19 @@ import { useConfirm } from './ConfirmProvider.jsx';
 
 const CloudStorageContext = createContext(null);
 
-// Custom-scheme redirect the native OAuth flow below sends Google back to — matches
-// android:scheme="@string/custom_url_scheme" on MainActivity's own intent-filter
-// (AndroidManifest.xml) and capacitor.config.json's appId, so the OS routes it back into this
-// app instead of a browser tab going nowhere.
-const OAUTH_REDIRECT_URI = 'cc.andene.whisperingwishes://oauth-callback';
+// Redirect URI the native OAuth flow below sends Google back to. NOT the app's own custom URL
+// scheme (cc.andene.whisperingwishes://...) — Google's authorization server validates the
+// redirect_uri's scheme itself against a fixed pattern for the client types that support a
+// non-https redirect at all ("iOS"/"Desktop app"/TV), and only accepts the CLIENT ID REVERSED
+// INTO REVERSE-DNS NOTATION: "com.googleusercontent.apps.<client-id-without-the-.apps.
+// googleusercontent.com-suffix>:/...". Anything else (including a plausible-looking custom
+// scheme) is rejected outright with "Error 400: invalid_request" before Google even checks
+// whether the URI was registered. Computed here from the same VITE_GOOGLE_CLIENT_ID_NATIVE this
+// file already reads below, and must exactly match android/app/build.gradle's own
+// googleAuthRedirectScheme (computed from that identical env var at Gradle build time) — see
+// that file's comment for the AndroidManifest.xml intent-filter this redirect lands on.
+const getOAuthRedirectUri = (nativeClientId) =>
+  `com.googleusercontent.apps.${nativeClientId.replace('.apps.googleusercontent.com', '')}:/oauth-callback`;
 
 // PKCE (RFC 7636) helpers for the native authorization-code flow below — a public client (no
 // client secret, since this is a bundled mobile app) proves it's the one that started the flow
@@ -186,20 +194,22 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
 
   // ── Google Sign-In (native) — authorization-code + PKCE flow through the system browser
   // (@capacitor/browser), since Google blocks its OAuth pages from loading inside an embedded
-  // WebView at all. The redirect comes back to the app via the custom-scheme intent-filter added
-  // to MainActivity (AndroidManifest.xml), delivered here as an 'appUrlOpen' event.
+  // WebView at all. The redirect comes back to the app via the reversed-client-ID-scheme
+  // intent-filter added to MainActivity (AndroidManifest.xml, computed at Gradle build time —
+  // see build.gradle's googleAuthRedirectScheme), delivered here as an 'appUrlOpen' event.
   //
-  // NOTE: this requires a Google Cloud OAuth client of a type that allows a custom-scheme
-  // redirect URI — the existing VITE_GOOGLE_CLIENT_ID (a "Web application" client, needed for
-  // the web flow above) can only redirect to https:// URLs and will reject
-  // cc.andene.whisperingwishes://oauth-callback outright. A second client (type "iOS" — the
-  // conventional choice for custom-scheme redirects, works fine for a non-iOS app) needs to be
-  // created in Google Cloud Console with this exact redirect URI registered, and its client ID
-  // supplied as VITE_GOOGLE_CLIENT_ID_NATIVE. Until that's set, this throws immediately rather
-  // than silently failing partway through the browser flow.
+  // NOTE: this requires a Google Cloud OAuth client of a type that allows a non-https redirect
+  // URI — the existing VITE_GOOGLE_CLIENT_ID (a "Web application" client, needed for the web
+  // flow above) can only redirect to https:// URLs. A second client (type "iOS" — the
+  // conventional choice for this, works fine for a non-iOS app) needs to exist in Google Cloud
+  // Console, with its client ID supplied as VITE_GOOGLE_CLIENT_ID_NATIVE — this type doesn't
+  // take a registered redirect URI at all in the console (Google derives the one valid URI from
+  // the client ID itself, see getOAuthRedirectUri above). Until the env var is set, this throws
+  // immediately rather than silently failing partway through the browser flow.
   const getGoogleAccessTokenNative = useCallback(() => new Promise((resolve, reject) => {
     const nativeClientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID_NATIVE || '';
     if (!nativeClientId) { reject(new Error('Native Google Sign-In not configured (VITE_GOOGLE_CLIENT_ID_NATIVE missing)')); return; }
+    const redirectUri = getOAuthRedirectUri(nativeClientId);
     let settled = false;
     let urlListenerHandle = null;
     let finishedListenerHandle = null;
@@ -218,7 +228,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
         const challenge = await generateCodeChallenge(verifier);
         const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({
           client_id: nativeClientId,
-          redirect_uri: OAUTH_REDIRECT_URI,
+          redirect_uri: redirectUri,
           response_type: 'code',
           scope: 'email profile',
           code_challenge: challenge,
@@ -233,7 +243,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
           finish(() => reject(new Error('Sign-in cancelled')));
         });
         urlListenerHandle = await CapacitorApp.addListener('appUrlOpen', async ({ url }) => {
-          if (!url.startsWith(OAUTH_REDIRECT_URI)) return;
+          if (!url.startsWith(redirectUri)) return;
           try { await Browser.close(); } catch { /* already closed */ }
           const parsed = new URL(url);
           const error = parsed.searchParams.get('error');
@@ -247,7 +257,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
               body: new URLSearchParams({
                 code,
                 client_id: nativeClientId,
-                redirect_uri: OAUTH_REDIRECT_URI,
+                redirect_uri: redirectUri,
                 grant_type: 'authorization_code',
                 code_verifier: verifier,
               }).toString(),

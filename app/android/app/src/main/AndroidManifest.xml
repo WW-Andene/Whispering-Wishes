@@ -25,14 +25,20 @@
                 android:resource="@xml/shortcuts" />
             <!-- Deep-link catcher for the Cloud Backup Google Sign-In flow (see
                  CloudStorageProvider.jsx) — Google blocks its OAuth popup inside a WebView, so
-                 on native the auth code comes back via a redirect to this custom scheme instead
-                 of a same-page callback, caught here and re-delivered to the JS side as an
-                 'appUrlOpen' event by @capacitor/app. -->
+                 on native the auth code comes back via a redirect instead of a same-page
+                 callback, caught here and re-delivered to the JS side as an 'appUrlOpen' event
+                 by @capacitor/app. The scheme is NOT the app's own custom_url_scheme — Google's
+                 OAuth server only accepts the reversed-client-ID scheme for this client type
+                 (Error 400: invalid_request otherwise), computed at build time from
+                 VITE_GOOGLE_CLIENT_ID_NATIVE by build.gradle's own googleAuthRedirectScheme
+                 (see its comment for why), and must exactly match what
+                 CloudStorageProvider.jsx's getGoogleAccessTokenNative() builds at runtime from
+                 that same env var. -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="@string/custom_url_scheme" />
+                <data android:scheme="${googleAuthRedirectScheme}" />
             </intent-filter>
         </activity>
 
