@@ -904,9 +904,15 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
   const roleMainDps = members.find(m => CHARACTER_DATA[m]?.role === 'Main DPS');
   const mainDps = (dpsOverride && members.includes(dpsOverride)) ? dpsOverride : roleMainDps;
   // Flag any team whose actual carry isn't the statically role-tagged 'Main DPS' — an off-role
-  // hypercarry (e.g. a Sub DPS run solo) is a real, often overused way these are actually played,
+  // carry (e.g. a Sub DPS run solo) is a real, often overused way these are actually played,
   // not a mistake, so it's surfaced as a tag rather than hidden or penalized.
-  if (mainDps && mainDps !== roleMainDps) tags.push('Hypercarry');
+  // Named 'Off-Role Carry', NOT 'Hypercarry' — engine-crosscheck-notes.md (2026-08-31) flagged that
+  // 'Hypercarry' already names a DIFFERENT, unrelated concept in references/combat-db/synergy/
+  // team-archetypes.json: a team shape (one Main DPS + two pure buffers, no other damage dealer at
+  // all — see that file's archetypeShapes.Hypercarry). This tag means "the real carry isn't the
+  // role-tagged Main DPS", which has nothing to do with that shape and could collide with it once
+  // real archetype-shape tags are added to this same `tags` array.
+  if (mainDps && mainDps !== roleMainDps) tags.push('Off-Role Carry');
   if (mainDps) {
     // Main DPS totalMult currently spans ~2200 (Lingyang) to 3800 (Aemeath) across the roster --
     // but that range only holds for ATK-scaling DPS. totalMult is "% of the character's own scaling

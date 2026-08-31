@@ -131,6 +131,33 @@ sub-DPS's own scaled totalMult contribution" mechanism in
 `coordShare`/`coordUptime` math as one input to that general formula — not a
 CA-specific bonus bolted onto the current mainDps-buffs-only model.
 
+**RESOLVED 2026-08-31 (commit 76df3e6a):** implemented exactly this general
+mechanism — every `role === 'Sub DPS'` teammate is now credited for their own
+normalized power score, discounted by `calcSubDpsFieldMultRatio()` (a direct
+port of `calcTeamStats.js`'s real `fieldRatio`/`coordShare`/`coordUptime`
+off-field-time-share math, not a re-approximation). CA characters benefit
+automatically through the real `coordShare` term for any `dmgFocus` that
+includes `'Coordinated ATK'`, with no per-character CA list hardcoded. The
+Redundant-DPS -20 penalty for a second Main DPS was also relaxed to credit
+real off-field contribution instead of an all-or-nothing buff-vs-penalty
+split. See `calcEngine.js` for `normalizedDpsPowerScore`/
+`calcSubDpsFieldMultRatio`.
+
+## Resolved: `'Hypercarry'` tag name collision with the archetype-shape name
+
+`scoreTeamComposition` (calcEngine.js, ~line 909) pushed a `'Hypercarry'` tag
+meaning "the team's real carry isn't the statically role-tagged Main DPS" (an
+off-role carry, e.g. a Sub DPS run solo). `team-archetypes.json`'s
+`archetypeShapes.Hypercarry` names a completely different concept: "one Main
+DPS + two pure buffers, no other damage dealer at all." These are unrelated
+and could collide if/when real archetype-shape detection is ever added to
+this same `tags` array. **Fixed 2026-08-31:** renamed the engine tag to
+`'Off-Role Carry'`. No other code or locale string depended on the literal
+`'Hypercarry'` tag value (checked: no test, no i18n string keys on it — the
+only other `Hypercarry`-adjacent hit in the app was an unrelated local
+variable name in `TeamsTab.jsx`, `ownedHypercarry`, which doesn't read this
+tag). `team-archetypes.json`'s archetype-shape name is untouched.
+
 ## Not an engine gap: Hsin has no `CHAR_BUFF_TABLE`/`CHARACTER_DATA` entry at all
 
 `references/combat-db/characters/hsin.json` is explicitly marked
