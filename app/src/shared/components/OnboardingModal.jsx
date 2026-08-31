@@ -3,10 +3,18 @@
 // First-run onboarding walkthrough modal.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Sparkles, Calculator, Upload, Target, BarChart3, LayoutGrid, CheckCircle, Users } from 'lucide-react';
 import { FocusTrapModal } from './FocusTrapModal.jsx';
+import { getPortalRoot, toCanvasSpace, toCanvasLength } from '../scaling/canvasScale.js';
 import { t } from '../../utils/i18n.js';
+
+// Which real nav element (its `id="tab-<id>"`, set by Card.jsx's TabButton
+// for the bottom nav, or directly on the header button for Profile) each
+// step is actually about — null for the intro/outro steps, which aren't
+// about any one tab. Drives the pulsing highlight ring below.
+const TAB_ID_BY_STEP = [null, 'profile', 'tracker', 'gathering', 'teams', 'calculator', 'analytics', null];
 
 // [SECTION:ONBOARDING]
 const OnboardingModal = ({ onComplete }) => {
@@ -25,6 +33,39 @@ const OnboardingModal = ({ onComplete }) => {
   const s = steps[step];
   const isLast = step === steps.length - 1;
 
+  // Highlights the real tab this step is about with a pulsing ring —
+  // measured in real screen space (getBoundingClientRect) then converted to
+  // the canvas's own pre-transform coordinate space via toCanvasSpace/
+  // toCanvasLength, same as FocusTrapModal's own drag handler does, since
+  // this renders as a `position: fixed` portal inside ScaledCanvas.jsx's
+  // transformed ancestor (see canvasScale.js's own comment on why that
+  // conversion is needed). Portaled as its own top-level element (not just
+  // a class toggled on the real nav button) so it renders ABOVE the
+  // modal's own dark scrim instead of being dimmed along with it — a
+  // z-index bump on the button itself couldn't escape <nav>'s own, lower
+  // stacking context to get above that scrim.
+  const [highlightRect, setHighlightRect] = useState(null);
+  useEffect(() => {
+    const tabId = TAB_ID_BY_STEP[step];
+    if (!tabId) {
+      setHighlightRect(null);
+      return;
+    }
+    const update = () => {
+      const el = document.getElementById(`tab-${tabId}`);
+      if (!el) {
+        setHighlightRect(null);
+        return;
+      }
+      const r = el.getBoundingClientRect();
+      const topLeft = toCanvasSpace(r.left, r.top);
+      setHighlightRect({ x: topLeft.x, y: topLeft.y, w: toCanvasLength(r.width), h: toCanvasLength(r.height) });
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [step]);
+
   return (
     <FocusTrapModal isOpen={true} onClose={onComplete} ariaLabel={t('modals.onboarding.ariaLabel')} className="" centered padding="p-3">
       <div className="kuro-card w-full max-w-xs" style={{ border: `1px solid ${s.color}30` }}>
@@ -39,8 +80,10 @@ const OnboardingModal = ({ onComplete }) => {
               no tab press involved. */}
           <button onClick={onComplete} className="kuro-btn onboarding-skip-btn absolute top-3 right-4 z-20 min-h-[48px]" style={{ padding: '8px 14px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.skip')}</button>
 
-          {/* Content */}
+          {/* Content — Abby hosts the tutorial throughout, not just the intro
+              step, so she stays put above the per-step icon/title/desc. */}
           <div className="kuro-body text-center pt-6" aria-live="polite" aria-atomic="true">
+            <img src="./misc-assets/Abby_Full_Sprite.png" alt="" aria-hidden="true" className="mx-auto w-24 h-16 object-contain object-bottom mb-1" />
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3" style={{ color: s.color, background: `${s.color}20`, border: `1px solid ${s.color}30` }}>
               {s.icon}
             </div>
@@ -73,6 +116,23 @@ const OnboardingModal = ({ onComplete }) => {
 
         </div>
       </div>
+      {highlightRect && createPortal(
+        <div
+          className="onboarding-tab-highlight"
+          aria-hidden="true"
+          style={{
+            position: 'fixed',
+            left: highlightRect.x,
+            top: highlightRect.y,
+            width: highlightRect.w,
+            height: highlightRect.h,
+            zIndex: 10001,
+            pointerEvents: 'none',
+            borderRadius: 12,
+          }}
+        />,
+        getPortalRoot(),
+      )}
     </FocusTrapModal>
   );
 };
