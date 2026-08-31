@@ -5,10 +5,38 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { createContext, useContext, useState, useRef, useCallback, useMemo, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
+import { App as CapacitorApp } from '@capacitor/app';
 import { useToast } from './ToastProvider.jsx';
 import { useConfirm } from './ConfirmProvider.jsx';
 
 const CloudStorageContext = createContext(null);
+
+// Custom-scheme redirect the native OAuth flow below sends Google back to — matches
+// android:scheme="@string/custom_url_scheme" on MainActivity's own intent-filter
+// (AndroidManifest.xml) and capacitor.config.json's appId, so the OS routes it back into this
+// app instead of a browser tab going nowhere.
+const OAUTH_REDIRECT_URI = 'cc.andene.whisperingwishes://oauth-callback';
+
+// PKCE (RFC 7636) helpers for the native authorization-code flow below — a public client (no
+// client secret, since this is a bundled mobile app) proves it's the one that started the flow
+// by sending a random verifier up front (as its SHA-256 hash) and the plain verifier back at
+// the token-exchange step, instead of a secret Google's own docs say never to ship in an app.
+const base64UrlEncode = (bytes) => {
+  let str = '';
+  for (const b of bytes) str += String.fromCharCode(b);
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+};
+const generateCodeVerifier = () => {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return base64UrlEncode(bytes);
+};
+const generateCodeChallenge = async (verifier) => {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  return base64UrlEncode(new Uint8Array(digest));
+};
 
 // Module-level constants (Firebase config from env)
 const FIREBASE_DB = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_DB) || null;
@@ -123,37 +151,129 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
     return refreshGoogleToken();
   }, [googleUser, refreshGoogleToken]);
 
+  // ── Google Sign-In (web) — Google Identity Services' own token-client popup, unchanged. Only
+  // works on an actual web page origin; Google rejects this flow (disallowed_useragent) inside
+  // an Android WebView, which is exactly why the native branch below exists. ──
+  const getGoogleAccessTokenWeb = useCallback(async () => {
+    if (!window.google?.accounts?.oauth2) {
+      await new Promise((resolve, reject) => {
+        if (document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
+          const check = setInterval(() => { if (window.google?.accounts?.oauth2) { clearInterval(check); resolve(); } }, 100);
+          setTimeout(() => { clearInterval(check); reject(new Error('GIS load timeout')); }, 10000);
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.onload = resolve;
+        script.onerror = () => reject(new Error('Failed to load Google Sign-In'));
+        document.head.appendChild(script);
+      });
+    }
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Sign-in timed out — popup may have been blocked')), 60000);
+      const client = window.google.accounts.oauth2.initTokenClient({
+        client_id: import.meta.env?.VITE_GOOGLE_CLIENT_ID || '',
+        scope: 'email profile',
+        callback: (response) => {
+          clearTimeout(timeout);
+          if (response.error) reject(new Error(response.error));
+          else resolve(response.access_token);
+        },
+      });
+      client.requestAccessToken();
+    });
+  }, []);
+
+  // ── Google Sign-In (native) — authorization-code + PKCE flow through the system browser
+  // (@capacitor/browser), since Google blocks its OAuth pages from loading inside an embedded
+  // WebView at all. The redirect comes back to the app via the custom-scheme intent-filter added
+  // to MainActivity (AndroidManifest.xml), delivered here as an 'appUrlOpen' event.
+  //
+  // NOTE: this requires a Google Cloud OAuth client of a type that allows a custom-scheme
+  // redirect URI — the existing VITE_GOOGLE_CLIENT_ID (a "Web application" client, needed for
+  // the web flow above) can only redirect to https:// URLs and will reject
+  // cc.andene.whisperingwishes://oauth-callback outright. A second client (type "iOS" — the
+  // conventional choice for custom-scheme redirects, works fine for a non-iOS app) needs to be
+  // created in Google Cloud Console with this exact redirect URI registered, and its client ID
+  // supplied as VITE_GOOGLE_CLIENT_ID_NATIVE. Until that's set, this throws immediately rather
+  // than silently failing partway through the browser flow.
+  const getGoogleAccessTokenNative = useCallback(() => new Promise((resolve, reject) => {
+    const nativeClientId = import.meta.env?.VITE_GOOGLE_CLIENT_ID_NATIVE || '';
+    if (!nativeClientId) { reject(new Error('Native Google Sign-In not configured (VITE_GOOGLE_CLIENT_ID_NATIVE missing)')); return; }
+    let settled = false;
+    let urlListenerHandle = null;
+    let finishedListenerHandle = null;
+    const timeout = setTimeout(() => finish(() => reject(new Error('Sign-in timed out'))), 120000);
+    const finish = (action) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      urlListenerHandle?.remove();
+      finishedListenerHandle?.remove();
+      action();
+    };
+    (async () => {
+      try {
+        const verifier = generateCodeVerifier();
+        const challenge = await generateCodeChallenge(verifier);
+        const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({
+          client_id: nativeClientId,
+          redirect_uri: OAUTH_REDIRECT_URI,
+          response_type: 'code',
+          scope: 'email profile',
+          code_challenge: challenge,
+          code_challenge_method: 'S256',
+          prompt: 'select_account',
+        }).toString();
+
+        // Fires if the user closes the browser tab themselves without completing sign-in —
+        // Browser.close() below (the success path) also fires this event, so the settled guard
+        // above keeps that from double-rejecting an already-resolved promise.
+        finishedListenerHandle = await Browser.addListener('browserFinished', () => {
+          finish(() => reject(new Error('Sign-in cancelled')));
+        });
+        urlListenerHandle = await CapacitorApp.addListener('appUrlOpen', async ({ url }) => {
+          if (!url.startsWith(OAUTH_REDIRECT_URI)) return;
+          try { await Browser.close(); } catch { /* already closed */ }
+          const parsed = new URL(url);
+          const error = parsed.searchParams.get('error');
+          const code = parsed.searchParams.get('code');
+          if (error) { finish(() => reject(new Error(error))); return; }
+          if (!code) { finish(() => reject(new Error('No authorization code returned'))); return; }
+          try {
+            const tokenRes = await fetchWithTimeout('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams({
+                code,
+                client_id: nativeClientId,
+                redirect_uri: OAUTH_REDIRECT_URI,
+                grant_type: 'authorization_code',
+                code_verifier: verifier,
+              }).toString(),
+            });
+            if (!tokenRes.ok) { finish(() => reject(new Error('Token exchange failed'))); return; }
+            const tokenData = await tokenRes.json();
+            finish(() => resolve(tokenData.access_token));
+          } catch (e) {
+            finish(() => reject(e));
+          }
+        });
+
+        await Browser.open({ url: authUrl });
+      } catch (e) {
+        finish(() => reject(e));
+      }
+    })();
+  }), []);
+
   // ── Google Sign-In / Sign-Out ───────────────────────────────────────────
   const handleGoogleSignIn = useCallback(async () => {
     if (!FIREBASE_API_KEY) { toast?.addToast?.('Firebase not configured', 'error'); return; }
     try {
-      if (!window.google?.accounts?.oauth2) {
-        await new Promise((resolve, reject) => {
-          if (document.querySelector('script[src*="accounts.google.com/gsi/client"]')) {
-            const check = setInterval(() => { if (window.google?.accounts?.oauth2) { clearInterval(check); resolve(); } }, 100);
-            setTimeout(() => { clearInterval(check); reject(new Error('GIS load timeout')); }, 10000);
-            return;
-          }
-          const script = document.createElement('script');
-          script.src = 'https://accounts.google.com/gsi/client';
-          script.onload = resolve;
-          script.onerror = () => reject(new Error('Failed to load Google Sign-In'));
-          document.head.appendChild(script);
-        });
-      }
-      const accessToken = await new Promise((resolve, reject) => {
-        const timeout = setTimeout(() => reject(new Error('Sign-in timed out — popup may have been blocked')), 60000);
-        const client = window.google.accounts.oauth2.initTokenClient({
-          client_id: import.meta.env?.VITE_GOOGLE_CLIENT_ID || '',
-          scope: 'email profile',
-          callback: (response) => {
-            clearTimeout(timeout);
-            if (response.error) reject(new Error(response.error));
-            else resolve(response.access_token);
-          },
-        });
-        client.requestAccessToken();
-      });
+      const accessToken = Capacitor.isNativePlatform()
+        ? await getGoogleAccessTokenNative()
+        : await getGoogleAccessTokenWeb();
       toast?.addToast?.('Signing in...', 'info');
       const fbRes = await fetchWithTimeout(
         `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${FIREBASE_API_KEY}`,
@@ -190,7 +310,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
       console.error('Google sign-in error:', err);
       toast?.addToast?.('Sign-in failed: ' + (err.message || 'Unknown error'), 'error');
     }
-  }, [toast]);
+  }, [toast, getGoogleAccessTokenNative, getGoogleAccessTokenWeb]);
 
   const handleGoogleSignOut = useCallback(() => {
     setGoogleUser(null);

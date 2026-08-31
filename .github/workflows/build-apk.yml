@@ -54,10 +54,22 @@ jobs:
       # VITE_API_BASE_URL repo secret isn't set, so this works with zero setup; set the
       # secret (Settings → Secrets and variables → Actions) to point at a different
       # deployment instead.
+      # VITE_FIREBASE_DB/VITE_FIREBASE_API_KEY/VITE_GOOGLE_CLIENT_ID_NATIVE gate Cloud Backup
+      # (CloudStorageProvider.jsx) — unset repo secrets fall through to '' here, which
+      # CloudStorageProvider.jsx's own FIREBASE_AVAILABLE check already treats as "feature off"
+      # (a "Firebase not configured" toast, nothing crashes), same as it always has on a web
+      # build with no .env — so this works with zero setup and Cloud Backup activates the moment
+      # the three secrets are set (Settings → Secrets and variables → Actions). Deliberately NOT
+      # VITE_GOOGLE_CLIENT_ID (singular) — that one's a "Web application" OAuth client only
+      # valid for the web build's popup flow; the native build needs its own client of a type
+      # that can redirect to a custom URL scheme (see .env.example's own comment on both vars).
       - name: Build native web bundle (dist-native/)
         working-directory: app
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || 'https://whispering-wishes.vercel.app' }}
+          VITE_FIREBASE_DB: ${{ secrets.VITE_FIREBASE_DB }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_GOOGLE_CLIENT_ID_NATIVE: ${{ secrets.VITE_GOOGLE_CLIENT_ID_NATIVE }}
         run: npm run build:native
 
       # android/ (capacitor.config.json, native project, gradle wrapper) is already
