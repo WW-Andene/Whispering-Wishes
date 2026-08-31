@@ -1,0 +1,35 @@
+{
+  "name": "Qiuyuan",
+  "slug": "qiuyuan",
+  "rarity": 5,
+  "element": "Aero",
+  "weaponType": "Sword",
+  "role": ["Hybrid", "Support"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Qiuyuan", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Hybrid: T0 Tower of Adversity, T0 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Aero Sword Hybrid specializing in Echo Skill DMG buffing (Sigrika, Phrolova, Galbrena). Forte 'Swordster's Soliloquy' (max 600) unlocks enhanced Basics at 200, a 30% Echo Skill DMG Bonus to the active character at 400, and 3 Forte Heavy Attacks (each counted as an Echo Skill cast) at 600.",
+    "skills": {
+      "normalAttack": "Basic Attack - Inkwash (3 hits) / Thus Spoke the Blade: Inkwash (4 hits) once enhanced.",
+      "resonanceSkill": "Through the Groves - dash Echo-Skill-DMG hit, can parry (immune + stagnate) if cast on being attacked.",
+      "forte": "Verdant Edge - governs Swordster's Soliloquy thresholds (enhanced Basics/Bamboo's Shade buff/Inksplash of Mind Forte Heavy Attacks).",
+      "liberation": "Sundering Strike - Echo-Skill-DMG AoE hit, grants up to 30% CRIT DMG to active character based on Qiuyuan's own CRIT Rate over 50%.",
+      "intro": "Attack the Must-Defend - Heavy-Attack-type Aero hit, grants 400 Forte instantly.",
+      "outro": "Strike Before Ready - Echo-Skill-DMG hit + 50% Echo Skill DMG Amplification to next character for 14s or until swap."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Emerald Sentence (signature, 100%, skippable - low personal damage)", "Red Spring (85.2%)", "Blazing Brilliance (84.4%)", "Emerald of Genesis (84.1%, best permanent, near-equal to sig)", "Feather Edge (80.1%, best 4-star, BP)", "Commando of Conviction (74.1%)", "Bloodpact's Pledge (best free)"],
+    "echoSet": ["Law of Harmony (best for Phrolova/DPS Qiuyuan - 30% Heavy DMG + up to 16% team Echo Skill DMG)", "Moonlit Clouds (best for Galbrena+Shorekeeper - 22.5% ATK to next character on Outro)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Aero DMG; Aero DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "Heavy Attack DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Galbrena Team", "members": ["Qiuyuan", "Galbrena", "The Shorekeeper/Verina"], "notes": "Best 2nd-slot teammate for Galbrena." },
+    { "name": "Phrolova Team", "members": ["Qiuyuan", "Phrolova", "The Shorekeeper/Verina"], "notes": "Best 3rd-slot teammate; multiple Echo casts trigger Hecate's Enhanced Attacks." },
+    { "name": "Sigrika Team", "members": ["Qiuyuan", "Sigrika", "The Shorekeeper/Verina"], "notes": "Best Sigrika buffer overall." }
+  ],
+  "rotation": "Intro -> Basic: Inkwash 3,4 -> (optional Skill, cancel via Ultimate) -> Ultimate -> Heavy: To Teach, To Save, To Sacrifice -> Outro. At S3+, a special Skill lets him repeat the Basic+Forte Heavy Attack loop for a DPS-oriented rotation.",
+  "communityNotes": "Prydwen: quick, easy rotation with strong specialized Echo Skill DMG buffing and cheap permanent weapon options, but his value is entirely tied to the Echo Skill DMG archetype's continued meta relevance and he's easily replaced (Lupa for Galbrena, Lucilla for Phrolova/Sigrika) - never strictly necessary, but strong where he fits.",
+  "lastUpdated": "2026-08-31"
+}
