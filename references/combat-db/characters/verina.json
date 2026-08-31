@@ -1,0 +1,33 @@
+{
+  "name": "Verina",
+  "slug": "verina",
+  "rarity": 5,
+  "element": "Spectro",
+  "weaponType": "Rectifier",
+  "role": ["Support", "Healer"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/verina", "nanoka": "https://ww.nanoka.cc/character/verina", "fandom": "https://wutheringwaves.fandom.com/wiki/Verina", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T0.5 Tower of Adversity, T1 Whimpering Wastes - one of the two premier generalist Supports" },
+  "kit": {
+    "intro": "5-star Spectro Rectifier generalist Support/healer with the shortest rotation in the game (as fast as ~2.35s at S2). Forte 'Photosynthesis Energy' (max 4, from Basic 5/Skill/Intro) consumed via Mid-air Attack for healing + Concerto. Notably her Intro Skill is considered unusable (launches her airborne, slows rotation) so it's typically skipped.",
+    "skills": {
+      "normalAttack": "Cultivation - up to 5-hit vine chain.",
+      "resonanceSkill": "Botany Experiment - Spectro DMG AoE, generates good Resonance Energy, typically instant-cancelled via Ultimate.",
+      "forte": "Starflower Blooms - Heavy/Mid-air Attack variant consuming Photosynthesis Energy for team heal + Concerto.",
+      "liberation": "Arboreal Flourish - Spectro DMG + team heal, applies Photosynthesis Mark (nearby attacks trigger Verina Coordinated Attacks + healing).",
+      "intro": "Verdant Growth - Spectro DMG (rarely used in optimal rotations).",
+      "outro": "Blossom - HoT to next character (19% ATK/s for 6s) + 15% all-type DMG Deepen to nearby team for 30s."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Variation (best, Concerto-generating)", "Stellar Symphony (Shorekeeper sig, 2nd best)", "Call of the Abyss (best F2P/no-sig)", "Rectifier#25 (F2P craftable)", "Rectifier of Voyager"],
+    "echoSet": ["Rejuvenating Glow (best, +15% team ATK on heal)", "Moonlit Clouds (alt, ER + Outro ATK)"],
+    "mainStats": { "cost4": "CRIT Rate > ATK%", "cost3": "Energy Regen (both 3-cost); Energy Regen / Spectro DMG" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK"]
+  },
+  "teams": [
+    { "name": "Generalist Support (any team)", "members": ["Verina", "any DPS", "any secondary"], "notes": "Slots into virtually any team; slightly behind The Shorekeeper in raw buff strength but has by far the shortest rotation, making her preferred in quickswap and some Jinhsi teams (Coordinated Attacks synergy)." }
+  ],
+  "rotation": "S0 (~3.75s): swap in (no Intro) -> Basic P3-P5 -> Skill (cancelled by Ultimate) -> Ultimate -> Jump -> Mid-air Starflower Blooms P1-P3 -> Outro. S2 (~2.35s): skip most basics, straight to Skill after Basic P3.",
+  "communityNotes": "Prydwen: top-tier (essentially T0) universal generalist Support, comfortably the fastest-rotating support in the game; her only real flaw is a near-unusable Intro Skill (skipped in favor of feeding an extra Intro to a teammate). Marginally weaker buffs than The Shorekeeper but makes up for it with rotation speed, making her the preferred choice in quickswap-heavy compositions.",
+  "lastUpdated": "2026-08-31"
+}
