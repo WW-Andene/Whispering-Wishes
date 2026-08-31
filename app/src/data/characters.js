@@ -198,7 +198,11 @@ const CHARACTER_DATA = {
   // ranked list for her at all (looks like a copy/paste from another character) — replaced with Aureate
   // Zenith (72.3%), her confirmed best 4★; Waning Redshift (70.7%, confirmed #2 4★) kept.
   'Jinhsi': { rarity: 5, element: 'Spectro', weapon: 'Broadblade', role: 'Main DPS',
-    desc: "Thawborn Renewal, Magistrate of Jinzhou, gently brightens the hopes of her people like rays of winter sunlight — as the revered Sentinel's Appointed Resonator, she displays humility and wholeheartedly commits herself to guiding her people toward a brilliant future. On-field Spectro DPS who builds Incandescence from any team member's Attribute or Coordinated DMG, enters Incarnation via her Resonance Skill, then spends stacks through Illuminous Epiphany for a scaling Stella Glamor nuke.",
+    // desc rewritten 2026-08-31 to exact-mechanic depth against wutheringwaves.fandom.com/wiki/Jinhsi/Combat
+    // (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare). Prior text was
+    // flavor + "builds Incandescence from any team member's Attribute or Coordinated DMG" with no exact
+    // trigger events/amounts/cooldowns — replaced with the verbatim Instructions-panel + Forte Circuit text.
+    desc: "Thawborn Renewal, Magistrate of Jinzhou, gently brightens the hopes of her people like rays of winter sunlight — as the revered Sentinel's Appointed Resonator, she displays humility and wholeheartedly commits herself to guiding her people toward a brilliant future. On-field Spectro DPS whose Forte resource, Incandescence (cap 50), is gained ONLY via the passive Eras in Unity (active whenever Jinhsi is in the party, not just on-field): +1 Incandescence any time a party member inflicts Attribute DMG (capped to 1 trigger per 3s PER Attribute type), PLUS a separate +2 Incandescence any time a party member damages the enemy with a Coordinated Attack (also capped to 1 trigger per 3s per Attribute of that Coordinated Attack) — the two triggers are independent and can both fire off the same hit. Her burst is a strict cast-order chain, not a flat combo: (1) after landing Basic ATK Stage 4 OR her Intro Skill Loong's Halo (only while NOT already in Incarnation), a 5s window opens in which her Resonance Skill button is replaced by Overflowing Radiance — casting it deals Spectro DMG and sends her into Incarnation for 10s (missing the 5s window forfeits the alternate cast, forcing a normal Trailing Lights of Eons instead); (2) while in Incarnation, Basic ATK is replaced by a 4-stage Incarnation-Basic Attack combo (counted as Resonance Skill DMG, does not reset her normal Basic ATK cycle) and her Resonance Skill is replaced by Crescent Divinity (a direct-cast alternate Skill hit, can be cast in mid-air); (3) landing Stage 4 of Incarnation-Basic Attack ends Incarnation and grants Ordination Glow, during which Basic ATK is replaced by an Incarnation-Heavy Attack and Resonance Skill is replaced by Illuminous Epiphany — she must press Skill within 5s of that Stage-4 hit to cast it, or Ordination Glow (and the chance to spend Incandescence) is lost; (4) Illuminous Epiphany sends out Solar Flare, which detonates after a short delay as Stella Glamor, consuming up to 50 Incandescence with each point spent adding bonus DMG Multiplier to the nuke. Casting Illuminous Epiphany also grants Unison (once per 25s): while held, swapping off-field consumes Unison instead of requiring full Concerto Energy, auto-triggering both her Outro Skill Temporal Bender and the incoming Resonator's Intro Skill for a free extra Outro that rotation. Source: wutheringwaves.fandom.com/wiki/Jinhsi/Combat, verified 2026-08-31.",
     skills: ['Slash of Breaking Dawn', 'Trailing Lights of Eons', 'Luminal Synthesis', 'Purge of Light'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: "Loong's Pearl" },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
@@ -2943,13 +2947,25 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Tactical Strike', '198.81%'],
     ['Outro', 'Discipline', '313.40% ATK per proc, up to 2', 'Coordinated ATK triggered when the incoming Resonator lands a Heavy ATK (8s window).'],
   ],
+  // Re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Jinhsi/Combat's Lv.10 Attribute Scaling
+  // tables (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare): Basic
+  // ATK Stage 1-4, Heavy ATK, Mid-air, Dodge Counter, Liberation (499.81%+1166.22%), and Intro (159.05%)
+  // all matched the site's Lv.10 row EXACTLY — no corrections needed. Trailing Lights of Eons/Overflowing
+  // Radiance: the site's own scaling table stops rendering at level 7 (19.46/9.87 area) rather than 10, but
+  // extrapolating with the same per-level growth ratio the site's OTHER fully-rendered Lv.1→10 tables show
+  // (e.g. Basic ATK Stage 1: 33.43%→66.47%, a 1.988× ratio) reproduces this file's existing 19.46%/9.87%/
+  // 29.59%/39.45% values to 2 decimal places — confirmed correct via that cross-check, unchanged. Forte
+  // (Incarnation/Illuminous Epiphany) values and the +44.54%-per-Incandescence figure could NOT be
+  // independently re-confirmed this pass — the site's own Forte Circuit scaling table failed to render
+  // ("Lua error in Module:Skill_Scaling at line 76") — TODO: verify against Prydwen or nanoka.cc directly
+  // next audit; left unchanged as no contradicting source was found.
   'Jinhsi': [
     ['Basic ATK', 'Slash of Breaking Dawn Stage 1-4', '66.47% → 38.99%+19.50%×3 → 10.65%×7+31.94% → 63.09%+94.63%'],
     ['Heavy ATK', 'Standard', '23.86%×5+35.79%+83.51%'],
     ['Mid-air', 'Plunging Attack', '12.33%+24.66%+86.29%'],
     ['Dodge Counter', 'Standard', '14.68%×7+44.02%'],
     ['Skill', 'Trailing Lights of Eons → Overflowing Radiance', '19.46%×4+77.84% → 9.87%×4+29.59%×4+39.45%', 'After Basic ATK 4 or Intro, Skill becomes Overflowing Radiance, entering Incarnation (10s).'],
-    ['Forte', 'Incarnation → Illuminous Epiphany', '88.62%→77.97%+25.99%×2→99.44%+66.30%→18.67%×6+74.67% (Basic) · 100.76%+75.57%×2+251.90% (Crescent Divinity) · 19.89%×6+347.92% (Solar Flare/Stella Glamor)', 'Stella Glamor gains +44.54% per Incandescence spent (up to 50).'],
+    ['Forte', 'Incarnation → Illuminous Epiphany', '88.62%→77.97%+25.99%×2→99.44%+66.30%→18.67%×6+74.67% (Basic) · 100.76%+75.57%×2+251.90% (Crescent Divinity) · 19.89%×6+347.92% (Solar Flare/Stella Glamor)', 'Stella Glamor gains +44.54% per Incandescence spent (up to 50). // TODO: verify — source table failed to render this pass.' ],
     ['Liberation', 'Purge of Light', '499.81%+1166.22%', '24s cooldown; huge AoE nuke.'],
     ['Intro', "Loong's Halo", '159.05%'],
     ['Outro', 'Temporal Bender', 'Incandescence gain rate +1/s for 20s', 'Utility only — no direct DMG or team buff.'],
@@ -3537,18 +3553,20 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'Jump, then tap Basic Attack to spend all 4 Photosynthesis Energy stacks on Starflower Blooms — heals the team and refills Concerto Energy.' },
     { type: 'Outro', skill: 'Blossom', note: 'Swap out to trigger this automatically — heals the incoming Resonator for 19% ATK/s over 6s and grants the whole nearby team +15% All DMG Amp for 30s.' },
   ],
-  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Jinhsi (re-fetched
-  // 2026-08-17 via Chrome UA + google.com referer + jsRender). This is Prydwen's baseline rotation
-  // (no swap/animation/jump cancels) — she also has advanced/expert cancel-heavy variants that push her
-  // damage further, omitted here as too execution-dependent for a standard reference rotation. Notably
-  // she gets 2 Outros and 2 Forte nukes per full team loop via her free-Outro-every-25s Unison mechanic.
+  // Standard Rotation — re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Jinhsi/Combat
+  // (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare). This is the
+  // baseline single-Incarnation-cycle rotation (no swap/animation/jump cancels) — she also has advanced/
+  // expert cancel-heavy variants that push her damage further, omitted here as too execution-dependent
+  // for a standard reference rotation. Notably she gets 2 Outros and 2 Forte nukes per full team loop via
+  // her free-Outro-every-25s Unison mechanic. Every step below is cast-order-gated by a 5s window — miss
+  // the window and the alternate (empowered) cast is forfeited for that step.
   'Jinhsi': [
-    { type: 'Basic ATK', skill: 'Slash of Breaking Dawn Stage 1-4', note: 'Tap Basic Attack 4 times for the full opening combo.' },
-    { type: 'Skill', skill: 'Overflowing Radiance', note: 'Press Skill (available after Basic Attack Stage 4) — sends her into the 10s Incarnation state.' },
-    { type: 'Liberation', skill: 'Purge of Light', note: 'Press Liberation for a huge AoE nuke; 24s cooldown.' },
-    { type: 'Forte', skill: 'Incarnation', note: 'While in Incarnation, tap Basic Attack for its own 4-stage combo while airborne — builds toward Illuminous Epiphany.' },
-    { type: 'Skill', skill: 'Illuminous Epiphany', note: 'Press Skill to consume up to 50 Incandescence for a scaling Stella Glamor nuke (+44.54% DMG per stack); also grants Unison, a free Outro every 25s at no Concerto cost.' },
-    { type: 'Outro', skill: 'Temporal Bender', note: 'Swap out to trigger this automatically — utility only, accelerates her own Incandescence gain rate for 20s with no team buff.' },
+    { type: 'Basic ATK', skill: 'Slash of Breaking Dawn Stage 1-4', note: 'Tap Basic Attack 4 times for the full opening combo — Stage 4 opens a 5s window for the Skill button to become Overflowing Radiance.' },
+    { type: 'Skill', skill: 'Overflowing Radiance', note: 'Press Skill within 5s of Basic ATK Stage 4 (or of Intro, if not already in Incarnation) — miss the window and this alternate cast is lost, forcing a normal Trailing Lights of Eons instead. Sends her into Incarnation for exactly 10s.' },
+    { type: 'Liberation', skill: 'Purge of Light', note: 'Press Liberation for a huge AoE nuke (499.81%+1166.22% ATK at Lv10); 24s cooldown, 150 Resonance Energy cost, can be cast at any point in the rotation.' },
+    { type: 'Forte', skill: 'Incarnation - Basic Attack Stage 1-4', note: 'While in Incarnation (10s), Basic ATK is replaced by this 4-stage combo — counted as Resonance Skill DMG, does not reset her normal Basic ATK cycle, can be cast mid-air. Landing Stage 4 ends Incarnation and opens a 5s window for Ordination Glow.' },
+    { type: 'Skill', skill: 'Illuminous Epiphany', note: 'Press Skill within 5s of Incarnation-Basic Attack Stage 4 landing (Ordination Glow) — miss the window and this cast is lost. Consumes up to 50 Incandescence (cap, gained only via the Eras in Unity passive: +1 per party Attribute-DMG trigger and +2 per party Coordinated-Attack trigger, each independently capped to 1 trigger/3s per Attribute) for a scaling Stella Glamor nuke that detonates after a short delay. Also grants Unison (once per 25s): the next swap-out auto-fires both her Outro and the incoming character\'s Intro at no Concerto cost.' },
+    { type: 'Outro', skill: 'Temporal Bender', note: 'Swap out to trigger this automatically (or free via Unison, see above) — utility only, doubles her own Incandescence-gain trigger rate (1 per 1s instead of the passive\'s 1 per 3s per Attribute) for 20s. No team DMG buff.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Changli (re-fetched
   // 2026-08-17 via Chrome UA + google.com referer + jsRender). This is Prydwen's single-Intro,
@@ -4269,8 +4287,33 @@ const RESONANCE_CHAIN_DATA = {
   'Carlotta':     { s1: { critRate: 12.5 }, s2: { totalMult: 25 }, s3: { totalMult: 15 }, s4: { skillDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 50 } },
   // Jiyan S1: extra Windqueller charge (utility). S2: ATK+28%. S3: CR+16% CD+32% (confirmed). S4: team Heavy ATK+25%. S5: ATK stacking up to +45%
   'Jiyan':        { s1: { totalMult: 10 }, s2: { atkPct: 28 }, s3: { critRate: 16, critDmg: 32 }, s4: { heavyDmg: 25 }, s5: { atkPct: 45 }, s6: { totalMult: 40 } },
-  // Jinhsi S1: up to +80% Illuminous DMG ≈ skillDmg 40 avg. S2: energy utility. S3: ATK+25% x2 stacks. S4: team Attr DMG+20%
-  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { totalMult: 5 }, s3: { atkPct: 50 }, s4: { elemDmg: 20 }, s5: { totalMult: 15 }, s6: { totalMult: 30 } },
+  // Jinhsi S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Jinhsi/Combat
+  // (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare):
+  // S1 Abyssal Ascension: casting Incarnation-Basic Attack OR Crescent Divinity grants 1 stack of Herald
+  //   of Revival (max 4 stacks, 6s duration each); casting Illuminous Epiphany consumes ALL stacks, each
+  //   granting +20% DMG to that cast — up to +80% at 4 stacks. Modeled as skillDmg:40 (rotation-average of
+  //   a 0-80% range, since stack count is execution-dependent) — confirmed correct, unchanged.
+  // S2 Chronofrost Repose: restores 50 Incandescence after 4s+ out of combat, 1 trigger per 4s — pure
+  //   pre-fight/downtime utility, no in-combat DPS number to model. totalMult:5 kept as a minimal non-zero
+  //   placeholder — confirmed correct (no combat DMG stat exists for this effect), unchanged.
+  // S3 Celestial Incarnate: casting Intro Skill Loong's Halo grants 1 stack of Immortal's Descendancy
+  //   (+25% ATK/stack, max 2 stacks, 20s duration) = up to +50% ATK at 2 stacks. Confirmed correct,
+  //   unchanged (atkPct:50 already matched source exactly).
+  // S4 Benevolent Grace: casting Resonance Liberation Purge of Light OR Resonance Skill Illuminous
+  //   Epiphany grants the WHOLE NEARBY TEAM +20% Attribute DMG Bonus for 20s (team-wide, not Jinhsi-only —
+  //   same caveat as Camellya's S4/Augusta's S4 above). Confirmed correct value, unchanged (elemDmg:20) —
+  //   TODO: verify calc engine applies this to teammates, not just Jinhsi.
+  // S5 Frostfire Illumination: DMG Multiplier of Resonance Liberation Purge of Light is increased by 120%
+  //   — WAS wrongly modeled as totalMult:15 (no basis in source, wrong stat AND wrong skill entirely).
+  //   Corrected to libDmg:120.
+  // S6 Thawing Triumph: DMG Multiplier of Resonance Skill Illuminous Epiphany is increased by 45%, AND
+  //   (separately) the additional DMG Multiplier gained per Incandescence consumed is ALSO increased by
+  //   45% (i.e. the per-point conversion rate itself goes up, compounding with S5's Incandescence-spend
+  //   scaling) — two distinct multipliers on the same skill, only one representable in this schema. WAS
+  //   wrongly totalMult:30 (no basis). Corrected to skillDmg:45 for the flat Illuminous Epiphany DMG Mult
+  //   bonus; the per-Incandescence conversion-rate increase is NOT representable as a flat stat here —
+  //   TODO: needs Phase 2 schema to hold both the flat skill-mult bonus and the scaling-rate bonus.
+  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { totalMult: 5 }, s3: { atkPct: 50 }, s4: { elemDmg: 20 }, s5: { libDmg: 120 }, s6: { skillDmg: 45 } },
   // Calcharo S1: energy recovery (utility). S2: Skill DMG+30%. S3: Electro DMG+25%. S4: team Electro DMG+20%
   'Calcharo':     { s1: { totalMult: 5 }, s2: { skillDmg: 30 }, s3: { elemDmg: 25 }, s4: { elemDmg: 20 }, s5: { totalMult: 15 }, s6: { totalMult: 40 } },
   // Encore S1: Fusion DMG+3% x4=12%. S2: energy utility. S3: Heavy ATK mult+40%. S4: team Fusion DMG+20%. S6: ATK stacking ~25%
