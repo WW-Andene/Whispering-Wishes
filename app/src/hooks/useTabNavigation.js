@@ -6,21 +6,52 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TAB_ORDER } from '../data/constants.js';
 import { haptic } from '../utils/haptics.js';
-import { getScrollContainer } from '../shared/scaling/canvasScale.js';
+import { getScrollContainer, getPortalRoot, toCanvasLength } from '../shared/scaling/canvasScale.js';
 export function useTabNavigation(swipeEnabled) {
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
   const [navPadding, setNavPadding] = useState(80);
 
-  // Measure nav height for bottom padding
+  // Measure nav height for bottom padding. Used to be nav.offsetHeight + 12
+  // + 12 — offsetHeight excludes the element's own CSS margin, so this
+  // silently ignored nav's marginBottom (the safe-area-bottom clearance,
+  // see App.jsx's own --safe-area-bottom-canvas comment) entirely, unlike
+  // App.jsx's headerPadding (which correctly measures the header's real
+  // rendered position via getBoundingClientRect(), margin included). That
+  // mismatch is why the gap above the nav never matched the gap below the
+  // header: this flat "+24" guess had no relationship to the actual
+  // safe-area value. Now measures nav's real position the same way header
+  // does — real-space distance from the canvas's own bottom edge up to
+  // nav's top edge, converted to canvas-local length — plus the same +12
+  // gap constant headerPadding adds on the other side.
   useEffect(() => {
     const nav = tabNavRef.current;
     if (!nav) return;
-    const update = () => setNavPadding(nav.offsetHeight + 12 + 12);
+    const update = () => {
+      const canvasBottom = getPortalRoot().getBoundingClientRect().bottom;
+      const navTop = nav.getBoundingClientRect().top;
+      setNavPadding(toCanvasLength(canvasBottom - navTop) + 12);
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(nav);
-    return () => ro.disconnect();
+    // ResizeObserver only fires on nav's own size changing, not on a
+    // margin-driven position shift — cover that (native's WindowInsets
+    // bridge lands asynchronously, a frame or more after first mount) with
+    // a short-lived poll, plus orientation/resize changes afterward. Same
+    // guard as App.jsx's own headerPadding effect, mirrored here.
+    const raf1 = requestAnimationFrame(() => {
+      const raf2 = requestAnimationFrame(update);
+      return () => cancelAnimationFrame(raf2);
+    });
+    const timer = setTimeout(update, 500);
+    window.addEventListener('resize', update);
+    return () => {
+      ro.disconnect();
+      cancelAnimationFrame(raf1);
+      clearTimeout(timer);
+      window.removeEventListener('resize', update);
+    };
   }, []);
 
   // Tab scroll position memory
