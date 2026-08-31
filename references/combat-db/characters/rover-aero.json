@@ -1,0 +1,34 @@
+{
+  "name": "Rover (Aero)",
+  "slug": "rover-aero",
+  "rarity": 5,
+  "element": "Aero",
+  "weaponType": "Sword",
+  "role": ["Support", "Healer"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Support: T1 Tower of Adversity, T1.5 Whimpering Wastes" },
+  "kit": {
+    "intro": "Free 5-star Aero Sword Support, mid-air combat focused, applying Aero Erosion via debuff conversion (removes other Negative Statuses and converts them 1:1 into Aero Erosion) and healing via Cloudburst Dance mid-air attacks and Ultimate. Currently restricted almost entirely to Cartethyia + Ciaccona teams.",
+    "skills": {
+      "normalAttack": "Basic Attack - Wind Cutter (4 hits), Aero.",
+      "resonanceSkill": "Awakening Gale - jump + Aero slash; Skyfall Severance in mid-air converts debuffs to Aero Erosion.",
+      "forte": "Cycle of Wind - governs Windstrings (max 120) -> Mid-air Attack: Cloudburst Dance (healing) -> Resonance Skill: Unbound Flow (enhanced, at max Windstrings) chain.",
+      "liberation": "Omega Storm - Aero AoE hit + team healing, castable mid-air (also used to instantly land after Forte attacks).",
+      "intro": "Relentless Squall - Aero strike, self +20% ATK for 10s.",
+      "outro": "Storm's Echo - grants +3 max Aero Erosion stacks to team for 30s (Cartethyia's key enabler)."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Bloodpact's Pledge (signature, free, 100% at R1 / 121.12% at R5 - only real option, gives Aero DMG Amplify + Energy Regen)"],
+    "echoSet": ["Rejuvenating Glow (best generalist - 15% team ATK on heal)", "Windward Pilgrimage (special, Cartethyia+Ciaccona high investment)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Aero DMG; Aero DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied - though signature weapon covers most of this)", "CRIT Rate = CRIT DMG", "ATK%", "Skill DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Rover (Aero)", "Cartethyia", "Ciaccona"], "notes": "Aero Rover's only genuinely strong team - tailored specifically for Cartethyia's Aero Erosion mechanics." },
+    { "name": "Main DPS Iuno Team", "members": ["Rover (Aero)", "Iuno", "Ciaccona"], "notes": "Best buffer for Main DPS Iuno via signature weapon's Aero DMG Amplify." }
+  ],
+  "rotation": "Standard: Intro -> Forte: Cloudburst Dance P1,2 -> Ultimate -> Skill: Awakening Gale -> Cloudburst Dance P1,2 -> Skyfall Severance (optional) -> Mid-air plunge -> Forte: Unbound Flow P1 (swap) -> Outro (P2 auto off-field).",
+  "communityNotes": "Prydwen: strong personal damage for a Support and free signature weapon, but functionally restricted to a single team (Cartethyia + Ciaccona) since no one else exploits her debuff-conversion mechanics; outclassed by Verina/Shorekeeper as a generalist Support due to lower overall buff strength, especially while capped at S1/R1.",
+  "lastUpdated": "2026-08-31"
+}

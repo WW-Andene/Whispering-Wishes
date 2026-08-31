@@ -1,0 +1,35 @@
+{
+  "name": "Roccia",
+  "slug": "roccia",
+  "rarity": 5,
+  "element": "Havoc",
+  "weaponType": "Gauntlets",
+  "role": ["Hybrid"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/roccia", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Roccia", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Hybrid: T3 Tower of Adversity, T3 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Havoc Gauntlets Hybrid buffing Basic/Havoc DMG dealers via a fast mid-air 'Real Fantasy' Heavy Attack chain; grants an extra Echo Skill cast via her Outro's Magic Box utility. Considered outclassed by free alternatives (Sanhua, Danjin) in most teams.",
+    "skills": {
+      "normalAttack": "Basic Attack - Pero, Easy (4 hits), Havoc.",
+      "resonanceSkill": "Acrobatic Trick - pull + Havoc DMG, activates Beyond Imagination (mid-air state).",
+      "forte": "A Prop Master Prepares - governs Imagination (max 300) -> Beyond Imagination -> Basic Attack: Real Fantasy mid-air bounce chain.",
+      "liberation": "Commedia Improvviso! - Heavy-Attack-type Havoc hit, grants up to 200 flat ATK to team based on CRIT Rate over 50%.",
+      "intro": "Pero, Help - Havoc strike.",
+      "outro": "Applause, Please! - 20% Havoc DMG / 25% Basic Attack DMG Amplification to next character for 14s or until swap; grants incoming character the Magic Box utility (extra Echo Skill cast)."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Tragicomedy (signature, 100%)", "Solsworn Ciphers (90%, Sigrika sig)", "Blazing Justice (88.2%)", "Verity's Handle (88.1%)", "Pulsation Bracer (86.6%, best permanent)", "Moongazer's Sigil (84.7%)", "Abyss Surges (81.2%)", "Aether Strike (72.9%, best 4-star, BP)", "Legend of Drunken Hero (best gacha-free)"],
+    "echoSet": ["Midnight Veil (best with endgame Echo investment + 5-star weapon)", "Moonlit Clouds (better otherwise - 22.5% ATK to next character on Outro)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Havoc DMG; Havoc DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate", "CRIT DMG", "ATK%", "Heavy ATK DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Camellya Team", "members": ["Roccia", "Camellya", "Verina/The Shorekeeper"], "notes": "Best buffer synergy on paper (Havoc + Basic DMG), though very competitive with the free Sanhua." },
+    { "name": "Phrolova Team", "members": ["Roccia", "Phrolova", "Cantarella"], "notes": "Good recipient of Phrolova's Outro, extra Echo Skill cast triggers Enhanced Hecate attack." },
+    { "name": "Havoc Rover Team", "members": ["Roccia", "Rover (Havoc)", "Verina/The Shorekeeper"], "notes": "Considered Havoc Rover's best buffer." }
+  ],
+  "rotation": "Intro -> Basic 4 (cancel via Ultimate) -> Ultimate -> Skill (dash-cancel on 1st hit) -> Basic: Real Fantasy 1,2,3 (cancel via Echo) -> Echo (swap) -> Outro. At S1+, Basic 4 can be skipped; at S6 enables an infinite-bounce Main DPS rotation.",
+  "communityNotes": "Prydwen: consistently outclassed by both premium alternatives (Lynae, Qiuyuan, Lucilla) and free 4-stars (Sanhua, Danjin) in every team she fits, with a short but interruption-prone rotation and heavy signature-weapon dependence just to match 4-star competitors - one of the weakest limited 5-stars in the game as of this review.",
+  "lastUpdated": "2026-08-31"
+}

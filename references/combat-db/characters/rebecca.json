@@ -1,0 +1,35 @@
+{
+  "name": "Rebecca",
+  "slug": "rebecca",
+  "rarity": 5,
+  "element": "Electro",
+  "weaponType": "Pistols",
+  "role": ["Hybrid"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rebecca", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Rebecca", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Hybrid: T0.5 Tower of Adversity, T1.5 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Electro Pistols Cyberpunk: Edgerunners collab Hybrid, a free 'second Mortefi' who buffs Heavy Attack DPS (best with Lucy, but works with Jiyan/Augusta/Phoebe/Galbrena too). Toggles between Huntress (CRIT DMG) and Guts (DEF Ignore) modes; uses the Hack mechanic (Tune Rupture variant).",
+    "skills": {
+      "normalAttack": "Basic Attack - Huntress (3 hits) / Basic Attack - Guts (3 hits).",
+      "resonanceSkill": "It's Big Boomin' Time! / Come 'n' Get Me! - switches stance while attacking.",
+      "forte": "Gloves Are Comin' Off! - governs Switch Gears mode toggle, Fervor (Forte Heavy Attack resource), and Hot Hand (A Girl Gets What She Wants! dual-mode buff).",
+      "liberation": "Party 'til Dawn! - Mk. 31 HMG channel dealing sustained Electro DMG, ends in BOOM! Fireworks! AoE burst.",
+      "intro": "My Turn! (Yo, It's Big Boomin' Time! / Hey, Leadhead, Come 'n' Get Me!) - Electro strike, switches stance.",
+      "outro": "Preem Choom - summons an attacking turret for 14s + 15% All DMG / up to 35% Heavy Attack DMG Amplification to next character."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Skull Thrasher (signature, 100%)", "Spectrum Blaster (96.3%, Lynae sig)", "Static Mist (86%, best team-DPS permanent)", "Phasic Homogenizer (93.3%, best personal-damage permanent)", "Woodland Aria (88.3%)", "The Last Dance / Spectral Trigger / Lux & Umbra (87.9%)", "Solar Flame (80.6%, best 4-star, BP)", "Pistols#26 (best gacha-free)"],
+    "echoSet": ["Moonlit Clouds (100%, best generalist - 22.5% ATK to next character on Outro)", "Shadow of Shattered Dreams (personal-damage alt)", "Pact of Neonlight Leap (Lucy team specific)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Electro DMG; Electro DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "Basic DMG%", "ATK%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Rebecca", "Yangyang: Xuanling", "Mornye/The Shorekeeper/Verina"], "notes": "Yangyang: Xuanling is the highest Heavy Attack DPS in the game, making this Rebecca's best pairing." },
+    { "name": "Edgerunners Team", "members": ["Rebecca", "Lucy", "Mornye/The Shorekeeper"], "notes": "Free, works well together via the Hack mechanic; Mornye emphasizes Off-Tune Buildup, Shorekeeper better for Whimpering Wastes." },
+    { "name": "Alternative Heavy Attack Teams", "members": ["Rebecca", "Phoebe/Jiyan/Augusta/Galbrena", "The Shorekeeper/Verina"], "notes": "Functions as a solid free alternative to Mortefi for any Heavy Attack DPS." }
+  ],
+  "rotation": "Opener: Intro: Huntress -> Guts Basic 1-3 -> Skill (switch to Huntress) -> Huntress Basic 1,2 (cancel via Heavy) -> Forte Heavy: Huntress (cancel via Ultimate) -> Ultimate -> BOOM! Fireworks (auto, swap) -> Outro. Loop: Intro -> Guts Basic 1-3 -> Skill -> Forte Heavy (cancel via Ultimate) -> Ultimate -> Fireworks (swap) -> Outro.",
+  "communityNotes": "Prydwen: doesn't need her signature to perform, easy Perfect-Dodge-friendly gameplay, and free - a strong second Mortefi for Heavy Attack teams, though her rotation runs noticeably longer than most secondary buffers.",
+  "lastUpdated": "2026-08-31"
+}

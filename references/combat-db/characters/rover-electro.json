@@ -1,0 +1,33 @@
+{
+  "name": "Rover (Electro)",
+  "slug": "rover-electro",
+  "rarity": 5,
+  "element": "Electro",
+  "weaponType": "Sword",
+  "role": ["Hybrid"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/rover-electro", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Rover", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Hybrid: T4 Tower of Adversity, T4 Whimpering Wastes" },
+  "kit": {
+    "intro": "Free 5-star Electro Sword Hybrid applying Electro Flare (up to 15 stacks) and buffing Negative Status characters; currently considered close to unusable in the meta pending a future Electro Flare-focused Main DPS to pair with. Has an unused 'Apex Resonance' pseudo-DPS mode (Thrum of All Sounds, multi-element).",
+    "skills": {
+      "normalAttack": "Basic Attack - Deterrence (4 hits) / Parry Stance -> Riposte Strike.",
+      "resonanceSkill": "Thunderclap - grapple + Electro DMG.",
+      "forte": "Myriad Omens' Mandate - governs Electric Surge (max 120) -> Resonance Skill: Overshock (tap: team ATK buff; hold: Apex Resonance multi-element combo) -> Thunder Rage.",
+      "liberation": "Ultimate Tactics - Electro AoE hit.",
+      "intro": "Thunderous Fury - Electro strike.",
+      "outro": "Rumbling Thunders - grants Electro Core to next character (consumed on next Negative Status inflicted for 25% All DMG Amplification for 14s); expires on swap."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Blazing Brilliance (100%, Changli sig)", "Red Spring (91.1%)", "Azure Oath / Everbright Polestar (90.4%)", "Emerald of Genesis (90%, best permanent)", "Frostburn / Emerald Sentence (89.5%)", "Feather Edge (80.8%, best 4-star, BP)", "Fables of Wisdom (best gacha-free)"],
+    "echoSet": ["Moonlit Clouds (best - 22.5% ATK to next character on Outro)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Electro DMG", "cost3b": "Electro DMG", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "Skill DMG% = ATK", "Liberation DMG%"]
+  },
+  "teams": [
+    { "name": "Fallback (Hiyuki)", "members": ["Rover (Electro)", "Hiyuki", "Suisui/Chisa/Verina"], "notes": "Only current niche - a replacement buffer for Hiyuki teams when low-Sequence Jianxin is the only alternative." }
+  ],
+  "rotation": "Intro -> Basic 1-4 -> Skill -> Basic: Repel (cancel via Ultimate) -> Ultimate -> Skill: Overshock (cancel via Echo) -> Echo (swap) -> Outro.",
+  "communityNotes": "Prydwen: essentially non-functional in the current meta at release - buffs too weak for any real synergy, Outro expires on swap (unusual for a Negative Status character), and Apex Resonance's multi-element DPS mode costs too much field time for the damage it deals; awaiting a future Electro Flare DPS to give her a purpose.",
+  "lastUpdated": "2026-08-31"
+}
