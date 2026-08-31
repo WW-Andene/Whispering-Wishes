@@ -146,8 +146,18 @@ export function armUnmuteOnFirstInteraction() {
   if (unmuteArmed) return;
   unmuteArmed = true;
   const unmute = () => {
-    if (sharedAmbientAudio && sharedAmbientAudio.muted && !sharedAmbientAudio.paused) {
-      sharedAmbientAudio.muted = false;
+    if (!sharedAmbientAudio) return;
+    sharedAmbientAudio.muted = false;
+    // The .then()-based unmute above assumes play() itself already
+    // succeeded (just muted) and only the unmute got refused — but on a
+    // genuinely first-ever cold boot the ENTIRE play() call can be the one
+    // that's blocked, not just the unmute, leaving .paused true forever.
+    // That left this handler doing nothing observable: flipping .muted on
+    // a track that was never actually playing. A real tap/keydown is a
+    // trusted user gesture, so retrying play() here — unconditionally,
+    // whenever the track isn't already playing — is never refused.
+    if (sharedAmbientAudio.paused) {
+      sharedAmbientAudio.play().catch(() => {});
     }
   };
   window.addEventListener('pointerdown', unmute, { capture: true, once: true });
