@@ -284,7 +284,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                       onClick={() => {
                         const eqKeyExp = state.activeTeamIndex + ':' + m.name;
                         const eqExp = teamEquipment[eqKeyExp] || { weapon: null, echoes: [null, null, null, null, null] };
-                        renderCharacterCard({ member: m, eq: eqExp, teamIdx: state.activeTeamIndex, collectionImages, getImageFraming, toast })
+                        renderCharacterCard({ member: m, eq: eqExp, teamIdx: state.activeTeamIndex, collectionImages, getImageFraming, profile: state.profile, toast })
                           .catch(err => {
                             console.error('Build card export failed:', err);
                             toast?.addToast?.(`Failed to save build card${err?.message ? ': ' + err.message : ''}`, 'error');
