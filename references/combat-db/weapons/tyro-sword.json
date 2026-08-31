@@ -1,0 +1,15 @@
+{
+  "name": "Tyro Sword",
+  "rarity": 2,
+  "type": "Sword",
+  "mainStat": "ATK%",
+  "baseAtkLv90": 209,
+  "subStatValueLv90": "+12.3%",
+  "bestFor": [],
+  "sources": [
+    {
+      "note": "Derived from app/src/data/weapons.js (already cited in-file to nanoka.cc live weapon pages per comments dated 2026-08-14/08-18). Not independently re-fetched from Prydwen's weapon pages in this pass.",
+      "url": "app/src/data/weapons.js"
+    }
+  ]
+}

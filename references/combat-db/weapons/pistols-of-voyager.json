@@ -1,0 +1,17 @@
+{
+  "name": "Pistols of Voyager",
+  "rarity": 3,
+  "type": "Pistols",
+  "mainStat": "ATK%",
+  "baseAtkLv90": 300,
+  "subStatValueLv90": "+30.4%",
+  "bestFor": [
+    "Carlotta"
+  ],
+  "sources": [
+    {
+      "note": "Derived from app/src/data/weapons.js (already cited in-file to nanoka.cc live weapon pages per comments dated 2026-08-14/08-18). Not independently re-fetched from Prydwen's weapon pages in this pass.",
+      "url": "app/src/data/weapons.js"
+    }
+  ]
+}

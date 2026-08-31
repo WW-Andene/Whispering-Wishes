@@ -1,0 +1,17 @@
+{
+  "name": "Meditations on Mercy",
+  "rarity": 4,
+  "type": "Broadblade",
+  "mainStat": "ATK%",
+  "baseAtkLv90": 462,
+  "subStatValueLv90": "+18.2%",
+  "bestFor": [
+    "Broadblade DPS"
+  ],
+  "sources": [
+    {
+      "note": "Derived from app/src/data/weapons.js (already cited in-file to nanoka.cc live weapon pages per comments dated 2026-08-14/08-18). Not independently re-fetched from Prydwen's weapon pages in this pass.",
+      "url": "app/src/data/weapons.js"
+    }
+  ]
+}

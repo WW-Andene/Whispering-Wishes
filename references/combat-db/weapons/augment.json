@@ -1,0 +1,20 @@
+{
+  "name": "Augment",
+  "rarity": 4,
+  "type": "Rectifier",
+  "mainStat": "Crit Rate",
+  "baseAtkLv90": 412,
+  "subStatValueLv90": "+20.3%",
+  "bestFor": [
+    "Rectifier DPS",
+    "Yinlin",
+    "Encore",
+    "Zhezhi"
+  ],
+  "sources": [
+    {
+      "note": "Derived from app/src/data/weapons.js (already cited in-file to nanoka.cc live weapon pages per comments dated 2026-08-14/08-18). Not independently re-fetched from Prydwen's weapon pages in this pass.",
+      "url": "app/src/data/weapons.js"
+    }
+  ]
+}
