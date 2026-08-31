@@ -1,9 +1,9 @@
 {
-  "$note": "Heuristic keyword-scan taxonomy built from the 60 characters/<slug>.json files (kit skills, rotation, communityNotes, teams notes) already scraped from Prydwen.gg per SOURCES_STATUS.md. Each row cites the character slug and the JSON section the keyword was found in; open characters/<slug>.json for the full sentence and exact numeric value where the source page gave one. This is a categorization pass, not a re-scrape \u2014 where Prydwen's own text did not state a number or duration, none is invented here (see each character file's own prose for what precision exists).",
+  "$note": "Heuristic keyword-scan taxonomy built from the 60 characters/<slug>.json files (kit skills, rotation, communityNotes, teams notes) already scraped from Prydwen.gg per SOURCES_STATUS.md. Each row cites the character slug and the JSON section the keyword was found in; open characters/<slug>.json for the full sentence and exact numeric value where the source page gave one. This is a categorization pass, not a re-scrape — where Prydwen's own text did not state a number or duration, none is invented here (see each character file's own prose for what precision exists).",
   "methodology": "Scanned kit.intro, kit.skills.*, rotation, communityNotes, and teams[].notes in every character JSON for category keywords (e.g. 'DMG Bonus/Amp/Deepen', 'Crit Rate', 'RES Shred', 'Heal', 'Concerto'/'Resonance Energy'). Terminology aligned with app/src/features/teams/calcEngine.js's CHAR_BUFF_TABLE stat vocabulary (allDmg, elemDmg, skillDmg, basicDmg, libDmg, critRate, critDmg, defShred, deepen) so this layer stays consumable by the same engine later.",
   "damageTypeBuffs": {
     "elementalDmgBonus": {
-      "description": "Buffs to a specific element's DMG% (Havoc/Spectro/Aero/Glacio/Fusion/Electro DMG Bonus, Amp, or Deepen) \u2014 the largest single buff category in the kit set. Typically granted via Outro Skill (target: next resonator) or Liberation, occasionally as an always-on Inherent Skill.",
+      "description": "Buffs to a specific element's DMG% (Havoc/Spectro/Aero/Glacio/Fusion/Electro DMG Bonus, Amp, or Deepen) — the largest single buff category in the kit set. Typically granted via Outro Skill (target: next resonator) or Liberation, occasionally as an always-on Inherent Skill.",
       "reliesOnArchetypes": [
         "Hypercarry (single Main DPS, buffers rotate through to feed one element)",
         "Mono-element teams (e.g. Mono Fusion, Mono Aero)"
@@ -292,7 +292,7 @@
       ]
     },
     "skillDmgBonus": {
-      "description": "Buffs scoped to Resonance Skill damage specifically, narrower than a flat elemental buff \u2014 rewards Skill-heavy rotations (e.g. Forte/loop-skill-spam kits).",
+      "description": "Buffs scoped to Resonance Skill damage specifically, narrower than a flat elemental buff — rewards Skill-heavy rotations (e.g. Forte/loop-skill-spam kits).",
       "providers": [
         {
           "slug": "brant",
@@ -381,7 +381,7 @@
       ]
     },
     "basicAttackDmgBonus": {
-      "description": "Buffs scoped to Basic Attack damage \u2014 rewards on-field auto-attack loops (e.g. Verina's Gift of Nature-adjacent kits, Basic-Attack DPS like Chixia).",
+      "description": "Buffs scoped to Basic Attack damage — rewards on-field auto-attack loops (e.g. Verina's Gift of Nature-adjacent kits, Basic-Attack DPS like Chixia).",
       "providers": [
         {
           "slug": "ciaccona",
@@ -435,7 +435,7 @@
       ]
     },
     "heavyAttackDmgBonus": {
-      "description": "Buffs scoped to Heavy Attack damage \u2014 rewards Heavy-ATK-focused kits (e.g. Yangyang: Xuanling's Bated Breath).",
+      "description": "Buffs scoped to Heavy Attack damage — rewards Heavy-ATK-focused kits (e.g. Yangyang: Xuanling's Bated Breath).",
       "providers": [
         {
           "slug": "iuno",
@@ -475,7 +475,7 @@
       ]
     },
     "liberationDmgBonus": {
-      "description": "Buffs scoped to Resonance Liberation (ultimate) damage \u2014 pairs with Concerto-Energy-focused/burst rotations.",
+      "description": "Buffs scoped to Resonance Liberation (ultimate) damage — pairs with Concerto-Energy-focused/burst rotations.",
       "providers": [
         {
           "slug": "aemeath",
@@ -529,7 +529,7 @@
       ]
     },
     "allDmgBonus": {
-      "description": "Unconditional 'All DMG' team buffs regardless of element \u2014 the most universally slottable buff type, typical of top-tier Support Outros (Verina, Shorekeeper, Suisui).",
+      "description": "Unconditional 'All DMG' team buffs regardless of element — the most universally slottable buff type, typical of top-tier Support Outros (Verina, Shorekeeper, Suisui).",
       "providers": [
         {
           "slug": "lynae",
@@ -569,7 +569,7 @@
       ]
     },
     "critRateBuffs": {
-      "description": "Team or self Crit Rate buffs \u2014 either substitute for substat investment (freeing echo rolls into Crit DMG/ATK%) or provide burst-window crit consistency.",
+      "description": "Team or self Crit Rate buffs — either substitute for substat investment (freeing echo rolls into Crit DMG/ATK%) or provide burst-window crit consistency.",
       "providers": [
         {
           "slug": "mornye",
@@ -651,7 +651,7 @@
   },
   "debuffs": {
     "resShred": {
-      "description": "Elemental RES (resistance) Shred on the enemy \u2014 multiplies with the team's own elemental DMG bonuses rather than stacking additively, so is prioritized for mono-element hypercarry teams. Fewer characters carry this than DEF Shred/DMG Amp in the current roster per this scan.",
+      "description": "Elemental RES (resistance) Shred on the enemy — multiplies with the team's own elemental DMG bonuses rather than stacking additively, so is prioritized for mono-element hypercarry teams. Fewer characters carry this than DEF Shred/DMG Amp in the current roster per this scan.",
       "providers": [
         {
           "slug": "iuno",
@@ -684,7 +684,7 @@
       ]
     },
     "defShred": {
-      "description": "Enemy DEF reduction \u2014 flagged as under-represented by this keyword scan (only 1 direct hit); most of the roster's defensive-debuff kit expresses as DMG Amplification/Deepen on the target instead of literal DEF%, per Prydwen's own phrasing.",
+      "description": "Enemy DEF reduction — flagged as under-represented by this keyword scan (only 1 direct hit); most of the roster's defensive-debuff kit expresses as DMG Amplification/Deepen on the target instead of literal DEF%, per Prydwen's own phrasing.",
       "providers": [
         {
           "slug": "chisa",
@@ -696,7 +696,7 @@
       ]
     },
     "dmgAmplificationVulnerability": {
-      "description": "Target-side 'DMG Taken +X%' / 'DMG Amplification' effects (calcEngine.js's 'deepen'/target-vulnerability stat family) \u2014 functionally similar to a damage-type buff but applied to the enemy instead of the party, so it multiplies every attacker's damage against that target regardless of element.",
+      "description": "Target-side 'DMG Taken +X%' / 'DMG Amplification' effects (calcEngine.js's 'deepen'/target-vulnerability stat family) — functionally similar to a damage-type buff but applied to the enemy instead of the party, so it multiplies every attacker's damage against that target regardless of element.",
       "providers": [
         {
           "slug": "aemeath",
@@ -953,7 +953,7 @@
       ]
     },
     "negativeStatusApplication": {
-      "description": "Application of the game's Negative Status DOT/debuff families: Frazzle (Electro), Erosion (Aero), Chafe (Glacio), Bane (Havoc), plus the generic Tune Break/Tune Strain-Interfered rupture mechanic (element-agnostic, triggered by breaking an enemy's stagger gauge). Modeled in calcEngine.js via FRAZZLE_*/EROSION_*/TUNE_BREAK_* constants \u2014 see resonance-chain-mechanics.md for the general mechanic.",
+      "description": "Application of the game's Negative Status DOT/debuff families: Frazzle (Electro), Erosion (Aero), Chafe (Glacio), Bane (Havoc), plus the generic Tune Break/Tune Strain-Interfered rupture mechanic (element-agnostic, triggered by breaking an enemy's stagger gauge). Modeled in calcEngine.js via FRAZZLE_*/EROSION_*/TUNE_BREAK_* constants — see resonance-chain-mechanics.md for the general mechanic.",
       "providers": [
         {
           "slug": "aalto",
@@ -1128,7 +1128,7 @@
   },
   "utility": {
     "healing": {
-      "description": "HP restoration, either flat/%-max-HP heals on skill/outro use or continuous field heals \u2014 the core identity of the Support/Healer role archetype.",
+      "description": "HP restoration, either flat/%-max-HP heals on skill/outro use or continuous field heals — the core identity of the Support/Healer role archetype.",
       "providers": [
         {
           "slug": "baizhi",
@@ -1245,7 +1245,7 @@
       ]
     },
     "shielding": {
-      "description": "Damage-absorbing shields, usually HP%-scaling, granted on skill/forte activation \u2014 secondary survivability tool alongside or instead of healing.",
+      "description": "Damage-absorbing shields, usually HP%-scaling, granted on skill/forte activation — secondary survivability tool alongside or instead of healing.",
       "providers": [
         {
           "slug": "augusta",
@@ -1292,7 +1292,7 @@
       ]
     },
     "energyRegen": {
-      "description": "Energy Regeneration% buffs or flat Resonance Energy restoration \u2014 feeds Liberation (ultimate) uptime; see calcEngine.js's ER_THRESHOLD_MAIN_DPS/SUB_DPS/STANDARD/HEALER breakpoints for how much a given role actually needs.",
+      "description": "Energy Regeneration% buffs or flat Resonance Energy restoration — feeds Liberation (ultimate) uptime; see calcEngine.js's ER_THRESHOLD_MAIN_DPS/SUB_DPS/STANDARD/HEALER breakpoints for how much a given role actually needs.",
       "providers": [
         {
           "slug": "brant",
@@ -1353,7 +1353,7 @@
       ]
     },
     "concertoAndResonanceEnergyGeneration": {
-      "description": "Concerto Energy (the gauge that unlocks a character's Outro Skill once full) and/or Resonance Energy (Liberation gauge) generation support \u2014 either self-generation mechanics or kit text explicitly calling out feeding a teammate's gauge.",
+      "description": "Concerto Energy (the gauge that unlocks a character's Outro Skill once full) and/or Resonance Energy (Liberation gauge) generation support — either self-generation mechanics or kit text explicitly calling out feeding a teammate's gauge.",
       "providers": [
         {
           "slug": "aalto",
@@ -1476,5 +1476,6 @@
         }
       ]
     }
-  }
+  },
+  "crossCheckPass2026_08_31": "All 57 released characters' Outro-Skill buff/DMG-amp entries in this taxonomy were cross-checked against wutheringwaves.fandom.com/wiki/Outro_Skill's official skill-text list (fetched 2026-08-31) and app/src/data/characters.js's CHAR_BUFF_TABLE (58/60 characters). Full per-character detail and the exact fandom/app quote for each is recorded in intro-outro-chains.json's crossCheckedSources field (same slug), which this taxonomy's damageTypeBuffs/debuffs rows are derived from — see that file rather than duplicating all 57 quotes here. Two real numeric fixes came out of that pass (Baizhi and Verina's outro DMG-amp durationApprox; Iuno's Heavy Attack DMG Amp duration 14s->10s) and are reflected in intro-outro-chains.json; no taxonomy row here needed value changes as a result since this file's rows quote effect text/category, not the specific durationApprox fields that were off. The 3 unreleased characters (Hsin, Jingran, Suoming) are confirmed absent from Fandom's official list too, matching their existing dataStatus:'stub' flag."
 }
