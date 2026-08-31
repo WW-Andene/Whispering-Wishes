@@ -30,8 +30,14 @@ const OnboardingModal = ({ onComplete }) => {
       <div className="kuro-card w-full max-w-xs" style={{ border: `1px solid ${s.color}30` }}>
         <div className="kuro-card-inner rounded-2xl overflow-hidden">
 
-          {/* Skip button */}
-          <button onClick={onComplete} className="kuro-btn absolute top-3 right-4 z-20 min-h-[48px]" style={{ padding: '8px 14px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.skip')}</button>
+          {/* Skip button — no focus ring: FocusTrapModal auto-focuses the
+              first focusable element on open (accessibility requirement,
+              shared by every modal), which is this button since it's first
+              in the DOM. Chromium's :focus-visible heuristic treats that
+              programmatic focus as "visible" the same as real keyboard
+              focus, so it showed a highlight ring immediately on open with
+              no tab press involved. */}
+          <button onClick={onComplete} className="kuro-btn onboarding-skip-btn absolute top-3 right-4 z-20 min-h-[48px]" style={{ padding: '8px 14px', fontSize: 'var(--font-sm)' }}>{t('modals.onboarding.skip')}</button>
 
           {/* Content */}
           <div className="kuro-body text-center pt-6" aria-live="polite" aria-atomic="true">

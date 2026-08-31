@@ -920,6 +920,17 @@
       -webkit-backdrop-filter: blur(var(--blur-md));
     }
 
+    /* Onboarding's Skip button is auto-focused the instant the welcome
+       panel opens (FocusTrapModal's own accessibility requirement — see
+       OnboardingModal.jsx's own comment), which Chromium's :focus-visible
+       heuristic treats as real keyboard focus, showing the highlight ring
+       immediately with no tab press involved. Suppressed here specifically. */
+    .onboarding-skip-btn:focus,
+    .onboarding-skip-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--shadow-md);
+    }
+
     /* Ripple container */
     .kuro-btn::before {
       content: '';
