@@ -405,7 +405,24 @@ const CHARACTER_DATA = {
   // non-signature 5-stars; alt4 uses Radiant Dawn (77.9%, best 4★) and Augment (77.8%, #2 4★); alt3 uses
   // the standard starter Rectifier of Night, matching the convention used elsewhere.
   'Cantarella': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Sea of Dreams, current head of the Fisalia Family, Cantarella the Bane — a mysterious noblewoman whose beauty is as captivating as it is perilous, residing in a crown-like castle where illusory dreams flow like streams, meticulously spun by her own hands. Havoc Hybrid who builds Trance through her Intro/Skill/Liberation, enters Mirage via her Forte Heavy Delusive Dive to unlock enhanced Basic Attacks and the burst Perception Drain nuke, deals off-field Havoc DMG through Coordinated Attack Dreamweavers from her Liberation, heals the team throughout, and buffs the incoming Resonator\'s Havoc and Resonance Skill DMG via her Outro Gentle Tentacles.',
+    // desc rewritten 2026-08-31 against wutheringwaves.fandom.com/wiki/Cantarella/Combat (Chrome/Windows UA +
+    // google.com referer + jsRender, 2 attempts needed past a Cloudflare interstitial) and cross-checked against
+    // prydwen.gg/wuthering-waves/characters/cantarella's Kit/Gameplay tabs. Prior desc only gestured at "builds
+    // Trance through Intro/Skill/Liberation" with no exact economy — the real numbers: Trance caps at 5, gained
+    // +1 on Intro cast, +1 on Basic ATK Stage 3 hit, +1 on Graceful Step (Skill) cast, +3 on Flowing Suffocation
+    // (Liberation) cast (this overcaps by 1 from a 2-Trance start, deliberately, to hit the 5-cap needed before
+    // Delusive Dive), and +1 every 5s while swimming. Mirage (entered by consuming all 5 Trance via the enhanced
+    // Heavy ATK "Delusive Dive") lasts a hard 8s and also ends early the instant Trance is depleted inside it —
+    // it is not simply "8s, full stop". Inside Mirage, Basic ATK is replaced by 3-hit "Phantom Sting" and each
+    // landed hit grants 1 Shiver (cap 3, also gainable off Abysmal Vortex/Shadowy Sweep hits); at 3 Shiver, Skill
+    // is replaced by the burst nuke "Perception Drain", which also heals the whole team and re-applies Hazy Dream.
+    // Abyssal Rebirth (entered on Intro cast, 25s duration, re-triggerable every 25s) is the real Concerto-Energy
+    // engine: any teammate's Echo Skill cast (capped at 6 procs per 25s window, no duplicate echo name twice)
+    // grants Cantarella 6 Concerto Energy — critical since her kit's own Resonance Energy generation is very low
+    // relative to her 125 Energy cost, so this is what actually lets Flowing Suffocation come off cooldown per
+    // rotation. Outro "Gentle Tentacles" grants the incoming Resonator +20% Havoc DMG and +25% Resonance Skill
+    // DMG for 14s, and that buff is forfeited early the moment that Resonator is swapped out again.
+    desc: 'Sea of Dreams, current head of the Fisalia Family, Cantarella the Bane — a mysterious noblewoman whose beauty is as captivating as it is perilous, residing in a crown-like castle where illusory dreams flow like streams, meticulously spun by her own hands. Havoc Hybrid who builds Trance (max 5: +1 Intro, +1 Basic ATK Stage 3, +1 Graceful Step, +3 Flowing Suffocation) and consumes it all via Heavy ATK "Delusive Dive" to enter Mirage (8s, or until Trance is depleted, whichever first) — unlocking enhanced "Phantom Sting" Basic Attacks that build Shiver (max 3) toward the burst nuke "Perception Drain", which also heals the team. Deals off-field Havoc DMG through Dreamweaver Coordinated Attacks summoned by her Liberation, sustains Concerto Energy via Abyssal Rebirth (+6 Energy per teammate Echo Skill cast, up to 6 times per 25s window after Intro), and buffs the incoming Resonator\'s Havoc DMG +20% and Resonance Skill DMG +25% for 14s (forfeited on swap) via her Outro "Gentle Tentacles".',
     skills: ['Illusion Collapse', 'Dance with Shadows', 'Beneath the Sea', 'Between Illusion and Reality'],
     ascension: { boss: 'Cleansing Conch', common: 'Polygon Core', specialty: 'Seaside Cendrelis' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Helix' },
@@ -2207,15 +2224,19 @@ const CHAR_BUFF_TABLE = {
   // Inherent Skill "Poison" (+6% Havoc DMG Bonus per Echo Skill cast, 10s, stacks up to 2x/12% cap) —
   // notable since several of her own kit abilities (Flowing Suffocation, Flickering Reverie, Perception
   // Drain) are themselves flagged as Echo Skill casts, so this self-buff is easy to trigger.
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Cantarella/Combat's Outro Skill
+  // ("Gentle Tentacles") and Inherent Skill ("Poison") entries: both the Outro's +20%/+25%/14s figures and
+  // Poison's +6%/10s/2-stack figures matched exactly, unchanged. Added the Outro's forfeit condition
+  // ("Switching Resonators ends this effect") to the note, which was previously undocumented here.
   'Cantarella': {
     outroBuffs: [
-      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },
-      { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp — ends early if the buffed Resonator is swapped out' },
+      { stat: 'skillDmg', value: 25, target: 'next', duration: 14, condition: 'Resonance Skill DMG Amp — ends early if the buffed Resonator is swapped out' },
     ],
     libBuffs: [],
     selfBuffs: [{ stat: 'elemDmg', value: 12, target: 'self', duration: 10, condition: 'Inherent Skill Poison: +6% Havoc DMG Bonus per Echo Skill cast, stacks up to 2x (12% cap)' }],
     debuffs: [],
-    note: 'Outro: +20% Havoc DMG + 25% Skill DMG Amp (14s). Off-field Coordinated ATK. Heal. Self: up to +12% Havoc DMG from Poison.',
+    note: 'Outro Gentle Tentacles: +20% Havoc DMG + 25% Resonance Skill DMG Amp (14s), forfeited early if the buffed Resonator is swapped out. Off-field Coordinated ATK via Liberation\'s Diffusion. Heal via Forte Trance/Shiver consumption and Perception Drain. Self: up to +12% Havoc DMG from Inherent Skill Poison.',
   },
   'Ciaccona': {
     outroBuffs: [{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
@@ -2919,16 +2940,27 @@ const SKILL_MULTIPLIERS = {
   // doesn't match her kit at all — her real Outro is 'Gentle Tentacles' (confirmed on both Prydwen and
   // nanoka); the fabricated name would have broken skill-icon/rotation substring lookups. The Outro's
   // buff description (+20% Havoc DMG + 25% Skill DMG Amp) was already correct and is unchanged.
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Cantarella/Combat's "Attribute
+  // Scaling" tables (Lv.10 column, rightmost) — the 2026-08-17 pass fixed the halving bug but the multi-hit
+  // Basic ATK Stage 2/3 and Forte Phantom Sting Stage 1-3 rows had been collapsed into a single summed total
+  // per stage instead of the real per-hit breakdown (same class of error the 10-character reference pass
+  // flagged), and the Heavy ATK row was pointed at "Standard" Heavy Attack (57.18%×2) while the actual
+  // rotation step uses the Trance-consuming enhanced Heavy ATK "Delusive Dive" (53.05%×2) — a distinct move
+  // with no multiplier row to match against at all, meaning that rotation step previously had ZERO damage
+  // multiplier resolving for it. Added a 'Skill'/'Jolt' row too: Jolt is a real Havoc DMG instance (198.81%,
+  // counted as Basic ATK DMG) auto-triggered when a Hazy Dream'd target takes damage, previously undocumented.
   'Cantarella': [
-    ['Basic ATK', 'Stage 1-3', '79.5% → 145.8% → 145.1%'],
-    ['Heavy ATK', 'Standard', '57.2%×2'],
-    ['Skill', 'Graceful Step', '73.6%×2'],
-    ['Skill', 'Flickering Reverie', '196.2%'],
-    ['Forte', 'Phantom Sting 1-3', '106.0% → 125.9% → 258.5%'],
-    ['Forte', 'Perception Drain', '668.0%×2'],
-    ['Liberation', 'Flowing Suffocation', '376.0% + 14.5%×21'],
-    ['Intro', 'Ripple', '42.3%×4'],
-    ['Outro', 'Gentle Tentacles', '+20% Havoc DMG + 25% Skill DMG Amp (14s)'],
+    ['Basic ATK', 'Stage 1-3', '79.53% → 36.44%×4 → 72.57%×2'], // was '79.5% → 145.8% → 145.1%' (summed, not per-hit)
+    ['Heavy ATK', 'Standard', '57.18%×2'], // was '57.2%×2' — kept for reference, NOT the move the rotation actually uses
+    ['Heavy ATK', 'Delusive Dive', '53.05%×2'], // NEW — the Trance-consuming enhanced Heavy ATK that enters Mirage; the rotation step referenced this name but no row existed to match it
+    ['Skill', 'Graceful Step', '73.60%×2'], // was '73.6%×2', rounding only
+    ['Skill', 'Flickering Reverie', '196.23%'], // was '196.2%', rounding only
+    ['Skill', 'Jolt', '198.81%'], // NEW — auto-trigger off Hazy Dream on-hit, considered Basic ATK DMG
+    ['Forte', 'Phantom Sting 1-3', '35.33%×3 → 62.93%×2 → 64.62%×4'], // was '106.0% → 125.9% → 258.5%' (summed, not per-hit)
+    ['Forte', 'Perception Drain', '667.99%×2'], // was '668.0%×2', rounding only
+    ['Liberation', 'Flowing Suffocation', '376.00% + 14.54%×21'], // was '376.0% + 14.5%×21', rounding only
+    ['Intro', 'Ripple', '42.25%×4'], // was '42.3%×4', rounding only
+    ['Outro', 'Gentle Tentacles', '+20% Havoc DMG + 25% Resonance Skill DMG Amp (14s, ends early on swap)'],
   ],
   // Corrected 2026-08-17 against ww.nanoka.cc's character #1107 sheet (Lv.10 skill attributes): every
   // row except Outro was roughly half its real value (e.g. Era of New Wave — her core Liberation nuke —
@@ -3587,17 +3619,24 @@ const SKILL_MULTIPLIERS = {
 const CHARACTER_ROTATIONS = {
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Cantarella (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  // Re-verified and expanded 2026-08-31 against both wutheringwaves.fandom.com/wiki/Cantarella/Combat (exact
+  // Trance/Shiver/Mirage/Abyssal Rebirth mechanics and durations) and prydwen.gg's Gameplay tab (rotation step
+  // order, unchanged from the 2026-08-17 pass). Corrections: the Heavy ATK step's `skill` field was 'Delusive
+  // Dive' with no matching SKILL_MULTIPLIERS row (fixed above — see that section's comment) so this step was
+  // previously resolving to 0 DMG. Also added Mirage's exact 8s/Trance-depletion end condition, Perception
+  // Drain's exact 18s cooldown and Flowing Suffocation's exact 25s cooldown/125 Energy cost (both previously
+  // undocumented cast-order/timing dependencies), and the Trance/Shiver point-by-point accounting per step.
   'Cantarella': [
     { type: 'Intro', skill: 'Cruise', note: 'Swap into her — fires automatically. This specific variant ("Ripple") makes her next Basic Attack skip straight to Stage 3 instead of starting over at Stage 1, and grants 1 Trance (0→1/5).' },
-    { type: 'Basic ATK', skill: 'Illusion Collapse Stage 3', note: 'Tap Basic Attack ONCE — since Intro primed her to start at Stage 3, this single tap lands Stage 3 and grants 1 more Trance (1→2/5).' },
-    { type: 'Skill', skill: 'Dance with Shadows', note: 'Press Skill (Graceful Step) — grants 1 more Trance (2→3/5) and a small amount of Concerto Energy.' },
-    { type: 'Liberation', skill: 'Beneath the Sea', note: 'Press Liberation — grants 3 Trance at once, overcapping to the 5 max (needed for Concerto Energy even though 1 point is "wasted"), and applies Diffusion: for the next 30s, every hit she or the team lands summons an extra Coordinated Attack.' },
-    { type: 'Heavy ATK', skill: 'Delusive Dive', note: 'HOLD Heavy Attack now that Trance is capped — this consumes all 5 Trance and launches her into "Mirage" state.' },
-    { type: 'Skill', skill: 'Flickering Reverie', note: 'While in Mirage her Skill is replaced by this one and its cooldown is already reset — press Skill again immediately. Inflicts Hazy Dream (slows the target and triggers a follow-up hit whenever it takes damage).' },
-    { type: 'Forte', skill: 'Phantom Sting 1-3', note: 'While still in Mirage, tap Basic Attack 3 times in a row (her Basic Attack is replaced by this combo automatically) — each hit builds 1 Shiver, capping at 3.' },
-    { type: 'Forte', skill: 'Perception Drain', note: 'Once Shiver hits 3, her Skill button becomes this automatically — press Skill to consume all 3 Shiver for a burst nuke that also heals the whole team.' },
+    { type: 'Basic ATK', skill: 'Illusion Collapse Stage 3', note: 'Tap Basic Attack ONCE — since Intro primed her to start at Stage 3, this single tap lands Stage 3 (72.57%×2) and grants 1 more Trance (1→2/5).' },
+    { type: 'Skill', skill: 'Dance with Shadows', note: 'Press Skill (Graceful Step, 73.60%×2, 6s cooldown) — grants 1 more Trance (2→3/5) and 10 Concerto Energy regen.' },
+    { type: 'Liberation', skill: 'Beneath the Sea', note: 'Press Liberation (Flowing Suffocation, 376.00%, 125 Energy cost, 25s cooldown) — grants 3 Trance at once, overcapping to the 5 max (needed for Concerto Energy even though 1 point is "wasted"), and applies Diffusion: for the next 30s (or until 21 Dreamweavers are summoned), every hit she or the team lands summons up to 1 Coordinated Attack per second (14.54%×21 total if fully consumed).' },
+    { type: 'Heavy ATK', skill: 'Delusive Dive', note: 'HOLD Heavy Attack now that Trance is capped — this consumes all 5 Trance for 53.05%×2 DMG and launches her into "Mirage" state, which lasts a hard 8s or ends earlier the instant Trance hits 0 inside it, whichever comes first.' },
+    { type: 'Skill', skill: 'Flickering Reverie', note: 'While in Mirage her Skill is replaced by this one (196.23%, considered an Echo Skill cast) and its cooldown is already reset — press Skill again immediately. Inflicts Hazy Dream (6.5s slow; the next hit the target takes triggers a follow-up Jolt hit for 198.81% Havoc DMG, considered Basic ATK DMG, and removes Hazy Dream — only her own hits or Coordinated ATK/Utility damage can trigger this consistently, a teammate\'s direct hit also consumes it without necessarily landing the Jolt).' },
+    { type: 'Forte', skill: 'Phantom Sting 1-3', note: 'While still in Mirage, tap Basic Attack 3 times in a row (her Basic Attack is replaced by this combo automatically: 35.33%×3 → 62.93%×2 → 64.62%×4) — each hit that lands consumes 1 Trance to build 1 Shiver, capping at 3.' },
+    { type: 'Forte', skill: 'Perception Drain', note: 'Once Shiver hits 3, her Skill button becomes this automatically (18s cooldown once cast) — press Skill to consume all 3 Shiver for a burst nuke (667.99%×2, considered Basic ATK DMG, also counted as an Echo Skill cast) that also heals the whole team and re-applies Hazy Dream.' },
     { type: 'Echo', skill: 'Swap Cancel', note: 'Use your equipped Echo\'s skill right after Perception Drain, then immediately swap out — this cuts off the Echo animation without losing its effect and triggers her Outro.' },
-    { type: 'Outro', skill: 'Gentle Tentacles', duration: 14, note: 'Triggers automatically the moment you swap out. Grants the incoming Resonator +20% Havoc DMG and +25% Resonance Skill DMG for 14s.' },
+    { type: 'Outro', skill: 'Gentle Tentacles', duration: 14, note: 'Triggers automatically the moment you swap out. Grants the incoming Resonator +20% Havoc DMG and +25% Resonance Skill DMG for 14s — this buff is forfeited early if that Resonator is swapped out before the 14s expires.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Brant (2026-08-17, Chrome
   // UA + google.com referer + jsRender). This section was previously entirely missing for him. Exact
@@ -4828,8 +4867,35 @@ const RESONANCE_CHAIN_DATA = {
   // s2 during Liberation, team +40% Aero DMG Bonus (was totalMult:15, wrong category); s3 +1 Musical Essence/+1 Skill charge, utility with no direct DPS stat, totalMult fallback (was elemDmg:10, no basis);
   // s4 ignores 45% DEF on Quadruple Downbeat/Liberation DMG (was deepen:10, wrong category/value); s5 +40% Liberation DMG Bonus (was totalMult:10, wrong category);
   // s6 Solo Concert pulse deals 220% ATK Aero DMG counted as Liberation DMG (was elemDmg:15, wrong category/value).
-  // Cantarella S1: +50% Skill DMG mult + Trance recovery ≈ totalMult 20
-  'Cantarella':   { s1: { totalMult: 20 }, s2: { totalMult: 10 }, s3: { deepen: 8 }, s4: { coordDmg: 10 }, s5: { totalMult: 10 }, s6: { deepen: 15 } },
+  // Cantarella S1-S6 fully re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Cantarella/Combat's
+  // "Resonance Chain" table (verbatim node text below) — every prior value was an unsourced approximation
+  // with no basis in her real chain kit, and 2 of 6 nodes carried a fabricated DPS number on what are actually
+  // partly or fully non-DPS mechanics (S4 heal-only, S5 a hit-count cap increase). Real node effects:
+  // S1 "Embrace the Endless Waves" — Resonance Skill cast recovers 1 Trance (utility, not modeled); Graceful
+  //   Step/Flickering Reverie/Perception Drain DMG Multiplier +50% (mixed Skill+Forte-that-counts-as-Basic-ATK
+  //   scope, doesn't cleanly map to one existing stat category, kept as totalMult); interrupt immunity during
+  //   Perception Drain (utility, not modeled). Was totalMult:20, no basis — corrected to totalMult:50.
+  // S2 "Surrender to the Illusive Reverie" — Flowing Suffocation now also inflicts Hazy Dream (utility, not
+  //   modeled); Jolt DMG Multiplier +245% (Jolt is a proc-only Basic ATK-DMG instance, not an always-on Basic
+  //   ATK buff, so basicDmg would over-apply it — kept as totalMult). Was totalMult:10 with a wrong-category
+  //   deepen mixed in elsewhere in this file's history — corrected to totalMult:245.
+  // S3 "Gaze into the Abyss" — Flowing Suffocation's own DMG Multiplier +370% (this buffs the Liberation
+  //   ability's self-multiplier directly, matching this table's libDmg convention e.g. Chisa S5); also causes
+  //   Flowing Suffocation to enter Mirage on cast (utility/cast-order change, not modeled). Was deepen:8, wrong
+  //   category and wrong magnitude — corrected to libDmg:370.
+  // S4 "Behold Your Own Soul" — Healing Bonus +25% while in Mirage. Zero DPS component (healing-only, and this
+  //   schema has no healingBonus stat key) — was coordDmg:10, a fabricated DPS number with no basis in the real
+  //   effect at all — zeroed to {} per the "don't force-fit a lossy value" rule.
+  // S5 "Rest in Your Reflection" — raises the Diffusion Dreamweaver cap from 21 to 26 (a flat +5 hit-count cap
+  //   increase, not a %-multiplier). Real DPS impact exists (more Coordinated ATK procs possible) but this flat
+  //   schema has no "extra hit count" stat to express it losslessly — was totalMult:10, a fabricated number —
+  //   zeroed to {} with a TODO rather than guessing a %.
+  // TODO: needs Phase 2 schema — S5's +5 max Dreamweaver cap (21→26) needs a hit-count-cap stat, not a %.
+  // S6 "Fall, Fall... and Fall Deeper into the Dream" — Basic Attack Phantom Sting DMG Multiplier +80%
+  //   (Phantom Sting is the Mirage-state Basic ATK combo, so basicDmg fits, confirmed exact); + DEF Ignore 30%
+  //   for 10s after casting Flowing Suffocation (confirmed exact -> defIgnore). Was deepen:15, wrong category
+  //   and wrong magnitude on both counts — corrected to basicDmg:80, defIgnore:30.
+  'Cantarella':   { s1: { totalMult: 50 }, s2: { totalMult: 245 }, s3: { libDmg: 370 }, s4: {}, s5: {}, s6: { basicDmg: 80, defIgnore: 30 } },
   // Corrected against ww.nanoka.cc character/1302 — prior values (elemDmg/resShred) didn't match her real
   // kit at all (she has no RES Shred anywhere in her chain).
   'Yinlin':       { s1: { skillDmg: 70 }, s2: { totalMult: 8 }, s3: { skillDmg: 55 }, s4: { atkPct: 20 }, s5: { libDmg: 100 }, s6: { totalMult: 40 } },
