@@ -5,6 +5,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, memo } from 'react';
 import { createPortal } from 'react-dom';
+import { getPortalRoot, toCanvasSpace, toCanvasLength } from '../scaling/canvasScale.js';
 import { ChevronDown } from 'lucide-react';
 
 const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, small, center }) => {
@@ -20,8 +21,14 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
   const toggle = useCallback(() => {
     setOpen(prev => {
       if (!prev && ref.current) {
+        // getBoundingClientRect() always returns REAL screen-space
+        // coordinates, but this dropdown portals into the scaled canvas
+        // (getPortalRoot()) where position:fixed/absolute resolves in the
+        // canvas's own pre-transform coordinate space — convert before use,
+        // see canvasScale.js's own comment on toCanvasSpace/toCanvasLength.
         const rect = ref.current.getBoundingClientRect();
-        setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+        const { x: left, y: bottom } = toCanvasSpace(rect.left, rect.bottom);
+        setPos({ top: bottom + 4, left, width: toCanvasLength(rect.width) });
       }
       return !prev;
     });
@@ -148,7 +155,7 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
             );
           })}
         </div>,
-        document.body
+        getPortalRoot()
       )}
     </div>
   );

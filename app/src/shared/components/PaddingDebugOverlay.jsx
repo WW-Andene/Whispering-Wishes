@@ -6,6 +6,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { getPortalRoot } from '../scaling/canvasScale.js';
 
 export const DEBUG_PADDING_STORAGE_KEY = 'ww-debug-padding';
 export const DEBUG_PADDING_EVENT = 'ww-debug-padding-changed';
@@ -152,7 +153,7 @@ const PaddingDebugOverlay = () => {
         🐛 Padding debug — {boxes.length} éléments
       </div>
     </div>,
-    document.body
+    getPortalRoot()
   );
 };
 

@@ -82,7 +82,8 @@ import { silentCatch } from './utils/silentCatch.js';
 import { gatherAuxData, restoreAuxData, getMergedHistories } from './core/storageKeys.js';
 import { hashUidForStorage } from './shared/utils/hashUidForStorage.js';
 import { t, formatDate, useAppLocale } from './utils/i18n.js';
-import { useIsReferenceDevice, useUiScale } from './hooks/useIsReferenceDevice.js';
+import { useIsReferenceDevice } from './hooks/useIsReferenceDevice.js';
+import { toCanvasSpace } from './shared/scaling/canvasScale.js';
 import { syncBannerWidget, syncCurrencyWidget } from './utils/widgetSync.js';
 import { initGlassTouch } from './utils/glassTouch.js';
 
@@ -106,12 +107,15 @@ function WhisperingWishesInner() {
   // instead, guaranteeing the new language actually shows up everywhere.
   const appLocale = useAppLocale();
 
-  // Multi-format UI recalculation: the reference device (Xiaomi 13T, 439px)
-  // always keeps --ui-scale pinned to 1 (untouched sizing). Other widths get
-  // --ui-scale = innerWidth/439 written onto <html>, which the design tokens
-  // in kuro.css/index.css multiply themselves by via calc().
+  // Multi-format UI now handled by ScaledCanvas.jsx (main.jsx) — the whole
+  // app renders inside a uniformly-scaled 439x976 canvas instead of this
+  // per-token width-only rescale, so useUiScale() is no longer called
+  // (kuro.css's --ui-scale stays frozen at its literal default of 1).
+  // isReferenceDevice/the data-reference-device attribute below is kept as
+  // a harmless leftover marker — nothing currently reads it — rather than
+  // ripped out along with useUiScale, since it costs nothing to keep and
+  // might still be useful for device-specific (not scale-related) branches.
   const isReferenceDevice = useIsReferenceDevice();
-  useUiScale();
 
   const toast = useToast();
   const confirm = useConfirm();
@@ -434,7 +438,12 @@ function WhisperingWishesInner() {
     // native Android only) as well as its own rendered height — margin
     // shifts the header's position without changing its own size, so
     // offsetHeight alone would under-report the space it actually occupies.
-    const update = () => setHeaderPadding(header.getBoundingClientRect().bottom + 12);
+    // getBoundingClientRect() always returns REAL screen-space coordinates
+    // though, and this value is used as <main>'s own paddingTop — a
+    // canvas-local length, since <main> lives inside ScaledCanvas.jsx's
+    // transformed box same as the header — so it needs converting back to
+    // canvas-local space first (see canvasScale.js's own comment).
+    const update = () => setHeaderPadding(toCanvasSpace(0, header.getBoundingClientRect().bottom).y + 12);
     update();
     const ro = new ResizeObserver(update);
     ro.observe(header);
@@ -1053,7 +1062,7 @@ function WhisperingWishesInner() {
       {/* Offline banner handled by PWAProvider */}
 
       {/* Header */}
-      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, height: 64, borderRadius: 14, display: 'flex', alignItems: 'center', marginTop: 'var(--safe-area-top, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
+      <header ref={headerRef} className="kuro-card fixed top-3 left-3 right-3 z-50" style={{ position: 'fixed', zIndex: 50, height: 64, borderRadius: 14, display: 'flex', alignItems: 'center', marginTop: 'var(--safe-area-top-canvas, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }}>
         {/* Theme banner art background */}
         {headerBgUrl && (
           headerBgType === 'animated' ? (
@@ -1137,7 +1146,7 @@ function WhisperingWishesInner() {
       </header>
 
       {/* Floating bottom navigation bar */}
-      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-center overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, height: 64, borderRadius: 14, marginBottom: 'var(--safe-area-bottom, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
+      <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-center overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, height: 64, borderRadius: 14, marginBottom: 'var(--safe-area-bottom-canvas, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
           const tabs = ['tracker','events','map','planner','calculator','analytics','teams','gathering'];
           const idx = tabs.indexOf(activeTab);
           let newTab;
