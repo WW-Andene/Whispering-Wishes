@@ -1,0 +1,33 @@
+{
+  "name": "Camellya",
+  "slug": "camellya",
+  "rarity": 5,
+  "element": "Havoc",
+  "weaponType": "Sword",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/camellya", "nanoka": "https://ww.nanoka.cc/character/camellya", "fandom": "https://wutheringwaves.fandom.com/wiki/Camellya", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T2 Tower of Adversity, T3 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Havoc Sword Main DPS with the longest rotation of any Main DPS in the game. Forte gauge 'Crimson Pistils' (max 100, restored only by Intro and Forte Skill) fuels a dual-form kit: White Hair (mobile, single-target, better tracking) vs Red Hair 'Blossom Mode' (AoE spin, immobile, faster Pistil consumption).",
+    "skills": {
+      "normalAttack": "Burgeoning - up to 5-hit chain; in Blossom Mode replaced by faster 'Vining Waltz'/'Blazing Waltz' spin attacks.",
+      "resonanceSkill": "Valse of Bloom and Blight - Crimson Blossom enters Blossom Mode; Floral Ravage exits it.",
+      "forte": "Vegetative Universe - consumes Crimson Pistils for buffed Energy Regen, builds Crimson Buds; at full Concerto, Ephemeral (Basic-type nuke) triggers Budding Mode (+50% dmg multiplier on Basic/Skill-type attacks, +5% per Crimson Bud consumed, up to +50%).",
+      "liberation": "Fervor Efflorescent - Havoc DMG nuke, mid-air castable.",
+      "intro": "Everblooming - Havoc DMG, restores 100 Crimson Pistils.",
+      "outro": "Twining - Havoc DMG (329% ATK, or 459% ATK if following an Ephemeral cast)."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Red Spring (signature, 100%)", "Emerald Sentence (90.1%)", "Frostburn (89.5%)", "Everbright Polestar (89.4%)", "Emerald of Genesis (88.4%, best permanent/F2P)", "Blazing Brilliance (77.8%)", "Feather Edge (77.8%, best 4-star)", "Commando of Conviction (F2P no-gacha)"],
+    "echoSet": ["Havoc Eclipse (5pc, best, ramping Havoc DMG)", "Endless Resonance (94.6%, generic alt)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Havoc DMG; ATK% >= Havoc DMG", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "Basic DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Camellya", "Lynae or Roccia/Sanhua/Danjin", "Mornye or The Shorekeeper/Verina"], "notes": "Sanhua is the F2P-friendly hybrid choice; Lynae is currently the strongest generalist buffer for her." }
+  ],
+  "rotation": "Standard (Red Hair, best DPS): Intro -> Skill (Crimson Blossom) -> Echo/Dash cancels -> Vining/Blazing Waltz spins -> Ultimate -> Skill (Ephemeral, Budding Mode) -> more Vining/Blazing Waltz -> Skill (Floral Ravage) -> Outro. White Hair variant available for better single-target tracking at the cost of DPS. Whole rotation exceeds 15s, longer than most Outro buff durations.",
+  "communityNotes": "Prydwen: F2P-friendly and flexible (AoE Red Hair vs tracking-friendly White Hair) but held back by having the longest DPS rotation in the game, meaning Outro buffs frequently expire before her backloaded Budding Mode damage lands; hasn't received a strong teammate refresh in a long time and is considered behind the current damage ceiling as of 3.2, though still capable of clearing content on a budget.",
+  "lastUpdated": "2026-08-31"
+}

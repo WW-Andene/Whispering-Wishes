@@ -1,0 +1,34 @@
+{
+  "name": "Cantarella",
+  "slug": "cantarella",
+  "rarity": 5,
+  "element": "Havoc",
+  "weaponType": "Rectifier",
+  "role": ["Hybrid", "Sub DPS/Healer"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/cantarella", "nanoka": "https://ww.nanoka.cc/character/cantarella", "fandom": "https://wutheringwaves.fandom.com/wiki/Cantarella", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T3 Tower of Adversity, T1.5 Whimpering Wastes (Hybrid)" },
+  "kit": {
+    "intro": "5-star Havoc Rectifier Hybrid combining on/off-field damage (Coordinated Attacks via Diffusion/Dreamweavers), healing, and an Outro buff (20% Havoc DMG + 25% Skill DMG). Two Forte resources: Trance (max 5, unlocks Mirage state via enhanced Heavy Attack) and Shiver (max 3 while in Mirage, unlocks nuke 'Perception Drain').",
+    "skills": {
+      "normalAttack": "Illusion Collapse - 3-hit chain; in Mirage becomes 'Phantom Sting' (3-hit, triggers Coordinated Attacks on stage 3).",
+      "resonanceSkill": "Dance with Shadows - Graceful Step (base) / Flickering Reverie in Mirage (Echo-type, applies Hazy Dream slow+Jolt DoT).",
+      "forte": "Between Illusion and Reality - governs Mirage state (enhanced basics/mid-air/dodge) and Perception Drain (Shiver-consuming nuke + heal); Abyssal Rebirth restores Concerto Energy on Echo Skill casts (up to 6x/25s).",
+      "liberation": "Beneath the Sea (Flowing Suffocation) - Havoc DMG + grants team Diffusion (up to 21 Dreamweaver Coordinated Attacks over 30s).",
+      "intro": "Cruise (Ripple) - Havoc DMG, starts Basic chain at stage 3, gains Trance.",
+      "outro": "Gentle Tentacles - next character gains 20% Havoc DMG + 25% Resonance Skill DMG Amplify for 14s."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Whispers of Sirens (signature, 100%)", "Rime-Draped Sprouts (87%)", "Stringmaster (85%)", "Lethean Elegy (82.6%)", "Cosmic Ripples (77.9%, best permanent)", "Radiant Dawn (77.9%, best 4-star)", "Jinzhou Keeper (F2P no-gacha)"],
+    "echoSet": ["Midnight Veil (best in Havoc teams)", "Moonlit Clouds (best in non-Havoc teams, sacrifices personal damage for buffing)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Havoc DMG; Havoc DMG > Energy Regen", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK = Basic ATK DMG%"]
+  },
+  "teams": [
+    { "name": "Team #1: Best Team", "members": ["Cantarella", "Phrolova", "The Shorekeeper or Verina"], "notes": "Cantarella is Phrolova's best teammate - her actions count as Echo Skills, feeding Phrolova's enhanced-attack mechanic, and Phrolova doesn't care about Cantarella's poor Energy generation." },
+    { "name": "Team #3: Skill Damage Teams", "members": ["Cantarella (Moonlit Clouds)", "Carlotta or Jinhsi", "support"], "notes": "Niche substitute for dedicated Skill-DPS supports; generally outclassed by Zhezhi/Yinlin due to Cantarella's severe Energy Regen needs." }
+  ],
+  "rotation": "Intro (Ripple) -> Basic P3 -> Skill (Graceful Step) -> Ultimate (Flowing Suffocation) -> Heavy (Delusive Dive, enter Mirage) -> Skill (Flickering Reverie) -> Phantom Sting P1-P3 -> Skill (Perception Drain) -> Echo -> Outro.",
+  "communityNotes": "Prydwen: strong multi-role kit (damage + heal + buff) but suffers severe Energy Regen requirements that hurt both her own damage and her teammates' builds; lacks a clearly best-in-slot DPS partner as of 3.2 review aside from Phrolova, making her pull value more speculative than cemented pending a future synergistic release/rerun.",
+  "lastUpdated": "2026-08-31"
+}
