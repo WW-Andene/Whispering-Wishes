@@ -79,7 +79,6 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
     const svr = server;
     const lr = luckRating;
     const tList = [...(trophies?.list || [])].sort((a,b) => (TROPHY_TIER_ORDER[a.tier]??99) - (TROPHY_TIER_ORDER[b.tier]??99)).slice(0, 5);
-    const impDate = profile.importedAt ? new Date(profile.importedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null;
     const beginnerHist = profile.beginner?.history||[];
     const charHist = [
       ...(profile.featured?.history || []),
@@ -154,23 +153,6 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       ctx.beginPath();ctx.moveTo(x+w-12-18,y+12);ctx.lineTo(x+w-12,y+12);ctx.lineTo(x+w-12,y+12+18);ctx.stroke();
       ctx.strokeStyle='rgba(255,255,255,0.14)';
       ctx.beginPath();ctx.moveTo(x+12+18,y+h-12);ctx.lineTo(x+12,y+h-12);ctx.lineTo(x+12,y+h-12-18);ctx.stroke();
-    };
-
-    // Header
-    const drawHeader = (x,y,w) => {
-      const hH=48; // PerfectSuite: 54 -> nearest primary+primary (32+16)
-      const hg=ctx.createLinearGradient(x,y,x+w,y);
-      hg.addColorStop(0,'rgba(255,255,255,0.02)');hg.addColorStop(0.4,'transparent');hg.addColorStop(0.6,'transparent');hg.addColorStop(1,'rgba(255,255,255,0.02)');
-      ctx.fillStyle=hg;ctx.fillRect(x,y,w,hH);
-      ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,y+hH);ctx.lineTo(x+w,y+hH);ctx.stroke();
-      const gb=ctx.createLinearGradient(0,y+15,0,y+15+26);gb.addColorStop(0,'rgba(237,175,24,0.9)');gb.addColorStop(1,'rgba(237,175,24,0.4)');
-      ctx.fillStyle=gb;rr(x+18,y+15,4,26,2);ctx.fill();
-      ctx.shadowColor='rgba(237,175,24,0.3)';ctx.shadowBlur=12;rr(x+18,y+15,4,26,2);ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;
-      ctx.fillStyle='#f1f5f9';ctx.font='600 18px sans-serif';ctx.fillText('RESONATOR ID',x+32,y+34);
-      ctx.fillStyle='#4b5563';ctx.font='14px sans-serif';ctx.textAlign='right';ctx.fillText('whisperingwishes.app',x+w-18,y+34);ctx.textAlign='left';
-      // App icon watermark — small brand mark in header, PerfectSuite 24px (secondary tier)
-      if(appIco){ctx.save();ctx.globalAlpha=0.85;ctx.drawImage(appIco,x+w/2-12,y+(hH-24)/2,24,24);ctx.restore();}
-      return hH;
     };
 
     // Section panel — same block as characterCardRenderer.js's drawBannerPanel: clipped
@@ -299,15 +281,18 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       ctx.textAlign='left';
     };
 
-    // Hero profile image — large, with collection-style framing and gradient fade
+    // Hero profile image — same "borderless, banner-bled" treatment as
+    // characterCardRenderer.js's own portrait block: no dark box behind the sprite (the
+    // full-bleed banner drawn earlier shows through in the gap outside the clip), object-contain
+    // framing via getImageFraming, a fade at the TOP (not the bottom) with the username/UID/
+    // server overlay sitting in it — same layout as the build card's name/level/element overlay
+    // — and a matching border stroke traced around the same clip radius.
     const drawHero = (x,y,w,h) => {
-      ctx.fillStyle='rgba(8,12,18,0.95)';rr(x,y,w,h,16);ctx.fill();
-      ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;rr(x,y,w,h,16);ctx.stroke();
       if(pImg){
-        ctx.save();rr(x+2,y+2,w-4,h-4,14);ctx.clip();
+        ctx.save(); rr(x+2,y+2,w-4,h-4,14); ctx.clip();
+        ctx.fillStyle='rgba(10,14,22,0.75)'; ctx.fillRect(x+2,y+2,w-4,h-4);
         const f=picName?getImageFraming('collection-'+picName):{zoom:100,x:0,y:0};
         const sc=f.zoom/100;
-        // Preserve aspect ratio (object-contain)
         const imgAR=pImg.naturalWidth/pImg.naturalHeight;
         const cellAR=w/h;
         let bw2,bh2;
@@ -317,13 +302,22 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
         const dy=y+(h-dh)/2-(f.y/100)*bh2*sc;
         ctx.drawImage(pImg,dx,dy,dw,dh);
         ctx.restore();
-        const fade=ctx.createLinearGradient(0,y+h-90,0,y+h);
-        fade.addColorStop(0,'rgba(8,12,18,0)');fade.addColorStop(1,'rgba(8,12,18,0.9)');
-        ctx.fillStyle=fade;ctx.fillRect(x+2,y+h-90,w-4,88);
+        const fade=ctx.createLinearGradient(0,y,0,y+96);
+        fade.addColorStop(0,'rgba(8,12,18,0.9)'); fade.addColorStop(1,'rgba(8,12,18,0)');
+        ctx.fillStyle=fade; ctx.fillRect(x+2,y+2,w-4,94);
       } else if(appIco){
+        ctx.save(); rr(x+2,y+2,w-4,h-4,14); ctx.clip();
+        ctx.fillStyle='rgba(10,14,22,0.75)'; ctx.fillRect(x+2,y+2,w-4,h-4);
         const sz=Math.min(w,h)*0.3;ctx.globalAlpha=0.08;ctx.drawImage(appIco,x+(w-sz)/2,y+(h-sz)/2,sz,sz);ctx.globalAlpha=1;
+        ctx.restore();
       }
-      if(picName){ctx.fillStyle='rgba(255,255,255,0.6)';ctx.font='14px sans-serif';ctx.textAlign='center';ctx.fillText(picName,x+w/2,y+h-9);ctx.textAlign='left';}
+      ctx.strokeStyle='rgba(255,255,255,0.16)'; ctx.lineWidth=1.5; rr(x+2,y+2,w-4,h-4,14); ctx.stroke();
+      // Username / UID / Server overlay — top-anchored, same three-line arrangement the build
+      // card uses for name / "Lv. 90/90" / element·role (server takes the element line's gold tint).
+      ctx.fillStyle='#f1f5f9'; ctx.font='bold 34px sans-serif'; ctx.fillText(uname,x+18,y+42);
+      ctx.fillStyle='#9ca3af'; ctx.font='16px sans-serif'; ctx.fillText('UID '+uid,x+18,y+64);
+      ctx.fillStyle='#edaf18'; ctx.font='600 18px sans-serif'; ctx.fillText(svr,x+18,y+93);
+      if(lr) drawLuck(x+18,y+108,w-54);
     };
 
     // Luck bar
@@ -463,172 +457,119 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
     bgG.addColorStop(0,'rgba(237,175,24,0.008)');bgG.addColorStop(1,'transparent');
     ctx.fillStyle=bgG;ctx.fillRect(0,0,W,H);
 
+    // No header bar — dropped in favor of characterCardRenderer.js's own layout logic, which
+    // has no header either: the portrait's own top overlay (username/UID/server, drawn by
+    // drawHero below) carries the identity role a header used to, and the footer still carries
+    // the brand mark, so nothing a header provided is lost.
     const M=16,ox=M,oy=M,ow=W-M*2,oh=H-M*2; // PerfectSuite: 18 -> 16 (primary)
     drawShell(ox,oy,ow,oh);
-    const hH=drawHeader(ox+1,oy+1,ow-2);
     const P=16,bx=ox+P,bw=ow-P*2; // PerfectSuite: 15 -> 16 (tie: primary beats tertiary)
     const footH=30;
-    let Y=oy+1+hH+P;
+    let Y=oy+1+P;
     const bottomY=oy+oh-footH-P;
 
     if(!isPortrait){
-      // ═══ LANDSCAPE 1920x1080 — content-adaptive ═══
-      const gap=8; // PerfectSuite: 9 -> 8 (primary)
-      const leftW=Math.floor(bw*0.35);
-      const rightX=bx+leftW+gap;
-      const rightW=bw-leftW-gap;
-      const contentH=bottomY-Y;
+      // ═══ LANDSCAPE 1920x1080 — same skeleton as characterCardRenderer.js's build card:
+      // a large borderless portrait on the left (portraitW = 36% of content width, same
+      // fraction), and the rest split into a 2-column grid of individually bordered panels
+      // (drawPanel === that card's own drawBannerPanel), each column its own 3-way equal
+      // split — mirroring the build card's "column of stacked bordered blocks" structure
+      // instead of this card's previous single nested Profile mega-panel + 4 stacked rows. ══
+      const bh=bottomY-Y;
+      const portraitW=Math.floor(bw*0.36);
+      drawHero(bx,Y,portraitW,bh);
 
-      // Hero image takes top of left column
-      const heroH=Math.floor(contentH*0.32);
-      drawHero(bx,Y,leftW,heroH);
+      const gap=16; // PerfectSuite primary — same as the build card's own column gap
+      const rx=bx+portraitW+gap, rw=bw-portraitW-gap;
+      const qGap=16;
+      const qw=Math.floor((rw-qGap)/2), qw2=rw-qw-qGap;
+      const q1x=rx, q2x=rx+qw+qGap;
+      const leftH=Math.floor((bh-2*qGap)/3);
+      const statsY=Y, histoY2=statsY+leftH+qGap, bannerY=histoY2+leftH+qGap;
+      const bannerBH=bh-leftH*2-2*qGap;
+      const collH=leftH, trophyY=Y+collH+qGap, trophyH=leftH;
+      const resY=trophyY+trophyH+qGap, resH=bh-collH-trophyH-2*qGap;
 
-      // Profile + Stats + Pity Distribution below hero — fills rest of left
-      const idY=Y+heroH+gap;
-      const idH=contentH-heroH-gap;
-      const idOff=drawPanel(bx,idY,leftW,idH,'Profile');
-      ctx.fillStyle='#f1f5f9';ctx.font='bold 30px sans-serif';ctx.fillText(uname,bx+15,idY+idOff+21);
-      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('UID',bx+15,idY+idOff+45);
-      ctx.fillStyle='#e2e8f0';ctx.font='18px monospace';ctx.fillText(uid,bx+48,idY+idOff+45);
-      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('Server',bx+15,idY+idOff+66);
-      ctx.fillStyle='#edaf18';ctx.font='18px monospace';ctx.fillText(svr,bx+72,idY+idOff+66);
-      if(lr)drawLuck(bx+15,idY+idOff+87,leftW-135);
-      const metaY=idY+idOff+(lr?117:90);
-      ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
-      let metaLine1='';
-      if(tList.length>0)metaLine1+=tList.length+' Trophies';
-      if(impDate)metaLine1+=(metaLine1?' · ':'')+impDate;
-      if(metaLine1)ctx.fillText(metaLine1,bx+15,metaY);
-      if(overallStats?.totalAstrite)ctx.fillText(overallStats.totalAstrite.toLocaleString('en-US')+' Astrite',bx+15,metaY+16);
-      // Convene Stats inside profile panel
-      const statCellH=36,statStartY=metaY+(overallStats?.totalAstrite?36:21);
-      drawStats(bx+9,statStartY,leftW-18,statCellH,16);
-      // Pity Distribution below stats inside profile panel
-      const histoY=statStartY+(statCellH+8)*2-8+15;
-      const histoH=idY+idH-histoY-9;
-      if(histSummary&&histoH>40){
-        ctx.strokeStyle='rgba(255,255,255,0.10)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx+15,histoY-6);ctx.lineTo(bx+leftW-15,histoY-6);ctx.stroke();
-        ctx.fillStyle='#e2e8f0';ctx.font='600 13px sans-serif';ctx.fillText('Pity Distribution',bx+15,histoY+6);
-        drawHisto(bx+9,histoY+15,leftW-18,histoH-15);
-        ctx.fillStyle='#4b5563';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('Lo '+histSummary.lo+' | Avg '+histSummary.avg+' | Hi '+histSummary.hi,bx+leftW-12,idY+idH-6);ctx.textAlign='left';
+      // Left column: Convene Stats / Pity Distribution / Convene Breakdown
+      {
+        const off=drawPanel(q1x,statsY,qw,leftH,'Convene Stats');
+        drawStats(q1x+9,statsY+off,qw-18,36,16);
+      }
+      {
+        const off=drawPanel(q1x,histoY2,qw,leftH,'Pity Distribution');
+        if(histSummary){
+          drawHisto(q1x+9,histoY2+off,qw-18,leftH-off-24);
+          ctx.fillStyle='#4b5563';ctx.font='11px sans-serif';ctx.textAlign='right';
+          ctx.fillText('Lo '+histSummary.lo+' | Avg '+histSummary.avg+' | Hi '+histSummary.hi,q1x+qw-12,histoY2+leftH-9);ctx.textAlign='left';
+        }
+      }
+      {
+        const off=drawPanel(q1x,bannerY,qw,bannerBH,'Convene Breakdown');
+        drawBannerRow(q1x+9,bannerY+off,qw-18,bannerBH-off-9);
       }
 
-      // ── Right column: Collection → Resonators → Trophies → Banner Breakdown ──
-      const panelPad=40; // PerfectSuite: 39 -> primary(32) + closest primary(8)
-      const collH=panelPad+48+6;
-      const trophyCols=Math.max(tList.length,1),trophyGap=8;
-      const trophyCellSize=Math.min(160,Math.floor((rightW-18-(trophyCols-1)*trophyGap)/trophyCols));
-      const trophyPanelH=panelPad+trophyCellSize+6;
-      const bannerH=panelPad+72+6; // banner breakdown panel height
-
-      const resCols=10,resGap2=6;
-      const resMax=Math.min(newestRes.length,20);
-      const resCellW=(rightW-18-(resCols-1)*resGap2)/resCols,resCellH=Math.round(resCellW*1.6);
-      const resRows=Math.ceil(Math.max(resMax,1)/resCols);
-      const resContentH=panelPad+resRows*(resCellH+resGap2)-resGap2+6+(newestRes.length>resMax?21:0);
-
-      // Draw Row 1: Collection (full width)
-      const cp1o=drawPanel(rightX,Y,rightW,collH,'Collection');
-      drawColl(rightX+9,Y+cp1o,rightW-18);
-
-      // Draw Row 2: Resonators — sized to content, fills width
-      const r2Y=Y+collH+gap;
-      const rp1o=drawPanel(rightX,r2Y,rightW,resContentH,'Resonators ('+newestRes.length+')');
-      drawResTags(rightX+9,r2Y+rp1o,rightW-18,10,resMax);
-
-      // Draw Row 3: Trophies — fixed height, centered
-      const r3Y=r2Y+resContentH+gap;
+      // Right column: Collection / Trophies / Resonators (fills the rest, same "fixed blocks +
+      // fills-rest" shape as the build card's Weapon+Echoes column)
+      {
+        const off=drawPanel(q2x,Y,qw2,collH,'Collection');
+        drawColl(q2x+9,Y+off,qw2-18);
+      }
       if(tList.length>0){
-        const tp1o=drawPanel(rightX,r3Y,rightW,trophyPanelH,'Trophies ('+tList.length+')');
-        tList.forEach((t,i)=>{drawTrophy(rightX+9+i*(trophyCellSize+trophyGap),r3Y+tp1o,trophyCellSize,t);});
+        const off=drawPanel(q2x,trophyY,qw2,trophyH,'Trophies ('+tList.length+')');
+        const tGap=8;
+        const tSize=Math.min(160,Math.floor((qw2-18-(tList.length-1)*tGap)/tList.length));
+        tList.forEach((t,i)=>{drawTrophy(q2x+9+i*(tSize+tGap),trophyY+off+(trophyH-off-tSize)/2,tSize,t);});
       }
-
-      // Draw Row 4: Banner Breakdown — fills remaining
-      const r4Y=r3Y+(tList.length>0?trophyPanelH:0)+gap;
-      const r4H=bottomY-r4Y;
-      if(r4H>60){
-        const bp1o=drawPanel(rightX,r4Y,rightW,r4H,'Convene Breakdown');
-        drawBannerRow(rightX+9,r4Y+bp1o,rightW-18,r4H-bp1o-6);
+      {
+        const resCols=Math.min(10,newestRes.length||1),resGap2=6;
+        const resMax=Math.min(newestRes.length,resCols*4);
+        const off=drawPanel(q2x,resY,qw2,resH,'Resonators ('+newestRes.length+')');
+        drawResTags(q2x+9,resY+off,qw2-18,resCols,resMax);
       }
 
       drawFooter(bx,bottomY,bw);
 
     } else {
-      // ═══ PORTRAIT 1080x1920 — content-adaptive ═══
-      const gap=8; // PerfectSuite: 9 -> 8 (primary)
-      const contentH=bottomY-Y;
-
-      // ── Top: Hero + Profile (with stats inside) side by side ──
-      const heroW=Math.floor(bw*0.38);
-      // Profile needs: panelPad(39) + name(30) + UID(24) + Server(24) + luck(27+18) + meta(18) + stats(2 rows * (51+8) - 8) = ~280
-      const pStatCellH=48,pPad=40; // PerfectSuite: 51->48 (primary+primary), 39->40
-      const profileMinH=pPad+30+24+24+(lr?45:0)+18+(pStatCellH+8)*2-8+15;
-      const heroH=Math.max(Math.floor(contentH*0.22),profileMinH);
-      drawHero(bx,Y,heroW,heroH);
-
-      const ix=bx+heroW+gap,iw=bw-heroW-gap;
-      const idOff=drawPanel(ix,Y,iw,heroH,'Profile');
-      ctx.fillStyle='#f1f5f9';ctx.font='bold 33px sans-serif';ctx.fillText(uname,ix+15,Y+idOff+21);
-      const uidLY=Y+idOff+48;
-      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('UID',ix+15,uidLY);
-      ctx.fillStyle='#e2e8f0';ctx.font='18px monospace';ctx.fillText(uid,ix+48,uidLY);
-      ctx.fillStyle='#9ca3af';ctx.font='14px sans-serif';ctx.fillText('Server',ix+15,uidLY+24);
-      ctx.fillStyle='#edaf18';ctx.font='18px monospace';ctx.fillText(svr,ix+72,uidLY+24);
-      if(lr)drawLuck(ix+15,uidLY+51,iw-135);
-      const metaY2=uidLY+(lr?84:57);
-      ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
-      let metaLine='';
-      if(tList.length>0)metaLine+=tList.length+' Trophies';
-      if(impDate)metaLine+=(metaLine?' · ':'')+impDate;
-      if(overallStats?.totalAstrite)metaLine+=(metaLine?' · ':'')+overallStats.totalAstrite.toLocaleString('en-US')+' Astrite';
-      if(metaLine)ctx.fillText(metaLine,ix+15,metaY2);
-      // Convene Stats inside profile panel
-      const pStatY=metaY2+30;
-      drawStats(ix+9,pStatY,iw-18,pStatCellH,22);
-
+      // ═══ PORTRAIT 1080x1920 — same portrait-on-top, stacked-panels-below shape, just single
+      // column instead of the landscape's 2-column grid (there isn't width to spare for two). ══
+      const gap=16; // PerfectSuite primary
+      const heroH=Math.floor((bottomY-Y)*0.34);
+      drawHero(bx,Y,bw,heroH);
       Y+=heroH+gap;
 
-      // Pre-calculate content heights for adaptive layout
-      const pCollH=pPad+48+6;
-      const pHistoH=144;
-      const pResCols=8,pResGap2=6;
-      const pResMax=Math.min(newestRes.length,24);
-      const pResCellW=(bw-18-(pResCols-1)*pResGap2)/pResCols,pResCellH=Math.round(pResCellW*1.6);
-      const pResRows=Math.ceil(Math.max(pResMax,1)/pResCols);
-      const pResContentH=pPad+pResRows*(pResCellH+pResGap2)-pResGap2+6+(newestRes.length>pResMax?21:0);
-      const pTrophyCols=Math.max(tList.length,1),pTrophyGap=8;
-      const pTrophySize=Math.min(192,Math.floor((bw-18-(pTrophyCols-1)*pTrophyGap)/pTrophyCols)); // PerfectSuite: 200->192
-      const pTrophyPanelH=pPad+pTrophySize+6;
-      const pBannerH=pPad+80+6; // banner breakdown
+      const pStatsH=140;
+      const off1=drawPanel(bx,Y,bw,pStatsH,'Convene Stats');
+      drawStats(bx+9,Y+off1,bw-18,48,22);
+      Y+=pStatsH+gap;
 
-      // ── Pity Distribution ──
-      const hp2o=drawPanel(bx,Y,bw,pHistoH,'Pity Distribution');
-      if(histSummary){drawHisto(bx+9,Y+hp2o,bw-18,pHistoH-hp2o-12);
-        ctx.fillStyle='#4b5563';ctx.font='11px sans-serif';ctx.textAlign='right';ctx.fillText('Low '+histSummary.lo+' | Avg '+histSummary.avg+' | High '+histSummary.hi,bx+bw-12,Y+pHistoH-5);ctx.textAlign='left';}
+      const pHistoH=180;
+      const off2=drawPanel(bx,Y,bw,pHistoH,'Pity Distribution');
+      if(histSummary){
+        drawHisto(bx+9,Y+off2,bw-18,pHistoH-off2-24);
+        ctx.fillStyle='#4b5563';ctx.font='11px sans-serif';ctx.textAlign='right';
+        ctx.fillText('Low '+histSummary.lo+' | Avg '+histSummary.avg+' | High '+histSummary.hi,bx+bw-12,Y+pHistoH-9);ctx.textAlign='left';
+      }
       Y+=pHistoH+gap;
 
-      // ── Collection ──
-      const cp2o=drawPanel(bx,Y,bw,pCollH,'Collection');
-      drawColl(bx+9,Y+cp2o,bw-18);
+      const pCollH=40+48+6;
+      const off3=drawPanel(bx,Y,bw,pCollH,'Collection');
+      drawColl(bx+9,Y+off3,bw-18);
       Y+=pCollH+gap;
 
-      // ── Resonators — fills width ──
-      const rp2o=drawPanel(bx,Y,bw,pResContentH,'Resonators ('+newestRes.length+')');
-      drawResTags(bx+9,Y+rp2o,bw-18,8,pResMax);
-      Y+=pResContentH+gap;
-
-      // ── Trophies — fixed height, centered ──
       if(tList.length>0){
-        const tp2o=drawPanel(bx,Y,bw,pTrophyPanelH,'Trophies ('+tList.length+')');
-        tList.forEach((t,i)=>{drawTrophy(bx+9+i*(pTrophySize+pTrophyGap),Y+tp2o,pTrophySize,t);});
+        const pTrophyGap=8;
+        const pTrophySize=Math.min(192,Math.floor((bw-18-(tList.length-1)*pTrophyGap)/tList.length));
+        const pTrophyPanelH=40+pTrophySize+6;
+        const off4=drawPanel(bx,Y,bw,pTrophyPanelH,'Trophies ('+tList.length+')');
+        tList.forEach((t,i)=>{drawTrophy(bx+9+i*(pTrophySize+pTrophyGap),Y+off4,pTrophySize,t);});
         Y+=pTrophyPanelH+gap;
       }
 
-      // ── Banner Breakdown — fills remaining ──
-      const pRemaining=bottomY-Y;
-      if(pRemaining>60){
-        const bp2o=drawPanel(bx,Y,bw,pRemaining,'Convene Breakdown');
-        drawBannerRow(bx+9,Y+bp2o,bw-18,pRemaining-bp2o-6);
+      // Resonators — fills whatever's left above the footer
+      const resRemaining=bottomY-Y;
+      if(resRemaining>60){
+        const off5=drawPanel(bx,Y,bw,resRemaining,'Resonators ('+newestRes.length+')');
+        drawResTags(bx+9,Y+off5,bw-18,8,Math.min(newestRes.length,24));
       }
 
       drawFooter(bx,bottomY,bw);
