@@ -1,0 +1,23 @@
+{
+  "name": "Flamewing's Shadow",
+  "element": "Fusion",
+  "bonuses": {
+    "3pc": "Echo Skill hit → +20% Heavy Attack Crit Rate; Heavy Attack hit → +20% Echo Skill Crit Rate; both conditions active → +16% Fusion DMG"
+  },
+  "usedBy": [
+    "Galbrena"
+  ],
+  "inEngineTeamSetBuffs": false,
+  "monsterDrops": [
+    "Corrosaurus", "Reminiscence: Threnodian - Leviathan", "Kerasaur",
+    "Nightmare: Viridblaze Saurian", "Nimbus Wraith",
+    "Nightmare: Baby Roseshroom", "Nightmare: Baby Viridblaze Saurian"
+  ],
+  "sources": [
+    {
+      "note": "Bonus text/values from app/src/data/echoes.js's ECHO_SETS table (line 39, v2.7-2.8 'Chronorift' set batch). Corrects INDEX.md's 2026-08-31 first-pass claim that this set had 'no dictionary entry, no p2/p5 text' — it does; that finding was a false positive from an incomplete grep. Not independently re-fetched from Prydwen.gg's per-set page in this pass.",
+      "url": "app/src/data/echoes.js"
+    }
+  ],
+  "usedByNote": "Cross-referenced against buildGuide.echoSet across the 60 combat-db character files (references/combat-db/characters/*.json); monsterDrops cross-referenced against echoes.js's ECHO_DATA entries whose sets array names this set."
+}
