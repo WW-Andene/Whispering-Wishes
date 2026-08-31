@@ -1,0 +1,34 @@
+{
+  "name": "Lupa",
+  "slug": "lupa",
+  "rarity": 5,
+  "element": "Fusion",
+  "weaponType": "Broadblade",
+  "role": ["Hybrid", "Support"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lupa", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lupa", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Hybrid: T0.5 Tower of Adversity, T1 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Fusion Broadblade Mono-Fusion enabler - her Ultimate grants the whole team Pack Hunt (ATK% + Fusion DMG vs Overlord/Calamity) and Glory (Fusion RES Ignore) for 35s, scaling further with more Fusion teammates and Intro Skill casts. Easy to play thanks to 3 free auto-dodges per rotation.",
+    "skills": {
+      "normalAttack": "Basic Attack (4 hits) / Heavy Attack - Wolf's Gnawing/Claw (Wolflame/Wolfaith spenders) / Mid-air Attack - Firestrike.",
+      "resonanceSkill": "Shewolf's Hunt (mark target) -> Feral Fang (+50% DMG vs marked); at 2 Wolfaith becomes Dance With the Wolf(: Climax) Liberation-DMG finisher.",
+      "forte": "Ignis Lupa - governs Wolflame (max 100) / Wolfaith (max 2) resource loop feeding her enhanced Heavy/Mid-air/Skill finishers.",
+      "liberation": "Fire-Kissed Glory - Fusion AoE hit, fully restores Wolflame, grants team-wide Pack Hunt + Glory for 35s and 3x auto-dodge-on-hit.",
+      "intro": "Try Focusing, Eh? - Fusion strike; enhances to Nowhere to Run! at max Pack Hunt (Wild Hunt).",
+      "outro": "Stand by Me, Warrior - +20% Fusion DMG / +25% Basic Attack DMG to next character for 14s or until swap."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Wildfire Mark (signature, 100%)", "Ages of Harvest (87.8%)", "Kumokiri (87%)", "Verdant Summit (86.7%)", "Thunderflare Dominion (84.6%)", "Radiance Cleaver (best permanent)", "Lustrous Razor (80.5%, standard 5-star)", "Waning Redshift (75%, best 4-star)", "Aureate Zenith (74.8%, BP)", "Meditations on Mercy (best fully F2P)"],
+    "echoSet": ["Flaming Clawprint (100%, best - 10% Fusion DMG + 15% team Fusion DMG on Ultimate + 20% Liberation DMG)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Fusion DMG; Fusion DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK", "Liberation ATK DMG%"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Lupa", "Aemeath/Galbrena", "Mornye/Denia/Changli/Brant/Encore"], "notes": "Mono Fusion enabler - buffs the entire team's ATK/Fusion RES Ignore; Aemeath and Galbrena have the highest baseline damage to capitalize on it." },
+    { "name": "Encore F2P Team", "members": ["Lupa", "Encore", "Verina/The Shorekeeper"], "notes": "Works well outside strict Mono Fusion since Encore's short rotation leaves downtime for Lupa's cooldowns to catch up." }
+  ],
+  "rotation": "Opener (no Intro): Skill: Shewolf's Hunt -> Ultimate -> Foebreaker -> Mid-air 1,2, Firestrike -> Heavy: Wolf's Claw -> Forte Skill: Dance With the Wolf - Climax -> Outro. Loop (Intro available): Intro -> Ultimate -> same finish. Automatically adds Set the Arena Ablaze to a nearby ally's Ultimate within 8s of her Forte Skill.",
+  "communityNotes": "Prydwen: super easy to use with strong Fusion-wide buffs and decent personal AoE damage, but largely locked into Mono Fusion compositions (competes with Sanhua for the generalist buffer slot) and her Outro expiring on swap makes quickswap risky unless well understood.",
+  "lastUpdated": "2026-08-31"
+}

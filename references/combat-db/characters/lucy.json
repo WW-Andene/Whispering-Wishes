@@ -1,0 +1,33 @@
+{
+  "name": "Lucy",
+  "slug": "lucy",
+  "rarity": 5,
+  "element": "Spectro",
+  "weaponType": "Pistols",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lucy", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lucy", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T1 Tower of Adversity, T2 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Spectro Pistols DPS from the Cyberpunk: Edgerunners collab. Builds TCP -> Root Access to access an enhanced Heavy Attack chain (Dual/Multi-threading), then unleashes a unique freeze-frame Ultimate letting the player pick up to 7 'Spoofing Program' debuffs/damage effects. Uses the 'Hack' mechanic, a Tune Rupture variant exclusive to the collab characters.",
+    "skills": {
+      "normalAttack": "Basic Attack - Locked Thread (4 hits) / Thread Shredding in Algorithm Compaction.",
+      "resonanceSkill": "Payload -> Pulse Interference (builds TCP/Digital Handshake); at 100 TCP or in Algorithm Compaction becomes Deadlock (enters Algorithm Compaction, +65% Spectro DMG Bonus for 8s).",
+      "forte": "Depths of Blackwall - governs TCP (max 100), Root Access (max 100), and SQL stack management feeding Multi-threading's 270% DMG bonus.",
+      "liberation": "Netrunner (or Old Net Deep Dive variant post-Multi-threading) - freezes enemies, lets player select up to 7 Spoofing Programs (damage/debuffs) from a starting 24 RAM, ends with Override AoE hit.",
+      "intro": "Outdated Hallucination - Spectro hit, grants team wallhack vision (Involuntary Sharing), extra Rebecca synergy.",
+      "outro": "Countermeasure Program - 25% Basic Attack DMG Amplify to next character + team-wide Hack-Shifting/damage-reduction utility for 25s."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Spectral Trigger (signature, 100%)", "Lux & Umbra (88.4%, Galbrena sig)", "Skull Thrasher (83.5%, Rebecca sig)", "Phasic Homogenizer (79.3%, best permanent)", "The Last Dance (79.2%)", "Spectrum Blaster (78%)", "Static Mist (76.7%)", "Woodland Aria (74.4%)", "Solar Flame (67.5%, best 4-star, BP)", "Pistols#26 craftable (best gacha-free)"],
+    "echoSet": ["Shadow of Shattered Dreams (100%, best - 1-piece + Adam Smasher, combined with Rite of Gilded Revelation/Pact of Neonlight Leap/Eternal Radiance/Celestial Light recommended, or Endless Resonance/Reel of Spliced Memories, or Moonlit Clouds/Empyrean Anthem/Tidebreaking Courage)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Spectro DMG; Spectro DMG >= ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "Heavy DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Lucy", "Rebecca", "Mornye/The Shorekeeper/Verina"], "notes": "Rebecca is Lucy's only real partner - their kits reference each other directly; Mornye emphasizes Hack damage via Off-Tune Buildup Rate, Shorekeeper is a close second (better in Whimpering Wastes)." }
+  ],
+  "rotation": "Opener: Ultimate (first 5 Programs, swap). Loop: Intro -> Skill: Payload -> Pulse Interference -> Basic 2,3,4 (cancel via Skill) -> Skill: Deadlock -> Thread 1-4 -> Heavy: Dual-threading -> Multi-threading (cancel via Ultimate) -> Ultimate (first 5 Programs) -> Outro.",
+  "communityNotes": "Prydwen: accessible (free best-in-slot buffer in Rebecca, works fine with generalist Supports) but has a noticeably lower damage ceiling than other modern releases (roughly late-2.x-tier), fairly Signature-weapon dependent, and is a one-off collab character unlikely to rerun - grab now or likely miss out.",
+  "lastUpdated": "2026-08-31"
+}
