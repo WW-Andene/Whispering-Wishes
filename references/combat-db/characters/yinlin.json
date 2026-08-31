@@ -1,0 +1,35 @@
+{
+  "name": "Yinlin",
+  "slug": "yinlin",
+  "rarity": 5,
+  "element": "Electro",
+  "weaponType": "Rectifier",
+  "role": ["Hybrid"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/yinlin", "nanoka": "https://ww.nanoka.cc/character/yinlin", "fandom": "https://wutheringwaves.fandom.com/wiki/Yinlin", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T3 Tower of Adversity, T4 Whimpering Wastes (Hybrid)" },
+  "kit": {
+    "intro": "5-star Electro Rectifier Hybrid, high AoE damage with strong off-field Coordinated Attack presence via marks. Most attacks apply 'Sinner's Mark'; Forte 'Judgment Points' (max 100) unlocks Heavy Attack 'Chameleon Cipher' converting marks to 'Punishment Mark' (triggers Coordinated Attack Judgment Strikes for 18s, even off-field). Should always run Moonlit Clouds as a Hybrid, never played as Main DPS.",
+    "skills": {
+      "normalAttack": "Zapstring's Dance - up to 4-hit puppet attack.",
+      "resonanceSkill": "Magnetic Roar - AoE Electro + enters Execution Mode (next 4 attacks trigger extra Electromagnetic Blast vs Sinner's Marked enemies); follow-up 'Lightning Execution' nuke.",
+      "forte": "Chameleon Cipher - Judgment Points gauge; enhanced Heavy Attack converts Sinner's Mark to Punishment Mark.",
+      "liberation": "Thundering Wrath - large-range Electro AoE nuke.",
+      "intro": "Raging Storm - large-range Electro DMG, applies Sinner's Mark.",
+      "outro": "Strategist - next character gains 20% Electro DMG Deepen + 25% Resonance Liberation DMG Deepen for 14s."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Stringmaster (signature, 100%, one of the best weapons in the game generally)", "Whispers of Sirens (96.7%)", "Rime-Draped Sprouts (96.3%)", "Lethean Elegy (94.8%)", "Cosmic Ripples (90%, best permanent)", "Augment (88.1%, best 4-star)", "Jinzhou Keeper (best F2P)"],
+    "echoSet": ["Moonlit Clouds (default Hybrid set)", "Empyrean Anthem (Coordinated-DMG focused alt)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Electro DMG; Electro DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK = Resonance Skill DMG%"]
+  },
+  "teams": [
+    { "name": "Main DPS Iuno", "members": ["Yinlin", "Iuno", "Verina or The Shorekeeper"], "notes": "Yinlin's 25% Liberation DMG Amplify makes her the second-best Iuno buffer after signature-weapon Ciaccona." },
+    { "name": "Xiangli Yao / Calcharo Team", "members": ["Yinlin", "Xiangli Yao or Calcharo", "support"], "notes": "Her 20% Electro + 25% Liberation DMG Amplify Outro is a massive multiplier for both - considered a near-mandatory pairing for Calcharo." },
+    { "name": "Jinhsi Team", "members": ["Yinlin", "Jinhsi", "Verina or The Shorekeeper"], "notes": "Competitive but slightly weaker alternative to Zhezhi for Jinhsi." }
+  ],
+  "rotation": "Intro -> Basic P4 -> Skill (Magnetic Roar) -> Heavy Attack -> Skill (Lightning Execution, cancel Heavy endlag) -> Ultimate -> Basic P1 -> Forte Heavy (Chameleon Cipher) -> Echo (swap cancel) -> Outro.",
+  "communityNotes": "Prydwen: strong, AoE-focused Hybrid buffer near-mandatory for a big Main DPS carry (Xiangli Yao, Calcharo, Jinhsi); benefits significantly from swap/animation cancels but has a decent baseline without them. Notably more signature-weapon-dependent than most characters - underperforms without Stringmaster, though that weapon is also excellent on other Rectifier DPS so it's rarely wasted.",
+  "lastUpdated": "2026-08-31"
+}
