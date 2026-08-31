@@ -1,0 +1,34 @@
+{
+  "name": "Lingyang",
+  "slug": "lingyang",
+  "rarity": 5,
+  "element": "Glacio",
+  "weaponType": "Gauntlets",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lingyang", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lingyang", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T3 Tower of Adversity, T4 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Glacio Gauntlets Hypercarry with a unique airborne 'Striding Lion' Ultimate stance - flies, juggles non-elite enemies, and alternates Basic Attack/Resonance Skill to exploit his Diligent Practice passive. Deals the bulk of his damage in one long Ultimate-locked burst window; not quickswap-friendly.",
+    "skills": {
+      "normalAttack": "Majestic Fists Basic Attack (5 hits, replaced by Feral Roars after Furious Punches) / Feral Gyrate (2 hits) while airborne.",
+      "resonanceSkill": "Ancient Arts (base) / Furious Punches (after Basic 3/4/5 or Feral Roars, feeds Forte fast) / Mountain Roamer while airborne.",
+      "forte": "Unification of Spirits - at full Lion's Spirit, Heavy Attack: Glorious Plunge enters Striding Lion (airborne, enhanced kit) for up to 15s (10s with Ultimate active).",
+      "liberation": "Strive: Lion's Vigor - Glacio hit, grants Lion's Vigor (+50% Glacio DMG Bonus for 14s, slows Lion's Spirit consumption).",
+      "intro": "Lion Awakens - Glacio strike, fills much of his Forte gauge on its own.",
+      "outro": "Frosty Marks - AoE Glacio shockwave (587.94% ATK)."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Moongazer's Sigil (106.2%, Iuno sig)", "Blazing Justice (105.3%, Zani sig)", "Verity's Handle (104.2%, Xiangli Yao sig)", "Tragicomedy (103%)", "Abyss Surges (100%, best permanent)", "Aether Strike (88.9%, BP)", "Celestial Spiral (86.5%)", "Hollow Mirage (82.8%)", "Stonard (82.3%)", "Legend of Drunken Hero (79.5%, best gacha-free)"],
+    "echoSet": ["Endless Resonance (100%, best - up to 30% ramping ATK%, but incompatible with quickswap)", "Frosty Resolve (98.9%, best quickswap-compatible)", "Freezing Frost (97.8%)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Glacio DMG; Glacio DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Lingyang", "Lynae or Zhezhi", "Mornye/Verina/The Shorekeeper"], "notes": "Lynae has the strongest generalist buffs (pairs well with Mornye); Zhezhi provides strong off-field Coordinated Attack damage plus a 20% Glacio/25% Skill DMG Outro." },
+    { "name": "F2P Team", "members": ["Lingyang", "Sanhua", "Verina/The Shorekeeper"], "notes": "Sanhua has a very fast rotation and 38% Basic ATK DMG Amplify Outro, free-to-play alternative when Zhezhi is unavailable/occupied." }
+  ],
+  "rotation": "Echo -> Intro -> Ultimate -> Heavy: Glorious Plunge (airborne) -> alternate Basic/Skill (Feral Gyrate P1, Mountain Roamer, P2, Mountain Roamer, P1, Mountain Roamer, P2, Mountain Roamer, P1) -> Stormy Kicks -> Mid-air Tail Strike -> Outro. Up to 9 independent attacks executable during his Ultimate window if uninterrupted.",
+  "communityNotes": "Prydwen: unique flying playstyle unlike any other character, easy button-mashing burst combo, but falls slightly behind comparable DPS in raw damage and the airborne mechanics/odd boss hitboxes make him harder to learn than most, keeping his overall endgame usage low.",
+  "lastUpdated": "2026-08-31"
+}

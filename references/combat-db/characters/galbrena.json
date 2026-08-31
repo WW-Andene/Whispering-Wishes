@@ -1,0 +1,34 @@
+{
+  "name": "Galbrena",
+  "slug": "galbrena",
+  "rarity": 5,
+  "element": "Fusion",
+  "weaponType": "Pistols",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/galbrena", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Galbrena", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T1 Tower of Adversity, T1.5 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Fusion Pistols main DPS built around 'Demon Hypostasis', an enhanced Basic Attack/Dodge Counter cleave stance entered via her enhanced Skill by spending Sinflame (max 100). Also holds a second Forte resource, Afterflame (max 40, replenished by teammates' Echo Skill casts), which raises enemy DMG Taken while in Demon Hypostasis by up to 60%.",
+    "skills": {
+      "normalAttack": "Basic Attack (Slayer's Trigger, up to 4 hits) / Basic Attack - Seraphic Execution (5 hits) in Demon Hypostasis - main Sinflame/Forte-consuming combo.",
+      "resonanceSkill": "Encroach - dash+leap Fusion strike; at 100 Sinflame becomes Ascent of Malice, which enters Demon Hypostasis.",
+      "forte": "Threshold State/Demon Hypostasis toggle governing Sinflame -> Purging Flame conversion and Afterflame stacking.",
+      "liberation": "Hellfire Absolution - Fusion hit, grants 85% DMG multiplier increase to her Demon Hypostasis kit for 14s.",
+      "intro": "Hellflare Overload - Fusion strike leading into Basic/Heavy Attack Stage 2.",
+      "outro": "Ashen Pursuit - pure damage Fusion hit, doesn't restrict quickswap."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Lux & Umbra (signature, 100%)", "Phasic Homogenizer (91.8%)", "The Last Dance (84.3%)", "Spectrum Blaster (84.2%)", "Static Mist (81.6%, standard 5-star, great in Mono Fusion)", "Woodland Aria (79.8%)", "Solar Flame (77%, BP)", "Relativistic Jet (71.8%)", "Pistols#26 craftable (68.4%, best F2P)"],
+    "echoSet": ["Flamewing's Shadow (100%, best - only she uses it well)", "paired with Molten Rift/Flaming Clawprint/Trailblazing Star/Chromatic Foam (recommended), or Endless Resonance/Reel of Spliced Memories, or Moonlit Clouds/Empyrean Anthem/Tidebreaking Courage"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Fusion DMG; Fusion DMG >= ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK = Heavy Attack DMG%"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Galbrena", "Qiuyuan/Lucilla", "Brant/Mortefi or Phrolova/Iuno", "Mornye/The Shorekeeper/Verina"], "notes": "Qiuyuan and Lucilla are her best Echo-DMG buffers (fills Afterflame + amplifies Echo DMG)." },
+    { "name": "Mono Fusion Alternatives", "members": ["Galbrena", "Lupa", "Brant or Mortefi"], "notes": "Lupa enables a strong Mono Fusion archetype, especially in Whimpering Wastes." }
+  ],
+  "rotation": "Intro -> Basic 2,3,4 -> Basic 2,3 -> Enhanced Skill (Ascent of Malice, interrupt on hit) -> Ultimate -> Forte Basic 2,3,4,5 -> Forte Basic 3,4,5 (swap-cancel) -> Outro. Always cast active Echo before entering Demon Hypostasis to fill Afterflame; Dodge Counters replace weaker Basic hits whenever available.",
+  "communityNotes": "Prydwen: best Fusion DPS currently in the game with wide teammate flexibility and no signature-weapon dependency; simple Basic-Attack-spam playstyle whose damage loads heavily into the back half of her rotation, hurting her multi-wave (Whimpering Wastes) value versus single-target Tower of Adversity performance. Competes closely with Changli for the Mono Fusion team slot.",
+  "lastUpdated": "2026-08-31"
+}

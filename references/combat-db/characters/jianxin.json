@@ -1,0 +1,35 @@
+{
+  "name": "Jianxin",
+  "slug": "jianxin",
+  "rarity": 5,
+  "element": "Aero",
+  "weaponType": "Gauntlets",
+  "role": ["Hybrid", "Support", "flex DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/jianxin", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Jianxin", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Hybrid: T4 Tower of Adversity, T4 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Aero Gauntlets ultimate multi-purpose unit: shields, self-healing, grouping (best-in-class Ultimate pull, rivaled only by The Shorekeeper), a free-parry Resonance Skill, and a Liberation-DMG buffing Outro. Master of none individually but fits DPS/Hybrid/Support roles.",
+    "skills": {
+      "normalAttack": "Fengyiquan Basic Attack (4 hits) / Heavy Attack / Dodge Counter, all Aero.",
+      "resonanceSkill": "Calming Air - hold to enter Parry Stance; parries into Chi Counter (no damage taken) or release for Chi Parry.",
+      "forte": "Primordial Chi Spiral - hold Heavy Attack at max Chi to enter Zhoutian Progress (50% DMG reduction, anti-interrupt, channeled AoE Chi Strikes + escalating shields).",
+      "liberation": "Purification Force Field - wind field that pulls + AoE Aero DMG twice (cast + on dissipation); best-in-class grouping tool.",
+      "intro": "Essence of Tao - pull + Aero DMG.",
+      "outro": "Transcendence - 38% Resonance Liberation DMG Deepen to next character for 14s or until swap."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Verity's Handle (114.7%, Xiangli Yao sig)", "Moongazer's Sigil (108.3%, Iuno sig)", "Blazing Justice (104.7%)", "Tragicomedy (104.6%)", "Abyss Surges (100%, best permanent)", "Aether Strike (91.2%, BP)", "Celestial Spiral (86.5%)", "Stonard (85%)", "Hollow Mirage (81.2%)", "Legend of Drunken Hero (79.2%, best gacha-free)", "Marcato (rotation-shortening niche)", "Originite: Type IV (support-build - enables Rejuvenating Glow via self-heal Basic Attacks)"],
+    "echoSet": ["Moonlit Clouds (best - 10% Energy Regen + 22.5% ATK to next character on Outro, with Impermanence Heron main echo swap-cancelled before Outro)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Aero DMG", "cost3b": "Aero DMG / Energy Regen", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK", "Liberation DMG%", "Heavy Attack DMG%", "Basic Attack DMG%"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Jianxin", "Iuno", "Verina/The Shorekeeper"], "notes": "Iuno is Jianxin's best DPS to buff (38% Liberation DMG Deepen on her Liberation-heavy damage); also enables a strong Mono Aero team with Aero Rover." },
+    { "name": "F2P Jinhsi Team", "members": ["Jianxin", "Mortefi", "Jinhsi"], "notes": "Mortefi's post-Ultimate Coordinated Attacks combo with Jianxin's Forte to rapidly refill Jinhsi's Incandescence stacks." },
+    { "name": "Xiangli Yao Team", "members": ["Jianxin", "Xiangli Yao", "Verina/The Shorekeeper"], "notes": "Budget alternative to Yinlin as Xiangli Yao's Liberation DMG buffer, at the cost of more field time and Energy Regen needs." }
+  ],
+  "rotation": "Flexible - keep Resonance Skill on cooldown as a free parry, Basic Attack periodically to keep Rejuvenating Glow/Originite Type IV active, use Echo off cooldown, Ultimate for grouping/Concerto Energy, align Outro with the main DPS's Liberation-DMG burst, and use Forte Circuit situationally (usually a net damage loss but valuable for its shield/Concerto generation).",
+  "communityNotes": "Prydwen: one of the most diverse kits in the game and arguably the best overworld/comfort Hybrid, but a jack-of-all-trades-master-of-none with limited endgame meta value outside low-investment grouping support in mid Tower of Adversity floors; her 6s-channeled Forte shield is easily interrupted or wasted if the boss moves out of range.",
+  "lastUpdated": "2026-08-31"
+}

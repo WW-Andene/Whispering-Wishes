@@ -1,0 +1,19 @@
+{
+  "name": "Jingran",
+  "slug": "jingran",
+  "rarity": 5,
+  "element": "Fusion",
+  "weaponType": "Broadblade",
+  "role": ["Unknown - not yet published"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/jingran", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Jingran", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Not available - ratings not yet published" },
+  "kit": {
+    "intro": "PARTIAL DATA: as of the 2026-08-31 scrape, Prydwen's Jingran page exists (confirms 5-star Fusion Broadblade) but all detail sections are placeholder text ('aren't available yet'). Likely a newly announced/unreleased character.",
+    "skills": {}
+  },
+  "buildGuide": { "bestWeapons": [], "echoSet": [], "mainStats": {}, "substatPriority": [] },
+  "teams": [],
+  "rotation": null,
+  "communityNotes": "No community/review content published on Prydwen yet for Jingran as of this scrape (2026-08-31). Flagged in SOURCES_STATUS.md as a skipped/incomplete entry pending a future Prydwen update.",
+  "lastUpdated": "2026-08-31"
+}
