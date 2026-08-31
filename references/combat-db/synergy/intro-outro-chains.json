@@ -1,0 +1,2523 @@
+{
+  "$schema_note": "Graph-friendly intro/outro data for all 60 Whispering Wishes combat-db characters. 'outro' describes what a character grants to the next resonator swapped in (per calcEngine.js's outroBuffs/target:'next' or 'team' convention); 'intro' describes what happens on that character's own entry. Sourced primarily from each characters/<slug>.json kit.skills.intro/outro field (already Prydwen-sourced per SOURCES_STATUS.md) plus that file's own 'teams' section for candidate outro->intro synergy pairings. skillName/damageTypeAffected/durationApprox are heuristically parsed from the prose description and may be null when the source prose didn't state them plainly \u2014 treat null as 'not confirmed', not zero.",
+  "generatedFrom": "references/combat-db/characters/*.json (2026-08-31 scrape)",
+  "characters": [
+    {
+      "slug": "aalto",
+      "name": "Aalto",
+      "element": "Aero",
+      "role": [
+        "Sub DPS",
+        "Hybrid/Buffer"
+      ],
+      "outro": {
+        "skillName": "Dissolving Mist",
+        "effect": "Dissolving Mist - next character (or nearby team on Outro) gains 23% Aero DMG Deepen for 14s or until swapped.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/aalto"
+      },
+      "intro": {
+        "skillName": "Feint Shot",
+        "effect": "Feint Shot - rapid Aero shots.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/aalto"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team (DPS)",
+          "partners": [
+            "Ciaccona",
+            "Verina or The Shorekeeper"
+          ],
+          "notes": "Mono-Aero core with Ciaccona for Aero Erosion synergy and Windward Pilgrimage set."
+        },
+        {
+          "teamName": "Best Team (Hybrid)",
+          "partners": [
+            "Jiyan or Iuno",
+            "Verina or The Shorekeeper"
+          ],
+          "notes": "Outro-buffer slot, not optimal (outclassed by Mortefi for Jiyan) but usable filler."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "aemeath",
+      "name": "Aemeath",
+      "element": "Fusion",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Silent Protection",
+        "effect": "Silent Protection - grants team (excl. Aemeath) 10-20% All-DMG Amplification for 20s depending on Resonance Mode responders.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": "20s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/aemeath"
+      },
+      "intro": {
+        "skillName": "Overture of Departure",
+        "effect": "Overture of Departure - Songs Across the Universe (Aemeath form) / Debut of Meteoric Radiance (Mech form), grants Starlume Acceleration.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/aemeath"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Fusion Burst Team",
+          "partners": [
+            "Denia",
+            "Lupa or Chisa"
+          ],
+          "notes": "Strongest AoE/quickswap archetype; Lupa on Moonlit Clouds, Denia on Flaming Clawprint."
+        },
+        {
+          "teamName": "Best Tune Rupture Team",
+          "partners": [
+            "Lynae",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Best single-target ceiling; Mornye ideal support since Aemeath self-applies Tune Rupture."
+        },
+        {
+          "teamName": "Mono Fusion",
+          "partners": [
+            "Brant or Changli",
+            "Lupa"
+          ],
+          "notes": "Lupa enables party-wide Fusion RES Ignore/DMG Bonus; Changli only better than Brant in quickswap."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "augusta",
+      "name": "Augusta",
+      "element": "Electro",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Battlesong of the Unyielding",
+        "effect": "Battlesong of the Unyielding - next character gains 15% All-DMG Amplification for 14s; grants Augusta a Majesty + Crown of Wills (Electro DMG Bonus) stack.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/augusta"
+      },
+      "intro": {
+        "skillName": "Stride of Goldenflare",
+        "effect": "Stride of Goldenflare - restores full Prowess + 20% Ascendancy.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/augusta"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Team #1 - Best Team",
+          "partners": [
+            "Iuno (or Mortefi/Rebecca/Lynae)",
+            "The Shorekeeper or Verina"
+          ],
+          "notes": "Iuno best Outro buffer (up to 90% DMG Amp); Mortefi/Rebecca close seconds for Heavy DMG buffing; free-to-play friendly with Mortefi."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "baizhi",
+      "name": "Baizhi",
+      "element": "Glacio",
+      "role": [
+        "Support",
+        "Healer"
+      ],
+      "outro": {
+        "skillName": "Rejuvinating Flow",
+        "effect": "Rejuvinating Flow - HoT (1.54% Max HP/3s for 30s) to next character, who also gains 15% all-type DMG Deepen for 6s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Glacio",
+        "durationApprox": "3s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/baizhi"
+      },
+      "intro": {
+        "skillName": "Overflowing Frost",
+        "effect": "Overflowing Frost - Glacio DMG plunge + team heal.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/baizhi"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Generalist Support",
+          "partners": [
+            "any Main DPS",
+            "any secondary"
+          ],
+          "notes": "Very flexible free 4-star healer; incompatible with Coordinated-Attack hybrids (Yinlin, Zhezhi, Mortefi) since her buffs target only one character at a time."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "brant",
+      "name": "Brant",
+      "element": "Fusion",
+      "role": [
+        "Sub DPS",
+        "Hybrid/Buffer"
+      ],
+      "outro": {
+        "skillName": null,
+        "effect": "The Course is Set! - next character gains 20% Fusion DMG Amplify + 25% Resonance Skill DMG Amplify for 14s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/brant"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": "Applaud for Me! - Fusion DMG + grants Interlude Applause (next Mid-air Attack starts at stage 2).",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/brant"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Team #1: Best Team (Mono Fusion)",
+          "partners": [
+            "Lupa",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Lupa's Outro (Basic+Fusion DMG Amp) is Brant's best buffer; Mornye lets him run Hypercarry-style while keeping Lupa's Mono Fusion buffs."
+        },
+        {
+          "teamName": "Team #3: Skill-DPS pairing",
+          "partners": [
+            "Carlotta or Jinhsi",
+            "Verina (required with Jinhsi for Coordinated Attacks)"
+          ],
+          "notes": "Brant's Outro amplifies Resonance Skill DMG, pairing well with Skill-focused DPS."
+        },
+        {
+          "teamName": "Team #4: DPS Brant",
+          "partners": [
+            "Lupa",
+            "Support"
+          ],
+          "notes": "Double Forte rotation builds Bravo twice for a concentrated burst window; lower average DPS than standard but very high peak damage."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "buling",
+      "name": "Buling",
+      "element": "Electro",
+      "role": [
+        "Support",
+        "Healer"
+      ],
+      "outro": {
+        "skillName": "Exorcism Spell",
+        "effect": "Exorcism Spell - HoT to active character (18% ATK/s for 16s) + 15% team DMG Amplify for 30s (persists on swap).",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": "16s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/buling"
+      },
+      "intro": {
+        "skillName": "Summon and Smite",
+        "effect": "Summon and Smite - Electro DMG + team heal.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/buling"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Carlotta or Phrolova",
+            "third slot"
+          ],
+          "notes": "Specializes in buffing Skill-DMG Main DPS; best niche is Carlotta/Phrolova teams, especially at S6 (50% Skill DMG Bonus)."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "calcharo",
+      "name": "Calcharo",
+      "element": "Electro",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Shadowy Raid",
+        "effect": "Shadowy Raid - summons a Phantom dealing ~196-392% ATK Electro DMG.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/calcharo"
+      },
+      "intro": {
+        "skillName": "Wanted Outlaw",
+        "effect": "Wanted Outlaw - Electro DMG, notably long wind-up animation that costs time in ToA.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/calcharo"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Yinlin",
+            "Lynae or Mornye/Shorekeeper"
+          ],
+          "notes": "Yinlin is his only realistic viable Outro buffer (25% Liberation, 20% Electro DMG); Lynae is his best generalist buffer for Hypercarry."
+        },
+        {
+          "teamName": "Budget Team",
+          "partners": [
+            "generalist support"
+          ],
+          "notes": "Entirely incompatible with Swap Cancels."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "camellya",
+      "name": "Camellya",
+      "element": "Havoc",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Twining",
+        "effect": "Twining - Havoc DMG (329% ATK, or 459% ATK if following an Ephemeral cast).",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Havoc",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/camellya"
+      },
+      "intro": {
+        "skillName": "Everblooming",
+        "effect": "Everblooming - Havoc DMG, restores 100 Crimson Pistils.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/camellya"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Lynae or Roccia/Sanhua/Danjin",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Sanhua is the F2P-friendly hybrid choice; Lynae is currently the strongest generalist buffer for her."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "cantarella",
+      "name": "Cantarella",
+      "element": "Havoc",
+      "role": [
+        "Hybrid",
+        "Sub DPS/Healer"
+      ],
+      "outro": {
+        "skillName": "Gentle Tentacles",
+        "effect": "Gentle Tentacles - next character gains 20% Havoc DMG + 25% Resonance Skill DMG Amplify for 14s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Havoc",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/cantarella"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": "Cruise (Ripple) - Havoc DMG, starts Basic chain at stage 3, gains Trance.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/cantarella"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Team #1: Best Team",
+          "partners": [
+            "Phrolova",
+            "The Shorekeeper or Verina"
+          ],
+          "notes": "Cantarella is Phrolova's best teammate - her actions count as Echo Skills, feeding Phrolova's enhanced-attack mechanic, and Phrolova doesn't care about Cantarella's poor Energy generation."
+        },
+        {
+          "teamName": "Team #3: Skill Damage Teams",
+          "partners": [
+            "Carlotta or Jinhsi",
+            "support"
+          ],
+          "notes": "Niche substitute for dedicated Skill-DPS supports; generally outclassed by Zhezhi/Yinlin due to Cantarella's severe Energy Regen needs."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "carlotta",
+      "name": "Carlotta",
+      "element": "Glacio",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Closing Remark",
+        "effect": "Closing Remark - Glacio DMG equal to ~794% ATK.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Glacio",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/carlotta"
+      },
+      "intro": {
+        "skillName": "Wintertime Aria",
+        "effect": "Wintertime Aria - Glacio DMG, +30 Substance, +3 Moldable Crystals.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/carlotta"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Team #1: Best Team",
+          "partners": [
+            "Zhezhi or Lynae/Brant/Cantarella",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Zhezhi/Lynae are top buffers (up to 45% DMG Amp + Energy funneling); Mornye pairs specifically with Lynae."
+        },
+        {
+          "teamName": "Team #2: F2P Team",
+          "partners": [
+            "Yangyang or Taoqi",
+            "Verina or Buling"
+          ],
+          "notes": "Yangyang easier to pilot; Taoqi (38% Skill DMG Amp Outro) has higher ceiling but clunkier rotation."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "cartethyia",
+      "name": "Cartethyia",
+      "element": "Aero",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Wind's Divine Blessing",
+        "effect": "Wind's Divine Blessing - +17.5% Aero DMG Amplify to next character vs targets with Negative Status, for 20s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": "20s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/cartethyia"
+      },
+      "intro": {
+        "skillName": "Sword to Mark Tide's Trace",
+        "effect": "Sword to Mark Tide's Trace - Aero DMG + 2 Aero Erosion stacks, summons Sword of Discord.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/cartethyia"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Team #1",
+          "partners": [
+            "Ciaccona",
+            "Rover (Aero)/Chisa or The Shorekeeper"
+          ],
+          "notes": "Ciaccona is her non-negotiable best partner (constant off-field Aero Erosion application + Outro amplifies erosion damage 100%); Shorekeeper preferred in multi-wave Whimpering Wastes."
+        },
+        {
+          "teamName": "Team #2: F2P Alternative",
+          "partners": [
+            "Sanhua",
+            "support"
+          ],
+          "notes": "Sanhua provides fast-rotating field time and Basic DMG buffing, best budget option even without erosion synergy."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "changli",
+      "name": "Changli",
+      "element": "Fusion",
+      "role": [
+        "Hybrid",
+        "Sub DPS"
+      ],
+      "outro": {
+        "skillName": "Strategy of Duality",
+        "effect": "Strategy of Duality - next character gains 20% Fusion DMG + 25% Liberation DMG Amplify for 10s (shortest Outro duration in the game alongside Lumi).",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": "10s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/changli"
+      },
+      "intro": {
+        "skillName": "Obedience of Rules",
+        "effect": "Obedience of Rules - mid-air Fusion DMG, grants True Sight.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/changli"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team (Mono Fusion)",
+          "partners": [
+            "Lupa",
+            "Brant or Aemeath"
+          ],
+          "notes": "Lupa is the premier Mono Fusion buffer; Brant is the easier partner, Aemeath needs quickswap skill to benefit from Changli's short Outro."
+        },
+        {
+          "teamName": "Expert Dual-DPS Teams",
+          "partners": [
+            "Xiangli Yao or Jinhsi",
+            "Verina"
+          ],
+          "notes": "Extremely high-skill-ceiling quickswap pairs; not recommended for casual players."
+        },
+        {
+          "teamName": "Budget Dual DPS",
+          "partners": [
+            "Yangyang or Chixia",
+            "generalist"
+          ],
+          "notes": "Chixia is currently the only character that fully exploits Changli's Outro (20% Fusion + 25% Liberation Amp)."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "chisa",
+      "name": "Chisa",
+      "element": "Havoc",
+      "role": [
+        "Support"
+      ],
+      "outro": {
+        "skillName": "Unraveling",
+        "effect": "Unraveling - Law Zero - grants team +3 max Negative Status/Electro Rage stacks and Thread of Bane on Negative-Status hits, for 20s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": "20s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/chisa"
+      },
+      "intro": {
+        "skillName": "Reverberance",
+        "effect": "Reverberance - Return - Havoc DMG.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/chisa"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team (Negative Status)",
+          "partners": [
+            "Yangyang Xuanling or Aemeath/Cartethyia/Hiyuki",
+            "Suisui or generalist"
+          ],
+          "notes": "Only worth using in dedicated Negative-Status teams (her buffs require the DPS to self-apply Negative Status); outclassed by free options as a generalist support."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "chixia",
+      "name": "Chixia",
+      "element": "Fusion",
+      "role": [
+        "Sub DPS",
+        "Dual DPS"
+      ],
+      "outro": {
+        "skillName": "Leaping Flames",
+        "effect": "Leaping Flames - AoE Fusion DMG equal to 530% ATK.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/chixia"
+      },
+      "intro": {
+        "skillName": "Grand Entrance",
+        "effect": "Grand Entrance - rapid dual-pistol Fusion DMG.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/chixia"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Brant",
+            "Verina or The Shorekeeper"
+          ],
+          "notes": "Brant amplifies Chixia's Fusion and Skill DMG (20%/25%) while contributing his own damage."
+        },
+        {
+          "teamName": "Changli Dual DPS Team",
+          "partners": [
+            "Changli",
+            "support"
+          ],
+          "notes": "Chixia is currently the character that best exploits Changli's short Outro buff; moderately difficult quickswap playstyle."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "ciaccona",
+      "name": "Ciaccona",
+      "element": "Aero",
+      "role": [
+        "Hybrid",
+        "Sub DPS",
+        "Main DPS (flex)"
+      ],
+      "outro": {
+        "skillName": "Windcalling Tune",
+        "effect": "Windcalling Tune - +100% Aero Erosion DMG Amplify near active character for 30s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": "30s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona"
+      },
+      "intro": {
+        "skillName": "Roaming with the Wind",
+        "effect": "Roaming with the Wind - Aero DMG + Aero Erosion, skips to Basic stage 3.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Team #2: Cartethyia Team",
+          "partners": [
+            "Cartethyia",
+            "Chisa or Rover (Aero)/The Shorekeeper"
+          ],
+          "notes": "Ciaccona's off-field multi-wave Aero Erosion application is the ideal complement to Cartethyia's field-time-heavy kit - considered her best partner."
+        },
+        {
+          "teamName": "Team #5: Spectro Frazzle Teams",
+          "partners": [
+            "Absolution Phoebe or Zani",
+            "support"
+          ],
+          "notes": "Only viable partner enabling Main DPS Phoebe to function in multi-wave Whimpering Wastes."
+        },
+        {
+          "teamName": "Team #6: Main DPS Ciaccona",
+          "partners": [
+            "Sanhua",
+            "support"
+          ],
+          "notes": "Sanhua's 38% Basic ATK DMG Amp and fast rotation make Ciaccona a fully viable on-field Main DPS."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "danjin",
+      "name": "Danjin",
+      "element": "Havoc",
+      "role": [
+        "Hybrid",
+        "Sub DPS/Main DPS (flex)"
+      ],
+      "outro": {
+        "skillName": "Duality",
+        "effect": "Duality - next character gains 23% Havoc DMG Deepen for 14s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Havoc",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/danjin"
+      },
+      "intro": {
+        "skillName": "Vindiction",
+        "effect": "Vindiction - Havoc DMG strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/danjin"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team (Hybrid)",
+          "partners": [
+            "Phrolova or Havoc Rover/Camellya",
+            "Verina or The Shorekeeper"
+          ],
+          "notes": "Danjin's Outro is the best Havoc DMG buff for Havoc Rover and a strong option for Phrolova/Camellya."
+        },
+        {
+          "teamName": "Best Team (Main DPS)",
+          "partners": [
+            "Cantarella",
+            "Verina"
+          ],
+          "notes": "Cantarella+Danjin forms one of the strongest all-4-star DPS teams in the game, though Danjin's self-damage HP mechanic is punishing here."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "denia",
+      "name": "Denia",
+      "element": "Fusion",
+      "role": [
+        "Hybrid"
+      ],
+      "outro": {
+        "skillName": "Unfinished Lies",
+        "effect": "Unfinished Lies - Fusion Burst mode: +60% Fusion Burst DMG Amplify near active character for 30s. Tune Strain mode: next character gains 15% (40% if they apply Tune Strain) All-DMG Amplify for 16s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": "30s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/denia"
+      },
+      "intro": {
+        "skillName": "Formal Greetings",
+        "effect": "Formal Greetings - It's Been A While! (Stagecraft) / Knock Knock (Breakdown).",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/denia"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Fusion Burst Team",
+          "partners": [
+            "Aemeath",
+            "Lupa or Chisa"
+          ],
+          "notes": "Denia + Aemeath is one of the strongest teams in the game; Lupa (Moonlit Clouds) or Chisa fill 3rd slot."
+        },
+        {
+          "teamName": "Tune Strain Team",
+          "partners": [
+            "Luuk Herssen or Qingxiao",
+            "Mornye"
+          ],
+          "notes": "Mornye is close to mandatory - Denia experiences significant DPS drop-off without her."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "encore",
+      "name": "Encore",
+      "element": "Fusion",
+      "role": [
+        "Main DPS",
+        "Dual DPS"
+      ],
+      "outro": {
+        "skillName": "Thermal Field",
+        "effect": "Thermal Field - AoE burn zone, ~177% ATK Fusion DMG every 1.5s for 6s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": "5s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/encore"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": "Woolies Can Help! - Fusion DMG pounce.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/encore"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Lupa or Sanhua",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Lupa now edges out Sanhua as best partner thanks to higher Fusion buffs; Sanhua remains a strong, very F2P-friendly alternative."
+        },
+        {
+          "teamName": "Best Team (Dual DPS)",
+          "partners": [
+            "Changli or Brant",
+            "support"
+          ],
+          "notes": "Brant's Skill+Fusion DMG Amplify Outro slightly edges out Changli's Liberation Amplify for Encore."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "galbrena",
+      "name": "Galbrena",
+      "element": "Fusion",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Ashen Pursuit",
+        "effect": "Ashen Pursuit - pure damage Fusion hit, doesn't restrict quickswap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/galbrena"
+      },
+      "intro": {
+        "skillName": "Hellflare Overload",
+        "effect": "Hellflare Overload - Fusion strike leading into Basic/Heavy Attack Stage 2.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/galbrena"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Qiuyuan/Lucilla",
+            "Brant/Mortefi or Phrolova/Iuno",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Qiuyuan and Lucilla are her best Echo-DMG buffers (fills Afterflame + amplifies Echo DMG)."
+        },
+        {
+          "teamName": "Mono Fusion Alternatives",
+          "partners": [
+            "Lupa",
+            "Brant or Mortefi"
+          ],
+          "notes": "Lupa enables a strong Mono Fusion archetype, especially in Whimpering Wastes."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "hiyuki",
+      "name": "Hiyuki",
+      "element": "Glacio",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Snowlight Blessing",
+        "effect": "Snowlight Blessing - 20% Glacio DMG Amplify to teammates against Chafe-afflicted targets for 20s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Glacio",
+        "durationApprox": "20s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/hiyuki"
+      },
+      "intro": {
+        "skillName": "Frostedge",
+        "effect": "Frostedge - Glacio Liberation-type hit, applies Chafe, restores Dedication.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/hiyuki"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Lucilla or Lynae",
+            "Chisa (or Mornye with Lynae)"
+          ],
+          "notes": "Lucilla/Lynae are her only competitive buffers; Chisa/Lucilla stack her Fine Snow passive (needs teammates applying Glacio Chafe/Havoc Bane)."
+        },
+        {
+          "teamName": "Alternative Teams",
+          "partners": [
+            "Suisui/Verina",
+            "Yinlin/Zhezhi/Changli/Jianxin"
+          ],
+          "notes": "Significant drop-off without Chisa/Lucilla/Lynae/Suisui/Mornye backing her up."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "hsin",
+      "name": "Hsin",
+      "element": "Electro",
+      "role": [
+        "Unknown - not yet published"
+      ],
+      "outro": {
+        "skillName": null,
+        "effect": null,
+        "grantsTo": null,
+        "damageTypeAffected": null,
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/hsin"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": null,
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/hsin"
+      },
+      "teamPairingsFromCharacterFile": [],
+      "dataStatus": "stub \u2014 Prydwen has not published this character's kit yet"
+    },
+    {
+      "slug": "iuno",
+      "name": "Iuno",
+      "element": "Aero",
+      "role": [
+        "Hybrid",
+        "Support/Sub DPS",
+        "flex Main DPS"
+      ],
+      "outro": {
+        "skillName": "From Gloom to Gleam",
+        "effect": "From Gloom to Gleam - Aero hit + 50% Heavy Attack DMG Amplification to next character for 14s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/iuno"
+      },
+      "intro": {
+        "skillName": "Illuminated Manifestation",
+        "effect": "Illuminated Manifestation - Aero strike, restores 40 Sentience.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/iuno"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team (Hybrid)",
+          "partners": [
+            "Augusta",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Iuno buffs Augusta with up to 90% total DMG Amplification via Full Moon Domain."
+        },
+        {
+          "teamName": "Main DPS Iuno",
+          "partners": [
+            "Lynae/Ciaccona/Yinlin/Jianxin",
+            "Mornye/The Shorekeeper/Verina/Rover (Aero)"
+          ],
+          "notes": "Lynae is generally best buffer (40% DMG Amplification via Outro); Ciaccona brings Aero RES Shred + fast rotation."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "jianxin",
+      "name": "Jianxin",
+      "element": "Aero",
+      "role": [
+        "Hybrid",
+        "Support",
+        "flex DPS"
+      ],
+      "outro": {
+        "skillName": "Transcendence",
+        "effect": "Transcendence - 38% Resonance Liberation DMG Deepen to next character for 14s or until swap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/jianxin"
+      },
+      "intro": {
+        "skillName": "Essence of Tao",
+        "effect": "Essence of Tao - pull + Aero DMG.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/jianxin"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Iuno",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Iuno is Jianxin's best DPS to buff (38% Liberation DMG Deepen on her Liberation-heavy damage); also enables a strong Mono Aero team with Aero Rover."
+        },
+        {
+          "teamName": "F2P Jinhsi Team",
+          "partners": [
+            "Mortefi",
+            "Jinhsi"
+          ],
+          "notes": "Mortefi's post-Ultimate Coordinated Attacks combo with Jianxin's Forte to rapidly refill Jinhsi's Incandescence stacks."
+        },
+        {
+          "teamName": "Xiangli Yao Team",
+          "partners": [
+            "Xiangli Yao",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Budget alternative to Yinlin as Xiangli Yao's Liberation DMG buffer, at the cost of more field time and Energy Regen needs."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "jingran",
+      "name": "Jingran",
+      "element": "Fusion",
+      "role": [
+        "Unknown - not yet published"
+      ],
+      "outro": {
+        "skillName": null,
+        "effect": null,
+        "grantsTo": null,
+        "damageTypeAffected": null,
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/jingran"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": null,
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/jingran"
+      },
+      "teamPairingsFromCharacterFile": [],
+      "dataStatus": "stub \u2014 Prydwen has not published this character's kit yet"
+    },
+    {
+      "slug": "jinhsi",
+      "name": "Jinhsi",
+      "element": "Spectro",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Temporal Bender",
+        "effect": "Temporal Bender - accelerates Incandescence generation from same-attribute damage (1 stack/1s for 20s) for the incoming character.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Spectro",
+        "durationApprox": "1s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/jinhsi"
+      },
+      "intro": {
+        "skillName": "Loong's Halo",
+        "effect": "Loong's Halo - Spectro DMG, can instantly trigger Incarnation.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/jinhsi"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Zhezhi (or Cantarella w/ buffs)",
+            "The Shorekeeper (or Verina)"
+          ],
+          "notes": "Standard Hypercarry/Coordinated-Attack team; Verina stronger if CRIT consistency isn't a concern, otherwise Shorekeeper."
+        },
+        {
+          "teamName": "Quickswap Team",
+          "partners": [
+            "Brant or Changli",
+            "Verina"
+          ],
+          "notes": "Higher rotation flexibility, harder to pilot, requires Verina for Coordinated Attacks."
+        },
+        {
+          "teamName": "Budget Team",
+          "partners": [
+            "Mortefi or Yuanwu",
+            "Verina"
+          ],
+          "notes": "Mortefi strong only with heavy Empyrean Anthem investment; otherwise Yuanwu on Rejuvenating Glow."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "jiyan",
+      "name": "Jiyan",
+      "element": "Aero",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Discipline",
+        "effect": "Discipline - next character's Heavy Attacks trigger Qingloong Coordinated Attacks (313% ATK) for 8s, up to 2x.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": "8s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/jiyan"
+      },
+      "intro": {
+        "skillName": "Tactical Strike",
+        "effect": "Tactical Strike - aerial Aero DMG stab.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/jiyan"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Iuno",
+            "Ciaccona (Windward Pilgrimage) or The Shorekeeper/Verina"
+          ],
+          "notes": "Iuno is his best Heavy-DMG buffer; Ciaccona's Aero Erosion buffs don't expire on swap, letting Jiyan switch mid-Lance combo."
+        },
+        {
+          "teamName": "Erosion Team",
+          "partners": [
+            "Ciaccona",
+            "The Shorekeeper or Rover (Aero)"
+          ],
+          "notes": "Very strong in quickswap, roughly equal to the Best Team."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "lingyang",
+      "name": "Lingyang",
+      "element": "Glacio",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Frosty Marks",
+        "effect": "Frosty Marks - AoE Glacio shockwave (587.94% ATK).",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Glacio",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lingyang"
+      },
+      "intro": {
+        "skillName": "Lion Awakens",
+        "effect": "Lion Awakens - Glacio strike, fills much of his Forte gauge on its own.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lingyang"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Lynae or Zhezhi",
+            "Mornye/Verina/The Shorekeeper"
+          ],
+          "notes": "Lynae has the strongest generalist buffs (pairs well with Mornye); Zhezhi provides strong off-field Coordinated Attack damage plus a 20% Glacio/25% Skill DMG Outro."
+        },
+        {
+          "teamName": "F2P Team",
+          "partners": [
+            "Sanhua",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Sanhua has a very fast rotation and 38% Basic ATK DMG Amplify Outro, free-to-play alternative when Zhezhi is unavailable/occupied."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "lucilla",
+      "name": "Lucilla",
+      "element": "Glacio",
+      "role": [
+        "Hybrid",
+        "Support"
+      ],
+      "outro": {
+        "skillName": "Montage",
+        "effect": "Montage - +60% Glacio Chafe DMG (Chafe mode, 30s) or +50% Echo Skill DMG to next character (Echo mode, 14s).",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Glacio",
+        "durationApprox": "30s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lucilla"
+      },
+      "intro": {
+        "skillName": "Clip It",
+        "effect": "Clip It - Glacio hit + 1 Glacio Chafe stack, restores 100 Trace.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lucilla"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Glacio Chafe Team",
+          "partners": [
+            "Hiyuki",
+            "Suisui/Chisa (or Shorekeeper/Verina)"
+          ],
+          "notes": "Hiyuki is Lucilla's only and best Chafe-mode partner."
+        },
+        {
+          "teamName": "Echo Skill Hypercarry",
+          "partners": [
+            "Sigrika",
+            "The Shorekeeper"
+          ],
+          "notes": "Sigrika is the best Echo-DMG dealer to pair with Lucilla; Galbrena and Phrolova are viable alternates."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "lucy",
+      "name": "Lucy",
+      "element": "Spectro",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Countermeasure Program",
+        "effect": "Countermeasure Program - 25% Basic Attack DMG Amplify to next character + team-wide Hack-Shifting/damage-reduction utility for 25s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Spectro",
+        "durationApprox": "25s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lucy"
+      },
+      "intro": {
+        "skillName": "Outdated Hallucination",
+        "effect": "Outdated Hallucination - Spectro hit, grants team wallhack vision (Involuntary Sharing), extra Rebecca synergy.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lucy"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Rebecca",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Rebecca is Lucy's only real partner - their kits reference each other directly; Mornye emphasizes Hack damage via Off-Tune Buildup Rate, Shorekeeper is a close second (better in Whimpering Wastes)."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "lumi",
+      "name": "Lumi",
+      "element": "Electro",
+      "role": [
+        "Hybrid",
+        "flex DPS"
+      ],
+      "outro": {
+        "skillName": "Escorting",
+        "effect": "Escorting - 38% Resonance Skill DMG Amplify to incoming character for 10s or until swap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": "10s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lumi"
+      },
+      "intro": {
+        "skillName": "Special Delivery",
+        "effect": "Special Delivery - enters Yellow Light Mode, Electro hit.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lumi"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team (Jinhsi)",
+          "partners": [
+            "Jinhsi",
+            "Verina"
+          ],
+          "notes": "Buffs Jinhsi's Skill-DMG nukes 38% via Outro; avoid Shorekeeper here since Jinhsi's Forte needs Coordinated Attacks."
+        },
+        {
+          "teamName": "Best Team (Carlotta)",
+          "partners": [
+            "Carlotta",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Carlotta deals almost exclusively Skill DMG, a natural fit, but timing Lumi's Outro against Carlotta's Forte nuke is awkward."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "lupa",
+      "name": "Lupa",
+      "element": "Fusion",
+      "role": [
+        "Hybrid",
+        "Support"
+      ],
+      "outro": {
+        "skillName": null,
+        "effect": "Stand by Me, Warrior - +20% Fusion DMG / +25% Basic Attack DMG to next character for 14s or until swap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lupa"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": "Try Focusing, Eh? - Fusion strike; enhances to Nowhere to Run! at max Pack Hunt (Wild Hunt).",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lupa"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Aemeath/Galbrena",
+            "Mornye/Denia/Changli/Brant/Encore"
+          ],
+          "notes": "Mono Fusion enabler - buffs the entire team's ATK/Fusion RES Ignore; Aemeath and Galbrena have the highest baseline damage to capitalize on it."
+        },
+        {
+          "teamName": "Encore F2P Team",
+          "partners": [
+            "Encore",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Works well outside strict Mono Fusion since Encore's short rotation leaves downtime for Lupa's cooldowns to catch up."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "luuk-herssen",
+      "name": "Luuk Herssen",
+      "element": "Spectro",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Bow to the Last Light",
+        "effect": "Bow to the Last Light - 500% ATK Spectro hit.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Spectro",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/luuk-herssen"
+      },
+      "intro": {
+        "skillName": "Before Injection of Dawn",
+        "effect": "Before Injection of Dawn - restores 100 Ichor Flow, grants a Dawnlit Keep damage-reduction stack.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/luuk-herssen"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Luuk Herssen",
+            "Denia/Lynae/Sanhua",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Denia is strongest (extra Tune Strain, buffing, grouping, fast rotation); Lynae close second; Sanhua a fully free budget option (may need an extra Mid-air chain post-Ultimate to hit his 25s cooldown)."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "lynae",
+      "name": "Lynae",
+      "element": "Spectro",
+      "role": [
+        "Hybrid",
+        "Support"
+      ],
+      "outro": {
+        "skillName": null,
+        "effect": "Let's Hit the Road! - Spectro hit + 15% All DMG / 25% Liberation DMG Amplify to next character for 14s or until swap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Spectro",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lynae"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": "Time to Show Some Colors! - Spectro hit, +25% Spectro DMG self-buff for 9s, restores 100 Overflow.",
+        "durationApprox": "9s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/lynae"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Aemeath/Hiyuki/Luuk Herssen/Iuno",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Aemeath is the single best pairing (Tune Rupture synergy); Mornye is Lynae's best Support partner (responds to Tune Rupture/Strain)."
+        },
+        {
+          "teamName": "Generalist Buff Teams",
+          "partners": [
+            "Phoebe/Carlotta/Camellya",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Works with virtually any DPS besides Zani and Cartethyia."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "mornye",
+      "name": "Mornye",
+      "element": "Fusion",
+      "role": [
+        "Support",
+        "Healer"
+      ],
+      "outro": {
+        "skillName": "Recursion",
+        "effect": "Recursion - 25% All DMG Amplification to team for 30s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": "30s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/mornye"
+      },
+      "intro": {
+        "skillName": "Convergence",
+        "effect": "Convergence - Fusion hit, jumps into Wide Field Observation Mode directly (skips Rest Mass Energy requirement).",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/mornye"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Mono Fusion",
+          "partners": [
+            "Lupa",
+            "Aemeath/Galbrena/Brant/Encore"
+          ],
+          "notes": "Best 3rd-slot Support for Lupa's Mono Fusion archetype."
+        },
+        {
+          "teamName": "Tune Rupture/Strain Team",
+          "partners": [
+            "Lynae/Denia/Qingxiao/Luuk Herssen/Aemeath",
+            "any DPS"
+          ],
+          "notes": "Responds to allies' Tune Rupture/Strain application via Interfered Marker for up to 40% DMG Bonus - requires S1 to be team-agnostic, otherwise near-mandatory Rupture/Strain applier."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "mortefi",
+      "name": "Mortefi",
+      "element": "Fusion",
+      "role": [
+        "Hybrid",
+        "Support"
+      ],
+      "outro": {
+        "skillName": "Rage Transposition",
+        "effect": "Rage Transposition - 38% Heavy Attack DMG Deepen to next character for 14s or until swap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Fusion",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/mortefi"
+      },
+      "intro": {
+        "skillName": "Dissonance",
+        "effect": "Dissonance - Fusion strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/mortefi"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team (Augusta)",
+          "partners": [
+            "Augusta",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Best F2P-accessible Heavy Attack buffer for Augusta."
+        },
+        {
+          "teamName": "Galbrena Mono Fusion Team",
+          "partners": [
+            "Galbrena",
+            "Lupa"
+          ],
+          "notes": "Fast rotation and solid personal damage make him a great Lupa Mono Fusion partner."
+        },
+        {
+          "teamName": "Jiyan Team",
+          "partners": [
+            "Jiyan",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Tailor-made Heavy Attack DMG partner."
+        },
+        {
+          "teamName": "Alternative Heavy Attack Teams",
+          "partners": [
+            "Phoebe/Zani",
+            "Spectro Rover (Rejuvenating Glow)"
+          ],
+          "notes": "Usable secondary for Absolution Phoebe and F2P Zani (no Spectro Frazzle application, but functional)."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "phoebe",
+      "name": "Phoebe",
+      "element": "Spectro",
+      "role": [
+        "Main DPS (Absolution)",
+        "Hybrid (Confession)"
+      ],
+      "outro": {
+        "skillName": "Attentive Heart",
+        "effect": "Attentive Heart - 528.41% ATK Spectro hit (+255% in Absolution) or Silent Prayer buff (10% Spectro RES Shred + 100% Frazzle DMG Amplify) in Confession.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Spectro",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/phoebe"
+      },
+      "intro": {
+        "skillName": "Golden Grace",
+        "effect": "Golden Grace - knockback + Spectro DMG.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/phoebe"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team (Absolution)",
+          "partners": [
+            "Lynae/Rebecca/Phrolova",
+            "Rover (Spectro)/Ciaccona/Chisa"
+          ],
+          "notes": "Needs a Spectro Frazzle applier (Rover for single-wave, Ciaccona for multi-wave)."
+        },
+        {
+          "teamName": "Best Team (Confession)",
+          "partners": [
+            "Zani",
+            "The Shorekeeper/Rover (Spectro) quickswap"
+          ],
+          "notes": "Confession Phoebe currently only pairs meaningfully with Zani."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "phrolova",
+      "name": "Phrolova",
+      "element": "Havoc",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Unfinished Piece",
+        "effect": "Unfinished Piece - 20% Havoc DMG / 25% Heavy Attack DMG Amplification to next character for 14s or until swap; extra Hecate attacks if cast during Maestro.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Havoc",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/phrolova"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": "Suite of Quietus (or Suite of Immortality post-Ultimate) - Havoc strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/phrolova"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Lucilla/Cantarella/Sigrika/Lynae",
+            "Qiuyuan/Roccia/Danjin"
+          ],
+          "notes": "Cantarella is the strongest personal-damage synergy; needs her Signature weapon to compete with top DPS."
+        },
+        {
+          "teamName": "Heavy Attack Buff Teams",
+          "partners": [
+            "Yangyang: Xuanling/Galbrena/Phoebe/Jiyan",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Phrolova can buff Heavy Attack DPS via Outro while dealing her own large damage off-field."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "qingxiao",
+      "name": "Qingxiao",
+      "element": "Aero",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Lingering Song",
+        "effect": "Lingering Song - 800% ATK Aero hit.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/qingxiao"
+      },
+      "intro": {
+        "skillName": "Tonality Shift",
+        "effect": "Tonality Shift - Aero hit, +30 Sword Cadence.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/qingxiao"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Denia",
+            "Mornye"
+          ],
+          "notes": "Denia+Mornye specifically is her intended best-in-slot team; Denia without Mornye causes major DPS drop-offs with no good alternative."
+        },
+        {
+          "teamName": "Lynae Team",
+          "partners": [
+            "Lynae",
+            "Mornye/Ciaccona/The Shorekeeper"
+          ],
+          "notes": "More flexible alternative with smaller drop-offs if Mornye is unavailable."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "qiuyuan",
+      "name": "Qiuyuan",
+      "element": "Aero",
+      "role": [
+        "Hybrid",
+        "Support"
+      ],
+      "outro": {
+        "skillName": "Strike Before Ready",
+        "effect": "Strike Before Ready - Echo-Skill-DMG hit + 50% Echo Skill DMG Amplification to next character for 14s or until swap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": "Attack the Must-Defend - Heavy-Attack-type Aero hit, grants 400 Forte instantly.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Galbrena Team",
+          "partners": [
+            "Galbrena",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Best 2nd-slot teammate for Galbrena."
+        },
+        {
+          "teamName": "Phrolova Team",
+          "partners": [
+            "Phrolova",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Best 3rd-slot teammate; multiple Echo casts trigger Hecate's Enhanced Attacks."
+        },
+        {
+          "teamName": "Sigrika Team",
+          "partners": [
+            "Sigrika",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Best Sigrika buffer overall."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "rebecca",
+      "name": "Rebecca",
+      "element": "Electro",
+      "role": [
+        "Hybrid"
+      ],
+      "outro": {
+        "skillName": "Preem Choom",
+        "effect": "Preem Choom - summons an attacking turret for 14s + 15% All DMG / up to 35% Heavy Attack DMG Amplification to next character.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rebecca"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": "My Turn! (Yo, It's Big Boomin' Time! / Hey, Leadhead, Come 'n' Get Me!) - Electro strike, switches stance.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rebecca"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Yangyang: Xuanling",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Yangyang: Xuanling is the highest Heavy Attack DPS in the game, making this Rebecca's best pairing."
+        },
+        {
+          "teamName": "Edgerunners Team",
+          "partners": [
+            "Lucy",
+            "Mornye/The Shorekeeper"
+          ],
+          "notes": "Free, works well together via the Hack mechanic; Mornye emphasizes Off-Tune Buildup, Shorekeeper better for Whimpering Wastes."
+        },
+        {
+          "teamName": "Alternative Heavy Attack Teams",
+          "partners": [
+            "Phoebe/Jiyan/Augusta/Galbrena",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Functions as a solid free alternative to Mortefi for any Heavy Attack DPS."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "roccia",
+      "name": "Roccia",
+      "element": "Havoc",
+      "role": [
+        "Hybrid"
+      ],
+      "outro": {
+        "skillName": null,
+        "effect": "Applause, Please! - 20% Havoc DMG / 25% Basic Attack DMG Amplification to next character for 14s or until swap; grants incoming character the Magic Box utility (extra Echo Skill cast).",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Havoc",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/roccia"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": "Pero, Help - Havoc strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/roccia"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Camellya Team",
+          "partners": [
+            "Camellya",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Best buffer synergy on paper (Havoc + Basic DMG), though very competitive with the free Sanhua."
+        },
+        {
+          "teamName": "Phrolova Team",
+          "partners": [
+            "Phrolova",
+            "Cantarella"
+          ],
+          "notes": "Good recipient of Phrolova's Outro, extra Echo Skill cast triggers Enhanced Hecate attack."
+        },
+        {
+          "teamName": "Havoc Rover Team",
+          "partners": [
+            "Rover (Havoc)",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Considered Havoc Rover's best buffer."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "rover-aero",
+      "name": "Rover (Aero)",
+      "element": "Aero",
+      "role": [
+        "Support",
+        "Healer"
+      ],
+      "outro": {
+        "skillName": "Storm's Echo",
+        "effect": "Storm's Echo - grants +3 max Aero Erosion stacks to team for 30s (Cartethyia's key enabler).",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": "30s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero"
+      },
+      "intro": {
+        "skillName": "Relentless Squall",
+        "effect": "Relentless Squall - Aero strike, self +20% ATK for 10s.",
+        "durationApprox": "10s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Rover (Aero)",
+            "Cartethyia",
+            "Ciaccona"
+          ],
+          "notes": "Aero Rover's only genuinely strong team - tailored specifically for Cartethyia's Aero Erosion mechanics."
+        },
+        {
+          "teamName": "Main DPS Iuno Team",
+          "partners": [
+            "Rover (Aero)",
+            "Iuno",
+            "Ciaccona"
+          ],
+          "notes": "Best buffer for Main DPS Iuno via signature weapon's Aero DMG Amplify."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "rover-electro",
+      "name": "Rover (Electro)",
+      "element": "Electro",
+      "role": [
+        "Hybrid"
+      ],
+      "outro": {
+        "skillName": "Rumbling Thunders",
+        "effect": "Rumbling Thunders - grants Electro Core to next character (consumed on next Negative Status inflicted for 25% All DMG Amplification for 14s); expires on swap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-electro"
+      },
+      "intro": {
+        "skillName": "Thunderous Fury",
+        "effect": "Thunderous Fury - Electro strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-electro"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Fallback (Hiyuki)",
+          "partners": [
+            "Rover (Electro)",
+            "Hiyuki",
+            "Suisui/Chisa/Verina"
+          ],
+          "notes": "Only current niche - a replacement buffer for Hiyuki teams when low-Sequence Jianxin is the only alternative."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "rover-havoc",
+      "name": "Rover (Havoc)",
+      "element": "Havoc",
+      "role": [
+        "Main DPS",
+        "flex Dual DPS"
+      ],
+      "outro": {
+        "skillName": "Soundweaver",
+        "effect": "Soundweaver - Havoc field, 143.3% ATK per tick every 2s for 6s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Havoc",
+        "durationApprox": "2s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc"
+      },
+      "intro": {
+        "skillName": "Instant of Annihilation",
+        "effect": "Instant of Annihilation - Havoc strike, restores Umbra (also refills Dark Surge if cast during it).",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Rover (Havoc)",
+            "Roccia",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Roccia is the best buffer (20% Havoc + 25% Basic Attack DMG Amplify)."
+        },
+        {
+          "teamName": "F2P Team",
+          "partners": [
+            "Rover (Havoc)",
+            "Danjin/Sanhua",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Both fully free and strong; Danjin edges out Sanhua slightly."
+        },
+        {
+          "teamName": "Phrolova Team",
+          "partners": [
+            "Rover (Havoc)",
+            "Phrolova",
+            "Danjin/Cantarella"
+          ],
+          "notes": "High personal damage and Energy generation make Rover a strong Phrolova teammate alternative."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "rover-spectro",
+      "name": "Rover (Spectro)",
+      "element": "Spectro",
+      "role": [
+        "Hybrid",
+        "Support/Healer"
+      ],
+      "outro": {
+        "skillName": "Instant",
+        "effect": "Instant - stasis field around next character for 3s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Spectro",
+        "durationApprox": "3s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-spectro"
+      },
+      "intro": {
+        "skillName": "Waveshock",
+        "effect": "Waveshock - Spectro strike, builds Diminutive Sound.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-spectro"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Rover (Spectro)",
+            "Phoebe",
+            "Lynae/Zani teammates"
+          ],
+          "notes": "Currently mandatory together - Phoebe's Absolution mode needs a Spectro Frazzle applier and Rover is one of only two in the game."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "sanhua",
+      "name": "Sanhua",
+      "element": "Glacio",
+      "role": [
+        "Hybrid"
+      ],
+      "outro": {
+        "skillName": "Silversnow",
+        "effect": "Silversnow - 38% Basic Attack DMG Deepen to next character for 14s or until swap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Glacio",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/sanhua"
+      },
+      "intro": {
+        "skillName": "Freezing Thorns",
+        "effect": "Freezing Thorns - creates an Ice Thorn, Glacio hit.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/sanhua"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Camellya Team",
+          "partners": [
+            "Camellya",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Extremely close second to Roccia at a fraction of the cost."
+        },
+        {
+          "teamName": "Encore Team",
+          "partners": [
+            "Encore",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Sanhua's single best pairing by far - Encore uses her better than nearly any other partner."
+        },
+        {
+          "teamName": "Brant Hypercarry Team",
+          "partners": [
+            "Brant",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Natural fit since Brant deals almost exclusively Basic ATK DMG."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "sigrika",
+      "name": "Sigrika",
+      "element": "Aero",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "In This Very Moment",
+        "effect": "In This Very Moment - 795% ATK Echo-Skill-DMG hit, grants Encapsulated (stagnates on ally Echo Skill casts).",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/sigrika"
+      },
+      "intro": {
+        "skillName": "Solsworn Etymology",
+        "effect": "Solsworn Etymology - Aero strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/sigrika"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Qiuyuan/Lucilla",
+            "The Shorekeeper/Mornye/Verina/Rover (Aero)"
+          ],
+          "notes": "Qiuyuan and Lucilla are near-mandatory - Sigrika's damage is almost entirely Echo Skill DMG, which only they buff meaningfully."
+        },
+        {
+          "teamName": "Phrolova Pairing",
+          "partners": [
+            "Qiuyuan",
+            "Phrolova"
+          ],
+          "notes": "Both share Qiuyuan's Echo Skill casts for high tandem damage, excellent for Whimpering Wastes."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "suisui",
+      "name": "Suisui",
+      "element": "Glacio",
+      "role": [
+        "Support",
+        "Healer"
+      ],
+      "outro": {
+        "skillName": "Rippling Waters",
+        "effect": "Rippling Waters - 25% All DMG Amplification to team for 30s; tiered bonus effects (Reflecting Shadows, Roaming Transcendent Plume Steps, Undulating Mist ATK buff) based on Floral Epistle consumed (0/200/400/600).",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Glacio",
+        "durationApprox": "30s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/suisui"
+      },
+      "intro": {
+        "skillName": "Tinkling Jade",
+        "effect": "Tinkling Jade - Glacio hit + Glacio Chafe, consumes Cloud Breath to pull + enter Drizzle Stance.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/suisui"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Hiyuki Team",
+          "partners": [
+            "Hiyuki",
+            "Lucilla/Lynae"
+          ],
+          "notes": "Applies Glacio Chafe for Hiyuki, a key replacement for Chisa."
+        },
+        {
+          "teamName": "Yangyang: Xuanling Team",
+          "partners": [
+            "Yangyang: Xuanling",
+            "any"
+          ],
+          "notes": "Havoc Bane synergy completes her best team."
+        },
+        {
+          "teamName": "Aemeath Team (Fusion Burst)",
+          "partners": [
+            "Aemeath",
+            "any"
+          ],
+          "notes": "Viable alternative when the Negative Status-consuming Hypercarry buff isn't strictly needed."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "suoming",
+      "name": "Suoming",
+      "element": "Electro",
+      "role": [
+        "Unknown - not yet published"
+      ],
+      "outro": {
+        "skillName": null,
+        "effect": null,
+        "grantsTo": null,
+        "damageTypeAffected": null,
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/suoming"
+      },
+      "intro": {
+        "skillName": null,
+        "effect": null,
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/suoming"
+      },
+      "teamPairingsFromCharacterFile": [],
+      "dataStatus": "stub \u2014 Prydwen has not published this character's kit yet"
+    },
+    {
+      "slug": "taoqi",
+      "name": "Taoqi",
+      "element": "Havoc",
+      "role": [
+        "Hybrid"
+      ],
+      "outro": {
+        "skillName": "Iron Will",
+        "effect": "Iron Will - 38% Resonance Skill DMG Deepen to next character for 14s or until swap.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Havoc",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/taoqi"
+      },
+      "intro": {
+        "skillName": "Defense Formation",
+        "effect": "Defense Formation - Havoc strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/taoqi"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Carlotta Team",
+          "partners": [
+            "Carlotta",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Best DPS to support - nearly all Carlotta's damage is Resonance Skill DMG."
+        },
+        {
+          "teamName": "Jinhsi Nuke Team",
+          "partners": [
+            "Jinhsi",
+            "Verina"
+          ],
+          "notes": "Not meta but produces huge damage-per-screenshot nukes; Verina needed for Coordinated Attacks to build Jinhsi's Forte."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "the-shorekeeper",
+      "name": "The Shorekeeper",
+      "element": "Spectro",
+      "role": [
+        "Support",
+        "Healer"
+      ],
+      "outro": {
+        "skillName": "Binary Butterfly",
+        "effect": "Binary Butterfly - 15% team DMG Amplify for 30s (persists through swaps) + up to 5 free interrupt-recoveries (auto perfect-dodge) for the active character.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Spectro",
+        "durationApprox": "30s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper"
+      },
+      "intro": {
+        "skillName": "Proof of Existence",
+        "effect": "Proof of Existence - Enlightenment (standard) / Discernment (empowered, once per Stellarealm, HP-scaling guaranteed-crit nuke, ends the Stellarealm early but doubles Concerto gain).",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Generalist Support (any team)",
+          "partners": [
+            "The Shorekeeper",
+            "any DPS",
+            "any secondary"
+          ],
+          "notes": "No particular required synergy - the most widely usable, effective third-slot support in the game (Augusta, Carlotta, Zani, Camellya teams all use her)."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "verina",
+      "name": "Verina",
+      "element": "Spectro",
+      "role": [
+        "Support",
+        "Healer"
+      ],
+      "outro": {
+        "skillName": "Blossom",
+        "effect": "Blossom - HoT to next character (19% ATK/s for 6s) + 15% all-type DMG Deepen to nearby team for 30s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Spectro",
+        "durationApprox": "6s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/verina"
+      },
+      "intro": {
+        "skillName": "Verdant Growth",
+        "effect": "Verdant Growth - Spectro DMG (rarely used in optimal rotations).",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/verina"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Generalist Support (any team)",
+          "partners": [
+            "any DPS",
+            "any secondary"
+          ],
+          "notes": "Slots into virtually any team; slightly behind The Shorekeeper in raw buff strength but has by far the shortest rotation, making her preferred in quickswap and some Jinhsi teams (Coordinated Attacks synergy)."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "xiangli-yao",
+      "name": "Xiangli Yao",
+      "element": "Electro",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Chain Rule",
+        "effect": "Chain Rule - next character's first Basic Attack hit triggers a laser AoE (237.6% ATK) for 8s, up to 3 times.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": "8s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/xiangli-yao"
+      },
+      "intro": {
+        "skillName": "Principle",
+        "effect": "Principle - Electro DMG strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/xiangli-yao"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Xiangli Yao",
+            "Lynae or Yinlin",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Lynae edges out Yinlin due to a more well-rounded buffing profile alongside a similar Outro effect."
+        },
+        {
+          "teamName": "Expert Team (Dual DPS)",
+          "partners": [
+            "Xiangli Yao",
+            "Changli",
+            "support"
+          ],
+          "notes": "Extremely quickswap-reliant, one of the highest-damage pairs in the game if mastered, not recommended for casual play."
+        },
+        {
+          "teamName": "Budget Team",
+          "partners": [
+            "Xiangli Yao",
+            "Yangyang or Jianxin",
+            "generalist"
+          ],
+          "notes": "Yangyang is the best non-limited-5-star option; Jianxin viable but has field-time/Energy issues."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "yangyang",
+      "name": "Yangyang",
+      "element": "Aero",
+      "role": [
+        "Hybrid"
+      ],
+      "outro": {
+        "skillName": "Whispering Breeze",
+        "effect": "Whispering Breeze - restores 4 Resonance Energy/s for 5s (20 total) to next character.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Aero",
+        "durationApprox": "5s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang"
+      },
+      "intro": {
+        "skillName": "Cerulean Song",
+        "effect": "Cerulean Song - launches target, Aero hit, +8% self Aero DMG Bonus for 8s.",
+        "durationApprox": "8s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Xiangli Yao Team",
+          "partners": [
+            "Xiangli Yao",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Best quickswap synergy - Xiangli Yao's many swap-cancel windows pair perfectly with Yangyang's fast rotation."
+        },
+        {
+          "teamName": "Changli Team",
+          "partners": [
+            "Changli",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Strong only under a true quickswap playstyle; falls off significantly otherwise."
+        },
+        {
+          "teamName": "Carlotta Team",
+          "partners": [
+            "Carlotta",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Budget alternative to Zhezhi even without quickswap."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "yangyang-xuanling",
+      "name": "Yangyang: Xuanling",
+      "element": "Havoc",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "As the Wind Wills",
+        "effect": "As the Wind Wills - 300% ATK Havoc hit + grants other Havoc Bane appliers +20% Havoc DMG Amplification after their next Havoc Bane application.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Havoc",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling"
+      },
+      "intro": {
+        "skillName": "Skybound Feather",
+        "effect": "Skybound Feather - Havoc hit + Havoc Bane, restores Azure Plume.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Yangyang: Xuanling",
+            "Chisa",
+            "Suisui"
+          ],
+          "notes": "Chisa is her best 2nd-slot partner (Negative Status buffing + Havoc Bane application), Suisui is the strongest 3rd slot for Havoc Bane consumers."
+        },
+        {
+          "teamName": "Alternative Premium Teams",
+          "partners": [
+            "Yangyang: Xuanling",
+            "Rebecca/Lynae/Phrolova/Iuno/Mortefi",
+            "Mornye/Verina"
+          ],
+          "notes": "Phrolova makes an excellent Whimpering Wastes Dual DPS pairing."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "yinlin",
+      "name": "Yinlin",
+      "element": "Electro",
+      "role": [
+        "Hybrid"
+      ],
+      "outro": {
+        "skillName": "Strategist",
+        "effect": "Strategist - next character gains 20% Electro DMG Deepen + 25% Resonance Liberation DMG Deepen for 14s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/yinlin"
+      },
+      "intro": {
+        "skillName": "Raging Storm",
+        "effect": "Raging Storm - large-range Electro DMG, applies Sinner's Mark.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/yinlin"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Main DPS Iuno",
+          "partners": [
+            "Iuno",
+            "Verina or The Shorekeeper"
+          ],
+          "notes": "Yinlin's 25% Liberation DMG Amplify makes her the second-best Iuno buffer after signature-weapon Ciaccona."
+        },
+        {
+          "teamName": "Xiangli Yao / Calcharo Team",
+          "partners": [
+            "Xiangli Yao or Calcharo",
+            "support"
+          ],
+          "notes": "Her 20% Electro + 25% Liberation DMG Amplify Outro is a massive multiplier for both - considered a near-mandatory pairing for Calcharo."
+        },
+        {
+          "teamName": "Jinhsi Team",
+          "partners": [
+            "Jinhsi",
+            "Verina or The Shorekeeper"
+          ],
+          "notes": "Competitive but slightly weaker alternative to Zhezhi for Jinhsi."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "youhu",
+      "name": "Youhu",
+      "element": "Glacio",
+      "role": [
+        "Support",
+        "Healer"
+      ],
+      "outro": {
+        "skillName": "Timeless Classics",
+        "effect": "Timeless Classics - 100% Coordinated Attack DMG Amplification to next character for 28s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Glacio",
+        "durationApprox": "28s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/youhu"
+      },
+      "intro": {
+        "skillName": "Scroll of Wonders",
+        "effect": "Scroll of Wonders - Lucky Draw (random Antique).",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/youhu"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team (Yinlin)",
+          "partners": [
+            "Yinlin",
+            "any"
+          ],
+          "notes": "Yinlin has the highest Coordinated Attack DMG of any character, the most natural pairing."
+        },
+        {
+          "teamName": "Zhezhi Team",
+          "partners": [
+            "Zhezhi",
+            "any"
+          ],
+          "notes": "Strong Coordinated Attack synergy."
+        },
+        {
+          "teamName": "Mortefi Team",
+          "partners": [
+            "Mortefi",
+            "any"
+          ],
+          "notes": "Viable budget pairing."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "yuanwu",
+      "name": "Yuanwu",
+      "element": "Electro",
+      "role": [
+        "Support"
+      ],
+      "outro": {
+        "skillName": "Lightning Manipulation",
+        "effect": "Lightning Manipulation - Electro field dealing heavy Vibration Strength (stagger) damage.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Electro",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/yuanwu"
+      },
+      "intro": {
+        "skillName": "Thunder Bombardment",
+        "effect": "Thunder Bombardment - Electro strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/yuanwu"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Jinhsi Team",
+          "partners": [
+            "Jinhsi",
+            "Verina/The Shorekeeper (on Moonlit Clouds)"
+          ],
+          "notes": "Only real meta use case - highest Coordinated Attack frequency of any character for filling Jinhsi's Forte, at essentially zero investment (level 1, 3-star weapon, level 0 Echoes still works)."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "zani",
+      "name": "Zani",
+      "element": "Spectro",
+      "role": [
+        "Main DPS"
+      ],
+      "outro": {
+        "skillName": "Beacon For the Future",
+        "effect": "Beacon For the Future - Spectro-Frazzle-DMG hit scaling with consumed Heliacal Ember stacks, +20% Spectro DMG Amplify to team on Heliacal-Ember-marked targets for 20s.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Spectro",
+        "durationApprox": "20s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/zani"
+      },
+      "intro": {
+        "skillName": "Immediate Execution",
+        "effect": "Immediate Execution - Spectro strike.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/zani"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Best Team",
+          "partners": [
+            "Phoebe (Confession)",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Phoebe is by far the best Zani partner - only she reliably fills Zani's Blaze via Spectro Frazzle application and provides up to 130% Spectro Frazzle DMG Amplify."
+        },
+        {
+          "teamName": "Premium Alternatives",
+          "partners": [
+            "Rover (Spectro)/Ciaccona",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Secondary Frazzle appliers; can enable a 3-Nightfall rotation with quickswap."
+        },
+        {
+          "teamName": "F2P Team",
+          "partners": [
+            "Iuno/Phrolova/Mortefi",
+            "Verina"
+          ],
+          "notes": "Heavy Attack DMG buffers as budget alternatives to Phoebe."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    },
+    {
+      "slug": "zhezhi",
+      "name": "Zhezhi",
+      "element": "Glacio",
+      "role": [
+        "Hybrid"
+      ],
+      "outro": {
+        "skillName": "Carve and Draw",
+        "effect": "Carve and Draw - 20% Glacio DMG / 25% Resonance Skill DMG Amplification to next character for 14s or until swap; restores 15 Resonance Energy to them.",
+        "grantsTo": "next resonator (swap-in)",
+        "damageTypeAffected": "Glacio",
+        "durationApprox": "14s",
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/zhezhi"
+      },
+      "intro": {
+        "skillName": "Radiant Ruin",
+        "effect": "Radiant Ruin - Glacio strike, builds Afflatus.",
+        "durationApprox": null,
+        "source": "https://www.prydwen.gg/wuthering-waves/characters/zhezhi"
+      },
+      "teamPairingsFromCharacterFile": [
+        {
+          "teamName": "Carlotta Team",
+          "partners": [
+            "Carlotta",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Zhezhi's best DPS partner since 2.0 - fully utilizes her buff kit."
+        },
+        {
+          "teamName": "Jinhsi Team",
+          "partners": [
+            "Jinhsi",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Only Coordinated Attacker who rotates fast without needing her Ultimate, plus Skill DMG Amplify."
+        },
+        {
+          "teamName": "Lingyang Team",
+          "partners": [
+            "Lingyang",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Acceptable fallback with a well-built team."
+        }
+      ],
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+    }
+  ]
+}
