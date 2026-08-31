@@ -12,7 +12,7 @@ Reference-only combat/theorycrafting data for the Team engine (`app/src/features
 
 ## Coverage
 
-**24 of 60 characters fully documented** (`characters/<slug>.json`) with kit breakdown, build guide, teams, rotation, and community notes. The remaining 36 are **not yet scraped** — listed below with just their Prydwen slug (captured from the character index page) so a follow-up pass can pick up alphabetically/by priority without re-deriving the list. Do not treat the "pending" rows as containing any real data; no file exists for them yet.
+**60 of 60 characters documented** (`characters/<slug>.json`) with kit breakdown, build guide, teams, rotation, and community notes — 57 with full Prydwen-sourced depth, and 3 (Hsin, Jingran, Suoming) as intentionally partial stub entries because Prydwen had not yet published their kit/build content as of the 2026-08-31 scrape (their pages exist and confirm rarity/element/weapon, but every content section reads "aren't available yet"). See `SOURCES_STATUS.md` for details on those three and a note on re-scraping them later.
 
 ## Characters — Done (24)
 
@@ -45,15 +45,54 @@ Reference-only combat/theorycrafting data for the Team engine (`app/src/features
 
 Full per-character detail (kit/skills, best weapons, echo sets, main-stat priority, teams, rotation, community notes) is in `characters/<slug>.json`.
 
-## Characters — Pending scrape (36)
+## Characters — Done, second pass (33 full + 3 partial)
 
-Slugs captured from Prydwen's character index (`https://www.prydwen.gg/wuthering-waves/characters/<slug>`), alphabetical:
+Scraped 2026-08-31, same Prydwen-page technique. Re-verified against the live Prydwen character index at the start of this pass — the 36-slug pending list from the previous pass matched exactly, no additions or removals.
 
-galbrena, hiyuki, hsin, iuno, jianxin, jingran, lingyang, lucilla, lucy, lumi, lupa, luuk-herssen, lynae, mornye, mortefi, phoebe, phrolova, qingxiao, qiuyuan, rebecca, roccia, rover-aero, rover-electro, rover-havoc, rover-spectro, sanhua, sigrika, suisui, suoming, taoqi, yangyang, yangyang-xuanling, youhu, yuanwu, zani, zhezhi
+| Character | Rarity | Element | Weapon | Role | Tier (ToA / WW) |
+|---|---|---|---|---|---|
+| Galbrena | 5★ | Fusion | Pistols | Main DPS | T1 / T1.5 |
+| Hiyuki | 5★ | Glacio | Sword | Main DPS | T0 / T0.5 |
+| Hsin | 5★ | Electro | Rectifier | *unpublished on Prydwen* | — |
+| Iuno | 5★ | Aero | Gauntlets | Hybrid/Support/flex DPS | T0.5-T1 / T1.5-T4 |
+| Jianxin | 5★ | Aero | Gauntlets | Hybrid/Support/flex DPS | T4 / T4 |
+| Jingran | 5★ | Fusion | Broadblade | *unpublished on Prydwen* | — |
+| Lingyang | 5★ | Glacio | Gauntlets | Main DPS | T3 / T4 |
+| Lucilla | 5★ | Glacio | Rectifier | Hybrid/Support | T0 / T0 |
+| Lucy | 5★ | Spectro | Pistols | Main DPS | T1 / T2 |
+| Lumi | 4★ | Electro | Broadblade | Hybrid/flex DPS | T4 / T4 |
+| Lupa | 5★ | Fusion | Broadblade | Hybrid/Support | T0.5 / T1 |
+| Luuk Herssen | 5★ | Spectro | Gauntlets | Main DPS | T0 / T1.5 |
+| Lynae | 5★ | Spectro | Pistols | Hybrid/Support | T0 / T1 |
+| Mornye | 5★ | Fusion | Broadblade | Support/Healer | T0 / T1 |
+| Mortefi | 4★ | Fusion | Pistols | Hybrid/Support | T1.5 / T2 |
+| Phoebe | 5★ | Spectro | Rectifier | Main DPS (Absolution)/Hybrid (Confession) | T1.5-T2 / T3 |
+| Phrolova | 5★ | Havoc | Rectifier | Main DPS | T0.5 / T0.5 |
+| Qingxiao | 5★ | Aero | Sword | Main DPS | T0 / T1 |
+| Qiuyuan | 5★ | Aero | Sword | Hybrid/Support | T0 / T0 |
+| Rebecca | 5★ | Electro | Pistols | Hybrid | T0.5 / T1.5 |
+| Roccia | 5★ | Havoc | Gauntlets | Hybrid | T3 / T3 |
+| Rover (Aero) | 5★ | Aero | Sword | Support/Healer | T1 / T1.5 |
+| Rover (Electro) | 5★ | Electro | Sword | Hybrid | T4 / T4 |
+| Rover (Havoc) | 5★ | Havoc | Sword | Main DPS/flex Dual DPS | T3 / T4 |
+| Rover (Spectro) | 5★ | Spectro | Sword | Hybrid/Support/Healer | T1.5 / T2 |
+| Sanhua | 4★ | Glacio | Sword | Hybrid | T2 / T3 |
+| Sigrika | 5★ | Aero | Gauntlets | Main DPS | T0 / T0 |
+| Suisui | 5★ | Glacio | Rectifier | Support/Healer | T0 / T0.5 |
+| Suoming | 5★ | Electro | Sword | *unpublished on Prydwen* | — |
+| Taoqi | 4★ | Havoc | Broadblade | Hybrid | T4 / T4 |
+| Yangyang | 4★ | Aero | Sword | Hybrid | T4 / T4 |
+| Yangyang: Xuanling | 5★ | Havoc | Sword | Main DPS | T0 / T1 |
+| Youhu | 4★ | Glacio | Gauntlets | Support/Healer | T4 / T4 |
+| Yuanwu | 4★ | Electro | Gauntlets | Support | T4 / T4 |
+| Zani | 5★ | Spectro | Gauntlets | Main DPS | T1.5 / T2 |
+| Zhezhi | 5★ | Glacio | Rectifier | Hybrid | T3 / T4 |
+
+**Hsin, Jingran, and Suoming are intentionally partial** — Prydwen's pages for them exist and confirm rarity/element/weapon type but every content section (Skills, Review, Build, Rotation, Synergies) reads "aren't available yet. They will be added soon!" as of the 2026-08-31 scrape. Their JSON files record this explicitly rather than fabricating kit data; re-scrape them in a follow-up pass once Prydwen publishes their guides.
 
 ## Follow-up priorities
 
-1. Finish the 36 pending characters using the same Prydwen-page technique (each ~8-13s fetch + a structured-JSON write); prioritize current-meta staples first if doing this incrementally: Zani, Zhezhi, Phrolova, Phoebe, Lupa, Roccia, Iuno, Sanhua, the four Rovers.
-2. Correct `sources.nanoka` in the 24 completed JSONs — Nanoka uses numeric character IDs, not name slugs (e.g. Jinhsi = `https://ww.nanoka.cc/character/1304`, not `/character/jinhsi`); a partial slug→ID map is in `SOURCES_STATUS.md`.
-3. Attempt Encore.moe, wuwatracker.com, and Reddit (r/Wuthering_Waves) per the original task brief — none were reached in this pass.
-4. Once characters are complete, the weapons/echoes/monsters scope explicitly excluded from this pass (per task instructions) would be the natural next step before any of this is wired into `calcEngine.js`.
+1. Re-scrape Hsin, Jingran, and Suoming once Prydwen publishes their character guides (all three were still placeholder pages as of 2026-08-31).
+2. Correct `sources.nanoka` across all 60 completed JSONs — Nanoka uses numeric character IDs, not name slugs (e.g. Jinhsi = `https://ww.nanoka.cc/character/1304`, not `/character/jinhsi`); a partial slug→ID map is in `SOURCES_STATUS.md`. None of the 60 files currently have this fixed.
+3. Attempt Encore.moe, wuwatracker.com, and Reddit (r/Wuthering_Waves) per the original task brief — none were reached in either pass.
+4. Now that all 60 characters are complete, the weapons/echoes/monsters scope explicitly excluded from this task (per task instructions) would be the natural next step before any of this is wired into `calcEngine.js`.

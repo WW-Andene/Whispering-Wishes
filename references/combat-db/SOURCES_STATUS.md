@@ -32,4 +32,16 @@ Not fetched in this pass. Community rotation/team-comp consensus notes included 
 
 ## Practical takeaway for a follow-up pass
 
-Given ~8-13s per Prydwen page fetch and the need for one page per character, covering all 60 characters end-to-end (with the current single-primary-source depth) is roughly a 60 x (fetch + write) loop — feasible but long. This pass completed 24 of 60 characters with full Prydwen-sourced depth (kit, build, teams, rotation, community notes) before time constraints required stopping to document and push. See `INDEX.md` for exactly which characters are done vs. pending.
+Given ~8-13s per Prydwen page fetch and the need for one page per character, covering all 60 characters end-to-end (with the current single-primary-source depth) is roughly a 60 x (fetch + write) loop — feasible but long. The first pass completed 24 of 60 characters with full Prydwen-sourced depth (kit, build, teams, rotation, community notes) before time constraints required stopping to document and push. See `INDEX.md` for exactly which characters are done.
+
+## Second pass — 2026-08-31 (this session)
+
+Finished the remaining 36 characters listed as "pending" in the first pass, using the identical technique (`jsRender: true`, `waitUntil: "load"`, `waitMs: 10000-13000`, Google referer, Chrome desktop UA, `extractText: true`).
+
+- **Re-verified the pending list against the live Prydwen character index** (`/wuthering-waves/characters`) before starting — the 36 slugs from the first pass's INDEX.md matched exactly against the current index; no characters were added or removed from the roster in the interim.
+- **33 of the 36 scraped with full depth** (kit, review, build, weapons, echoes, teams, rotation, community notes), same as the first pass's 24.
+- **3 of the 36 — Hsin, Jingran, Suoming — are unpublished on Prydwen.** Each has a live page confirming rarity/element/weapon type, but every content section (Skills, Resonance Chain, Minor Fortes, Stats, Upgrade Materials, Review, Pros & Cons, Build, Rotation, Synergies, Example Teams) is placeholder text reading "aren't available yet. They will be added soon!" These are almost certainly newly-announced/not-yet-released characters. Their `characters/<slug>.json` files record this explicitly (partial `kit.intro` note, empty `buildGuide`/`teams`/`rotation`) rather than fabricating data — do not treat them as silently dropped; they are flagged, just incomplete pending a future Prydwen update.
+- One transient empty-page fetch on `lucy` (first attempt returned only nav chrome with no content, likely a slow Cloudflare resolve) — retried once with `waitMs: 13000` and `forceRefresh: true`, succeeded fully on the second attempt. Same transient issue hit `zhezhi`, same fix worked.
+- Nanoka.cc, Fandom, Encore.moe, wuwatracker.com, and Reddit were **not** attempted in this second pass either (out of scope per the task brief's priority on finishing all 36 on Prydwen first); `sources.nanoka` in all 36 new files is left as the placeholder slug-style URL (`null` where no reasonable guess existed), same known gap as the first pass's 24 files.
+
+**Total after this session: 60/60 characters have a `characters/<slug>.json` file** — 57 with full Prydwen-sourced depth, 3 (Hsin, Jingran, Suoming) as documented partial stubs pending Prydwen publishing their kits.
