@@ -131,8 +131,27 @@ const CHARACTER_DATA = {
   // independently re-verified against ww.nanoka.cc character/1405 this same audit and were already
   // accurate. weaponAlts/teams were corrected against Prydwen's live build/team page (see comments
   // by those fields below) once it became reachable via a Chrome UA + referer + jsRender fetch.
+  // desc re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Jianxin/Combat's "Details"/"Forte"
+  // tables directly (not just the infobox blurb): the prior "large HP-scaling shield and periodic team
+  // healing" line was vague/approximate — replaced with the exact mechanics from the Forte Circuit table:
+  // Chi caps at 120, gained from Basic ATK hits, casting Calming Air, landing Chi Counter/Chi Parry, and
+  // Intro Skill Essence of Tao hits (site gives no per-hit numeric gain, so none is invented here — flagged
+  // TODO below). At max Chi, HOLDING Basic Attack (not Heavy Attack — the site's own section header calls
+  // it "Heavy Attack: Primordial Chi Spiral" but the Instructions box and Forte Circuit body text both say
+  // "hold Basic Attack" to trigger it; kept as "Basic Attack" per the two matching in-body mentions) casts
+  // Primordial Chi Spiral and enters Zhoutian Progress: +interrupt resistance and -50% DMG taken while
+  // channeling, releasing Chi in periodic Chi Strikes. On end, Jianxin gains a shield sized by how far
+  // Zhoutian Progress reached — at Lv.10/Major Zhoutian: Outer (the max stage) that's a flat 5,539 + 238.78%
+  // of her HP (up from a lower flat+% value at earlier stages), further +20% via the Reflection Inherent
+  // Skill (2/2), for a fixed 30s duration. While that shield persists, the on-field/active Resonator (not
+  // unconditionally "the team" — it's whichever Resonator happens to be active when each tick lands) is
+  // healed once every 6s — corrected from "periodic team healing" to reflect that it's a single active-unit
+  // heal-over-time, not a party-wide heal.
+  // TODO: verify — the wiki's Forte/Chi text does not give a per-hit Chi gain number for any of the four
+  // Chi sources (Basic ATK hit / Calming Air cast / Chi Counter-Parry hit / Intro Skill hit); could not be
+  // sourced this pass, left undocumented rather than invented.
   'Jianxin': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Support',
-    desc: 'Guiding Starlance, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who channels Heavy Attack Primordial Chi Spiral (Zhoutian Progress) for a large HP-scaling shield and periodic team healing, groups enemies with Liberation Purification Force Field, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
+    desc: 'Guiding Starlance, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS: builds Chi (cap 120) from Basic ATK hits, Calming Air casts, Chi Counter/Chi Parry hits, and Intro Skill hits; at max Chi, holds Basic Attack to cast Primordial Chi Spiral and enter Zhoutian Progress — a channeled state with +interrupt resistance and -50% DMG taken — ending in an HP-scaling shield (up to 5,539 + 238.78% HP at Lv.10 Major Zhoutian: Outer, +20% more via her 2nd Inherent Skill, 30s duration) that heals the active Resonator once every 6s while it persists. Groups enemies with Liberation Purification Force Field, which explodes on expiry, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
     skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Whisperin Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
@@ -3302,13 +3321,20 @@ const SKILL_MULTIPLIERS = {
     ['Intro', "Loong's Halo", '159.05%'],
     ['Outro', 'Temporal Bender', 'Incandescence gain rate +1/s for 20s', 'Utility only — no direct DMG or team buff.'],
   ],
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Jianxin/Combat's "Attribute
+  // Scaling" tables at column 10 (Lv.10) for every row — all existing per-hit values already matched the
+  // source exactly (Basic/Heavy/Mid-air/Dodge Counter/Skill/Liberation/Intro/Outro all confirmed correct,
+  // no changes). One addition: the Forte row was missing "Zhoutian Progress Continuous Damage" (24.86% at
+  // Lv.10) — the recurring Chi Strike tick dealt every interval while channeling Primordial Chi Spiral,
+  // separate from the Pushing Punch/Shock/Yielding Pull hits already listed — appended below rather than
+  // left out, since it's a real per-tick DPS component of the channel.
   'Jianxin': [
     ['Basic ATK', 'Fengyiquan Stage 1-4', '69.46% → 26.64%×2+79.90% → 41.75%×4 → 113.40%'],
     ['Heavy ATK', 'Standard', '126.07%'],
     ['Mid-air', 'Plunging Kick', '123.27%'],
     ['Dodge Counter', 'Standard', '40.83%×2+163.29%'],
     ['Skill', 'Calming Air: Chi Counter / Chi Parry', '334.60% / 258.73%', 'Hold Skill for Parry Stance — Chi Counter on being attacked, Chi Parry on early release. 12s cooldown.'],
-    ['Forte', 'Primordial Chi Spiral (Zhoutian Progress)', '248.52% (Pushing Punch) · 139.17%/377.74%/516.91% (Minor/Major-Inner/Major-Outer Shock) · 218.70% (Yielding Pull)', 'At max Chi, hold Basic ATK for a channeled shield-and-DMG state with 50% DMG reduction.'],
+    ['Forte', 'Primordial Chi Spiral (Zhoutian Progress)', '248.52% (Pushing Punch) · 24.86% per tick (Zhoutian Progress Continuous DMG) · 139.17%/377.74%/516.91% (Minor/Major-Inner/Major-Outer Shock) · 218.70% (Yielding Pull)', 'At max Chi, hold Basic ATK for a channeled shield-and-DMG state with 50% DMG reduction and +interrupt resistance.'],
     ['Liberation', 'Purification Force Field', '29.83% (continuous) + 636.20% (explosion)', 'Pulls targets into the field, then explodes on expiry. 20s cooldown.'],
     ['Intro', 'Essence of Tao', '33.80%×3+67.60%'],
     ['Outro', 'Transcendence', 'Resonance Liberation DMG Amp +38% (14s)', 'Grants the incoming Resonator this buff — no direct DMG.'],
@@ -3949,6 +3975,15 @@ const CHARACTER_ROTATIONS = {
   ],
   // Standard Rotation — sourced from Jianxin's kit flow on ww.nanoka.cc character/1405 (Prydwen's
   // "Gameplay and teams" tab was unreachable this audit — 403/blank JS-render).
+  // Re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Jianxin/Combat's Forte/Details text
+  // directly: every step's `skill` string still substring-matches its SKILL_MULTIPLIERS.Jianxin row name
+  // under the calc engine's rowName.includes(step.skill) lookup ('Essence of Tao'->Intro row, 'Fengyiquan
+  // Stage 1-4'->Basic ATK row, 'Calming Air'->the 'Calming Air: Chi Counter / Chi Parry' Skill row,
+  // 'Primordial Chi Spiral'->the Forte row, 'Purification Force Field'->Liberation row, 'Transcendence'
+  // ->Outro row) — no zero-damage step-name bug found here, unlike the pattern seen on ~10 other
+  // characters this project. Corrected the Forte step's trigger verb: the site's own Forte Circuit body
+  // text says "hold Basic Attack" (not Heavy Attack, despite the section header's "Heavy Attack: Primordial
+  // Chi Spiral" label) to cast it once Chi is maxed — was already written that way here and left unchanged.
   'Jianxin': [
     { type: 'Intro', skill: 'Essence of Tao', note: 'Swap into her — fires automatically, pulling enemies in and building Chi toward the Forte gauge.' },
     { type: 'Basic ATK', skill: 'Fengyiquan Stage 1-4', note: 'Tap Basic Attack repeatedly for the 4-stage combo — builds Chi toward the 120 max.' },
@@ -5399,9 +5434,38 @@ const RESONANCE_CHAIN_DATA = {
   // s2 Bamboo's Shade +30% additional team Echo Skill DMG (was totalMult:15); s3 Liberation DMG Mult +500% (was echoDmg:10, no basis);
   // s4 +20% ATK (was atkPct:10, half real value); s5 ignores 15% target DEF (was totalMult:10); s6 Straw Cape grants +100% Crit DMG for 6s (was echoDmg:40).
   // 4★ + missing characters
-  // Corrected against ww.nanoka.cc character/1405 — prior values (deepen/defShred) didn't match any
-  // real chain effect (she has no DMG Deepen or DEF Shred anywhere in her kit).
-  'Jianxin':      { s1: { totalMult: 10 }, s2: { totalMult: 8 }, s3: { totalMult: 8 }, s4: { libDmg: 80 }, s5: { totalMult: 10 }, s6: { totalMult: 35 } },
+  // Jianxin S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Jianxin/Combat's
+  // Resonance Chain section — every node re-read directly, replacing the prior 2026-08-17 pass's generic
+  // totalMult placeholders (which had no basis in her real, mostly non-damage chain):
+  // S1 "Verdant Branchlet": after casting Intro Skill Essence of Tao, gain 100% extra Chi from Basic
+  //   Attacks for 10s — pure resource/Chi-gain utility, ZERO DPS component. Was totalMult:10, a fabricated
+  //   damage number — zeroed to {}.
+  // TODO: needs Phase 2 schema — S1's "+100% extra Chi from Basic ATK for 10s after Intro" needs a
+  //   dedicated resource-gain-rate stat this flat DMG-modifier schema doesn't have.
+  // S2 "Tao Seeker's Journey": Resonance Skill Calming Air can be used 1 more time (extra charge) — pure
+  //   utility, ZERO DPS component. Was totalMult:8, fabricated — zeroed to {}.
+  // TODO: needs Phase 2 schema — S2's "+1 extra Calming Air charge" needs a charge-count stat.
+  // S3 "Principles of Wuwei": after 2.5s in Calming Air's Parry Stance, Chi Counter becomes immediately
+  //   available (skips its own internal readiness delay) — pure cooldown/availability utility, ZERO DPS
+  //   component. Was totalMult:8, fabricated — zeroed to {}.
+  // TODO: needs Phase 2 schema — S3's conditional early-availability trigger has no matching stat here.
+  // S4 "Multitide Reflection": while performing Forte Circuit Heavy Attack: Primordial Chi Spiral,
+  //   Resonance Liberation Purification Force Field DMG is increased by 80% for 14s -> libDmg:80 (already
+  //   correct, kept; the "only while/shortly after the Forte channel" gating isn't representable in this
+  //   flat schema).
+  // S5 "Mirroring Introspection": the range/AoE of Purification Force Field is increased by 33% — a pure
+  //   area-of-effect increase, ZERO DPS component (does not change per-hit or explosion multipliers). Was
+  //   totalMult:10, fabricated — zeroed to {}.
+  // TODO: needs Phase 2 schema — S5's "+33% Liberation field range" needs an AoE-size stat, not a DMG one.
+  // S6 "Truth from Within": during the Primordial Chi Spiral channel, after performing Pushing Punch,
+  //   Jianxin can use an enhanced Special Chi Counter once every 5s — a discrete extra proc dealing 556.67%
+  //   ATK Aero DMG (counted as Heavy Attack DMG) plus a bonus Zhoutian Progress 4 shield, not a %-modifier
+  //   to an existing damage instance. Was totalMult:35, a fabricated/scaled-down guess with no basis in the
+  //   real 556.67% figure — zeroed to {}, same "discrete proc, not a modifier" treatment already used for
+  //   Yinlin's S6 Furious Thunder.
+  // TODO: needs Phase 2 schema — S6's Special Chi Counter needs an "extra proc: 556.67% ATK (Heavy ATK-type),
+  //   up to 1 use per 5s, gated behind Pushing Punch during the Forte channel" stat shape.
+  'Jianxin':      { s1: {}, s2: {}, s3: {}, s4: { libDmg: 80 }, s5: {}, s6: {} },
   // Confirmed via ww.nanoka.cc character pages 1502 (Spectro), 1604 (Havoc), 1406 (Aero), 1309 (Electro).
   // energyRegen/heal aren't tracked stat keys elsewhere in this table — approximated as totalMult, same
   // convention this file already uses for other non-DMG-multiplier chain effects (CD resets, utility, etc).
