@@ -374,7 +374,7 @@ function AnalyticsTab({
   // [SECTION:RENDER] ── JSX output ───────────────────────────────────────────
   return (
     <div role="tabpanel" id="tabpanel-analytics" aria-labelledby="tab-analytics" tabIndex="0">
-    <TabErrorBoundary tabName="Stats">
+    <TabErrorBoundary tabName={t('tabs.stats')}>
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="stats" />
 

@@ -331,7 +331,7 @@ function CollectionTab({
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div role="tabpanel" id="tabpanel-gathering" aria-labelledby="tab-gathering" tabIndex="0">
-    <TabErrorBoundary tabName="Collection">
+    <TabErrorBoundary tabName={t('tabs.collection')}>
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="gathering" />
 

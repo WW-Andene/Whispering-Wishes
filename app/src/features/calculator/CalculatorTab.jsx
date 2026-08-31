@@ -161,7 +161,7 @@ function CalculatorTab({ state, dispatch }) {
   return (
     <>
           <div role="tabpanel" id="tabpanel-calculator" aria-labelledby="tab-calculator" tabIndex="0">
-          <TabErrorBoundary tabName="Calculator">
+          <TabErrorBoundary tabName={t('tabs.calculator')}>
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="calc" />
 

@@ -91,7 +91,7 @@ function TrackerTab({
 
   return (
           <div role="tabpanel" id="tabpanel-tracker" aria-labelledby="tab-tracker" tabIndex="0">
-          <TabErrorBoundary tabName="Tracker">
+          <TabErrorBoundary tabName={t('tabs.tracker')}>
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="tracker" glowColor="gold" />
 

@@ -116,7 +116,7 @@ function EventsTab({
 
   return (
     <div role="tabpanel" id="tabpanel-events" aria-labelledby="tab-events" tabIndex="0">
-    <TabErrorBoundary tabName="Events">
+    <TabErrorBoundary tabName={t('tabs.events')}>
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="events" />
 
