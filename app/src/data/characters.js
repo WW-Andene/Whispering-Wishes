@@ -562,8 +562,21 @@ const CHARACTER_DATA = {
     bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
     weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
     teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Mortefi + Shorekeeper', 'Augusta + Mortefi + Verina'] },
+  // desc rewritten 2026-08-31 against wutheringwaves.fandom.com/wiki/Iuno/Combat "Forte > Details" (Chrome/
+  // Windows UA + google.com referer + jsRender, load+9s wait): prior desc was flavor text with no exact
+  // resource numbers. Sentience (0-100 cap): Intro Skill +40, Resonance Liberation +60, Closing/Unfinished
+  // Refrain +25 each, plus passive regen from Moonring Basic ATK/Dodge Counter/Mid-air Attack while in Lunar
+  // Cycle. Resonance Skill - Closing Refrain (outside Lunar Cycle) or Resonance Liberation activates Lunar
+  // Cycle for 15s, starting in Half Moon (Moonring attacks, restore Sentience on hit). Heavy ATK - Flux
+  // (25 STA) toggles Half Moon ⇄ New Moon; New Moon swaps her Basic ATK to Moonbow and Skill to Arc Beyond
+  // the Edge (2 charges) — in New Moon, Basic ATK/Arc Beyond the Edge/Dodge Counter CONSUME Sentience to
+  // boost their own DMG Multiplier, restore extra Concerto Energy, and heal the team on hit; both Moonbow's
+  // and Arc Beyond the Edge's damage is explicitly categorized by the game as Resonance Liberation DMG. At
+  // full Concerto Energy her Heavy ATK becomes Absolute Fullness (once per 25s): ends Lunar Cycle, deals AoE
+  // Aero DMG (also Liberation DMG), heals nearby allies, and drops a 30s Full Moon Domain that restores
+  // team HP/STA every 5s — gaining a Shield inside it grants a stack of Blessing of the Wan Light (below).
   'Iuno': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Sub DPS',
-    desc: 'Priestess of Septimont\'s Tetragon Temple who grasps meaning in time\'s rhythm. Aero sub-DPS who buffs Heavy ATK DMG via Outro, heals the team through her New Moon attacks and Full Moon Domain, and self-shields on skill casts, cycling between Half Moon and New Moon combat states.',
+    desc: 'Priestess of Septimont\'s Tetragon Temple. Aero Sub-DPS built around Sentience (0-100: +40 on Intro, +60 on Liberation, +25 on Closing/Unfinished Refrain). Resonance Skill or Liberation activates Lunar Cycle (15s), toggling Half Moon ⇄ New Moon via Heavy ATK - Flux (25 STA); in New Moon, Basic ATK/Arc Beyond the Edge/Dodge Counter consume Sentience to raise their own DMG Multiplier and heal the team — this damage is categorized as Resonance Liberation DMG. At full Concerto Energy, Heavy ATK becomes Absolute Fullness (once/25s): ends Lunar Cycle, heals the team, and drops a 30s Full Moon Domain — Shields gained inside it grant stacking Blessing of the Wan Light (+4%/stack all DMG Amp, max 10 stacks, resets on refresh, ends if swapped off-field). Outro grants the incoming ally +50% Heavy ATK DMG Amp for 10s (ends early if they\'re swapped out).',
     skills: ['Moon Steps', 'Foresight Fugue', 'Beneath Lunar Tides', 'Ebb and Flow'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Sliverglow Bloom' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
@@ -2273,14 +2286,23 @@ const CHAR_BUFF_TABLE = {
     debuffs: [{ stat: 'resShred', value: 15, duration: 35, condition: 'Fusion RES ignore, Glory (from Liberation): 3% base +3%/other Fusion Resonator up to 15% at 3 Fusion units' }],
     note: 'Outro: +20% Fusion DMG + 25% Basic ATK DMG Amp (14s). Lib: up to 18% ATK team (35s), enables Wild Hunt. Fusion RES ignore up to 15% (35s), needs a mono-Fusion team for max value (S3 removes the requirement). (Corrected 2026-08-16: fixed Lib buff and RES-ignore durations, which were listed far too short; added missing self-buff and weapon buff via Nanoka/Prydwen/Game8.)',
   },
+  // Re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Iuno/Combat "Forte > Details" and "Ebb and
+  // Flow" sections (Chrome/Windows UA + google.com referer + jsRender, load+9s wait): outro duration corrected
+  // 14s → 10s (wiki states "gains 50% Heavy Attack DMG Amplification for 10s. This effect ends early if they
+  // are switched off the field." — the file's prior 14s had no basis in the source text) and the swap-cancel
+  // forfeit condition added. Blessing of the Wan Light's exact mechanic (source of the selfBuffs allDmg:40)
+  // confirmed verbatim: gained by getting Shielded while standing in the 30s Full Moon Domain (max 1
+  // stack/0.5s), +4%/stack up to 10 stacks (40% total), each new stack RESETS the 10s duration, and the
+  // buff ends early if that Resonator is swapped off-field — none of that conditionality was previously
+  // documented. Waxing Ascent self-shield duration (15s) added — was previously undocumented.
   'Iuno': {
-    outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 14 }],
+    outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 10, condition: 'From Gloom to Gleam — ends early if the incoming Resonator is switched off-field; casting Outro does NOT interrupt an in-progress Absolute Fullness' }],
     libBuffs: [],
     selfBuffs: [
-      { stat: 'allDmg', value: 40, target: 'self', duration: 10, condition: 'Derivation: Blessing of the Wan Light, max 10 stacks (+4%/stack)' },
+      { stat: 'allDmg', value: 40, target: 'self', duration: 10, condition: 'Blessing of the Wan Light: +4% all DMG Amp per stack, max 10 stacks (40% total); gained by being Shielded inside the 30s Full Moon Domain (max 1 stack per 0.5s) — Derivation Inherent Skill instantly grants 5 stacks on Intro/Liberation cast; each new stack resets the 10s duration; ends early if swapped off-field' },
     ],
     debuffs: [],
-    note: 'Outro: 50% Heavy ATK DMG Amp (14s). Real team healing via New Moon Moonbow attacks/Dodge Counter/Arc Beyond the Edge (heal on hit) and Absolute Fullness + Full Moon Domain (team HP/STA regen). Self-shield via Waxing Ascent (32% ATK per skill cast, self only). Liberation activates Lunar Cycle burst phase, no team DMG buff. (Corrected 2026-08-16: restored the team-heal claim — confirmed via Nanoka live re-check after Prydwen/Game8 omitted her healing kit in the prior audit.)',
+    note: 'Outro: 50% Heavy ATK DMG Amp for 10s (ends early if the incoming Resonator is swapped off-field; corrected from 14s 2026-08-31 — no source basis for 14s). Real team healing via New Moon Moonbow Basic ATK (13.03/13.03/24.43% healing per hit at Lv10), Moonbow Dodge Counter (16.29%), Arc Beyond the Edge (24.43%), Absolute Fullness (194.26% healing, once/25s) + 30s Full Moon Domain (5s-interval team HP/STA regen, 20 STA per tick). Self-shield via Waxing Ascent: 32% ATK, 15s, self-only, on every Basic/Heavy/Dodge/Skill/Liberation/Intro cast — not passed to the incoming Resonator. Liberation activates Lunar Cycle burst phase, no team DMG buff. (Corrected 2026-08-16: restored the team-heal claim — confirmed via Nanoka live re-check after Prydwen/Game8 omitted her healing kit in the prior audit.)',
   },
   'Qiuyuan': {
     outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
@@ -3068,16 +3090,36 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Hellflare Overload', '47.3%', 'Swap-in opener strike.'],
     ['Outro', 'Ashen Pursuit', '79.5%×3 + 556.5%', 'Pure-damage swap-out finisher; no team buff, so she\'s free to quickswap.'],
   ],
+  // Re-verified in full 2026-08-31 against wutheringwaves.fandom.com/wiki/Iuno/Combat's Lv.10 Attribute
+  // Scaling tables (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare).
+  // Prior values were ALL Level-1 numbers (not Lv.10, breaking this file's established convention — see
+  // e.g. the Jinhsi re-verification comment above using Lv.10) with every multi-hit stage collapsed into a
+  // single summed percentage instead of the real per-hit breakdown — both corrected below. CRITICAL BUG:
+  // CHARACTER_ROTATIONS.Iuno's 'Flux: Moonbow' step (Heavy ATK - Flux: Moonbow, the Half Moon → New Moon
+  // switch) had NO matching row in this table at all — under the calc engine's name-match lookup that step
+  // silently resolved to ZERO damage, the exact bug class found in Cantarella's pass. Added both Flux
+  // rows (Moonbow and Moonring) below, plus the two Dodge Counter rows and Unfinished Refrain (Half Moon's
+  // Skill replacement, same numbers as Closing Refrain per the source table) which were also missing.
+  // Enhanced Moonbow (the further Sentience-boosted Basic ATK/Dodge Counter/Arc Beyond the Edge variant
+  // inside New Moon) is a separate, higher-value scaling track in the source but is state/resource-gated
+  // per hit in a way this flat per-move schema can't express — TODO: needs Phase 2 schema; base Moonbow
+  // values used for now (a conservative floor, not an overstatement).
   'Iuno': [
-    ['Basic ATK', 'Moonring 1-3', '44.1% → 70.2% → 134.1%', 'Standard combo before entering the Lunar Cycle.'],
-    ['Basic ATK', 'Moonbow 1-3', '63.6% → 84% → 168%', 'Empowered combo used while inside the Lunar Cycle.'],
-    ['Skill', 'Pulse of Origins', '9.4%×7 + 65.7%', 'Base dash Skill, can transform into different follow-ups depending on her state.'],
-    ['Skill', 'Closing Refrain', '70.8%×2 + 72.9%', 'Flurry follow-up that activates the Lunar Cycle.'],
-    ['Skill', 'Arc Beyond the Edge', '110.6%×2', 'Follow-up Skill in New Moon state, has 2 charges.'],
-    ['Heavy ATK', 'Absolute Fullness', '80%', 'Forte-empowered Heavy ATK, scales hugely with her Resonance Chain.'],
-    ['Liberation', 'Beneath Lunar Tides', '550%', 'Ultimate strike that activates the Lunar Cycle; no team buff, purely personal damage.'],
-    ['Intro', 'Illuminated Manifestation', '8%×7 + 24%', 'Swap-in opener that also refills her Sentience meter.'],
-    ['Outro', 'From Gloom to Gleam', '100%', 'Swap-out strike that grants the next Resonator Heavy ATK DMG Amp.'],
+    ['Basic ATK', 'Moonring 1-3', '87.68% → 46.06%×2+47.46% → 87.98%×2+90.65%', 'Standard combo before entering the Lunar Cycle. Lv.10, per-hit.'],
+    ['Basic ATK', 'Moonbow 1-3', '126.45% → 55.67%×3 → 167.01%×2', 'Empowered combo used while inside the Lunar Cycle (New Moon); counted as Resonance Liberation DMG. Lv.10, per-hit.'],
+    ['Mid-air', 'Mid-air Attack', '53.68%×2', 'Plunging attack, 30 STA cost. Lv.10.'],
+    ['Dodge Counter', 'Moonring Dodge Counter', '82.08%×2+84.57%', 'Dodge Counter while in Half Moon (or outside Lunar Cycle). Lv.10, per-hit.'],
+    ['Dodge Counter', 'Moonbow Dodge Counter', '103.39%×3', 'Dodge Counter while in New Moon; counted as Resonance Liberation DMG. Lv.10, per-hit.'],
+    ['Skill', 'Pulse of Origins', '18.65%×7 + 130.52%', 'Base dash Skill, can transform into different follow-ups depending on her state. Lv.10.'],
+    ['Skill', 'Closing Refrain', '140.73%×2 + 145.00%', 'Skill replacement when NOT in Lunar Cycle (after Moonring Basic ATK 3/Intro/Pulse of Origins); casting it activates Lunar Cycle. Lv.10.'],
+    ['Skill', 'Unfinished Refrain', '140.73%×2 + 145.00%', 'Skill replacement while in Lunar Cycle - Half Moon; shares Closing Refrain\'s cooldown. Lv.10.'],
+    ['Skill', 'Arc Beyond the Edge', '219.79%×2', 'Skill replacement in New Moon, 2 charges, consumes Sentience per cast; counted as Resonance Liberation DMG. Lv.10.'],
+    ['Heavy ATK', 'Flux: Moonbow', '250.51%', 'Heavy ATK replacement in Half Moon (25 STA) — switches Half Moon → New Moon; counted as Resonance Liberation DMG. Lv.10.'],
+    ['Heavy ATK', 'Flux: Moonring', '79.18%×4', 'Heavy ATK replacement in New Moon (25 STA) — switches New Moon → Half Moon; counted as Resonance Liberation DMG. Lv.10, per-hit.'],
+    ['Heavy ATK', 'Absolute Fullness', '159.05%', 'Forte-empowered Heavy ATK at full Concerto Energy (once per 25s); ends Lunar Cycle. Lv.10 (was the Lv.1 value 80%).'],
+    ['Liberation', 'Beneath Lunar Tides', '1093.46%', 'Ultimate strike that activates the Lunar Cycle; no team buff, purely personal damage. Lv.10 (was the Lv.1 value 550%).'],
+    ['Intro', 'Illuminated Manifestation', '15.91%×7 + 47.72%', 'Swap-in opener that also restores 40 Sentience. Lv.10.'],
+    ['Outro', 'From Gloom to Gleam', '100%', 'Swap-out strike that grants the next Resonator +50% Heavy ATK DMG Amp for 10s.'],
   ],
   'Jiyan': [
     ['Basic ATK', 'Lone Lance Stage 1-5', '73.16% → 43.73% → 36.38%×2 → 66.20%×2 → 23.60%×4+153.45%×2', 'Standard 5-stage combo; Stage 3/5 have sub-hits.'],
@@ -4061,14 +4103,22 @@ const CHARACTER_ROTATIONS = {
   // Moon — neither matches Prydwen's actual "Standard Sub DPS Rotation" (used alongside Augusta), which
   // opens Intro straight into Liberation, then Flux into the Moonbow combo, and skips the base Skill
   // entirely (Closing Refrain is only used in the longer "Extended"/Main DPS variants).
+  // Re-verified and expanded 2026-08-31 against wutheringwaves.fandom.com/wiki/Iuno/Combat's "Forte > Details"
+  // section (Chrome/Windows UA + google.com referer + jsRender). Each step's `skill` string re-checked as a
+  // substring of a SKILL_MULTIPLIERS.Iuno row name — see the critical bug fix noted in that table's comment
+  // above ('Flux: Moonbow' had no matching row before this pass, so that step resolved to 0 DMG). Corrections:
+  // Liberation's `duration: 30` field replaced (30s did not match any published duration — Lunar Cycle itself
+  // lasts exactly 15s per the source's own Attribute Scaling table); Outro duration corrected 14 → 10 to match
+  // the TEAM_BUFFS.Iuno fix above; exact Sentience costs/caps and the Absolute Fullness 25s internal cooldown
+  // added throughout (previously vague "up to X Sentience" with no cap/cost cited).
   'Iuno': [
-    { type: 'Intro', skill: 'Illuminated Manifestation', note: 'Swap into her — fires automatically, restoring 40 Sentience.' },
-    { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 30, note: 'Press Liberation — activates Lunar Cycle and restores 60 Sentience.' },
-    { type: 'Heavy ATK', skill: 'Flux: Moonbow', note: 'HOLD Heavy Attack to jump-attack — switches her from Half Moon to New Moon.' },
-    { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'Tap Basic Attack for the Sentience-enhanced combo, consuming up to 50 Sentience.' },
-    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'Press Skill for the New Moon follow-up — 2 charges, consuming up to 25 Sentience each.' },
-    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'HOLD Heavy Attack for the Forte finisher, then swap-cancel — optional, cast it for the extra team heal/Full Moon Domain, especially with Augusta on the team.' },
-    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'Swap out to trigger this automatically — grants the next Resonator +50% Heavy Attack DMG Amp.' },
+    { type: 'Intro', skill: 'Illuminated Manifestation', note: 'Swap into her — fires automatically, restoring 40 Sentience (cap 100).' },
+    { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 15, note: 'Press Liberation — activates Lunar Cycle (15s) starting in Half Moon, and restores 60 Sentience.' },
+    { type: 'Heavy ATK', skill: 'Flux: Moonbow', note: 'HOLD Heavy Attack (25 STA) — switches Half Moon → New Moon; this hit itself counts as Resonance Liberation DMG.' },
+    { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'Tap Basic Attack for the Moonbow combo (counted as Resonance Liberation DMG) — while in New Moon this consumes Sentience per hit to boost its own DMG Multiplier and heal the team on hit; base values used here (see SKILL_MULTIPLIERS TODO on the unmodeled Sentience-enhanced variant).' },
+    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'Press Skill for the New Moon follow-up (counted as Resonance Liberation DMG) — 2 charges, consumes Sentience per cast to boost its own DMG Multiplier; can recover Iuno from hitstun/launch.' },
+    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'HOLD Heavy Attack for the Forte finisher (usable once per 25s, requires full Concerto Energy) — ends Lunar Cycle, heals nearby allies, and drops a 30s Full Moon Domain; optional but worth casting for the team heal/Blessing of the Wan Light uptime, especially with Augusta on the team.' },
+    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 10, note: 'Swap out to trigger this automatically — grants the incoming Resonator +50% Heavy Attack DMG Amp for 10s, ending early if they are swapped off-field. Does not interrupt an in-progress Absolute Fullness.' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
   // skipped her Mid-air Attack entirely — the step that recalls all 3 Sword Shadows and grants their
@@ -4759,12 +4809,32 @@ const RESONANCE_CHAIN_DATA = {
   // s2 Burning Drive ATK Bonus amplified +350% more (20% base × 4.5 = 90% ATK while active, was unfounded totalMult:40);
   // s3 Liberation DMG Mult +130% (was critRate:12, no basis); s4 team +20% All-Attr DMG on team Echo Skill cast (was heavyDmg:40, no basis);
   // s5 Encroach/Ascent of Malice/Ravage DMG Mult +150% (was totalMult:15); s6 core Demon Hypostasis attacks DMG Mult +60% (was deepen:40).
-  // Iuno S1: ATK+40% during Lunar Cycle (not heavyDmg)
-  'Iuno':         { s1: { atkPct: 40 }, s2: { allDmg: 40 }, s3: { libDmg: 65 }, s4: { totalMult: 15 }, s5: { libDmg: 20 }, s6: { heavyDmg: 1600 } },
-  // Iuno R-chain corrected 2026-08-16 via Prydwen/Game8: s1 +40% ATK in Lunar Cycle confirmed correct;
-  // s2 team +40% all DMG Amp at 10 Wan Light stacks (was atkPct:15, wrong stat/value); s3 +65% DMG Amp on Moonbow Basic/Arc Beyond the Edge (was libDmg:25);
-  // s4 Absolute Fullness grants team Shield = 160% ATK — no direct DPS stat, totalMult fallback (was heavyDmg:40, no basis);
-  // s5 +20% Liberation DMG Bonus (was totalMult:15); s6 Absolute Fullness DMG Multiplier +1600% (was deepen:25, no basis).
+  // Iuno R-chain re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Iuno/Combat
+  // "Resonance Chain" section (Chrome/Windows UA + google.com referer + jsRender):
+  // s1 "Wax or Wane, All Gild the Bough": ATK +40% while in Lunar Cycle (atkPct:40, confirmed unchanged) —
+  //     PLUS, while inside the Full Moon Domain, +1 Resonance Energy/s, AND Arc Beyond the Edge/Absolute
+  //     Fullness become interruption-immune — both unmodeled (no Resonance-Energy-rate or interrupt-immunity
+  //     stat in this schema); TODO: needs Phase 2 schema.
+  // s2 "Day or Night, Let This Be Eternal": Resonators (team) with 10 stacks of Blessing of the Wan Light gain
+  //     an ADDITIONAL 40% all DMG Amp — condition-gated on already being at max Wan Light stacks, not a free
+  //     team buff (allDmg:40, confirmed unchanged; the condition text lives in TEAM_BUFFS.Iuno.selfBuffs above).
+  // s3 "I Drink Deep of Their Forgetting": while in Lunar Cycle, DMG dealt by Moonbow Basic ATK/Arc Beyond the
+  //     Edge/Moonbow Dodge Counter is Amplified by 65% — all three are the game's own "Resonance Liberation
+  //     DMG"-tagged moves, so libDmg is the correct stat category here (libDmg:65, confirmed unchanged). Also
+  //     removes Arc Beyond the Edge's reset of the Moonbow Basic ATK combo cycle within a short window after a
+  //     Moonbow Basic ATK/Dodge Counter (source gives no exact seconds — unmodeled, no combo-cycle stat).
+  // s4 "Rainy Season Dwell in My Eyes": Absolute Fullness grants a Shield = 160% of Iuno's ATK to the WHOLE
+  //     TEAM for 30s (not passable to the incoming Resonator on swap) — purely defensive, ZERO DPS component.
+  //     ZEROED 2026-08-31 (was totalMult:15, a fabricated "fallback" number with no basis in this effect —
+  //     matches the "zero, don't guess" rule for defensive/utility nodes flagged across the other 11 passes).
+  //     TODO: needs Phase 2 schema if shield-value mechanics are ever modeled.
+  // s5 "A Thousand Futile Glimpses": +20% Resonance Liberation DMG Bonus (libDmg:20, confirmed unchanged —
+  //     correct category since it's an explicit "Resonance Liberation DMG Bonus," not a generic buff).
+  // s6 "I Am the Constant in the Chaos": DMG Multiplier of Absolute Fullness (a Heavy ATK) +1600% (heavyDmg:
+  //     1600, confirmed unchanged — correct category, it's Iuno's Forte-empowered Heavy ATK). Also, on cast:
+  //     re-enters Lunar Cycle - New Moon, grants 100 Sentience, and resets Arc Beyond the Edge's cooldown —
+  //     all three unmodeled (no cooldown-reset/Sentience-grant stat in this schema).
+  'Iuno':         { s1: { atkPct: 40 }, s2: { allDmg: 40 }, s3: { libDmg: 65 }, s4: { totalMult: 0 }, s5: { libDmg: 20 }, s6: { heavyDmg: 1600 } },
   // Sigrika (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +70% DMG mult to specific skills (rotation-averaged).
   // S2: Learn My True Name DMG Mult+120% (considered Echo Skill DMG) — was totalMult:40, no basis. S3: Innate Gift? stack
   // cap 2->4, no flat %, was critRate:12 with no basis — kept as totalMult. S4: team ATK+20% on ally Echo Skill cast —
