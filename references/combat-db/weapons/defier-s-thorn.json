@@ -1,12 +1,12 @@
 {
-  "name": "s Spine",
+  "name": "Defier's Thorn",
   "rarity": 5,
-  "type": "Gauntlets",
-  "mainStat": "Crit Rate",
-  "baseAtkLv90": 587,
-  "subStatValueLv90": "+24.3%",
+  "type": "Sword",
+  "mainStat": "HP%",
+  "baseAtkLv90": 412,
+  "subStatValueLv90": "+72.2%",
   "bestFor": [
-    "Luuk Herssen"
+    "Cartethyia"
   ],
   "sources": [
     {

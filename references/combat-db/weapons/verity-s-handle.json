@@ -1,14 +1,13 @@
 {
-  "name": "s Sigil",
+  "name": "Verity's Handle",
   "rarity": 5,
   "type": "Gauntlets",
   "mainStat": "Crit Rate",
-  "baseAtkLv90": 500,
-  "subStatValueLv90": "+36.0%",
+  "baseAtkLv90": 587,
+  "subStatValueLv90": "+24.3%",
   "bestFor": [
-    "Iuno",
-    "Jianxin",
-    "Lingyang"
+    "Xiangli Yao",
+    "Jianxin"
   ],
   "sources": [
     {

@@ -1,13 +1,12 @@
 {
-  "name": "s Herald",
-  "rarity": 5,
+  "name": "Ocean's Gift",
+  "rarity": 4,
   "type": "Rectifier",
-  "mainStat": "Energy Regen",
-  "baseAtkLv90": 412,
-  "subStatValueLv90": "+77.0%",
+  "mainStat": "ATK%",
+  "baseAtkLv90": 462,
+  "subStatValueLv90": "+18.2%",
   "bestFor": [
-    "Suisui",
-    "Shorekeeper"
+    "Spectro DPS"
   ],
   "sources": [
     {

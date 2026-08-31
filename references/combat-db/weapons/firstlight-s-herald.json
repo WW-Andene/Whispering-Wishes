@@ -1,13 +1,13 @@
 {
-  "name": "s Handle",
+  "name": "Firstlight's Herald",
   "rarity": 5,
-  "type": "Gauntlets",
-  "mainStat": "Crit Rate",
-  "baseAtkLv90": 587,
-  "subStatValueLv90": "+24.3%",
+  "type": "Rectifier",
+  "mainStat": "Energy Regen",
+  "baseAtkLv90": 412,
+  "subStatValueLv90": "+77.0%",
   "bestFor": [
-    "Xiangli Yao",
-    "Jianxin"
+    "Suisui",
+    "Shorekeeper"
   ],
   "sources": [
     {

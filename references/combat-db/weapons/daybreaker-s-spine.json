@@ -1,13 +1,12 @@
 {
-  "name": "s Pledge",
+  "name": "Daybreaker's Spine",
   "rarity": 5,
-  "type": "Sword",
-  "mainStat": "Energy Regen",
+  "type": "Gauntlets",
+  "mainStat": "Crit Rate",
   "baseAtkLv90": 587,
-  "subStatValueLv90": "+38.9%",
+  "subStatValueLv90": "+24.3%",
   "bestFor": [
-    "Sword healers",
-    "Rover"
+    "Luuk Herssen"
   ],
   "sources": [
     {
