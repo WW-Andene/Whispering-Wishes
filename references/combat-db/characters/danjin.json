@@ -1,0 +1,34 @@
+{
+  "name": "Danjin",
+  "slug": "danjin",
+  "rarity": 4,
+  "element": "Havoc",
+  "weaponType": "Sword",
+  "role": ["Hybrid", "Sub DPS/Main DPS (flex)"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/danjin", "nanoka": "https://ww.nanoka.cc/character/danjin", "fandom": "https://wutheringwaves.fandom.com/wiki/Danjin", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T3 Tower of Adversity, T3 Whimpering Wastes (Hybrid; flex Main DPS)" },
+  "kit": {
+    "intro": "4-star Havoc Sword dual-role unit, playable as a fast Hybrid buffer or an extended Main DPS. Resonance Skill has no cooldown and chains into a 'mark' combo (applies Incinerating Will, +20% DMG taken from Danjin) or a longer 3-Basic/3-Skill combo. Forte builds via Skill casts and spends 50%/100% HP-cost Heavy Attacks (Chaoscleave) that heal ~1/3 max HP; her attacks consume her own HP, making her a high-risk/high-reward pick.",
+    "skills": {
+      "normalAttack": "Execution - up to 3-hit chain.",
+      "resonanceSkill": "Crimson Fragment - Carmine Gleam into Crimson Erosion (mark combo) or Sanguine Pulse (long combo, no cooldown).",
+      "forte": "Serene Vigil - Ruby Blossom gauge; Heavy Attack 'Chaoscleave'/'Scatterbloom' at 50 or full 100+ stacks, heals Danjin.",
+      "liberation": "Crimson Bloom - rapid multi-hit Havoc DMG + Scarlet Burst.",
+      "intro": "Vindiction - Havoc DMG strike.",
+      "outro": "Duality - next character gains 23% Havoc DMG Deepen for 14s."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Blazing Brilliance (105.7%, best)", "Red Spring (100.3%)", "Emerald of Genesis (100%, best permanent/5-star F2P)", "Commando of Conviction (81.1%, best 4-star F2P)", "Endless Collapse (80.7%)", "Somnoire Anchor (79.7%)"],
+    "echoSet": ["Moonlit Clouds (best generally)", "Midnight Veil (better with heavy investment/5-star weapon)", "Havoc Eclipse (Main DPS variant, Dreamless echo)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Havoc DMG; Havoc DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK", "Heavy DMG%", "Resonance Skill DMG%"]
+  },
+  "teams": [
+    { "name": "Best Team (Hybrid)", "members": ["Danjin", "Phrolova or Havoc Rover/Camellya", "Verina or The Shorekeeper"], "notes": "Danjin's Outro is the best Havoc DMG buff for Havoc Rover and a strong option for Phrolova/Camellya." },
+    { "name": "Best Team (Main DPS)", "members": ["Danjin", "Cantarella", "Verina"], "notes": "Cantarella+Danjin forms one of the strongest all-4-star DPS teams in the game, though Danjin's self-damage HP mechanic is punishing here." }
+  ],
+  "rotation": "Damage Dealer: Intro -> Crimson Erosion I-II -> Ultimate -> Carmine Gleam -> Basic P2-3 -> Sanguine Pulse I-III (x2) -> full-power Chaoscleave/Scatterbloom -> Echo (swap) -> Outro. Hybrid variant uses partial-power Heavy Attack for a shorter rotation.",
+  "communityNotes": "Prydwen: strong F2P 4-star flex pick (Hybrid or Main DPS) with excellent parry/dodge-counter play and great Sequence scaling, but constantly drains her own HP which makes her inconsistent against multi-enemy pressure; currently outclassed by Sanhua as a Hybrid and by limited 5-stars as Main DPS.",
+  "lastUpdated": "2026-08-31"
+}
