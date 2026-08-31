@@ -194,7 +194,7 @@ function PlannerTab({
 
   return (
     <div role="tabpanel" id="tabpanel-planner" aria-labelledby="tab-planner" tabIndex="0">
-    <TabErrorBoundary tabName="Planner">
+    <TabErrorBoundary tabName={t('tabs.planner')}>
     <div className="kuro-calc space-y-3 tab-content">
       <TabBackground id="planner" />
 

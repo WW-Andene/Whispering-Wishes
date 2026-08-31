@@ -499,7 +499,7 @@ function ProfileTab({
   return (
     <>
           <div role="tabpanel" id="tabpanel-profile" aria-labelledby="tab-profile" tabIndex="0">
-          <TabErrorBoundary tabName="Profile">
+          <TabErrorBoundary tabName={t('tabs.profile')}>
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="profile" />
 

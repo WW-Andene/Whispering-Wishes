@@ -1179,7 +1179,7 @@ function WhisperingWishesInner() {
         
         {/* [SECTION:TAB-TRACKER] */}
         {activeTab === 'tracker' && !bgFramingMode && (
-          <TabErrorBoundary tabName="Tracker">
+          <TabErrorBoundary tabName={t('tabs.tracker')}>
             <Suspense fallback={<TabLoadingFallback />}>
               <TrackerTab
                 state={state}
@@ -1201,7 +1201,7 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-EVENTS] */}
         {activeTab === 'events' && !bgFramingMode && (
-          <TabErrorBoundary tabName="Events">
+          <TabErrorBoundary tabName={t('tabs.events')}>
             <Suspense fallback={<TabLoadingFallback />}>
               <EventsTab
                 state={state}
@@ -1227,7 +1227,7 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-CALC] */}
         {activeTab === 'calculator' && !bgFramingMode && (
-          <TabErrorBoundary tabName="Calculator">
+          <TabErrorBoundary tabName={t('tabs.calculator')}>
             <Suspense fallback={<TabLoadingFallback />}>
               <CalculatorTab state={state} dispatch={dispatch} />
 
@@ -1237,7 +1237,7 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-PLANNER] */}
         {activeTab === 'planner' && !bgFramingMode && (
-          <TabErrorBoundary tabName="Planner">
+          <TabErrorBoundary tabName={t('tabs.planner')}>
             <Suspense fallback={<TabLoadingFallback />}>
               <PlannerTab
                 state={state}
@@ -1254,7 +1254,7 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-STATS] */}
         {activeTab === 'analytics' && !bgFramingMode && (
-          <TabErrorBoundary tabName="Analytics">
+          <TabErrorBoundary tabName={t('tabs.stats')}>
             <Suspense fallback={<TabLoadingFallback />}>
               <AnalyticsTab
                 state={state}
@@ -1277,7 +1277,7 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-COLLECT] */}
         {activeTab === 'gathering' && !bgFramingMode && (
-          <TabErrorBoundary tabName="Collection">
+          <TabErrorBoundary tabName={t('tabs.collection')}>
             <Suspense fallback={<TabLoadingFallback />}>
               <CollectionTab
                 state={state}
@@ -1302,7 +1302,7 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-TEAMS] */}
         {activeTab === 'teams' && !bgFramingMode && (
-          <TabErrorBoundary tabName="Teams">
+          <TabErrorBoundary tabName={t('tabs.teams')}>
             <Suspense fallback={<TabLoadingFallback />}>
               <TeamsTab
                 state={state}
@@ -1319,7 +1319,7 @@ function WhisperingWishesInner() {
 
         {/* [SECTION:TAB-PROFILE] */}
         {(activeTab === 'profile' || bgFramingMode) && (
-          <TabErrorBoundary tabName="Profile">
+          <TabErrorBoundary tabName={t('tabs.profile')}>
             <Suspense fallback={<TabLoadingFallback />}>
               <ProfileTab
             state={state}

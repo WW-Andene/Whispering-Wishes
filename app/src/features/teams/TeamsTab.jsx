@@ -228,7 +228,7 @@ function TeamsTab({
 
   return (
           <div role="tabpanel" id="tabpanel-teams" aria-labelledby="tab-teams" tabIndex="0">
-          <TabErrorBoundary tabName="Teams">
+          <TabErrorBoundary tabName={t('tabs.teams')}>
           <div className="kuro-calc space-y-3 tab-content">
             <TabBackground id="teams" />
 
