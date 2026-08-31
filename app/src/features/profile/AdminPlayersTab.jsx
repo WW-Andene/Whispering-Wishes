@@ -2,15 +2,31 @@
 // AdminPlayersTab — Real-time presence chart, registered player list, privacy
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
-import { RefreshCcw } from 'lucide-react';
+import React, { useState } from 'react';
+import { RefreshCcw, Trash2 } from 'lucide-react';
 import { t } from '../../utils/i18n.js';
 
 export default function AdminPlayersTab({
   activePlayersCount, activePlayersHistory,
   presenceError, adminPlayerList,
-  fetchActivePlayersCount, fetchAdminPlayerList,
+  fetchActivePlayersCount, fetchAdminPlayerList, deleteLeaderboardEntry,
 }) {
+  const [deletingKey, setDeletingKey] = useState(null);
+  const [confirmingKey, setConfirmingKey] = useState(null);
+
+  const handleDeleteClick = async (firebaseKey) => {
+    if (confirmingKey !== firebaseKey) {
+      setConfirmingKey(firebaseKey);
+      return;
+    }
+    setConfirmingKey(null);
+    setDeletingKey(firebaseKey);
+    try {
+      await deleteLeaderboardEntry?.(firebaseKey);
+    } finally {
+      setDeletingKey(null);
+    }
+  };
   return (
     <div className="space-y-4">
       <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4 text-center">
@@ -116,8 +132,22 @@ export default function AdminPlayersTab({
                     <span className="text-gray-400 text-sm">{t('admin.players.winLoss')} <span className="text-emerald-400">{p.won5050}W</span>/<span className="text-red-400">{p.lost5050}L</span></span>
                   </div>
                 </div>
-                <div className="text-gray-500 text-2xs text-right flex-shrink-0 ml-2">
-                  {p.timestamp ? new Date(p.timestamp).toLocaleDateString() : '—'}
+                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                  <div className="text-gray-500 text-2xs text-right">
+                    {p.timestamp ? new Date(p.timestamp).toLocaleDateString() : '—'}
+                  </div>
+                  {deleteLeaderboardEntry && (
+                    <button
+                      onClick={() => handleDeleteClick(p.firebaseKey)}
+                      onBlur={() => setConfirmingKey(prev => prev === p.firebaseKey ? null : prev)}
+                      disabled={deletingKey === p.firebaseKey}
+                      className={`p-2 min-w-[32px] min-h-[32px] flex items-center justify-center rounded-lg transition-colors ${confirmingKey === p.firebaseKey ? 'bg-red-500/30 text-red-300' : 'text-gray-500 hover:text-red-400 hover:bg-red-500/10'}`}
+                      aria-label={confirmingKey === p.firebaseKey ? t('admin.players.deleteConfirmAria') : t('admin.players.deleteAria')}
+                      title={confirmingKey === p.firebaseKey ? t('admin.players.deleteConfirmTitle') : t('admin.players.deleteTitle')}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

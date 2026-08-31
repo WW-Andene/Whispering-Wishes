@@ -57,7 +57,6 @@ function AboutSection({ handleAdminTap, adminTapCount, dispatch, toast }) {
           <ul className="space-y-1 ml-1">
             <li>{t('profile.about.privacyThirdPartyGoogle')}</li>
             <li>{t('profile.about.privacyThirdPartyFirebase')}</li>
-            <li>{t('profile.about.privacyThirdPartyGroq')}</li>
             <li>{t('profile.about.privacyThirdPartyWuwa')}</li>
           </ul>
         </div>

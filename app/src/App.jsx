@@ -500,13 +500,10 @@ function WhisperingWishesInner() {
       avgPity
     };
   }, [state.profile.featured?.history, state.profile.weapon?.history, state.profile.standardChar?.history, state.profile.standardWeap?.history, state.profile.beginner?.history]);
-  
-  // Leaderboard functions - Firebase Realtime Database (constants at module level)
 
-  // Firebase anonymous auth + helpers — now in CloudStorageProvider
-  // Presence system consumes them via useCloudStorage() below.
+  // Firebase anonymous auth + helpers, and leaderboard logic, live in
+  // CloudStorageProvider / AnalyticsTab. Presence consumes them via useCloudStorage() below.
 
-  
   // Presence tracking (extracted hook — heartbeat runs internally)
   usePresenceTracking();
 

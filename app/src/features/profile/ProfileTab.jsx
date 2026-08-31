@@ -302,6 +302,23 @@ function ProfileTab({
     }
   }, [getFirebaseAuth, firebaseFetch]);
 
+  const deleteLeaderboardEntry = useCallback(async (firebaseKey) => {
+    if (!firebaseKey) return;
+    try {
+      const authToken = await getFirebaseAuth();
+      const [lbRes] = await Promise.all([
+        firebaseFetch(`leaderboard/${firebaseKey}`, authToken, { method: 'DELETE' }),
+        firebaseFetch(`community-pulls/${firebaseKey}`, authToken, { method: 'DELETE' }).catch(() => {}),
+      ]);
+      if (!lbRes.ok) throw new Error(`Delete failed (${lbRes.status})`);
+      setAdminPlayerList(prev => prev ? prev.filter(p => p.firebaseKey !== firebaseKey) : prev);
+      toast?.addToast?.(t('admin.players.deleteSuccess'), 'success');
+    } catch (e) {
+      console.error('Leaderboard entry delete error:', e);
+      toast?.addToast?.(t('admin.players.deleteFailed', { message: e.message }), 'error');
+    }
+  }, [getFirebaseAuth, firebaseFetch, toast]);
+
   // ── Admin handlers ─────────────────────────────────────────────────────
   const handleAdminTap = useCallback(async () => {
     if (adminTapTimerRef.current) clearTimeout(adminTapTimerRef.current);
@@ -1408,6 +1425,7 @@ function ProfileTab({
         adminLockedUntil={adminLockedUntil}
         trophies={trophies}
         fetchActivePlayersCount={fetchActivePlayersCount} fetchAdminPlayerList={fetchAdminPlayerList}
+        deleteLeaderboardEntry={deleteLeaderboardEntry}
         trophyOverrides={trophyOverrides} setTrophyOverrides={setTrophyOverrides}
         verifyAdminPassword={verifyAdminPassword} saveCustomBanners={saveCustomBanners}
         buildBannerForm={buildBannerForm} updateBannerForm={updateBannerForm}

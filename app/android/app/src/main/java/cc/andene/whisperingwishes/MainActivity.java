@@ -202,6 +202,27 @@ public class MainActivity extends BridgeActivity {
         float bottomDp = Math.min(navBarPx / density, 48f);
         WebView webView = getBridge() != null ? getBridge().getWebView() : null;
         if (webView != null) {
+            // MUST be the very first thing done to this WebView reference,
+            // before setBackgroundColor/evaluateJavascript below or anything
+            // else that touches it. This flag is what allows autoplay (even
+            // muted) to work at all in a WebView — Capacitor's default
+            // leaves it true (gesture required). It used to be set in its
+            // own block further down, AFTER evaluateJavascript() already ran
+            // script inside the page — meaning on a warm WebView (every
+            // relaunch after the first) the renderer process is already
+            // primed and this Java statement still finishes fast enough to
+            // beat the page's own JS, but on a device's genuinely first-ever
+            // cold start (fresh WebView renderer process spin-up, nothing
+            // cached/synced yet) that ordering isn't guaranteed: React can
+            // mount and call audio.play() before this setting has actually
+            // propagated to the WebView, so even a *muted* autoplay attempt
+            // gets silently blocked (rejected promise, swallowed by the JS
+            // side's own .catch()) — audio.muted never gets flipped back to
+            // false, and nothing later retries it. Reported symptom: ambient
+            // sound never plays on the very first app open, but works from
+            // then on. Setting it here, before any other WebView call,
+            // removes that race entirely.
+            webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
             // WebView defaults to an opaque white background the instant it's
             // created — before it has painted any of its own content at all.
             // AppTheme.NoActionBar's windowBackground (the boot poster,
@@ -231,21 +252,10 @@ public class MainActivity extends BridgeActivity {
                     + "window.__bootInsetsReady = true;";
             webView.evaluateJavascript(js, null);
         }
-        // Boot splash (index.html) autoplays a muted <video> the instant
-        // the app starts — no user gesture has happened yet at that point,
-        // by definition. Android's WebView has its OWN gesture-based
-        // autoplay policy (WebSettings.setMediaPlaybackRequiresUserGesture),
-        // completely separate from the HTML autoplay attribute and from
-        // desktop/mobile Chrome's autoplay rules — Capacitor's Bridge is
-        // *supposed* to already disable this by default, but every attempt
-        // at fixing the splash from the JS/HTML side alone has failed to
-        // produce any visible change on-device, which is consistent with
-        // this WebView-level gesture requirement silently blocking
-        // autoplay entirely regardless of what the page's own script does.
-        // Set explicitly rather than trusted to Capacitor's default.
-        if (getBridge() != null && getBridge().getWebView() != null) {
-            getBridge().getWebView().getSettings().setMediaPlaybackRequiresUserGesture(false);
-        }
+        // setMediaPlaybackRequiresUserGesture(false) — the fix for the boot
+        // splash's/ambient track's autoplay — now lives at the top of the
+        // `if (webView != null)` block above, applied before any other
+        // WebView call. See that comment for why the ordering matters.
 
         // Experimental low-latency haptic path — see GlassHapticsPlugin.java's
         // history: performHapticFeedback(KEYBOARD_TAP) called through
