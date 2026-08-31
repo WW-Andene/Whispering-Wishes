@@ -71,7 +71,24 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Thunderflare Dominion', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Broadblade of Night'] },
     teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper'] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'Phantom Hunter, leader of the "Ghost Hounds" international mercenary group — ruthless, vengeful, unforgiving; a potential client must be mindful of the price to pay before making him an offer. On-field Electro DPS who builds Cruelty from his Resonance Skill Extermination Order into an enhanced Heavy Attack "Mercy," then triggers Resonance Liberation Phantom Etching to enter Deathblade Gear, replacing his Basic Attack with the Killing Intent-fueled "Death Messenger" burst finisher.',
+    // desc rewritten 2026-08-31 against wutheringwaves.fandom.com/wiki/Calcharo/Combat (Chrome/Windows UA +
+    // google.com referer + jsRender, load+9s wait; 2nd attempt cleared Cloudflare) and cross-checked against
+    // prydwen.gg/wuthering-waves/characters/calcharo's Skills tab (identical mechanic text, confirms both
+    // agree). Exact resource economy previously undocumented: Cruelty caps at 3, gained 1 per Resonance Skill
+    // Extermination Order HIT (not per cast), and — critically — Cruelty CANNOT be gained at all while in
+    // Deathblade Gear (undocumented mutual-exclusion between the two gauges). At 3 Cruelty, Heavy Attack is
+    // replaced by "Mercy" (consumes all 3 Cruelty, Heavy ATK DMG, restores Resonance + Concerto Energy).
+    // Resonance Liberation Phantom Etching costs 125 Resonance Energy, deals a hit, and enters Deathblade Gear
+    // for an exact 11s: Basic Attack → 5-hit "Hounds Roar", Heavy Attack and Dodge Counter both upgraded to
+    // Resonance Liberation DMG. Inside Deathblade Gear the Forte Gauge itself is replaced by "Killing Intent"
+    // (caps at 5, gained 1 per Hounds Roar hit); at 5/5, Basic Attack is replaced by "Death Messenger"
+    // (consumes all 5 Killing Intent, Resonance Liberation DMG, also restores Resonance + Concerto Energy).
+    // Previously undocumented cast-order dependency: once Deathblade Gear ends, Calcharo\'s VERY NEXT Intro
+    // Skill cast is silently replaced with a different move, "Necessary Means" (Intro Skill DMG, 198.81%×2 at
+    // Lv.10 — see SKILL_MULTIPLIERS.Calcharo), instead of his normal Intro "Wanted Outlaw" — reverting to
+    // Wanted Outlaw again after that one use. S2/S5 Resonance Chain nodes both key off "casts Wanted Outlaw OR
+    // Necessary Means", so this alternation matters for their uptime too.
+    desc: 'Phantom Hunter, leader of the "Ghost Hounds" international mercenary group — ruthless, vengeful, unforgiving; a potential client must be mindful of the price to pay before making him an offer. On-field Electro DPS. Resonance Skill Extermination Order hits build "Cruelty" (cap 3, frozen while in Deathblade Gear); at 3 Cruelty, Heavy Attack becomes "Mercy" (consumes all 3, restores Energy). Resonance Liberation Phantom Etching (125 Energy) enters Deathblade Gear for 11s: Basic Attack becomes the 5-hit "Hounds Roar", Heavy Attack/Dodge Counter both upgrade to Liberation DMG, and the Forte Gauge becomes "Killing Intent" (cap 5, +1 per Hounds Roar hit) — at 5/5, Basic Attack becomes the Killing-Intent-fueled "Death Messenger" burst finisher (Liberation DMG, restores Energy). Once Deathblade Gear ends, his next Intro Skill cast is silently swapped to "Necessary Means" instead of his usual "Wanted Outlaw".',
     skills: ['Gnawing Fangs', 'Extermination Order', 'Hunting Mission', 'Phantom Etching'],
     rotation: ['Echo', 'Intro', 'Liberation', 'Heavy: Death Messenger', 'Basic: Hounds Roar 1-5', 'Heavy: Death Messenger', 'Basic: Hounds Roar 1-5', 'Heavy: Death Messenger', 'Outro'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Ring', specialty: 'Iris' },
@@ -2986,17 +3003,40 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Applaud for Me!', '202.8% + 50.7%'],
     ['Outro', 'The Course is Set!', '+20% Fusion DMG + 25% Skill DMG Amp (14s, or until the buffed Resonator is swapped out)'],
   ],
+  // Re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Calcharo/Combat's Lv.10 Attribute Scaling
+  // tables (Chrome/Windows UA + google.com referer + jsRender, load+9s wait; 2nd attempt cleared Cloudflare),
+  // cross-checked against prydwen.gg/wuthering-waves/characters/calcharo's Skills/Gameplay tabs. This
+  // character's Combat page uses an older wiki template ({{Forte Table|Calcharo}}, category "ATK Scaling
+  // Skill Characters") whose "Details" section only renders full Attribute Scaling tables for Resonance Skill
+  // Extermination Order and Resonance Liberation Phantom Etching (which bundles Deathblade Gear's Basic
+  // ATK/Heavy ATK/Dodge Counter/"Necessary Means" sub-tables) — it does NOT expose separate tables for the
+  // normal-state Basic ATK, Heavy ATK, Mid-air, Dodge Counter, Forte "Mercy"/"Death Messenger", or Intro
+  // Skill, and Prydwen's Skills tab gives mechanic text for those but not raw per-hit %. Rows below marked
+  // "TODO: verify" could NOT be confirmed against either source this pass and are carried over unchanged from
+  // the prior data rather than being touched without a citation. Rows confirmed EXACT matches against the
+  // wiki's Lv.10 columns: Skill (Extermination Order Part 1/2/3), Liberation (Hounds Roar Stages 1-5), Outro
+  // (Shadowy Raid, matches Prydwen's kit text "195.98%+391.96% of Calcharo's ATK" too) — all correct, unchanged.
+  // Two real corrections found and fixed:
+  // (1) NEW row added: Intro "Necessary Means" (198.81%×2 at Lv.10, matches wiki's "Necessary Means Damage"
+  //   row exactly) — a real, previously entirely undocumented Intro-Skill-DMG source (see desc rewrite above).
+  // (2) NEW row added: Heavy ATK / Dodge Counter "In Deathblade Gear" variants (62.03%×5 / 56.99%×6 at Lv.10,
+  //   both from the wiki's Phantom Etching sub-table, explicitly stated "considered as Resonance Liberation
+  //   DMG") — previously entirely uncaptured; the old single "Standard" rows for Heavy ATK/Dodge Counter are
+  //   the NORMAL-state values only and remain filed under their own categories, unchanged.
   'Calcharo': [
-    ['Basic ATK', 'Gnawing Fangs Stage 1-4', '45.73%×2 → 99.41% → 85.18%+42.59%×3 → 79.51%×2+106.01%'],
-    ['Heavy ATK', 'Standard', '41.36%×5'],
-    ['Mid-air', 'Plunging Attack', '123.27%'],
-    ['Dodge Counter', 'Standard', '66.48%×3+85.47%'],
-    ['Skill', 'Extermination Order Stage 1-3', '51.57%×2+68.76% → 77.36%×2+103.14% → 214.87%×2', '10s cooldown; does not interrupt the Basic ATK cycle.'],
-    ['Forte', 'Heavy ATK: "Mercy"', '39.11%×8+78.22%', 'At 3 Cruelty (gained from Skill hits), Heavy ATK becomes "Mercy" — restores Resonance/Concerto Energy.'],
-    ['Forte', 'Heavy ATK: "Death Messenger"', '97.77%×8+195.53%', 'In Deathblade Gear, at 5 Killing Intent, Basic ATK becomes "Death Messenger" (Liberation DMG).'],
-    ['Liberation', 'Phantom Etching → Hounds Roar', '596.43% → 88.07%→35.23%×2+52.84%×2→163.84%→34.82%×6→150.19%×2', 'Enters Deathblade Gear (11s): Basic ATK replaced by Hounds Roar, Heavy ATK/Dodge Counter deal Liberation DMG.'],
-    ['Intro', 'Wanted Outlaw', '39.77%×2+59.65%×2'],
-    ['Outro', 'Shadowy Raid', '195.98%+391.96%'],
+    ['Basic ATK', 'Gnawing Fangs Stage 1-4', '45.73%×2 → 99.41% → 85.18%+42.59%×3 → 79.51%×2+106.01%', 'TODO: verify — not present in either source this pass (see table-level comment above); Prydwen confirms the 4-stage count only.'],
+    ['Heavy ATK', 'Standard', '41.36%×5', 'TODO: verify — normal-state Heavy ATK, not present in either source this pass. Do not confuse with the Deathblade Gear row below.'],
+    ['Heavy ATK', 'Standard (Deathblade Gear)', '62.03%×5', 'Confirmed 2026-08-31 against wutheringwaves.fandom.com Lv.10 "Heavy Attack DMG" row under Phantom Etching. While in Deathblade Gear (11s after Phantom Etching), Heavy Attack deals this boosted value instead of the normal-state row above, and is counted as Resonance Liberation DMG, not Heavy ATK DMG.'],
+    ['Mid-air', 'Plunging Attack', '123.27%', 'TODO: verify — not present in either source this pass.'],
+    ['Dodge Counter', 'Standard', '66.48%×3+85.47%', 'TODO: verify — normal-state Dodge Counter, not present in either source this pass. Do not confuse with the Deathblade Gear row below.'],
+    ['Dodge Counter', 'Standard (Deathblade Gear)', '56.99%×6', 'Confirmed 2026-08-31 against wutheringwaves.fandom.com Lv.10 "Dodge Counter DMG" row under Phantom Etching. While in Deathblade Gear, Dodge Counter deals this boosted value instead of the normal-state row above, and is counted as Resonance Liberation DMG, not Dodge Counter DMG.'],
+    ['Skill', 'Extermination Order Stage 1-3', '51.57%×2+68.76% → 77.36%×2+103.14% → 214.87%×2', 'Confirmed exact match 2026-08-31 against wutheringwaves.fandom.com Lv.10 Part 1/2/3 Damage rows. 10s cooldown; does not interrupt the Basic ATK cycle. Each Skill hit grants 1 Cruelty (cap 3) — frozen while in Deathblade Gear.'],
+    ['Forte', 'Heavy ATK: "Mercy"', '39.11%×8+78.22%', 'TODO: verify — not present in either source this pass. At 3 Cruelty, Heavy ATK becomes "Mercy" — consumes all 3 Cruelty, restores Resonance/Concerto Energy, counted as Heavy ATK DMG.'],
+    ['Forte', 'Heavy ATK: "Death Messenger"', '97.77%×8+195.53%', 'TODO: verify — not present in either source this pass. In Deathblade Gear, at 5 Killing Intent, Basic ATK becomes "Death Messenger" — consumes all 5 Killing Intent, restores Resonance/Concerto Energy, counted as Resonance Liberation DMG.'],
+    ['Liberation', 'Phantom Etching → Hounds Roar', '596.43% → 88.07%→35.23%×2+52.84%×2→163.84%→34.82%×6→150.19%×2', 'Confirmed exact match 2026-08-31 against wutheringwaves.fandom.com Lv.10 Skill Damage / Hounds Roar Stage 1-5 rows. Enters Deathblade Gear (11s, 125 Resonance Energy cost, 20 Concerto Energy regen): Basic ATK replaced by Hounds Roar (each hit grants 1 Killing Intent, cap 5), Heavy ATK/Dodge Counter deal Liberation DMG (see the Deathblade Gear rows above).'],
+    ['Intro', 'Wanted Outlaw', '39.77%×2+59.65%×2', 'TODO: verify — not present in either source this pass. Official skill name confirmed "Wanted Outlaw" per the wiki\'s own footnote (in-game Resonance Chain text mislabels it "Wanted Criminal").'],
+    ['Intro', '"Necessary Means"', '198.81%×2', 'NEW row added 2026-08-31, confirmed exact match against wutheringwaves.fandom.com Lv.10 "\'Necessary Means\' Damage" row (also matches Prydwen\'s kit text). Previously entirely undocumented: once Deathblade Gear ends, Calcharo\'s next Intro Skill cast is silently replaced by this move instead of "Wanted Outlaw", counted as Intro Skill DMG. TODO: needs Phase 2 schema to model the cross-rotation "which Intro fires next" state — CHARACTER_ROTATIONS below always uses the "Wanted Outlaw" opener as the baseline case.'],
+    ['Outro', 'Shadowy Raid', '195.98%+391.96%', 'Confirmed exact match 2026-08-31 against wutheringwaves.fandom.com Lv.10 Outro Skill row and Prydwen\'s kit text ("195.98%+391.96% of Calcharo\'s ATK").'],
   ],
   // Corrected 2026-08-17 against ww.nanoka.cc's character #1603 sheet (Lv.10 skill attributes): every
   // row except Outro was roughly half its real value (e.g. Ephemeral was '635%' vs the real 1262.45%,
@@ -3980,15 +4020,23 @@ const CHARACTER_ROTATIONS = {
   // Calcharo (re-fetched 2026-08-18, Chrome UA + google.com referer + jsRender). Prydwen also lists a
   // Dash-Cancel variant (harder, same Death Messenger count) and a "4 Death Messenger" combo rated
   // Difficulty: Impossible — both omitted as too execution-heavy for a standard reference rotation.
+  // Zero-damage bug fixed 2026-08-31 (re-verified against SKILL_MULTIPLIERS.Calcharo, same bug class already
+  // caught on Yinlin/Roccia/Jiyan): TWO separate steps used skill strings that did NOT substring-match their
+  // SKILL_MULTIPLIERS row name under the calc engine's `rowName.includes(step.skill)` lookup, so both
+  // silently resolved to ZERO damage. (1) The 3 Forte steps used "Heavy Attack: \"Death Messenger\"" (with
+  // "Attack") against a row named 'Heavy ATK: "Death Messenger"' (with "ATK") — corrected all 3 to
+  // 'Heavy ATK: "Death Messenger"'. (2) The 2 Basic ATK steps used "Hounds Roar 1-5" against the row name
+  // 'Phantom Etching → Hounds Roar', which contains "Hounds Roar" but not the "1-5" suffix — corrected both
+  // to plain "Hounds Roar", which is a substring of the row name and now resolves correctly.
   'Calcharo': [
     { type: 'Echo', skill: 'Use + Swap Cancel', note: 'Use your equipped Echo\'s skill before swapping Calcharo in, then swap-cancel it — banks its effect without eating its full animation.' },
-    { type: 'Intro', skill: 'Wanted Outlaw', note: 'Swap into him — fires automatically, dealing an Electro hit.' },
-    { type: 'Liberation', skill: 'Phantom Etching', note: 'Press Liberation — deals a hit and enters "Deathblade Gear": his Basic Attack is replaced by the 5-hit Hounds Roar combo, Dodge Counter deals more damage, and his Forte Gauge becomes "Killing Intent" (caps at 5, gained 1 per Hounds Roar hit; cannot gain Cruelty while in this state).' },
-    { type: 'Forte', skill: 'Heavy Attack: "Death Messenger"', note: 'Once Killing Intent hits 5/5, his Basic Attack is replaced by this automatically — tap Basic Attack to fire it, consuming all 5 Killing Intent for a big Electro hit (counted as Liberation DMG) and refunding Resonance + Concerto Energy. Swap-cancel right after if you can, to protect him from the long wind-up on the next cast.' },
-    { type: 'Basic ATK', skill: 'Hounds Roar 1-5', note: 'Tap Basic Attack 5 times in a row (still in Deathblade Gear) — each hit is 1 stage of the combo and grants 1 Killing Intent, refilling it to 5/5 for the next Death Messenger.' },
-    { type: 'Forte', skill: 'Heavy Attack: "Death Messenger"', note: '2nd cast — same as above, tap Basic Attack once Killing Intent caps again. Swap-cancel if possible.' },
-    { type: 'Basic ATK', skill: 'Hounds Roar 1-5', note: 'Repeat the 5-tap combo to refill Killing Intent to 5/5 a third time.' },
-    { type: 'Forte', skill: 'Heavy Attack: "Death Messenger"', note: '3rd cast — the realistic ceiling per rotation without frame-perfect Dash Cancels between Hounds Roar hits (a 4th is theoretically possible but rated "Difficulty: Impossible" by Prydwen).' },
+    { type: 'Intro', skill: 'Wanted Outlaw', note: 'Swap into him — fires automatically, dealing an Electro hit. Note: if this rotation is his 2nd+ in a fight and his previous Deathblade Gear has already ended, this Intro is silently replaced by "Necessary Means" instead (see SKILL_MULTIPLIERS.Calcharo) — this reference rotation assumes the baseline "Wanted Outlaw" opener.' },
+    { type: 'Liberation', skill: 'Phantom Etching', note: 'Press Liberation (125 Resonance Energy) — deals a hit and enters "Deathblade Gear" for 11s: his Basic Attack is replaced by the 5-hit Hounds Roar combo, Dodge Counter and Heavy Attack both deal boosted Resonance Liberation DMG, and his Forte Gauge becomes "Killing Intent" (caps at 5, gained 1 per Hounds Roar hit; cannot gain Cruelty while in this state). Once this state ends, his next Intro Skill cast becomes "Necessary Means" instead of "Wanted Outlaw".' },
+    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: 'Once Killing Intent hits 5/5, his Basic Attack is replaced by this automatically — tap Basic Attack to fire it, consuming all 5 Killing Intent for a big Electro hit (counted as Liberation DMG) and refunding Resonance + Concerto Energy. Swap-cancel right after if you can, to protect him from the long wind-up on the next cast.' },
+    { type: 'Basic ATK', skill: 'Hounds Roar', note: 'Tap Basic Attack 5 times in a row (still in Deathblade Gear) — each hit is 1 stage of the combo and grants 1 Killing Intent, refilling it to 5/5 for the next Death Messenger.' },
+    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: '2nd cast — same as above, tap Basic Attack once Killing Intent caps again. Swap-cancel if possible.' },
+    { type: 'Basic ATK', skill: 'Hounds Roar', note: 'Repeat the 5-tap combo to refill Killing Intent to 5/5 a third time.' },
+    { type: 'Forte', skill: 'Heavy ATK: "Death Messenger"', note: '3rd cast — the realistic ceiling per rotation without frame-perfect Dash Cancels between Hounds Roar hits (a 4th is theoretically possible but rated "Difficulty: Impossible" by Prydwen).' },
     { type: 'Outro', skill: 'Shadowy Raid', note: 'Swap out to trigger this automatically — summons a Phantom that slashes everything in front of him for a large Electro hit.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Yinlin (re-fetched
@@ -4779,8 +4827,41 @@ const RESONANCE_CHAIN_DATA = {
   //   bonus; the per-Incandescence conversion-rate increase is NOT representable as a flat stat here —
   //   TODO: needs Phase 2 schema to hold both the flat skill-mult bonus and the scaling-rate bonus.
   'Jinhsi':       { s1: { skillDmg: 40 }, s2: { totalMult: 5 }, s3: { atkPct: 50 }, s4: { elemDmg: 20 }, s5: { libDmg: 120 }, s6: { skillDmg: 45 } },
-  // Calcharo S1: energy recovery (utility). S2: Skill DMG+30%. S3: Electro DMG+25%. S4: team Electro DMG+20%
-  'Calcharo':     { s1: { totalMult: 5 }, s2: { skillDmg: 30 }, s3: { elemDmg: 25 }, s4: { elemDmg: 20 }, s5: { totalMult: 15 }, s6: { totalMult: 40 } },
+  // Calcharo S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Calcharo/Combat's
+  // "Resonance Chain" section (Chrome/Windows UA + google.com referer + jsRender, load+9s wait; 2nd attempt
+  // cleared Cloudflare), cross-checked against prydwen.gg/wuthering-waves/characters/calcharo (identical
+  // text). Node names (Covert Negotiation/Zero-Sum Game/Iron Fist Diplomacy/Dark Alliance/Unconventional
+  // Compact/The Ultimatum) at line ~6802 already matched verbatim — unchanged.
+  // S1 Covert Negotiation: "Resonance Skill Extermination Order hits additionally recover 10 Resonance
+  //   Energy, once every 20s" — purely a Resonance Energy utility effect with ZERO DPS component. Previous
+  //   data fabricated `totalMult: 5` with no basis; zeroed with a TODO per the "don't guess, zero it" rule.
+  // S2 Zero-Sum Game: casting Intro Skill Wanted Outlaw OR "Necessary Means" grants Resonance Skill DMG
+  //   Bonus +30% for 15s — confirmed correct as-is (skillDmg:30 matches both value and stat category), no
+  //   change; TODO note added for the 15s-duration/Intro-cast-trigger conditionality the flat schema can't
+  //   capture.
+  // S3 Iron Fist Diplomacy: during Resonance Liberation Deathblade Gear state, Electro DMG Bonus +25% —
+  //   confirmed correct as-is (elemDmg:25 matches both value and stat category), no change.
+  // S4 Dark Alliance: after casting Outro Skill Shadowy Raid, Electro DMG Bonus of the WHOLE TEAM +20% for
+  //   30s — confirmed correct as-is (elemDmg:20 matches both value and stat category; team-wide caveat same
+  //   as Camellya's S4/Jinhsi's S4 above), no change.
+  // S5 Unconventional Compact: Intro Skill Wanted Outlaw and "Necessary Means" deal 50% MORE DAMAGE (a flat
+  //   DMG-multiplier bonus on those two specific casts) — WAS wrongly `totalMult: 15`, less than a third of
+  //   the real value and with no basis in source. Corrected to `totalMult: 50` (matches this file's
+  //   convention elsewhere, e.g. Jiyan's S5/Carlotta's nodes, for a flat DMG-multiplier bonus scoped to a
+  //   specific move) — TODO: needs Phase 2 schema to scope this to Intro-Skill-only rather than a generic
+  //   total multiplier.
+  // S6 The Ultimatum: casting Resonance Liberation "Death Messenger" summons 2 Phantoms that EACH deal
+  //   Electro DMG equal to 100% of Calcharo's ATK (considered Resonance Liberation DMG) — this is two
+  //   separate extra attack instances, not a %DMG buff at all. Previous `totalMult: 40` was fabricated (not
+  //   40, not a multiplier-type effect in the first place) — corrected to `totalMult: 200` as the closest
+  //   flat-schema approximation of "2 hits × 100% ATK" (200% ATK-scaling worth of extra Liberation DMG per
+  //   Death Messenger cast), with a TODO noting the real mechanic is two separate flat-ATK-scaling hits, not
+  //   a multiplier on Death Messenger's own damage, and needs Phase 2 schema to model properly.
+  'Calcharo':     { s1: { totalMult: 0 }, /* TODO: needs Phase 2 schema — Covert Negotiation's Resonance Energy recovery is pure utility with no DPS component */
+    s2: { skillDmg: 30 }, /* TODO: needs Phase 2 schema — only active for 15s after casting Intro Skill Wanted Outlaw/Necessary Means, not a flat passive buff */
+    s3: { elemDmg: 25 }, s4: { elemDmg: 20 },
+    s5: { totalMult: 50 }, /* TODO: needs Phase 2 schema — scoped to Intro Skill Wanted Outlaw/Necessary Means only, not a generic total multiplier */
+    s6: { totalMult: 200 } /* TODO: needs Phase 2 schema — real mechanic is 2 separate Phantom hits at 100% ATK each on "Death Messenger" cast, not a %DMG multiplier; 200 approximates the combined ATK-scaling value */ },
   // Encore S1: Fusion DMG+3% x4=12%. S2: energy utility. S3: Heavy ATK mult+40%. S4: team Fusion DMG+20%. S6: ATK stacking ~25%
   'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 5 }, s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { skillDmg: 35 }, s6: { atkPct: 25 } },
   // Xiangli Yao S1: extra hits (utility). S2: CD+30%. S3: skill mult+63% (large). S4: team Lib DMG+25%. S6: skill mult boost
