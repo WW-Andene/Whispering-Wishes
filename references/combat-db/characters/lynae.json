@@ -1,0 +1,34 @@
+{
+  "name": "Lynae",
+  "slug": "lynae",
+  "rarity": 5,
+  "element": "Spectro",
+  "weaponType": "Pistols",
+  "role": ["Hybrid", "Support"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/lynae", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Lynae", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Hybrid: T0 Tower of Adversity, T1 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Spectro Pistols generalist Hybrid buffer, considered the best all-purpose buffer in the game - buffs almost any Main DPS via Outro (15% All DMG + 25% Liberation DMG Amplify) and Ultimate (24% party-wide DMG Bonus), plus Tune Rupture/Tune Strain toggle mode for specialized synergies (e.g. Mornye, Luuk).",
+    "skills": {
+      "normalAttack": "Basic Attack - Chroma Drift (3 hits) / Kaleidoscopic Parade Basic (5 hits) once in Parade state.",
+      "resonanceSkill": "Lynae-Style Palettes (or Additive Color in Parade) - Spectro strike.",
+      "forte": "Chromaticity Modeling - governs Overflow -> Spark Collision -> Kaleidoscopic Parade -> Lumiflow -> True Color resource chain, culminating in Visual Impact (her main damage + 40 Tune Break Boost team-wide).",
+      "liberation": "Prismatic Overblast - Spectro hit, grants 24% All DMG Bonus to team for 30s.",
+      "intro": "Time to Show Some Colors! - Spectro hit, +25% Spectro DMG self-buff for 9s, restores 100 Overflow.",
+      "outro": "Let's Hit the Road! - Spectro hit + 15% All DMG / 25% Liberation DMG Amplify to next character for 14s or until swap."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Spectrum Blaster (signature, 100%)", "Static Mist (91.2%, better team buffing than her own sig in some cases)", "Phasic Homogenizer (85%, best permanent)", "The Last Dance (83.8%)", "Lux & Umbra (82.6%)", "Woodland Aria (70.3%)", "Solar Flame (68.8%, BP)", "Relativistic Jet / Pistols#26 (best gacha-free)"],
+    "echoSet": ["Pact of Neonlight Leap (best - 30% ATK + 10% DMG Bonus via Hyvatia to next character on Outro)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Spectro DMG; Spectro DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK = Basic Attack DMG%"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Lynae", "Aemeath/Hiyuki/Luuk Herssen/Iuno", "Mornye/The Shorekeeper/Verina"], "notes": "Aemeath is the single best pairing (Tune Rupture synergy); Mornye is Lynae's best Support partner (responds to Tune Rupture/Strain)." },
+    { "name": "Generalist Buff Teams", "members": ["Lynae", "Phoebe/Carlotta/Camellya", "Mornye/The Shorekeeper/Verina"], "notes": "Works with virtually any DPS besides Zani and Cartethyia." }
+  ],
+  "rotation": "Intro (cancel via Ultimate) -> Ultimate -> Skill: Lynae-Style Palettes -> Heavy: Spark Collision (full charge, cancel via Jump) -> Jump: Polychrome Leap x3 -> Mid-air Attack: Visual Impact -> Outro. S6 uses a faster Heavy-Attack-first rotation.",
+  "communityNotes": "Prydwen: the strongest generalist Hybrid buffer ever released, F2P-friendly (doesn't need signature), functions with nearly every DPS in the game with specialized Tune Rupture/Strain/Liberation synergies on top; main downside is a long-cooldown, low-flexibility single rotation with limited swap-cancel room.",
+  "lastUpdated": "2026-08-31"
+}

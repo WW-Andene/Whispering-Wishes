@@ -1,0 +1,33 @@
+{
+  "name": "Luuk Herssen",
+  "slug": "luuk-herssen",
+  "rarity": 5,
+  "element": "Spectro",
+  "weaponType": "Gauntlets",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/luuk-herssen", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Luuk_Herssen", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T0 Tower of Adversity, T1.5 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Spectro Gauntlets aerial-combat Main DPS with one of the strongest single-hit Ultimate nukes in the game. Casts 3 enhanced Skills (Ring/Breach/Glare) from mid-air attack strings to build Endnotes on the Endgame (+25% Ultimate DMG each, up to 3 stacks), then a plunging Gavel of Earthshaker before unleashing his Ultimate. Fully locked into a single ~24-25s rotation - no quickswap possible.",
+    "skills": {
+      "normalAttack": "Basic Attack - Such is Light (4 hits) / Mid-air Attack (Dissection via Basic or Resection via Jump, 4 stages).",
+      "resonanceSkill": "Golden Reflux (2 charges) baseline; after Basic 4/Mid-air 3 becomes Aureole of Execution with 3 rotating forms (Ring/Breach/Glare).",
+      "forte": "Spark from the Frost - governs Ichor Flow (max 300) and the Aureate Judge state (full Ichor Flow, +110% Aureole of Execution DMG).",
+      "liberation": "Rewritten in Winter's Margins - massive single-hit Spectro nuke, scaled by Endnotes on the Endgame stacks.",
+      "intro": "Before Injection of Dawn - restores 100 Ichor Flow, grants a Dawnlit Keep damage-reduction stack.",
+      "outro": "Bow to the Last Light - 500% ATK Spectro hit."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Daybreaker's Spine (signature, 100%)", "Pulsation Bracer (85.7%, best permanent/F2P)", "Blazing Justice (83.4%)", "Moongazer's Sigil (80.7%)", "Verity's Handle (80.4%)", "Tragicomedy (80.2%)", "Abyss Surges (74.5%)", "Celestial Spiral (66.5%, BP)", "Legend of Drunken Hero (best gacha-free)"],
+    "echoSet": ["Rite of Gilded Revelation (100%, best - up to 40% Spectro DMG + 40% Basic DMG on Ultimate)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Spectro DMG; ATK% = Spectro DMG", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT DMG = CRIT Rate", "ATK% = Basic DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Luuk Herssen", "Denia/Lynae/Sanhua", "Mornye/The Shorekeeper/Verina"], "notes": "Denia is strongest (extra Tune Strain, buffing, grouping, fast rotation); Lynae close second; Sanhua a fully free budget option (may need an extra Mid-air chain post-Ultimate to hit his 25s cooldown)." }
+  ],
+  "rotation": "Intro -> Jump Mid-air: Resection 2,3 -> Skill: Ring -> Golden Impale (dash-cancel) -> Basic Mid-air 1 -> Resection 2,3 -> Skill: Breach -> Golden Impale (dash-cancel) -> Basic Mid-air 1 -> Resection 2,3 -> Skill: Glare -> Gavel of Earthshaker (cancel via Ultimate) -> Ultimate -> Skill (swap) -> Outro.",
+  "communityNotes": "Prydwen: one of the most accessible DPS in the game - performs well on a fully F2P weapon and free teammate (Sanhua) - with a huge, satisfying Ultimate nuke, but strictly single-rotation (any swap mid-combo breaks his entire kit) and weak in multi-wave content without Denia's grouping.",
+  "lastUpdated": "2026-08-31"
+}
