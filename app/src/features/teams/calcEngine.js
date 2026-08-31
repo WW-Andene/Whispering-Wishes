@@ -828,6 +828,53 @@ export function uptimeScaledUplift(stat, value, buffDuration, onFieldOrRotTime) 
 // were calibrated against the old score range) — 1% real DPS uplift ≈ 2.5 composition-score points.
 const UPLIFT_TO_SCORE = 2.5;
 
+// ── Normalized DPS power score (0-25), calibrated against an observed ATK-equivalent totalMult
+// range of ~2000-3800 — extracted from what was originally inline-only Main DPS scoring (see the
+// comment block that used to live here, now at the mainDps call site below) so a Sub DPS's own real
+// damage output can be scored on the exact same calibrated scale instead of inventing a second one.
+// Converts HP/DEF-scaling totalMult onto the ATK-scaling unit the 2000-3800 calibration expects —
+// see the mainDps call site for the full explanation of why that conversion is needed.
+function normalizedDpsPowerScore(charName) {
+  const d = CHARACTER_DATA[charName];
+  const scalingBase = d?.statScaling === 'HP' ? d?.baseHp
+    : d?.statScaling === 'DEF' ? d?.baseDef
+    : d?.baseAtk;
+  const REFERENCE_BASE_ATK = 400; // typical 5★ Main DPS baseAtk (observed range ~375-460)
+  const rawMult = d?.totalMult || 0;
+  const isAltScaling = d?.statScaling === 'HP' || d?.statScaling === 'DEF';
+  const dpsMult = (isAltScaling && scalingBase) ? rawMult * (scalingBase / REFERENCE_BASE_ATK) : rawMult;
+  return Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
+}
+
+// ── Sub-DPS off-field/Coordinated-ATK field-time-share multiplier ──────────────────────────────
+// Mirrors calcTeamStats.js's own real-damage-calculator math for how much of a non-mainDps member's
+// totalMult they can actually land — the RAW-tier block at calcTeamStats.js:520-540 (duplicated,
+// with team-buff context added, at the FULL-tier block :962-995). That is the ground-truth formula
+// this pass was asked to reuse rather than re-approximate: off-field members split the mainDps's
+// off-field window proportionally to their own onField need (`fieldRatio`), while the 7
+// Coordinated-ATK-role characters (Baizhi, Cantarella, Mortefi, Verina, Yinlin, Yuanwu, Zhezhi —
+// resonance-chain-mechanics.md §6) instead deal a `coordShare` portion of their damage during the
+// mainDps's ON-field window (`coordUptime`), since their CA hits trigger off the on-field ally's
+// attacks rather than needing their own field time. Extracted (not reimplemented) so this scorer's
+// numbers can't independently drift from the real calculator's — see the note at the bottom of this
+// file on why `composeTeamRotation` was deleted for exactly that failure mode.
+export function calcSubDpsFieldMultRatio(member, subDpsPool, mainOnField, rotTime) {
+  const d = CHARACTER_DATA[member];
+  if (!d || !(d.totalMult > 0)) return 0;
+  const subOnField = d.onField || 5;
+  const offFieldTime = Math.max(0, rotTime - mainOnField);
+  const totalSubNeed = subDpsPool.reduce((s, m) => s + (CHARACTER_DATA[m]?.onField || 5), 0) || 1;
+  const allocatedTime = offFieldTime * (subOnField / totalSubNeed);
+  const fieldRatio = Math.min(1, allocatedTime / subOnField);
+  const focus = d.dmgFocus || [];
+  if (focus.includes('Coordinated ATK')) {
+    const coordShare = focus.length === 1 ? 0.8 : 0.5; // pure coord chars vs. hybrid, same as calcTeamStats.js
+    const coordUptime = Math.min(1, mainOnField / rotTime);
+    return coordShare * coordUptime + (1 - coordShare) * fieldRatio;
+  }
+  return fieldRatio;
+}
+
 // dpsOverride: an explicit headline-DPS pick for THIS hypothetical/candidate team — mirrors the
 // crown (mainDpsOverride) the player can set on a real built team in calcTeamStats.js. Without it,
 // this function could only ever recognize a statically role-tagged 'Main DPS' member as the team's
@@ -870,23 +917,9 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // scored every HP/DEF-scaling DPS as ~0 (clamped) regardless of how strong they actually are.
     // Convert to an ATK-equivalent mult first (raw scaling-stat output ÷ a typical 5★ DPS baseAtk)
     // so this stays comparable across ATK/HP/DEF scalers before applying the existing calibration.
-    const mainDpsD = CHARACTER_DATA[mainDps];
-    const scalingBase = mainDpsD?.statScaling === 'HP' ? mainDpsD?.baseHp
-      : mainDpsD?.statScaling === 'DEF' ? mainDpsD?.baseDef
-      : mainDpsD?.baseAtk;
-    const REFERENCE_BASE_ATK = 400; // typical 5★ Main DPS baseAtk (observed range ~375-460)
-    const rawMult = mainDpsD?.totalMult || 0;
-    // scalingBase × rawMult is the character's real raw output scale (calcTeamStats.js's mDmg
-    // formula) -- for an HP/DEF scaler, convert it back to "what totalMult would read as if this
-    // were an ATK scaler with REFERENCE_BASE_ATK", the unit the 2000-3800 calibration below expects.
-    // ATK scalers are left as their raw totalMult, unchanged from before this fix, since their own
-    // baseAtk already sits close enough to REFERENCE_BASE_ATK that the existing calibration was
-    // tuned against their real totalMult values directly.
-    const isAltScaling = mainDpsD?.statScaling === 'HP' || mainDpsD?.statScaling === 'DEF';
-    const dpsMult = (isAltScaling && scalingBase) ? rawMult * (scalingBase / REFERENCE_BASE_ATK) : rawMult;
-    // Min-max normalize against that observed ATK-equivalent range so the top of the meta still
-    // differentiates (a flat divisor saturates and makes most current-meta DPS score identically).
-    let dpsScore = Math.max(0, Math.min(25, Math.round((dpsMult - 2000) / 72)));
+    // (Now shared via normalizedDpsPowerScore, above, so a Sub DPS's own contribution — added below
+    // — is scored on this exact same calibrated scale rather than a second invented one.)
+    let dpsScore = normalizedDpsPowerScore(mainDps);
     const dpsFocus = CHARACTER_DATA[mainDps]?.dmgFocus || [];
     // A Liberation-focused DPS with a 175-Energy cost (calcEnergyCycles' own cutoff for the harder ER
     // threshold, ER_THRESHOLD_HEALER) is genuinely harder to keep at full Liberation uptime without
@@ -907,6 +940,28 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // rotation — a buff sitting on them while off-field does nothing. Falls back to rotTime only
     // when onField isn't tracked for this character.
     const dpsOnField = CHARACTER_DATA[mainDps]?.onField || CHARACTER_DATA[mainDps]?.rotTime;
+    // ── Team rotation time + off-field member pool, mirroring calcTeamStats.js's rawRotTime/
+    // subDpsMembers setup (calcTeamStats.js:144-145,518-522) so calcSubDpsFieldMultRatio (below)
+    // gets the same inputs the real damage calculator itself derives them from — same sumOnField
+    // clamp, same "any non-mainDps member with real totalMult competes for off-field time" pool.
+    const sumOnField = members.reduce((s, m) => s + (CHARACTER_DATA[m]?.onField ?? (m === mainDps ? 15 : 5)), 0);
+    const teamRotTime = Math.max(15, Math.min(35, sumOnField + 2));
+    const teamMainOnField = Math.min(dpsOnField || 15, teamRotTime * 0.8);
+    const subDpsPool = members.filter(m => m !== mainDps && (CHARACTER_DATA[m]?.totalMult || 0) > 0);
+    // A non-mainDps member's own real-damage-equivalent contribution, on the same 0-25 power scale
+    // and enemy-RES gate as the mainDps score above, discounted by how much of their totalMult they
+    // can actually realistically land per calcSubDpsFieldMultRatio (real fieldRatio/coordShare math,
+    // not a flat guess). Shared by the Sub DPS credit and the second-Main-DPS redundancy check below.
+    const subDpsOwnContribution = (m) => {
+      const fieldMult = calcSubDpsFieldMultRatio(m, subDpsPool, teamMainOnField, teamRotTime);
+      if (fieldMult <= 0) return 0;
+      let contribution = normalizedDpsPowerScore(m) * fieldMult;
+      if (enemyResMap) {
+        const el = (CHARACTER_DATA[m]?.element || '').toLowerCase();
+        contribution *= calcResMult(enemyResMap[el] ?? 10, 0);
+      }
+      return contribution;
+    };
     // An elemDmg buff only helps this DPS if its condition (when present) actually names their
     // element or "all" — otherwise it's a buff for a different attribute that does nothing here.
     const elemBuffApplies = (b) => { const cond = (b.condition || '').toLowerCase(); return !cond || cond.includes(dpsEl) || cond.includes('all'); };
@@ -1050,7 +1105,24 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       // of parking two same-role carries side by side with no synergy tag to show for it.
       if (CHARACTER_DATA[m]?.role === 'Main DPS') {
         if (score > scoreBeforeMember) tags.push('Dual DPS');
-        else { score -= 20; tags.push('Redundant DPS'); }
+        else {
+          // Previously a flat -20 whenever a second Main DPS didn't buff the real mainDps — but a
+          // second Main DPS run intentionally off-field (the same real mechanic that makes a
+          // role:'Sub DPS' character's own damage worth crediting below) is a genuine, undervalued
+          // pattern, not just a benched hypercarry. Give it the same real-damage credit a Sub DPS
+          // gets; only penalize when it's neither buffing mainDps NOR contributing real off-field
+          // damage of its own.
+          const offFieldContribution = subDpsOwnContribution(m);
+          if (offFieldContribution > 0) { score += offFieldContribution; tags.push('Off-Field DPS'); }
+          else { score -= 20; tags.push('Redundant DPS'); }
+        }
+      } else if (CHARACTER_DATA[m]?.role === 'Sub DPS') {
+        // NEW: credit this Sub DPS's own real off-field/Coordinated-ATK damage contribution — the
+        // gap flagged in engine-crosscheck-notes.md's 2026-08-31 "Coordinated Attack presence bonus"
+        // entry. Additive to the buff-synergy-to-mainDps scoring above: a Sub DPS who both buffs the
+        // mainDps AND deals real damage of their own scores higher than one who does only one.
+        const contribution = subDpsOwnContribution(m);
+        if (contribution > 0) { score += contribution; tags.push('Sub DPS Damage'); }
       }
     });
   }
