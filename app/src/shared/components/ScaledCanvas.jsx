@@ -4,37 +4,51 @@
 // availableWidth/439, with its HEIGHT set dynamically to exactly fill the
 // remaining real vertical space (availableHeight/scale) — see
 // useCanvasScale.js's own comment for why this is elastic rather than a
-// fixed 439x976 box: that fixed-box version letterboxed whenever a real
-// screen's aspect ratio didn't exactly match 439:976 (i.e. nearly every
-// device), leaving a visible gap between the bottom nav and the real screen
-// edge. This version always fills 100% of the real screen, both axes, with
-// zero gap — the scale factor alone (uniform on x AND y via `scale(k)`)
-// is what keeps every element's proportions exactly as authored.
+// fixed 439x976 box.
 //
-// `position: fixed` descendants (the app's header/nav, this app's modals via
-// getPortalRoot()) resolve relative to THIS div, not the real viewport —
-// applying any CSS transform makes an element the containing block for its
-// fixed-position descendants, which is exactly what turns this into a
-// self-contained "canvas" the rest of the app can treat as if it were the
-// whole screen.
+// TWO nested divs, not one, and that split matters:
+//   - canvasRef (transform box): applies `transform: scale(k)`, never
+//     scrolls. Any element with a `transform` becomes the containing block
+//     for its `position: fixed` descendants (that's what turns this into a
+//     self-contained "canvas" the header/nav/modals can treat as the whole
+//     screen) — but that containing-block relationship is unreliable across
+//     browsers specifically when the SAME element also has `overflow:auto`
+//     and actually scrolls. An earlier version put both on one div, and on
+//     at least one real Android browser the fixed header/nav ended up
+//     scrolling away with the page content instead of staying pinned —
+//     exactly the "broken bottom" bug this split fixes.
+//   - scrollRef (scroll box): a plain, non-transformed absolutely-positioned
+//     child that fills the transform box exactly and does the actual
+//     `overflow-y: auto` scrolling. Position:fixed descendants still
+//     resolve against canvasRef (CSS only climbs to the nearest ancestor
+//     that actually has a transform when computing a fixed element's
+//     containing block — a plain scrolling div in between doesn't count),
+//     so they correctly stay pinned to the canvas edges regardless of how
+//     far the inner content has scrolled.
 //
-// This div is also the app's only scroll container (see index.css's
-// `body { overflow: hidden }` and canvasScale.js's getScrollContainer()) —
-// scrolling used to happen on `body` before this existed, back when the app
-// rendered directly into the real viewport with no scaling involved.
+// getPortalRoot() (canvasScale.js) targets canvasRef, not scrollRef — a
+// portaled modal/dropdown doesn't need to be a descendant of the scrolling
+// content to resolve correctly (per the above), and staying out of it
+// sidesteps any interaction with the scroll box's own overflow clipping.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useRef } from 'react';
 import { useCanvasScale, CANVAS_WIDTH } from '../../hooks/useCanvasScale.js';
-import { setCanvasElement } from '../scaling/canvasScale.js';
+import { setCanvasElement, setScrollElement } from '../scaling/canvasScale.js';
 
 export default function ScaledCanvas({ children }) {
   const { scale, canvasHeight } = useCanvasScale();
   const canvasRef = useRef(null);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     setCanvasElement(canvasRef.current);
     return () => setCanvasElement(null);
+  }, []);
+
+  useEffect(() => {
+    setScrollElement(scrollRef.current);
+    return () => setScrollElement(null);
   }, []);
 
   // Exposed as a CSS var (not just used inline below) so kuro.css can derive
@@ -68,12 +82,21 @@ export default function ScaledCanvas({ children }) {
           transform: `scale(${scale})`,
           transformOrigin: 'top center',
           position: 'relative',
-          overflowY: 'auto',
-          overflowX: 'hidden',
-          WebkitOverflowScrolling: 'touch',
+          overflow: 'hidden',
         }}
       >
-        {children}
+        <div
+          ref={scrollRef}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );

@@ -20,13 +20,24 @@
 
 export const CANVAS_WIDTH = 439;
 
+// canvasEl = the TRANSFORMED box (ScaledCanvas.jsx's canvasRef) — never
+// scrolls, is the containing block for position:fixed descendants and the
+// portal root. scrollEl = the separate, non-transformed child that actually
+// scrolls (scrollRef). Deliberately two different elements, not one — see
+// ScaledCanvas.jsx's own comment on why combining transform+overflow:auto
+// on a single element broke position:fixed header/nav on real devices.
 let canvasEl = null;
+let scrollEl = null;
 
 // Called once by ScaledCanvas.jsx on mount/unmount. Never called by anything
 // else — this is the one writer, everything else only reads via the getters
 // below.
 export function setCanvasElement(el) {
   canvasEl = el;
+}
+
+export function setScrollElement(el) {
+  scrollEl = el;
 }
 
 // Every createPortal() in the app must target this instead of document.body
@@ -72,11 +83,12 @@ export function toCanvasLength(realLength) {
   return realLength / scale;
 }
 
-// The canvas div is the app's ONLY scroll container (see index.css's own
-// comment on `body { overflow: hidden }`) — window.scrollY/scrollTo no
-// longer correspond to anything the user can see once the whole app lives
-// inside a transformed, fixed-size box. Same document.body fallback
-// reasoning as getPortalRoot() above.
+// ScaledCanvas.jsx's inner scroll div is the app's ONLY scroll container
+// (see index.css's own comment on `body { overflow: hidden }`) —
+// window.scrollY/scrollTo no longer correspond to anything the user can see
+// once the whole app lives inside a transformed, fixed-size box. Same
+// document.documentElement fallback reasoning as getPortalRoot()'s own
+// document.body fallback above.
 export function getScrollContainer() {
-  return canvasEl || document.documentElement;
+  return scrollEl || document.documentElement;
 }
