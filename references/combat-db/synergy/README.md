@@ -63,29 +63,47 @@ say so explicitly rather than inventing a number when a source page didn't give 
   WuWa combat-system knowledge cross-checked against the rotation prose already present in the 60
   character files.
 
-## What's still open
+## What's still open (updated 2026-08-31, cross-check pass)
 
-- **Numeric buff values are inconsistent.** Where a character's Prydwen page or `CHAR_BUFF_TABLE` (in
-  `app/src/data/characters.js`) gave an exact %/duration, it's captured; where the source page only
-  described an effect in prose without a number, `intro-outro-chains.json`'s `damageTypeAffected`/
-  `durationApprox` fields are `null` rather than guessed. A follow-up pass cross-referencing every
-  character's `kit.skills.outro` text against `CHAR_BUFF_TABLE`'s `outroBuffs` (which has real numbers
-  for a large subset of the roster, added during app development, not this combat-db effort) would tighten
-  this considerably — `CHAR_BUFF_TABLE` was read for terminology in this pass but not systematically
-  merged in.
-- **`buff-debuff-taxonomy.json` is a keyword scan, not a hand-verified catalog.** Some `quote` snippets
-  are truncated mid-sentence or catch a tangential mention (e.g. "Heal" matching a Prydwen review aside
-  rather than a real kit heal) — treat each row as a pointer into the source character file to verify,
-  not a guaranteed-precise fact in isolation.
+**Resolved this pass:**
+
+- ~~Numeric buff values are inconsistent~~ — **done for Outro effects.** `CHAR_BUFF_TABLE`
+  (`app/src/data/characters.js`, 58/60 characters) and Fandom's official
+  `wutheringwaves.fandom.com/wiki/Outro_Skill` list (57/57 released characters, exact game text) are now
+  both merged into every `intro-outro-chains.json` entry's `crossCheckedSources` field. 3 real numeric
+  contradictions were found and fixed (Baizhi, Verina, Iuno — see each entry's `crossCheckContradiction`
+  field); the rest of the roster's Prydwen-derived numbers were independently confirmed correct by both
+  additional sources.
+- ~~Nanoka.cc, Encore.moe, wuwatracker.com, and Reddit remain unattempted~~ — **attempted, see
+  `SOURCES_STATUS.md`'s "Third pass" section for the full per-source result.** Nanoka's slug→ID map is
+  now complete and applied to all 58 released characters' `sources.nanoka` field. Encore.moe and
+  wuwatracker.com are reachable but had no additional structured data worth scraping deeper for this
+  specific synergy-layer task. Reddit is actively blocked by its own network policy (confirmed via two
+  different fetch strategies, not a transient failure) — no community-consensus data was obtainable.
+- **Coordinated Attack now has an authoritative source.** `resonance-chain-mechanics.md` §6 cites
+  Fandom's official 7-character CA-role list (Baizhi, Cantarella, Mortefi, Verina, Yinlin, Yuanwu,
+  Zhezhi) instead of relying only on Prydwen review prose.
+
+**Still open:**
+
+- **`buff-debuff-taxonomy.json` is still a keyword scan, not a hand-verified catalog** for its
+  non-Outro rows (Liberation buffs, self-buffs, debuffs, utility) — only the Outro-derived
+  `damageTypeBuffs` rows got the Fandom/app cross-check this pass (see the file's own
+  `crossCheckPass2026_08_31` note). Some `quote` snippets elsewhere may still be truncated mid-sentence
+  or catch a tangential mention — treat each row as a pointer to verify, not a guaranteed-precise fact.
 - **`team-archetypes.json` only covers the 30 archetype rows that appeared on the Tower of Adversity
-  Team Tier List in this fetch** (patch 3.4, 2026-08-31). The same page has a separate Whimpering Wastes
-  tier-list view (switchable in-page) that was not fetched in this pass — a follow-up could add a
-  second `wwTier` field per archetype the same way character files carry both `tierList.prydwen`
-  ToA/WW numbers.
-- **Nanoka.cc, Encore.moe, wuwatracker.com, and Reddit** remain unattempted for this synergy layer too,
-  same gap already logged in `SOURCES_STATUS.md` for the character layer.
-- **Resonance Chain per-node numeric effects** are not cataloged systematically here beyond the couple of
-  examples already present in individual character files' `selfBuffs`/`debuffs` `condition` text (e.g.
-  Qingxiao S3, Jingran S4) — a dedicated `resonance-chain-effects.json` per character×node would be a
-  reasonable next file if the app ever wants to model chain investment, but was out of scope for this
-  pass (`resonance-chain-mechanics.md` covers the *system*, not a per-character node table).
+  Team Tier List** (patch 3.4, 2026-08-31) — the Whimpering Wastes tier-list view was not fetched in
+  either pass. No community-sourced tier corroboration was possible (Reddit blocked; Encore.moe/
+  wuwatracker.com had no comparable structured tier data).
+- **Resonance Chain per-node numeric effects** are still not cataloged systematically beyond the couple
+  of examples already present in individual character files' `selfBuffs`/`debuffs` `condition` text —
+  unchanged from before this pass; still a reasonable candidate for a dedicated
+  `resonance-chain-effects.json` in a future pass.
+- **Nanoka.cc and Encore.moe per-character kit-multiplier pages** (Basic/Skill/Liberation DMG
+  multipliers, not just Outro buffs) were not deep-scraped for any character in this pass — both sites
+  are confirmed reachable and ID-mapped, making this the most actionable next step if the app ever wants
+  Skill-multiplier-level cross-checking (this pass's scope was team-synergy/Outro-Intro data, which
+  Fandom's `Outro_Skill` page already covered comprehensively).
+- **The 3 unreleased characters (Hsin, Jingran, Suoming)** remain stubs on every source tried this pass
+  too (Fandom's Outro Skill list, nanoka's list page, and encore.moe's character list all omit them) —
+  confirms they are genuinely unpublished everywhere, not a Prydwen-specific gap.
