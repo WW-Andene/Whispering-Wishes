@@ -219,8 +219,20 @@ const CHARACTER_DATA = {
   // named as her specific partner) for Lupa, per Prydwen's actual "Best Team" (Changli+Lupa+Brant,
   // Lupa being explicitly "part of Changli's best team" as the top Mono Fusion buffer); the Encore+Verina
   // budget team was kept, confirmed as Prydwen's named Budget Dual DPS Team.
+  // desc rewritten 2026-08-31 with exact Forte economy/True Sight mechanics per
+  // wutheringwaves.fandom.com/wiki/Changli/Combat ("Instructions" + "Forte" > "Details" sections):
+  // Enflamement caps at 4 stacks; +1 per on-hit True Sight: Conquest (ground) or True Sight: Charge
+  // (jump/mid-air) follow-up, or +4 instantly from casting Liberation Radiance of Fealty. True Sight
+  // itself (12s window) is entered by landing Basic ATK Stage 4, Mid-air ATK Stage 4, Resonance Skill
+  // Tripartite Flames (True Sight: Capture — 2 charges, 12s recharge each, castable mid-air), or Intro
+  // Skill Obedience of Rules — and is consumed/ended the instant either follow-up fires (only one
+  // Conquest-or-Charge per window, not both), so re-triggering True Sight is required between every
+  // Enflamement tick. At 4 Enflamement, holding Heavy Attack casts Flaming Sacrifice instead (consumes
+  // all 4 stacks, 40% DMG reduction while casting) — no other cast-order/timing-window dependency exists
+  // (unlike Jinhsi's Skill-within-5s or Camellya's cast-before-Outro): Flaming Sacrifice is available
+  // any time Enflamement is capped, not gated to a specific prior cast.
   'Changli': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Eternal Blaze, counselor serving the Jinzhou Magistrate and former Secretary-General in the capital — shrouded in flames, she\'s fated to burn brightly until her final embers, rising to power with fiery determination and a strategic mindset always thinking ahead. On-field Fusion DPS who enters True Sight from her Basic Attack/Skill/Intro finishers, builds Enflamement stacks from the True Sight follow-ups, then unleashes the enhanced Heavy Attack Flaming Sacrifice — a fast, quickswap-friendly kit that also buffs the incoming Resonator\'s Fusion and Liberation DMG via Outro.',
+    desc: 'Eternal Blaze, counselor serving the Jinzhou Magistrate and former Secretary-General in the capital — shrouded in flames, she\'s fated to burn brightly until her final embers, rising to power with fiery determination and a strategic mindset always thinking ahead. On-field Fusion DPS whose Basic/Mid-air Attack Stage 4, Resonance Skill Tripartite Flames (2 charges, 12s recharge), or Intro Skill open a 12s True Sight window; the next ground Basic ATK (Conquest) or jump/mid-air Basic ATK (Charge) consumes that window for a Resonance-Skill-type hit and +1 Enflamement (caps at 4; Liberation Radiance of Fealty instantly grants all 4 plus Fiery Feather, a self +25% ATK buff consumed by her next Flaming Sacrifice within 10s). At 4 Enflamement, Heavy Attack casts the enhanced Flaming Sacrifice instead — consuming all stacks for a big Fusion nuke with 40% DMG reduction while casting. Outro Strategy of Duality grants the incoming Resonator +20% Fusion DMG Amp and +25% Liberation DMG Amp for 10s (or until they\'re swapped out).',
     skills: ['Blazing Enlightenment', 'Tripartite Flames', 'Flaming Sacrifice', 'Radiance of Fealty'],
     ascension: { boss: 'Rage Tacet Core', common: 'Ring', specialty: 'Pavo Plum' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Metallic Drip' },
@@ -2094,16 +2106,19 @@ const CHAR_BUFF_TABLE = {
   // casts", which matched nothing in her kit. Fiery Feather is granted by casting Liberation (Radiance
   // of Fealty) and consumed by her next Forte Heavy ATK (Flaming Sacrifice) within 10s — already
   // correctly described in this same file's SKILL_MULTIPLIERS Changli/Liberation row, just not reflected
-  // here.
+  // here. Re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Changli/Combat (Outro Skill
+  // Strategy of Duality section): outroBuffs values (20%/25%/10s) confirmed exact; wiki text explicitly
+  // states the buff lasts "10s or until the Resonator is switched out" — added to note since this file's
+  // schema has no forfeit-on-swap field (same limitation flagged for Roccia/Augusta's outro buffs).
   'Changli': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 10 },
       { stat: 'libDmg', value: 25, target: 'next', duration: 10 },
     ],
     libBuffs: [],
-    selfBuffs: [{ stat: 'atkPct', value: 25, target: 'self', duration: 10, condition: 'Fiery Feather: after Liberation Radiance of Fealty, self ATK +25% on the next Forte Heavy ATK (Flaming Sacrifice) within 10s.' }],
+    selfBuffs: [{ stat: 'atkPct', value: 25, target: 'self', duration: 10, condition: 'Fiery Feather: after Liberation Radiance of Fealty, self ATK +25% on the next Forte Heavy ATK (Flaming Sacrifice) within 10s — consuming it ends Fiery Feather early.' }],
     debuffs: [],
-    note: 'Outro: 20% Fusion DMG Amp + 25% Liberation DMG Amp (10s). Self ATK ramp via Fiery Feather.',
+    note: 'Outro: 20% Fusion DMG Amp + 25% Liberation DMG Amp — lasts 10s OR ends immediately if the incoming Resonator is swapped out before then (not modeled, schema has no swap-forfeit field). Self ATK ramp via Fiery Feather.',
   },
   'Yinlin': {
     outroBuffs: [
@@ -2869,16 +2884,20 @@ const SKILL_MULTIPLIERS = {
     ['Intro', "Sword to Call for Freedom", '4.28% + 9.97%HP', 'Fleurdelys-form swap-in opener.'],
     ['Outro', "Wind's Divine Blessing", '+17.5% Aero DMG vs Negative Status (20s)', 'Swap-out buff to the active teammate against targets with a Negative Status.'],
   ],
+  // All Lv10 multipliers below re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/
+  // Changli/Combat's "Attribute Scaling" tables (Basic Attack, Tripartite Flames, Radiance of Fealty,
+  // Flaming Sacrifice, Obedience of Rules sections) — every value already matched exactly, no corrections
+  // needed here (unlike the RESONANCE_CHAIN_DATA row below, where every node was wrong).
   'Changli': [
     ['Basic ATK', 'Blazing Enlightenment Stage 1-4', '29.49%×2 → 35.49%×2 → 36.45%×3 → 50.70%+29.58%×4', 'Releasing Stage 4 enters True Sight (12s).'],
     ['Mid-air', 'Stage 1-4', '61.35% → 50.87%×2 → 44.00%×3 → 38.03%+22.18%×4', 'Also enters True Sight on release of Stage 4.'],
     ['Heavy ATK', 'Standard / Mid-air Heavy', '28.99%×3+37.27% → 123.27%'],
     ['Dodge Counter', 'Standard', '82.64%×3'],
-    ['Skill', 'True Sight: Capture / Conquest / Charge', '81.88%×3+163.76% → 58.95%×2+82.52%+94.31% → 72.68%+109.02%', 'Capture (2 charges, 12s recharge) enters True Sight; Conquest/Charge are the True Sight follow-ups.'],
+    ['Skill', 'True Sight: Capture / Conquest / Charge', '81.88%×3+163.76% → 58.95%×2+82.52%+94.31% → 72.68%+109.02%', 'Capture (2 charges, 12s recharge) enters True Sight; Conquest/Charge are the True Sight follow-ups — each window is consumed by only one of the two.'],
     ['Forte', 'Heavy ATK: Flaming Sacrifice', '39.25%×5+457.85%', 'At 4 Enflamement stacks, Heavy ATK casts this instead — 40% DMG reduction while casting.'],
-    ['Liberation', 'Radiance of Fealty', '1212.75%', '20s cooldown; grants 4 Enflamement and Fiery Feather (next Flaming Sacrifice within 10s: self ATK +25%).'],
+    ['Liberation', 'Radiance of Fealty', '1212.75%', '20s cooldown, 125 Resonance Energy; grants 4 Enflamement and Fiery Feather (next Flaming Sacrifice within 10s: self ATK +25%).'],
     ['Intro', 'Obedience of Rules', '44.50%+25.96%×4', 'Also enters True Sight.'],
-    ['Outro', 'Strategy of Duality', 'Fusion DMG Amp +20% + Liberation DMG Amp +25% (10s)', 'Grants the incoming Resonator these buffs — no direct DMG.'],
+    ['Outro', 'Strategy of Duality', 'Fusion DMG Amp +20% + Liberation DMG Amp +25% (10s)', 'Grants the incoming Resonator these buffs — no direct DMG; buff ends early if that Resonator is swapped out before 10s.'],
   ],
   'Chisa': [
     ['Basic ATK', 'Stage 1-2', '16.71%×2 → 9.55%+19.09%+66.81%', 'Standard combo string ending in a heavier chainsaw finisher.'],
@@ -3572,14 +3591,20 @@ const CHARACTER_ROTATIONS = {
   // 2026-08-17 via Chrome UA + google.com referer + jsRender). This is Prydwen's single-Intro,
   // no-swap-cancel rotation — she also has Double-Intro and heavy Swap-Cancel variants for advanced
   // quickswap play, omitted here as too execution/team-dependent for a standard reference rotation. Goal
-  // each rotation: land 4 True Sight follow-ups to fill Enflamement for 2 Forte Heavy casts.
+  // each rotation: land 4 True Sight follow-ups to fill Enflamement for 2 Forte Heavy casts. Step notes
+  // re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Changli/Combat ("Instructions" and
+  // Forte "Details" sections): each True Sight window (12s) is consumed by exactly ONE follow-up
+  // (Conquest on a ground Basic ATK, or Charge on jump/mid-air) — landing both per window is not
+  // possible, so a fresh True Sight trigger is required before every Enflamement tick; this is the one
+  // cast-order/timing constraint in her kit, added below since the prior note only said "weaving in"
+  // without stating the one-shot nature of each window.
   'Changli': [
-    { type: 'Intro', skill: 'Obedience of Rules', note: 'Swap into her — fires automatically and also enters True Sight (12s).' },
-    { type: 'Skill', skill: 'True Sight: Capture', note: 'Press Skill — 2 charges, 12s recharge each; every cast also opens a fresh True Sight window.' },
-    { type: 'Heavy ATK', skill: 'Standard', note: 'HOLD Heavy Attack on the ground, then again in the air for the Mid-air Heavy, weaving in True Sight: Conquest/Charge follow-ups (press Skill when prompted) to build Enflamement stacks.' },
-    { type: 'Liberation', skill: 'Radiance of Fealty', note: 'Press Liberation — instantly grants 4 Enflamement and Fiery Feather (self +25% ATK on the next Forte Heavy Attack within 10s); 20s cooldown.' },
+    { type: 'Intro', skill: 'Obedience of Rules', note: 'Swap into her — fires automatically, deals a hit, and opens a True Sight window (12s).' },
+    { type: 'Skill', skill: 'True Sight: Capture', note: 'Press Skill — 2 charges, 12s recharge each; every cast also opens a fresh 12s True Sight window (replacing/refreshing any window already open).' },
+    { type: 'Heavy ATK', skill: 'Standard', note: 'HOLD Heavy Attack on the ground, then again in the air for the Mid-air Heavy, weaving in True Sight: Conquest (ground Basic ATK) or True Sight: Charge (jump/mid-air Basic ATK) to consume each open window — only ONE follow-up lands per window (it ends the instant either fires), each on-hit follow-up grants +1 Enflamement (cap 4).' },
+    { type: 'Liberation', skill: 'Radiance of Fealty', note: 'Press Liberation — instantly grants 4 Enflamement (overwrites/caps, does not stack past 4) and Fiery Feather (self +25% ATK on the next Forte Heavy Attack within 10s, consumed and ended by that cast); 20s cooldown, 125 Resonance Energy.' },
     { type: 'Forte', skill: 'Heavy ATK: Flaming Sacrifice', note: 'At 4 Enflamement stacks, HOLD Heavy Attack to consume them all — takes 40% less DMG while casting; landing 2 casts per rotation is the goal.' },
-    { type: 'Outro', skill: 'Strategy of Duality', note: 'Swap out to trigger this automatically — grants the incoming Resonator +20% Fusion DMG Amp and +25% Liberation DMG Amp for 10s, her shortest Outro window in the game alongside Lumi.' },
+    { type: 'Outro', skill: 'Strategy of Duality', note: 'Swap out to trigger this automatically — grants the incoming Resonator +20% Fusion DMG Amp and +25% Liberation DMG Amp for 10s or until they are swapped out, whichever comes first; her shortest Outro window in the game alongside Lumi.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Zhezhi (re-fetched
   // 2026-08-17 via Chrome UA + google.com referer + jsRender). Goal: fill the 3-segment Afflatus Forte
@@ -4496,7 +4521,27 @@ const RESONANCE_CHAIN_DATA = {
   // Corrected against ww.nanoka.cc character/1302 — prior values (elemDmg/resShred) didn't match her real
   // kit at all (she has no RES Shred anywhere in her chain).
   'Yinlin':       { s1: { skillDmg: 70 }, s2: { totalMult: 8 }, s3: { skillDmg: 55 }, s4: { atkPct: 20 }, s5: { libDmg: 100 }, s6: { totalMult: 40 } },
-  'Changli':      { s1: { elemDmg: 10 }, s2: { skillDmg: 15 }, s3: { elemDmg: 10 }, s4: { atkPct: 15 }, s5: { totalMult: 10 }, s6: { deepen: 40 } },
+  // Changli S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Changli/Combat
+  // (Resonance Chain section) — every prior value in this row was wrong (placeholder-looking, no basis
+  // found in the wiki text), same pattern already caught for Jinhsi/Camellya/Yinlin/Chisa/etc:
+  // S1 Hidden Thoughts: "Resonance Skill Tripartite Flames and Heavy Attack Flaming Sacrifice increase
+  //   Changli's DMG dealt by 10%" (+interruption resistance, no stat field for that) — was elemDmg:10
+  //   (wrong: this is conditional to those 2 specific casts, not general Fusion DMG; modeled as the
+  //   closest matching categories skillDmg+heavyDmg since both are named).
+  // S2 Pursuit of Desires: gaining Enflamement raises Crit Rate +25% for 8s — was skillDmg:15, no basis
+  //   at all (wrong stat and wrong value).
+  // S3 Learned Secrets: Radiance of Fealty (Liberation) DMG +80% — was elemDmg:10, wrong stat and far
+  //   too low.
+  // S4 Polished Words: after Intro Skill, team ATK +20% for 30s — stat category (atkPct) was already
+  //   right, value was wrong (was 15, real is 20). // TODO: needs Phase 2 schema — this file's atkPct
+  //   is applied as a flat always-on buff; the real effect is gated behind an Intro-Skill cast and only
+  //   lasts 30s, same limitation as S1's conditional-cast gating and S2's 8s Crit Rate window above.
+  // S5 Sacrificed Gains: Flaming Sacrifice (Forte Heavy ATK) Multiplier +50% and DMG dealt +50% — was
+  //   totalMult:10, no basis; modeled as heavyDmg since Flaming Sacrifice is a Heavy ATK-type cast.
+  // S6 Realized Plans: Tripartite Flames, Flaming Sacrifice, and Radiance of Fealty ignore an additional
+  //   40% of target DEF — was deepen:40 (wrong category, deepen != DEF ignore); value happened to already
+  //   be numerically correct.
+  'Changli':      { s1: { skillDmg: 10, heavyDmg: 10 }, s2: { critRate: 25 }, s3: { libDmg: 80 }, s4: { atkPct: 20 }, s5: { heavyDmg: 50 }, s6: { defIgnore: 40 } },
   // Corrected against ww.nanoka.cc character/1105 — prior values (coordDmg/elemDmg on S1/S3/S4) didn't
   // match her real chain effects (Crit Rate, ATK stacking, team ATK — no Glacio DMG anywhere in her chain).
   'Zhezhi':       { s1: { critRate: 10 }, s2: { totalMult: 15 }, s3: { atkPct: 15 }, s4: { atkPct: 20 }, s5: { coordDmg: 20 }, s6: { coordDmg: 40 } },
