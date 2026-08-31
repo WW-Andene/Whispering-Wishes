@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { Crown, Download, Monitor, Smartphone, Star, X } from 'lucide-react';
+import { Download, Monitor, Smartphone, Star, X } from 'lucide-react';
 import { CHARACTER_DATA, ALL_CHARACTERS } from '../../data/characters.js';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -35,61 +35,41 @@ export default function IdCardModal({
             {/* The Card */}
             <div className="kuro-card" style={{ overflow: 'hidden' }}>
               <div className="kuro-card-inner">
-                {/* Header */}
-                <div className="kuro-header">
-                  <span className="text-gray-100 font-bold text-base flex items-center gap-2"><Crown size={14} className="text-yellow-400" /> {t('profile.idCard.header')}</span>
-                  <span className="text-gray-500 text-sm">Whispering Wishes</span>
-                </div>
-
-                {/* Main content */}
+                {/* Main content — no header bar, same as the canvas export (idCardRenderer.js's
+                    drawHero carries the identity role a header used to; see that file's own
+                    "No header bar" comment). */}
                 <div className="kuro-body" style={{ padding: 'var(--space-md)', display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
 
-                  {/* ═══ PROFILE PANEL ═══ */}
-                  <div className="idcard-section idcard-section--lg">
-                    <div className="idcard-shimmer" />
-                    <div className="idcard-corner-tr" />
-                    <div className="idcard-corner-bl" />
-                    <div className="flex gap-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-semibold text-xl truncate leading-tight kuro-tshadow-overlay">{state.profile.username || t('profile.idCard.usernameFallback')}</h3>
-                        <div className="mt-2 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-500 text-sm uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>{t('profile.idCard.uid')}</span>
-                            <span className="text-gray-200 text-base font-mono">{state.profile.uid || '—'}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-gray-500 text-sm uppercase tracking-wider" style={{ width: '32px', flexShrink: 0 }}>{t('profile.idCard.server')}</span>
-                            <span className="text-base font-mono kuro-tshadow-brand" style={{ color: '#edaf18' }}>{state.server}</span>
-                          </div>
-                        </div>
-                        {luckRating && (
-                          <div className="mt-3 flex items-center gap-2">
-                            <div className="flex-1 h-1.5 rounded-full overflow-hidden kuro-border-subtle" style={{ background: 'var(--bg-stat)' }}>
-                              <div className="h-full rounded-full kuro-gradient-luck kuro-shadow-luck-bar" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%` }} />
-                            </div>
-                            <span className="text-sm font-bold flex-shrink-0 px-2 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60` }}>{luckRating.tier} {luckRating.rating}</span>
-                          </div>
-                        )}
+                  {/* ═══ HERO PORTRAIT — same borderless, banner-bled treatment the canvas
+                      export's drawHero uses: one large image (no separate boxed avatar), a top
+                      fade with the username/UID/server overlaid in it, and the luck bar sitting
+                      just below — a real flex row here, unlike the canvas version's manually
+                      budgeted pixel widths, so there's nothing to clip regardless of content
+                      length. ═══ */}
+                  <div className="idcard-section relative overflow-hidden" style={{ padding: 0, aspectRatio: '3/2' }}>
+                    <div className="idcard-img-shimmer" />
+                    {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
+                      const f = getImageFraming(`collection-${state.profile.profilePic}`);
+                      return <div className="absolute inset-0 breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} /></div>;
+                    })() : (
+                      <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
+                        <img src="./app-title-icon/Abby_app_home_icon.png" alt="Default" className="w-12 h-12 object-contain opacity-30" />
                       </div>
-                      <div className="flex-shrink-0 flex flex-col items-center">
-                        <div className={`relative rounded-xl overflow-hidden kuro-avatar-frame kuro-shadow-portrait${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`} style={{ width: 'var(--size-avatar-lg)', height: 'var(--size-avatar-lg)', border: '1px solid var(--border-medium)' }}>
-                          <div className="idcard-img-shimmer" />
-                          {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
-                            const f = getImageFraming(`collection-${state.profile.profilePic}`);
-                            {/* AUDIT-FIX L21: onError fallback for profile pic in ID card */}
-                            return <div className="absolute inset-0 breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} /></div>;
-                          })() : (
-                            <div className="w-full h-full flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
-                              <img src="./app-title-icon/Abby_app_home_icon.png" alt="Default" className="w-12 h-12 object-contain opacity-60" />
-                            </div>
-                          )}
-                          <div className="absolute bottom-0 left-0 right-0 h-8 pointer-events-none idcard-img-fade" />
-                        </div>
-                        {state.profile.profilePic && (
-                          <p className="text-gray-500 text-center mt-1 truncate" style={{ fontSize: 'var(--font-2xs)', width: 'var(--size-avatar-lg)' }}>{state.profile.profilePic}</p>
-                        )}
-                      </div>
+                    )}
+                    <div className="absolute top-0 left-0 right-0 h-24 pointer-events-none" style={{ background: 'linear-gradient(rgba(8,12,18,0.9), transparent)' }} />
+                    <div className="absolute top-0 left-0 right-0 p-3">
+                      <h3 className="text-white font-bold text-xl truncate leading-tight kuro-tshadow-overlay">{state.profile.username || t('profile.idCard.usernameFallback')}</h3>
+                      <p className="text-gray-300 text-sm kuro-tshadow-overlay">{t('profile.idCard.uid')} {state.profile.uid || '—'}</p>
+                      <p className="text-base font-semibold kuro-tshadow-brand" style={{ color: '#edaf18' }}>{state.server}</p>
                     </div>
+                    {luckRating && (
+                      <div className="absolute left-0 right-0 p-3 flex items-center gap-2" style={{ bottom: 0, background: 'linear-gradient(transparent, rgba(8,12,18,0.9))' }}>
+                        <div className="flex-1 h-1.5 rounded-full overflow-hidden kuro-border-subtle" style={{ background: 'var(--bg-stat)' }}>
+                          <div className="h-full rounded-full kuro-gradient-luck kuro-shadow-luck-bar" style={{ width: `${Math.min(luckRating.percentile || 50, 100)}%` }} />
+                        </div>
+                        <span className="text-sm font-bold flex-shrink-0 px-2 py-0.5 rounded" style={{ color: luckRating.color || '#edaf18', background: `${luckRating.color || '#edaf18'}15`, border: `1px solid ${luckRating.color || '#edaf18'}30`, textShadow: `0 0 8px ${luckRating.color || '#edaf18'}60` }}>{luckRating.tier} {luckRating.rating}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* ═══ CONVENE STATS PANEL ═══ */}

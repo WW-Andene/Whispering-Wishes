@@ -2547,13 +2547,16 @@
     /* ═══ IDCARD SECTION CLASSES (§DCO3) ═══ */
     /* Replaces 5× repeated inline styles in IdCardModal.jsx */
 
-    /* Glassmorphic section container */
+    /* Section container mask — rgba(10,14,22,0.75), the same opacity every panel on the
+       canvas-exported ID card and build card uses (idCardRenderer.js/characterCardRenderer.js's
+       drawPanel), not the near-transparent white glass this used to be — so the in-app preview
+       and the downloaded PNG read as the same card instead of two different designs. */
     .idcard-section {
       position: relative;
       border-radius: var(--radius-xl);
       overflow: hidden;
-      background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.008));
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(10,14,22,0.75);
+      border: 1px solid rgba(255,255,255,0.16);
       padding: 8px;
     }
     .idcard-section--lg {
