@@ -28,10 +28,13 @@ body {
   min-height: 100dvh;
   background: #080c14;
   font-family: var(--font-display, 'Rajdhani'), system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
-  /* NOT overflow: hidden — body is the app's only scroll container (no
-     #root/<main> overflow-y:auto exists to take over); that would freeze
-     every tab whose content exceeds the viewport height. */
+  /* ScaledCanvas.jsx's own inner div is the app's scroll container now (see
+     its own comment) — body itself never scrolls, it just hosts the fixed,
+     full-viewport letterbox layer ScaledCanvas renders into. This USED to
+     say "NOT overflow:hidden, body is the only scroll container" — no
+     longer true since the 439x976 scaled-canvas engine replaced direct
+     document-level scrolling. */
+  overflow: hidden;
 }
 
 /* OpenDyslexic — self-hosted for CSP compatibility */

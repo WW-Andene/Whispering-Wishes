@@ -153,11 +153,24 @@
        §E10-CB-F3: Element icon/shape backup for colorblind accessibility:
        Fusion=Flame, Electro=Bolt, Aero=Wind, Glacio=Snowflake, Havoc=Spiral, Spectro=Star */
     :root {
-      /* Multi-format UI recalculation: set to window.innerWidth/439 (only on
-         non-reference devices, see useIsReferenceDevice.js) via App.jsx. The
-         literal default of 1 here is what the reference device (Xiaomi 13T,
-         439px) and every browser without JS still gets — untouched sizing. */
+      /* Superseded by ScaledCanvas.jsx's whole-app geometric scaling (see
+         --canvas-scale below) — that scales every rendered pixel uniformly,
+         tokenized or not, so per-token multiplication here would double-
+         scale everything it touches. Frozen at 1 and never written to by JS
+         anymore (App.jsx no longer calls the old useUiScale hook) — kept
+         only so the handful of manual `calc(Npx * var(--ui-scale))` call
+         sites elsewhere (grep for --ui-scale) don't need touching; they now
+         just multiply by 1, a no-op, with the real scaling happening once
+         at the canvas level instead. */
       --ui-scale: 1;
+      /* The single source of truth for ScaledCanvas.jsx's current scale
+         factor (real screen size ÷ the 439x976 reference canvas) — written
+         by ScaledCanvas.jsx itself on mount and every resize. Used below to
+         convert the real-device-px safe-area values into canvas-space px:
+         a real 24px status bar needs to be authored as 24/scale px INSIDE
+         the transformed canvas so it still measures exactly 24 real px
+         once the canvas's own transform scales that box back up/down. */
+      --canvas-scale: 1;
       --color-gold: 237, 175, 24;   /* oklch(78% 0.17 85°) */
       --color-pink: 236, 72, 153;   /* oklch(62% 0.22 350°) — §E9-CM-F1: Weapon banner domain color */
       --color-cyan: 56, 189, 248;   /* oklch(76% 0.14 230°) — MED-10: Restrict to: info state, Glacio element, Standard banner */
@@ -193,6 +206,13 @@
          the status/nav bar even before MainActivity's native push arrives. */
       --safe-area-top: 24px;
       --safe-area-bottom: 16px;
+      /* Canvas-space versions of the two vars above — use THESE (not the
+         plain --safe-area-top/bottom) for anything positioned inside
+         ScaledCanvas.jsx's transformed box, i.e. the app's own header/nav.
+         See --canvas-scale's own comment just above for why the division
+         is needed at all. */
+      --safe-area-top-canvas: calc(var(--safe-area-top, 0px) / var(--canvas-scale, 1));
+      --safe-area-bottom-canvas: calc(var(--safe-area-bottom, 0px) / var(--canvas-scale, 1));
       /* DC3-SH1 + DP-F1: Ambient light model (0-offset blur-only) with subtle gold glow */
       --shadow-sm: 0 0 4px rgba(6, 10, 24, 0.5), 0 0 4px rgba(var(--color-gold), 0.03);
       --shadow-md: 0 0 12px rgba(6, 10, 24, 0.6), 0 0 8px rgba(var(--color-gold), 0.04);
