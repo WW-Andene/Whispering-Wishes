@@ -15,7 +15,7 @@
 // components, scroll-position code) doesn't need a prop/context thread all
 // the way down just to find the canvas DOM node — it's one instance for the
 // life of the app, same rationale as useAmbientMusic.js's own
-// window.__bootAmbientAudio singleton.
+// sharedAmbientAudio module-level singleton.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export const CANVAS_WIDTH = 439;

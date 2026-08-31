@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { resolveAmbientTrackSrc, playWithRetry } from '../../hooks/useAmbientMusic.js';
 
 // Renders on top of the app the instant React mounts. Unlike earlier
 // versions of this component, it renders NO poster of its own anymore —
@@ -15,12 +14,17 @@ import { resolveAmbientTrackSrc, playWithRetry } from '../../hooks/useAmbientMus
 //
 // This component's only job now: wait for the video to be ready, dismiss
 // the native poster at that exact moment (window.AndroidBoot.
-// dismissBootPoster()), play the video, start the Log Screen ambient track
-// in sync with the video's own 'playing' event (handed off to
-// useAmbientMusic.js via window.__bootAmbientAudio so it continues with no
-// restart once React's hook takes over managing it), then fade the video
-// out over 1s once it finishes and unmount — never blocking or delaying the
-// app underneath, which mounts and renders in parallel the entire time.
+// dismissBootPoster()), play the video, then fade it out over 1s once it
+// finishes and unmount — never blocking or delaying the app underneath,
+// which mounts and renders in parallel the entire time. The ambient Log
+// Screen track is entirely useAmbientMusic.js's own responsibility (it
+// mounts and starts the track essentially immediately, well before this
+// video is even ready to play) — this component used to *also* start its
+// own separate audio element in sync with the video's 'playing' event,
+// racing against useAmbientMusic.js's own attempt for which one actually
+// got to keep the <audio> element; removed since useAmbientMusic.js always
+// won that race in practice anyway, so it was dead code paid for with a
+// second, harder-to-reason-about failure path.
 export default function BootIntro() {
   const videoRef = useRef(null);
   const [canPlay, setCanPlay] = useState(false);
@@ -83,42 +87,6 @@ export default function BootIntro() {
       }, 1000);
     };
 
-    // Reads settings directly rather than via useVisualSettings/context —
-    // this needs to fire the instant the video starts playing, not wait
-    // for a provider to mount. See useAmbientMusic.js for the matching
-    // adoption logic and the 'someone already started this' race guard.
-    const startAmbient = () => {
-      try {
-        if (window.__bootAmbientStarted) return;
-        const raw = localStorage.getItem('whispering-wishes-visual-settings-v3');
-        const settings = raw ? JSON.parse(raw) : null;
-        const soundOn = !settings || settings.soundEnabled !== false;
-        const track = settings?.logScreenTrack || '2';
-        if (!soundOn || track === 'off') return;
-        // Was hardcoded as `./audio/log-screen-${track}.m4a` — only ever
-        // matched track keys '1'/'2'/'3'. Picking Convene or any track from
-        // the OST library (see useAmbientMusic.js's own TRACK_SRC) meant
-        // this 404'd silently and the one-shot autoplay permission a page-
-        // load play() call gets was spent on the failed attempt — nothing
-        // later could recover it without a fresh user gesture. Resolving
-        // through the same TRACK_SRC map useAmbientMusic.js itself uses
-        // keeps this from drifting out of sync with it again.
-        const src = resolveAmbientTrackSrc(track);
-        if (!src) return;
-        window.__bootAmbientStarted = true;
-        const audio = new Audio(src);
-        audio.loop = true;
-        audio.volume = 0.35;
-        // See playWithRetry's own comment (useAmbientMusic.js) for why this
-        // needs to retry with no gesture involved at all, not just try once.
-        playWithRetry(audio);
-        window.__bootAmbientAudio = audio;
-        window.__bootAmbientTrack = track;
-      } catch {
-        // localStorage unavailable/corrupt — no boot music, not fatal.
-      }
-    };
-
     const onCanPlay = () => {
       setCanPlay(true);
       video.play().catch(() => startFadeOut());
@@ -144,12 +112,10 @@ export default function BootIntro() {
     };
 
     video.addEventListener('canplaythrough', onCanPlay);
-    video.addEventListener('playing', startAmbient, { once: true });
     video.addEventListener('ended', onEnded);
     video.addEventListener('error', onError);
     return () => {
       video.removeEventListener('canplaythrough', onCanPlay);
-      video.removeEventListener('playing', startAmbient);
       video.removeEventListener('ended', onEnded);
       video.removeEventListener('error', onError);
     };

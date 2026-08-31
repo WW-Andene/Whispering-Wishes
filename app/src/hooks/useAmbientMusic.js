@@ -5,11 +5,13 @@
 // visualSettings.soundEnabled). A single <audio> element is reused across
 // track switches so playback doesn't restart just from a re-render.
 //
-// index.html already starts this same default track (window.__bootAmbientAudio)
-// synchronously at boot, before React mounts, so it's already playing under
-// the splash video. On first mount here we adopt that exact <audio> element
-// instead of creating a new one, so the track carries on with no restart or
-// gap once React takes over managing it.
+// This is the ONLY place that ever creates or starts the ambient <audio>
+// element — BootIntro.jsx (the intro video overlay) used to also start its
+// own separate one in sync with the video's 'playing' event, racing
+// against this hook's own mount effect for which one actually got to keep
+// it. That's gone now: this hook mounts and runs essentially immediately
+// (App.jsx calls it unconditionally near the top, well before the intro
+// video is even ready to play), so it always won that race anyway.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useRef } from 'react';
@@ -86,20 +88,6 @@ const TRACK_SRC = {
   convene: `${BASE}audio/convene-screen.m4a`,
   ...Object.fromEntries(OST_TRACKS.map(([key, , filename]) => [key, `${BASE}audio/${encodeURIComponent(filename)}`])),
 };
-
-// Resolves a logScreenTrack key to its playable URL — the single source of
-// truth BootIntro.jsx's own boot-time bootstrap uses too (see its own
-// comment for the bug this fixed: it used to hardcode a `log-screen-
-// ${track}.m4a` URL pattern that only ever matched '1'/'2'/'3', so picking
-// Convene or any OST track meant the boot audio 404'd silently, and the
-// autoplay permission that only a page-load-time play() call can use was
-// spent on that failed attempt — every later retry (including this hook's
-// own mount effect noticing the wrong src and fixing it) runs without a
-// fresh user gesture, so browsers/WebViews block it, and the track never
-// starts until the user's next tap incidentally satisfies that requirement).
-export function resolveAmbientTrackSrc(key) {
-  return TRACK_SRC[key] || null;
-}
 
 // Ordered {key, label, category} list for the picker UI (ProfileTab's
 // Ambient Music section) — the original 4 keep their translated labels
@@ -205,24 +193,11 @@ export function useAmbientMusic(visualSettings) {
 
   useEffect(() => {
     if (!audioRef.current) {
-      // React mounts (and this effect runs) essentially immediately on
-      // load — well before index.html's boot script fires, since that one
-      // deliberately waits for the splash video's 'playing' event (or a
-      // 1.5s fallback) before starting its own Audio, to avoid contending
-      // with the video's decode. So window.__bootAmbientAudio is normally
-      // still unset here, and this creates the audio itself instead.
-      // Registering it back onto window.__bootAmbientAudio (and setting a
-      // "someone already started this" flag) is what lets the boot
-      // script's later, deferred check skip creating a second, overlapping
-      // Audio for the same track once it does fire — without this, both
-      // sides raced to create their own and played on top of each other.
-      const audio = window.__bootAmbientAudio || new Audio();
+      const audio = new Audio();
       audio.loop = true;
       audio.volume = AMBIENT_VOLUME;
       audioRef.current = audio;
       sharedAmbientAudio = audio;
-      window.__bootAmbientAudio = audio;
-      window.__bootAmbientStarted = true;
     }
     return () => {
       audioRef.current?.pause();
@@ -242,14 +217,8 @@ export function useAmbientMusic(visualSettings) {
     if (audio.src !== src) {
       audio.src = src;
     }
-    // This effect runs essentially immediately on React mount (App.jsx
-    // calls useAmbientMusic() unconditionally near the top), well before
-    // BootIntro.jsx's own video-gated startAmbient() ever fires — so on a
-    // genuinely first-ever app open, THIS is the play() call that actually
-    // wins the race and claims window.__bootAmbientStarted, leaving
-    // BootIntro's mute/unmute workaround dead code (its own `if
-    // (window.__bootAmbientStarted) return;` guard bails immediately).
-    // See playWithRetry's own comment for why this needs to retry at all.
+    // See playWithRetry's own comment for why this needs to retry at all
+    // instead of trying play() just once.
     return playWithRetry(audio);
   }, [enabled, track]);
 }
