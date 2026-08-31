@@ -1156,17 +1156,18 @@ function ProfileTab({
                   </button>
                 </div>
 
-                {/* Ambient Music track picker — Off / Convene (the pull-
-                    simulator's own loop, folded in here as just another
-                    track choice rather than a separate always-on toggle
-                    scoped to that one modal) always visible, then the full
-                    36-track OST library organized into category TABS —
+                {/* Ambient Music track picker — Off always visible, then the
+                    full 36-track OST library organized into category TABS —
                     Login / Theme / Boss / Classic — same tab pattern the
                     Backgrounds section above uses for its own Resonators/
                     Version/Others/Animated categories, rather than a
-                    dropdown or stacked sections. Same collapse pattern as
-                    Backgrounds too — Off/Convene/the Login tab's tracks stay
-                    visible even while collapsed (the everyday quick-picks). */}
+                    dropdown or stacked sections. "Convene" (the pull-
+                    simulator's own loop, just another track choice rather
+                    than a separate always-on toggle scoped to that one
+                    modal) lives under the Theme tab. Same collapse pattern
+                    as Backgrounds too — Off/the Login tab's tracks stay
+                    visible even while collapsed (the everyday quick-picks);
+                    Convene is reachable once expanded, under Theme. */}
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <button
                     type="button"
@@ -1188,13 +1189,6 @@ function ProfileTab({
                       className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === 'off' ? 'active-gold' : ''}`}
                     >
                       {t('profile.sound.trackOff')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: 'convene' })}
-                      className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === 'convene' ? 'active-gold' : ''}`}
-                    >
-                      {t('profile.sound.trackConvene')}
                     </button>
                   </div>
 
@@ -1232,6 +1226,15 @@ function ProfileTab({
                             {t(`profile.sound.track${track}`)}
                           </button>
                         ))}
+                        {activeCategory === 'theme' && (
+                          <button
+                            type="button"
+                            onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: 'convene' })}
+                            className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === 'convene' ? 'active-gold' : ''}`}
+                          >
+                            {t('profile.sound.trackConvene')}
+                          </button>
+                        )}
                         {categoryTracks.map(({ key, label }) => (
                           <button
                             key={key}
