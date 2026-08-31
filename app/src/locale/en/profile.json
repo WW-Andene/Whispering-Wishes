@@ -251,7 +251,6 @@
   },
   "idCard": {
     "ariaLabel": "Resonator ID Card",
-    "header": "RESONATOR ID",
     "usernameFallback": "Resonator",
     "uid": "UID",
     "server": "SVR",
