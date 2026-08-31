@@ -126,55 +126,38 @@ export function suspendAmbientMusic() {
   sharedAmbientAudio?.pause();
 }
 
-// The muted-play-then-unmute trick (see the effect below) still leaves a gap
-// on some devices: autoplaying MUTED is essentially always allowed with no
-// user gesture, but actually flipping .muted back to false on a track that
-// started that way can itself get silently refused until the page has real
-// "user activation" — a separate, stricter check than the one that gates
-// play() itself. That's consistent with the exact bug report this exists
-// for: ambient track stays muted forever on a genuinely fresh install, but
-// starts working the instant the user taps ANYTHING (originally noticed via
-// toggling the sound setting, which just happens to be the first tap most
-// testers make) — any real tap grants that activation for the whole page,
-// not just the element tapped. So rather than hoping the .then() below wins
-// that race, this arms a one-time fallback: the moment any real
-// pointerdown/keydown happens anywhere in the app, unmute directly inside
-// that handler — a genuine user gesture no autoplay policy variant refuses.
-// A no-op if the .then() below already succeeded first.
-// Also exposed as window.__wwUnmuteAmbient — MainActivity.java's boot
-// poster (a native ImageView sitting ON TOP of the WebView for the entire
-// boot phase) calls this directly via evaluateJavascript on its own first
-// touch, since a tap landing on that native view never generates a DOM
-// pointerdown/keydown event at all — the pointerdown/keydown listeners
-// below only catch a tap that actually reaches the WebView's page content.
-// On a device's genuinely first-ever cold start (the one case this whole
-// file exists for) the poster can stay up long enough for an impatient
-// user's first tap to land on it instead of the page underneath, so the
-// DOM-only listeners alone weren't reaching this same logic.
-function unmuteAndRetryAmbient() {
-  if (!sharedAmbientAudio) return;
-  sharedAmbientAudio.muted = false;
-  // The .then()-based unmute in the effect below assumes play() itself
-  // already succeeded (just muted) and only the unmute got refused — but
-  // on a genuinely first-ever cold boot the ENTIRE play() call can be the
-  // one that's blocked, not just the unmute, leaving .paused true forever.
-  // That left this handler doing nothing observable: flipping .muted on a
-  // track that was never actually playing. A real tap/keydown (or the
-  // native forward above) carries trusted user activation, so retrying
-  // play() here — unconditionally, whenever the track isn't already
-  // playing — is never refused.
-  if (sharedAmbientAudio.paused) {
-    sharedAmbientAudio.play().catch(() => {});
-  }
-}
-window.__wwUnmuteAmbient = unmuteAndRetryAmbient;
-
-let unmuteArmed = false;
-export function armUnmuteOnFirstInteraction() {
-  if (unmuteArmed) return;
-  unmuteArmed = true;
-  window.addEventListener('pointerdown', unmuteAndRetryAmbient, { capture: true, once: true });
-  window.addEventListener('keydown', unmuteAndRetryAmbient, { capture: true, once: true });
+// Starts (or restarts) muted, unmuting once playback actually begins, and —
+// with no tap/gesture involved anywhere — keeps retrying on a short timer
+// if the attempt fails, instead of giving up after one try. On a device's
+// genuinely first-ever cold boot, the WebView engine itself is still
+// spinning up (first-time renderer process init) at the exact moment this
+// runs, and MainActivity.java's own setMediaPlaybackRequiresUserGesture(false)
+// call — despite being made as early as possible on the Java side — can
+// still lose that race and not have actually reached the renderer yet, so
+// play() fails outright. That's a one-time startup cost, not a permanent
+// block: the renderer finishes initializing a moment later and every
+// attempt after that succeeds (matching "works every time except the very
+// first open"). Returns a cancel function.
+export function playWithRetry(audio, { maxAttempts = 20, retryMs = 500 } = {}) {
+  let cancelled = false;
+  let timer = null;
+  let attempt = 0;
+  const tryPlay = () => {
+    audio.muted = true;
+    audio.play().then(() => {
+      if (!cancelled) audio.muted = false;
+    }).catch(() => {
+      attempt += 1;
+      if (!cancelled && attempt < maxAttempts) {
+        timer = setTimeout(tryPlay, retryMs);
+      }
+    });
+  };
+  tryPlay();
+  return () => {
+    cancelled = true;
+    if (timer) clearTimeout(timer);
+  };
 }
 
 // Re-checks the current settings itself rather than blindly playing — the
@@ -240,7 +223,6 @@ export function useAmbientMusic(visualSettings) {
       sharedAmbientAudio = audio;
       window.__bootAmbientAudio = audio;
       window.__bootAmbientStarted = true;
-      armUnmuteOnFirstInteraction();
     }
     return () => {
       audioRef.current?.pause();
@@ -267,11 +249,7 @@ export function useAmbientMusic(visualSettings) {
     // wins the race and claims window.__bootAmbientStarted, leaving
     // BootIntro's mute/unmute workaround dead code (its own `if
     // (window.__bootAmbientStarted) return;` guard bails immediately).
-    // A plain unmuted play() here hits the exact same Chromium Media
-    // Engagement Index block BootIntro.jsx's comment documents (blocked on
-    // an origin's first-ever play, silently swallowed by the .catch()
-    // below), so it needs the identical mute-then-unmute-on-resolve trick.
-    audio.muted = true;
-    audio.play().then(() => { audio.muted = false; }).catch(() => {});
+    // See playWithRetry's own comment for why this needs to retry at all.
+    return playWithRetry(audio);
   }, [enabled, track]);
 }

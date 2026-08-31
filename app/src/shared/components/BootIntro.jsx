@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { resolveAmbientTrackSrc, armUnmuteOnFirstInteraction } from '../../hooks/useAmbientMusic.js';
+import { resolveAmbientTrackSrc, playWithRetry } from '../../hooks/useAmbientMusic.js';
 
 // Renders on top of the app the instant React mounts. Unlike earlier
 // versions of this component, it renders NO poster of its own anymore —
@@ -109,29 +109,11 @@ export default function BootIntro() {
         const audio = new Audio(src);
         audio.loop = true;
         audio.volume = 0.35;
-        // Starts MUTED, unmuting right after playback actually begins —
-        // even with the native side disabling WebView's gesture-required
-        // autoplay flag (see MainActivity.java's own
-        // setMediaPlaybackRequiresUserGesture(false)), Chromium's separate
-        // Media Engagement Index heuristic still silently blocks UNMUTED
-        // autoplay on an origin with no prior play history, which on a
-        // genuinely first-ever app open is every time — reported as
-        // "doesn't play the first time, but does after that" (the second
-        // open now has engagement history from the first). A muted
-        // audio.play() call is never blocked by that heuristic; unmuting an
-        // element that's already actively playing isn't treated as
-        // "starting playback" and doesn't need a fresh gesture either, so
-        // this reaches full volume within the same tick with no audible gap.
-        audio.muted = true;
-        audio.play().then(() => { audio.muted = false; }).catch(() => {});
+        // See playWithRetry's own comment (useAmbientMusic.js) for why this
+        // needs to retry with no gesture involved at all, not just try once.
+        playWithRetry(audio);
         window.__bootAmbientAudio = audio;
         window.__bootAmbientTrack = track;
-        // See useAmbientMusic.js's own comment on this — the .then() above
-        // isn't reliably enough to get unmuted on a genuinely first-ever
-        // install; this arms the same first-real-tap fallback regardless of
-        // which of the two mount-race paths (this one, or useAmbientMusic's
-        // own effect) actually created the audio element.
-        armUnmuteOnFirstInteraction();
       } catch {
         // localStorage unavailable/corrupt — no boot music, not fatal.
       }
