@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { TAB_ORDER } from '../data/constants.js';
 import { haptic } from '../utils/haptics.js';
+import { getScrollContainer } from '../shared/scaling/canvasScale.js';
 export function useTabNavigation(swipeEnabled) {
   const [activeTab, setActiveTabRaw] = useState('tracker');
   const tabNavRef = useRef(null);
@@ -27,13 +28,15 @@ export function useTabNavigation(swipeEnabled) {
   const activeTabRef = useRef(activeTab);
 
   const setActiveTab = useCallback((tab) => {
-    tabScrollPositions.current[activeTabRef.current] = window.scrollY;
+    // ScaledCanvas.jsx's inner div is the app's scroll container now, not
+    // window — see canvasScale.js's own comment on getScrollContainer().
+    tabScrollPositions.current[activeTabRef.current] = getScrollContainer().scrollTop;
     setActiveTabRaw(tab);
   }, []);
 
   useEffect(() => {
     const saved = tabScrollPositions.current[activeTab];
-    window.scrollTo(0, saved || 0);
+    getScrollContainer().scrollTo(0, saved || 0);
   }, [activeTab]);
 
   useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
