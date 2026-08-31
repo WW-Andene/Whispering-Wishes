@@ -1,0 +1,34 @@
+{
+  "name": "Jiyan",
+  "slug": "jiyan",
+  "rarity": 5,
+  "element": "Aero",
+  "weaponType": "Broadblade",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/jiyan", "nanoka": "https://ww.nanoka.cc/character/jiyan", "fandom": "https://wutheringwaves.fandom.com/wiki/Jiyan", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T1.5 Tower of Adversity, T1.5 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Aero Broadblade Hypercarry, one of the earliest standard-banner 5-stars, still top-tier. Ultimate transforms him into 'Qingloong Mode' (increased interruption resistance, Basic/Heavy/Dodge Counter replaced by an 8-hit-per-cast 'Lance of Qingloong' Heavy Attack combo that groups and CCs enemies). Forte 'Resolve' (max 60) empowers Skill or the Ultimate's opening draconic strike.",
+    "skills": {
+      "normalAttack": "Lone Lance - 5-hit chain (rarely used outside Ultimate).",
+      "resonanceSkill": "Windqueller - forward dash Aero DMG, low cooldown, generates lots of Resonance Energy.",
+      "forte": "Qingloong at War - governs Resolve spend on enhanced Skill (+20% DMG) or enhanced Ultimate opener (Emerald Storm: Finale).",
+      "liberation": "Emerald Storm: Prelude - enters Qingloong Mode (his entire damage window).",
+      "intro": "Tactical Strike - aerial Aero DMG stab.",
+      "outro": "Discipline - next character's Heavy Attacks trigger Qingloong Coordinated Attacks (313% ATK) for 8s, up to 2x."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Verdant Summit (signature, 100%)", "Thunderflare Dominion (90.3%)", "Ages of Harvest (86.9%)", "Kumokiri / Wildfire Mark (86.3%)", "Radiance Cleaver (86.3%, best permanent)", "Aureate Zenith (83.2%, best 4-star)", "Lustrous Razor (82.3%)", "Meditations on Mercy (best F2P craftable)"],
+    "echoSet": ["Windward Pilgrimage (best with an Aero Erosion applier)", "Sierra Gale (94.3%, generic alt)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Aero DMG; ATK% >= Aero DMG", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK = Heavy DMG%"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Jiyan", "Iuno", "Ciaccona (Windward Pilgrimage) or The Shorekeeper/Verina"], "notes": "Iuno is his best Heavy-DMG buffer; Ciaccona's Aero Erosion buffs don't expire on swap, letting Jiyan switch mid-Lance combo." },
+    { "name": "Erosion Team", "members": ["Jiyan", "Ciaccona", "The Shorekeeper or Rover (Aero)"], "notes": "Very strong in quickswap, roughly equal to the Best Team." }
+  ],
+  "rotation": "Warm-up: Skill on cooldown, Echo right before Ultimate. Burst: Intro -> Forte (Emerald Storm) -> Lance of Qingloong P1 (interrupt via Skill) -> Skill -> Lance x6-7 -> Skill -> Outro. Advanced 'Double Dragon' combo uses dodge-cancels to overlap two Lance of Qingloong dragons simultaneously for higher DPS.",
+  "communityNotes": "Prydwen: enduring top-tier AoE+ST Hypercarry DPS, easy to play, near entirely reliant on his Ultimate window for damage (little value from swap-cancelling); needs good Energy Regen/cooldown management to keep the Ultimate up every rotation. Consistently one of the best Tower of Adversity DPS since release.",
+  "lastUpdated": "2026-08-31"
+}
