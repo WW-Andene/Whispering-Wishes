@@ -1,5 +1,5 @@
 {
-  "$schema_note": "Graph-friendly intro/outro data for all 60 Whispering Wishes combat-db characters. 'outro' describes what a character grants to the next resonator swapped in (per calcEngine.js's outroBuffs/target:'next' or 'team' convention); 'intro' describes what happens on that character's own entry. Sourced primarily from each characters/<slug>.json kit.skills.intro/outro field (already Prydwen-sourced per SOURCES_STATUS.md) plus that file's own 'teams' section for candidate outro->intro synergy pairings. skillName/damageTypeAffected/durationApprox are heuristically parsed from the prose description and may be null when the source prose didn't state them plainly \u2014 treat null as 'not confirmed', not zero.",
+  "$schema_note": "Graph-friendly intro/outro data for all 60 Whispering Wishes combat-db characters. 'outro' describes what a character grants to the next resonator swapped in (per calcEngine.js's outroBuffs/target:'next' or 'team' convention); 'intro' describes what happens on that character's own entry. Sourced primarily from each characters/<slug>.json kit.skills.intro/outro field (already Prydwen-sourced per SOURCES_STATUS.md) plus that file's own 'teams' section for candidate outro->intro synergy pairings. skillName/damageTypeAffected/durationApprox are heuristically parsed from the prose description and may be null when the source prose didn't state them plainly — treat null as 'not confirmed', not zero.",
   "generatedFrom": "references/combat-db/characters/*.json (2026-08-31 scrape)",
   "characters": [
     {
@@ -42,7 +42,15 @@
           "notes": "Outro-buffer slot, not optimal (outclassed by Mortefi for Jiyan) but usable filler."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Aalto",
+          "appOutroBuffsRaw": "[{ stat: 'elemDmg', value: 23, target: 'next', duration: 14 }]",
+          "appNote": "Off-field Aero applicator. Outro: 23% Aero DMG Amp to next. Mist clone Coordinated ATK."
+        }
+      ]
     },
     {
       "slug": "aemeath",
@@ -91,7 +99,15 @@
           "notes": "Lupa enables party-wide Fusion RES Ignore/DMG Bonus; Changli only better than Brant in quickswap."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Aemeath",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced Seraphic Duet scales off Rupturous/Fusion Trail (up to 30 stacks = 300% mult, 4%/10% per stack removed). Weapon contribution now comes entirely from the equipped weapon\\'s own pv, not a hardcoded assumption. Self-buff: up to 60% CD via Between the Stars. Tune Break: confirmed genuine Tune Rupture Response (Starburst, base kit, once/8s) but exact ruptureDmgMult not sourced (Prydwen 2026-08-18 — multiplier table renders client-side, not in text extraction); tuneBreak sub-object only carries the generic base Boost stat pending that number."
+        }
+      ]
     },
     {
       "slug": "augusta",
@@ -124,7 +140,15 @@
           "notes": "Iuno best Outro buffer (up to 90% DMG Amp); Mortefi/Rebecca close seconds for Heavy DMG buffing; free-to-play friendly with Mortefi."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Augusta",
+          "appOutroBuffsRaw": "[{ stat: 'elemDmg', value: 15, target: 'next', duration: 14 }]",
+          "appNote": "Heavy ATK AoE DPS with built-in self shields (Glory\\'s Favor) and a Crown of Wills self-buff. Outro: +15% All DMG Amp to next Resonator (14s), not a \"Deepen\" multiplier. Liberation\\'s Ruler\\'s Realm grants teammates a shield on Intro cast — no direct DPS stat. (Corrected 2026-08-16: Outro was mislabeled as deepen instead of allDmg; added missing Crown of Wills self-buff.)"
+        }
+      ]
     },
     {
       "slug": "baizhi",
@@ -139,7 +163,7 @@
         "effect": "Rejuvinating Flow - HoT (1.54% Max HP/3s for 30s) to next character, who also gains 15% all-type DMG Deepen for 6s.",
         "grantsTo": "next resonator (swap-in)",
         "damageTypeAffected": "Glacio",
-        "durationApprox": "3s",
+        "durationApprox": "6s",
         "source": "https://www.prydwen.gg/wuthering-waves/characters/baizhi"
       },
       "intro": {
@@ -158,7 +182,16 @@
           "notes": "Very flexible free 4-star healer; incompatible with Coordinated-Attack hybrids (Yinlin, Zhezhi, Mortefi) since her buffs target only one character at a time."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Baizhi",
+          "appOutroBuffsRaw": "[{ stat: 'deepen', value: 15, target: 'next', duration: 6 }]",
+          "appNote": "Outro: 15% Deepen (6s per tick, refreshes on heal). Inherent: 15% ATK teamwide (20s on Euphonia pickup). Heal."
+        }
+      ],
+      "crossCheckContradiction": "Prydwen text conflates two numbers: the durationApprox field here (3s, mis-set in the prior pass) actually belongs to neither effect — Prydwen's own prose gives HoT=30s(3s ticks)/Deepen=6s. CHAR_BUFF_TABLE confirms the Deepen buff is 6s. Fixed durationApprox to 6s (the Deepen duration, which is what target dropdowns like 'damageTypeAffected' actually describe) and logged the HoT tick cadence separately."
     },
     {
       "slug": "brant",
@@ -208,7 +241,15 @@
           "notes": "Double Forte rotation builds Bravo twice for a concentrated burst window; lower average DPS than standard but very high peak damage."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Brant",
+          "appOutroBuffsRaw": "[\n      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Fusion DMG Amp' },\n      { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },\n    ]",
+          "appNote": "Outro: +20% Fusion DMG + 25% Skill DMG Amp (14s). Self-heal + team shield from Forte. Inherent: +15% Fusion DMG Bonus."
+        }
+      ]
     },
     {
       "slug": "buling",
@@ -242,7 +283,16 @@
           "notes": "Specializes in buffing Skill-DMG Main DPS; best niche is Carlotta/Phrolova teams, especially at S6 (50% Skill DMG Bonus)."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Buling",
+          "appOutroBuffsRaw": "[{ stat: 'allDmg', value: 15, target: 'team', duration: 30, condition: \"Outro (Exorcism Spell) — DMG Amp to nearby team members; doesn't expire on swap. Also heals the active character for 18% of Buling's ATK/s for 16s\" }]",
+          "appNote": "Off-field healer (Heavy Attacks/Intro/Outro). Enhanced Liberation deploys Electro Flare array + ramping team Skill DMG Bonus on ally Intro casts (10%→25%, 50% at S6). Outro: 15% team DMG Amp (30s)."
+        }
+      ],
+      "crossCheckContradiction": "Not a contradiction: CHAR_BUFF_TABLE's 30s is the team DMG Amp duration (matches durationApprox here, both say Outro Amp persists 30s) while the app's inline condition text separately notes an 18%ATK/s HoT lasting 16s to the active character. Two different sub-effects; durationApprox correctly tracks the DMG Amp (30s)."
     },
     {
       "slug": "calcharo",
@@ -282,7 +332,15 @@
           "notes": "Entirely incompatible with Swap Cancels."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Calcharo",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Liberation → Death Messenger combo."
+        }
+      ]
     },
     {
       "slug": "camellya",
@@ -315,7 +373,15 @@
           "notes": "Sanhua is the F2P-friendly hybrid choice; Lynae is currently the strongest generalist buffer for her."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Camellya",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Self-buffing Main DPS. Seedbed: +15% Havoc DMG. Epiphyte: +15% Basic DMG."
+        }
+      ]
     },
     {
       "slug": "cantarella",
@@ -357,7 +423,15 @@
           "notes": "Niche substitute for dedicated Skill-DPS supports; generally outclassed by Zhezhi/Yinlin due to Cantarella's severe Energy Regen needs."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Cantarella",
+          "appOutroBuffsRaw": "[\n      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },\n      { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },\n    ]",
+          "appNote": "Outro: +20% Havoc DMG + 25% Skill DMG Amp (14s). Off-field Coordinated ATK. Heal. Self: up to +12% Havoc DMG from Poison."
+        }
+      ]
     },
     {
       "slug": "carlotta",
@@ -398,7 +472,15 @@
           "notes": "Yangyang easier to pilot; Taoqi (38% Skill DMG Amp Outro) has higher ceiling but clunkier rotation."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Carlotta",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Burst Glacio Main DPS. Final Bow: +80% Liberation DMG Multiplier at full Substance. Deconstruction: -18% target DEF (4s)."
+        }
+      ]
     },
     {
       "slug": "cartethyia",
@@ -439,7 +521,15 @@
           "notes": "Sanhua provides fast-rotating field time and Basic DMG buffing, best budget option even without erosion synergy."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Cartethyia",
+          "appOutroBuffsRaw": "[{ stat: 'elemDmg', value: 17.5, target: 'next', duration: 20, condition: 'Aero DMG vs Negative Status targets' }]",
+          "appNote": "Top-tier Aero DPS. HP-scaling. Outro: +17.5% Aero DMG vs Negative Status (20s). Wind\\'s Indelible Imprint debuffs Erosion-stacked targets up to +60% DMG taken. Weapon DEF Ignore now comes entirely from the equipped weapon\\'s own pv, not a hardcoded assumption."
+        }
+      ]
     },
     {
       "slug": "changli",
@@ -489,7 +579,15 @@
           "notes": "Chixia is currently the only character that fully exploits Changli's Outro (20% Fusion + 25% Liberation Amp)."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Changli",
+          "appOutroBuffsRaw": "[\n      { stat: 'elemDmg', value: 20, target: 'next', duration: 10 },\n      { stat: 'libDmg', value: 25, target: 'next', duration: 10 },\n    ]",
+          "appNote": "Outro: 20% Fusion DMG Amp + 25% Liberation DMG Amp (10s). Self ATK ramp via Fiery Feather."
+        }
+      ]
     },
     {
       "slug": "chisa",
@@ -522,7 +620,15 @@
           "notes": "Only worth using in dedicated Negative-Status teams (her buffs require the DPS to self-apply Negative Status); outclassed by free options as a generalist support."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Chisa",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Support/Healer for Negative Status teams. DEF Ignore 18% via Thread of Bane and DEF Shred up to 12% via Havoc Bane both require the enemy to be marked by Unseen Snare, and Thread of Bane specifically only benefits Resonators who themselves inflict/deal Negative Status damage — Prydwen stresses her kit is close to non-functional outside Negative Status teams. Heals team via Death Snip and Moment of Nihility; grants Shields via Sawring - Eradication. Outro: teammates can stack +3 more Negative Status/Electro Rage for 20s."
+        }
+      ]
     },
     {
       "slug": "chixia",
@@ -564,7 +670,15 @@
           "notes": "Chixia is currently the character that best exploits Changli's short Outro buff; moderately difficult quickswap playstyle."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Chixia",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Fusion DPS. Resonance Skill burst. Whizzing Fight Spirit sustained fire."
+        }
+      ]
     },
     {
       "slug": "ciaccona",
@@ -615,7 +729,15 @@
           "notes": "Sanhua's 38% Basic ATK DMG Amp and fast rotation make Ciaccona a fully viable on-field Main DPS."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Ciaccona",
+          "appOutroBuffsRaw": "[{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],\n    // stat corrected 2026-08-18: was 'allDmg' (universal, applies to any team regardless of element)\n    // but this character's own note text (below) and kit identity both say this is an AERO-only DMG\n    // bonus (\"+24% Aero DMG team\"), not a true All-Attribute Amp — was granting a phantom +24% damage\n    // buff to any non-Aero main DPS paired with her, in both the damage calculator and the\n    // recommendation engine (which is how this was actually caught — she scored as a top-8 recommended\n    // teammate for a Glacio DPS with no real synergy).\n    libBuffs: [{ stat: 'elemDmg', value: 24, target: 'team', duration: 99, condition: 'aero — Solo Concert: from Basic ATK Ensemble Sylph summons, not Liberation itself — near-permanent uptime' }],\n    selfBuffs: [],\n    // corrected 2026-08-18: removed — this was mislabeled as a team buff. Woodland Aria's real effect\n    // (re-verified against nanoka.cc's raw effect JSON) is entirely self-target: \"Hitting Aero-Eroded\n    // targets → self Aero RES -10%\", not a team-wide RES shred. It's also already covered by the weapon's\n    // own pv.resShred whenever the wielder actually has it equipped — hardcoding it here double-counted it\n    // (as a team buff, which doesn't exist) and phantom-applied it with any other weapon equipped.\n    weaponBuffs: [],\n    debuffs: [\n      { stat: 'erosion', value: 3, duration: 15, condition: '3 stacks Aero Erosion, ticks every 2s' },\n    ]",
+          "appNote": "Solo Concert: +24% Aero DMG team (from Basic ATK passive, near-permanent uptime, not gated behind Liberation). Outro: +100% Aero Erosion DMG Amp (30s). Aero Erosion 3 stacks. Weapon contribution now comes entirely from the equipped weapon\\'s own pv, not a hardcoded team-buff assumption."
+        }
+      ]
     },
     {
       "slug": "danjin",
@@ -657,7 +779,15 @@
           "notes": "Cantarella+Danjin forms one of the strongest all-4-star DPS teams in the game, though Danjin's self-damage HP mechanic is punishing here."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Danjin",
+          "appOutroBuffsRaw": "[{ stat: 'deepen', value: 23, target: 'next', duration: 14 }]",
+          "appNote": "Outro: 23% Havoc DMG Deepen to next."
+        }
+      ]
     },
     {
       "slug": "denia",
@@ -698,7 +828,15 @@
           "notes": "Mornye is close to mandatory - Denia experiences significant DPS drop-off without her."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Denia",
+          "appOutroBuffsRaw": "[{ stat: 'allDmg', value: 40, target: 'next', duration: 16, condition: 'Tune Strain mode, after inflicting Tune Strain - Shifting' }, { stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Fusion Burst mode' }]",
+          "appNote": "Dual Resonance Mode: Fusion Burst mode Outro amplifies team Fusion Burst DMG by 60% (30s); Tune Strain mode Outro grants the next Resonator 15-40% All DMG Amp (16s). Tune Break kit (Tune Strain mode only, confirmed via Prydwen 2026-08-18): Tune Strain response 0.12% DMG/stack/Boost, +1 max Strain stack, +10 Tune Break Boost team (Etched Colors)."
+        }
+      ]
     },
     {
       "slug": "encore",
@@ -740,7 +878,15 @@
           "notes": "Brant's Skill+Fusion DMG Amplify Outro slightly edges out Changli's Liberation Amplify for Encore."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Encore",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "On-field Fusion main DPS. Builds Mayhem from Basic/Skill/Intro hits; at full Mayhem, Heavy ATK enters a 70% DMG-reduction state and casts a big Liberation-DMG finisher (Cloudy Frenzy / Cosmos Rupture) on exit. Liberation Cosmos Rave replaces her whole kit with enhanced Fusion versions for 10s. Outro Thermal Field is a pure DoT proc, no team buff — free to quickswap."
+        }
+      ]
     },
     {
       "slug": "galbrena",
@@ -782,7 +928,15 @@
           "notes": "Lupa enables a strong Mono Fusion archetype, especially in Whimpering Wastes."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Galbrena",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Echo Skill + Heavy ATK Fusion DPS. Outro (Ashen Pursuit) is pure damage, no team buff — free to quickswap. Self-buffs via Liberation and Burning Drive, no team support kit. Afterflame is a DMG Taken debuff on the enemy (not a self-buff), replenished by any teammate\\'s Echo Skill casts — Prydwen notes it\\'s realistically 36% without Phrolova, 48% with her (rarely maxed at 60%)."
+        }
+      ]
     },
     {
       "slug": "hiyuki",
@@ -823,7 +977,15 @@
           "notes": "Significant drop-off without Chisa/Lucilla/Lynae/Suisui/Mornye backing her up."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Hiyuki",
+          "appOutroBuffsRaw": "[{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'vs. targets affected by Glacio Chafe' }]",
+          "appNote": "On-field Glacio DPS. Outro grants +20% Glacio DMG to the rest of the team against Glacio Chafe-affected targets (20s). Inherent Fine Snow: self +40% Crit DMG at 1 Snow Rust stack, +30%/+30% Glacio Bite DMG Amp at 1/3 stacks — needs teammates applying Glacio Chafe or Havoc Bane to reach max stacks."
+        }
+      ]
     },
     {
       "slug": "hsin",
@@ -847,7 +1009,7 @@
         "source": "https://www.prydwen.gg/wuthering-waves/characters/hsin"
       },
       "teamPairingsFromCharacterFile": [],
-      "dataStatus": "stub \u2014 Prydwen has not published this character's kit yet"
+      "dataStatus": "stub — Prydwen has not published this character's kit yet"
     },
     {
       "slug": "iuno",
@@ -890,7 +1052,15 @@
           "notes": "Lynae is generally best buffer (40% DMG Amplification via Outro); Ciaccona brings Aero RES Shred + fast rotation."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Iuno",
+          "appOutroBuffsRaw": "[{ stat: 'heavyDmg', value: 50, target: 'next', duration: 14 }]",
+          "appNote": "Outro: 50% Heavy ATK DMG Amp (14s). Real team healing via New Moon Moonbow attacks/Dodge Counter/Arc Beyond the Edge (heal on hit) and Absolute Fullness + Full Moon Domain (team HP/STA regen). Self-shield via Waxing Ascent (32% ATK per skill cast, self only). Liberation activates Lunar Cycle burst phase, no team DMG buff. (Corrected 2026-08-16: restored the team-heal claim — confirmed via Nanoka live re-check after Prydwen/Game8 omitted her healing kit in the prior audit.)"
+        }
+      ]
     },
     {
       "slug": "jianxin",
@@ -941,7 +1111,15 @@
           "notes": "Budget alternative to Yinlin as Xiangli Yao's Liberation DMG buffer, at the cost of more field time and Energy Regen needs."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Jianxin",
+          "appOutroBuffsRaw": "[{ stat: 'libDmg', value: 38, target: 'next', duration: 14 }]",
+          "appNote": "Shield support/Parry-stance sub-DPS. Forte (Primordial Chi Spiral) grants a large HP-scaling shield and periodic healing while channeled. Liberation Purification Force Field groups enemies before exploding. Outro Transcendence: Liberation DMG Amp +38% (14s) for the incoming Resonator."
+        }
+      ]
     },
     {
       "slug": "jingran",
@@ -965,7 +1143,15 @@
         "source": "https://www.prydwen.gg/wuthering-waves/characters/jingran"
       },
       "teamPairingsFromCharacterFile": [],
-      "dataStatus": "stub \u2014 Prydwen has not published this character's kit yet"
+      "dataStatus": "stub on Prydwen (kit page unpublished as of 2026-08-31), BUT app/src/data/characters.js CHAR_BUFF_TABLE already carries real kit info (role: pure HP-scaling DPS, no team buffs; Resonance Chain 4 conditional team buff) predating this combat-db pass — see crossCheckedSources. Role/kit fields here are left null pending an authoritative Prydwen source, but a human should decide whether to promote the app's data instead of waiting.",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Jingran",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Pure HP-scaling DPS, no team buffs. Resonance Chain 4 grants team +20% All-Attribute DMG Bonus (30s) when any Resonator gains a Shield — conditional, not modeled as a base kit buff."
+        }
+      ]
     },
     {
       "slug": "jinhsi",
@@ -1014,7 +1200,15 @@
           "notes": "Mortefi strong only with heavy Empyrean Anthem investment; otherwise Yuanwu on Rejuvenating Glow."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Jinhsi",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "On-field Spectro burst DPS. Builds Incandescence from any team member\\'s Attribute/Coordinated DMG, then spends it via Illuminous Epiphany (Incarnation Basic ATK Stage 4) for a massive Stella Glamor nuke (+44.54% DMG per Incandescence). Outro Temporal Bender is a pure Incandescence-gain utility, not a team buff."
+        }
+      ]
     },
     {
       "slug": "jiyan",
@@ -1055,7 +1249,15 @@
           "notes": "Very strong in quickswap, roughly equal to the Best Team."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Jiyan",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Heavy ATK DPS in Qingloong form. Weapon contribution now comes entirely from the equipped weapon\\'s own pv, not a hardcoded assumption."
+        }
+      ]
     },
     {
       "slug": "lingyang",
@@ -1096,7 +1298,15 @@
           "notes": "Sanhua has a very fast rotation and 38% Basic ATK DMG Amplify Outro, free-to-play alternative when Zhezhi is unavailable/occupied."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Lingyang",
+          "appOutroBuffsRaw": "[]",
+          "appNote": null
+        }
+      ]
     },
     {
       "slug": "lucilla",
@@ -1138,7 +1348,15 @@
           "notes": "Sigrika is the best Echo-DMG dealer to pair with Lucilla; Galbrena and Phrolova are viable alternates."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Lucilla",
+          "appOutroBuffsRaw": "[{ stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Glacio Chafe mode' }, { stat: 'echoDmg', value: 50, target: 'next', duration: 14, condition: 'Echo mode' }]",
+          "appNote": "Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s)."
+        }
+      ]
     },
     {
       "slug": "lucy",
@@ -1171,7 +1389,16 @@
           "notes": "Rebecca is Lucy's only real partner - their kits reference each other directly; Mornye emphasizes Hack damage via Off-Tune Buildup Rate, Shorekeeper is a close second (better in Whimpering Wastes)."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Lucy",
+          "appOutroBuffsRaw": "[{ stat: 'basicDmg', value: 25, target: 'next', duration: 14 }]",
+          "appNote": "Outro: 25% Basic ATK DMG Amp to next Resonator (14s) + team-wide Countermeasure Program (Hack - Interfered triggers +20% All DMG Amp). Tune Break: Hack is confirmed the same generic Tune Break family (per fandom\\'s Tune Break page); Hack Response - Data Crash is genuine (base kit, once/8s) but exact ruptureDmgMult not sourced (Prydwen 2026-08-18 — multiplier table renders client-side)."
+        }
+      ],
+      "crossCheckContradiction": "Two distinct effects with two distinct durations, not a contradiction: CHAR_BUFF_TABLE's 25% Basic DMG Amp is 14s (matches app raw), while Prydwen's prose-derived durationApprox of 25s refers to the separate team-wide Countermeasure Program/Hack-Shifting utility window. Recorded both explicitly."
     },
     {
       "slug": "lumi",
@@ -1213,7 +1440,15 @@
           "notes": "Carlotta deals almost exclusively Skill DMG, a natural fit, but timing Lumi's Outro against Carlotta's Forte nuke is awkward."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Lumi",
+          "appOutroBuffsRaw": "[{ stat: 'skillDmg', value: 38, target: 'next', duration: 10 }]",
+          "appNote": "Outro (Escorting): 38% Resonance Skill DMG Amp to next for 10s or until they switch out. Electro Hybrid buffer."
+        }
+      ]
     },
     {
       "slug": "lupa",
@@ -1255,7 +1490,15 @@
           "notes": "Works well outside strict Mono Fusion since Encore's short rotation leaves downtime for Lupa's cooldowns to catch up."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Lupa",
+          "appOutroBuffsRaw": "[\n      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Fusion DMG Amp' },\n      { stat: 'basicDmg', value: 25, target: 'next', duration: 14 },\n    ]",
+          "appNote": "Outro: +20% Fusion DMG + 25% Basic ATK DMG Amp (14s). Lib: up to 18% ATK team (35s), enables Wild Hunt. Fusion RES ignore up to 15% (35s), needs a mono-Fusion team for max value (S3 removes the requirement). (Corrected 2026-08-16: fixed Lib buff and RES-ignore durations, which were listed far too short; added missing self-buff and weapon buff via Nanoka/Prydwen/Game8.)"
+        }
+      ]
     },
     {
       "slug": "luuk-herssen",
@@ -1289,7 +1532,15 @@
           "notes": "Denia is strongest (extra Tune Strain, buffing, grouping, fast rotation); Lynae close second; Sanhua a fully free budget option (may need an extra Mid-air chain post-Ultimate to hit his 25s cooldown)."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Luuk Herssen",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Spectro Gauntlets DPS. Tune Strain focused. Weapon contribution now comes entirely from the equipped weapon\\'s own pv, not a hardcoded assumption. Tune Break kit (confirmed via Prydwen 2026-08-18): Tune Strain response 0.12% DMG/stack/Boost, +1 max Strain stack, no team Tune Break Boost buff."
+        }
+      ]
     },
     {
       "slug": "lynae",
@@ -1331,7 +1582,15 @@
           "notes": "Works with virtually any DPS besides Zani and Cartethyia."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Lynae",
+          "appOutroBuffsRaw": "[\n      { stat: 'allDmg', value: 15, target: 'next', duration: 14 },\n      { stat: 'libDmg', value: 25, target: 'next', duration: 14 },\n    ]",
+          "appNote": "Lib: 24% All DMG (30s, confirmed exact 2026-08-16). Outro: 15% All DMG + 25% Lib Amp to next (14s) — was miscategorized as deepen, no basis. Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost."
+        }
+      ]
     },
     {
       "slug": "mornye",
@@ -1373,7 +1632,15 @@
           "notes": "Responds to allies' Tune Rupture/Strain application via Interfered Marker for up to 40% DMG Bonus - requires S1 to be team-agnostic, otherwise near-mandatory Rupture/Strain applier."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Mornye",
+          "appOutroBuffsRaw": null,
+          "appNote": "Outro: 25% All DMG Amp to team (30s, confirmed exact 2026-08-16 — was miscategorized as deepen). Syntony Field: +50% Off-Tune Buildup Rate (25s), healing, DEF+20% via Ultimate. Interfered Marker: up to 40% DMG Amp on target. Rupture Response."
+        }
+      ]
     },
     {
       "slug": "mortefi",
@@ -1431,7 +1698,15 @@
           "notes": "Usable secondary for Absolution Phoebe and F2P Zani (no Spectro Frazzle application, but functional)."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Mortefi",
+          "appOutroBuffsRaw": "[{ stat: 'heavyDmg', value: 38, target: 'next', duration: 14 }]",
+          "appNote": "Outro: 38% Heavy ATK DMG Amp. Off-field Coordinated ATK on Heavy ATK."
+        }
+      ]
     },
     {
       "slug": "phoebe",
@@ -1446,7 +1721,7 @@
         "effect": "Attentive Heart - 528.41% ATK Spectro hit (+255% in Absolution) or Silent Prayer buff (10% Spectro RES Shred + 100% Frazzle DMG Amplify) in Confession.",
         "grantsTo": "next resonator (swap-in)",
         "damageTypeAffected": "Spectro",
-        "durationApprox": null,
+        "durationApprox": "30s (from app CHAR_BUFF_TABLE)",
         "source": "https://www.prydwen.gg/wuthering-waves/characters/phoebe"
       },
       "intro": {
@@ -1473,7 +1748,15 @@
           "notes": "Confession Phoebe currently only pairs meaningfully with Zani."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Phoebe",
+          "appOutroBuffsRaw": "[\n      { stat: 'resShred', value: 10, target: 'enemy', duration: 30, condition: 'Spectro RES (Confession mode)' },\n      { stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Spectro Frazzle DMG Amp (Confession)' },\n    ]",
+          "appNote": "Confession: applies 18 Frazzle stacks. Outro: Spectro RES -10% + 100% Frazzle DMG Amp. Frazzle = Level-scaling DOT, not ATK-based."
+        }
+      ]
     },
     {
       "slug": "phrolova",
@@ -1514,7 +1797,15 @@
           "notes": "Phrolova can buff Heavy Attack DPS via Outro while dealing her own large damage off-field."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Phrolova",
+          "appOutroBuffsRaw": "[\n      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },\n      { stat: 'heavyDmg', value: 25, target: 'next', duration: 14 },\n    ]",
+          "appNote": "Outro (Unfinished Piece): +20% Havoc DMG + 25% Heavy ATK DMG Amp (14s). Self: up to 60-100% CD from Aftersound stacking. Intro is \"Suite of Quietus\" (base) / \"Suite of Immortality\" (Maestro-enhanced). (Corrected 2026-08-16: Outro skill name was wrong — file previously called it \"Final Applause\"; the real base Intro name \"Suite of Quietus\" was also missing, previously only the enhanced Maestro form was listed.)"
+        }
+      ]
     },
     {
       "slug": "qingxiao",
@@ -1555,7 +1846,15 @@
           "notes": "More flexible alternative with smaller drop-offs if Mornye is unavailable."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Qingxiao",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic (base kit: up to 15 stacks, ~49% combined DMG Amp/Taken at cap — first 7 stacks each worth 7%, remaining stacks worth 2% each; S1/S2 raise the stack cap to 25). Pre-release data via ww.nanoka.cc datamine (2026-08-18, releases 2026-08-20) — subject to change at launch."
+        }
+      ]
     },
     {
       "slug": "qiuyuan",
@@ -1605,7 +1904,15 @@
           "notes": "Best Sigrika buffer overall."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Qiuyuan",
+          "appOutroBuffsRaw": "[{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }]",
+          "appNote": "Outro: 50% Echo Skill DMG Amp (14s). Lib: conditional Crit DMG buff (up to +30% at 65%+ Crit Rate), not a flat Echo DMG buff. Sig weapon: 20% team Echo DMG on Intro cast. (Corrected 2026-08-16: Liberation buff was mislabeled as echoDmg — real effect is Crit DMG, confirmed via Prydwen/Game8.)"
+        }
+      ]
     },
     {
       "slug": "rebecca",
@@ -1654,7 +1961,15 @@
           "notes": "Functions as a solid free alternative to Mortefi for any Heavy Attack DPS."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Rebecca",
+          "appOutroBuffsRaw": "[{ stat: 'heavyDmg', value: 35, target: 'next', duration: 14 }, { stat: 'allDmg', value: 15, target: 'next', duration: 14 }]",
+          "appNote": "Outro: deploys a turret for 14s and grants the next Resonator 15% All DMG Amp (14s), ramping to 35% Heavy ATK DMG Amp via stacking Overlimit. Both buffs target the incoming Resonator only, not the whole team. Huntress mode grants self 30% Crit DMG; Guts mode grants self 15% DEF Ignore (personal, not a team-wide DEF Shred debuff — fixed 2026-08-16, was miscategorized under debuffs as defShred). Tune Break: Hack Response - Meltdown is genuine (base kit, once/8s) but exact ruptureDmgMult not sourced (Prydwen 2026-08-18); Tag, You\\'re It! confirmed +30 Tune Break Boost (30s) to whichever teammate inflicts Hack - Shifting."
+        }
+      ]
     },
     {
       "slug": "roccia",
@@ -1703,7 +2018,15 @@
           "notes": "Considered Havoc Rover's best buffer."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Roccia",
+          "appOutroBuffsRaw": "[\n      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },\n      { stat: 'basicDmg', value: 25, target: 'next', duration: 14 },\n    ]",
+          "appNote": "Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% (12s) on Skill/Heavy ATK. Liberation: flat team ATK +1 per 0.1% Crit Rate over 50%, up to +200 (30s) — not a % buff, so untracked in libBuffs."
+        }
+      ]
     },
     {
       "slug": "rover-aero",
@@ -1747,7 +2070,15 @@
           "notes": "Best buffer for Main DPS Iuno via signature weapon's Aero DMG Amplify."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Rover: Aero",
+          "appOutroBuffsRaw": "[{ stat: 'totalMult', value: 3, target: 'team', duration: 30, condition: \"Outro Storm's Echo: Aeolian Realm — team's Aero Erosion stack cap +3 for 10s per hit (30s field).\" }]",
+          "appNote": null
+        }
+      ]
     },
     {
       "slug": "rover-electro",
@@ -1781,7 +2112,15 @@
           "notes": "Only current niche - a replacement buffer for Hiyuki teams when low-Sequence Jianxin is the only alternative."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Rover: Electro",
+          "appOutroBuffsRaw": "[{ stat: 'allDmg', value: 25, target: 'ally', duration: 14, condition: 'Outro Rumbling Thunders: incoming Resonator gains Electro Core — next Negative Status hit grants All DMG Amp +25% (14s).' }]",
+          "appNote": "Parry Stance hybrid. Hold Basic ATK for interrupt immunity + 60% DMG reduction. At max Electric Surge, tap Overshock for a team ATK buff or hold it to enter Apex Resonance, unlocking the multi-element Thrum of All Sounds Forte combo (Spectro/Havoc/Aero hits + Thunder Bane Electro pulses). Currently the weakest attunement — lacks a strong DPS partner."
+        }
+      ]
     },
     {
       "slug": "rover-havoc",
@@ -1834,7 +2173,15 @@
           "notes": "High personal damage and Energy generation make Rover a strong Phrolova teammate alternative."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Rover: Havoc",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "On-field Havoc main DPS. Hold Heavy ATK at full Umbra to cast Devastation and enter Dark Surge — an enhanced Basic/Heavy/Skill state ending in Liberation Deadening Abyss, a 1520% ATK single-target nuke."
+        }
+      ]
     },
     {
       "slug": "rover-spectro",
@@ -1869,7 +2216,15 @@
           "notes": "Currently mandatory together - Phoebe's Absolution mode needs a Spectro Frazzle applier and Rover is one of only two in the game."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Rover: Spectro",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Spectro Frazzle applier/quick-swap support. Forte: Resonance Skill at 50+ Diminutive Sound casts Resonating Spin (2 Frazzle stacks + Shimmer, which stops decay), followed by Basic ATK Resonating Echoes. Liberation Echoing Orchestra applies 6 more Frazzle stacks. S6 (5 copies): Skill hits Spectro RES Shred -10%/20s."
+        }
+      ]
     },
     {
       "slug": "sanhua",
@@ -1918,7 +2273,15 @@
           "notes": "Natural fit since Brant deals almost exclusively Basic ATK DMG."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Sanhua",
+          "appOutroBuffsRaw": "[{ stat: 'basicDmg', value: 38, target: 'next', duration: 14 }]",
+          "appNote": "Outro: 38% Basic ATK DMG Amp (14s). Quick swap."
+        }
+      ]
     },
     {
       "slug": "sigrika",
@@ -1959,7 +2322,15 @@
           "notes": "Both share Qiuyuan's Echo Skill casts for high tandem damage, excellent for Whimpering Wastes."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Sigrika",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Rune-consuming Echo Skill hypercarry. Inherent True Names Aligned: Blessing of Runes grants the active Resonator +3%/+3% Aero+Echo Skill DMG per stack (6 max) from teammates\\' Echo Skill casts, +30%/+30% more at max stacks (48%/48% total) — resets on team swap. Inherent Aligned Names 2: up to 50% Echo DMG from ER above 125%. Sig weapon: 32% Echo Skill Amp + 10% DEF Ignore. Crowd control via Runic modes."
+        }
+      ]
     },
     {
       "slug": "suisui",
@@ -2009,7 +2380,15 @@
           "notes": "Viable alternative when the Negative Status-consuming Hypercarry buff isn't strictly needed."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Suisui",
+          "appOutroBuffsRaw": "[\n      { stat: 'allDmg', value: 25, target: 'team', duration: 30 },\n      { stat: 'allDmg', value: 12, target: 'team', duration: 6, condition: '400+ Floral Epistle consumed, Ceaseless Landscape active' },\n    ]",
+          "appNote": "Outro (Rippling Waters): unconditional 25% All DMG Amp for 30s. At 400+ Floral Epistle consumed (Drizzle Stance Forte gauge) while Ceaseless Landscape is active, additionally grants up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s via Roaming Transcendent. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Liberation (Song of Thoroughfare) extends negative-status stack caps for the team rather than granting a flat DMG buff. Inherent Skill Sky Over Water grants a self Crit Rate/Glacio DMG spike on her own Awakening Spring/Tinkling Jade hits, gated to once every 25s."
+        }
+      ]
     },
     {
       "slug": "suoming",
@@ -2033,7 +2412,7 @@
         "source": "https://www.prydwen.gg/wuthering-waves/characters/suoming"
       },
       "teamPairingsFromCharacterFile": [],
-      "dataStatus": "stub \u2014 Prydwen has not published this character's kit yet"
+      "dataStatus": "stub — Prydwen has not published this character's kit yet"
     },
     {
       "slug": "taoqi",
@@ -2074,7 +2453,15 @@
           "notes": "Not meta but produces huge damage-per-screenshot nukes; Verina needed for Coordinated Attacks to build Jinhsi's Forte."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Taoqi",
+          "appOutroBuffsRaw": "[{ stat: 'skillDmg', value: 38, target: 'next', duration: 14 }]",
+          "appNote": "Outro Iron Will: 38% Resonance Skill DMG Amp to next (14s). Skill Fortified Defense grants 3 stacks of Rocksteady Shield (15% DMG reduction while active) + self-heal."
+        }
+      ]
     },
     {
       "slug": "the-shorekeeper",
@@ -2109,7 +2496,15 @@
           "notes": "No particular required synergy - the most widely usable, effective third-slot support in the game (Augusta, Carlotta, Zani, Camellya teams all use her)."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Shorekeeper",
+          "appOutroBuffsRaw": "[{ stat: 'allDmg', value: 15, target: 'team', duration: 30 }]",
+          "appNote": "Outro: 15% All DMG Amp, team-wide, 30s (persists through swaps). Lib Stellarealm: +12.5% CR +25% CD (30s), team-wide. Knockdown recovery."
+        }
+      ]
     },
     {
       "slug": "verina",
@@ -2124,7 +2519,7 @@
         "effect": "Blossom - HoT to next character (19% ATK/s for 6s) + 15% all-type DMG Deepen to nearby team for 30s.",
         "grantsTo": "next resonator (swap-in)",
         "damageTypeAffected": "Spectro",
-        "durationApprox": "6s",
+        "durationApprox": "30s",
         "source": "https://www.prydwen.gg/wuthering-waves/characters/verina"
       },
       "intro": {
@@ -2143,7 +2538,16 @@
           "notes": "Slots into virtually any team; slightly behind The Shorekeeper in raw buff strength but has by far the shortest rotation, making her preferred in quickswap and some Jinhsi teams (Coordinated Attacks synergy)."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Verina",
+          "appOutroBuffsRaw": "[{ stat: 'allDmg', value: 15, target: 'team', duration: 30 }]",
+          "appNote": "Outro Blossom: heals the incoming Resonator + All DMG Amp +15% (30s) for the nearby team. Inherent Gift of Nature: team ATK +20%/20s on Forte/Liberation/Outro triggers."
+        }
+      ],
+      "crossCheckContradiction": "Prydwen prose-derived durationApprox (6s) was actually the HoT-to-next-character duration, not the All DMG Amp duration. CHAR_BUFF_TABLE confirms the All DMG Amp (the effect damageTypeAffected/durationApprox are meant to describe) is 30s team-wide. Fixed durationApprox to 30s."
     },
     {
       "slug": "xiangli-yao",
@@ -2195,7 +2599,15 @@
           "notes": "Yangyang is the best non-limited-5-star option; Jianxin viable but has field-time/Energy issues."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Xiangli Yao",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Intuition-state Liberation Main DPS. Outro Chain Rule deals bonus Electro DMG (237.63% ATK, up to 3 procs over 8s) on the incoming Resonator\\'s Basic Attacks rather than granting a DMG Amp buff."
+        }
+      ]
     },
     {
       "slug": "yangyang",
@@ -2244,7 +2656,15 @@
           "notes": "Budget alternative to Zhezhi even without quickswap."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Yangyang",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Outro (Whispering Breeze) funnels 4 Energy/s for 5s to the incoming character — no direct DMG buff at S0. Minimal personal DMG contribution; value comes from Energy generation and quickswap-friendliness (buffs unlocked at higher Sequences)."
+        }
+      ]
     },
     {
       "slug": "yangyang-xuanling",
@@ -2258,7 +2678,7 @@
         "effect": "As the Wind Wills - 300% ATK Havoc hit + grants other Havoc Bane appliers +20% Havoc DMG Amplification after their next Havoc Bane application.",
         "grantsTo": "next resonator (swap-in)",
         "damageTypeAffected": "Havoc",
-        "durationApprox": null,
+        "durationApprox": "20s (from app CHAR_BUFF_TABLE)",
         "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling"
       },
       "intro": {
@@ -2287,7 +2707,15 @@
           "notes": "Phrolova makes an excellent Whimpering Wastes Dual DPS pairing."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Yangyang: Xuanling",
+          "appOutroBuffsRaw": "[{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'Havoc Bane appliers only, via As the Wind Wills' }]",
+          "appNote": "Primarily a self-buffing DPS (huge personal Crit DMG scaling via Feathered Oath, plus Bated Breath/Streaming Storm +160% Crit DMG on her Forte-gated Heavy ATK and Unbroken Vow\\'s Havoc Bane DMG Amp). Outro grants +20% Havoc DMG to other Havoc Bane appliers in the team (Chisa)."
+        }
+      ]
     },
     {
       "slug": "yinlin",
@@ -2336,7 +2764,15 @@
           "notes": "Competitive but slightly weaker alternative to Zhezhi for Jinhsi."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Yinlin",
+          "appOutroBuffsRaw": "[\n      { stat: 'elemDmg', value: 20, target: 'next', duration: 14 },\n      { stat: 'libDmg', value: 25, target: 'next', duration: 14 },\n    ]",
+          "appNote": "Off-field Electro sub-DPS via Coordinated Attacks (Electromagnetic Blast on Sinner\\'s Mark targets, Judgement Strike on Punishment Mark targets). Outro: Electro DMG Amp +20% + Liberation DMG Amp +25% (14s) for the incoming Resonator. No RES Shred in her kit."
+        }
+      ]
     },
     {
       "slug": "youhu",
@@ -2386,7 +2822,15 @@
           "notes": "Viable budget pairing."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Youhu",
+          "appOutroBuffsRaw": "[{ stat: 'coordDmg', value: 100, target: 'next', duration: 28 }]",
+          "appNote": "Glacio healer (Scroll Divination + Poetic Essence, both heal on cast). Outro Timeless Classics: +100% Coordinated ATK DMG Amp (28s) to the incoming Resonator — her signature niche buff."
+        }
+      ]
     },
     {
       "slug": "yuanwu",
@@ -2419,7 +2863,15 @@
           "notes": "Only real meta use case - highest Coordinated Attack frequency of any character for filling Jinhsi's Forte, at essentially zero investment (level 1, 3-star weapon, level 0 Echoes still works)."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Yuanwu",
+          "appOutroBuffsRaw": "[]",
+          "appNote": "Skill Thunder Wedge: off-field Coordinated ATK (1x/1.2s while an ally is on-field within the field). Liberation Blazing Might grants team-wide Interruption Resistance (Lightning Infused, 10s) — no DMG stat. Outro Lightning Manipulation: pure Vibration Strength depletion, no DMG buff. Shield only unlocks at Resonance Chain S4."
+        }
+      ]
     },
     {
       "slug": "zani",
@@ -2468,7 +2920,15 @@
           "notes": "Heavy Attack DMG buffers as budget alternatives to Phoebe."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Zani",
+          "appOutroBuffsRaw": "[{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'To allies hitting the Heliacal Ember-marked target' }]",
+          "appNote": "Converts Frazzle→Heliacal Embers. Outro grants allies hitting the marked target +20% Spectro DMG Amp (20s). Weapon contribution now comes entirely from the equipped weapon\\'s own pv, not a hardcoded assumption."
+        }
+      ]
     },
     {
       "slug": "zhezhi",
@@ -2517,7 +2977,15 @@
           "notes": "Acceptable fallback with a well-built team."
         }
       ],
-      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)"
+      "dataStatus": "sourced from Prydwen build page (see kit.skills in characters/<slug>.json)",
+      "crossCheckedSources": [
+        {
+          "source": "app/src/data/characters.js CHAR_BUFF_TABLE",
+          "appCharacterKey": "Zhezhi",
+          "appOutroBuffsRaw": "[\n      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Glacio DMG Amp' },\n      { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },\n    ]",
+          "appNote": "Outro: +20% Glacio DMG Amp + 25% Res. Skill DMG Amp (14s). Off-field painter DMG."
+        }
+      ]
     }
   ]
 }
