@@ -285,19 +285,17 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
 
   // Character name badge/plaque — bottom-center of the portrait, sitting in the bottom fade
   // drawn above. A pill same style as the Weapon panel's refinement pill (gold-tinted fill +
-  // border) rather than plain text, so it reads as a nameplate/badge rather than a caption.
+  // border) — the same neutral dark mask/border every other block on this card uses (drawBannerPanel's
+  // rgba(10,14,22,0.75) fill + rgba(255,255,255,0.16) border), not a gold treatment.
   {
     ctx.font = 'bold 26px sans-serif';
     const textW = ctx.measureText(name).width;
     const padX = 24, plaqueH = 44;
     const plaqueW = textW + padX * 2;
     const plaqueX = bx + portraitW / 2 - plaqueW / 2, plaqueY = by + bh - 18 - plaqueH;
-    ctx.fillStyle = 'rgba(10,14,22,0.85)'; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.fill();
-    const pg = ctx.createLinearGradient(plaqueX, 0, plaqueX + plaqueW, 0);
-    pg.addColorStop(0, 'rgba(237,175,24,0.15)'); pg.addColorStop(0.5, 'rgba(237,175,24,0.35)'); pg.addColorStop(1, 'rgba(237,175,24,0.15)');
-    ctx.fillStyle = pg; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(237,175,24,0.6)'; ctx.lineWidth = 1.5; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.stroke();
-    ctx.fillStyle = '#fdf6e3'; ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(10,14,22,0.75)'; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.stroke();
+    ctx.fillStyle = '#f1f5f9'; ctx.textAlign = 'center';
     ctx.fillText(name, bx + portraitW / 2, plaqueY + plaqueH / 2 + 9);
     ctx.textAlign = 'left';
   }
