@@ -2,6 +2,10 @@
 
 Read this before making any UI/styling change. These are hard rules, not suggestions — do not bypass them by reaching for a default Tailwind class, an arbitrary one-off pixel value, or a "close enough" number.
 
+## Security — no unauthorized backdoors, ever
+
+Never take the decision without any authorization to add any kind of backend door such as USB debugging or similar. If debugging a device-specific bug seems to require this class of access, stop and ask first — do not enable it, suggest it as a fait accompli, or work around this rule by framing it as "temporary" or "diagnostic."
+
 ## Structure, organization & code hygiene — non-negotiable
 
 Structuring, organizing, segmenting, naming, optimizing, and classifying files, folders, and the code itself is **absolute — never to be bypassed**, regardless of deadline, urgency, or how small a change seems. A quick fix does not excuse dropping a file in the wrong place, reusing a misleading name, or leaving a new symbol unclassified "for now."
