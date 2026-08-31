@@ -1,12 +1,12 @@
 name: Build APK
 
-# Only ever builds from main — either automatically on a push that touches
-# the app, or manually via workflow_dispatch (the ref dropdown defaults to
-# main; the guard below hard-stops the job if someone runs it from another
-# branch anyway, so main is enforced regardless of what's picked there).
+# Builds from Whispering-Wishes-Public-Release only, on this branch —
+# either automatically on a push that touches the app, or manually via
+# workflow_dispatch. The guard below hard-stops the job if run from any
+# other branch.
 on:
   push:
-    branches: [main]
+    branches: [Whispering-Wishes-Public-Release]
     paths:
       - 'app/**'
       - '.github/workflows/build-apk.yml'
@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Refuse to run off main
-        if: github.ref != 'refs/heads/main'
+      - name: Refuse to run off Whispering-Wishes-Public-Release
+        if: github.ref != 'refs/heads/Whispering-Wishes-Public-Release'
         run: |
-          echo "This workflow only builds from main (got $GITHUB_REF) — aborting." >&2
+          echo "This workflow only builds from Whispering-Wishes-Public-Release (got $GITHUB_REF) — aborting." >&2
           exit 1
 
       - name: Checkout repository

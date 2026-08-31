@@ -46,14 +46,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
 
   const [status, setStatus] = useState('Loading map...');
   const [mapReady, setMapReady] = useState(false);
-  const [showWipNotice, setShowWipNotice] = useState(() => {
-    if (typeof localStorage === 'undefined') return false;
-    try { return localStorage.getItem(MAP_WIP_SEEN_KEY) !== '1'; } catch { return true; }
-  });
-  const dismissWipNotice = useCallback(() => {
-    setShowWipNotice(false);
-    try { localStorage.setItem(MAP_WIP_SEEN_KEY, '1'); } catch {}
-  }, []);
+  const [showWipNotice] = useState(true); // public release: Map is permanently locked
   const [authorEnabled, setAuthorEnabled] = useState(() => {
     if (typeof localStorage === 'undefined') return false;
     return localStorage.getItem(AUTHOR_FLAG_KEY) === '1';
@@ -2771,16 +2764,13 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         }
       `}</style>
       <div role="tabpanel" id="tabpanel-map" aria-labelledby="tab-map" tabIndex="0" style={{ position: 'relative', zIndex: 10 }}>
-      <FocusTrapModal isOpen={showWipNotice} onClose={dismissWipNotice} className="" onClick={dismissWipNotice} ariaLabel="Map work in progress" centered padding="p-3">
-        <div className="kuro-card w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+      <FocusTrapModal isOpen={showWipNotice} onClose={() => {}} className="" ariaLabel="Map work in progress" centered padding="p-3">
+        <div className="kuro-card w-full max-w-sm">
           <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between" data-sheet-header>
             <div className="flex items-center gap-2">
               <Construction size={16} className="text-yellow-400" />
               <h3 className="text-white font-semibold text-lg">{t('map.wip.title')}</h3>
             </div>
-            <button onClick={dismissWipNotice} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('map.wip.close')}>
-              <X size={16} />
-            </button>
           </div>
           <div className="w-full h-48 flex items-center justify-center overflow-hidden" style={{ background: 'var(--bg-btn)' }}>
             <img
@@ -2794,9 +2784,6 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           <div className="p-4 space-y-3 text-sm text-gray-300 leading-relaxed">
             <p>{t('map.wip.body1')}</p>
             <p>{t('map.wip.body2')}</p>
-          </div>
-          <div className="px-4 pb-4">
-            <button onClick={dismissWipNotice} className="kuro-btn w-full">{t('map.wip.gotIt')}</button>
           </div>
         </div>
       </FocusTrapModal>

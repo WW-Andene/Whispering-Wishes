@@ -481,7 +481,6 @@ async function getOcrWorker() {
           // a hang actually happens at.
           logger: (m) => {
             lastStage = `${m.status} (${Math.round((m.progress || 0) * 100)}%)`;
-            console.log('[OCR]', lastStage);
           },
         });
       })(),

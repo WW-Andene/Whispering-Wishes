@@ -8,7 +8,6 @@ import { storageAvailable, sanitizeStateObj } from '../../core/storage.js';
 import { getLocale } from '../../utils/i18n.js';
 
 const ADMIN_BANNER_KEY = 'whispering-wishes-admin-banners';
-const ADMIN_HASH = '3cfcc468339c419168af41cd27265872e0f5d654a415edd90e59f2785886c494';
 
 const loadCustomBanners = () => {
   if (!storageAvailable) return null;
@@ -32,4 +31,4 @@ const getActiveBanners = () => {
   return custom || getLocalizedCurrentBanners(getLocale());
 };
 
-export { ADMIN_BANNER_KEY, ADMIN_HASH, loadCustomBanners, getActiveBanners };
+export { ADMIN_BANNER_KEY, loadCustomBanners, getActiveBanners };

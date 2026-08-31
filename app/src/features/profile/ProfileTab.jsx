@@ -21,12 +21,11 @@ import { useFocusTrap, FocusTrapModal } from '../../shared/components/FocusTrapM
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
-import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/bannerUtils.js';
+import { ADMIN_BANNER_KEY } from '../../shared/components/bannerUtils.js';
 
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 import IdCardModal from './IdCardModal.jsx';
-import AdminPanel from './AdminPanel.jsx';
 import AboutSection from './AboutSection.jsx';
 import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
@@ -424,7 +423,7 @@ function ProfileTab({
       toast?.addToast?.('Hashing unavailable. HTTPS required', 'error');
       return;
     }
-    if (constantTimeCompare(pbkdf2Hash, ADMIN_HASH)) {
+    if (false) { // public release: admin login is disabled, ADMIN_HASH removed
       setAdminUnlocked(true);
       setAdminPassword('');
       adminSessionFailsRef.current = 0;
@@ -1417,40 +1416,6 @@ function ProfileTab({
         ownedCharNames={ownedCharNames}
         idCardTrapRef={idCardTrapRef}
         trophies={trophies}
-      />
-
-      {/* Admin Panel Modal + Mini Window */}
-      <AdminPanel
-        showAdminPanel={showAdminPanel} setShowAdminPanel={setShowAdminPanel}
-        adminUnlocked={adminUnlocked} setAdminUnlocked={setAdminUnlocked}
-        adminPassword={adminPassword} setAdminPassword={setAdminPassword}
-        adminTab={adminTab} setAdminTab={setAdminTab}
-        adminMiniMode={adminMiniMode} setAdminMiniMode={setAdminMiniMode}
-        bannerForm={bannerForm} setBannerForm={setBannerForm}
-        trophyJsonInput={trophyJsonInput} setTrophyJsonInput={setTrophyJsonInput}
-        activePlayersCount={activePlayersCount} activePlayersHistory={activePlayersHistory}
-        presenceError={presenceError} adminPlayerList={adminPlayerList}
-        adminLockedUntil={adminLockedUntil}
-        trophies={trophies}
-        fetchActivePlayersCount={fetchActivePlayersCount} fetchAdminPlayerList={fetchAdminPlayerList}
-        deleteLeaderboardEntry={deleteLeaderboardEntry}
-        trophyOverrides={trophyOverrides} setTrophyOverrides={setTrophyOverrides}
-        verifyAdminPassword={verifyAdminPassword} saveCustomBanners={saveCustomBanners}
-        buildBannerForm={buildBannerForm} updateBannerForm={updateBannerForm}
-        visualSettings={visualSettings} saveVisualSettings={saveVisualSettings}
-        customCollectionImages={customCollectionImages} saveCollectionImages={saveCollectionImages}
-        collectionImages={collectionImages}
-        activeBanners={activeBanners} setActiveBanners={setActiveBanners}
-        state={state} dispatch={dispatch} toast={toast} confirm={confirm}
-        adminTrapRef={adminTrapRef}
-        setActiveTab={setActiveTab}
-        withCacheBuster={withCacheBuster}
-        detailModal={detailModal}
-        DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
-        bgFramingMode={bgFramingMode} setBgFramingMode={setBgFramingMode}
-        editingBgTarget={editingBgTarget} setEditingBgTarget={setEditingBgTarget}
-        updateBgPosition={updateBgPosition} getBgPositionLabel={getBgPositionLabel}
-        exportBgPositions={exportBgPositions}
       />
 
     </>

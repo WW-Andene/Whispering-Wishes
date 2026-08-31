@@ -56,8 +56,6 @@ import { OnboardingModal } from './shared/components/OnboardingModal.jsx';
 import { ImageFramingProvider, useImageFramingContext } from './providers/ImageFramingProvider.jsx';
 import { CloudStorageProvider, useCloudStorage } from './providers/CloudStorageProvider.jsx';
 // --- shared ---
-import AdminMiniPanel from './features/profile/AdminMiniPanel.jsx';
-import PaddingDebugOverlay from './shared/components/PaddingDebugOverlay.jsx';
 import { DetailModalHost } from './shared/components/DetailModalHost.jsx';
 import { TabButton } from './shared/components/Card.jsx';
 import { ThemeColor } from './shared/components/ThemeColor.jsx';
@@ -1375,22 +1373,6 @@ function WhisperingWishesInner() {
 
       </main>
 
-      {/* Admin Mini Panel — rendered here (not inside ProfileTab) so it
-          persists across tab switches. ProfileTab still renders the full
-          AdminPanel modal; we only hoist the mini variant. */}
-      {showAdminPanel && adminMiniMode && adminUnlocked && (
-        <AdminMiniPanel
-          setShowAdminPanel={setShowAdminPanel} setAdminMiniMode={setAdminMiniMode}
-          visualSettings={visualSettings} saveVisualSettings={saveVisualSettings} DEFAULT_VISUAL_SETTINGS={DEFAULT_VISUAL_SETTINGS}
-          bgFramingMode={bgFramingMode} setBgFramingMode={setBgFramingMode}
-          editingBgTarget={editingBgTarget} setEditingBgTarget={setEditingBgTarget}
-          updateBgPosition={updateBgPosition} getBgPositionLabel={getBgPositionLabel} exportBgPositions={exportBgPositions}
-          detailModal={detailModal} toast={toast} confirm={confirm}
-        />
-      )}
-
-      {/* Padding debug overlay — self-manages visibility via localStorage, toggled from Admin Panel > Debug tab */}
-      <PaddingDebugOverlay />
 
       {/* Server Selector Modal */}
       <ServerSelectorModal
