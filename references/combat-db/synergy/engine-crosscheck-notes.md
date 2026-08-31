@@ -168,3 +168,119 @@ unpublished as of the 2026-08-31 scrape. Hsin has no entry anywhere in
 `RESONANCE_CHAIN_DATA`) — consistent with the character being wholly unreleased
 in the live app, not a missed buff-table entry. No action taken; re-check once
 Prydwen's Hsin kit page is complete.
+
+## Recommendation-pipeline audit (2026-08-31, second pass) — autoEquip.js, TeamSelector/TeamsTab, full scoreTeamComposition re-read
+
+Scope: `autoEquip.js` (never audited before this pass), `scoreTeamComposition`
+re-read end to end for internal consistency after the 76df3e6a sub-DPS patch,
+`TeamSelector.jsx`/`TeamsTab.jsx` UI-layer surfacing of scores/tags, and a
+sample cross-check of characters' `bestEchoes`/`dmgFocus`/`substatPriority`
+against `references/combat-db/characters/*.json`.
+
+### FIXED: `libDmg` buffs not gated by Liberation `dmgFocus` in `scoreTeamComposition`
+
+`scoreTeamComposition`'s local `typeFocusMap` (calcEngine.js, was line 989)
+gates `basicDmg`/`heavyDmg`/`echoDmg`/`coordDmg`/`skillDmg` buffs to only
+apply when the receiving DPS's `dmgFocus` actually includes that attack
+type — but omitted `libDmg` entirely, so any Liberation-DMG outro buff fell
+through to `buffApplies`'s final `return true` (the "atkPct/critRate/critDmg
+are universal" catch-all) and was scored as applicable to ANY DPS regardless
+of whether Liberation is even part of their kit.
+
+Four real characters carry a `target:'next'` `libDmg` outro in
+`CHAR_BUFF_TABLE` (`app/src/data/characters.js`): Jianxin (+38%), Lynae
+(+25%), Changli (+25%), Yinlin (+25%). All four were being scored as
+full-value teammates for every DPS in the recommendation engine, including
+non-Liberation-focused ones who mechanically get zero benefit from the buff.
+
+Confirmed against the real damage calculator in the same codebase, not
+guessed: `calcEngine.js`'s own `TYPE_FOCUS_MAP` (line 366, used by
+`applyBuff`/`routeTypeBonuses` for actual DPS math) already contains
+`libDmg: 'Liberation'`, and `calcTeamStats.js:1314` independently applies the
+identical gate (`b.stat === 'libDmg' && dpsFocus.includes('Liberation')`) in
+its own sub-DPS synergy-scoring code. `scoreTeamComposition`'s local map was
+simply missing the one entry the rest of the codebase already agrees on.
+
+**Fixed**: added `libDmg: 'Liberation'` to `typeFocusMap`. `cd app && npm
+test`: 611/612 passing (same one pre-existing, unrelated SSR failure as
+every prior pass on this branch — not touched).
+
+### Checked and clean: `autoEquip.js` (first audit of this file)
+
+Read in full. Findings:
+
+- `bestEchoes`/`bestWeapon`/`weaponAlts` are read directly from
+  `CHARACTER_DATA`, which is the same source `references/combat-db` was
+  cross-checked against in earlier passes (e.g. Jinhsi:
+  `bestEchoes: ['Jué', 'Celestial Light 5pc']`, `bestWeapon: 'Ages of
+  Harvest'` matches `characters/jinhsi.json`'s `buildGuide.echoSet` /
+  `bestWeapons[0]` exactly) — no drift found in the sample checked (Jinhsi,
+  Verina, Yinlin, Camellya, Cartethyia, Xiangli Yao, Baizhi).
+- The multi-build-entry parsing (`stripAnnotation`, the `totalRequestedPc
+  >= 5` stop condition) and the 2pc+2pc hybrid-set handling are already
+  correctly implemented and documented in-file with worked reasoning tied to
+  real characters (Chisa/Aemeath/Denia's multi-build entries, Rebecca/Lucy's
+  intentional 3-piece 1pc+2pc target) — re-verified the logic against those
+  specific characters' actual `bestEchoes` strings and it parses as
+  intended.
+- `pickEcho`'s fallback chain (direct-name match → pure-set match → any-set
+  match → element/dead-weight-aware fallback → any unused echo) is
+  internally consistent and never returns `null` while any echo remains
+  unused, so it can't silently leave a gear slot empty the way an earlier
+  version (per its own in-file changelog comments) apparently did.
+- `computeAutoEquipEntryOptimized`'s search over `['default','er','support']`
+  presets for an ambiguous non-headline DPS actually re-runs
+  `calcTeamStats` per candidate and keeps the highest real `teamDps` — a
+  measured choice, not a heuristic guess, and its in-file comment documents
+  a concrete case (a previously-tried "spare DPS → ER when no healer"
+  heuristic regressed teamDps 12613 → 9767) that was reverted once measured
+  against the real engine. No further gap found here.
+- No character's `bestEchoes` in the checked sample contradicts its own
+  `substatPriority`/`mainStats` fields from combat-db in any way autoEquip's
+  set-matching logic would mishandle.
+
+One known, already-documented simplification (not a new bug, not fixed):
+combat-db's `substatPriority` for nearly every character (including pure
+Crit DPS) lists "Energy Regen (until satisfied)" as the #1 substat —
+reflecting real players itemizing ER echoes only until they clear their
+rotation's energy requirement, then switching purely to Crit. `autoEquip.js`
+has no per-character energy-requirement model to know when "satisfied" is
+reached, so its `default` (Crit DPS) preset omits Energy Regen from the
+substat list entirely rather than guessing a breakpoint — a decision already
+made and measured in-file (see the reverted "spare DPS → ER" experiment
+above, which found trading Crit for ER a straight DPS loss without a real
+uptime model backing it). Flagging for awareness only: a future
+energy-cycle-aware substat allocator would be a real improvement, but
+building one safely is a data/measurement project of its own, not a
+surgical fix.
+
+### Checked and clean: `TeamSelector.jsx` / `TeamsTab.jsx` UI-layer surfacing
+
+- `TeamSelector.jsx`'s "Recommended" badge rank (`recommendedOrder.indexOf(name)
+  + 1`) is derived from `recommendedNames`' Map insertion order, which
+  `TeamsTab.jsx` builds via `[...candidateScores.entries()].sort((a,b) =>
+  b[1]-a[1])` — insertion order does equal descending-score order in a plain
+  JS `Map`, so the displayed rank badge always matches the real score
+  ranking. No stale-order bug found.
+- `filteredChars`' own sort in `TeamsTab.jsx` (~line 401) uses the same
+  `candidateScores` map as the primary sort key, so the grid's actual left-
+  to-right/top-to-bottom order also matches score order, not just the badge.
+  (Its inline comment — "Higher vote count... ranks first" — is stale/
+  imprecise leftover phrasing from an earlier curated-votes-only version;
+  the code itself already correctly sorts by the full synergy score, which
+  includes but isn't limited to curated votes. Cosmetic comment drift only,
+  not a functional bug — not fixed since no code change is needed.)
+- The "Team Suggestions" list (`teamSuggestions` `useMemo`) and the
+  character-selector's own live `candidateScores` computation both call
+  the identically-shared `scoreTeamComposition`, so a fix to the scorer
+  (like the `libDmg` fix above) automatically applies to both surfaces —
+  confirmed no second, drifted copy of the ranking math exists in either
+  file.
+- `applySuggestion`'s handling of `dpsOverride` (set for custom/roster-built
+  teams, left unset/cleared for curated `CHARACTER_DATA.teams` entries) is
+  intentional and already documented in-file; re-verified it doesn't leave
+  a stale override from a previously-loaded team, since it's explicitly
+  dispatched to `null` whenever the loaded suggestion doesn't carry one.
+
+No new UI-layer bug found in this pass — a correct score already reliably
+drives what the player sees.
