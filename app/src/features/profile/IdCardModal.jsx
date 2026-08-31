@@ -52,7 +52,7 @@ export default function IdCardModal({
                       const f = getImageFraming(`collection-${state.profile.profilePic}`);
                       return <div className="absolute inset-0 breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} /></div>;
                     })() : (
-                      <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
+                      <div className="absolute inset-0 flex items-center justify-center rounded-[inherit]" style={{ background: 'var(--bg-stat)' }}>
                         <img src="./misc-assets/Abby_Full_Sprite.png" alt="Default" className="w-32 h-32 object-contain" />
                       </div>
                     )}

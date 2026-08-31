@@ -549,7 +549,7 @@ function ProfileTab({
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
                         return <div className="w-full h-full breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} /></div>;
                       })() : (
-                        <img src="./app-title-icon/Abby_app_home_icon.png" alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1" loading="lazy" onError={hideOnError} />
+                        <img src="./app-title-icon/Abby_app_home_icon.png" alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1 rounded-[inherit]" loading="lazy" onError={hideOnError} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
