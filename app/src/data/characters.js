@@ -52,7 +52,13 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Blazing Brilliance', 'Laser Shearer'], alt4: ['Lunar Cutter', 'Endless Collapse'], alt3: ['Sword of Night'] },
     teams: ['Rover: Electro + Yinlin + Verina', 'Rover: Electro + Calcharo + Shorekeeper'] },
   'Jiyan': { rarity: 5, element: 'Aero', weapon: 'Broadblade', role: 'Main DPS',
-    desc: "Windborne Rider, leader of the Midnight Rangers of Jinzhou, acts with swift and resolute righteousness — he possesses the formidable ability to conjure a powerful Qingloong from the winds, making him invincible on the battlefield. On-field Aero DPS who builds Resolve through Basic Attacks and the Intro Skill Tactical Strike, spending it on an empowered Windqueller or the Emerald Storm: Finale burst, then unleashes Emerald Storm: Prelude to enter Qingloong Mode — a heavy-hitting Lance of Qingloong combo with high interrupt resistance.",
+    // desc rewritten 2026-08-31 against wutheringwaves.fandom.com/wiki/Jiyan/Combat (Chrome/Windows UA +
+    // google.com referer + jsRender, load+9s wait; 2nd attempt cleared the Cloudflare interstitial the 1st
+    // hit): exact Resolve economy (0-60 cap, gain sources, 15s no-hit decay), exact 30-Resolve thresholds for
+    // both the empowered Windqueller (+20% DMG, costs 30 Resolve) and the Finale-vs-Prelude Liberation branch,
+    // and exact Qingloong Mode entry/duration/cooldown/cost — none of this was documented with real numbers
+    // before.
+    desc: "Windborne Rider, leader of the Midnight Rangers of Jinzhou, acts with swift and resolute righteousness — he possesses the formidable ability to conjure a powerful Qingloong from the winds, making him invincible on the battlefield. On-field Aero DPS whose Forte resource is Resolve (0-60 cap): gained when Basic Attack 'Lone Lance' or the Intro Skill 'Tactical Strike' hits a target, and it gradually decays if he goes 15s without landing a hit. At 30+ Resolve, casting Resonance Skill 'Windqueller' consumes 30 Resolve for +20% DMG (in Qingloong Mode this same +20% is free and costs no Resolve). Also at 30+ Resolve, pressing Resonance Liberation consumes 30 Resolve to cast the empowered 'Emerald Storm: Finale' (counted as Heavy ATK DMG, castable at low altitude mid-air) instead of the normal 'Emerald Storm: Prelude'; below 30 Resolve, Prelude is cast instead — it deals no direct damage itself but puts him into Qingloong Mode for 10s (16s cooldown, costs 125 Concerto Energy): increased Anti-interruption, with Basic Attack, Heavy Attack, and Dodge Counter all replaced by the 3-part Heavy Attack 'Lance of Qingloong' combo (counted as Heavy ATK DMG).",
     skills: ['Lone Lance', 'Windqueller', 'Qingloong at War', 'Emerald Storm: Prelude'],
     rotation: ['Echo', 'Intro', 'Liberation: Emerald Storm', 'Heavy: Lance of Qingloong 1 (cancel → Skill)', 'Skill', 'Heavy: Lance 1', 'Heavy: Lance 2', 'Heavy: Lance 3', 'Heavy: Lance 1', 'Heavy: Lance 2', 'Heavy: Lance 3', 'Skill', 'Outro'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Pecok Flower' },
@@ -3173,16 +3179,35 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Illuminated Manifestation', '15.91%×7 + 47.72%', 'Swap-in opener that also restores 40 Sentience. Lv.10.'],
     ['Outro', 'From Gloom to Gleam', '100%', 'Swap-out strike that grants the next Resonator +50% Heavy ATK DMG Amp for 10s.'],
   ],
+  // Re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Jiyan/Combat's Lv.10 Attribute Scaling
+  // tables (Chrome/Windows UA + google.com referer + jsRender, load+9s wait; 2nd attempt cleared Cloudflare).
+  // Corrections vs previous data: Basic ATK Stage 3 was wrongly '×2' — site's own table shows 5 sub-hits
+  // ('36.38%*5'), corrected to ×5. Stage 5 was wrongly '×4' on the first term — site shows 7 sub-hits
+  // ('23.60%*7'), corrected to ×7 (the trailing '+153.45%×2' term was already correct). Heavy ATK's
+  // Windborne Strike (hold, 81.71%) and Abyssal Slash (release, 105.96%) values were swapped relative to the
+  // row's own label order ('Windborne Strike / Abyssal Slash') — reordered to 81.71% → 105.96% to match.
+  // Added the previously-missing 'Banner of Triumph' mid-air follow-up row (only reachable after Windborne
+  // Strike or an airborne Windqueller — site's own separate 'Mid-Air Attack: Banner of Triumph' section).
+  // Liberation 'Emerald Storm: Prelude' itself deals NO direct damage per source (it only triggers Qingloong
+  // Mode) — the 65.52%×8/61.55%×8/66.76%×8 figures previously attached to the Liberation row actually belong
+  // to the separate 'Heavy Attack: Lance of Qingloong' move (source's own 'Lance Of Qingloong Part 1/2/3
+  // Damage' scaling table, explicitly "considered as Heavy Attack damage") — moved to a dedicated Heavy ATK
+  // row and Liberation zeroed to reflect it has no direct hit of its own. This also fixes a zero-damage bug:
+  // CHARACTER_ROTATIONS.Jiyan's steps referenced move names like "Lance of Qingloong P1" which did not
+  // substring-match the old row name at all (rowName.includes(step.skill) lookup) — rotation steps corrected
+  // to say plain "Lance of Qingloong", which now matches this row's name.
   'Jiyan': [
-    ['Basic ATK', 'Lone Lance Stage 1-5', '73.16% → 43.73% → 36.38%×2 → 66.20%×2 → 23.60%×4+153.45%×2', 'Standard 5-stage combo; Stage 3/5 have sub-hits.'],
-    ['Heavy ATK', 'Standard / Windborne Strike / Abyssal Slash', '22.20%×6 → 105.96% → 81.71%', 'Hold or release Basic ATK during Heavy ATK for a follow-up finisher.'],
+    ['Basic ATK', 'Lone Lance Stage 1-5', '73.16% → 43.73% → 36.38%×5 → 66.20%×2 → 23.60%×7+153.45%×2', 'Standard 5-stage combo; Stage 3 hits 5×, Stage 5 hits 7×+2× finisher hit.'],
+    ['Heavy ATK', 'Standard / Windborne Strike / Abyssal Slash', '22.20%×6 → 81.71% → 105.96%', 'Hold Basic ATK during Heavy ATK for Windborne Strike (81.71%); release Basic ATK for Abyssal Slash (105.96%) instead.'],
+    ['Heavy ATK', 'Lance of Qingloong 1-3', '65.52%×8 → 61.55%×8 → 66.76%×8', 'Qingloong Mode Heavy ATK replacement (10s duration, 16s CD, 125 Energy cost); 3-part combo, each part hits 8×; counted as Heavy ATK DMG.'],
     ['Mid-air', 'Plunging Attack + Follow-up', '123.26%+155.66%'],
+    ['Mid-air', 'Banner of Triumph', '79.52%', 'Extra mid-air follow-up, only usable right after Windborne Strike or an airborne Windqueller.'],
     ['Dodge Counter', 'Standard', '125.84%×2'],
-    ['Skill', 'Windqueller', '106.36%×4', '7s cooldown; consumes Resolve for +20% DMG outside Qingloong Mode.'],
-    ['Forte', 'Emerald Storm: Finale', '142.91%×2+428.73%', 'At 30+ Resolve, Liberation Prelude casts Finale instead (Heavy ATK DMG).'],
-    ['Liberation', 'Emerald Storm: Prelude → Lance of Qingloong', '65.52%×8 → 61.55%×8 → 66.76%×8', 'Enters Qingloong Mode (10s): Basic/Heavy/Dodge Counter replaced by Lance of Qingloong.'],
+    ['Skill', 'Windqueller', '106.36%×4', '7s cooldown; at 30+ Resolve consumes 30 Resolve for +20% DMG outside Qingloong Mode; free +20% DMG (no Resolve cost) while in Qingloong Mode.'],
+    ['Forte', 'Emerald Storm: Finale', '142.91%×2+428.73%', 'At 30+ Resolve, Liberation consumes 30 Resolve to cast Finale instead of Prelude (counted as Heavy ATK DMG; castable mid-air at low altitude).'],
+    ['Liberation', 'Emerald Storm: Prelude', 'No direct DMG', 'Deals no direct DMG below 30 Resolve — only triggers Qingloong Mode (10s, 16s CD, 125 Energy cost). See "Lance of Qingloong 1-3" (Heavy ATK) for the actual damage dealt during Qingloong Mode, and "Emerald Storm: Finale" (Forte) for the 30+ Resolve branch.'],
     ['Intro', 'Tactical Strike', '198.81%'],
-    ['Outro', 'Discipline', '313.40% ATK per proc, up to 2', 'Coordinated ATK triggered when the incoming Resonator lands a Heavy ATK (8s window).'],
+    ['Outro', 'Discipline', '313.40% ATK per proc, up to 2', 'Coordinated ATK triggered when the incoming Resonator lands a Heavy ATK (8s window, once per second).'],
   ],
   // Re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Jinhsi/Combat's Lv.10 Attribute Scaling
   // tables (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare): Basic
@@ -3990,14 +4015,22 @@ const CHARACTER_ROTATIONS = {
   // Standard "Burst Combo" Rotation — sourced from Prydwen's "Gameplay and teams" tab for Jiyan
   // (re-fetched 2026-08-18, Chrome UA + google.com referer + jsRender). Omits the harder "Double Dragon
   // Combo" (dodge-cancel-timed variant that overlaps two dragons) as too execution-heavy for a baseline.
+  // Zero-damage bug fixed 2026-08-31 (re-verified against SKILL_MULTIPLIERS.Jiyan, same bug class already
+  // caught on Yinlin/Roccia): the 4 Heavy ATK steps used skill strings "Lance of Qingloong P1" and "Lance of
+  // Qingloong P1-P3", neither of which substring-matched the SKILL_MULTIPLIERS row name (previously
+  // "Emerald Storm: Prelude → Lance of Qingloong" under the Liberation row, now the dedicated Heavy ATK row
+  // "Lance of Qingloong 1-3") under the calc engine's `rowName.includes(step.skill)` lookup — those 4 steps
+  // silently resolved to ZERO damage. Corrected all 4 to plain "Lance of Qingloong", which is a substring of
+  // "Lance of Qingloong 1-3" and now resolves correctly. Liberation step's skill "Emerald Storm: Prelude"
+  // also re-verified — matches its own row's name (now correctly documented as dealing no direct DMG).
   'Jiyan': [
     { type: 'Echo', skill: 'Use Echo', note: "Use your equipped Echo's skill during the warm-up phase, right before entering the burst combo below, so its buff is active for the whole Ultimate window." },
     { type: 'Intro', skill: 'Tactical Strike', note: 'Swap into him — fires automatically, stabs the target and builds Resolve toward the 60 cap.' },
-    { type: 'Liberation', skill: 'Emerald Storm: Prelude', duration: 10, note: 'Press Liberation — enters Qingloong Mode for 10s: Basic Attack, Heavy Attack, and Dodge Counter are all replaced by Heavy Attack: Lance of Qingloong.' },
-    { type: 'Heavy ATK', skill: 'Lance of Qingloong P1', note: 'Press Heavy Attack for the 1st Lance of Qingloong, but interrupt it as fast as possible with Resonance Skill below — only the animation frames actually playing deal damage, so cutting it short here loses nothing and saves time.' },
-    { type: 'Skill', skill: 'Windqueller', note: 'Press Skill to cancel the interrupted Lance — deals Aero DMG (gets +20% DMG automatically while in Qingloong Mode, no Resolve cost).' },
-    { type: 'Heavy ATK', skill: 'Lance of Qingloong P1-P3', note: 'Press Heavy Attack and let it run this time — full 3-part combo, each part hits multiple times as the summoned dragon sweeps the area.' },
-    { type: 'Heavy ATK', skill: 'Lance of Qingloong P1-P3', note: 'Press Heavy Attack again for a 2nd full 3-part Lance of Qingloong combo.' },
+    { type: 'Liberation', skill: 'Emerald Storm: Prelude', duration: 10, note: 'Press Liberation (below 30 Resolve) — deals no direct DMG, only enters Qingloong Mode for 10s (16s CD, 125 Energy cost): Basic Attack, Heavy Attack, and Dodge Counter are all replaced by Heavy Attack: Lance of Qingloong.' },
+    { type: 'Heavy ATK', skill: 'Lance of Qingloong', note: 'Press Heavy Attack for the 1st Lance of Qingloong, but interrupt it as fast as possible with Resonance Skill below — only the animation frames actually playing deal damage, so cutting it short here loses nothing and saves time.' },
+    { type: 'Skill', skill: 'Windqueller', note: 'Press Skill to cancel the interrupted Lance — deals Aero DMG (free +20% DMG while in Qingloong Mode, no Resolve cost).' },
+    { type: 'Heavy ATK', skill: 'Lance of Qingloong', note: 'Press Heavy Attack and let it run this time — full 3-part combo (Part 1/2/3, each hits 8×) as the summoned dragon sweeps the area.' },
+    { type: 'Heavy ATK', skill: 'Lance of Qingloong', note: 'Press Heavy Attack again for a 2nd full 3-part Lance of Qingloong combo.' },
     { type: 'Skill', skill: 'Windqueller', note: 'Press Skill again before Qingloong Mode ends — a 6th/7th Lance rep can be started and cut short here for a small extra tick if timing allows, then swap out.' },
     { type: 'Outro', skill: 'Discipline', duration: 8, note: 'Swap out to trigger this automatically. For the next 8s, whenever the incoming Resonator lands a Heavy Attack, Jiyan\'s dragon lands a Coordinated Attack (up to 2 procs, once per second).' },
   ],
@@ -4689,8 +4722,36 @@ const RESONANCE_CHAIN_DATA = {
   //   totalMult:50, well under a third of the real value) — also doubles Death Knell's crystal-shard count
   //   and adds a 1.5s Scattering immobilize on hit (CC, not a DPS stat; no schema field for it).
   'Carlotta':     { s1: { critRate: 12.5 }, s2: { totalMult: 126 }, s3: { totalMult: 93 }, s4: { skillDmg: 25 }, s5: { totalMult: 47 }, s6: { totalMult: 186.6 } },
-  // Jiyan S1: extra Windqueller charge (utility). S2: ATK+28%. S3: CR+16% CD+32% (confirmed). S4: team Heavy ATK+25%. S5: ATK stacking up to +45%
-  'Jiyan':        { s1: { totalMult: 10 }, s2: { atkPct: 28 }, s3: { critRate: 16, critDmg: 32 }, s4: { heavyDmg: 25 }, s5: { atkPct: 45 }, s6: { totalMult: 40 } },
+  // Jiyan S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Jiyan/Combat's
+  // "Resonance Chain" section (Chrome/Windows UA + google.com referer + jsRender, load+9s wait; 2nd attempt
+  // cleared Cloudflare). Node names (Benevolence/Versatility/Spectation/Prudence/Resolution/Fortitude) at
+  // line ~6739 already matched verbatim — unchanged. Corrections to the numeric/stat data below:
+  // S1 Benevolence: purely utility (Windqueller +1 extra charge/use; Resolve cost of Windqueller -15) — has
+  //   ZERO DPS component. Previous data fabricated `totalMult: 10` with no basis; zeroed with a TODO per the
+  //   "don't guess, zero it" rule.
+  // S2 Versatility: after Intro Skill Tactical Strike, gain 30 Resolve and ATK+28% for 15s (once per 15s) —
+  //   confirmed correct as-is, no change.
+  // S3 Spectation: casting Windqueller, Liberation Prelude, Finale, OR Intro Tactical Strike grants Crit
+  //   Rate+16%/Crit DMG+32% for 8s — confirmed correct as-is, no change.
+  // S4 Prudence: casting Liberation Prelude or Finale grants the WHOLE TEAM Heavy ATK DMG Bonus +25% for
+  //   30s — confirmed correct as-is, no change.
+  // S5 Resolution: TWO separate effects, only one of which was previously captured. (a) Outro Skill
+  //   Discipline gains an ADDITIONAL +120% DMG Multiplier — not represented at all before; added as
+  //   `totalMult: 120` (matches this file's convention elsewhere, e.g. Carlotta's totalMult nodes, for a
+  //   flat DMG-multiplier bonus on a specific move). (b) ATK+3% per hit landed, stacking up to 15× (=+45%
+  //   max) for 8s, instantly maxed after casting Tactical Strike — this IS the source of the previous
+  //   `atkPct: 45` value (3%×15=45%), confirmed correct and kept, though the flat schema can't capture the
+  //   per-hit stacking/8s-decay/instant-max-on-Intro conditionality — TODO: needs Phase 2 schema for that.
+  // S6 Fortitude: stateful "Momentum" stacks (gained on Heavy ATK, Tactical Strike, or Windqueller use, cap
+  //   2) that Emerald Storm: Finale consumes entirely on cast, each stack consumed giving Finale's OWN DMG
+  //   Multiplier +120% (so up to +240% at 2 stacks, applying only to Finale, not a generic team/self total).
+  //   Previous `totalMult: 40` was fabricated (not 40, not generic) — corrected to `totalMult: 240` to
+  //   represent the realistic 2-stack max case, with a TODO noting the real mechanic is per-stack/conditional
+  //   and needs Phase 2 schema to model properly (0/120/240 depending on Momentum stacks at cast time).
+  'Jiyan':        { s1: { totalMult: 0 }, /* TODO: needs Phase 2 schema — Benevolence's extra Windqueller charge + Resolve-cost reduction are pure utility with no DPS component */
+    s2: { atkPct: 28 }, s3: { critRate: 16, critDmg: 32 }, s4: { heavyDmg: 25 },
+    s5: { atkPct: 45, totalMult: 120 }, /* TODO: needs Phase 2 schema — atkPct is a per-hit stack (max 15×, 8s duration, instant-maxed by Tactical Strike), not a flat buff */
+    s6: { totalMult: 240 } /* TODO: needs Phase 2 schema — real value is +120%/Momentum stack (cap 2) on Emerald Storm: Finale only, consumed on cast; 240 is the 2-stack-max case, not a flat constant */ },
   // Jinhsi S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Jinhsi/Combat
   // (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare):
   // S1 Abyssal Ascension: casting Incarnation-Basic Attack OR Crescent Divinity grants 1 stack of Herald
