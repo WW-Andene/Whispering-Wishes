@@ -53,7 +53,7 @@ export default function IdCardModal({
                       return <div className="absolute inset-0 breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} /></div>;
                     })() : (
                       <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'var(--bg-stat)' }}>
-                        <img src="./app-title-icon/Abby_app_home_icon.png" alt="Default" className="w-12 h-12 object-contain opacity-30" />
+                        <img src="./misc-assets/Abby_Full_Sprite.png" alt="Default" className="w-32 h-32 object-contain" />
                       </div>
                     )}
                     <div className="absolute top-0 left-0 right-0 h-24 pointer-events-none" style={{ background: 'linear-gradient(rgba(8,12,18,0.9), transparent)' }} />
