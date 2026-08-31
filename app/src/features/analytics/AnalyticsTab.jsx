@@ -752,7 +752,11 @@ function AnalyticsTab({
                       {(() => {
                       
                       return (<>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {/* sm:grid-cols-4 removed — real-viewport-based (fires on any
+                          real device >=640px), predates ScaledCanvas.jsx's engine
+                          where the canvas is always phone-shaped regardless of
+                          real width. Always 3 columns now. */}
+                      <div className="grid grid-cols-3 gap-2">
                         {trophies.list.map(trophy => {
                           const IconComponent = TROPHY_ICON_MAP[trophy.icon] || Star;
                           return (

@@ -506,12 +506,14 @@
       from { transform: translateY(100%); }
       to { transform: translateY(0); }
     }
-    @media (min-width: 640px) {
-      @keyframes sheetSlideUp {
-        from { opacity: 0; transform: scale(0.96); }
-        to { opacity: 1; transform: scale(1); }
-      }
-    }
+    /* Used to be gated behind @media (min-width: 640px), swapping to a
+       desktop-style scale-in instead of the mobile bottom-sheet slide-up
+       above whenever the REAL device was wide enough — predates
+       ScaledCanvas.jsx's engine, which means the canvas is now ALWAYS
+       phone-shaped regardless of real device width, so the "desktop" swap
+       can never be the right call anymore: it's not desktop, it's a
+       phone-shaped canvas rendered at whatever size fits a wide screen.
+       Removed — FocusTrapModal always gets the mobile slide-up now. */
 
     @keyframes scaleIn {
       from { opacity: 0; transform: scale(0.96); }
@@ -1209,12 +1211,15 @@
       color: #8f99ab;
     }
     
-    /* E2-MO2: Compact inputs on mobile for above-fold density */
-    @media (max-width: 640px) {
-      .kuro-calc .kuro-input {
-        padding: 8px 8px;
-        font-size: 13px;
-      }
+    /* E2-MO2: Compact inputs for above-fold density. Used to be gated behind
+       @media (max-width: 640px) — real-viewport-based, from before
+       ScaledCanvas.jsx's engine existed. The canvas is now ALWAYS
+       phone-shaped (fixed 439 logical px wide) regardless of the real
+       device, so "mobile" is no longer a sometimes-true condition to test
+       for — it's the only reality, and this now always applies. */
+    .kuro-calc .kuro-input {
+      padding: 8px 8px;
+      font-size: 13px;
     }
 
     .kuro-input-sm {
@@ -1894,13 +1899,16 @@
       animation: kuroSlideOut 0.2s ease-out forwards;
     }
 
-    /* RS-F1: Responsive typography compression for narrow viewports */
-    @media (max-width: 768px) {
-      .text-6xl { font-size: var(--font-5xl) !important; }
-      .text-5xl { font-size: var(--font-4xl) !important; }
-      .text-4xl { font-size: var(--font-3xl) !important; }
-      .text-3xl { font-size: var(--font-2xl) !important; }
-    }
+    /* RS-F1: Responsive typography compression. Used to be gated behind
+       @media (max-width: 768px) — real-viewport-based, from before
+       ScaledCanvas.jsx's engine existed. The canvas is now ALWAYS
+       phone-shaped (fixed 439 logical px wide) regardless of the real
+       device, so "narrow viewport" is no longer a sometimes-true condition
+       — it's the only reality, and this compression now always applies. */
+    .text-6xl { font-size: var(--font-5xl) !important; }
+    .text-5xl { font-size: var(--font-4xl) !important; }
+    .text-4xl { font-size: var(--font-3xl) !important; }
+    .text-3xl { font-size: var(--font-2xl) !important; }
 
     /* §DST1: Ghost-grid placeholder cells for collection empty state */
     @keyframes ghostPulse {

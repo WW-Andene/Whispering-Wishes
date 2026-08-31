@@ -579,7 +579,10 @@ function ProfileTab({
             <Card>
               <CardHeader>{t('profile.server.title')}</CardHeader>
               <CardBody>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-1">
+                {/* sm:grid-cols-5 removed — real-viewport-based, predates
+                    ScaledCanvas.jsx's engine (canvas is always phone-shaped
+                    regardless of real width). Always 3 columns now. */}
+                <div className="grid grid-cols-3 gap-1">
                   {Object.keys(SERVERS).map(s => (
                     <button key={s} onClick={() => dispatch({ type: 'SET_SERVER', server: s })} aria-pressed={state.server === s} className={`kuro-btn min-h-[48px] py-2 text-sm font-medium ${state.server === s ? 'active-gold' : ''}`}>{s}</button>
                   ))}
@@ -926,11 +929,16 @@ function ProfileTab({
                         : bgCategory === 'version' ? VERSION_SPLASH_SCREENS
                         : bgCategory === 'others' ? OTHER_BACKGROUNDS
                         : ANIMATED_BACKGROUNDS;
-                      // 12 = a full 3-row grid at the widest column count (4 cols × 3 rows) —
-                      // still comfortably 3+ rows at 3 cols too. Only applied while collapsed.
+                      // 12 = a full 4-row grid at the fixed 3-column count. Only
+                      // applied while collapsed. (Used to also account for a
+                      // sm:grid-cols-4 variant — removed, see the grid's own
+                      // comment below — so 3 columns is the only case now.)
                       const items = bgSectionCollapsed ? allItems.slice(0, 12) : allItems;
                       return (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                        // sm:grid-cols-4 removed — real-viewport-based, predates
+                        // ScaledCanvas.jsx's engine (canvas is always phone-shaped
+                        // regardless of real width). Always 3 columns now.
+                        <div className="grid grid-cols-3 gap-1.5">
                           {bgCategory === 'resonators' && items.map(th => (
                             <button
                               key={th.id}

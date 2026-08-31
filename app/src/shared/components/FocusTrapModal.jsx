@@ -120,10 +120,18 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
   }, [onClose]);
 
   if (!isOpen) return null;
+  // Used to also carry sm:items-center/sm:justify-center/sm:p-3/sm:p-4 (and
+  // the sheet div below had sm:contents), switching every modal — even
+  // bottom-sheet ones — to a centered desktop dialog layout whenever the
+  // REAL device was >=640px wide. Predates ScaledCanvas.jsx's engine: the
+  // canvas is now ALWAYS phone-shaped regardless of real device width, so
+  // that "desktop" swap fought the `centered` prop's own intentional
+  // choice of bottom-sheet vs dialog instead of respecting it. Removed —
+  // `centered` alone decides the layout now, unconditionally.
   return createPortal(
     <div
       ref={focusTrapRef}
-      className={`fixed inset-0 z-[10000] flex sm:items-center sm:justify-center ${padding === 'p-3' ? 'sm:p-3' : 'sm:p-4'} ${centered ? `items-center justify-center ${padding === 'p-3' ? 'p-3' : 'p-4'}` : 'items-end'} modal-backdrop ${className}`}
+      className={`fixed inset-0 z-[10000] flex ${centered ? `items-center justify-center ${padding === 'p-3' ? 'p-3' : 'p-4'}` : 'items-end'} modal-backdrop ${className}`}
       style={{
         // DSA-06 audit fix: chromatic navy scrim (--scrim token) instead of
         // the prior pure backdrop-blur-only treatment. Keeps modals cohesive
@@ -139,7 +147,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
     >
       <div
         ref={sheetRef}
-        className={`w-full sm:contents ${centered ? 'flex items-center justify-center' : ''}`}
+        className={`w-full ${centered ? 'flex items-center justify-center' : ''}`}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
