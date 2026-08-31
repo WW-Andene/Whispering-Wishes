@@ -2800,12 +2800,17 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           </div>
         </div>
       </FocusTrapModal>
-      {/* Wrapper gets the outer height (viewport minus header/nav reserved space); the card is a
+      {/* Wrapper gets the outer height (canvas height minus header/nav reserved space); the card is a
           flex child (flex: 1) that fills whatever's left INSIDE that box, including .tab-content's
           own padding (box-sizing: border-box handles that automatically). Extra -12: the margin
           that should sit between the wrapper and the nav (mirroring the one between the header and
-          the wrapper) wasn't showing up on its own, so it's reserved explicitly here. */}
-      <div className="kuro-calc space-y-3 tab-content" style={{ display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1, height: `calc(100dvh - ${headerPadding + navPadding + 12}px)` }}>
+          the wrapper) wasn't showing up on its own, so it's reserved explicitly here.
+          var(--canvas-height-px), not 100dvh — 100dvh is the REAL physical viewport height, which
+          only equals ScaledCanvas.jsx's own (elastic) canvas height when scale is exactly 1 (the
+          reference device); on every other device this card came up short of the canvas's actual
+          available height, i.e. didn't reach the bottom. See ScaledCanvas.jsx's own comment on
+          --canvas-height-px. */}
+      <div className="kuro-calc space-y-3 tab-content" style={{ display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 1, height: `calc(var(--canvas-height-px, 100dvh) - ${headerPadding + navPadding + 12}px)` }}>
         <div className="kuro-card map-card" style={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden', background: MAP_BG, position: 'relative', zIndex: 1, isolation: 'isolate' }}>
           <div className="kuro-card-inner" style={{ position: 'relative', height: '100%' }}>
             <div
@@ -2871,7 +2876,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
               <OfflineDownloadsPopover
                 panelRef={downloadsPanelRef}
                 top={headerHeight + 8}
-                maxHeight={`calc(100dvh - ${headerHeight + navPadding + 40}px)`}
+                maxHeight={`calc(var(--canvas-height-px, 100dvh) - ${headerHeight + navPadding + 40}px)`}
                 downloadables={downloadables}
                 overlayOffline={overlayOffline}
                 onDownloadAll={handleDownloadAll}
@@ -2888,7 +2893,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
               <ZonesPopover
                 panelRef={zonesPanelRef}
                 top={headerHeight + 8}
-                maxHeight={`calc(100dvh - ${headerHeight + navPadding + 40}px)`}
+                maxHeight={`calc(var(--canvas-height-px, 100dvh) - ${headerHeight + navPadding + 40}px)`}
                 zoneNav={zoneNav}
                 expandedZones={expandedZones}
                 currentZoneId={currentZoneId}
@@ -2909,7 +2914,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
               <IconFiltersPopover
                 panelRef={filtersPanelRef}
                 top={headerHeight + 8}
-                maxHeight={`calc(100dvh - ${headerHeight + navPadding + 40}px)`}
+                maxHeight={`calc(var(--canvas-height-px, 100dvh) - ${headerHeight + navPadding + 40}px)`}
                 iconDrafts={iconDrafts}
                 getIconCatalogEntry={getIconCatalogEntry}
                 iconFiltersOff={iconFiltersOff}

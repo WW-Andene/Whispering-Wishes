@@ -107,7 +107,11 @@ class AppErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#080c12', color: '#fff', fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
+        // var(--canvas-height-px), not 100dvh — this boundary renders inside
+        // App.jsx, inside ScaledCanvas.jsx's transformed canvas, so it needs
+        // the canvas's own (elastic) height, not the real physical viewport
+        // height, to actually fill the screen on any non-reference device.
+        <div style={{ minHeight: 'var(--canvas-height-px, 100dvh)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#080c12', color: '#fff', fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
           {/* §E10-ER-F3: Red border accent to distinguish app-level crash from tab-level */}
           <div style={{ textAlign: 'center', maxWidth: '420px', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 'var(--radius-xl)', padding: '2rem', background: 'rgba(239,68,68,0.05)' }}>
             <div style={{ fontSize: 48, marginBottom: 'var(--space-lg)', color: '#ef4444' }}>!</div>

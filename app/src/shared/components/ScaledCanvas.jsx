@@ -61,6 +61,17 @@ export default function ScaledCanvas({ children }) {
     document.documentElement.style.setProperty('--canvas-scale', String(scale));
   }, [scale]);
 
+  // Same idea, for height: any component sizing itself against "the whole
+  // screen" via 100vh/100dvh gets the REAL physical viewport height, which
+  // only happens to equal this canvas's own local height when scale is
+  // exactly 1 (the reference device) — everywhere else canvasHeight is
+  // elastic (see useCanvasScale.js) and doesn't match 100dvh at all. Use
+  // this var instead of 100vh/100dvh for anything meant to fill the canvas
+  // exactly (MapTab.jsx's own map-card wrapper is the first consumer).
+  useEffect(() => {
+    document.documentElement.style.setProperty('--canvas-height-px', `${canvasHeight}px`);
+  }, [canvasHeight]);
+
   return (
     <div
       style={{

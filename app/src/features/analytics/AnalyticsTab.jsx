@@ -407,7 +407,11 @@ function AnalyticsTab({
               // the Achievements card above it (when present) is accounted for.
               <div
                 className="flex items-center justify-center"
-                style={{ minHeight: `calc(100dvh - ${(headerPadding ?? 64) + (navPadding ?? 64)}px)` }}
+                // var(--canvas-height-px), not 100dvh — 100dvh is the real physical
+                // viewport height, which only matches ScaledCanvas.jsx's own
+                // (elastic) canvas height when scale is exactly 1. See
+                // ScaledCanvas.jsx's own comment on --canvas-height-px.
+                style={{ minHeight: `calc(var(--canvas-height-px, 100dvh) - ${(headerPadding ?? 64) + (navPadding ?? 64)}px)` }}
               >
                 <Card className="w-full">
                   <CardBody className="kuro-empty-state text-center py-8">
