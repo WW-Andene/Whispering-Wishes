@@ -81,8 +81,8 @@ const OnboardingModal = ({ onComplete }) => {
 
           {/* Content — Abby hosts the tutorial throughout, not just the intro
               step, so she stays put above the per-step title/desc. */}
-          <div className="kuro-body text-center pt-6" aria-live="polite" aria-atomic="true">
-            <img src="./misc-assets/Abby_Full_Sprite.png" alt="" aria-hidden="true" className="mx-auto w-40 h-32 object-contain object-bottom mb-1" />
+          <div className="kuro-body text-center pt-2" aria-live="polite" aria-atomic="true">
+            <img src="./misc-assets/Abby_Full_Sprite.png" alt="" aria-hidden="true" className="mx-auto w-48 h-32 object-contain object-bottom mb-1" />
             <h4 className="font-bold text-lg" style={{ color: 'var(--text-heading)' }}>{s.title}</h4>
             <p style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)', marginTop: '4px' }}>{s.desc}</p>
           </div>
