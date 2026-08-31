@@ -78,6 +78,23 @@ if (!HOST_URL) {
 // The directories excluded from the native bundle — see file header.
 const EXCLUDED_DIRS = ['map-tiles', 'portraits', 'animated-bg', 'spine', 'convene-animations', 'audio'];
 
+// One single exception carved out of the audio/ exclusion above: the
+// default Log Screen ambient track (useVisualSettings.js's own
+// DEFAULT_VISUAL_SETTINGS.logScreenTrack: '2'), which is exactly what a
+// genuinely first-ever app open needs to autoplay with zero setup. On that
+// very first page load, the service worker isn't controlling the page
+// yet (a page's first-ever load is never controlled by the SW it's still
+// installing — that only starts on the NEXT navigation) — so a request
+// for an excluded audio/ file doesn't even reach public/sw.js's own
+// JSDELIVR_ASSET_BASE redirect at all; it hits the local WebView asset
+// loader directly, where the file genuinely doesn't exist, and 404s
+// immediately. That matches the exact reported pattern (silent on the
+// very first open, fine after any reopen — the SW is controlling by
+// then, and its redirect to jsDelivr works). Bundling this one ~4MB file
+// removes that network/SW-timing dependency entirely for the one case
+// that actually needs zero setup to just work.
+const NATIVE_BUNDLED_AUDIO_FILES = ['log-screen-2.m4a'];
+
 console.log('Building web bundle...');
 execSync('npm run build', { cwd: APP_ROOT, stdio: 'inherit', env: { ...process.env, VITE_API_BASE_URL: HOST_URL } });
 
@@ -101,6 +118,18 @@ function copyFiltered(src, dest) {
   }
 }
 copyFiltered(DIST_DIR, DIST_NATIVE_DIR);
+
+// Carve NATIVE_BUNDLED_AUDIO_FILES back out of the audio/ exclusion above —
+// see that const's own comment for why the default track specifically
+// can't rely on the network/service-worker path the rest of audio/ uses.
+if (NATIVE_BUNDLED_AUDIO_FILES.length > 0) {
+  const nativeAudioDir = path.join(DIST_NATIVE_DIR, 'audio');
+  fs.mkdirSync(nativeAudioDir, { recursive: true });
+  for (const file of NATIVE_BUNDLED_AUDIO_FILES) {
+    fs.copyFileSync(path.join(DIST_DIR, 'audio', file), path.join(nativeAudioDir, file));
+  }
+  console.log(`Bundled ${NATIVE_BUNDLED_AUDIO_FILES.join(', ')} into dist-native/audio/ despite the audio/ exclusion above`);
+}
 
 // Patch the service worker so requests for map-tiles/ (the one excluded
 // directory still not handled generically by public/sw.js itself — see that
