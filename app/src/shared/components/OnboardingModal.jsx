@@ -112,16 +112,27 @@ const OnboardingModal = ({ onComplete }) => {
 
         </div>
       </div>
-      {highlightRect && createPortal(
+      {createPortal(
+        // Always mounted (visibility toggled via `display`, never inserted/
+        // removed) rather than conditionally rendered — some Android WebView
+        // versions stop repainting FocusTrapModal's own backdrop-filter
+        // blur/dim once a sibling node is inserted or removed next to it,
+        // and don't recover afterward even once that sibling is gone. That
+        // matched exactly what was reported: the dark scrim behind this
+        // modal disappeared from step 2 onward and stayed gone even on the
+        // un-highlighted final step. Keeping this node's presence in the
+        // DOM constant across every step (only its own style changes)
+        // avoids ever triggering that repaint bug in the first place.
         <div
           className="onboarding-tab-highlight"
           aria-hidden="true"
           style={{
+            display: highlightRect ? 'block' : 'none',
             position: 'fixed',
-            left: highlightRect.x,
-            top: highlightRect.y,
-            width: highlightRect.w,
-            height: highlightRect.h,
+            left: highlightRect?.x ?? 0,
+            top: highlightRect?.y ?? 0,
+            width: highlightRect?.w ?? 0,
+            height: highlightRect?.h ?? 0,
             zIndex: 10001,
             pointerEvents: 'none',
             borderRadius: 12,
