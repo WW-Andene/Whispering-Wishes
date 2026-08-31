@@ -210,9 +210,11 @@
     "track2": "2.0 Login Screen",
     "track3": "3.0 Login Screen",
     "trackConvene": "Convene",
-    "categoryBoss": "Boss",
+    "categoryLogin": "Login",
     "categoryTheme": "Theme",
-    "categoryClassic": "Classic"
+    "categoryBoss": "Boss",
+    "categoryClassic": "Classic",
+    "categoryClassicEmpty": "Coming soon."
   },
   "importInfo": {
     "title": "Import Info",

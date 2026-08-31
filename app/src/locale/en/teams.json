@@ -2,6 +2,30 @@
   "monsterCard": {
     "noResData": "No elemental RES data"
   },
+  "echoSelector": {
+    "title": "Select Echo",
+    "clear": "Clear",
+    "noMatch": "No echoes match filters",
+    "closeAria": "Close echo selector",
+    "sonataSets": "Sonata Sets",
+    "echoSkill": "Echo Skill",
+    "damage": "Damage:",
+    "utilityHealing": "Utility / Healing (no damage)",
+    "asEnemy": "As Enemy",
+    "bossEchoNote": "Boss echo — can be selected as DPS target",
+    "closeStatsAria": "Close echo stats",
+    "subStats": "Sub Stats",
+    "rollValue": "Roll Value",
+    "unequipAria": "Unequip echo"
+  },
+  "weaponSelector": {
+    "title": "Select Weapon",
+    "bis": "BiS"
+  },
+  "enemyTarget": {
+    "target": "Target",
+    "level": "Lv."
+  },
   "selector": {
     "title": "Select Resonator",
     "subtitle": "Slot {{slot}} • {{team}}",

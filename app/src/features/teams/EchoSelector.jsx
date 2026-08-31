@@ -4,7 +4,7 @@ import { CHARACTER_DATA } from '../../data/characters.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, getLocalizedEchoData } from '../../data/echoes.js';
 import { haptic } from '../../utils/haptics.js';
 import { getSetIcon, getElementIcon } from '../../shared/utils/elementVisuals.js';
-import { getLocale } from '../../utils/i18n.js';
+import { getLocale, t } from '../../utils/i18n.js';
 import { isHealerRole, isSupportRole, ECHO_SUBSTAT_GRADES, getDefaultSubstatGrade, getSubstatGradeValue } from './calcEngine.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
@@ -81,10 +81,10 @@ export default function EchoSelector({
               <>
                 <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                   <div>
-                    <h3 className="text-white font-semibold text-xl">Select Echo</h3>
+                    <h3 className="text-white font-semibold text-xl">{t('teams.echoSelector.title')}</h3>
                     <p className="text-gray-400 text-sm">{echoSelectorTarget.charName} — Slot {slotIdx + 1} ({costNum}-Cost)</p>
                   </div>
-                  <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="p-3 min-w-[calc(48px*var(--ui-scale,1))] min-h-[calc(48px*var(--ui-scale,1))] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close echo selector"><X size={16} /></button>
+                  <button onClick={() => { setEchoSelectorOpen(false); setEchoSetFilter('all'); setEchoBuffFilter('all'); }} className="p-3 min-w-[calc(48px*var(--ui-scale,1))] min-h-[calc(48px*var(--ui-scale,1))] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('teams.echoSelector.closeAria')}><X size={16} /></button>
                 </div>
                 {/* Search + Filters */}
                 <div className="p-2 border-b border-[var(--border-subtle)] flex-shrink-0 space-y-1.5">
@@ -120,7 +120,7 @@ export default function EchoSelector({
                       className="flex-1 text-sm"
                     />
                     {hasFilters && (
-                      <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="kuro-btn kuro-btn-sm">Clear</button>
+                      <button onClick={() => { setEchoSetFilter('all'); setEchoBuffFilter('all'); setEchoSearch(''); }} className="kuro-btn kuro-btn-sm">{t('teams.echoSelector.clear')}</button>
                     )}
                   </div>
                   {/* Recommendation indicator */}
@@ -162,7 +162,7 @@ export default function EchoSelector({
                       className="w-full p-2 rounded-lg border border-dashed border-white/15 text-sm text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
                       style={{ background: 'var(--bg-btn)' }}
                     >
-                      ✕ Unequip echo
+                      ✕ {t('teams.echoSelector.unequipAria')}
                     </button>
                     {/* Echo list */}
                     {filtered.map(name => {
@@ -222,7 +222,7 @@ export default function EchoSelector({
                         );
                       })}
                     {filtered.length === 0 && (
-                      <div className="text-center py-6 text-gray-400 text-base">No echoes match filters</div>
+                      <div className="text-center py-6 text-gray-400 text-base">{t('teams.echoSelector.noMatch')}</div>
                     )}
                   </div>
                 </div>
@@ -326,13 +326,13 @@ export default function EchoSelector({
                       <p className="text-gray-400 text-sm">{charName} — Slot {slotIdx + 1} · {costNum}-Cost</p>
                     </div>
                   </div>
-                  <button onClick={() => setEchoStatPanel(null)} className="p-3 min-w-[calc(48px*var(--ui-scale,1))] min-h-[calc(48px*var(--ui-scale,1))] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all flex-shrink-0" aria-label="Close echo stats"><X size={16} /></button>
+                  <button onClick={() => setEchoStatPanel(null)} className="p-3 min-w-[calc(48px*var(--ui-scale,1))] min-h-[calc(48px*var(--ui-scale,1))] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all flex-shrink-0" aria-label={t('teams.echoSelector.closeStatsAria')}><X size={16} /></button>
                 </div>
                 <div className="overflow-y-auto flex-1 p-3 space-y-4">
                   {/* Sonata sets — highlight recommended */}
                   {echoData?.sets && (
                     <div>
-                      <div className="kuro-section-label">Sonata Sets</div>
+                      <div className="kuro-section-label">{t('teams.echoSelector.sonataSets')}</div>
                       <div className="flex flex-wrap gap-1">
                         {echoData.sets.map(s => {
                           const isRec = charRecSets.has(s);
@@ -357,11 +357,11 @@ export default function EchoSelector({
                   {/* Echo Skill Details */}
                   {echoData && (
                     <div>
-                      <div className="kuro-section-label">Echo Skill</div>
+                      <div className="kuro-section-label">{t('teams.echoSelector.echoSkill')}</div>
                       <div className="kuro-detail-box">
                         {echoData.dmg > 0 && (
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm text-gray-400">Damage:</span>
+                            <span className="text-sm text-gray-400">{t('teams.echoSelector.damage')}</span>
                             <span className="text-base font-bold text-yellow-400">{echoData.dmg}%</span>
                             {echoData.element && echoData.element !== 'Healing' && (
                               <span className="kuro-badge kuro-badge-neutral">{echoData.element}</span>
@@ -369,7 +369,7 @@ export default function EchoSelector({
                           </div>
                         )}
                         {echoData.dmg === 0 && (
-                          <div className="text-sm text-gray-500 mb-1">Utility / Healing (no damage)</div>
+                          <div className="text-sm text-gray-500 mb-1">{t('teams.echoSelector.utilityHealing')}</div>
                         )}
                         <p className="text-sm text-gray-400 leading-relaxed">{echoData.desc}</p>
                       </div>
@@ -379,7 +379,7 @@ export default function EchoSelector({
                   {/* Enemy Stats (4-cost bosses only) */}
                   {echoData?.enemyRes && (
                     <div>
-                      <div className="kuro-section-label">As Enemy</div>
+                      <div className="kuro-section-label">{t('teams.echoSelector.asEnemy')}</div>
                       <div className="kuro-detail-box kuro-detail-box--danger">
                         <div className="flex flex-wrap gap-2">
                           {Object.entries(echoData.enemyRes).map(([el, val]) => (
@@ -391,7 +391,7 @@ export default function EchoSelector({
                             Other: 10%
                           </span>
                         </div>
-                        <p className="text-sm text-gray-500 mt-1">Boss echo — can be selected as DPS target</p>
+                        <p className="text-sm text-gray-500 mt-1">{t('teams.echoSelector.bossEchoNote')}</p>
                       </div>
                     </div>
                   )}
@@ -417,7 +417,7 @@ export default function EchoSelector({
 
                   {/* Sub Stats Selection */}
                   <div>
-                    <div className="kuro-section-label">Sub Stats <span className="text-gray-600">(select up to 5)</span> {recSubstats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
+                    <div className="kuro-section-label">{t('teams.echoSelector.subStats')} <span className="text-gray-600">(select up to 5)</span> {recSubstats.size > 0 && <span className="text-orange-400/70 normal-case">· ★ = recommended</span>}</div>
                     <div className="grid grid-cols-2 gap-1">
                       {substatOptions.map(stat => {
                         const isActive = currentSubstats.includes(stat);
@@ -453,7 +453,7 @@ export default function EchoSelector({
                       damage calc itself reads (ECHO_SUBSTAT_GRADES). */}
                   {currentSubstats.length > 0 && (
                     <div>
-                      <div className="kuro-section-label">Roll Value</div>
+                      <div className="kuro-section-label">{t('teams.echoSelector.rollValue')}</div>
                       <div className="flex flex-col gap-1">
                         {currentSubstats.map(stat => {
                           const grades = ECHO_SUBSTAT_GRADES[stat];

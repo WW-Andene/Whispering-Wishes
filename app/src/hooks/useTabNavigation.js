@@ -95,14 +95,19 @@ export function useTabNavigation(swipeEnabled) {
 
       if (isHorizontalSwipe && ((isFastEnough && isLongEnough) || isHighVelocity)) {
         const currentIndex = TAB_ORDER.indexOf(activeTabRef.current);
-        if (deltaX < 0 && currentIndex < TAB_ORDER.length - 1) {
+        // Wraps at both ends — swiping "next" from the last tab (Collection)
+        // rolls back to the first (Tracker), and swiping "prev" from the
+        // first rolls back to the last, so the two ends of TAB_ORDER are
+        // directly reachable from each other by a single swipe instead of
+        // needing to pass through every tab in between.
+        if (deltaX < 0) {
           lastSwipeRef.current = Date.now();
           haptic.medium();
-          setActiveTab(TAB_ORDER[currentIndex + 1]);
-        } else if (deltaX > 0 && currentIndex > 0) {
+          setActiveTab(TAB_ORDER[(currentIndex + 1) % TAB_ORDER.length]);
+        } else if (deltaX > 0) {
           lastSwipeRef.current = Date.now();
           haptic.medium();
-          setActiveTab(TAB_ORDER[currentIndex - 1]);
+          setActiveTab(TAB_ORDER[(currentIndex - 1 + TAB_ORDER.length) % TAB_ORDER.length]);
         }
       }
     };

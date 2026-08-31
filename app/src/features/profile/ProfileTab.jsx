@@ -169,6 +169,9 @@ function ProfileTab({
   // the everyday quick-picks, Convene and the rest of the OST library are
   // the "browse" part.
   const [ambientSectionCollapsed, setAmbientSectionCollapsed] = useState(true);
+  // Which OST category tab is showing — same idea as bgCategory above, just
+  // for the Ambient Music section's own Login/Theme/Boss/Classic tabs.
+  const [ambientCategory, setAmbientCategory] = useState('login');
   // Target-picker modal (Home/Lock/Both) shown before crowning a static wallpaper image.
   const [wallpaperTargetPrompt, setWallpaperTargetPrompt] = useState(null); // { url } | null
   // Position editor shown after the Home/Lock/Both target is chosen — lets the user slide the
@@ -1153,14 +1156,17 @@ function ProfileTab({
                   </button>
                 </div>
 
-                {/* Ambient Music track picker — Off / 1.0 / 2.0 / 3.0 / 3.5 Login
-                    Screen / Convene (the pull-simulator's own loop, folded
-                    in here as just another track choice rather than a
-                    separate always-on toggle scoped to that one modal) / the
-                    full 36-track OST library. Same collapse pattern as the
-                    Backgrounds section above — the 4 Login Screen tracks stay
-                    visible even while collapsed (the everyday quick-picks),
-                    Off/Convene/the full library are the "browse" part. */}
+                {/* Ambient Music track picker — Off / Convene (the pull-
+                    simulator's own loop, folded in here as just another
+                    track choice rather than a separate always-on toggle
+                    scoped to that one modal) always visible, then the full
+                    36-track OST library organized into category TABS —
+                    Login / Theme / Boss / Classic — same tab pattern the
+                    Backgrounds section above uses for its own Resonators/
+                    Version/Others/Animated categories, rather than a
+                    dropdown or stacked sections. Same collapse pattern as
+                    Backgrounds too — Off/Convene/the Login tab's tracks stay
+                    visible even while collapsed (the everyday quick-picks). */}
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <button
                     type="button"
@@ -1175,11 +1181,6 @@ function ProfileTab({
                     <ChevronDown size={16} className={`text-gray-400 transition-transform flex-shrink-0 ${ambientSectionCollapsed ? '-rotate-90' : ''}`} />
                   </button>
 
-                  {/* Off leads the list, then the Login quick-picks — both stay
-                      visible even while collapsed. Everything below (Convene +
-                      the categorized OST library) is buttons flowing directly in
-                      this section, no dropdown — same flex-wrap treatment
-                      throughout rather than visually separate rows. */}
                   <div className={`flex flex-wrap gap-2 ${ambientSectionCollapsed ? 'mt-3' : 'mb-2'}`}>
                     <button
                       type="button"
@@ -1188,62 +1189,65 @@ function ProfileTab({
                     >
                       {t('profile.sound.trackOff')}
                     </button>
-                    {['1', '2', '3'].map((track) => (
-                      <button
-                        key={track}
-                        type="button"
-                        onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: track })}
-                        className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === track ? 'active-gold' : ''}`}
-                      >
-                        {t(`profile.sound.track${track}`)}
-                      </button>
-                    ))}
-                    {AMBIENT_OST_TRACKS.filter(t2 => t2.category === 'login').map(({ key, label }) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: key })}
-                        className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === key ? 'active-gold' : ''}`}
-                      >
-                        {label}
-                      </button>
-                    ))}
+                    <button
+                      type="button"
+                      onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: 'convene' })}
+                      className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === 'convene' ? 'active-gold' : ''}`}
+                    >
+                      {t('profile.sound.trackConvene')}
+                    </button>
                   </div>
 
                   {!ambientSectionCollapsed && (
-                    <div className="space-y-2">
-                      <div className="flex flex-wrap gap-2">
+                    <div className="flex gap-1.5 mb-2">
+                      {AMBIENT_OST_CATEGORIES.map((cat) => (
                         <button
+                          key={cat}
                           type="button"
-                          onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: 'convene' })}
-                          className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === 'convene' ? 'active-gold' : ''}`}
+                          onClick={() => setAmbientCategory(cat)}
+                          className={`kuro-btn flex-1 text-sm ${ambientCategory === cat ? 'active-cyan' : ''}`}
                         >
-                          {t('profile.sound.trackConvene')}
+                          {cat === 'login' ? t('profile.sound.categoryLogin') : t(`profile.sound.category${cat.charAt(0).toUpperCase()}${cat.slice(1)}`)}
                         </button>
-                      </div>
-                      {AMBIENT_OST_CATEGORIES.filter(cat => cat !== 'login').map((cat) => {
-                        const tracks = AMBIENT_OST_TRACKS.filter(t2 => t2.category === cat);
-                        if (tracks.length === 0) return null;
-                        return (
-                          <div key={cat}>
-                            <div className="text-gray-500 text-2xs uppercase tracking-wide mb-1">{t(`profile.sound.category${cat.charAt(0).toUpperCase()}${cat.slice(1)}`)}</div>
-                            <div className="flex flex-wrap gap-2">
-                              {tracks.map(({ key, label }) => (
-                                <button
-                                  key={key}
-                                  type="button"
-                                  onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: key })}
-                                  className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === key ? 'active-gold' : ''}`}
-                                >
-                                  {label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
+                      ))}
                     </div>
                   )}
+
+                  {(() => {
+                    // While collapsed, the Login tab's tracks are the ones
+                    // that stay visible (the everyday quick-picks) regardless
+                    // of which tab was last selected; once expanded, whatever
+                    // tab is active shows.
+                    const activeCategory = ambientSectionCollapsed ? 'login' : ambientCategory;
+                    const categoryTracks = AMBIENT_OST_TRACKS.filter(t2 => t2.category === activeCategory);
+                    return (
+                      <div className="flex flex-wrap gap-2">
+                        {activeCategory === 'login' && ['1', '2', '3'].map((track) => (
+                          <button
+                            key={track}
+                            type="button"
+                            onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: track })}
+                            className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === track ? 'active-gold' : ''}`}
+                          >
+                            {t(`profile.sound.track${track}`)}
+                          </button>
+                        ))}
+                        {categoryTracks.map(({ key, label }) => (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: key })}
+                            className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === key ? 'active-gold' : ''}`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                        {!ambientSectionCollapsed && activeCategory === 'classic' && categoryTracks.length === 0 && (
+                          <p className="text-gray-500 text-sm">{t('profile.sound.categoryClassicEmpty')}</p>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Install App on Device */}

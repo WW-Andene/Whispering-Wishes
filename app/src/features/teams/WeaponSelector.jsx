@@ -6,7 +6,7 @@ import { haptic } from '../../utils/haptics.js';
 import { getStatIcon, getWeaponTypeIcon } from '../../shared/utils/elementVisuals.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { getLocale } from '../../utils/i18n.js';
+import { getLocale, t } from '../../utils/i18n.js';
 
 const LOCALIZED_WEAPON_DATA = getLocalizedWeaponData(getLocale());
 
@@ -24,7 +24,7 @@ export default function WeaponSelector({
                       <div className="kuro-card w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
                         <div className="px-4 py-3 border-b border-[var(--border-medium)] flex items-center justify-between flex-shrink-0" data-sheet-header>
                           <div>
-                            <h3 className="text-white font-semibold text-xl">Select Weapon</h3>
+                            <h3 className="text-white font-semibold text-xl">{t('teams.weaponSelector.title')}</h3>
                             <p className="text-gray-400 text-sm inline-flex items-center gap-1">
                               {weaponSelectorTarget.charName} —
                               {getWeaponTypeIcon(CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon) && <img src={getWeaponTypeIcon(CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
@@ -104,7 +104,7 @@ export default function WeaponSelector({
                                           <div className="flex items-center gap-1.5">
                                             <span className="text-white text-base font-semibold truncate">{LOCALIZED_WEAPON_DATA[name]?.displayName || name}</span>
                                             <span className={`text-2xs ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
-                                            {isBest && <span className="kuro-badge kuro-badge-emerald">BiS</span>}
+                                            {isBest && <span className="kuro-badge kuro-badge-emerald">{t('teams.weaponSelector.bis')}</span>}
                                           </div>
                                           <div className="flex items-center gap-2 mt-0.5">
                                             <span className="text-sm text-gray-400">ATK {w.baseAtk}</span>
