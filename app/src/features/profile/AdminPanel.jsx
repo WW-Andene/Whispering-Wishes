@@ -174,7 +174,7 @@ export default function AdminPanel({
   presenceError, adminPlayerList,
   adminLockedUntil,
   trophies,
-  fetchActivePlayersCount, fetchAdminPlayerList,
+  fetchActivePlayersCount, fetchAdminPlayerList, deleteLeaderboardEntry,
   trophyOverrides, setTrophyOverrides,
   verifyAdminPassword, saveCustomBanners,
   buildBannerForm, updateBannerForm,
@@ -358,6 +358,7 @@ export default function AdminPanel({
                       activePlayersCount={activePlayersCount} activePlayersHistory={activePlayersHistory}
                       presenceError={presenceError} adminPlayerList={adminPlayerList}
                       fetchActivePlayersCount={fetchActivePlayersCount} fetchAdminPlayerList={fetchAdminPlayerList}
+                      deleteLeaderboardEntry={deleteLeaderboardEntry}
                     />
                   )}
 

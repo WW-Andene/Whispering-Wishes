@@ -19,6 +19,7 @@ import { ALL_CHARACTERS } from '../../data/characters.js';
 import { ALL_5STAR_WEAPONS } from '../../data/weaponLists.js';
 import { getMergedHistories } from '../../core/storageKeys.js';
 import { MEDAL_COLORS, HARD_PITY, LEADERBOARD_DISPLAY_LIMIT } from '../../data/constants.js';
+import { CURRENT_BANNERS } from '../../data/banners.js';
 
 import { t, formatNumber, formatDate, getPluralForm } from '../../utils/i18n.js';
 import { storageAvailable } from '../../core/storage.js';
@@ -205,7 +206,9 @@ function AnalyticsTab({
       }
       const data = await res.json();
       if (data) {
-        const rawEntries = Object.values(data).filter(e => e && e.avgPity && e.id);
+        // Only rank entries submitted for the current game version — older-version pity
+        // data would otherwise compete indefinitely against current-version pulls.
+        const rawEntries = Object.values(data).filter(e => e && e.avgPity && e.id && e.version === CURRENT_BANNERS.version);
         const deduped = new Map();
         rawEntries.forEach(e => {
           const uidKey = e.uid || null;
@@ -325,7 +328,10 @@ function AnalyticsTab({
         totalPulls,
         won5050,
         lost5050,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        // Current game version at submit time — lets the board scope rankings to the
+        // live version instead of letting pity data from old versions compete forever.
+        version: CURRENT_BANNERS.version
       };
       const authToken = await getFirebaseAuth();
       const res = await firebaseFetch(`leaderboard/${effectiveLeaderboardId}`, authToken, {
@@ -522,8 +528,7 @@ function AnalyticsTab({
                             ) : (
                               leaderboardData.map((entry, i) => {
                                 const isYou = entry.id === effectiveLeaderboardId ||
-                                  (entry.uid && hashedProfileUid && entry.uid === hashedProfileUid) ||
-                                  (!entry.uid && overallStats?.avgPity && entry.avgPity === parseFloat(overallStats.avgPity) && entry.totalPulls === (overallStats.totalPulls ?? 0) && entry.pulls === (overallStats.fiveStars ?? 0));
+                                  (entry.uid && hashedProfileUid && entry.uid === hashedProfileUid);
                                 return (
                                   <div 
                                     key={entry.id}
