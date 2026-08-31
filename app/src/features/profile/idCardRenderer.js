@@ -140,9 +140,11 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
     ];
 
     // ═══ DRAWING PRIMITIVES ═══
-    // Outer card — .kuro-card
+    // Outer card shell — same as characterCardRenderer.js's own drawShell: left UNFILLED, not
+    // an opaque rgba(12,16,24,0.8) background. Every panel/the portrait already draws its own
+    // rgba(10,14,22,0.75) mask, so filling the shell body too double-masked the banner behind
+    // the gaps between panels instead of letting it show through there like the build card does.
     const drawShell = (x,y,w,h) => {
-      ctx.fillStyle='rgba(12,16,24,0.8)';rr(x,y,w,h,24);ctx.fill();
       ctx.strokeStyle='rgba(255,255,255,0.14)';ctx.lineWidth=1.5;rr(x,y,w,h,24);ctx.stroke();
       const il=ctx.createLinearGradient(x,y,x,y+3);il.addColorStop(0,'rgba(255,255,255,0.07)');il.addColorStop(1,'transparent');
       ctx.fillStyle=il;ctx.fillRect(x+24,y+1,w-48,2);
@@ -317,7 +319,13 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       ctx.fillStyle='#f1f5f9'; ctx.font='bold 34px sans-serif'; ctx.fillText(uname,x+18,y+42);
       ctx.fillStyle='#9ca3af'; ctx.font='16px sans-serif'; ctx.fillText('UID '+uid,x+18,y+64);
       ctx.fillStyle='#edaf18'; ctx.font='600 18px sans-serif'; ctx.fillText(svr,x+18,y+93);
-      if(lr) drawLuck(x+18,y+108,w-54);
+      // drawLuck's third arg is only the BAR's own width — it then draws a 105px-wide tier-readout
+      // pill 9px past the bar's right edge (see drawLuck below), so the bar must stop well short
+      // of the portrait's right edge to leave room for that pill, or the pill clips outside the
+      // portrait box. w-54 left only 36px of clearance past the 18px left inset (bar+pill actually
+      // needing ~132px) — the pill spilled ~80px past the edge. w-140 leaves the full 114px the
+      // pill+gap need, plus an 8px margin.
+      if(lr) drawLuck(x+18,y+108,Math.max(40,w-140));
     };
 
     // Luck bar
@@ -537,7 +545,9 @@ export async function renderIdCard({ format, profile, server, overallStats, luck
       drawHero(bx,Y,bw,heroH);
       Y+=heroH+gap;
 
-      const pStatsH=140;
+      // Header offset (~40) + drawStats' own 2-row grid at cellH=48 ((48+8)*2-8=104) = ~144
+      // needed — 140 clipped the second stat row's bottom edge against the panel border.
+      const pStatsH=152;
       const off1=drawPanel(bx,Y,bw,pStatsH,'Convene Stats');
       drawStats(bx+9,Y+off1,bw-18,48,22);
       Y+=pStatsH+gap;
