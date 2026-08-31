@@ -1,0 +1,35 @@
+{
+  "name": "Xiangli Yao",
+  "slug": "xiangli-yao",
+  "rarity": 5,
+  "element": "Electro",
+  "weaponType": "Gauntlets",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/xiangli-yao", "nanoka": "https://ww.nanoka.cc/character/xiangli-yao", "fandom": "https://wutheringwaves.fandom.com/wiki/Xiangli_Yao", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T3 Tower of Adversity, T4 Whimpering Wastes - noted as very accessible/forgiving DPS" },
+  "kit": {
+    "intro": "5-star Electro Gauntlets DPS with an unusually long (24s) and forgiving Ultimate burst window that grants interruption resistance, reducing reliance on swap-cancels. In Ultimate ('Intuition'), gains 3 'Hypercube' charges spent on enhanced Skill 'Law of Reigns' (costs 5 Performance Capacity each), the core of his damage.",
+    "skills": {
+      "normalAttack": "Probe - up to 5-hit chain; enhanced 'Pivot - Impale' 3-hit combo during Intuition.",
+      "resonanceSkill": "Deduction - Electro DMG, short 5s cooldown, generates Concerto/Resonance Energy; becomes 'Decipher' at full standard Capacity, 'Divergence'/'Law of Reigns' during Intuition.",
+      "forte": "Forever Seeking - Capacity/Performance Capacity gauges governing Decipher and the Intuition-state Law of Reigns loop.",
+      "liberation": "Cogitation Model - Electro DMG nuke, enters 24s 'Intuition' state (enhanced kit, 3 Hypercubes).",
+      "intro": "Principle - Electro DMG strike.",
+      "outro": "Chain Rule - next character's first Basic Attack hit triggers a laser AoE (237.6% ATK) for 8s, up to 3 times."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Moongazer's Sigil (Iuno sig, 100%, now best)", "Verity's Handle (signature, 98.7%)", "Blazing Justice (92%)", "Solsworn Ciphers / Tragicomedy (89.4%)", "Pulsation Bracer (89.4%, best permanent)", "Aether Strike (81.4%, best 4-star)", "Legend of Drunken Hero (best F2P no-gacha)"],
+    "echoSet": ["Void Thunder (5pc, best, ramping Electro DMG)", "Endless Resonance (92.1%, generic alt)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Electro DMG; ATK% >= Electro DMG", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "Liberation DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team", "members": ["Xiangli Yao", "Lynae or Yinlin", "Mornye or The Shorekeeper/Verina"], "notes": "Lynae edges out Yinlin due to a more well-rounded buffing profile alongside a similar Outro effect." },
+    { "name": "Expert Team (Dual DPS)", "members": ["Xiangli Yao", "Changli", "support"], "notes": "Extremely quickswap-reliant, one of the highest-damage pairs in the game if mastered, not recommended for casual play." },
+    { "name": "Budget Team", "members": ["Xiangli Yao", "Yangyang or Jianxin", "generalist"], "notes": "Yangyang is the best non-limited-5-star option; Jianxin viable but has field-time/Energy issues." }
+  ],
+  "rotation": "Intro -> Skill (cancelled by Ultimate) -> Ultimate -> Skill (Divergence) -> Mid-air (Revamp) -> Skill (Law of Reigns) -> Basic Pivot-Impale P1-P3 -> Skill (Law of Reigns) -> Skill (Divergence) -> Mid-air (Revamp) -> Skill (Law of Reigns) -> Outro. 24s Ultimate duration leaves ample room for dodges, swaps, and mistakes.",
+  "communityNotes": "Prydwen: notably accessible and forgiving 5-star DPS thanks to his long, interruption-resistant Ultimate window (unlike swap-cancel-dependent characters like Calcharo); was free to obtain around his release patch. Strong with Lynae/Yinlin as buffers; his Dual-DPS synergy with Changli is very powerful but extremely execution-heavy.",
+  "lastUpdated": "2026-08-31"
+}
