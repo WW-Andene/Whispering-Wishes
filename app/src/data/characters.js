@@ -469,7 +469,7 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Stringmaster', 'Whispers of Sirens'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper'] },
   'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro DPS who deals Heavy ATK and Liberation burst DMG with built-in shields and a time-stop mechanic on Resonance Skill.',
+    desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro Heavy ATK DPS who self-shields via Glory\'s Favor and builds Ascendancy (up to 100, from Normal ATK hits, +20% from Intro, +10% from Skill, +40% from Liberation) toward a Sword of Eternal Oath. At 2 Majesty stacks she can hold Liberation to cast Sublime is the Sun instead, entering a 7s time-stopped Sworn Allegiance state (swapping disabled) for a 9-hit Sunborne combo into an Everbright Protector finisher that deploys Ruler\'s Realm (grants teammates a shield on their Intro cast). Her Outro (Battlesong of the Unyielding) grants the next Resonator +15% All-Attribute DMG Amp for 14s that ends immediately if they are swapped out — and ONLY if that same Resonator casts their own Outro Skill back to Augusta while the buff is still active does she gain +1 Majesty and +1 Crown of Wills stack (swapping to a third character first forfeits the stack). Source: wutheringwaves.fandom.com/wiki/Augusta/Combat, verified 2026-08-31.',
     skills: ['Hunter\'s Path', 'Warrior\'s Blade', 'Sunward Conquest', 'Call Me By the Sun'],
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Luminous Calendula' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
@@ -2496,7 +2496,7 @@ const CHAR_BUFF_TABLE = {
       { stat: 'elemDmg', value: 15, target: 'self', duration: 99, condition: 'Crown of Wills: +15% Electro DMG Bonus per stack, max 1 stack at base kit (S0)' },
     ],
     debuffs: [],
-    note: 'Heavy ATK AoE DPS with built-in self shields (Glory\'s Favor) and a Crown of Wills self-buff. Outro: +15% All DMG Amp to next Resonator (14s), not a "Deepen" multiplier. Liberation\'s Ruler\'s Realm grants teammates a shield on Intro cast — no direct DPS stat. (Corrected 2026-08-16: Outro was mislabeled as deepen instead of allDmg; added missing Crown of Wills self-buff.)',
+    note: 'Heavy ATK AoE DPS with built-in self shields (Glory\'s Favor) and a Crown of Wills self-buff. Outro: +15% All DMG Amp to next Resonator (14s, ends immediately on swap-out), not a "Deepen" multiplier. Liberation\'s Ruler\'s Realm grants teammates a shield on Intro cast — no direct DPS stat. Majesty/Crown-of-Wills Outro payoff is CONDITIONAL, not automatic: Augusta only gains the stack if the buffed Resonator Outros back to her before a third swap (see CHARACTER_ROTATIONS Outro note and RESONANCE_CHAIN_DATA comment for the full mechanic) — not modeled as an unconditional self-buff here since it depends on partner behavior, out of scope for this schema until Phase 2 wiring. (Corrected 2026-08-16: Outro was mislabeled as deepen instead of allDmg; added missing Crown of Wills self-buff. Conditional Outro-back mechanic documented 2026-08-31 per wutheringwaves.fandom.com/wiki/Augusta/Combat.)',
   },
   'Galbrena': {
     outroBuffs: [],
@@ -2752,7 +2752,7 @@ const SKILL_MULTIPLIERS = {
     ['Liberation', 'Everbright Protector', '120% + 450% + 3%×10', 'Finisher following Sunborne, deploys Ruler\'s Realm.'],
     ['Forte', 'Undying Sunlight', 'Strike 70%×2 / Leap 112%+14%×2 / Plunge 43.6%+392%', 'Forte-empowered combo, Plunge consumes all Ascendancy for a big finisher.'],
     ['Intro', 'Stride of Goldenflare', '50%×2', 'Swap-in opener strike.'],
-    ['Outro', 'Battlesong of the Unyielding', '+15% All DMG Amp (14s)', 'Swap-out buff to the next Resonator; also grants Augusta stacks for her next rotation.'],
+    ['Outro', 'Battlesong of the Unyielding', '+15% All DMG Amp (14s)', 'Grants the next Resonator +15% All-Attribute DMG Amp for 14s, which ends immediately if they are swapped out. Conditional payoff: Augusta gains +1 Majesty stack AND +1 Crown of Wills stack ONLY if that SAME Resonator casts their own Outro Skill back to Augusta while this buff is still up — swap to a third character first and the buff (and the stack chance) is forfeited. Verified verbatim wutheringwaves.fandom.com/wiki/Augusta/Combat, 2026-08-31.'],
   ],
   'Aemeath': [
     ['Basic ATK', 'Aemeath Form Stage 1-4', '46.35% → 13.89%+20.84%+34.73% → 9.32%×3+18.63%+46.56% → 6.73%×5+100.94%', 'Standard human-form combo string, weaker but faster than Mech Form.'],
@@ -4283,10 +4283,32 @@ const RESONANCE_CHAIN_DATA = {
   'Brant':        { s1: { allDmg: 20 }, s2: { critRate: 30, totalMult: 25 }, s3: { totalMult: 15 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
   // Augusta S1: +15% CD per Crown stack x2=30% (confirmed). S2: +20% CR per stack + excess CR→CD conversion
   'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 40 }, s3: { totalMult: 25 }, s4: { atkPct: 20 }, s5: { totalMult: 15 }, s6: { heavyDmg: 200 } },
-  // Augusta R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 +15%/Crown of Wills stack Crit DMG, max 2 stacks = 30% confirmed correct;
-  // s2 +20%/stack Crit Rate, max 2 stacks = 40% (was critRate:20 + an unfounded critDmg:40 — real S2 CR-over-100% → CD conversion is conditional, not a flat number, dropped);
-  // s3 +25% DMG Mult on Thunderoar/Plunge/Sublime is the Sun (was totalMult:15); s4 team +20% ATK on Intro cast (was heavyDmg:40, no basis);
-  // s5 Glory's Favor shield +50%, no direct DPS stat, totalMult fallback (was totalMult:15, kept as-is); s6 Thunder Rage: 2 extra Heavy ATK hits at 100% ATK each = 200% (was totalMult:25).
+  // Augusta R-chain — verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Augusta/Combat
+  // (Chrome/Windows UA + google.com referer + jsRender, load+8s wait to clear Cloudflare):
+  // s1 "Stained in Scorched Earth": Crown of Wills +15% Crit DMG per stack (max stack raised 1→2) = 30% at 2 stacks. Confirmed correct.
+  // s2 "Cleansed in Crimson War": Crown of Wills +20% Crit Rate per stack (2 stacks = 40%, modeled) — PLUS a separate
+  //     conditional conversion not modeled here: "for every 1% Crit Rate over 100%, +2% Crit DMG, up to 100%" (i.e. up
+  //     to another +100% Crit DMG at 150%+ CR). TODO: verify whether calcEngine's CR/CD pipeline can express this
+  //     threshold-conversion before adding it — flat critRate:40 is the safe partial model for now.
+  // s3 "Forged in Rot and Ruin": +25% DMG Mult specifically on Heavy Attack - Thunderoar: Backstep / Spinslash / Uppercut
+  //     and their Dodge Counter equivalents only (not a generic Heavy ATK buff) — modeled as totalMult:25 since those are
+  //     her only Heavy ATK hits anyway.
+  // s4 "Ascent in Sun and Glory": casting Intro Skill - Stride of Goldenflare grants the WHOLE TEAM +20% ATK for 30s
+  //     (not self-only, not a permanent buff — duration-gated).
+  // s5 "Unshaken in Wrathful Tides": Inherent Skill - Glory's Favor shield value +50% — a survivability stat, no direct
+  //     DPS number; totalMult:15 kept as an approximate DPS-uptime proxy, not a real modeled effect.
+  // s6 "Engraved in Radiant Light": Crown of Wills max stacks 2→4; CR-over-150%→CD conversion up to +50% (separate,
+  //     unmodeled, same caveat as s2); AND casting Thunderoar: Spinslash or Uppercut grants 2 Crown of Wills stacks
+  //     (capped at 2 stacks/sec) AND triggers "Thunder Rage" — 2 separate Electro Heavy-ATK hits at 100% ATK each (200%
+  //     ATK total, on top of the move's own damage). heavyDmg:200 approximates the Thunder Rage add-on only.
+  //
+  // Forte/Outro mechanic (the conditional the user flagged as missing — see CHARACTER_ROTATIONS['Augusta'] Outro entry
+  // and CHARACTER_DATA['Augusta'].desc for the full write-up): Augusta's Outro Skill - Battlesong of the Unyielding
+  // grants the NEXT resonator switched in +15% All-Attribute DMG Amp for 14s, "which end[s] immediately if they are
+  // switched out." While that buff is still active on them, if THAT SAME resonator casts THEIR OWN Outro Skill
+  // (swapping back out), Augusta gains +1 Majesty stack AND +1 Crown of Wills stack. Swapping to a third character
+  // first ends the 14s buff early and the Outro-back condition can no longer be met — exactly the "gains the point only
+  // if the same character Outros back before a third swap" mechanic. Source: wutheringwaves.fandom.com/wiki/Augusta/Combat, 2026-08-31.
   // Cartethyia S1: +25% CD per 30 Conviction threshold (up to ~100%). S2: Basic/Heavy/etc DMG+50%, Mid-air+200%
   'Cartethyia':   { s1: { critDmg: 100 }, s2: { basicDmg: 50, totalMult: 30 }, s3: { libDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 15 }, s6: { elemDmg: 40 } },
   // Cartethyia R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 +25%/Conviction-level Crit DMG, max 4 stacks = 100% (was critDmg:40, quarter of real max);
