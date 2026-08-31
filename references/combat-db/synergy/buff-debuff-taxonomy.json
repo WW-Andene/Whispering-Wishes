@@ -1,0 +1,1480 @@
+{
+  "$note": "Heuristic keyword-scan taxonomy built from the 60 characters/<slug>.json files (kit skills, rotation, communityNotes, teams notes) already scraped from Prydwen.gg per SOURCES_STATUS.md. Each row cites the character slug and the JSON section the keyword was found in; open characters/<slug>.json for the full sentence and exact numeric value where the source page gave one. This is a categorization pass, not a re-scrape \u2014 where Prydwen's own text did not state a number or duration, none is invented here (see each character file's own prose for what precision exists).",
+  "methodology": "Scanned kit.intro, kit.skills.*, rotation, communityNotes, and teams[].notes in every character JSON for category keywords (e.g. 'DMG Bonus/Amp/Deepen', 'Crit Rate', 'RES Shred', 'Heal', 'Concerto'/'Resonance Energy'). Terminology aligned with app/src/features/teams/calcEngine.js's CHAR_BUFF_TABLE stat vocabulary (allDmg, elemDmg, skillDmg, basicDmg, libDmg, critRate, critDmg, defShred, deepen) so this layer stays consumable by the same engine later.",
+  "damageTypeBuffs": {
+    "elementalDmgBonus": {
+      "description": "Buffs to a specific element's DMG% (Havoc/Spectro/Aero/Glacio/Fusion/Electro DMG Bonus, Amp, or Deepen) \u2014 the largest single buff category in the kit set. Typically granted via Outro Skill (target: next resonator) or Liberation, occasionally as an always-on Inherent Skill.",
+      "reliesOnArchetypes": [
+        "Hypercarry (single Main DPS, buffers rotate through to feed one element)",
+        "Mono-element teams (e.g. Mono Fusion, Mono Aero)"
+      ],
+      "providers": [
+        {
+          "slug": "aalto",
+          "name": "Aalto",
+          "sources": "n DPS or a Hybrid buffer via Outro (23% Aero DMG Deepen to next character). Kit centers on 'Mist' zones and a 'Gate of Quandary' that empower attacks fired through them.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/aalto"
+        },
+        {
+          "slug": "augusta",
+          "name": "Augusta",
+          "sources": "nts Augusta a Majesty + Crown of Wills (Electro DMG Bonus) stack.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/augusta"
+        },
+        {
+          "slug": "baizhi",
+          "name": "Baizhi",
+          "sources": "ned Promise - up to 4 hits via You'tan, Glacio DMG.",
+          "citedSection": "kit.skills.normalAttack",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/baizhi"
+        },
+        {
+          "slug": "brant",
+          "name": "Brant",
+          "sources": "Anchors Aweigh! - AoE Fusion DMG launch; becomes Plunging Attack variant mid-air if Bravo not full.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/brant"
+        },
+        {
+          "slug": "buling",
+          "name": "Buling",
+          "sources": "In Shadow Thunder Stirs - Electro DMG + pulls enemies in, generates a Thunder Trigram.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/buling"
+        },
+        {
+          "slug": "calcharo",
+          "name": "Calcharo",
+          "sources": "Phantom Etching - Electro DMG, enters Deathblade Gear (Basic replaced by Hounds Roar; next Intro replaced by enhanced 'Necessary Means').",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/calcharo"
+        },
+        {
+          "slug": "camellya",
+          "name": "Camellya",
+          "sources": "Fervor Efflorescent - Havoc DMG nuke, mid-air castable.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/camellya"
+        },
+        {
+          "slug": "cantarella",
+          "name": "Cantarella",
+          "sources": "avers), healing, and an Outro buff (20% Havoc DMG + 25% Skill DMG). Two Forte resources: Trance (max 5, unlocks Mirage state via enhanced Heavy Attack) and Shiver (max 3 while in M",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/cantarella"
+        },
+        {
+          "slug": "carlotta",
+          "name": "Carlotta",
+          "sources": "Wintertime Aria - Glacio DMG, +30 Substance, +3 Moldable Crystals.",
+          "citedSection": "kit.skills.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/carlotta"
+        },
+        {
+          "slug": "cartethyia",
+          "name": "Cartethyia",
+          "sources": "Sword to Bear Their Names - Aero DMG + Aero Erosion, summons Sword of Virtue; Fleurdelys variant is a 2-part force-field pull (Sword to Answer Waves' Call -> May Tempes",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/cartethyia"
+        },
+        {
+          "slug": "changli",
+          "name": "Changli",
+          "sources": "Radiance of Fealty - Fusion DMG AoE, grants 4 Enflamement + Fiery Feather (next Forte Heavy gets +25% ATK).",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/changli"
+        },
+        {
+          "slug": "chisa",
+          "name": "Chisa",
+          "sources": "Moment of Nihility - Havoc DMG + team heal, enters Woven Myriad - Convergence (buffs Chainsaw attacks +120% multiplier).",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/chisa"
+        },
+        {
+          "slug": "chixia",
+          "name": "Chixia",
+          "sources": "Blazing Flames - AoE Fusion DMG, tied for highest Energy cost among damage dealers.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/chixia"
+        },
+        {
+          "slug": "ciaccona",
+          "name": "Ciaccona",
+          "sources": "granting team-wide 'Solo Concert' (24% Aero DMG Bonus, near-permanent uptime). Forte 'Musical Essence' (max 3) unlocks a pull-in Heavy Attack nuke.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona"
+        },
+        {
+          "slug": "danjin",
+          "name": "Danjin",
+          "sources": "Crimson Bloom - rapid multi-hit Havoc DMG + Scarlet Burst.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/danjin"
+        },
+        {
+          "slug": "encore",
+          "name": "Encore",
+          "sources": "Woolies Can Help! - Fusion DMG pounce.",
+          "citedSection": "kit.skills.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/encore"
+        },
+        {
+          "slug": "hiyuki",
+          "name": "Hiyuki",
+          "sources": "Snowlight Blessing - 20% Glacio DMG Amplify to teammates against Chafe-afflicted targets for 20s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/hiyuki"
+        },
+        {
+          "slug": "jianxin",
+          "name": "Jianxin",
+          "sources": "rce Field - wind field that pulls + AoE Aero DMG twice (cast + on dissipation); best-in-class grouping tool.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jianxin"
+        },
+        {
+          "slug": "jinhsi",
+          "name": "Jinhsi",
+          "sources": "ance' becomes available for 5s, dealing Spectro DMG and entering Incarnation.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jinhsi"
+        },
+        {
+          "slug": "jiyan",
+          "name": "Jiyan",
+          "sources": "Windqueller - forward dash Aero DMG, low cooldown, generates lots of Resonance Energy.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jiyan"
+        },
+        {
+          "slug": "lingyang",
+          "name": "Lingyang",
+          "sources": "- Glacio hit, grants Lion's Vigor (+50% Glacio DMG Bonus for 14s, slows Lion's Spirit consumption).",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lingyang"
+        },
+        {
+          "slug": "lucilla",
+          "name": "Lucilla",
+          "sources": "Phantom Frame - pull + Glacio DMG, Focus Ring timing gives Compensate (unremarkable) or Spotlight (better, CD reduction/Concerto).",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lucilla"
+        },
+        {
+          "slug": "lucy",
+          "name": "Lucy",
+          "sources": "lock (enters Algorithm Compaction, +65% Spectro DMG Bonus for 8s).",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lucy"
+        },
+        {
+          "slug": "lupa",
+          "name": "Lupa",
+          "sources": "grants the whole team Pack Hunt (ATK% + Fusion DMG vs Overlord/Calamity) and Glory (Fusion RES Ignore) for 35s, scaling further with more Fusion teammates and Intro Skill casts. Ea",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lupa"
+        },
+        {
+          "slug": "lynae",
+          "name": "Lynae",
+          "sources": "o Show Some Colors! - Spectro hit, +25% Spectro DMG self-buff for 9s, restores 100 Overflow.",
+          "citedSection": "kit.skills.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lynae"
+        },
+        {
+          "slug": "phoebe",
+          "name": "Phoebe",
+          "sources": "Golden Grace - knockback + Spectro DMG.",
+          "citedSection": "kit.skills.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/phoebe"
+        },
+        {
+          "slug": "phrolova",
+          "name": "Phrolova",
+          "sources": "Unfinished Piece - 20% Havoc DMG / 25% Heavy Attack DMG Amplification to next character for 14s or until swap; extra Hecate attacks if cast during Maestro.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/phrolova"
+        },
+        {
+          "slug": "rebecca",
+          "name": "Rebecca",
+          "sources": "- Mk. 31 HMG channel dealing sustained Electro DMG, ends in BOOM! Fireworks! AoE burst.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rebecca"
+        },
+        {
+          "slug": "roccia",
+          "name": "Roccia",
+          "sources": "ar Havoc Gauntlets Hybrid buffing Basic/Havoc DMG dealers via a fast mid-air 'Real Fantasy' Heavy Attack chain; grants an extra Echo Skill cast via her Outro's Magic Box utility. C",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/roccia"
+        },
+        {
+          "slug": "rover-aero",
+          "name": "Rover (Aero)",
+          "sources": "or Main DPS Iuno via signature weapon's Aero DMG Amplify.",
+          "citedSection": "teams.Main DPS Iuno Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero"
+        },
+        {
+          "slug": "rover-electro",
+          "name": "Rover (Electro)",
+          "sources": "Thunderclap - grapple + Electro DMG.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-electro"
+        },
+        {
+          "slug": "rover-havoc",
+          "name": "Rover (Havoc)",
+          "sources": "enter Dark Surge (enhanced Basics, +20% Havoc DMG Bonus, +25% CRIT Rate, refreshed Skill). Extremely cheap Ultimate (125 Energy, 16s CD) and access to the Dreamless 4-cost Echo (hi",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc"
+        },
+        {
+          "slug": "verina",
+          "name": "Verina",
+          "sources": "Botany Experiment - Spectro DMG AoE, generates good Resonance Energy, typically instant-cancelled via Ultimate.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/verina"
+        },
+        {
+          "slug": "xiangli-yao",
+          "name": "Xiangli Yao",
+          "sources": "Deduction - Electro DMG, short 5s cooldown, generates Concerto/Resonance Energy; becomes 'Decipher' at full standard Capacity, 'Divergence'/'Law of Reig",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/xiangli-yao"
+        },
+        {
+          "slug": "yangyang",
+          "name": "Yangyang",
+          "sources": "g - launches target, Aero hit, +8% self Aero DMG Bonus for 8s.",
+          "citedSection": "kit.skills.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang"
+        },
+        {
+          "slug": "yangyang-xuanling",
+          "name": "Yangyang: Xuanling",
+          "sources": "+ grants other Havoc Bane appliers +20% Havoc DMG Amplification after their next Havoc Bane application.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling"
+        },
+        {
+          "slug": "yinlin",
+          "name": "Yinlin",
+          "sources": "Raging Storm - large-range Electro DMG, applies Sinner's Mark.",
+          "citedSection": "kit.skills.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yinlin"
+        },
+        {
+          "slug": "yuanwu",
+          "name": "Yuanwu",
+          "sources": "Thunder Wedge - summons a field dealing Electro DMG, launches Coordinated Attacks on ally hits (builds Forte off-field).",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yuanwu"
+        },
+        {
+          "slug": "zani",
+          "name": "Zani",
+          "sources": "th consumed Heliacal Ember stacks, +20% Spectro DMG Amplify to team on Heliacal-Ember-marked targets for 20s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/zani"
+        },
+        {
+          "slug": "zhezhi",
+          "name": "Zhezhi",
+          "sources": "Carve and Draw - 20% Glacio DMG / 25% Resonance Skill DMG Amplification to next character for 14s or until swap; restores 15 Resonance Energy to them.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/zhezhi"
+        }
+      ]
+    },
+    "skillDmgBonus": {
+      "description": "Buffs scoped to Resonance Skill damage specifically, narrower than a flat elemental buff \u2014 rewards Skill-heavy rotations (e.g. Forte/loop-skill-spam kits).",
+      "providers": [
+        {
+          "slug": "brant",
+          "name": "Brant",
+          "sources": "20% Fusion DMG Amplify + 25% Resonance Skill DMG Amplify for 14s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/brant"
+        },
+        {
+          "slug": "buling",
+          "name": "Buling",
+          "sources": "at applies Electro Flare and buffs team Skill DMG (up to 25%, 50% at S6). Also heals off-field and buffs ATK via Rejuvenating Glow synergy.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/buling"
+        },
+        {
+          "slug": "cantarella",
+          "name": "Cantarella",
+          "sources": "and an Outro buff (20% Havoc DMG + 25% Skill DMG). Two Forte resources: Trance (max 5, unlocks Mirage state via enhanced Heavy Attack) and Shiver (max 3 while in Mirage, unlocks n",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/cantarella"
+        },
+        {
+          "slug": "carlotta",
+          "name": "Carlotta",
+          "sources": "Fatal Finale, all counted as Resonance Skill DMG). Forte gauge 'Substance' (max 120) built via Moldable Crystals; at full Substance unlocks 'Final Bow' (+80% dmg multiplier on all",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/carlotta"
+        },
+        {
+          "slug": "chixia",
+          "name": "Chixia",
+          "sources": "Brant amplifies Chixia's Fusion and Skill DMG (20%/25%) while contributing his own damage.",
+          "citedSection": "teams.Best Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/chixia"
+        },
+        {
+          "slug": "lingyang",
+          "name": "Lingyang",
+          "sources": "ted Attack damage plus a 20% Glacio/25% Skill DMG Outro.",
+          "citedSection": "teams.Best Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lingyang"
+        },
+        {
+          "slug": "lucilla",
+          "name": "Lucilla",
+          "sources": "hafe DMG (Chafe mode, 30s) or +50% Echo Skill DMG to next character (Echo mode, 14s).",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lucilla"
+        },
+        {
+          "slug": "lumi",
+          "name": "Lumi",
+          "sources": "d, the only character to buff Resonance Skill DMG on Outro (38%). Dual Forte gauge (Yellow Light Spark / Red Light Spark) toggled with no cooldown via her Resonance Skill, alternat",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lumi"
+        },
+        {
+          "slug": "qiuyuan",
+          "name": "Qiuyuan",
+          "sources": "Aero Sword Hybrid specializing in Echo Skill DMG buffing (Sigrika, Phrolova, Galbrena). Forte 'Swordster's Soliloquy' (max 600) unlocks enhanced Basics at 200, a 30% Echo Skill DM",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan"
+        },
+        {
+          "slug": "sigrika",
+          "name": "Sigrika",
+          "sources": "5-star Aero Gauntlets Echo Skill DMG DPS (similar archetype to Phrolova/Galbrena) built around generating and consuming 'Runes' via enhanced Basic Attacks and Skills t",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/sigrika"
+        },
+        {
+          "slug": "taoqi",
+          "name": "Taoqi",
+          "sources": "4-star Havoc Broadblade Skill DMG Amplifier/Shielder, considered bottom-tier despite a huge 38% Resonance Skill DMG Deepen Outro (relevant only for Jinhsi and Carlo",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/taoqi"
+        },
+        {
+          "slug": "zhezhi",
+          "name": "Zhezhi",
+          "sources": "ier Hybrid buffing Glacio and Resonance Skill DMG, with strong off-field Coordinated Attack damage via summoned Inklit Spirits. Teleports to placed 'Phantasmic Imprint' markers for",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/zhezhi"
+        }
+      ]
+    },
+    "basicAttackDmgBonus": {
+      "description": "Buffs scoped to Basic Attack damage \u2014 rewards on-field auto-attack loops (e.g. Verina's Gift of Nature-adjacent kits, Basic-Attack DPS like Chixia).",
+      "providers": [
+        {
+          "slug": "ciaccona",
+          "name": "Ciaccona",
+          "sources": "Sanhua's 38% Basic ATK DMG Amp and fast rotation make Ciaccona a fully viable on-field Main DPS.",
+          "citedSection": "teams.Team #6: Main DPS Ciaccona",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona"
+        },
+        {
+          "slug": "lingyang",
+          "name": "Lingyang",
+          "sources": "Sanhua has a very fast rotation and 38% Basic ATK DMG Amplify Outro, free-to-play alternative when Zhezhi is unavailable/occupied.",
+          "citedSection": "teams.F2P Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lingyang"
+        },
+        {
+          "slug": "lucy",
+          "name": "Lucy",
+          "sources": "Countermeasure Program - 25% Basic Attack DMG Amplify to next character + team-wide Hack-Shifting/damage-reduction utility for 25s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lucy"
+        },
+        {
+          "slug": "lupa",
+          "name": "Lupa",
+          "sources": "by Me, Warrior - +20% Fusion DMG / +25% Basic Attack DMG to next character for 14s or until swap.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lupa"
+        },
+        {
+          "slug": "roccia",
+          "name": "Roccia",
+          "sources": "Applause, Please! - 20% Havoc DMG / 25% Basic Attack DMG Amplification to next character for 14s or until swap; grants incoming character the Magic Box utility (extra Echo Skill ca",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/roccia"
+        },
+        {
+          "slug": "rover-havoc",
+          "name": "Rover (Havoc)",
+          "sources": "cia is the best buffer (20% Havoc + 25% Basic Attack DMG Amplify).",
+          "citedSection": "teams.Best Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc"
+        },
+        {
+          "slug": "sanhua",
+          "name": "Sanhua",
+          "sources": "Concerto rotation in the game, buffing Basic Attack DMG by 38% on Outro. Deploys ice constructs (Thorn/Prism/Glacier) via Intro/Skill/Ultimate then detonates them all at once with",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/sanhua"
+        }
+      ]
+    },
+    "heavyAttackDmgBonus": {
+      "description": "Buffs scoped to Heavy Attack damage \u2014 rewards Heavy-ATK-focused kits (e.g. Yangyang: Xuanling's Bated Breath).",
+      "providers": [
+        {
+          "slug": "iuno",
+          "name": "Iuno",
+          "sources": "From Gloom to Gleam - Aero hit + 50% Heavy Attack DMG Amplification to next character for 14s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/iuno"
+        },
+        {
+          "slug": "mortefi",
+          "name": "Mortefi",
+          "sources": "tols Hybrid, the classic F2P-accessible Heavy Attack DMG buffer (Iuno/Augusta/Jiyan/Galbrena teams). Ultimate applies Burning Rhapsody, letting him launch off-field Coordinated 'Ma",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/mortefi"
+        },
+        {
+          "slug": "phrolova",
+          "name": "Phrolova",
+          "sources": "Unfinished Piece - 20% Havoc DMG / 25% Heavy Attack DMG Amplification to next character for 14s or until swap; extra Hecate attacks if cast during Maestro.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/phrolova"
+        },
+        {
+          "slug": "rebecca",
+          "name": "Rebecca",
+          "sources": "urret for 14s + 15% All DMG / up to 35% Heavy Attack DMG Amplification to next character.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rebecca"
+        },
+        {
+          "slug": "zani",
+          "name": "Zani",
+          "sources": "Heavy Attack DMG buffers as budget alternatives to Phoebe.",
+          "citedSection": "teams.F2P Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/zani"
+        }
+      ]
+    },
+    "liberationDmgBonus": {
+      "description": "Buffs scoped to Resonance Liberation (ultimate) damage \u2014 pairs with Concerto-Energy-focused/burst rotations.",
+      "providers": [
+        {
+          "slug": "aemeath",
+          "name": "Aemeath",
+          "sources": "ch form; charged Heavy Attacks count as Liberation DMG.",
+          "citedSection": "kit.skills.normalAttack",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/aemeath"
+        },
+        {
+          "slug": "changli",
+          "name": "Changli",
+          "sources": "xt character gains 20% Fusion DMG + 25% Liberation DMG Amplify for 10s (shortest Outro duration in the game alongside Lumi).",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/changli"
+        },
+        {
+          "slug": "hiyuki",
+          "name": "Hiyuki",
+          "sources": "lf (3 hits) / Foreclaimed Self (5 hits, Liberation DMG) both apply Glacio Chafe on later hits.",
+          "citedSection": "kit.skills.normalAttack",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/hiyuki"
+        },
+        {
+          "slug": "iuno",
+          "name": "Iuno",
+          "sources": "Moon) / Moonbow Basic Attack (New Moon, Liberation DMG, consumes Sentience for higher DMG + healing).",
+          "citedSection": "kit.skills.normalAttack",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/iuno"
+        },
+        {
+          "slug": "jianxin",
+          "name": "Jianxin",
+          "sources": "Transcendence - 38% Resonance Liberation DMG Deepen to next character for 14s or until swap.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jianxin"
+        },
+        {
+          "slug": "lynae",
+          "name": "Lynae",
+          "sources": "y Main DPS via Outro (15% All DMG + 25% Liberation DMG Amplify) and Ultimate (24% party-wide DMG Bonus), plus Tune Rupture/Tune Strain toggle mode for specialized synergies (e.g. M",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lynae"
+        },
+        {
+          "slug": "yinlin",
+          "name": "Yinlin",
+          "sources": "20% Electro DMG Deepen + 25% Resonance Liberation DMG Deepen for 14s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yinlin"
+        }
+      ]
+    },
+    "allDmgBonus": {
+      "description": "Unconditional 'All DMG' team buffs regardless of element \u2014 the most universally slottable buff type, typical of top-tier Support Outros (Verina, Shorekeeper, Suisui).",
+      "providers": [
+        {
+          "slug": "lynae",
+          "name": "Lynae",
+          "sources": "uffs almost any Main DPS via Outro (15% All DMG + 25% Liberation DMG Amplify) and Ultimate (24% party-wide DMG Bonus), plus Tune Rupture/Tune Strain toggle mode for specialized syn",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lynae"
+        },
+        {
+          "slug": "mornye",
+          "name": "Mornye",
+          "sources": "Recursion - 25% All DMG Amplification to team for 30s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/mornye"
+        },
+        {
+          "slug": "rebecca",
+          "name": "Rebecca",
+          "sources": "mmons an attacking turret for 14s + 15% All DMG / up to 35% Heavy Attack DMG Amplification to next character.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rebecca"
+        },
+        {
+          "slug": "rover-electro",
+          "name": "Rover (Electro)",
+          "sources": "next Negative Status inflicted for 25% All DMG Amplification for 14s); expires on swap.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-electro"
+        },
+        {
+          "slug": "suisui",
+          "name": "Suisui",
+          "sources": "Rippling Waters - 25% All DMG Amplification to team for 30s; tiered bonus effects (Reflecting Shadows, Roaming Transcendent Plume Steps, Undulating Mist ATK buff)",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/suisui"
+        }
+      ]
+    },
+    "critRateBuffs": {
+      "description": "Team or self Crit Rate buffs \u2014 either substitute for substat investment (freeing echo rolls into Crit DMG/ATK%) or provide burst-window crit consistency.",
+      "providers": [
+        {
+          "slug": "mornye",
+          "name": "Mornye",
+          "sources": "tical Protocol - Fusion AoE hit, scales CRIT Rate/DMG with Energy Regen over 100%, upgrades Syntony Field to High Syntony Field.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/mornye"
+        },
+        {
+          "slug": "qiuyuan",
+          "name": "Qiuyuan",
+          "sources": "active character based on Qiuyuan's own CRIT Rate over 50%.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan"
+        },
+        {
+          "slug": "roccia",
+          "name": "Roccia",
+          "sources": "nts up to 200 flat ATK to team based on CRIT Rate over 50%.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/roccia"
+        },
+        {
+          "slug": "rover-havoc",
+          "name": "Rover (Havoc)",
+          "sources": "nced Basics, +20% Havoc DMG Bonus, +25% CRIT Rate, refreshed Skill). Extremely cheap Ultimate (125 Energy, 16s CD) and access to the Dreamless 4-cost Echo (highest-damaging Echo sk",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc"
+        },
+        {
+          "slug": "the-shorekeeper",
+          "name": "The Shorekeeper",
+          "sources": "Outer (team HoT) -> Inner (up to 12.5% CRIT Rate, scaling with her Energy Regen) -> Supernal (up to 25% CRIT DMG, scaling with ER). Needs ~230-250% Energy Regen to hit the caps.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper"
+        }
+      ]
+    },
+    "critDmgBuffs": {
+      "description": "Team or self Crit DMG buffs, usually conditional/self-only (Inherent Skills) rather than team-wide.",
+      "providers": [
+        {
+          "slug": "phrolova",
+          "name": "Phrolova",
+          "sources": "ile Notes (max 6) -> Aftersound stacks (CRIT DMG ramp) -> Compose/Resolving Chord states feeding Scarlet Coda and the Maestro Ultimate.",
+          "citedSection": "kit.skills.forte",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/phrolova"
+        },
+        {
+          "slug": "qiuyuan",
+          "name": "Qiuyuan",
+          "sources": "cho-Skill-DMG AoE hit, grants up to 30% CRIT DMG to active character based on Qiuyuan's own CRIT Rate over 50%.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan"
+        },
+        {
+          "slug": "rebecca",
+          "name": "Rebecca",
+          "sources": "albrena too). Toggles between Huntress (CRIT DMG) and Guts (DEF Ignore) modes; uses the Hack mechanic (Tune Rupture variant).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rebecca"
+        },
+        {
+          "slug": "the-shorekeeper",
+          "name": "The Shorekeeper",
+          "sources": "er Energy Regen) -> Supernal (up to 25% CRIT DMG, scaling with ER). Needs ~230-250% Energy Regen to hit the caps.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper"
+        },
+        {
+          "slug": "yangyang-xuanling",
+          "name": "Yangyang: Xuanling",
+          "sources": "ure/Feather sword stances, self-buffing CRIT DMG heavily (500%+ achievable).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling"
+        }
+      ]
+    }
+  },
+  "debuffs": {
+    "resShred": {
+      "description": "Elemental RES (resistance) Shred on the enemy \u2014 multiplies with the team's own elemental DMG bonuses rather than stacking additively, so is prioritized for mono-element hypercarry teams. Fewer characters carry this than DEF Shred/DMG Amp in the current roster per this scan.",
+      "providers": [
+        {
+          "slug": "iuno",
+          "name": "Iuno",
+          "sources": "cation via Outro); Ciaccona brings Aero RES Shred + fast rotation.",
+          "citedSection": "teams.Main DPS Iuno",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/iuno"
+        },
+        {
+          "slug": "phoebe",
+          "name": "Phoebe",
+          "sources": "ion) or Silent Prayer buff (10% Spectro RES Shred + 100% Frazzle DMG Amplify) in Confession.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/phoebe"
+        },
+        {
+          "slug": "rover-spectro",
+          "name": "Rover (Spectro)",
+          "sources": "unlocked for free, including a Spectro RES Shred at S6.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-spectro"
+        },
+        {
+          "slug": "suisui",
+          "name": "Suisui",
+          "sources": "ack caps by 3 and grants Havoc Bane DEF/RES Shred synergy.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/suisui"
+        }
+      ]
+    },
+    "defShred": {
+      "description": "Enemy DEF reduction \u2014 flagged as under-represented by this keyword scan (only 1 direct hit); most of the roster's defensive-debuff kit expresses as DMG Amplification/Deepen on the target instead of literal DEF%, per Prydwen's own phrasing.",
+      "providers": [
+        {
+          "slug": "chisa",
+          "name": "Chisa",
+          "sources": ". Applies 'Unseen Snare' -> Havoc Bane (DEF Shred) on marked targets; grants Negative-Status appliers/dealers 18% DEF Ignore (Thread of Bane) and, via Outro, +3 max Negative Status",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/chisa"
+        }
+      ]
+    },
+    "dmgAmplificationVulnerability": {
+      "description": "Target-side 'DMG Taken +X%' / 'DMG Amplification' effects (calcEngine.js's 'deepen'/target-vulnerability stat family) \u2014 functionally similar to a damage-type buff but applied to the enemy instead of the party, so it multiplies every attacker's damage against that target regardless of element.",
+      "providers": [
+        {
+          "slug": "aemeath",
+          "name": "Aemeath",
+          "sources": "nts team (excl. Aemeath) 10-20% All-DMG Amplification for 20s depending on Resonance Mode responders.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/aemeath"
+        },
+        {
+          "slug": "augusta",
+          "name": "Augusta",
+          "sources": "ding - next character gains 15% All-DMG Amplification for 14s; grants Augusta a Majesty + Crown of Wills (Electro DMG Bonus) stack.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/augusta"
+        },
+        {
+          "slug": "brant",
+          "name": "Brant",
+          "sources": "! - next character gains 20% Fusion DMG Amplify + 25% Resonance Skill DMG Amplify for 14s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/brant"
+        },
+        {
+          "slug": "buling",
+          "name": "Buling",
+          "sources": "cter (18% ATK/s for 16s) + 15% team DMG Amplify for 30s (persists on swap).",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/buling"
+        },
+        {
+          "slug": "cantarella",
+          "name": "Cantarella",
+          "sources": "20% Havoc DMG + 25% Resonance Skill DMG Amplify for 14s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/cantarella"
+        },
+        {
+          "slug": "cartethyia",
+          "name": "Cartethyia",
+          "sources": "ind's Divine Blessing - +17.5% Aero DMG Amplify to next character vs targets with Negative Status, for 20s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/cartethyia"
+        },
+        {
+          "slug": "changli",
+          "name": "Changli",
+          "sources": "ins 20% Fusion DMG + 25% Liberation DMG Amplify for 10s (shortest Outro duration in the game alongside Lumi).",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/changli"
+        },
+        {
+          "slug": "ciaccona",
+          "name": "Ciaccona",
+          "sources": "ndcalling Tune - +100% Aero Erosion DMG Amplify near active character for 30s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona"
+        },
+        {
+          "slug": "danjin",
+          "name": "Danjin",
+          "sources": "4-star Havoc Sword dual-role unit, playable as a fast Hybrid buffer or an extended Main DPS. Resonance Skill has no cooldown and chains into",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/danjin"
+        },
+        {
+          "slug": "denia",
+          "name": "Denia",
+          "sources": "usion Burst mode: +60% Fusion Burst DMG Amplify near active character for 30s. Tune Strain mode: next character gains 15% (40% if they apply Tune Strain) All-DMG Amplify for 16s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/denia"
+        },
+        {
+          "slug": "encore",
+          "name": "Encore",
+          "sources": "Brant's Skill+Fusion DMG Amplify Outro slightly edges out Changli's Liberation Amplify for Encore.",
+          "citedSection": "teams.Best Team (Dual DPS)",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/encore"
+        },
+        {
+          "slug": "galbrena",
+          "name": "Galbrena",
+          "sources": "' Echo Skill casts), which raises enemy DMG Taken while in Demon Hypostasis by up to 60%.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/galbrena"
+        },
+        {
+          "slug": "hiyuki",
+          "name": "Hiyuki",
+          "sources": "Snowlight Blessing - 20% Glacio DMG Amplify to teammates against Chafe-afflicted targets for 20s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/hiyuki"
+        },
+        {
+          "slug": "iuno",
+          "name": "Iuno",
+          "sources": "-of-all-trades: healing, shielding, DMG Amplification (Blessing of the Wan Light, up to 10 stacks of 4%), Heavy Attack buffing on Outro, and a viable Main DPS mode via her Lunar Cy",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/iuno"
+        },
+        {
+          "slug": "lingyang",
+          "name": "Lingyang",
+          "sources": "ery fast rotation and 38% Basic ATK DMG Amplify Outro, free-to-play alternative when Zhezhi is unavailable/occupied.",
+          "citedSection": "teams.F2P Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lingyang"
+        },
+        {
+          "slug": "lucy",
+          "name": "Lucy",
+          "sources": "rmeasure Program - 25% Basic Attack DMG Amplify to next character + team-wide Hack-Shifting/damage-reduction utility for 25s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lucy"
+        },
+        {
+          "slug": "lumi",
+          "name": "Lumi",
+          "sources": "Escorting - 38% Resonance Skill DMG Amplify to incoming character for 10s or until swap.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lumi"
+        },
+        {
+          "slug": "lynae",
+          "name": "Lynae",
+          "sources": "Outro (15% All DMG + 25% Liberation DMG Amplify) and Ultimate (24% party-wide DMG Bonus), plus Tune Rupture/Tune Strain toggle mode for specialized synergies (e.g. Mornye, Luuk).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lynae"
+        },
+        {
+          "slug": "mornye",
+          "name": "Mornye",
+          "sources": "Recursion - 25% All DMG Amplification to team for 30s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/mornye"
+        },
+        {
+          "slug": "phoebe",
+          "name": "Phoebe",
+          "sources": "0% Spectro RES Shred + 100% Frazzle DMG Amplify) in Confession.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/phoebe"
+        },
+        {
+          "slug": "phrolova",
+          "name": "Phrolova",
+          "sources": "- 20% Havoc DMG / 25% Heavy Attack DMG Amplification to next character for 14s or until swap; extra Hecate attacks if cast during Maestro.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/phrolova"
+        },
+        {
+          "slug": "qingxiao",
+          "name": "Qingxiao",
+          "sources": "n, and Mindlock stacking (up to 65% DMG Amplification).",
+          "citedSection": "kit.skills.forte",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/qingxiao"
+        },
+        {
+          "slug": "qiuyuan",
+          "name": "Qiuyuan",
+          "sources": "Echo-Skill-DMG hit + 50% Echo Skill DMG Amplification to next character for 14s or until swap.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/qiuyuan"
+        },
+        {
+          "slug": "rebecca",
+          "name": "Rebecca",
+          "sources": "5% All DMG / up to 35% Heavy Attack DMG Amplification to next character.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rebecca"
+        },
+        {
+          "slug": "roccia",
+          "name": "Roccia",
+          "sources": "- 20% Havoc DMG / 25% Basic Attack DMG Amplification to next character for 14s or until swap; grants incoming character the Magic Box utility (extra Echo Skill cast).",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/roccia"
+        },
+        {
+          "slug": "rover-aero",
+          "name": "Rover (Aero)",
+          "sources": "PS Iuno via signature weapon's Aero DMG Amplify.",
+          "citedSection": "teams.Main DPS Iuno Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero"
+        },
+        {
+          "slug": "rover-electro",
+          "name": "Rover (Electro)",
+          "sources": "gative Status inflicted for 25% All DMG Amplification for 14s); expires on swap.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-electro"
+        },
+        {
+          "slug": "rover-havoc",
+          "name": "Rover (Havoc)",
+          "sources": "uffer (20% Havoc + 25% Basic Attack DMG Amplify).",
+          "citedSection": "teams.Best Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc"
+        },
+        {
+          "slug": "suisui",
+          "name": "Suisui",
+          "sources": "Rippling Waters - 25% All DMG Amplification to team for 30s; tiered bonus effects (Reflecting Shadows, Roaming Transcendent Plume Steps, Undulating Mist ATK buff) based o",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/suisui"
+        },
+        {
+          "slug": "taoqi",
+          "name": "Taoqi",
+          "sources": "4-star Havoc Broadblade Skill DMG Amplifier/Shielder, considered bottom-tier despite a huge 38% Resonance Skill DMG Deepen Outro (relevant only for Jinhsi and Carlotta). Long",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/taoqi"
+        },
+        {
+          "slug": "the-shorekeeper",
+          "name": "The Shorekeeper",
+          "sources": "Binary Butterfly - 15% team DMG Amplify for 30s (persists through swaps) + up to 5 free interrupt-recoveries (auto perfect-dodge) for the active character.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper"
+        },
+        {
+          "slug": "yangyang-xuanling",
+          "name": "Yangyang: Xuanling",
+          "sources": "ther Havoc Bane appliers +20% Havoc DMG Amplification after their next Havoc Bane application.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling"
+        },
+        {
+          "slug": "yinlin",
+          "name": "Yinlin",
+          "sources": "Yinlin's 25% Liberation DMG Amplify makes her the second-best Iuno buffer after signature-weapon Ciaccona.",
+          "citedSection": "teams.Main DPS Iuno",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yinlin"
+        },
+        {
+          "slug": "youhu",
+          "name": "Youhu",
+          "sources": "ique niche: 100% Coordinated Attack DMG Amplification on Outro (the single biggest damage type amplifier in the game), plus full-team healing. Randomized 'Antique' (Chime/Ruyi/Ding",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/youhu"
+        },
+        {
+          "slug": "zani",
+          "name": "Zani",
+          "sources": "Heliacal Ember stacks, +20% Spectro DMG Amplify to team on Heliacal-Ember-marked targets for 20s.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/zani"
+        },
+        {
+          "slug": "zhezhi",
+          "name": "Zhezhi",
+          "sources": "0% Glacio DMG / 25% Resonance Skill DMG Amplification to next character for 14s or until swap; restores 15 Resonance Energy to them.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/zhezhi"
+        }
+      ]
+    },
+    "negativeStatusApplication": {
+      "description": "Application of the game's Negative Status DOT/debuff families: Frazzle (Electro), Erosion (Aero), Chafe (Glacio), Bane (Havoc), plus the generic Tune Break/Tune Strain-Interfered rupture mechanic (element-agnostic, triggered by breaking an enemy's stagger gauge). Modeled in calcEngine.js via FRAZZLE_*/EROSION_*/TUNE_BREAK_* constants \u2014 see resonance-chain-mechanics.md for the general mechanic.",
+      "providers": [
+        {
+          "slug": "aalto",
+          "name": "Aalto",
+          "sources": "Mono-Aero core with Ciaccona for Aero Erosion synergy and Windward Pilgrimage set.",
+          "citedSection": "teams.Best Team (DPS)",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/aalto"
+        },
+        {
+          "slug": "aemeath",
+          "name": "Aemeath",
+          "sources": "4), and a 'Resonance Mode' toggle (Tune Rupture vs Fusion Burst) that changes her Intro/Basic effects and Forte (Duet) enhancements; also enables Mono Fusion play via Lupa.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/aemeath"
+        },
+        {
+          "slug": "cartethyia",
+          "name": "Cartethyia",
+          "sources": "unlocking a second Ultimate). Deep Aero Erosion synergy - damage scales with erosion stacks on enemies.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/cartethyia"
+        },
+        {
+          "slug": "chisa",
+          "name": "Chisa",
+          "sources": "teams. Applies 'Unseen Snare' -> Havoc Bane (DEF Shred) on marked targets; grants Negative-Status appliers/dealers 18% DEF Ignore (Thread of Bane) and, via Outro, +3 max Negative",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/chisa"
+        },
+        {
+          "slug": "ciaccona",
+          "name": "Ciaccona",
+          "sources": "pplication (Aero Erosion and/or Spectro Frazzle via Ultimate). Basic Attack 4 cancel spawns 'Ensemble Sylph' clones granting team-wide 'Solo Concert' (24% Aero DMG Bonus, near-perm",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona"
+        },
+        {
+          "slug": "danjin",
+          "name": "Danjin",
+          "sources": "n Fragment - Carmine Gleam into Crimson Erosion (mark combo) or Sanguine Pulse (long combo, no cooldown).",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/danjin"
+        },
+        {
+          "slug": "denia",
+          "name": "Denia",
+          "sources": "second Ultimate drops a persistent 30s 'Erosion Field' that periodically groups enemies and applies Fusion Burst/Tune Strain off-field.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/denia"
+        },
+        {
+          "slug": "encore",
+          "name": "Encore",
+          "sources": "ed Heavy Attack (Cloudy Frenzy / Cosmos Rupture in Ultimate) grants 70% DMG reduction while channeling.",
+          "citedSection": "kit.skills.forte",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/encore"
+        },
+        {
+          "slug": "hiyuki",
+          "name": "Hiyuki",
+          "sources": "-> Glacio Bite conversion (like Zani's Frazzle/Heliacal Embers, but Bite is still a real Negative Status). Builds Dedication then Frostheart to enter 'Foreclaimed Self' and eventu",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/hiyuki"
+        },
+        {
+          "slug": "jiyan",
+          "name": "Jiyan",
+          "sources": "best Heavy-DMG buffer; Ciaccona's Aero Erosion buffs don't expire on swap, letting Jiyan switch mid-Lance combo.",
+          "citedSection": "teams.Best Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jiyan"
+        },
+        {
+          "slug": "lucilla",
+          "name": "Lucilla",
+          "sources": "dual 'Resonance Mode' identity (Glacio Chafe or Echo Skill) chosen based on team; buffs whichever mode via her Outro and Ultimate (Clear As Day -> Reminiscence). Only 5 inputs nee",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lucilla"
+        },
+        {
+          "slug": "lucy",
+          "name": "Lucy",
+          "sources": "fects. Uses the 'Hack' mechanic, a Tune Rupture variant exclusive to the collab characters.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lucy"
+        },
+        {
+          "slug": "luuk-herssen",
+          "name": "Luuk Herssen",
+          "sources": "Denia is strongest (extra Tune Strain, buffing, grouping, fast rotation); Lynae close second; Sanhua a fully free budget option (may need an extra Mid-air chain post-",
+          "citedSection": "teams.Best Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/luuk-herssen"
+        },
+        {
+          "slug": "lynae",
+          "name": "Lynae",
+          "sources": "e (24% party-wide DMG Bonus), plus Tune Rupture/Tune Strain toggle mode for specialized synergies (e.g. Mornye, Luuk).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lynae"
+        },
+        {
+          "slug": "mornye",
+          "name": "Mornye",
+          "sources": "erina/Shorekeeper mold, specializing in Tune Break-related buffing (Observation Marker -> Interfered Marker, up to 40% DMG Bonus vs marked targets scaling with her own Energy Regen",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/mornye"
+        },
+        {
+          "slug": "mortefi",
+          "name": "Mortefi",
+          "sources": "olution Phoebe and F2P Zani (no Spectro Frazzle application, but functional).",
+          "citedSection": "teams.Alternative Heavy Attack Teams",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/mortefi"
+        },
+        {
+          "slug": "phoebe",
+          "name": "Phoebe",
+          "sources": "Absolution (Main DPS, relies on Spectro Frazzle already on enemies) and Confession (Hybrid, applies/buffs Spectro Frazzle for a partner, currently only Zani) via her Forte 'Prayer'",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/phoebe"
+        },
+        {
+          "slug": "qingxiao",
+          "name": "Qingxiao",
+          "sources": "5-star Aero Sword Tune Strain DPS fighting mostly in mid-air, reminiscent of Luuk Herssen. Extremely simple rotation (hold Basic Attack almost the whole time)",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/qingxiao"
+        },
+        {
+          "slug": "rebecca",
+          "name": "Rebecca",
+          "sources": "re) modes; uses the Hack mechanic (Tune Rupture variant).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rebecca"
+        },
+        {
+          "slug": "rover-aero",
+          "name": "Rover (Aero)",
+          "sources": ", mid-air combat focused, applying Aero Erosion via debuff conversion (removes other Negative Statuses and converts them 1:1 into Aero Erosion) and healing via Cloudburst Dance mid",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero"
+        },
+        {
+          "slug": "rover-spectro",
+          "name": "Rover (Spectro)",
+          "sources": "nly real meta niche is applying Spectro Frazzle for Phoebe (currently mandatory pairing). All Sequence Nodes unlocked for free, including a Spectro RES Shred at S6.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-spectro"
+        },
+        {
+          "slug": "suisui",
+          "name": "Suisui",
+          "sources": "Drizzle Stance (4 hits, pulls + Glacio Chafe on Stage 4).",
+          "citedSection": "kit.skills.normalAttack",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/suisui"
+        },
+        {
+          "slug": "yangyang-xuanling",
+          "name": "Yangyang: Xuanling",
+          "sources": "game modes. Applies and maintains Havoc Bane constantly, alternating Azure/Feather sword stances, self-buffing CRIT DMG heavily (500%+ achievable).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling"
+        },
+        {
+          "slug": "zani",
+          "name": "Zani",
+          "sources": "mate stance, converting allies' Spectro Frazzle into her own 'Heliacal Ember' Forte resource. Tanky with built-in parries and damage reduction. Best paired with Confession Phoebe,",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/zani"
+        }
+      ]
+    }
+  },
+  "utility": {
+    "healing": {
+      "description": "HP restoration, either flat/%-max-HP heals on skill/outro use or continuous field heals \u2014 the core identity of the Support/Healer role archetype.",
+      "providers": [
+        {
+          "slug": "baizhi",
+          "name": "Baizhi",
+          "sources": "4-star (free) Glacio Rectifier healer/support. Attacks via her companion You'tan. Forte gauge (4 stacks max, gained per Basic Attack) spent via Skill or Heavy Attack for t",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/baizhi"
+        },
+        {
+          "slug": "brant",
+          "name": "Brant",
+          "sources": "Basic-Attack-type nuke + shield). Also heals/shields the party for free. Ultimate scales flat ATK off excess Energy Regen (up to 280%).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/brant"
+        },
+        {
+          "slug": "buling",
+          "name": "Buling",
+          "sources": "Skill DMG (up to 25%, 50% at S6). Also heals off-field and buffs ATK via Rejuvenating Glow synergy.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/buling"
+        },
+        {
+          "slug": "cantarella",
+          "name": "Cantarella",
+          "sources": "ed Attacks via Diffusion/Dreamweavers), healing, and an Outro buff (20% Havoc DMG + 25% Skill DMG). Two Forte resources: Trance (max 5, unlocks Mirage state via enhanced Heavy Atta",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/cantarella"
+        },
+        {
+          "slug": "chisa",
+          "name": "Chisa",
+          "sources": "Moment of Nihility - Havoc DMG + team heal, enters Woven Myriad - Convergence (buffs Chainsaw attacks +120% multiplier).",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/chisa"
+        },
+        {
+          "slug": "danjin",
+          "name": "Danjin",
+          "sources": "P-cost Heavy Attacks (Chaoscleave) that heal ~1/3 max HP; her attacks consume her own HP, making her a high-risk/high-reward pick.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/danjin"
+        },
+        {
+          "slug": "iuno",
+          "name": "Iuno",
+          "sources": "star Aero Gauntlets jack-of-all-trades: healing, shielding, DMG Amplification (Blessing of the Wan Light, up to 10 stacks of 4%), Heavy Attack buffing on Outro, and a viable Main D",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/iuno"
+        },
+        {
+          "slug": "jianxin",
+          "name": "Jianxin",
+          "sources": "imate multi-purpose unit: shields, self-healing, grouping (best-in-class Ultimate pull, rivaled only by The Shorekeeper), a free-parry Resonance Skill, and a Liberation-DMG buffing",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jianxin"
+        },
+        {
+          "slug": "mornye",
+          "name": "Mornye",
+          "sources": "h her own Energy Regen) plus generalist healing, DEF buff, and oneshot/death resistance via Boundedness.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/mornye"
+        },
+        {
+          "slug": "rover-aero",
+          "name": "Rover (Aero)",
+          "sources": "onverts them 1:1 into Aero Erosion) and healing via Cloudburst Dance mid-air attacks and Ultimate. Currently restricted almost entirely to Cartethyia + Ciaccona teams.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-aero"
+        },
+        {
+          "slug": "rover-spectro",
+          "name": "Rover (Spectro)",
+          "sources": "-star Spectro Sword jack-of-all-trades (healing, CC, debuff, Sub-DPS) whose only real meta niche is applying Spectro Frazzle for Phoebe (currently mandatory pairing). All Sequence",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/rover-spectro"
+        },
+        {
+          "slug": "suisui",
+          "name": "Suisui",
+          "sources": "uki, Yangyang: Xuanling), a Mornye-type healer/buffer. Alternates Zephyr Stance (opener) and Drizzle Stance (main buffing phase, entered instantly via Intro).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/suisui"
+        },
+        {
+          "slug": "taoqi",
+          "name": "Taoqi",
+          "sources": "Fortified Defense - Havoc AoE + self-heal + 3 Rocksteady Shield stacks (party DMG reduction).",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/taoqi"
+        },
+        {
+          "slug": "the-shorekeeper",
+          "name": "The Shorekeeper",
+          "sources": "Chaos Theory - team heal + summons 5 Dim Star Butterflies, 20 Concerto on cast, 16s cooldown.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper"
+        },
+        {
+          "slug": "verina",
+          "name": "Verina",
+          "sources": "ar Spectro Rectifier generalist Support/healer with the shortest rotation in the game (as fast as ~2.35s at S2). Forte 'Photosynthesis Energy' (max 4, from Basic 5/Skill/Intro) con",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/verina"
+        },
+        {
+          "slug": "youhu",
+          "name": "Youhu",
+          "sources": "amplifier in the game), plus full-team healing. Randomized 'Antique' (Chime/Ruyi/Ding/Mask) draw system enhancing her Basic Attacks, building toward a 4-Auspice Forte finisher (Po",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/youhu"
+        }
+      ]
+    },
+    "shielding": {
+      "description": "Damage-absorbing shields, usually HP%-scaling, granted on skill/forte activation \u2014 secondary survivability tool alongside or instead of healing.",
+      "providers": [
+        {
+          "slug": "augusta",
+          "name": "Augusta",
+          "sources": "nisher), grants team-wide Ruler's Realm shield-on-Intro.",
+          "citedSection": "kit.skills.liberation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/augusta"
+        },
+        {
+          "slug": "brant",
+          "name": "Brant",
+          "sources": "om Ashes' (big Basic-Attack-type nuke + shield). Also heals/shields the party for free. Ultimate scales flat ATK off excess Energy Regen (up to 280%).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/brant"
+        },
+        {
+          "slug": "chisa",
+          "name": "Chisa",
+          "sources": "ainsaw Basic Attack combo ending in the shielding nuke 'Sawring - Eradication'.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/chisa"
+        },
+        {
+          "slug": "iuno",
+          "name": "Iuno",
+          "sources": "Gauntlets jack-of-all-trades: healing, shielding, DMG Amplification (Blessing of the Wan Light, up to 10 stacks of 4%), Heavy Attack buffing on Outro, and a viable Main DPS mode v",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/iuno"
+        },
+        {
+          "slug": "jianxin",
+          "name": "Jianxin",
+          "sources": "Gauntlets ultimate multi-purpose unit: shields, self-healing, grouping (best-in-class Ultimate pull, rivaled only by The Shorekeeper), a free-parry Resonance Skill, and a Liberati",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jianxin"
+        },
+        {
+          "slug": "taoqi",
+          "name": "Taoqi",
+          "sources": "ar Havoc Broadblade Skill DMG Amplifier/Shielder, considered bottom-tier despite a huge 38% Resonance Skill DMG Deepen Outro (relevant only for Jinhsi and Carlotta). Long, slow-ani",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/taoqi"
+        }
+      ]
+    },
+    "energyRegen": {
+      "description": "Energy Regeneration% buffs or flat Resonance Energy restoration \u2014 feeds Liberation (ultimate) uptime; see calcEngine.js's ER_THRESHOLD_MAIN_DPS/SUB_DPS/STANDARD/HEALER breakpoints for how much a given role actually needs.",
+      "providers": [
+        {
+          "slug": "brant",
+          "name": "Brant",
+          "sources": "ee. Ultimate scales flat ATK off excess Energy Regen (up to 280%).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/brant"
+        },
+        {
+          "slug": "camellya",
+          "name": "Camellya",
+          "sources": "e - consumes Crimson Pistils for buffed Energy Regen, builds Crimson Buds; at full Concerto, Ephemeral (Basic-type nuke) triggers Budding Mode (+50% dmg multiplier on Basic/Skill-t",
+          "citedSection": "kit.skills.forte",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/camellya"
+        },
+        {
+          "slug": "cantarella",
+          "name": "Cantarella",
+          "sources": "amage + heal + buff) but suffers severe Energy Regen requirements that hurt both her own damage and her teammates' builds; lacks a clearly best-in-slot DPS partner as of 3.2 review",
+          "citedSection": "communityNotes",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/cantarella"
+        },
+        {
+          "slug": "jianxin",
+          "name": "Jianxin",
+          "sources": "fer, at the cost of more field time and Energy Regen needs.",
+          "citedSection": "teams.Xiangli Yao Team",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jianxin"
+        },
+        {
+          "slug": "jiyan",
+          "name": "Jiyan",
+          "sources": "value from swap-cancelling); needs good Energy Regen/cooldown management to keep the Ultimate up every rotation. Consistently one of the best Tower of Adversity DPS since release.",
+          "citedSection": "communityNotes",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jiyan"
+        },
+        {
+          "slug": "mornye",
+          "name": "Mornye",
+          "sources": "vs marked targets scaling with her own Energy Regen) plus generalist healing, DEF buff, and oneshot/death resistance via Boundedness.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/mornye"
+        },
+        {
+          "slug": "phrolova",
+          "name": "Phrolova",
+          "sources": "K buff and off-field Hecate attacks. No Energy Regen requirement (0 max Energy Ultimate).",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/phrolova"
+        },
+        {
+          "slug": "the-shorekeeper",
+          "name": "The Shorekeeper",
+          "sources": "up to 12.5% CRIT Rate, scaling with her Energy Regen) -> Supernal (up to 25% CRIT DMG, scaling with ER). Needs ~230-250% Energy Regen to hit the caps.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper"
+        }
+      ]
+    },
+    "concertoAndResonanceEnergyGeneration": {
+      "description": "Concerto Energy (the gauge that unlocks a character's Outro Skill once full) and/or Resonance Energy (Liberation gauge) generation support \u2014 either self-generation mechanics or kit text explicitly calling out feeding a teammate's gauge.",
+      "providers": [
+        {
+          "slug": "aalto",
+          "name": "Aalto",
+          "sources": "e Circuit generally skipped in the fast Concerto-focused rotation.",
+          "citedSection": "rotation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/aalto"
+        },
+        {
+          "slug": "baizhi",
+          "name": "Baizhi",
+          "sources": "kill or Heavy Attack for team healing + Concerto generation. Outro grants 15% all-type DMG Deepen + healing over time to next character; Inherent Skill 1 drops a pickup-able 'Eupho",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/baizhi"
+        },
+        {
+          "slug": "calcharo",
+          "name": "Calcharo",
+          "sources": "Heavy Attack becomes 'Mercy' (Resonance/Concerto Energy recovery); at 5 Killing Intent (only gained in Deathblade Gear), Basic Attack becomes 'Death Messenger' Heavy Attack (core b",
+          "citedSection": "kit.skills.forte",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/calcharo"
+        },
+        {
+          "slug": "camellya",
+          "name": "Camellya",
+          "sources": "rgy Regen, builds Crimson Buds; at full Concerto, Ephemeral (Basic-type nuke) triggers Budding Mode (+50% dmg multiplier on Basic/Skill-type attacks, +5% per Crimson Bud consumed,",
+          "citedSection": "kit.skills.forte",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/camellya"
+        },
+        {
+          "slug": "cantarella",
+          "name": "Cantarella",
+          "sources": "nuke + heal); Abyssal Rebirth restores Concerto Energy on Echo Skill casts (up to 6x/25s).",
+          "citedSection": "kit.skills.forte",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/cantarella"
+        },
+        {
+          "slug": "ciaccona",
+          "name": "Ciaccona",
+          "sources": "AoE pull + Aero DMG + Aero Erosion, big Concerto gain.",
+          "citedSection": "kit.skills.forte",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona"
+        },
+        {
+          "slug": "jianxin",
+          "name": "Jianxin",
+          "sources": "cho off cooldown, Ultimate for grouping/Concerto Energy, align Outro with the main DPS's Liberation-DMG burst, and use Forte Circuit situationally (usually a net damage loss but va",
+          "citedSection": "rotation",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jianxin"
+        },
+        {
+          "slug": "jiyan",
+          "name": "Jiyan",
+          "sources": "ro DMG, low cooldown, generates lots of Resonance Energy.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/jiyan"
+        },
+        {
+          "slug": "lucilla",
+          "name": "Lucilla",
+          "sources": "ble) or Spotlight (better, CD reduction/Concerto).",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/lucilla"
+        },
+        {
+          "slug": "mortefi",
+          "name": "Mortefi",
+          "sources": "y Attacks (2x per Heavy hit). Very fast Concerto rotation.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/mortefi"
+        },
+        {
+          "slug": "sanhua",
+          "name": "Sanhua",
+          "sources": "Sword Hybrid with arguably the fastest Concerto rotation in the game, buffing Basic Attack DMG by 38% on Outro. Deploys ice constructs (Thorn/Prism/Glacier) via Intro/Skill/Ultima",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/sanhua"
+        },
+        {
+          "slug": "the-shorekeeper",
+          "name": "The Shorekeeper",
+          "sources": "al + summons 5 Dim Star Butterflies, 20 Concerto on cast, 16s cooldown.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/the-shorekeeper"
+        },
+        {
+          "slug": "verina",
+          "name": "Verina",
+          "sources": "nsumed via Mid-air Attack for healing + Concerto. Notably her Intro Skill is considered unusable (launches her airborne, slows rotation) so it's typically skipped.",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/verina"
+        },
+        {
+          "slug": "xiangli-yao",
+          "name": "Xiangli Yao",
+          "sources": "ectro DMG, short 5s cooldown, generates Concerto/Resonance Energy; becomes 'Decipher' at full standard Capacity, 'Divergence'/'Law of Reigns' during Intuition.",
+          "citedSection": "kit.skills.resonanceSkill",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/xiangli-yao"
+        },
+        {
+          "slug": "yangyang",
+          "name": "Yangyang",
+          "sources": "he game and a unique Outro that funnels Resonance Energy to the incoming character (rather than a DMG buff), making her the only fully quickswap-friendly Hybrid buffer in the game",
+          "citedSection": "kit.intro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/yangyang"
+        },
+        {
+          "slug": "youhu",
+          "name": "Youhu",
+          "sources": "Mortefi); slower attack animations and Concerto-hungry rotation limit her general appeal versus Verina/Shorekeeper.",
+          "citedSection": "communityNotes",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/youhu"
+        },
+        {
+          "slug": "zhezhi",
+          "name": "Zhezhi",
+          "sources": "cter for 14s or until swap; restores 15 Resonance Energy to them.",
+          "citedSection": "kit.skills.outro",
+          "source": "https://www.prydwen.gg/wuthering-waves/characters/zhezhi"
+        }
+      ]
+    }
+  }
+}
