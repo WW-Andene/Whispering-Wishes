@@ -1995,7 +1995,15 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: deploys a turret for 14s and grants the next Resonator 15% All DMG Amp (14s), ramping to 35% Heavy ATK DMG Amp via stacking Overlimit. Both buffs target the incoming Resonator only, not the whole team. Huntress mode grants self 30% Crit DMG; Guts mode grants self 15% DEF Ignore (personal, not a team-wide DEF Shred debuff — fixed 2026-08-16, was miscategorized under debuffs as defShred). Tune Break: Hack Response - Meltdown is genuine (base kit, once/8s) but exact ruptureDmgMult not sourced (Prydwen 2026-08-18); Tag, You\'re It! confirmed +30 Tune Break Boost (30s) to whichever teammate inflicts Hack - Shifting.',
   },
   'Denia': {
-    outroBuffs: [{ stat: 'allDmg', value: 40, target: 'next', duration: 16, condition: 'Tune Strain mode, after inflicting Tune Strain - Shifting' }, { stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Fusion Burst mode' }],
+    // value corrected 2026-08-31: was 40 (the conditional ceiling, "40% if they apply Tune Strain -
+    // Shifting"), which the engine was applying unconditionally to every comp — its `condition` field
+    // only gates on named elements (universalStatApplies in calcEngine.js), so "after inflicting Tune
+    // Strain - Shifting" was never actually checked and every team got the max value for free. Fixed to
+    // 15%, the guaranteed floor documented in both references/combat-db/characters/denia.json's
+    // Prydwen-sourced kit.skills.outro ("Tune Strain mode: next character gains 15% (40% if they apply
+    // Tune Strain) All-DMG Amplify for 16s") and Fandom's Outro Skill page (fetched 2026-08-31) — this
+    // file's own `note` below already correctly said "15-40%", only the numeric entry was wrong.
+    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'next', duration: 16, condition: 'Tune Strain mode' }, { stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Fusion Burst mode' }],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
@@ -2370,7 +2378,18 @@ const CHAR_BUFF_TABLE = {
   },
   // ── 5★ Main DPS missing from initial table ──
   'Aemeath': {
-    outroBuffs: [],
+    // Added 2026-08-31 — outroBuffs was empty despite Aemeath having a real team-wide Outro buff
+    // (Silent Protection). Confirmed by two independent sources in references/combat-db: her own
+    // Prydwen-sourced kit.skills.outro text ("grants team (excl. Aemeath) 10-20% All-DMG Amplification
+    // for 20s depending on Resonance Mode responders") and Fandom's official Outro Skill page
+    // (wutheringwaves.fandom.com/wiki/Outro_Skill, fetched 2026-08-31: "In Tune Rupture mode: team
+    // (except Aemeath) 10% All-DMG Amp for 20s (20% for Tune Rupture-Shifting inflictors). In Fusion
+    // Burst mode: same 10%/20% structure."). Modeled at the guaranteed 10% floor (team-wide, both
+    // Resonance Modes) rather than the conditional 20% ceiling, since the engine's `condition` field
+    // only gates on named elements (see universalStatApplies in calcEngine.js) and can't gate on "is a
+    // Tune Rupture-Shifting inflictor" — encoding 20% here would silently apply it to every team member
+    // in every comp, which overstates for non-inflictors more than the 10% floor understates for them.
+    outroBuffs: [{ stat: 'allDmg', value: 10, target: 'team', duration: 20 }],
     libBuffs: [],
     // corrected 2026-08-18: removed the two "Sig weapon" entries (DEF Ignore +32%, Fusion RES ignore +10%)
     // — they exactly duplicated Everbright Polestar's own pv, which the calculator already applies whenever
