@@ -67,6 +67,13 @@ const OnboardingModal = ({ onComplete }) => {
 
   return (
     <FocusTrapModal isOpen={true} onClose={onComplete} ariaLabel={t('modals.onboarding.ariaLabel')} className="" centered padding="p-3" dim={step === 0}>
+      {/* Sized to exactly the card's own footprint (not full-screen like
+          FocusTrapModal's own `dim` scrim) — from page 2 on, the rest of the
+          real app behind the modal stays fully visible so the highlighted
+          tab reads clearly, but the card itself still needs a dark backdrop
+          of its own or kuro-card's translucent background reads as barely
+          -there against a bright/busy tab behind it. */}
+      <div className="w-full max-w-xs rounded-2xl" style={step > 0 ? { background: 'var(--scrim)', backdropFilter: 'blur(2px) brightness(0.4)', WebkitBackdropFilter: 'blur(2px) brightness(0.4)' } : undefined}>
       <div className="kuro-card w-full max-w-xs" style={{ border: `1px solid ${s.color}30` }}>
         <div className="kuro-card-inner rounded-2xl overflow-hidden">
 
@@ -111,6 +118,7 @@ const OnboardingModal = ({ onComplete }) => {
           </div>
 
         </div>
+      </div>
       </div>
       {createPortal(
         // Always mounted (visibility toggled via `display`, never inserted/
