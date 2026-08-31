@@ -320,7 +320,10 @@ const CHARACTER_DATA = {
   // 5-stars; alt4 uses Undying Flame (75.8%, best 4★) and Pistols#26 (72.0%, named best F2P/no-gacha
   // option); alt3 uses the standard starter Pistols of Night, matching the convention used elsewhere.
   'Carlotta': { rarity: 5, element: 'Glacio', weapon: 'Pistols', role: 'Main DPS',
-    desc: 'Reshaping Dimensions, second daughter of the Montelli family and an art investor unbound by convention — she moves seamlessly through social circles and business transactions while quietly handling the family\'s unspeakable "troubles" in secret. On-field Glacio Main DPS who builds Moldable Crystals and Substance through her Basic/Heavy Attack and Skill combos, unleashes the Forte Heavy Imminent Oblivion at full Substance for Final Bow, then dumps her fully-buffed Resonance Liberation Era of New Wave into a six-hit Twilight Tango barrage (Death Knell ×4 into Fatal Finale) for a massive burst of Resonance Skill-flagged DMG.',
+    // desc rewritten 2026-08-31 to exact-mechanic depth against wutheringwaves.fandom.com/wiki/Carlotta/Combat
+    // (Chrome/Windows UA + google.com referer + jsRender). Prior text was flavor + a vague "builds Moldable
+    // Crystals and Substance" summary with no exact ammo counts, gain events, or enhanced-state gating.
+    desc: 'Reshaping Dimensions, second daughter of the Montelli family and an art investor unbound by convention — she moves seamlessly through social circles and business transactions while quietly handling the family\'s unspeakable "troubles" in secret. On-field Glacio Main DPS built around two resources, both capped and both frozen while she is in Twilight Tango: Moldable Crystals (cap 6) are gained +3 each from Basic ATK Stage 2, Heavy Attack, Mid-air Customary Greetings, Intro Skill Wintertime Aria, Resonance Skill Art of Violence, or a successful Dodge; Substance (cap 120) is gained +30 from Intro Skill Wintertime Aria, +10 per Moldable Crystal consumed when casting Resonance Skill Chromatic Splendor or Basic ATK Necessary Measures (up to +60 for a full 6 crystals), and +10 (consuming 1 Moldable Crystal) on a Dodge Counter. Resonance Skill Art of Violence deals Glacio DMG and inflicts Dispersion (1.5s immobilize); pressing Skill again shortly after chains into Chromatic Splendor, which consumes ALL held Moldable Crystals for +10 Substance each — the Skill otherwise falls off cooldown if Chromatic Splendor is not cast or she is swapped off-field. At full 120 Substance she enters Final Bow: Resonance Liberation Era of New Wave, Death Knell, and Fatal Finale all gain +80% DMG Multiplier, an effect that ends the moment she is swapped off-field during Twilight Tango or when Twilight Tango itself ends. Her enhanced Heavy Attack, Imminent Oblivion, is separately gated behind Tinted Crystal, which activates on its own 22s cooldown: only when Substance is full AND Tinted Crystal is active can she HOLD Basic Attack (instead of tapping Heavy Attack for the always-available Containment Tactics) to consume all 120 Substance for Imminent Oblivion — Resonance Skill-flagged Glacio DMG that also cuts Art of Violence\'s cooldown by 6s and sends Tinted Crystal back on cooldown. Pressing Resonance Liberation Era of New Wave hits all nearby targets (Resonance Skill-flagged), inflicts Deconstruction (-18% target DEF ignored, 4s) and activates Twilight Tango (10s): the next 5 Basic Attack/Liberation presses are forced into 4× Death Knell (each stacking 1 of max-4 Meta Vector) then, on the 5th press with all 4 Meta Vectors banked, an automatic Fatal Finale that ends Twilight Tango and wipes Substance to 0 — Necessary Measures, Containment Tactics, and Imminent Oblivion cannot be cast while Twilight Tango is active. Source: wutheringwaves.fandom.com/wiki/Carlotta/Combat, verified 2026-08-31.',
     skills: ['Silent Execution', 'Art of Violence', 'Era of New Wave', 'Lethal Repertoire'],
     ascension: { boss: 'Platinum Core', common: 'Polygon Core', specialty: 'Sword Acorus' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Phlogiston' },
@@ -2256,11 +2259,15 @@ const CHAR_BUFF_TABLE = {
   // real Forte Circuit "Final Bow" (+80% DMG Multiplier to all 3 Liberation abilities at full Substance).
   // debuffs was empty, missing her real "Deconstruction" debuff (18% DEF ignore on hit, applied by
   // Liberation and — via Inherent Skill Ars Gratia Artis — also her Intro/Chromatic Splendor/Forte Heavy).
+  // re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Carlotta/Combat: Final Bow (+80% Liberation
+  // DMG Multiplier at full 120 Substance, ends on swap-out during Twilight Tango or when Twilight Tango ends)
+  // and Deconstruction (-18% DEF ignore, 4s, from Liberation base-kit + Intro/Chromatic Splendor/Death Knell/
+  // Imminent Oblivion via Inherent Skill Ars Gratia Artis) both already matched source exactly — unchanged.
   'Carlotta': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'libDmg', value: 80, target: 'self', duration: 99, condition: 'Forte Circuit Final Bow: at full Substance, Liberation DMG Multiplier (Era of New Wave/Death Knell/Fatal Finale) +80%' }],
-    debuffs: [{ stat: 'defIgnore', value: 18, target: 'enemy', duration: 4, condition: 'Deconstruction: applied by Liberation, plus Intro/Chromatic Splendor/Forte Heavy via Ars Gratia Artis' }],
+    selfBuffs: [{ stat: 'libDmg', value: 80, target: 'self', duration: 99, condition: 'Forte Circuit Final Bow: at full Substance, Liberation DMG Multiplier (Era of New Wave/Death Knell/Fatal Finale) +80%; ends if swapped out during Twilight Tango or when Twilight Tango ends' }],
+    debuffs: [{ stat: 'defIgnore', value: 18, target: 'enemy', duration: 4, condition: 'Deconstruction: applied by Liberation, plus Intro/Chromatic Splendor/Death Knell/Forte Heavy via Ars Gratia Artis' }],
     note: 'Burst Glacio Main DPS. Final Bow: +80% Liberation DMG Multiplier at full Substance. Deconstruction: -18% target DEF (4s).',
   },
   'Jinhsi': {
@@ -2865,18 +2872,22 @@ const SKILL_MULTIPLIERS = {
   // row except Outro was roughly half its real value (e.g. Era of New Wave — her core Liberation nuke —
   // was listed as '202.6%' vs the real 402.71%), the same halving pattern found and fixed in Camellya's
   // row. Outro (794.2%) was already correct and is unchanged.
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Carlotta/Combat's "Attribute
+  // Scaling" tables (Lv.10 column, rightmost): the 2026-08-17 pass fixed the halving bug but every row
+  // still carried a small rounding/transcription drift from the exact per-hit figures — corrected below,
+  // each old value shown in the per-row comment. Outro Closing Remark (794.2%) matched exactly, unchanged.
   'Carlotta': [
-    ['Basic ATK', 'Stage 1-2', '54.1% → 132.6%'],
-    ['Basic ATK', 'Necessary Measures 1-3', '66.4% → 134.4% → 234.6%'],
-    ['Heavy ATK', 'Standard', '153.0%'],
-    ['Heavy ATK', 'Containment Tactics', '229.6%'],
-    ['Forte', 'Imminent Oblivion', '67.2%×5 + 504.2%'],
-    ['Skill', 'Art of Violence', '145.0%×2'],
-    ['Skill', 'Chromatic Splendor', '113.4%×2 + 340.2%'],
-    ['Liberation', 'Era of New Wave', '405.2%'],
-    ['Liberation', 'Death Knell', '(184.6% + 14.6%×4) per shot'],
-    ['Liberation', 'Fatal Finale', '648.2%'],
-    ['Intro', 'Wintertime Aria', '180% + 60%×2'],
+    ['Basic ATK', 'Stage 1-2', '54.08% → 39.55%+39.55%+52.73%'], // was '54.1% → 132.6%' (stage 2 sum is 131.83, not 132.6)
+    ['Basic ATK', 'Necessary Measures 1-3', '65.91% → 60.08%+73.43% → 139.93%+23.33%×4'], // was '66.4% → 134.4% → 234.6%'
+    ['Heavy ATK', 'Standard', '22.82%×4 + 60.84%'], // was '153.0%' (real total 152.12%)
+    ['Heavy ATK', 'Containment Tactics', '34.23%×4 + 91.26%'], // was '229.6%' (real total 228.18%)
+    ['Forte', 'Imminent Oblivion', '66.83%×5 + 501.21%'], // was '67.2%×5 + 504.2%' (real total 835.36%, not 840.2%)
+    ['Skill', 'Art of Violence', '144.11%×2'], // was '145.0%×2' (real total 288.22%, not 290%)
+    ['Skill', 'Chromatic Splendor', '112.73%×2 + 338.18%'], // was '113.4%×2 + 340.2%' (real total 563.64%, not 567%)
+    ['Liberation', 'Era of New Wave', '402.71%'], // was '405.2%'
+    ['Liberation', 'Death Knell', '(183.64% + 14.50%×4) per shot'], // was '(184.6% + 14.6%×4) per shot'
+    ['Liberation', 'Fatal Finale', '644.33%'], // was '648.2%'
+    ['Intro', 'Wintertime Aria', '178.93% + 59.65%×2'], // was '180% + 60%×2'
     ['Outro', 'Closing Remark', '794.2%'],
   ],
   // Corrected 2026-08-17 against ww.nanoka.cc's character #1409 sheet (Lv.10 skill attributes): most
@@ -3538,19 +3549,23 @@ const CHARACTER_ROTATIONS = {
     { type: 'Outro', skill: 'Applause, Please!', duration: 14, note: 'Triggers automatically the moment you swap out — no separate button press needed. Grants the incoming Resonator +20% Havoc DMG / +25% Basic ATK DMG for 14s, and swaps their Utility button for Roccia\'s Magic Box.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Carlotta (re-fetched
-  // 2026-08-18, Chrome UA + google.com referer + jsRender).
+  // 2026-08-18, Chrome UA + google.com referer + jsRender). Step-by-step mechanics re-verified 2026-08-31
+  // verbatim against wutheringwaves.fandom.com/wiki/Carlotta/Combat's Forte Details table (exact ammo counts,
+  // gain/consume events, and Twilight Tango's forced-press/forfeit structure) — the action sequence already
+  // matched; only the per-step conditional detail was tightened (e.g. Chromatic Splendor's Substance gain is
+  // per-crystal, 10 per Moldable Crystal consumed, not a flat "60").
   'Carlotta': [
     { type: 'Intro', skill: 'Wintertime Aria', note: 'Swap into her — fires automatically. Grants 30 Substance and 3 Moldable Crystals (of 6 max) right away.' },
-    { type: 'Skill', skill: 'Art of Violence', note: 'Press Skill — deals Glacio DMG, inflicts Dispersion (1.5s immobilize), and grants 3 more Moldable Crystals (now 6/6). Press Skill again shortly after to chain into Chromatic Splendor before the window closes.' },
-    { type: 'Skill', skill: 'Chromatic Splendor', note: 'Press Skill again within the follow-up window — consumes all 6 Moldable Crystals for 60 Substance (now 90/120) and enters "Final Bow" once Substance later hits 120, granting +80% DMG Multiplier to all 3 Liberation abilities.' },
+    { type: 'Skill', skill: 'Art of Violence', note: 'Press Skill — deals Glacio DMG, inflicts Dispersion (1.5s immobilize), and grants 3 more Moldable Crystals (now 6/6). Press Skill again shortly after to chain into Chromatic Splendor before the window closes; otherwise Art of Violence simply falls off cooldown on its own.' },
+    { type: 'Skill', skill: 'Chromatic Splendor', note: 'Press Skill again within the follow-up window — consumes ALL held Moldable Crystals for +10 Substance PER crystal consumed (6 crystals = +60, now 90/120) and enters "Final Bow" once Substance later hits 120/120, granting +80% DMG Multiplier to all 3 Liberation abilities (Era of New Wave/Death Knell/Fatal Finale) until she is swapped off during Twilight Tango or Twilight Tango ends.' },
     { type: 'Mid-air', skill: 'Plunging Attack', note: 'Jump and tap Basic Attack to plunge back to the ground — pure repositioning, no damage focus, just gets her grounded to continue the combo.' },
-    { type: 'Forte', skill: 'Imminent Oblivion', note: 'Once Tinted Crystal is off cooldown and Substance is capped at 120/120, HOLD Basic Attack (her Heavy Attack is replaced automatically) — consumes all 120 Substance, deals Glacio DMG counted as Resonance Skill DMG, and cuts Art of Violence\'s cooldown by 6s.' },
-    { type: 'Liberation', skill: 'Era of New Wave', note: 'Press Liberation — hits all nearby targets (counted as Skill DMG), inflicts Deconstruction (-18% DEF for 4s), and activates "Twilight Tango," converting the next 5 Basic Attack/Liberation presses into Death Knell/Fatal Finale.' },
+    { type: 'Forte', skill: 'Imminent Oblivion', note: 'Tinted Crystal activates on its own 22s cooldown; once it is active AND Substance is capped at 120/120, HOLD Basic Attack (replacing the normally-available tap Heavy Attack/Containment Tactics) — consumes all 120 Substance, deals Glacio DMG counted as Resonance Skill DMG, cuts Art of Violence\'s cooldown by 6s, and sends Tinted Crystal back on cooldown. Cannot be cast while in Twilight Tango.' },
+    { type: 'Liberation', skill: 'Era of New Wave', note: 'Press Liberation — hits all nearby targets (counted as Skill DMG), inflicts Deconstruction (-18% DEF ignored, 4s), and activates "Twilight Tango" (10s), forcing the next 5 Basic Attack/Liberation presses into Death Knell/Fatal Finale — Necessary Measures, Containment Tactics, and Imminent Oblivion are all locked out, and no Substance/Moldable Crystals can be gained, for the duration.' },
     { type: 'Liberation', skill: 'Death Knell ×4', note: 'Press Basic Attack or Liberation 4 times in a row — each press fires Death Knell automatically while in Twilight Tango, dealing Glacio DMG (counted as Skill DMG) and building 1 Meta Vector per hit, capping at 4.' },
-    { type: 'Liberation', skill: 'Fatal Finale', note: 'On the 5th press, with 4 Meta Vectors banked, this fires automatically instead of another Death Knell — a big AoE hit (counted as Skill DMG) that consumes all 4 Meta Vectors and ends Twilight Tango, also wiping her Substance to 0.' },
-    { type: 'Skill', skill: 'Art of Violence → Chromatic Splendor', note: 'Press Skill twice again (same as the opener) to bank 30 Substance for the start of the next rotation.' },
+    { type: 'Liberation', skill: 'Fatal Finale', note: 'On the 5th press, with 4 Meta Vectors banked, this fires automatically instead of another Death Knell — a big AoE hit (counted as Skill DMG) that consumes all 4 Meta Vectors and ends Twilight Tango, also wiping her Substance to 0. There is no way to delay past the 5th press — the forced-press sequence cannot be skipped or extended.' },
+    { type: 'Skill', skill: 'Art of Violence → Chromatic Splendor', note: 'Press Skill twice again (same as the opener) — this rebuilds only 3 Moldable Crystals from Art of Violence itself (no other crystal-granting action happened since Twilight Tango wiped her state), so Chromatic Splendor here consumes 3 crystals for +30 Substance, banked for the start of the next rotation.' },
     { type: 'Echo', skill: 'Swap Cancel', note: 'Use your equipped Echo\'s skill, then immediately swap out — cuts the Echo animation short without losing its effect and triggers her Outro.' },
-    { type: 'Outro', skill: 'Closing Remark', note: 'Triggers automatically on swap-out — one final Glacio hit worth 794.2% ATK at base rank.' },
+    { type: 'Outro', skill: 'Closing Remark', note: 'Triggers automatically on swap-out — one final Glacio hit worth 794.2% ATK at base rank (confirmed exact against source, unchanged).' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Camellya (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
@@ -4345,8 +4360,28 @@ const RESONANCE_CHAIN_DATA = {
   //   Dream's bonus raised to 250%, immune to interruption while casting — TODO: needs Phase 2 schema, not
   //   representable as a flat stat bonus).
   'Camellya':     { s1: { critDmg: 28 }, s2: { totalMult: 120 }, s3: { atkPct: 58, totalMult: 50 }, s4: { basicDmg: 25 }, s5: { totalMult: 303 }, s6: { totalMult: 150 } },
-  // Carlotta S1: +12.5% CR on Deconstructed (confirmed). S4: team Skill DMG+25%
-  'Carlotta':     { s1: { critRate: 12.5 }, s2: { totalMult: 25 }, s3: { totalMult: 15 }, s4: { skillDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 50 } },
+  // Carlotta S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Carlotta/Combat:
+  // S1 Beauty Blazes Brightest Before It Fades: +12.5% Crit Rate on that instance of DMG when hitting a
+  //   Deconstructed target (confirmed, unchanged) — PLUS Chromatic Splendor hitting a Dispersion target
+  //   additionally restores 30 Substance (resource-economy effect, not a DPS stat; no schema field for it).
+  // S2 Fallen Petals Give Life to New Blooms: Fatal Finale's DMG Multiplier +126% (was wrongly totalMult:25,
+  //   less than a fifth of the real value — straight transcription/magnitude bug, same class of error found
+  //   in Changli's/Phrolova's rows).
+  // S3 Adelante, Cortado, Spinning in Grace: DMG Multiplier of Art of Violence AND Chromatic Splendor both
+  //   +93% (was wrongly totalMult:15). ALSO enables Outro Skill "Kaleidoscope Sparks": Closing Remark gains
+  //   1 additional strike worth 1032.18% ATK Glacio DMG — a whole new action the flat schema can't add onto
+  //   the Outro row without inflating the base Closing Remark multiplier itself.
+  //   // TODO: needs Phase 2 schema — Kaleidoscope Sparks' +1032.18% ATK Outro strike is not representable
+  //   // as a flat totalMult on this node without conflating it with the Art of Violence/Chromatic Splendor bonus.
+  // S4 Yesterday's Raindrops Make Finest Wine: casting Heavy ATK, Containment Tactics, or Imminent Oblivion
+  //   grants the WHOLE TEAM +25% Resonance Skill DMG Bonus for 30s (confirmed value; target is 'team', not
+  //   Carlotta-only — TODO: verify calc engine applies this to teammates, not just self).
+  // S5 Toast to Past, Today, and Every Day to Come: Imminent Oblivion's DMG Multiplier +47% (was wrongly
+  //   totalMult:15, roughly a third of the real value).
+  // S6 As the Curtain Falls, I Remain What I Am: Death Knell's DMG Multiplier +186.6% (was wrongly
+  //   totalMult:50, well under a third of the real value) — also doubles Death Knell's crystal-shard count
+  //   and adds a 1.5s Scattering immobilize on hit (CC, not a DPS stat; no schema field for it).
+  'Carlotta':     { s1: { critRate: 12.5 }, s2: { totalMult: 126 }, s3: { totalMult: 93 }, s4: { skillDmg: 25 }, s5: { totalMult: 47 }, s6: { totalMult: 186.6 } },
   // Jiyan S1: extra Windqueller charge (utility). S2: ATK+28%. S3: CR+16% CD+32% (confirmed). S4: team Heavy ATK+25%. S5: ATK stacking up to +45%
   'Jiyan':        { s1: { totalMult: 10 }, s2: { atkPct: 28 }, s3: { critRate: 16, critDmg: 32 }, s4: { heavyDmg: 25 }, s5: { atkPct: 45 }, s6: { totalMult: 40 } },
   // Jinhsi S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Jinhsi/Combat
