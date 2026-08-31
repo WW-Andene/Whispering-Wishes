@@ -260,15 +260,19 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     const dx2 = bx + (portraitW - dw2) / 2 - (f.x / 100) * bw2 * sc;
     const dy2 = by + (bh - dh2) / 2 - (f.y / 100) * bh2 * sc;
     ctx.drawImage(portraitImg, dx2, dy2, dw2, dh2);
-    ctx.restore();
     // Fade at the TOP of the portrait — the player identity overlay (username/UID) lives up
     // there. A second, smaller fade at the BOTTOM backs the character-name badge/plaque below.
+    // Both drawn BEFORE ctx.restore() below, still inside the same rounded clip region as the
+    // portrait image itself — drawn after restore (as a previous version of this did), their
+    // plain fillRect corners square off the mask's rounded top/bottom corners instead of
+    // respecting them.
     const fadeTop = ctx.createLinearGradient(0, by, 0, by + 96);
     fadeTop.addColorStop(0, 'rgba(8,12,18,0.9)'); fadeTop.addColorStop(1, 'rgba(8,12,18,0)');
     ctx.fillStyle = fadeTop; ctx.fillRect(bx + 2, by + 2, portraitW - 4, 94);
     const fadeBottom = ctx.createLinearGradient(0, by + bh - 96, 0, by + bh);
     fadeBottom.addColorStop(0, 'rgba(8,12,18,0)'); fadeBottom.addColorStop(1, 'rgba(8,12,18,0.9)');
     ctx.fillStyle = fadeBottom; ctx.fillRect(bx + 2, by + bh - 94, portraitW - 4, 92);
+    ctx.restore();
   }
   // Player identity overlay — username/UID, same role the Resonator ID card's own portrait
   // overlay plays (idCardRenderer.js's drawHero), swapped in here in place of the character's
