@@ -1,0 +1,19 @@
+{
+  "name": "Suoming",
+  "slug": "suoming",
+  "rarity": 5,
+  "element": "Electro",
+  "weaponType": "Sword",
+  "role": ["Unknown - not yet published"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/suoming", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Suoming", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Not available - ratings not yet published" },
+  "kit": {
+    "intro": "PARTIAL DATA: as of the 2026-08-31 scrape, Prydwen's Suoming page exists (confirms 5-star Electro Sword) but all detail sections are placeholder text ('aren't available yet'). Likely a newly announced/unreleased character, same situation as Hsin and Jingran.",
+    "skills": {}
+  },
+  "buildGuide": { "bestWeapons": [], "echoSet": [], "mainStats": {}, "substatPriority": [] },
+  "teams": [],
+  "rotation": null,
+  "communityNotes": "No community/review content published on Prydwen yet for Suoming as of this scrape (2026-08-31). Flagged in SOURCES_STATUS.md as a skipped/incomplete entry pending a future Prydwen update.",
+  "lastUpdated": "2026-08-31"
+}

@@ -1,0 +1,35 @@
+{
+  "name": "Suisui",
+  "slug": "suisui",
+  "rarity": 5,
+  "element": "Glacio",
+  "weaponType": "Rectifier",
+  "role": ["Support", "Healer"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/suisui", "nanoka": null, "fandom": "https://wutheringwaves.fandom.com/wiki/Suisui", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "Support: T0 Tower of Adversity, T0.5 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Glacio Rectifier Support specializing in buffing Negative Status consumers (Hiyuki, Yangyang: Xuanling), a Mornye-type healer/buffer. Alternates Zephyr Stance (opener) and Drizzle Stance (main buffing phase, entered instantly via Intro).",
+    "skills": {
+      "normalAttack": "Basic Attack - Zephyr Stance (4 hits) / Drizzle Stance (4 hits, pulls + Glacio Chafe on Stage 4).",
+      "resonanceSkill": "Vernal Screen - Zephyr Stance thrust; Awakening Spring at full Cloud Breath enters Drizzle Stance (pull + Glacio Chafe + team Enrichment stack).",
+      "forte": "Lambent Gold - governs Cloud Breath (Zephyr, max 120) and Floral Epistle (Drizzle, max 600) resources feeding Outro's tiered buff unlocks.",
+      "liberation": "Song of Thoroughfare - deploys Ceaseless Landscape (30s): raises max Negative Status stack caps by 3 and grants Havoc Bane DEF/RES Shred synergy.",
+      "intro": "Tinkling Jade - Glacio hit + Glacio Chafe, consumes Cloud Breath to pull + enter Drizzle Stance.",
+      "outro": "Rippling Waters - 25% All DMG Amplification to team for 30s; tiered bonus effects (Reflecting Shadows, Roaming Transcendent Plume Steps, Undulating Mist ATK buff) based on Floral Epistle consumed (0/200/400/600)."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Firstlight's Herald (signature, best - 20% team ATK)", "Stellar Symphony (Shorekeeper sig, good Energy Regen)", "Variation (best cost-efficient permanent)", "Call of the Abyss (last resort)"],
+    "echoSet": ["Song of Feathered Trace (best - 25% team ATK via Glacio Chafe + Energy Regen scaling)", "Rejuvenating Glow (close alternative)"],
+    "mainStats": { "cost4": "CRIT DMG", "cost3": "Energy Regen", "cost3b": "Energy Regen / HP%", "cost1": "HP%" },
+    "substatPriority": ["Energy Regen (until 260%)", "CRIT DMG", "HP%", "CRIT Rate", "Basic DMG%", "HP"]
+  },
+  "teams": [
+    { "name": "Hiyuki Team", "members": ["Suisui", "Hiyuki", "Lucilla/Lynae"], "notes": "Applies Glacio Chafe for Hiyuki, a key replacement for Chisa." },
+    { "name": "Yangyang: Xuanling Team", "members": ["Suisui", "Yangyang: Xuanling", "any"], "notes": "Havoc Bane synergy completes her best team." },
+    { "name": "Aemeath Team (Fusion Burst)", "members": ["Suisui", "Aemeath", "any"], "notes": "Viable alternative when the Negative Status-consuming Hypercarry buff isn't strictly needed." }
+  ],
+  "rotation": "Opener: Basic: Zephyr 1,2,3 -> Skill: Awakening Spring -> Swallow's Cut -> Drizzle Basic 1-4 (cancel via Ultimate) -> Ultimate -> Outro. Loop: Intro -> Skill: Drizzle (dash-cancel) -> Drizzle Basic 1-4 (cancel via Ultimate) -> Ultimate -> Outro. At S3+, skip straight from Skill to Basic Drizzle 4.",
+  "communityNotes": "Prydwen: the best Support for Negative Status Hypercarries and a currently top-tier meta pick, easy rotation and F2P-friendly (Variation is a fine signature replacement), but her strongest buffs require literal Negative Status consumption which limits flexibility, and she has almost no quickswap headroom or Sequence scaling.",
+  "lastUpdated": "2026-08-31"
+}
