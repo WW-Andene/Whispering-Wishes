@@ -1,0 +1,35 @@
+{
+  "name": "Ciaccona",
+  "slug": "ciaccona",
+  "rarity": 5,
+  "element": "Aero",
+  "weaponType": "Pistols",
+  "role": ["Hybrid", "Sub DPS", "Main DPS (flex)"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/ciaccona", "nanoka": "https://ww.nanoka.cc/character/ciaccona", "fandom": "https://wutheringwaves.fandom.com/wiki/Ciaccona", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T0.5 Tower of Adversity, T1 Whimpering Wastes (Hybrid; also viable Main DPS)" },
+  "kit": {
+    "intro": "5-star Aero Pistols Hybrid known for a very short, flexible rotation and dual Negative-Status application (Aero Erosion and/or Spectro Frazzle via Ultimate). Basic Attack 4 cancel spawns 'Ensemble Sylph' clones granting team-wide 'Solo Concert' (24% Aero DMG Bonus, near-permanent uptime). Forte 'Musical Essence' (max 3) unlocks a pull-in Heavy Attack nuke.",
+    "skills": {
+      "normalAttack": "Quadruple Time Steps - 4-hit chain, stage 4 applies Aero Erosion and can be jump-cancelled to spawn Ensemble Sylph.",
+      "resonanceSkill": "Harmonic Allegro - dash Aero DMG + Aero Erosion stack.",
+      "forte": "Symphony of Wind and Verse - Heavy Attack 'Quadruple Downbeat' at 3 Musical Essence: AoE pull + Aero DMG + Aero Erosion, big Concerto gain.",
+      "liberation": "Singer's Triple Cadenza - AoE Aero DMG, enters 'Recital' singing state applying repeated off-field Symphonic Poem: Tonic waves (Aero Erosion or switchable to Spectro Frazzle), persists after swap.",
+      "intro": "Roaming with the Wind - Aero DMG + Aero Erosion, skips to Basic stage 3.",
+      "outro": "Windcalling Tune - +100% Aero Erosion DMG Amplify near active character for 30s."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Woodland Aria (best overall, 10% Aero RES Shred)", "Phasic Homogenizer (86.9%, best generalist permanent)", "Lux & Umbra (83%)", "Spectrum Blaster (82.8%)", "The Last Dance (78.8%)", "Static Mist (77%)", "Romance in Farewell (69.9%, best F2P craftable)"],
+    "echoSet": ["Gusts of Welkin (best when an Aero Main DPS is present)", "Moonlit Clouds (best in non-Aero teams)", "Windward Pilgrimage (used when playing Ciaccona as Main DPS)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Aero DMG; Aero DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK"]
+  },
+  "teams": [
+    { "name": "Team #2: Cartethyia Team", "members": ["Ciaccona", "Cartethyia", "Chisa or Rover (Aero)/The Shorekeeper"], "notes": "Ciaccona's off-field multi-wave Aero Erosion application is the ideal complement to Cartethyia's field-time-heavy kit - considered her best partner." },
+    { "name": "Team #5: Spectro Frazzle Teams", "members": ["Ciaccona", "Absolution Phoebe or Zani", "support"], "notes": "Only viable partner enabling Main DPS Phoebe to function in multi-wave Whimpering Wastes." },
+    { "name": "Team #6: Main DPS Ciaccona", "members": ["Ciaccona", "Sanhua", "support"], "notes": "Sanhua's 38% Basic ATK DMG Amp and fast rotation make Ciaccona a fully viable on-field Main DPS." }
+  ],
+  "rotation": "Intro -> Basic P3-P4 -> Jump-cancel -> Mid-air P1-P2 -> Basic P4 -> Skill (cancel) -> Forte Heavy (Quadruple Downbeat) -> Ultimate (cancelled on hit) -> optional Tonic color-switch -> Outro. Very short (~14s max on field for Main DPS variant).",
+  "communityNotes": "Prydwen: extremely flexible top-tier Hybrid/Sub-DPS - viable in nearly any Aero or Negative-Status team, and also a legitimate Main DPS option; her multi-wave off-field erosion/frazzle application makes her especially valuable in Whimpering Wastes. Main downside is needing two separate Echo Set builds (Gusts of Welkin for Aero teams vs Moonlit Clouds for others) and being weapon-signature-reliant to reach full potential.",
+  "lastUpdated": "2026-08-31"
+}
