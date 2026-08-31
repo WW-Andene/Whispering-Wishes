@@ -1,0 +1,1247 @@
+{
+  "$note": "Named team archetypes, sourced from Prydwen's Team Tier List (Tower of Adversity view) archetype labels \u2014 each row on that list names the archetype as '<Character> <Archetype Shape>' (e.g. 'Jinhsi Hypercarry', 'Aemeath Mono Fusion'). The tier-list page itself did not render member-composition text in this session's JS extraction (icon-only team rows) \u2014 example 3-member comps below are instead pulled from that lead character's own characters/<slug>.json 'teams' section (same Prydwen build-page source, cross-referenced by slug), which is more detailed anyway (named sub-variants, budget alternatives, notes on why a slot works).",
+  "toaTierListFetched": "2026-08-31, patch 3.4",
+  "toaTierListUrl": "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+  "shapeDefinitions": {
+    "Hypercarry": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+    "Dual DPS": "Two damage-dealing characters alternate on-field time roughly evenly (via quickswap or via one triggering the other's burst window), each buffing or debuff-setting for the other through their own Outro/Intro/Liberation, rather than one pure DPS being fed by two pure supports.",
+    "Mono": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
+    "Rupture": "Built around the element-agnostic Tune Break/Tune Rupture stagger mechanic (see resonance-chain-mechanics.md \u00a77): the team's rotation is sequenced to keep breaking the enemy's Tune gauge for repeated Rupture burst damage and the Interfered vulnerability window, rather than around a single character's Forte nuke.",
+    "Echo": "Named for Phrolova's own kit terminology (her Resonance Liberation/Forte mechanic is explicitly called an 'Echo'-branded stance in her kit); the archetype centers her self-sufficient on-field loop rather than a hypercarry buffer chain.",
+    "Fusion Burst": "Named for Aemeath's kit-specific 'Fusion Burst' finisher mechanic; the team is sequenced to detonate her burst payoff rather than a generic elemental-buff hypercarry loop."
+  },
+  "archetypes": [
+    {
+      "archetype": "Aemeath Fusion Burst",
+      "toaTier": "T0",
+      "coreDamageType": "Fusion",
+      "shape": "Fusion Burst",
+      "shapeExplanation": "Named for Aemeath's kit-specific 'Fusion Burst' finisher mechanic; the team is sequenced to detonate her burst payoff rather than a generic elemental-buff hypercarry loop.",
+      "leadCharacter": {
+        "slug": "aemeath",
+        "name": "Aemeath",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Fusion Burst Team",
+          "members": [
+            "Aemeath",
+            "Denia",
+            "Lupa or Chisa"
+          ],
+          "notes": "Strongest AoE/quickswap archetype; Lupa on Moonlit Clouds, Denia on Flaming Clawprint."
+        },
+        {
+          "name": "Best Tune Rupture Team",
+          "members": [
+            "Aemeath",
+            "Lynae",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Best single-target ceiling; Mornye ideal support since Aemeath self-applies Tune Rupture."
+        },
+        {
+          "name": "Mono Fusion",
+          "members": [
+            "Aemeath",
+            "Brant or Changli",
+            "Lupa"
+          ],
+          "notes": "Lupa enables party-wide Fusion RES Ignore/DMG Bonus; Changli only better than Brant in quickswap."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/aemeath"
+      ]
+    },
+    {
+      "archetype": "Aemeath Rupture",
+      "toaTier": "T0",
+      "coreDamageType": "Fusion",
+      "shape": "Rupture",
+      "shapeExplanation": "Built around the element-agnostic Tune Break/Tune Rupture stagger mechanic (see resonance-chain-mechanics.md \u00a77): the team's rotation is sequenced to keep breaking the enemy's Tune gauge for repeated Rupture burst damage and the Interfered vulnerability window, rather than around a single character's Forte nuke.",
+      "leadCharacter": {
+        "slug": "aemeath",
+        "name": "Aemeath",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Fusion Burst Team",
+          "members": [
+            "Aemeath",
+            "Denia",
+            "Lupa or Chisa"
+          ],
+          "notes": "Strongest AoE/quickswap archetype; Lupa on Moonlit Clouds, Denia on Flaming Clawprint."
+        },
+        {
+          "name": "Best Tune Rupture Team",
+          "members": [
+            "Aemeath",
+            "Lynae",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Best single-target ceiling; Mornye ideal support since Aemeath self-applies Tune Rupture."
+        },
+        {
+          "name": "Mono Fusion",
+          "members": [
+            "Aemeath",
+            "Brant or Changli",
+            "Lupa"
+          ],
+          "notes": "Lupa enables party-wide Fusion RES Ignore/DMG Bonus; Changli only better than Brant in quickswap."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/aemeath"
+      ]
+    },
+    {
+      "archetype": "Hiyuki Hypercarry",
+      "toaTier": "T0",
+      "coreDamageType": "Glacio",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "hiyuki",
+        "name": "Hiyuki",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Hiyuki",
+            "Lucilla or Lynae",
+            "Chisa (or Mornye with Lynae)"
+          ],
+          "notes": "Lucilla/Lynae are her only competitive buffers; Chisa/Lucilla stack her Fine Snow passive (needs teammates applying Glacio Chafe/Havoc Bane)."
+        },
+        {
+          "name": "Alternative Teams",
+          "members": [
+            "Hiyuki",
+            "Suisui/Verina",
+            "Yinlin/Zhezhi/Changli/Jianxin"
+          ],
+          "notes": "Significant drop-off without Chisa/Lucilla/Lynae/Suisui/Mornye backing her up."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/hiyuki"
+      ]
+    },
+    {
+      "archetype": "Luuk Hypercarry",
+      "toaTier": "T0",
+      "coreDamageType": "Spectro",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "luuk-herssen",
+        "name": "Luuk Herssen",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Luuk Herssen",
+            "Denia/Lynae/Sanhua",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Denia is strongest (extra Tune Strain, buffing, grouping, fast rotation); Lynae close second; Sanhua a fully free budget option (may need an extra Mid-air chain post-Ultimate to hit his 25s cooldown)."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/luuk-herssen"
+      ]
+    },
+    {
+      "archetype": "Qingxiao Hypercarry",
+      "toaTier": "T0",
+      "coreDamageType": "Aero",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "qingxiao",
+        "name": "Qingxiao",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Qingxiao",
+            "Denia",
+            "Mornye"
+          ],
+          "notes": "Denia+Mornye specifically is her intended best-in-slot team; Denia without Mornye causes major DPS drop-offs with no good alternative."
+        },
+        {
+          "name": "Lynae Team",
+          "members": [
+            "Qingxiao",
+            "Lynae",
+            "Mornye/Ciaccona/The Shorekeeper"
+          ],
+          "notes": "More flexible alternative with smaller drop-offs if Mornye is unavailable."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/qingxiao"
+      ]
+    },
+    {
+      "archetype": "Sigrika Hypercarry",
+      "toaTier": "T0",
+      "coreDamageType": "Aero",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "sigrika",
+        "name": "Sigrika",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Sigrika",
+            "Qiuyuan/Lucilla",
+            "The Shorekeeper/Mornye/Verina/Rover (Aero)"
+          ],
+          "notes": "Qiuyuan and Lucilla are near-mandatory - Sigrika's damage is almost entirely Echo Skill DMG, which only they buff meaningfully."
+        },
+        {
+          "name": "Phrolova Pairing",
+          "members": [
+            "Sigrika",
+            "Qiuyuan",
+            "Phrolova"
+          ],
+          "notes": "Both share Qiuyuan's Echo Skill casts for high tandem damage, excellent for Whimpering Wastes."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/sigrika"
+      ]
+    },
+    {
+      "archetype": "Xuanling Hypercarry",
+      "toaTier": "T0",
+      "coreDamageType": "Havoc",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "yangyang-xuanling",
+        "name": "Yangyang: Xuanling",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Yangyang: Xuanling",
+            "Chisa",
+            "Suisui"
+          ],
+          "notes": "Chisa is her best 2nd-slot partner (Negative Status buffing + Havoc Bane application), Suisui is the strongest 3rd slot for Havoc Bane consumers."
+        },
+        {
+          "name": "Alternative Premium Teams",
+          "members": [
+            "Yangyang: Xuanling",
+            "Rebecca/Lynae/Phrolova/Iuno/Mortefi",
+            "Mornye/Verina"
+          ],
+          "notes": "Phrolova makes an excellent Whimpering Wastes Dual DPS pairing."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/yangyang-xuanling"
+      ]
+    },
+    {
+      "archetype": "Aemeath Mono Fusion",
+      "toaTier": "T0.5",
+      "coreDamageType": "Fusion",
+      "shape": "Mono",
+      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
+      "leadCharacter": {
+        "slug": "aemeath",
+        "name": "Aemeath",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Fusion Burst Team",
+          "members": [
+            "Aemeath",
+            "Denia",
+            "Lupa or Chisa"
+          ],
+          "notes": "Strongest AoE/quickswap archetype; Lupa on Moonlit Clouds, Denia on Flaming Clawprint."
+        },
+        {
+          "name": "Best Tune Rupture Team",
+          "members": [
+            "Aemeath",
+            "Lynae",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Best single-target ceiling; Mornye ideal support since Aemeath self-applies Tune Rupture."
+        },
+        {
+          "name": "Mono Fusion",
+          "members": [
+            "Aemeath",
+            "Brant or Changli",
+            "Lupa"
+          ],
+          "notes": "Lupa enables party-wide Fusion RES Ignore/DMG Bonus; Changli only better than Brant in quickswap."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/aemeath"
+      ]
+    },
+    {
+      "archetype": "Cartethyia Hypercarry",
+      "toaTier": "T0.5",
+      "coreDamageType": "Aero",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "cartethyia",
+        "name": "Cartethyia",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Team #1",
+          "members": [
+            "Cartethyia",
+            "Ciaccona",
+            "Rover (Aero)/Chisa or The Shorekeeper"
+          ],
+          "notes": "Ciaccona is her non-negotiable best partner (constant off-field Aero Erosion application + Outro amplifies erosion damage 100%); Shorekeeper preferred in multi-wave Whimpering Wastes."
+        },
+        {
+          "name": "Team #2: F2P Alternative",
+          "members": [
+            "Cartethyia",
+            "Sanhua",
+            "support"
+          ],
+          "notes": "Sanhua provides fast-rotating field time and Basic DMG buffing, best budget option even without erosion synergy."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/cartethyia"
+      ]
+    },
+    {
+      "archetype": "Iuno Hypercarry",
+      "toaTier": "T0.5",
+      "coreDamageType": "Aero",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "iuno",
+        "name": "Iuno",
+        "role": [
+          "Hybrid",
+          "Support/Sub DPS",
+          "flex Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team (Hybrid)",
+          "members": [
+            "Iuno",
+            "Augusta",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Iuno buffs Augusta with up to 90% total DMG Amplification via Full Moon Domain."
+        },
+        {
+          "name": "Main DPS Iuno",
+          "members": [
+            "Iuno",
+            "Lynae/Ciaccona/Yinlin/Jianxin",
+            "Mornye/The Shorekeeper/Verina/Rover (Aero)"
+          ],
+          "notes": "Lynae is generally best buffer (40% DMG Amplification via Outro); Ciaccona brings Aero RES Shred + fast rotation."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/iuno"
+      ]
+    },
+    {
+      "archetype": "Phrolova Echo",
+      "toaTier": "T0.5",
+      "coreDamageType": "Havoc",
+      "shape": "Echo",
+      "shapeExplanation": "Named for Phrolova's own kit terminology (her Resonance Liberation/Forte mechanic is explicitly called an 'Echo'-branded stance in her kit); the archetype centers her self-sufficient on-field loop rather than a hypercarry buffer chain.",
+      "leadCharacter": {
+        "slug": "phrolova",
+        "name": "Phrolova",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Phrolova",
+            "Lucilla/Cantarella/Sigrika/Lynae",
+            "Qiuyuan/Roccia/Danjin"
+          ],
+          "notes": "Cantarella is the strongest personal-damage synergy; needs her Signature weapon to compete with top DPS."
+        },
+        {
+          "name": "Heavy Attack Buff Teams",
+          "members": [
+            "Phrolova",
+            "Yangyang: Xuanling/Galbrena/Phoebe/Jiyan",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Phrolova can buff Heavy Attack DPS via Outro while dealing her own large damage off-field."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/phrolova"
+      ]
+    },
+    {
+      "archetype": "Augusta Hypercarry",
+      "toaTier": "T1",
+      "coreDamageType": "Electro",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "augusta",
+        "name": "Augusta",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Team #1 - Best Team",
+          "members": [
+            "Augusta",
+            "Iuno (or Mortefi/Rebecca/Lynae)",
+            "The Shorekeeper or Verina"
+          ],
+          "notes": "Iuno best Outro buffer (up to 90% DMG Amp); Mortefi/Rebecca close seconds for Heavy DMG buffing; free-to-play friendly with Mortefi."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/augusta"
+      ]
+    },
+    {
+      "archetype": "Carlotta Hypercarry",
+      "toaTier": "T1",
+      "coreDamageType": "Glacio",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "carlotta",
+        "name": "Carlotta",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Team #1: Best Team",
+          "members": [
+            "Carlotta",
+            "Zhezhi or Lynae/Brant/Cantarella",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Zhezhi/Lynae are top buffers (up to 45% DMG Amp + Energy funneling); Mornye pairs specifically with Lynae."
+        },
+        {
+          "name": "Team #2: F2P Team",
+          "members": [
+            "Carlotta",
+            "Yangyang or Taoqi",
+            "Verina or Buling"
+          ],
+          "notes": "Yangyang easier to pilot; Taoqi (38% Skill DMG Amp Outro) has higher ceiling but clunkier rotation."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/carlotta"
+      ]
+    },
+    {
+      "archetype": "Galbrena Hypercarry",
+      "toaTier": "T1",
+      "coreDamageType": "Fusion",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "galbrena",
+        "name": "Galbrena",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Galbrena",
+            "Qiuyuan/Lucilla",
+            "Brant/Mortefi or Phrolova/Iuno",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Qiuyuan and Lucilla are her best Echo-DMG buffers (fills Afterflame + amplifies Echo DMG)."
+        },
+        {
+          "name": "Mono Fusion Alternatives",
+          "members": [
+            "Galbrena",
+            "Lupa",
+            "Brant or Mortefi"
+          ],
+          "notes": "Lupa enables a strong Mono Fusion archetype, especially in Whimpering Wastes."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/galbrena"
+      ]
+    },
+    {
+      "archetype": "Lucy Hypercarry",
+      "toaTier": "T1",
+      "coreDamageType": "Spectro",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "lucy",
+        "name": "Lucy",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Lucy",
+            "Rebecca",
+            "Mornye/The Shorekeeper/Verina"
+          ],
+          "notes": "Rebecca is Lucy's only real partner - their kits reference each other directly; Mornye emphasizes Hack damage via Off-Tune Buildup Rate, Shorekeeper is a close second (better in Whimpering Wastes)."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/lucy"
+      ]
+    },
+    {
+      "archetype": "Brant Hypercarry",
+      "toaTier": "T1.5",
+      "coreDamageType": "Fusion",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "brant",
+        "name": "Brant",
+        "role": [
+          "Sub DPS",
+          "Hybrid/Buffer"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Team #1: Best Team (Mono Fusion)",
+          "members": [
+            "Brant",
+            "Lupa",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Lupa's Outro (Basic+Fusion DMG Amp) is Brant's best buffer; Mornye lets him run Hypercarry-style while keeping Lupa's Mono Fusion buffs."
+        },
+        {
+          "name": "Team #3: Skill-DPS pairing",
+          "members": [
+            "Brant",
+            "Carlotta or Jinhsi",
+            "Verina (required with Jinhsi for Coordinated Attacks)"
+          ],
+          "notes": "Brant's Outro amplifies Resonance Skill DMG, pairing well with Skill-focused DPS."
+        },
+        {
+          "name": "Team #4: DPS Brant",
+          "members": [
+            "Brant (Main DPS)",
+            "Lupa",
+            "Support"
+          ],
+          "notes": "Double Forte rotation builds Bravo twice for a concentrated burst window; lower average DPS than standard but very high peak damage."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/brant"
+      ]
+    },
+    {
+      "archetype": "Jiyan Mono Aero",
+      "toaTier": "T1.5",
+      "coreDamageType": "Aero",
+      "shape": "Mono",
+      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
+      "leadCharacter": {
+        "slug": "jiyan",
+        "name": "Jiyan",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Jiyan",
+            "Iuno",
+            "Ciaccona (Windward Pilgrimage) or The Shorekeeper/Verina"
+          ],
+          "notes": "Iuno is his best Heavy-DMG buffer; Ciaccona's Aero Erosion buffs don't expire on swap, letting Jiyan switch mid-Lance combo."
+        },
+        {
+          "name": "Erosion Team",
+          "members": [
+            "Jiyan",
+            "Ciaccona",
+            "The Shorekeeper or Rover (Aero)"
+          ],
+          "notes": "Very strong in quickswap, roughly equal to the Best Team."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/jiyan"
+      ]
+    },
+    {
+      "archetype": "Phoebe Hypercarry",
+      "toaTier": "T1.5",
+      "coreDamageType": "Spectro",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "phoebe",
+        "name": "Phoebe",
+        "role": [
+          "Main DPS (Absolution)",
+          "Hybrid (Confession)"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team (Absolution)",
+          "members": [
+            "Phoebe",
+            "Lynae/Rebecca/Phrolova",
+            "Rover (Spectro)/Ciaccona/Chisa"
+          ],
+          "notes": "Needs a Spectro Frazzle applier (Rover for single-wave, Ciaccona for multi-wave)."
+        },
+        {
+          "name": "Best Team (Confession)",
+          "members": [
+            "Phoebe",
+            "Zani",
+            "The Shorekeeper/Rover (Spectro) quickswap"
+          ],
+          "notes": "Confession Phoebe currently only pairs meaningfully with Zani."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/phoebe"
+      ]
+    },
+    {
+      "archetype": "Phrolova Dual DPS",
+      "toaTier": "T1.5",
+      "coreDamageType": "Havoc",
+      "shape": "Dual DPS",
+      "shapeExplanation": "Two damage-dealing characters alternate on-field time roughly evenly (via quickswap or via one triggering the other's burst window), each buffing or debuff-setting for the other through their own Outro/Intro/Liberation, rather than one pure DPS being fed by two pure supports.",
+      "leadCharacter": {
+        "slug": "phrolova",
+        "name": "Phrolova",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Phrolova",
+            "Lucilla/Cantarella/Sigrika/Lynae",
+            "Qiuyuan/Roccia/Danjin"
+          ],
+          "notes": "Cantarella is the strongest personal-damage synergy; needs her Signature weapon to compete with top DPS."
+        },
+        {
+          "name": "Heavy Attack Buff Teams",
+          "members": [
+            "Phrolova",
+            "Yangyang: Xuanling/Galbrena/Phoebe/Jiyan",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Phrolova can buff Heavy Attack DPS via Outro while dealing her own large damage off-field."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/phrolova"
+      ]
+    },
+    {
+      "archetype": "Tri-DPS Fusion",
+      "toaTier": "T1.5",
+      "coreDamageType": "Fusion",
+      "shape": "Mono",
+      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
+      "leadCharacter": {
+        "slug": "brant",
+        "name": "Brant",
+        "role": [
+          "Sub DPS",
+          "Hybrid/Buffer"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Team #1: Best Team (Mono Fusion)",
+          "members": [
+            "Brant",
+            "Lupa",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Lupa's Outro (Basic+Fusion DMG Amp) is Brant's best buffer; Mornye lets him run Hypercarry-style while keeping Lupa's Mono Fusion buffs."
+        },
+        {
+          "name": "Team #3: Skill-DPS pairing",
+          "members": [
+            "Brant",
+            "Carlotta or Jinhsi",
+            "Verina (required with Jinhsi for Coordinated Attacks)"
+          ],
+          "notes": "Brant's Outro amplifies Resonance Skill DMG, pairing well with Skill-focused DPS."
+        },
+        {
+          "name": "Team #4: DPS Brant",
+          "members": [
+            "Brant (Main DPS)",
+            "Lupa",
+            "Support"
+          ],
+          "notes": "Double Forte rotation builds Bravo twice for a concentrated burst window; lower average DPS than standard but very high peak damage."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/brant"
+      ]
+    },
+    {
+      "archetype": "Zani Hypercarry",
+      "toaTier": "T1.5",
+      "coreDamageType": "Spectro",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "zani",
+        "name": "Zani",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Zani",
+            "Phoebe (Confession)",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Phoebe is by far the best Zani partner - only she reliably fills Zani's Blaze via Spectro Frazzle application and provides up to 130% Spectro Frazzle DMG Amplify."
+        },
+        {
+          "name": "Premium Alternatives",
+          "members": [
+            "Zani",
+            "Rover (Spectro)/Ciaccona",
+            "The Shorekeeper/Verina"
+          ],
+          "notes": "Secondary Frazzle appliers; can enable a 3-Nightfall rotation with quickswap."
+        },
+        {
+          "name": "F2P Team",
+          "members": [
+            "Zani",
+            "Iuno/Phrolova/Mortefi",
+            "Verina"
+          ],
+          "notes": "Heavy Attack DMG buffers as budget alternatives to Phoebe."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/zani"
+      ]
+    },
+    {
+      "archetype": "Camellya Hypercarry",
+      "toaTier": "T2",
+      "coreDamageType": "Havoc",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "camellya",
+        "name": "Camellya",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Camellya",
+            "Lynae or Roccia/Sanhua/Danjin",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Sanhua is the F2P-friendly hybrid choice; Lynae is currently the strongest generalist buffer for her."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/camellya"
+      ]
+    },
+    {
+      "archetype": "Encore Hypercarry",
+      "toaTier": "T2",
+      "coreDamageType": "Fusion",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "encore",
+        "name": "Encore",
+        "role": [
+          "Main DPS",
+          "Dual DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Encore",
+            "Lupa or Sanhua",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Lupa now edges out Sanhua as best partner thanks to higher Fusion buffs; Sanhua remains a strong, very F2P-friendly alternative."
+        },
+        {
+          "name": "Best Team (Dual DPS)",
+          "members": [
+            "Encore",
+            "Changli or Brant",
+            "support"
+          ],
+          "notes": "Brant's Skill+Fusion DMG Amplify Outro slightly edges out Changli's Liberation Amplify for Encore."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/encore"
+      ]
+    },
+    {
+      "archetype": "Jinhsi Hypercarry",
+      "toaTier": "T2",
+      "coreDamageType": "Spectro",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "jinhsi",
+        "name": "Jinhsi",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Jinhsi",
+            "Zhezhi (or Cantarella w/ buffs)",
+            "The Shorekeeper (or Verina)"
+          ],
+          "notes": "Standard Hypercarry/Coordinated-Attack team; Verina stronger if CRIT consistency isn't a concern, otherwise Shorekeeper."
+        },
+        {
+          "name": "Quickswap Team",
+          "members": [
+            "Jinhsi",
+            "Brant or Changli",
+            "Verina"
+          ],
+          "notes": "Higher rotation flexibility, harder to pilot, requires Verina for Coordinated Attacks."
+        },
+        {
+          "name": "Budget Team",
+          "members": [
+            "Jinhsi",
+            "Mortefi or Yuanwu",
+            "Verina"
+          ],
+          "notes": "Mortefi strong only with heavy Empyrean Anthem investment; otherwise Yuanwu on Rejuvenating Glow."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/jinhsi"
+      ]
+    },
+    {
+      "archetype": "Jiyan Dual DPS",
+      "toaTier": "T2",
+      "coreDamageType": "Aero",
+      "shape": "Dual DPS",
+      "shapeExplanation": "Two damage-dealing characters alternate on-field time roughly evenly (via quickswap or via one triggering the other's burst window), each buffing or debuff-setting for the other through their own Outro/Intro/Liberation, rather than one pure DPS being fed by two pure supports.",
+      "leadCharacter": {
+        "slug": "jiyan",
+        "name": "Jiyan",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Jiyan",
+            "Iuno",
+            "Ciaccona (Windward Pilgrimage) or The Shorekeeper/Verina"
+          ],
+          "notes": "Iuno is his best Heavy-DMG buffer; Ciaccona's Aero Erosion buffs don't expire on swap, letting Jiyan switch mid-Lance combo."
+        },
+        {
+          "name": "Erosion Team",
+          "members": [
+            "Jiyan",
+            "Ciaccona",
+            "The Shorekeeper or Rover (Aero)"
+          ],
+          "notes": "Very strong in quickswap, roughly equal to the Best Team."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/jiyan"
+      ]
+    },
+    {
+      "archetype": "Phoebe Dual DPS",
+      "toaTier": "T2",
+      "coreDamageType": "Spectro",
+      "shape": "Dual DPS",
+      "shapeExplanation": "Two damage-dealing characters alternate on-field time roughly evenly (via quickswap or via one triggering the other's burst window), each buffing or debuff-setting for the other through their own Outro/Intro/Liberation, rather than one pure DPS being fed by two pure supports.",
+      "leadCharacter": {
+        "slug": "phoebe",
+        "name": "Phoebe",
+        "role": [
+          "Main DPS (Absolution)",
+          "Hybrid (Confession)"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team (Absolution)",
+          "members": [
+            "Phoebe",
+            "Lynae/Rebecca/Phrolova",
+            "Rover (Spectro)/Ciaccona/Chisa"
+          ],
+          "notes": "Needs a Spectro Frazzle applier (Rover for single-wave, Ciaccona for multi-wave)."
+        },
+        {
+          "name": "Best Team (Confession)",
+          "members": [
+            "Phoebe",
+            "Zani",
+            "The Shorekeeper/Rover (Spectro) quickswap"
+          ],
+          "notes": "Confession Phoebe currently only pairs meaningfully with Zani."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/phoebe"
+      ]
+    },
+    {
+      "archetype": "Havoc Rover Hypercarry",
+      "toaTier": "T3",
+      "coreDamageType": "Havoc",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "rover-havoc",
+        "name": "Rover (Havoc)",
+        "role": [
+          "Main DPS",
+          "flex Dual DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Rover (Havoc)",
+            "Roccia",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Roccia is the best buffer (20% Havoc + 25% Basic Attack DMG Amplify)."
+        },
+        {
+          "name": "F2P Team",
+          "members": [
+            "Rover (Havoc)",
+            "Danjin/Sanhua",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Both fully free and strong; Danjin edges out Sanhua slightly."
+        },
+        {
+          "name": "Phrolova Team",
+          "members": [
+            "Rover (Havoc)",
+            "Phrolova",
+            "Danjin/Cantarella"
+          ],
+          "notes": "High personal damage and Energy generation make Rover a strong Phrolova teammate alternative."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/rover-havoc"
+      ]
+    },
+    {
+      "archetype": "Lingyang Hypercarry",
+      "toaTier": "T3",
+      "coreDamageType": "Glacio",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "lingyang",
+        "name": "Lingyang",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Lingyang",
+            "Lynae or Zhezhi",
+            "Mornye/Verina/The Shorekeeper"
+          ],
+          "notes": "Lynae has the strongest generalist buffs (pairs well with Mornye); Zhezhi provides strong off-field Coordinated Attack damage plus a 20% Glacio/25% Skill DMG Outro."
+        },
+        {
+          "name": "F2P Team",
+          "members": [
+            "Lingyang",
+            "Sanhua",
+            "Verina/The Shorekeeper"
+          ],
+          "notes": "Sanhua has a very fast rotation and 38% Basic ATK DMG Amplify Outro, free-to-play alternative when Zhezhi is unavailable/occupied."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/lingyang"
+      ]
+    },
+    {
+      "archetype": "Xiangli Yao Hypercarry",
+      "toaTier": "T3",
+      "coreDamageType": "Electro",
+      "shape": "Hypercarry",
+      "shapeExplanation": "One Main DPS stays on-field for the large majority of the rotation; the other two slots are pure buffers/healers whose entire job is to land their Outro Skill (elemental DMG / All DMG / Crit buffs) onto the Main DPS and then get out of the way. Rewards a single character's investment (weapon/echoes) over spreading resources, and rewards buffer Outro uptime/duration over the buffers' own damage.",
+      "leadCharacter": {
+        "slug": "xiangli-yao",
+        "name": "Xiangli Yao",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Xiangli Yao",
+            "Lynae or Yinlin",
+            "Mornye or The Shorekeeper/Verina"
+          ],
+          "notes": "Lynae edges out Yinlin due to a more well-rounded buffing profile alongside a similar Outro effect."
+        },
+        {
+          "name": "Expert Team (Dual DPS)",
+          "members": [
+            "Xiangli Yao",
+            "Changli",
+            "support"
+          ],
+          "notes": "Extremely quickswap-reliant, one of the highest-damage pairs in the game if mastered, not recommended for casual play."
+        },
+        {
+          "name": "Budget Team",
+          "members": [
+            "Xiangli Yao",
+            "Yangyang or Jianxin",
+            "generalist"
+          ],
+          "notes": "Yangyang is the best non-limited-5-star option; Jianxin viable but has field-time/Energy issues."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/xiangli-yao"
+      ]
+    },
+    {
+      "archetype": "Calcharo Dual DPS",
+      "toaTier": "T4",
+      "coreDamageType": "Electro",
+      "shape": "Dual DPS",
+      "shapeExplanation": "Two damage-dealing characters alternate on-field time roughly evenly (via quickswap or via one triggering the other's burst window), each buffing or debuff-setting for the other through their own Outro/Intro/Liberation, rather than one pure DPS being fed by two pure supports.",
+      "leadCharacter": {
+        "slug": "calcharo",
+        "name": "Calcharo",
+        "role": [
+          "Main DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Calcharo",
+            "Yinlin",
+            "Lynae or Mornye/Shorekeeper"
+          ],
+          "notes": "Yinlin is his only realistic viable Outro buffer (25% Liberation, 20% Electro DMG); Lynae is his best generalist buffer for Hypercarry."
+        },
+        {
+          "name": "Budget Team",
+          "members": [
+            "Calcharo",
+            "generalist support"
+          ],
+          "notes": "Entirely incompatible with Swap Cancels."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/calcharo"
+      ]
+    },
+    {
+      "archetype": "Chixia Mono Fusion",
+      "toaTier": "T4",
+      "coreDamageType": "Fusion",
+      "shape": "Mono",
+      "shapeExplanation": "All three team members share one element so every elemental-RES debuff, elemental DMG Bonus buff, and (where relevant) element-specific Sonata/Echo-set bonus applies to the whole team uniformly \u2014 trades team-building flexibility for stacking depth on a single damage type.",
+      "leadCharacter": {
+        "slug": "chixia",
+        "name": "Chixia",
+        "role": [
+          "Sub DPS",
+          "Dual DPS"
+        ]
+      },
+      "exampleComps": [
+        {
+          "name": "Best Team",
+          "members": [
+            "Chixia",
+            "Brant",
+            "Verina or The Shorekeeper"
+          ],
+          "notes": "Brant amplifies Chixia's Fusion and Skill DMG (20%/25%) while contributing his own damage."
+        },
+        {
+          "name": "Changli Dual DPS Team",
+          "members": [
+            "Chixia",
+            "Changli",
+            "support"
+          ],
+          "notes": "Chixia is currently the character that best exploits Changli's short Outro buff; moderately difficult quickswap playstyle."
+        }
+      ],
+      "sources": [
+        "https://www.prydwen.gg/wuthering-waves/team-tier-list (Tower of Adversity list, patch 3.4, fetched 2026-08-31)",
+        "https://www.prydwen.gg/wuthering-waves/characters/chixia"
+      ]
+    }
+  ]
+}
