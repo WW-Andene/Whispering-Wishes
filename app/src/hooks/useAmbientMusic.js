@@ -126,33 +126,18 @@ export function suspendAmbientMusic() {
 // block: the renderer finishes initializing a moment later and every
 // attempt after that succeeds (matching "works every time except the very
 // first open"). Returns a cancel function.
-// Temporary diagnostic logging — Capacitor forwards WebView console.* calls
-// to Android Logcat by default (tag "Capacitor/Console"), so `adb logcat |
-// grep WWAmbient` during a genuine first-ever launch shows exactly which
-// step this actually reaches/fails at, instead of guessing blind. Remove
-// once the real first-open bug is confirmed fixed on a real device.
-function logAmbient(...args) {
-  try { console.log('[WWAmbient]', ...args); } catch {}
-}
-
 export function playWithRetry(audio, { maxAttempts = 20, retryMs = 500 } = {}) {
   let cancelled = false;
   let timer = null;
   let attempt = 0;
-  logAmbient('playWithRetry start', { src: audio.src, readyState: audio.readyState });
   const tryPlay = () => {
     audio.muted = true;
-    logAmbient('attempt', attempt, 'calling play()');
     audio.play().then(() => {
-      logAmbient('attempt', attempt, 'play() resolved, paused=', audio.paused);
       if (!cancelled) audio.muted = false;
-    }).catch((err) => {
-      logAmbient('attempt', attempt, 'play() rejected:', err?.name, err?.message);
+    }).catch(() => {
       attempt += 1;
       if (!cancelled && attempt < maxAttempts) {
         timer = setTimeout(tryPlay, retryMs);
-      } else if (attempt >= maxAttempts) {
-        logAmbient('giving up after', attempt, 'attempts');
       }
     });
   };
@@ -223,7 +208,6 @@ export function useAmbientMusic(visualSettings) {
 
   useEffect(() => {
     const audio = audioRef.current;
-    logAmbient('effect run', { hasAudio: !!audio, enabled, track, soundEnabled: visualSettings?.soundEnabled });
     if (!audio) return;
     if (!enabled) {
       audio.pause();
