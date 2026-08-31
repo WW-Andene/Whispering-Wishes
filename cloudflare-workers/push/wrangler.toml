@@ -1,0 +1,21 @@
+# Cloudflare Worker config for Whispering Wishes' push-notification backend.
+# Deploy with: npx wrangler deploy   (run from this directory)
+#
+# This replaces api/push/register.js + api/push/send.js for anyone not
+# running a Vercel deployment — same logic, ported to the Workers fetch()
+# handler shape instead of Vercel's (req, res). See src/index.js.
+
+name = "whispering-wishes-push"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# Secrets (never put these here — set via `npx wrangler secret put <NAME>`):
+#   FIREBASE_SERVICE_ACCOUNT_JSON  — the whole service-account JSON, one line
+#   FIREBASE_DB_URL                — your Realtime Database URL
+#   PUSH_ADMIN_SECRET              — random string protecting /send
+#
+# Non-secret config (safe to keep here or override with `--var`):
+[vars]
+# Comma-separated extra origins allowed to call /register, on top of the
+# built-in Capacitor/localhost defaults baked into src/cors.js.
+EXTRA_ALLOWED_ORIGINS = ""

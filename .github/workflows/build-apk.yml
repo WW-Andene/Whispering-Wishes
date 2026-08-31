@@ -70,6 +70,11 @@ jobs:
           VITE_FIREBASE_DB: ${{ secrets.VITE_FIREBASE_DB }}
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_GOOGLE_CLIENT_ID_NATIVE: ${{ secrets.VITE_GOOGLE_CLIENT_ID_NATIVE }}
+          # Push's own backend (see cloudflare-workers/push/README.md) — unset repo
+          # secret falls through to '' here, which pushNotifications.js's own
+          # PUSH_API_BASE_URL check already treats as "fall back to VITE_API_BASE_URL",
+          # so this works with zero setup until you actually deploy the push backend.
+          VITE_PUSH_API_BASE_URL: ${{ secrets.VITE_PUSH_API_BASE_URL }}
         run: npm run build:native
 
       # android/ (capacitor.config.json, native project, gradle wrapper) is already
