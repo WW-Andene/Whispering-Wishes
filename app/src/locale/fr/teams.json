@@ -2,6 +2,30 @@
   "monsterCard": {
     "noResData": "Aucune donnée de RES élémentaire"
   },
+  "echoSelector": {
+    "title": "Sélectionner un écho",
+    "clear": "Effacer",
+    "noMatch": "Aucun écho ne correspond aux filtres",
+    "closeAria": "Fermer le sélecteur d'échos",
+    "sonataSets": "Ensembles Sonate",
+    "echoSkill": "Compétence de l'écho",
+    "damage": "Dégâts :",
+    "utilityHealing": "Utilitaire / Soin (sans dégâts)",
+    "asEnemy": "En tant qu'ennemi",
+    "bossEchoNote": "Écho de boss — peut être sélectionné comme cible DPS",
+    "closeStatsAria": "Fermer les stats de l'écho",
+    "subStats": "Sous-stats",
+    "rollValue": "Valeur de relance",
+    "unequipAria": "Déséquiper l'écho"
+  },
+  "weaponSelector": {
+    "title": "Sélectionner une arme",
+    "bis": "BiS"
+  },
+  "enemyTarget": {
+    "target": "Cible",
+    "level": "Nv."
+  },
   "selector": {
     "title": "Sélectionner un Résonateur",
     "subtitle": "Emplacement {{slot}} • {{team}}",

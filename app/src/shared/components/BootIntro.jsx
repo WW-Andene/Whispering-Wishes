@@ -109,7 +109,21 @@ export default function BootIntro() {
         const audio = new Audio(src);
         audio.loop = true;
         audio.volume = 0.35;
-        audio.play().catch(() => {});
+        // Starts MUTED, unmuting right after playback actually begins —
+        // even with the native side disabling WebView's gesture-required
+        // autoplay flag (see MainActivity.java's own
+        // setMediaPlaybackRequiresUserGesture(false)), Chromium's separate
+        // Media Engagement Index heuristic still silently blocks UNMUTED
+        // autoplay on an origin with no prior play history, which on a
+        // genuinely first-ever app open is every time — reported as
+        // "doesn't play the first time, but does after that" (the second
+        // open now has engagement history from the first). A muted
+        // audio.play() call is never blocked by that heuristic; unmuting an
+        // element that's already actively playing isn't treated as
+        // "starting playback" and doesn't need a fresh gesture either, so
+        // this reaches full volume within the same tick with no audible gap.
+        audio.muted = true;
+        audio.play().then(() => { audio.muted = false; }).catch(() => {});
         window.__bootAmbientAudio = audio;
         window.__bootAmbientTrack = track;
       } catch {

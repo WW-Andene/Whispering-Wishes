@@ -210,9 +210,11 @@
     "track2": "2.0 Login Screen",
     "track3": "3.0 Login Screen",
     "trackConvene": "Convier",
-    "categoryBoss": "Boss",
+    "categoryLogin": "Login",
     "categoryTheme": "Thème",
-    "categoryClassic": "Classique"
+    "categoryBoss": "Boss",
+    "categoryClassic": "Classique",
+    "categoryClassicEmpty": "Bientôt disponible."
   },
   "importInfo": {
     "title": "Informations d'importation",

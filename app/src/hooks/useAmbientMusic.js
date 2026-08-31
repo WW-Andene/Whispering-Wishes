@@ -36,7 +36,7 @@ const BASE = import.meta.env.BASE_URL || './';
 // when some are added). Labels for every 'boss' entry drop the literal
 // word "Boss" — redundant once grouped under that category heading.
 const OST_TRACKS = [
-  ['3_5_login', '3.5 Login', '3.5 Login OST.mp3', 'login'],
+  ['3_5_login', '3.5 Login Screen', '3.5 Login OST.mp3', 'login'],
   ['aleph_1_boss', 'Aleph 1', 'Aleph 1 Boss OST.mp3', 'boss'],
   ['arsinosa_boss', 'Arsinosa', 'Arsinosa Boss OST.mp3', 'boss'],
   ['bell_borne_geochelone_boss', 'Bell Borne Geochelone', 'Bell Borne Geochelone Boss OST.mp3', 'boss'],
@@ -110,7 +110,7 @@ export const AMBIENT_OST_TRACKS = OST_TRACKS.map(([key, label, , category]) => (
 // Category display order for the picker — 'classic' has no tracks yet but
 // is listed here so it renders (empty) the moment one is added, with no
 // further code change needed.
-export const AMBIENT_OST_CATEGORIES = ['login', 'boss', 'theme', 'classic'];
+export const AMBIENT_OST_CATEGORIES = ['login', 'theme', 'boss', 'classic'];
 
 const AMBIENT_VOLUME = 0.35;
 
