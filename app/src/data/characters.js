@@ -163,7 +163,27 @@ const CHARACTER_DATA = {
   // Variation is already covered in alt4. alt5 reordered to lead with Stellar Symphony (confirmed by
   // both sources) over Boson Astrolabe (unconfirmed by either this audit, kept as a plausible ER pick).
   'Verina': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Nature Calling — with an extensive knowledge of botany, Verina is always solicitous, always smiling, and always wishing for every flower to be blessed with the miracle of life. Spectro healer who builds Photosynthesis Energy from Basic Attacks, Skill, and Intro, then spends it on Heavy/Mid-air Attack Starflower Blooms to heal the team; Liberation Arboreal Flourish both heals and marks enemies for a Coordinated-Attack heal-on-hit, while Outro Blossom heals the incoming Resonator and grants the team All DMG Amp.',
+    // desc rewritten 2026-08-31 verbatim against wutheringwaves.fandom.com/wiki/Verina/Combat (Chrome UA
+    // + google.com referer + jsRender; the page's Forte "Details" table omits an Outro Skill row entirely,
+    // so Blossom's own numbers are cross-sourced from ww.nanoka.cc/character/1503 and prydwen.gg, which
+    // agree on both figures) and prydwen.gg/wuthering-waves/characters/verina's Gameplay tab. Exact
+    // resource economy: Photosynthesis Energy caps at 4 stacks, gained 1 each from Basic Attack Stage 5
+    // on hit, Resonance Skill Botany Experiment on hit, and Intro Skill Verdant Growth on hit (the Intro
+    // is rated "unusable" by Prydwen — it launches her airborne and lengthens her already-shortest rotation
+    // in the game, so it's skipped in practice and she swaps in cold, starting her Basic ATK combo at
+    // Stage 3 instead of Stage 1). Each stack is spent 1-for-1 on Heavy Attack: Starflower Blooms (Heavy
+    // ATK DMG) or Mid-air Attack: Starflower Blooms (Basic ATK DMG) — both heal the nearby team and refill
+    // 12 Concerto Energy per cast, no separate "enhanced state," just gauge-gated alt-casts with no
+    // duration/timer. Resonance Liberation Arboreal Flourish (175 Energy, 25s CD) heals the team (950 +
+    // 23.80% ATK at Lv.10) and applies a 12s Photosynthesis Mark; any nearby ally hitting a marked target
+    // triggers a Coordinated Attack (9.95% ATK DMG, 428 + 10.71% ATK heal), capped at 1/s. Cast-order note:
+    // Skill Botany Experiment can be swap-cancelled immediately by Liberation to skip its damage/Resonance
+    // Energy gain while still keeping its Concerto Energy gain — this is the standard rotation, not an edge
+    // case. Outro Blossom heals the incoming Resonator 19% of Verina\'s ATK/s for 6s and grants the whole
+    // nearby team +15% All DMG Amp for 30s (confirmed "Amplified," not Deepen, per nanoka\'s and this file\'s
+    // CHAR_BUFF_TABLE\'s existing sourcing — Prydwen\'s own prose loosely says "Deepen" but its Skills tab
+    // multiplier text says "Amplified," matching nanoka verbatim). Inherent Skill Gift of Nature: casting
+    // Heavy/Mid-air Starflower Blooms, Liberation, or Outro grants the whole team +20% ATK for 20s.',
     skills: ['Cultivation', 'Botany Experiment', 'Starflower Blooms', 'Arboreal Flourish'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
@@ -3410,16 +3430,25 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Solsworn Etymology', '163.42%', 'Standard combo-starting opener hit.'],
     ['Outro', 'In This Very Moment', '795%', 'Finishing hit that stagnates enemies on ally Echo Skill casts.'],
   ],
+  // Re-verified per-hit at Lv.10 2026-08-31 against wutheringwaves.fandom.com/wiki/Verina/Combat's
+  // "Attribute Scaling" tables (Chrome UA + google.com referer + jsRender) and cross-checked against
+  // ww.nanoka.cc/character/1503 — every existing % value matched exactly, no numeric corrections needed.
+  // Row-name bug fixed: the Forte row was 'Heavy/Mid-air ATK: Starflower Blooms' (using the abbreviation
+  // "ATK"), but CHARACTER_ROTATIONS.Verina's Forte step names the move 'Mid-air Attack: Starflower Blooms'
+  // (spelled out, matching the wiki's own text) — 'Heavy/Mid-air ATK: Starflower Blooms'.includes('Mid-air
+  // Attack: Starflower Blooms') is false (no "ATK"/"Attack" match), so the calc engine's
+  // rowName.includes(step.skill) lookup silently resolved that rotation step to ZERO damage. Renamed to
+  // 'Heavy/Mid-air Attack: Starflower Blooms' (spelled out, matching both source sites) to fix the match.
   'Verina': [
     ['Basic ATK', 'Cultivation Stage 1-5', '37.86% → 51.16% → 25.58%×2 → 67.32% → 71.62%'],
     ['Heavy ATK', 'Standard', '99.41%'],
     ['Mid-air', 'Stage 1-3 + Heavy', '56.37% → 53.19% → 25.42%×3 · 61.64% (Mid-air Heavy)'],
     ['Dodge Counter', 'Standard', '129.23%'],
     ['Skill', 'Botany Experiment', '35.79%×3+71.58%', '12s cooldown; grants Photosynthesis Energy.'],
-    ['Forte', 'Heavy/Mid-air ATK: Starflower Blooms', '64.95%+97.42% (Heavy) · 67.64%+63.82%+30.50%×3 (Mid-air)', 'Consumes Photosynthesis Energy to heal the team and restore Concerto Energy.'],
-    ['Liberation', 'Arboreal Flourish', '198.81%', 'Heals the team and applies Photosynthesis Mark; marked-target hits trigger a healing Coordinated Attack (9.95% ATK/hit).'],
+    ['Forte', 'Heavy/Mid-air Attack: Starflower Blooms', '64.95%+97.42% (Heavy) · 67.64%+63.82%+30.50%×3 (Mid-air)', 'Consumes 1 Photosynthesis Energy (cap 4) per cast to heal the team (1188 + 29.75% ATK at Lv.10) and restore 12 Concerto Energy.'],
+    ['Liberation', 'Arboreal Flourish', '198.81%', '175 Energy, 25s cooldown. Heals the team (950 + 23.80% ATK at Lv.10) and applies a 12s Photosynthesis Mark; marked-target hits trigger a healing Coordinated Attack (9.95% ATK DMG, 428 + 10.71% ATK heal), capped 1/s.'],
     ['Intro', 'Verdant Growth', '99.41%'],
-    ['Outro', 'Blossom', 'All DMG Amp +15% (30s) + heal', 'Heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All DMG Amp +15% (30s) — not a DMG Deepen.'],
+    ['Outro', 'Blossom', 'All DMG Amp +15% (30s) + heal', 'Heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All DMG Amp +15% (30s) — confirmed "Amplified," not Deepen, per nanoka/CHAR_BUFF_TABLE\'s existing sourcing.'],
   ],
   'Xiangli Yao': [
     ['Basic ATK', 'Probe Stage 1-5', '33.11%×2 → 99.61% → 39.76%×3 → 53.05%×2+26.53% → 198.81%'],
@@ -3843,15 +3872,18 @@ const CHARACTER_ROTATIONS = {
     { type: 'Skill', skill: 'Ancient Arts', note: 'Press Skill for Mountain Roamer while airborne — alternating Basic Attack/Skill taps like this lands up to ~9 hits total during the Ultimate window under ideal play.' },
     { type: 'Outro', skill: 'Frosty Marks', note: 'Swap out to trigger this automatically — a pure-damage AoE finisher with no team buff (though the S4 chain grants the team +20% Glacio DMG for 30s).' },
   ],
-  // Standard Rotation (S0) — sourced from Prydwen's "Gameplay and teams" tab for Verina (re-fetched
-  // 2026-08-17 via Chrome UA + google.com referer + jsRender). Her Intro Skill is explicitly skipped —
-  // Prydwen calls it "unusable," sending her airborne and lengthening her already-shortest-in-game
-  // rotation — so she swaps in cold and her Basic ATK cycle starts from Stage 3.
+  // Standard Rotation (S0) — re-verified 2026-08-31 against prydwen.gg/wuthering-waves/characters/verina's
+  // "Gameplay and teams" tab (Chrome UA + google.com referer + jsRender; total listed time 3.75s at S0,
+  // 2.35s at S2) and cross-checked against wutheringwaves.fandom.com/wiki/Verina/Combat and
+  // ww.nanoka.cc/character/1503 for the per-step numbers. Her Intro Skill is explicitly skipped — Prydwen
+  // calls it "unusable," sending her airborne and lengthening her already-shortest-in-game rotation — so
+  // she swaps in cold and her Basic ATK cycle starts from Stage 3. Cast-order note: Skill Botany Experiment
+  // is deliberately swap-cancelled by Liberation, not an execution error — see that step.
   'Verina': [
-    { type: 'Basic ATK', skill: 'Cultivation Stage 1-5', note: 'Swap her in cold with no Intro (Prydwen rates her Intro Skill "unusable"), then tap Basic Attack — swapping in this way starts the combo straight at Stage 3, into Stage 4-5.' },
-    { type: 'Skill', skill: 'Botany Experiment', note: 'Press Skill, then immediately cancel it with the Liberation below to save time — this skips the hit and its Resonance Energy gain, but Concerto Energy is still gained.' },
-    { type: 'Liberation', skill: 'Arboreal Flourish', note: 'Press Liberation right after Botany Experiment to cancel it — heals the team and applies the Photosynthesis Mark; 25s cooldown.' },
-    { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'Jump, then tap Basic Attack to spend all 4 Photosynthesis Energy stacks on Starflower Blooms — heals the team and refills Concerto Energy.' },
+    { type: 'Basic ATK', skill: 'Cultivation Stage 1-5', note: 'Swap her in cold with no Intro (Prydwen rates her Intro Skill "unusable"), then tap Basic Attack — swapping in this way starts the combo straight at Stage 3, into Stage 4-5. Stage 5 on hit grants 1 Photosynthesis Energy.' },
+    { type: 'Skill', skill: 'Botany Experiment', note: 'Press Skill, then immediately cancel it with the Liberation below to save time — this skips the hit and its Resonance Energy gain, but Concerto Energy is still gained. Also grants 1 Photosynthesis Energy on cast.' },
+    { type: 'Liberation', skill: 'Arboreal Flourish', note: 'Press Liberation right after Botany Experiment to cancel it — 175 Energy, 25s cooldown. Heals the team (950 + 23.80% ATK at Lv.10) and applies a 12s Photosynthesis Mark for Coordinated-Attack healing.' },
+    { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'Jump, then tap Basic Attack up to 3 times to spend all 4 Photosynthesis Energy stacks (1 per cast, cap 4) on Starflower Blooms — each cast heals the team (1188 + 29.75% ATK at Lv.10) and refills 12 Concerto Energy. A Concerto-generating weapon (Variation/Stellar Symphony) lets the last cast be skipped, per Prydwen.' },
     { type: 'Outro', skill: 'Blossom', note: 'Swap out to trigger this automatically — heals the incoming Resonator for 19% ATK/s over 6s and grants the whole nearby team +15% All DMG Amp for 30s.' },
   ],
   // Standard Rotation — re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Jinhsi/Combat
@@ -4928,10 +4960,31 @@ const RESONANCE_CHAIN_DATA = {
   // s2 team +20% Fusion DMG on skill casts, stacks ×2 = 40% (was totalMult:40, wrong category); s3 Nowhere to Run! DMG Mult +100%, Intro-type with no direct schema stat, totalMult fallback (was atkPct:15, no basis);
   // s4 Dance With the Wolf: Climax DMG Mult +125%, Forte-type with no direct schema stat, totalMult fallback (was deepen:12, no basis);
   // s5 +15% Resonance Liberation DMG Bonus (was totalMult:15, wrong category); s6 Climax/Liberation/Nowhere to Run! ignore 30% DEF (was elemDmg:40, no basis).
-  // Supports — utility nodes represented as small totalMult DPS contributions
-  // S6 corrected — she has no DMG Deepen anywhere in her kit; real S6 boosts Heavy/Mid-air ATK
-  // Starflower Blooms DMG and adds a Coordinated ATK + heal proc (bucketed as totalMult).
-  'Verina':       { s1: { totalMult: 5 }, s2: { totalMult: 5 }, s3: { totalMult: 5 }, s4: { elemDmg: 15 }, s5: { totalMult: 12 }, s6: { totalMult: 20 } },
+  // Verina S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Verina/Combat's
+  // Resonance Chain section (Chrome UA + google.com referer + jsRender), cross-checked against
+  // ww.nanoka.cc/character/1503 and prydwen.gg (all three agree verbatim on every node's text):
+  // S1 "Moment of Emergence": Outro Skill Blossom grants the next character a continuous heal, 20% of
+  //   Verina's ATK every 5s for 30s (6 ticks, 120% ATK total). Pure heal node, zero DPS component — was
+  //   totalMult:5 with no basis — zeroed to {}.
+  // S2 "Sprouting Reflections": Resonance Skill Botany Experiment additionally grants 1 Photosynthesis
+  //   Energy and 10 Concerto Energy on cast. Pure resource-economy node, zero DPS component — was
+  //   totalMult:5 with no basis — zeroed to {}.
+  // S3 "The Choice to Flourish": Healing of Liberation's Photosynthesis Mark (both the initial Arboreal
+  //   Flourish heal and its Coordinated Attack heal) increased by 12%. Pure heal% node, zero DPS
+  //   component — was totalMult:5 with no basis — zeroed to {}. TODO: needs Phase 2 schema (a
+  //   healBonusPct-on-Liberation key) to represent the +12%.
+  // S4 "Blossoming Embrace": casting Heavy/Mid-air Attack Starflower Blooms, Liberation, or Outro Blossom
+  //   raises the whole team's Spectro DMG Bonus by 15% for 24s — confirmed exact, unchanged (elemDmg:15
+  //   was already correct category+magnitude; only the 24s duration/trigger-condition context is new).
+  // S5 "Miraculous Blooms": when Verina heals a team member below 50% HP, her Healing is increased by
+  //   20% (conditional, non-DPS). Zero DPS component — was totalMult:12 with no basis — zeroed to {}.
+  //   TODO: needs Phase 2 schema (a conditional healBonusPct-below-HP-threshold key) to represent this.
+  // S6 "Joyous Harvest": Heavy/Mid-air Attack Starflower Blooms deal 20% more DMG (real DPS component,
+  //   matches the existing totalMult:20 magnitude and category — unchanged) AND additionally trigger 1
+  //   Coordinated Attack + team heal on cast, both equal to Liberation's Photosynthesis Mark's own CA
+  //   DMG/heal values. TODO: needs Phase 2 schema to add that extra on-cast Coordinated Attack DPS/heal
+  //   proc — only the flat +20% DMG Mult on Starflower Blooms itself is captured here.
+  'Verina':       { s1: {}, s2: {}, s3: {}, s4: { elemDmg: 15 }, s5: {}, s6: { totalMult: 20 } },
   // Shorekeeper S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Shorekeeper/Combat
   // (MediaWiki API action=parse, section=Resonance Chain — bypassed the Combat page's Cloudflare interstitial),
   // cross-checked against Prydwen's live kit page (Chrome UA + google.com referer + jsRender):
