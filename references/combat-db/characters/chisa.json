@@ -1,0 +1,33 @@
+{
+  "name": "Chisa",
+  "slug": "chisa",
+  "rarity": 5,
+  "element": "Havoc",
+  "weaponType": "Broadblade",
+  "role": ["Support"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/chisa", "nanoka": "https://ww.nanoka.cc/character/chisa", "fandom": "https://wutheringwaves.fandom.com/wiki/Chisa", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T0 Tower of Adversity, T0 Whimpering Wastes (Support/Negative Status)" },
+  "kit": {
+    "intro": "5-star Havoc Broadblade Support dedicated to Negative-Status teams. Applies 'Unseen Snare' -> Havoc Bane (DEF Shred) on marked targets; grants Negative-Status appliers/dealers 18% DEF Ignore (Thread of Bane) and, via Outro, +3 max Negative Status stacks. Forte 'Ring of Chainsaw' unlocks a Chainsaw Basic Attack combo ending in the shielding nuke 'Sawring - Eradication'.",
+    "skills": {
+      "normalAttack": "Reign of Silence - 2-hit chain into Rending Lunge/Death Snip/Thread Withdrawn combo string; Chainsaw Mode swaps this for Sawring - Blitz.",
+      "resonanceSkill": "Fractured Composition - Eye of Unraveling (base) / Serrated Loop (enhanced, at full Forte, enters Chainsaw Mode).",
+      "forte": "Sight of Unraveling - Oblivion - governs Unseen Snare/Havoc Bane application and Chainsaw Mode's Sawring-Blitz/Eradication combo (team shield on cast).",
+      "liberation": "Moment of Nihility - Havoc DMG + team heal, enters Woven Myriad - Convergence (buffs Chainsaw attacks +120% multiplier).",
+      "intro": "Reverberance - Return - Havoc DMG.",
+      "outro": "Unraveling - Law Zero - grants team +3 max Negative Status/Electro Rage stacks and Thread of Bane on Negative-Status hits, for 20s."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Kumokiri (signature, 100%, +24% DMG Bonus to Negative Status appliers)", "Wildfire Mark (88.4%)", "Ages of Harvest (82.1%)", "Verdant Summit (81.5%)", "Radiance Cleaver (80%, best permanent)", "Meditations on Mercy (69%, best F2P craftable)"],
+    "echoSet": ["Rejuvenating Glow (best overall, team ATK buff)", "Thread of Severed Fate (best for personal damage)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Havoc DMG; Havoc DMG >= ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "Liberation DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Team (Negative Status)", "members": ["Chisa", "Yangyang Xuanling or Aemeath/Cartethyia/Hiyuki", "Suisui or generalist"], "notes": "Only worth using in dedicated Negative-Status teams (her buffs require the DPS to self-apply Negative Status); outclassed by free options as a generalist support." }
+  ],
+  "rotation": "Opener: Basic 1-2 -> Skill (Eye of Unraveling) -> Rending Lunge -> Death Snip -> Thread Withdrawn -> Ultimate -> Basic 2 -> Skill (Serrated Loop, Chainsaw Mode) -> Sawring Blitz 2-3 -> Eradication (swap) -> Outro. Loop rotation replaces the opener basics with Intro.",
+  "communityNotes": "Prydwen: top-tier (T0/T0) Support specifically for Negative Status team archetypes (Glacio Chafe, Fusion Burst, Aero Erosion, Spectro Frazzle) with strong healing/shielding/grouping; near useless outside Negative Status teams since almost all her buffs are conditional on the recipient applying their own Negative Status. Weaker in multi-wave Whimpering Wastes since Havoc Bane needs time to ramp.",
+  "lastUpdated": "2026-08-31"
+}

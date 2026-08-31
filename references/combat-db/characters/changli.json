@@ -1,0 +1,35 @@
+{
+  "name": "Changli",
+  "slug": "changli",
+  "rarity": 5,
+  "element": "Fusion",
+  "weaponType": "Sword",
+  "role": ["Hybrid", "Sub DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/changli", "nanoka": "https://ww.nanoka.cc/character/changli", "fandom": "https://wutheringwaves.fandom.com/wiki/Changli", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T2 Tower of Adversity, T3 Whimpering Wastes (Hybrid/Dual-DPS)" },
+  "kit": {
+    "intro": "5-star Fusion Sword Hybrid, mid-air focused, defined by extreme Quickswap synergy - nearly every key ability (Basic P4, Skill, True Sight: Conquest, Forte Heavy) can be Swap Cancelled to keep her attacking off-field while playing another character. Forte 'Enflamement' (max 4 stacks, from Ultimate or True Sight attacks) unlocks Forte Heavy 'Flaming Sacrifice' nuke.",
+    "skills": {
+      "normalAttack": "Blazing Enlightment - 4-hit chain; entering True Sight state (12s) after Basic/Mid-air Attack 4.",
+      "resonanceSkill": "Tripartite Flames - True Sight: Capture (2 charges), dash attack that also grants True Sight.",
+      "forte": "Flaming Sacrifice - Heavy Attack consuming 4 Enflamement stacks for a big Resonance-Skill-type nuke with 40% damage reduction during cast.",
+      "liberation": "Radiance of Fealty - Fusion DMG AoE, grants 4 Enflamement + Fiery Feather (next Forte Heavy gets +25% ATK).",
+      "intro": "Obedience of Rules - mid-air Fusion DMG, grants True Sight.",
+      "outro": "Strategy of Duality - next character gains 20% Fusion DMG + 25% Liberation DMG Amplify for 10s (shortest Outro duration in the game alongside Lumi)."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Blazing Brilliance (signature, 100%)", "Emerald of Genesis (91.1%, best permanent/F2P)", "Emerald Sentence (90.4%)", "Frostburn / Red Spring (90%)", "Everbright Polestar (89.9%)", "Somnoire Anchor (81.4%, best 4-star)", "Commando of Conviction (F2P no-gacha)"],
+    "echoSet": ["Molten Rift (5pc, ramping Fusion DMG after Resonance Skill)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Fusion DMG; ATK% >= Fusion DMG", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK%", "ATK", "Resonance Skill DMG%"]
+  },
+  "teams": [
+    { "name": "Best Team (Mono Fusion)", "members": ["Changli", "Lupa", "Brant or Aemeath"], "notes": "Lupa is the premier Mono Fusion buffer; Brant is the easier partner, Aemeath needs quickswap skill to benefit from Changli's short Outro." },
+    { "name": "Expert Dual-DPS Teams", "members": ["Changli", "Xiangli Yao or Jinhsi", "Verina"], "notes": "Extremely high-skill-ceiling quickswap pairs; not recommended for casual players." },
+    { "name": "Budget Dual DPS", "members": ["Changli", "Yangyang or Chixia", "generalist"], "notes": "Chixia is currently the only character that fully exploits Changli's Outro (20% Fusion + 25% Liberation Amp)." }
+  ],
+  "rotation": "Opener: Ultimate -> Forte Heavy (swap). Standard: Intro -> True Sight: Charge -> Skill -> Heavy -> True Sight: Charge -> Mid-air Attack -> True Sight: Charge -> Skill -> True Sight: Conquest -> Forte Heavy -> Ultimate -> Forte Heavy (swap) -> Outro. Advanced play swap-cancels nearly every key attack for a Dual-DPS quickswap playstyle.",
+  "communityNotes": "Prydwen: strong, F2P-weapon-friendly Hybrid whose value is almost entirely defined by her unmatched Quickswap/Swap-Cancel affinity - largely outclassed by more modern Fusion options (Brant, Aemeath) in raw buffing when played passively, but among the best Dual-DPS partners in the game (with Xiangli Yao, Jinhsi, Cartethyia) for expert players willing to learn her swap-cancel-heavy rotation.",
+  "lastUpdated": "2026-08-31"
+}
