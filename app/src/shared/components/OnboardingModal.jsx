@@ -12,8 +12,11 @@ import { t } from '../../utils/i18n.js';
 // Which real nav element (its `id="tab-<id>"`, set by Card.jsx's TabButton
 // for the bottom nav, or directly on the header button for Profile) each
 // step is actually about — null for the intro/outro steps, which aren't
-// about any one tab. Drives the pulsing highlight ring below.
-const TAB_ID_BY_STEP = [null, 'profile', 'tracker', 'gathering', 'teams', 'calculator', 'analytics', null];
+// about any one tab. Drives the pulsing highlight ring below. Order here
+// must match the `steps` array below 1:1 — every real tab (TAB_ORDER, plus
+// the header Profile button) has one step now, walked in the same
+// left-to-right order they appear in the bottom nav.
+const TAB_ID_BY_STEP = [null, 'profile', 'tracker', 'events', 'map', 'planner', 'calculator', 'analytics', 'teams', 'gathering', null];
 
 // [SECTION:ONBOARDING]
 const OnboardingModal = ({ onComplete }) => {
@@ -22,10 +25,13 @@ const OnboardingModal = ({ onComplete }) => {
     { title: t('modals.onboarding.step1Title'), desc: t('modals.onboarding.step1Desc'), color: '#edaf18' },
     { title: t('modals.onboarding.step2Title'), desc: t('modals.onboarding.step2Desc'), color: '#22d3ee' },
     { title: t('modals.onboarding.step3Title'), desc: t('modals.onboarding.step3Desc'), color: '#fb923c' },
-    { title: t('modals.onboarding.step4Title'), desc: t('modals.onboarding.step4Desc'), color: '#a855f7' },
-    { title: t('modals.onboarding.step5Title'), desc: t('modals.onboarding.step5Desc'), color: '#60a5fa' },
+    { title: t('modals.onboarding.step9Title'), desc: t('modals.onboarding.step9Desc'), color: '#eab308' },
+    { title: t('modals.onboarding.step10Title'), desc: t('modals.onboarding.step10Desc'), color: '#38bdf8' },
+    { title: t('modals.onboarding.step11Title'), desc: t('modals.onboarding.step11Desc'), color: '#fb7185' },
     { title: t('modals.onboarding.step6Title'), desc: t('modals.onboarding.step6Desc'), color: '#34d399' },
     { title: t('modals.onboarding.step7Title'), desc: t('modals.onboarding.step7Desc'), color: '#f472b6' },
+    { title: t('modals.onboarding.step5Title'), desc: t('modals.onboarding.step5Desc'), color: '#60a5fa' },
+    { title: t('modals.onboarding.step4Title'), desc: t('modals.onboarding.step4Desc'), color: '#a855f7' },
     { title: t('modals.onboarding.step8Title'), desc: t('modals.onboarding.step8Desc'), color: '#edaf18' }
   ];
 

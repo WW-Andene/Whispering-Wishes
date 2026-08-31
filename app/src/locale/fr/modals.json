@@ -21,7 +21,13 @@
     "step7Title": "Consultez les statistiques",
     "step7Desc": "Vérifiez votre indice de chance, vos graphiques et votre historique de Conviers.",
     "step8Title": "Vous êtes prêt(e) !",
-    "step8Desc": "Bonne chance pour vos Conviers, Nomade !"
+    "step8Desc": "Bonne chance pour vos Conviers, Nomade !",
+    "step9Title": "Consultez les événements",
+    "step9Desc": "Retrouvez les événements en cours et à venir, leurs récompenses et leurs échéances dans l'onglet Événements.",
+    "step10Title": "Explorez la carte",
+    "step10Desc": "Trouvez des collectibles, des ressources et des points d'intérêt dans l'onglet Carte.",
+    "step11Title": "Planifiez votre Astrite",
+    "step11Desc": "Suivez vos prochains revenus et planifiez vos tirages dans l'onglet Planificateur."
   },
   "serverSelector": {
     "ariaLabel": "Sélectionner la région du serveur",

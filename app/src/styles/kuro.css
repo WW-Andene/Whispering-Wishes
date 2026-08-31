@@ -559,12 +559,13 @@
        currently about — see OnboardingModal.jsx's own comment for why this
        is a portaled overlay rather than a class on the real tab button. */
     @keyframes onboardingTabPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(237, 175, 24, 0.55), 0 0 0 2px rgba(237, 175, 24, 0.95); }
-      50% { box-shadow: 0 0 0 8px rgba(237, 175, 24, 0), 0 0 0 2px rgba(237, 175, 24, 0.95); }
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(237, 175, 24, 0.55), 0 0 0 2px rgba(237, 175, 24, 0.95); }
+      50% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(237, 175, 24, 0), 0 0 0 2px rgba(237, 175, 24, 0.95); }
     }
     .onboarding-tab-highlight {
       border: 2px solid rgba(237, 175, 24, 0.95);
       animation: onboardingTabPulse 1.6s ease-in-out infinite;
+      transform-origin: center;
     }
 
     /* ═══ TAB CONTENT LAYOUT ═══ */

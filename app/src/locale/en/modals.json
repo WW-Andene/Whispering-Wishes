@@ -21,7 +21,13 @@
     "step7Title": "View Analytics",
     "step7Desc": "Check your luck rating, charts, and Convene history.",
     "step8Title": "You're Ready!",
-    "step8Desc": "Good luck on your Convenes, Rover!"
+    "step8Desc": "Good luck on your Convenes, Rover!",
+    "step9Title": "Check Events",
+    "step9Desc": "See ongoing and upcoming events, rewards, and deadlines in the Events tab.",
+    "step10Title": "Explore the Map",
+    "step10Desc": "Find collectibles, resources, and points of interest in the Map tab.",
+    "step11Title": "Plan Your Astrite",
+    "step11Desc": "Track upcoming income and time your pulls in the Planner tab."
   },
   "serverSelector": {
     "ariaLabel": "Select server region",
