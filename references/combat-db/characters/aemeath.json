@@ -1,0 +1,41 @@
+{
+  "name": "Aemeath",
+  "slug": "aemeath",
+  "rarity": 5,
+  "element": "Fusion",
+  "weaponType": "Sword",
+  "role": ["Main DPS"],
+  "sources": {
+    "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/aemeath",
+    "nanoka": "https://ww.nanoka.cc/character/aemeath",
+    "fandom": "https://wutheringwaves.fandom.com/wiki/Aemeath",
+    "encore": null,
+    "wuwatracker": null
+  },
+  "tierList": { "prydwen": "T0 Tower of Adversity, T0.5 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Fusion Sword Main DPS with a Form Switch mechanic (Aemeath <-> Mech), 2 Forte resources (Synchronization Rate 0-200, Resonance Rate 0-4), and a 'Resonance Mode' toggle (Tune Rupture vs Fusion Burst) that changes her Intro/Basic effects and Forte (Duet) enhancements; also enables Mono Fusion play via Lupa.",
+    "skills": {
+      "normalAttack": "Infinity Calibration - up to 4-hit strings in either Aemeath or Mech form; charged Heavy Attacks count as Liberation DMG.",
+      "resonanceSkill": "Shared Voyage - Form Switch between Aemeath/Mech; Sync Strikes (Armament Merge / Call of Dawn) available after specific basic-attack stages.",
+      "forte": "To Sculpt the Silence - at Synchronization Rate 100, casts Seraphic Duet (Overture in Aemeath form / Encore in Mech form), consumed Resonance Liberation DMG, enhanced by current Resonance Mode (Tune Rupture or Fusion Burst).",
+      "liberation": "Towards the Daybreak - Heavenfall Edict: Overdrive (switches to Mech, grants Stardust Resonance + Unbound state); second Ultimate Heavenfall Edict: Finale usable once both Forte resources are maxed, big AoE nuke that clears trash.",
+      "intro": "Overture of Departure - Songs Across the Universe (Aemeath form) / Debut of Meteoric Radiance (Mech form), grants Starlume Acceleration.",
+      "outro": "Silent Protection - grants team (excl. Aemeath) 10-20% All-DMG Amplification for 20s depending on Resonance Mode responders."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Everbright Polestar (signature, 100%)", "Emerald of Genesis (83.5%)", "Red Spring (83.2%)", "Emerald Sentence (82.9%)", "Blazing Brilliance (78.1%)", "Feather Edge (78.1%, best 4-star)", "Somnoire Anchor (74.8%)", "Endless Collapse (74.1%)", "Commando of Conviction (best No-Gacha/F2P)"],
+    "echoSet": ["Trailblazing Star (5pc, dedicated set: +20% CRIT Rate & Fusion DMG Bonus)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Fusion DMG; ATK% = Fusion DMG", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT DMG = CRIT Rate", "ATK%", "Liberation DMG%", "ATK"]
+  },
+  "teams": [
+    { "name": "Best Fusion Burst Team", "members": ["Aemeath", "Denia", "Lupa or Chisa"], "notes": "Strongest AoE/quickswap archetype; Lupa on Moonlit Clouds, Denia on Flaming Clawprint." },
+    { "name": "Best Tune Rupture Team", "members": ["Aemeath", "Lynae", "Mornye or The Shorekeeper/Verina"], "notes": "Best single-target ceiling; Mornye ideal support since Aemeath self-applies Tune Rupture." },
+    { "name": "Mono Fusion", "members": ["Aemeath", "Brant or Changli", "Lupa"], "notes": "Lupa enables party-wide Fusion RES Ignore/DMG Bonus; Changli only better than Brant in quickswap." }
+  ],
+  "rotation": "Standard: Skill (Mech form) opener -> Intro -> Mech Basics -> Ultimate (Overdrive) -> Basics -> Skill (Duet Encore) -> Aemeath Basics -> Skill (Duet Overture) -> Heavy (Mech II) -> Ultimate (Finale) -> Outro. Advanced Quickswap variant delays Intro by ~4s of off-field basics to line up with short Outro buffs (e.g. Changli).",
+  "communityNotes": "Prydwen: current strongest Fusion DPS (T0/T0.5), flexible across 3 team archetypes (Tune Rupture, Fusion Burst, Mono Fusion) each enabled by a different secondary (Lynae, Denia, Lupa respectively); main weakness is Forte generation requiring melee Basic Attacks to actually land, punished by airborne/evasive enemies, and lacks a permanently-accessible premium teammate the way Phrolova/Augusta do.",
+  "lastUpdated": "2026-08-31"
+}

@@ -1,0 +1,33 @@
+{
+  "name": "Augusta",
+  "slug": "augusta",
+  "rarity": 5,
+  "element": "Electro",
+  "weaponType": "Broadblade",
+  "role": ["Main DPS"],
+  "sources": { "prydwen": "https://www.prydwen.gg/wuthering-waves/characters/augusta", "nanoka": "https://ww.nanoka.cc/character/augusta", "fandom": "https://wutheringwaves.fandom.com/wiki/Augusta", "encore": null, "wuwatracker": null },
+  "tierList": { "prydwen": "T1 Tower of Adversity, T1 Whimpering Wastes" },
+  "kit": {
+    "intro": "5-star Electro Broadblade Main DPS built around 3 resources: Prowess (enhanced Heavy Attacks), Ascendancy (enhanced Resonance Skill sequence), and Majesty (2 stacks unlock a time-stopping second Ultimate 'Sublime is the Sun' that lands 9 rapid Heavy Attacks + finisher).",
+    "skills": {
+      "normalAttack": "Hunter's Path - basic chain plus Prowess-enhanced Heavy Attack variants (Backstep/Spinslash/Uppercut).",
+      "resonanceSkill": "Warrior's Blade; upgrades to Undying Sunlight Strike/Leap/Plunge sequence at full Ascendancy, granting Majesty.",
+      "forte": "Call Me By the Sun - governs Ascendancy generation and the enhanced Resonance Skill chain.",
+      "liberation": "Sunward Conquest - base Sword of Eternal Oath; at 2 Majesty, hold to unleash Sublime is the Sun (7s time-stop, 9x Sunborne hits + Everbright Protector finisher), grants team-wide Ruler's Realm shield-on-Intro.",
+      "intro": "Stride of Goldenflare - restores full Prowess + 20% Ascendancy.",
+      "outro": "Battlesong of the Unyielding - next character gains 15% All-DMG Amplification for 14s; grants Augusta a Majesty + Crown of Wills (Electro DMG Bonus) stack."
+    }
+  },
+  "buildGuide": {
+    "bestWeapons": ["Thunderflare Dominion (signature, 100%)", "Verdant Summit (90.3%)", "Ages of Harvest (80.4%)", "Wildfire Mark / Radiance Cleaver (77.3%)", "Kumokiri (74.3%)", "Lustrous Razor (73.2%, best permanent)", "Aureate Zenith (71%, best 4-star)", "Autumntrace (66.5%)", "Meditations on Mercy (F2P last resort)"],
+    "echoSet": ["Crown of Valor (5pc, ATK/CRIT DMG stacks on shield application - Augusta uniquely stacks it fully)"],
+    "mainStats": { "cost4": "CRIT Rate / CRIT DMG", "cost3": "Electro DMG; Electro DMG > ATK%", "cost1": "ATK%" },
+    "substatPriority": ["Energy Regen (until satisfied)", "CRIT Rate = CRIT DMG", "ATK% = Heavy Attack DMG%", "ATK", "Resonance Skill DMG%"]
+  },
+  "teams": [
+    { "name": "Team #1 - Best Team", "members": ["Augusta", "Iuno (or Mortefi/Rebecca/Lynae)", "The Shorekeeper or Verina"], "notes": "Iuno best Outro buffer (up to 90% DMG Amp); Mortefi/Rebecca close seconds for Heavy DMG buffing; free-to-play friendly with Mortefi." }
+  ],
+  "rotation": "Intro -> Backstep+Spinslash x2 -> Skill -> Ultimate (Sword of Eternal Oath) -> Forte Skill chain (Strike/Leap/Plunge) -> Ultimate (Sublime is the Sun: 9x Sunborne + Everbright Protector) -> Outro. Near-incompatible with quickswap since her Outro locks the next character on field and ~half her damage is backloaded into the 2nd Ultimate.",
+  "communityNotes": "Prydwen: top-tier DPS (T1/T1) with excellent F2P accessibility via Mortefi, higher ceiling with Iuno; weaknesses are backloaded damage (poor for multi-wave Whimpering Wastes timing), negligible shield strength (only exists to trigger set/weapon effects), and near-total incompatibility with quickswap teams. Note: her 2nd Ultimate instantly kills on-field summons, making Phrolova synergy poor.",
+  "lastUpdated": "2026-08-31"
+}
