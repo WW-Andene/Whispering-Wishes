@@ -5,7 +5,6 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { getPortalRoot, getScrollContainer, toCanvasLength } from '../scaling/canvasScale.js';
 
 // [SECTION:A11Y_HOOKS] - Accessibility hooks for modal focus trapping & escape key
 // P14-FIX: MEDIUM-22 — Re-query focusable elements on each Tab keypress instead of caching.
@@ -65,21 +64,21 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
   useEscapeKey(isOpen, onClose);
   const dragRef = useRef({ startY: 0, currentY: 0, dragging: false });
   const sheetRef = useRef(null);
-  // Prevent background scroll when modal is open. Used to be the classic
-  // iOS body-scroll-lock trick (position:fixed + negative top offset) —
-  // that specifically worked around iOS Safari ignoring `overflow:hidden`
-  // on the real page's own <body> while still rubber-banding it. Now that
-  // ScaledCanvas.jsx's inner div is the app's actual scroll container (not
-  // body, which is `overflow:hidden` globally — see index.css), a plain
-  // overflow toggle on that div is enough; it's a normal scrollable
-  // element, not the page body, so it doesn't need the same workaround.
+  // Prevent background scroll when modal is open (fixes iOS Safari scroll bleed)
   useEffect(() => {
     if (!isOpen) return;
-    const scrollEl = getScrollContainer();
-    const prevOverflow = scrollEl.style.overflowY;
-    scrollEl.style.overflowY = 'hidden';
+    const scrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
     return () => {
-      scrollEl.style.overflowY = prevOverflow;
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      // Restore scroll position instantly to avoid visual jump on iOS
+      window.scrollTo({ top: scrollY, left: 0, behavior: 'instant' });
     };
   }, [isOpen]);
 
@@ -93,12 +92,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
   }, []);
   const onTouchMove = useCallback((e) => {
     if (!dragRef.current.dragging) return;
-    // clientY delta is real screen px, but this translateY nests inside
-    // ScaledCanvas.jsx's own transform — without converting, a finger
-    // moving 100 real px would drag the sheet 100 CANVAS px, which renders
-    // as 100*scale real px, breaking 1:1 finger tracking on any non-1x
-    // canvas scale. toCanvasLength() undoes that.
-    const dy = toCanvasLength(e.touches[0].clientY - dragRef.current.startY);
+    const dy = e.touches[0].clientY - dragRef.current.startY;
     if (dy < 0) return; // only drag down
     dragRef.current.currentY = dy;
     const sheet = sheetRef.current;
@@ -148,7 +142,7 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
         {children}
       </div>
     </div>,
-    getPortalRoot()
+    document.body
   );
 };
 

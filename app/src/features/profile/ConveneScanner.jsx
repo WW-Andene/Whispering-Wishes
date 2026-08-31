@@ -5,7 +5,6 @@
 
 import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { getPortalRoot } from '../../shared/scaling/canvasScale.js';
 import { Camera, Scan, X } from 'lucide-react';
 import { HEADER_ICON } from '../../data/constants.js';
 import { t } from '../../utils/i18n.js';
@@ -166,6 +165,6 @@ export default function ConveneScanner({
         @keyframes captureShimmer { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>,
-    getPortalRoot()
+    document.body
   );
 }

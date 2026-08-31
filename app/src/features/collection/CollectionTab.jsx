@@ -5,7 +5,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSessionState } from '../../hooks/useSessionState.js';
-import { toCanvasSpace, CANVAS_WIDTH } from '../../shared/scaling/canvasScale.js';
 import { ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
@@ -95,10 +94,8 @@ function CollectionTab({
   const counterWidgetRef = useRef(null);
   const showCounterWidget = useCallback((name, isCharacter, event) => {
     const touch = event?.touches?.[0] || event;
-    // clientX/clientY are always REAL screen-space coordinates — convert to
-    // canvas-local space since this widget renders `position: fixed` inside
-    // ScaledCanvas.jsx's transformed box (see canvasScale.js's own comment).
-    const { x, y } = toCanvasSpace(touch?.clientX || 0, touch?.clientY || 0);
+    const x = touch?.clientX || 0;
+    const y = touch?.clientY || 0;
     setCounterWidget({ name, isCharacter, x, y });
   }, []);
   const adjustManualCount = useCallback((name, isCharacter, delta) => {
@@ -940,7 +937,7 @@ function CollectionTab({
       <div ref={counterWidgetRef}
         className="kuro-card fixed z-50 flex items-center gap-1.5 p-1.5"
         style={{
-          left: Math.min(counterWidget.x - 60, CANVAS_WIDTH - 140),
+          left: Math.min(counterWidget.x - 60, window.innerWidth - 140),
           top: Math.max(counterWidget.y - 50, 10),
         }}>
         <button

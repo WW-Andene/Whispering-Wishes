@@ -5,7 +5,6 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { getPortalRoot } from '../../shared/scaling/canvasScale.js';
 import { ClipboardList, Settings, X } from 'lucide-react';
 import { APP_VERSION } from '../../data/constants.js';
 import { CHARACTER_DATA, RELEASE_ORDER } from '../../data/characters.js';
@@ -385,6 +384,6 @@ export default function AdminMiniPanel({
         </Card>
       </div>
     </div>,
-    getPortalRoot()
+    document.body
   );
 }
