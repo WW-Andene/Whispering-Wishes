@@ -289,7 +289,7 @@ const CHARACTER_DATA = {
   // Frostburn/Everbright Polestar; alt4 uses Feather Edge (77.8%, #1 4★) and Lumingloss (76.8%, #2 4★);
   // alt3 uses the standard starter Sword of Night, matching the convention used for other Sword users.
   'Camellya': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Sanguine Blossom, a Bloom Bearer of the Black Shores — free-spirited and dangerously charming, she roams Solaris in search of talent, immersing herself in the present and relishing its pleasures, unburdened by thoughts of the past or future. On-field Havoc Main DPS who alternates White Hair (mobile) and Red Hair/Blossom Mode (stationary AoE spin) via her Skill, builds Crimson Pistils into Crimson Buds, unleashes the Forte burst Ephemeral into Budding Mode for a team of amplified Basic Attacks, and closes with her Outro Twining nuke.',
+    desc: 'Sanguine Blossom, a Bloom Bearer of the Black Shores — free-spirited and dangerously charming, she roams Solaris in search of talent, immersing herself in the present and relishing its pleasures, unburdened by thoughts of the past or future. On-field Havoc Main DPS. Her Skill (Crimson Blossom) puts her into Blossom Mode, which replaces her Basic/Heavy/Dodge-Counter/Skill kit with the Vining Waltz combo; every hit of Normal ATK / Vining Waltz / Blazing Waltz / Vining Ronde / Dodge Counter Atonement / Crimson Blossom / Floral Ravage consumes Crimson Pistils at +150% Energy Regen Multiplier, and each 10 Pistils consumed recovers 4 Concerto Energy and grants 1 Crimson Bud (15s duration each, stacks to 10). Once Concerto Energy is fully charged and Ephemeral is off cooldown (25s CD), her Skill button is replaced by Ephemeral: it costs 70 Concerto Energy, deals Basic-ATK-type Havoc DMG, and puts her into Budding Mode — Sweet Dream raises Normal/Vining Waltz/Blazing Waltz/Vining Ronde/Atonement/Crimson Blossom/Floral Ravage DMG Multiplier by a flat 50%, PLUS +5% per Crimson Bud consumed on cast (up to +50% more at 10 stacks, so up to +100% total); while in Budding Mode she cannot gain new Crimson Buds and her Energy Regen Multiplier on those same hits drops to 0%. Budding Mode (15s) ends early if she is swapped off-field or all Crimson Pistils are consumed. Her Outro (Twining) deals 329.24% ATK Havoc DMG normally, but if Ephemeral was cast that rotation, Twining instead deals an ADDITIONAL 459.02% ATK — a strictly sequential Ephemeral-then-Outro conditional, not a flat bonus. Source: wutheringwaves.fandom.com/wiki/Camellya/Combat, verified 2026-08-31.',
     skills: ['Burgeoning', 'Valse of Bloom and Blight', 'Fervor Efflorescent', 'Vegetative Universe'],
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Metallic Drip' },
@@ -3496,15 +3496,15 @@ const CHARACTER_ROTATIONS = {
   // Simplified from Prydwen's full swap/Echo-cancel-annotated combo down to the core skill sequence,
   // matching the level of detail used for the rest of the roster's rotation entries.
   'Camellya': [
-    { type: 'Intro', skill: 'Everblooming' },
-    { type: 'Skill', skill: 'Crimson Blossom', note: 'enters Blossom Mode (Red Hair)' },
-    { type: 'Skill', skill: 'Vining Waltz 1-4 / Blazing Waltz', note: 'full Blossom Mode combo, builds Crimson Pistils/Buds' },
+    { type: 'Intro', skill: 'Everblooming', note: 'With S1, also grants +28% Crit DMG for 18s (once per 25s).' },
+    { type: 'Skill', skill: 'Crimson Blossom', note: 'Basic-ATK-type Havoc DMG; enters Blossom Mode (mid-air castable), replacing Basic/Heavy/Dodge-Counter/Skill.' },
+    { type: 'Skill', skill: 'Vining Waltz 1-4 / Blazing Waltz', note: 'Blossom Mode combo — every hit consumes Crimson Pistils at +150% Energy Regen; each 10 Pistils = 4 Concerto Energy + 1 Crimson Bud (15s, stacks to 10).' },
     { type: 'Liberation', skill: 'Fervor Efflorescent' },
-    { type: 'Basic ATK', skill: 'Vining Waltz 1', note: 'fills the last Concerto Energy needed' },
-    { type: 'Forte', skill: 'Ephemeral', duration: 15, note: 'consumes all Crimson Buds, enters Budding Mode' },
-    { type: 'Skill', skill: 'Vining Waltz 1-4 / Blazing Waltz', note: 'Budding Mode combo, +50-100% DMG Multiplier' },
-    { type: 'Skill', skill: 'Floral Ravage', note: 'ends Blossom Mode' },
-    { type: 'Outro', skill: 'Twining', note: 'empowered version deals bonus DMG since Ephemeral was cast this rotation' },
+    { type: 'Basic ATK', skill: 'Vining Waltz 1', note: 'Fills the last Concerto Energy needed to unlock Ephemeral.' },
+    { type: 'Forte', skill: 'Ephemeral', duration: 15, note: 'Once Concerto Energy is full and off its own 25s cooldown, replaces Skill. Costs 70 Concerto Energy, consumes ALL Crimson Buds (each consumed adds +5% DMG Multiplier to Sweet Dream, up to +50% at 10 stacks on top of the base +50%), enters 15s Budding Mode. Budding Mode ends early on swap-out or once all Crimson Pistils are gone, and blocks gaining new Buds/Energy on the affected hits while active.' },
+    { type: 'Skill', skill: 'Vining Waltz 1-4 / Blazing Waltz', note: 'Budding Mode combo, Sweet Dream DMG Multiplier +50% to +100% depending on Buds consumed on Ephemeral cast.' },
+    { type: 'Skill', skill: 'Floral Ravage', note: 'Ends Blossom Mode (does not restore STA).' },
+    { type: 'Outro', skill: 'Twining', note: 'Base 329.24% ATK Havoc DMG. Conditional: deals an ADDITIONAL 459.02% ATK ONLY if Ephemeral was cast earlier this on-field rotation — this is a strict cast-order dependency (Ephemeral must precede Twining), not an always-on bonus.' },
   ],
   // Standard Rotation — sourced from Jianxin's kit flow on ww.nanoka.cc character/1405 (Prydwen's
   // "Gameplay and teams" tab was unreachable this audit — 403/blank JS-render).
@@ -4246,8 +4246,25 @@ const RESONANCE_CHAIN_DATA = {
   // S6: each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence
   // reliably hits max, so using the max value +600% (confirmed via Nanoka/Game8/Prydwen cross-check 2026-08-16; was erroneously 100 — S3's value).
   'Lucilla':      { s1: { critRate: 20 }, s2: { elemDmg: 60 }, s3: { libDmg: 100 }, s4: { atkPct: 30 }, s5: { basicDmg: 50 }, s6: { libDmg: 600 } },
-  // Camellya S1: +28% CD after Intro (confirmed exact). S3: ATK+58% in Budding. S4: team Basic ATK DMG+25%
-  'Camellya':     { s1: { critDmg: 28 }, s2: { totalMult: 40 }, s3: { atkPct: 58, totalMult: 15 }, s4: { basicDmg: 25 }, s5: { totalMult: 40 }, s6: { totalMult: 50 } },
+  // Camellya S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Camellya/Combat:
+  // S1 Somewhere No One Travelled: casting Intro Skill Everblooming gives +28% Crit DMG for 18s, triggerable
+  //   once every 25s; also grants interruption immunity while casting Ephemeral (not modeled — no immunity field).
+  // S2 Calling Upon the Silent Rose: Ephemeral's DMG Multiplier +120% (was wrongly 40 — corrected).
+  // S3 A Bud Adorned by Thorns: Fervor Efflorescent's DMG Multiplier +50% (was wrongly 15 — corrected);
+  //   ATK+58% while in Budding Mode only (conditional/stateful — kept as flat atkPct, TODO: verify calc engine
+  //   gates this on Budding Mode state rather than applying it unconditionally).
+  // S4 Roots Set Deep In Eternity: casting Everblooming grants the WHOLE TEAM +25% Basic ATK DMG Bonus for 30s
+  //   (team-wide buff, not a Camellya-only self buff — TODO: verify calc engine applies this to teammates).
+  // S5 Infinity Held in Your Palm: Everblooming's DMG Multiplier +303% AND Twining's DMG Multiplier +68%
+  //   (two separate multipliers on two different skills — schema only has one totalMult slot, so previous
+  //   single value of 40 was not representable correctly either way; TODO: needs Phase 2 schema to hold both).
+  // S6 Bloom For You Thousand Times Over: Sweet Dream's (Budding Mode's) DMG Multiplier +150% additional
+  //   (was wrongly 50 — corrected), plus unlocks Forte Circuit: Perennial (a whole new skill triggerable within
+  //   15s of Ephemeral when Concerto Energy is full and off cooldown — consumes 50 Concerto Energy, recovers
+  //   50 Crimson Pistils, deals 100% of Ephemeral's DMG as Basic ATK DMG, re-enters Budding Mode with Sweet
+  //   Dream's bonus raised to 250%, immune to interruption while casting — TODO: needs Phase 2 schema, not
+  //   representable as a flat stat bonus).
+  'Camellya':     { s1: { critDmg: 28 }, s2: { totalMult: 120 }, s3: { atkPct: 58, totalMult: 50 }, s4: { basicDmg: 25 }, s5: { totalMult: 303 }, s6: { totalMult: 150 } },
   // Carlotta S1: +12.5% CR on Deconstructed (confirmed). S4: team Skill DMG+25%
   'Carlotta':     { s1: { critRate: 12.5 }, s2: { totalMult: 25 }, s3: { totalMult: 15 }, s4: { skillDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 50 } },
   // Jiyan S1: extra Windqueller charge (utility). S2: ATK+28%. S3: CR+16% CD+32% (confirmed). S4: team Heavy ATK+25%. S5: ATK stacking up to +45%
