@@ -1659,12 +1659,24 @@
       background: linear-gradient(90deg, transparent, rgba(237, 175, 24, 0.3), transparent);
     }
 
-    /* §E10-RD-F2: Stack planner projection grids vertically on narrow viewports */
-    @media (max-width: 400px) {
-      .kuro-calc .grid.grid-cols-3 {
-        grid-template-columns: 1fr;
-      }
-    }
+    /* §E10-RD-F2 REMOVED: used to stack .kuro-calc's 3-column grids (Team
+       Builder's slot grid included) vertically whenever the REAL device
+       viewport was ≤400px — meaningful in the old per-token width-scaling
+       world, where a genuinely narrow real screen really did have less
+       room. Under ScaledCanvas.jsx's engine, that's no longer true: canvas
+       width is ALWAYS exactly 439 logical px regardless of the real
+       device, so "narrow viewport" can no longer mean "less room available
+       inside the canvas" the way it used to.
+       Worse than just stale: this rule and Tailwind's own `.grid-cols-3`
+       utility (3 equal 1fr tracks) ended up BOTH matching this element on
+       any real device ≤400px (nearly every phone), producing neither the
+       intended single column NOR clean equal thirds but a genuinely
+       broken asymmetric 3-column split (measured ~163px/92px/92px instead
+       of ~112px each on a 393px-wide real device) — this was the actual
+       cause of the "Add Resonator" card text overflowing/crowding its box
+       reported on real hardware. Deleting outright, not just narrowing the
+       media query, since the whole scenario this rule existed for
+       (insufficient room in a 3-column grid) can't happen anymore. */
 
     /* E6-AP4: Active press feedback for non-kuro buttons */
     .kuro-calc button:not(.kuro-btn):active {
