@@ -60,7 +60,7 @@ const useEscapeKey = (isOpen, onClose) => {
 };
 
 // P12-FIX: Reusable modal wrapper with focus trapping + escape handling for inline modals (Step 11 audit — MEDIUM-6d)
-const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', onClick, centered = false, padding = 'p-4' }) => {
+const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', onClick, centered = false, padding = 'p-4', dim = true }) => {
   const focusTrapRef = useFocusTrap(isOpen);
   useEscapeKey(isOpen, onClose);
   const dragRef = useRef({ startY: 0, currentY: 0, dragging: false });
@@ -132,14 +132,14 @@ const FocusTrapModal = ({ isOpen, onClose, ariaLabel, children, className = '', 
     <div
       ref={focusTrapRef}
       className={`fixed inset-0 z-[10000] flex ${centered ? `items-center justify-center ${padding === 'p-3' ? 'p-3' : 'p-4'}` : 'items-end'} modal-backdrop ${className}`}
-      style={{
+      style={dim ? {
         // DSA-06 audit fix: chromatic navy scrim (--scrim token) instead of
         // the prior pure backdrop-blur-only treatment. Keeps modals cohesive
         // with the rest of the LAHAI-ROI palette; the blur still applies on top.
         background: 'var(--scrim)',
         backdropFilter: 'blur(2px) brightness(0.4)',
         WebkitBackdropFilter: 'blur(2px) brightness(0.4)',
-      }}
+      } : undefined}
       role="dialog"
       aria-modal="true"
       aria-label={ariaLabel}
