@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { resolveAmbientTrackSrc } from '../../hooks/useAmbientMusic.js';
+import { resolveAmbientTrackSrc, armUnmuteOnFirstInteraction } from '../../hooks/useAmbientMusic.js';
 
 // Renders on top of the app the instant React mounts. Unlike earlier
 // versions of this component, it renders NO poster of its own anymore —
@@ -126,6 +126,12 @@ export default function BootIntro() {
         audio.play().then(() => { audio.muted = false; }).catch(() => {});
         window.__bootAmbientAudio = audio;
         window.__bootAmbientTrack = track;
+        // See useAmbientMusic.js's own comment on this — the .then() above
+        // isn't reliably enough to get unmuted on a genuinely first-ever
+        // install; this arms the same first-real-tap fallback regardless of
+        // which of the two mount-race paths (this one, or useAmbientMusic's
+        // own effect) actually created the audio element.
+        armUnmuteOnFirstInteraction();
       } catch {
         // localStorage unavailable/corrupt — no boot music, not fatal.
       }

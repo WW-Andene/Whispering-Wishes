@@ -126,6 +126,34 @@ export function suspendAmbientMusic() {
   sharedAmbientAudio?.pause();
 }
 
+// The muted-play-then-unmute trick (see the effect below) still leaves a gap
+// on some devices: autoplaying MUTED is essentially always allowed with no
+// user gesture, but actually flipping .muted back to false on a track that
+// started that way can itself get silently refused until the page has real
+// "user activation" — a separate, stricter check than the one that gates
+// play() itself. That's consistent with the exact bug report this exists
+// for: ambient track stays muted forever on a genuinely fresh install, but
+// starts working the instant the user taps ANYTHING (originally noticed via
+// toggling the sound setting, which just happens to be the first tap most
+// testers make) — any real tap grants that activation for the whole page,
+// not just the element tapped. So rather than hoping the .then() below wins
+// that race, this arms a one-time fallback: the moment any real
+// pointerdown/keydown happens anywhere in the app, unmute directly inside
+// that handler — a genuine user gesture no autoplay policy variant refuses.
+// A no-op if the .then() below already succeeded first.
+let unmuteArmed = false;
+export function armUnmuteOnFirstInteraction() {
+  if (unmuteArmed) return;
+  unmuteArmed = true;
+  const unmute = () => {
+    if (sharedAmbientAudio && sharedAmbientAudio.muted && !sharedAmbientAudio.paused) {
+      sharedAmbientAudio.muted = false;
+    }
+  };
+  window.addEventListener('pointerdown', unmute, { capture: true, once: true });
+  window.addEventListener('keydown', unmute, { capture: true, once: true });
+}
+
 // Re-checks the current settings itself rather than blindly playing — the
 // track may have been paused because it's genuinely disabled (sound off,
 // or track set to 'off'), not just ducked, and resuming unconditionally
@@ -189,6 +217,7 @@ export function useAmbientMusic(visualSettings) {
       sharedAmbientAudio = audio;
       window.__bootAmbientAudio = audio;
       window.__bootAmbientStarted = true;
+      armUnmuteOnFirstInteraction();
     }
     return () => {
       audioRef.current?.pause();
