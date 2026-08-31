@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { resolveAmbientTrackSrc } from '../../hooks/useAmbientMusic.js';
 
 // Renders on top of the app the instant React mounts. Unlike earlier
 // versions of this component, it renders NO poster of its own anymore —
@@ -94,8 +95,18 @@ export default function BootIntro() {
         const soundOn = !settings || settings.soundEnabled !== false;
         const track = settings?.logScreenTrack || '2';
         if (!soundOn || track === 'off') return;
+        // Was hardcoded as `./audio/log-screen-${track}.m4a` — only ever
+        // matched track keys '1'/'2'/'3'. Picking Convene or any track from
+        // the OST library (see useAmbientMusic.js's own TRACK_SRC) meant
+        // this 404'd silently and the one-shot autoplay permission a page-
+        // load play() call gets was spent on the failed attempt — nothing
+        // later could recover it without a fresh user gesture. Resolving
+        // through the same TRACK_SRC map useAmbientMusic.js itself uses
+        // keeps this from drifting out of sync with it again.
+        const src = resolveAmbientTrackSrc(track);
+        if (!src) return;
         window.__bootAmbientStarted = true;
-        const audio = new Audio(`./audio/log-screen-${track}.m4a`);
+        const audio = new Audio(src);
         audio.loop = true;
         audio.volume = 0.35;
         audio.play().catch(() => {});
