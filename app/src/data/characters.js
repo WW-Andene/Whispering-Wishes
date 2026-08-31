@@ -173,7 +173,22 @@ const CHARACTER_DATA = {
     // current sources unanimously name Iuno as Jiyan's actual current buffer instead.
     teams: ['Jinhsi + Yinlin + Verina', 'Jiyan + Iuno + Verina', 'Encore + Changli + Verina'] },
   'Yinlin': { rarity: 5, element: 'Electro', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Enforcer Puppet — a skilled Patroller and powerful Natural Resonator of Jinzhou; after being suspended from her duties at the Public Security Bureau, she must now pursue hidden evils in secrecy. Electro sub-DPS who marks targets with Sinner\'s Mark via Basic Attack and Intro Skill, deals off-field Electro DMG through Coordinated Attacks (Electromagnetic Blast/Judgement Strike) once Punishment Mark is applied, and amplifies the incoming teammate\'s Electro DMG and Resonance Liberation DMG via Outro.',
+    // desc rewritten 2026-08-31 verbatim against wutheringwaves.fandom.com/wiki/Yinlin/Combat (re-fetched,
+    // Chrome UA + google.com referer + jsRender, 2 attempts needed past a Cloudflare interstitial) and
+    // cross-checked against prydwen.gg/wuthering-waves/characters/yinlin. Exact Forte economy: Judgment
+    // Points cap at 100, restored by Zapstring's Dance (Basic ATK) hits, Magnetic Roar, Electromagnetic
+    // Blast, Lightning Execution, and Thundering Wrath (Liberation) hits — every offensive action feeds it.
+    // Magnetic Roar puts her into Execution Mode for 10s: her next 4 Basic ATK/Dodge Counter combo stages
+    // (1 trigger per stage, max 4) each also fire an Electromagnetic Blast on any Sinner's-Mark target.
+    // Sinner's Mark itself is applied by Zapstring's Dance, Thundering Wrath, and Intro Skill Raging
+    // Storm — and is removed entirely when Yinlin leaves the field (not a fixed duration). At 100/100
+    // Judgment Points her Heavy Attack is auto-replaced by Chameleon Cipher, which consumes all 100 and
+    // upgrades any Sinner's Mark on the hit target to Punishment Mark for exactly 18s; a Punishment-Marked
+    // target that takes any damage triggers an automatic Judgement Strike Coordinated ATK, capped at
+    // 1/second. Timing/cast-order dependency: Lightning Execution is only castable as the immediate
+    // follow-up to Magnetic Roar — cast it too late, or swap Yinlin out first, and it goes on a separate
+    // cooldown instead of firing free.
+    desc: 'Enforcer Puppet — a skilled Patroller and powerful Natural Resonator of Jinzhou; after being suspended from her duties at the Public Security Bureau, she must now pursue hidden evils in secrecy. Electro sub-DPS/hybrid who applies Sinner\'s Mark via Basic Attack, Thundering Wrath, and Intro Skill (removed the instant she leaves the field), spends Magnetic Roar to enter a 10s Execution Mode that adds Electromagnetic Blast procs onto her next 4 Basic ATK/Dodge Counter stages, and — once her 100-cap Judgment Points meter fills — auto-replaces Heavy Attack with Chameleon Cipher, upgrading Sinner\'s Mark to an 18s Punishment Mark that auto-triggers Judgement Strike (up to 1/s) whenever the target takes damage, even off-field. Lightning Execution only casts for free as an immediate follow-up to Magnetic Roar (miss the window, or swap out first, and it goes on cooldown instead). Outro amplifies the incoming Resonator\'s Electro DMG +20% and Resonance Liberation DMG +25% for 14s. No RES Shred anywhere in her kit.',
     skills: ['Zapstring\'s Dance', 'Magnetic Roar', 'Chameleon Cipher', 'Thundering Wrath'],
     rotation: ['Intro', 'Basic 4 (optional swap cancel)', 'Skill: Magnetic Roar', 'Heavy Attack', 'Skill: Lightning Execution (cancel → Heavy endlag)', 'Liberation (on landing)', 'Basic 1', 'Forte Heavy: Chameleon Cipher', 'Outro'],
     ascension: { boss: 'Group Abomination Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
@@ -2211,6 +2226,10 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: 20% Fusion DMG Amp + 25% Liberation DMG Amp — lasts 10s OR ends immediately if the incoming Resonator is swapped out before then (not modeled, schema has no swap-forfeit field). Self ATK ramp via Fiery Feather.',
   },
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Yinlin/Combat's Outro Skill
+  // ("Strategist") and Inherent Skill ("Pain Immersion") entries: both matched exactly, unchanged. Added
+  // the Outro's forfeit condition ("...for 14 seconds or until the Character is switched") to the note,
+  // which was previously undocumented here — same pattern already caught on Cantarella's Outro.
   'Yinlin': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 14 },
@@ -2219,7 +2238,7 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [{ stat: 'critRate', value: 15, target: 'self', duration: 5, condition: 'Inherent Skill Pain Immersion: Crit Rate +15% for 5s after Magnetic Roar.' }],
     debuffs: [],
-    note: 'Off-field Electro sub-DPS via Coordinated Attacks (Electromagnetic Blast on Sinner\'s Mark targets, Judgement Strike on Punishment Mark targets). Outro: Electro DMG Amp +20% + Liberation DMG Amp +25% (14s) for the incoming Resonator. No RES Shred in her kit.',
+    note: 'Off-field Electro sub-DPS via Coordinated Attacks (Electromagnetic Blast on Sinner\'s Mark targets, Judgement Strike on Punishment Mark targets). Outro: Electro DMG Amp +20% + Liberation DMG Amp +25% (14s) for the incoming Resonator — ends early if that Resonator is switched out. No RES Shred in her kit.',
   },
   'Zhezhi': {
     outroBuffs: [
@@ -3409,6 +3428,19 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Principle', '99.41%×2'],
     ['Outro', 'Chain Rule', '237.63% ATK ×3 procs (8s, 2s ICD)', "Laser strikes on the incoming Resonator's first Basic ATK hit — pure DMG proc, no team buff."],
   ],
+  // Re-verified per-hit at Lv.10 2026-08-31 against wutheringwaves.fandom.com/wiki/Yinlin/Combat's
+  // "Attribute Scaling" tables (re-fetched, Chrome UA + google.com referer + jsRender, 2 attempts needed
+  // past a Cloudflare interstitial) — Basic ATK (28.81%/33.82%×2/13.99%×7/75.16%), Heavy ATK (29.83%×2),
+  // Mid-air (123.27%), Dodge Counter (24.22%×7), Magnetic Roar (59.65%×3), Lightning Execution (89.47%×4,
+  // 12s CD confirmed), Chameleon Cipher (178.93%×2), Judgment Strike (78.64%), Thundering Wrath (116.56%×7,
+  // 16s CD confirmed), and Raging Storm (14.32%×10) all matched this file's existing values exactly at
+  // Lv.10 (not Lv.1 — cross-checked against prydwen.gg's Lv.1 table, which shows visibly smaller numbers
+  // e.g. Basic ATK Stage 1 14.49% vs. this file's correct 28.81%, confirming this row was NOT accidentally
+  // Lv.1 data). No changes needed to any of those rows.
+  // TODO: verify — Electromagnetic Blast's 19.89% could not be confirmed: neither fandom's Magnetic Roar
+  // "Attribute Scaling" table nor prydwen's multiplier tables list a distinct value for it (both only
+  // publish Magnetic Roar Damage and Lightning Execution Damage under that skill's scaling table);
+  // kept as-is rather than guessing, pending a source that actually publishes this figure.
   'Yinlin': [
     ['Basic ATK', "Zapstring's Dance Stage 1-4", '28.81% → 33.82%×2 → 13.99%×7 → 75.16%'],
     ['Heavy ATK', 'Standard', '29.83%×2'],
@@ -3899,11 +3931,18 @@ const CHARACTER_ROTATIONS = {
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Yinlin (re-fetched
   // 2026-08-18, Chrome UA + google.com referer + jsRender).
+  // Zero-damage bug fixed 2026-08-31 (re-verified against SKILL_MULTIPLIERS.Yinlin, same bug class already
+  // caught on Roccia): step 2's `skill` was "Zapstring's Dance Stage 4", which does NOT substring-match the
+  // Basic ATK row name "Zapstring's Dance Stage 1-4" (CharacterDetailModal's per-step DMG lookup does
+  // `rowName.includes(step.skill)`, and "Stage 1-4" does not contain "Stage 4" as a substring) — silently
+  // resolved to 0 DMG. Step 4's `skill` was "Standard Heavy Attack" against the Heavy ATK row name
+  // "Standard" — same bug, same fix pattern already used for e.g. Jiyan's Heavy ATK step ('Standard').
+  // Both changed to the exact row name, with the stage-specific detail kept in the note text.
   'Yinlin': [
     { type: 'Intro', skill: 'Raging Storm', note: 'Swap into her — fires automatically, hits a large area and applies Sinner\'s Mark.' },
-    { type: 'Basic ATK', skill: "Zapstring's Dance Stage 4", note: 'Tap Basic Attack ONCE (optionally swap-cancel it afterward) — lands Stage 4 of the puppet combo.' },
+    { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", note: 'Tap Basic Attack ONCE (optionally swap-cancel it afterward) — lands Stage 4 of the puppet combo (75.16% at Lv.10).' },
     { type: 'Skill', skill: 'Magnetic Roar', note: 'Press Skill — deals Electro DMG and puts her into Execution Mode for 10s: her next 4 Basic Attack/Dodge Counter stages each also trigger an Electromagnetic Blast on any target carrying Sinner\'s Mark.' },
-    { type: 'Heavy ATK', skill: 'Standard Heavy Attack', note: 'HOLD Heavy Attack — consumes Stamina for a puppet strike.' },
+    { type: 'Heavy ATK', skill: 'Standard', note: 'HOLD Heavy Attack — consumes Stamina for a puppet strike (29.83%×2 at Lv.10).' },
     { type: 'Skill', skill: 'Lightning Execution', note: 'Press Skill again right after the Heavy Attack — try to fire it as early as the Heavy Attack\'s first hit lands, to cancel its endlag. Only works if cast shortly after Magnetic Roar, or it goes on cooldown instead.' },
     { type: 'Liberation', skill: 'Thundering Wrath', note: 'Press Liberation the instant Yinlin lands from the Heavy Attack — calls thunder down on a large area and re-applies Sinner\'s Mark.' },
     { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1", note: 'Tap Basic Attack ONCE — restores Judgment Points toward the 100 cap.' },
@@ -5021,9 +5060,29 @@ const RESONANCE_CHAIN_DATA = {
   //   for 10s after casting Flowing Suffocation (confirmed exact -> defIgnore). Was deepen:15, wrong category
   //   and wrong magnitude on both counts — corrected to basicDmg:80, defIgnore:30.
   'Cantarella':   { s1: { totalMult: 50 }, s2: { totalMult: 245 }, s3: { libDmg: 370 }, s4: {}, s5: {}, s6: { basicDmg: 80, defIgnore: 30 } },
-  // Corrected against ww.nanoka.cc character/1302 — prior values (elemDmg/resShred) didn't match her real
-  // kit at all (she has no RES Shred anywhere in her chain).
-  'Yinlin':       { s1: { skillDmg: 70 }, s2: { totalMult: 8 }, s3: { skillDmg: 55 }, s4: { atkPct: 20 }, s5: { libDmg: 100 }, s6: { totalMult: 40 } },
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Yinlin/Combat's Resonance Chain
+  // section (cross-checked against prydwen.gg/wuthering-waves/characters/yinlin, both matched exactly):
+  // S1 "Morality's Crossroad": Resonance Skill Magnetic Roar and Lightning Execution deal 70% more damage
+  //   -> skillDmg:70 (already correct, kept).
+  // S2 "Ensnarled By Rapport": Electromagnetic Blast recovers +5 Judgment Points and +5 Resonance Energy on
+  //   hit — pure resource/Concerto-Energy utility, ZERO DPS component. Was totalMult:8, a fabricated damage
+  //   number with no basis in the real (non-damage) effect — zeroed to {}.
+  // TODO: needs Phase 2 schema — S2's +5 Judgment Points/+5 Energy per hit needs dedicated resource-gain
+  //   stats this flat DMG-modifier schema doesn't have.
+  // S3 "Unyielding Verdict": Forte Circuit Judgment Strike's DMG multiplier +55% (Judgment Strike is
+  //   explicitly "considered Skill DMG" per its own kit text) -> skillDmg:55 (already correct, kept).
+  // S4 "Steadfast Conviction": on Judgment Strike hit, team ATK +20% for 12s -> atkPct:20 (already correct
+  //   value; the 12s duration/on-hit trigger condition isn't representable in this flat schema).
+  // S5 "Resounding Will": Thundering Wrath deals 100% extra DMG to Sinner's/Punishment-Marked targets ->
+  //   libDmg:100 (already correct value; conditional on the target carrying a mark, not unconditional).
+  // S6 "Pursuit of Justice": in the first 30s after casting Thundering Wrath, each Basic ATK hit has a
+  //   chance to trigger "Furious Thunder" — a separate 419.59%-ATK Electro nuke (considered Resonance Skill
+  //   DMG), up to 4 triggers per Liberation cast. This is a discrete extra-hit proc bolted onto Basic ATK,
+  //   not a %-modifier to existing damage instances — was totalMult:40, a fabricated/scaled-down guess with
+  //   no basis in the real 419.59% figure — zeroed to {}.
+  // TODO: needs Phase 2 schema — S6's Furious Thunder needs an "extra proc: X% ATK, up to N times, window
+  //   Ys after trigger skill" stat shape; the real number is 419.59% ATK per proc, cap 4 procs/30s window.
+  'Yinlin':       { s1: { skillDmg: 70 }, s2: {}, s3: { skillDmg: 55 }, s4: { atkPct: 20 }, s5: { libDmg: 100 }, s6: {} },
   // Changli S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Changli/Combat
   // (Resonance Chain section) — every prior value in this row was wrong (placeholder-looking, no basis
   // found in the wiki text), same pattern already caught for Jinhsi/Camellya/Yinlin/Chisa/etc:
