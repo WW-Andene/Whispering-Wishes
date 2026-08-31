@@ -375,7 +375,11 @@ const CHARACTER_DATA = {
   // him at all) and Commando of Conviction as a no-gacha baseline; alt3 uses the standard starter Sword
   // of Night.
   'Brant': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Flamebound Compass, captain of Rinascita\'s Troupe of Fools — a free spirit and romantic, unpredictable and full of life, the beating heart of the troupe who slips into countless roles on stage but is unwaveringly genuine offstage. Fusion Main DPS/Hybrid who fills his Forte Bravo through Mid-air Basic Attack chains and his Intro, unleashes the burst Forte skill Returned from Ashes for massive damage plus a team-wide shield, heals the team as Bravo builds, and buffs the incoming Resonator\'s Fusion and Resonance Skill DMG through his Outro The Course is Set! — almost his entire kit is executed airborne, dodging most enemy attacks for free.',
+    // desc rewritten 2026-08-31 against wutheringwaves.fandom.com/wiki/Brant/Combat (Chrome/Windows UA +
+    // google.com referer + jsRender, load+9s wait): added exact Forte ("Bravo") economy, Aflame
+    // enter/exit + duration, and Returned from Ashes' exact shield duration — none of this was in the
+    // prior flavor-text-only desc.
+    desc: 'Flamebound Compass, captain of Rinascita\'s Troupe of Fools — a free spirit and romantic, unpredictable and full of life, the beating heart of the troupe who slips into countless roles on stage but is unwaveringly genuine offstage. Fusion Main DPS/Hybrid built around Bravo, a 0-100 Forte gauge filled by Basic ATK, Mid-air Attack, Intro Skill, and Resonance Skill hits, which passively heals the whole team once at each of 25/50/75/100 Bravo (Waves of Acclaims). At 100 Bravo his Skill button becomes Returned from Ashes: dumps all 100 Bravo for a massive Fusion hit (counted as Basic ATK DMG) plus a team shield lasting 30s. Casting Liberation (To the Horizon) heals the team and enters Aflame for 12s: Bravo gain from Basic ATK and Resonance Skill hits (NOT Intro) is doubled, and his passive ATK-from-Energy-Regen conversion (Theatrical Moment, +12 ATK per 1% ER over 150%, capped +1,560 ATK) is replaced by the stronger "My" Moment (+20 ATK per 1% ER over 150%, capped +2,600 ATK) for the duration; casting Returned from Ashes while Aflame is active ends Aflame once the cast finishes. His Outro The Course is Set! grants the incoming Resonator +20% Fusion DMG and +25% Resonance Skill DMG for 14s, or until that Resonator is swapped out, whichever comes first — almost his entire kit is executed airborne, dodging most enemy attacks for free.',
     skills: ['Captain\'s Rhapsody', 'Anchors Aweigh!', 'To the Horizon', 'Ocean Odyssey'],
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Metallic Drip' },
@@ -2813,15 +2817,31 @@ const SKILL_MULTIPLIERS = {
   // match his actual kit at all: 'Bravo!' (Liberation) → 'To the Horizon', 'Here I Am!' (Intro) →
   // 'Applaud for Me!', 'Standing Ovation' (Outro) → 'The Course is Set!' — the fabricated names would
   // have broken the skill-icon/rotation substring lookups against his real skill list.
+  // Re-audited verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Brant/Combat's Lv.10
+  // Attribute Scaling tables (Chrome/Windows UA + google.com referer + jsRender, load+9s wait):
+  // - Basic ATK Stage 3 was '233%' — that value doesn't correspond to anything in the source; the
+  //   actual Lv.10 Stage 3 DMG is 22.06%*3+33.08%*2 = 132.34%, a ~100pp overstate (same class of
+  //   magnitude bug as the earlier Returned from Ashes halving fix, just in the other direction).
+  //   Stage 1/2/4 were already correct within rounding, tightened to source's exact decimals.
+  // - Mid-air "Charged Combo" 5-value chain (Stage1 → Stage1 Charged Attack → Flip → Stage 3 → Stage 4)
+  //   was off by ~1pp per entry (stale pull); retightened to exact Lv.10 values. NOTE: the wiki's own
+  //   Mid-air description says the Charged Attack triggers off Stage 1 OR Stage 2's grapple swing, and
+  //   Stage 2 has its own separate (lower) Charged Attack multiplier (32.87%*6=197.22%) not used here —
+  //   which grapple-swing stage is actually chained in a real rotation is a player-input branch this
+  //   flat schema can't express — TODO: needs Phase 2 schema (input-dependent combo branch) to model
+  //   the Stage-2-charged alternative path.
+  // - Heavy ATK, Skill, Liberation, Forte (Returned from Ashes — confirms the prior 665%→1322.09% fix
+  //   still holds), Intro all matched source exactly within rounding, no change.
+  // - Outro text amended to include its exact swap-forfeit condition (already in CHARACTER_ROTATIONS).
   'Brant': [
-    ['Basic ATK', 'Stage 1-4', '50.8% → 102% → 233% → 141%'],
-    ['Mid-air', 'Charged Combo', '123.6% → 334.2% → 93.6% → 170.2% → 255.2%'],
+    ['Basic ATK', 'Stage 1-4', '50.5% → 101.4% → 132.3% → 140.1%'],
+    ['Mid-air', 'Charged Combo', '122.9% → 332.5% → 93.0% → 169.0% → 253.9%'],
     ['Heavy ATK', 'Rhapsodic Riff', '169.0%'],
     ['Skill', 'Anchors Aweigh', '200.4% + 133.6%'],
     ['Liberation', 'To the Horizon', '85.1%×4 + 340.2%'],
     ['Forte', 'Returned from Ashes', '47.2%×2 + 94.4% + 188.9%×2 + 1322.1%'],
     ['Intro', 'Applaud for Me!', '202.8% + 50.7%'],
-    ['Outro', 'The Course is Set!', '+20% Fusion DMG + 25% Skill DMG Amp (14s)'],
+    ['Outro', 'The Course is Set!', '+20% Fusion DMG + 25% Skill DMG Amp (14s, or until the buffed Resonator is swapped out)'],
   ],
   'Calcharo': [
     ['Basic ATK', 'Gnawing Fangs Stage 1-4', '45.73%×2 → 99.41% → 85.18%+42.59%×3 → 79.51%×2+106.01%'],
@@ -3516,13 +3536,16 @@ const CHARACTER_ROTATIONS = {
     { type: 'Outro', skill: 'Gentle Tentacles', duration: 14, note: 'Triggers automatically the moment you swap out. Grants the incoming Resonator +20% Havoc DMG and +25% Resonance Skill DMG for 14s.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Brant (2026-08-17, Chrome
-  // UA + google.com referer + jsRender). This section was previously entirely missing for him.
+  // UA + google.com referer + jsRender). This section was previously entirely missing for him. Exact
+  // conditional mechanics (Aflame's Bravo-gain doubling scope, Interlude Applause's forfeit condition,
+  // Returned from Ashes' shield duration, Outro's swap-forfeit) verified 2026-08-31 against
+  // wutheringwaves.fandom.com/wiki/Brant/Combat (Chrome/Windows UA + google.com referer + jsRender).
   'Brant': [
-    { type: 'Intro', skill: 'Applaud for Me!', note: 'Swap into him — fires automatically. Fills a quarter of his Forte gauge ("Bravo") and makes his next Mid-air Attack start at Stage 2 instead of Stage 1.' },
-    { type: 'Liberation', skill: 'To the Horizon', note: 'Cast Liberation right after Intro — heals the team, instantly puts Brant airborne (skipping the slow jump-up), and doubles his Bravo gain from every source except Intro for its duration ("Aflame").' },
+    { type: 'Intro', skill: 'Applaud for Me!', note: 'Swap into him — fires automatically. Fills a quarter of his Forte gauge ("Bravo") and grants Interlude Applause: his next Mid-air Attack starts at Stage 2 instead of Stage 1. Interlude Applause is FORFEITED (removed with no effect) if he lands early or is swapped out before that next Mid-air Attack.' },
+    { type: 'Liberation', skill: 'To the Horizon', note: 'Cast Liberation right after Intro — heals the team, instantly puts Brant airborne (skipping the slow jump-up), and enters Aflame for 12s: Bravo gain from Basic ATK and Resonance Skill hits is doubled (Intro Skill\'s Bravo gain is NOT boosted), and his passive ATK-from-ER conversion is upgraded from Theatrical Moment to the stronger "My" Moment for the duration.' },
     { type: 'Mid-air', skill: 'Stage 2-3 + Charged Attack + Flip', note: 'While airborne, HOLD Basic Attack and keep holding — he automatically chains Mid-air Attack Stage 2 into a Charged Attack, backflips, then continues into Stage 3. This is his main way to fill the rest of Bravo; just keep holding until the gauge is full.' },
-    { type: 'Forte', skill: 'Returned from Ashes', note: 'Once Bravo hits 100, his Skill button becomes this automatically — press Skill to consume all 100 Bravo for a massive hit that also shields the team.' },
-    { type: 'Outro', skill: 'The Course is Set!', duration: 14, note: 'Swap out right after Returned from Ashes to trigger this automatically. Grants the incoming Resonator +20% Fusion DMG and +25% Resonance Skill DMG for 14s.' },
+    { type: 'Forte', skill: 'Returned from Ashes', note: 'Once Bravo hits 100, his Skill button becomes this automatically — press Skill to consume all 100 Bravo for a massive hit (counted as Basic ATK DMG) that also grants the team a shield lasting 30s. If cast while Aflame is still active, Aflame ends once this cast finishes.' },
+    { type: 'Outro', skill: 'The Course is Set!', duration: 14, note: 'Swap out right after Returned from Ashes to trigger this automatically. Grants the incoming Resonator +20% Fusion DMG and +25% Resonance Skill DMG for 14s, or until that Resonator is swapped out, whichever comes first.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Phoebe (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
@@ -4466,8 +4489,38 @@ const RESONANCE_CHAIN_DATA = {
   //   Enhanced Attack-Hecate-specific multiplier (echoDmg-typed, since Enhanced Attack-Hecate is Echo Skill
   //   DMG) to be tracked alongside the +60% elemDmg rather than overwritten by it.
   'Phrolova':     { s1: { totalMult: 80 }, s2: { skillDmg: 75 }, s3: { echoDmg: 80 }, s4: { allDmg: 20 }, s5: {}, s6: { elemDmg: 60 } },
-  // Brant S1: +20% DMG dealt per stack x3 (allDmg type). S2: CR+30% + explosions
-  'Brant':        { s1: { allDmg: 20 }, s2: { critRate: 30, totalMult: 25 }, s3: { totalMult: 15 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
+  // Brant R-chain — verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Brant/Combat
+  // (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare):
+  // s1 "By Currents and Winds": casting Intro Skill or each Mid-air Attack flip grants +20% DMG dealt
+  //   for 5s, STACKING up to 3 times = 60% at max stacks — was stored as the single-stack value (20),
+  //   not the max-stacks total; corrected to 60 (allDmg), matching the max-stacks convention already
+  //   used elsewhere (e.g. Augusta's s1 stores 30 = 15%/stack × 2 stacks, not 15). Node also makes
+  //   Returned from Ashes cause nearby targets to Stagnate (removed if Brant is swapped off-field) —
+  //   TODO: needs Phase 2 schema (stateful field effect, not a DPS stat).
+  // s2 "For Smiles and Cheers": Mid-air Attack / Returned from Ashes hits grant +30% Crit Rate — value
+  //   and category confirmed correct, kept. The stored totalMult:25 had NO basis in this node's text at
+  //   all (fabricated): the node's actual second effect is a conditional Outro enhancement — within 20s
+  //   of Outro, the incoming/nearby Resonator's Skill hits trigger a Brant-dealt Fusion explosion worth
+  //   440% ATK (Basic ATK DMG type), max 1/sec, max 2 explosions total — removed the fabricated 25 and
+  //   left a TODO: needs Phase 2 schema (partner-action-triggered, capped-count, off-field damage).
+  // s3 "Through Storms I Sail": Returned from Ashes' DMG Multiplier is increased by 42% — was stored as
+  //   totalMult:15, a magnitude bug (should be 42, not 15); corrected.
+  // s4 "To Freedom I Sing": +20% Returned from Ashes Shield strength, plus team healing on cast (6.60 HP
+  //   per 1% ER) — a purely defensive/utility node with NO DMG-dealing component. Was stored as
+  //   elemDmg:15, a number with zero basis in this node's text (same fabricated-number pattern as
+  //   Phrolova's S5) — zeroed out per the "don't force-fit a lossy value" rule. TODO: needs Phase 2
+  //   schema (shield-strength buff + healing, not modeled by any current offensive stat field).
+  // s5 "All the World's an Actor's Stage": Basic ATK DMG grants Brant +15% Basic Attack DMG Bonus for
+  //   10s — value (15) was correct but the stored category (totalMult) was wrong; this is specifically
+  //   Basic ATK DMG, i.e. basicDmg, not a total-damage multiplier. Corrected category.
+  // s6 "All the World's a Captain's Carnevale": Mid-air Attack's DMG Multiplier +30%, PLUS Returned from
+  //   Ashes triggers a secondary blast for 30% of its own DMG (Basic ATK DMG type) — was stored as
+  //   deepen:40, a stat/number combination with no basis anywhere in this node's text (no "deepen"
+  //   mechanic exists on this node at all). Corrected the headline stat to totalMult:30 (the Mid-air
+  //   multiplier increase); the secondary 30%-of-Forte-damage echo is a separate conditional component
+  //   this flat schema can't also carry — TODO: needs Phase 2 schema (percent-of-another-hit's-damage
+  //   secondary instance).
+  'Brant':        { s1: { allDmg: 60 }, s2: { critRate: 30 }, s3: { totalMult: 42 }, s4: {}, s5: { basicDmg: 15 }, s6: { totalMult: 30 } },
   // Augusta S1: +15% CD per Crown stack x2=30% (confirmed). S2: +20% CR per stack + excess CR→CD conversion
   'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 40 }, s3: { totalMult: 25 }, s4: { atkPct: 20 }, s5: { totalMult: 15 }, s6: { heavyDmg: 200 } },
   // Augusta R-chain — verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Augusta/Combat
