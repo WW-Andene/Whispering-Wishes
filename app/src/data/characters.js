@@ -339,8 +339,11 @@ const CHARACTER_DATA = {
   // missing — added: alt5 uses Solsworn Ciphers (90.0%) and Blazing Justice (88.2%), Prydwen's #2/#3
   // non-signature 5-stars; alt4 uses Aether Strike (72.9%) and Celestial Spiral (72.6%), the top two
   // 4-stars; alt3 uses the standard starter Gauntlets of Night, matching the convention used elsewhere.
+  // desc rewritten 2026-08-31 against wutheringwaves.fandom.com/wiki/Roccia/Combat (Chrome/Windows UA +
+  // google.com referer + jsRender, 2 attempts to clear Cloudflare interstitial) with exact Forte
+  // ("Imagination") resource economy — this was previously flavor text with zero real numbers.
   'Roccia': { rarity: 5, element: 'Havoc', weapon: 'Gauntlets', role: 'Sub DPS',
-    desc: 'Stage in the Box, assistant, prop master, and improv comedian of the Troupe of Fools — always there to make sure the Troupe is at the ready, carrying a Magic Box that appears to hold the world, or perhaps a world she recreated inside it. Havoc sub-DPS/buffer who pulls enemies in and enters Beyond Imagination via her Skill, bounces through 3 Forte Real Fantasy hits (counted as Heavy Attack DMG), nukes with her Liberation for a scaling flat team ATK buff off her own Crit Rate, then buffs the incoming Resonator\'s Havoc and Basic ATK DMG through her Outro Applause, Please! — the best group-pull utility in the game via her Skill and transferable Magic Box.',
+    desc: 'Stage in the Box, assistant, prop master, and improv comedian of the Troupe of Fools — always there to make sure the Troupe is at the ready, carrying a Magic Box that appears to hold the world, or perhaps a world she recreated inside it. Havoc sub-DPS/buffer built around her Imagination gauge (caps at 300): Skill Acrobatic Trick and Intro Pero, Help each restore a flat +100 Imagination (landing Basic Attack hits also restore some, exact rate not published by source — TODO: verify); Acrobatic Trick additionally pulls enemies in, launches Roccia into mid-air, and activates Beyond Imagination, a state she only exits by landing (going non-airborne) or being switched off the field. While in Beyond Imagination with ≥100 Imagination, pressing Basic Attack spends exactly 100 Imagination per press to chain up to 3 Real Fantasy bounces (counted as Heavy Attack DMG, 322.08%/339.97%/357.86% at Lv.10) — landing after Stage 1 or Stage 2 with over 100 Imagination remaining automatically re-launches her into Beyond Imagination, so a full 300-Imagination bar covers exactly 3 bounces. Casting Liberation Commedia Improvviso! the instant the 3rd bounce lands cancels its landing recovery — a single-target hit counted as Heavy Attack DMG (278.34%×3 at Lv.10) that also grants the whole team a flat ATK buff scaling with Roccia\'s own Crit Rate (+1 ATK per 0.1% Crit Rate over 50%, capped at +200 ATK once Crit Rate hits 70%+, lasting 30s). Swapping out fires Outro Applause, Please! automatically: +20% Havoc DMG Amp and +25% Basic ATK DMG Amp to the incoming Resonator for 14s or until they are swapped out, and — via Inherent Skill Super Attractive Magic Box — that Resonator\'s Utility button is replaced with Roccia\'s own Magic Box (100 flat Havoc pull-in DMG, counted as Echo Skill Utility DMG) for the same 14s/until-swap window — the best group-pull utility in the game via her Skill and transferable Magic Box.',
     skills: ['Pero, Easy', 'Acrobatic Trick', 'Commedia Improvviso!', 'A Prop Master Prepares'],
     ascension: { boss: 'Cleansing Conch', common: 'Tidal Residuum', specialty: 'Firecracker Jewelweed' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
@@ -2175,6 +2178,11 @@ const CHAR_BUFF_TABLE = {
   // Performance. outroBuffs/debuffs were already accurate; libBuffs is correctly empty since her
   // Liberation's team buff is flat ATK points (up to 200, scaling with her own Crit Rate over 50%) —
   // not a percentage stat this table's schema represents — documented in the note instead.
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Roccia/Combat: outroBuffs
+  // values (20%/25%/14s) confirmed exact; wiki text explicitly states the buff lasts "14s or until the
+  // Resonator is switched out" — added to note since this file's schema has no swap-forfeit field (same
+  // limitation flagged for Changli/Augusta's outro buffs). Liberation's team ATK buff duration confirmed
+  // as 30s (was previously undocumented here).
   'Roccia': {
     outroBuffs: [
       { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Havoc DMG Amp' },
@@ -2183,7 +2191,7 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [{ stat: 'atkPct', value: 20, target: 'self', duration: 12, condition: 'Immersive Performance: Skill or Heavy ATK cast → self ATK +20% (12s)' }],
     debuffs: [],
-    note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp (14s). Inherent 1: self ATK +20% (12s) on Skill/Heavy ATK. Liberation: flat team ATK +1 per 0.1% Crit Rate over 50%, up to +200 (30s) — not a % buff, so untracked in libBuffs.',
+    note: 'Outro: +20% Havoc DMG Amp + 25% Basic ATK DMG Amp — lasts 14s OR ends immediately if the incoming Resonator is swapped out before then (not modeled, schema has no swap-forfeit field). Inherent 1: self ATK +20% (12s) on Skill/Heavy ATK. Liberation: flat team ATK +1 per 0.1% Crit Rate over 50%, up to +200 at 70%+ Crit Rate, lasting 30s — not a % buff, so untracked in libBuffs.',
   },
   // selfBuffs condition corrected 2026-08-17 against fandom/Prydwen — was "After 4 Resonance Skill
   // casts", which matched nothing in her kit. Fiery Feather is granted by casting Liberation (Radiance
@@ -3291,14 +3299,26 @@ const SKILL_MULTIPLIERS = {
   // damage row was roughly half its real value (e.g. Real Fantasy's 3 hits were '162% → 171% → 180%'
   // vs the real 322.08% → 339.97% → 357.86%) — the same halving pattern already found and fixed in
   // Camellya's/Carlotta's rows. Outro (a DMG Amp buff description, not a raw multiplier) is unaffected.
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Roccia/Combat's Attribute
+  // Scaling tables (Lv.10 column specifically, confirming this is not the Iuno-style Lv.1 bug):
+  // Real Fantasy/Skill/Liberation/Intro numbers above were already correct. Basic ATK's 4 stages were
+  // wrongly SUMMED into one number per stage instead of per-hit (Stage 2 '114.4%' = 38.14%×3 summed;
+  // Stage 3 '169.0%' = 33.80%×2+101.40% summed; Stage 4 '208.4%' = 104.19%×2 summed) — same collapsed
+  // multi-hit bug already found/fixed on Camellya/Carlotta/Phoebe's rows, fixed here to real per-hit
+  // values. Added Mid-air Attack and Dodge Counter rows (both present in the source's Attribute Scaling
+  // table but previously missing entirely from this file). Outro's forfeit condition ("...or until the
+  // Resonator is switched out", confirmed present in the wiki's Outro text, same schema-gap flagged for
+  // Changli/Augusta's outro buffs) added to the note.
   'Roccia': [
-    ['Basic ATK', 'Stage 1-4', '73.2% → 114.4% → 169.0% → 208.4%'],
-    ['Heavy ATK', 'Standard', '169.0%'],
-    ['Skill', 'Acrobatic Trick', '61.5%×8'],
-    ['Forte', 'Real Fantasy 1-3', '322.1% → 340.0% → 357.9%'],
-    ['Liberation', 'Commedia Improvviso!', '278.3%×3'],
-    ['Intro', 'Pero, Help!', '169.0%'],
-    ['Outro', 'Applause, Please!', '+20% Havoc DMG + 25% Basic ATK DMG Amp (14s)'],
+    ['Basic ATK', 'Stage 1-4', '73.18% → 38.14%×3 → 33.80%×2+101.40% → 104.19%×2'],
+    ['Heavy ATK', 'Standard', '168.99%'],
+    ['Mid-air ATK', 'Plunging Attack', '104.78%'],
+    ['Dodge Counter', 'Standard', '68.90%×3'],
+    ['Skill', 'Acrobatic Trick', '61.47%×8'],
+    ['Forte', 'Real Fantasy 1-3', '322.08% → 339.97% → 357.86%'],
+    ['Liberation', 'Commedia Improvviso!', '278.34%×3'],
+    ['Intro', 'Pero, Help!', '168.99%'],
+    ['Outro', 'Applause, Please!', '+20% Havoc DMG + 25% Basic ATK DMG Amp (14s or until swapped out)'],
   ],
   'Rover: Spectro': [
     ['Basic ATK', 'Vibration Manifestation Stage 1-4', '59.15% → 76.05% → 15.21%×5 → 130.13%', 'Standard 4-stage combo; each hit builds Diminutive Sound toward Forte.'],
@@ -3715,14 +3735,22 @@ const CHARACTER_ROTATIONS = {
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Roccia (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
+  // Re-verified 2026-08-31 verbatim against wutheringwaves.fandom.com/wiki/Roccia/Combat's Forte
+  // Details section (exact Imagination gain/spend amounts, Beyond Imagination entry/exit conditions,
+  // Liberation's Crit-Rate-scaling team ATK buff, Outro's forfeit-on-swap condition). Also fixes a
+  // zero-damage bug: step 2's `skill` was 'Pero, Easy Stage 4', which does NOT appear as a substring of
+  // SKILL_MULTIPLIERS.Roccia's Basic ATK row name ('Stage 1-4') — CharacterDetailModal's per-step DMG
+  // lookup is `n.includes(step.skill)` (row name must CONTAIN the step's skill string), so this step
+  // silently resolved to no DMG shown, the same bug class already found/fixed on 2 other characters'
+  // rows. Changed to 'Stage 1-4' (exact match) with the Stage-4-specifically detail kept in the note.
   'Roccia': [
-    { type: 'Intro', skill: 'Pero, Help', note: 'Swap into her — this fires automatically and fills her Forte gauge ("Imagination") to 100/300.' },
-    { type: 'Basic ATK', skill: 'Pero, Easy Stage 4', note: 'Tap Basic Attack ONCE. Because you just used Intro, her combo skips straight to Stage 4 instead of starting over at Stage 1 — that single tap fills Imagination to 200/300.' },
-    { type: 'Skill', skill: 'Acrobatic Trick', note: 'Press Skill. This pulls enemies in, fills the last 100 Imagination (now capped at 300/300), and automatically launches her into the air into "Beyond Imagination" — you don\'t need to jump manually.' },
-    { type: 'Forte', skill: 'Real Fantasy 1-3', note: 'While airborne in Beyond Imagination, tap Basic Attack (do NOT hold) 3 times in a row — each tap is one bounce and spends 100 Imagination, so your exact 300 covers all 3. On the 3rd bounce landing, immediately cast Liberation to cancel its landing recovery.' },
-    { type: 'Liberation', skill: 'Commedia Improvviso!', note: 'Cast this the instant the 3rd Forte bounce lands (cancels its endlag) — a flat team ATK buff whose size depends on Roccia\'s own Crit Rate: 70%+ Crit Rate gives the full +200 ATK to everyone.' },
+    { type: 'Intro', skill: 'Pero, Help', note: 'Swap into her — this fires automatically, dealing Havoc DMG (168.99% at Lv.10) and restoring a flat +100 Imagination (now 100/300).' },
+    { type: 'Basic ATK', skill: 'Stage 1-4', note: 'Tap Basic Attack ONCE. Because you just used Intro, her combo skips straight to Stage 4 (104.19%×2 at Lv.10) instead of starting over at Stage 1 — Basic Attack hits restore some Imagination on their own (exact rate not published by source), on top of the flat gains from Intro/Skill.' },
+    { type: 'Skill', skill: 'Acrobatic Trick', note: 'Press Skill. This pulls enemies in, restores a flat +100 Imagination (caps at 300, so this step alone can bring you to the cap), and automatically launches her into the air into "Beyond Imagination" — you don\'t need to jump manually. Beyond Imagination only ends when Roccia lands (goes non-airborne) or is switched off the field.' },
+    { type: 'Forte', skill: 'Real Fantasy 1-3', note: 'While airborne in Beyond Imagination with ≥100 Imagination, tap Basic Attack (do NOT hold) — each tap is one Real Fantasy bounce, counted as Heavy Attack DMG, and spends exactly 100 Imagination. Landing after Stage 1 or Stage 2 with over 100 Imagination left automatically re-launches Beyond Imagination for the next bounce, so an exact 300 Imagination bar covers all 3 (322.08%/339.97%/357.86% at Lv.10). On the 3rd bounce landing, immediately cast Liberation to cancel its landing recovery.' },
+    { type: 'Liberation', skill: 'Commedia Improvviso!', note: 'Cast this the instant the 3rd Forte bounce lands (cancels its endlag) — a single hit counted as Heavy Attack DMG (278.34%×3 at Lv.10), plus a flat team ATK buff whose size depends on Roccia\'s own Crit Rate: +1 ATK per 0.1% Crit Rate over 50%, so 70%+ Crit Rate gives the full +200 ATK to everyone, lasting 30s.' },
     { type: 'Echo', skill: 'Swap Cancel', note: 'Use your equipped Echo\'s skill right after Liberation, then immediately swap to the next character — swapping cuts off the Echo\'s own animation without losing its effect.' },
-    { type: 'Outro', skill: 'Applause, Please!', duration: 14, note: 'Triggers automatically the moment you swap out — no separate button press needed. Grants the incoming Resonator +20% Havoc DMG / +25% Basic ATK DMG for 14s, and swaps their Utility button for Roccia\'s Magic Box.' },
+    { type: 'Outro', skill: 'Applause, Please!', duration: 14, note: 'Triggers automatically the moment you swap out — no separate button press needed. Grants the incoming Resonator +20% Havoc DMG Amp / +25% Basic ATK DMG Amp for 14s or until they are swapped out, and — via Inherent Skill Super Attractive Magic Box — swaps their Utility button for Roccia\'s Magic Box (100 flat Havoc pull-in DMG, counted as Echo Skill Utility DMG) for the same window.' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Carlotta (re-fetched
   // 2026-08-18, Chrome UA + google.com referer + jsRender). Step-by-step mechanics re-verified 2026-08-31
@@ -4867,7 +4895,34 @@ const RESONANCE_CHAIN_DATA = {
   // S5: Critical Protocol Liberation DMG Mult+40% (was totalMult:10, no basis). S6: Critical Protocol DMG Mult+400%
   // (was deepen:15, no basis)
   'Mornye':       { s1: { totalMult: 15 }, s2: { critDmg: 32 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { libDmg: 40 }, s6: { libDmg: 400 } },
-  'Roccia':       { s1: { basicDmg: 10 }, s2: { atkPct: 15 }, s3: { basicDmg: 10 }, s4: { totalMult: 10 }, s5: { atkPct: 10 }, s6: { basicDmg: 15 } },
+  // Roccia R-chain re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Roccia/Combat's
+  // Resonance Chain section (Chrome/Windows UA + google.com referer + jsRender). Every prior value was
+  // fabricated (no basis in any node's real effect):
+  // s1 "When Shadows Engulf the Hull": Skill Acrobatic Trick grants +100 additional Imagination and +10
+  //     Concerto Energy; Real Fantasy gains interrupt immunity. Zero DPS component (was basicDmg:10,
+  //     fabricated) — ZEROED. TODO: needs Phase 2 schema for the Imagination/Concerto/interrupt-immunity
+  //     effects if ever modeled.
+  // s2 "When the Luceanite Gleams": casting Real Fantasy grants the whole team +10% Havoc DMG Bonus for
+  //     30s, stacking up to 3 times (30% at max stacks); reaching max stacks grants a further +10% Havoc
+  //     DMG Bonus for 30s (40% total at full stack+bonus) — an elemDmg (Havoc DMG) buff, not atkPct (was
+  //     atkPct:15, wrong stat AND magnitude). Stacking/ramp-up is stateful and not captured by the flat
+  //     schema — using the 40% max-stack value; TODO: needs Phase 2 schema for the stack ramp.
+  // s3 "When the Heart Sees and Hands Feel": casting Intro Pero, Help grants Roccia herself +10% Crit
+  //     Rate and +30% Crit DMG for 15s (was basicDmg:10, wrong stat AND value).
+  // s4 "When Wonders Gather in the Box": casting Skill Acrobatic Trick increases Real Fantasy's own DMG
+  //     Multiplier by +60% for 12s — a single-move DMG Multiplier boost, bucketed as totalMult per this
+  //     file's existing convention for the same effect shape (was totalMult:10, undervalued).
+  // s5 "When Dreams Are Reborn on Stage": unconditionally increases Liberation Commedia Improvviso!'s DMG
+  //     Multiplier by +20% (bucketed as libDmg, matching this file's convention for "X's DMG Multiplier"
+  //     buffs on a Liberation-type move) and Heavy Attack's DMG Multiplier by +80% (heavyDmg) — was
+  //     atkPct:10, wrong stat AND value entirely.
+  // s6 "When the Golden Wings Fly": casting Liberation grants, for 12s, Real Fantasy DEF ignore +60%
+  //     (defIgnore:60, was basicDmg:15, wrong stat AND value) PLUS an unmodeled extra move-loop: landing
+  //     after Real Fantasy Stage 3 re-launches Beyond Imagination into a new Basic Attack "Reality
+  //     Recreation" (100% of Real Fantasy Stage 3 DMG, counted as Heavy Attack DMG, interrupt-immune,
+  //     itself re-triggering the loop on landing) — stateful extra-cast mechanic with no flat-schema
+  //     equivalent; TODO: needs Phase 2 schema.
+  'Roccia':       { s1: { totalMult: 0 }, s2: { elemDmg: 40 }, s3: { critRate: 10, critDmg: 30 }, s4: { totalMult: 60 }, s5: { libDmg: 20, heavyDmg: 80 }, s6: { defIgnore: 60 } },
   // Sanhua corrected 2026-08-18 per Prydwen's own Resonance Chain text (previous values were unsourced
   // guesses): S1 Basic ATK V grants Crit Rate+15% for 10s (was atkPct:10, wrong stat -> critRate). S2 is
   // pure utility (Heavy ATK Detonate Stamina cost -10, Anti-interruption on Eternal Frost cast) with no
