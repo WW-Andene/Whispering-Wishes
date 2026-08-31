@@ -105,7 +105,11 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Autumntrace', 'Aureate Zenith'], alt3: ['Broadblade of Night'] },
     teams: ['Calcharo + Lynae + Mornye', 'Calcharo + Yinlin + Shorekeeper'] },
   'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
-    desc: "Wooly-Counting Game, a girl of the Black Shores accompanied by one black and one white Wooly, who dreams of creating happy stories with candies, fairy tales, and her imagination. On-field Fusion DPS who builds Mayhem from her Basic/Skill/Intro hits into an empowered, damage-reducing Heavy Attack (Cloudy Frenzy), then unleashes Resonance Liberation Cosmos Rave to swap her whole kit for enhanced Fusion versions for 10s.",
+    // desc rewritten 2026-08-31 against wuthering.gg/characters/encore (Lv.1 skill-detail widget, cross-checked
+    // against wutheringwaves.fandom.com/wiki/Encore/Combat's Forte/Resonance Chain text) for exact Mayhem
+    // economy, Cosmos Rave entry/exit, and the Flaming Woolies → Energetic Welcome cast-order window — none of
+    // this was previously documented with exact numbers.
+    desc: "Wooly-Counting Game, a girl of the Black Shores accompanied by one black and one white Wooly, who dreams of creating happy stories with candies, fairy tales, and her imagination. On-field Fusion DPS who builds Mayhem (caps at 100) toward an empowered Heavy Attack: every hit of Basic ATK Wooly Attack, Resonance Skill Flaming Woolies/Energetic Welcome, and Intro Skill Woolies Helpers restores some Mayhem. At 100/100, casting Heavy Attack consumes it all to enter a 70% DMG-reduction channel (surviving a swap-out — no forfeit on quickswap) that ends in a Cloudy Frenzy nuke, counted as Resonance Liberation DMG. Resonance Skill has its own 2-part cast-order window: Flaming Woolies (8-hit barrage) can be chained into a stronger Energetic Welcome finisher only by pressing Skill again immediately after Flaming Woolies ends — otherwise the chain resets. Resonance Liberation Cosmos Rave (125 Energy, 16s cooldown) swaps her whole kit — Basic ATK, Heavy ATK, Skill, and Dodge Counter all become enhanced 'Cosmos' Fusion versions — for a fixed 10s, during which any hit still restores Mayhem, so the same full-Mayhem/Heavy-ATK trigger inside the window instead casts Cosmos Rupture (also Liberation DMG). Inherent Skill Angry Cosmos adds +10% DMG dealt during Cosmos Rave whenever her HP is above 70%.",
     skills: ['Wooly Attack', 'Flaming Woolies', 'Black & White Woolies', 'Cosmos Rave'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Helix' },
@@ -2648,12 +2652,20 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Liberation → Death Messenger combo.',
   },
+  // Added 2026-08-31 (verified against wuthering.gg/characters/encore + wutheringwaves.fandom.com/wiki/Encore/Combat):
+  // Inherent Skill "Angry Cosmos" (+10% DMG during Cosmos Rave while HP > 70%) was completely missing from
+  // selfBuffs — only Woolies Cheer Dance was present. Woolies Cheer Dance's own condition text was re-verified
+  // verbatim and is unchanged (it really is triggered by "Resonance Skill Flaming Woolies or Resonance Skill
+  // Cosmos - Rampage", not the Liberation Cosmos Rave cast itself).
   'Encore': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 10, target: 'self', duration: 10, condition: 'Inherent Skill Woolies Cheer Dance: Fusion DMG +10%/10s on Flaming Woolies/Cosmos-Rampage cast.' }],
+    selfBuffs: [
+      { stat: 'elemDmg', value: 10, target: 'self', duration: 10, condition: 'Inherent Skill Woolies Cheer Dance: Fusion DMG +10%/10s on Flaming Woolies/Cosmos-Rampage cast.' },
+      { stat: 'allDmg', value: 10, target: 'self', duration: 10, condition: 'Inherent Skill Angry Cosmos: +10% DMG dealt during Resonance Liberation Cosmos Rave while Encore\'s HP is above 70%. TODO: needs Phase 2 schema — conditional on both being in the Cosmos Rave window AND the 70% HP threshold, not a flat always-on buff; duration approximated to Cosmos Rave\'s 10s window since the source gives no separate timer.' },
+    ],
     debuffs: [],
-    note: 'On-field Fusion main DPS. Builds Mayhem from Basic/Skill/Intro hits; at full Mayhem, Heavy ATK enters a 70% DMG-reduction state and casts a big Liberation-DMG finisher (Cloudy Frenzy / Cosmos Rupture) on exit. Liberation Cosmos Rave replaces her whole kit with enhanced Fusion versions for 10s. Outro Thermal Field is a pure DoT proc, no team buff — free to quickswap.',
+    note: 'On-field Fusion main DPS. Builds Mayhem (caps 100) from Basic ATK/Skill/Intro hits; at full Mayhem, Heavy ATK enters a 70% DMG-reduction state (survives swap-out) and casts a big Liberation-DMG finisher (Cloudy Frenzy / Cosmos Rupture) on exit. Liberation Cosmos Rave (125 Energy, 16s CD) replaces her whole kit with enhanced Fusion versions for a fixed 10s. Outro Thermal Field is a pure DoT proc, no team buff — free to quickswap.',
   },
   'Lingyang': {
     outroBuffs: [],
@@ -3167,15 +3179,33 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Roaming with the Wind', '189.1%', 'Swap-in opener that inflicts Aero Erosion and lets her combo straight into Basic ATK Stage 3.'],
     ['Outro', 'Windcalling Tune', '+100% Aero Erosion DMG Amp (30s)', 'Swap-out buff amplifying Aero Erosion damage near the active Resonator.'],
   ],
+  // Re-verified 2026-08-31 against wuthering.gg/characters/encore's Lv.1 skill-detail widget (Lv.1→Lv.10 growth
+  // factor confirmed uniform at ×1.9881 across every existing row — e.g. Basic ATK Stage 1 28.00%→55.66%,
+  // Skill 38.53%→76.61%, Forte Cloudy Frenzy 168.00%→334.00% — so all pre-existing Lv.10 numbers below check out
+  // and are unchanged), cross-checked against wutheringwaves.fandom.com/wiki/Encore/Combat's Forte text.
+  // CRITICAL bug fixed: the four Cosmos Rave enhanced-state multipliers (Cosmos: Heavy Attack, Cosmos:
+  // Frolicking, Cosmos: Rampage, and a completely missing Cosmos: Dodge Counter) were previously crammed into
+  // one combined string under a single 'Liberation'/'Cosmos Rave' row. CHARACTER_ROTATIONS' steps for these
+  // moves use `type: 'Basic ATK'/'Heavy ATK'/'Skill'` (matching how the game itself classifies the enhanced
+  // hits) with skill names like 'Cosmos: Frolicking 1-4' — under the calc engine's
+  // `type === step.type && rowName.includes(step.skill)` lookup, none of those ever matched this row (wrong
+  // type, and the skill substring was buried mid-string in the wrong row entirely), so every enhanced-state
+  // rotation step silently resolved to ZERO damage. Split into their own correctly-typed rows below, plus added
+  // the previously-undocumented Cosmos: Dodge Counter row (source lists it as 33.19%×4 at Lv.1, identical to
+  // Frolicking Stage 3's Lv.1 value, so its Lv.10 value is likewise identical at 65.99%×4).
   'Encore': [
     ['Basic ATK', 'Wooly Attack Stage 1-4 → Wooly Strike', '55.66% → 66.20% → 66.30%×2 → 38.27%×4 → 238.57%', 'Stage 4 into a timed-press Wooly Strike finisher.'],
     ['Heavy ATK', 'Standard', '187.08%'],
     ['Mid-air', 'Plunging Attack', '123.26%'],
     ['Dodge Counter', 'Standard', '125.94%×2'],
-    ['Skill', 'Flaming Woolies → Energetic Welcome', '76.61%×8 → 339.16%', '10s cooldown; Skill again after Flaming Woolies casts Energetic Welcome.'],
-    ['Forte', 'Heavy ATK: Cloudy Frenzy', '334.00%', 'At full Mayhem, Heavy ATK enters a 70% DMG-reduction state, then casts Cloudy Frenzy (Liberation DMG) on exit.'],
-    ['Forte', 'Heavy ATK: Cosmos Rupture', '46.42%×6+495.21%', 'Same mechanic as Cloudy Frenzy, but during Cosmos Rave.'],
-    ['Liberation', 'Cosmos Rave', '217.58% (Cosmos Heavy ATK) · 90.18%×2+56.40%×3+65.99%×4+194.01%×3 (Cosmos: Frolicking) · 63.32%×4 (Cosmos: Rampage)', '10s state; Basic/Heavy/Skill/Dodge Counter all replaced with enhanced Fusion versions. 16s cooldown.'],
+    ['Skill', 'Flaming Woolies → Energetic Welcome', '76.61%×8 → 339.16%', '10s cooldown; Skill again immediately after Flaming Woolies ends casts Energetic Welcome — otherwise the chain window is lost.'],
+    ['Forte', 'Heavy ATK: Cloudy Frenzy', '334.00%', 'At full Mayhem (100/100), Heavy ATK enters a 70% DMG-reduction state (survives swap-out), then casts Cloudy Frenzy (counted as Resonance Liberation DMG) on exit.'],
+    ['Forte', 'Heavy ATK: Cosmos Rupture', '46.42%×6+495.21%', "Cosmos Rave's version of Cloudy Frenzy — same full-Mayhem/Heavy ATK trigger and 70% DMG-reduction channel, but during Cosmos Rave; also counted as Resonance Liberation DMG."],
+    ['Liberation', 'Cosmos Rave', 'No direct DMG', 'Press Liberation (125 Energy, 16s cooldown) — no direct hit on cast. Replaces Basic ATK/Heavy ATK/Skill/Dodge Counter with the enhanced "Cosmos" rows below for a fixed 10s; any hit landed during the window still restores Mayhem.'],
+    ['Basic ATK', 'Cosmos: Frolicking 1-4', '90.18%×2+56.40%×3+65.99%×4+194.01%×3', 'Enhanced Basic ATK combo during Cosmos Rave (replaces Wooly Attack); counted as Basic Attack DMG.'],
+    ['Heavy ATK', 'Cosmos: Heavy Attack', '217.58%', 'Enhanced Heavy ATK during Cosmos Rave (replaces Standard); counted as Heavy Attack DMG.'],
+    ['Skill', 'Cosmos: Rampage', '63.32%×4', 'Enhanced Skill during Cosmos Rave (replaces Flaming Woolies); counted as Resonance Skill DMG. 4s internal cooldown; also restores Mayhem.'],
+    ['Dodge Counter', 'Cosmos: Dodge Counter', '65.99%×4', 'Enhanced Dodge Counter during Cosmos Rave (replaces Standard); counted as Basic Attack DMG.'],
     ['Intro', 'Woolies Helpers', '198.81%'],
     ['Outro', 'Thermal Field', '176.76% ATK per tick ×4 (6s, 1.5s interval)', 'AoE burn field around the Skill target — no team buff, so she\'s free to quickswap.'],
   ],
@@ -4004,16 +4034,28 @@ const CHARACTER_ROTATIONS = {
   // Encore (re-fetched 2026-08-18, Chrome UA + google.com referer + jsRender). Prydwen also lists
   // Advanced and "No Forte" combos that squeeze in extra Basic Attacks via Dash/Skill-cancels — omitted
   // here as too execution-heavy for a standard reference rotation.
+  // Zero-damage bug fixed 2026-08-31 (re-verified against wuthering.gg/characters/encore + SKILL_MULTIPLIERS.Encore,
+  // same bug class already caught on Calcharo/Yinlin/Roccia/Jiyan): FIVE separate step skill strings did NOT
+  // substring-match their SKILL_MULTIPLIERS row name under the calc engine's `rowName.includes(step.skill)`
+  // lookup, so every one of them (7 total steps) silently resolved to ZERO damage. (1) The Intro step used the
+  // invented flavor phrase "Woolies Can Help!" — her real Intro Skill name (per both fandom and wuthering.gg) is
+  // "Woolies Helpers"; no row existed for the fake name at all. (2)-(3) The 3 "Cosmos: Rampage" Skill steps and
+  // 2 "Cosmos: Frolicking 1-4" Basic ATK steps referenced names that only existed buried mid-string inside the
+  // old combined 'Liberation'/'Cosmos Rave' row (see that section's fix) — now resolved by the new dedicated
+  // 'Skill'/'Basic ATK' rows. (4) The Forte finisher step used "Heavy Attack: Cosmos Rupture" (with "Attack")
+  // against the row name 'Heavy ATK: Cosmos Rupture' (with "ATK") — corrected to match. (5) "Dissonance" was
+  // also corrected to "Mayhem" throughout — the Forte gauge's actual in-game name (wuthering.gg's own skill text
+  // calls it "Mayhem"; "Dissonance" appears nowhere in either source and was an unsourced invention).
   'Encore': [
     { type: 'Echo', skill: 'Use Echo', note: 'Use your equipped Echo\'s skill before swapping her in (Inferno Rider is best-in-slot but needs a swap-cancel to use smoothly).' },
-    { type: 'Intro', skill: 'Woolies Can Help!', note: 'Swap into her — fires automatically, dealing a Fusion hit and pouncing enemies together with Cosmos.' },
-    { type: 'Liberation', skill: 'Cosmos Rave', note: 'Press Liberation — sends Encore into a melee-focused frenzy: her Basic Attack, Heavy Attack, Skill, and Dodge Counter are all replaced by enhanced "Cosmos" versions for the duration.' },
-    { type: 'Skill', skill: 'Cosmos: Rampage', note: 'Press Skill (her Skill is auto-replaced while in Cosmos Rave) — a Fusion hit that also restores a good chunk of Dissonance (Forte Gauge, caps at 100).' },
-    { type: 'Basic ATK', skill: 'Cosmos: Frolicking 1-4', note: 'Tap Basic Attack 4 times in a row — the auto-replaced combo during Cosmos Rave, each hit also restoring some Dissonance.' },
-    { type: 'Skill', skill: 'Cosmos: Rampage', note: 'Press Skill again on cooldown to keep filling Dissonance toward 100.' },
+    { type: 'Intro', skill: 'Woolies Helpers', note: 'Swap into her — fires automatically, dealing a Fusion hit and restoring some Mayhem.' },
+    { type: 'Liberation', skill: 'Cosmos Rave', note: 'Press Liberation (125 Energy) — no direct hit on cast; sends Encore into a melee-focused frenzy for a fixed 10s (16s cooldown): her Basic Attack, Heavy Attack, Skill, and Dodge Counter are all replaced by enhanced "Cosmos" versions for the duration.' },
+    { type: 'Skill', skill: 'Cosmos: Rampage', note: 'Press Skill (her Skill is auto-replaced while in Cosmos Rave) — a Fusion hit that also restores a good chunk of Mayhem (Forte Gauge, caps at 100). 4s internal cooldown.' },
+    { type: 'Basic ATK', skill: 'Cosmos: Frolicking 1-4', note: 'Tap Basic Attack 4 times in a row — the auto-replaced combo during Cosmos Rave, each hit also restoring some Mayhem.' },
+    { type: 'Skill', skill: 'Cosmos: Rampage', note: 'Press Skill again on cooldown to keep filling Mayhem toward 100.' },
     { type: 'Basic ATK', skill: 'Cosmos: Frolicking 1-4', note: 'Second 4-tap combo pass, same as above.' },
-    { type: 'Skill', skill: 'Cosmos: Rampage', note: 'Third Skill cast — by now Dissonance should be at or near its 100 cap.' },
-    { type: 'Forte', skill: 'Heavy Attack: Cosmos Rupture', note: 'Once Dissonance is full, HOLD Heavy Attack (auto-replaced while in Cosmos Rave) — consumes all 100 Dissonance to enter a 70%-damage-reduction channel, then unleashes a big Fusion hit (counted as Liberation DMG) once it ends. Swap-cancel the instant the channel begins to skip most of its animation.' },
+    { type: 'Skill', skill: 'Cosmos: Rampage', note: 'Third Skill cast — by now Mayhem should be at or near its 100 cap.' },
+    { type: 'Forte', skill: 'Heavy ATK: Cosmos Rupture', note: 'Once Mayhem is full (100/100), HOLD Heavy Attack (auto-replaced while in Cosmos Rave) — consumes all 100 Mayhem to enter a 70%-damage-reduction channel (survives a swap-out), then unleashes Cosmos Rupture (counted as Resonance Liberation DMG) once it ends. Swap-cancel the instant the channel begins to skip most of its animation.' },
     { type: 'Outro', skill: 'Thermal Field', duration: 6, note: 'Swap out to trigger this automatically — drops a 3m burn zone dealing Fusion DMG every 1.5s for 6s to anything standing in it.' },
   ],
   // Standard Rotation ("Basic Burst Combo") — sourced from Prydwen's "Gameplay and teams" tab for
@@ -4862,8 +4904,23 @@ const RESONANCE_CHAIN_DATA = {
     s3: { elemDmg: 25 }, s4: { elemDmg: 20 },
     s5: { totalMult: 50 }, /* TODO: needs Phase 2 schema — scoped to Intro Skill Wanted Outlaw/Necessary Means only, not a generic total multiplier */
     s6: { totalMult: 200 } /* TODO: needs Phase 2 schema — real mechanic is 2 separate Phantom hits at 100% ATK each on "Death Messenger" cast, not a %DMG multiplier; 200 approximates the combined ATK-scaling value */ },
-  // Encore S1: Fusion DMG+3% x4=12%. S2: energy utility. S3: Heavy ATK mult+40%. S4: team Fusion DMG+20%. S6: ATK stacking ~25%
-  'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 5 }, s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { skillDmg: 35 }, s6: { atkPct: 25 } },
+  // Encore — re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Encore/Combat + wuthering.gg/characters/encore.
+  // S1: "Fusion DMG Bonus +3%, stacking up to 4 times for 6s" on Basic ATK hit = 12% max (elemDmg, confirmed correct category+value).
+  // S2 corrected: previous `totalMult: 5` was a fabricated placeholder for a node that has ZERO DPS component —
+  // real effect is "additionally restores 10 Resonance Energy when casting Basic Attack Wooly Attack or Resonance
+  // Skill Energetic Welcome, once every 10s", pure Energy-economy utility. Zeroed per the no-fabricated-numbers rule.
+  // S3: "DMG multiplier of Heavy Attack Cloudy Frenzy and Heavy Attack Cosmos Rupture +40%" — both are explicitly
+  // named "Heavy Attack" by source despite being Forte-triggered, so heavyDmg is the correct category (confirmed correct).
+  // S4: "Heavy Attack Cosmos Rupture increases team Fusion DMG Bonus by 20% for 30s" (elemDmg, confirmed correct).
+  // S5: "Resonance Skill DMG Bonus +35%" (skillDmg, confirmed correct).
+  // S6: "gains 1 stack of Lost Lamb per damage instance during Cosmos Rave, each +5% ATK for 10s, stacking up to
+  // 5 times" = 25% max (atkPct, confirmed correct) per fandom's Combat page and wuthering.gg's Resonance Chain
+  // section (both independently say 5 stacks / 25%). NOTE: Prydwen's live character page states "stacking up to
+  // 6 time(s)" for this same node — an outlier vs. two independent sources agreeing on 5; kept at 25% (5 stacks)
+  // per the two-source majority and this project's designated primary source, discrepancy flagged here rather
+  // than silently resolved either way.
+  'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 0 }, /* TODO: needs Phase 2 schema — Sheep-counting Lullaby's Resonance Energy recovery (10 Energy, once per 10s) is pure utility with no DPS component */
+    s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { skillDmg: 35 }, s6: { atkPct: 25 } },
   // Xiangli Yao S1: extra hits (utility). S2: CD+30%. S3: skill mult+63% (large). S4: team Lib DMG+25%. S6: skill mult boost
   'Xiangli Yao':  { s1: { totalMult: 10 }, s2: { critDmg: 30 }, s3: { skillDmg: 40 }, s4: { libDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 15 } },
   // Aemeath S1: +300% Crit DMG for Heavy ATK in Instant Response (confirmed exact). S3: Between the Stars enhanced to
