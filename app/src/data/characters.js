@@ -186,8 +186,17 @@ const CHARACTER_DATA = {
   // teams: 'Lingyang + Zhezhi + Shorekeeper' had no basis in Prydwen's synergy list — replaced with
   // 'Lingyang + Lynae + Zhezhi', explicitly named "Lingyang's best partners" and Prydwen's cited Best
   // Team; 'Lingyang + Sanhua + Verina' kept, confirmed as Prydwen's named F2P Team.
+  // desc rewritten 2026-08-31 against wutheringwaves.fandom.com/wiki/Lingyang/Combat's Forte "Details" text
+  // (Chrome/Windows UA + google.com referer + jsRender). Prior text only named the resource trigger (Furious
+  // Punches) and skipped the other two restore events, the exact 100 cap, and the Striding Lion entry/exit
+  // timing — all now stated verbatim: Lion's Spirit restores on Furious Punches, Lion Awakens (Intro), and
+  // Strive: Lion's Vigor (Liberation); Striding Lion can also be entered via Basic ATK right after Lion
+  // Awakens/Strive: Lion's Vigor if Lion's Spirit is already full, not just via Glorious Plunge; the state
+  // drains to 0 within 5s (10s while the Liberation's Lion's Vigor buff halves the drain rate); and Basic
+  // ATK swaps to Stormy Kicks specifically once Lion's Spirit drops below 10 (source doesn't publish the
+  // per-trigger restore amounts, so those are omitted rather than guessed — see rotation TODO below).
   'Lingyang': { rarity: 5, element: 'Glacio', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: "Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou and the last living Suan'ni — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS who builds Lion's Spirit through his Resonance Skill Furious Punches, then unleashes it via Heavy Attack Glorious Plunge to enter the airborne Striding Lion state, chaining enhanced Basic Attacks, Mountain Roamer, and Stormy Kicks.",
+    desc: "Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou and the last living Suan'ni — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS whose Forte resource, Lion's Spirit (100 cap), is restored by casting Resonance Skill Furious Punches, Intro Skill Lion Awakens, or Resonance Liberation Strive: Lion's Vigor. At full Lion's Spirit, Heavy Attack casts Glorious Plunge and enters the airborne Striding Lion state (also enterable via Basic ATK right after Lion Awakens or Strive: Lion's Vigor if Lion's Spirit is already full); the state drains Lion's Spirit to 0 within 5s (10s if Strive: Lion's Vigor's buff is active, which halves the drain rate), swapping Basic ATK to the 2-hit Feral Gyrate and Resonance Skill to Mountain Roamer, with Basic ATK becoming the 8-hit+finisher Stormy Kicks (unlocking the Tail Strike Mid-air Attack) once Lion's Spirit drops below 10.",
     skills: ['Majestic Fists', 'Ancient Arts', 'Unification of Spirits', "Strive: Lion's Vigor"],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
@@ -3339,6 +3348,11 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Essence of Tao', '33.80%×3+67.60%'],
     ['Outro', 'Transcendence', 'Resonance Liberation DMG Amp +38% (14s)', 'Grants the incoming Resonator this buff — no direct DMG.'],
   ],
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Lingyang/Combat's Lv.10
+  // "Attribute Scaling" tables (Chrome/Windows UA + google.com referer + jsRender) — every row below
+  // already matched source exactly (Basic ATK stages, Heavy/Mid-air/Dodge Counter, Ancient Arts/Furious
+  // Punches, all 5 Forte Circuit sub-hits, Liberation, Intro, Outro); no numeric corrections were needed
+  // here, unlike most other characters in this pass.
   'Lingyang': [
     ['Basic ATK', 'Majestic Fists Stage 1-5', '59.65% → 79.53% → 72.87%×2 → 20.41%×5+43.72% → 152.49%', 'Stage 5 can be replaced by Feral Roars (79.53%×2) after casting Furious Punches.'],
     ['Heavy ATK', 'Standard', '145.73%'],
@@ -3992,15 +4006,23 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Purification Force Field', note: 'Press Liberation to group enemies together — the field explodes for damage when it expires; 20s cooldown.' },
     { type: 'Outro', skill: 'Transcendence', note: 'Swap out to trigger this automatically — grants the incoming Resonator +38% Resonance Liberation DMG for 14s.' },
   ],
-  // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Lingyang (re-fetched
-  // 2026-08-17 via Chrome UA + google.com referer + jsRender, confirmed against nanoka's kit order).
+  // Standard Rotation — re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Lingyang/Combat's
+  // Forte "Details" text (Chrome/Windows UA + google.com referer + jsRender), cross-checked against
+  // prydwen.gg/wuthering-waves/characters/lingyang's "Gameplay and teams" tab for cast order. Every step's
+  // `skill` string still substring-matches its SKILL_MULTIPLIERS.Lingyang row name. Prior notes were vague
+  // ("filling a large chunk of the gauge", "up to ~9 hits ... under ideal play") without the source's actual
+  // stated numbers — now cites the 100 Lion's Spirit cap, the 5s/10s Striding Lion timer, and the <10
+  // Stormy Kicks threshold verbatim. Source does not publish per-trigger Lion's Spirit restore amounts
+  // (only that Furious Punches/Lion Awakens/Strive: Lion's Vigor each restore some), so no restore % is
+  // stated — TODO: needs Phase 2 schema (stateful gauge tracking) to model Lion's Spirit gain/drain/threshold
+  // transitions precisely; this flat rotation can only describe the state machine in prose.
   'Lingyang': [
-    { type: 'Intro', skill: 'Lion Awakens', note: "Swap into him — fires automatically, filling a large chunk of the Lion's Spirit Forte gauge on its own." },
-    { type: 'Liberation', skill: "Strive: Lion's Vigor", duration: 14, note: 'Press Liberation — grants self +50% Glacio DMG Bonus for 14s; 20s cooldown.' },
-    { type: 'Forte', skill: 'Unification of Spirits', note: 'Once Lion\'s Spirit is full, HOLD Heavy Attack to cast Glorious Plunge and enter the airborne Striding Lion state.' },
-    { type: 'Basic ATK', skill: 'Majestic Fists', note: 'While in Striding Lion, tap Basic Attack for Feral Gyrate P1/P2 — alternate with the Skill below (never tap two Basic Attacks or two Skills back-to-back).' },
-    { type: 'Skill', skill: 'Ancient Arts', note: 'Press Skill for Mountain Roamer while airborne — alternating Basic Attack/Skill taps like this lands up to ~9 hits total during the Ultimate window under ideal play.' },
-    { type: 'Outro', skill: 'Frosty Marks', note: 'Swap out to trigger this automatically — a pure-damage AoE finisher with no team buff (though the S4 chain grants the team +20% Glacio DMG for 30s).' },
+    { type: 'Intro', skill: 'Lion Awakens', note: "Swap into him to fire this automatically — deals Glacio DMG and is one of three casts (with Furious Punches and Strive: Lion's Vigor) that restore the 100-cap Lion's Spirit gauge; exact restore amount per trigger not published by source." },
+    { type: 'Liberation', skill: "Strive: Lion's Vigor", duration: 14, note: "Press Liberation — grants self +50% Glacio DMG Bonus for 14s (20s cooldown, 125 Resonance Energy) and also restores Lion's Spirit. While this buff is active, Striding Lion's Lion's Spirit drain is halved, extending the state from 5s up to 10s." },
+    { type: 'Forte', skill: 'Unification of Spirits', note: "At 100/100 Lion's Spirit, HOLD Heavy Attack for Glorious Plunge and enter the airborne Striding Lion state (also enterable via Basic ATK right after Lion Awakens or Strive: Lion's Vigor if Lion's Spirit is already full)." },
+    { type: 'Basic ATK', skill: 'Majestic Fists', note: "While in Striding Lion, tap Basic Attack for the 2-hit Feral Gyrate — alternate with the Skill step below (never repeat the same input twice in a row). Once Lion's Spirit drops below 10, Basic Attack becomes the 8-hit+finisher Stormy Kicks instead, which unlocks the Tail Strike Mid-air Attack." },
+    { type: 'Skill', skill: 'Ancient Arts', note: "Press Skill for Mountain Roamer while airborne in Striding Lion — alternating Basic Attack/Skill taps like this maximizes hits landed before Lion's Spirit runs out (drains to 0 within 5s, or 10s under Strive: Lion's Vigor)." },
+    { type: 'Outro', skill: 'Frosty Marks', note: 'Swap out to trigger this automatically — a pure-damage AoE finisher (587.94% ATK) with no baseline team buff (S4 Resonance Chain grants the team +20% Glacio DMG for 30s on this Outro).' },
   ],
   // Standard Rotation (S0) — re-verified 2026-08-31 against prydwen.gg/wuthering-waves/characters/verina's
   // "Gameplay and teams" tab (Chrome UA + google.com referer + jsRender; total listed time 3.75s at S0,
@@ -5144,7 +5166,27 @@ const RESONANCE_CHAIN_DATA = {
   //     Erosion on an already-max-stack target immediately procs Erosion DMG once — both unmodeled (no
   //     Erosion-stack/proc stat in this schema).
   'Cartethyia':   { s1: { critDmg: 100 }, s2: { basicDmg: 50, totalMult: 200 }, s3: { libDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 0 }, s6: { elemDmg: 40 } },
-  'Lingyang':     { s1: { totalMult: 10 }, s2: { totalMult: 8 }, s3: { basicDmg: 20, skillDmg: 10 }, s4: { elemDmg: 20 }, s5: { totalMult: 35 }, s6: { basicDmg: 100 } },
+  // Lingyang S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Lingyang/Combat's
+  // Resonance Chain section (Chrome/Windows UA + google.com referer + jsRender).
+  // s1 "Lion of Light, Blessings Abound": "During Resonance Liberation Lion's Vigor, Lingyang's
+  //     Anti-Interruption is enhanced." ZEROED 2026-08-31 (was totalMult:10, fabricated) — pure poise/
+  //     interrupt-resistance utility, zero DPS component, no stat equivalent in this schema.
+  // s2 "Dominant and Fierce, Power Unbound": "Intro Skill Lion Awakens additionally recovers 10 Resonance
+  //     Energy for Lingyang, triggered once every 20s." ZEROED 2026-08-31 (was totalMult:8, fabricated) —
+  //     pure Resonance Energy resource-gain, zero DPS component; no energy-gain stat in this schema.
+  // s3 "Jaw-Dropping Feats, Loud and Wide": "During Resonance Liberation Lion's Vigor, Basic Attack DMG
+  //     Bonus +20%, Resonance Skill DMG Bonus +10%." (basicDmg:20, skillDmg:10, confirmed unchanged).
+  // s4 "Immortals Bow, in Reverence Flawed": "Outro Skill Frosty Marks increases the Glacio DMG Bonus of
+  //     all team members by 20% for 30s." (elemDmg:20, confirmed unchanged).
+  // s5 "Seven Stars Shine, Stepped upon High": "Resonance Liberation Strive: Lion's Vigor additionally
+  //     deals Glacio DMG equal to 200% of Lingyang's ATK." FIXED 2026-08-31: was totalMult:35, a fabricated
+  //     number that didn't match the source's stated 200% flat ATK-scaling bonus hit — corrected to
+  //     totalMult:200.
+  // s6 "Demons Tremble, Divine Power Nigh": "In Striding Lion state, during the first 3s after every
+  //     Mountain Roamer, the Basic Attack DMG Bonus for Lingyang's next Basic Attack is increased by 100%."
+  //     (basicDmg:100, confirmed unchanged; the "next Basic Attack only, 3s window" conditionality isn't
+  //     capturable by the flat schema — TODO: needs Phase 2 schema for per-hit conditional buff windows).
+  'Lingyang':     { s1: { totalMult: 0 }, s2: { totalMult: 0 }, s3: { basicDmg: 20, skillDmg: 10 }, s4: { elemDmg: 20 }, s5: { totalMult: 200 }, s6: { basicDmg: 100 } },
   // Galbrena S1: +2% CD per Afterflame (up to 80%). Averaged ~40
   'Galbrena':     { s1: { critDmg: 80 }, s2: { atkPct: 90 }, s3: { libDmg: 130 }, s4: { allDmg: 20 }, s5: { skillDmg: 150 }, s6: { elemDmg: 60 } },
   // Galbrena R-chain corrected 2026-08-16 via Prydwen/Game8: s1 max Afterflame Crit DMG scaling (+2%/pt, cap 80%, was 40);
