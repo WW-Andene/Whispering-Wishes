@@ -441,7 +441,11 @@ const CHARACTER_DATA = {
   // Prydwen's own explicit "last resort" pick — the only other Sword in the game with an HP% main stat,
   // matching her HP-scaling kit, so used here instead of the generic starter Sword of Night).
   'Cartethyia': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Feathered Tempest, a wandering knight who travels across Rinascita — formerly known as the Blessed Maiden, the vessel of Divinity, and the Queen of Gale and Tide under the name Fleurdelys, she is now simply free and unfettered. HP-scaling on-field Aero Main DPS who builds Sword Shadows through her Basic Attack/Skill/Intro finishers, recalls them via Mid-air Attack, transforms into Fleurdelys via her Liberation for an entirely new enhanced kit, builds Conviction toward the devastating second Ultimate Blade of Howling Squall that consumes stacked Aero Erosion for bonus DMG, then buffs the incoming Resonator\'s Aero DMG against Negative Status targets through her Outro.',
+    // desc rewritten 2026-08-31 against wutheringwaves.fandom.com/wiki/Cartethyia/Combat's "Forte" section for
+    // exact resource economy (trigger events, amounts, caps), enhanced-state entry/exit conditions and duration,
+    // and the Skill1→Skill2 cast-order dependency inside Manifest — the prior desc only gestured at "builds Sword
+    // Shadows" / "consumes stacked Aero Erosion for bonus DMG" with no numbers at all.
+    desc: 'Feathered Tempest, a wandering knight who travels across Rinascita — formerly known as the Blessed Maiden, the vessel of Divinity, and the Queen of Gale and Tide under the name Fleurdelys, she is now simply free and unfettered. HP-scaling on-field Aero Main DPS. As Cartethyia, her Basic Attack Stage 4, Heavy Attack, Intro Skill, and Resonance Skill each summon a distinct Sword Shadow (Sword of Divinity / Sword of Discord ×2 sources / Sword of Virtue — max 1 of each type up, 20s each); her Mid-air Attack recalls every Sword Shadow currently up and converts them into the Heart of Virtue / Mandate of Divinity / Power of Discord buffs Fleurdelys carries for that transformation. Resonance Liberation - A Knight\'s Heartfelt Prayers costs 50% of her current Max HP (25% at Resonance Chain S5; free if already below 50% HP) and transforms her into Fleurdelys (Manifest) for 12s, clearing all Conviction to 0 on entry — ending Manifest does not clear Resonance Energy. As Fleurdelys, every attack restores Conviction; her Resonance Skill is a strict 2-cast chain — Sword to Answer Waves\' Call must be followed by May Tempest Break the Tides within a short, wiki-unspecified follow-up window or the Skill drops to its normal 14s cooldown, forfeiting the second cast for that Manifest window. At exactly 120 Conviction, Resonance Liberation is replaced by Blade of Howling Squall: it clears all Conviction, ends Manifest, restores 50% Max HP, deals 13.12%×7 Max HP DMG, and strips every stacked Aero Erosion point from the target, each stack removed Amplifying DMG taken by the target +20% (capped at 5 stacks, +100% total). Her Outro Wind\'s Divine Blessing then buffs the incoming Resonator\'s (not her own) Aero DMG against Negative-Status targets by +17.5% for 20s.',
     skills: ['Sword to Carve My Forms', 'Sword to Bear Their Names', 'A Knight\'s Heartfelt Prayers', 'Tempest'],
     ascension: { boss: 'Unfading Glory', common: 'Tidal Residuum', specialty: 'Bamboo Iris' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Metallic Drip' },
@@ -2882,15 +2886,20 @@ const SKILL_MULTIPLIERS = {
   // Freedom' Intro row was already exactly correct (4.28% + 9.97%HP), showing this wasn't a single
   // clean 2x scaling error but a row-by-row data entry issue. Every value below is now sourced directly
   // from nanoka's precise Lv.10 multipliers rather than doubled from the old figures.
+  // All Lv10 multipliers re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Cartethyia/Combat's
+  // "Attribute Scaling" tables (Basic Attack - Cartethyia, Sword to Bear Their Names, Blade of Howling Squall,
+  // Sword to Mark Tide's Trace / Sword to Call for Freedom, Sword to Answer Waves' Call / May Tempest Break the
+  // Tides sections) — every value already matched exactly (sums of per-hit % + flat %HP components check out to
+  // the digit), no corrections needed here, unlike the RESONANCE_CHAIN_DATA row above where s2/s5 were wrong.
   'Cartethyia': [
     ['Basic ATK', 'Base Form 1-4', '4.78%HP → 13.13%HP → 17.12%HP → 15.1%HP', 'Standard combo in her base sword form, scales off Max HP.'],
     ['Basic ATK', 'Fleurdelys 1-5', '6.49%HP → 9.09%HP → 10.65%HP → 13.7%HP → 36%HP', 'Empowered combo used in Fleurdelys form.'],
     ['Heavy ATK', 'Fleurdelys Enhanced', '7.78%×2 + 3.89%HP', 'Charged strike in Fleurdelys form.'],
-    ['Skill', 'Base Form', '6.89%×3 + 8.86%HP', 'Skill strike that applies Aero Erosion and summons a Sword Shadow.'],
-    ['Skill', 'Fleurdelys 1-2', '24.8%HP / 24.8%HP', 'Fleurdelys-form Skill variants (Sword to Answer Waves\' Call / May Tempest Break the Tides).'],
-    ['Liberation', "A Knight's Heartfelt Prayers", 'Costs 50% Max HP', 'Ultimate that transforms her into Fleurdelys form for 12s; no direct damage.'],
-    ['Liberation', 'Blade of Howling Squall', '13.12%×7 HP', 'Fleurdelys-form Ultimate finisher; removes Aero Erosion stacks from the target for bonus DMG.'],
-    ['Intro', "Sword to Mark Tide's Trace", '2.08%×3 + 6.24%HP', 'Base-form swap-in opener.'],
+    ['Skill', 'Base Form', '6.89%×3 + 8.86%HP', 'Skill strike that applies 2 stacks of Aero Erosion and summons Sword of Virtue\'s Shadow (max 1, 20s).'],
+    ['Skill', 'Fleurdelys 1-2', '24.8%HP / 24.8%HP', "Fleurdelys-form Skill variants (Sword to Answer Waves' Call / May Tempest Break the Tides) — see CHARACTER_ROTATIONS for the cast-order window between them."],
+    ['Liberation', "A Knight's Heartfelt Prayers", 'Costs 50% Max HP (25% at Resonance Chain S5; free below 50% HP)', 'Ultimate that transforms her into Fleurdelys form for 12s and clears all Conviction; no direct damage.'],
+    ['Liberation', 'Blade of Howling Squall', '13.12%×7 HP', 'Fleurdelys-form Ultimate finisher, cast at 120 Conviction; restores 50% Max HP, removes ALL Aero Erosion stacks from the target (each stack removed Amplifies DMG taken by 20%, up to 5 stacks = +100%), and ends Manifest.'],
+    ['Intro', "Sword to Mark Tide's Trace", '2.08%×3 + 6.24%HP', "Base-form swap-in opener; inflicts 2 Aero Erosion stacks and summons Sword of Discord's Shadow (max 1, 20s)."],
     ['Intro', "Sword to Call for Freedom", '4.28% + 9.97%HP', 'Fleurdelys-form swap-in opener.'],
     ['Outro', "Wind's Divine Blessing", '+17.5% Aero DMG vs Negative Status (20s)', 'Swap-out buff to the active teammate against targets with a Negative Status.'],
   ],
@@ -3916,18 +3925,21 @@ const CHARACTER_ROTATIONS = {
   // skipped her Mid-air Attack entirely — the step that recalls all 3 Sword Shadows and grants their
   // buffs to Fleurdelys, central to her kit — and collapsed her two-phase Fleurdelys Skill 1/Skill 2
   // loop into a single generic Basic ATK line. Rebuilt to match Prydwen's actual "Basic Rotation".
+  // Re-verified and expanded 2026-08-31 against wutheringwaves.fandom.com/wiki/Cartethyia/Combat's "Forte"
+  // section for exact resource numbers, the Skill1→Skill2 cast-order window, and Liberation2's exact payload
+  // (previously just "removes stacked Erosion... for bonus DMG", now the real +20%/stack, max 5 stacks, formula).
   'Cartethyia': [
-    { type: 'Intro', skill: "Sword to Mark Tide's Trace", note: 'Swap into her — fires automatically, granting Sword of Discord.' },
-    { type: 'Basic ATK', skill: 'Base Form 1-4', note: 'Tap Basic Attack 4 times — Stage 4 grants Sword of Divinity.' },
-    { type: 'Skill', skill: 'Base Form', note: 'Press Skill — grants Sword of Virtue.' },
-    { type: 'Mid-air', skill: 'Cartethyia Plunging Attack', note: 'Jump then tap Basic Attack to plunge down — recalls all 3 Sword Shadows and grants their buffs to Fleurdelys.' },
-    { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", duration: 12, note: 'Press Liberation — transforms her into Fleurdelys (Manifest) for 12s.' },
-    { type: 'Skill', skill: "Fleurdelys 1", note: "Press Skill for Sword to Answer Waves' Call." },
-    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Tap Basic Attack — chains Mid-air Plunge Stage 3 into Basic Attack Stage 3-5.' },
-    { type: 'Skill', skill: 'Fleurdelys 2', note: 'Press Skill again for May Tempest Break the Tides.' },
-    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Tap Basic Attack for Stage 3-5 again — builds Conviction up to 120.' },
-    { type: 'Liberation', skill: 'Blade of Howling Squall', note: 'Press Liberation for the Fleurdelys finisher — removes stacked Erosion from the target for bonus DMG and ends Manifest.' },
-    { type: 'Outro', skill: "Wind's Divine Blessing", duration: 20, note: 'Swap out to trigger this automatically — boosts Aero DMG against targets with a Negative Status for 20s.' },
+    { type: 'Intro', skill: "Sword to Mark Tide's Trace", note: "Swap into her — fires automatically, inflicts 2 Aero Erosion stacks, and grants Sword of Discord's Shadow (max 1, 20s duration)." },
+    { type: 'Basic ATK', skill: 'Base Form 1-4', note: "Tap Basic Attack 4 times — Stage 4 inflicts 1 Aero Erosion stack and grants Sword of Divinity's Shadow (max 1, 20s duration)." },
+    { type: 'Skill', skill: 'Base Form', note: "Press Skill — inflicts 2 Aero Erosion stacks and grants Sword of Virtue's Shadow (max 1, 20s duration)." },
+    { type: 'Mid-air', skill: 'Cartethyia Plunging Attack', note: 'Jump then tap Basic Attack to plunge down — recalls ALL Sword Shadows currently up (max 3, one of each type); the specific combination of shadow types recalled determines which of Heart of Virtue / Mandate of Divinity / Power of Discord buffs Fleurdelys receives for the whole upcoming Manifest window. TODO: needs Phase 2 schema — which shadow grants which buff, and the buff\'s exact per-effect magnitude, is stateful/combinatorial and not capturable as a flat multiplier.' },
+    { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", duration: 12, note: 'Press Liberation — costs 50% Max HP (25% at S5, free if HP already below 50%); transforms her into Fleurdelys (Manifest) for 12s and clears all Conviction to 0. Ending Manifest does NOT clear Resonance Energy.' },
+    { type: 'Skill', skill: "Fleurdelys 1", note: "Press Skill for Sword to Answer Waves' Call — restores Conviction on hit." },
+    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Tap Basic Attack — chains Mid-air Plunge Stage 3 into Basic Attack Stage 3-5, restoring Conviction on hit.' },
+    { type: 'Skill', skill: 'Fleurdelys 2', note: "Press Skill again for May Tempest Break the Tides — must follow Skill 1 within the game's un-numbered follow-up window (wiki states only \"a certain period,\" no exact seconds given; TODO: verify exact window) or the Skill goes on its normal 14s cooldown instead, forfeiting the Skill-2 cast for that Manifest window." },
+    { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Tap Basic Attack for Stage 3-5 again — builds Conviction toward the 120-point threshold that unlocks Liberation2 (exact Conviction-per-hit amount not published by source; TODO: verify).' },
+    { type: 'Liberation', skill: 'Blade of Howling Squall', note: 'Available only once Conviction reaches exactly 120 (below 120, pressing Liberation instead reverts her to base Cartethyia form without ending Manifest). On cast: removes ALL Conviction, ends Manifest, restores 50% Max HP, then hits for 13.12%×7 HP DMG and strips ALL stacked Aero Erosion from the target — each stack removed Amplifies DMG taken by the target by +20%, capped at 5 stacks (+100% total).' },
+    { type: 'Outro', skill: "Wind's Divine Blessing", duration: 20, note: 'Swap out to trigger this automatically — boosts the incoming teammate\'s (not Cartethyia/Fleurdelys\'s own) Aero DMG against targets with a Negative Status by +17.5% for 20s.' },
   ],
   // Standard Sub-DPS Rotation — sourced from Prydwen's "Gameplay and teams" tab for Ciaccona (2026-08-18,
   // Chrome UA + google.com referer + jsRender).
@@ -4449,13 +4461,37 @@ const RESONANCE_CHAIN_DATA = {
   // (swapping back out), Augusta gains +1 Majesty stack AND +1 Crown of Wills stack. Swapping to a third character
   // first ends the 14s buff early and the Outro-back condition can no longer be met — exactly the "gains the point only
   // if the same character Outros back before a third swap" mechanic. Source: wutheringwaves.fandom.com/wiki/Augusta/Combat, 2026-08-31.
-  // Cartethyia S1: +25% CD per 30 Conviction threshold (up to ~100%). S2: Basic/Heavy/etc DMG+50%, Mid-air+200%
-  'Cartethyia':   { s1: { critDmg: 100 }, s2: { basicDmg: 50, totalMult: 30 }, s3: { libDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 15 }, s6: { elemDmg: 40 } },
-  // Cartethyia R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 +25%/Conviction-level Crit DMG, max 4 stacks = 100% (was critDmg:40, quarter of real max);
-  // s2 Basic/Heavy/Dodge/Intro DMG Mult +50% confirmed, Mid-air Attack +200% has no direct schema stat, totalMult fallback (was totalMult:25); s3 Liberation2 DMG Mult +100% (was totalMult:15, wrong category);
-  // s4 team +20% All-Attribute DMG after inflicting any Bane/Burst/Frazzle/Flare/Chafe/Erosion (was atkPct:40, no basis); s5 fatal-blow immunity + Max HP shield, no direct DPS stat, totalMult fallback (kept as-is);
-  // s6 Fleurdelys attacks deal +40% more DMG to targets (was totalMult:25, wrong category).
-  // Corrected against ww.nanoka.cc character/1104 — prior values didn't match any real chain effect.
+  // Cartethyia R-chain re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Cartethyia/Combat
+  // "Resonance Chain" section (Chrome UA + google.com referer + jsRender):
+  // s1 "Crown Destined by Fate": when Fleurdelys's Conviction hits 30/60/90/120, Crit DMG +25% for 15s, up to 4
+  //     stacks (25%*4 = 100% at full stack); duration does not reset on a new stack; all stacks removed after
+  //     casting Blade of Howling Squall. critDmg:100 confirmed unchanged. Also grants a separate, unmodeled "Zeal"
+  //     proc (10s window on an Erosion-inflicted kill that maxes Erosion stacks on the next kill's targets) —
+  //     TODO: needs Phase 2 schema, no DPS-stat equivalent in this flat schema.
+  // s2 "Blade Broken by Tempest": DMG Multiplier of Basic ATK/Heavy ATK/Dodge Counter/Intro Skill +50% (basicDmg:50,
+  //     confirmed unchanged) AND DMG Multiplier of Mid-air Attack +200% specifically (totalMult fallback, since
+  //     there's no dedicated mid-air-only stat) — FIXED 2026-08-31: was totalMult:30, which didn't match the source
+  //     value the node's own prior comment already claimed (200%); corrected to totalMult:200. Also raises Erosion's
+  //     max-stack cap by +3 within range on Liberation1 cast and reduces Skill cooldown by 1s per Sword Shadow type
+  //     recalled via Mid-air Attack — both unmodeled (no cooldown/stack-cap stat in this schema).
+  // s3 "Prisoner Hanged in the Tower": DMG Multiplier of Resonance Liberation - Blade of Howling Squall +100%
+  //     (libDmg:100, confirmed unchanged). Also makes Basic5/Mid-air2/Enhanced Heavy/Skill2 inflict 2 Erosion
+  //     stacks each — unmodeled (no Erosion-application stat in this schema).
+  // s4 "Sacrifice Made for Salvation": after any team member inflicts Havoc Bane/Fusion Burst/Spectro Frazzle/
+  //     Electro Flare/Glacio Chafe/Aero Erosion, the WHOLE team gains +20% DMG Bonus for ALL Attributes for 20s
+  //     (allDmg:20, confirmed unchanged; duration not captured by the flat schema).
+  // s5 "Hope Reshaped in Storms": ZEROED 2026-08-31 (was totalMult:15, fabricated — didn't match either real
+  //     effect below). Purely defensive, zero DPS component: (a) fatal-blow immunity once per 10 real-time minutes,
+  //     granting a Shield = 20% of Cartethyia's Max HP for 10s; (b) Liberation1 HP cost reduced from 50% to 25% of
+  //     Max HP. Neither has a DPS-stat equivalent — TODO: needs Phase 2 schema if shield/HP-cost mechanics are ever
+  //     modeled.
+  // s6 "Freedom Found in Storm's Wake": targets take +40% more DMG from Fleurdelys specifically (elemDmg:40,
+  //     confirmed unchanged — matches the "targets take X% more DMG" debuff convention used elsewhere in this file,
+  //     e.g. Wind's Indelible Imprint below). Also: Blade of Howling Squall now maxes (instead of removing) the
+  //     target's Erosion stacks on cast, and within 30s of any Intro/Liberation cast, any team member inflicting
+  //     Erosion on an already-max-stack target immediately procs Erosion DMG once — both unmodeled (no
+  //     Erosion-stack/proc stat in this schema).
+  'Cartethyia':   { s1: { critDmg: 100 }, s2: { basicDmg: 50, totalMult: 200 }, s3: { libDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 0 }, s6: { elemDmg: 40 } },
   'Lingyang':     { s1: { totalMult: 10 }, s2: { totalMult: 8 }, s3: { basicDmg: 20, skillDmg: 10 }, s4: { elemDmg: 20 }, s5: { totalMult: 35 }, s6: { basicDmg: 100 } },
   // Galbrena S1: +2% CD per Afterflame (up to 80%). Averaged ~40
   'Galbrena':     { s1: { critDmg: 80 }, s2: { atkPct: 90 }, s3: { libDmg: 130 }, s4: { allDmg: 20 }, s5: { skillDmg: 150 }, s6: { elemDmg: 60 } },
