@@ -477,7 +477,17 @@ const CHARACTER_DATA = {
   // uses Radiant Dawn (66.9%, best 4★) and Augment (64.9%, #2 4★); alt3 uses the standard starter
   // Rectifier of Night.
   'Phrolova': { rarity: 5, element: 'Havoc', weapon: 'Rectifier', role: 'Main DPS',
-    desc: 'Symphony of Beyond, a Fractsidus Overseer walking the fine line between life and death — an uncanny, deadly conductor whose silent wave of the baton is enough to attune the very frequencies of being and conduct the symphonies of "souls," her music able to sculpt a better world or just as easily summon a legion to wreak havoc. Havoc Main DPS who builds Volatile Notes through Basic Attack/Skill combos and their Forte-enhanced follow-ups, unleashes her Liberation to enter the Maestro state and command her partner Hecate for sustained off-field Havoc DMG (triggered further by any teammate\'s Echo Skill casts), then buffs the incoming Resonator\'s Havoc and Heavy Attack DMG through her Outro.',
+    // desc rewritten 2026-08-31 to exact Forte economy/enhanced-state mechanics via
+    // wutheringwaves.fandom.com/wiki/Phrolova/Combat, cross-checked ww.nanoka.cc/character/1608: previous
+    // blurb only vaguely described "builds Volatile Notes through combos" — added the exact trigger events
+    // (Strings from Basic ATK Stage 3/Movement of Fate and Finality, Winds from Skill/Murmurs in a Haunting
+    // Dream), the exact 6-Note/Compose-state/not-Resolving-Chord gate on Scarlet Coda, the Compose state's
+    // fixed 25s auto-trigger cadence (independent of her actions — a timing detail missing before), the
+    // 0-Resonance-Energy/Resolving-Chord-only gate on her Liberation, the exact 24s Maestro duration and
+    // +120% self ATK, the Enhanced Attack-Hecate trigger cap (10 per Maestro window, 1 per unique Echo
+    // name) which was entirely absent, and the Outro's exact "ends if swapped out" forfeit condition plus
+    // its Maestro-only 2-bonus-attack clause (previously stated with no forfeit/conditionality at all).
+    desc: 'Symphony of Beyond, a Fractsidus Overseer walking the fine line between life and death — an uncanny, deadly conductor whose silent wave of the baton is enough to attune the very frequencies of being and conduct the symphonies of "souls," her music able to sculpt a better world or just as easily summon a legion to wreak havoc. Havoc Main DPS who alternates Basic ATK Stage 3 and Skill casts to enter/exit Reincarnate, banking up to 6 Volatile Notes (Strings from Basic ATK Stage 3 or its Forte follow-up Movement of Fate and Finality; Winds from Skill or its Forte follow-up Murmurs in a Haunting Dream). With 6 Notes stacked, outside Resolving Chord, and in the Compose state (auto-triggers on a fixed 25s cadence, independent of her own actions), her Heavy Attack is replaced by Scarlet Coda — a Skill-type nuke whose DMG Multiplier scales with stacked Aftersound (cap 24 stacks) — which activates Resolving Chord and unlocks her Liberation. Waltz of Forsaken Depths costs no Resonance Energy (her max is 0) and is only castable during Resolving Chord; casting it ends Resolving Chord and opens a 24s Maestro state (+120% self ATK) in which her Volatile Notes are played out in turn (4s each), giving Hecate\'s off-field Enhanced Attack the matching Strings/Winds/Cadenza effect — Hecate auto-attacks off-field and gains an Enhanced Attack whenever any teammate casts an Echo Skill, capped at 10 such triggers per Maestro window (1 per unique Echo of the same name). Her Outro (Unfinished Piece) grants the incoming Resonator +20% Havoc DMG Amp and +25% Heavy Attack DMG Amp for 14s, ending immediately if they are swapped out — and if cast while she is still in Maestro state, Hecate additionally fires 2 bonus Enhanced Attacks off-field before that same Maestro window ends. Source: wutheringwaves.fandom.com/wiki/Phrolova/Combat, cross-checked ww.nanoka.cc/character/1608, verified 2026-08-31.',
     skills: ['Movement of Life and Death', 'Whispers in a Fleeting Dream', 'Waltz of Forsaken Depths', 'Rhapsody of a New World'],
     ascension: { boss: 'Truth in Lies', common: 'Polygon Core', specialty: 'Afterlife' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Helix' },
@@ -3084,6 +3094,13 @@ const SKILL_MULTIPLIERS = {
   // as '234%' vs the real 465.22%) — the same halving pattern already found and fixed across most of
   // the recently-audited roster. The old Intro Suite of Quietus note claiming "exact base number not
   // published" was also wrong — nanoka does publish it (80.61%+120.91%) — so that note is dropped.
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Phrolova/Combat Lv.10
+  // Attribute Scaling tables, cross-checked ww.nanoka.cc/character/1608's Skill Attributes (Lv.10)
+  // panels — every row below, including Intro, matches both sources exactly; no corrections needed.
+  // (An initial fandom-wiki text extraction seemed to show Suite of Quietus at Lv.10 as 74.96%+112.44%,
+  // one row short of the other 10-level tables on the same page; nanoka's Skill Attributes panel
+  // confirms the true Lv.10 value is 80.61%+120.9x%, matching the existing 80.6% + 120.9% below — the
+  // fandom figure was simply the Lv.9 row, an artifact of a truncated column in that extraction.)
   'Phrolova': [
     ['Basic ATK', 'Stage 1-3', '106.9% → 95.4% → 196.1%', 'Standard combo string, builds Aftersound/Notes.'],
     ['Heavy ATK', 'Scarlet Coda', '33.0%×2 + 12.4%×8 + 495.1% (+82.55% per stack)', 'Empowered Heavy ATK, damage scales with stacked Aftersound.'],
@@ -3998,6 +4015,14 @@ const CHARACTER_ROTATIONS = {
   // used only the first time she's switched in from another character, skips the Intro and starts at
   // Basic 2 instead). Forte: Basic (Movement of Fate and Finality) is used vs. bosses; Forte: Skill
   // (Murmurs in a Haunting Dream) groups adds instead — pick whichever fits the fight each time it's due.
+  // Corrected 2026-08-31 against wutheringwaves.fandom.com/wiki/Phrolova/Combat, cross-checked
+  // ww.nanoka.cc/character/1608: Outro entry previously stated the +20%/+25% buff with no forfeit
+  // condition at all — added "ends if swapped out" (wiki: "...for 14s or until they are switched out")
+  // and separated the Maestro-only 2-bonus-Hecate-attack clause, which is conditioned on Phrolova still
+  // being in Maestro state at the moment Unfinished Piece is cast, not merely "cast during Maestro" in
+  // general. Liberation entry's gate (Resolving Chord state only, 0 max Resonance Energy) confirmed
+  // accurate. Rest of the sequence (Forte/Note economy, Scarlet Coda's 6-Note/Compose/not-Resolving-Chord
+  // gate, the 25s Compose auto-trigger) re-verified accurate against source, no changes needed.
   'Phrolova': [
     { type: 'Intro', skill: 'Suite of Immortality', note: 'Swap into her — since her Ultimate was cast last rotation, this empowered Intro auto-replaces the base one: a Stagnate hit counted as Skill DMG.' },
     { type: 'Basic ATK', skill: 'Stage 3', note: 'Press Basic Attack once — enters Reincarnate and grants 1 Volatile Note: Strings.' },
@@ -4006,10 +4031,10 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Movement of Fate and Finality / Murmurs in a Haunting Dream', note: 'Cast your 2nd Forte enhanced attack (pick to fit the encounter again) — cancel its animation instantly (Basic version) or when the portal opens (Skill version).' },
     { type: 'Basic ATK', skill: 'Stage 1-3', note: 'Tap Basic Attack 3 times — Stage 3 grants another Volatile Note: Strings, priming Reincarnate again.' },
     { type: 'Forte', skill: 'Movement of Fate and Finality / Murmurs in a Haunting Dream', note: 'Cast a 3rd Forte enhanced attack — by now she should be holding all 6 Volatile Notes needed for Scarlet Coda.' },
-    { type: 'Heavy ATK', skill: 'Scarlet Coda', note: 'With 6 Volatile Notes and in the Compose state (auto-triggers every 25s), HOLD Basic Attack (Heavy Attack replaced) — a Skill-type hit that scales with stacked Aftersound and activates the Resolving Chord state, unlocking her Ultimate.' },
+    { type: 'Heavy ATK', skill: 'Scarlet Coda', note: 'With 6 Volatile Notes, in the Compose state (auto-triggers every 25s on a fixed timer independent of her actions), and NOT already in Resolving Chord, HOLD Basic Attack (Heavy Attack replaced) — a Skill-type hit that scales with stacked Aftersound (cap 24 stacks) and activates the Resolving Chord state, unlocking her Liberation.' },
     { type: 'Echo', skill: 'Use Echo', note: 'Use your equipped Echo (Nightmare: Hecate) right after Scarlet Coda.' },
-    { type: 'Liberation', skill: 'Waltz of Forsaken Depths', duration: 24, note: 'Press Liberation (costs no Resonance Energy — she has none) — ends Resolving Chord and enters Maestro for 24s: +120% self ATK, and Hecate now fights alongside her, sharing her stats and cueable via Basic Attack/Dodge/Jump while she stays on-field.' },
-    { type: 'Outro', skill: 'Unfinished Piece', duration: 14, note: 'Swap out to trigger this automatically (Hecate keeps attacking off-field for the rest of Maestro\'s 24s, auto-triggering an Enhanced Attack whenever any teammate casts their own Echo Skill). Grants the incoming Resonator +20% Havoc DMG Amp and +25% Heavy ATK DMG Amp for 14s.' },
+    { type: 'Liberation', skill: 'Waltz of Forsaken Depths', duration: 24, note: 'Press Liberation (costs no Resonance Energy — her max is 0, and it is castable only while in the Resolving Chord state) — ends Resolving Chord and enters Maestro for 24s: +120% self ATK, and Hecate now fights alongside her, sharing her stats and cueable via Basic Attack/Dodge/Jump while she stays on-field.' },
+    { type: 'Outro', skill: 'Unfinished Piece', duration: 14, note: 'Swap out to trigger this automatically. Grants the incoming Resonator +20% Havoc DMG Amp and +25% Heavy ATK DMG Amp for 14s — ends immediately if THAT Resonator is swapped out. Only if Phrolova is still in Maestro state at the moment this Outro is cast does Hecate additionally fire 2 bonus Enhanced Attacks off-field before that same Maestro window (24s total) ends; off-field Hecate otherwise still auto-attacks and gains a normal Enhanced Attack whenever any teammate casts their own Echo Skill, capped at 10 such triggers per Maestro window (1 per unique Echo of the same name).' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
   // opened with a full Basic ATK combo before her Liberation and never mentioned Foebreaker, the
@@ -4358,12 +4383,42 @@ const RESONANCE_CHAIN_DATA = {
   // s5 Rekindle DMG Mult +120% (was totalMult:40, wrong category); s6 Heavy Slash Daybreak/Dawning/Nightfall/Lightsmash Mult +40% (was totalMult:40 + duplicate heavyDmg:40, consolidated).
   // Phoebe S1: Liberation mult increase ≈ libDmg 15. S3: Heavy ATK+40%
   'Phoebe':       { s1: { libDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
-  // Phrolova S1: skill mult+80% (no CR). S2: Scarlet Coda+75% + Aftersound (no CR)
-  'Phrolova':     { s1: { totalMult: 20 }, s2: { heavyDmg: 75 }, s3: { echoDmg: 80 }, s4: { allDmg: 20 }, s5: { totalMult: 10 }, s6: { elemDmg: 24 } },
-  // Phrolova R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 +80% DMG to Forte Basic/Skill (was totalMult:15, no basis — kept totalMult, real number too broad to cleanly categorize);
-  // s2 Scarlet Coda DMG Mult +75% (was totalMult:40); s3 Echo Skill DMG Amp +80% (was totalMult:15, wrong category);
-  // s4 team +20% Attribute DMG on team Echo Skill cast (was echoDmg:40, wrong stat — only applies in support role); s5 Maestro DMG taken −30% + Stagnation field, no direct DPS stat, totalMult fallback (was totalMult:15);
-  // s6 +24% Enhanced Attack-Hecate DMG (was deepen:25, wrong category).
+  // Phrolova R-chain re-verified 2026-08-31 verbatim against wutheringwaves.fandom.com/wiki/Phrolova/Combat
+  // (Resonance Chain section), cross-checked ww.nanoka.cc/character/1608. Every node checked individually,
+  // per the Changli lesson that existing values can be wrong in stat category, not just magnitude:
+  // S1 "A Key to Netherworld's Secrets": Movement of Fate and Finality DMG Mult +80% AND Murmurs in a
+  //   Haunting Dream DMG Mult +80% (was totalMult:20, magnitude wrong — real number is 80, not 20; kept
+  //   totalMult as the category since it buffs two specific Forte-follow-up multipliers, not a general
+  //   stat bucket). Also grants Volatile Note - Cadenza every 4s out-of-combat if she holds <2 Notes and
+  //   isn't in Maestro — TODO: needs Phase 2 schema (conditional out-of-combat resource regen, not a DPS stat).
+  // S2 "A Rope Tied to a Life Beyond": Scarlet Coda DMG Mult +75% (magnitude was already correct) BUT the
+  //   wiki explicitly states "This instance of damage is considered Resonance Skill DMG" — so the correct
+  //   stat category is skillDmg, NOT heavyDmg (Scarlet Coda replaces Heavy Attack as an input, but its
+  //   damage type is Skill; the old heavyDmg categorization was wrong exactly the way Changli's nodes were).
+  //   Node also doubles Aftersound's per-stack bonus to Scarlet Coda's multiplier (+75% instead of the
+  //   base +82.55%/stack-equivalent) and grants 14 Aftersound stacks on cast — TODO: needs Phase 2 schema
+  //   (stacking/per-cast resource grant, current schema has no field for either).
+  // S3 "A Dagger to Cut Clean Obsessions": Echo Skill DMG Amplified +80% — value and echoDmg category both
+  //   confirmed correct, no change. Node also converts all Volatile Notes to Cadenza on Scarlet Coda cast
+  //   and applies a 20% ATK reduction debuff (15s) to targets hit by Enhanced Attack-Hecate: Cadenza —
+  //   TODO: needs Phase 2 schema (enemy-side debuff + stateful note conversion, not a self DPS stat).
+  // S4 "A Torch Illuminating the Path": casting Echo Skill grants the WHOLE TEAM +20% Attribute DMG Bonus
+  //   for 30s — value (20) and allDmg category both confirmed correct, no change; duration is 30s (was
+  //   undocumented, added to this comment for the record — flat schema has no duration field).
+  // S5 "A Forked Road in Fate's Heartland": Maestro-entry Stagnate field (4s, ends early if she leaves
+  //   Maestro/swaps) + 30% DMG TAKEN reduction during Maestro — this is a purely defensive/utility node
+  //   with NO DMG-dealing component at all (was totalMult:10, force-fit with no basis in source). Left
+  //   empty per the "don't force-fit a lossy value" rule — TODO: needs Phase 2 schema (defensive stat,
+  //   current schema only models offensive stat additions).
+  // S6 "A Night to Depart From Eternal Rest": TWO conditional DMG components depending on whether Phrolova
+  //   is on-field during Maestro — off-field: enemies take +40% more DMG from Hecate/Phrolova (a DMG-taken
+  //   debuff, not a self buff); on-field: Phrolova gains +60% Havoc DMG Bonus (elemDmg) instead. Modeled
+  //   the larger, self-buff, on-field case as elemDmg:60 (was elemDmg:24, which was actually the node's
+  //   separate flat +24% Enhanced Attack-Hecate DMG Mult — correct number, wrong node component to surface
+  //   as the headline stat). TODO: needs Phase 2 schema for the on-field/off-field branch and the +24%
+  //   Enhanced Attack-Hecate-specific multiplier (echoDmg-typed, since Enhanced Attack-Hecate is Echo Skill
+  //   DMG) to be tracked alongside the +60% elemDmg rather than overwritten by it.
+  'Phrolova':     { s1: { totalMult: 80 }, s2: { skillDmg: 75 }, s3: { echoDmg: 80 }, s4: { allDmg: 20 }, s5: {}, s6: { elemDmg: 60 } },
   // Brant S1: +20% DMG dealt per stack x3 (allDmg type). S2: CR+30% + explosions
   'Brant':        { s1: { allDmg: 20 }, s2: { critRate: 30, totalMult: 25 }, s3: { totalMult: 15 }, s4: { elemDmg: 15 }, s5: { totalMult: 15 }, s6: { deepen: 40 } },
   // Augusta S1: +15% CD per Crown stack x2=30% (confirmed). S2: +20% CR per stack + excess CR→CD conversion
