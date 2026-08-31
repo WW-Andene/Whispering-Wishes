@@ -359,7 +359,17 @@ const CHARACTER_DATA = {
   // alt4 uses Augment (86.1%, best 4★) and Ocean's Gift (78.8%, #2 4★); alt3 uses the standard starter
   // Rectifier of Night, matching the convention used elsewhere.
   'Phoebe': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Graceful Luminescence, Acolyte of the Order of the Deep — a young woman of quiet devotion who fulfills her duties with unwavering diligence, her prayers offering comfort and peace like the light she carries. Dual-mode Spectro Hybrid who consumes Prayer at full Forte to enter either Absolution (self-buffed Main DPS, amplifying her own Heavy Attack Starflash against Spectro Frazzle) or Confession (support mode, stacking Spectro Frazzle onto enemies and buffing the on-field ally\'s Frazzle DMG via Outro) — Confession Phoebe is built specifically to empower Zani, her only current Frazzle-DPS partner.',
+    // desc rewritten 2026-08-31 with exact Forte economy, verified verbatim against
+    // wutheringwaves.fandom.com/wiki/Phoebe/Combat's "Forte" section (Chrome UA + google.com referer +
+    // jsRender): Prayer caps at 120 (+5/s passive, ~24s 0→full); Divine Voice caps at 60, refilled to 60
+    // by Absolution Litany/Utter Confession; the two modes are mutually exclusive and cannot coexist;
+    // Divine Voice reaching 0 does NOT auto-exit the mode (it persists until manually swapped); Starflash
+    // costs 30 Divine Voice base, 15 in Absolution (exactly 4 casts per full bar) with +256% DMG Amp vs
+    // Frazzle targets, or applies 5 Frazzle stacks per cast in Confession at the base 30 cost. Also
+    // corrects a prior implication of a Jinhsi-style 2-stage cast-order Liberation chain — Phoebe has no
+    // such mechanic; Dawn of Enlightenment is a single non-chained cast whose DMG Multiplier is simply
+    // mode-gated (+255% in Absolution; unchanged but applies 8 Frazzle stacks in Confession).
+    desc: 'Graceful Luminescence, Acolyte of the Order of the Deep — a young woman of quiet devotion who fulfills her duties with unwavering diligence, her prayers offering comfort and peace like the light she carries. Dual-mode Spectro Hybrid whose Prayer gauge (cap 120, +5/s passive regen, ~24s to fill) auto-fills with no action needed; at full Prayer, holding Basic ATK casts Absolution Litany (entering self-buffed "Absolution" Main DPS mode) or holding Skill casts Utter Confession (entering "Confession" Frazzle-support mode) — the two are mutually exclusive, entering one ends the other, and each refills her separate Divine Voice gauge (cap 60) which fuels her empowered Heavy ATK Starflash. Starflash costs 30 Divine Voice normally, only 15 in Absolution (letting exactly 4 casts drain a full bar) with +256% DMG Amp against Spectro-Frazzled targets, or costs the base 30 in Confession while applying 5 Frazzle stacks per cast; notably, Divine Voice hitting 0 does not force an exit from either mode — it persists until manually swapped. Her Liberation, Dawn of Enlightenment, is a single non-chained cast (no Jinhsi-style timed cast-order window) whose DMG Multiplier is simply mode-gated: +255% in Absolution, or unchanged (but applying 8 Frazzle stacks) in Confession. Confession Phoebe is built specifically to empower Zani, her only current Frazzle-DPS partner, via her Outro\'s Silent Prayer buff.',
     skills: ['O Come Divine Light', 'To Where Light Shines', 'Dawn of Enlightenment', 'Radiant Invocation'],
     ascension: { boss: 'Cleansing Conch', common: 'Whisperin Core', specialty: 'Firecracker Jewelweed' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
@@ -3150,16 +3160,25 @@ const SKILL_MULTIPLIERS = {
   // row except Outro was roughly half its real value (e.g. Absolution Litany — her core Forte burst —
   // was listed as '321%' vs the real 638.19%) — the same halving pattern already found and fixed across
   // Camellya/Carlotta/Roccia's rows. Outro (528.4%, matching nanoka's 528.41% exactly) is unchanged.
+  // Re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Phoebe/Combat's Lv.10 Attribute
+  // Scaling tables. Basic ATK Stage 2 and Chamuel's Star Stage 2 were each stored as one collapsed number
+  // (49.7%, 79.5%) that actually sums TWO separate hits (real: 22.37%+27.34% and 39.77%×2 respectively) —
+  // corrected to the per-hit "A+B" / "A×N" notation used everywhere else in this table so the hit count
+  // isn't lost. Every other row (Heavy ATK, Skill, Forte Starflash/Absolution Litany, Liberation, Intro,
+  // Outro) matches the fandom Lv.10 row exactly, no further changes. Also added each skill's mode-gated
+  // Confession-side effect where the wiki text gives one (Liberation applies 8 Frazzle stacks instead of
+  // its Absolution DMG bump; Outro instead grants the Silent Prayer support buff) so the DMG-only number
+  // isn't read as the whole picture.
   'Phoebe': [
-    ['Basic ATK', 'Stage 1-3', '29.5% → 49.7% → 14.2%×8'],
+    ['Basic ATK', 'Stage 1-3', '29.5% → 22.4%+27.3% → 14.2%×8'],
     ['Heavy ATK', 'Standard', '41.4%×4'],
     ['Skill', 'To Where Light Shines', '62.6%×2'],
-    ['Skill', "Chamuel's Star 1-3", '59.4% → 79.5% → 28.9%×6'],
+    ['Skill', "Chamuel's Star 1-3", '59.4% → 39.8%×2 → 28.9%×6'],
     ['Forte', 'Starflash', '82.7%×3'],
     ['Forte', 'Absolution Litany', '638.2%'],
-    ['Liberation', 'Dawn of Enlightenment', '401.6% (+255% in Absolution)'],
+    ['Liberation', 'Dawn of Enlightenment', '401.6% (+255% DMG Mult in Absolution / 8 Frazzle stacks applied in Confession, no DMG Mult change)'],
     ['Intro', 'Golden Grace', '198.8%'],
-    ['Outro', 'Attentive Heart', '528.4%'],
+    ['Outro', 'Attentive Heart', '528.4% (+255% DMG Mult in Absolution / grants Silent Prayer support buff in Confession)'],
   ],
   // Corrected 2026-08-17 against ww.nanoka.cc's character #1608 sheet (Lv.10 skill attributes): every
   // row except Outro was roughly half its true value (e.g. her Liberation cast Curtain Call was listed
@@ -3596,14 +3615,22 @@ const CHARACTER_ROTATIONS = {
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
   // Uses her Absolution (self-DPS) rotation, Prydwen's higher-rated mode (T1.5 DPS vs T2 Hybrid) —
   // Confession mode swaps the Forte cast for Utter Confession and only loops 2x instead of 4x.
+  // Exact resource numbers re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Phoebe/Combat's
+  // "Forte" section: Prayer caps at 120, +5/s passive regen (0→120 = 24s, matching the existing note);
+  // Divine Voice caps at 60, refilled to 60 by either Absolution Litany or Utter Confession; entering one
+  // of Absolution/Confession ends the other and the two casts "cannot coexist"; while Divine Voice > 0,
+  // Absolution Litany/Utter Confession cannot be recast, and — notably — Divine Voice hitting 0 does NOT
+  // force an exit from Absolution/Confession, the mode itself persists until manually swapped out of.
+  // Starflash costs 30 Divine Voice at base, reduced to 15 by the Absolution Enhancement — exactly 4 casts
+  // (60÷15) drain a full bar, confirming the existing "4 times total" loop count is correct.
   'Phoebe': [
     { type: 'Intro', skill: 'Golden Grace', note: 'Swap into her — fires automatically, dealing minor knockback damage. No button press needed.' },
-    { type: 'Skill', skill: 'To Where Light Shines', note: 'Press Skill to plant a Ring of Mirrors at your target — anything hit is frozen in place for 2s. Press Skill again shortly after to teleport into the ring\'s center (optional, but standing inside it roughly doubles her Basic Attack damage for the rest of the rotation).' },
-    { type: 'Forte', skill: 'Absolution Litany', note: 'Her Prayer gauge fills passively at 5/second with no action needed — once it hits 120 (about 24s after her last use), HOLD Basic Attack to unleash this, entering "Absolution" mode and refilling her separate Divine Voice gauge to 60.' },
-    { type: 'Liberation', skill: 'Dawn of Enlightenment', note: 'Cast Liberation immediately after Absolution Litany — this also cancels Absolution Litany\'s ending animation, saving time. Deals a big hit with +255% DMG in Absolution mode.' },
+    { type: 'Skill', skill: 'To Where Light Shines', note: 'Press Skill to plant a Ring of Mirrors at your target — anything hit is frozen in place for 2s (up to 12 targets). Press Skill again shortly after to teleport into the ring\'s center (optional, but standing inside it swaps Basic Attack to the stronger Chamuel\'s Star combo for the rest of the rotation). The Ring lasts 30s and casting it again replaces any existing Ring.' },
+    { type: 'Forte', skill: 'Absolution Litany', note: 'Her Prayer gauge fills passively at 5/second with no action needed — once it hits its 120 cap (about 24s after her last use), HOLD Basic Attack to unleash this, entering "Absolution" mode (ends Confession if active), applying 1 Spectro Frazzle stack, and refilling her separate Divine Voice gauge to its 60 cap.' },
+    { type: 'Liberation', skill: 'Dawn of Enlightenment', note: 'Cast Liberation immediately after Absolution Litany — this also cancels Absolution Litany\'s ending animation, saving time. Deals a single (non-chained) hit with DMG Multiplier +255% while in Absolution mode (in Confession mode it instead applies 8 Spectro Frazzle stacks, with no DMG Multiplier change).' },
     { type: 'Skill', skill: "Chamuel's Star 1-3", note: 'While standing inside the Ring of Mirrors, tap Basic Attack 3 times — her Basic Attack is automatically replaced by this stronger combo while inside the ring.' },
-    { type: 'Forte', skill: 'Starflash', note: 'Right after landing Basic Attack Stage 3 (or a Dodge Counter), her Heavy Attack becomes this automatically — press Heavy Attack to fire it, consuming Divine Voice. Repeat the "3 Basics into Starflash" pattern 4 times total until Divine Voice runs out.' },
-    { type: 'Outro', skill: 'Attentive Heart', note: 'Swap out after the 4th Starflash to trigger this automatically — deals a final hit with +255% DMG in Absolution mode.' },
+    { type: 'Forte', skill: 'Starflash', note: 'Right after landing Basic Attack Stage 3 (or a Dodge Counter) while Divine Voice > 0, her Heavy Attack becomes this automatically — press Heavy Attack to fire it, consuming 15 Divine Voice per cast in Absolution mode (base cost 30, reduced by 15 via the Absolution Enhancement) and gaining +256% DMG Amp against targets already carrying Spectro Frazzle. Repeat the "3 Basics into Starflash" pattern exactly 4 times (60÷15 Divine Voice) until the gauge empties.' },
+    { type: 'Outro', skill: 'Attentive Heart', note: 'Swap out after the 4th Starflash to trigger this automatically — deals a final hit with DMG Multiplier +255% while in Absolution mode (in Confession mode it instead grants the on-field ally Silent Prayer: -10% target Spectro RES + 100% Spectro Frazzle DMG Amp + 50% longer Frazzle damage interval, lasting 30s or until Phoebe swaps back to Absolution).' },
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Roccia (2026-08-17,
   // Chrome UA + google.com referer + jsRender). This section was previously entirely missing for her.
@@ -4530,7 +4557,35 @@ const RESONANCE_CHAIN_DATA = {
   // for the same skill (prydwen and the Forte/Liberation section of fandom's own page agree it's The Last
   // Stand), not a separate mechanic; does not affect the stored value.
   // Phoebe S1: Liberation mult increase ≈ libDmg 15. S3: Heavy ATK+40%
-  'Phoebe':       { s1: { libDmg: 15 }, s2: { skillDmg: 25 }, s3: { heavyDmg: 40 }, s4: { atkPct: 15 }, s5: { totalMult: 15 }, s6: { critDmg: 25 } },
+  // Phoebe R-chain re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Phoebe/Combat's
+  // "Resonance Chain" section (Chrome UA + google.com referer + jsRender). Every node was previously wrong
+  // — the old {libDmg:15, skillDmg:25, heavyDmg:40, atkPct:15, totalMult:15, critDmg:25} placeholder set
+  // had no basis in the real text at all (wrong category on 4 of 6 nodes, and Phoebe has no Crit Rate/DMG
+  // R-chain node whatsoever). All values below use her Absolution-mode number (matching this file's
+  // Absolution-mode rotation/build) with the Confession-mode alternate noted; both modes are given
+  // verbatim so nothing is invented:
+  // S1 Warm Light and Bedside Wishes: Dawn of Enlightenment DMG Mult 255%→480% in Absolution (delta +225,
+  //   modeled as libDmg:225); in Confession instead +90% DMG Mult and max-stack Frazzle application.
+  // S2 A Boat Adrift in Tears: in Absolution, Outro DMG to Frazzle-afflicted targets +120% Amp; in
+  //   Confession, Silent Prayer's Frazzle DMG Amp is itself increased by another 120%. Both are Frazzle-
+  //   DMG-Amp effects (same stat category as Attentive Heart's own Confession 100% deepen buff), modeled
+  //   as deepen:120 (was skillDmg:25 — wrong category, Phoebe's S2 never touches Skill DMG at all).
+  // S3 Daisy Wreaths and Dreams: Starflash DMG Mult +91% in Absolution / +249% in Confession (was
+  //   heavyDmg:40 — magnitude wrong, real Absolution number is more than double that).
+  // S4 Ringing Bells on Wings Aloft: Basic ATK/Chamuel's Star/Dodge Counter/Chamuel's Star: Dodge Counter
+  //   hits reduce the target's Spectro RES by 10% for 30s — a RES Shred, not an ATK buff (was atkPct:15,
+  //   wrong category with no basis; corrected to resShred:10).
+  // S5 Prayer to the Distant Light: casting Intro Skill Golden Grace grants +12% Spectro DMG Bonus for
+  //   15s — an elemental DMG buff conditional on the Intro cast (was totalMult:15, wrong category;
+  //   corrected to elemDmg:12).
+  // S6 Whispering Chirps in Silence: in Absolution/Confession, summoning a Ring of Mirrors (Resonance
+  //   Skill cast) grants +10% ATK for 20s AND triggers one free extra Starflash at the ring (no Divine
+  //   Voice cost, not counted as a Heavy ATK cast for other interactions) — was critDmg:25 with no basis
+  //   at all; Phoebe has no Crit stat anywhere in her real R-chain. Corrected to atkPct:10 for the ATK
+  //   portion. TODO: needs Phase 2 schema — the free bonus Starflash proc (a real extra damage instance)
+  //   and the node's non-DPS extended-stagnation utility (+2s stagnation, all-target application) can't be
+  //   represented by this flat {stat:value} schema and are left out rather than force-fit into atkPct.
+  'Phoebe':       { s1: { libDmg: 225 }, s2: { deepen: 120 }, s3: { heavyDmg: 91 }, s4: { resShred: 10 }, s5: { elemDmg: 12 }, s6: { atkPct: 10 } },
   // Phrolova R-chain re-verified 2026-08-31 verbatim against wutheringwaves.fandom.com/wiki/Phrolova/Combat
   // (Resonance Chain section), cross-checked ww.nanoka.cc/character/1608. Every node checked individually,
   // per the Changli lesson that existing values can be wrong in stat category, not just magnitude:
