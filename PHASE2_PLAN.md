@@ -444,8 +444,61 @@ totalMult guess for this — same non-negotiable as every other zeroed node.
    returned in time is fundamentally cross-character, which a single
    character's own `CHARACTER_ROTATIONS` array can't answer; that still
    needs either a hand-built step or the multi-character interleaving
-   below. **Multi-character interleaving itself is NOT started** — still
-   needed before any of this can feed `calcTeamStats.js` for real.
+   below. **Multi-character interleaving: DONE 2026-09-01.**
+   `RotationSimulator`'s methods (`isReady`/`useCooldown`, `openWindow`/
+   `tryWindowedCast`, `openProcWindow`/`tryProc`, `recordCast`/
+   `hasCastThisSegment`/`resetSegment`) now take an optional `owner`
+   namespace parameter, composed into their internal Map/Set keys —
+   backward-compatible (every single-character call omits it, defaulting
+   consistently to `''`, identical behavior to before). `_outroWindows`/
+   `registerSwap()` deliberately have NO owner param: partner-outro-return
+   and the swap clock are inherently cross-character/global, not
+   per-character, by design. `simulateRotation(blocks, steps)` is now a
+   thin wrapper over a new shared core (`simulateStepsCore`) — single- and
+   multi-character resolution are the SAME code path, not two parallel
+   implementations that could drift.
+   New: `simulateTeamRotation(ownedSteps, blocksByOwner)` — the low-level
+   multi-character entry point (an already owner-tagged, time-ordered step
+   array + each member's own block set). New: `buildTeamSteps(members)` —
+   the real-data entry point: reuses `deriveStepsFromRotation()` per member
+   (no duplicated annotation logic), then adds exactly the two things a
+   single character's own view can't know: (1) a guaranteed swap boundary
+   between every consecutive member pair regardless of whether the
+   outgoing member happens to have an outro-BUFF block (Camellya's
+   `outroBuffs` is genuinely empty, but her swap-out still has to count
+   against the team's shared swap clock or Augusta-style
+   `maxInterveningSwaps` counting would silently undercount), and (2)
+   `partnerReturnFor` cross-referencing for `partner-outro-return` blocks —
+   when member `i` has one gating on their own outro, member `i+1` (the
+   very next member in team order, matching how `'next-on-field'` buffs
+   already resolve elsewhere in this codebase) has their own real Outro
+   step tagged as the return attempt.
+   Verified against REAL `CHARACTER_ROTATIONS` data for a genuine 3-member
+   team (Augusta + Yinlin + Rover: Electro) in
+   `__tests__/simulateTeamRotation.test.js` (10 tests) — this is the first
+   time Augusta's Majesty/`partner-outro-return` condition (the ONLY reason
+   that trigger type exists in the schema at all) has been proven against
+   a real multi-character timeline rather than a single character's block
+   set in isolation or a fully hand-fed `firedTriggers` set. Includes a
+   discrimination test (not just an always-succeeds check): reordering the
+   team so Rover: Electro sits between Augusta and Yinlin correctly
+   redirects the cross-reference to Rover: Electro (the ACTUAL next
+   member) instead of silently keeping it pinned to Yinlin.
+   **Also found and fixed while building this**: `RotationSimulator`'s
+   state was never actually isolated per character even conceptually
+   before this refactor — a real fix, not just new capability, since any
+   FUTURE multi-character caller would have silently cross-contaminated
+   cooldowns/windows/segments between characters without it (verified
+   explicitly in `simulateTeamRotation.test.js`'s "owner-namespaced state
+   stays isolated" describe block).
+   Still NOT done: feeding this into `calcTeamStats.js` for a real
+   user-visible number (needs `resolveSimulatedRotation.js`'s
+   single-character time-integration driver generalized to consume a
+   `simulateTeamRotation` timeline instead of `simulateRotation`'s — not
+   attempted in this pass), and `buildTeamSteps` still expects the caller
+   to supply members in already-decided on-field order (reusing
+   `calcTeamStats.js`'s own order-search logic, not reimplementing it, is
+   the obvious next step rather than assuming a fixed order).
 3. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
    schema` comment left by the Phase 1 passes for the full sourced backlog
    of known-hard mechanics, one entry per real conditional mechanic found

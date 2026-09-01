@@ -50,9 +50,20 @@ export class RotationSimulator {
     this._cooldowns = new Map();
   }
 
+  // Owner-namespacing: every method below that tracks a SINGLE character's own rotation history
+  // (cooldowns, windowed-cast windows, proc windows, requires-prior-cast segments) takes an optional
+  // `owner` string and composes it into the internal Map/Set key. Single-character callers (every
+  // test/driver written before multi-character interleaving) simply omit `owner`, which defaults to
+  // '' consistently everywhere — same effective keys as before this refactor, so no behavior change
+  // for any existing caller. `_outroWindows` and `registerSwap()` deliberately have NO owner
+  // parameter: partner-outro-return is inherently cross-character (Augusta's OWN block tracks
+  // whether a DIFFERENT character returned an Outro), and the swap counter has to be one shared
+  // clock across the whole team, not per-character.
+  #ns(key, owner) { return `${owner || ''}::${key}`; }
+
   /** Is `blockId` off cooldown (or never used) at the simulator's current time? */
-  isReady(blockId) {
-    const readyAt = this._cooldowns.get(blockId);
+  isReady(blockId, owner) {
+    const readyAt = this._cooldowns.get(this.#ns(blockId, owner));
     return readyAt == null || this.time >= readyAt;
   }
 
@@ -60,25 +71,30 @@ export class RotationSimulator {
    *  already returned true for it — this doesn't itself check readiness, so a caller that ignores
    *  isReady() can still record overlapping activations (garbage in, garbage out, same as every
    *  other method on this class). */
-  useCooldown(blockId, cooldownSeconds) {
-    this._cooldowns.set(blockId, this.time + cooldownSeconds);
+  useCooldown(blockId, cooldownSeconds, owner) {
+    this._cooldowns.set(this.#ns(blockId, owner), this.time + cooldownSeconds);
   }
 
   /** Call for every 'cast:TYPE:SKILL' key that occurs, so requires-prior-cast can later check it. */
-  recordCast(castKey) {
-    this._castsThisSegment.add(castKey);
+  recordCast(castKey, owner) {
+    this._castsThisSegment.add(this.#ns(castKey, owner));
   }
 
   /** Has `castKey` occurred since the last resetSegment()? Does not consume — a prior cast can gate
    *  multiple later blocks (e.g. every Twining-style hit for the rest of the segment). */
-  hasCastThisSegment(castKey) {
-    return this._castsThisSegment.has(castKey);
+  hasCastThisSegment(castKey, owner) {
+    return this._castsThisSegment.has(this.#ns(castKey, owner));
   }
 
   /** Call on swap-IN (a new on-field segment starting) — requires-prior-cast dependencies don't
-   *  carry across a swap-out/swap-in cycle, only within one continuous on-field window. */
-  resetSegment() {
-    this._castsThisSegment = new Set();
+   *  carry across a swap-out/swap-in cycle, only within one continuous on-field window. Only clears
+   *  THIS owner's cast records (matters in team mode — one member swapping in must not wipe every
+   *  other member's already-recorded casts). */
+  resetSegment(owner) {
+    const prefix = this.#ns('', owner);
+    for (const k of this._castsThisSegment) {
+      if (k.startsWith(prefix)) this._castsThisSegment.delete(k);
+    }
   }
 
   advance(seconds) {
@@ -86,8 +102,8 @@ export class RotationSimulator {
   }
 
   /** Call when a windowed-cast block's opensOn trigger fires. */
-  openWindow(windowKey) {
-    this._windows.set(windowKey, this.time);
+  openWindow(windowKey, owner) {
+    this._windows.set(this.#ns(windowKey, owner), this.time);
   }
 
   /**
@@ -95,9 +111,10 @@ export class RotationSimulator {
    * (a real window can only be tried once) and returns whether it landed in time.
    * Returns false with no side effect beyond consumption if the window was never opened.
    */
-  tryWindowedCast(windowKey, windowSeconds) {
-    const openedAt = this._windows.get(windowKey);
-    this._windows.delete(windowKey);
+  tryWindowedCast(windowKey, windowSeconds, owner) {
+    const k = this.#ns(windowKey, owner);
+    const openedAt = this._windows.get(k);
+    this._windows.delete(k);
     if (openedAt == null) return false;
     return (this.time - openedAt) <= windowSeconds;
   }
@@ -106,8 +123,8 @@ export class RotationSimulator {
    *  resetting its count. A cast that reopens an already-open window (e.g. re-casting Liberation
    *  before the prior 30s window closed) restarts the count, matching "in the first 30s after
    *  casting" being anchored to the MOST RECENT cast, not accumulating across casts. */
-  openProcWindow(windowKey, windowSeconds, maxProcs) {
-    this._procWindows.set(windowKey, { openedAt: this.time, windowSeconds, count: 0, maxProcs });
+  openProcWindow(windowKey, windowSeconds, maxProcs, owner) {
+    this._procWindows.set(this.#ns(windowKey, owner), { openedAt: this.time, windowSeconds, count: 0, maxProcs });
   }
 
   /** Call when a qualifying hit (the proc block's `on` type) occurs while a proc window might be
@@ -116,13 +133,14 @@ export class RotationSimulator {
    *  on a successful proc; closes (deletes) the window once it's both expired and exhausted is not
    *  required — expiry alone doesn't delete the entry (a later hit checks elapsed time again), but
    *  once maxProcs is reached the window is removed since no further check can ever succeed. */
-  tryProc(windowKey) {
-    const w = this._procWindows.get(windowKey);
+  tryProc(windowKey, owner) {
+    const k = this.#ns(windowKey, owner);
+    const w = this._procWindows.get(k);
     if (!w) return false;
-    if ((this.time - w.openedAt) > w.windowSeconds) { this._procWindows.delete(windowKey); return false; }
+    if ((this.time - w.openedAt) > w.windowSeconds) { this._procWindows.delete(k); return false; }
     if (w.count >= w.maxProcs) return false;
     w.count += 1;
-    if (w.count >= w.maxProcs) this._procWindows.delete(windowKey);
+    if (w.count >= w.maxProcs) this._procWindows.delete(k);
     return true;
   }
 
@@ -179,24 +197,47 @@ export class RotationSimulator {
  *   timeline instead of only knowing relative step order.
  */
 export function simulateRotation(blocks, steps) {
-  const sim = new RotationSimulator();
-  const windowedBlocks = blocks.filter(b => b.trigger.type === 'windowed-cast');
-  const partnerBlocks = blocks.filter(b => b.trigger.type === 'partner-outro-return');
-  const priorCastBlocks = blocks.filter(b => b.trigger.type === 'requires-prior-cast');
-  const procBlocks = blocks.filter(b => b.trigger.type === 'windowed-proc');
-  const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
-  // Cooldown-gated 'cast' blocks — trigger.on is the same TYPE:SKILL label attemptOn/checksAt/on
-  // (proc) already use, so matching a step to its own block(s) is the same lookup pattern.
-  const cooldownCastBlocks = blocks.filter(b => b.trigger.type === 'cast' && b.trigger.on && b.timing?.cooldown != null);
+  return simulateStepsCore(new RotationSimulator(), steps.map(s => ({ ...s, owner: '' })), { '': blocks });
+}
+
+// The real shared implementation behind both simulateRotation() (single character) and
+// simulateTeamRotation() (multi-character — see that function below). Single-character mode is
+// simply the special case where every step's owner is '' and `blocksByOwner` has one entry — this
+// function doesn't know or care whether it's resolving one character's own kit or a full team's
+// interleaved timeline, since every owner-scoped RotationSimulator call already takes the owner
+// namespace as a parameter (see RotationSimulator's own #ns doc comment for why `_outroWindows`/
+// registerSwap() deliberately have NO owner param: partner-outro-return and the swap clock are
+// inherently cross-character/global, not per-owner).
+function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
+  const allBlocks = Object.values(blocksByOwner).flat();
+  // partnerBlocks is intentionally NOT scoped per-owner: a 'partner-outro-return' block can belong
+  // to any team member (in practice, so far, only Augusta-shaped kits have one) and its
+  // `requiresActiveBlock` references THAT SAME member's own outro-buff block id — which step's
+  // isOutroCast should open that gate is resolved per-step below by looking up the CURRENT step's
+  // own owner's outro block, then searching this global list for a match.
+  const partnerBlocks = allBlocks.filter(b => b.trigger.type === 'partner-outro-return');
 
   const results = [];
-  for (const ev of steps) {
+  for (const ev of ownedSteps) {
+    const owner = ev.owner || '';
+    const blocks = blocksByOwner[owner] || [];
+    const windowedBlocks = blocks.filter(b => b.trigger.type === 'windowed-cast');
+    const priorCastBlocks = blocks.filter(b => b.trigger.type === 'requires-prior-cast');
+    const procBlocks = blocks.filter(b => b.trigger.type === 'windowed-proc');
+    const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
+    // Cooldown-gated 'cast' blocks — trigger.on is the same TYPE:SKILL label attemptOn/checksAt/on
+    // (proc) already use, so matching a step to its own block(s) is the same lookup pattern.
+    const cooldownCastBlocks = blocks.filter(b => b.trigger.type === 'cast' && b.trigger.on && b.timing?.cooldown != null);
+
     sim.advance(ev.stepSeconds ?? DEFAULT_STEP_SECONDS);
     const fired = new Set(['passive']); // passive blocks are always eligible, same as every prior test's convention
     const ineligibleBlockIds = new Set();
 
+    // registerSwap()/the swap clock are global (no owner) — every swap counts against every open
+    // partner-outro window across the WHOLE team, not just this step's own owner. resetSegment IS
+    // owner-scoped: one member swapping in must not wipe another member's already-recorded casts.
     if (ev.isSwap) sim.registerSwap();
-    if (ev.isSwapIn) sim.resetSegment();
+    if (ev.isSwapIn) sim.resetSegment(owner);
     // Real gap found while building resolveSimulatedRotation.js: this loop tracked swap EVENTS for
     // window bookkeeping (registerSwap/resetSegment above) but never actually marked the plain
     // 'swap-out'/'swap-in' trigger keys as fired — meaning every outro-buff block in the roster
@@ -211,20 +252,20 @@ export function simulateRotation(blocks, steps) {
     if (ev.type && ev.skill) {
       const castKey = `cast:${ev.type}:${ev.skill}`;
       fired.add(castKey);
-      sim.recordCast(castKey);
+      sim.recordCast(castKey, owner);
       for (const b of windowedBlocks) {
-        if (b.trigger.opensOn.includes(castKey)) sim.openWindow(b.trigger.opensOn.join('|'));
+        if (b.trigger.opensOn.includes(castKey)) sim.openWindow(b.trigger.opensOn.join('|'), owner);
       }
       for (const b of procBlocks) {
         if (b.trigger.opensOnProc.includes(castKey)) {
-          sim.openProcWindow(b.trigger.opensOnProc.join('|'), b.trigger.windowSeconds, b.trigger.maxProcs);
+          sim.openProcWindow(b.trigger.opensOnProc.join('|'), b.trigger.windowSeconds, b.trigger.maxProcs, owner);
         }
       }
       const label = `${ev.type}:${ev.skill}`;
       for (const b of cooldownCastBlocks) {
         if (b.trigger.on !== label) continue;
-        if (sim.isReady(b.id)) {
-          sim.useCooldown(b.id, b.timing.cooldown);
+        if (sim.isReady(b.id, owner)) {
+          sim.useCooldown(b.id, b.timing.cooldown, owner);
         } else {
           // Cast attempted while this specific block is still on cooldown — the raw input still
           // shows up in `fired` (the button was pressed), but the block itself must not resolve
@@ -239,7 +280,7 @@ export function simulateRotation(blocks, steps) {
 
     if (ev.checksPriorCast) {
       const b = priorCastBlocks.find(x => x.id === ev.checksPriorCast);
-      if (b && sim.hasCastThisSegment(b.trigger.requiresPriorCast)) {
+      if (b && sim.hasCastThisSegment(b.trigger.requiresPriorCast, owner)) {
         fired.add(`requires-prior-cast:${b.trigger.requiresPriorCast}`);
       }
     }
@@ -248,7 +289,7 @@ export function simulateRotation(blocks, steps) {
       const b = windowedBlocks.find(x => x.id === ev.consumesWindowBlockId);
       if (b) {
         const windowKey = b.trigger.opensOn.join('|');
-        if (sim.tryWindowedCast(windowKey, b.trigger.windowSeconds)) {
+        if (sim.tryWindowedCast(windowKey, b.trigger.windowSeconds, owner)) {
           fired.add(`windowed-cast:${windowKey}`);
         }
       }
@@ -263,7 +304,7 @@ export function simulateRotation(blocks, steps) {
       const b = procBlocks.find(x => x.id === ev.triesProc);
       if (b) {
         const windowKey = b.trigger.opensOnProc.join('|');
-        if (sim.tryProc(windowKey)) {
+        if (sim.tryProc(windowKey, owner)) {
           fired.add(`windowed-proc:${windowKey}`);
         }
       }
@@ -275,7 +316,7 @@ export function simulateRotation(blocks, steps) {
       }
     }
 
-    results.push({ step: ev, firedTriggers: fired, ineligibleBlockIds, time: sim.time });
+    results.push({ step: ev, owner, firedTriggers: fired, ineligibleBlockIds, time: sim.time });
   }
   return results;
 }
@@ -342,4 +383,97 @@ export function deriveStepsFromRotation(rotation, blocks, stepSeconds = DEFAULT_
 
     return step;
   });
+}
+
+/**
+ * Multi-character interleaving — PHASE2_PLAN.md's other remaining engine gap. Everything above this
+ * point (RotationSimulator, simulateRotation, deriveStepsFromRotation) resolves ONE character's own
+ * kit in isolation. Real teams interleave: Augusta's 'partner-outro-return' needs to know when a
+ * DIFFERENT character casts their own Outro; the swap clock that gates it has to count every swap
+ * across the WHOLE team, not just one character's own. This is exactly why RotationSimulator's
+ * methods were just refactored to take an optional `owner` namespace (see the class's own #ns doc
+ * comment) — `simulateTeamRotation` is the actual multi-character consumer of that refactor.
+ *
+ * @param {{owner: string, blocks: import('./triggerBlocks.schema.js').TriggerBlock[]}[]} membersWithSteps
+ *   Not quite right shape — see buildTeamSteps below for how real callers should normally get here.
+ *   This function's OWN contract is simpler and lower-level: it just needs an already-owner-tagged,
+ *   already-time-ordered step array (each step has an `owner` field naming which team member it
+ *   belongs to) plus a lookup of each owner's own block set.
+ * @param {Object[]} ownedSteps  Same per-step shape simulateRotation() takes, PLUS a required
+ *   `owner` field (the team member's name) on every step.
+ * @param {Object<string, import('./triggerBlocks.schema.js').TriggerBlock[]>} blocksByOwner
+ *   Each team member's own block set, keyed by the same owner name used in `ownedSteps`.
+ * @returns Same shape as simulateRotation()'s return, with `owner` populated per result instead of
+ *   always ''.
+ */
+export function simulateTeamRotation(ownedSteps, blocksByOwner) {
+  return simulateStepsCore(new RotationSimulator(), ownedSteps, blocksByOwner);
+}
+
+/**
+ * Builds a real, owner-tagged, time-ordered team step sequence from each member's own
+ * CHARACTER_ROTATIONS data and block set — the team-level equivalent of deriveStepsFromRotation(),
+ * and the thing that actually makes simulateTeamRotation() usable against real app data instead of a
+ * hand-built fixture. Reuses deriveStepsFromRotation() per member (no duplicated annotation logic),
+ * then adds exactly two things a single character's own view can't know:
+ *
+ *   1. Swap boundaries between members — guaranteed on every non-last member's own final step
+ *      regardless of whether that member happens to have an outro-BUFF block (Camellya, for example,
+ *      has no outroBuffs at all — CHAR_BUFF_TABLE['Camellya'].outroBuffs is genuinely empty — but her
+ *      swap-out still has to count against the team's shared swap clock, or Augusta-style
+ *      maxInterveningSwaps counting would silently undercount). deriveStepsFromRotation's own
+ *      isSwap/isOutroCast heuristic (Outro-type step + an own-outro BUFF block) is trusted first
+ *      since it's more semantically precise (real cast happening then); this only backfills the
+ *      swap BOUNDARY itself when that heuristic had nothing to attach it to.
+ *   2. `partnerReturnFor` cross-referencing for 'partner-outro-return' blocks (Augusta-shaped kits):
+ *      when member i has such a block gating on their OWN outro, and member i+1 (the very next member
+ *      in team order — who is who they buffed, matching how 'next-on-field' buffs already resolve
+ *      elsewhere in this codebase) later casts THEIR OWN outro, that step is tagged so
+ *      tryPartnerOutroReturn() actually gets attempted there — a single character's own
+ *      deriveStepsFromRotation output has no way to know this, since it doesn't know who comes next
+ *      in the team.
+ *
+ * @param {{name: string, rotation: Object[], blocks: import('./triggerBlocks.schema.js').TriggerBlock[], stepSeconds?: number}[]} members
+ *   Team members in ON-FIELD ORDER (matches calcTeamStats.js's own rotationTimeline.segments
+ *   ordering convention — supports first, main DPS last). `rotation` is that member's own
+ *   CHARACTER_ROTATIONS[name] array.
+ * @returns {{ownedSteps: Object[], blocksByOwner: Object}} ready to pass straight into
+ *   simulateTeamRotation(ownedSteps, blocksByOwner).
+ */
+export function buildTeamSteps(members) {
+  const ownedSteps = [];
+  const blocksByOwner = {};
+  const ownOutroBlockOf = (m) => m.blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
+  const partnerReturnBlockOf = (m) => m.blocks.find(b => b.trigger.type === 'partner-outro-return');
+
+  members.forEach((member, i) => {
+    blocksByOwner[member.name] = member.blocks;
+    const perMemberSteps = deriveStepsFromRotation(member.rotation, member.blocks, member.stepSeconds);
+    const tagged = perMemberSteps.map(s => ({ ...s, owner: member.name }));
+
+    // Guarantee (1): every member's own first step is a real swap-in for THEM, regardless of
+    // whether their CHARACTER_ROTATIONS happens to literally start with an 'Intro'-type step.
+    if (tagged.length) tagged[0].isSwapIn = true;
+    // Guarantee (1) continued: every non-last member's own final step is a real swap boundary,
+    // regardless of whether deriveStepsFromRotation's own Outro-type + own-outro-block heuristic
+    // already caught it.
+    if (tagged.length && i < members.length - 1) tagged[tagged.length - 1].isSwap = true;
+
+    ownedSteps.push(...tagged);
+
+    // Guarantee (2): if the PREVIOUS member has a partner-outro-return block gating on their own
+    // outro, and THIS member is the very next one in team order (the partner they buffed), tag THIS
+    // member's own outro-cast step (if any) as the return attempt.
+    if (i > 0) {
+      const prev = members[i - 1];
+      const prevOwnOutro = ownOutroBlockOf(prev);
+      const prevPartnerBlock = partnerReturnBlockOf(prev);
+      if (prevOwnOutro && prevPartnerBlock && prevPartnerBlock.trigger.requiresActiveBlock === prevOwnOutro.id) {
+        const thisMembersOutroStep = [...tagged].reverse().find(s => s.isOutroCast);
+        if (thisMembersOutroStep) thisMembersOutroStep.partnerReturnFor = prevPartnerBlock.trigger.requiresActiveBlock;
+      }
+    }
+  });
+
+  return { ownedSteps, blocksByOwner };
 }
