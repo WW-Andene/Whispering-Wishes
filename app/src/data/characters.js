@@ -4007,8 +4007,13 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Dissonance', '168.99%', 'Fusion DMG opener.'],
     ['Outro', 'Rage Transposition', '+38% Heavy ATK DMG Amp (14s or until swapped)', 'Grants the incoming character Heavy ATK DMG Amplification.'],
   ],
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Sanhua/Combat, cross-checked against
+  // ww.nanoka.cc/character/1102 (both agree exactly) — every damage value was already correct. Added the
+  // two entirely missing rows (Mid-air Attack, Dodge Counter).
   'Sanhua': [
     ['Basic ATK', 'Frigid Light Stage 1-5', '48.71% → 73.76% → 21.58%×4 → 39.67%×2 → 233.81%', 'Up to 5 Glacio strikes.'],
+    ['Mid-air', 'Attack', '86.29%'],
+    ['Dodge Counter', 'Standard', '167.01%'],
     ['Heavy ATK', 'Frigid Light (hold)', '22.27%×5', 'Consumes STA.'],
     ['Skill', 'Eternal Frost', '359.85%', 'Creates 1 Ice Prism, detonable by Heavy ATK: Detonate.'],
     ['Liberation', 'Glacial Gaze', '809.48%', 'Creates 1 Glacier and grants 2 stacks of Clarity.'],
@@ -4842,8 +4847,8 @@ const CHARACTER_ROTATIONS = {
     { type: 'Intro', skill: 'Freezing Thorns', note: 'creates 1 Ice Thorn' },
     { type: 'Liberation', skill: 'Glacial Gaze', note: 'creates 1 Glacier, grants 2 stacks of Clarity (expands Frostbite area)' },
     { type: 'Skill', skill: 'Eternal Frost', note: 'creates 1 Ice Prism, grants 1 stack of Clarity' },
-    { type: 'Forte', skill: 'Heavy ATK: Detonate', note: 'detonates all 3 Ice constructs (Thorn/Prism/Glacier) at once for a large Concerto/Energy burst' },
-    { type: 'Forte', skill: 'Heavy ATK: Detonate', note: 'second detonate to fully spend the loop before swapping' },
+    { type: 'Forte', skill: 'Clarity of Mind: Detonate', note: 'detonates all 3 Ice constructs (Thorn/Prism/Glacier) at once for a large Concerto/Energy burst. Skill name corrected 2026-09-01 from \'Heavy ATK: Detonate\', which never matched the SKILL_MULTIPLIERS row name and was silently resolving to 0 DMG.' },
+    { type: 'Forte', skill: 'Clarity of Mind: Detonate', note: 'second detonate to fully spend the loop before swapping' },
     { type: 'Outro', skill: 'Silversnow', duration: 14, note: 'grants next Resonator 38% Basic ATK DMG Amp — time this to land on the intended DPS' },
   ],
   // Standard Rotations added 2026-08-18 for Aalto/Baizhi/Chixia — sourced from wutheringwaves.fandom.com's
@@ -5748,7 +5753,11 @@ const RESONANCE_CHAIN_DATA = {
   // Burst Crit DMG+100% (confirmed exact, conditional to that one hit) — corrected from an unsourced 50 to
   // the real value 100. S6 team ATK+10%/stack, stacking to 2 (=20% max) for 20s (confirmed exact),
   // unchanged.
-  'Sanhua':       { s1: { critRate: 15 }, s2: { totalMult: 5 }, s3: { totalMult: 35 }, s4: { heavyDmg: 120 }, s5: { critDmg: 100 }, s6: { atkPct: 20 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Sanhua/Combat, cross-checked against
+  // ww.nanoka.cc/character/1102 (both agree exactly). S2 (totalMult: 5) was undocumented — real effect is
+  // purely Heavy Attack Detonate STA cost -10 plus interruption-resistance utility on Eternal Frost cast,
+  // zero DPS component. Zeroed to {}. S1/S3/S4/S5/S6 confirmed correct, unchanged.
+  'Sanhua':       { s1: { critRate: 15 }, s2: {}, s3: { totalMult: 35 }, s4: { heavyDmg: 120 }, s5: { critDmg: 100 }, s6: { atkPct: 20 } },
   // corrected 2026-08-18: prior values (heavyDmg/totalMult/coordDmg guesses on every node) had no basis
   // in Mortefi's real chain kit (fandom Combat page rendered Resonance Chain table, matches Prydwen's Kit
   // tab wording exactly) — none of his nodes touch Heavy ATK DMG at all. Real effects: S1 Solitary Etude —
