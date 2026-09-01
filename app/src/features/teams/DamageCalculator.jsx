@@ -551,53 +551,51 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                             <ChevronDown size={12} className="transform group-open:rotate-180 transition-transform flex-shrink-0" />
                             <span>{t('teams.damageCalc.sequenceRefinement')}</span>
                           </summary>
-                        <div className="kuro-detail-box mt-1 space-y-2">
-                          <div className="flex" role="group" aria-label={t('teams.damageCalc.sequenceRefinementAria', { name: m.name })} style={{ gap: 'var(--card-padding)' }}>
-                            <div className="flex-[7] min-w-0 space-y-0.5">
-                              <div className="kuro-micro-label">{t('teams.damageCalc.sequence')}</div>
-                              <div className="flex gap-0.5" role="radiogroup" aria-label={t('teams.damageCalc.sequenceAria', { name: m.name })}>
-                                {[0,1,2,3,4,5,6].map(s => {
-                                  const isActive = (eq.sequence || 0) === s;
-                                  return (
-                                    <button key={s}
-                                      role="radio"
-                                      aria-checked={isActive}
-                                      className={`kuro-chip flex-1 text-2xs ${isActive ? 'active-gold' : ''}`}
-                                      onClick={() => {
-                                        setTeamEquipment(prev => {
-                                          const n = { ...prev };
-                                          n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
-                                                    return n;
-                                        });
-                                        haptic.light();
-                                      }}
-                                    >S{s}</button>
-                                  );
-                                })}
-                              </div>
+                        <div className="kuro-detail-box mt-1 space-y-2" role="group" aria-label={t('teams.damageCalc.sequenceRefinementAria', { name: m.name })}>
+                          <div className="min-w-0 space-y-0.5">
+                            <div className="kuro-micro-label">{t('teams.damageCalc.sequence')}</div>
+                            <div className="flex gap-0.5" role="radiogroup" aria-label={t('teams.damageCalc.sequenceAria', { name: m.name })}>
+                              {[0,1,2,3,4,5,6].map(s => {
+                                const isActive = (eq.sequence || 0) === s;
+                                return (
+                                  <button key={s}
+                                    role="radio"
+                                    aria-checked={isActive}
+                                    className={`kuro-chip flex-1 text-2xs ${isActive ? 'active-gold' : ''}`}
+                                    onClick={() => {
+                                      setTeamEquipment(prev => {
+                                        const n = { ...prev };
+                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), sequence: s };
+                                                  return n;
+                                      });
+                                      haptic.light();
+                                    }}
+                                  >S{s}</button>
+                                );
+                              })}
                             </div>
-                            <div className="flex-[5] min-w-0 space-y-0.5">
-                              <div className="kuro-micro-label">{t('teams.damageCalc.refinement')}</div>
-                              <div className="flex gap-0.5" role="radiogroup" aria-label={t('teams.damageCalc.refinementAria', { name: m.name })}>
-                                {[1,2,3,4,5].map(r => {
-                                  const isActive = (eq.refinement || 1) === r;
-                                  return (
-                                    <button key={r}
-                                      role="radio"
-                                      aria-checked={isActive}
-                                      className={`kuro-chip flex-1 text-2xs ${isActive ? 'active-gold' : ''}`}
-                                      onClick={() => {
-                                        setTeamEquipment(prev => {
-                                          const n = { ...prev };
-                                          n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), refinement: r };
-                                                    return n;
-                                        });
-                                        haptic.light();
-                                      }}
-                                    >R{r}</button>
-                                  );
-                                })}
-                              </div>
+                          </div>
+                          <div className="min-w-0 space-y-0.5">
+                            <div className="kuro-micro-label">{t('teams.damageCalc.refinement')}</div>
+                            <div className="flex gap-0.5" role="radiogroup" aria-label={t('teams.damageCalc.refinementAria', { name: m.name })}>
+                              {[1,2,3,4,5].map(r => {
+                                const isActive = (eq.refinement || 1) === r;
+                                return (
+                                  <button key={r}
+                                    role="radio"
+                                    aria-checked={isActive}
+                                    className={`kuro-chip flex-1 text-2xs ${isActive ? 'active-gold' : ''}`}
+                                    onClick={() => {
+                                      setTeamEquipment(prev => {
+                                        const n = { ...prev };
+                                        n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), refinement: r };
+                                                  return n;
+                                      });
+                                      haptic.light();
+                                    }}
+                                  >R{r}</button>
+                                );
+                              })}
                             </div>
                           </div>
                         </div>

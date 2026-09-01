@@ -85,6 +85,23 @@ const elementCornerFade = (hex) =>
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
+// Long-form kit/note prose in the data files is written as one dense run-on paragraph (audit-trail
+// style, not reader-facing). A handful of sentences reads fine as a single block, but the longer
+// entries (5-15+ sentences, common on complex kits) become an unreadable wall of text. Split on
+// sentence boundaries (". "/"; " before a capital letter or digit, i.e. the start of a new clause —
+// avoids breaking on "e.g." "vs." decimals, etc.) and group a few sentences per paragraph so the text
+// reads as short paragraphs instead of one block, without having to hand-rewrite every character's
+// prose with real newlines in the data files.
+function splitIntoParagraphs(text, sentencesPerParagraph = 2) {
+  if (!text) return [];
+  const sentences = text.match(/[^.!?]+[.!?]+(?:['"’»]?\s+|$)/g) || [text];
+  const paragraphs = [];
+  for (let i = 0; i < sentences.length; i += sentencesPerParagraph) {
+    paragraphs.push(sentences.slice(i, i + sentencesPerParagraph).join('').trim());
+  }
+  return paragraphs.filter(Boolean);
+}
+
 const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData, visualSettings }) => {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
@@ -319,9 +336,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             const lore = dot > 0 ? localizedDesc.slice(0, dot + 1) : null;
             const gameplay = dot > 0 ? localizedDesc.slice(dot + 2) : localizedDesc;
             return (
-              <div className="text-md space-y-1">
+              <div className="text-md space-y-1.5">
                 {lore && <p className="text-gray-400 italic leading-relaxed">{lore}</p>}
-                <p className="text-gray-300 leading-relaxed">{gameplay}</p>
+                {splitIntoParagraphs(gameplay, 3).map((para, i) => (
+                  <p key={i} className="text-gray-300 leading-relaxed">{para}</p>
+                ))}
               </div>
             );
           })()}
@@ -536,7 +555,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 </div>
               )}
               {localizedBuffNote && (
-                <p className="text-sm text-gray-300 leading-relaxed">{localizedBuffNote}</p>
+                <div className="space-y-1.5">
+                  {splitIntoParagraphs(localizedBuffNote).map((para, i) => (
+                    <p key={i} className="text-sm text-gray-300 leading-relaxed">{para}</p>
+                  ))}
+                </div>
               )}
             </div>
           )}
