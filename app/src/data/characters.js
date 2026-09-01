@@ -3918,8 +3918,13 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Summon and Smite', '131.10%', 'Heals all nearby team Resonators on cast; Inherent Skill grants 4 Electro Flare stacks to targets hit (once per 10s).'],
     ['Outro', 'Exorcism Spell', 'No DMG (Heal + 15% team DMG Amp, 30s)', "Heals the active Resonator by 18% of Buling's ATK/s for 16s. All nearby team Resonators have DMG Amplified by 15% for 30s."],
   ],
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Chixia/Combat, cross-checked against
+  // ww.nanoka.cc/character/1202 (both agree exactly) — every pre-existing value was already correct.
+  // Added the two entirely missing rows (Mid-air Attack, Dodge Counter).
   'Chixia': [
     ['Basic ATK', 'POW POW Stage 1-4', '66.21% → 48.32%×2 → 33.55%×4 → 232.61%', 'Up to 4 shots.'],
+    ['Mid-air', 'Attack', '32.21%'],
+    ['Dodge Counter', 'Standard', '339.97%'],
     ['Heavy ATK', 'POW POW (aimed shot)', '35.79% → 80.52% fully charged', 'Charged aimed shot.'],
     ['Skill', 'Whizzing Fight Spirit', '31.81%×8', '2 initial charges; hold to enter DAKA DAKA!'],
     ['Forte', 'Heroic Bullets: DAKA DAKA!', '19.89% per Thermobaric Bullet', 'Continuous-fire state; tapping Basic ATK exits into Basic ATK 4.'],
@@ -5984,7 +5989,15 @@ const RESONANCE_CHAIN_DATA = {
   // HP (libDmg, confirmed exact, conditional). S4 Liberation grants 60 Thermobaric Bullets + resets Skill CD (utility).
   // S5 ATK+30% at max Numbingly Spicy! stacks (atkPct, confirmed exact, conditional). S6 Boom Boom grants team Basic
   // ATK DMG Bonus+25% for 15s (basicDmg, confirmed exact, team buff).
-  'Chixia':       { s1: { totalMult: 5 }, s2: { totalMult: 4 }, s3: { libDmg: 40 }, s4: { totalMult: 8 }, s5: { atkPct: 30 }, s6: { basicDmg: 25 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Chixia/Combat, cross-checked against
+  // ww.nanoka.cc/character/1202 (both agree exactly). S1: was totalMult: 5 (undocumented placeholder) —
+  // real effect is Resonance Skill Boom Boom hits always Critical, a conditional 100% Crit Rate scoped to
+  // one specific infrequent proc rather than a flat kit-wide Crit Rate buff; no clean conversion exists.
+  // Zeroed to {}. S2: was totalMult: 4 (undocumented placeholder) — real effect is purely Resonance
+  // Energy restore per kill during Blazing Flames, zero DPS component. Zeroed to {}. S4: was totalMult: 8
+  // — real effect is purely a Thermobaric Bullets grant + Skill cooldown reset (both resource/utility, no
+  // direct DPS stat). Zeroed to {}. TODO: needs Phase 2 schema for S1's scoped-crit-guarantee mechanic.
+  'Chixia':       { s1: {}, s2: {}, s3: { libDmg: 40 }, s4: {}, s5: { atkPct: 30 }, s6: { basicDmg: 25 } },
   // corrected 2026-08-18: prior values (skillDmg/atkPct on every node) had no basis in Lumi's real chain
   // kit (fandom Combat page, rendered Resonance Chain table) — she has no ATK% node and no Resonance
   // Skill DMG node at all. Real effects: S1 Parcel To Be Delivered — after Energized Rebound, +60 STA
