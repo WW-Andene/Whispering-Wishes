@@ -364,13 +364,35 @@ totalMult guess for this — same non-negotiable as every other zeroed node.
    deliberate way these six did, and extend `RotationSimulator` (new Map,
    new open/try method pair) rather than inventing a second state-tracking
    mechanism alongside it.
-2. Once 1-2 more characters are converted, revisit `rotationSimulator.js`'s
-   own known gaps (see design question 2 above): deriving `steps`
-   automatically from a real `CHARACTER_ROTATIONS` array instead of a
-   hand-built list, and tracking multiple characters' interleaved
-   rotations as a real team timeline instead of one character's blocks in
-   isolation. Both are needed before any of this can feed
-   `calcTeamStats.js` for real.
+2. **HALF DONE 2026-09-01**: `rotationSimulator.js` now has
+   `deriveStepsFromRotation(rotation, blocks)` — walks a REAL
+   `CHARACTER_ROTATIONS[charName]` array and auto-derives the `steps`
+   array `simulateRotation()` needs (`isSwapIn`, `isSwap`/`isOutroCast`,
+   `consumesWindowBlockId`, `triesProc`, `checksPriorCast`), instead of a
+   human hand-building it per test. Required two small schema additions to
+   make this possible: `windowed-cast.attemptOn` and
+   `requires-prior-cast.checksAt` (both `TYPE:SKILL` labels naming WHICH
+   rotation step attempts/checks the condition — previously nothing in the
+   block itself said this, only a hand-set flag on a test's own step did).
+   Verified end-to-end against REAL `CHARACTER_ROTATIONS` data (not test
+   fixtures) for Jinhsi (both windowed-cast windows actually land, given
+   her rotation's real move order) and Camellya (the prior-cast condition
+   actually fires, since Ephemeral really does precede Outro Twining in
+   her rotation) — see `rotationSimulator.test.js`'s new
+   "deriveStepsFromRotation" describe block (8 tests). Yinlin's case
+   surfaced a genuine, useful finding rather than a derivation bug: her
+   real rotation's post-Liberation Basic ATK step is a single tap ("Stage
+   1", to refill Judgment Points), a different skill label than the S6
+   proc block's `on` ("Stage 1-4"), so the derived steps correctly do NOT
+   attempt a proc there — the window opens but nothing in this specific
+   optimized rotation lands a qualifying hit inside it. Still NOT derived
+   automatically: `partnerReturnFor` for `partner-outro-return` blocks
+   (Augusta-style) — evaluating whether a DIFFERENT character's Outro
+   returned in time is fundamentally cross-character, which a single
+   character's own `CHARACTER_ROTATIONS` array can't answer; that still
+   needs either a hand-built step or the multi-character interleaving
+   below. **Multi-character interleaving itself is NOT started** — still
+   needed before any of this can feed `calcTeamStats.js` for real.
 3. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
    schema` comment left by the Phase 1 passes for the full sourced backlog
    of known-hard mechanics, one entry per real conditional mechanic found

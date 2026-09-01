@@ -63,7 +63,7 @@ export const CAMELLYA_BLOCKS = [
     id: 'camellya.outro.twining-ephemeral-bonus',
     source: SOURCE,
     kind: 'utility',
-    trigger: { type: 'requires-prior-cast', requiresPriorCast: 'cast:Forte:Ephemeral' },
+    trigger: { type: 'requires-prior-cast', requiresPriorCast: 'cast:Forte:Ephemeral', checksAt: 'Outro:Twining' },
     timing: {},
     target: { scope: 'self' },
     effects: [],

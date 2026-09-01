@@ -110,6 +110,20 @@
  * @property {number} [windowSeconds] For 'windowed-cast': how long the window stays open after the
  *                                    `opensOn` trigger fires before the alternate/empowered cast this
  *                                    block represents is forfeited.
+ * @property {string} [attemptOn]     For 'windowed-cast': the `TYPE:SKILL` label (matches a
+ *                                    CHARACTER_ROTATIONS {type, skill} pair, same convention as the
+ *                                    shared `on` field) of the rotation step that ATTEMPTS to consume
+ *                                    this window — i.e. the empowered/alternate cast itself (Jinhsi's
+ *                                    Overflowing Radiance window: attemptOn 'Skill:Overflowing
+ *                                    Radiance'). Added alongside `deriveStepsFromRotation()` in
+ *                                    rotationSimulator.js so a real CHARACTER_ROTATIONS array can be
+ *                                    walked automatically — without this field there was no way to
+ *                                    tell, from the block alone, WHICH step in the rotation should call
+ *                                    `tryWindowedCast()` (previously only a hand-built test's
+ *                                    `consumesWindowBlockId` flag on that one step could say so). Optional:
+ *                                    older blocks without it simply can't be auto-derived yet and still
+ *                                    need a hand-built `steps` array with `consumesWindowBlockId` set
+ *                                    explicitly, same as before.
  * @property {string} [requiresPriorCast]  For 'requires-prior-cast': the trigger key (same format
  *                                    triggerEngine.js's triggerKey() produces) of a cast that must
  *                                    have occurred SOMEWHERE EARLIER in the current on-field segment
@@ -125,6 +139,15 @@
  *                                    track "was this cast seen since the last swap-in" to evaluate it
  *                                    (see rotationSimulator.js's `recordCast`/`hasCastThisSegment`/
  *                                    `resetSegment`, added alongside this trigger type).
+ * @property {string} [checksAt]      For 'requires-prior-cast': the `TYPE:SKILL` label (same
+ *                                    convention as 'windowed-cast''s `attemptOn`) of the rotation step
+ *                                    at which this dependency should be checked — Camellya's Outro
+ *                                    Twining: checksAt 'Outro:Twining'. Added alongside
+ *                                    `deriveStepsFromRotation()` for the same reason `attemptOn` was:
+ *                                    without it, nothing in the block itself says WHICH step should
+ *                                    call `hasCastThisSegment()` (previously only a hand-built test's
+ *                                    `checksPriorCast` flag on that one step could say so). Optional,
+ *                                    same fallback as `attemptOn`.
  * @property {string[]} [opensOnProc] For 'windowed-proc': trigger key(s) whose firing opens the
  *                                    proc window (same `opensOn` semantics as 'windowed-cast' —
  *                                    ANY of them opens it). Kept as a separate field name from

@@ -13,7 +13,8 @@
 import { describe, it, expect } from 'vitest';
 import { createStats } from '../features/teams/calcEngine.js';
 import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
-import { RotationSimulator, simulateRotation, DEFAULT_STEP_SECONDS } from '../engine/rotationSimulator.js';
+import { RotationSimulator, simulateRotation, deriveStepsFromRotation, DEFAULT_STEP_SECONDS } from '../engine/rotationSimulator.js';
+import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { JINHSI_BLOCKS } from '../engine/characterBlocks/jinhsi.blocks.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
@@ -237,5 +238,68 @@ describe('RotationSimulator — windowed-proc (Yinlin)', () => {
     const procFires = results.map(r => r.firedTriggers.has('windowed-proc:cast:Liberation:Thundering Wrath'));
     // Liberation-cast step never fires the proc key itself; the next 4 Basic ATKs do; the 5th does not.
     expect(procFires).toEqual([false, true, true, true, true, false]);
+  });
+});
+
+describe('deriveStepsFromRotation — auto-deriving steps from REAL CHARACTER_ROTATIONS data', () => {
+  // Closes the remaining piece of design question 2: every test above (and every parity test in
+  // this repo) hand-built its own `steps` array with isSwap/isOutroCast/consumesWindowBlockId/
+  // checksPriorCast/triesProc flags set by a human. This describe block instead feeds the SAME real
+  // CHARACTER_ROTATIONS data RotationTimeline.jsx/CharacterDetailModal.jsx already render straight
+  // into deriveStepsFromRotation() + simulateRotation(), so the whole pipeline runs against real app
+  // data for the first time, not a test fixture.
+
+  it("derives Jinhsi's opening Basic ATK step as isSwapIn: false and the correct consumesWindowBlockId on each Skill step", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jinhsi'], JINHSI_BLOCKS);
+    const overflowing = steps.find(s => s.skill === 'Overflowing Radiance');
+    const illuminous = steps.find(s => s.skill === 'Illuminous Epiphany');
+    expect(overflowing.consumesWindowBlockId).toBe('jinhsi.window.overflowing-radiance');
+    expect(illuminous.consumesWindowBlockId).toBe('jinhsi.window.illuminous-epiphany');
+    // Jinhsi's rotation opens with a Basic ATK combo, not an Intro cast — isSwapIn only applies to
+    // an actual Intro-type first step, so it correctly stays unset here.
+    expect(steps[0].isSwapIn).toBeUndefined();
+  });
+
+  it("end-to-end: Jinhsi's REAL rotation order lands both windowed casts (Overflowing Radiance immediately follows Basic ATK Stage 4; Illuminous Epiphany immediately follows the Incarnation combo)", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jinhsi'], JINHSI_BLOCKS);
+    const results = simulateRotation(JINHSI_BLOCKS, steps);
+    const allFired = new Set(results.flatMap(r => [...r.firedTriggers]));
+    expect(allFired.has("windowed-cast:cast:Basic ATK:Slash of Breaking Dawn Stage 1-4|cast:Intro:Loong's Halo")).toBe(true);
+    expect(allFired.has('windowed-cast:cast:Forte:Incarnation - Basic Attack Stage 1-4')).toBe(true);
+  });
+
+  it("derives Camellya's Outro Twining step with checksPriorCast set", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Camellya'], CAMELLYA_BLOCKS);
+    const twining = steps.find(s => s.type === 'Outro' && s.skill === 'Twining');
+    expect(twining.checksPriorCast).toBe('camellya.outro.twining-ephemeral-bonus');
+    // Unlike Augusta/Yinlin/Rover: Electro/Shorekeeper, CHAR_BUFF_TABLE['Camellya'].outroBuffs is
+    // genuinely empty (Twining carries no team/self outro BUFF, only the conditional bonus DMG
+    // modeled above) — so CAMELLYA_BLOCKS has no own-outro buff block for isSwap/isOutroCast to
+    // attribute this step to, and deriveStepsFromRotation correctly leaves both unset rather than
+    // guessing. Not a derivation gap: the convention (isOutroCast requires a real outro-buff block
+    // to exist) is deliberate — see deriveStepsFromRotation's own doc comment.
+    expect(twining.isSwap).toBeUndefined();
+    expect(twining.isOutroCast).toBeUndefined();
+  });
+
+  it("end-to-end: Camellya's REAL rotation casts Ephemeral (Forte) before Outro Twining, so the prior-cast condition actually fires", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Camellya'], CAMELLYA_BLOCKS);
+    const results = simulateRotation(CAMELLYA_BLOCKS, steps);
+    const lastFired = results[results.length - 1].firedTriggers;
+    expect(lastFired.has('requires-prior-cast:cast:Forte:Ephemeral')).toBe(true);
+  });
+
+  it("derives Yinlin's Basic ATK Stage 1-4 step (which appears BEFORE Liberation in her real rotation) with triesProc set regardless of order — evaluation, not derivation, is what actually gates it on real elapsed time", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yinlin'], YINLIN_BLOCKS);
+    const openingBasic = steps.find(s => s.type === 'Basic ATK' && s.skill === "Zapstring's Dance Stage 1-4");
+    expect(openingBasic.triesProc).toBe('yinlin.chain.s6-pursuit-of-justice');
+    // Her REAL rotation's post-Liberation Basic ATK step is a single tap ("Stage 1", to refill
+    // Judgment Points) — a DIFFERENT skill label than the block's `on` ("Stage 1-4"), so it
+    // correctly does NOT get triesProc: a genuine finding about this specific optimized rotation
+    // (Furious Thunder's proc window opens, but nothing in this canonical sequence attempts a
+    // qualifying Basic ATK combo before the window would next be checked), not a derivation bug.
+    const postLiberationBasic = steps.find(s => s.type === 'Basic ATK' && s.skill === "Zapstring's Dance Stage 1");
+    expect(postLiberationBasic).toBeDefined();
+    expect(postLiberationBasic.triesProc).toBeUndefined();
   });
 });

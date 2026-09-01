@@ -222,3 +222,67 @@ export function simulateRotation(blocks, steps) {
   }
   return results;
 }
+
+/**
+ * Walks a REAL CHARACTER_ROTATIONS[charName] array (the {type, skill, note, duration?} shape
+ * characters.js already carries for ~56 of ~60 characters) and derives the annotated `steps` array
+ * simulateRotation() expects — closing PHASE2_PLAN.md design question 2's remaining gap: until now,
+ * every test in this repo (rotationSimulator.test.js) hand-built its own `steps` array with
+ * `isSwap`/`isOutroCast`/`consumesWindowBlockId`/`checksPriorCast`/`triesProc` flags set by a human
+ * reading the block set, which meant simulateRotation had never actually been run against the SAME
+ * rotation data the rest of the app (RotationTimeline.jsx, CharacterDetailModal.jsx) already reads.
+ *
+ * What this derives automatically, from the block set alone (no new data entry needed):
+ *   - `isSwapIn`: the character's own opening Intro-type step (index 0, type 'Intro').
+ *   - `isSwap`/`isOutroCast`: the character's own Outro-type step, when this character has an
+ *     own-outro buff block (trigger.type 'swap-out', kind 'buff') to attribute it to.
+ *   - `consumesWindowBlockId`: any step whose `TYPE:SKILL` label matches a 'windowed-cast' block's
+ *     `attemptOn` field (added alongside this function specifically so this match is possible).
+ *   - `triesProc`: any step whose `TYPE:SKILL` label matches a 'windowed-proc' block's `on` field.
+ *   - `checksPriorCast`: any step whose `TYPE:SKILL` label matches a 'requires-prior-cast' block's
+ *     `checksAt` field (added alongside this function, same reasoning as `attemptOn`).
+ *
+ * What this does NOT derive (still needs a hand-built step, or item 2 below in PHASE2_PLAN.md's
+ * backlog — multi-character interleaving): `partnerReturnFor` for 'partner-outro-return' blocks
+ * (Augusta-style) — evaluating whether a DIFFERENT character's Outro actually returned in time is
+ * fundamentally a cross-character question a single character's own CHARACTER_ROTATIONS array can't
+ * answer; a block set with a 'partner-outro-return' trigger still needs that one step supplied by
+ * the caller (or, once multi-character interleaving lands, by a team-level deriver built on top of
+ * this one). Blocks whose `attemptOn`/`on`/`checksAt` field isn't set yet (an older conversion that
+ * predates this function) simply won't auto-resolve that one condition — same as before, no
+ * regression, just not upgraded yet.
+ *
+ * @param {{type: string, skill?: string, duration?: number}[]} rotation  CHARACTER_ROTATIONS[charName]
+ * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks
+ * @param {number} [stepSeconds]  Pacing override, same DEFAULT_STEP_SECONDS caveat as simulateRotation.
+ * @returns {Object[]} a `steps` array ready to pass straight into simulateRotation()
+ */
+export function deriveStepsFromRotation(rotation, blocks, stepSeconds = DEFAULT_STEP_SECONDS) {
+  const windowedBlocks = blocks.filter(b => b.trigger.type === 'windowed-cast' && b.trigger.attemptOn);
+  const procBlocks = blocks.filter(b => b.trigger.type === 'windowed-proc' && b.trigger.on);
+  const priorCastBlocks = blocks.filter(b => b.trigger.type === 'requires-prior-cast' && b.trigger.checksAt);
+  const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
+
+  return rotation.map((raw, i) => {
+    const step = { type: raw.type, skill: raw.skill, stepSeconds };
+    const label = raw.type && raw.skill ? `${raw.type}:${raw.skill}` : null;
+
+    if (i === 0 && raw.type === 'Intro') step.isSwapIn = true;
+
+    if (raw.type === 'Outro' && ownOutroBlock) {
+      step.isSwap = true;
+      step.isOutroCast = true;
+    }
+
+    const consumesBlock = label && windowedBlocks.find(b => b.trigger.attemptOn === label);
+    if (consumesBlock) step.consumesWindowBlockId = consumesBlock.id;
+
+    const procBlock = label && procBlocks.find(b => b.trigger.on === label);
+    if (procBlock) step.triesProc = procBlock.id;
+
+    const priorCastBlock = label && priorCastBlocks.find(b => b.trigger.checksAt === label);
+    if (priorCastBlock) step.checksPriorCast = priorCastBlock.id;
+
+    return step;
+  });
+}

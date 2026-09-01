@@ -53,6 +53,7 @@ export const JINHSI_BLOCKS = [
       type: 'windowed-cast',
       opensOn: ['cast:Basic ATK:Slash of Breaking Dawn Stage 1-4', 'cast:Intro:Loong\'s Halo'],
       windowSeconds: 5,
+      attemptOn: 'Skill:Overflowing Radiance',
     },
     condition: { requiresStance: undefined }, // "only while NOT already in Incarnation"
     timing: {},
@@ -68,6 +69,7 @@ export const JINHSI_BLOCKS = [
       type: 'windowed-cast',
       opensOn: ['cast:Forte:Incarnation - Basic Attack Stage 1-4'],
       windowSeconds: 5,
+      attemptOn: 'Skill:Illuminous Epiphany',
     },
     timing: {},
     target: { scope: 'self' },
