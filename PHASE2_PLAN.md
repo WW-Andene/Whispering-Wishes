@@ -1,9 +1,9 @@
 # Phase 2 plan — wiring precise mechanics into the calc engine
 
-## Status: STARTED 2026-09-01. Scaffold + 1 of ~60 characters converted and
-## verified. This doc is now also a log of what exists, not just a plan —
-## read the "What actually exists now" section below before doing anything
-## else in this phase.
+## Status: STARTED 2026-09-01. Scaffold + 4 of ~60 characters converted and
+## verified (Rover: Electro, Shorekeeper, Augusta, Jinhsi). This doc is now
+## also a log of what exists, not just a plan — read the "What actually
+## exists now" section below before doing anything else in this phase.
 
 Phase 1 (see `PHASE1_HANDOFF.md`) rewrote `app/src/data/characters.js` so
 every character's Forte/Outro/Resonance-Chain description and numbers are
@@ -204,8 +204,9 @@ implementation details:
 ## Actual current backlog / next steps (as of 2026-09-01)
 
 Converted so far: **Rover: Electro** (PoC, all always-on/passive nodes),
-**Shorekeeper** (cast-scoped node, no schema change needed), and
-**Augusta** (3 of ~60) — the first one that DID need a schema extension.
+**Shorekeeper** (cast-scoped node, no schema change needed), **Augusta**
+(first schema extension — cross-character trigger), and **Jinhsi** (second
+schema extension — same-character cast-order forfeit windows) (4 of ~60).
 
 Shorekeeper's S6 (Discernment cast-scoped totalMult+critDmg) proved
 `trigger.type: 'cast'` already models "only active during this specific
@@ -231,30 +232,52 @@ S4 (whole-team ATK+20%) is cast-scoped-but-persistent — unlike
 Shorekeeper's single-hit-scoped S6, it fires on a cast but then lasts 30s,
 proving `timing.duration` composes correctly with a `cast` trigger.
 
-Still not stress-tested: Jinhsi's two 5s cast-order forfeit windows (a
-self-contained, same-character version of the ordering problem Augusta's
-cross-character version hinted at — this is what will actually force
-design question 2's state machine to get built, since it needs to be
-evaluated moment-to-moment within one rotation, not just structurally
-named like Augusta's block is), Camellya's multi-skill-shared-node value,
-and discrete flat-ATK procs instead of %-modifiers (Yinlin/Jianxin/
-Calcharo S6-style — `effects[].stat` likely needs a new value shape, not
-just a new trigger type).
+Jinhsi's two 5s cast-order forfeit windows (Overflowing Radiance after
+Basic ATK Stage 4/Intro Loong's Halo; Illuminous Epiphany after Incarnation-
+Basic Attack Stage 4) are same-character — unlike Augusta's cross-character
+Majesty condition, both the window-opening event and the windowed cast
+belong to Jinhsi's own rotation. Added `trigger.type: 'windowed-cast'` with
+`opensOn` (array of trigger keys — ANY of which opens the window, e.g.
+Jinhsi's first window opens on EITHER Basic ATK Stage 4 landing OR Loong's
+Halo casting) and `windowSeconds`. **Same limitation as
+'partner-outro-return', stated explicitly again because it's the crux of
+design question 2**: this field only names the window's shape (what opens
+it, how long it stays open) — it does NOT track real elapsed time within a
+simulated rotation to evaluate whether a cast actually landed inside that
+window. `triggerEngine.js`'s `triggerKey()` keys this trigger type by its
+`opensOn` list so multiple distinct windows on one character resolve
+independently (proven in `triggerEngine-jinhsi.test.js`). Two conversions
+in, the pattern is now clear: EVERY conditional-timing mechanic needs its
+own named trigger type in the schema (a real design decision, correctly
+one-per-shape rather than a generic catch-all), but the actual EVALUATION
+of any of them — partner-outro-return, windowed-cast, and whatever comes
+next — is deferred to the same not-yet-built rotation-history state
+machine. That piece is now the single highest-leverage remaining task:
+building it once would retroactively make every converted character's
+conditional blocks actually resolve correctly, instead of only being
+correctly *shaped*.
 
-1. **Convert one more character per pass, hardest cases first**, following
-   `roverElectro.blocks.js`/`shorekeeper.blocks.js`/`augusta.blocks.js`'s
-   structure and writing a parity test (`triggerEngine-<name>.test.js`)
-   for each one before moving on — same cadence/discipline as the Phase 1
-   data audit (one character, verify, commit+push, next). Remaining
-   priority order: Jinhsi (two 5s cast-order forfeit windows — this is
-   what actually answers design question 2, since it needs real moment-
-   to-moment evaluation within a rotation, not just a structurally-named
-   condition like Augusta's), Camellya (cast-before-Outro dependency + one
-   node with two multipliers on two different skills — tests whether one
-   block can/should have per-effect trigger overrides or needs to split
-   into two blocks), Yinlin/Jianxin/Calcharo (discrete flat-ATK procs, not
-   %-modifiers — `effects[].stat` may need a new 'flatProc' variant, not
-   just the existing % stats).
+Still not stress-tested: Camellya's multi-skill-shared-node value (one
+Resonance Chain node with two different multipliers on two different
+skills — tests whether one block can/should have per-effect trigger
+overrides or needs to split into two blocks, the same question Jinhsi's S4
+raised but didn't yet resolve — see its block's own note), and discrete
+flat-ATK procs instead of %-modifiers (Yinlin/Jianxin/Calcharo S6-style —
+`effects[].stat` likely needs a new value shape, not just a new trigger
+type).
+
+1. **Strongly consider building the rotation-history state machine next**,
+   rather than converting a 5th character. Three of four conversions so
+   far (Augusta, Jinhsi, and Shorekeeper's cast-scoping) have each
+   individually proven their trigger SHAPE works, but none of their
+   conditional logic actually evaluates yet — `firedTriggers` is still
+   hand-fed by test code, not derived from walking a real
+   `CHARACTER_ROTATIONS` sequence with elapsed time. Continuing to convert
+   characters without this makes the backlog of "shaped but unevaluated"
+   blocks grow, not shrink. If continuing character conversion anyway,
+   same cadence as before — one character, parity test, commit+push, next
+   — prioritizing Camellya (multi-skill-shared-node) then Yinlin/Jianxin/
+   Calcharo (discrete flat-ATK procs) as the remaining unproven shapes.
 2. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
    schema` comment left by the Phase 1 passes for the full sourced backlog
    of known-hard mechanics, one entry per real conditional mechanic found

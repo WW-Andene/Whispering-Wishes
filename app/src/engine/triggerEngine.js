@@ -51,6 +51,12 @@ function triggerKey(trigger) {
   // triggerBlocks.schema.js's requiresActiveBlock doc) — this resolver only checks whether the key
   // is present, same as every other trigger type.
   if (trigger.type === 'partner-outro-return') return `partner-outro-return:${trigger.requiresActiveBlock}`;
+  // Keyed by the block itself, not by opensOn — same reasoning as partner-outro-return: this
+  // resolver doesn't track elapsed time or evaluate whether the real cast landed inside
+  // `windowSeconds` of one of `opensOn`'s triggers firing. It only checks whether the caller (a
+  // future rotation simulator) already asserted "yes, this windowed cast happened in time" by
+  // including this exact key in firedTriggers.
+  if (trigger.type === 'windowed-cast') return `windowed-cast:${trigger.opensOn?.join('|')}`;
   return trigger.type;
 }
 

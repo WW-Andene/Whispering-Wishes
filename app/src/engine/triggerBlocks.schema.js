@@ -44,7 +44,9 @@
  *                            'passive' (always-on once conditions are met) | 'on-hit' |
  *                            'resource-threshold' (a gauge/stack count crossing a value) |
  *                            'negative-status-hit' | 'field-time' | 'partner-outro-return'
- *                            (added for Augusta's Majesty/Crown-of-Wills mechanic — see below)
+ *                            (added for Augusta's Majesty/Crown-of-Wills mechanic — see below) |
+ *                            'windowed-cast' (added for Jinhsi's cast-order forfeit windows —
+ *                            see below)
  * @property {string} [on]   The specific skill/move id this trigger fires on (matches a
  *                            CHARACTER_ROTATIONS-style {type, skill} pair when type === 'cast');
  *                            omitted for triggers that aren't tied to one specific move
@@ -70,6 +72,26 @@
  *                                    before the condition is forfeited (Augusta: 1 — the partner's own
  *                                    Outro-out IS that one swap; a swap to a third character before
  *                                    that forfeits it).
+ * @property {string[]} [opensOn]     For 'windowed-cast': the trigger key(s) — same format
+ *                                    triggerEngine.js's triggerKey() produces, e.g.
+ *                                    'cast:Basic ATK:Slash of Breaking Dawn Stage 1-4' — whose firing
+ *                                    opens this block's cast-order window. Multiple entries mean ANY
+ *                                    of them opens it (Jinhsi's Overflowing Radiance window opens on
+ *                                    EITHER landing Basic ATK Stage 4 OR casting Intro Loong's Halo).
+ *                                    Same-character version of the cross-character problem
+ *                                    'partner-outro-return' solves for Augusta: here the window-open
+ *                                    and window-cast events both belong to THIS character's own
+ *                                    rotation, but still require real elapsed-time tracking within
+ *                                    that rotation to evaluate — this schema field only names the
+ *                                    window's shape (what opens it, how long it stays open); it does
+ *                                    not itself track whether real elapsed time in a simulated
+ *                                    rotation fell inside `windowSeconds`. That evaluation is exactly
+ *                                    PHASE2_PLAN.md's design question 2 (state machine / rotation
+ *                                    history) — still open, same limitation as
+ *                                    'partner-outro-return'.
+ * @property {number} [windowSeconds] For 'windowed-cast': how long the window stays open after the
+ *                                    `opensOn` trigger fires before the alternate/empowered cast this
+ *                                    block represents is forfeited.
  */
 
 /**
@@ -114,7 +136,7 @@
  *                                 'refresh' (re-triggering resets duration instead of adding)
  */
 
-export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return'];
+export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast'];
 export const BLOCK_KINDS = ['damage', 'buff', 'debuff', 'heal', 'utility'];
 export const TARGET_SCOPES = ['self', 'on-field', 'next-on-field', 'whole-team', 'marked-enemy', 'all-enemies'];
 export const STACKING_MODES = ['unique', 'stacking', 'refresh'];
