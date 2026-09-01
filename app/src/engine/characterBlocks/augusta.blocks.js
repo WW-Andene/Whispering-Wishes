@@ -117,7 +117,14 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'swap-out' },
     timing: { duration: 14 }, target: { scope: 'next-on-field' },
-    effects: [{ stat: 'elemDmg', value: 15, stacking: 'refresh' }],
+    // stat corrected 2026-09-01 (found via a recommendation-scoring audit that traced the same wrong
+    // stat back into the live damage engine): this was 'elemDmg', silently scoping Battlesong of the
+    // Unyielding to Electro-only teammates. Her own kit text is "+15% All-Attribute DMG Amp" — a real
+    // damage engine gate difference existed here, matching the identical stale field CHAR_BUFF_TABLE.
+    // Augusta already carried (note text there was corrected 2026-08-16 to say allDmg, but the field
+    // itself never was) — meaning a non-Electro teammate receiving this outro was getting ZERO benefit
+    // from it in the real Team-tab damage calculator, not just the recommendation scorer.
+    effects: [{ stat: 'allDmg', value: 15, stacking: 'refresh' }],
     note: 'Battlesong of the Unyielding. Ends immediately if the incoming Resonator is swapped off-field, not modeled. Also grants Augusta 1 Majesty stack. See augusta.outro.majesty-condition below for the conditional partner-Outro-return payoff.',
   },
   {

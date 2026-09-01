@@ -2309,8 +2309,12 @@ const CHAR_BUFF_TABLE = {
   // states the buff lasts "10s or until the Resonator is switched out" — added to note since this file's
   // schema has no forfeit-on-swap field (same limitation flagged for Roccia/Augusta's outro buffs).
   'Changli': {
+    // condition added 2026-09-01 (found via a recommendation-scoring audit): CHARACTER_DATA.Changli's
+    // own desc already says "+20% Fusion DMG Amp" — genuinely element-locked — but the missing
+    // condition text let scoreTeamComposition's elemBuffApplies (which treats an empty condition as
+    // universal) credit it for ANY off-element placed DPS.
     outroBuffs: [
-      { stat: 'elemDmg', value: 20, target: 'next', duration: 10 },
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 10, condition: 'Fusion DMG Amp' },
       { stat: 'libDmg', value: 25, target: 'next', duration: 10 },
     ],
     libBuffs: [],
@@ -2323,8 +2327,13 @@ const CHAR_BUFF_TABLE = {
   // the Outro's forfeit condition ("...for 14 seconds or until the Character is switched") to the note,
   // which was previously undocumented here — same pattern already caught on Cantarella's Outro.
   'Yinlin': {
+    // condition added 2026-09-01 (found via a recommendation-scoring audit): this buff's own note
+    // below already said "Electro DMG Amp" — genuinely element-locked to Yinlin's own element, same
+    // as Zhezhi's correctly-conditioned entry a few lines down — but the missing condition text let
+    // scoreTeamComposition's elemBuffApplies (which treats an empty condition as universal) credit it
+    // for ANY off-element placed DPS.
     outroBuffs: [
-      { stat: 'elemDmg', value: 20, target: 'next', duration: 14 },
+      { stat: 'elemDmg', value: 20, target: 'next', duration: 14, condition: 'Electro DMG Amp' },
       { stat: 'libDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
@@ -2527,7 +2536,12 @@ const CHAR_BUFF_TABLE = {
     // by 23%" — this is a buff to the ally's own outgoing Havoc DMG (elemDmg), not a Deepen-type
     // vulnerability debuff on the enemy (a different mechanic — Deepen means the target takes more
     // damage from all attackers, not that one ally hits harder). Reverted deepen -> elemDmg.
-    outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14 }],
+    // condition added 2026-09-01 (found via a recommendation-scoring audit): this buff's own note
+    // below already says "Havoc DMG Amp" — genuinely element-locked, per the 2026-09-01 correction
+    // comment above re-verifying it's elemDmg not deepen — but the missing condition text let
+    // scoreTeamComposition's elemBuffApplies (which treats an empty condition as universal) credit it
+    // for ANY off-element placed DPS.
+    outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14, condition: 'Havoc DMG Amp' }],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
@@ -2601,7 +2615,12 @@ const CHAR_BUFF_TABLE = {
   'Aalto': {
     // corrected 2026-08-18: outroBuffs was empty, missing Aalto's actual Outro Skill "Dissolving Mist" (fandom Combat
     // page: "The incoming Resonator has their Aero DMG Amplified by 23% for 14s or until they are switched out").
-    outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14 }],
+    // condition added 2026-09-01 (found via a recommendation-scoring audit): the correction comment
+    // above already quotes "Aero DMG Amplified by 23%" — genuinely element-locked — and
+    // CHARACTER_DATA.Aalto's own 'teams corrected' comment explains this only benefits an Aero Main
+    // DPS, but the missing condition text let scoreTeamComposition's elemBuffApplies (which treats an
+    // empty condition as universal) credit it for ANY off-element placed DPS.
+    outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14, condition: 'Aero DMG Amp' }],
     libBuffs: [],
     // corrected 2026-08-18: removed "Weapon passive: Aero DMG +12%" — this assumed a generic weapon
     // Attr DMG baseline regardless of which weapon is actually equipped, double-counting with the
@@ -2756,7 +2775,16 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: +20% Fusion DMG + 25% Skill DMG Amp (14s). Self-heal + team shield from Forte. Inherent: +15% Fusion DMG Bonus.',
   },
   'Augusta': {
-    outroBuffs: [{ stat: 'elemDmg', value: 15, target: 'next', duration: 14 }],
+    // stat corrected 2026-09-01 (found via a recommendation-scoring audit): this row's own field was
+    // still 'elemDmg' even though the note below already said "Outro was mislabeled as deepen instead
+    // of allDmg" back on 2026-08-16 — that earlier fix corrected the NOTE text but never actually
+    // changed this field. Her real Outro (Battlesong of the Unyielding) grants "+15% All-Attribute DMG
+    // Amp" per CHARACTER_DATA.Augusta's own desc — genuinely universal, not element-locked — but as
+    // 'elemDmg' with no condition, scoreTeamComposition's elemBuffApplies (which treats an empty
+    // condition as universal, same coincidental leak as the other 4 conditions fixed alongside this
+    // one) happened to still score it as applying everywhere, just for the wrong conceptual reason —
+    // a future gating fix for unconditioned elemDmg would have wrongly locked this to Electro-only.
+    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'next', duration: 14 }],
     libBuffs: [],
     selfBuffs: [
       { stat: 'elemDmg', value: 15, target: 'self', duration: 99, condition: 'Crown of Wills: +15% Electro DMG Bonus per stack, max 1 stack at base kit (S0)' },
