@@ -3393,18 +3393,43 @@ const SKILL_MULTIPLIERS = {
   // the recently-audited roster. The old Intro Try Focusing, Eh? note claiming "exact base number not
   // published" was also wrong — nanoka does publish it (29.76%+42.16%×4), so the apologetic note is
   // dropped along with the halved placeholder value.
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Lupa/Combat, cross-checked against
+  // ww.nanoka.cc/character/1207 (both agree on every value exactly). Multiple bug classes fixed:
+  // (1) multi-hit stages collapsed bug — Basic ATK Stage 1-4 was one summed-total string, not per-hit
+  // values; split into per-stage rows. (2) type miscategorization — Wolf's Claw was stored as type
+  // 'Basic ATK' but is a native Heavy Attack move (replaces the Heavy ATK input at 50+ Wolflame/1+
+  // Wolfaith); moved to 'Heavy ATK'. (3) wrong parent-type bug — Dance With the Wolf, Dance With the
+  // Wolf: Climax, and Nowhere to Run! are each explicitly "considered Resonance Liberation DMG" in their
+  // own move text, but were typed 'Skill'/'Intro'; retyped to 'Liberation' (also now consistent with
+  // RESONANCE_CHAIN_DATA.Lupa's S3/S4 libDmg nodes, which buff these same two moves' own multipliers).
+  // Firestrike is "considered Heavy Attack DMG" per its own text; typed 'Heavy ATK' (was 'Mid-air').
+  // (4) missing rows — Wolf's Gnawing, Heavy ATK (standard), Mid-air Attack Stage 1-2, Plunging Attack,
+  // Dodge Counter, Foebreaker, and Dance With the Wolf: Climax had no row at all; Foebreaker's absence
+  // was a real zero-damage rotation bug (CHARACTER_ROTATIONS.Lupa's Foebreaker step had nothing to
+  // match). All added below.
   'Lupa': [
-    ['Basic ATK', 'Stage 1-4', '90.1% → 90.1% → 157.7% → 246.2%', 'Standard combo string, builds Wolflame.'],
-    ['Basic ATK', "Wolf's Claw", '72.2% + 18.0%×4 + 96.2%', 'Alt combo follow-up.'],
-    ['Mid-air', 'Starfall', '12.7%×4 + 118.1%', 'Airborne attack chain.'],
-    ['Skill', "Shewolf's Hunt", '140.8%', 'Base Skill dash strike.'],
-    ['Skill', 'Feral Fang', '313.6%', 'Empowered Skill against marked targets, +50% DMG Mult.'],
-    ['Skill', 'Dance with the Wolf', '56.0% + 42.0%×4 + 336.1%', 'Forte finisher combo.'],
-    ['Liberation', 'Fire-Kissed Glory', '820.4%', 'Ultimate nuke that also grants the team ATK/Fusion DMG buffs and enables Wild Hunt.'],
-    ['Liberation', 'Foebreaker', '304.5%', 'Follow-up hit tied to her Ultimate.'],
-    ['Intro', 'Try Focusing, Eh?', '29.8% + 42.2%×4', 'Base swap-in opener.'],
-    ['Intro', 'Nowhere to Run!', '793.6% + 49.6%×4', 'Much stronger Intro used only once per Liberation, while in Wild Hunt state.'],
-    ['Outro', 'Stand by Me, Warrior', '+20% Fusion DMG + 25% Basic ATK DMG Amp (14s)', 'Swap-out buff to the next Resonator.'],
+    ['Basic ATK', 'Stage 1', '22.52%+22.52%+45.04%'],
+    ['Basic ATK', 'Stage 2', '90.08%'],
+    ['Basic ATK', 'Stage 3', '78.84%+13.14%×6'],
+    ['Basic ATK', 'Stage 4', '73.87%×2+49.25%×2'],
+    ['Basic ATK', 'Starfall', '12.65%×4+118.06%', 'Ground finisher after a Plunging Attack, Dodge Counter, Shewolf\'s Hunt/Feral Fang, or the Remember My Name Sprint dash.'],
+    ['Heavy ATK', 'Standard', '56.36%×2'],
+    ['Heavy ATK', "Wolf's Gnawing", '56.11%×2', 'Replaces Heavy ATK at 50+ Wolflame; consumes 50 Wolflame, grants 1 Wolfaith. Does not restore Wolflame.'],
+    ['Heavy ATK', "Wolf's Claw", '72.15%+18.04%×4+96.19%', 'Replaces Heavy ATK at 50+ Wolflame and 1+ Wolfaith; consumes 50 Wolflame, grants 1 more Wolfaith.'],
+    ['Heavy ATK', 'Firestrike', '28.48%×2', 'Replaces Mid-air Attack Stage 3 at 50+ Wolflame; considered Heavy ATK DMG.'],
+    ['Mid-air', 'Attack Stage 1-2', '76.73% → 77.23%+19.31%×4'],
+    ['Mid-air', 'Plunging Attack', '26.20%+52.39%+26.20%', 'Hold Basic Attack while airborne; can combo into Starfall.'],
+    ['Dodge Counter', 'Standard', '34.18%×4+136.72%'],
+    ['Skill', "Shewolf's Hunt", '140.77%', 'Base Skill dash strike; marks the target for 8s and opens the Feral Fang window.'],
+    ['Skill', 'Feral Fang', '313.61%', 'Empowered follow-up within the window after Shewolf\'s Hunt; +50% DMG Mult vs the marked target.'],
+    ['Liberation', 'Dance With the Wolf', '56.02%+42.02%×4+336.11%', 'Forte finisher at 2 Wolfaith, consumes both; considered Resonance Liberation DMG.'],
+    ['Liberation', 'Dance With the Wolf: Climax', '75.63%+56.72%×4+453.75%', 'Upgraded Forte finisher when Wolfaith hits 2 during Burning Matchpoint; considered Resonance Liberation DMG.'],
+    ['Skill', 'Set the Arena Ablaze', '42.35%+169.40%', 'Off-field backup hit within 8s of Dance With the Wolf(: Climax), triggered by an ally casting their Liberation; considered Resonance Skill DMG.'],
+    ['Liberation', 'Fire-Kissed Glory', '820.44%', 'Ultimate nuke that also grants the team Pack Hunt/Glory buffs and enables Wild Hunt.'],
+    ['Skill', 'Foebreaker', '304.46%', 'Consumes all Wolflame; enters Burning Matchpoint.'],
+    ['Intro', 'Try Focusing, Eh?', '29.76%+42.16%×4', 'Base swap-in opener.'],
+    ['Liberation', 'Nowhere to Run!', '793.57%+49.60%×4', 'Replaces the next Intro Skill once in Wild Hunt state; considered Resonance Liberation DMG.'],
+    ['Outro', 'Stand by Me, Warrior', '+20% Fusion DMG Amp + 25% Basic ATK DMG Amp (14s)', 'Swap-out buff to the next Resonator.'],
   ],
   'Luuk Herssen': [
     ['Basic ATK', 'Stage 1-4', '40.56%×2 → 60.16%+90.24% → 5.02%×30 → 96.33%', 'Standard ground combo; Stage 3 leaves a lingering blade.'],
@@ -4602,14 +4627,20 @@ const CHARACTER_ROTATIONS = {
   // Mid-air Attack chain, or Wolf's Claw — the actual core of her Forte-building loop. Rebuilt to match
   // Prydwen's "Loop Rotation" (used whenever an Intro Skill is available, i.e. whenever she isn't the
   // team's opener).
+  // Rotation steps' types corrected 2026-09-01 to match SKILL_MULTIPLIERS.Lupa's fixed row types above
+  // (see that section's comment): Firestrike moved 'Mid-air' -> 'Heavy ATK' (it's "considered Heavy
+  // Attack DMG"), Dance With the Wolf moved 'Skill' -> 'Liberation' (it's "considered Resonance
+  // Liberation DMG") with its name capitalization fixed to match the row exactly ('With', not 'with') —
+  // the old lowercase 'with' silently broke the case-sensitive substring match on top of the wrong type,
+  // a second independent reason this step was resolving to 0 DMG.
   'Lupa': [
     { type: 'Intro', skill: 'Try Focusing, Eh?' },
     { type: 'Liberation', skill: 'Fire-Kissed Glory', duration: 35, note: 'fully restores Wolflame, grants team Pack Hunt + Glory buffs' },
     { type: 'Skill', skill: 'Foebreaker', note: 'press Basic/Skill shortly after Liberation, enters Burning Matchpoint' },
-    { type: 'Mid-air', skill: 'Stage 1-2', note: 'builds toward Firestrike' },
-    { type: 'Mid-air', skill: 'Firestrike', note: 'consumes 50 Wolflame, grants 1 Wolfaith' },
+    { type: 'Mid-air', skill: 'Attack Stage 1-2', note: 'builds toward Firestrike' },
+    { type: 'Heavy ATK', skill: 'Firestrike', note: 'consumes 50 Wolflame, grants 1 Wolfaith' },
     { type: 'Heavy ATK', skill: "Wolf's Claw", note: 'press Basic after Firestrike, consumes 50 Wolflame, grants 1 more Wolfaith' },
-    { type: 'Skill', skill: 'Dance with the Wolf', note: 'Forte finisher, consumes both Wolfaith' },
+    { type: 'Liberation', skill: 'Dance With the Wolf', note: 'Forte finisher, consumes both Wolfaith' },
     { type: 'Outro', skill: 'Stand by Me, Warrior', duration: 14, note: 'grants next Resonator Fusion + Basic ATK DMG Amp' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
@@ -5313,11 +5344,19 @@ const RESONANCE_CHAIN_DATA = {
   // value). S6: Endnotes stacking grants Liberation DMG+40%/stack up to +120% — was defIgnore:15, no basis at all.
   'Luuk Herssen': { s1: { basicDmg: 15 }, s2: { libDmg: 60 }, s3: { totalMult: 15 }, s4: { allDmg: 20 }, s5: { totalMult: 15 }, s6: { libDmg: 120 } },
   // Lupa S1: CR+20% for 10s (not elemDmg)
-  'Lupa':         { s1: { critRate: 20 }, s2: { allDmg: 40 }, s3: { totalMult: 20 }, s4: { totalMult: 25 }, s5: { libDmg: 15 }, s6: { defIgnore: 30 } },
-  // Lupa R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 Fire-Kissed Glory +20% Crit Rate confirmed correct;
-  // s2 team +20% Fusion DMG on skill casts, stacks ×2 = 40% (was totalMult:40, wrong category); s3 Nowhere to Run! DMG Mult +100%, Intro-type with no direct schema stat, totalMult fallback (was atkPct:15, no basis);
-  // s4 Dance With the Wolf: Climax DMG Mult +125%, Forte-type with no direct schema stat, totalMult fallback (was deepen:12, no basis);
-  // s5 +15% Resonance Liberation DMG Bonus (was totalMult:15, wrong category); s6 Climax/Liberation/Nowhere to Run! ignore 30% DEF (was elemDmg:40, no basis).
+  // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Lupa/Combat, cross-checked against
+  // ww.nanoka.cc/character/1207 (both agree on every node's exact wording). Found a stale comment/data
+  // mismatch below: the 2026-08-16 sourcing comment already documented the correct S3/S4 values (+100%/
+  // +125%) but the stored object still had totalMult: 20 / totalMult: 25 — off by a factor of 5, never
+  // actually applied. Also recategorized S3/S4 from the totalMult fallback to libDmg: both Nowhere to
+  // Run! (S3) and Dance With the Wolf: Climax (S4) are explicitly "considered Resonance Liberation DMG"
+  // in their own move text, so a libDmg node (matching this file's now-established convention for a
+  // Liberation-type-classified move's own DMG Multiplier boost, e.g. Xiangli Yao/Zhezhi above) is more
+  // accurate than a blanket totalMult that would over-credit non-Liberation damage too.
+  // S2: allDmg -> elemDmg (Fusion DMG Bonus is element-specific, not all-element); value 40 already
+  // correct as the max-stacked total (20%/stack ×2 stacks, matching this file's existing convention of
+  // storing the stacking cap, e.g. Sanhua's S6 atkPct).
+  'Lupa':         { s1: { critRate: 20 }, s2: { elemDmg: 40 }, s3: { libDmg: 100 }, s4: { libDmg: 125 }, s5: { libDmg: 15 }, s6: { defIgnore: 30 } },
   // Verina S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Verina/Combat's
   // Resonance Chain section (Chrome UA + google.com referer + jsRender), cross-checked against
   // ww.nanoka.cc/character/1503 and prydwen.gg (all three agree verbatim on every node's text):
