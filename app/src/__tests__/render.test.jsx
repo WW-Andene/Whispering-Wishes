@@ -132,6 +132,8 @@ describe('Tab SSR rendering', () => {
       visualSettings: mockVS, setActiveTab: noop, setDetailModal: noop,
       activeBanners: CURRENT_BANNERS, withCacheBuster: (u) => u,
       refreshImages: noop, handleSetProfilePic: noop,
+      ownedChars: [], setOwnedChars: noop,
+      manualCounts: {}, setManualCounts: noop,
     });
   });
 
