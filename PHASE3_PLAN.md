@@ -1,5 +1,62 @@
 # Phase 3 — Cut `calcTeamStats.js` over to the TriggerBlock engine
 
+## Current status (updated 2026-09-01)
+
+**Done:**
+- Stage 0 — coverage audit. Confirmed real per-hit damage and cross-character
+  buff-uptime timing already have working engine equivalents from Phase 2;
+  DOT reactions, energy-cycle-gated Liberation uptime, the rotation
+  on-field order-search, and Coordinated ATK off-field snapshot semantics
+  have no engine model at all yet.
+- Stage 1 — parity harness. Built and swept across all 56 converted
+  characters (`phase3-parityHarness.test.js`), comparing the engine's real
+  per-hit damage against `calcTeamStats()`'s own RAW-tier `rawDps`. Found
+  and fixed a real engine gap along the way: `resolveHitComposedDps` had no
+  way to receive gear-side stats (weapon passives, echo sets) at all — added
+  an additive `externalStats` param.
+- Stage 2 — triage. Root-caused all 6 flagged outliers (Lucilla 40x,
+  Hiyuki 12.7x, Roccia 8.8x, Sanhua 9.0x, Aemeath 6.7x, Iuno 6.5x) to a
+  single systemic gap, not six separate bugs: no character's engine blocks
+  gated Resonance Chain bonuses by owned sequence level — every `chain.sN`
+  block fired unconditionally, as if every character were fully R6-awakened.
+- Stage 3, item 1 of 5 — sequence-level gating. Added `engine/sequenceGating.js`
+  (derives the required sequence from the existing `chain.sN` id convention,
+  verified with zero exceptions across all 56 characters) and wired it into
+  `resolveHitComposedDps`/`resolveSimulatedTeamRotation` as an opt-in,
+  backward-compatible parameter. Re-ran the Stage 1 harness at a true S0
+  baseline: roster-wide median dropped 3.13x → 2.03x, mean 4.20x → 2.34x,
+  max 40.03x → 8.01x (Lucilla, now a real but much smaller residual, not
+  the dominant systemic bug it was).
+
+**Remaining (Stage 3, items 2-5, none yet started):**
+- DOT reactions (Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break) —
+  no engine model exists at all; `calcTeamStats.js` computes these via
+  dedicated `calcEngine.js` functions with no TriggerBlock equivalent.
+- Energy-cycle-gated Liberation uptime (`calcEnergyCycles`) — must gate the
+  engine's Liberation-derived hits by real ER-based uptime, same as legacy's
+  `mult * (1 - libShare*(1-libUptime))`.
+- The rotation on-field order-search itself (brute-force permutation +
+  duration-aware scoring) — the engine currently assumes a GIVEN on-field
+  order; it doesn't choose one the way `calcTeamStats.js` does.
+- Coordinated ATK off-field snapshot semantics (the 0.6 discount factor,
+  buffs-received-before-swap-out snapshotting) — no engine concept of
+  "coordinated/off-field damage" yet.
+- Lucilla's residual 8.01x ratio (flagged, not yet independently confirmed
+  bug vs. real divergence — candidate cause noted in Stage 3's own section
+  below).
+
+**Not started:** Stage 4 (the actual `calcTeamStats.js` rewrite) and Stage 5
+(final verification + commit) — both explicitly blocked on Stage 3's
+remaining 4 items per this plan's own ordering; attempting the rewrite
+before they're closed would silently drop those mechanics from the live
+calculator.
+
+**Every commit through this stage has been additive** — new engine files,
+new tests, an opt-in param on 2 existing engine functions. `calcTeamStats.js`
+itself has not been touched at any point in Phase 3 (verified via
+`git diff --stat` after every stage). All work is on `main` directly; no
+separate feature branch exists for this phase.
+
 ## Why this is its own phase, not a quick edit
 
 `calcTeamStats.js` (1365 lines) is the live calculator every user's team score

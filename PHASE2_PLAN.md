@@ -1162,6 +1162,11 @@ Jingran remains deliberately excluded (unreleased, no rotation data).
 `calcTeamStats.js` (the live calculator) was never touched at any point
 in this effort.
 
+**Follow-on work — wiring the engine into `calcTeamStats.js` itself — is
+tracked separately in `PHASE3_PLAN.md`**, not here. See that file for
+current status; as of 2026-09-01 it's in progress (Stage 3 of 5, item 1 of
+5 done: sequence-level gating).
+
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
 - Follow the PerfectSuite numeric-scale rule (see `CLAUDE.md`) for any px
