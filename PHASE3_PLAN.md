@@ -130,9 +130,50 @@ denominators, not necessarily an error), and whether either character's
 `.blocks.js` double-counts or over-scopes anything relative to its own
 audit-comment source.
 
-**Next**: extend this harness to the remaining ~49 converted characters
-(bare-kit + real gear cases), still logging rather than asserting, before
-Stage 2 triage begins in earnest.
+**Update — full sweep done (2026-09-01, all 56 converted characters):**
+`phase3-parityHarness.test.js` now dynamically loads every `.blocks.js` file
+(generated from the directory listing + each file's own `SOURCE`, not
+hand-typed) and runs the same solo comparison for all 56. One harness bug
+found and fixed along the way: several HP/DEF-scaling characters mix
+ATK-basis hits into an otherwise HP/DEF kit (documented pattern, e.g.
+Cartethyia's own audit comment on mixed "%"/"%HP" notation) — the harness
+was only supplying the character's OWN scaling stat as `baseStats`, so 5
+characters (Baizhi, Shorekeeper, Suisui, Taoqi, Youhu) threw
+`needs baseStats.atk ... wasn't provided`. Fixed by always supplying all
+three raw base stats (atk/hp/def), letting each block draw whichever basis
+it actually declares — not a change to any character's `.blocks.js` file,
+purely a harness-input fix.
+
+All 56 pass (produce a real, finite ratio) once fixed. Summary across the
+full roster: **min 0.056, max 40.03, median 3.13, mean 4.20** (engine/legacy).
+Full per-character table is in the harness's own console output
+(`npx vitest run src/__tests__/phase3-parityHarness.test.js --reporter=verbose`) —
+not duplicated here since it's 56 rows and easily regenerated; the
+distribution shape is what matters for triage:
+
+- **4 characters land BELOW 1.0** (engine < legacy): Baizhi (0.056),
+  Suisui (0.311), Shorekeeper (0.423), Youhu (0.417) — all four are
+  Healer/Support-role characters whose real kit is mostly non-damage
+  (healing, shields, buffs), so their converted `.blocks.js` files
+  correctly have few/small damage blocks, while the legacy `totalMult`
+  approximates a "personal power" baseline that doesn't really represent
+  a healer's intended playstyle either. Plausible as expected divergence,
+  but Stage 2 should confirm Baizhi's 0.056 (18x below) isn't hiding a
+  real missing damage block rather than a genuinely thin healer kit.
+- **The bulk (majority) cluster in the 1.5x–5.5x range** — consistent
+  with "real per-hit composition legitimately differs from a flat
+  totalMult%", the expected outcome per this file's own header note, but
+  not yet individually confirmed bug-free.
+- **Notable high outliers needing a real-bug check first**: Lucilla
+  (40.03x), Roccia (8.80x), Sanhua (9.04x), Hiyuki (12.71x), Aemeath
+  (6.72x), Iuno (6.46x). A 40x gap in particular is far outside "engine is
+  more precise" territory and much likelier to be a real double-count,
+  missing cooldown/ICD gate, or a rotation-step mismatch (e.g. a hit
+  firing far more often in the derived steps than the real combo intends).
+
+**Next**: Stage 2 — triage the outliers above first (they're the ones most
+likely to hide a genuine bug rather than intended precision gain), then
+work down through the mid-range cluster.
 
 ## Stage 1 — Parity harness
 
@@ -199,7 +240,7 @@ independently, one commit at a time, one-by-one per this project's standing
 ## Status
 
 - [x] Stage 0 — coverage audit
-- [ ] Stage 1 — parity harness (in progress: 3/~52 characters, engine `externalStats` gap found+fixed)
+- [x] Stage 1 — parity harness (all 56 converted characters swept; engine `externalStats` gap found+fixed; ratio distribution recorded, outliers flagged for Stage 2)
 - [ ] Stage 2 — triage
 - [ ] Stage 3 — close gaps
 - [ ] Stage 4 — rewrite
