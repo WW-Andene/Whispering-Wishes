@@ -22,7 +22,6 @@ import {
   applyFullEchoSet, applyEchoStats,
   countTeamElements, routeTypeBonuses, applyResonanceChain,
   calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
-  calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
   calcEnergyCycles,
   isHealerRole,
   TEAM_SET_BUFFS,
@@ -33,6 +32,7 @@ import { BLOCKS_BY_CHARACTER } from '../../engine/characterBlocks/index.js';
 import { deriveStepsFromRotation } from '../../engine/rotationSimulator.js';
 import { resolveHitComposedDps } from '../../engine/resolveHitComposedDps.js';
 import { resolveHitComposedTeamDps } from '../../engine/resolveHitComposedTeamDps.js';
+import { resolveDotReactionDps } from '../../engine/dotReactions.js';
 import { chooseOnFieldOrder } from '../../engine/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/coordinatedAtk.js';
 
@@ -979,31 +979,26 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const resMult = calcResMult(mainBaseRes, resShred);
     const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
-    // ── DOT damage (ICD-aware, from calcEngine) ──
+    // ── DOT damage (ICD-aware, composed via engine/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /
+    // Stage 4 step 3) ──
     // Each of these reactions has a fixed damage element regardless of which character on the team
     // triggers it (Frazzle is always Spectro, Erosion always Havoc, etc.) — so its RES must come from
     // the enemy's RES to THAT element, not resMult above (which is keyed to mainDps's own element and
     // was wrong here whenever the team's element differs from the reaction's, e.g. a Glacio main DPS
     // whose support triggers Havoc Erosion). Tune Break has no single canonical element (bespoke
-    // per-character mechanic), so it keeps using mainDps's resMult as before.
-    let dotDmgPerRotation = 0;
-    const frazzleResMult = calcResMult(getEnemyRes('Spectro'), resShred);
-    const erosionResMult = calcResMult(getEnemyRes('Havoc'), resShred);
-    const fusionBurstResMult = calcResMult(getEnemyRes('Fusion'), resShred);
-    const electroFlareResMult = calcResMult(getEnemyRes('Electro'), resShred);
-    const frazzleResult = calcFrazzleDmg(mems, rotTime, defMult, frazzleResMult);
-    const erosionResult = calcErosionDmg(mems, rotTime, defMult, erosionResMult);
-    const fusionBurstResult = calcFusionBurstDmg(mems, rotTime, defMult, fusionBurstResMult);
-    const electroFlareResult = calcElectroFlareDmg(mems, rotTime, defMult, electroFlareResMult);
-    // energyCycleFactors is computed earlier now (see the top of this function) so it's available
-    // to the buff-accumulation tiers above, not just Tune Break.
-    const tuneBreakResult = calcTuneBreakDmg(mems, rotTime, defMult, resMult, energyCycleFactors);
-    dotDmgPerRotation += frazzleResult.dmg + erosionResult.dmg + fusionBurstResult.dmg + electroFlareResult.dmg + tuneBreakResult.dmg;
-    const hasFrazzle = frazzleResult.active;
-    const hasErosion = erosionResult.active;
-    const hasFusionBurst = fusionBurstResult.active;
-    const hasElectroFlare = electroFlareResult.active;
-    const tuneBreakDeepenMult = tuneBreakResult.deepenMult;
+    // per-character mechanic), so it keeps using mainDps's resMult — resolveDotReactionDps's own
+    // `mainResMult` param, matching its jsdoc's documented Stage 0 fallback exactly. Pure plumbing
+    // swap versus calling calcFrazzleDmg/calcErosionDmg/etc. individually — same underlying
+    // calcEngine.js functions, same rotTime/defMult/resShred inputs, byte-identical output; the actual
+    // engine-vs-legacy `rotTime` reconciliation stays step 4's job (rotationTimeline itself), not this
+    // one — DOT keeps using the same shared `rotTime` every other FULL-tier total already does.
+    const dotResult = resolveDotReactionDps(mems, rotTime, defMult, resShred, getEnemyRes, resMult, energyCycleFactors);
+    const dotDmgPerRotation = dotResult.totalDmg;
+    const hasFrazzle = dotResult.breakdown.frazzle.active;
+    const hasErosion = dotResult.breakdown.erosion.active;
+    const hasFusionBurst = dotResult.breakdown.fusionBurst.active;
+    const hasElectroFlare = dotResult.breakdown.electroFlare.active;
+    const tuneBreakDeepenMult = dotResult.tuneBreakDeepenMult;
 
     let totalRotDmg = 0;
     const memberDmgArr = [];

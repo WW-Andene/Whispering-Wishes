@@ -934,8 +934,42 @@ Camellya+Danjin+Verina) — all produced plausible `teamDps`/`memberDps`
 splits (percentages summing to 100, main DPS carrying the expected
 majority share).
 
-**Next**: step 3/6 — DOT + `dmgSources` (wire `dotReactions.js`'s
-`resolveDotReactionDps` in, re-derive the 3-way rotation/echo/DOT split).
+### Stage 4, step 3/6 — DOT + `dmgSources` (done, 2026-09-01)
+
+Smaller than steps 1-2: swapped the 5 individual `calcFrazzleDmg`/
+`calcErosionDmg`/`calcFusionBurstDmg`/`calcElectroFlareDmg`/
+`calcTuneBreakDmg` calls for one `resolveDotReactionDps(mems, rotTime,
+defMult, resShred, getEnemyRes, resMult, energyCycleFactors)` call
+(`engine/dotReactions.js`, built in Stage 3 item 2) — a pure plumbing swap,
+same underlying `calcEngine.js` functions and the same shared `rotTime`
+every other FULL-tier total already uses, so `dotDmgPerRotation`/
+`hasFrazzle`/`hasErosion`/`hasFusionBurst`/`hasElectroFlare`/
+`tuneBreakDeepenMult` are byte-identical to before. The engine-vs-legacy
+`rotTime` reconciliation itself stays step 4's job (rotationTimeline), not
+this one.
+
+`dmgSources` (the rotation/echo/DOT % split) needed **zero additional
+code** — it was already deriving from `memberDmg`'s `skillDmg` field, which
+step 2 already overrides with engine-composed values for a fully-converted
+team, so the split was already engine-correct as a side effect of step 2's
+own work. Verified this explicitly rather than assuming it: a real
+Frazzle-team probe (Camellya+Phoebe+Verina) shows `hasFrazzle: true`,
+`dotDps > 0`, `dmgSources: {rotation: 79, echo: 0, dot: 21}` — plausible
+and correctly attributed.
+
+3 new tests (`calcTeamStatsDotWiring.test.js`): a real Frazzle-applying
+team reports the flag and a positive DOT share; a team with no DOT
+mechanics reports all-zero flags/share; `dmgSources`' three percentages
+always sum to ~100 regardless of composition.
+
+Full suite: 1114/1114 passing (83 files). Production build verified clean.
+
+**Next**: step 4/6 — `rotationTimeline` (re-derive from the engine's own
+chosen order + real block windows instead of the legacy hand-built
+segments/buffs arrays; this is also where the engine-vs-legacy `rotTime`
+denominators steps 1-3 deliberately left unreconciled finally get sorted
+out). Verify `CharacterDetailModal.jsx`'s solo Rotation Guide, which reuses
+this exact shape, still renders correctly.
 
 ## Stage 5 — Final verification and commit
 
@@ -956,7 +990,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
 - [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
 - [x] Stage 4 reconnaissance — full consumer-contract map (every field read outside calcTeamStats.js, by which component), measured perf check (engine ~3.1x slower/call than legacy but still sub-ms — not a blocker for autoEquip.js's search loop), and a 6-step phased implementation plan (solo tier -> team tier -> DOT -> rotationTimeline -> warnings -> dead code removal), each step independently tested/committed
-- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; step 2/6 done — FULL tier/`teamDps`/`memberDps` now calls `chooseOnFieldOrder` + `resolveHitComposedTeamDps` (which gained its own `externalStats` support) for a fully-converted team, same legacy fallback; steps 3-6 remaining)
+- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; step 2/6 done — FULL tier/`teamDps`/`memberDps` now calls `chooseOnFieldOrder` + `resolveHitComposedTeamDps` (which gained its own `externalStats` support) for a fully-converted team, same legacy fallback; step 3/6 done — DOT now composed via `engine/dotReactions.js`'s `resolveDotReactionDps` (pure plumbing swap), `dmgSources` needed no changes (already engine-correct via step 2); steps 4-6 remaining)
 - [ ] Stage 5 — final verify + commit
 
 Work proceeds stage by stage; each stage's own sub-tasks are committed
