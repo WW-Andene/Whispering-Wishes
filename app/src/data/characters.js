@@ -3696,7 +3696,13 @@ const SKILL_MULTIPLIERS = {
     ['Mid-air', 'Plunging Attack', '117.10%'],
     ['Dodge Counter', 'Standard', '179.43%'],
     ['Skill', 'Wingblade', '286.29%×2', '12s cooldown.'],
-    ['Forte', 'Devastation → Dark Surge', '228.14% (Devastation)', 'Hold Basic ATK at full Umbra to cast Devastation, entering Dark Surge: enhanced Basic/Heavy ATK plus Skill Lifetaker (276.35%×2+9.95%×4).'],
+    ['Heavy ATK', 'Devastation', '228.14%', 'Hold Basic ATK at full Umbra to cast Devastation, entering Dark Surge; considered Heavy Attack DMG.'],
+    ['Skill', 'Umbra: Lifetaker', '276.35%×2+9.95%×4', 'Replaces Wingblade in Dark Surge; resets Skill cooldown on entry.'],
+    ['Basic ATK', 'Umbra: Basic Attack Stage 1-5', '56.37% → 93.94% → 155.67% → 37.13%×3+111.39% → 28.52%×4+114.07%', 'Enhanced Basic ATK combo in Dark Surge.'],
+    ['Heavy ATK', 'Umbra: Heavy Attack', '128.83%', 'Enhanced Heavy ATK in Dark Surge.'],
+    ['Heavy ATK', 'Umbra: Thwackblade', '126.65%+9.95%×4', 'Basic ATK follow-up after Umbra: Heavy Attack; considered Heavy Attack DMG.'],
+    ['Mid-air', 'Umbra: Plunging Attack', '123.27%', 'Plunging Attack in Dark Surge.'],
+    ['Dodge Counter', 'Umbra: Dodge Counter', '316.71%', 'Dodge Counter in Dark Surge.'],
     ['Liberation', 'Deadening Abyss', '1520.90%', '16s cooldown — huge single-target nuke.'],
     ['Intro', 'Instant of Annihilation', '198.81%'],
     ['Outro', 'Soundweaver', '143.3% ATK per tick ×3 (6s)', 'Havoc Field: AoE DoT for the incoming Resonator.'],
@@ -5993,7 +5999,15 @@ const RESONANCE_CHAIN_DATA = {
   // the previous "approximated as totalMult" convention. TODO: needs Phase 2 schema for Energy Regen% and
   // healing-bonus effects. S1/S2/S5/S6 confirmed correct, unchanged.
   'Rover: Spectro': { s1: { critRate: 15 }, s2: { elemDmg: 20 }, s3: {}, s4: {}, s5: { libDmg: 40 }, s6: { resShred: 10 } },
-  'Rover: Havoc':   { s1: { skillDmg: 30 }, s2: { totalMult: 8 }, s3: { totalMult: 8 }, s4: { resShred: 10 }, s5: { basicDmg: 50 }, s6: { critRate: 25 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Rover/Combat (unified page), cross-checked
+  // against ww.nanoka.cc/character/1604 (both agree exactly). S2 (Skill cooldown reset on Devastation
+  // cast) and S3 (Basic Attack 5 heals 10% of HP lost) have zero real DPS component and no matching
+  // category in this schema — zeroed both to {} per this project's hard rule against inventing values.
+  // TODO: needs Phase 2 schema for S2's cooldown-reset and S3's healing-bonus mechanics.
+  // S1/S4/S6 confirmed correct. S5 (basicDmg: 50) approximates "Basic Attack 5 deals +50% of its own DMG
+  // as a bonus hit" via the matching Basic-ATK-type category — a reasonable fit since the value is exact,
+  // though technically scoped to Stage 5 only rather than all Basic ATK hits.
+  'Rover: Havoc':   { s1: { skillDmg: 30 }, s2: {}, s3: {}, s4: { resShred: 10 }, s5: { basicDmg: 50 }, s6: { critRate: 25 } },
   'Rover: Aero':    { s1: { totalMult: 5 }, s2: { totalMult: 12 }, s3: { elemDmg: 15 }, s4: { skillDmg: 15 }, s5: { libDmg: 20 }, s6: { skillDmg: 30 } },
   'Rover: Electro': { s1: { totalMult: 5 }, s2: { totalMult: 8 }, s3: { skillDmg: 20 }, s4: { libDmg: 20 }, s5: { critDmg: 20 }, s6: { skillDmg: 20 } },
   // corrected 2026-08-18: prior values (elemDmg:8/totalMult:10/elemDmg:8/atkPct:10/totalMult:10/elemDmg:12) had no basis
