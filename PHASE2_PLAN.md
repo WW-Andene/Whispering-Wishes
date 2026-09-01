@@ -1090,6 +1090,35 @@ simultaneously on the same cast.
 **Next**: batch 5 of 10, same cadence, continuing alphabetically from
 Suisui through the remaining roster.
 
+## Character-roster conversion — batch 5 of ~6 (2026-09-01)
+
+**Batch 5 — done, all individually verified, 987/987 suite passing:**
+Suisui, Taoqi, Verina, Xiangli Yao, Yangyang, Yangyang: Xuanling, Youhu,
+Yuanwu, Zani, Zhezhi. `calcTeamStats.js` never touched.
+
+**Real omissions/corrections caught by reading full audit-comment context
+this batch**: Suisui's Intro self-buff split into two real components
+(the CHAR_BUFF_TABLE-listed critRate+80 AND a +240% Glacio DMG bonus on
+that same hit, only mentioned in condition text, not a structured
+selfBuffs entry) — same class of catch as Chisa/Lucilla earlier; Xiangli
+Yao's S1 and Yuanwu's S1-S4/S6 (5 of 6 nodes!) correctly left unmodeled
+because their real mechanics (bonus-hit-scaling-off-another-move,
+attack-speed, DEF%, shield) have no derivable flat figure or matching
+category — Yuanwu is now the character with the fewest representable
+chain nodes in the whole converted roster; Zhezhi's S5/S6, by contrast,
+turned out to have precisely computable bonus-hit values (140%/120% of a
+sourced move's own multiplier, cross-checked against nanoka's raw damage
+data in the audit comment itself) and were modeled as real proc blocks
+instead of left zeroed like Xiangli Yao's/Yuanwu's less-determinable
+nodes — the same real-number-over-flat-approximation principle applied
+differently depending on what the source data actually supports.
+
+**Roster status**: only Augusta and Cartethyia remain unconverted (aside
+from Jingran, still skipped as unreleased/no rotation data). Batch 6 will
+be a short final batch of 2, not 10.
+
+**Next**: batch 6 (final, 2 characters) — Augusta and Cartethyia.
+
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
 - Follow the PerfectSuite numeric-scale rule (see `CLAUDE.md`) for any px
