@@ -964,12 +964,55 @@ always sum to ~100 regardless of composition.
 
 Full suite: 1114/1114 passing (83 files). Production build verified clean.
 
-**Next**: step 4/6 — `rotationTimeline` (re-derive from the engine's own
-chosen order + real block windows instead of the legacy hand-built
-segments/buffs arrays; this is also where the engine-vs-legacy `rotTime`
-denominators steps 1-3 deliberately left unreconciled finally get sorted
-out). Verify `CharacterDetailModal.jsx`'s solo Rotation Guide, which reuses
-this exact shape, still renders correctly.
+### Stage 4, step 4/6 — `rotationTimeline` order reconciliation (done, 2026-09-01, scoped down)
+
+Scoped narrower than originally planned, deliberately: reconciled the
+**on-field order** `rotationTimeline` displays with the real order the
+engine actually computed `teamDps` against (step 2) — NOT a full rewrite of
+`rotationTimeline`'s buff-list/duration-display internals to real
+TriggerBlock windows. Rationale for the narrower scope: unlike steps 1-3,
+`rotationTimeline`'s own internal buff/duration display is purely
+cosmetic (the Rotation Guide UI) — it was never wired into the real
+`teamDps`/`memberDps` numbers to begin with (those came from the separate
+legacy FULL-tier computation steps 1-3 already replaced). The one thing
+that WAS a real, user-visible inconsistency risk — the Rotation Guide
+showing a different swap order than the one the actual DPS number assumes
+— is exactly what this step fixes; rewriting the rest for a cosmetic-only
+gain wasn't a good risk/value trade for this pass.
+
+- **`engineChosenOrder`** (new, computed once near the top of the
+  function, right before `rotationTimeline`'s own IIFE): the SAME
+  `chooseOnFieldOrder` call step 2 needs, hoisted earlier and reused by
+  both — removes a duplicate computation and guarantees the two agree.
+- Inside `rotationTimeline`'s IIFE: when `engineChosenOrder` exists, its
+  `order` is used directly as the (single) candidate — skipping the legacy
+  permutation-search-and-score entirely, rather than letting a
+  second, independently-derived guess potentially disagree with the order
+  `teamDps` was actually computed against. A mixed team (not-yet-converted
+  member present) keeps running the legacy search unchanged, since no
+  `engineChosenOrder` exists for it.
+- `rotationTimeline`'s own segment durations/buff-list contents/`totalTime`
+  still come from the legacy `buildForOrder` logic (CHAR_BUFF_TABLE-driven,
+  scaled to legacy `rotTime`) — NOT rewritten to real per-hit engine
+  windows in this pass. This means the engine-vs-legacy `rotTime`
+  denominator question steps 1-3 left open is NOT fully resolved by this
+  step either — logged here as explicitly deferred, not silently dropped,
+  should a future pass want to pursue the full display rewrite.
+- 4 new tests (`calcTeamStatsRotationTimelineOrder.test.js`): a
+  fully-converted team's displayed order matches a fresh
+  `chooseOnFieldOrder` call for the same team; Main DPS is always last;
+  solo (1-member) degenerates cleanly; a mixed team still resolves via the
+  legacy search.
+
+Full suite: 1118/1118 passing (84 files). Production build verified clean.
+Manually verified `rotationTimeline.segments`/`.steps` output shape for
+both a real 3-member team and a solo (`CharacterDetailModal.jsx`'s own
+calling convention) — both produced complete, plausible step data (buff
+labels, durations, skill sequences) with no missing fields.
+
+**Next**: step 5/6 — `warnings` (port energy-cycle/RES-based warning logic,
+expected to need little to no change since it already reads
+`energyCycleFactors`/`mems`/`mainDps`, none of which steps 1-4 restructured).
 
 ## Stage 5 — Final verification and commit
 
@@ -990,7 +1033,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
 - [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
 - [x] Stage 4 reconnaissance — full consumer-contract map (every field read outside calcTeamStats.js, by which component), measured perf check (engine ~3.1x slower/call than legacy but still sub-ms — not a blocker for autoEquip.js's search loop), and a 6-step phased implementation plan (solo tier -> team tier -> DOT -> rotationTimeline -> warnings -> dead code removal), each step independently tested/committed
-- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; step 2/6 done — FULL tier/`teamDps`/`memberDps` now calls `chooseOnFieldOrder` + `resolveHitComposedTeamDps` (which gained its own `externalStats` support) for a fully-converted team, same legacy fallback; step 3/6 done — DOT now composed via `engine/dotReactions.js`'s `resolveDotReactionDps` (pure plumbing swap), `dmgSources` needed no changes (already engine-correct via step 2); steps 4-6 remaining)
+- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; step 2/6 done — FULL tier/`teamDps`/`memberDps` now calls `chooseOnFieldOrder` + `resolveHitComposedTeamDps` (which gained its own `externalStats` support) for a fully-converted team, same legacy fallback; step 3/6 done — DOT now composed via `engine/dotReactions.js`'s `resolveDotReactionDps` (pure plumbing swap), `dmgSources` needed no changes (already engine-correct via step 2); step 4/6 done, scope narrowed — `rotationTimeline`'s displayed on-field order now reuses the same `chooseOnFieldOrder` result `teamDps` was computed against (a new `engineChosenOrder`, hoisted and shared with step 2); its own segment-duration/buff-list display internals stay legacy/CHAR_BUFF_TABLE-driven, not rewritten to real engine windows in this pass — logged as deferred, not dropped; steps 5-6 remaining)
 - [ ] Stage 5 — final verify + commit
 
 Work proceeds stage by stage; each stage's own sub-tasks are committed

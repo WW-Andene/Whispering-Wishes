@@ -156,6 +156,17 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // applying their hardcoded cap — same fix already applied to Mornye's Tune Break amp.
     const energyCycleFactors = calcEnergyCycles(mems, teamEquipment, teamIdx);
 
+    // PHASE3_PLAN.md Stage 4 step 4: computed once, here — BEFORE rotationTimeline's own IIFE, so it
+    // can reuse this exact order instead of running its own separate permutation search — and reused
+    // again by the FULL tier's engine path below (step 2), instead of calling chooseOnFieldOrder a
+    // second time for the same team. A team where every member is converted gets ONE real,
+    // engine-derived on-field order; rotationTimeline's own legacy search stays the fallback for a
+    // mixed team, unchanged.
+    const allMembersConverted = mems.every(m => BLOCKS_BY_CHARACTER[m.name] && CHARACTER_ROTATIONS[m.name]);
+    const engineChosenOrder = allMembersConverted
+      ? chooseOnFieldOrder(mems.map(m => ({ name: m.name, blocks: BLOCKS_BY_CHARACTER[m.name], rotation: CHARACTER_ROTATIONS[m.name] })), mainDps.name)
+      : null;
+
     const rotationTimeline = (() => {
       // ── Smart rotation ordering based on WuWa swap mechanics ──
       // Rule 1: Main DPS goes LAST (receives all buffs in DPS window)
@@ -388,12 +399,22 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       return { timeline, buffs };
       }
 
+      // PHASE3_PLAN.md Stage 4 step 4: when every member is converted, skip this whole legacy
+      // permutation search — reuse the ALREADY-computed real engine order (chooseOnFieldOrder,
+      // Stage 3 item 5) instead, so the Rotation Guide's displayed swap sequence matches the same
+      // order the actual engine-composed teamDps (step 2) was computed against, not a second,
+      // independently-derived guess. Falls back to the legacy search for a mixed team, unchanged.
+      const engineOrderedMems = engineChosenOrder
+        ? engineChosenOrder.order.map(name => mems.find(m => m.name === name)).filter(Boolean)
+        : null;
+
       // Candidate orderings: every permutation of supports (dpsChar always last — Rule 1 is not up
       // for debate, only which support leads/trails is). Capped at 3! = 6 candidates since team size
       // maxes at 3 (≤2 supports); if that cap is ever raised, falls back to just the heuristic order
       // above rather than a factorial blowup.
-      const candidateOrders = (supports.length <= 3 ? permutations(supports) : [supports])
-        .map(perm => dpsChar ? [...perm, dpsChar] : [...perm]);
+      const candidateOrders = engineOrderedMems
+        ? [engineOrderedMems]
+        : (supports.length <= 3 ? permutations(supports) : [supports]).map(perm => dpsChar ? [...perm, dpsChar] : [...perm]);
 
       // Score = total buff value-time from non-DPS members that's actually still active (per its real
       // `duration`) when the DPS's own on-field window starts — i.e. how much of what this ordering
@@ -1211,9 +1232,9 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // still ran, unmodified, as the fallback for a mixed team — a follow-up cleanup pass removes that
     // now-redundant work once every step of this rewrite has landed, not before, per this project's
     // "1 by 1" rule: each step stays independently revertable until the whole rewrite is trusted).
-    // `chooseOnFieldOrder` picks its own real on-field order (Stage 3 item 5) — deliberately NOT the
-    // legacy rotationTimeline's order computed elsewhere in this function; reconciling the two is
-    // Stage 4 step 4's job (rotationTimeline itself), not this one.
+    // `engineChosenOrder` (computed once, near the top of this function, right before
+    // rotationTimeline — Stage 4 step 4 also reuses it for rotationTimeline's own displayed order,
+    // so both agree on the same real on-field sequence instead of two independently-derived guesses).
     //
     // Each member's own `dps` (resolveHitComposedTeamDps's real damage / their own real on-field
     // segment duration, itself derived from real CHARACTER_ROTATIONS timing, not a proportional
@@ -1221,10 +1242,8 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // the RAW tier — NOT also multiplied by the legacy coordShare/fieldRatio discount, since the
     // engine's own real per-member segment (via chooseOnFieldOrder + coordSnapshotDiscount) already
     // replaces that heuristic with something more precise; applying both would double-discount.
-    const allMembersConverted = mems.every(m => BLOCKS_BY_CHARACTER[m.name] && CHARACTER_ROTATIONS[m.name]);
     if (allMembersConverted) {
-      const engineMembers = mems.map(m => ({ name: m.name, blocks: BLOCKS_BY_CHARACTER[m.name], rotation: CHARACTER_ROTATIONS[m.name] }));
-      const chosenOrder = chooseOnFieldOrder(engineMembers, mainDps.name);
+      const chosenOrder = engineChosenOrder;
       if (chosenOrder) {
         const { ownedSteps, blocksByOwner } = chosenOrder;
         let engineTotalRotDmg = 0;
