@@ -55,18 +55,28 @@
   `'whole-team'` buffs untouched — mapping legacy's outroBuffs-vs-libBuffs
   distinction directly onto the engine's own scope vocabulary. 6 new tests.
 
-**Remaining (Stage 3, item 5, not yet started):**
-- The rotation on-field order-search itself (brute-force permutation +
-  duration-aware scoring) — the engine currently assumes a GIVEN on-field
-  order; it doesn't choose one the way `calcTeamStats.js` does.
+- Stage 3, item 5 of 5 (final item) — the rotation on-field order-search.
+  Added `engine/rotationOrderSearch.js`'s `chooseOnFieldOrder(members,
+  mainDpsName)`: brute-forces every permutation of supports (Main DPS
+  always last), scores each via `buildTeamSteps`/`simulateTeamRotation` +
+  `buildBlockWindows`/`activeCountAt` (how much cross-character whole-team/
+  next-on-field buff value survives to the instant the Main DPS's own
+  on-field segment opens), keeps the highest (ties keep the input order) —
+  the engine-native equivalent of calcTeamStats.js's own rotationTimeline
+  IIFE. 5 new tests, including a load-bearing behavioral one: reordering so
+  Rover: Electro's `next-on-field` outro actually reaches Yinlin (instead of
+  landing on nobody, as the naive input order does) scores strictly higher
+  and the search finds it.
+
+**Stage 3 is now fully closed — all 5 items done.**
+
 - Lucilla's residual 8.01x ratio (flagged, not yet independently confirmed
   bug vs. real divergence — candidate cause noted in Stage 3's own section
   below).
 
 **Not started:** Stage 4 (the actual `calcTeamStats.js` rewrite) and Stage 5
-(final verification + commit) — both explicitly blocked on Stage 3's
-remaining item per this plan's own ordering; attempting the rewrite before
-it's closed would silently drop that mechanic from the live calculator.
+(final verification + commit) — Stage 3 is now fully closed, so both are
+unblocked per this plan's own ordering, but neither has started yet.
 
 **Every commit through this stage has been additive** — new engine files,
 new tests, an opt-in param on 2 existing engine functions. `calcTeamStats.js`
@@ -489,7 +499,54 @@ calcTeamStats.js's RAW tier (:531-540) and FULL tier (:984-993, :1024-1090):
 Full suite: 1085/1085 passing (76 files). `calcTeamStats.js` untouched
 throughout (confirmed via `git diff --stat`).
 
-**Next**: Stage 3's final item — the rotation on-field order-search.
+## Stage 3, item 5 — the rotation on-field order-search (done, 2026-09-01) — Stage 3 complete
+
+calcTeamStats.js's own rotationTimeline IIFE (calcTeamStats.js:153-462) does
+two things: (a) brute-forces every permutation of supports (Main DPS always
+last) and scores each by how much cross-character buff value survives to
+the instant the Main DPS's own on-field window opens, keeping the highest
+(ties keep the original team-wide-outro-first/strongest-next-outro-last
+heuristic order); (b) renders the result as the Rotation Guide's display
+blocks. Its own in-file comment claims this "cannot change the real DPS
+number, only which ordering the Rotation Guide presents" — checked against
+the rest of the file and found stale: `rotSegByName` (calcTeamStats.js:
+475-476) is built directly from this same rotationTimeline, and
+`overlapUptimeForSeg` (fed by `rotSegByName` via `outroStart`/`blockStart`)
+is what every cross-character buff-uptime figure in the FULL tier actually
+uses — the file's own nearby comment on that function even cites a
+quantitative audit finding "43.5% [of cross-character buffs] collapse to
+exactly zero" once real ordering is accounted for. So the search's chosen
+order IS load-bearing for the real number, confirming Stage 0's original
+flag that an engine equivalent is required before Stage 4's rewrite, not
+just cosmetic Rotation-Guide parity.
+
+- **`engine/rotationOrderSearch.js`** (new): `chooseOnFieldOrder(members,
+  mainDpsName)` — same brute-force-permutation-then-score structure as
+  legacy, re-expressed against the engine's real primitives instead of
+  CHAR_BUFF_TABLE's flat buff list: `buildTeamSteps`/`simulateTeamRotation`
+  actually simulate each candidate order, then `buildBlockWindows`/
+  `activeCountAt` (the same "was this buff live at this exact instant"
+  primitive `resolveHitComposedTeamDps.js` already uses) answer legacy's
+  `scoreOrder` question — is a cross-character (`source !== mainDpsName`),
+  continuous, team-reaching (`target.scope` `'whole-team'`/`'next-on-field'`)
+  block still active when the Main DPS's own segment starts — summing each
+  qualifying block's effect values, matching legacy's `Math.abs(b.value||0)`
+  sum exactly. No new simulation machinery — pure search+score composed on
+  top of what Phase 2/3 already built and trusts.
+- **`rotationOrderSearch.test.js`** (new, 5 tests): Main DPS always placed
+  last; a solo team's own trivial single-member order; `null` for an absent
+  mainDpsName; the chosen `ownedSteps`/`blocksByOwner` genuinely match
+  `buildTeamSteps` run on the chosen order (not a stale/mismatched pair);
+  and the one load-bearing behavioral test — Rover: Electro's real
+  `'next-on-field'` outro block reaches nobody in the naive input order
+  (Augusta, Yinlin, Rover: Electro — Yinlin isn't immediately after him),
+  but the search correctly finds the reordering that puts him right before
+  Yinlin instead, scoring strictly higher.
+
+Full suite: 1090/1090 passing (77 files). `calcTeamStats.js` untouched
+throughout (confirmed via `git status`/`git diff --stat`) — **this closes
+Stage 3 in full**. Stage 4 (the actual rewrite) and Stage 5 (final
+verification + commit) are next, per this plan's own ordering.
 
 ## Stage 1 — Parity harness
 
@@ -560,7 +617,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 0 — coverage audit
 - [x] Stage 1 — parity harness (all 56 converted characters swept; engine `externalStats` gap found+fixed; ratio distribution recorded, outliers flagged for Stage 2)
 - [x] Stage 2 — triage (root cause found for all 6 flagged outliers: no sequence-level gating anywhere in the engine — one systemic gap, not six bugs; likely a major contributor to the whole roster's elevated median too)
-- [ ] Stage 3 — close gaps (item 1/5 done: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5 done: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5 done: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5 done: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; remaining: order-search)
+- [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
 - [ ] Stage 4 — rewrite
 - [ ] Stage 5 — final verify + commit
 
