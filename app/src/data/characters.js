@@ -4103,10 +4103,10 @@ const CHARACTER_ROTATIONS = {
     { type: 'Basic ATK', skill: 'Dimming Brush Stage 1-3', note: 'Tap Basic Attack 3 times for the full combo — fills the remaining Afflatus.' },
     { type: 'Skill', skill: 'Manifestation', note: 'At 60+ Afflatus, press Skill to consume 60 and summon Phantasmic Imprint - Left and Right.' },
     { type: 'Forte', skill: 'Heavy ATK: Conjuration', note: 'At 30+ Afflatus, HOLD Heavy Attack to consume 30 and summon Phantasmic Imprint - Middle.' },
-    { type: 'Skill', skill: 'Stroke of Genius', note: 'Press Skill to teleport to and consume a Phantasmic Imprint for an off-field-style Basic Attack-type hit — Jump Cancel out of the landing lag to chain into the next Imprint faster.' },
-    { type: 'Skill', skill: 'Stroke of Genius', note: '2nd cast — repeat for each Imprint placed, escalating into Creation\'s Zenith once Painter\'s Delight hits 2 stacks; cancel its endlag via Liberation.' },
+    { type: 'Forte', skill: 'Stroke of Genius', note: 'Press Skill to teleport to and consume a Phantasmic Imprint for an off-field-style Basic Attack-type hit — Jump Cancel out of the landing lag to chain into the next Imprint faster. Type corrected 2026-09-01 from \'Skill\' to \'Forte\' to match SKILL_MULTIPLIERS.Zhezhi\'s row type (was silently resolving to 0 DMG under the type===step.type lookup).' },
+    { type: 'Forte', skill: 'Stroke of Genius', note: '2nd cast — repeat for each Imprint placed, escalating into Creation\'s Zenith once Painter\'s Delight hits 2 stacks; cancel its endlag via Liberation. Type corrected 2026-09-01, see note above.' },
     { type: 'Liberation', skill: 'Living Canvas', note: 'Press Liberation at any point in the rotation (also cancels Creation\'s Zenith endlag) — summons Inklit Spirits that perform Coordinated Attacks alongside the active Resonator for up to 30s.' },
-    { type: 'Skill', skill: "Creation's Zenith", note: 'Finisher — Dash Cancel out of it into Echo, Swap, or Outro to skip the remaining recovery.' },
+    { type: 'Forte', skill: "Creation's Zenith", note: 'Finisher — Dash Cancel out of it into Echo, Swap, or Outro to skip the remaining recovery. Type corrected 2026-09-01 from \'Skill\' to \'Forte\', see note above.' },
     { type: 'Outro', skill: 'Carve and Draw', duration: 14, note: 'Swap out to trigger this automatically — grants the incoming Resonator +20% Glacio DMG Amp and +25% Resonance Skill DMG Amp for 14s, plus 15 Resonance Energy via Inherent Skill Flourish.' },
   ],
   // Standard Rotation ("Easy & Basic Burst Combo") — sourced from Prydwen's "Gameplay and teams" tab for
@@ -5533,7 +5533,29 @@ const RESONANCE_CHAIN_DATA = {
   'Changli':      { s1: { skillDmg: 10, heavyDmg: 10 }, s2: { critRate: 25 }, s3: { libDmg: 80 }, s4: { atkPct: 20 }, s5: { heavyDmg: 50 }, s6: { defIgnore: 40 } },
   // Corrected against ww.nanoka.cc character/1105 — prior values (coordDmg/elemDmg on S1/S3/S4) didn't
   // match her real chain effects (Crit Rate, ATK stacking, team ATK — no Glacio DMG anywhere in her chain).
-  'Zhezhi':       { s1: { critRate: 10 }, s2: { totalMult: 15 }, s3: { atkPct: 15 }, s4: { atkPct: 20 }, s5: { coordDmg: 20 }, s6: { coordDmg: 40 } },
+  // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Zhezhi/Combat, cross-checked against
+  // ww.nanoka.cc/character/1105 (both agree on every node's exact wording):
+  // S1 "Brushwork's Finish": critRate: 10 already correct (Crit Rate +10% for 27s on Creation's Zenith
+  // cast) — the node also restores 15 Resonance Energy, pure utility, not represented here.
+  // S2 "Vivid Strokes": was totalMult: 15 (fabricated, no basis in source); real effect is "Max Inklit
+  // Spirits summoned by Living Canvas +6" (21 -> 27 cap), not a percentage stat at all. Zeroed to {}.
+  // TODO: needs Phase 2 schema — can't represent "+N max summon count on an existing per-hit %" in the
+  // flat {stat: value} schema.
+  // S3 "Reflection's Grace": atkPct: 15 already correct (ATK +15% per stack, stacks up to 3, on
+  // Manifestation/Stroke of Genius/Creation's Zenith cast).
+  // S4 "Hue's Spectrum": atkPct: 20 already correct (team ATK +20% for 30s on Living Canvas cast).
+  // S5 "Composition's Clue": was coordDmg: 20 (fabricated category+value); real effect is "every 3
+  // Inklit Spirits summoned by Living Canvas, 1 extra Inklit Apparition procs a Coordinated ATK at 140%
+  // of Inklit Spirit's own DMG Multiplier" (140% x 65.21% = 91.29%, matching nanoka's raw Living Canvas
+  // damage-data row 2 of 91.3% exactly) — a bonus-hit-at-X%-of-move-Y's-own-multiplier effect, not a flat
+  // coordDmg buff. Zeroed to {}.
+  // S6 "Infinite Legacy": was coordDmg: 40 (fabricated category+value); real effect is "on Stroke of
+  // Genius/Creation's Zenith cast, an extra Ivory Herald procs at 120% of Stroke of Genius's own DMG
+  // Multiplier" (120% x 298.22% = 357.86%, matching nanoka's raw Ink and Wash damage-data row 4 of
+  // 357.86% exactly) — same bonus-hit-at-X%-of-another-move class as S5. Zeroed to {}.
+  // TODO: needs Phase 2 schema — S5/S6's bonus-hit-at-X%-of-move-Y's-own-multiplier effects have no home
+  // in a single-category flat node (same class of gap as Xiangli Yao's S1, documented above).
+  'Zhezhi':       { s1: { critRate: 10 }, s2: {}, s3: { atkPct: 15 }, s4: { atkPct: 20 }, s5: {}, s6: {} },
   'Qiuyuan':      { s1: { critRate: 20 }, s2: { echoDmg: 30 }, s3: { libDmg: 500 }, s4: { atkPct: 20 }, s5: { defIgnore: 15 }, s6: { critDmg: 100 } },
   // Qiuyuan R-chain corrected 2026-08-16 via Prydwen/Game8: s1 +20% Crit Rate + uninterruptible Heavy ATKs (was echoDmg:10, wrong stat);
   // s2 Bamboo's Shade +30% additional team Echo Skill DMG (was totalMult:15); s3 Liberation DMG Mult +500% (was echoDmg:10, no basis);
