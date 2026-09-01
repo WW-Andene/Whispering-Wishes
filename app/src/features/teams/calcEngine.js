@@ -1073,6 +1073,17 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
         });
         (bt.debuffs || []).forEach(db => {
           if (db.stat === 'defShred' || db.stat === 'resShred') {
+            // Fixed 2026-09-01 (found via a per-character solo-recommendation deep audit): RES Shred
+            // reduces enemy RESISTANCE TO A SPECIFIC ELEMENT — e.g. Lupa's own debuff condition says
+            // "Fusion RES ignore..." outright — so it only helps a DPS who deals THAT element's
+            // damage, same as an elemDmg buff. Unlike DEF (a flat, element-agnostic stat every damage
+            // type is reduced by equally, correctly left ungated), this had NO gate at all: Lupa's
+            // Fusion-only RES Shred was crediting full uplift for a placed Havoc/Aero/Electro carry
+            // who can never trigger it, helping crown her the #1 recommendation for several off-
+            // element characters (Chisa, Ciaccona, Lumi, Rover: Havoc) she has no real Fusion-locked
+            // synergy with. Reuse elemBuffApplies (already used for elemDmg buffs) — a condition that
+            // doesn't name a specific element stays universal, exactly like it does for elemDmg.
+            if (db.stat === 'resShred' && !elemBuffApplies(db)) return;
             const uplift = estimateBuffUplift(db.stat, db.value);
             if (uplift > 0) { score += uplift * UPLIFT_TO_SCORE; tags.push('Shred'); }
           }
