@@ -5772,10 +5772,17 @@ const RESONANCE_CHAIN_DATA = {
   // Hypocritical Hymn — Echo Skill use restores +10 Resonance Energy, 20s CD (pure utility, not modeled,
   // kept as small totalMult). S3 Flaming Recitativo — during Burning Rhapsody, Marcato Crit DMG+30%
   // (confirmed exact, modeled as critDmg). S4 Cathartic Waltz — Burning Rhapsody duration +7s (utility, no
-  // DMG stat, kept as small totalMult). S5 Funerary Quartet — Skill/Fury Fugue hits fire 4 bonus Marcato
-  // hits at 50% reduced DMG (extra proc source, kept as small totalMult). S6 Apoplectic Instrumental — on
-  // Liberation cast, team ATK+20% for 20s (confirmed exact, modeled as atkPct).
-  'Mortefi':      { s1: { totalMult: 6 }, s2: { totalMult: 3 }, s3: { critDmg: 30 }, s4: { totalMult: 4 }, s5: { totalMult: 8 }, s6: { atkPct: 20 } },
+  // DMG stat). S5 Funerary Quartet — Skill/Fury Fugue hits fire 4 bonus Marcato hits at 50% reduced DMG
+  // (extra proc source). S6 Apoplectic Instrumental — on Liberation cast, team ATK+20% for 20s (confirmed
+  // exact, modeled as atkPct).
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Mortefi/Combat, cross-checked against
+  // ww.nanoka.cc/character/1204 (both agree exactly). S1/S5 were undocumented placeholders for a
+  // bonus-hit-at-flat-Marcato-value mechanic (2 or 4 extra Marcato procs) — no flat-schema fit, same
+  // unrepresentable class as other bonus-hit nodes this pass. S2 was a placeholder for pure Resonance
+  // Energy restore utility. S4 was a placeholder for a duration-extension effect (no flat DMG% derivation
+  // exists for "+7s uptime"). All four zeroed to {} per this project's hard rule against inventing values.
+  // TODO: needs Phase 2 schema for bonus-hit, utility, and duration-extension mechanics.
+  'Mortefi':      { s1: {}, s2: {}, s3: { critDmg: 30 }, s4: {}, s5: {}, s6: { atkPct: 20 } },
   // added 2026-08-18 — previously entirely missing. Sourced from fandom's Combat page rendered
   // Resonance Chain table (matches Prydwen's Kit tab wording exactly). Real effects: S1 Waterside
   // Respite — 10% chance of DMG/interruption immunity for 5s after Lucky Draw (utility, no DMG stat,
