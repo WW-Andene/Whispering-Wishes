@@ -2999,12 +2999,28 @@ const SKILL_MULTIPLIERS = {
     ['Intro', "It's Been A While! / Knock Knock", 'Grants Dark Core / Entropy Shift: Breakdown Form', 'Opener that also grants a Dark Core.'],
     ['Outro', 'Unfinished Lies', '60% Fusion Burst DMG Amp (Fusion mode) / 15-40% All DMG Amp (Tune Strain mode)', 'Buffs Fusion Burst DMG or grants All DMG Amp.'],
   ],
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Lucilla/Combat, cross-checked against
+  // ww.nanoka.cc/character/1109 (both agree on every value exactly). Fixed a real zero-damage rotation
+  // bug: CHARACTER_ROTATIONS.Lucilla's 'Tracing Forms Stage 1-3' and 'Letting It Go' steps had nothing to
+  // match — the entire Reminiscence-state combo (her actual Liberation payoff, not a minor side-move) was
+  // missing from this table. Added that plus the pre-existing gaps: Mid-air Attack, Dodge Counter (both
+  // stances), Clip It: Hard Cut, and split Oblivion into its two mode-dependent rows (its own move text
+  // makes it "considered Basic Attack DMG" in Glacio Chafe mode / "considered Echo Skill DMG" in Echo
+  // mode, matching this file's established type-reclassification convention).
   'Lucilla': [
     ['Basic ATK', 'Snapshot Stage 1-3', '59.29% → 26.89%+40.34% → 235.27% (Commendable) / 159.55% (Unremarkable)', 'Standard combo; hold the 3rd hit for a stronger finisher.'],
+    ['Mid-air', 'Attack', '86.29%'],
+    ['Dodge Counter', 'Standard', '67.83%+82.90%'],
     ['Skill', 'Phantom Frame / Compensate / Spotlight', '13.26%×3 / 249.07% / 82.35%×2+274.48%+109.80%', 'Pulls enemies in; hold for a stronger follow-up.'],
     ['Liberation', 'Clear As Day', '142.74%, enters Reminiscence', 'Ultimate: enters her empowered stance.'],
-    ['Forte', 'Oblivion', '285.48% (Glacio Chafe mode, Basic ATK DMG) / same value as Echo Skill DMG (Echo mode)', 'Auto-attacks during Reminiscence, consuming Photos.'],
-    ['Intro', 'Clip It', '97.42% (149.41% as Clip It: Hard Cut)', 'Opener hit that applies Glacio Chafe.'],
+    ['Basic ATK', 'Oblivion', '285.48%', 'Glacio Chafe mode; considered Basic Attack DMG. Auto-fires during Tracing Forms Stage 3, consuming Photos.'],
+    ['Echo', 'Oblivion', '285.48%', 'Echo mode; considered Echo Skill DMG, each cast counted as a different Echo Skill. Auto-fires during Tracing Forms Stage 3, consuming Photos.'],
+    ['Basic ATK', 'Tracing Forms Stage 1-3', '30.64%+45.95% → 59.77%+89.65% → 52.12%×8', 'Reminiscence-state Basic ATK replacement; considered Basic Attack DMG regardless of mode.'],
+    ['Basic ATK', 'Letting It Go', '84.81%×3+593.64%', 'Interruption-immune finisher on releasing/finishing Tracing Forms Stage 3, ends Reminiscence; considered Basic Attack DMG in Glacio Chafe mode / Echo Skill DMG in Echo mode (same value either way).'],
+    ['Basic ATK', 'Mid-air Attack - Reminiscence', '110.94%'],
+    ['Basic ATK', 'Dodge Counter - Reminiscence', '115.55%+141.22%'],
+    ['Intro', 'Clip It', '97.42%', 'Opener hit that applies Glacio Chafe.'],
+    ['Intro', 'Clip It: Hard Cut', '149.41%', 'Replaces Clip It while in Reminiscence.'],
     ['Outro', 'Montage', '60% Glacio Chafe DMG Amp (Chafe mode) / 50% Echo Skill DMG Amp to next (Echo mode)', 'Buffs Glacio Chafe DMG or next ally Echo Skill DMG.'],
   ],
   'Augusta': [
@@ -4298,7 +4314,7 @@ const CHARACTER_ROTATIONS = {
   // Chrome UA + google.com referer + jsRender). Only 5 real inputs — one of the simplest kits in the game.
   'Lucilla': [
     { type: 'Intro', skill: 'Clip It', note: 'Swap into her — fires automatically, restores 100 of 150 Trace and inflicts 1 stack of Glacio Chafe.' },
-    { type: 'Skill', skill: 'Phantom Frame → Spotlight', note: 'Press and HOLD Skill to deploy the Focus Ring, then release it about a quarter-second in, right as the ring turns gold — a perfect release triggers Spotlight (restores 50 Trace, more than the 25 a missed "Compensate" release gives) and unlocks her Ultimate once she now holds all 3 Photos (1 Photo per 50 Trace restored).' },
+    { type: 'Skill', skill: 'Spotlight', note: 'Press and HOLD Skill to deploy the Focus Ring, then release it about a quarter-second in, right as the ring turns gold — a perfect release triggers Spotlight (restores 50 Trace, more than the 25 a missed "Compensate" release gives) and unlocks her Ultimate once she now holds all 3 Photos (1 Photo per 50 Trace restored). Skill name corrected 2026-09-01 from \'Phantom Frame → Spotlight\', which never matched the SKILL_MULTIPLIERS row name (arrow vs slash separator) and was silently resolving to 0 DMG.' },
     { type: 'Liberation', skill: 'Clear As Day', duration: 10, note: 'Press Liberation (feel free to spam it — it won\'t fire until the Skill animation fully finishes) — costs no Resonance Energy, enters Reminiscence for ~10s, and grants +30% Basic ATK DMG Bonus for 10s in Glacio Chafe mode (or +30% Echo Skill DMG Bonus in Echo mode).' },
     { type: 'Basic ATK', skill: 'Tracing Forms Stage 1-3', note: 'HOLD Basic Attack and keep holding — Reminiscence auto-replaces her Basic Attack with this 3-stage combo, consuming her 3 Photos as it goes (each is an "Oblivion" hit inflicting Glacio Chafe in Chafe mode, or counted as a separate Echo Skill cast in Echo mode).' },
     { type: 'Basic ATK', skill: 'Letting It Go', note: 'Fires automatically once Stage 3 finishes or you release Basic Attack — an interruption-immune AoE finisher that fully restores Concerto Energy and ends Reminiscence.' },
@@ -4971,11 +4987,26 @@ const RESONANCE_CHAIN_DATA = {
   // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere).
   // S5: Final Act - Stagecraft Form DMG+100% (confirmed exact via Nanoka/Prydwen 2026-08-16 cross-check; was 50 previously)
   'Denia':        { s1: { critDmg: 30 }, s2: { libDmg: 40 }, s3: { libDmg: 80 }, s4: { totalMult: 15 }, s5: { libDmg: 100 }, s6: { elemDmg: 60 } },
-  // Lucilla S2: Glacio Chafe DMG Amp+80% / Echo Skill DMG+40% depending on mode (averaged). S3: Letting It Go DMG+100% (confirmed exact).
-  // S4: ATK+10%/stack up to 3 stacks = +30% (confirmed exact). S5: Oblivion DMG+50% (confirmed exact).
-  // S6: each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence
-  // reliably hits max, so using the max value +600% (confirmed via Nanoka/Game8/Prydwen cross-check 2026-08-16; was erroneously 100 — S3's value).
-  'Lucilla':      { s1: { critRate: 20 }, s2: { elemDmg: 60 }, s3: { libDmg: 100 }, s4: { atkPct: 30 }, s5: { basicDmg: 50 }, s6: { libDmg: 600 } },
+  // Lucilla re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Lucilla/Combat, cross-checked
+  // against ww.nanoka.cc/character/1109 (both agree on every node's exact wording and value). S3/S5/S6
+  // all buff Letting It Go and/or Oblivion, whose own move text makes their damage type mode-dependent —
+  // "considered Basic Attack DMG" in Resonance Mode: Glacio Chafe, "considered Echo Skill DMG" in
+  // Resonance Mode: Echo — never Liberation-type despite Letting It Go being part of the Liberation
+  // combo. Recategorized libDmg -> {basicDmg, echoDmg} (both keys, same value) on all three, since only
+  // one mode is ever active in a given build so the two keys never double-count; whichever mode's
+  // SKILL_MULTIPLIERS type matches is the one that applies.
+  // S2 was elemDmg: 60 (wrong category AND averaged value) — real effect is Glacio Chafe DMG Amp +80% in
+  // Glacio Chafe mode OR team Echo Skill DMG Bonus +40% in Echo mode; only the Echo-mode branch has a
+  // matching schema category (echoDmg). Corrected to echoDmg: 40. TODO: needs Phase 2 schema — the
+  // Glacio-Chafe-mode branch (Glacio Chafe DMG Amp, not a plain elemDmg buff) has no matching category.
+  // S3: Letting It Go DMG Mult +100% (value confirmed exact, category fixed as above).
+  // S4: ATK+10%/stack up to 3 stacks = +30% (confirmed exact, unchanged).
+  // S5: Oblivion DMG Mult +50% (value confirmed exact, category fixed as above — was basicDmg-only,
+  // missing the Echo-mode branch).
+  // S6: each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It
+  // Go — a full 3-Photo Reminiscence reliably hits max, so using the max value +600% (value confirmed
+  // exact, category fixed as above).
+  'Lucilla':      { s1: { critRate: 20 }, s2: { echoDmg: 40 }, s3: { basicDmg: 100, echoDmg: 100 }, s4: { atkPct: 30 }, s5: { basicDmg: 50, echoDmg: 50 }, s6: { basicDmg: 600, echoDmg: 600 } },
   // Camellya S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Camellya/Combat:
   // S1 Somewhere No One Travelled: casting Intro Skill Everblooming gives +28% Crit DMG for 18s, triggerable
   //   once every 25s; also grants interruption immunity while casting Ephemeral (not modeled — no immunity field).
