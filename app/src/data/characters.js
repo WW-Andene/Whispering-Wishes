@@ -6073,7 +6073,11 @@ const RESONANCE_CHAIN_DATA = {
   // S4's basicDmg). S6 Give Me A Five-star Rating — casting Squeakie Express grants all team members
   // ATK+20% for 20s (confirmed exact -> atkPct, team buff, matches this table's convention elsewhere,
   // e.g. Danjin/Taoqi S6).
-  'Lumi':         { s1: { totalMult: 5 }, s2: { defIgnore: 20 }, s3: { libDmg: 30 }, s4: { basicDmg: 30 }, s5: { totalMult: 100 }, s6: { atkPct: 20 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Lumi/Combat, cross-checked against
+  // ww.nanoka.cc/character/1504 (both agree exactly). S1 (totalMult: 5) was undocumented — real effect is
+  // purely +60 STA restore within 3s after Energized Rebound, zero DPS component. Zeroed to {}. S2/S3/S4/
+  // S5/S6 confirmed correct, unchanged.
+  'Lumi':         { s1: {}, s2: { defIgnore: 20 }, s3: { libDmg: 30 }, s4: { basicDmg: 30 }, s5: { totalMult: 100 }, s6: { atkPct: 20 } },
   // corrected 2026-08-18: prior values (defShred/deepen on every node) had no basis in Taoqi's real
   // chain kit (fandom Combat page, Resonance Chain table) — she has no DEF Shred or DMG Deepen node at
   // all. Real effects: S1 Essense of Tranquility — Forte Circuit Power Shift's Shield +40% (utility,
