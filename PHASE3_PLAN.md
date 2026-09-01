@@ -27,11 +27,15 @@
   baseline: roster-wide median dropped 3.13x → 2.03x, mean 4.20x → 2.34x,
   max 40.03x → 8.01x (Lucilla, now a real but much smaller residual, not
   the dominant systemic bug it was).
+- Stage 3, item 2 of 5 — DOT reactions. Added `engine/dotReactions.js`,
+  composing the five already-correct `calcEngine.js` DOT functions
+  (Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break) around
+  engine-derived rotation time and per-element enemy RES, matching
+  `calcTeamStats.js`'s own per-reaction element routing exactly (Stage 0's
+  "stays composed around the engine" treatment, same as gear — not a
+  TriggerBlock port). 6 new tests.
 
-**Remaining (Stage 3, items 2-5, none yet started):**
-- DOT reactions (Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break) —
-  no engine model exists at all; `calcTeamStats.js` computes these via
-  dedicated `calcEngine.js` functions with no TriggerBlock equivalent.
+**Remaining (Stage 3, items 3-5, none yet started):**
 - Energy-cycle-gated Liberation uptime (`calcEnergyCycles`) — must gate the
   engine's Liberation-derived hits by real ER-based uptime, same as legacy's
   `mult * (1 - libShare*(1-libUptime))`.
@@ -47,15 +51,14 @@
 
 **Not started:** Stage 4 (the actual `calcTeamStats.js` rewrite) and Stage 5
 (final verification + commit) — both explicitly blocked on Stage 3's
-remaining 4 items per this plan's own ordering; attempting the rewrite
+remaining 3 items per this plan's own ordering; attempting the rewrite
 before they're closed would silently drop those mechanics from the live
 calculator.
 
 **Every commit through this stage has been additive** — new engine files,
 new tests, an opt-in param on 2 existing engine functions. `calcTeamStats.js`
 itself has not been touched at any point in Phase 3 (verified via
-`git diff --stat` after every stage). All work is on `main` directly; no
-separate feature branch exists for this phase.
+`git diff --stat` after every stage).
 
 ## Why this is its own phase, not a quick edit
 
@@ -352,6 +355,46 @@ and Coordinated ATK off-field snapshot semantics. None of these are
 individually as roster-wide-impactful as sequence gating was, but Stage 4's
 rewrite can't start until each is closed or explicitly descoped.
 
+## Stage 3, item 2 — DOT reactions (done, 2026-09-01)
+
+Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break's real math (ICD-aware
+stack/tick tables, hand-verified against the wiki per each function's own
+audit comment) already lives correctly in calcEngine.js
+(`calcFrazzleDmg`/`calcErosionDmg`/`calcFusionBurstDmg`/`calcElectroFlareDmg`/
+`calcTuneBreakDmg`). Re-deriving that from scratch as TriggerBlocks would
+mean rebuilding already-correct formulas for no benefit — so this item gets
+the SAME treatment Stage 0's table already prescribed for gear ("stays
+composed around the engine, not ported into TriggerBlocks"), not a
+TriggerBlock port.
+
+- **`engine/dotReactions.js`** (new): `resolveDotReactionDps(members,
+  rotTime, defMult, resShred, getEnemyRes, mainResMult, energyCycleFactors)`
+  composes all five calcEngine.js DOT functions, routing each reaction's RES
+  from the enemy's RES to ITS OWN fixed element (Frazzle=Spectro,
+  Erosion=Havoc, Fusion Burst=Fusion, Electro Flare=Electro) exactly like
+  `calcTeamStats.js:941-953` already does — Tune Break has no single
+  canonical element and keeps using the caller's own `mainResMult`, same as
+  legacy. Returns `{totalDmg, dps, tuneBreakDeepenMult, breakdown}` so
+  Stage 4's rewrite can call one function instead of hand-wiring five.
+- **`rotTimeFromSteps(ownedSteps)`** (new, same file): sums a team step
+  list's `stepSeconds` (defaulting missing entries to `DEFAULT_STEP_SECONDS`,
+  same convention `resolveSimulatedTeamRotation.js`/
+  `resolveHitComposedTeamDps.js` already use per-member) — gives Stage 4 an
+  engine-derived rotation time to pass in, rather than requiring
+  `calcTeamStats.js`'s own `rawRotTime` formula specifically.
+- **`dotReactions.test.js`** (new, 6 tests): proves the composition is exact
+  (byte-identical to calling the five calcEngine.js functions directly, per
+  the same per-element RES routing) and that `rotTimeFromSteps` matches the
+  sum-of-stepSeconds convention, plus edge cases (no DOT-applying members,
+  zero rotTime doesn't produce NaN/Infinity).
+
+Full suite: 1071/1071 passing (74 files). `calcTeamStats.js` untouched
+throughout (confirmed via `git diff --stat`).
+
+**Next**: Stage 3's remaining 3 items — energy-cycle-gated Liberation
+uptime, the rotation on-field order-search, and Coordinated ATK off-field
+snapshot semantics.
+
 ## Stage 1 — Parity harness
 
 Extend `verifyEngineAgainstCalcTeamStats.test.js` (currently scoped to one
@@ -421,7 +464,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 0 — coverage audit
 - [x] Stage 1 — parity harness (all 56 converted characters swept; engine `externalStats` gap found+fixed; ratio distribution recorded, outliers flagged for Stage 2)
 - [x] Stage 2 — triage (root cause found for all 6 flagged outliers: no sequence-level gating anywhere in the engine — one systemic gap, not six bugs; likely a major contributor to the whole roster's elevated median too)
-- [ ] Stage 3 — close gaps (item 1/5 done: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; remaining: DOT, energy-cycle gating, order-search, Coordinated ATK snapshot)
+- [ ] Stage 3 — close gaps (item 1/5 done: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5 done: DOT reactions composed around the engine via engine/dotReactions.js; remaining: energy-cycle gating, order-search, Coordinated ATK snapshot)
 - [ ] Stage 4 — rewrite
 - [ ] Stage 5 — final verify + commit
 
