@@ -1,5 +1,14 @@
 # Phase 1 handoff — precise skill/Forte/Resonance Chain mechanics
 
+## Is there a Phase 2 document?
+Yes — see `PHASE2_PLAN.md` at the repo root. It's a planning doc only (no
+Phase 2 work has started): it explains what the flat Resonance-Chain schema
+can't represent, where the relevant calc-engine code lives, the open design
+questions that need the user's sign-off before writing any Phase 2 code, and
+a suggested approach for when the user greenlights it. Do not start Phase 2
+work from Phase 1 — finish/continue the character-by-character data pass
+described below unless the user explicitly asks to move to Phase 2.
+
 ## What this is
 The user found the character skill/Forte/Outro/Resonance Chain data in
 `app/src/data/characters.js` too shallow to support a real rotation-construction
