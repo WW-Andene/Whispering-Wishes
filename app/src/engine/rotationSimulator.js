@@ -224,7 +224,7 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
     const windowedBlocks = blocks.filter(b => b.trigger.type === 'windowed-cast');
     const priorCastBlocks = blocks.filter(b => b.trigger.type === 'requires-prior-cast');
     const procBlocks = blocks.filter(b => b.trigger.type === 'windowed-proc');
-    const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
+    const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out');
     // Cooldown-gated 'cast' blocks — trigger.on is the same TYPE:SKILL label attemptOn/checksAt/on
     // (proc) already use, so matching a step to its own block(s) is the same lookup pattern.
     const cooldownCastBlocks = blocks.filter(b => b.trigger.type === 'cast' && b.trigger.on && b.timing?.cooldown != null);
@@ -368,7 +368,7 @@ export function deriveStepsFromRotation(rotation, blocks, stepSeconds = DEFAULT_
   const procBlocks = blocks.filter(b => b.trigger.type === 'windowed-proc' && b.trigger.on);
   const priorCastBlocks = blocks.filter(b => b.trigger.type === 'requires-prior-cast' && b.trigger.checksAt);
   const resourceBlocks = blocks.filter(b => b.trigger.type === 'resource-threshold' && b.trigger.resourceStepOn);
-  const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
+  const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out');
 
   return rotation.map((raw, i) => {
     const step = { type: raw.type, skill: raw.skill, stepSeconds };
@@ -455,7 +455,7 @@ export function simulateTeamRotation(ownedSteps, blocksByOwner) {
 export function buildTeamSteps(members) {
   const ownedSteps = [];
   const blocksByOwner = {};
-  const ownOutroBlockOf = (m) => m.blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
+  const ownOutroBlockOf = (m) => m.blocks.find(b => b.trigger.type === 'swap-out');
   const partnerReturnBlockOf = (m) => m.blocks.find(b => b.trigger.type === 'partner-outro-return');
 
   members.forEach((member, i) => {

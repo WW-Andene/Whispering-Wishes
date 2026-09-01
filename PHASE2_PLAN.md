@@ -962,6 +962,48 @@ anything beyond the ARCHITECTURE being sound. (3) Converting the remaining
 ongoing roster-coverage effort, distinct from "finishing the engine"
 itself.
 
+## Character-roster conversion — batch 1 of ~6 (2026-09-01)
+
+Converting the ~54 remaining unconverted characters to `TriggerBlock`s, one
+character at a time, full precision (audit-comment context read for every
+`RESONANCE_CHAIN_DATA`/`CHAR_BUFF_TABLE` node, not just the raw flat-data
+line), committed in batches of 10. `calcTeamStats.js` never touched.
+
+**Batch 1 — done, all individually verified, 792/792 suite passing:**
+Aalto, Aemeath (redone once for precision after an initial rushed pass —
+see git history), Baizhi, Brant, Buling, Calcharo, Cantarella, Carlotta,
+Changli, Chisa. Each has its own `engine/characterBlocks/<name>.blocks.js`
+and `__tests__/triggerEngine-<name>.test.js` parity test.
+
+**Infra fix found and applied during Calcharo's conversion**:
+`rotationSimulator.js`'s own-Outro-cast heuristic (`ownOutroBlock`, 3
+call sites) only recognized a character's own `trigger.type: 'swap-out'`
+block when it was `kind: 'buff'` — a character whose Outro is
+damage-only (no outro buff), like Calcharo's Shadowy Raid, never got its
+Outro damage block fired by `deriveStepsFromRotation()`. Broadened all
+3 lookups to match any `trigger.type: 'swap-out'` block regardless of
+`kind`. Full suite re-run afterward confirmed no regressions (768/768
+before Calcharo's own test was added, still fully green after).
+
+**Real omissions/corrections caught by reading full audit-comment context
+this batch** (the reason for the 1-by-1, not 10-by-10, pace): Aemeath's
+S1 conditional stance-gate, S4 team-wide scope, S6 debuff-not-buff
+recategorization, and a missing second selfBuff; Calcharo's S6 modeled
+with its real 2x100%-ATK proc data instead of the flat `totalMult:200`
+fallback; Cantarella's S6 split into its two differently-timed real
+effects; Carlotta's S1 conditional-on-Deconstructed-target gate and S4's
+confirmed team-wide scope; Chisa's S2 split into its two real effects
+(the smaller `resShred:10` component isn't stored in
+`RESONANCE_CHAIN_DATA` at all, only in its audit comment), S4 correctly
+left unmodeled as a confirmed utility-only node despite the flat table
+still carrying a stale `totalMult:10`, and an Intro self-buff
+(+20% Havoc DMG, 12s) that was completely absent from
+`CHAR_BUFF_TABLE['Chisa'].selfBuffs` (empty array) — found only by
+reading `CHARACTER_ROTATIONS`' own step note text.
+
+**Next**: batch 2 of 10, same one-at-a-time/full-precision/commit-at-10
+cadence, continuing alphabetically through the remaining roster.
+
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
 - Follow the PerfectSuite numeric-scale rule (see `CLAUDE.md`) for any px
