@@ -3016,14 +3016,37 @@ const SKILL_MULTIPLIERS = {
     ['Intro', "Hey, Leadhead, Come 'n' Get Me!", '10.14%+30.42%+40.56%×4', 'Guts-mode opener that also swaps her to Huntress.'],
     ['Outro', 'Preem Choom', 'Turret (2.5% Electro DMG/hit, 14s) + Edgerunner Bonds (15% All DMG Amp, 14s) + Overlimit (0.5%/0.2s Heavy ATK DMG Amp, up to 35%)', "Leaves a turret; buffs next ally's All DMG and Heavy ATK DMG."],
   ],
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Denia/Combat, cross-checked against
+  // ww.nanoka.cc/character/1211 (both agree exactly, including a fandom-side table for Banish -
+  // Breakdown Form Stage 2 that's truncated at Lv.9 — extrapolating the same ~1.075x per-level growth
+  // ratio every other row shows lands almost exactly on nanoka's stated Lv.10 112.01%, confirming it).
+  // Nearly every row here was placeholder description text instead of a real number (same bug class as
+  // Hiyuki, found and fixed earlier this pass) — the calc engine can't extract a DMG value from prose, so
+  // these were effectively dealing 0. Also fixed real zero-damage rotation-name mismatches: 'Banish Stage
+  // 1'/'Banish Stage 2' never matched the old combined 'Phantom Bubble / Beckon / Banish' row at all.
+  // Banish - Breakdown Form Stage 2 and Erosion Field are each explicitly "considered Resonance
+  // Liberation DMG" in their own move text despite being cast from the Skill/Forte slots — typed
+  // 'Liberation' (Stage 1 of Banish has no such reclassification and stays 'Skill').
   'Denia': [
-    ['Basic ATK', 'Stagecraft/Breakdown Form Stage 1-4', 'Fusion DMG, applies Fusion Burst or Tune Strain - Shifting on Stage 3/4', 'Combo that applies Fusion Burst or Tune Strain.'],
-    ['Skill', 'Phantom Bubble / Beckon / Banish', 'Banish DMG Mult +150% per Dark Core consumed', 'Pulls enemies in; Banish spends Dark Cores for a nuke.'],
-    ['Liberation', 'Final Act: Stagecraft Form', 'Grants Entropy Shift: Breakdown Form (12s), switches form', 'Switches to Breakdown Form.'],
-    ['Liberation', 'Final Act: Breakdown Form', 'Consumes full Conformal Charge + Void Particle, switches form', '2nd Ultimate: big hit, switches back to Stagecraft.'],
-    ['Forte', 'Erosion Field', 'Pulls + damages every 4s for 30s, considered Liberation DMG', 'Leaves a pulling, damaging field.'],
-    ['Intro', "It's Been A While! / Knock Knock", 'Grants Dark Core / Entropy Shift: Breakdown Form', 'Opener that also grants a Dark Core.'],
-    ['Outro', 'Unfinished Lies', '60% Fusion Burst DMG Amp (Fusion mode) / 15-40% All DMG Amp (Tune Strain mode)', 'Buffs Fusion Burst DMG or grants All DMG Amp.'],
+    ['Basic ATK', 'Stagecraft Form Stage 1-4', '32.69% → 30.18%×2 → 25.49%×3 → 128.00%', 'Stage 3/4 apply Fusion Burst or Tune Strain - Shifting depending on Resonance Mode.'],
+    ['Basic ATK', 'Breakdown Form Stage 1-4', '36.51% → 37.51%+14.07%×4 → 62.39% → 35.54%+82.92%', 'Stage 3/4 apply Fusion Burst or Tune Strain - Shifting depending on Resonance Mode.'],
+    ['Heavy ATK', 'Stagecraft Form', '80.76%×2'],
+    ['Heavy ATK', 'Breakdown Form', '137.06%'],
+    ['Mid-air', 'Attack - Stagecraft Form', '29.59%+44.38%'],
+    ['Mid-air', 'Attack - Breakdown Form Stage 1-4', '36.51% → 37.51%+14.07%×4 → 62.39% → 35.54%+82.92%'],
+    ['Mid-air', 'Heavy Attack - Breakdown Form', '29.59%+44.38%'],
+    ['Dodge Counter', 'Stagecraft Form', '49.35%×3'],
+    ['Dodge Counter', 'Breakdown Form', '108.08%'],
+    ['Skill', 'Phantom Bubble - Stagecraft Form', '17.42%×3+52.25%', 'Pulls in nearby targets.'],
+    ['Skill', 'Beckon - Breakdown Form', '31.10%+14.52%×5', 'Pulls in nearby targets; shares a cooldown with Banish.'],
+    ['Skill', 'Banish - Breakdown Form Stage 1', '34.68%×3', 'Replaces Beckon while holding a Dark Core.'],
+    ['Liberation', 'Banish - Breakdown Form Stage 2', '112.01%', '+150% DMG Mult per Dark Core consumed (all held Dark Cores spent on cast); considered Resonance Liberation DMG despite the Skill input.'],
+    ['Liberation', 'Erosion Field', '136.33% per tick (every 4s for 30s)', 'Off-field zone left by Final Act - Breakdown Form; pulls in and hits nearby targets, applying Fusion Burst/Tune Strain even after Denia swaps out. Considered Resonance Liberation DMG.'],
+    ['Liberation', 'Final Act: Stagecraft Form', '397.62%', 'Grants Entropy Shift: Breakdown Form (+30% ATK, 12s), then switches to Breakdown Form.'],
+    ['Liberation', 'Final Act: Breakdown Form', '198.81%×4', 'Consumes full Conformal Charge + Void Particle; grants Entropy Shift: Stagecraft Form (30s), leaves an Erosion Field, then switches back to Stagecraft Form.'],
+    ['Intro', "It's Been A While!", '104.62%', 'Stagecraft-Form opener; grants 25 Void Particle and 1 Dark Core.'],
+    ['Intro', 'Knock Knock', '51.74%×3', 'Breakdown-Form opener; grants Entropy Shift: Breakdown Form (12s) and 1 Dark Core.'],
+    ['Outro', 'Unfinished Lies', '60% Fusion Burst DMG Amp for 30s (Fusion Burst mode) / 15% All DMG Amp for 16s, jumping to 40% once Tune Strain - Shifting is inflicted (Tune Strain mode)', 'Buffs Fusion Burst DMG near the active Resonator, or grants the incoming Resonator All DMG Amp.'],
   ],
   // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Lucilla/Combat, cross-checked against
   // ww.nanoka.cc/character/1109 (both agree on every value exactly). Fixed a real zero-damage rotation
@@ -4380,16 +4403,20 @@ const CHARACTER_ROTATIONS = {
   // Standard Rotation (easier non-Jump-Cancel variant) — sourced from Prydwen's "Gameplay and teams" tab
   // for Denia (2026-08-18, Chrome UA + google.com referer + jsRender). Works in either Resonance Mode
   // (Fusion Burst or Tune Strain, picked before combat) — only the Outro's payoff differs between them.
+  // Step types/names corrected 2026-09-01 to match SKILL_MULTIPLIERS.Denia's rebuilt rows above: Banish
+  // Stage 2 and Erosion Field moved off 'Skill'/'Forte' to 'Liberation' (each "considered Resonance
+  // Liberation DMG" per its own move text); 'Banish Stage 1'/'Banish Stage 2' never substring-matched the
+  // old combined row name at all.
   'Denia': [
     { type: 'Intro', skill: "It's Been A While!", note: 'Swap into her in Stagecraft Form — fires automatically, grants 25 Void Particle and 1 Dark Core.' },
-    { type: 'Basic ATK', skill: 'Stagecraft Form Stage 4', note: 'Tap Basic Attack ONCE — cancel its endlag by immediately pressing Skill.' },
-    { type: 'Skill', skill: 'Phantom Bubble', note: 'Press Skill — pulls in nearby targets and grants 25 more Void Particle. Cancel its ending instantly by pressing Liberation.' },
+    { type: 'Basic ATK', skill: 'Stagecraft Form Stage 1-4', note: 'Tap Basic Attack ONCE — cancel its endlag by immediately pressing Skill.' },
+    { type: 'Skill', skill: 'Phantom Bubble - Stagecraft Form', note: 'Press Skill — pulls in nearby targets and grants 25 more Void Particle. Cancel its ending instantly by pressing Liberation.' },
     { type: 'Liberation', skill: 'Final Act: Stagecraft Form', duration: 12, note: 'Press Liberation — deals a hit and grants Entropy Shift: Breakdown Form (+30% ATK) for 12s, then switches her to Breakdown Form.' },
     { type: 'Basic ATK', skill: 'Breakdown Form Stage 1-4', note: 'Tap Basic Attack 4 times (ground or mid-air, either works) — builds Conformal Charge toward 100, each hit inflicting Fusion Burst or Tune Strain - Shifting depending on her Resonance Mode.' },
-    { type: 'Skill', skill: 'Banish Stage 1', note: 'Press Skill (replaces Beckon while holding a Dark Core) — pulls in targets. Press Basic Attack or Skill again shortly after for Stage 2.' },
-    { type: 'Skill', skill: 'Banish Stage 2', note: 'Consumes all held Dark Cores for a hit that gets +150% DMG Multiplier per Dark Core spent (counted as Liberation DMG). Cancel its ending instantly by pressing Liberation.' },
+    { type: 'Skill', skill: 'Banish - Breakdown Form Stage 1', note: 'Press Skill (replaces Beckon while holding a Dark Core) — pulls in targets. Press Basic Attack or Skill again shortly after for Stage 2.' },
+    { type: 'Liberation', skill: 'Banish - Breakdown Form Stage 2', note: 'Consumes all held Dark Cores for a hit that gets +150% DMG Multiplier per Dark Core spent (counted as Resonance Liberation DMG). Cancel its ending instantly by pressing Liberation.' },
     { type: 'Liberation', skill: 'Final Act: Breakdown Form', note: 'Once Conformal Charge hits 100/100, press Liberation — consumes all Conformal Charge and Void Particle for the 2nd Ultimate, grants Entropy Shift: Stagecraft Form for 30s, and switches her back to Stagecraft Form.' },
-    { type: 'Forte', skill: 'Erosion Field', duration: 30, note: 'Deploys automatically off the 2nd Ultimate — a 30s off-field zone that pulls in and hits nearby targets every 4s (counted as Liberation DMG), applying Fusion Burst/Tune Strain even after Denia swaps out.' },
+    { type: 'Liberation', skill: 'Erosion Field', duration: 30, note: 'Deploys automatically off the 2nd Ultimate — a 30s off-field zone that pulls in and hits nearby targets every 4s (counted as Resonance Liberation DMG), applying Fusion Burst/Tune Strain even after Denia swaps out.' },
     { type: 'Echo', skill: 'Use Echo', note: 'In Fusion Burst mode, use your Echo at any convenient point in the rotation. In Tune Strain mode, swap-cancel it right before swapping out for Outro instead.' },
     { type: 'Outro', skill: 'Unfinished Lies', duration: 30, note: 'Triggers automatically on swap-out. In Fusion Burst mode, Amplifies Fusion Burst DMG near the active Resonator by +60% for 30s. In Tune Strain mode, grants the incoming Resonator +15% All DMG Amp for 16s (jumping to +40% once they apply Tune Strain themselves) instead.' },
   ],
@@ -5044,7 +5071,18 @@ const RESONANCE_CHAIN_DATA = {
   'Rebecca':      { s1: { basicDmg: 50 }, s2: { allDmg: 20 }, s3: { libDmg: 60 }, s4: {}, s5: { basicDmg: 20 }, s6: { basicDmg: 40 } },
   // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere).
   // S5: Final Act - Stagecraft Form DMG+100% (confirmed exact via Nanoka/Prydwen 2026-08-16 cross-check; was 50 previously)
-  'Denia':        { s1: { critDmg: 30 }, s2: { libDmg: 40 }, s3: { libDmg: 80 }, s4: { totalMult: 15 }, s5: { libDmg: 100 }, s6: { elemDmg: 60 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Denia/Combat, cross-checked against
+  // ww.nanoka.cc/character/1211 (both agree exactly). S1 (critDmg: 30), S2 (libDmg: 40, the unconditional
+  // Banish - Breakdown Form Stage 2 DMG Mult bonus — that move's own text says "The skill deals Resonance
+  // Liberation DMG", confirming the libDmg category), S3, and S5 all confirmed correct, unchanged.
+  // S4: totalMult: 15 has no exact derivation in source — the real effect is "Erosion Field's attack
+  // interval reduced from 4s to 3s" (a +33% proc-frequency increase to one Forte-circuit DoT tick, not a
+  // flat DMG% anywhere in the node text), kept as an approximated totalMult since there's no frequency-
+  // based stat in this schema; value left as-is (unverifiable exact conversion, not clearly wrong either).
+  // TODO: needs Phase 2 schema — proc-frequency buffs have no home in a flat {stat: value} node.
+  // S6 was missing a second real component: the node grants BOTH "+60% ATK" AND "+60% Fusion DMG Bonus"
+  // simultaneously while in Entropy Shift (only the elemDmg half was captured). Added atkPct: 60.
+  'Denia':        { s1: { critDmg: 30 }, s2: { libDmg: 40 }, s3: { libDmg: 80 }, s4: { totalMult: 15 }, s5: { libDmg: 100 }, s6: { atkPct: 60, elemDmg: 60 } },
   // Lucilla re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Lucilla/Combat, cross-checked
   // against ww.nanoka.cc/character/1109 (both agree on every node's exact wording and value). S3/S5/S6
   // all buff Letting It Go and/or Oblivion, whose own move text makes their damage type mode-dependent —
