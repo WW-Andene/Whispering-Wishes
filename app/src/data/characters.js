@@ -3616,7 +3616,7 @@ const SKILL_MULTIPLIERS = {
     ['Basic ATK', 'Intuition: Pivot-Impale', '119.67% → 60.92%×4 → 133.25%×2', 'Basic/Heavy ATK replacement in Intuition (3-stage combo); Stage 1 hit grants 1 Performance Capacity, Stage 2/3 hits grant 2 each (5 total). Counted as Basic ATK DMG, NOT Liberation DMG, per wutheringwaves.gg — previously mis-lumped under a Liberation-type row.'],
     ['Skill', 'Intuition: Divergence', '49.59%×3+173.55%×2', 'Resonance Skill replacement in Intuition; grants 2 Performance Capacity per cast. Counted as Skill DMG, NOT Liberation DMG, per wutheringwaves.gg — previously mis-lumped under a Liberation-type row.'],
     ['Dodge Counter', 'Intuition: Unfathomed', '38.83%×2+310.58%', 'Dodge Counter replacement in Intuition; grants 2 Performance Capacity per cast. Counted as Resonance Liberation DMG per wutheringwaves.gg (the one sub-move of the old lumped row that really was Liberation-type).'],
-    ['Intro', 'Principle', '99.41%×2'],
+    ['Intro', 'Principle', '79.32%×2'],
     ['Outro', 'Chain Rule', '237.63% ATK ×3 procs (8s, 2s ICD)', "Laser strikes on the incoming Resonator's first Basic ATK hit — pure DMG proc, no team buff."],
   ],
   // Re-verified per-hit at Lv.10 2026-08-31 against wutheringwaves.fandom.com/wiki/Yinlin/Combat's
@@ -5032,11 +5032,15 @@ const RESONANCE_CHAIN_DATA = {
   // TODO: needs Phase 2 schema — the Outro Chain Rule +222% DMG Multiplier portion has no matching
   // category in this schema (no "outro DMG" stat exists) and is not represented in the object below.
   // S6 "Solace of the Ordinary": was totalMult: 15 (fabricated, wrong category and value); real effect
-  // is Law of Reigns' own DMG Multiplier +75% (per wuwa.build/arabwuwa's explicit node text — a
-  // secondary WebSearch-derived "damage progression" summary implied 76%, kept the primary node-text
-  // figure of 75% instead). Law of Reigns counted as Liberation DMG, so category totalMult -> libDmg,
-  // value 15 -> 75.
-  'Xiangli Yao':  { s1: {}, s2: { critDmg: 30 }, s3: { skillDmg: 63 }, s4: { libDmg: 25 }, s5: { libDmg: 100 }, s6: { libDmg: 75 } },
+  // is Law of Reigns' own DMG Multiplier +76% (re-verified 2026-09-01 directly against
+  // wutheringwaves.fandom.com/wiki/Xiangli_Yao/Combat node text via the MediaWiki API — this project's
+  // designated primary source explicitly states 76%, superseding the prior 75% taken from the
+  // secondary wuwa.build/arabwuwa cross-reference). Law of Reigns counted as Liberation DMG, so
+  // category totalMult -> libDmg, value 15 -> 76.
+  // Intro Skill "Principle" (CHARACTER_ROTATIONS above) also corrected 2026-09-01 in the same re-fetch:
+  // was 99.41%×2, fandom's Attribute Scaling table (the move's only listed value, not level-gated) gives
+  // 79.32%×2.
+  'Xiangli Yao':  { s1: {}, s2: { critDmg: 30 }, s3: { skillDmg: 63 }, s4: { libDmg: 25 }, s5: { libDmg: 100 }, s6: { libDmg: 76 } },
   // Aemeath S1: +300% Crit DMG for Heavy ATK in Instant Response (confirmed exact). S3: Between the Stars enhanced to
   // CD+60% (confirmed exact) + Heavenfall Edict: Finale DMG Mult+100% (was defIgnore:20, no basis at all — real S3 has
   // no DEF Ignore effect). S4: team +20% All-Attr DMG on Intro/Sync Strike/Duet cast (was totalMult:15, no basis).
