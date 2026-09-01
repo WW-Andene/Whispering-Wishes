@@ -203,27 +203,41 @@ implementation details:
 
 ## Actual current backlog / next steps (as of 2026-09-01)
 
-Converted so far: **Rover: Electro only** (1 of ~60). This is a proof of
-concept, not a representative sample — it has no cast-order dependencies,
-no forfeit windows, no multi-skill-shared-node value, and no discrete
-flat-ATK procs, so it did NOT have to stress-test design questions 2/3
-below. The next characters to convert should deliberately include the hard
-cases, not just the easy ones, or Phase 2 will silently accumulate a schema
-that only works for simple kits.
+Converted so far: **Rover: Electro** (PoC, all always-on/passive nodes) and
+**Shorekeeper** (2 of ~60). Shorekeeper's S6 (Discernment cast-scoped
+totalMult+critDmg) proved `trigger.type: 'cast'` already models "only
+active during this specific cast" correctly with NO schema change needed —
+a block only activates when its trigger key is present in the caller's
+`firedTriggers` Set for that rotation step, so a cast-scoped bonus and a
+passive/always-on one are naturally distinguished by which trigger.type is
+used, not by extra condition logic. See
+`__tests__/triggerEngine-shorekeeper.test.js`'s "S6 is cast-scoped" test
+for the proof (asserts the bonus is absent when Discernment wasn't cast
+this step, present when it was).
+
+Still not stress-tested by either conversion: cast-order/forfeit-window
+dependencies (Jinhsi's two 5s windows, Augusta's partner-Outro-back
+condition), cross-character partner conditions, multi-skill-shared-node
+values (Camellya S5), and discrete flat-ATK procs instead of %-modifiers
+(Yinlin/Jianxin/Calcharo S6-style). These will very likely require a real
+schema extension, not just another block file — see the updated backlog
+below.
 
 1. **Convert one more character per pass, hardest cases first**, following
-   `roverElectro.blocks.js`'s structure and writing a parity test
-   (`triggerEngine-<name>.test.js`) for each one before moving on — same
-   cadence/discipline as the Phase 1 data audit (one character, verify,
-   commit+push, next). Prioritize, in order: Shorekeeper (cast-scoped Crit
-   DMG only on Discernment — will break the current schema's `passive`-only
-   Resonance Chain trigger assumption), Augusta (partner-Outro-back
-   condition — needs a new trigger/condition shape entirely), Jinhsi (two
-   5s cast-order forfeit windows — this is what actually answers design
-   question 2), Camellya (cast-before-Outro dependency + one node with two
-   multipliers on two different skills), Yinlin/Jianxin/Calcharo (discrete
-   flat-ATK procs, not %-modifiers — `effects[].stat` may need a new
-   'flatProc' variant, not just the existing % stats).
+   `roverElectro.blocks.js`/`shorekeeper.blocks.js`'s structure and writing
+   a parity test (`triggerEngine-<name>.test.js`) for each one before
+   moving on — same cadence/discipline as the Phase 1 data audit (one
+   character, verify, commit+push, next). Remaining priority order:
+   Augusta (partner-Outro-back condition — needs a new trigger/condition
+   shape entirely, since it depends on ANOTHER character's action, not
+   just this character's own trigger history), Jinhsi (two 5s cast-order
+   forfeit windows — this is what actually answers design question 2),
+   Camellya (cast-before-Outro dependency + one node with two multipliers
+   on two different skills — tests whether one block can/should have
+   per-effect trigger overrides or needs to split into two blocks),
+   Yinlin/Jianxin/Calcharo (discrete flat-ATK procs, not %-modifiers —
+   `effects[].stat` may need a new 'flatProc' variant, not just the
+   existing % stats).
 2. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
    schema` comment left by the Phase 1 passes for the full sourced backlog
    of known-hard mechanics, one entry per real conditional mechanic found
