@@ -375,10 +375,38 @@ totalMult guess for this — same non-negotiable as every other zeroed node.
    schema` comment left by the Phase 1 passes for the full sourced backlog
    of known-hard mechanics, one entry per real conditional mechanic found
    in verified source material — don't re-derive this list from scratch.
-4. Fix the fragile `rowName.includes(step.skill)` lookup pattern at the
-   engine level (exact-match against a stable `id` field, not fuzzy
-   substring) so the zero-damage bug class can't recur even if a future
-   data edit introduces a new naming mismatch. Not started.
+4. **PARTIALLY DONE 2026-09-01**: the fragile `rowName.includes(step.skill)`
+   lookup was centralized into `characters.js`'s new
+   `findSkillMultiplierRow(charName, step)` — the ONLY place in the code
+   that actually did this lookup was `CharacterDetailModal.jsx` (line ~559;
+   `calcEngine.js`/`calcTeamStats.js`/`RotationTimeline.jsx` all consume
+   `CHARACTER_ROTATIONS` for other purposes and don't do this specific
+   per-step damage lookup, contrary to what this doc's "Where the current
+   code lives" section implied — verified by grepping, not assumed). The
+   new function tries an EXACT `type`+`name` match first, only falling back
+   to the historical fuzzy substring match, and in dev builds
+   (`import.meta.env.DEV`) console.warns on every step that resolves via
+   the fuzzy fallback OR fails to resolve at all — turning the silent-zero
+   failure mode into a visible one during development. `CharacterDetailModal.jsx`
+   now calls it instead of an inline `.find()`.
+   A NEW automated regression test (`__tests__/data-integrity.test.js`,
+   "CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity") runs this
+   exact lookup against the full roster in CI. It is NOT a "must resolve
+   for every step" assertion — most of the ~80 steps that don't resolve are
+   legitimately non-damage (stance swaps, descriptive multi-move labels,
+   Forte continuations), and telling those apart from a real naming bug
+   needs per-step judgment this test can't make alone (that finer-grained
+   classification IS the larger not-yet-done "stable id field" migration
+   this backlog item originally asked for — still not done). What the test
+   DOES do: snapshot the current ~80 unresolved steps as a known baseline
+   and fail if a NEW one appears that isn't already in it — so a future
+   data edit that breaks a PREVIOUSLY-RESOLVING step (a row rename, a typo)
+   is caught by CI instead of waiting for another manual audit, without
+   requiring this pass to retroactively classify every existing
+   non-resolving step first. Still open: the actual stable-`id`-field
+   migration (would let the baseline shrink to zero for real, and let
+   fuzzy-match be removed entirely) — a larger, separate effort across all
+   ~60 characters' SKILL_MULTIPLIERS rows, not attempted here.
 5. Only once several more characters are converted AND item 2's
    `rotationSimulator.js` gaps (real `CHARACTER_ROTATIONS` derivation,
    multi-character interleaving) are closed: wire `triggerEngine.js`'s

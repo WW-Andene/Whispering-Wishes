@@ -7798,6 +7798,39 @@ export function getLocalizedChainNodeNames(locale) {
   return out;
 }
 
+// Single source of truth for resolving one CHARACTER_ROTATIONS step against its
+// SKILL_MULTIPLIERS row — replaces the inline `n.includes(step.skill)` lookup that used to be
+// duplicated at each call site (CharacterDetailModal.jsx). That fuzzy substring match is fragile
+// by construction: it silently resolves to undefined (rendered as "no DMG shown", and previously
+// mistaken for 0 DMG bugs) instead of erroring when a rotation step's `skill` string doesn't
+// actually appear inside any row name for that character — the exact bug class PHASE2_PLAN.md
+// tracks as "the zero-damage rotation-step bug class" and multiple prior audits (Roccia, Jiyan,
+// Yinlin, and others — see this file's own historical comments near each fix) had to catch by
+// hand, one character at a time. This function doesn't remove the substring fallback (SKILL_
+// MULTIPLIERS rows don't carry a stable `id` field to exact-match against yet — see PHASE2_PLAN.md
+// backlog item 4 for that larger, not-yet-done migration), but it does two things a future data
+// edit couldn't get wrong silently anymore: (1) tries an EXACT type+name match first, only falling
+// back to substring if no exact match exists, and (2) in dev builds, warns to the console whenever
+// a step's `skill` finds no row at all (the actual silent-zero failure mode) OR only resolves via
+// the fuzzy fallback (a naming mismatch that happens to still work, worth tightening). See
+// __tests__/data-integrity.test.js's "every CHARACTER_ROTATIONS step resolves to a SKILL_
+// MULTIPLIERS row" test, which now runs this exact lookup against the full roster in CI so this bug
+// class can't reappear unnoticed the way it did before.
+export function findSkillMultiplierRow(charName, step) {
+  const rows = SKILL_MULTIPLIERS[charName] || [];
+  const exact = rows.find(([t, n]) => t === step.type && n === step.skill);
+  if (exact) return exact;
+  const fuzzy = rows.find(([t, n]) => t === step.type && n.includes(step.skill));
+  if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
+    if (!fuzzy) {
+      console.warn(`[SKILL_MULTIPLIERS] ${charName}: rotation step "${step.type}: ${step.skill}" matched NO row (silent zero-DMG bug class) — check the step's skill string against SKILL_MULTIPLIERS['${charName}'].`);
+    } else {
+      console.warn(`[SKILL_MULTIPLIERS] ${charName}: rotation step "${step.type}: ${step.skill}" only substring-matched row "${fuzzy[1]}" (no exact match) — consider tightening the step's skill string.`);
+    }
+  }
+  return fuzzy;
+}
+
 // CHARACTER_ROTATIONS' `note` field is display-only prose (rendered in
 // RotationGuideCard.jsx). `type`/`skill` are NOT touched: they're matched
 // against SKILL_MULTIPLIERS via substring lookup at render time.

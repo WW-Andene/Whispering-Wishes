@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames } from '../../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames, findSkillMultiplierRow } from '../../data/characters.js';
 import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { getSonataLoadouts } from '../../data/echoes.js';
@@ -555,8 +555,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   // or team-composed in Teams.
                   const sty = stepStyle(step.type, getLocale());
                   // Look up this step's DMG from SKILL_MULTIPLIERS — single source of truth, same [type, name] tags
-                  // used above, so Team tab can resolve the same step against the same table later.
-                  const row = (SKILL_MULTIPLIERS[name] || []).find(([t, n]) => t === step.type && n.includes(step.skill));
+                  // used above, so Team tab can resolve the same step against the same table later. Uses the
+                  // shared findSkillMultiplierRow() (exact match first, fuzzy substring fallback, dev-mode
+                  // console.warn on any mismatch) instead of a bare inline substring lookup — see that
+                  // function's own doc comment in characters.js for why.
+                  const row = findSkillMultiplierRow(name, step);
                   const dmg = row?.[2];
                   const stepIcon = getSkillIcon(name, step.skill);
                   // 'Echo' steps (e.g. "Use Echo", "Swap Cancel") aren't a character skill at all —
