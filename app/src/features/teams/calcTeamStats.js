@@ -642,7 +642,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const rResMult = calcResMult(getEnemyRes(m.d.element), 0);
       rawTotalRotDmg += rEff * (mult / 100) * rAvgCrit * rDmgBonus * rDefMult * rResMult;
     });
-    const rawDps = Math.round(rawTotalRotDmg / rawRotTime);
 
     // ── FULL TIER: Base stats with team buffs ──
     const mainStatKey = mainDps.scaling === 'HP' ? 'HP%' : mainDps.scaling === 'DEF' ? 'DEF%' : 'ATK%';
