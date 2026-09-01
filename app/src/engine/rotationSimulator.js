@@ -32,6 +32,27 @@ export class RotationSimulator {
     this._windows = new Map();
     // outro-buff blockId -> { swaps, maxInterveningSwaps }
     this._outroWindows = new Map();
+    // castKey -> true, for every cast seen since the last resetSegment() (swap-in) — backs
+    // 'requires-prior-cast', which has no time limit, just "was this seen earlier in the current
+    // on-field segment."
+    this._castsThisSegment = new Set();
+  }
+
+  /** Call for every 'cast:TYPE:SKILL' key that occurs, so requires-prior-cast can later check it. */
+  recordCast(castKey) {
+    this._castsThisSegment.add(castKey);
+  }
+
+  /** Has `castKey` occurred since the last resetSegment()? Does not consume — a prior cast can gate
+   *  multiple later blocks (e.g. every Twining-style hit for the rest of the segment). */
+  hasCastThisSegment(castKey) {
+    return this._castsThisSegment.has(castKey);
+  }
+
+  /** Call on swap-IN (a new on-field segment starting) — requires-prior-cast dependencies don't
+   *  carry across a swap-out/swap-in cycle, only within one continuous on-field window. */
+  resetSegment() {
+    this._castsThisSegment = new Set();
   }
 
   advance(seconds) {
@@ -86,20 +107,24 @@ export class RotationSimulator {
  * actually met, not because a caller asserted it.
  *
  * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks
- * @param {Object[]} steps  Each: { type, skill, stepSeconds?, isSwap?, isOutroCast?,
- *   partnerReturnFor? } — `type`/`skill` (when present) form the step's own 'cast:TYPE:SKILL' key
- *   the same way triggerEngine.js's triggerKey() does. `isSwap` marks a character-swap event
- *   (advances every open partner-outro window's swap count). `isOutroCast` marks that this step
- *   IS this character's own outro-buff cast (opens a partner-return window for any
- *   'partner-outro-return' block in `blocks` that references it). `partnerReturnFor` names an
- *   outro block id — set this on the step representing "the buffed partner cast their own Outro
- *   back" to attempt consuming that window.
+ * @param {Object[]} steps  Each: { type, skill, stepSeconds?, isSwap?, isSwapIn?, isOutroCast?,
+ *   partnerReturnFor?, checksPriorCast? } — `type`/`skill` (when present) form the step's own
+ *   'cast:TYPE:SKILL' key the same way triggerEngine.js's triggerKey() does, and are also recorded
+ *   for 'requires-prior-cast' tracking. `isSwap` marks a character-swap event (advances every open
+ *   partner-outro window's swap count). `isSwapIn` marks that this step is THIS character
+ *   swapping in (resets the requires-prior-cast segment — a new on-field window). `isOutroCast`
+ *   marks that this step IS this character's own outro-buff cast (opens a partner-return window
+ *   for any 'partner-outro-return' block in `blocks` that references it). `partnerReturnFor` names
+ *   an outro block id — set this on the step representing "the buffed partner cast their own Outro
+ *   back" to attempt consuming that window. `checksPriorCast` names a 'requires-prior-cast' block
+ *   id whose dependency should be checked at this step.
  * @returns {{ step: Object, firedTriggers: Set<string> }[]}
  */
 export function simulateRotation(blocks, steps) {
   const sim = new RotationSimulator();
   const windowedBlocks = blocks.filter(b => b.trigger.type === 'windowed-cast');
   const partnerBlocks = blocks.filter(b => b.trigger.type === 'partner-outro-return');
+  const priorCastBlocks = blocks.filter(b => b.trigger.type === 'requires-prior-cast');
   const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
 
   const results = [];
@@ -108,12 +133,21 @@ export function simulateRotation(blocks, steps) {
     const fired = new Set(['passive']); // passive blocks are always eligible, same as every prior test's convention
 
     if (ev.isSwap) sim.registerSwap();
+    if (ev.isSwapIn) sim.resetSegment();
 
     if (ev.type && ev.skill) {
       const castKey = `cast:${ev.type}:${ev.skill}`;
       fired.add(castKey);
+      sim.recordCast(castKey);
       for (const b of windowedBlocks) {
         if (b.trigger.opensOn.includes(castKey)) sim.openWindow(b.trigger.opensOn.join('|'));
+      }
+    }
+
+    if (ev.checksPriorCast) {
+      const b = priorCastBlocks.find(x => x.id === ev.checksPriorCast);
+      if (b && sim.hasCastThisSegment(b.trigger.requiresPriorCast)) {
+        fired.add(`requires-prior-cast:${b.trigger.requiresPriorCast}`);
       }
     }
 

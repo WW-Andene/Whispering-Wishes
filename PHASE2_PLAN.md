@@ -1,8 +1,8 @@
 # Phase 2 plan — wiring precise mechanics into the calc engine
 
-## Status: STARTED 2026-09-01. Scaffold + 4 of ~60 characters converted and
-## verified (Rover: Electro, Shorekeeper, Augusta, Jinhsi), PLUS a working
-## rotation-history state machine (engine/rotationSimulator.js) that
+## Status: STARTED 2026-09-01. Scaffold + 5 of ~60 characters converted and
+## verified (Rover: Electro, Shorekeeper, Augusta, Jinhsi, Camellya), PLUS a
+## working rotation-history state machine (engine/rotationSimulator.js) that
 ## actually EVALUATES the conditional trigger types those conversions
 ## introduced, instead of every prior test hand-asserting the outcome. This
 ## doc is now also a log of what exists, not just a plan — read the "What
@@ -288,30 +288,47 @@ same way these two did, but the state-tracking pattern
 `simulateRotation()`'s per-step firedTriggers derivation) is now
 established to extend rather than invent from scratch.
 
-Still not stress-tested: Camellya's multi-skill-shared-node value (one
-Resonance Chain node with two different multipliers on two different
-skills — tests whether one block can/should have per-effect trigger
-overrides or needs to split into two blocks, the same question Jinhsi's S4
-raised but didn't yet resolve — see its block's own note), and discrete
-flat-ATK procs instead of %-modifiers (Yinlin/Jianxin/Calcharo S6-style —
-`effects[].stat` likely needs a new value shape, not just a new trigger
-type).
+**Camellya converted 2026-09-01**, resolving both remaining questions from
+her own kit — and revealing she actually needed THREE things, not one:
+
+- Resonance Chain S5's multi-skill-shared-node question (one node, two
+  multipliers on two different skills — Everblooming +303%, Twining +68%)
+  turned out to need **no schema change at all**. The block model is
+  already many-blocks-per-mechanic, so it just became two blocks
+  (`camellya.chain.s5-everblooming` / `camellya.chain.s5-twining`) sharing
+  one sourcing comment. This is the answer to the question Jinhsi's S4
+  raised but didn't resolve: split the node into multiple blocks, don't
+  add a multi-target-effect field. Proven in
+  `triggerEngine-camellya.test.js`'s "S5 multi-skill split" test — Twining's
+  +68% (`rc.s5.twining` is `undefined`) was genuinely unrepresentable in
+  the flat `RESONANCE_CHAIN_DATA` table and is now captured.
+- Her Outro Twining's bonus DMG turned out to be cast-order-dependent
+  (Ephemeral must have been cast earlier the SAME on-field rotation) —
+  a THIRD distinct conditional shape, same-character like Jinhsi's
+  windowed-cast but NOT time-bounded (no 5s limit, just "was it seen this
+  segment"). Added `trigger.type: 'requires-prior-cast'` +
+  `RotationSimulator.recordCast()`/`hasCastThisSegment()`/`resetSegment()`
+  (segment resets on swap-in) to evaluate it for real — proven in
+  `rotationSimulator.test.js` with success, no-cast-yet, AND
+  cast-in-a-prior-segment forfeit cases (5 tests total for this shape).
+
+Still not stress-tested: discrete flat-ATK procs instead of %-modifiers
+(Yinlin/Jianxin/Calcharo S6-style — `effects[].stat` likely needs a new
+value shape, not just a new trigger type — this is now the only
+completely unproven mechanic shape left on the priority list).
 
 1. **DONE 2026-09-01**: the rotation-history state machine
-   (`engine/rotationSimulator.js`) — see above. Resume converting
-   characters, same cadence as before (one character, parity test,
-   commit+push, next), following `roverElectro.blocks.js`/
-   `shorekeeper.blocks.js`/`augusta.blocks.js`/`jinhsi.blocks.js`'s
-   structure. Priority order for remaining unproven shapes: Camellya
-   (multi-skill-shared-node — one Resonance Chain node with two different
-   multipliers on two different skills), then Yinlin/Jianxin/Calcharo
-   (discrete flat-ATK procs, not %-modifiers — `effects[].stat` likely
-   needs a new value shape). When either of THESE needs its own new
+   (`engine/rotationSimulator.js`), extended same-day for Camellya's
+   `requires-prior-cast` — see above. Resume converting characters, same
+   cadence as before (one character, parity test, commit+push, next),
+   following `roverElectro.blocks.js`/`shorekeeper.blocks.js`/
+   `augusta.blocks.js`/`jinhsi.blocks.js`/`camellya.blocks.js`'s structure.
+   Priority: Yinlin, Jianxin, or Calcharo (discrete flat-ATK procs — the
+   one remaining unproven shape). When it needs its own new
    trigger/condition/effect shape, extend the schema the same deliberate
-   way `partner-outro-return`/`windowed-cast` were added — and if the new
-   shape also needs history tracking, extend `RotationSimulator` (new
-   Map, new open/try method pair) rather than inventing a second state-
-   tracking mechanism alongside it.
+   way the prior three were added — and if it needs history tracking too,
+   extend `RotationSimulator` (new Map, new open/try method pair) rather
+   than inventing a second state-tracking mechanism alongside it.
 2. Once 1-2 more characters are converted, revisit `rotationSimulator.js`'s
    own known gaps (see design question 2 above): deriving `steps`
    automatically from a real `CHARACTER_ROTATIONS` array instead of a

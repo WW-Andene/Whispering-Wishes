@@ -57,6 +57,11 @@ function triggerKey(trigger) {
   // future rotation simulator) already asserted "yes, this windowed cast happened in time" by
   // including this exact key in firedTriggers.
   if (trigger.type === 'windowed-cast') return `windowed-cast:${trigger.opensOn?.join('|')}`;
+  // Same reasoning as the other two conditional types: this resolver only checks whether the
+  // caller already asserted the dependency was met (via this key being present in
+  // firedTriggers) — evaluating "was requiresPriorCast actually seen earlier this on-field
+  // segment" is rotationSimulator.js's job (recordCast/hasCastThisSegment/resetSegment).
+  if (trigger.type === 'requires-prior-cast') return `requires-prior-cast:${trigger.requiresPriorCast}`;
   return trigger.type;
 }
 

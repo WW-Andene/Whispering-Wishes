@@ -16,6 +16,7 @@ import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
 import { RotationSimulator, simulateRotation, DEFAULT_STEP_SECONDS } from '../engine/rotationSimulator.js';
 import { JINHSI_BLOCKS } from '../engine/characterBlocks/jinhsi.blocks.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
+import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
 
 describe('RotationSimulator — windowed-cast (Jinhsi)', () => {
   it('fires when the windowed cast lands within the window', () => {
@@ -110,5 +111,59 @@ describe('RotationSimulator — partner-outro-return (Augusta)', () => {
     const results = simulateRotation(AUGUSTA_BLOCKS, steps);
     const lastFired = results[results.length - 1].firedTriggers;
     expect(lastFired.has('partner-outro-return:augusta.outro.battlesong')).toBe(false);
+  });
+});
+
+describe('RotationSimulator — requires-prior-cast (Camellya)', () => {
+  it('fires when the required cast happened earlier in the same on-field segment', () => {
+    const sim = new RotationSimulator();
+    sim.recordCast('cast:Forte:Ephemeral');
+    expect(sim.hasCastThisSegment('cast:Forte:Ephemeral')).toBe(true);
+  });
+
+  it('forfeits when the required cast never happened this segment', () => {
+    const sim = new RotationSimulator();
+    expect(sim.hasCastThisSegment('cast:Forte:Ephemeral')).toBe(false);
+  });
+
+  it('resetSegment() (a new swap-in) clears prior-segment casts', () => {
+    const sim = new RotationSimulator();
+    sim.recordCast('cast:Forte:Ephemeral');
+    sim.resetSegment();
+    expect(sim.hasCastThisSegment('cast:Forte:Ephemeral')).toBe(false);
+  });
+
+  it('simulateRotation resolves Camellya\'s Twining bonus end-to-end: success case (Ephemeral cast this segment)', () => {
+    const steps = [
+      { isSwapIn: true, stepSeconds: 0 },
+      { type: 'Forte', skill: 'Ephemeral', stepSeconds: 5 },
+      { type: 'Outro', skill: 'Twining', isSwap: true, checksPriorCast: 'camellya.outro.twining-ephemeral-bonus', stepSeconds: 3 },
+    ];
+    const results = simulateRotation(CAMELLYA_BLOCKS, steps);
+    const lastFired = results[results.length - 1].firedTriggers;
+    expect(lastFired.has('requires-prior-cast:cast:Forte:Ephemeral')).toBe(true);
+  });
+
+  it('simulateRotation resolves Camellya\'s Twining bonus end-to-end: forfeit case (Ephemeral never cast this segment)', () => {
+    const steps = [
+      { isSwapIn: true, stepSeconds: 0 },
+      { type: 'Basic ATK', skill: 'Vining Waltz 1', stepSeconds: 5 }, // never casts Ephemeral this segment
+      { type: 'Outro', skill: 'Twining', isSwap: true, checksPriorCast: 'camellya.outro.twining-ephemeral-bonus', stepSeconds: 3 },
+    ];
+    const results = simulateRotation(CAMELLYA_BLOCKS, steps);
+    const lastFired = results[results.length - 1].firedTriggers;
+    expect(lastFired.has('requires-prior-cast:cast:Forte:Ephemeral')).toBe(false);
+  });
+
+  it('forfeits when Ephemeral was cast in a PRIOR on-field segment, not the current one', () => {
+    const steps = [
+      { isSwapIn: true, stepSeconds: 0 },
+      { type: 'Forte', skill: 'Ephemeral', stepSeconds: 5 }, // cast, but in the first segment
+      { isSwapIn: true, stepSeconds: 8 }, // swaps back in later — new segment, Ephemeral not re-cast
+      { type: 'Outro', skill: 'Twining', isSwap: true, checksPriorCast: 'camellya.outro.twining-ephemeral-bonus', stepSeconds: 3 },
+    ];
+    const results = simulateRotation(CAMELLYA_BLOCKS, steps);
+    const lastFired = results[results.length - 1].firedTriggers;
+    expect(lastFired.has('requires-prior-cast:cast:Forte:Ephemeral')).toBe(false);
   });
 });

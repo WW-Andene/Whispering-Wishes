@@ -46,6 +46,7 @@
  *                            'negative-status-hit' | 'field-time' | 'partner-outro-return'
  *                            (added for Augusta's Majesty/Crown-of-Wills mechanic — see below) |
  *                            'windowed-cast' (added for Jinhsi's cast-order forfeit windows —
+ *                            see below) | 'requires-prior-cast' (added for Camellya's Twining —
  *                            see below)
  * @property {string} [on]   The specific skill/move id this trigger fires on (matches a
  *                            CHARACTER_ROTATIONS-style {type, skill} pair when type === 'cast');
@@ -92,6 +93,21 @@
  * @property {number} [windowSeconds] For 'windowed-cast': how long the window stays open after the
  *                                    `opensOn` trigger fires before the alternate/empowered cast this
  *                                    block represents is forfeited.
+ * @property {string} [requiresPriorCast]  For 'requires-prior-cast': the trigger key (same format
+ *                                    triggerEngine.js's triggerKey() produces) of a cast that must
+ *                                    have occurred SOMEWHERE EARLIER in the current on-field segment
+ *                                    — no time limit, unlike 'windowed-cast', just ordering within
+ *                                    one continuous on-field window. Camellya's Outro Twining deals
+ *                                    additional DMG only if her Forte Ephemeral was cast earlier that
+ *                                    same on-field rotation (wutheringwaves.fandom.com/wiki/
+ *                                    Camellya/Combat / CHARACTER_ROTATIONS['Camellya']'s own Outro
+ *                                    note) — distinct from both other conditional trigger types:
+ *                                    not cross-character (partner-outro-return) and not time-bounded
+ *                                    (windowed-cast). Same evaluation limitation as those two: this
+ *                                    field only names the dependency; a rotation simulator has to
+ *                                    track "was this cast seen since the last swap-in" to evaluate it
+ *                                    (see rotationSimulator.js's `recordCast`/`hasCastThisSegment`/
+ *                                    `resetSegment`, added alongside this trigger type).
  */
 
 /**
@@ -136,7 +152,7 @@
  *                                 'refresh' (re-triggering resets duration instead of adding)
  */
 
-export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast'];
+export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast', 'requires-prior-cast'];
 export const BLOCK_KINDS = ['damage', 'buff', 'debuff', 'heal', 'utility'];
 export const TARGET_SCOPES = ['self', 'on-field', 'next-on-field', 'whole-team', 'marked-enemy', 'all-enemies'];
 export const STACKING_MODES = ['unique', 'stacking', 'refresh'];
