@@ -27,35 +27,63 @@
   baseline: roster-wide median dropped 3.13x → 2.03x, mean 4.20x → 2.34x,
   max 40.03x → 8.01x (Lucilla, now a real but much smaller residual, not
   the dominant systemic bug it was).
+- Stage 3, item 2 of 5 — DOT reactions. Added `engine/dotReactions.js`,
+  composing the five already-correct `calcEngine.js` DOT functions
+  (Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break) around
+  engine-derived rotation time and per-element enemy RES, matching
+  `calcTeamStats.js`'s own per-reaction element routing exactly (Stage 0's
+  "stays composed around the engine" treatment, same as gear — not a
+  TriggerBlock port). 6 new tests.
 
-**Remaining (Stage 3, items 2-5, none yet started):**
-- DOT reactions (Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break) —
-  no engine model exists at all; `calcTeamStats.js` computes these via
-  dedicated `calcEngine.js` functions with no TriggerBlock equivalent.
-- Energy-cycle-gated Liberation uptime (`calcEnergyCycles`) — must gate the
-  engine's Liberation-derived hits by real ER-based uptime, same as legacy's
-  `mult * (1 - libShare*(1-libUptime))`.
-- The rotation on-field order-search itself (brute-force permutation +
-  duration-aware scoring) — the engine currently assumes a GIVEN on-field
-  order; it doesn't choose one the way `calcTeamStats.js` does.
-- Coordinated ATK off-field snapshot semantics (the 0.6 discount factor,
-  buffs-received-before-swap-out snapshotting) — no engine concept of
-  "coordinated/off-field damage" yet.
-- Lucilla's residual 8.01x ratio (flagged, not yet independently confirmed
-  bug vs. real divergence — candidate cause noted in Stage 3's own section
-  below).
+- Stage 3, item 3 of 5 — energy-cycle-gated Liberation uptime. Added
+  `engine/energyCycleGating.js` (`libUptimeOf()`, a small lookup over
+  `calcEnergyCycles()`'s already-correct output) and wired a `libUptime`
+  param into `resolveHitComposedDps`/`resolveHitComposedTeamDps` as an
+  opt-in, backward-compatible parameter, same pattern as sequence gating.
+  Unlike legacy's flat `libShare` heuristic (a guessed 20%/35% share of the
+  WHOLE totalMult, since calcTeamStats.js has no per-source damage split),
+  the engine gate discounts exactly the hits whose `damage.category` is
+  `'libDmg'` — a documented precision improvement, not a behavior change to
+  match. 8 new tests.
+
+- Stage 3, item 4 of 5 — Coordinated ATK off-field snapshot semantics.
+  Added `engine/coordinatedAtk.js` (`coordinatedMultShare()`, factoring out
+  the coord/field-time mult blend duplicated between calcTeamStats.js's RAW
+  and FULL tiers) and a `coordSnapshotDiscount` opt-in option on
+  `resolveSimulatedTeamRotation`/`resolveHitComposedTeamDps` that discounts
+  `'next-on-field'`-scoped buffs by legacy's exact 0.6 factor while leaving
+  `'whole-team'` buffs untouched — mapping legacy's outroBuffs-vs-libBuffs
+  distinction directly onto the engine's own scope vocabulary. 6 new tests.
+
+- Stage 3, item 5 of 5 (final item) — the rotation on-field order-search.
+  Added `engine/rotationOrderSearch.js`'s `chooseOnFieldOrder(members,
+  mainDpsName)`: brute-forces every permutation of supports (Main DPS
+  always last), scores each via `buildTeamSteps`/`simulateTeamRotation` +
+  `buildBlockWindows`/`activeCountAt` (how much cross-character whole-team/
+  next-on-field buff value survives to the instant the Main DPS's own
+  on-field segment opens), keeps the highest (ties keep the input order) —
+  the engine-native equivalent of calcTeamStats.js's own rotationTimeline
+  IIFE. 5 new tests, including a load-bearing behavioral one: reordering so
+  Rover: Electro's `next-on-field` outro actually reaches Yinlin (instead of
+  landing on nobody, as the naive input order does) scores strictly higher
+  and the search finds it.
+
+**Stage 3 is now fully closed — all 5 items done.**
+
+- Stage 4 kickoff: root-caused the residual ~2.03x roster-wide median (Case
+  1, documented `totalMult`-heuristic-vs-real-sum improvement — see Stage 4
+  kickoff section below) and individually confirmed Lucilla's 8.01x (same
+  Case 1, compounded by her unusually short 5s `onField` vs. a typical
+  Main DPS's 14-19s) — no open items left before the rewrite.
 
 **Not started:** Stage 4 (the actual `calcTeamStats.js` rewrite) and Stage 5
-(final verification + commit) — both explicitly blocked on Stage 3's
-remaining 4 items per this plan's own ordering; attempting the rewrite
-before they're closed would silently drop those mechanics from the live
-calculator.
+(final verification + commit) — Stage 3 is now fully closed, so both are
+unblocked per this plan's own ordering, but neither has started yet.
 
 **Every commit through this stage has been additive** — new engine files,
 new tests, an opt-in param on 2 existing engine functions. `calcTeamStats.js`
 itself has not been touched at any point in Phase 3 (verified via
-`git diff --stat` after every stage). All work is on `main` directly; no
-separate feature branch exists for this phase.
+`git diff --stat` after every stage).
 
 ## Why this is its own phase, not a quick edit
 
@@ -343,6 +371,14 @@ not yet independently confirmed against how often that step actually
 recurs in her real `CHARACTER_ROTATIONS` sequence). Not blocking further
 Stage 3 work — logged here so it isn't lost.
 
+**Update (Stage 4 kickoff, 2026-09-01)**: independently confirmed — see the
+"Stage 4 kickoff — Lucilla's 8.01x individually confirmed" section further
+down. The candidate cause above was ruled out (that rotation step occurs
+only once in her real `CHARACTER_ROTATIONS`, so both blocks fire once, not
+duplicated); the real driver is the same `totalMult`-heuristic-vs-real-sum
+root cause as the roster median, compounded by her unusually short 5s
+`onField` allocation. Case 1 (documented improvement), not a bug.
+
 Full suite: 1065/1065 passing. `calcTeamStats.js` untouched throughout
 (confirmed via `git diff --stat`).
 
@@ -351,6 +387,176 @@ energy-cycle-gated Liberation uptime, the rotation on-field order-search,
 and Coordinated ATK off-field snapshot semantics. None of these are
 individually as roster-wide-impactful as sequence gating was, but Stage 4's
 rewrite can't start until each is closed or explicitly descoped.
+
+## Stage 3, item 2 — DOT reactions (done, 2026-09-01)
+
+Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break's real math (ICD-aware
+stack/tick tables, hand-verified against the wiki per each function's own
+audit comment) already lives correctly in calcEngine.js
+(`calcFrazzleDmg`/`calcErosionDmg`/`calcFusionBurstDmg`/`calcElectroFlareDmg`/
+`calcTuneBreakDmg`). Re-deriving that from scratch as TriggerBlocks would
+mean rebuilding already-correct formulas for no benefit — so this item gets
+the SAME treatment Stage 0's table already prescribed for gear ("stays
+composed around the engine, not ported into TriggerBlocks"), not a
+TriggerBlock port.
+
+- **`engine/dotReactions.js`** (new): `resolveDotReactionDps(members,
+  rotTime, defMult, resShred, getEnemyRes, mainResMult, energyCycleFactors)`
+  composes all five calcEngine.js DOT functions, routing each reaction's RES
+  from the enemy's RES to ITS OWN fixed element (Frazzle=Spectro,
+  Erosion=Havoc, Fusion Burst=Fusion, Electro Flare=Electro) exactly like
+  `calcTeamStats.js:941-953` already does — Tune Break has no single
+  canonical element and keeps using the caller's own `mainResMult`, same as
+  legacy. Returns `{totalDmg, dps, tuneBreakDeepenMult, breakdown}` so
+  Stage 4's rewrite can call one function instead of hand-wiring five.
+- **`rotTimeFromSteps(ownedSteps)`** (new, same file): sums a team step
+  list's `stepSeconds` (defaulting missing entries to `DEFAULT_STEP_SECONDS`,
+  same convention `resolveSimulatedTeamRotation.js`/
+  `resolveHitComposedTeamDps.js` already use per-member) — gives Stage 4 an
+  engine-derived rotation time to pass in, rather than requiring
+  `calcTeamStats.js`'s own `rawRotTime` formula specifically.
+- **`dotReactions.test.js`** (new, 6 tests): proves the composition is exact
+  (byte-identical to calling the five calcEngine.js functions directly, per
+  the same per-element RES routing) and that `rotTimeFromSteps` matches the
+  sum-of-stepSeconds convention, plus edge cases (no DOT-applying members,
+  zero rotTime doesn't produce NaN/Infinity).
+
+Full suite: 1071/1071 passing (74 files). `calcTeamStats.js` untouched
+throughout (confirmed via `git diff --stat`).
+
+**Next**: Stage 3's remaining 3 items — energy-cycle-gated Liberation
+uptime, the rotation on-field order-search, and Coordinated ATK off-field
+snapshot semantics.
+
+## Stage 3, item 3 — energy-cycle-gated Liberation uptime (done, 2026-09-01)
+
+`calcEnergyCycles` (calcEngine.js:583-619) already derives each character's
+real total ER (weapon/echo substats + set bonuses) and compares it against a
+role-specific threshold to produce `libUptime` (1.0 once cleared, floored at
+0.6 otherwise) — that formula was never the gap. The gap was that
+`resolveHitComposedDps`/`resolveHitComposedTeamDps` had no concept of "this
+hit came from Liberation" at all, so every Liberation-derived hit fired at
+full strength regardless of the character's real ER investment.
+
+- **`engine/energyCycleGating.js`** (new): `libUptimeOf(energyCycleFactors,
+  name)` — a small lookup over `calcEnergyCycles()`'s own output, returning
+  `null` (no gating) for a missing character/map, same no-gating-by-default
+  convention as `sequenceGating.js`.
+- **`resolveHitComposedDps`**: added a 9th param, `libUptime = null`. Only
+  hits whose `damage.category`/`proc.category === 'libDmg'` are scaled by
+  it — every other hit is untouched regardless of value. Omitting it (the
+  default) leaves every existing caller byte-identical to before this param
+  existed.
+- **`resolveHitComposedTeamDps`**: added `opts.libUptime`, same semantics,
+  scoped to `targetName`'s own Liberation-sourced hits only.
+- This is deliberately a MORE PRECISE gate than calcTeamStats.js's own
+  `mult * (1 - libShare*(1-libUptime))` (calcTeamStats.js:973-978): legacy
+  has no per-source damage split, so it approximates "the Liberation
+  portion" as a flat 20%/35% share of the character's WHOLE totalMult. The
+  engine already tracks each hit's real category, so it discounts exactly
+  the Liberation-sourced hits instead of guessing a share of everything —
+  same "documented improvement, not a behavior change to match" treatment
+  Stage 3 item 1 established for Resonance Chain `target.scope` precision.
+- **`energyCycleGating.test.js`** (new, 8 tests): `libUptimeOf`'s lookup/
+  no-gating-by-default behavior; the gate is opt-in/backward-compatible;
+  it scales ONLY the libDmg-category block, proportionally, leaving a
+  non-Liberation hit at the same instant untouched; `libUptime: 0` zeroes
+  Liberation damage entirely; the team-level `opts.libUptime` variant.
+
+Full suite: 1079/1079 passing (75 files). `calcTeamStats.js` untouched
+throughout (confirmed via `git diff --stat`).
+
+**Next**: Stage 3's remaining 2 items — the rotation on-field order-search,
+and Coordinated ATK off-field snapshot semantics.
+
+## Stage 3, item 4 — Coordinated ATK off-field snapshot semantics (done, 2026-09-01)
+
+This name covers TWO separate legacy mechanics, duplicated verbatim between
+calcTeamStats.js's RAW tier (:531-540) and FULL tier (:984-993, :1024-1090):
+
+1. **The coord/field-time mult blend** — a Coordinated ATK sub-DPS's own
+   damage-share blends a "coordinated" portion (scales with the MAIN DPS's
+   own on-field uptime) and an ordinary on-field portion (scales with this
+   character's own field-time ratio): `mult * (coordShare*coordUptime +
+   (1-coordShare)*fieldRatio)`.
+2. **The buff-snapshot discount** — an off-field Coordinated ATK character
+   doesn't receive a support's outro buff if that support swaps in AFTER
+   them (they already left); legacy applies a flat 0.6 discount specifically
+   to buffs targeted `'next'` (calcTeamStats.js:1046-1052), while leaving
+   whole-team/continuous buffs like libBuffs undiscounted (:1081-1089 has no
+   discount at all).
+
+- **`engine/coordinatedAtk.js`** (new): `coordinatedMultShare({coordShare,
+  coordUptime, fieldRatio})` factors out mechanic 1's formula (identical in
+  both legacy tiers) for Stage 4 reuse — pure math, no new engine mechanism
+  needed. `COORD_SNAPSHOT_DISCOUNT = 0.6` is legacy's exact constant.
+- Mechanic 2 maps directly onto the engine's EXISTING scope vocabulary:
+  legacy's `'next'`-target outro buffs are exactly what `target.scope:
+  'next-on-field'` already models (only reaches the team member immediately
+  after the buff's source), while legacy's undiscounted continuous buffs are
+  `target.scope: 'whole-team'`. So no new mechanism was needed here either —
+  just an opt-in `coordSnapshotDiscount` boolean on
+  `resolveSimulatedTeamRotation`/`resolveHitComposedTeamDps` that multiplies
+  a `'next-on-field'`-scoped block's contribution by `COORD_SNAPSHOT_DISCOUNT`
+  when set, and leaves `'whole-team'` blocks (and everything else) alone —
+  same no-gating-by-default pattern as sequence/libUptime gating.
+- **`coordinatedAtk.test.js`** (new, 6 tests): `coordinatedMultShare` matches
+  calcTeamStats.js's formula exactly for both pure-coord and hybrid kits;
+  `coordSnapshotDiscount` is opt-in/backward-compatible on both functions and
+  discounts by exactly 0.6 when set, verified against Augusta's real
+  `augusta.outro.battlesong` block (`elemDmg +15`, `next-on-field`).
+
+Full suite: 1085/1085 passing (76 files). `calcTeamStats.js` untouched
+throughout (confirmed via `git diff --stat`).
+
+## Stage 3, item 5 — the rotation on-field order-search (done, 2026-09-01) — Stage 3 complete
+
+calcTeamStats.js's own rotationTimeline IIFE (calcTeamStats.js:153-462) does
+two things: (a) brute-forces every permutation of supports (Main DPS always
+last) and scores each by how much cross-character buff value survives to
+the instant the Main DPS's own on-field window opens, keeping the highest
+(ties keep the original team-wide-outro-first/strongest-next-outro-last
+heuristic order); (b) renders the result as the Rotation Guide's display
+blocks. Its own in-file comment claims this "cannot change the real DPS
+number, only which ordering the Rotation Guide presents" — checked against
+the rest of the file and found stale: `rotSegByName` (calcTeamStats.js:
+475-476) is built directly from this same rotationTimeline, and
+`overlapUptimeForSeg` (fed by `rotSegByName` via `outroStart`/`blockStart`)
+is what every cross-character buff-uptime figure in the FULL tier actually
+uses — the file's own nearby comment on that function even cites a
+quantitative audit finding "43.5% [of cross-character buffs] collapse to
+exactly zero" once real ordering is accounted for. So the search's chosen
+order IS load-bearing for the real number, confirming Stage 0's original
+flag that an engine equivalent is required before Stage 4's rewrite, not
+just cosmetic Rotation-Guide parity.
+
+- **`engine/rotationOrderSearch.js`** (new): `chooseOnFieldOrder(members,
+  mainDpsName)` — same brute-force-permutation-then-score structure as
+  legacy, re-expressed against the engine's real primitives instead of
+  CHAR_BUFF_TABLE's flat buff list: `buildTeamSteps`/`simulateTeamRotation`
+  actually simulate each candidate order, then `buildBlockWindows`/
+  `activeCountAt` (the same "was this buff live at this exact instant"
+  primitive `resolveHitComposedTeamDps.js` already uses) answer legacy's
+  `scoreOrder` question — is a cross-character (`source !== mainDpsName`),
+  continuous, team-reaching (`target.scope` `'whole-team'`/`'next-on-field'`)
+  block still active when the Main DPS's own segment starts — summing each
+  qualifying block's effect values, matching legacy's `Math.abs(b.value||0)`
+  sum exactly. No new simulation machinery — pure search+score composed on
+  top of what Phase 2/3 already built and trusts.
+- **`rotationOrderSearch.test.js`** (new, 5 tests): Main DPS always placed
+  last; a solo team's own trivial single-member order; `null` for an absent
+  mainDpsName; the chosen `ownedSteps`/`blocksByOwner` genuinely match
+  `buildTeamSteps` run on the chosen order (not a stale/mismatched pair);
+  and the one load-bearing behavioral test — Rover: Electro's real
+  `'next-on-field'` outro block reaches nobody in the naive input order
+  (Augusta, Yinlin, Rover: Electro — Yinlin isn't immediately after him),
+  but the search correctly finds the reordering that puts him right before
+  Yinlin instead, scoring strictly higher.
+
+Full suite: 1090/1090 passing (77 files). `calcTeamStats.js` untouched
+throughout (confirmed via `git status`/`git diff --stat`) — **this closes
+Stage 3 in full**. Stage 4 (the actual rewrite) and Stage 5 (final
+verification + commit) are next, per this plan's own ordering.
 
 ## Stage 1 — Parity harness
 
@@ -395,6 +601,137 @@ operate on engine-derived per-member timing, energy-cycle gating applied to
 `resolveHitComposedDps`'s Liberation-derived hits, etc. Each addition gets
 its own test before Stage 1's harness re-run.
 
+## Stage 4 kickoff — root-causing the residual ~2x median gap (done, 2026-09-01)
+
+Before touching the live file, root-caused the harness's still-unexplained
+roster-wide median (2.03x engine/legacy, unchanged since Stage 3 item 1 —
+flagged there as "a second, smaller, still-unidentified factor" and never
+followed up). Rewriting `calcTeamStats.js` while that gap stayed
+unexplained would have silently changed every player's displayed team score
+by up to ~2x (8x for Lucilla) with no way to tell a real precision gain from
+a bug — exactly the class of regression this whole phase exists to prevent,
+so this had to be resolved BEFORE any rewrite, not after.
+
+**Hypothesis 1 (partially right, not the driver): timing-window mismatch.**
+`calcTeamStats.js`'s `rawRotTime` (`max(15, min(35, sumOnField+2))`, a
+field-time-based window) and the engine's own `totalTime`
+(`deriveStepsFromRotation`'s single non-repeating pass through
+`CHARACTER_ROTATIONS`, paced at a flat `DEFAULT_STEP_SECONDS=1.5`/step) use
+different denominators. Hand-verified on 7 characters
+(Danjin/Camellya/Changli/Xiangli Yao/Lingyang/Hiyuki/Galbrena): the two
+windows genuinely differ (ratio 0.97x-2.0x depending on rotation step
+count), and for characters where `engine.totalTime < legacy.rotTime` this
+does inflate the engine's dps. But it doesn't correlate with the total
+ratio closely enough to be the dominant driver (e.g. Xiangli Yao/Hiyuki have
+`timingRatio≈0.97` — engine's own window is if anything SLIGHTLY LONGER
+than legacy's — yet still show a ~2x total ratio), so this is a real,
+independent, smaller effect, not the explanation.
+
+**Hypothesis 2 (real bug, fixed, but near-zero measured impact today):
+missing cross-loop cooldown throttling.** `resolveHitComposedDps`'s
+`totalDamage/totalTime` implicitly assumes every hit in the single derived
+pass repeats every `totalTime` seconds forever — correct only for a hit
+whose own cooldown is `<= totalTime`. Confirmed on Xiangli Yao: his
+Liberation "Cogitation Model" is 1466.06% ATK with a real 25s cooldown
+(`characters.js` SKILL_MULTIPLIERS row, `'25s cooldown'` in its own note
+text) landing inside a derived pass only ~19.5s long — the engine credits
+it every 19.5s instead of its real 25s cadence, a genuine over-count. Fixed
+via a new opt-in `cooldownSteadyState` param on
+`resolveHitComposedDps`/`resolveHitComposedTeamDps` (scales a block whose
+`timing.cooldown` exceeds the pass/field-duration by
+`min(1, duration/cooldown)`) — correct, tested (6 new tests in
+`cooldownSteadyState.test.js`), and worth keeping for Stage 4. But re-running
+the Stage 1 harness with it enabled moved the roster-wide median/mean by
+**less than 0.03** (2.03x → 2.03x median, 2.34x → 2.31x mean): almost every
+converted character's `damage.hits` blocks have `timing: {}` — no
+`timing.cooldown` value populated at all (Yinlin's Liberation block, the one
+this fix was tested against, is one of the few exceptions) — so the fix is
+real but currently has almost nothing to gate. Populating real cooldowns
+onto every damage block across all 56 characters is a large, separate
+data-authoring task, not a Stage 4 blocker in itself (the gate is a no-op
+until that data exists, same "opt-in, byte-identical when unset" contract
+every other Stage 3 gate uses).
+
+**Root cause (confirmed): `totalMult` was never meant to equal a real
+per-hit sum.** `characters.js`'s own ROTATION_DATA section header
+(`characters.js:1374-1378`) defines it plainly: *"totalMult: sum of ATK%
+multipliers in one full rotation (all skills used)... Sources: Prydwen,
+WutheringLab, community rotation testing"* — a **hand-authored heuristic
+table**, entered per-character from community power-ranking/build-guide
+impressions, not derived from `SKILL_MULTIPLIERS`' own real, verified
+per-skill percentages at all. A nearby fix comment on the same table
+(`characters.js:1396-1404`, the Cartethyia HP-scaling correction) confirms
+this directly: fixing her `totalMult` to stop reusing an ATK%-calibrated
+heuristic number "made her auto-calculated teamDps ~5x every other top-tier
+DPS" before the fix — i.e. this table's own entries are acknowledged
+(elsewhere in the same file) to have been wrong by multiples before,
+independent of anything Phase 2/3 touches. The engine, by contrast, sums
+`SKILL_MULTIPLIERS`' real per-skill values (e.g. Xiangli Yao's Liberation
+alone is a verified 1466.06%, not a share of a single "totalMult: 2900"
+heuristic spread across 13 hits) — genuinely more precise data, not a
+different opinion about the same data.
+
+**Conclusion, per Stage 2's own 3-way classification**: the roster-wide
+elevated median is **Case 1 — expected, documented engine improvement**,
+not Case 2/3 (a real engine gap or a bug to fix). This closes the "still-
+unidentified factor" Stage 3 item 1 left open and satisfies Stage 4's own
+precondition ("every remaining diff is Stage-2-labeled as an intentional
+improvement") for the residual median gap specifically. It does NOT mean
+every individual character's ratio is automatically fine — Lucilla's 8.01x
+(the single largest outlier, already flagged in Stage 3 item 1 as not yet
+independently confirmed) and any other outlier substantially above the new
+~2x baseline still warrant a per-character look during Stage 4, the same
+way Stage 2 triaged the original 6 outliers individually rather than waving
+off the whole roster at once.
+
+## Stage 4 kickoff — Lucilla's 8.01x individually confirmed (done, 2026-09-01)
+
+Per Stage 2's own precedent (triage every outlier individually, don't wave
+the whole roster off at once), checked Lucilla's 8.01x — the single largest
+outlier, ~4x the new roster median — before starting the rewrite.
+
+**Ruled out the specific candidate cause Stage 3 item 1 had flagged**:
+`lucilla.basic.oblivion` and `lucilla.basic.tracing-forms` do share the
+exact same trigger (`Basic ATK:Tracing Forms Stage 1-3`), but
+`CHARACTER_ROTATIONS['Lucilla']` only contains that step ONCE
+(`characters.js:4442`) — both blocks fire exactly once per solo pass, not
+duplicated across repeated occurrences. Not a double-count bug.
+
+**Real explanation, confirmed via a hit-by-hit breakdown** (real weapon
+Freeze Frame + Wishes of Quiet Snowfall echo set, matching the harness's own
+gear inference): every block fires exactly once, each contributing a
+plausible, SKILL_MULTIPLIERS-accurate share of the 36407 total —
+`lucilla.basic.oblivion` (10376, from 3×285.48%) and
+`lucilla.basic.letting-it-go` (10274, from 84.81%×3+593.64%) alone account
+for well over half; nothing resembles an engine artifact. The actual driver
+is the SAME root cause as the roster median, compounded by Lucilla's
+specific role data: her `totalMult` heuristic is only **700**
+(`characters.js:1458`) against an **`onField` of just 5s** — both
+dramatically lower than a typical Main DPS's 2200-3400/14-19s, because her
+real kit is a brief-window Ultimate/buffer burst, not sustained on-field
+damage. The engine's solo harness (per Stage 0's own design) runs her FULL
+`CHARACTER_ROTATIONS` pass (Intro→Skill→Liberation→Basic combo→Outro,
+~10.5s derived) exactly like every other character gets — over DOUBLE her
+real 5s on-field allocation — while her `totalMult=700` was hand-calibrated
+assuming she's realistically credited for only that short window. Two
+compounding factors, both Case 1 (documented heuristic conservatism, not a
+bug): the general totalMult-vs-real-sum gap every character has, PLUS an
+unusually large legacy-side discount specific to her short-onField Sub-DPS/
+buffer role.
+
+**Conclusion**: Lucilla's 8.01x is independently confirmed as Case 1, same
+classification as the roster median — closes the one open item Stage 3
+item 1 left flagged. No further engine gap or bug found for her specifically;
+nothing here blocks starting the actual Stage 4 rewrite.
+
+**Practical consequence for the rewrite**: Stage 4 should NOT aim for
+numeric parity with legacy's `rawDps`/`teamDps` — that was always the wrong
+bar (this file's own header note said so from the start). The verification
+bar is: no consumer breaks, the external return shape stays intact, and any
+per-character ratio that's an outlier even against the new engine-wide
+baseline gets the same individual triage Stage 2 gave Lucilla/Roccia/etc.,
+not a blanket "engine is always right" assumption either.
+
 ## Stage 4 — Rewrite `calcTeamStats.js`
 
 Only once Stage 1's harness is green (or every remaining diff is Stage-2-
@@ -421,8 +758,9 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 0 — coverage audit
 - [x] Stage 1 — parity harness (all 56 converted characters swept; engine `externalStats` gap found+fixed; ratio distribution recorded, outliers flagged for Stage 2)
 - [x] Stage 2 — triage (root cause found for all 6 flagged outliers: no sequence-level gating anywhere in the engine — one systemic gap, not six bugs; likely a major contributor to the whole roster's elevated median too)
-- [ ] Stage 3 — close gaps (item 1/5 done: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; remaining: DOT, energy-cycle gating, order-search, Coordinated ATK snapshot)
-- [ ] Stage 4 — rewrite
+- [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
+- [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
+- [ ] Stage 4 — the actual rewrite (not yet started)
 - [ ] Stage 5 — final verify + commit
 
 Work proceeds stage by stage; each stage's own sub-tasks are committed

@@ -22,6 +22,7 @@ import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createS
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 import { triggerFired, conditionHolds } from './triggerEngine.js';
 import { buildBlockWindows, activeCountAt } from './blockWindows.js';
+import { COORD_SNAPSHOT_DISCOUNT } from './coordinatedAtk.js';
 
 /**
  * @param {Object[]} ownedSteps  Same shape buildTeamSteps()/simulateTeamRotation() take.
@@ -33,6 +34,24 @@ import { buildBlockWindows, activeCountAt } from './blockWindows.js';
  * @param {Object} [opts]
  * @param {string} [opts.targetElementLower]
  * @param {string} [opts.targetRole]
+ * @param {number|null} [opts.libUptime]  PHASE3_PLAN.md Stage 3 item 3: `targetName`'s real
+ *   energy-cycle-gated Liberation uptime (0-1, from calcEnergyCycles()'s own `libUptime` field) —
+ *   only THIS member's own `damage.category`/`proc.category === 'libDmg'` hits are scaled by it, same
+ *   semantics as resolveHitComposedDps.js's own `libUptime` param (see its jsdoc for why this is a
+ *   more precise gate than calcTeamStats.js's flat libShare heuristic). Omitting this (default `null`)
+ *   does NOT gate anything.
+ * @param {boolean} [opts.coordSnapshotDiscount]  PHASE3_PLAN.md Stage 3 item 4: pass `true` when
+ *   `targetName` is an off-field Coordinated ATK character (legacy's `isOffField`, see
+ *   coordinatedAtk.js's own file header and resolveSimulatedTeamRotation.js's identical option) to
+ *   discount buffs `targetName` receives via `'next-on-field'` scope (swap-order-dependent outro
+ *   buffs) by `COORD_SNAPSHOT_DISCOUNT` (0.6) — `'whole-team'` (order-independent) buffs are left
+ *   untouched. Omitting this (default `false`) does NOT discount anything.
+ * @param {boolean} [opts.cooldownSteadyState]  Same steady-state cooldown gate as
+ *   resolveHitComposedDps.js's own `cooldownSteadyState` param (see its jsdoc for the full Stage 4
+ *   root-cause writeup) — scales a damage block whose `timing.cooldown` exceeds `targetName`'s own
+ *   on-field field duration by `min(1, fieldDuration / cooldown)`, so a long-CD nuke firing once in a
+ *   short on-field window isn't credited as if it recurs every window. Omitting this (default `false`)
+ *   does NOT scale anything.
  * @returns {{
  *   totalDamage: number,
  *   targetSegment: {start:number, end:number} | null,
@@ -41,7 +60,7 @@ import { buildBlockWindows, activeCountAt } from './blockWindows.js';
  * }}
  */
 export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName, enemyContext, baseStats, opts = {}) {
-  const { targetElementLower = null, targetRole = null } = opts;
+  const { targetElementLower = null, targetRole = null, libUptime = null, coordSnapshotDiscount = false, cooldownSteadyState = false } = opts;
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
   const { enemyDef, enemyRes } = enemyContext;
 
@@ -86,7 +105,10 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
     }
     for (const { block, windows, stackingMode, maxStacks } of windowedRelevant) {
       const cap = stackingMode === 'stacking' ? maxStacks : 1;
-      const count = activeCountAt(windows, instant, cap);
+      let count = activeCountAt(windows, instant, cap);
+      // Same 'next-on-field'-only snapshot discount as resolveSimulatedTeamRotation.js — see this
+      // function's own opts.coordSnapshotDiscount jsdoc above.
+      if (coordSnapshotDiscount && block.target?.scope === 'next-on-field') count *= COORD_SNAPSHOT_DISCOUNT;
       if (count > 0) applyEffects(block, count, stats);
     }
     return stats;
@@ -121,8 +143,13 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       }
       const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
 
+      const libGate = (libUptime != null && category === 'libDmg') ? libUptime : 1;
+      const fieldDuration = targetSegment.end - targetSegment.start;
+      const cooldownGate = (cooldownSteadyState && db.timing?.cooldown && fieldDuration > 0)
+        ? Math.min(1, fieldDuration / db.timing.cooldown) : 1;
+
       for (const hit of hits) {
-        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult;
+        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate;
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
       }

@@ -37,6 +37,7 @@ import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.
 import { triggerFired, conditionHolds } from './triggerEngine.js';
 import { buildBlockWindows, timeWeightedAverageConcurrency } from './blockWindows.js';
 import { sequenceAllows } from './sequenceGating.js';
+import { COORD_SNAPSHOT_DISCOUNT } from './coordinatedAtk.js';
 
 /**
  * @param {Object[]} ownedSteps  Same shape buildTeamSteps()/simulateTeamRotation() take — each step
@@ -51,6 +52,16 @@ import { sequenceAllows } from './sequenceGating.js';
  *   missing from this map is NOT gated (every one of their blocks fires) — same no-gating-by-default
  *   backward compatibility as resolveHitComposedDps's own `sequence` param; omit the whole option to
  *   keep every existing caller's behavior unchanged.
+ * @param {boolean} [opts.coordSnapshotDiscount]  PHASE3_PLAN.md Stage 3 item 4: pass `true` when
+ *   `targetName` is an off-field Coordinated ATK character (legacy's own `isOffField` condition,
+ *   calcTeamStats.js:1029: `dmgFocus.includes('Coordinated ATK') && dmgFocus.length <= 2`) to apply
+ *   the same flat `COORD_SNAPSHOT_DISCOUNT` (0.6, see coordinatedAtk.js) legacy applies to buffs
+ *   targeted 'next' — an off-field character doesn't actually receive a support's outro buff if that
+ *   support swaps in AFTER them. Only `'next-on-field'`-scoped blocks are discounted; `'whole-team'`
+ *   (continuous, swap-order-independent buffs like libBuffs) are left untouched, matching legacy's own
+ *   distinction (calcTeamStats.js:1044-1052 discounts outro/Sonata-next buffs; :1081-1089's libBuffs
+ *   loop has no discount at all). Omitting this (default `false`/falsy) does NOT discount anything —
+ *   every existing caller's behavior stays byte-identical to before this option existed.
  * @returns {{
  *   stats: Object,
  *   totalMultBonus: number,
@@ -60,7 +71,7 @@ import { sequenceAllows } from './sequenceGating.js';
  * }}
  */
 export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetName, opts = {}) {
-  const { targetElementLower = null, targetRole = null, sequenceByOwner = null } = opts;
+  const { targetElementLower = null, targetRole = null, sequenceByOwner = null, coordSnapshotDiscount = false } = opts;
   const results = simulateTeamRotation(ownedSteps, blocksByOwner);
   const order = [...new Set(ownedSteps.map(s => s.owner))];
 
@@ -127,7 +138,11 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
     // targetName), and for whole-team/next-on-field it's the RECIPIENT's segment, exactly matching
     // calcTeamStats.js's overlapUptimeForSeg semantics (uptime relative to the recipient's own
     // on-field window, not the buff owner's).
-    const avgMultiplier = timeWeightedAverageConcurrency(windows, targetSegment, stackingMode === 'stacking' ? maxStacks : 1);
+    let avgMultiplier = timeWeightedAverageConcurrency(windows, targetSegment, stackingMode === 'stacking' ? maxStacks : 1);
+    // Only 'next-on-field' (legacy's swap-order-dependent outro/Sonata-next buffs) gets the snapshot
+    // discount — 'whole-team' (continuous, order-independent buffs like libBuffs) never does, matching
+    // legacy's own distinction exactly (see this option's own jsdoc above).
+    if (coordSnapshotDiscount && scope === 'next-on-field') avgMultiplier *= COORD_SNAPSHOT_DISCOUNT;
     activity[`${block.id}=>${targetName}`] = { windows, avgMultiplier };
     applyEffects(block, avgMultiplier, stats, (v) => { totalMultBonus += v; });
   }

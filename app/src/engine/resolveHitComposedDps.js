@@ -68,6 +68,32 @@ import { gateBlocksBySequence } from './sequenceGating.js';
  *   behavior stays byte-identical to before this param existed (Stage 2 found this gap: chain blocks
  *   were firing unconditionally as if every character were fully R6-awakened). Pass an explicit 0-6
  *   to actually gate, matching calcTeamStats.js's own applyResonanceChain() semantics.
+ * @param {number|null} [libUptime]  PHASE3_PLAN.md Stage 3 item 3: the character's real
+ *   energy-cycle-gated Liberation uptime (0-1, from calcEnergyCycles()'s own `libUptime` field —
+ *   1.0 once real ER investment clears the role's threshold, discounted down to a 0.6 floor
+ *   otherwise). Only hits whose `damage.category`/`proc.category` is `'libDmg'` (i.e. actually
+ *   Liberation-sourced, per each block's own category tag) get scaled by this — everything else is
+ *   untouched. This is a MORE PRECISE gate than calcTeamStats.js's own `mult * (1 -
+ *   libShare*(1-libUptime))` (calcTeamStats.js:973-978): legacy has no per-source damage split, so it
+ *   approximates "the Liberation portion" as a flat 20%/35% share of the character's WHOLE totalMult;
+ *   the engine already tracks each hit's real category, so it can discount exactly the
+ *   Liberation-sourced hits instead of guessing a share of everything — same documented-improvement
+ *   treatment Stage 3 item 1 already established for Resonance Chain's `target.scope` precision.
+ *   Omitting this (default `null`) does NOT gate anything — every existing caller's behavior stays
+ *   byte-identical to before this param existed.
+ * @param {boolean} [cooldownSteadyState]  Root-caused during Stage 4 planning as the dominant
+ *   still-unexplained factor behind the Stage 1 harness's roster-wide ~2x median ratio (see
+ *   PHASE3_PLAN.md's Stage 4 kickoff section for the full investigation): `deriveStepsFromRotation`
+ *   builds ONE non-repeating pass through a character's `CHARACTER_ROTATIONS`, and this function's
+ *   `totalDamage / totalTime` implicitly assumes every hit in that pass repeats every `totalTime`
+ *   seconds forever — true only for a hit whose own `timing.cooldown` is <= `totalTime`. A long-CD hit
+ *   (Liberation nukes are typically 20-25s CD, routinely longer than a short combo's own ~9-20s pass
+ *   length) gets counted at the pass's own cadence instead of its own real cooldown, over-crediting it
+ *   by up to `cooldown/totalTime`. When `true`, every damage block with a `timing.cooldown` set has
+ *   its damage scaled by `min(1, totalTime / cooldown)` — the steady-state fraction of "once per
+ *   cooldown" actually sustainable within this pass's own length, not the pass's own (shorter,
+ *   artificially inflating) firing cadence. Omitting this (default `false`) does NOT scale anything —
+ *   every existing caller's behavior stays byte-identical to before this param existed.
  * @returns {{
  *   totalDamage: number,
  *   totalTime: number,
@@ -75,7 +101,7 @@ import { gateBlocksBySequence } from './sequenceGating.js';
  *   hitLog: {time: number, blockId: string, atkPct: number, damage: number, category: string}[],
  * }}
  */
-export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null, externalStats = null, sequence = null) {
+export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null, externalStats = null, sequence = null, libUptime = null, cooldownSteadyState = false) {
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
   blocks = gateBlocksBySequence(blocks, sequence);
   const results = simulateRotation(blocks, steps);
@@ -151,8 +177,17 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
       // hit correctly gets none of `atkPct`'s contribution rather than the wrong full credit).
       const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
 
+      // Only Liberation-sourced hits (category === 'libDmg') are subject to the energy-cycle gate —
+      // everything else ignores libUptime entirely, whether it's null or a real 0-1 value.
+      const libGate = (libUptime != null && category === 'libDmg') ? libUptime : 1;
+      // Steady-state cooldown gate — see this function's own jsdoc for cooldownSteadyState. Only
+      // engages when the pass's own totalTime is SHORTER than the block's real cooldown (a block
+      // whose cooldown already fits inside one pass is unaffected — cooldownGate stays 1).
+      const cooldownGate = (cooldownSteadyState && db.timing?.cooldown && totalTime > 0)
+        ? Math.min(1, totalTime / db.timing.cooldown) : 1;
+
       for (const hit of hits) {
-        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult;
+        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate;
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
       }
