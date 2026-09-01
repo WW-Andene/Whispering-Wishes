@@ -4064,7 +4064,16 @@ const SKILL_MULTIPLIERS = {
   // the MediaWiki API). No Basic ATK/Heavy ATK/Mid-air/Dodge Counter rows exist in her Forte Details
   // table at all (unlike Yuanwu/Mortefi) — her 4-part Basic Attack combo and Heavy ATK: Frostfall have no
   // published DMG% scaling on fandom or Prydwen, so none are invented here.
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Youhu/Combat, cross-checked against
+  // ww.nanoka.cc/character/1106 (both agree exactly). Fixed a real zero-damage rotation bug:
+  // CHARACTER_ROTATIONS.Youhu's 'Basic ATK'/'Frosty Punches' step had no matching row at all — her entire
+  // Basic ATK combo was missing from this table. Added that plus the other missing moves (Heavy Attack:
+  // Frostfall, Mid-air Attack, Dodge Counter).
   'Youhu': [
+    ['Basic ATK', 'Frosty Punches Stage 1-4', '47.38% → 31.91%+59.26% → 38.06%+46.52% → 116.35%'],
+    ['Heavy ATK', 'Frostfall', '14.45%×6', 'At full Frost, dashes forward and performs a Lucky Draw.'],
+    ['Mid-air', 'Attack', '123.27%'],
+    ['Dodge Counter', 'Standard', '28.89%×6', 'Only available while holding no Antique; performs a Lucky Draw.'],
     ['Skill', 'Scroll Divination', '156.46%', 'Glacio DMG hit + heal to all nearby party members + performs Lucky Draw once (grants a random Antique).'],
     ['Skill', 'Chime (Antique Appraisal)', '41.05% + 49.85%×3 + 102.62%', 'Antique Appraisal variant. Effectively reduces enemy Vibration Strength.'],
     ['Skill', 'Ruyi (Antique Appraisal)', '137.00% + 167.45%', 'Antique Appraisal variant with the highest DMG Multiplier of the four.'],
@@ -5789,11 +5798,22 @@ const RESONANCE_CHAIN_DATA = {
   // kept as small totalMult). S2 Sunroom Siesta — Antithesis/Triplet/Perfect Rhyme DMG bonus on Poetic
   // Essence doubled (self DMG, low priority for a healer/support, kept as small totalMult). S3 Restless
   // Sleep — ATK+20% (confirmed exact -> atkPct). S4 Frosted Lullaby — 20% chance Scroll Divination skips
-  // Cooldown (utility, no DMG stat, kept as small totalMult). S5 Dreamland Meander — Crit Rate+15% for
+  // Cooldown (utility, no DMG stat). S5 Dreamland Meander — Crit Rate+15% for
   // 14s after Intro Skill (confirmed exact -> critRate). S6 Slumber Evermore — Sky Blue stacks (max 4,
   // 7s) each granting Crit DMG+15%, so max 60% Crit DMG (confirmed exact at max stacks -> critDmg,
   // matching this table's convention of using max-stack totals, e.g. Chixia S5/Mortefi S1).
-  'Youhu':        { s1: { totalMult: 3 }, s2: { totalMult: 5 }, s3: { atkPct: 20 }, s4: { totalMult: 3 }, s5: { critRate: 15 }, s6: { critDmg: 60 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Youhu/Combat, cross-checked against
+  // ww.nanoka.cc/character/1106 (both agree exactly). S1 (totalMult: 3) was undocumented — real effect is
+  // a 10% chance of 5s damage/interruption immunity on Lucky Draw, pure defensive utility, zero DPS
+  // component. Zeroed to {}. S2 (totalMult: 5) was undocumented — real effect is "the DMG bonus of
+  // Antithesis/Triplet/Perfect Rhyme on Poetic Essence is doubled" (a multiplier-of-a-multiplier on
+  // conditional Auspice-combo bonuses, e.g. Antithesis's own +70% becomes +140%), with no flat value
+  // stated directly in the node text and no buff-of-a-buff category in this schema. Zeroed to {}. S4
+  // (totalMult: 3) was undocumented — real effect is a 20% chance for Scroll Divination to skip its
+  // cooldown, a proc-based effective-cooldown-reduction with no flat DMG% equivalent. Zeroed to {}.
+  // TODO: needs Phase 2 schema for S1's defensive proc, S2's buff-of-a-buff, and S4's proc-based cooldown
+  // reduction.
+  'Youhu':        { s1: {}, s2: {}, s3: { atkPct: 20 }, s4: {}, s5: { critRate: 15 }, s6: { critDmg: 60 } },
   // Danjin re-verified 2026-08-18 against fandom's Chain Node pages (Crimson Heart of Justice/Dusted
   // Mirror/Fleeting Blossom/Solitary Carnation/Reigning Blade/Bloodied Jade wikitext, cross-checked with
   // Prydwen's Kit tab Resonance Chain text — identical wording): S1 ATK+5% per stack on Incinerating Will
