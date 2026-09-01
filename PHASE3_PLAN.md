@@ -407,7 +407,9 @@ so every consumer (`DamageCalculator.jsx`, `TeamsTab`, `DPSComparisonCard`,
 
 ## Stage 5 — Final verification and commit
 
-Re-run the full harness plus the existing 996-test suite, confirm no
+Re-run the full harness plus the existing full test suite (1065 tests as of
+Stage 3 item 1; check the current count when this stage actually runs, it
+will have grown), confirm no
 consumer component broke (manual check of the Damage Calculator UI), then
 commit. This is the only stage that touches the live file — everything
 before it is additive (new tests, new engine code) and safe to land
