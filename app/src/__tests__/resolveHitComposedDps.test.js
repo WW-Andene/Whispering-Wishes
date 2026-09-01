@@ -9,6 +9,7 @@ import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
+import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blocks.js';
 import { parseSkillMultiplierHits, sumHitsAtkPct } from '../engine/skillMultiplierParser.js';
 
 // Zero DEF/RES so defMult/resMult both come out to exactly 1 — isolates the test to just the
@@ -133,5 +134,40 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     // Judgement Strike (on-hit-triggered, off-field) correctly does NOT fire from a plain step
     // walkthrough — nothing in a simple rotation sequence represents "the target took damage".
     expect(firedBlockIds.has('yinlin.coordatk.judgement-strike')).toBe(false);
+  });
+});
+
+describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS data (Rover: Electro)', () => {
+  it('computes a real total across his whole rotation, with every real damage block firing exactly once', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Rover: Electro'], ROVER_ELECTRO_BLOCKS);
+    const { totalDamage, dps, hitLog } = resolveHitComposedDps(ROVER_ELECTRO_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'electro', 'Sub DPS');
+
+    expect(totalDamage).toBeGreaterThan(0);
+    expect(dps).toBeGreaterThan(0);
+
+    // Real gap fixed this pass: Deterrence 1-4 (the very FIRST damage step in his rotation) had no
+    // block at all before today — confirm it now fires.
+    const deterrenceHits = hitLog.filter(h => h.blockId === 'rover-electro.basic.deterrence');
+    expect(deterrenceHits).toHaveLength(12); // 1 + 2 + 7 + 2, per the row's own stage breakdown
+
+    const firedBlockIds = new Set(hitLog.map(h => h.blockId));
+    expect(firedBlockIds.has('rover-electro.intro.thunderous-fury')).toBe(true); // swap-in
+    expect(firedBlockIds.has('rover-electro.basic.deterrence')).toBe(true);
+    expect(firedBlockIds.has('rover-electro.skill.thunderclap')).toBe(true);
+    expect(firedBlockIds.has('rover-electro.basic.repel')).toBe(true);
+    expect(firedBlockIds.has('rover-electro.liberation.ultimate-tactics')).toBe(true);
+    // Overshock (resource-threshold, resourceStepOn'd to the real Forte:Overshock step) fires too,
+    // same fix as Yinlin's Chameleon Cipher.
+    expect(firedBlockIds.has('rover-electro.forte.overshock')).toBe(true);
+  });
+
+  it("Thunderclap's real 100.20%×2 hits are independently hand-verifiable against a neutral enemy", () => {
+    const thunderclapBlock = ROVER_ELECTRO_BLOCKS.find(b => b.id === 'rover-electro.skill.thunderclap');
+    const steps = [{ type: 'Skill', skill: 'Thunderclap', stepSeconds: 1 }];
+    const { hitLog, totalDamage } = resolveHitComposedDps([thunderclapBlock], steps, NEUTRAL_ENEMY, 1000);
+    expect(hitLog).toHaveLength(2);
+    expect(hitLog.every(h => h.atkPct === 100.20)).toBe(true);
+    const avgCrit = 1 + (5 / 100) * (150 / 100 - 1);
+    expect(totalDamage).toBeCloseTo(1000 * (100.20 / 100) * 2 * avgCrit, 6);
   });
 });

@@ -833,16 +833,40 @@ Cipher (2-hit, 178.93%×2) now correctly appears in a real rotation's hit
 log, where it previously silently never fired. A future real gauge
 simulator, if ever built, supersedes this rather than conflicting with it.
 
+**Rover: Electro's `damage.hits` — DONE 2026-09-01 (same day).** Populated
+every existing damage block, and found a real gap while doing it: his
+4-stage Basic ATK combo (`Deterrence 1-4` — the very FIRST real damage step
+in `CHARACTER_ROTATIONS['Rover: Electro']`) had NO block at all before this
+— only its auto-chained follow-up (`Repel`) was ever modeled. Added
+`rover-electro.basic.deterrence`, same "fill the gap found during
+migration" precedent as Yinlin's Lightning Execution split. Verified with
+2 new tests (hand-computed Thunderclap reference number, real end-to-end
+rotation run confirming every block — including the newly-added Deterrence
+block and the resource-threshold-gated Overshock — fires exactly once).
+
+**Bigger finding, worth flagging explicitly**: Shorekeeper, Augusta,
+Jinhsi, and Camellya have **NO damage blocks at all** — their conversions
+only ever modeled buffs/Resonance Chain/utility, never their actual
+skill-cast damage. "Extending `damage.hits` to the other 5 converted
+characters" was written assuming a data-population task (like Yinlin/
+Rover: Electro); for these four it's actually closer to a FRESH
+damage-block conversion pass each (trigger wiring + SKILL_MULTIPLIERS
+parsing + gap-checking against CHARACTER_ROTATIONS, the same amount of
+work Yinlin/Rover: Electro's original damage-block sections took) — not
+attempted in this pass, flagged here rather than started blind or silently
+folded into a smaller-sounding checklist item.
+
 **Still not done, deliberately** (next increments, in roughly the order
-they build on each other): (1) extending the per-hit `damage.hits` data to
-the other 5 converted characters, (2) team-level integration (cross-
-character buffs landing on specific hits mid-combo, reusing
-`resolveSimulatedTeamRotation.js`'s routing logic generalized to
-`activeCountAt` the same way Stage 1 generalized the single-character
-driver), (3) the actual `calcTeamStats.js` gating/wiring decision — still
-requires its own separate go-ahead, per the "never all-or-nothing" rule,
-and is not any closer to being decided than before this stage — none of
-this proves anything beyond the ARCHITECTURE being sound.
+they build on each other): (1) damage blocks for Shorekeeper/Augusta/
+Jinhsi/Camellya (see finding above — a real conversion pass each, not a
+quick add), (2) team-level integration (cross-character buffs landing on
+specific hits mid-combo, reusing `resolveSimulatedTeamRotation.js`'s
+routing logic generalized to `activeCountAt` the same way Stage 1
+generalized the single-character driver), (3) the actual `calcTeamStats.js`
+gating/wiring decision — still requires its own separate go-ahead, per the
+"never all-or-nothing" rule, and is not any closer to being decided than
+before this stage — none of this proves anything beyond the ARCHITECTURE
+being sound.
 
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
