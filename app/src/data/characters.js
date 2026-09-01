@@ -2945,16 +2945,42 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Skybound Feather', '116.59%', 'Opener that applies Havoc Bane.'],
     ['Outro', 'As the Wind Wills', '300% ATK + team Havoc DMG buff', "Buffs other Havoc Bane appliers' DMG."],
   ],
+  // Full audit 2026-09-01: wutheringwaves.fandom.com/wiki/Hiyuki/Combat's Attribute Scaling collapsibles
+  // render the wrong content for this character (a template/Lua bug — the section wraps a Skill Upgrade
+  // materials-cost table instead of the real damage tables, similar to the documented Jinhsi issue), so
+  // its numbers were unusable, but ww.nanoka.cc/character/1108's full Lv.10 table supplied every value
+  // below, and fandom's separately-rendered Resonance Chain section (unaffected by the bug) matched
+  // nanoka's node text verbatim, cross-confirming the mechanics. Two serious bug classes fixed:
+  // (1) Most of her Forte/Liberation/Intro moves were stored as placeholder description text instead of
+  // real per-hit percentages (e.g. "3× arrow volley, considered Liberation DMG" instead of an actual
+  // number) — the calc engine can't extract a DMG value from prose, so these were effectively dealing 0.
+  // (2) Type miscategorization: her entire Foreclaimed Self move set (Basic ATK, Heavy ATK, Mid-air,
+  // Dodge Counter, Iai, Frostedge, Frost Splinter) is explicitly "considered Resonance Liberation DMG" in
+  // its own move text despite being cast from Basic/Heavy/Intro slots — retyped to 'Liberation' throughout
+  // (matching this file's established convention, e.g. Lupa's Wolf's Claw, Galbrena's Ascent of Malice).
+  // Also fixes a real zero-damage rotation bug: CHARACTER_ROTATIONS.Hiyuki's 'Foreclaimed Self Stage 1-3'
+  // and 'Iai Stance ×3' steps had no matching row at all (the old row was named 'Stage 1-5', a different
+  // substring; Iai wasn't in this table at all).
   'Hiyuki': [
-    ['Basic ATK', 'Present Self Stage 1-3', '37.72%×2 → 90.25% → 4.92%×5+98.37%', 'Standard combo; applies Glacio Chafe.'],
-    ['Basic ATK', 'Foreclaimed Self Stage 1-5', '49.27% → 40.02%×2 → 25.16%×4+67.08% → 29.93%×5 → 12.17%+109.47%', 'Empowered combo used after her Ultimate.'],
-    ['Heavy ATK', 'Frost Splinter: Present Self', '3× arrow volley, considered Liberation DMG', 'Builds toward her Ultimate; fires 3 arrows.'],
-    ['Heavy ATK', 'Bitterfrost: Foreclaimed Self', 'Consumes 3 Whiteout Bitterfrost, considered Liberation DMG', 'Forte finisher that fuels her 2nd Ultimate.'],
-    ['Liberation', 'Foreclaiming: Inward Vision', 'Enters Foreclaimed Self, 4 stacks Glacio Chafe on hit', 'Ultimate: enters her empowered stance.'],
-    ['Liberation', 'Foreclaiming: Blade Liberation', 'Scales with Snowforged Blade consumed', '2nd Ultimate finisher, stronger with more Blade stacks.'],
-    ['Forte', 'Glacio Bite', 'Converts team Glacio Chafe into Glacio Bite procs', 'Turns ally Glacio Chafe into bonus DMG procs.'],
-    ['Intro', 'Frostedge', 'Considered Liberation DMG, 1 stack Glacio Chafe on hit', 'Opener hit that applies Glacio Chafe.'],
-    ['Outro', 'Snowlight Blessing', 'Team Glacio DMG +20% vs Chafe-affected targets (20s)', 'Buffs team Glacio DMG on Chafe-affected enemies.'],
+    ['Basic ATK', 'Present Self Stage 1-3', '37.72%×2 → 90.25% → 4.92%×5+98.37%', 'Standard combo; Stage 3 applies Glacio Chafe. Not reclassified — plain Basic ATK DMG.'],
+    ['Basic ATK', 'Mid-air Attack - Present Self', '128.18%'],
+    ['Basic ATK', 'Dodge Counter - Present Self', '173.75%'],
+    ['Liberation', 'Frost Splinter: Present Self', '79.31%×2+158.61%', '3-arrow volley once Dedication caps; interruption-immune throughout, applies Glacio Chafe on the last hit; considered Resonance Liberation DMG despite the Heavy ATK input.'],
+    ['Skill', 'Resonance Skill - Present Self', '24.50%×4+97.98%', 'Enhances the next Basic Attack Stage 3 to restore extra Dedication.'],
+    ['Liberation', 'Foreclaiming: Inward Vision', '397.62%', 'Ultimate: enters Foreclaimed Self, applies 4 stacks of Glacio Chafe on hit, grants 3 Frostharden Iai.'],
+    ['Liberation', 'Foreclaimed Self Stage 1-3', '49.27% → 40.02%×2 → 25.16%×4+67.08%', 'Basic ATK replacement in Foreclaimed Self; Stage 3 applies Glacio Chafe. Considered Resonance Liberation DMG.'],
+    ['Liberation', 'Foreclaimed Self Stage 4-5', '29.93%×5 → 12.17%+109.47%', 'Continuation of the Foreclaimed Self Basic ATK combo. Considered Resonance Liberation DMG.'],
+    ['Liberation', 'Heavy Attack - Foreclaimed Self', '107.16%', 'Standard (non-Bitterfrost) Heavy ATK in Foreclaimed Self; considered Resonance Liberation DMG.'],
+    ['Liberation', 'Mid-air Attack - Foreclaimed Self Stage 1-2', '28.83%×2+38.43% → 26.09%×4', 'Considered Resonance Liberation DMG; Stage 2 & 3 apply Glacio Chafe.'],
+    ['Liberation', 'Mid-air Plunging Attack - Foreclaimed Self', '111.60%', 'Considered Resonance Liberation DMG.'],
+    ['Liberation', 'Dodge Counter - Foreclaimed Self', '81.77%×2', 'Considered Resonance Liberation DMG.'],
+    ['Skill', 'Frostblight: Jade Cleave', '66.01%×4', 'Ground Resonance Skill replacement in Foreclaimed Self; pulls in targets, restores Frostheart, removes Frostbind.'],
+    ['Skill', 'Frostblight: Petalfall', '64.02%×4+64.02%', 'Mid-air Resonance Skill replacement in Foreclaimed Self; shares a cooldown with Jade Cleave.'],
+    ['Liberation', 'Iai', '283.82%+47.31%×4', 'Cast in Iai Stance (100+ Frostheart) at up to 3 uses per entry; each cast consumes 1 Frostharden Iai for 3 Glacio Chafe stacks and grants 1 Whiteout Bitterfrost. Considered Resonance Liberation DMG.'],
+    ['Liberation', 'Bitterfrost: Foreclaimed Self', '15.41%×8+493.05%', 'Forte finisher once Whiteout Bitterfrost is full; consumes it for 1 Snowforged Blade. Considered Resonance Liberation DMG despite the Heavy ATK input.'],
+    ['Liberation', 'Foreclaiming: Blade Liberation', '198.81%+795.24%', '2nd Ultimate; base value shown, +795.24% additional per Snowforged Blade stack consumed (up to 3 stacks, +2385.72% max) — ends Foreclaimed Self.'],
+    ['Liberation', 'Frostedge', '156.15%', 'Opener hit that applies Glacio Chafe; considered Resonance Liberation DMG despite the Intro Skill input.'],
+    ['Outro', 'Snowlight Blessing', 'Team Glacio DMG +20% vs Chafe-affected targets (20s)', 'Buffs team Glacio DMG on Chafe-affected enemies (excludes Hiyuki herself).'],
   ],
   'Lucy': [
     ['Basic ATK', 'Locked Thread Stage 1-4', '12.15%×6+48.59% → 20.66%+20.05%×2 → 36.06%×2+48.08% → 31.02%+15.51%×3+38.77%×2', 'Standard combo; hold for extended attacks.'],
@@ -4369,17 +4395,23 @@ const CHARACTER_ROTATIONS = {
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Hiyuki (2026-08-18,
   // Chrome UA + google.com referer + jsRender).
+  // Step types corrected 2026-09-01 to match SKILL_MULTIPLIERS.Hiyuki's rebuilt rows above: Frostedge,
+  // Frost Splinter: Present Self, the Foreclaimed Self Basic/Heavy ATK combo, and Iai are all "considered
+  // Resonance Liberation DMG" per their own move text despite being cast from Intro/Basic/Heavy slots —
+  // moved off 'Intro'/'Basic ATK'/'Heavy ATK' to 'Liberation'. Under the old types+names these steps had
+  // nothing to match (the row itself didn't even hold a real number in most cases) and were silently
+  // resolving to 0 DMG.
   'Hiyuki': [
-    { type: 'Intro', skill: 'Frostedge', note: 'Swap into her — fires automatically, restores 200 of 300 Dedication and applies 1 stack of Glacio Chafe.' },
-    { type: 'Basic ATK', skill: 'Present Self Stage 3', note: 'Tap Basic Attack ONCE — since Intro left her primed, this lands Stage 3 directly, restoring the last 100 Dedication (now 300/300) and applying another Glacio Chafe stack.' },
-    { type: 'Heavy ATK', skill: 'Frost Splinter: Present Self', note: 'Once Dedication is capped, HOLD Basic Attack (her Heavy Attack is replaced automatically) — fires 3 arrows in a row, interruption-immune throughout, applying Glacio Chafe on the last hit. Cancel its ending as soon as possible by pressing Liberation.' },
+    { type: 'Liberation', skill: 'Frostedge', note: 'Swap into her — fires automatically, restores 200 of 300 Dedication and applies 1 stack of Glacio Chafe.' },
+    { type: 'Basic ATK', skill: 'Present Self Stage 1-3', note: 'Tap Basic Attack ONCE — since Intro left her primed, this lands Stage 3 directly, restoring the last 100 Dedication (now 300/300) and applying another Glacio Chafe stack.' },
+    { type: 'Liberation', skill: 'Frost Splinter: Present Self', note: 'Once Dedication is capped, HOLD Basic Attack (her Heavy Attack is replaced automatically) — fires 3 arrows in a row, interruption-immune throughout, applying Glacio Chafe on the last hit. Cancel its ending as soon as possible by pressing Liberation.' },
     { type: 'Liberation', skill: 'Foreclaiming: Inward Vision', note: 'Press Liberation right after the arrows — no Energy cost, deals a hit applying 4 stacks of Glacio Chafe, grants 3 Frostharden Iai, consumes all 300 Dedication and Frostheart, and enters Foreclaimed Self while restoring 50 Frostheart.' },
-    { type: 'Basic ATK', skill: 'Foreclaimed Self Stage 1-3', note: 'Tap Basic Attack 3 times — her Basic Attack is auto-replaced by this stronger combo (counted as Liberation DMG), building Frostheart; Stage 3 applies Glacio Chafe. Cancel Stage 3\'s endlag by immediately pressing Skill.' },
+    { type: 'Liberation', skill: 'Foreclaimed Self Stage 1-3', note: 'Tap Basic Attack 3 times — her Basic Attack is auto-replaced by this stronger combo (counted as Resonance Liberation DMG), building Frostheart; Stage 3 applies Glacio Chafe. Cancel Stage 3\'s endlag by immediately pressing Skill.' },
     { type: 'Skill', skill: 'Frostblight: Jade Cleave', note: 'Press Skill — pulls in targets and restores more Frostheart.' },
     { type: 'Skill', skill: 'Frostblight: Petalfall', note: 'Press Skill again (mid-air variant, shares a cooldown with Jade Cleave but is a separate follow-up here) — restores more Frostheart.' },
-    { type: 'Basic ATK', skill: 'Foreclaimed Self Stage 1-3', note: 'Tap Basic Attack 3 more times — Stage 3 again applies Glacio Chafe. Cancel its endlag by pressing Dodge.' },
-    { type: 'Basic ATK', skill: 'Iai Stance ×3', note: 'Once Frostheart hits 100+, press Dodge to flash back and enter Iai Stance, then tap Basic Attack up to 3 times in a row (each cast costs 100 Frostheart, counted as Liberation DMG) — each cast consumes 1 Frostharden Iai stack for 3 more Glacio Chafe stacks and grants 1 Whiteout Bitterfrost, capping at 3.' },
-    { type: 'Heavy ATK', skill: 'Bitterfrost: Foreclaimed Self', note: 'Once Whiteout Bitterfrost hits 3/3, HOLD Basic Attack (Heavy Attack replaced automatically) — consumes STA and all 3 Whiteout Bitterfrost for a hit that applies Glacio Chafe and grants 1 Snowforged Blade.' },
+    { type: 'Liberation', skill: 'Foreclaimed Self Stage 1-3', note: 'Tap Basic Attack 3 more times — Stage 3 again applies Glacio Chafe. Cancel its endlag by pressing Dodge.' },
+    { type: 'Liberation', skill: 'Iai', note: 'Once Frostheart hits 100+, press Dodge to flash back and enter Iai Stance, then tap Basic Attack up to 3 times in a row (each cast costs 100 Frostheart, counted as Resonance Liberation DMG) — each cast consumes 1 Frostharden Iai stack for 3 more Glacio Chafe stacks and grants 1 Whiteout Bitterfrost, capping at 3.' },
+    { type: 'Liberation', skill: 'Bitterfrost: Foreclaimed Self', note: 'Once Whiteout Bitterfrost hits 3/3, HOLD Basic Attack (Heavy Attack replaced automatically) — consumes STA and all 3 Whiteout Bitterfrost for a hit that applies Glacio Chafe and grants 1 Snowforged Blade.' },
     { type: 'Liberation', skill: 'Foreclaiming: Blade Liberation', note: 'HOLD Liberation to charge (consuming Snowforged Blade stacks for extra DMG Multiplier) then release — consumes all remaining Dedication/Frostheart and ends Foreclaimed Self.' },
     { type: 'Echo', skill: 'Use Echo', note: 'Summon your equipped Echo (Reminiscence: Threnodian) at any point in the rotation.' },
     { type: 'Outro', skill: 'Snowlight Blessing', duration: 20, note: 'Swap out to trigger this automatically. For 20s, nearby teammates other than Hiyuki deal +20% Glacio DMG Amp against targets affected by Glacio Chafe.' },
@@ -4961,8 +4993,34 @@ const RESONANCE_CHAIN_DATA = {
   // Yangyang: Xuanling S2: Heavy/Mid-air/Havoc-in-Bloom DMG+100% (confirmed exact). S3: Hush of a Thousand Voices
   // Liberation DMG+175% (confirmed exact via Nanoka/Prydwen 2026-08-16 cross-check; was 80, didn't match comment or kit)
   'Yangyang: Xuanling': { s1: { totalMult: 10 }, s2: { heavyDmg: 100 }, s3: { libDmg: 175 }, s4: { atkPct: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
-  // Hiyuki S1/S2: Foreclaimed/Iai skills are "considered Resonance Liberation DMG" per kit. S3: Heavy ATK mult+160% (confirmed), Glacio Bite scaling at 2 stacks (scaled down)
-  'Hiyuki':       { s1: { libDmg: 80 }, s2: { libDmg: 60 }, s3: { heavyDmg: 100 }, s4: { atkPct: 15 }, s5: { skillDmg: 60 }, s6: { critDmg: 100 } },
+  // Hiyuki S1/S2: Foreclaimed/Iai skills are "considered Resonance Liberation DMG" per kit.
+  // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Hiyuki/Combat — its Attribute Scaling
+  // collapsibles render the wrong content for this character (a template/Lua bug specific to this page,
+  // similar to the documented Jinhsi issue: the section wraps a Skill Upgrade materials-cost table
+  // instead of the actual damage tables), so its per-hit numbers couldn't be used, but the Resonance
+  // Chain node text rendered correctly and matches ww.nanoka.cc/character/1108 verbatim, which supplied
+  // the numbers below. Found the category+value correct on nothing pre-existing except S1's category:
+  // S1: was libDmg: 80 (category already correct — Foreclaimed Self core moves are "considered Resonance
+  // Liberation DMG" — but value was wrong). Real is +120%. Corrected 80 -> 120.
+  // S2: was libDmg: 60 (category correct — Basic Attack - Iai is also "considered Resonance Liberation
+  // DMG" — but value was wrong). Real is +125%. Corrected 60 -> 125.
+  // S3: was heavyDmg: 100 (wrong category AND value) — Frost Splinter: Present Self and Bitterfrost:
+  // Foreclaimed Self are each explicitly "considered Resonance Liberation DMG" despite being cast from
+  // the Heavy Attack slot (same reclassification class as Lupa's Wolf's Claw / Galbrena's Ascent of
+  // Malice, both fixed earlier this pass). Real is +160%. Corrected heavyDmg -> libDmg, 100 -> 160.
+  // S4: was atkPct: 15 (wrong stat entirely) — real effect is "+20% DMG dealt by all nearby team
+  // Resonators for 30s" on Present Self/Jade Cleave/Petalfall cast, an allDmg buff, not an ATK% buff (the
+  // node's self-heal 18% Max HP on the same trigger isn't a DPS stat, not represented). Corrected
+  // atkPct -> allDmg, 15 -> 20.
+  // S5: was skillDmg: 60 (category already correct — Present Self/Jade Cleave/Petalfall are plain
+  // Resonance Skill DMG, no "considered" reclassification — but value was wrong). Real is +80%. Corrected
+  // 60 -> 80.
+  // S6: was critDmg: 100 (value wrong) — real primary effect is Foreclaiming: Inward Vision/Blade
+  // Liberation Crit DMG +500%. Corrected 100 -> 500. TODO: needs Phase 2 schema — the node also grants a
+  // further conditional +40% Crit DMG at 2 Snow Rust stacks and +25% Glacio Bite DMG taken at 3 stacks,
+  // neither represented (stacking on top of an already-conditional Inherent Skill mechanic with no clean
+  // single-node home in this schema).
+  'Hiyuki':       { s1: { libDmg: 120 }, s2: { libDmg: 125 }, s3: { libDmg: 160 }, s4: { allDmg: 20 }, s5: { skillDmg: 80 }, s6: { critDmg: 500 } },
   // Lucy S2 (confirmed via Nanoka/Prydwen 2026-08-16 cross-check, was an unverified heavyDmg:60 previously): raises
   // Heavy Attack - Multi-threading's SQL DMG Mult from 270% to 560% (conditional, only on SQL-consuming casts), grants
   // +32 starting RAM (from 24), and adds a separate flat extra hit worth 450% ATK as Heavy DMG after Pulse Interference.
