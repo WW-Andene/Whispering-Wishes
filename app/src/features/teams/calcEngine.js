@@ -1133,10 +1133,26 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     });
   }
   // Element
+  // Fixed 2026-09-01 (found via a character-recommendation audit — a same-element Sub DPS with no
+  // real kit synergy, e.g. Rebecca, was outranking Augusta's actual curated partners like Mortefi/
+  // Iuno/Shorekeeper/Verina, none of whom share her element): Resonance (+12) and Mono (+8) fired
+  // TOGETHER whenever every member present shared an element, stacking to +20 — correct for a
+  // genuine, COMPLETE 3-member mono team, but this same condition (elSet.size === 1) is ALSO
+  // trivially true for any 2-member hypothetical that happens to match — which is exactly what
+  // TeamsTab.jsx's "which teammate should I add next" candidate scoring evaluates while only one
+  // slot is filled. At that point "these 2 share an element" and "this will be a mono-element team"
+  // are NOT the same claim — the still-unpicked 3rd slot could easily not match — but the old check
+  // couldn't tell them apart and paid the full committed-mono bonus early, on unearned confidence,
+  // enough on its own to outweigh a genuinely synergistic but different-element curated partner's
+  // dedicated buff. Now the full +20 requires an ACTUALLY COMPLETE 3-member team (members.length
+  // >= 3) that's genuinely mono; an incomplete team (this scorer's own team-building/candidate-
+  // ranking use case) or a complete-but-partial-match team both fall through to the smaller +12
+  // partial-resonance credit whenever at least one duplicate element exists — same total as before
+  // for a real, finished mono team, but no more crediting a still-open 3rd slot as already decided.
   const els = members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
   const elSet = new Set(els);
-  if (els.length > elSet.size) { score += 12; tags.push('Resonance'); }
-  if (elSet.size === 1 && els.length > 1) { score += 8; tags.push('Mono'); }
+  if (members.length >= 3 && elSet.size === 1 && els.length > 1) { score += 20; tags.push('Mono'); }
+  else if (els.length > elSet.size) { score += 12; tags.push('Resonance'); }
   // BiS weapon
   let hasBis = false, hasGoodWeapon = false;
   members.forEach(m => {
