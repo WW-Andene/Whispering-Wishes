@@ -36,6 +36,7 @@ import { resolveSimulatedTeamRotation } from '../../engine/resolveSimulatedTeamR
 import { resolveDotReactionDps } from '../../engine/dotReactions.js';
 import { chooseOnFieldOrder } from '../../engine/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/coordinatedAtk.js';
+import { gateBlocksBySequence } from '../../engine/sequenceGating.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
 // Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
@@ -164,8 +165,16 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // engine-derived on-field order; rotationTimeline's own legacy search stays the fallback for a
     // mixed team, unchanged.
     const allMembersConverted = mems.every(m => BLOCKS_BY_CHARACTER[m.name] && CHARACTER_ROTATIONS[m.name]);
+    // Blocks are gated by each member's own owned Resonance Chain sequence (gateBlocksBySequence,
+    // engine/sequenceGating.js) BEFORE reaching chooseOnFieldOrder/buildTeamSteps — fixed 2026-09-01:
+    // this was passing every member's raw, ungated blocks (as if everyone were R6), so an unbuilt
+    // member's chain buffs/damage fired unconditionally in both the order search's own scoring AND
+    // every downstream consumer of engineChosenOrder.blocksByOwner (the FULL-tier teamDps/memberDps
+    // override below, and the main-DPS stat panel's resolveSimulatedTeamRotation call) — the exact
+    // "counted as if R6" bug Stage 3 item 1 already fixed for the RAW/solo tier, silently reintroduced
+    // here since this tier never threaded m.seqLevel through at all.
     const engineChosenOrder = allMembersConverted
-      ? chooseOnFieldOrder(mems.map(m => ({ name: m.name, blocks: BLOCKS_BY_CHARACTER[m.name], rotation: CHARACTER_ROTATIONS[m.name] })), mainDps.name)
+      ? chooseOnFieldOrder(mems.map(m => ({ name: m.name, blocks: gateBlocksBySequence(BLOCKS_BY_CHARACTER[m.name], m.seqLevel), rotation: CHARACTER_ROTATIONS[m.name] })), mainDps.name)
       : null;
 
     const rotationTimeline = (() => {
