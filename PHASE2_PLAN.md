@@ -1,9 +1,13 @@
 # Phase 2 plan — wiring precise mechanics into the calc engine
 
 ## Status: STARTED 2026-09-01. Scaffold + 4 of ~60 characters converted and
-## verified (Rover: Electro, Shorekeeper, Augusta, Jinhsi). This doc is now
-## also a log of what exists, not just a plan — read the "What actually
-## exists now" section below before doing anything else in this phase.
+## verified (Rover: Electro, Shorekeeper, Augusta, Jinhsi), PLUS a working
+## rotation-history state machine (engine/rotationSimulator.js) that
+## actually EVALUATES the conditional trigger types those conversions
+## introduced, instead of every prior test hand-asserting the outcome. This
+## doc is now also a log of what exists, not just a plan — read the "What
+## actually exists now" section below before doing anything else in this
+## phase.
 
 Phase 1 (see `PHASE1_HANDOFF.md`) rewrote `app/src/data/characters.js` so
 every character's Forte/Outro/Resonance-Chain description and numbers are
@@ -178,13 +182,29 @@ implementation details:
    two 5s cast-order windows and Augusta's partner-Outro condition are the
    likely first cases to break it), extend the schema file and its JSDoc,
    don't invent a parallel one-off format for just that character.
-2. **Where does the state live? STILL OPEN — the scaffold does NOT solve
-   this.** Cast-order dependencies and forfeit
-   windows are inherently about a rotation's *history* (what was cast
-   before, how long ago, whether a swap happened since). The rotation
-   simulator/calculator needs to track that as it walks through
-   `CHARACTER_ROTATIONS`, not just sum flat multipliers. That's a real
-   simulation-state design, not a data-schema tweak alone.
+2. **Where does the state live? PARTIALLY ANSWERED 2026-09-01** — see
+   `engine/rotationSimulator.js` (`RotationSimulator` class +
+   `simulateRotation()`). It tracks exactly the two pieces of state the
+   trigger types built so far actually need: elapsed time since a
+   `windowed-cast` window opened (`_windows: Map<windowKey, openedAtTime>`)
+   and swap count since a `partner-outro-return` outro buff was applied
+   (`_outroWindows: Map<blockId, {swaps, maxInterveningSwaps}>`) — both
+   proven against real success AND forfeit cases in
+   `__tests__/rotationSimulator.test.js` (10 tests, e.g. a windowed cast
+   landing at 4s of a 5s window fires, landing at 6s forfeits; a partner
+   Outro-ing back as the very next swap fires, a 3rd-character swap first
+   forfeits). **What this does NOT yet do**: derive its step sequence from
+   a real `CHARACTER_ROTATIONS` array automatically (the caller still
+   builds the `steps` array by hand — see the test file for the shape),
+   assign real per-move timing (`DEFAULT_STEP_SECONDS` is an explicit,
+   documented engineering placeholder, not sourced animation data), track
+   MULTIPLE characters' rotations interleaved as a real team rotation
+   would be (today's tests run one character's blocks against a hand-built
+   step list, not a full team timeline), or feed its output into
+   `calcTeamStats.js` at all. Those are the next layers, not solved by
+   this module alone — but the core question ("track elapsed time + swap
+   count as history, not just flat state") now has a working, tested
+   answer to build on rather than being open.
 3. **Scope of "done."** Is Phase 2's goal (a) just correctly *modeling* these
    conditions in data with TODOs resolved, (b) actually making the DPS
    calculator evaluate them (i.e. a rotation that violates a forfeit
@@ -247,15 +267,26 @@ simulated rotation to evaluate whether a cast actually landed inside that
 window. `triggerEngine.js`'s `triggerKey()` keys this trigger type by its
 `opensOn` list so multiple distinct windows on one character resolve
 independently (proven in `triggerEngine-jinhsi.test.js`). Two conversions
-in, the pattern is now clear: EVERY conditional-timing mechanic needs its
-own named trigger type in the schema (a real design decision, correctly
+in, the pattern was clear: EVERY conditional-timing mechanic needs its own
+named trigger type in the schema (a real design decision, correctly
 one-per-shape rather than a generic catch-all), but the actual EVALUATION
-of any of them — partner-outro-return, windowed-cast, and whatever comes
-next — is deferred to the same not-yet-built rotation-history state
-machine. That piece is now the single highest-leverage remaining task:
-building it once would retroactively make every converted character's
-conditional blocks actually resolve correctly, instead of only being
-correctly *shaped*.
+of any of them was deferred to a not-yet-built rotation-history state
+machine.
+
+**That state machine now exists** — `engine/rotationSimulator.js`, built
+2026-09-01 immediately after Jinhsi, per the user's explicit choice to
+build it before converting a 5th character (see "Where does the state
+live?" in design question 2 above for what it does/doesn't cover yet).
+Both `windowed-cast` (Jinhsi) and `partner-outro-return` (Augusta) now
+have a real evaluator with passing success-AND-forfeit-path tests, not
+just a hand-fed assertion — this was the actual blocker, and it's cleared
+for any FUTURE character needing either of these two trigger types. A
+character needing a genuinely NEW conditional shape (multi-skill-shared-
+node, discrete flat-ATK procs) will still need its own schema field the
+same way these two did, but the state-tracking pattern
+(`RotationSimulator`'s Map-based window/swap tracking,
+`simulateRotation()`'s per-step firedTriggers derivation) is now
+established to extend rather than invent from scratch.
 
 Still not stress-tested: Camellya's multi-skill-shared-node value (one
 Resonance Chain node with two different multipliers on two different
@@ -266,41 +297,44 @@ flat-ATK procs instead of %-modifiers (Yinlin/Jianxin/Calcharo S6-style —
 `effects[].stat` likely needs a new value shape, not just a new trigger
 type).
 
-1. **Strongly consider building the rotation-history state machine next**,
-   rather than converting a 5th character. Three of four conversions so
-   far (Augusta, Jinhsi, and Shorekeeper's cast-scoping) have each
-   individually proven their trigger SHAPE works, but none of their
-   conditional logic actually evaluates yet — `firedTriggers` is still
-   hand-fed by test code, not derived from walking a real
-   `CHARACTER_ROTATIONS` sequence with elapsed time. Continuing to convert
-   characters without this makes the backlog of "shaped but unevaluated"
-   blocks grow, not shrink. If continuing character conversion anyway,
-   same cadence as before — one character, parity test, commit+push, next
-   — prioritizing Camellya (multi-skill-shared-node) then Yinlin/Jianxin/
-   Calcharo (discrete flat-ATK procs) as the remaining unproven shapes.
-2. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
+1. **DONE 2026-09-01**: the rotation-history state machine
+   (`engine/rotationSimulator.js`) — see above. Resume converting
+   characters, same cadence as before (one character, parity test,
+   commit+push, next), following `roverElectro.blocks.js`/
+   `shorekeeper.blocks.js`/`augusta.blocks.js`/`jinhsi.blocks.js`'s
+   structure. Priority order for remaining unproven shapes: Camellya
+   (multi-skill-shared-node — one Resonance Chain node with two different
+   multipliers on two different skills), then Yinlin/Jianxin/Calcharo
+   (discrete flat-ATK procs, not %-modifiers — `effects[].stat` likely
+   needs a new value shape). When either of THESE needs its own new
+   trigger/condition/effect shape, extend the schema the same deliberate
+   way `partner-outro-return`/`windowed-cast` were added — and if the new
+   shape also needs history tracking, extend `RotationSimulator` (new
+   Map, new open/try method pair) rather than inventing a second state-
+   tracking mechanism alongside it.
+2. Once 1-2 more characters are converted, revisit `rotationSimulator.js`'s
+   own known gaps (see design question 2 above): deriving `steps`
+   automatically from a real `CHARACTER_ROTATIONS` array instead of a
+   hand-built list, and tracking multiple characters' interleaved
+   rotations as a real team timeline instead of one character's blocks in
+   isolation. Both are needed before any of this can feed
+   `calcTeamStats.js` for real.
+3. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
    schema` comment left by the Phase 1 passes for the full sourced backlog
    of known-hard mechanics, one entry per real conditional mechanic found
    in verified source material — don't re-derive this list from scratch.
-3. Once 2-3 of the hard cases above are converted and the schema has
-   proven it can represent them (extending the schema file itself is
-   expected and fine; starting a second parallel shape is not), implement
-   the state-machine/rotation-history piece for design question 2 — this
-   is the biggest remaining chunk of real engineering work in this phase,
-   bigger than converting the rest of the roster. `triggerEngine.js`'s
-   current hand-fed `firedTriggers` Set is a stand-in for this, not a
-   solution to it.
 4. Fix the fragile `rowName.includes(step.skill)` lookup pattern at the
    engine level (exact-match against a stable `id` field, not fuzzy
    substring) so the zero-damage bug class can't recur even if a future
    data edit introduces a new naming mismatch. Not started.
-5. Only once the schema is proven against the hard cases AND the state-
-   machine piece exists: wire `triggerEngine.js`'s output into
-   `calcTeamStats.js`, gated per-character (only use a character's blocks
-   once that character has a verified parity test — fall back to the
-   legacy flat-table path otherwise) so cutover is incremental and never
-   all-or-nothing. Not started — nothing in the live calculator reads
-   `app/src/engine/` yet.
+5. Only once several more characters are converted AND item 2's
+   `rotationSimulator.js` gaps (real `CHARACTER_ROTATIONS` derivation,
+   multi-character interleaving) are closed: wire `triggerEngine.js`'s
+   output into `calcTeamStats.js`, gated per-character (only use a
+   character's blocks once that character has a verified parity test —
+   fall back to the legacy flat-table path otherwise) so cutover is
+   incremental and never all-or-nothing. Not started — nothing in the
+   live calculator reads `app/src/engine/` yet.
 6. Re-verify against `CharacterDetailModal.jsx` and `RotationTimeline.jsx`
    that the new schema renders correctly in the UI, not just computes
    correctly. Not started.
