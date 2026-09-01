@@ -33,6 +33,12 @@ import { buildBlockWindows, activeCountAt } from './blockWindows.js';
  * @param {Object} [opts]
  * @param {string} [opts.targetElementLower]
  * @param {string} [opts.targetRole]
+ * @param {number|null} [opts.libUptime]  PHASE3_PLAN.md Stage 3 item 3: `targetName`'s real
+ *   energy-cycle-gated Liberation uptime (0-1, from calcEnergyCycles()'s own `libUptime` field) —
+ *   only THIS member's own `damage.category`/`proc.category === 'libDmg'` hits are scaled by it, same
+ *   semantics as resolveHitComposedDps.js's own `libUptime` param (see its jsdoc for why this is a
+ *   more precise gate than calcTeamStats.js's flat libShare heuristic). Omitting this (default `null`)
+ *   does NOT gate anything.
  * @returns {{
  *   totalDamage: number,
  *   targetSegment: {start:number, end:number} | null,
@@ -41,7 +47,7 @@ import { buildBlockWindows, activeCountAt } from './blockWindows.js';
  * }}
  */
 export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName, enemyContext, baseStats, opts = {}) {
-  const { targetElementLower = null, targetRole = null } = opts;
+  const { targetElementLower = null, targetRole = null, libUptime = null } = opts;
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
   const { enemyDef, enemyRes } = enemyContext;
 
@@ -121,8 +127,10 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       }
       const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
 
+      const libGate = (libUptime != null && category === 'libDmg') ? libUptime : 1;
+
       for (const hit of hits) {
-        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult;
+        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult * libGate;
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
       }

@@ -68,6 +68,19 @@ import { gateBlocksBySequence } from './sequenceGating.js';
  *   behavior stays byte-identical to before this param existed (Stage 2 found this gap: chain blocks
  *   were firing unconditionally as if every character were fully R6-awakened). Pass an explicit 0-6
  *   to actually gate, matching calcTeamStats.js's own applyResonanceChain() semantics.
+ * @param {number|null} [libUptime]  PHASE3_PLAN.md Stage 3 item 3: the character's real
+ *   energy-cycle-gated Liberation uptime (0-1, from calcEnergyCycles()'s own `libUptime` field —
+ *   1.0 once real ER investment clears the role's threshold, discounted down to a 0.6 floor
+ *   otherwise). Only hits whose `damage.category`/`proc.category` is `'libDmg'` (i.e. actually
+ *   Liberation-sourced, per each block's own category tag) get scaled by this — everything else is
+ *   untouched. This is a MORE PRECISE gate than calcTeamStats.js's own `mult * (1 -
+ *   libShare*(1-libUptime))` (calcTeamStats.js:973-978): legacy has no per-source damage split, so it
+ *   approximates "the Liberation portion" as a flat 20%/35% share of the character's WHOLE totalMult;
+ *   the engine already tracks each hit's real category, so it can discount exactly the
+ *   Liberation-sourced hits instead of guessing a share of everything — same documented-improvement
+ *   treatment Stage 3 item 1 already established for Resonance Chain's `target.scope` precision.
+ *   Omitting this (default `null`) does NOT gate anything — every existing caller's behavior stays
+ *   byte-identical to before this param existed.
  * @returns {{
  *   totalDamage: number,
  *   totalTime: number,
@@ -75,7 +88,7 @@ import { gateBlocksBySequence } from './sequenceGating.js';
  *   hitLog: {time: number, blockId: string, atkPct: number, damage: number, category: string}[],
  * }}
  */
-export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null, externalStats = null, sequence = null) {
+export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null, externalStats = null, sequence = null, libUptime = null) {
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
   blocks = gateBlocksBySequence(blocks, sequence);
   const results = simulateRotation(blocks, steps);
@@ -151,8 +164,12 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
       // hit correctly gets none of `atkPct`'s contribution rather than the wrong full credit).
       const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
 
+      // Only Liberation-sourced hits (category === 'libDmg') are subject to the energy-cycle gate —
+      // everything else ignores libUptime entirely, whether it's null or a real 0-1 value.
+      const libGate = (libUptime != null && category === 'libDmg') ? libUptime : 1;
+
       for (const hit of hits) {
-        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult;
+        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult * libGate;
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
       }

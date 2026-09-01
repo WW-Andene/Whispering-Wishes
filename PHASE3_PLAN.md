@@ -35,10 +35,18 @@
   "stays composed around the engine" treatment, same as gear — not a
   TriggerBlock port). 6 new tests.
 
-**Remaining (Stage 3, items 3-5, none yet started):**
-- Energy-cycle-gated Liberation uptime (`calcEnergyCycles`) — must gate the
-  engine's Liberation-derived hits by real ER-based uptime, same as legacy's
-  `mult * (1 - libShare*(1-libUptime))`.
+- Stage 3, item 3 of 5 — energy-cycle-gated Liberation uptime. Added
+  `engine/energyCycleGating.js` (`libUptimeOf()`, a small lookup over
+  `calcEnergyCycles()`'s already-correct output) and wired a `libUptime`
+  param into `resolveHitComposedDps`/`resolveHitComposedTeamDps` as an
+  opt-in, backward-compatible parameter, same pattern as sequence gating.
+  Unlike legacy's flat `libShare` heuristic (a guessed 20%/35% share of the
+  WHOLE totalMult, since calcTeamStats.js has no per-source damage split),
+  the engine gate discounts exactly the hits whose `damage.category` is
+  `'libDmg'` — a documented precision improvement, not a behavior change to
+  match. 8 new tests.
+
+**Remaining (Stage 3, items 4-5, none yet started):**
 - The rotation on-field order-search itself (brute-force permutation +
   duration-aware scoring) — the engine currently assumes a GIVEN on-field
   order; it doesn't choose one the way `calcTeamStats.js` does.
@@ -51,7 +59,7 @@
 
 **Not started:** Stage 4 (the actual `calcTeamStats.js` rewrite) and Stage 5
 (final verification + commit) — both explicitly blocked on Stage 3's
-remaining 3 items per this plan's own ordering; attempting the rewrite
+remaining 2 items per this plan's own ordering; attempting the rewrite
 before they're closed would silently drop those mechanics from the live
 calculator.
 
@@ -395,6 +403,47 @@ throughout (confirmed via `git diff --stat`).
 uptime, the rotation on-field order-search, and Coordinated ATK off-field
 snapshot semantics.
 
+## Stage 3, item 3 — energy-cycle-gated Liberation uptime (done, 2026-09-01)
+
+`calcEnergyCycles` (calcEngine.js:583-619) already derives each character's
+real total ER (weapon/echo substats + set bonuses) and compares it against a
+role-specific threshold to produce `libUptime` (1.0 once cleared, floored at
+0.6 otherwise) — that formula was never the gap. The gap was that
+`resolveHitComposedDps`/`resolveHitComposedTeamDps` had no concept of "this
+hit came from Liberation" at all, so every Liberation-derived hit fired at
+full strength regardless of the character's real ER investment.
+
+- **`engine/energyCycleGating.js`** (new): `libUptimeOf(energyCycleFactors,
+  name)` — a small lookup over `calcEnergyCycles()`'s own output, returning
+  `null` (no gating) for a missing character/map, same no-gating-by-default
+  convention as `sequenceGating.js`.
+- **`resolveHitComposedDps`**: added a 9th param, `libUptime = null`. Only
+  hits whose `damage.category`/`proc.category === 'libDmg'` are scaled by
+  it — every other hit is untouched regardless of value. Omitting it (the
+  default) leaves every existing caller byte-identical to before this param
+  existed.
+- **`resolveHitComposedTeamDps`**: added `opts.libUptime`, same semantics,
+  scoped to `targetName`'s own Liberation-sourced hits only.
+- This is deliberately a MORE PRECISE gate than calcTeamStats.js's own
+  `mult * (1 - libShare*(1-libUptime))` (calcTeamStats.js:973-978): legacy
+  has no per-source damage split, so it approximates "the Liberation
+  portion" as a flat 20%/35% share of the character's WHOLE totalMult. The
+  engine already tracks each hit's real category, so it discounts exactly
+  the Liberation-sourced hits instead of guessing a share of everything —
+  same "documented improvement, not a behavior change to match" treatment
+  Stage 3 item 1 established for Resonance Chain `target.scope` precision.
+- **`energyCycleGating.test.js`** (new, 8 tests): `libUptimeOf`'s lookup/
+  no-gating-by-default behavior; the gate is opt-in/backward-compatible;
+  it scales ONLY the libDmg-category block, proportionally, leaving a
+  non-Liberation hit at the same instant untouched; `libUptime: 0` zeroes
+  Liberation damage entirely; the team-level `opts.libUptime` variant.
+
+Full suite: 1079/1079 passing (75 files). `calcTeamStats.js` untouched
+throughout (confirmed via `git diff --stat`).
+
+**Next**: Stage 3's remaining 2 items — the rotation on-field order-search,
+and Coordinated ATK off-field snapshot semantics.
+
 ## Stage 1 — Parity harness
 
 Extend `verifyEngineAgainstCalcTeamStats.test.js` (currently scoped to one
@@ -464,7 +513,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 0 — coverage audit
 - [x] Stage 1 — parity harness (all 56 converted characters swept; engine `externalStats` gap found+fixed; ratio distribution recorded, outliers flagged for Stage 2)
 - [x] Stage 2 — triage (root cause found for all 6 flagged outliers: no sequence-level gating anywhere in the engine — one systemic gap, not six bugs; likely a major contributor to the whole roster's elevated median too)
-- [ ] Stage 3 — close gaps (item 1/5 done: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5 done: DOT reactions composed around the engine via engine/dotReactions.js; remaining: energy-cycle gating, order-search, Coordinated ATK snapshot)
+- [ ] Stage 3 — close gaps (item 1/5 done: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5 done: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5 done: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; remaining: order-search, Coordinated ATK snapshot)
 - [ ] Stage 4 — rewrite
 - [ ] Stage 5 — final verify + commit
 
