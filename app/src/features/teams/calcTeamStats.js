@@ -29,6 +29,10 @@ import {
   universalStatApplies,
   applyBuff,
 } from './calcEngine.js';
+import { BLOCKS_BY_CHARACTER } from '../../engine/characterBlocks/index.js';
+import { deriveStepsFromRotation } from '../../engine/rotationSimulator.js';
+import { resolveHitComposedDps } from '../../engine/resolveHitComposedDps.js';
+import { coordinatedMultShare } from '../../engine/coordinatedAtk.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
 // Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
@@ -524,6 +528,12 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     mems.forEach(m => {
       let mult = m.d.totalMult || 0;
       if (mult === 0) return;
+      // fieldMultFactor (0-1): how much of this member's FULL output actually lands within
+      // rawRotTime, given field-time allocation / Coordinated ATK's coord-vs-onField blend. Kept
+      // separate from `mult` (which also carries the legacy totalMult% for the fallback formula
+      // below) so the engine path — a real per-second dps rate, not a totalMult% — can apply the
+      // SAME discount without double-multiplying a percentage into it.
+      let fieldMultFactor = 1;
       if (m.name !== mainDps.name) {
         const subOnField = m.d.onField || 5;
         const allocatedTime = rawOffFieldTime * (subOnField / totalSubNeed);
@@ -534,10 +544,11 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         if (rawHasCoord) {
           const coordShare = rawFocus.length === 1 ? 0.8 : 0.5;
           const coordUptime = Math.min(1, rawMainOnField / rawRotTime);
-          mult = mult * (coordShare * coordUptime + (1 - coordShare) * fieldRatio);
+          fieldMultFactor = coordinatedMultShare({ coordShare, coordUptime, fieldRatio });
         } else {
-          mult = mult * fieldRatio;
+          fieldMultFactor = fieldRatio;
         }
+        mult = mult * fieldMultFactor;
       }
       const sKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
       let rStatPct = 0, rCr = 5, rCd = 150, rElem = 0, rSkillDmg = 0;
@@ -565,6 +576,35 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const eqKey = teamIdx + ':' + m.name;
       applyEchoStats(rStats, teamEquipment[eqKey]?.echoes, m.d.element, m.scaling, { atk: m.totalBaseAtk, hp: m.d.baseHp, def: m.d.baseDef });
       if (m.d.element && elCounts[m.d.element] >= 2) rStats.elemDmg += 10;
+
+      // PHASE3_PLAN.md Stage 4 step 1: a converted member (real TriggerBlocks + real
+      // CHARACTER_ROTATIONS) gets REAL per-hit composed damage instead of the flat totalMult%
+      // formula below — resolveHitComposedDps already reads basicDmg/heavyDmg/libDmg/echoDmg/coordDmg
+      // per-hit by their own real category (see its own EXTERNAL_STAT_KEYS), so `rStats` is handed
+      // over BEFORE routeTypeBonuses flattens those into a single skillDmg bucket — that flattening
+      // is a legacy-only approximation the engine doesn't need. Falls back to the legacy formula
+      // for any not-yet-converted character (currently just Jingran, unreleased) so an incomplete
+      // roster never breaks a team containing one.
+      const blocks = BLOCKS_BY_CHARACTER[m.name];
+      const rotation = CHARACTER_ROTATIONS[m.name];
+      if (blocks && rotation) {
+        const gearDelta = { ...rStats, cr: rStats.cr - BASE_CRIT_RATE, cd: rStats.cd - BASE_CRIT_DMG };
+        const baseStats = { atk: m.totalBaseAtk, hp: m.d.baseHp || 0, def: m.d.baseDef || 0 };
+        const steps = deriveStepsFromRotation(rotation, blocks);
+        const enemyContext = { enemyDef: enemyDef90, enemyRes: getEnemyRes(m.d.element) };
+        const { totalDamage, totalTime } = resolveHitComposedDps(
+          blocks, steps, enemyContext, baseStats, (m.d.element || '').toLowerCase(), m.d.role,
+          gearDelta, m.seqLevel, null, true, // sequence: m.seqLevel, libUptime: none at RAW tier (matches legacy, which never gates RAW), cooldownSteadyState: true
+        );
+        const memberDps = totalTime > 0 ? totalDamage / totalTime : 0;
+        // fieldMultFactor (0-1, computed above) applies the same field-time/coord discount as the
+        // legacy formula — then re-scale the per-second rate back up to rawRotTime's shared
+        // denominator (rawTotalRotDmg accumulates a TOTAL across rawRotTime, not a rate, summed
+        // across every member before a single division at the end).
+        rawTotalRotDmg += memberDps * fieldMultFactor * rawRotTime;
+        return;
+      }
+
       routeTypeBonuses(rStats, m.d.dmgFocus || []);
       const rEff = m.baseStat * (1 + rStats.atkPct / 100);
       const rAvgCrit = calcAvgCrit(rStats.cr, rStats.cd);
