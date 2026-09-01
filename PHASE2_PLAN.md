@@ -1,17 +1,27 @@
 # Phase 2 plan — wiring precise mechanics into the calc engine
 
-## Status: not started. This is a planning document, not a log of work done.
+## Status: STARTED 2026-09-01. Scaffold + 1 of ~60 characters converted and
+## verified. This doc is now also a log of what exists, not just a plan —
+## read the "What actually exists now" section below before doing anything
+## else in this phase.
 
-Phase 1 (see `PHASE1_HANDOFF.md`) is rewriting `app/src/data/characters.js` so
+Phase 1 (see `PHASE1_HANDOFF.md`) rewrote `app/src/data/characters.js` so
 every character's Forte/Outro/Resonance-Chain description and numbers are
-mechanically precise and sourced. Phase 1 does **not** touch the calc engine
-— it deliberately stops at "the data is now honest," including honest about
-what it can't yet represent (every `// TODO: needs Phase 2 schema` comment
-left across ~21 characters so far is a marker for this phase).
+mechanically precise and sourced, including the full doc-listed roster
+(finished 2026-09-01, see PHASE1_HANDOFF.md/git log for the last entry,
+Rover: Electro). Phase 1 did **not** touch the calc engine — it deliberately
+stopped at "the data is now honest," including honest about what it can't
+yet represent (every `// TODO: needs Phase 2 schema` comment left across the
+audited characters is a marker for this phase).
 
-**Do not start Phase 2 until Phase 1 is closer to done and the user
-explicitly says to start it.** This doc exists so that when that happens,
-the next Claude isn't starting from zero on design.
+Phase 2 was greenlit by the user on 2026-09-01 with this framing: segment
+each character's skills/Forte/Resonance-Chain/buffs/debuffs/timing into
+separate logical blocks that interact by trigger, condition, timing, and
+target — "basically like an engine" — so that once every character has this,
+the blocks can be assembled and computed for any team composition
+dynamically, not just looked up from a flat table. That request settled
+design question 1 below (a typed block-per-mechanic schema, not a generic
+DSL) — see "What actually exists now."
 
 ## The problem Phase 2 solves
 
@@ -60,6 +70,73 @@ has gotten the *numbers* right:
   wrong/zero results instead of erroring. That's worth fixing at the engine
   level too, not just patching each character's strings.
 
+## What actually exists now (2026-09-01) — read this first
+
+A working scaffold and one converted-and-verified character exist under
+`app/src/engine/` — **entirely additive**, not yet wired into the live
+calculator (`calcEngine.js`/`calcTeamStats.js`/`autoEquip.js` are byte-for-
+byte unmodified by this phase so far):
+
+- `app/src/engine/triggerBlocks.schema.js` — the actual schema (JSDoc
+  typedefs, no runtime logic). A `TriggerBlock` is
+  `{ id, source, kind, trigger, condition, timing, target, effects, note }`.
+  Read this file directly — it's short and is the real source of truth for
+  the shape, more current than any description of it in this doc. Key
+  decisions baked in:
+  - `trigger.type` is one of `cast | swap-in | swap-out | passive | on-hit |
+    resource-threshold | negative-status-hit | field-time`.
+  - `effects[].stat` deliberately **reuses calcEngine.js's existing stat
+    vocabulary** (`atkPct`, `elemDmg`, `skillDmg`, `basicDmg`, `heavyDmg`,
+    `libDmg`, `echoDmg`, `coordDmg`, `deepen`, `critRate`, `critDmg`,
+    `defShred`, `resShred`, `defIgnore`, `totalMult`) instead of inventing a
+    parallel one — a converted block resolves through the SAME `applyBuff()`
+    switch calcEngine.js already has, so no second damage formula needs to
+    be built or kept in sync.
+  - This answers design question 1 below: typed-object-per-mechanic, not a
+    generic rule DSL — confirmed by the user's own framing of the request.
+- `app/src/engine/triggerEngine.js` — `resolveTriggerBlocks(blocks, ctx,
+  stats)`, a resolver that walks a block array, checks `triggerFired()`
+  against a `Set` of trigger keys that "occurred" in some rotation pass, and
+  `conditionHolds()` for element/role gating, then applies matching effects
+  via the real `applyBuff()`. This is intentionally minimal — no cooldown
+  tracking, no stacking-mode enforcement, no state-machine/rotation-history
+  yet (see design question 2, still open — this file does NOT answer it,
+  it's stubbed with a hand-fed `firedTriggers` set for now).
+- `app/src/engine/characterBlocks/roverElectro.blocks.js` — Rover: Electro
+  (the character just fully audited in Phase 1) converted to 15 blocks: 5
+  damage, 2 buff, 1 debuff, 6 Resonance Chain, 1 utility×2 (S1/S2, kept
+  zeroed with the same "no fabricated DPS component" TODO the flat table
+  has). **This is the reference example for converting every other
+  character** — follow its structure and its sourcing-comment convention
+  (cite characters.js's own already-audited fields, don't re-derive numbers
+  from scratch).
+- `app/src/__tests__/triggerEngine-rover-electro.test.js` — the parity gate
+  pattern: asserts the block set's buff/Resonance-Chain values exactly
+  match what the legacy `applyResonanceChain()`/`CHAR_BUFF_TABLE` path
+  already produces for that character. **Every converted character needs an
+  equivalent test before being trusted** — this is how a regression gets
+  caught per-character instead of only being noticed after the whole roster
+  is converted.
+
+Known gaps in the scaffold itself (not yet solved, don't assume otherwise):
+- No cooldown enforcement, no stacking-mode (`unique`/`stacking`/`refresh`)
+  logic — `STACKING_MODES` is declared in the schema but `triggerEngine.js`
+  doesn't read it yet.
+- `firedTriggers` has to be hand-constructed by the caller; nothing yet
+  walks `CHARACTER_ROTATIONS` to derive it automatically for a real
+  rotation simulation. That's design question 2 below, still unresolved.
+- Per-hit damage values (the actual `%ATK` numbers) still live only in
+  `SKILL_MULTIPLIERS` — the PoC's damage blocks carry the trigger/timing
+  wiring but `effects: []` for the raw hit %, since migrating the actual
+  damage-per-hit formula path is a separate, larger step than wiring up
+  buffs/conditions. Don't treat the empty `effects` arrays on damage blocks
+  as a bug; it's the documented current boundary.
+- Nothing in `calcTeamStats.js`/`CharacterDetailModal.jsx`/
+  `RotationTimeline.jsx` reads any of this yet — nothing changed for a real
+  user (or the calculator) yet. That's intentional (see rollout note in
+  the schema file) but means "Phase 2 has UI-visible effect" is still 0%
+  done regardless of how many characters get converted at the data layer.
+
 ## Where the current code lives (read before designing)
 - `app/src/data/characters.js` — `CHARACTER_DATA`, `CHARACTER_ROTATIONS`,
   `RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `CHAR_BUFF_TABLE` (the data
@@ -90,16 +167,19 @@ These aren't answered yet — surface them to the user rather than picking
 silently, since they're real product/architecture decisions, not just
 implementation details:
 
-1. **Schema shape.** Does each Resonance-Chain-node / Forte-mechanic get a
-   small typed "condition" object (e.g.
-   `{ type: 'cast-scoped', appliesTo: 'Discernment', stat: 'critDmg', value: 500 }`
-   vs. `{ type: 'requires-prior-cast', requires: 'Ephemeral', withinSameRotation: true, bonus: {...} }`),
-   or a more general small rule-expression format? A typed-object-per-
-   mechanic-shape approach is probably more tractable to hand-author for 58
-   characters than a generic DSL, but confirm with the user before
-   committing — this is the single biggest design decision in Phase 2 and
-   changes how much re-work the Phase-1-authored TODOs turn into.
-2. **Where does the state live?** Cast-order dependencies and forfeit
+1. **Schema shape. ANSWERED 2026-09-01** — typed-object-per-mechanic
+   (`TriggerBlock`, see `app/src/engine/triggerBlocks.schema.js`), not a
+   generic rule DSL. Confirmed by the user's own request framing ("segment
+   ... into separate logical blocks ... interacting by trigger, criteria,
+   timing and condition"). Do not re-litigate this — extend the existing
+   schema (add a new `trigger.type`, a new `Condition` field, etc.) rather
+   than starting a second competing shape. If a real character's mechanic
+   genuinely doesn't fit the current schema (this WILL happen — Jinhsi's
+   two 5s cast-order windows and Augusta's partner-Outro condition are the
+   likely first cases to break it), extend the schema file and its JSDoc,
+   don't invent a parallel one-off format for just that character.
+2. **Where does the state live? STILL OPEN — the scaffold does NOT solve
+   this.** Cast-order dependencies and forfeit
    windows are inherently about a rotation's *history* (what was cast
    before, how long ago, whether a swap happened since). The rotation
    simulator/calculator needs to track that as it walks through
@@ -121,26 +201,55 @@ implementation details:
    -apply it? Given the user's stated preference for precision, the
    one-character-at-a-time cadence is likely still right, but confirm.
 
-## Suggested approach once the user greenlights Phase 2
-1. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
-   schema` comment left by the Phase 1 passes — that's the actual, sourced
-   backlog (not hypothetical), one entry per real conditional mechanic
-   found in verified source material.
-2. Design the schema shape against 3-4 of the hardest real cases already on
-   file (Augusta's partner-Outro-back condition, Jinhsi's two 5s cast-order
-   windows, Camellya's cast-before-Outro dependency, Shorekeeper's
-   cast-scoped Crit DMG) rather than in the abstract — get the user's
-   sign-off on the shape before applying it broadly.
-3. Fix the fragile `rowName.includes(step.skill)` lookup pattern at the
+## Actual current backlog / next steps (as of 2026-09-01)
+
+Converted so far: **Rover: Electro only** (1 of ~60). This is a proof of
+concept, not a representative sample — it has no cast-order dependencies,
+no forfeit windows, no multi-skill-shared-node value, and no discrete
+flat-ATK procs, so it did NOT have to stress-test design questions 2/3
+below. The next characters to convert should deliberately include the hard
+cases, not just the easy ones, or Phase 2 will silently accumulate a schema
+that only works for simple kits.
+
+1. **Convert one more character per pass, hardest cases first**, following
+   `roverElectro.blocks.js`'s structure and writing a parity test
+   (`triggerEngine-<name>.test.js`) for each one before moving on — same
+   cadence/discipline as the Phase 1 data audit (one character, verify,
+   commit+push, next). Prioritize, in order: Shorekeeper (cast-scoped Crit
+   DMG only on Discernment — will break the current schema's `passive`-only
+   Resonance Chain trigger assumption), Augusta (partner-Outro-back
+   condition — needs a new trigger/condition shape entirely), Jinhsi (two
+   5s cast-order forfeit windows — this is what actually answers design
+   question 2), Camellya (cast-before-Outro dependency + one node with two
+   multipliers on two different skills), Yinlin/Jianxin/Calcharo (discrete
+   flat-ATK procs, not %-modifiers — `effects[].stat` may need a new
+   'flatProc' variant, not just the existing % stats).
+2. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
+   schema` comment left by the Phase 1 passes for the full sourced backlog
+   of known-hard mechanics, one entry per real conditional mechanic found
+   in verified source material — don't re-derive this list from scratch.
+3. Once 2-3 of the hard cases above are converted and the schema has
+   proven it can represent them (extending the schema file itself is
+   expected and fine; starting a second parallel shape is not), implement
+   the state-machine/rotation-history piece for design question 2 — this
+   is the biggest remaining chunk of real engineering work in this phase,
+   bigger than converting the rest of the roster. `triggerEngine.js`'s
+   current hand-fed `firedTriggers` Set is a stand-in for this, not a
+   solution to it.
+4. Fix the fragile `rowName.includes(step.skill)` lookup pattern at the
    engine level (exact-match against a stable `id` field, not fuzzy
    substring) so the zero-damage bug class can't recur even if a future
-   data edit introduces a new naming mismatch.
-4. Decide and implement the state-machine/simulation piece needed for
-   question 2/3 above — likely the biggest single chunk of engineering work
-   in this phase.
-5. Re-verify against `CharacterDetailModal.jsx` and `RotationTimeline.jsx`
+   data edit introduces a new naming mismatch. Not started.
+5. Only once the schema is proven against the hard cases AND the state-
+   machine piece exists: wire `triggerEngine.js`'s output into
+   `calcTeamStats.js`, gated per-character (only use a character's blocks
+   once that character has a verified parity test — fall back to the
+   legacy flat-table path otherwise) so cutover is incremental and never
+   all-or-nothing. Not started — nothing in the live calculator reads
+   `app/src/engine/` yet.
+6. Re-verify against `CharacterDetailModal.jsx` and `RotationTimeline.jsx`
    that the new schema renders correctly in the UI, not just computes
-   correctly.
+   correctly. Not started.
 
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
