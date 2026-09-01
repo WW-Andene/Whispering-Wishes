@@ -4481,7 +4481,7 @@ const CHARACTER_ROTATIONS = {
   // "Opener Rotation" building up from Zephyr Stance is used only when it isn't).
   'Suisui': [
     { type: 'Intro', skill: 'Tinkling Jade', note: 'Swap into her — fires automatically, inflicts 1 stack of Glacio Chafe, consumes all Cloud Breath to pull in nearby targets, and immediately enters Drizzle Stance.' },
-    { type: 'Skill', skill: 'Drizzle Stance Thrust', note: 'Press Skill — thrusts forward and restores Floral Epistle. Cancel its ending on the first hit by immediately pressing Dash (optional — only saves a few frames, skip it if the timing is tight).' },
+    { type: 'Skill', skill: 'Drizzle Stance thrust', note: 'Press Skill — thrusts forward and restores Floral Epistle. Cancel its ending on the first hit by immediately pressing Dash (optional — only saves a few frames, skip it if the timing is tight). Capitalization corrected 2026-09-01 from \'Drizzle Stance Thrust\' (capital T), which never matched the SKILL_MULTIPLIERS row name \'Drizzle Stance thrust\' (case-sensitive substring match) and was silently resolving to 0 DMG.' },
     { type: 'Basic ATK', skill: 'Drizzle Stance Stage 1-4', note: 'Tap Basic Attack 4 times — each hit restores more Floral Epistle toward the 600 cap; Stage 4 also inflicts Glacio Chafe. Cancel Stage 4\'s endlag by immediately pressing Liberation.' },
     { type: 'Liberation', skill: 'Song of Thoroughfare', duration: 30, note: 'Press Liberation right after Basic Attack Stage 4 to cancel its endlag — deploys Ceaseless Landscape for 30s, raising the max stack limit of Negative Statuses on affected targets by 3 for 15s per application, and letting DEF Ignore/RES Shred trigger off Havoc Bane consumption.' },
     { type: 'Outro', skill: 'Rippling Waters', duration: 30, note: 'Swap out to trigger this automatically. Grants the team +25% All DMG Amp for 30s; consumes all her banked Floral Epistle (aim for 400-600) to enter Roaming Transcendent for 30s, periodically performing Plume Steps that re-apply Glacio Chafe, heal the active Resonator, and grant Reflecting Shadows (extra interruption resistance) — the more Floral Epistle spent, the more Plume Steps and the stronger the follow-up ATK buff on future Outros.' },
@@ -5008,11 +5008,30 @@ const CHARACTER_ROTATIONS = {
 // totalMult = rotation-averaged DPS contribution for utility/multiplier nodes
 // Sources: Game8 sequence nodes, Prydwen, wutheringlab, cross-verified Apr 2026
 const RESONANCE_CHAIN_DATA = {
-  // Suisui S2: team Crit DMG+50% conditional on negative-status/Havoc Bane trigger. S4: Enrichment/Spring's Birth healing
-  // +50% (not a DPS stat — was miscategorized as deepen:10 with no basis, kept as totalMult since no heal-bonus stat
-  // exists in this schema). S5: Drizzle Basic/Heavy DMG+100% (scaled down, secondary to healing role). S6: Crit DMG+500%
-  // on rare Intro/Skill triggers (scaled down)
-  'Suisui':       { s1: { totalMult: 5 }, s2: { critDmg: 50 }, s3: { totalMult: 5 }, s4: { totalMult: 5 }, s5: { basicDmg: 25 }, s6: { critDmg: 25 } },
+  // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Suisui/Combat, cross-checked against
+  // ww.nanoka.cc/character/1110 (both agree exactly). The prior version of this row deliberately stored
+  // "scaled down" approximations instead of the real sourced numbers on S5/S6 — against this project's own
+  // hard rule against inventing/guessing values. Corrected to the real, unscaled numbers throughout:
+  // S1 "Mountains Washed Into Paintings": was totalMult: 5 (undocumented placeholder) — real effect is
+  // entirely utility (Undulating Mist trigger-condition change, Reflecting Shadows duration +100%,
+  // interruption immunity on several Drizzle-stance moves), zero real DPS component. Zeroed to {}.
+  // S2: team Crit DMG +50% for 30s, conditional on inflicting Negative Status/consuming Havoc Bane
+  // (value/category confirmed exact, unchanged).
+  // S3 "Sparse Curtains Invite Evening Glow": was totalMult: 5 (undocumented placeholder) — real effect is
+  // entirely utility (an extra Basic ATK Stage 4 combo route, Kingfisher stack restoring Concerto
+  // Energy/Floral Epistle), zero real DPS component. Zeroed to {}.
+  // S4: Enrichment/Spring's Birth healing +50% — a healing-only stat, not DPS; no heal-bonus category
+  // exists in this schema. Kept at {} (was totalMult: 5, an undocumented placeholder with no derivation —
+  // healing isn't representable here at all, so zeroing rather than approximating is more honest than a
+  // guessed totalMult).
+  // S5: was basicDmg: 25 — the real, un-scaled-down value is Basic Attack - Drizzle Stance AND Heavy
+  // Attack - Drizzle Stance DMG Multipliers both +100% (two moves, not one). Corrected to
+  // {basicDmg: 100, heavyDmg: 100}.
+  // S6: was critDmg: 25 — the real, un-scaled-down value is Crit DMG +500% on Intro Skill - Tinkling Jade
+  // and Resonance Skill - Awakening Spring (both HP%-scaling openers). Corrected to critDmg: 500.
+  // TODO: needs Phase 2 schema — S4's healing-bonus effect has no representable category in this
+  // DPS-focused schema.
+  'Suisui':       { s1: {}, s2: { critDmg: 50 }, s3: {}, s4: {}, s5: { basicDmg: 100, heavyDmg: 100 }, s6: { critDmg: 500 } },
   // Qingxiao S2: Heavy ATK mult+40% (confirmed). S3: Liberation Crit DMG+100% (confirmed). S4: ATK+20% on team Tune Strain trigger. S5: Skill mult+100% (confirmed)
   'Qingxiao':     { s1: { critRate: 16 }, s2: { heavyDmg: 40 }, s3: { critDmg: 100 }, s4: { atkPct: 20 }, s5: { skillDmg: 100 }, s6: { deepen: 40 } },
   // Jingran S1: Skill mult+80% (confirmed). S2: Heavy ATK mult+46% (confirmed). S6: Heavy ATK DMG taken+40% (confirmed)
