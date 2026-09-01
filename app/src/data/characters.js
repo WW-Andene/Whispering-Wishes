@@ -6052,8 +6052,21 @@ const RESONANCE_CHAIN_DATA = {
   // Guardian — Power Shift DMG+50% (confirmed exact; Power Shift is "considered as Basic Attack DMG"
   // per its own Forte text, modeled as basicDmg) + restores 20 Resonance Energy on hit (utility, not
   // modeled). S6 Defender of Peace — Basic ATK and Heavy ATK DMG+40% while Rocksteady Shield holds
-  // (confirmed exact, conditional; modeled as basicDmg, single-stat schema).
-  'Taoqi':        { s1: { totalMult: 4 }, s2: { critRate: 20 }, s3: { totalMult: 6 }, s4: { totalMult: 8 }, s5: { basicDmg: 50 }, s6: { basicDmg: 40 } },
+  // (confirmed exact, conditional).
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Taoqi/Combat, cross-checked against
+  // ww.nanoka.cc/character/1601 (both agree exactly). S1 (totalMult: 4) and S3 (totalMult: 6) were
+  // undocumented placeholders — real effects are Power Shift's Shield +40% and Rocksteady Shield
+  // duration extended to 30s, both shield/utility with zero DPS component. Zeroed both to {}. S2 was
+  // missing a real second component — the node grants BOTH Crit Rate +20% AND Crit DMG +20% to Unmovable
+  // simultaneously, only Crit Rate was captured. Added critDmg: 20. S4 (totalMult: 8) was undocumented —
+  // real effect is 25% HP heal + DEF +50% for 5s on a successful Strategic Parry; DEF is Taoqi's actual
+  // damage-scaling stat here but no DEF% category exists in this schema. Zeroed to {}. S6's prior comment
+  // said "single-stat schema" limited it to basicDmg only, but multi-key nodes are used throughout this
+  // file (e.g. Suisui S5, Aalto S6) — added heavyDmg: 40 alongside the existing basicDmg: 40, since the
+  // node explicitly buffs both.
+  // TODO: needs Phase 2 schema — S1/S3's shield effects and S4's DEF%-scaling conditional buff have no
+  // home in this DPS-focused flat-{stat: value} schema.
+  'Taoqi':        { s1: {}, s2: { critRate: 20, critDmg: 20 }, s3: {}, s4: {}, s5: { basicDmg: 50 }, s6: { basicDmg: 40, heavyDmg: 40 } },
   // Corrected 2026-08-18 via Prydwen's Kit tab (Resonance Chain/Sequence Node text, exact wording).
   // S1: Intro Cerulean Song grants an additional +15% Aero DMG Bonus for 8s (was atkPct:5, no basis).
   // S2: Heavy Attack recovers +10 Resonance Energy on hit, 1x/20s — energy utility, no direct DMG stat
