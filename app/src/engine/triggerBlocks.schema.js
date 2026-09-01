@@ -36,6 +36,22 @@
  * @property {string} [note]        Human-readable sourcing/mechanic note (same convention as
  *                                   the free-text `note` fields already used throughout
  *                                   characters.js — keep provenance attached to the data)
+ * @property {Proc} [proc]          For a discrete, repeatable extra-hit proc (Yinlin S6-style —
+ *                                   see Proc typedef below) — the raw flat-ATK-scaling damage
+ *                                   instance this block represents. Kept OUT of `effects` on
+ *                                   purpose: `effects[].stat` values are %-modifiers resolved
+ *                                   through calcEngine.js's existing `applyBuff()` switch, but a
+ *                                   proc is a whole separate damage instance (like a
+ *                                   SKILL_MULTIPLIERS row), not a modifier to one — forcing it
+ *                                   into `effects` would either silently no-op (applyBuff has no
+ *                                   case for a raw %ATK value) or require inventing a fake
+ *                                   modifier stat with no basis in the real mechanic, the same
+ *                                   mistake Phase 1 already caught and reverted for Yinlin's S6
+ *                                   (see RESONANCE_CHAIN_DATA['Yinlin'].s6's audit comment in
+ *                                   characters.js). Same documented boundary as every `effects: []`
+ *                                   damage block already in this codebase (Rover's Thunderclap,
+ *                                   etc.) — resolveTriggerBlocks() does not compute proc damage
+ *                                   yet; this field only names the shape.
  */
 
 /**
@@ -47,6 +63,7 @@
  *                            (added for Augusta's Majesty/Crown-of-Wills mechanic — see below) |
  *                            'windowed-cast' (added for Jinhsi's cast-order forfeit windows —
  *                            see below) | 'requires-prior-cast' (added for Camellya's Twining —
+ *                            see below) | 'windowed-proc' (added for Yinlin's Furious Thunder —
  *                            see below)
  * @property {string} [on]   The specific skill/move id this trigger fires on (matches a
  *                            CHARACTER_ROTATIONS-style {type, skill} pair when type === 'cast');
@@ -108,6 +125,44 @@
  *                                    track "was this cast seen since the last swap-in" to evaluate it
  *                                    (see rotationSimulator.js's `recordCast`/`hasCastThisSegment`/
  *                                    `resetSegment`, added alongside this trigger type).
+ * @property {string[]} [opensOnProc] For 'windowed-proc': trigger key(s) whose firing opens the
+ *                                    proc window (same `opensOn` semantics as 'windowed-cast' —
+ *                                    ANY of them opens it). Kept as a separate field name from
+ *                                    'windowed-cast''s `opensOn` only to keep triggerKey() able to
+ *                                    tell the two trigger types apart by field alone if ever
+ *                                    needed; same list-of-trigger-keys shape otherwise.
+ * @property {number} [windowSeconds] Reused for 'windowed-proc' too: how long the window stays
+ *                                    open after `opensOnProc` fires.
+ * @property {number} [maxProcs]      For 'windowed-proc': the cap on how many times this proc can
+ *                                    fire within one open window (Yinlin S6 Furious Thunder: 4,
+ *                                    within the 30s window opened by casting Liberation Thundering
+ *                                    Wrath). Unlike 'windowed-cast' (a single empowered cast that's
+ *                                    either landed in time or forfeited), a proc window is
+ *                                    repeatable up to this count — every qualifying `on`-type hit
+ *                                    (Yinlin: Basic ATK) while the window is open can independently
+ *                                    trigger it, until the cap is hit or the window closes.
+ * @property {string} [on]            Reused for 'windowed-proc' too: which hit type
+ *                                    (CHARACTER_ROTATIONS-style, e.g. 'Basic ATK') can trigger the
+ *                                    proc while its window is open — see the shared `on` doc above.
+ *                                    Same evaluation limitation as every other conditional type
+ *                                    added so far: this only names the window's shape (what opens
+ *                                    it, how long, the cap, which hits qualify); real elapsed-time +
+ *                                    count tracking is rotationSimulator.js's job (see
+ *                                    `openProcWindow`/`tryProc`, added alongside this trigger type).
+ */
+
+/**
+ * @typedef {Object} Proc
+ * @property {number} atkPct   The discrete extra-hit's damage, as a percentage of ATK (e.g.
+ *                                Yinlin S6 Furious Thunder: 419.59) — a whole separate damage
+ *                                instance, not a %-modifier to an existing one.
+ * @property {string} [category] Which of calcEngine.js's existing damage-type categories
+ *                                (basicDmg/heavyDmg/libDmg/skillDmg/echoDmg/coordDmg) this proc's
+ *                                damage is "considered" as for type-focus purposes, per the kit's
+ *                                own text (Yinlin's Furious Thunder is explicitly "considered
+ *                                Resonance Skill DMG" -> category: 'skillDmg'). Descriptive only —
+ *                                resolveTriggerBlocks() doesn't route proc damage through
+ *                                applyBuff() yet (see the TriggerBlock.proc doc above).
  */
 
 /**
@@ -152,7 +207,7 @@
  *                                 'refresh' (re-triggering resets duration instead of adding)
  */
 
-export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast', 'requires-prior-cast'];
+export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast', 'requires-prior-cast', 'windowed-proc'];
 export const BLOCK_KINDS = ['damage', 'buff', 'debuff', 'heal', 'utility'];
 export const TARGET_SCOPES = ['self', 'on-field', 'next-on-field', 'whole-team', 'marked-enemy', 'all-enemies'];
 export const STACKING_MODES = ['unique', 'stacking', 'refresh'];

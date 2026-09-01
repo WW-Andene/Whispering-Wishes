@@ -1,7 +1,7 @@
 # Phase 2 plan — wiring precise mechanics into the calc engine
 
-## Status: STARTED 2026-09-01. Scaffold + 5 of ~60 characters converted and
-## verified (Rover: Electro, Shorekeeper, Augusta, Jinhsi, Camellya), PLUS a
+## Status: STARTED 2026-09-01. Scaffold + 6 of ~60 characters converted and
+## verified (Rover: Electro, Shorekeeper, Augusta, Jinhsi, Camellya, Yinlin), PLUS a
 ## working rotation-history state machine (engine/rotationSimulator.js) that
 ## actually EVALUATES the conditional trigger types those conversions
 ## introduced, instead of every prior test hand-asserting the outcome. This
@@ -312,23 +312,58 @@ her own kit — and revealing she actually needed THREE things, not one:
   `rotationSimulator.test.js` with success, no-cast-yet, AND
   cast-in-a-prior-segment forfeit cases (5 tests total for this shape).
 
-Still not stress-tested: discrete flat-ATK procs instead of %-modifiers
-(Yinlin/Jianxin/Calcharo S6-style — `effects[].stat` likely needs a new
-value shape, not just a new trigger type — this is now the only
-completely unproven mechanic shape left on the priority list).
+**Yinlin converted 2026-09-01**, resolving the last remaining unproven
+mechanic shape: a discrete, repeatable, capped flat-ATK proc (Resonance
+Chain S6 "Pursuit of Justice" — Furious Thunder, a separate 419.59%-ATK
+Electro nuke, up to 4 procs within 30s of casting Liberation Thundering
+Wrath), not a %-modifier to any existing hit. `RESONANCE_CHAIN_DATA
+['Yinlin'].s6` was correctly zeroed by Phase 1 rather than fabricate a
+totalMult guess for this — same non-negotiable as every other zeroed node.
+
+- Added `trigger.type: 'windowed-proc'` (`opensOnProc`/`windowSeconds`/
+  `maxProcs`/`on`) — same "name the window's shape here, evaluate for real
+  in the state machine" split already established for `windowed-cast`/
+  `partner-outro-return`/`requires-prior-cast`, but REPEATABLE up to a cap
+  instead of one-shot (Jinhsi's `windowed-cast` fires at most once; a proc
+  window can fire up to `maxProcs` times before closing).
+- Added `TriggerBlock.proc` (a new `Proc` typedef: `{ atkPct, category }`)
+  to carry the raw flat-ATK-scaling number itself — deliberately kept OUT
+  of `effects`, since `effects[].stat` is %-modifier-only (resolved through
+  calcEngine.js's `applyBuff()`) and a proc is a whole separate damage
+  instance, not a modifier to one. This is the actual answer to the
+  "`effects[].stat` needs a new value shape" question this backlog
+  flagged: the fix was a sibling field, not overloading `effects`.
+- Extended `rotationSimulator.js` with `openProcWindow(windowKey,
+  windowSeconds, maxProcs)` / `tryProc(windowKey)` — real elapsed-time AND
+  count-cap tracking, proven with success, expiry-forfeit, cap-exhaustion,
+  and window-reopen-resets-count cases in `rotationSimulator.test.js`
+  (8 new tests), plus an end-to-end 5-Basic-ATKs-in-one-window case proving
+  the 4th procs and the 5th doesn't.
+- Same documented boundary as every other empty-`effects` damage block in
+  this codebase: `resolveTriggerBlocks()` does not yet route `proc` damage
+  through `applyBuff()` (there's no formula path for a raw ATK-scaling
+  extra hit yet, same gap SKILL_MULTIPLIERS' per-hit %s already have) —
+  the real 419.59%/4-cap/30s-window figures are captured and the window/cap
+  are now REALLY evaluated, but not yet summed into a DPS number. That's
+  the same "computed correctly" vs. "modeled correctly" gap design
+  question 3 already named, unresolved either way.
 
 1. **DONE 2026-09-01**: the rotation-history state machine
    (`engine/rotationSimulator.js`), extended same-day for Camellya's
-   `requires-prior-cast` — see above. Resume converting characters, same
-   cadence as before (one character, parity test, commit+push, next),
+   `requires-prior-cast` and again for Yinlin's `windowed-proc` — see
+   above. **DONE 2026-09-01**: the one remaining unproven mechanic shape
+   (discrete flat-ATK procs) — Yinlin, above. Resume converting characters,
+   same cadence as before (one character, parity test, commit+push, next),
    following `roverElectro.blocks.js`/`shorekeeper.blocks.js`/
-   `augusta.blocks.js`/`jinhsi.blocks.js`/`camellya.blocks.js`'s structure.
-   Priority: Yinlin, Jianxin, or Calcharo (discrete flat-ATK procs — the
-   one remaining unproven shape). When it needs its own new
-   trigger/condition/effect shape, extend the schema the same deliberate
-   way the prior three were added — and if it needs history tracking too,
-   extend `RotationSimulator` (new Map, new open/try method pair) rather
-   than inventing a second state-tracking mechanism alongside it.
+   `augusta.blocks.js`/`jinhsi.blocks.js`/`camellya.blocks.js`/
+   `yinlin.blocks.js`'s structure. Every schema-extension shape flagged in
+   this doc's original backlog is now proven at least once; the next
+   characters (Jianxin, Calcharo, and the rest of the ~60-character roster)
+   should mostly reuse an existing trigger type rather than need a new one
+   — but if one genuinely doesn't fit, extend the schema the same
+   deliberate way these six did, and extend `RotationSimulator` (new Map,
+   new open/try method pair) rather than inventing a second state-tracking
+   mechanism alongside it.
 2. Once 1-2 more characters are converted, revisit `rotationSimulator.js`'s
    own known gaps (see design question 2 above): deriving `steps`
    automatically from a real `CHARACTER_ROTATIONS` array instead of a

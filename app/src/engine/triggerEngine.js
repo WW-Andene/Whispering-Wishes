@@ -62,6 +62,15 @@ function triggerKey(trigger) {
   // firedTriggers) — evaluating "was requiresPriorCast actually seen earlier this on-field
   // segment" is rotationSimulator.js's job (recordCast/hasCastThisSegment/resetSegment).
   if (trigger.type === 'requires-prior-cast') return `requires-prior-cast:${trigger.requiresPriorCast}`;
+  // Keyed by opensOnProc, mirroring windowed-cast's own opensOn-keying — this resolver doesn't
+  // track window elapsed time or the proc count cap itself (see rotationSimulator.js's
+  // openProcWindow/tryProc); it only checks whether the caller already asserted "yes, a proc fired
+  // within this window and under its cap" by including this exact key in firedTriggers. Each
+  // individual proc occurrence is a separate call with the same key (repeatable, unlike
+  // windowed-cast's one-shot), so resolveTriggerBlocks applying this block's effects once per
+  // firedTriggers check is intentional — the CALLER is responsible for invoking resolution once per
+  // actual proc, not this resolver deduping them.
+  if (trigger.type === 'windowed-proc') return `windowed-proc:${trigger.opensOnProc?.join('|')}`;
   return trigger.type;
 }
 

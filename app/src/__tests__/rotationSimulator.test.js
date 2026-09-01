@@ -17,6 +17,7 @@ import { RotationSimulator, simulateRotation, DEFAULT_STEP_SECONDS } from '../en
 import { JINHSI_BLOCKS } from '../engine/characterBlocks/jinhsi.blocks.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
+import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 
 describe('RotationSimulator — windowed-cast (Jinhsi)', () => {
   it('fires when the windowed cast lands within the window', () => {
@@ -165,5 +166,76 @@ describe('RotationSimulator — requires-prior-cast (Camellya)', () => {
     const results = simulateRotation(CAMELLYA_BLOCKS, steps);
     const lastFired = results[results.length - 1].firedTriggers;
     expect(lastFired.has('requires-prior-cast:cast:Forte:Ephemeral')).toBe(false);
+  });
+});
+
+describe('RotationSimulator — windowed-proc (Yinlin)', () => {
+  it('procs when a qualifying hit lands within the window and under the cap', () => {
+    const sim = new RotationSimulator();
+    sim.openProcWindow('w1', 30, 4);
+    sim.advance(5); // well within a 30s window
+    expect(sim.tryProc('w1')).toBe(true);
+  });
+
+  it('forfeits once the window has expired', () => {
+    const sim = new RotationSimulator();
+    sim.openProcWindow('w1', 30, 4);
+    sim.advance(31); // past the 30s window
+    expect(sim.tryProc('w1')).toBe(false);
+  });
+
+  it('is repeatable up to maxProcs, then forfeits further attempts within the same window', () => {
+    const sim = new RotationSimulator();
+    sim.openProcWindow('w1', 30, 4);
+    expect(sim.tryProc('w1')).toBe(true); // 1
+    expect(sim.tryProc('w1')).toBe(true); // 2
+    expect(sim.tryProc('w1')).toBe(true); // 3
+    expect(sim.tryProc('w1')).toBe(true); // 4 — hits the cap
+    expect(sim.tryProc('w1')).toBe(false); // 5th attempt, cap already reached
+  });
+
+  it('re-opening the window (a fresh Liberation cast) resets the count', () => {
+    const sim = new RotationSimulator();
+    sim.openProcWindow('w1', 30, 4);
+    sim.tryProc('w1'); sim.tryProc('w1'); sim.tryProc('w1'); sim.tryProc('w1'); // exhausts the cap
+    expect(sim.tryProc('w1')).toBe(false);
+    sim.openProcWindow('w1', 30, 4); // re-cast Liberation, reopens the window
+    expect(sim.tryProc('w1')).toBe(true);
+  });
+
+  it("simulateRotation resolves Yinlin's Furious Thunder window end-to-end: success case (Basic ATK lands within 30s of Thundering Wrath)", () => {
+    const steps = [
+      { type: 'Liberation', skill: 'Thundering Wrath', stepSeconds: 1 },
+      { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 3, triesProc: 'yinlin.chain.s6-pursuit-of-justice' },
+    ];
+    const results = simulateRotation(YINLIN_BLOCKS, steps);
+    const lastFired = results[results.length - 1].firedTriggers;
+    expect(lastFired.has('windowed-proc:cast:Liberation:Thundering Wrath')).toBe(true);
+  });
+
+  it("simulateRotation resolves Yinlin's Furious Thunder window end-to-end: forfeit case (Basic ATK lands after the 30s window closes)", () => {
+    const steps = [
+      { type: 'Liberation', skill: 'Thundering Wrath', stepSeconds: 1 },
+      { type: 'Echo', skill: 'Use Echo', stepSeconds: 31 }, // stalls past the 30s window
+      { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 0.5, triesProc: 'yinlin.chain.s6-pursuit-of-justice' },
+    ];
+    const results = simulateRotation(YINLIN_BLOCKS, steps);
+    const lastFired = results[results.length - 1].firedTriggers;
+    expect(lastFired.has('windowed-proc:cast:Liberation:Thundering Wrath')).toBe(false);
+  });
+
+  it("simulateRotation resolves Yinlin's Furious Thunder cap: a 5th Basic ATK within the window does not proc again", () => {
+    const steps = [
+      { type: 'Liberation', skill: 'Thundering Wrath', stepSeconds: 1 },
+      { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 1, triesProc: 'yinlin.chain.s6-pursuit-of-justice' },
+      { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 1, triesProc: 'yinlin.chain.s6-pursuit-of-justice' },
+      { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 1, triesProc: 'yinlin.chain.s6-pursuit-of-justice' },
+      { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 1, triesProc: 'yinlin.chain.s6-pursuit-of-justice' },
+      { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 1, triesProc: 'yinlin.chain.s6-pursuit-of-justice' },
+    ];
+    const results = simulateRotation(YINLIN_BLOCKS, steps);
+    const procFires = results.map(r => r.firedTriggers.has('windowed-proc:cast:Liberation:Thundering Wrath'));
+    // Liberation-cast step never fires the proc key itself; the next 4 Basic ATKs do; the 5th does not.
+    expect(procFires).toEqual([false, true, true, true, true, false]);
   });
 });

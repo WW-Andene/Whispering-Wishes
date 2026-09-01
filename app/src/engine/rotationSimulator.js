@@ -36,6 +36,10 @@ export class RotationSimulator {
     // 'requires-prior-cast', which has no time limit, just "was this seen earlier in the current
     // on-field segment."
     this._castsThisSegment = new Set();
+    // windowKey (matches a windowed-proc block's opensOnProc.join('|')) -> { openedAt, count, maxProcs }
+    // — backs 'windowed-proc' (Yinlin S6-style repeatable capped procs), distinct from _windows
+    // above because a proc window can fire MULTIPLE times up to maxProcs, not just once.
+    this._procWindows = new Map();
   }
 
   /** Call for every 'cast:TYPE:SKILL' key that occurs, so requires-prior-cast can later check it. */
@@ -76,6 +80,30 @@ export class RotationSimulator {
     return (this.time - openedAt) <= windowSeconds;
   }
 
+  /** Call when a windowed-proc block's opensOnProc trigger fires — (re)opens the proc window,
+   *  resetting its count. A cast that reopens an already-open window (e.g. re-casting Liberation
+   *  before the prior 30s window closed) restarts the count, matching "in the first 30s after
+   *  casting" being anchored to the MOST RECENT cast, not accumulating across casts. */
+  openProcWindow(windowKey, windowSeconds, maxProcs) {
+    this._procWindows.set(windowKey, { openedAt: this.time, windowSeconds, count: 0, maxProcs });
+  }
+
+  /** Call when a qualifying hit (the proc block's `on` type) occurs while a proc window might be
+   *  open. Returns whether this hit actually procs: window must still be open (within
+   *  windowSeconds of when it opened) AND the count must be under maxProcs. Increments the count
+   *  on a successful proc; closes (deletes) the window once it's both expired and exhausted is not
+   *  required — expiry alone doesn't delete the entry (a later hit checks elapsed time again), but
+   *  once maxProcs is reached the window is removed since no further check can ever succeed. */
+  tryProc(windowKey) {
+    const w = this._procWindows.get(windowKey);
+    if (!w) return false;
+    if ((this.time - w.openedAt) > w.windowSeconds) { this._procWindows.delete(windowKey); return false; }
+    if (w.count >= w.maxProcs) return false;
+    w.count += 1;
+    if (w.count >= w.maxProcs) this._procWindows.delete(windowKey);
+    return true;
+  }
+
   /** Call when this character casts the outro block identified by `outroBlockId`, opening the
    *  partner-return window with the swap allowance named by the gating block's own trigger. */
   openPartnerOutroWindow(outroBlockId, maxInterveningSwaps) {
@@ -108,7 +136,7 @@ export class RotationSimulator {
  *
  * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks
  * @param {Object[]} steps  Each: { type, skill, stepSeconds?, isSwap?, isSwapIn?, isOutroCast?,
- *   partnerReturnFor?, checksPriorCast? } — `type`/`skill` (when present) form the step's own
+ *   partnerReturnFor?, checksPriorCast?, triesProc? } — `type`/`skill` (when present) form the step's own
  *   'cast:TYPE:SKILL' key the same way triggerEngine.js's triggerKey() does, and are also recorded
  *   for 'requires-prior-cast' tracking. `isSwap` marks a character-swap event (advances every open
  *   partner-outro window's swap count). `isSwapIn` marks that this step is THIS character
@@ -117,7 +145,9 @@ export class RotationSimulator {
  *   for any 'partner-outro-return' block in `blocks` that references it). `partnerReturnFor` names
  *   an outro block id — set this on the step representing "the buffed partner cast their own Outro
  *   back" to attempt consuming that window. `checksPriorCast` names a 'requires-prior-cast' block
- *   id whose dependency should be checked at this step.
+ *   id whose dependency should be checked at this step. `triesProc` names a 'windowed-proc' block
+ *   id whose window should be checked for a proc at this step (only fires if that block's window is
+ *   currently open and under its cap — see openProcWindow/tryProc).
  * @returns {{ step: Object, firedTriggers: Set<string> }[]}
  */
 export function simulateRotation(blocks, steps) {
@@ -125,6 +155,7 @@ export function simulateRotation(blocks, steps) {
   const windowedBlocks = blocks.filter(b => b.trigger.type === 'windowed-cast');
   const partnerBlocks = blocks.filter(b => b.trigger.type === 'partner-outro-return');
   const priorCastBlocks = blocks.filter(b => b.trigger.type === 'requires-prior-cast');
+  const procBlocks = blocks.filter(b => b.trigger.type === 'windowed-proc');
   const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
 
   const results = [];
@@ -141,6 +172,11 @@ export function simulateRotation(blocks, steps) {
       sim.recordCast(castKey);
       for (const b of windowedBlocks) {
         if (b.trigger.opensOn.includes(castKey)) sim.openWindow(b.trigger.opensOn.join('|'));
+      }
+      for (const b of procBlocks) {
+        if (b.trigger.opensOnProc.includes(castKey)) {
+          sim.openProcWindow(b.trigger.opensOnProc.join('|'), b.trigger.windowSeconds, b.trigger.maxProcs);
+        }
       }
     }
 
@@ -164,6 +200,16 @@ export function simulateRotation(blocks, steps) {
     if (ev.isOutroCast && ownOutroBlock) {
       const gating = partnerBlocks.find(b => b.trigger.requiresActiveBlock === ownOutroBlock.id);
       if (gating) sim.openPartnerOutroWindow(ownOutroBlock.id, gating.trigger.maxInterveningSwaps);
+    }
+
+    if (ev.triesProc) {
+      const b = procBlocks.find(x => x.id === ev.triesProc);
+      if (b) {
+        const windowKey = b.trigger.opensOnProc.join('|');
+        if (sim.tryProc(windowKey)) {
+          fired.add(`windowed-proc:${windowKey}`);
+        }
+      }
     }
 
     if (ev.partnerReturnFor) {
