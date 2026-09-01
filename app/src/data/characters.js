@@ -3912,8 +3912,8 @@ const SKILL_MULTIPLIERS = {
     ['Basic ATK', 'Mid-air Attack', '73.96%', 'Consumes STA; grants Trigram - Thunder on hit.'],
     ['Basic ATK', 'Heavy Attack - Mountain Over Thunder', '178.93%', 'Consumes 1 Trigram - Mountain + 1 Trigram - Thunder (in that order); grants Minor Yang.'],
     ['Basic ATK', 'Heavy Attack - Thunder Over Mountain', '89.47%', 'Consumes 1 Trigram - Thunder + 1 Trigram - Mountain (in that order); small DMG, also reduces target Vibration Strength; grants Minor Yang.'],
-    ['Basic ATK', 'Heavy Attack - Twin Mountains', '360 flat + 135.20%', 'Consumes 2 Trigram - Mountain; heals all nearby team Resonators instead of dealing full DMG; grants Minor Yin.'],
-    ['Basic ATK', 'Heavy Attack - Twin Thunders', '85 flat + 18.30%', 'Consumes 2 Trigram - Thunder; heals all nearby team Resonators once/s for 8s; grants Minor Yin.'],
+    ['Basic ATK', 'Heavy Attack - Twin Mountains', '716 flat + 135.20% ATK', 'Consumes 2 Trigram - Mountain; heals all nearby team Resonators instead of dealing full DMG; grants Minor Yin. Flat value corrected 2026-09-01 from 360 (roughly half the real 716).'],
+    ['Basic ATK', 'Heavy Attack - Twin Thunders', '169 flat + 18.30% ATK', 'Consumes 2 Trigram - Thunder; heals all nearby team Resonators once/s for 8s; grants Minor Yin. Flat value corrected 2026-09-01 from 85 (roughly half the real 169).'],
     ['Skill', 'In Shadow Thunder Stirs: Thunder Talisman', '58.40%', 'Pulls in nearby targets; can chain into Basic Attack Stage 4 right after cast.'],
     ['Skill', 'In Shadow Thunder Stirs: Pull-in Effect', '5.84%×10', 'Continuous DMG while pulling targets in.'],
     ['Liberation', 'Flashing Thunder Spell', '357.86%', 'Base-kit Liberation, used when Buling lacks both Minor Yin and Minor Yang.'],
@@ -6044,7 +6044,13 @@ const RESONANCE_CHAIN_DATA = {
   // same treatment). S6 "Almighty Forum Lord of Thunder Spell" — upgrades the enhanced Liberation's
   // Thunder Spell - Heaven, Earth, Mind state from 25% to 50% Resonance Skill DMG Bonus to the active
   // Resonator (confirmed exact -> skillDmg, matches CHAR_BUFF_TABLE's libBuffs note above).
-  'Buling':       { s1: { critRate: 20 }, s2: { totalMult: 3 }, s3: { totalMult: 3 }, s4: { totalMult: 3 }, s5: { totalMult: 3 }, s6: { skillDmg: 50 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Buling/Combat, cross-checked against
+  // ww.nanoka.cc/character/1307 (both agree exactly). S2-S5's totalMult: 3 placeholders had no real
+  // derivation — none of them have a DPS component: S2 is pure Resonance Energy restore, S3 and S4 are
+  // healing-only stats, S5 is an extra Electro Flare stack application with no flat DMG% conversion.
+  // Zeroed all four to {} per this project's hard rule against inventing values. S1/S6 confirmed correct.
+  // TODO: needs Phase 2 schema for S3/S4's healing bonuses and S5's stacking-DoT-application mechanic.
+  'Buling':       { s1: { critRate: 20 }, s2: {}, s3: {}, s4: {}, s5: {}, s6: { skillDmg: 50 } },
   // corrected 2026-08-18: prior values (atkPct:8/skillDmg:10/atkPct:8/skillDmg:10/totalMult:10/elemDmg:12) had no basis
   // in Chixia's real chain kit (fandom Combat page). S1 Boom Boom hits always Crit (utility, no %-stat fits). S2
   // Liberation kill-refund of Resonance Energy (utility). S3 Liberation Blazing Flames DMG+40% vs targets below 50%
