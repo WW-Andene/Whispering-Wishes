@@ -359,17 +359,28 @@ function TeamsTab({
                 mentionedByThisMember.forEach(m => curatedVotes.set(m, (curatedVotes.get(m) || 0) + 1));
               });
               // Full synergy score for every eligible candidate — drives sort order for the whole list.
+              // Fixed 2026-09-01 (found via a per-character/all-pairs recommendation audit): without an
+              // explicit crown AND with no role-tagged 'Main DPS' among the already-placed members yet
+              // (the common case — a player who just placed a single Sub DPS/support character, e.g.
+              // Yinlin, hasn't crowned anyone), scoreTeamComposition's own internal fallback
+              // (`roleMainDps = members.find(role === 'Main DPS')`) let any candidate who happens to
+              // BE role:'Main DPS' silently become the presumed carry of the hypothetical team for
+              // scoring purposes — evaluating "how good would THIS candidate be as the star, with the
+              // placed member as their support" instead of "how good is this candidate AS A TEAMMATE
+              // for the character the player is actually building around". Every top-tier, off-element
+              // Main DPS in the roster (Hiyuki, Aemeath, Sigrika, ...) won this way for nearly any
+              // placed Sub DPS/support, regardless of real synergy. Anchor the assumed carry explicitly:
+              // the crown if set, else an already-placed role:'Main DPS' member if one exists, else the
+              // first character the player actually placed — never let the yet-untested candidate
+              // itself claim the role.
+              const assumedMainDps = activeTeam.mainDpsOverride
+                || placedNow.find(m => CHARACTER_DATA[m]?.role === 'Main DPS')
+                || placedNow[0];
               const candidateScores = new Map();
               allCharNames.forEach(name => {
                 if (usedInTeam.has(name) || (usedRoverAttuned && name.startsWith('Rover:')) || !CHARACTER_DATA[name]) return;
                 const hypotheticalTeam = placedNow.length > 0 ? [...placedNow, name] : [name];
-                // Thread the player's own crowned headline DPS through here too — the Team Suggestions
-                // card already does this (scoreTeam at the top of this component), but this selector
-                // call was scoring every candidate against whichever role-tagged 'Main DPS' happened to
-                // be placed (or none), silently ignoring an explicit crown on a Sub DPS hypercarry. A
-                // player who crowned a Sub DPS as their real carry would get teammate recommendations
-                // scored with zero DPS-synergy awareness of that choice.
-                const { score } = scoreTeamComposition(hypotheticalTeam, ownedWeapsForRec, activeTeam.mainDpsOverride);
+                const { score } = scoreTeamComposition(hypotheticalTeam, ownedWeapsForRec, assumedMainDps);
                 candidateScores.set(name, score + (curatedVotes.get(name) || 0) * 20);
               });
               // "Recommended" badge/highlight = top-scoring candidates only — now that every eligible

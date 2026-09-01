@@ -953,7 +953,26 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     const sumOnField = members.reduce((s, m) => s + (CHARACTER_DATA[m]?.onField ?? (m === mainDps ? 15 : 5)), 0);
     const teamRotTime = Math.max(15, Math.min(35, sumOnField + 2));
     const teamMainOnField = Math.min(dpsOnField || 15, teamRotTime * 0.8);
-    const subDpsPool = members.filter(m => m !== mainDps && (CHARACTER_DATA[m]?.totalMult || 0) > 0);
+    // Fixed 2026-09-01 (found via a per-character/all-pairs recommendation audit — top-tier, unrelated-
+    // element Main DPS like Hiyuki/Aemeath/Sigrika kept winning "who should I add next" for characters
+    // they share nothing with, purely off this credit): this scorer evaluates HYPOTHETICAL teams that
+    // may still be incomplete — TeamsTab.jsx's teammate selector scores every candidate against just
+    // the already-placed members, as few as 1 of the eventual 3. calcSubDpsFieldMultRatio's own field-
+    // time-share math (shared with the real calcTeamStats.js FULL tier, where `members` is always a
+    // real, complete 3-slot team) assumes subDpsPool already lists EVERY off-field competitor for the
+    // mainDps's remaining on-field window — true there, but not yet true for a 2-member hypothetical: a
+    // still-unpicked slot will also compete for that same window once the team is actually finished,
+    // and omitting it handed 100% of the off-field time to a single lone candidate that a genuine 3rd
+    // teammate will end up splitting it with, inflating that candidate's real off-field-DPS credit well
+    // past what they'd realistically land on a finished team. Pad the pool with a placeholder (onField
+    // defaults to 5 via calcSubDpsFieldMultRatio's own existing `|| 5` fallback for an unrecognized
+    // name) for each still-open slot, so an incomplete hypothetical's off-field-DPS credit reflects the
+    // same time-sharing a real completed team would apply — a real, complete team (openSlots === 0)
+    // scores byte-identical to before this fix.
+    const STANDARD_TEAM_SIZE = 3;
+    const openSlots = Math.max(0, STANDARD_TEAM_SIZE - members.length);
+    const subDpsPool = members.filter(m => m !== mainDps && (CHARACTER_DATA[m]?.totalMult || 0) > 0)
+      .concat(Array.from({ length: openSlots }, (_, i) => `__open-slot-${i}__`));
     // A non-mainDps member's own real-damage-equivalent contribution, on the same 0-25 power scale
     // and enemy-RES gate as the mainDps score above, discounted by how much of their totalMult they
     // can actually realistically land per calcSubDpsFieldMultRatio (real fieldRatio/coordShare math,
