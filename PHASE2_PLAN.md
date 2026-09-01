@@ -1001,8 +1001,41 @@ still carrying a stale `totalMult:10`, and an Intro self-buff
 `CHAR_BUFF_TABLE['Chisa'].selfBuffs` (empty array) — found only by
 reading `CHARACTER_ROTATIONS`' own step note text.
 
-**Next**: batch 2 of 10, same one-at-a-time/full-precision/commit-at-10
-cadence, continuing alphabetically through the remaining roster.
+## Character-roster conversion — batch 2 of ~6 (2026-09-01)
+
+**Batch 2 — done, all individually verified, 843/843 suite passing:**
+Chixia, Ciaccona, Danjin, Denia, Encore, Galbrena, Hiyuki, Iuno, Jianxin,
+Jiyan. `calcTeamStats.js` never touched.
+
+**Jingran skipped, not converted**: he has NO `CHARACTER_ROTATIONS` entry
+at all — characters.js's own comment (near the top of the roster data)
+explicitly documents this as unreleased content (ships ~Sept 10, 2026)
+and states both source sites confirm no real rotation/Forte/Sequence data
+exists yet ("not fabricatable"). Converting him would require inventing a
+rotation, which the precision mandate rules out. Skipped in favor of the
+next alphabetical character (Jiyan) for this batch; revisit once his kit
+actually ships and `CHARACTER_ROTATIONS['Jingran']` has real data.
+
+**Real omissions/corrections caught by reading full audit-comment context
+this batch**: Jianxin's S6 (Special Chi Counter) modeled as a real
+556.67%-ATK proc-damage block instead of the flat table's own zeroed
+approximation (same treatment as Yinlin's S6 and Calcharo's S6 in batch
+1); Jiyan's S1 zeroed correctly (pure utility) while S5's two genuinely
+separate effects (Outro's own +120% multiplier vs. a +3%/hit ATK stack
+capped at 15) were kept as two distinct blocks rather than collapsed;
+Galbrena's Afterflame mechanic (shared between her S1 and her own debuff)
+correctly documented as gained from ANY teammate's Echo Skill cast, not
+her own — a cross-character trigger this schema has no clean anchor for;
+Denia's two mutually-exclusive real Outro effects (Tune Strain mode vs.
+Fusion Burst mode) modeled as two separate condition-gated blocks instead
+of picking one; Iuno's S4 correctly left unmodeled (a pure defensive team
+shield, zero DPS) even though it's numerically substantial in-game.
+
+**Next**: batch 3 of 10, same one-at-a-time/full-precision/commit-at-10
+cadence, continuing alphabetically from Lingyang through the remaining
+roster (Jinhsi/Rover: Electro/Shorekeeper/Yinlin were already converted
+earlier in this phase, before the batch-of-10 cadence started; Jingran
+stays skipped until he ships).
 
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
