@@ -16,10 +16,157 @@
 // __tests__/triggerEngine-augusta.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+
 const SOURCE = 'Augusta';
 
 /** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
 export const AUGUSTA_BLOCKS = [
+  // ── Damage blocks (from SKILL_MULTIPLIERS) — added 2026-09-01, this character's FIRST damage
+  //    blocks (her original conversion only covered buffs/Resonance Chain). Several of her
+  //    SKILL_MULTIPLIERS rows combine MULTIPLE distinct moves with a '/' separator (e.g. Thunderoar:
+  //    "Backstep 27% / Spinslash 71.3%×3 / Uppercut 90%×2") — each real CHARACTER_ROTATIONS step gets
+  //    only the ONE sub-value it actually names, same "split shared multi-hit nodes" precedent as
+  //    Yinlin's Lightning Execution / Camellya's S5. Basic ATK (Hunter's Path), plain Heavy ATK
+  //    (Steelclash), and Uppercut have real rows but no matching CHARACTER_ROTATIONS step in her
+  //    current sequence — no block for them yet, same "only what a real step needs" rule as
+  //    Shorekeeper's conversion. ──
+  {
+    id: 'augusta.heavy.thunderoar-backstep',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Heavy ATK:Thunderoar: Backstep' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('27%'), category: 'heavyDmg' },
+    note: 'Once Prowess is capped, HOLD Basic Attack (Heavy Attack replaced) — consumes all Prowess.',
+  },
+  {
+    id: 'augusta.heavy.thunderoar-spinslash',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Heavy ATK:Thunderoar: Spinslash' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('71.3%×3'), category: 'heavyDmg' },
+    note: "Auto-chains off Backstep — a whirling follow-up hit.",
+  },
+  {
+    id: 'augusta.heavy.thunderoar-backstep-spinslash-repeat',
+    source: SOURCE,
+    kind: 'damage',
+    // CHARACTER_ROTATIONS' 2nd Thunderoar combo (once Prowess refills) is one combined step
+    // ('Heavy ATK: Thunderoar: Backstep → Spinslash'), a DIFFERENT label than either single-move step
+    // above — needs its own block to actually match, same reasoning as Yinlin's split. Reuses the
+    // SAME real per-move values (27%/71.3%×3), not new numbers.
+    trigger: { type: 'cast', on: 'Heavy ATK:Thunderoar: Backstep → Spinslash' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('27%+71.3%×3'), category: 'heavyDmg' },
+    note: 'Once Prowess refills, repeat the Backstep-into-Spinslash combo a 2nd time.',
+  },
+  {
+    id: 'augusta.skill.warriors-blade',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: "Skill:Warrior's Blade" },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('110%×3'), category: 'skillDmg' },
+    note: "Press Skill right as Spinslash's damage lands, to cancel its endlag.",
+  },
+  {
+    id: 'augusta.liberation.sword-of-eternal-oath',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Sword of Eternal Oath' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // "counted as Heavy ATK DMG" per its own kit text (the exact case calcEngine.js's own
+    // NOTE_OVERRIDE_RE comment names as the reason that reclassification regex exists at all) —
+    // category: 'heavyDmg', not 'libDmg', despite the Liberation-button input.
+    damage: { hits: parseSkillMultiplierHits('16.6%×2 + 66.4%×3 + 16.6%×2 + 287.6%'), category: 'heavyDmg' },
+    note: "Press (and release) Liberation right as the 2nd Spinslash lands — a sweeping hit counted as Heavy ATK DMG, restores the last 40% Ascendancy.",
+  },
+  {
+    id: 'augusta.skill.undying-sunlight-strike',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Undying Sunlight: Strike' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('70%×2'), category: 'skillDmg' },
+    note: 'Once Ascendancy is capped, press Skill (auto-replaced).',
+  },
+  {
+    id: 'augusta.skill.undying-sunlight-leap',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Undying Sunlight: Leap' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('112%+14%×2'), category: 'skillDmg' },
+    note: 'Auto-chains — a follow-up hit.',
+  },
+  {
+    id: 'augusta.skill.undying-sunlight-plunge',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Undying Sunlight: Plunge' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // "counted as Heavy ATK DMG" per its own CHARACTER_ROTATIONS note, same reclassification pattern
+    // as Sword of Eternal Oath above.
+    damage: { hits: parseSkillMultiplierHits('43.6%+392%'), category: 'heavyDmg' },
+    note: 'Consumes all Ascendancy for a hit (counted as Heavy ATK DMG) and grants 1 Majesty stack.',
+  },
+  {
+    id: 'augusta.liberation.sunborne',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Sublime is the Sun: Sunborne ×9' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('60%×9'), category: 'libDmg' },
+    note: 'Tap or hold Basic Attack repeatedly — 9 rapid Heavy ATK-type hits during the frozen time window (SKILL_MULTIPLIERS lists this under the Liberation row group; kept libDmg since no "counted as" override is stated for it, unlike Sword of Eternal Oath/Plunge above).',
+  },
+  {
+    id: 'augusta.liberation.everbright-protector',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Sublime is the Sun: Everbright Protector' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('120% + 450% + 3%×10'), category: 'libDmg' },
+    note: 'Fires automatically after the 9th Sunborne hit — a big finishing hit that ends Sworn Allegiance and consumes all Crown of Wills stacks.',
+  },
+  {
+    id: 'augusta.intro.stride-of-goldenflare',
+    source: SOURCE,
+    kind: 'damage',
+    // 'cast'-type (not 'swap-in') to match augusta.chain.s4-ascent-in-sun-and-glory's own trigger for
+    // this exact same real cast, rather than a generic "any swap-in" — this is specifically Stride of
+    // Goldenflare landing, not just any character entering the field.
+    trigger: { type: 'cast', on: 'Intro:Stride of Goldenflare' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // No `category` — Intro/Outro excluded from calcEngine.js's dmgFocus-routing buckets, same as
+    // Rover: Electro's Intro block.
+    damage: { hits: parseSkillMultiplierHits('50%×2') },
+    note: 'Swap into her — fires automatically, fully restores Prowess and 20% Ascendancy.',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'augusta.outro.battlesong',

@@ -11,6 +11,7 @@ import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blocks.js';
 import { SHOREKEEPER_BLOCKS } from '../engine/characterBlocks/shorekeeper.blocks.js';
+import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { parseSkillMultiplierHits, sumHitsAtkPct } from '../engine/skillMultiplierParser.js';
 
 // Zero DEF/RES so defMult/resMult both come out to exactly 1 — isolates the test to just the
@@ -216,5 +217,48 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     // explicitly no-direct-DMG per their own kit text (healing/buff-only), so no damage block exists
     // for either.
     expect(firedBlockIds.has('shorekeeper.liberation.end-loop')).toBe(false);
+  });
+});
+
+describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS data (Augusta)', () => {
+  it('computes a real total across her whole rotation, correctly distinguishing the two separate Thunderoar combo steps and applying "counted as Heavy ATK DMG" reclassifications', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Augusta'], AUGUSTA_BLOCKS);
+    const { totalDamage, dps, hitLog } = resolveHitComposedDps(AUGUSTA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3500, 'electro', 'Main DPS');
+
+    expect(totalDamage).toBeGreaterThan(0);
+    expect(dps).toBeGreaterThan(0);
+
+    const firedBlockIds = new Set(hitLog.map(h => h.blockId));
+    expect(firedBlockIds.has('augusta.intro.stride-of-goldenflare')).toBe(true);
+    expect(firedBlockIds.has('augusta.heavy.thunderoar-backstep')).toBe(true); // 1st combo (separate steps)
+    expect(firedBlockIds.has('augusta.heavy.thunderoar-spinslash')).toBe(true);
+    expect(firedBlockIds.has('augusta.heavy.thunderoar-backstep-spinslash-repeat')).toBe(true); // 2nd combo (combined step)
+    expect(firedBlockIds.has('augusta.skill.warriors-blade')).toBe(true);
+    expect(firedBlockIds.has('augusta.liberation.sword-of-eternal-oath')).toBe(true);
+    expect(firedBlockIds.has('augusta.skill.undying-sunlight-strike')).toBe(true);
+    expect(firedBlockIds.has('augusta.skill.undying-sunlight-leap')).toBe(true);
+    expect(firedBlockIds.has('augusta.skill.undying-sunlight-plunge')).toBe(true);
+    expect(firedBlockIds.has('augusta.liberation.sunborne')).toBe(true);
+    expect(firedBlockIds.has('augusta.liberation.everbright-protector')).toBe(true);
+
+    // Sword of Eternal Oath and Undying Sunlight: Plunge both carry a "counted as Heavy ATK DMG"
+    // category override despite their Liberation/Skill-button inputs — confirm the block data itself
+    // reflects that (the reclassification's actual DPS effect would need a heavyDmg-buffing block to
+    // spot-check against, which nothing in her current kit provides — this asserts the data is
+    // correctly tagged, not a live before/after comparison).
+    const swordBlock = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.liberation.sword-of-eternal-oath');
+    const plungeBlock = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.skill.undying-sunlight-plunge');
+    expect(swordBlock.damage.category).toBe('heavyDmg');
+    expect(plungeBlock.damage.category).toBe('heavyDmg');
+  });
+
+  it("Undying Sunlight: Leap's real hits (112%+14%×2) are independently hand-verifiable", () => {
+    const leapBlock = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.skill.undying-sunlight-leap');
+    const steps = [{ type: 'Skill', skill: 'Undying Sunlight: Leap', stepSeconds: 1 }];
+    const { hitLog, totalDamage } = resolveHitComposedDps([leapBlock], steps, NEUTRAL_ENEMY, 1000);
+    expect(hitLog.map(h => h.atkPct)).toEqual([112, 14, 14]);
+    const avgCrit = 1 + (5 / 100) * (150 / 100 - 1);
+    const expected = 1000 * avgCrit * ((112 + 14 + 14) / 100);
+    expect(totalDamage).toBeCloseTo(expected, 6);
   });
 });
