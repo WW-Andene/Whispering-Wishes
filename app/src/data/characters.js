@@ -2965,14 +2965,30 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Outdated Hallucination', '69.14%×2', 'Opener that reveals enemies through walls.'],
     ['Outro', 'Countermeasure Program', '25% Basic ATK DMG Amp to next + team Hack-Shifting response', "Buffs next ally's Basic ATK DMG."],
   ],
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Rebecca/Combat, cross-checked against
+  // ww.nanoka.cc/character/1308 (both agree on every value exactly, including the "Lucy" reference in
+  // the Outro's Overlimit text — re-verified as a real cross-character interaction, not a copy/paste
+  // error, since it's identical and independent across both sources). Fixed a real zero-damage rotation
+  // bug: CHARACTER_ROTATIONS.Rebecca's 'Basic ATK'/'Guts Stage 1-3' step had no matching row at all — the
+  // whole Guts-mode Basic ATK combo was missing from this table, added below. Also added the missing
+  // base (non-Forte) Heavy ATK for both stances and the "Hey, Leadhead, Come 'n' Get Me!" Intro variant,
+  // and fixed a fabricated Liberation value: Party 'til Dawn' was stored as "24.30%→116.64% ramp", but
+  // 116.64% never appears as a DMG Multiplier anywhere in either source (it's the unrelated Elemental DMG
+  // stat from the raw scaling table's 2nd-Enhancement row) — the real mechanic is 3 discrete auto-fire
+  // tiers (24.30% / 48.60% / 72.90%), corrected below.
   'Rebecca': [
-    ['Basic ATK', 'Mix-\'n\'-Match', '36.76%+36.76% → 19.13%×4+19.13% → 109.85%', 'Standard combo in Huntress or Guts stance.'],
+    ['Basic ATK', 'Huntress Stage 1-3', '36.76%×2 → 19.13%×4+19.13% → 109.85%'],
+    ['Basic ATK', 'Guts Stage 1-3', '61.69%×2 → 84.50% → 33.77%×2+157.57%'],
+    ['Heavy ATK', 'Standard - Huntress', '16.90%×2'],
+    ['Heavy ATK', 'Standard - Guts', '202.79%'],
     ['Heavy ATK', 'Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts', '19.89%×3+318.10%+19.89% / 278.34%', 'Forte finisher once Fervor is maxed.'],
     ['Skill', "It's Big Boomin' Time! / Come 'n' Get Me!", '23.66%×4+35.49%×4 / 23.66%+4.74%+23.66%×2+137.22%+11.83%×2', 'Closes distance and swaps stance.'],
-    ['Liberation', "Party 'til Dawn! / BOOM! Fireworks!", '24.30%→116.64% ramp / 63.62%+572.58%', 'Channeled minigun into a finishing blast.'],
+    ['Liberation', "Party 'til Dawn!", '24.30% / 48.60% (1st enhancement) / 72.90% (2nd enhancement), auto-fires repeatedly for 9.5s', 'Mk. 31 HMG channel; pressing/holding Basic ATK or Liberation during it ramps to the next firepower tier and builds Overload faster.'],
+    ['Liberation', 'BOOM! Fireworks!', '63.62%+572.58%', 'Auto-casts when the channel ends or Overload maxes.'],
     ['Forte', 'Hack Response - Meltdown', '2358.89% (Hack DMG)', 'Bonus DMG when allies inflict Hack-Interfered.'],
-    ['Intro', "Yo, It's Big Boomin' Time!", '27.04%×6+40.56%+67.60%', 'Opener that also swaps stance.'],
-    ['Outro', 'Preem Choom', 'Turret + Edgerunner Bonds (All DMG Amp) + Overlimit stacks', "Leaves a turret; buffs next ally's Heavy ATK DMG."],
+    ['Intro', "Yo, It's Big Boomin' Time!", '27.04%×6+40.56%+67.60%', 'Huntress-mode opener that also swaps her to Guts.'],
+    ['Intro', "Hey, Leadhead, Come 'n' Get Me!", '10.14%+30.42%+40.56%×4', 'Guts-mode opener that also swaps her to Huntress.'],
+    ['Outro', 'Preem Choom', 'Turret (2.5% Electro DMG/hit, 14s) + Edgerunner Bonds (15% All DMG Amp, 14s) + Overlimit (0.5%/0.2s Heavy ATK DMG Amp, up to 35%)', "Leaves a turret; buffs next ally's All DMG and Heavy ATK DMG."],
   ],
   'Denia': [
     ['Basic ATK', 'Stagecraft/Breakdown Form Stage 1-4', 'Fusion DMG, applies Fusion Burst or Tune Strain - Shifting on Stage 3/4', 'Combo that applies Fusion Burst or Tune Strain.'],
@@ -4940,7 +4956,18 @@ const RESONANCE_CHAIN_DATA = {
   // Hack-Shifting (confirmed)
   'Lucy':         { s1: { atkPct: 20 }, s2: { totalMult: 30 }, s3: { libDmg: 50, critDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
   // Rebecca S2: team +20% All-Attribute DMG on Intro/Lib (confirmed exact). S3: Liberation DMG Mult+60% (confirmed exact)
-  'Rebecca':      { s1: { basicDmg: 50 }, s2: { allDmg: 20 }, s3: { libDmg: 60 }, s4: { totalMult: 15 }, s5: { basicDmg: 20 }, s6: { basicDmg: 40 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Rebecca/Combat, cross-checked against
+  // ww.nanoka.cc/character/1308 (both agree exactly). S1 (basicDmg: 50, "Huntress/Guts core moves DMG
+  // Mult +50%") and S5 (basicDmg: 20, "+20% Basic ATK DMG Bonus for 8s on inflicting Hack - Shifting")
+  // both confirmed exact. S4 was totalMult: 15 with no basis in either source — real effect is "+60%
+  // Stat Bonus increase to the A Girl Gets What She Wants! effect" (itself a conditional buff of Crit
+  // DMG/DEF Ignore that only exists while AGGWS is active), a buff-to-a-buff with no flat-schema
+  // equivalent. Zeroed to {} rather than guessing. TODO: needs Phase 2 schema. S6's basicDmg: 40 ("+40%
+  // Basic ATK DMG Bonus from every source") is directionally correct but the node also grants a separate
+  // bonus hit — an extra instance of Electro DMG equal to 900% ATK during Rat-tat-tat!/Bang-bang-bang!,
+  // considered Basic Attack DMG — not represented here (same bonus-hit-at-flat-%-ATK class documented
+  // elsewhere in this file, e.g. Xiangli Yao's S1/Ciaccona's S6). TODO: needs Phase 2 schema.
+  'Rebecca':      { s1: { basicDmg: 50 }, s2: { allDmg: 20 }, s3: { libDmg: 60 }, s4: {}, s5: { basicDmg: 20 }, s6: { basicDmg: 40 } },
   // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere).
   // S5: Final Act - Stagecraft Form DMG+100% (confirmed exact via Nanoka/Prydwen 2026-08-16 cross-check; was 50 previously)
   'Denia':        { s1: { critDmg: 30 }, s2: { libDmg: 40 }, s3: { libDmg: 80 }, s4: { totalMult: 15 }, s5: { libDmg: 100 }, s6: { elemDmg: 60 } },
