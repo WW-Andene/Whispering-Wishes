@@ -307,6 +307,10 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     expect(firedBlockIds.has('camellya.liberation.fervor-efflorescent')).toBe(true);
     expect(firedBlockIds.has('camellya.forte.ephemeral')).toBe(true); // resource-threshold, resourceStepOn'd
     expect(firedBlockIds.has('camellya.outro.twining-base')).toBe(true);
+    // Her real rotation casts Forte Ephemeral (step 5) BEFORE Outro Twining (the last step), so the
+    // conditional +459.02% bonus should actually compose now — was a documented gap, closed same day
+    // once resolveHitComposedDps.js/TeamDps existed to give it somewhere real to land.
+    expect(firedBlockIds.has('camellya.outro.twining-ephemeral-bonus')).toBe(true);
 
     // The combined 'Vining Waltz 1-4 / Blazing Waltz' step appears TWICE in her rotation (Blossom
     // Mode, then again in Budding Mode) — both fire the SAME block, a documented limitation (see the
@@ -316,13 +320,28 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     expect(comboFires.length % 12).toBe(0); // 12 hits per cast (1+2+6+3) — confirms whole-cast multiples, not a partial misfire
   });
 
-  it("Twining's REAL total only includes the unconditional base hit (329.24%) — the conditional +459.02% bonus is a documented, separate gap, not silently included", () => {
+  it("Twining's total includes BOTH the base hit (329.24%) and the conditional bonus (459.02%) when Ephemeral was cast earlier this segment — and ONLY the base hit when it wasn't", () => {
     const twiningBaseBlock = CAMELLYA_BLOCKS.find(b => b.id === 'camellya.outro.twining-base');
-    const steps = [{ type: 'Outro', skill: 'Twining', stepSeconds: 1 }];
-    const { hitLog, totalDamage } = resolveHitComposedDps([twiningBaseBlock], steps, NEUTRAL_ENEMY, 1000);
-    expect(hitLog).toHaveLength(1);
-    expect(hitLog[0].atkPct).toBe(329.24);
+    const bonusBlock = CAMELLYA_BLOCKS.find(b => b.id === 'camellya.outro.twining-ephemeral-bonus');
+    const blocks = [twiningBaseBlock, bonusBlock];
+
+    // Success case: Ephemeral cast earlier this segment.
+    const successSteps = [
+      { isSwapIn: true, stepSeconds: 0 },
+      { type: 'Forte', skill: 'Ephemeral', stepSeconds: 5 },
+      { type: 'Outro', skill: 'Twining', checksPriorCast: bonusBlock.id, stepSeconds: 3 },
+    ];
+    const { hitLog: successLog, totalDamage: successTotal } = resolveHitComposedDps(blocks, successSteps, NEUTRAL_ENEMY, 1000);
+    expect(successLog.map(h => h.atkPct).sort((a, b) => a - b)).toEqual([329.24, 459.02]);
     const avgCrit = 1 + (5 / 100) * (150 / 100 - 1);
-    expect(totalDamage).toBeCloseTo(1000 * avgCrit * (329.24 / 100), 6);
+    expect(successTotal).toBeCloseTo(1000 * avgCrit * ((329.24 + 459.02) / 100), 6);
+
+    // Forfeit case: Ephemeral never cast this segment.
+    const forfeitSteps = [
+      { isSwapIn: true, stepSeconds: 0 },
+      { type: 'Outro', skill: 'Twining', checksPriorCast: bonusBlock.id, stepSeconds: 3 },
+    ];
+    const { hitLog: forfeitLog } = resolveHitComposedDps(blocks, forfeitSteps, NEUTRAL_ENEMY, 1000);
+    expect(forfeitLog.map(h => h.atkPct)).toEqual([329.24]);
   });
 });

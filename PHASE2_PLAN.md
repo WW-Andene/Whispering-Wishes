@@ -934,15 +934,33 @@ against the TARGET's own on-field segment duration (matching real-game
 "how hard does this character hit while actually on field"), not the whole
 team timeline.
 
-**Still not done, deliberately**: (1) the two documented gaps from the
-per-character damage-block pass (Camellya's repeated-step ambiguity, her
-Twining conditional bonus), (2) the actual `calcTeamStats.js` gating/wiring
-decision — still requires its own separate go-ahead, per the "never
-all-or-nothing" rule, and is not any closer to being decided than before
-this stage — none of this proves anything beyond the ARCHITECTURE being
-sound. (3) Converting the remaining ~54 unconverted characters to the
-engine at all — a separate, much larger, ongoing roster-coverage effort,
-distinct from "finishing the engine" itself.
+**Camellya's Twining conditional-bonus gap — CLOSED 2026-09-01 (same day),
+once there was somewhere real for it to land.** With
+`resolveHitComposedDps.js`/`resolveHitComposedTeamDps.js` now existing,
+`camellya.outro.twining-ephemeral-bonus` changed from `kind: 'utility'`
+(a bare condition marker, `effects: []`) to `kind: 'damage'` with a real
+`damage: { hits: [{atkPct: 459.02}] }`. No new wiring was needed —
+`deriveStepsFromRotation()`'s existing `checksAt` tagging already fires
+this block's `requires-prior-cast` key on the SAME step as
+`camellya.outro.twining-base`'s cast key, so both blocks resolve together
+automatically. Verified with success (Ephemeral cast earlier this segment
+→ both 329.24% AND 459.02% hits land) and forfeit (never cast → only the
+base 329.24%) cases, plus confirmed her REAL `CHARACTER_ROTATIONS`
+sequence (Ephemeral at step 5, Twining at the last step) actually composes
+the bonus now.
+
+**Still not done, deliberately**: (1) Camellya's OTHER documented gap
+(her repeated `'Vining Waltz 1-4 / Blazing Waltz'` step sharing one label
+across two mechanically-different casts) — genuinely blocked without new
+`CHARACTER_ROTATIONS` data (the two occurrences need distinct skill
+strings to ever be told apart; not something to invent), (2) the actual
+`calcTeamStats.js` gating/wiring decision — still requires its own
+separate go-ahead, per the "never all-or-nothing" rule, and is not any
+closer to being decided than before this stage — none of this proves
+anything beyond the ARCHITECTURE being sound. (3) Converting the remaining
+~54 unconverted characters to the engine at all — a separate, much larger,
+ongoing roster-coverage effort, distinct from "finishing the engine"
+itself.
 
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.

@@ -134,12 +134,8 @@ export const CAMELLYA_BLOCKS = [
     effects: [],
     // Only the UNCONDITIONAL base hit (329.24% ATK Havoc DMG per its own kit text). The additional
     // conditional +459.02% ATK (only if Forte Ephemeral was cast earlier this on-field rotation) is
-    // already named by camellya.outro.twining-ephemeral-bonus (a 'requires-prior-cast' utility
-    // block) but that block's `effects: []`/no `damage` field — composing its real +459.02% into an
-    // actual extra hit is a further increment on top of this pass (would need either a 2nd damage
-    // block sharing this same trigger PLUS the prior-cast condition, or a schema change letting one
-    // damage block carry a conditional bonus hit — neither attempted here), not silently included as
-    // if already solved.
+    // a SEPARATE block — camellya.outro.twining-ephemeral-bonus, below, whose own 'requires-prior-cast'
+    // trigger fires on this same real step only when the condition actually holds.
     damage: { hits: parseSkillMultiplierHits('329.24%') },
     note: 'Base 329.24% ATK Havoc DMG, unconditional.',
   },
@@ -170,12 +166,20 @@ export const CAMELLYA_BLOCKS = [
   {
     id: 'camellya.outro.twining-ephemeral-bonus',
     source: SOURCE,
-    kind: 'utility',
+    // Changed from 'utility' to 'damage' 2026-09-01: now that resolveHitComposedDps.js/
+    // resolveHitComposedTeamDps.js exist, the conditional +459.02% ATK bonus can actually be
+    // composed as a real extra hit instead of staying a bare condition marker. This block's own
+    // trigger (checksAt: 'Outro:Twining') already fires on the SAME step as
+    // camellya.outro.twining-base's cast — deriveStepsFromRotation() tags that one step with BOTH
+    // the cast key and (when the condition holds) the requires-prior-cast key, so both blocks
+    // resolve together automatically; no new wiring was needed beyond adding `damage` here.
+    kind: 'damage',
     trigger: { type: 'requires-prior-cast', requiresPriorCast: 'cast:Forte:Ephemeral', checksAt: 'Outro:Twining' },
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    note: 'Outro Twining deals a base 329.24% ATK Havoc DMG unconditionally, PLUS an additional 459.02% ATK ONLY if Forte Ephemeral was cast earlier in the same on-field rotation. The base hit lives in SKILL_MULTIPLIERS as always-applying; this block represents just the conditional additional-DMG portion, which resolveTriggerBlocks() only applies when a rotation simulator (rotationSimulator.js) has confirmed Ephemeral was actually seen this segment — no fabricated damage number added here, since translating "459.02% ATK conditional bonus" into a flat stat effect isn\'t attempted; this block is presently a utility marker for the condition itself.',
+    damage: { hits: parseSkillMultiplierHits('459.02%') },
+    note: 'Outro Twining deals a base 329.24% ATK Havoc DMG unconditionally (see camellya.outro.twining-base), PLUS this additional 459.02% ATK ONLY if Forte Ephemeral was cast earlier in the same on-field rotation.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — re-verified 2026-08-31) ──
