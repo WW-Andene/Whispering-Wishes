@@ -241,6 +241,59 @@ describe('RotationSimulator — windowed-proc (Yinlin)', () => {
   });
 });
 
+describe("simulateRotation — 'swap-out'/'swap-in' trigger keys actually fire", () => {
+  // Found while building resolveSimulatedRotation.js: this loop tracked swap EVENTS for window
+  // bookkeeping (registerSwap/resetSegment) but never added the plain 'swap-out'/'swap-in' trigger
+  // keys to `fired` — meaning EVERY outro-buff block in the roster (trigger.type: 'swap-out' is how
+  // every converted character's own outro is declared) could never resolve through simulateRotation,
+  // only through a test hand-feeding firedTriggers directly. Locking this in as its own regression
+  // test, separate from resolveSimulatedRotation's own coverage, since it's a correctness fix to
+  // simulateRotation itself that any future caller depends on, not just the new driver.
+  it("an isOutroCast step fires the 'swap-out' key", () => {
+    const results = simulateRotation(YINLIN_BLOCKS, [
+      { type: 'Outro', skill: 'Strategist', isSwap: true, isOutroCast: true, stepSeconds: 1 },
+    ]);
+    expect(results[0].firedTriggers.has('swap-out')).toBe(true);
+  });
+
+  it("an isSwapIn step fires the 'swap-in' key", () => {
+    const results = simulateRotation(YINLIN_BLOCKS, [
+      { type: 'Intro', skill: 'Raging Storm', isSwapIn: true, stepSeconds: 1 },
+    ]);
+    expect(results[0].firedTriggers.has('swap-in')).toBe(true);
+  });
+
+  it("a step that is neither does NOT fire either key", () => {
+    const results = simulateRotation(YINLIN_BLOCKS, [
+      { type: 'Skill', skill: 'Magnetic Roar', stepSeconds: 1 },
+    ]);
+    expect(results[0].firedTriggers.has('swap-out')).toBe(false);
+    expect(results[0].firedTriggers.has('swap-in')).toBe(false);
+  });
+
+  it("end-to-end: Yinlin's real derived Outro step now resolves through resolveTriggerBlocks via simulateRotation alone (no hand-fed firedTriggers)", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yinlin'], YINLIN_BLOCKS);
+    const results = simulateRotation(YINLIN_BLOCKS, steps);
+    const outroStepResult = results.find(r => r.step.type === 'Outro' && r.step.skill === 'Strategist');
+    expect(outroStepResult.firedTriggers.has('swap-out')).toBe(true);
+
+    const stats = createStats();
+    resolveTriggerBlocks(YINLIN_BLOCKS, {
+      firedTriggers: outroStepResult.firedTriggers,
+      ineligibleBlockIds: outroStepResult.ineligibleBlockIds,
+      targetElementLower: 'electro', targetRole: 'Sub DPS',
+    }, stats);
+    // yinlin.outro.strategist grants elemDmg +20 / libDmg +25 — now actually reachable through the
+    // simulator's own output, not just a hand-built firedTriggers set. elemDmg has no other
+    // contributor in this call, so it isolates cleanly to the outro's +20. libDmg also gets S5's
+    // passive +100 (Resounding Will, always-fires here since resolveTriggerBlocks doesn't gate
+    // condition.requiresStance) baked in by the same call, so assert the total including it rather
+    // than a wrong isolated +25.
+    expect(stats.elemDmg).toBe(20);
+    expect(stats.libDmg).toBe(100 + 25);
+  });
+});
+
 describe('RotationSimulator — timing.cooldown enforcement', () => {
   it('a block is ready before it has ever been used', () => {
     const sim = new RotationSimulator();

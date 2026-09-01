@@ -228,6 +228,17 @@
  * @property {string} [stacking] One of: 'unique' (default — doesn't stack with itself) |
  *                                 'stacking' (multiple instances add, e.g. Electro Flare stacks) |
  *                                 'refresh' (re-triggering resets duration instead of adding)
+ * @property {number} [maxStacks] For 'stacking' only: the real cap on concurrent instances (e.g.
+ *                                 Rover: Electro's Electro Flare debuff: 10, straight from its own
+ *                                 kit text/note — "10 stacks of Electro Flare"). Added alongside
+ *                                 resolveSimulatedRotation.js, which is the first thing that
+ *                                 actually needs to know when a 'stacking' effect stops adding —
+ *                                 every prior consumer (resolveTriggerBlocks) only ever applied a
+ *                                 block once per call and never accumulated multiple instances, so
+ *                                 this had no consumer to enforce it until now. Omit for a
+ *                                 'stacking' effect whose real cap isn't sourced yet (kept
+ *                                 uncapped rather than guessing a number — same "don't fabricate"
+ *                                 rule as everywhere else in this schema).
  */
 
 export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast', 'requires-prior-cast', 'windowed-proc'];

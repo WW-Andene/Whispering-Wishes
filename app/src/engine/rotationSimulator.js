@@ -170,10 +170,13 @@ export class RotationSimulator {
  *   id whose dependency should be checked at this step. `triesProc` names a 'windowed-proc' block
  *   id whose window should be checked for a proc at this step (only fires if that block's window is
  *   currently open and under its cap — see openProcWindow/tryProc).
- * @returns {{ step: Object, firedTriggers: Set<string>, ineligibleBlockIds: Set<string> }[]}
+ * @returns {{ step: Object, firedTriggers: Set<string>, ineligibleBlockIds: Set<string>, time: number }[]}
  *   `ineligibleBlockIds` names blocks whose OWN `timing.cooldown` says they can't fire yet even
  *   though their trigger key is present in `firedTriggers` (see cooldown-gated 'cast' blocks below)
  *   — pass it as `ctx.ineligibleBlockIds` to resolveTriggerBlocks() to have it actually skip them.
+ *   `time` is the simulator's cumulative elapsed time AFTER this step (i.e. when this step's cast/
+ *   effect actually lands) — used by resolveSimulatedRotation.js to place each activation on a real
+ *   timeline instead of only knowing relative step order.
  */
 export function simulateRotation(blocks, steps) {
   const sim = new RotationSimulator();
@@ -194,6 +197,16 @@ export function simulateRotation(blocks, steps) {
 
     if (ev.isSwap) sim.registerSwap();
     if (ev.isSwapIn) sim.resetSegment();
+    // Real gap found while building resolveSimulatedRotation.js: this loop tracked swap EVENTS for
+    // window bookkeeping (registerSwap/resetSegment above) but never actually marked the plain
+    // 'swap-out'/'swap-in' trigger keys as fired — meaning every outro-buff block in the roster
+    // (trigger.type: 'swap-out' is how EVERY converted character's own outro buff is declared, e.g.
+    // Rover: Electro's Rumbling Thunders, Yinlin's Strategist) could never actually resolve through
+    // simulateRotation(), only through a test hand-feeding firedTriggers directly. isOutroCast/
+    // isSwapIn already name exactly which step IS this character's own outro cast / own swap-in, so
+    // this reuses those same flags rather than adding new ones.
+    if (ev.isOutroCast) fired.add('swap-out');
+    if (ev.isSwapIn) fired.add('swap-in');
 
     if (ev.type && ev.skill) {
       const castKey = `cast:${ev.type}:${ev.skill}`;
@@ -262,7 +275,7 @@ export function simulateRotation(blocks, steps) {
       }
     }
 
-    results.push({ step: ev, firedTriggers: fired, ineligibleBlockIds });
+    results.push({ step: ev, firedTriggers: fired, ineligibleBlockIds, time: sim.time });
   }
   return results;
 }

@@ -97,4 +97,8 @@ function conditionHolds(condition, targetElementLower, targetRole) {
   return true;
 }
 
-export { triggerKey };
+// triggerFired/conditionHolds exported alongside triggerKey so resolveSimulatedRotation.js (the
+// time-integration driver — see its own file header) can determine per-step block eligibility with
+// the EXACT same logic resolveTriggerBlocks() uses, instead of re-deriving a second copy that could
+// silently drift out of sync.
+export { triggerKey, triggerFired, conditionHolds };

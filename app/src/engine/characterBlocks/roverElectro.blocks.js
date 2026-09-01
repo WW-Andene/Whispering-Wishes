@@ -101,7 +101,7 @@ export const ROVER_ELECTRO_BLOCKS = [
     condition: {},
     timing: { duration: 99 },
     target: { scope: 'marked-enemy' },
-    effects: [{ stat: 'flare', value: 10, stacking: 'stacking' }],
+    effects: [{ stat: 'flare', value: 10, stacking: 'stacking', maxStacks: 10 }],
     note: 'Hold-cast Overshock (Inherent Skill "Decipher") inflicts 10 stacks of Electro Flare.',
   },
 

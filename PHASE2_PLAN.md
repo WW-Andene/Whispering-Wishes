@@ -138,20 +138,47 @@ Known gaps in the scaffold itself (not yet solved, don't assume otherwise):
   rotation loop never hits it in practice, but it's a real correctness gap
   closed for anything simulating more than one loop (or team interleaving,
   once that lands).
-- **Stacking-mode (`unique`/`stacking`/`refresh`) logic — still NOT done.**
-  `STACKING_MODES` is declared in the schema but `triggerEngine.js` doesn't
-  read it. Deliberately NOT attempted in the same pass as cooldown: unlike
-  cooldown (a simple per-block "is it ready" check), stacking-mode only means
-  something when accumulating a buff's uptime across MULTIPLE
-  `resolveTriggerBlocks()` calls over a full simulated timeline (does a
-  re-triggering 'refresh' buff reset its duration instead of double-counting;
-  does a 'stacking' buff actually add per-instance) — that's the same
-  time-integrated overlap/uptime math `calcTeamStats.js` already has for
-  cross-character buffs (`buffs` array with `start`/`duration`, overlap-based
-  uptime fractions). Building a SECOND, parallel duration-accumulator inside
-  the engine instead of reusing/interoperating with that existing one is a
-  real design decision, not an implementation detail — flagged for the user
-  rather than guessed at silently.
+- **Stacking-mode (`unique`/`stacking`/`refresh`) logic — DONE 2026-09-01.**
+  Scoped with the user first (their explicit call: build the full
+  time-integration driver now, single-character scope, rather than a
+  narrower isolated patch or deferring to multi-character work) — see
+  `engine/resolveSimulatedRotation.js`, a NEW module (not a
+  `resolveTriggerBlocks()` patch): given one character's blocks + a step
+  sequence, it runs `simulateRotation()`, tracks every `'buff'`/`'debuff'`
+  block with a real `timing.duration` as a set of activation windows over
+  the WHOLE simulated timeline (honoring each effect's own `stacking` mode
+  — `'unique'` ignores a re-trigger while still active, `'refresh'` extends
+  the open window instead of opening a 2nd, `'stacking'` opens genuinely
+  concurrent windows capped at a new `Effect.maxStacks` field), then
+  integrates each block's window history into a time-weighted average
+  multiplier using the SAME overlap-fraction arithmetic
+  `calcTeamStats.js`'s `overlapUptimeForSeg` already uses for its own
+  single-instance cross-character buff uptime — generalized (via an exact
+  boundary-sweep, not sampling) to sum N possibly-overlapping windows of
+  the SAME block instead of one fixed window, since resolving one
+  character's own kit has multiple self-re-triggering instances to
+  reconcile that calcTeamStats never had. Verified with independently
+  hand-computed timings for all three stacking modes (not just "whatever
+  the code produces"), plus real end-to-end runs against Yinlin's actual
+  `CHARACTER_ROTATIONS` data (`__tests__/resolveSimulatedRotation.test.js`,
+  10 tests).
+  A duration-less `'cast'`-triggered block (Shorekeeper's S6: active for
+  exactly one hit, not a continuous window) is deliberately EXCLUDED from
+  this driver's output rather than mis-time-averaged in either direction —
+  reported separately via `perHitScopedBlockIds` for the not-yet-built
+  per-hit damage-application path to consume later.
+  **Also found and fixed while building this**: `simulateRotation()`
+  tracked swap EVENTS for window bookkeeping (`registerSwap`/
+  `resetSegment`) but never actually marked the plain `'swap-out'`/
+  `'swap-in'` trigger keys as fired — meaning every outro-buff block in the
+  ENTIRE roster (`trigger.type: 'swap-out'` is how every converted
+  character's own outro buff is declared — Rover: Electro, Shorekeeper,
+  Augusta, Yinlin, all of them) could never actually resolve through
+  `simulateRotation()`, only through a test hand-feeding `firedTriggers`
+  directly. Fixed by reusing the existing `isOutroCast`/`isSwapIn` flags to
+  also add `'swap-out'`/`'swap-in'` to the fired set; regression-tested
+  separately in `rotationSimulator.test.js` since it's a `simulateRotation`
+  correctness fix any future caller depends on, not just this new driver.
 - `firedTriggers` has to be hand-constructed by the caller; nothing yet
   walks `CHARACTER_ROTATIONS` to derive it automatically for a real
   rotation simulation. That's design question 2 below, still unresolved.
