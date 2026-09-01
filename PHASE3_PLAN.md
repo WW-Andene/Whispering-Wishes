@@ -1158,6 +1158,35 @@ pass is physically deleting the now-unused-but-still-running legacy
 computation (flagged in step 6, not a functional gap — see its own
 writeup for why it was deferred).
 
+## Post-phase engine audit — FULL-tier teamDps ignored owned Resonance Chain sequence (fixed, 2026-09-01)
+
+A full read-only audit of the core engine files (`engine/*.js` + `calcTeamStats.js`'s wiring, not
+individual `characterBlocks/*.blocks.js` game-balance data) found one Critical bug: the FULL-tier
+`allMembersConverted` path — the code overriding `teamDps`/`memberDps`, the numbers the Team tab
+actually displays — built `engineChosenOrder` from every member's raw, UNGATED TriggerBlocks. Every
+`chain.s1`-`chain.s6` Resonance Chain block fired unconditionally regardless of the character's
+actually-owned sequence, as if every team member were R6.
+
+This is the exact bug Stage 3 item 1 already fixed for the RAW/solo tier (`sequenceGating.js`,
+verified there via Lucilla dropping from a 40x to ~4x parity ratio) — it simply never got threaded
+into the team tier at all, silently reintroducing the same class of regression for `teamDps`/
+`memberDps` and for `chooseOnFieldOrder`'s own scoring, while the solo/RAW-tier numbers shown right
+next to them on the same screen stayed correct. Probe confirmation: a Lucilla/Verina/Shorekeeper
+team's `teamDps` was 7,019 at sequence 0 (the common case — most players are unbuilt) vs. 24,135 at
+sequence 6 — S0 was getting ~3.4x inflated team damage before this fix.
+
+**Fix**: gate each member's blocks via `gateBlocksBySequence(BLOCKS_BY_CHARACTER[m.name],
+m.seqLevel)` (from `engine/sequenceGating.js`, already used elsewhere) BEFORE they reach
+`chooseOnFieldOrder`/`buildTeamSteps`, at the single shared point `engineChosenOrder` is built —
+every downstream consumer of `engineChosenOrder.blocksByOwner` (teamDps/memberDps here, and the
+main-DPS stat panel's `resolveSimulatedTeamRotation` call, which already separately passed its own
+`sequenceByOwner` for internal gating — now redundant-but-harmless, doubly gated) only ever sees
+blocks the character actually has.
+
+New regression test (`calcTeamStatsFullTierSequenceGating.test.js`) — previously nothing covered
+this; none of the existing FULL-tier/engine tests referenced sequence at all. Full suite: 1128/1128
+passing (87 files, up from 1126/86). Production build verified clean.
+
 ## Post-phase cleanup — physically skip the dead legacy FULL-tier computation (done, 2026-09-01)
 
 The item Stage 4 step 6 and Stage 5 both explicitly deferred: the legacy
