@@ -591,6 +591,97 @@ operate on engine-derived per-member timing, energy-cycle gating applied to
 `resolveHitComposedDps`'s Liberation-derived hits, etc. Each addition gets
 its own test before Stage 1's harness re-run.
 
+## Stage 4 kickoff — root-causing the residual ~2x median gap (done, 2026-09-01)
+
+Before touching the live file, root-caused the harness's still-unexplained
+roster-wide median (2.03x engine/legacy, unchanged since Stage 3 item 1 —
+flagged there as "a second, smaller, still-unidentified factor" and never
+followed up). Rewriting `calcTeamStats.js` while that gap stayed
+unexplained would have silently changed every player's displayed team score
+by up to ~2x (8x for Lucilla) with no way to tell a real precision gain from
+a bug — exactly the class of regression this whole phase exists to prevent,
+so this had to be resolved BEFORE any rewrite, not after.
+
+**Hypothesis 1 (partially right, not the driver): timing-window mismatch.**
+`calcTeamStats.js`'s `rawRotTime` (`max(15, min(35, sumOnField+2))`, a
+field-time-based window) and the engine's own `totalTime`
+(`deriveStepsFromRotation`'s single non-repeating pass through
+`CHARACTER_ROTATIONS`, paced at a flat `DEFAULT_STEP_SECONDS=1.5`/step) use
+different denominators. Hand-verified on 7 characters
+(Danjin/Camellya/Changli/Xiangli Yao/Lingyang/Hiyuki/Galbrena): the two
+windows genuinely differ (ratio 0.97x-2.0x depending on rotation step
+count), and for characters where `engine.totalTime < legacy.rotTime` this
+does inflate the engine's dps. But it doesn't correlate with the total
+ratio closely enough to be the dominant driver (e.g. Xiangli Yao/Hiyuki have
+`timingRatio≈0.97` — engine's own window is if anything SLIGHTLY LONGER
+than legacy's — yet still show a ~2x total ratio), so this is a real,
+independent, smaller effect, not the explanation.
+
+**Hypothesis 2 (real bug, fixed, but near-zero measured impact today):
+missing cross-loop cooldown throttling.** `resolveHitComposedDps`'s
+`totalDamage/totalTime` implicitly assumes every hit in the single derived
+pass repeats every `totalTime` seconds forever — correct only for a hit
+whose own cooldown is `<= totalTime`. Confirmed on Xiangli Yao: his
+Liberation "Cogitation Model" is 1466.06% ATK with a real 25s cooldown
+(`characters.js` SKILL_MULTIPLIERS row, `'25s cooldown'` in its own note
+text) landing inside a derived pass only ~19.5s long — the engine credits
+it every 19.5s instead of its real 25s cadence, a genuine over-count. Fixed
+via a new opt-in `cooldownSteadyState` param on
+`resolveHitComposedDps`/`resolveHitComposedTeamDps` (scales a block whose
+`timing.cooldown` exceeds the pass/field-duration by
+`min(1, duration/cooldown)`) — correct, tested (6 new tests in
+`cooldownSteadyState.test.js`), and worth keeping for Stage 4. But re-running
+the Stage 1 harness with it enabled moved the roster-wide median/mean by
+**less than 0.03** (2.03x → 2.03x median, 2.34x → 2.31x mean): almost every
+converted character's `damage.hits` blocks have `timing: {}` — no
+`timing.cooldown` value populated at all (Yinlin's Liberation block, the one
+this fix was tested against, is one of the few exceptions) — so the fix is
+real but currently has almost nothing to gate. Populating real cooldowns
+onto every damage block across all 56 characters is a large, separate
+data-authoring task, not a Stage 4 blocker in itself (the gate is a no-op
+until that data exists, same "opt-in, byte-identical when unset" contract
+every other Stage 3 gate uses).
+
+**Root cause (confirmed): `totalMult` was never meant to equal a real
+per-hit sum.** `characters.js`'s own ROTATION_DATA section header
+(`characters.js:1374-1378`) defines it plainly: *"totalMult: sum of ATK%
+multipliers in one full rotation (all skills used)... Sources: Prydwen,
+WutheringLab, community rotation testing"* — a **hand-authored heuristic
+table**, entered per-character from community power-ranking/build-guide
+impressions, not derived from `SKILL_MULTIPLIERS`' own real, verified
+per-skill percentages at all. A nearby fix comment on the same table
+(`characters.js:1396-1404`, the Cartethyia HP-scaling correction) confirms
+this directly: fixing her `totalMult` to stop reusing an ATK%-calibrated
+heuristic number "made her auto-calculated teamDps ~5x every other top-tier
+DPS" before the fix — i.e. this table's own entries are acknowledged
+(elsewhere in the same file) to have been wrong by multiples before,
+independent of anything Phase 2/3 touches. The engine, by contrast, sums
+`SKILL_MULTIPLIERS`' real per-skill values (e.g. Xiangli Yao's Liberation
+alone is a verified 1466.06%, not a share of a single "totalMult: 2900"
+heuristic spread across 13 hits) — genuinely more precise data, not a
+different opinion about the same data.
+
+**Conclusion, per Stage 2's own 3-way classification**: the roster-wide
+elevated median is **Case 1 — expected, documented engine improvement**,
+not Case 2/3 (a real engine gap or a bug to fix). This closes the "still-
+unidentified factor" Stage 3 item 1 left open and satisfies Stage 4's own
+precondition ("every remaining diff is Stage-2-labeled as an intentional
+improvement") for the residual median gap specifically. It does NOT mean
+every individual character's ratio is automatically fine — Lucilla's 8.01x
+(the single largest outlier, already flagged in Stage 3 item 1 as not yet
+independently confirmed) and any other outlier substantially above the new
+~2x baseline still warrant a per-character look during Stage 4, the same
+way Stage 2 triaged the original 6 outliers individually rather than waving
+off the whole roster at once.
+
+**Practical consequence for the rewrite**: Stage 4 should NOT aim for
+numeric parity with legacy's `rawDps`/`teamDps` — that was always the wrong
+bar (this file's own header note said so from the start). The verification
+bar is: no consumer breaks, the external return shape stays intact, and any
+per-character ratio that's an outlier even against the new engine-wide
+baseline gets the same individual triage Stage 2 gave Lucilla/Roccia/etc.,
+not a blanket "engine is always right" assumption either.
+
 ## Stage 4 — Rewrite `calcTeamStats.js`
 
 Only once Stage 1's harness is green (or every remaining diff is Stage-2-
@@ -618,7 +709,8 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 1 — parity harness (all 56 converted characters swept; engine `externalStats` gap found+fixed; ratio distribution recorded, outliers flagged for Stage 2)
 - [x] Stage 2 — triage (root cause found for all 6 flagged outliers: no sequence-level gating anywhere in the engine — one systemic gap, not six bugs; likely a major contributor to the whole roster's elevated median too)
 - [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
-- [ ] Stage 4 — rewrite
+- [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
+- [ ] Stage 4 — the actual rewrite (not yet started)
 - [ ] Stage 5 — final verify + commit
 
 Work proceeds stage by stage; each stage's own sub-tasks are committed

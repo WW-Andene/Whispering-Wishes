@@ -46,6 +46,12 @@ import { COORD_SNAPSHOT_DISCOUNT } from './coordinatedAtk.js';
  *   discount buffs `targetName` receives via `'next-on-field'` scope (swap-order-dependent outro
  *   buffs) by `COORD_SNAPSHOT_DISCOUNT` (0.6) — `'whole-team'` (order-independent) buffs are left
  *   untouched. Omitting this (default `false`) does NOT discount anything.
+ * @param {boolean} [opts.cooldownSteadyState]  Same steady-state cooldown gate as
+ *   resolveHitComposedDps.js's own `cooldownSteadyState` param (see its jsdoc for the full Stage 4
+ *   root-cause writeup) — scales a damage block whose `timing.cooldown` exceeds `targetName`'s own
+ *   on-field field duration by `min(1, fieldDuration / cooldown)`, so a long-CD nuke firing once in a
+ *   short on-field window isn't credited as if it recurs every window. Omitting this (default `false`)
+ *   does NOT scale anything.
  * @returns {{
  *   totalDamage: number,
  *   targetSegment: {start:number, end:number} | null,
@@ -54,7 +60,7 @@ import { COORD_SNAPSHOT_DISCOUNT } from './coordinatedAtk.js';
  * }}
  */
 export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName, enemyContext, baseStats, opts = {}) {
-  const { targetElementLower = null, targetRole = null, libUptime = null, coordSnapshotDiscount = false } = opts;
+  const { targetElementLower = null, targetRole = null, libUptime = null, coordSnapshotDiscount = false, cooldownSteadyState = false } = opts;
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
   const { enemyDef, enemyRes } = enemyContext;
 
@@ -138,9 +144,12 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
 
       const libGate = (libUptime != null && category === 'libDmg') ? libUptime : 1;
+      const fieldDuration = targetSegment.end - targetSegment.start;
+      const cooldownGate = (cooldownSteadyState && db.timing?.cooldown && fieldDuration > 0)
+        ? Math.min(1, fieldDuration / db.timing.cooldown) : 1;
 
       for (const hit of hits) {
-        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult * libGate;
+        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate;
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
       }
