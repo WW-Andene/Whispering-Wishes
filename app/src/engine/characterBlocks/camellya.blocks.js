@@ -32,10 +32,114 @@
 // hand-fed) by __tests__/rotationSimulator.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+
 const SOURCE = 'Camellya';
 
 /** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
 export const CAMELLYA_BLOCKS = [
+  // ── Damage blocks (from SKILL_MULTIPLIERS) — added 2026-09-01, this character's FIRST damage
+  //    blocks. Two real ambiguities found and handled honestly rather than forced: ──
+  {
+    id: 'camellya.basic.vining-waltz-1',
+    source: SOURCE,
+    kind: 'damage',
+    // Real cross-reference ambiguity: CHARACTER_ROTATIONS tags this step type: 'Basic ATK' (which
+    // BUTTON was pressed — Blossom Mode replaces Basic ATK with the Vining Waltz combo per Crimson
+    // Blossom's own kit text), but SKILL_MULTIPLIERS only has a 'Skill, Vining Waltz 1-4' row (how
+    // the damage TYPE is categorized) — no distinct 'Basic ATK, Vining Waltz' row exists.
+    // 'Vining Waltz 1' names stage 1 of that same combo (96.33%, the first token in the row) — no new
+    // number invented, just the specific stage this one-tap step represents.
+    trigger: { type: 'cast', on: 'Basic ATK:Vining Waltz 1' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('96.33%'), category: 'skillDmg' },
+    note: "Fills the last Concerto Energy needed to unlock Ephemeral. Stage 1 of the Vining Waltz combo (96.33% at Lv.10) — counted as Skill DMG per Blossom Mode's own kit text (Basic/Heavy/Dodge-Counter/Skill all replaced by this combo while active).",
+  },
+  {
+    id: 'camellya.skill.crimson-blossom',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Crimson Blossom' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('113.62%×2'), category: 'skillDmg' },
+    note: 'Basic-ATK-type Havoc DMG; enters Blossom Mode (mid-air castable), replacing Basic/Heavy/Dodge-Counter/Skill.',
+  },
+  {
+    id: 'camellya.skill.vining-waltz-combo',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Vining Waltz 1-4 / Blazing Waltz' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // Real, documented limitation: this exact combined step label appears TWICE in her
+    // CHARACTER_ROTATIONS (once in Blossom Mode, once again in Budding Mode after casting Ephemeral,
+    // where the combo mechanically becomes Blazing Waltz instead — a DIFFERENT SKILL_MULTIPLIERS row,
+    // '21.95%×19'). Because both occurrences share the identical {type, skill} label, this one block
+    // fires identically both times — it cannot currently distinguish "1st cast (Vining Waltz)" from
+    // "2nd cast (Blazing Waltz, Budding Mode)" the way e.g. Yinlin's Lightning Execution split needed
+    // a genuinely distinct label to separate. Uses the Vining Waltz values (the first-named move in
+    // the combined label) for BOTH occurrences rather than fabricate a blended number — the 2nd
+    // occurrence's real Blazing Waltz damage is undercounted as a result. A future fix would need
+    // CHARACTER_ROTATIONS itself to distinguish the two steps with different skill strings (the same
+    // fix category as the "zero-damage rotation-step" class PHASE2_PLAN.md already tracks), not
+    // something this schema alone can solve.
+    damage: { hits: parseSkillMultiplierHits('96.33% → 45.63%×2 → 21.95%×6 → 67.59%×3'), category: 'skillDmg' },
+    note: 'Blossom Mode combo — every hit consumes Crimson Pistils at +150% Energy Regen.',
+  },
+  {
+    id: 'camellya.forte.ephemeral',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'resource-threshold', resource: 'Concerto Energy', threshold: 70, resourceStepOn: 'Forte:Ephemeral' },
+    timing: { cooldown: 25 },
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('1262.45%'), category: 'skillDmg' },
+    note: 'Once Concerto Energy is full and off its own 25s cooldown, replaces Skill. Costs 70 Concerto Energy, consumes all Crimson Buds, enters 15s Budding Mode.',
+  },
+  {
+    id: 'camellya.liberation.fervor-efflorescent',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Fervor Efflorescent' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('1202.81%'), category: 'libDmg' },
+  },
+  {
+    id: 'camellya.intro.everblooming',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Intro:Everblooming' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // No `category` — Intro/Outro excluded from calcEngine.js's dmgFocus-routing buckets, same as
+    // every other converted character's Intro/Outro damage block.
+    damage: { hits: parseSkillMultiplierHits('198.81%') },
+  },
+  {
+    id: 'camellya.outro.twining-base',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Outro:Twining' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // Only the UNCONDITIONAL base hit (329.24% ATK Havoc DMG per its own kit text). The additional
+    // conditional +459.02% ATK (only if Forte Ephemeral was cast earlier this on-field rotation) is
+    // a SEPARATE block — camellya.outro.twining-ephemeral-bonus, below, whose own 'requires-prior-cast'
+    // trigger fires on this same real step only when the condition actually holds.
+    damage: { hits: parseSkillMultiplierHits('329.24%') },
+    note: 'Base 329.24% ATK Havoc DMG, unconditional.',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'camellya.selfbuff.seedbed',
@@ -62,12 +166,20 @@ export const CAMELLYA_BLOCKS = [
   {
     id: 'camellya.outro.twining-ephemeral-bonus',
     source: SOURCE,
-    kind: 'utility',
-    trigger: { type: 'requires-prior-cast', requiresPriorCast: 'cast:Forte:Ephemeral' },
+    // Changed from 'utility' to 'damage' 2026-09-01: now that resolveHitComposedDps.js/
+    // resolveHitComposedTeamDps.js exist, the conditional +459.02% ATK bonus can actually be
+    // composed as a real extra hit instead of staying a bare condition marker. This block's own
+    // trigger (checksAt: 'Outro:Twining') already fires on the SAME step as
+    // camellya.outro.twining-base's cast — deriveStepsFromRotation() tags that one step with BOTH
+    // the cast key and (when the condition holds) the requires-prior-cast key, so both blocks
+    // resolve together automatically; no new wiring was needed beyond adding `damage` here.
+    kind: 'damage',
+    trigger: { type: 'requires-prior-cast', requiresPriorCast: 'cast:Forte:Ephemeral', checksAt: 'Outro:Twining' },
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    note: 'Outro Twining deals a base 329.24% ATK Havoc DMG unconditionally, PLUS an additional 459.02% ATK ONLY if Forte Ephemeral was cast earlier in the same on-field rotation. The base hit lives in SKILL_MULTIPLIERS as always-applying; this block represents just the conditional additional-DMG portion, which resolveTriggerBlocks() only applies when a rotation simulator (rotationSimulator.js) has confirmed Ephemeral was actually seen this segment — no fabricated damage number added here, since translating "459.02% ATK conditional bonus" into a flat stat effect isn\'t attempted; this block is presently a utility marker for the condition itself.',
+    damage: { hits: parseSkillMultiplierHits('459.02%') },
+    note: 'Outro Twining deals a base 329.24% ATK Havoc DMG unconditionally (see camellya.outro.twining-base), PLUS this additional 459.02% ATK ONLY if Forte Ephemeral was cast earlier in the same on-field rotation.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — re-verified 2026-08-31) ──

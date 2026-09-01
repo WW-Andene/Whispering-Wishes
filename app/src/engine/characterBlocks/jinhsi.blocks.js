@@ -28,10 +28,85 @@
 // __tests__/triggerEngine-jinhsi.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+
 const SOURCE = 'Jinhsi';
 
 /** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
 export const JINHSI_BLOCKS = [
+  // ── Damage blocks (from SKILL_MULTIPLIERS) — added 2026-09-01, this character's FIRST damage
+  //    blocks. Several rows combine multiple sub-modes: the Skill row is 'Trailing Lights of Eons →
+  //    Overflowing Radiance' (only the Overflowing Radiance half matches a real CHARACTER_ROTATIONS
+  //    step — her canonical rotation always lands the windowed empowered cast, never the base
+  //    Trailing Lights); the Forte row combines the Incarnation-Basic-ATK combo AND Illuminous
+  //    Epiphany's THREE conditional sub-modes (Basic/Crescent Divinity/Solar Flare-Stella Glamor) in
+  //    one string — only Solar Flare/Stella Glamor matches, per her own rotation note ("consumes up
+  //    to 50 Incandescence... for a scaling Stella Glamor nuke"), the same figure
+  //    jinhsi.chain.s2-chronofrost-repose's own note already references. No separate Intro:Loong's
+  //    Halo block — no CHARACTER_ROTATIONS step in her canonical sequence casts it as a literal step
+  //    (it's referenced only via windowed-cast's opensOn, a different concern), same "only what a
+  //    real step needs" rule as Shorekeeper/Augusta. ──
+  {
+    id: 'jinhsi.basic.slash-of-breaking-dawn',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Basic ATK:Slash of Breaking Dawn Stage 1-4' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('66.47% → 38.99%+19.50%×3 → 10.65%×7+31.94% → 63.09%+94.63%'), category: 'basicDmg' },
+    note: 'Tap Basic Attack 4 times for the full opening combo — Stage 4 opens a 5s window for Overflowing Radiance.',
+  },
+  {
+    id: 'jinhsi.skill.overflowing-radiance',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Overflowing Radiance' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('9.87%×4+29.59%×4+39.45%'), category: 'skillDmg' },
+    note: 'Press Skill within 5s of Basic ATK Stage 4 — sends her into Incarnation for 10s.',
+  },
+  {
+    id: 'jinhsi.liberation.purge-of-light',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Purge of Light' },
+    timing: { cooldown: 24 },
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('499.81%+1166.22%'), category: 'libDmg' },
+    note: 'Huge AoE nuke, 24s cooldown, can be cast at any point in the rotation.',
+  },
+  {
+    id: 'jinhsi.forte.incarnation-basic-attack',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Forte:Incarnation - Basic Attack Stage 1-4' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // "counted as Resonance Skill DMG" per this cast's own CHARACTER_ROTATIONS note.
+    damage: { hits: parseSkillMultiplierHits('88.62%→77.97%+25.99%×2→99.44%+66.30%→18.67%×6+74.67%'), category: 'skillDmg' },
+    note: 'While in Incarnation (10s), Basic ATK is replaced by this 4-stage combo — counted as Resonance Skill DMG. Landing Stage 4 ends Incarnation and opens a 5s window for Illuminous Epiphany.',
+  },
+  {
+    id: 'jinhsi.skill.illuminous-epiphany',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Illuminous Epiphany' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // The 'Solar Flare/Stella Glamor' sub-mode specifically — per this cast's own rotation note
+    // ("consumes up to 50 Incandescence... for a scaling Stella Glamor nuke"), not the row's other two
+    // conditional sub-modes (plain 'Basic' or 'Crescent Divinity'), which don't match her canonical
+    // full-Incandescence-spend rotation.
+    damage: { hits: parseSkillMultiplierHits('19.89%×6+347.92%'), category: 'skillDmg' },
+    note: 'Press Skill within 5s of Incarnation-Basic Attack Stage 4 landing — consumes up to 50 Incandescence for a scaling Stella Glamor nuke.',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'jinhsi.selfbuff.radiant-surge',
@@ -53,6 +128,7 @@ export const JINHSI_BLOCKS = [
       type: 'windowed-cast',
       opensOn: ['cast:Basic ATK:Slash of Breaking Dawn Stage 1-4', 'cast:Intro:Loong\'s Halo'],
       windowSeconds: 5,
+      attemptOn: 'Skill:Overflowing Radiance',
     },
     condition: { requiresStance: undefined }, // "only while NOT already in Incarnation"
     timing: {},
@@ -68,6 +144,7 @@ export const JINHSI_BLOCKS = [
       type: 'windowed-cast',
       opensOn: ['cast:Forte:Incarnation - Basic Attack Stage 1-4'],
       windowSeconds: 5,
+      attemptOn: 'Skill:Illuminous Epiphany',
     },
     timing: {},
     target: { scope: 'self' },

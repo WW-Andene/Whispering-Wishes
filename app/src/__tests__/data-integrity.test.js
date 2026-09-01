@@ -3,7 +3,7 @@
  * Verifies all game data is complete, consistent, and correctly structured.
  */
 import { describe, it, expect } from 'vitest';
-import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, ALL_CHARACTERS } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, ALL_CHARACTERS, findSkillMultiplierRow } from '../data/characters.js';
 import { WEAPON_DATA } from '../data/weapons.js';
 import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES } from '../data/echoes.js';
 import { CURRENT_BANNERS } from '../data/banners.js';
@@ -80,6 +80,132 @@ describe('CHARACTER_DATA integrity', () => {
         expect(weapon.type, `${name}: weapon type mismatch (${weapon.type} vs ${data.weapon})`).toBe(data.weapon);
       }
     });
+  });
+});
+
+// PHASE2_PLAN.md backlog item 4: "the zero-damage rotation-step bug class." CharacterDetailModal.jsx
+// (and, historically, several one-off hand audits across characters.js's own comments — Roccia,
+// Jiyan, Yinlin among them) resolve each CHARACTER_ROTATIONS step against a SKILL_MULTIPLIERS row
+// via findSkillMultiplierRow() (exact type+name match, falling back to the historical fuzzy
+// substring match). That lookup silently returns undefined instead of erroring when a step's
+// `skill` string doesn't actually match anything for that character — which is exactly how this bug
+// class kept recurring: a data edit renames a row, or introduces a step string, without the two
+// staying in sync, and nothing catches it except a human happening to notice a step showing no DMG.
+// This test runs the SAME lookup against the full roster so a future mismatch fails CI instead of
+// waiting for a manual audit to find it.
+describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
+  const rotations = Object.entries(CHARACTER_ROTATIONS);
+
+  it('has rotation data for at least 40 characters', () => {
+    expect(rotations.length).toBeGreaterThanOrEqual(40);
+  });
+
+  // NOT a "must be zero" assertion: plenty of steps legitimately have no SKILL_MULTIPLIERS row —
+  // stance swaps, descriptive multi-move labels ("Vining Waltz 1-4 / Blazing Waltz"), Forte
+  // continuations, etc. — and telling those apart from an actual naming-mismatch bug requires
+  // per-step, per-character judgment this test can't make automatically (that finer-grained
+  // classification is the larger, not-yet-done "stable id field" migration PHASE2_PLAN.md's
+  // backlog item 4 itself defers). What this test CAN do without that: snapshot the current set of
+  // unresolved steps as a known baseline, then fail if a NEW one appears that wasn't already known
+  // — so a future data edit that silently breaks a PREVIOUSLY-RESOLVING step (the actual bug class
+  // this item targets: a row gets renamed, a step string gets typo'd, and nothing else notices) is
+  // caught by CI instead of waiting for a manual audit. Shrinking this list (an existing entry
+  // getting fixed, not just re-labeled) is always fine — only growth needs re-approving here.
+  const KNOWN_UNRESOLVED_BASELINE = new Set([
+    'Cantarella[0] "Intro: Cruise"',
+    'Cantarella[1] "Basic ATK: Illusion Collapse Stage 3"',
+    'Cantarella[2] "Skill: Dance with Shadows"',
+    'Cantarella[3] "Liberation: Beneath the Sea"',
+    'Brant[2] "Mid-air: Stage 2-3 + Charged Attack + Flip"',
+    'Carlotta[6] "Liberation: Death Knell ×4"',
+    'Carlotta[8] "Skill: Art of Violence → Chromatic Splendor"',
+    'Camellya[2] "Skill: Vining Waltz 1-4 / Blazing Waltz"',
+    'Camellya[4] "Basic ATK: Vining Waltz 1"',
+    'Camellya[6] "Skill: Vining Waltz 1-4 / Blazing Waltz"',
+    'Camellya[7] "Skill: Floral Ravage"',
+    'Jinhsi[3] "Forte: Incarnation - Basic Attack Stage 1-4"',
+    'Jinhsi[4] "Skill: Illuminous Epiphany"',
+    'Calcharo[4] "Basic ATK: Hounds Roar"',
+    'Calcharo[6] "Basic ATK: Hounds Roar"',
+    'Lucilla[5] "Echo: Use Echo"',
+    'Rebecca[3] "Forte: Rat-tat-tat!: Huntress"',
+    'Lucy[3] "Basic ATK: Locked Thread Stage 2-4"',
+    'Lucy[5] "Basic ATK: Thread Shredding Stage 1-4"',
+    'Lucy[6] "Heavy ATK: Dual Threading"',
+    'Lucy[8] "Liberation: Old Net Deep Dive"',
+    'Sigrika[1] "Basic ATK: Stage 2-4"',
+    'Sigrika[3] "Forte: Heavy ATK: Schemata of Runes (Chain Whip)"',
+    'Sigrika[5] "Basic ATK: Stage 2-4"',
+    'Sigrika[7] "Forte: Heavy ATK: Schemata of Runes (Runic Outburst)"',
+    'Luuk Herssen[1] "Mid-air: Jump: Scythe Resection Stage 2-3"',
+    'Luuk Herssen[2] "Skill: Aureole of Execution: Ring"',
+    'Luuk Herssen[3] "Basic ATK: Golden Impale"',
+    'Luuk Herssen[4] "Mid-air: Basic 1 → Jump: Resection 2-3"',
+    'Luuk Herssen[5] "Skill: Aureole of Execution: Breach"',
+    'Luuk Herssen[6] "Basic ATK: Golden Impale"',
+    'Luuk Herssen[7] "Mid-air: Basic 1 → Jump: Resection 2-3"',
+    'Luuk Herssen[8] "Skill: Aureole of Execution: Glare"',
+    'Luuk Herssen[9] "Forte: Mid-air Attack: Gavel of Earthshaker"',
+    'Yangyang: Xuanling[1] "Basic ATK: Azure Sword Stance Stage 1-4"',
+    'Yangyang: Xuanling[3] "Heavy ATK: Heavy Attack: Feather Sword Stance"',
+    'Yangyang: Xuanling[5] "Basic ATK: Havoc in Bloom Stage 1-3"',
+    'Yangyang: Xuanling[8] "Heavy ATK: Heavy Attack: Azure Sword Stance"',
+    'Aemeath[0] "Skill: Form Switch"',
+    'Aemeath[2] "Basic ATK: Mech Stage 3-4"',
+    'Aemeath[3] "Liberation: Heavenfall Edict: Overdrive"',
+    'Aemeath[4] "Basic ATK: Mech Stage 2-4"',
+    'Aemeath[5] "Skill: Seraphic Duet: Encore"',
+    'Aemeath[6] "Basic ATK: Aemeath Stage 2-4"',
+    'Aemeath[7] "Skill: Seraphic Duet: Overture"',
+    'Aemeath[9] "Liberation: Heavenfall Edict: Finale"',
+    'Aemeath[10] "Skill: Form Switch"',
+    'Lynae[3] "Heavy ATK: Spark Collision (full charge)"',
+    'Lynae[4] "Basic ATK: Polychrome Leap ×3"',
+    'Lynae[5] "Forte: Mid-air Attack: Visual Impact"',
+    'Mornye[1] "Basic ATK: Wide Field Observation Mode Stage 1-3"',
+    'Mornye[3] "Forte: Heavy Attack: Inversion"',
+    'Chisa[1] "Basic ATK: Stage 2, Rending Lunge, Death Snip"',
+    'Chisa[4] "Forte: Sawring - Blitz 2-3"',
+    'Cartethyia[7] "Skill: Fleurdelys 2"',
+    'Zani[1] "Skill: Standard Defense Protocol"',
+    'Zani[2] "Basic ATK: Stage 3"',
+    'Zani[3] "Skill: Targeted Action / Forcible Riposte"',
+    'Zani[5] "Forte: Heavy Slash: Daybreak"',
+    'Zani[6] "Forte: Heavy Slash: Dawning"',
+    'Zani[7] "Forte: Heavy Slash: Nightfall"',
+    'Zani[8] "Forte: Heavy Slash: Daybreak → Dawning → Nightfall"',
+    'Augusta[1] "Heavy ATK: Thunderoar: Backstep"',
+    'Augusta[2] "Heavy ATK: Thunderoar: Spinslash"',
+    'Augusta[4] "Heavy ATK: Thunderoar: Backstep → Spinslash"',
+    'Augusta[6] "Skill: Undying Sunlight: Strike"',
+    'Augusta[7] "Skill: Undying Sunlight: Leap"',
+    'Augusta[8] "Skill: Undying Sunlight: Plunge"',
+    'Augusta[9] "Liberation: Sublime is the Sun"',
+    'Augusta[10] "Liberation: Sublime is the Sun: Sunborne ×9"',
+    'Augusta[11] "Liberation: Sublime is the Sun: Everbright Protector"',
+    'Phrolova[1] "Basic ATK: Stage 3"',
+    'Phrolova[3] "Skill: Whispers in a Fleeting Dream"',
+    'Phrolova[9] "Liberation: Waltz of Forsaken Depths"',
+    'Qiuyuan[1] "Basic ATK: Inkwash Stage 3-4"',
+    'Rover: Electro[1] "Basic ATK: Deterrence 1-4"',
+  ]);
+
+  it('no NEW rotation step fails to resolve against SKILL_MULTIPLIERS (baseline-tracked, see comment above)', () => {
+    const unresolved = [];
+    rotations.forEach(([name, steps]) => {
+      // Only check characters/types this file actually has SKILL_MULTIPLIERS rows for — a
+      // character or type with none isn't a lookup failure, it's simply undocumented yet.
+      const rows = SKILL_MULTIPLIERS[name];
+      if (!rows || !rows.length) return;
+      const typesWithRows = new Set(rows.map(([t]) => t));
+      steps.forEach((step, i) => {
+        if (!step.skill || !typesWithRows.has(step.type)) return;
+        const row = findSkillMultiplierRow(name, step);
+        if (!row) unresolved.push(`${name}[${i}] "${step.type}: ${step.skill}"`);
+      });
+    });
+    const newlyUnresolved = unresolved.filter(u => !KNOWN_UNRESOLVED_BASELINE.has(u));
+    expect(newlyUnresolved, `NEW unresolved rotation steps not in the known baseline (would silently show 0 DMG) — if these are genuinely non-damage steps, add them to KNOWN_UNRESOLVED_BASELINE with a reason; if they're a real mismatch, fix the step's skill string or the SKILL_MULTIPLIERS row name:\n${newlyUnresolved.join('\n')}`).toEqual([]);
   });
 });
 

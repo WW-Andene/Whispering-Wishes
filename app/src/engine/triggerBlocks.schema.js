@@ -36,6 +36,68 @@
  * @property {string} [note]        Human-readable sourcing/mechanic note (same convention as
  *                                   the free-text `note` fields already used throughout
  *                                   characters.js — keep provenance attached to the data)
+ * @property {Proc} [proc]          For a discrete, repeatable extra-hit proc (Yinlin S6-style —
+ *                                   see Proc typedef below) — the raw flat-ATK-scaling damage
+ *                                   instance this block represents. Kept OUT of `effects` on
+ *                                   purpose: `effects[].stat` values are %-modifiers resolved
+ *                                   through calcEngine.js's existing `applyBuff()` switch, but a
+ *                                   proc is a whole separate damage instance (like a
+ *                                   SKILL_MULTIPLIERS row), not a modifier to one — forcing it
+ *                                   into `effects` would either silently no-op (applyBuff has no
+ *                                   case for a raw %ATK value) or require inventing a fake
+ *                                   modifier stat with no basis in the real mechanic, the same
+ *                                   mistake Phase 1 already caught and reverted for Yinlin's S6
+ *                                   (see RESONANCE_CHAIN_DATA['Yinlin'].s6's audit comment in
+ *                                   characters.js). Same documented boundary as every `effects: []`
+ *                                   damage block already in this codebase (Rover's Thunderclap,
+ *                                   etc.) — resolveTriggerBlocks() does not compute proc damage
+ *                                   yet; this field only names the shape.
+ * @property {DamageHits} [damage]  For a `kind: 'damage'` block: the real per-hit `%ATK` values for
+ *                                   this cast, parsed from SKILL_MULTIPLIERS via
+ *                                   skillMultiplierParser.js's `parseSkillMultiplierHits()` — no new
+ *                                   numbers invented, same sourcing discipline as everywhere else in
+ *                                   this schema. Added 2026-09-01 alongside the "totalMult →
+ *                                   hit-composed DPS" design doc in PHASE2_PLAN.md — this is that
+ *                                   design's data prerequisite (step 1), populated for Yinlin as the
+ *                                   Stage 1 proof-of-concept. Kept OUT of `effects` for the exact same
+ *                                   reason `proc` is: `effects[].stat` is %-modifier-only
+ *                                   (resolved through `applyBuff()`), while a hit's own raw %ATK is a
+ *                                   whole damage instance, not a modifier. `effects: []` on a damage
+ *                                   block WITHOUT a populated `damage` field is still the documented
+ *                                   boundary it always was — this field is additive, not a
+ *                                   requirement every damage block must carry yet (most of the
+ *                                   roster's damage blocks still don't have one).
+ */
+
+/**
+ * @typedef {Object} DamageHits
+ * @property {{atkPct: number}[]} hits  One entry per individual hit in this cast (a multi-stage
+ *                                        combo like Yinlin's 4-tap Basic ATK has one entry per stage,
+ *                                        already expanded — a source row's `×N` shorthand becomes N
+ *                                        separate entries, not one entry with a multiplier field).
+ *                                        The field is always named `atkPct` even when `basis` is
+ *                                        `'HP'`/`'DEF'` (matches calcTeamStats.js's own convention —
+ *                                        e.g. its `sKey`/`baseStat` handling — of keeping one %-value
+ *                                        field regardless of which base stat it scales off).
+ * @property {string} [category]        Which of calcEngine.js's existing damage-type categories
+ *                                        (basicDmg/heavyDmg/libDmg/skillDmg/echoDmg/coordDmg) this
+ *                                        cast's damage counts as — same vocabulary/purpose as
+ *                                        `Proc.category`.
+ * @property {string} [basis]           Which base stat these hits scale off: `'ATK'` (default,
+ *                                        omit for the common case) | `'HP'` | `'DEF'`. Added
+ *                                        2026-09-01 for Shorekeeper's Discernment (Intro), whose own
+ *                                        kit text says explicitly "scales off her HP, not ATK" — a
+ *                                        real, sourced fact, not a guess. `resolveHitComposedDps.js`
+ *                                        reads this to pick the right base value instead of silently
+ *                                        assuming every hit is ATK-scaling.
+ * @property {boolean} [guaranteedCrit] True if this cast is a guaranteed Crit per its own kit text
+ *                                        (Shorekeeper's Discernment: "a guaranteed-Crit hit," sourced
+ *                                        from the same CHARACTER_ROTATIONS note the rest of this
+ *                                        block's data comes from) — `resolveHitComposedDps.js` uses
+ *                                        the full `(1 + cd/100)` crit multiplier for these hits
+ *                                        instead of `calcAvgCrit`'s expected-value blend, which would
+ *                                        otherwise silently undercount a hit that can never actually
+ *                                        NOT crit.
  */
 
 /**
@@ -47,12 +109,34 @@
  *                            (added for Augusta's Majesty/Crown-of-Wills mechanic — see below) |
  *                            'windowed-cast' (added for Jinhsi's cast-order forfeit windows —
  *                            see below) | 'requires-prior-cast' (added for Camellya's Twining —
+ *                            see below) | 'windowed-proc' (added for Yinlin's Furious Thunder —
  *                            see below)
  * @property {string} [on]   The specific skill/move id this trigger fires on (matches a
  *                            CHARACTER_ROTATIONS-style {type, skill} pair when type === 'cast');
  *                            omitted for triggers that aren't tied to one specific move
  * @property {string} [resource]      Name of the gauge this trigger reads, for 'resource-threshold'
  * @property {number} [threshold]     Value the resource must reach/cross
+ * @property {string} [resourceStepOn]  For 'resource-threshold': the `TYPE:SKILL` label (same
+ *                                    convention as `attemptOn`/`checksAt`/proc's `on`) of the
+ *                                    CHARACTER_ROTATIONS step that itself represents this threshold
+ *                                    being reached (Yinlin's Chameleon Cipher: resourceStepOn
+ *                                    'Forte:Chameleon Cipher'). Added 2026-09-01 rather than building
+ *                                    real gauge-accumulation simulation (tracking Judgment Points/
+ *                                    Electric Surge/Concerto Energy gain-per-hit, caps, etc. — a much
+ *                                    larger, currently-unsourced modeling task with no per-hit gain-rate
+ *                                    data anywhere in characters.js yet): a rotation guide's own step
+ *                                    sequence ALREADY encodes "the gauge is full here" simply by
+ *                                    placing this step at this point (Yinlin's own
+ *                                    CHARACTER_ROTATIONS note literally says "Once Judgment Points hit
+ *                                    100/100, her Heavy Attack is replaced by this automatically") —
+ *                                    reusing that existing, sourced assertion is honest (it derives
+ *                                    from real data, not a guess) even though it does NOT track a real
+ *                                    numeric gauge value the way `windowed-proc`'s time/count tracking
+ *                                    does. `deriveStepsFromRotation()` auto-tags the matching step;
+ *                                    `simulateRotation()`/`simulateTeamRotation()` fire the
+ *                                    'resource-threshold:...' key there. A future real gauge simulator
+ *                                    (if ever built) would supersede this, not conflict with it — this
+ *                                    field just names which step to trust in the meantime.
  * @property {string} [requiresActiveBlock]  For 'partner-outro-return': the id of ANOTHER block
  *                                    (this character's own outro buff, applied to a teammate) that
  *                                    must still be active — not yet expired, and not yet ended by an
@@ -93,6 +177,20 @@
  * @property {number} [windowSeconds] For 'windowed-cast': how long the window stays open after the
  *                                    `opensOn` trigger fires before the alternate/empowered cast this
  *                                    block represents is forfeited.
+ * @property {string} [attemptOn]     For 'windowed-cast': the `TYPE:SKILL` label (matches a
+ *                                    CHARACTER_ROTATIONS {type, skill} pair, same convention as the
+ *                                    shared `on` field) of the rotation step that ATTEMPTS to consume
+ *                                    this window — i.e. the empowered/alternate cast itself (Jinhsi's
+ *                                    Overflowing Radiance window: attemptOn 'Skill:Overflowing
+ *                                    Radiance'). Added alongside `deriveStepsFromRotation()` in
+ *                                    rotationSimulator.js so a real CHARACTER_ROTATIONS array can be
+ *                                    walked automatically — without this field there was no way to
+ *                                    tell, from the block alone, WHICH step in the rotation should call
+ *                                    `tryWindowedCast()` (previously only a hand-built test's
+ *                                    `consumesWindowBlockId` flag on that one step could say so). Optional:
+ *                                    older blocks without it simply can't be auto-derived yet and still
+ *                                    need a hand-built `steps` array with `consumesWindowBlockId` set
+ *                                    explicitly, same as before.
  * @property {string} [requiresPriorCast]  For 'requires-prior-cast': the trigger key (same format
  *                                    triggerEngine.js's triggerKey() produces) of a cast that must
  *                                    have occurred SOMEWHERE EARLIER in the current on-field segment
@@ -108,6 +206,53 @@
  *                                    track "was this cast seen since the last swap-in" to evaluate it
  *                                    (see rotationSimulator.js's `recordCast`/`hasCastThisSegment`/
  *                                    `resetSegment`, added alongside this trigger type).
+ * @property {string} [checksAt]      For 'requires-prior-cast': the `TYPE:SKILL` label (same
+ *                                    convention as 'windowed-cast''s `attemptOn`) of the rotation step
+ *                                    at which this dependency should be checked — Camellya's Outro
+ *                                    Twining: checksAt 'Outro:Twining'. Added alongside
+ *                                    `deriveStepsFromRotation()` for the same reason `attemptOn` was:
+ *                                    without it, nothing in the block itself says WHICH step should
+ *                                    call `hasCastThisSegment()` (previously only a hand-built test's
+ *                                    `checksPriorCast` flag on that one step could say so). Optional,
+ *                                    same fallback as `attemptOn`.
+ * @property {string[]} [opensOnProc] For 'windowed-proc': trigger key(s) whose firing opens the
+ *                                    proc window (same `opensOn` semantics as 'windowed-cast' —
+ *                                    ANY of them opens it). Kept as a separate field name from
+ *                                    'windowed-cast''s `opensOn` only to keep triggerKey() able to
+ *                                    tell the two trigger types apart by field alone if ever
+ *                                    needed; same list-of-trigger-keys shape otherwise.
+ * @property {number} [windowSeconds] Reused for 'windowed-proc' too: how long the window stays
+ *                                    open after `opensOnProc` fires.
+ * @property {number} [maxProcs]      For 'windowed-proc': the cap on how many times this proc can
+ *                                    fire within one open window (Yinlin S6 Furious Thunder: 4,
+ *                                    within the 30s window opened by casting Liberation Thundering
+ *                                    Wrath). Unlike 'windowed-cast' (a single empowered cast that's
+ *                                    either landed in time or forfeited), a proc window is
+ *                                    repeatable up to this count — every qualifying `on`-type hit
+ *                                    (Yinlin: Basic ATK) while the window is open can independently
+ *                                    trigger it, until the cap is hit or the window closes.
+ * @property {string} [on]            Reused for 'windowed-proc' too: which hit type
+ *                                    (CHARACTER_ROTATIONS-style, e.g. 'Basic ATK') can trigger the
+ *                                    proc while its window is open — see the shared `on` doc above.
+ *                                    Same evaluation limitation as every other conditional type
+ *                                    added so far: this only names the window's shape (what opens
+ *                                    it, how long, the cap, which hits qualify); real elapsed-time +
+ *                                    count tracking is rotationSimulator.js's job (see
+ *                                    `openProcWindow`/`tryProc`, added alongside this trigger type).
+ */
+
+/**
+ * @typedef {Object} Proc
+ * @property {number} atkPct   The discrete extra-hit's damage, as a percentage of ATK (e.g.
+ *                                Yinlin S6 Furious Thunder: 419.59) — a whole separate damage
+ *                                instance, not a %-modifier to an existing one.
+ * @property {string} [category] Which of calcEngine.js's existing damage-type categories
+ *                                (basicDmg/heavyDmg/libDmg/skillDmg/echoDmg/coordDmg) this proc's
+ *                                damage is "considered" as for type-focus purposes, per the kit's
+ *                                own text (Yinlin's Furious Thunder is explicitly "considered
+ *                                Resonance Skill DMG" -> category: 'skillDmg'). Descriptive only —
+ *                                resolveTriggerBlocks() doesn't route proc damage through
+ *                                applyBuff() yet (see the TriggerBlock.proc doc above).
  */
 
 /**
@@ -150,9 +295,20 @@
  * @property {string} [stacking] One of: 'unique' (default — doesn't stack with itself) |
  *                                 'stacking' (multiple instances add, e.g. Electro Flare stacks) |
  *                                 'refresh' (re-triggering resets duration instead of adding)
+ * @property {number} [maxStacks] For 'stacking' only: the real cap on concurrent instances (e.g.
+ *                                 Rover: Electro's Electro Flare debuff: 10, straight from its own
+ *                                 kit text/note — "10 stacks of Electro Flare"). Added alongside
+ *                                 resolveSimulatedRotation.js, which is the first thing that
+ *                                 actually needs to know when a 'stacking' effect stops adding —
+ *                                 every prior consumer (resolveTriggerBlocks) only ever applied a
+ *                                 block once per call and never accumulated multiple instances, so
+ *                                 this had no consumer to enforce it until now. Omit for a
+ *                                 'stacking' effect whose real cap isn't sourced yet (kept
+ *                                 uncapped rather than guessing a number — same "don't fabricate"
+ *                                 rule as everywhere else in this schema).
  */
 
-export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast', 'requires-prior-cast'];
+export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast', 'requires-prior-cast', 'windowed-proc'];
 export const BLOCK_KINDS = ['damage', 'buff', 'debuff', 'heal', 'utility'];
 export const TARGET_SCOPES = ['self', 'on-field', 'next-on-field', 'whole-team', 'marked-enemy', 'all-enemies'];
 export const STACKING_MODES = ['unique', 'stacking', 'refresh'];

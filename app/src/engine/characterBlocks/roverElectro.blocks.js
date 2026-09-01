@@ -11,11 +11,30 @@
 // __tests__/triggerEngine-rover-electro.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+
 const SOURCE = 'Rover: Electro';
 
 /** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
 export const ROVER_ELECTRO_BLOCKS = [
-  // ── Damage blocks (from SKILL_MULTIPLIERS, split per the 2026-09-01 audit fix) ──
+  // ── Damage blocks (from SKILL_MULTIPLIERS, split per the 2026-09-01 audit fix). `damage.hits`
+  //    populated 2026-09-01 alongside the "totalMult -> hit-composed DPS" design doc — real per-hit
+  //    %ATK parsed from these same already-audited strings, no new numbers invented. ──
+  {
+    id: 'rover-electro.basic.deterrence',
+    source: SOURCE,
+    kind: 'damage',
+    // A real gap found while populating damage.hits: this 4-stage combo — the very FIRST real damage
+    // step in CHARACTER_ROTATIONS['Rover: Electro'] — had no block of its own at all (only its
+    // auto-chained follow-up, Repel, was modeled). Added now, same "fill the gap found during
+    // migration" precedent as Yinlin's Lightning Execution split.
+    trigger: { type: 'cast', on: 'Basic ATK:Deterrence 1-4' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('51.08% → 26.00%+39.00% → 13.27%×7 → 72.82%+109.22%'), category: 'basicDmg' },
+    note: 'Tap Basic Attack 4 times in a row — each hit builds more Electric Surge.',
+  },
   {
     id: 'rover-electro.skill.thunderclap',
     source: SOURCE,
@@ -23,9 +42,9 @@ export const ROVER_ELECTRO_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Thunderclap' },
     timing: { cooldown: 10 },
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 0 }], // per-hit % (100.20%×2) lives in SKILL_MULTIPLIERS; this
-    // block only carries the trigger/timing wiring — the raw damage-per-hit stays sourced from the
-    // flat table until the calc formula itself is migrated (see rollout note in the schema file).
+    effects: [{ stat: 'skillDmg', value: 0 }], // no-op placeholder, kept as-is (harmless — applyBuff's
+    // default case ignores it); the real damage now lives in `damage.hits` below.
+    damage: { hits: parseSkillMultiplierHits('100.20%×2'), category: 'skillDmg' },
   },
   {
     id: 'rover-electro.basic.repel',
@@ -36,18 +55,20 @@ export const ROVER_ELECTRO_BLOCKS = [
     timing: { delay: 0 },
     target: { scope: 'self' },
     effects: [],
+    damage: { hits: parseSkillMultiplierHits('56.12%+84.17%'), category: 'basicDmg' },
     note: 'Auto-chains from a single Basic Attack tap right after Thunderclap lands.',
   },
   {
     id: 'rover-electro.forte.overshock',
     source: SOURCE,
     kind: 'damage',
-    trigger: { type: 'resource-threshold', resource: 'Electric Surge', threshold: 120 },
+    trigger: { type: 'resource-threshold', resource: 'Electric Surge', threshold: 120, resourceStepOn: 'Forte:Overshock' },
     condition: {},
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    note: 'TAP at max Electric Surge (HOLD enters Apex Resonance instead). Forte-type per the 2026-09-01 rotation fix.',
+    damage: { hits: parseSkillMultiplierHits('80.72%×7+423.77%+423.77%'), category: 'skillDmg' },
+    note: 'TAP at max Electric Surge (HOLD enters Apex Resonance instead) — counted as Resonance Skill DMG per its own kit text. Forte-type per the 2026-09-01 rotation fix.',
   },
   {
     id: 'rover-electro.liberation.ultimate-tactics',
@@ -57,6 +78,7 @@ export const ROVER_ELECTRO_BLOCKS = [
     timing: { cooldown: 25 },
     target: { scope: 'self' },
     effects: [],
+    damage: { hits: parseSkillMultiplierHits('1192.86%'), category: 'libDmg' },
   },
   {
     id: 'rover-electro.intro.thunderous-fury',
@@ -66,6 +88,12 @@ export const ROVER_ELECTRO_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
+    // No `category` — Intro/Outro casts are excluded from calcEngine.js's own dmgFocus-routing
+    // buckets (see ROTATION_RAW_TYPE_TO_FOCUS's own comment there: "Intro/Outro are one-off utility
+    // casts, not a repeated rotation-damage type"), so this hit's DMG Bonus draws only from elemDmg,
+    // not a type-specific category — resolveHitComposedDps.js already handles an absent `category`
+    // correctly (categoryStat defaults to 0).
+    damage: { hits: parseSkillMultiplierHits('33.41%×2+100.21%') },
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
@@ -73,7 +101,7 @@ export const ROVER_ELECTRO_BLOCKS = [
     id: 'rover-electro.selfbuff.overshock-atk',
     source: SOURCE,
     kind: 'buff',
-    trigger: { type: 'resource-threshold', resource: 'Electric Surge', threshold: 120 },
+    trigger: { type: 'resource-threshold', resource: 'Electric Surge', threshold: 120, resourceStepOn: 'Forte:Overshock' },
     condition: {},
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
@@ -101,7 +129,7 @@ export const ROVER_ELECTRO_BLOCKS = [
     condition: {},
     timing: { duration: 99 },
     target: { scope: 'marked-enemy' },
-    effects: [{ stat: 'flare', value: 10, stacking: 'stacking' }],
+    effects: [{ stat: 'flare', value: 10, stacking: 'stacking', maxStacks: 10 }],
     note: 'Hold-cast Overshock (Inherent Skill "Decipher") inflicts 10 stacks of Electro Flare.',
   },
 

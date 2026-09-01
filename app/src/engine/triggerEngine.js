@@ -24,12 +24,23 @@ import { applyBuff } from '../features/teams/calcEngine.js';
  * @param {string} ctx.targetName        Character whose stat accumulator effects should land on
  * @param {string} ctx.targetElementLower Target's element, lowercased (for condition.element gating)
  * @param {string} ctx.targetRole        Target's role (for condition.requiresRole gating)
+ * @param {Set<string>} [ctx.ineligibleBlockIds]  Block ids that must NOT resolve this call even
+ *                                          though their trigger key is present in firedTriggers —
+ *                                          currently produced by rotationSimulator.js's
+ *                                          simulateRotation() for 'cast' blocks still on their own
+ *                                          timing.cooldown (a cast key is shared across every block
+ *                                          that listens for it, so per-block cooldown state can't be
+ *                                          expressed as a trigger key alone; the state machine has to
+ *                                          name the exception explicitly). Optional — omitting it is
+ *                                          the same as passing an empty set, same as every prior call
+ *                                          site that predates this parameter.
  * @param {Object} stats                 Stat accumulator (createStats() shape from calcEngine.js)
  */
 export function resolveTriggerBlocks(blocks, ctx, stats) {
-  const { firedTriggers, targetElementLower, targetRole } = ctx;
+  const { firedTriggers, targetElementLower, targetRole, ineligibleBlockIds } = ctx;
   let totalMultBonus = 0;
   for (const block of blocks) {
+    if (ineligibleBlockIds?.has(block.id)) continue;
     if (!triggerFired(block.trigger, firedTriggers)) continue;
     if (!conditionHolds(block.condition, targetElementLower, targetRole)) continue;
     for (const effect of block.effects) {
@@ -62,6 +73,15 @@ function triggerKey(trigger) {
   // firedTriggers) — evaluating "was requiresPriorCast actually seen earlier this on-field
   // segment" is rotationSimulator.js's job (recordCast/hasCastThisSegment/resetSegment).
   if (trigger.type === 'requires-prior-cast') return `requires-prior-cast:${trigger.requiresPriorCast}`;
+  // Keyed by opensOnProc, mirroring windowed-cast's own opensOn-keying — this resolver doesn't
+  // track window elapsed time or the proc count cap itself (see rotationSimulator.js's
+  // openProcWindow/tryProc); it only checks whether the caller already asserted "yes, a proc fired
+  // within this window and under its cap" by including this exact key in firedTriggers. Each
+  // individual proc occurrence is a separate call with the same key (repeatable, unlike
+  // windowed-cast's one-shot), so resolveTriggerBlocks applying this block's effects once per
+  // firedTriggers check is intentional — the CALLER is responsible for invoking resolution once per
+  // actual proc, not this resolver deduping them.
+  if (trigger.type === 'windowed-proc') return `windowed-proc:${trigger.opensOnProc?.join('|')}`;
   return trigger.type;
 }
 
@@ -77,4 +97,8 @@ function conditionHolds(condition, targetElementLower, targetRole) {
   return true;
 }
 
-export { triggerKey };
+// triggerFired/conditionHolds exported alongside triggerKey so resolveSimulatedRotation.js (the
+// time-integration driver — see its own file header) can determine per-step block eligibility with
+// the EXACT same logic resolveTriggerBlocks() uses, instead of re-deriving a second copy that could
+// silently drift out of sync.
+export { triggerKey, triggerFired, conditionHolds };
