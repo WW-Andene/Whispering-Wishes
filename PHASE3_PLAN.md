@@ -1010,9 +1010,27 @@ both a real 3-member team and a solo (`CharacterDetailModal.jsx`'s own
 calling convention) — both produced complete, plausible step data (buff
 labels, durations, skill sequences) with no missing fields.
 
-**Next**: step 5/6 — `warnings` (port energy-cycle/RES-based warning logic,
-expected to need little to no change since it already reads
-`energyCycleFactors`/`mems`/`mainDps`, none of which steps 1-4 restructured).
+### Stage 4, step 5/6 — `warnings` (done, 2026-09-01, zero code change)
+
+Confirmed the prediction: `warnings` needed **zero code changes**. It reads
+`mems`/`mainDps`/`mainDpsOverride`/`enemyEcho`/`getEnemyRes`/
+`energyCycleFactors` directly — team composition, role coverage, element
+resonance, enemy RES, and ER-uptime heuristics — and never touched
+`totalMult`/`mult` math at all, so nothing steps 1-4 restructured could
+have broken it. Verified explicitly rather than assumed: probed a 1-member
+(Incomplete team), a healer-less 3-member (No healer in team), a
+properly-staffed 3-member (no false-positive No-healer warning), and
+confirmed the low-ER warning still names the right under-built member with
+their real `totalER`/`libUptime` numbers.
+
+4 new tests (`calcTeamStatsWarnings.test.js`). Full suite: 1122/1122
+passing (85 files).
+
+**Next**: step 6/6 (final step) — delete the now-dead legacy code paths
+(`applyResonanceChain`'s calling code, the old inline permutation search
+inside `rotationTimeline` when `engineChosenOrder` exists, the RAW/FULL
+tier's legacy per-member math for a fully-converted team) — only once this
+step confirms every earlier step is trustworthy, which it now does.
 
 ## Stage 5 — Final verification and commit
 
@@ -1033,7 +1051,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
 - [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
 - [x] Stage 4 reconnaissance — full consumer-contract map (every field read outside calcTeamStats.js, by which component), measured perf check (engine ~3.1x slower/call than legacy but still sub-ms — not a blocker for autoEquip.js's search loop), and a 6-step phased implementation plan (solo tier -> team tier -> DOT -> rotationTimeline -> warnings -> dead code removal), each step independently tested/committed
-- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; step 2/6 done — FULL tier/`teamDps`/`memberDps` now calls `chooseOnFieldOrder` + `resolveHitComposedTeamDps` (which gained its own `externalStats` support) for a fully-converted team, same legacy fallback; step 3/6 done — DOT now composed via `engine/dotReactions.js`'s `resolveDotReactionDps` (pure plumbing swap), `dmgSources` needed no changes (already engine-correct via step 2); step 4/6 done, scope narrowed — `rotationTimeline`'s displayed on-field order now reuses the same `chooseOnFieldOrder` result `teamDps` was computed against (a new `engineChosenOrder`, hoisted and shared with step 2); its own segment-duration/buff-list display internals stay legacy/CHAR_BUFF_TABLE-driven, not rewritten to real engine windows in this pass — logged as deferred, not dropped; steps 5-6 remaining)
+- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; step 2/6 done — FULL tier/`teamDps`/`memberDps` now calls `chooseOnFieldOrder` + `resolveHitComposedTeamDps` (which gained its own `externalStats` support) for a fully-converted team, same legacy fallback; step 3/6 done — DOT now composed via `engine/dotReactions.js`'s `resolveDotReactionDps` (pure plumbing swap), `dmgSources` needed no changes (already engine-correct via step 2); step 4/6 done, scope narrowed — `rotationTimeline`'s displayed on-field order now reuses the same `chooseOnFieldOrder` result `teamDps` was computed against (a new `engineChosenOrder`, hoisted and shared with step 2); its own segment-duration/buff-list display internals stay legacy/CHAR_BUFF_TABLE-driven, not rewritten to real engine windows in this pass — logged as deferred, not dropped; step 5/6 done — `warnings` needed zero code changes (never touched totalMult/mult math); step 6/6 remaining — dead code removal, the only remaining item)
 - [ ] Stage 5 — final verify + commit
 
 Work proceeds stage by stage; each stage's own sub-tasks are committed
