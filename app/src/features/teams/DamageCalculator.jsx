@@ -450,7 +450,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                               ) : m.d.bestWeapon ? (
                                 <div className="text-sm space-y-0.5">
                                   <div><span className="text-gray-500">{t('teams.damageCalc.recommended')}</span><span className="text-yellow-400/50">{m.d.bestWeapon}</span></div>
-                                  {m.d.bestEchoes && <div className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</div>}
+                                  {m.d.bestEchoes?.length > 0 && <div className="text-cyan-400/50">{m.d.bestEchoes.join(' + ')}</div>}
                                 </div>
                               ) : null}
                               {/* Echo summary */}

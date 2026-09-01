@@ -927,8 +927,13 @@ const CHARACTER_DATA = {
     // "not featured in any Event Convene" as of 2026-08-20 (he's confirmed for the 3.6-p2 banner,
     // ~Sept 10, per BANNER_HISTORY, not live day-one like Qingxiao) — bestEchoes/teams/weaponAlts
     // remain genuinely unconfirmed, not guessed.
-    bestEchoes: ['Unconfirmed (releases 3.6-p2, ~Sept 2026)'], bestWeapon: 'Thousandfold Deliverance',
-    teams: ['Unconfirmed (releases 3.6-p2, ~Sept 2026)'] },
+    // bestEchoes/teams left empty rather than a placeholder sentinel string: DamageCalculator.jsx's
+    // "Recommended" line (`m.d.bestEchoes && ...`) renders any truthy bestEchoes verbatim to the
+    // user, sentinel prose included — found via a team-recommendation audit (2026-09-01). An empty
+    // array renders nothing (falls through to the "no recommendation yet" empty state) instead of
+    // leaking "Unconfirmed (releases 3.6-p2, ~Sept 2026)" as if it were a real echo-set suggestion.
+    bestEchoes: [], bestWeapon: 'Thousandfold Deliverance',
+    teams: [] },
     // Re-checked 2026-08-31 (deepened rotation/Resonance-Chain data pass): Jingran remains the sole gap
     // in CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA out of the 58-entry roster, and it is still not
     // fabricatable — reconfirmed via headless-browser fetch (Chrome UA + google.com referer, load-wait
