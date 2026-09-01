@@ -3878,8 +3878,13 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Feint Shot', '66.27%×3', 'Rapid continuous shooting on entry.'],
     ['Outro', 'Dissolving Mist', '+23% Aero DMG Amp (14s)', 'Buffs the incoming Resonator.'],
   ],
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Baizhi/Combat, cross-checked against
+  // ww.nanoka.cc/character/1103 (both agree exactly) — every pre-existing value was already correct.
+  // Added the two entirely missing rows (Mid-air Attack, Dodge Counter).
   'Baizhi': [
     ['Basic ATK', "Destined Promise Stage 1-4", '65.48% → 78.57% → 13.10%×7 → 78.57%', "Up to 4 You'tan-commanded strikes."],
+    ['Mid-air', 'Attack', '78.89%'],
+    ['Dodge Counter', 'Standard', '178.65%'],
     ['Heavy ATK', "Destined Promise (channel)", '48.86%/s', "Continuous You'tan attacks; Baizhi can reposition You'tan during the channel."],
     ['Skill', 'Emergency Plan', '15.94% + healing', "Immediate team heal plus a Glacio hit from You'tan."],
     ['Liberation', 'Momentary Union', 'Team heal + 4x Remnant Entities (4.07% each)', 'Remnant Entities auto-attack and heal every 2.5s.'],
@@ -5943,7 +5948,20 @@ const RESONANCE_CHAIN_DATA = {
   // Remnant Entities gets 2 extra casts + Healing Mult+20% + extra Glacio DMG (healing-focused, kept as small
   // totalMult). S5 revives a KO'd teammate once per 10 min (pure utility, no DPS stat fits). S6 Euphonia pickup grants
   // team Glacio DMG Bonus+12% for 20s (elemDmg, confirmed exact).
-  'Baizhi':       { s1: { totalMult: 4 }, s2: { elemDmg: 15 }, s3: { totalMult: 6 }, s4: { totalMult: 8 }, s5: { totalMult: 4 }, s6: { elemDmg: 12 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Baizhi/Combat, cross-checked against
+  // ww.nanoka.cc/character/1103 (both agree exactly). S1: was totalMult: 4 (undocumented placeholder) —
+  // real effect is purely restoring 2.5 extra Resonance Energy per Concentration consumed on Emergency
+  // Plan, zero DPS component. Zeroed to {}. S3: was totalMult: 6 — real effect is Overflowing Frost
+  // granting Max HP +12% for 10s, which only indirectly affects DPS through Baizhi's HP%-scaling moves
+  // (Emergency Plan, Remnant Entities); no maxHP/hpPct DPS category exists in this schema to convert it
+  // cleanly, and the prior value had no shown derivation. Zeroed to {}. S4: was totalMult: 8 — real effect
+  // is +2 Remnant Entities casts (healing-focused) plus a flat +1.20% Max HP additional Glacio DMG per
+  // proc (an HP%-scaling bonus-hit addition, same unrepresentable class as other bonus-hit nodes
+  // documented this pass). Zeroed to {}. S5: was totalMult: 4 (undocumented placeholder) — real effect is
+  // a pure-utility one-time revive, zero DPS component. Zeroed to {}.
+  // TODO: needs Phase 2 schema — S3/S4's HP%-scaling effects and S1/S5's utility effects have no home in
+  // this DPS-focused flat-{stat: value} schema.
+  'Baizhi':       { s1: {}, s2: { elemDmg: 15 }, s3: {}, s4: {}, s5: {}, s6: { elemDmg: 12 } },
   // corrected 2026-08-18: prior values (atkPct/deepen on every node) had no basis in Buling's real
   // chain kit (fandom Combat page, rendered Resonance Chain table, cross-checked against Prydwen's own
   // Kit tab) — she has no ATK% node and no DMG Deepen node at all. Real effects: S1 Exorcist Gadgets,
