@@ -189,7 +189,12 @@ describe('PHASE3_PLAN.md Stage 1 — parity harness (engine hit-composed DPS vs.
       let engineDps = 0, totalDamage = 0, totalTime = 0, threw = null;
       try {
         const steps = deriveStepsFromRotation(rotation, blocks);
-        ({ totalDamage, totalTime } = resolveHitComposedDps(blocks, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, baseStats, (d.element || '').toLowerCase(), d.role, gearDelta));
+        // sequence: 0 — matches calcTeamStats()'s own default for an unbuilt character (no `eq.sequence`
+        // override in teamEquipment above -> `eq?.sequence || 0`), so this is now a genuine apples-to-
+        // apples S0 comparison. Before PHASE3_PLAN.md Stage 3's sequenceGating.js, chain blocks fired
+        // unconditionally regardless of this param even existing — see Stage 2's write-up for how much
+        // that skewed the ratios (Lucilla's alone was inflated 40.03x -> ~4.1x by this fix).
+        ({ totalDamage, totalTime } = resolveHitComposedDps(blocks, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, baseStats, (d.element || '').toLowerCase(), d.role, gearDelta, 0));
         engineDps = totalTime > 0 ? totalDamage / totalTime : 0;
       } catch (err) {
         threw = err;

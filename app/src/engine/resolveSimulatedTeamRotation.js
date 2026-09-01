@@ -36,6 +36,7 @@ import { createStats, applyBuff } from '../features/teams/calcEngine.js';
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 import { triggerFired, conditionHolds } from './triggerEngine.js';
 import { buildBlockWindows, timeWeightedAverageConcurrency } from './blockWindows.js';
+import { sequenceAllows } from './sequenceGating.js';
 
 /**
  * @param {Object[]} ownedSteps  Same shape buildTeamSteps()/simulateTeamRotation() take — each step
@@ -45,6 +46,11 @@ import { buildBlockWindows, timeWeightedAverageConcurrency } from './blockWindow
  * @param {Object} [opts]
  * @param {string} [opts.targetElementLower]
  * @param {string} [opts.targetRole]
+ * @param {Object<string, number>} [opts.sequenceByOwner]  PHASE3_PLAN.md Stage 3: each team member's
+ *   owned Resonance Chain sequence (0-6), keyed by name (same keys as `blocksByOwner`). A member
+ *   missing from this map is NOT gated (every one of their blocks fires) — same no-gating-by-default
+ *   backward compatibility as resolveHitComposedDps's own `sequence` param; omit the whole option to
+ *   keep every existing caller's behavior unchanged.
  * @returns {{
  *   stats: Object,
  *   totalMultBonus: number,
@@ -54,7 +60,7 @@ import { buildBlockWindows, timeWeightedAverageConcurrency } from './blockWindow
  * }}
  */
 export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetName, opts = {}) {
-  const { targetElementLower = null, targetRole = null } = opts;
+  const { targetElementLower = null, targetRole = null, sequenceByOwner = null } = opts;
   const results = simulateTeamRotation(ownedSteps, blocksByOwner);
   const order = [...new Set(ownedSteps.map(s => s.owner))];
 
@@ -93,6 +99,7 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
       scope === 'whole-team' ||
       (scope === 'next-on-field' && isImmediateNext(order, blockOwner, targetName));
     if (!relevantToTarget) continue;
+    if (sequenceByOwner && Object.prototype.hasOwnProperty.call(sequenceByOwner, blockOwner) && !sequenceAllows(block, sequenceByOwner[blockOwner])) continue;
 
     // A block's OWN activation history only depends on ITS OWNER's steps — a target merely
     // RECEIVING it plays no part in whether/when it fires.

@@ -237,6 +237,64 @@ then thread a `sequence` parameter through `resolveHitComposedDps`/
 once that's done does re-running this Stage 1/2 harness produce a genuinely
 apples-to-apples S0 (and, ideally, parameterized S1-S6) comparison.
 
+## Stage 3, item 1 — sequence-level gating (done, 2026-09-01)
+
+Implemented as a DERIVED convention rather than hand-editing ~300 chain
+blocks across 56 files (verified via a full grep sweep that every single
+converted character's chain block id already matches `<char>.chain.sN` or
+`<char>.chain.sN-<suffix>`, N always 1-6, zero exceptions — a
+`sequenceGating.test.js` test asserts this convention holds, so any future
+character conversion that breaks it fails loudly rather than silently
+un-gating):
+
+- **`engine/sequenceGating.js`** (new): `requiredSequenceOf(block)` derives
+  the required sequence from `trigger.requiresSequence` if explicitly set,
+  else from the `chain.sN` id pattern, else `0` (always available).
+  `sequenceAllows(block, sequence)` and `gateBlocksBySequence(blocks,
+  sequence)` — `sequence == null` never gates (backward-compatible default),
+  an explicit `0`-`6` actually filters, mirroring
+  `applyResonanceChain`'s own `Math.min(seqLevel, 6)` semantics exactly.
+  10 tests, including the full-roster convention check.
+- **`resolveHitComposedDps`**: added an 8th param, `sequence = null`. Gates
+  `blocks` at entry via `gateBlocksBySequence`. Every existing caller that
+  doesn't pass it is unaffected (confirmed: full suite unchanged before this
+  param existed vs. after, 1065/1065 either way).
+- **`resolveSimulatedTeamRotation`**: added `opts.sequenceByOwner` (a
+  `{name: seqLevel}` map) — a member missing from the map isn't gated,
+  same no-gating-by-default pattern.
+
+**Stage 1 harness re-run at a TRUE apples-to-apples S0 baseline** (passing
+`sequence: 0` explicitly, matching `calcTeamStats()`'s own default for an
+unbuilt character): the whole-roster distribution collapsed dramatically —
+
+| | before (chain unconditional) | after (gated at S0) |
+|---|---|---|
+| min | 0.056 | 0.044 |
+| max | 40.03 (Lucilla) | 8.01 (Lucilla) |
+| median | 3.13 | 2.03 |
+| mean | 4.20 | 2.34 |
+
+Confirms Stage 2's hypothesis was correct and now quantified precisely: the
+missing sequence gate was the dominant systemic driver of the whole
+roster's inflation, not just the 6 flagged outliers. Lucilla remains the
+single highest outlier post-fix (8.01x, ~4x the new median) — a real,
+smaller residual worth one more look in a future Stage 2/3 pass (candidate
+cause: `lucilla.basic.oblivion` shares the exact same `trigger.on` as
+`lucilla.basic.tracing-forms`, so both fire together on every occurrence of
+that rotation step — plausible as intentional per the block's own note, but
+not yet independently confirmed against how often that step actually
+recurs in her real `CHARACTER_ROTATIONS` sequence). Not blocking further
+Stage 3 work — logged here so it isn't lost.
+
+Full suite: 1065/1065 passing. `calcTeamStats.js` untouched throughout
+(confirmed via `git diff --stat`).
+
+**Next**: Stage 3's remaining items from the Stage 0 table — DOT reactions,
+energy-cycle-gated Liberation uptime, the rotation on-field order-search,
+and Coordinated ATK off-field snapshot semantics. None of these are
+individually as roster-wide-impactful as sequence gating was, but Stage 4's
+rewrite can't start until each is closed or explicitly descoped.
+
 ## Stage 1 — Parity harness
 
 Extend `verifyEngineAgainstCalcTeamStats.test.js` (currently scoped to one
@@ -304,7 +362,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 0 — coverage audit
 - [x] Stage 1 — parity harness (all 56 converted characters swept; engine `externalStats` gap found+fixed; ratio distribution recorded, outliers flagged for Stage 2)
 - [x] Stage 2 — triage (root cause found for all 6 flagged outliers: no sequence-level gating anywhere in the engine — one systemic gap, not six bugs; likely a major contributor to the whole roster's elevated median too)
-- [ ] Stage 3 — close gaps (revised priority: sequence-level gating FIRST, then Stage 0's DOT/energy-cycle/order-search/Coordinated-ATK list)
+- [ ] Stage 3 — close gaps (item 1/5 done: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; remaining: DOT, energy-cycle gating, order-search, Coordinated ATK snapshot)
 - [ ] Stage 4 — rewrite
 - [ ] Stage 5 — final verify + commit
 
