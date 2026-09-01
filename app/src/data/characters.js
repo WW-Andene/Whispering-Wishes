@@ -3724,8 +3724,10 @@ const SKILL_MULTIPLIERS = {
     ['Basic ATK', 'Riposte Strike / Crumble (Parry Stance)', '55.95% / 59.43%', 'Hold Basic ATK to enter Parry Stance (immune to interrupt, -60% DMG taken); release for Riposte Strike, or Crumble if it neutralizes a hit.'],
     ['Mid-air', 'Plunging Attack', '104.94%'],
     ['Dodge Counter', 'Standard', '74.25%+74.25%'],
-    ['Skill', 'Thunderclap → Overshock', '100.20%×2 → 80.72%×7+423.77%+423.77%', 'Thunderclap (10s CD); at max Electric Surge, Skill becomes Overshock instead — tap for team ATK buff, hold for Apex Resonance.'],
-    ['Forte', 'Apex Resonance: Thrum of All Sounds', 'Up to 7-stage ground + 6-stage aerial combo (Spectro/Havoc/Aero hits + Thunder Bane Electro pulses)', 'Consumes Thunder Rage each second while active.'],
+    ['Skill', 'Thunderclap', '100.20%×2', '10s cooldown; grapples toward the target and builds Electric Surge.'],
+    ['Basic ATK', 'Repel', '56.12%+84.17%', 'Auto-chains from a single Basic Attack tap right after Thunderclap lands, replacing the normal Basic ATK combo restart.'],
+    ['Forte', 'Overshock', '80.72%×7+423.77%+423.77%', 'Once Electric Surge is fully capped, Skill becomes this instead — counted as Resonance Skill DMG replacement via the Forte Circuit; TAP to unleash (HOLD enters Apex Resonance instead). Type corrected 2026-09-01 from \'Skill\' to \'Forte\' to match CHARACTER_ROTATIONS.Rover: Electro\'s Forte/Overshock step, which never matched the old combined row and was silently resolving to 0 DMG.'],
+    ['Forte', 'Apex Resonance: Thrum of All Sounds', 'TODO: verify — per-stage multipliers not yet sourced', 'Up to 7-stage ground + 6-stage aerial combo (Spectro/Havoc/Aero hits + Thunder Bane Electro pulses); consumes Thunder Rage each second while active.'],
     ['Liberation', 'Ultimate Tactics', '1192.86%', '25s cooldown.'],
     ['Intro', 'Thunderous Fury', '33.41%×2+100.21%'],
     ['Outro', 'Rumbling Thunders', 'Grants Electro Core → next Negative Status hit: All DMG Amp +25% (14s)'],
@@ -6016,7 +6018,16 @@ const RESONANCE_CHAIN_DATA = {
   // TODO: needs Phase 2 schema for S1's interruption-resistance and S2's healing-bonus mechanics.
   // S3/S4/S5/S6 confirmed correct, unchanged.
   'Rover: Aero':    { s1: {}, s2: {}, s3: { elemDmg: 15 }, s4: { skillDmg: 15 }, s5: { libDmg: 20 }, s6: { skillDmg: 30 } },
-  'Rover: Electro': { s1: { totalMult: 5 }, s2: { totalMult: 8 }, s3: { skillDmg: 20 }, s4: { libDmg: 20 }, s5: { critDmg: 20 }, s6: { skillDmg: 20 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Rover/Combat (unified page), cross-checked
+  // against ww.nanoka.cc/character/1309 (both agree). S1 (Celestial Ingenuity, interruption resistance
+  // utility) and S2 (Thousandfold Artifice, Electro Flare stack utility) have zero real DPS component and
+  // no matching category in this schema — the prior totalMult:5/totalMult:8 values had no basis in the
+  // actual node text and are zeroed to {} per this project's hard rule against inventing values.
+  // TODO: needs Phase 2 schema for S1's interruption-resistance and S2's Electro-Flare-stack mechanics.
+  // S3 (Alchemy of Wonders, Overshock DMG+20%), S4 (Earthquaking Rumble, Liberation DMG+20%), S5
+  // (Principle of Change, Crit DMG+20% in Apex Resonance), S6 (Mind's Depths in a Casket, Thrum of All
+  // Sounds/Thunder Bane DMG+20%) confirmed correct, unchanged.
+  'Rover: Electro': { s1: {}, s2: {}, s3: { skillDmg: 20 }, s4: { libDmg: 20 }, s5: { critDmg: 20 }, s6: { skillDmg: 20 } },
   // corrected 2026-08-18: prior values (elemDmg:8/totalMult:10/elemDmg:8/atkPct:10/totalMult:10/elemDmg:12) had no basis
   // in Aalto's actual chain kit (fandom Combat page, Resonance Chain table). Real effects: S1 Shift Trick CD-4s (no
   // direct DPS stat, modeled as small totalMult utility). S2 Mist Avatar ATK+15% on taunted-target attacks (conditional
