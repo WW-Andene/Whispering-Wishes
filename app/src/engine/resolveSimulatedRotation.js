@@ -136,7 +136,7 @@ export function resolveSimulatedRotation(blocks, steps, opts = {}) {
 
     if (!windows.length) continue; // never triggered this rotation
 
-    const avgMultiplier = timeWeightedAverageConcurrency(windows, totalTime, stackingMode === 'stacking' ? maxStacks : 1);
+    const avgMultiplier = timeWeightedAverageConcurrency(windows, { start: 0, end: totalTime }, stackingMode === 'stacking' ? maxStacks : 1);
     activity[block.id] = { windows, avgMultiplier };
     applyEffects(block, avgMultiplier, stats, (v) => { totalMultBonus += v; });
   }
@@ -154,17 +154,22 @@ function applyEffects(block, multiplier, stats, addTotalMult) {
 
 // Generalizes calcTeamStats.js's overlapUptimeForSeg (one window vs. one fixed recipient span,
 // overlap-length / recipient-length) to N possibly-overlapping windows summed and capped, integrated
-// against the FULL [0, totalTime] simulated span rather than a single fixed recipient segment (this
-// driver resolves a character's own kit, not a cross-character handoff, so the "recipient window" IS
-// the whole simulated timeline). A sweep over every window boundary keeps this exact rather than
-// sampled — each sub-interval between consecutive boundaries has a genuinely constant concurrent
-// count, so summing (count * intervalLength) over all sub-intervals and dividing by totalTime is the
-// exact time-weighted average, not an approximation.
-function timeWeightedAverageConcurrency(windows, totalTime, cap) {
-  if (!(totalTime > 0)) return 0;
-  const clamped = windows.map(w => ({ start: Math.max(0, w.start), end: Math.min(totalTime, w.end) })).filter(w => w.end > w.start);
+// against an arbitrary recipient segment {start, end} — for this single-character driver, that
+// segment is always {start: 0, end: totalTime} (the whole simulated span, since it resolves a
+// character's own kit against themselves, so the "recipient window" IS the whole timeline). Exported
+// (and generalized to take a segment rather than a bare totalTime) so
+// resolveSimulatedTeamRotation.js can reuse the EXACT same math for a genuinely different recipient
+// segment — another character's own on-field window — instead of a second, possibly-drifting copy.
+// A sweep over every window boundary keeps this exact rather than sampled — each sub-interval
+// between consecutive boundaries has a genuinely constant concurrent count, so summing
+// (count * intervalLength) over all sub-intervals and dividing by the segment's length is the exact
+// time-weighted average, not an approximation.
+export function timeWeightedAverageConcurrency(windows, seg, cap) {
+  if (!seg || !(seg.end > seg.start)) return 0;
+  const segLen = seg.end - seg.start;
+  const clamped = windows.map(w => ({ start: Math.max(seg.start, w.start), end: Math.min(seg.end, w.end) })).filter(w => w.end > w.start);
   if (!clamped.length) return 0;
-  const boundaries = [...new Set([0, totalTime, ...clamped.flatMap(w => [w.start, w.end])])].sort((a, b) => a - b);
+  const boundaries = [...new Set([seg.start, seg.end, ...clamped.flatMap(w => [w.start, w.end])])].sort((a, b) => a - b);
   let area = 0;
   for (let i = 0; i < boundaries.length - 1; i++) {
     const t0 = boundaries[i], t1 = boundaries[i + 1];
@@ -173,5 +178,5 @@ function timeWeightedAverageConcurrency(windows, totalTime, cap) {
     const count = clamped.filter(w => w.start <= mid && mid < w.end).length;
     area += Math.min(count, cap) * (t1 - t0);
   }
-  return area / totalTime;
+  return area / segLen;
 }

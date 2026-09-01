@@ -491,14 +491,79 @@ totalMult guess for this — same non-negotiable as every other zeroed node.
    cooldowns/windows/segments between characters without it (verified
    explicitly in `simulateTeamRotation.test.js`'s "owner-namespaced state
    stays isolated" describe block).
-   Still NOT done: feeding this into `calcTeamStats.js` for a real
-   user-visible number (needs `resolveSimulatedRotation.js`'s
-   single-character time-integration driver generalized to consume a
-   `simulateTeamRotation` timeline instead of `simulateRotation`'s — not
-   attempted in this pass), and `buildTeamSteps` still expects the caller
-   to supply members in already-decided on-field order (reusing
-   `calcTeamStats.js`'s own order-search logic, not reimplementing it, is
-   the obvious next step rather than assuming a fixed order).
+   Follow-up same day (below): the time-integration driver WAS generalized
+   to teams (`resolveSimulatedTeamRotation.js`), and a verification layer
+   proved it agrees with `calcTeamStats.js` on real data — see that entry.
+   `buildTeamSteps` still expects the caller to supply members in
+   already-decided on-field order; reusing `calcTeamStats.js`'s own
+   order-search logic (not reimplementing it) is what the verification
+   layer below does by calling `calcTeamStats()` itself and reading its
+   real `rotationTimeline.segments`, rather than `buildTeamSteps` needing
+   its own copy of that search.
+
+**`resolveSimulatedTeamRotation.js` + verification layer — DONE 2026-09-01.**
+Scoped with the user first, explicitly: a real DPS-number cutover into
+`calcTeamStats.js` isn't honestly possible yet regardless of caution, since
+every converted character's damage blocks still carry `effects: []` (the
+`SKILL_MULTIPLIERS`-to-engine per-hit migration is separate, larger, and
+not started) — the engine only knows how to compute BUFF modifiers, not the
+damage number they'd apply to. So this pass built the actual prerequisite
+instead: proof that the engine's cross-character buff math agrees with
+`calcTeamStats.js`'s own real algorithm, before any cutover is even
+attempted.
+
+- `engine/resolveSimulatedTeamRotation.js` — the team-level generalization
+  of `resolveSimulatedRotation.js`: given `buildTeamSteps()`'s output and a
+  `targetName`, computes that ONE team member's time-weighted received stat
+  totals, routing `'self'`-scoped blocks only from their own owner,
+  `'whole-team'`-scoped blocks from ANY member (including the target
+  itself) via overlap with the target's own on-field segment, and
+  `'next-on-field'`-scoped blocks only from whichever member is the
+  IMMEDIATE predecessor in team order — exactly matching
+  `calcTeamStats.js`'s own `outroStart()`/`blockStart()`/`overlapUptimeForSeg`
+  conventions. Reuses `resolveSimulatedRotation.js`'s
+  `timeWeightedAverageConcurrency` verbatim (exported specifically for
+  this, generalized from a bare `totalTime` number to an arbitrary
+  `{start, end}` recipient segment — single-character mode is now just the
+  `{0, totalTime}` special case, same code, no drift risk between the two).
+  Verified with 7 tests: self-scope isolation (Yinlin's own chain bonuses
+  don't leak onto Augusta), whole-team routing with a real non-trivial
+  uptime fraction (not always 0% or 100%), whole-team blocks reaching their
+  OWN source too, next-on-field adjacency (only the immediate next member
+  receives it, proven by reordering the team and watching the recipient
+  change), and a not-on-the-team target resolving cleanly instead of
+  crashing.
+- **The verification layer itself**
+  (`__tests__/verifyEngineAgainstCalcTeamStats.test.js`) — calls the REAL,
+  UNMODIFIED `calcTeamStats()` (confirmed via `git diff --stat` showing
+  zero changes to that file — this pass touched no live user-facing code
+  at all) purely to read its own genuine `rotationTimeline.segments`
+  (real on-field order from its actual order-search, real per-member
+  timing), feeds that identical order into `buildTeamSteps`, and compares
+  the engine's cross-character outro-buff uptime against
+  `calcTeamStats.js`'s own `overlapUptimeForSeg` formula (reproduced
+  verbatim in the test — not exported from the live file, since exposing
+  test-only plumbing from the real calculator wasn't worth the risk) — on
+  the SAME real segments, not hand-picked ones. The two independently
+  computed uptime fractions match to floating-point precision.
+  **Explicitly scoped, not swept under the rug**: this verifies the
+  outro-buff (`'next-on-field'`) mechanism only. It deliberately does NOT
+  attempt to reconcile `RESONANCE_CHAIN_DATA`'s legacy cross-character
+  leakage — `calcTeamStats.js`'s own `applyResonanceChain` blanket-applies
+  specific fields (`atkPct`/`critRate`/`critDmg`/`elemDmg`-via-`allDmg`/
+  `basicDmg`/etc.) from EVERY team member's own chain data onto the main
+  DPS's stats regardless of that node's real target scope, as a legacy
+  approximation — against the engine's more precise per-block
+  `target.scope` model. The two are EXPECTED to diverge in places (the
+  engine is intentionally more correct than that blanket legacy
+  heuristic); reconciling or fixing the legacy heuristic itself is a
+  separate legacy-code question, not something to silently paper over
+  here.
+  **Still not done, and not attempted this pass**: any actual cutover of a
+  real DPS number shown to users. That stays blocked on the per-hit-damage
+  migration (SKILL_MULTIPLIERS → engine damage blocks), same as always —
+  this pass only proves the buff-modifier half of the pipeline is
+  trustworthy, which was the honestly achievable, correctly-scoped goal.
 3. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
    schema` comment left by the Phase 1 passes for the full sourced backlog
    of known-hard mechanics, one entry per real conditional mechanic found
