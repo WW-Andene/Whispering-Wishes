@@ -52,6 +52,14 @@ import { COORD_SNAPSHOT_DISCOUNT } from './coordinatedAtk.js';
  *   on-field field duration by `min(1, fieldDuration / cooldown)`, so a long-CD nuke firing once in a
  *   short on-field window isn't credited as if it recurs every window. Omitting this (default `false`)
  *   does NOT scale anything.
+ * @param {Object} [opts.externalStats]  PHASE3_PLAN.md Stage 4 step 2: `targetName`'s own gear-side
+ *   stats (weapon pv, echo set bonuses, echo substat rolls) computed OUTSIDE their TriggerBlocks —
+ *   same pure-DELTA shape and purpose as resolveHitComposedDps.js's own `externalStats` param (its
+ *   own jsdoc has the full rationale: without this, gear can never reach the engine's team-level
+ *   composition either, silently computing kit-only numbers). Folded into `targetName`'s own stat
+ *   snapshot every instant, alongside their own blocks and whatever teammates' buffs route to them.
+ *   Omitting this (default `null`) contributes nothing — every existing caller's behavior stays
+ *   byte-identical to before this param existed.
  * @returns {{
  *   totalDamage: number,
  *   targetSegment: {start:number, end:number} | null,
@@ -60,7 +68,7 @@ import { COORD_SNAPSHOT_DISCOUNT } from './coordinatedAtk.js';
  * }}
  */
 export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName, enemyContext, baseStats, opts = {}) {
-  const { targetElementLower = null, targetRole = null, libUptime = null, coordSnapshotDiscount = false, cooldownSteadyState = false } = opts;
+  const { targetElementLower = null, targetRole = null, libUptime = null, coordSnapshotDiscount = false, cooldownSteadyState = false, externalStats = null } = opts;
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
   const { enemyDef, enemyRes } = enemyContext;
 
@@ -97,8 +105,12 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
     .filter(b => b.trigger.type !== 'passive' && b.timing?.duration != null)
     .map(b => ({ block: b, ...buildBlockWindows(b, results.filter(r => r.owner === b.source), targetElementLower, targetRole) }));
 
+  const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
   function statsAtInstant(instant) {
     const stats = createStats();
+    if (externalStats) {
+      for (const k of EXTERNAL_STAT_KEYS) { if (externalStats[k]) stats[k] += externalStats[k]; }
+    }
     for (const pb of passiveRelevant) {
       if (!conditionHolds(pb.condition, targetElementLower, targetRole)) continue;
       applyEffects(pb, 1, stats);

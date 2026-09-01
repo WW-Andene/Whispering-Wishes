@@ -32,6 +32,8 @@ import {
 import { BLOCKS_BY_CHARACTER } from '../../engine/characterBlocks/index.js';
 import { deriveStepsFromRotation } from '../../engine/rotationSimulator.js';
 import { resolveHitComposedDps } from '../../engine/resolveHitComposedDps.js';
+import { resolveHitComposedTeamDps } from '../../engine/resolveHitComposedTeamDps.js';
+import { chooseOnFieldOrder } from '../../engine/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/coordinatedAtk.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
@@ -525,6 +527,11 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const subDpsMembers = mems.filter(m => m.name !== mainDps.name && (m.d.totalMult || 0) > 0);
     const totalSubNeed = subDpsMembers.reduce((s, m) => s + (m.d.onField || 5), 0) || 1;
     let rawTotalRotDmg = 0;
+    // Captured here (RAW tier already builds this exact gear composition per member) and reused by
+    // the FULL tier's own engine path below (PHASE3_PLAN.md Stage 4 step 2) instead of computing the
+    // same weapon-pv/echo-set/echo-stat delta a second time — a member's base equipment contribution
+    // doesn't depend on which tier is asking for it.
+    const gearDeltaByName = {};
     mems.forEach(m => {
       let mult = m.d.totalMult || 0;
       if (mult === 0) return;
@@ -589,6 +596,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const rotation = CHARACTER_ROTATIONS[m.name];
       if (blocks && rotation) {
         const gearDelta = { ...rStats, cr: rStats.cr - BASE_CRIT_RATE, cd: rStats.cd - BASE_CRIT_DMG };
+        gearDeltaByName[m.name] = gearDelta;
         const baseStats = { atk: m.totalBaseAtk, hp: m.d.baseHp || 0, def: m.d.baseDef || 0 };
         const steps = deriveStepsFromRotation(rotation, blocks);
         const enemyContext = { enemyDef: enemyDef90, enemyRes: getEnemyRes(m.d.element) };
@@ -1201,6 +1209,56 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         memberDmgArr.push({ name: m.name, dmg: sDmg });
       }
     });
+
+    // PHASE3_PLAN.md Stage 4 step 2: when EVERY team member has a converted TriggerBlocks file +
+    // real CHARACTER_ROTATIONS, override totalRotDmg/memberDmgArr with real engine-composed team
+    // damage instead of the flat totalMult%-plus-hand-written-buff-routing computation above (which
+    // still ran, unmodified, as the fallback for a mixed team — a follow-up cleanup pass removes that
+    // now-redundant work once every step of this rewrite has landed, not before, per this project's
+    // "1 by 1" rule: each step stays independently revertable until the whole rewrite is trusted).
+    // `chooseOnFieldOrder` picks its own real on-field order (Stage 3 item 5) — deliberately NOT the
+    // legacy rotationTimeline's order computed elsewhere in this function; reconciling the two is
+    // Stage 4 step 4's job (rotationTimeline itself), not this one.
+    //
+    // Each member's own `dps` (resolveHitComposedTeamDps's real damage / their own real on-field
+    // segment duration, itself derived from real CHARACTER_ROTATIONS timing, not a proportional
+    // field-time fudge) is re-scaled to `rotTime`'s shared denominator the same way Step 1 did for
+    // the RAW tier — NOT also multiplied by the legacy coordShare/fieldRatio discount, since the
+    // engine's own real per-member segment (via chooseOnFieldOrder + coordSnapshotDiscount) already
+    // replaces that heuristic with something more precise; applying both would double-discount.
+    const allMembersConverted = mems.every(m => BLOCKS_BY_CHARACTER[m.name] && CHARACTER_ROTATIONS[m.name]);
+    if (allMembersConverted) {
+      const engineMembers = mems.map(m => ({ name: m.name, blocks: BLOCKS_BY_CHARACTER[m.name], rotation: CHARACTER_ROTATIONS[m.name] }));
+      const chosenOrder = chooseOnFieldOrder(engineMembers, mainDps.name);
+      if (chosenOrder) {
+        const { ownedSteps, blocksByOwner } = chosenOrder;
+        let engineTotalRotDmg = 0;
+        const engineMemberDmgArr = [];
+        mems.forEach(m => {
+          if ((m.d.totalMult || 0) === 0) { engineMemberDmgArr.push({ name: m.name, dmg: 0 }); return; }
+          const focus = m.d.dmgFocus || [];
+          const isOffFieldCoord = m.name !== mainDps.name && focus.includes('Coordinated ATK') && focus.length <= 2;
+          const ecf = energyCycleFactors[m.name];
+          const baseStats = { atk: m.totalBaseAtk, hp: m.d.baseHp || 0, def: m.d.baseDef || 0 };
+          const enemyContext = { enemyDef: enemyDef90, enemyRes: getEnemyRes(m.d.element) };
+          const { dps: memberEngineDps } = resolveHitComposedTeamDps(ownedSteps, blocksByOwner, m.name, enemyContext, baseStats, {
+            targetElementLower: (m.d.element || '').toLowerCase(),
+            targetRole: m.d.role,
+            libUptime: ecf ? ecf.libUptime : null,
+            coordSnapshotDiscount: isOffFieldCoord,
+            cooldownSteadyState: true,
+            externalStats: gearDeltaByName[m.name],
+          });
+          const dmg = memberEngineDps * rotTime;
+          engineTotalRotDmg += dmg;
+          engineMemberDmgArr.push({ name: m.name, dmg });
+        });
+        totalRotDmg = engineTotalRotDmg;
+        memberDmgArr.length = 0;
+        memberDmgArr.push(...engineMemberDmgArr);
+      }
+    }
+
     // ── Per-member damage with type breakdown ──
     const memberDmg = memberDmgArr.map(m => {
       const mem = mems.find(mm => mm.name === m.name);

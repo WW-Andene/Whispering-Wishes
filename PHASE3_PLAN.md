@@ -876,9 +876,66 @@ legacy formula otherwise (currently only Jingran, unreleased).
 
 Full suite: 1104/1104 passing (80 files). Production build verified clean.
 
-**Next**: step 2/6 — the Team/FULL tier (`teamDps`/`memberDps`), the actual
-cutover every other consumer (`TeamsTab`, `autoEquip.js`,
-`DamageCalculator.jsx`'s main numbers) starts reading from.
+### Stage 4, step 2/6 — Team/FULL tier (`teamDps`/`memberDps`) (done, 2026-09-01)
+
+The real cutover — every other consumer (`TeamsTab`, `autoEquip.js`,
+`DamageCalculator.jsx`'s main numbers) reads `teamDps`/`memberDps`, and
+both now come from the engine for any team where EVERY member is
+converted.
+
+- **`resolveHitComposedTeamDps` gained `opts.externalStats`** (new,
+  mirroring `resolveHitComposedDps`'s own): the team-level composer had NO
+  way to receive gear-side stats at all before this — the same gap Stage 1
+  found and fixed for the solo version, just never carried over to the team
+  version since nothing needed it until now. 3 new tests
+  (`resolveHitComposedTeamDpsExternalStats.test.js`).
+- **`gearDeltaByName`**: the RAW tier (step 1) already builds each member's
+  exact gear-composition delta — captured into a map and reused here
+  instead of computing it a third time (RAW tier / legacy FULL tier's own
+  duplicate / this new path would otherwise all three build the same
+  weapon-pv/echo-set/echo-stat number independently).
+- **Order + composition**: `chooseOnFieldOrder` (Stage 3 item 5) picks its
+  own real on-field order — deliberately independent of the legacy
+  `rotationTimeline`'s own order computed elsewhere in this function;
+  reconciling the two is step 4's job, not this one. Each member's own
+  `resolveHitComposedTeamDps` call passes `libUptime` (from
+  `energyCycleFactors`), `coordSnapshotDiscount` (for an off-field
+  Coordinated ATK member, same `isOffField` condition legacy uses),
+  `cooldownSteadyState: true`, and their `gearDeltaByName` entry.
+- **No double-discounting**: a member's own real on-field segment (from
+  `chooseOnFieldOrder`'s real per-member timing) already replaces legacy's
+  synthetic `coordShare`/`fieldRatio` proportional-allocation heuristic —
+  Stage 3 items 4 and 5 exist precisely to model this more precisely, so
+  the engine path does NOT also apply `coordinatedMultShare` on top (that
+  would double-discount the same concept two different ways). Each
+  member's engine `dps` (their real damage / their real on-field segment
+  duration) is re-scaled to `rotTime`'s shared denominator the same way
+  step 1 did for the RAW tier.
+- **Scope discipline**: only `totalRotDmg`/`memberDmgArr` are overridden
+  when `allMembersConverted`; `effAtk`/`avgCrit`/`dmgBonus`/`defMult`/
+  `resMult`/`score` (the main-DPS stat-panel readout) and DOT/`dmgSources`
+  still come from the legacy computation, which keeps running unmodified as
+  both the fallback for a mixed team AND (for now) the source of those
+  still-untouched fields even on a fully-converted team — a step 6 cleanup
+  removes this now-partially-redundant legacy computation only once every
+  step has landed, per this project's "1 by 1" rule (each step stays
+  independently revertable until the whole rewrite is trusted).
+- 4 new tests (`calcTeamStatsEngineFullTier.test.js`): a real 3-member
+  team's `teamDps` is finite and exceeds `soloDps` (team buffs help,
+  sanity-checking the buff routing actually fired); `memberDps` entries are
+  all finite/non-negative with `pct` summing to ~100; a mixed team
+  (Jingran) still resolves via the legacy fallback; a solo 1-member
+  "team" degenerates cleanly through the same code path.
+
+Full suite: 1111/1111 passing (82 files). Production build verified clean.
+Manually sanity-checked 3 real team compositions outside the test suite
+(Yinlin+Augusta+Rover:Electro, Xiangli Yao+Yinlin+Shorekeeper,
+Camellya+Danjin+Verina) — all produced plausible `teamDps`/`memberDps`
+splits (percentages summing to 100, main DPS carrying the expected
+majority share).
+
+**Next**: step 3/6 — DOT + `dmgSources` (wire `dotReactions.js`'s
+`resolveDotReactionDps` in, re-derive the 3-way rotation/echo/DOT split).
 
 ## Stage 5 — Final verification and commit
 
@@ -899,7 +956,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
 - [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
 - [x] Stage 4 reconnaissance — full consumer-contract map (every field read outside calcTeamStats.js, by which component), measured perf check (engine ~3.1x slower/call than legacy but still sub-ms — not a blocker for autoEquip.js's search loop), and a 6-step phased implementation plan (solo tier -> team tier -> DOT -> rotationTimeline -> warnings -> dead code removal), each step independently tested/committed
-- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; steps 2-6 remaining)
+- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; step 2/6 done — FULL tier/`teamDps`/`memberDps` now calls `chooseOnFieldOrder` + `resolveHitComposedTeamDps` (which gained its own `externalStats` support) for a fully-converted team, same legacy fallback; steps 3-6 remaining)
 - [ ] Stage 5 — final verify + commit
 
 Work proceeds stage by stage; each stage's own sub-tasks are committed
