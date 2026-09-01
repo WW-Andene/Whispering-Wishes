@@ -3683,10 +3683,12 @@ const SKILL_MULTIPLIERS = {
     ['Mid-air', 'Plunging Attack', '104.78%'],
     ['Dodge Counter', 'Standard', '195.34%'],
     ['Skill', 'Resonating Slashes', '236.19%', '6s cooldown; builds Diminutive Sound toward the Forte combo.'],
-    ['Forte', 'Resonating Spin → Resonating Echoes', '129.08%×2+39.77% → 79.53%+159.05%', 'At 50+ Diminutive Sound, Skill casts Resonating Spin (2 Spectro Frazzle stacks + Shimmer), Basic ATK follow-up casts Resonating Echoes.'],
+    ['Forte', 'Resonating Spin', '129.08%×2', 'At 50+ Diminutive Sound, Skill casts Resonating Spin (2 Spectro Frazzle stacks + Shimmer).'],
+    ['Forte', 'Resonating Whirl', '39.77%', 'Immediate Basic ATK follow-up chained right after Resonating Spin.'],
+    ['Forte', 'Resonating Echoes', '79.53%+159.05%', 'Separate Basic ATK combo cast after Resonating Spin fully ends.'],
     ['Liberation', 'Echoing Orchestra', '198.81%+675.96%', 'Delayed blast; applies 6 stacks of Spectro Frazzle.'],
     ['Intro', 'Waveshock', '168.99%'],
-    ['Outro', 'Instant', 'Stasis field (CC only, no listed DMG in kit text) — some sources credit +20% Spectro DMG Amp (14s) to the swap-out window'],
+    ['Outro', 'Instant', 'Stasis field (CC only, no DMG)', 'Generates an area of stasis centered on the incoming Resonator, lasting 3s. Re-verified 2026-09-01 against fandom/nanoka: neither source lists any DMG Amp buff for this Outro — the previous "some sources credit +20% Spectro DMG Amp" note was unconfirmed speculation, removed.'],
   ],
   'Rover: Havoc': [
     ['Basic ATK', 'Tuneslayer Stage 1-5', '56.67% → 56.67%×2 → 85% → 40.30%×3 → 94.44%×2', '5-stage Basic ATK combo, into an enhanced Stage 4 after a Heavy ATK.'],
@@ -5018,13 +5020,13 @@ const CHARACTER_ROTATIONS = {
     { type: 'Outro', skill: 'Soundweaver', note: 'Triggers automatically on swap. This is the Short Burst Combo — for more field time as Main DPS, insert 1-3 Dark Surge Basic Attack strings (tap Basic Attack repeatedly, P1 through P5) before the Skill/Liberation/Echo finisher above.' },
   ],
   'Rover: Spectro': [
-    { type: 'Heavy ATK', skill: 'Resonance → Aftertune', note: 'Done as warm-up while another character is still on-field (or right as you swap in): press Heavy Attack, then tap Basic Attack right as it lands to chain into "Resonance", then tap Basic Attack again to chain into "Aftertune" — this fills Diminutive Sound (her Forte gauge) fast without a full Basic combo.' },
-    { type: 'Forte', skill: 'Resonating Spin → Resonating Whirl', note: 'Once Diminutive Sound is 50+, press Skill — it auto-upgrades into this enhanced version (applies Spectro Frazzle), then tap Basic Attack right after to chain into the extra "Resonating Whirl" hit.' },
+    { type: 'Heavy ATK', skill: 'Standard / Resonance / Aftertune', note: 'Done as warm-up while another character is still on-field (or right as you swap in): press Heavy Attack, then tap Basic Attack right as it lands to chain into "Resonance", then tap Basic Attack again to chain into "Aftertune" — this fills Diminutive Sound (her Forte gauge) fast without a full Basic combo. Skill name corrected 2026-09-01 from \'Resonance → Aftertune\', which never matched the row name and was silently resolving to 0 DMG.' },
+    { type: 'Forte', skill: 'Resonating Whirl', note: 'Once Diminutive Sound is 50+, press Skill — it auto-upgrades into Resonating Spin (applies Spectro Frazzle), then tap Basic Attack right after to chain into the extra Resonating Whirl hit. Skill name corrected 2026-09-01 — Resonating Spin and Resonating Whirl are now separate rows; this step resolves to Whirl (Spin is credited in the note only).' },
     { type: 'Intro', skill: 'Waveshock', note: 'Swap in — fires automatically and adds a bit more Diminutive Sound.' },
     { type: 'Liberation', skill: 'Echoing Orchestra', note: 'Press Liberation — applies a full 6 stacks of Spectro Frazzle to the target in one hit.' },
-    { type: 'Basic ATK', skill: 'Vibration Manifestation 1-2', note: 'Tap Basic Attack twice to refill some more Diminutive Sound toward the next Forte cast.' },
-    { type: 'Forte', skill: 'Resonating Spin → Resonating Whirl', note: 'Once back at 50+ Diminutive Sound, press Skill again for a second Resonating Spin into Whirl, same as the first one.' },
-    { type: 'Forte', skill: 'Resonating Echoes 1-2', note: 'Right after Resonating Spin ends, tap Basic Attack twice more — this fires the follow-up "Resonating Echoes" combo automatically.' },
+    { type: 'Basic ATK', skill: 'Vibration Manifestation Stage 1-4', note: 'Tap Basic Attack twice to refill some more Diminutive Sound toward the next Forte cast.' },
+    { type: 'Forte', skill: 'Resonating Whirl', note: 'Once back at 50+ Diminutive Sound, press Skill again for a second Resonating Spin into Whirl, same as the first one.' },
+    { type: 'Forte', skill: 'Resonating Echoes', note: 'Right after Resonating Spin ends, tap Basic Attack twice more — this fires the follow-up "Resonating Echoes" combo automatically.' },
     { type: 'Outro', skill: 'Instant', note: 'Swap out to trigger this automatically — slows the incoming enemy target briefly, useful for chaining into the next character\'s Outro if they also have one active.' },
   ],
   'Rover: Aero': [
@@ -5984,9 +5986,13 @@ const RESONANCE_CHAIN_DATA = {
   //   up to 1 use per 5s, gated behind Pushing Punch during the Forte channel" stat shape.
   'Jianxin':      { s1: {}, s2: {}, s3: {}, s4: { libDmg: 80 }, s5: {}, s6: {} },
   // Confirmed via ww.nanoka.cc character pages 1502 (Spectro), 1604 (Havoc), 1406 (Aero), 1309 (Electro).
-  // energyRegen/heal aren't tracked stat keys elsewhere in this table — approximated as totalMult, same
-  // convention this file already uses for other non-DMG-multiplier chain effects (CD resets, utility, etc).
-  'Rover: Spectro': { s1: { critRate: 15 }, s2: { elemDmg: 20 }, s3: { totalMult: 12 }, s4: { totalMult: 10 }, s5: { libDmg: 40 }, s6: { resShred: 10 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Rover/Combat (all 4 attunements share
+  // this one unified page). S3 (Energy Regen +20%) and S4 (team heal on Liberation cast) have zero real
+  // DPS component and no matching category in this schema — the prior totalMult approximations had no
+  // real derivation. Zeroed both to {} per this project's hard rule against inventing values, rather than
+  // the previous "approximated as totalMult" convention. TODO: needs Phase 2 schema for Energy Regen% and
+  // healing-bonus effects. S1/S2/S5/S6 confirmed correct, unchanged.
+  'Rover: Spectro': { s1: { critRate: 15 }, s2: { elemDmg: 20 }, s3: {}, s4: {}, s5: { libDmg: 40 }, s6: { resShred: 10 } },
   'Rover: Havoc':   { s1: { skillDmg: 30 }, s2: { totalMult: 8 }, s3: { totalMult: 8 }, s4: { resShred: 10 }, s5: { basicDmg: 50 }, s6: { critRate: 25 } },
   'Rover: Aero':    { s1: { totalMult: 5 }, s2: { totalMult: 12 }, s3: { elemDmg: 15 }, s4: { skillDmg: 15 }, s5: { libDmg: 20 }, s6: { skillDmg: 30 } },
   'Rover: Electro': { s1: { totalMult: 5 }, s2: { totalMult: 8 }, s3: { skillDmg: 20 }, s4: { libDmg: 20 }, s5: { critDmg: 20 }, s6: { skillDmg: 20 } },
