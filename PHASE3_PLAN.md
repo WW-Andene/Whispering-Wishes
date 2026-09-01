@@ -91,6 +91,49 @@ can produce a correct number — attempting the rewrite before Stage 3 would
 silently drop these mechanics from the live calculator, which is exactly
 the class of regression this whole phase exists to prevent.
 
+## Stage 1 result (in progress, 2026-09-01 — first 3 characters)
+
+Before any comparison was possible, found and fixed a real engine gap:
+`resolveHitComposedDps` had **no way to receive gear-side stats at all** —
+`statsAtInstant` started from a bare `createStats()` and only ever folded in
+the character's own TriggerBlocks, so weapon passives and echo set bonuses
+(which dominate calcTeamStats.js's real numbers) could never reach it. Added
+an additive, backward-compatible `externalStats` param (a pure delta object,
+folded in every instant alongside the character's own blocks) — this is how
+Stage 0's "gear stays composed around the engine" conclusion is actually
+wired in. Covered by 2 new regression tests in
+`resolveHitComposedDps.test.js` proving it's opt-in and additive.
+
+Built `phase3-parityHarness.test.js`: for a solo (1-member) team, computes
+`calcTeamStats()`'s real `rawDps` (the RAW tier — equipment-only, no team
+buffs, no DOT, no order-search, no energy-cycle gating — the cleanest
+solo-comparable slice per Stage 0) and diffs it against the engine's own
+`resolveHitComposedDps` total (real per-hit damage from `deriveStepsFromRotation`
++ the character's real `.blocks.js`, with gear composed in via the new
+`externalStats` param, using the SAME weapon/echo-set inference calcTeamStats
+itself uses for an unbuilt character). First 3 real results:
+
+| Character | calcTeamStats rawDps | engine dps | ratio (engine/legacy) |
+|---|---|---|---|
+| Augusta | 1748 | 2160 | 1.24x |
+| Cartethyia | 1131 | 4967 | 4.39x |
+| Calcharo | 1513 | 6758 | 4.47x |
+
+Not yet triaged (that's Stage 2) — recorded here as raw Stage 1 output.
+Augusta's 1.24x is close enough to plausibly be real per-hit-vs-flat-%
+divergence (the whole point of the engine). Cartethyia's and Calcharo's
+4x+ gaps are large enough that Stage 2 needs to check for a real bug before
+assuming "the engine is just more precise" — candidates to check first:
+whether `rawRotTime`'s time-window differs enough from the engine's own
+simulated total combo time to explain a chunk of it (the two use different
+denominators, not necessarily an error), and whether either character's
+`.blocks.js` double-counts or over-scopes anything relative to its own
+audit-comment source.
+
+**Next**: extend this harness to the remaining ~49 converted characters
+(bare-kit + real gear cases), still logging rather than asserting, before
+Stage 2 triage begins in earnest.
+
 ## Stage 1 — Parity harness
 
 Extend `verifyEngineAgainstCalcTeamStats.test.js` (currently scoped to one
@@ -155,8 +198,8 @@ independently, one commit at a time, one-by-one per this project's standing
 
 ## Status
 
-- [ ] Stage 0 — coverage audit
-- [ ] Stage 1 — parity harness
+- [x] Stage 0 — coverage audit
+- [ ] Stage 1 — parity harness (in progress: 3/~52 characters, engine `externalStats` gap found+fixed)
 - [ ] Stage 2 — triage
 - [ ] Stage 3 — close gaps
 - [ ] Stage 4 — rewrite

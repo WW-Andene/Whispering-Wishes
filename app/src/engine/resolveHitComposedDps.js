@@ -51,6 +51,15 @@ import { buildBlockWindows, activeCountAt } from './blockWindows.js';
  *   throws rather than silently computing a wrong number off `undefined`.
  * @param {string} [targetElementLower]
  * @param {string} [targetRole]
+ * @param {Object} [externalStats]  Gear-side stats (weapon pv, echo set bonuses) computed OUTSIDE
+ *   this character's own TriggerBlocks — calcEngine.js's applyWeaponPv/applyFullEchoSet/applyEchoStats
+ *   output, same shape as calcEngine.js's createStats(). Added into the flat baseline every instant
+ *   starts from, alongside the character's own passive/buff blocks — this is how PHASE3_PLAN.md's
+ *   Stage 0 finding ("gear stays composed around the engine, not ported into TriggerBlocks") is
+ *   actually wired: without this, resolveHitComposedDps had no way to receive gear stats at all,
+ *   silently computing kit-only numbers that could never match calcTeamStats.js's real, gear-inclusive
+ *   ones. Omitting this param keeps every existing caller's behavior byte-identical (an empty/absent
+ *   externalStats contributes exactly 0, same as before this param existed).
  * @returns {{
  *   totalDamage: number,
  *   totalTime: number,
@@ -58,7 +67,7 @@ import { buildBlockWindows, activeCountAt } from './blockWindows.js';
  *   hitLog: {time: number, blockId: string, atkPct: number, damage: number, category: string}[],
  * }}
  */
-export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null) {
+export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null, externalStats = null) {
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
   const results = simulateRotation(blocks, steps);
   const totalTime = results.length ? results[results.length - 1].time : 0;
@@ -71,8 +80,15 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
   const buffWindows = buffBlocks.map(b => ({ block: b, ...buildBlockWindows(b, results, targetElementLower, targetRole) }));
   const passiveBlocks = blocks.filter(b => (b.kind === 'buff' || b.kind === 'debuff') && b.trigger.type === 'passive');
 
+  // externalStats is a pure DELTA (gear's own contribution only, cr/cd NOT pre-seeded with
+  // BASE_CRIT_RATE/BASE_CRIT_DMG — createStats() below already supplies that baseline once per
+  // instant) — see this function's own jsdoc above for why this exists and what shape it expects.
+  const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
   function statsAtInstant(instant) {
     const stats = createStats();
+    if (externalStats) {
+      for (const k of EXTERNAL_STAT_KEYS) { if (externalStats[k]) stats[k] += externalStats[k]; }
+    }
     for (const pb of passiveBlocks) {
       if (!conditionHolds(pb.condition, targetElementLower, targetRole)) continue;
       applyEffects(pb, 1, stats);

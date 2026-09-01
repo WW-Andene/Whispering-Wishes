@@ -345,3 +345,30 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     expect(forfeitLog.map(h => h.atkPct)).toEqual([329.24]);
   });
 });
+
+describe('resolveHitComposedDps — externalStats param (PHASE3_PLAN.md Stage 1: gear composed in from outside)', () => {
+  it('omitting externalStats is byte-identical to the pre-existing behavior (backward compatible)', () => {
+    const basicBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.basic.zapstrings-dance');
+    const steps = [{ type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 1 }];
+    const withoutParam = resolveHitComposedDps([basicBlock], steps, NEUTRAL_ENEMY, 1000);
+    const withNull = resolveHitComposedDps([basicBlock], steps, NEUTRAL_ENEMY, 1000, null, null, null);
+    expect(withNull.totalDamage).toBeCloseTo(withoutParam.totalDamage, 10);
+  });
+
+  it('externalStats atkPct/cr/cd are pure deltas added on top of the base 5%/150% crit baseline, not a replacement of it', () => {
+    const basicBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.basic.zapstrings-dance');
+    const steps = [{ type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 1 }];
+    const baseAtk = 1000;
+    const gear = { atkPct: 30, cr: 20, elemDmg: 10 };
+    const { totalDamage, hitLog } = resolveHitComposedDps([basicBlock], steps, NEUTRAL_ENEMY, baseAtk, null, null, gear);
+
+    const hits = parseSkillMultiplierHits("28.81% → 33.82%×2 → 13.99%×7 → 75.16%");
+    const avgCrit = 1 + (Math.min(5 + 20, 100) / 100) * (150 / 100 - 1); // gear cr added to BASE_CRIT_RATE
+    const dmgBonus = 1 + 10 / 100; // gear elemDmg, no category match
+    const effAtk = baseAtk * (1 + 30 / 100); // gear atkPct added to base
+    const expectedTotal = hits.reduce((sum, h) => sum + effAtk * (h.atkPct / 100) * avgCrit * dmgBonus, 0);
+
+    expect(totalDamage).toBeCloseTo(expectedTotal, 6);
+    expect(hitLog).toHaveLength(11);
+  });
+});
