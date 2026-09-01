@@ -906,16 +906,41 @@ across this whole session, all green, `calcTeamStats.js` untouched
 throughout (confirmed via `git diff --stat` after every single commit in
 this pass, not just checked once at the start).
 
-**Still not done, deliberately**: (1) team-level hit composition
-(cross-character buffs landing on specific hits mid-combo, reusing
-`resolveSimulatedTeamRotation.js`'s routing logic generalized to
-`activeCountAt` the same way Stage 1 generalized the single-character
-driver), (2) the two documented gaps above (Camellya's repeated-step
-ambiguity, her Twining conditional bonus), (3) the actual `calcTeamStats.js`
-gating/wiring decision — still requires its own separate go-ahead, per the
-"never all-or-nothing" rule, and is not any closer to being decided than
-before this stage — none of this proves anything beyond the ARCHITECTURE
-being sound. (4) Converting the remaining ~54 uncoverted characters to the
+**Team-level hit composition — DONE 2026-09-01 (same day).**
+`engine/resolveHitComposedTeamDps.js`: given one target team member and a
+full multi-character rotation, sums their real per-hit damage with
+cross-character buffs correctly landing only on the hits that overlap the
+buff's real active window — not a segment-averaged approximation. Built the
+same way `resolveSimulatedTeamRotation.js` generalized
+`resolveSimulatedRotation.js`: reuses the identical `target.scope` routing
+rules (`'self'` only from the target's own blocks, `'whole-team'` from any
+member including the target, `'next-on-field'` only from the immediately
+preceding team member), just sampling each relevant block's window at the
+hit's own instant (`activeCountAt`) instead of integrating over a segment.
+Only the target's OWN damage/proc blocks ever contribute a hit to their own
+total — another character's kit can only reach them via a buff, never
+directly deal them damage, matching how the real game works.
+Verified with 4 tests, the marquee one being a genuine per-hit
+DISCRIMINATION proof (not just "the total is bigger"): a hand-built
+2-member scenario where Yinlin casts the identical Basic ATK combo twice —
+once while Augusta's 30s whole-team ATK+20% window is open, once well after
+it closes — shows the buffed cast's damage-per-%ATK ratio is EXACTLY 1.2x
+the unbuffed cast's, hit-for-hit. This is precisely the fidelity a flat
+`totalMult`/segment-averaged uptime number can never express — the actual
+point of the whole "totalMult → hit-composed DPS" design doc. Also verified
+end-to-end against the real 3-member Augusta/Yinlin/Rover: Electro team
+built from actual `CHARACTER_ROTATIONS` data, and that `dps` is measured
+against the TARGET's own on-field segment duration (matching real-game
+"how hard does this character hit while actually on field"), not the whole
+team timeline.
+
+**Still not done, deliberately**: (1) the two documented gaps from the
+per-character damage-block pass (Camellya's repeated-step ambiguity, her
+Twining conditional bonus), (2) the actual `calcTeamStats.js` gating/wiring
+decision — still requires its own separate go-ahead, per the "never
+all-or-nothing" rule, and is not any closer to being decided than before
+this stage — none of this proves anything beyond the ARCHITECTURE being
+sound. (3) Converting the remaining ~54 unconverted characters to the
 engine at all — a separate, much larger, ongoing roster-coverage effort,
 distinct from "finishing the engine" itself.
 
