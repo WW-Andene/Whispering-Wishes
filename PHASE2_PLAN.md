@@ -1064,6 +1064,32 @@ DEF-scaling character converted this phase.
 **Next**: batch 4 of 10, same cadence, continuing alphabetically from
 Phrolova through the remaining roster.
 
+## Character-roster conversion — batch 4 of ~6 (2026-09-01)
+
+**Batch 4 — done, all individually verified, 939/939 suite passing:**
+Phrolova, Qingxiao, Qiuyuan, Rebecca, Roccia, Rover: Aero, Rover: Havoc,
+Rover: Spectro, Sanhua, Sigrika. `calcTeamStats.js` never touched.
+
+**Real omissions/corrections caught by reading full audit-comment context
+this batch**: Rebecca's S6 modeled with a real 900%-ATK bonus-hit proc
+block alongside (not instead of) its flat basicDmg multiplier; Rover:
+Havoc's CHAR_BUFF_TABLE selfBuffs/debuffs entries confirmed explicitly
+chain-gated ("not innate") and modeled once via their Resonance Chain
+blocks rather than duplicated as separate base-kit blocks — same
+precision distinction as Qingxiao's S3 chain node, which literally is
+the same effect already described in CHAR_BUFF_TABLE's own selfBuffs;
+Rover: Aero's RESONANCE_CHAIN_DATA line was found to have NO adjacent
+audit comment of its own (the nearby comment block that looked
+applicable actually documents Rover: Electro's chain, confirmed by its
+node names belonging to the Electro attunement, not Aero) — flagged
+rather than silently treated as verified; Sanhua's Forte Detonate step
+combines two separate SKILL_MULTIPLIERS rows (Detonate + Ice Burst)
+because CHARACTER_ROTATIONS' own note describes them firing
+simultaneously on the same cast.
+
+**Next**: batch 5 of 10, same cadence, continuing alphabetically from
+Suisui through the remaining roster.
+
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
 - Follow the PerfectSuite numeric-scale rule (see `CLAUDE.md`) for any px
