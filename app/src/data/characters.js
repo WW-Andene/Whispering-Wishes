@@ -3260,14 +3260,46 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Woolies Helpers', '198.81%'],
     ['Outro', 'Thermal Field', '176.76% ATK per tick ×4 (6s, 1.5s interval)', 'AoE burn field around the Skill target — no team buff, so she\'s free to quickswap.'],
   ],
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Galbrena/Combat, cross-checked against
+  // ww.nanoka.cc/character/1208 (both agree on every value exactly). CRITICAL BUG: every pre-existing row
+  // except Outro was stored at Lv.1, not this file's Lv.10 baseline — e.g. Basic ATK Stage 1 was 29.8%
+  // (real Lv.1) vs. the correct 59.18% (Lv.10), silently halving nearly her entire kit's DPS output, the
+  // same bug class previously found on Iuno. Also fixed: multi-hit stages collapsed into summed totals
+  // instead of per-hit values; several moves typed 'Basic ATK'/'Skill'/'Liberation' when their own move
+  // text explicitly reclassifies them as "considered Heavy Attack DMG" or "considered Echo Skill DMG"
+  // (matching this file's established convention, e.g. Jiyan's Lance of Qingloong) — retyped accordingly
+  // so the correct heavyDmg/echoDmg-type buffs apply to them. Entirely missing Demon Hypostasis move set
+  // (Seraphic Execution, Flamewing Verdict, Hellsent Barrage, Purgatory Scourge, Ravage) added — this is
+  // most of her actual combo once transformed, and its absence meant CHARACTER_ROTATIONS.Galbrena's whole
+  // post-transformation segment was resolving to 0 DMG.
   'Galbrena': [
-    ['Basic ATK', 'Stage 1-4', '29.8% → 66.2% → 71.9% → 89.5%', 'Standard combo string, builds toward her Demon Hypostasis form.'],
-    ['Heavy ATK', 'Volley of Death 1-3', '53.6% → 34.8% → 84.4%', 'Charged shot combo, hits harder the longer it\'s held.'],
-    ['Skill', 'Encroach', '5.4% + 12.6%', 'Quick dash strike that builds Sinflame.'],
-    ['Skill', 'Ascent of Malice', '25.9%×2', 'Empowered Skill once Sinflame is maxed, transforms her into Demon Hypostasis.'],
-    ['Liberation', 'Hellfire Absolution', '55.8% + 45.6%×11', 'Ultimate barrage that also grants a big self DMG buff to her Demon Hypostasis attacks.'],
-    ['Intro', 'Hellflare Overload', '47.3%', 'Swap-in opener strike.'],
-    ['Outro', 'Ashen Pursuit', '79.5%×3 + 556.5%', 'Pure-damage swap-out finisher; no team buff, so she\'s free to quickswap.'],
+    ['Heavy ATK', 'Basic Attack Stage 1', '59.18%', 'Considered Heavy Attack DMG despite the Basic ATK input.'],
+    ['Heavy ATK', 'Basic Attack Stage 2', '26.31%×2+78.91%', 'Considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Basic Attack Stage 3', '28.60%×2+42.89%×2', 'Considered Heavy Attack DMG.'],
+    ['Echo', 'Basic Attack Stage 4', '177.86%', 'Considered Echo Skill DMG.'],
+    ['Heavy ATK', 'Blood for Blood', '41.05%×2+61.57%×2', 'Dodge Counter; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Ashfall Barrage Plunging Attack', '143.15%', 'Mid-air tap; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Ashfall Barrage Sustained Fire', '26.84% (per tick)', 'Mid-air hold; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Volley of Death Stage 1', '53.30%×2'],
+    ['Heavy ATK', 'Volley of Death Stage 2', '34.59%×2'],
+    ['Echo', 'Volley of Death Stage 3', '16.77%×3+117.39%', 'Considered Echo Skill DMG (Stage 1-2 stay Heavy ATK).'],
+    ['Heavy ATK', 'Encroach', '10.74%+25.04%', 'Base Skill dash strike, builds Sinflame; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Ascent of Malice', '51.57%×2', 'Empowered Skill once Sinflame is maxed, transforms into Demon Hypostasis; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Seraphic Execution Stage 1', '58.99%', 'Demon Hypostasis Basic ATK replacement; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Seraphic Execution Stage 2', '27.84%×2+83.51%', 'Considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Seraphic Execution Stage 3', '24.32%×3+170.21%', 'Considered Heavy Attack DMG.'],
+    ['Echo', 'Seraphic Execution Stage 4', '18.15%×3+127.02%', 'Considered Echo Skill DMG.'],
+    ['Echo', 'Seraphic Execution Stage 5', '67.28%+156.99%', 'Considered Echo Skill DMG.'],
+    ['Heavy ATK', 'Purgatory Scourge', '32.10%×3+224.70%', 'Demon Hypostasis Dodge Counter replacement; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Flamewing Verdict Stage 1', '59.22%×2', 'Demon Hypostasis Heavy ATK replacement; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Flamewing Verdict Stage 2', '38.35%×2', 'Considered Heavy Attack DMG.'],
+    ['Echo', 'Flamewing Verdict Stage 3', '17.69%×3+123.77%', 'Considered Echo Skill DMG.'],
+    ['Heavy ATK', 'Hellsent Barrage Plunging Attack', '159.05%', 'Demon Hypostasis mid-air tap; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Hellsent Barrage Sustained Fire', '29.83% (per tick)', 'Demon Hypostasis mid-air hold; considered Heavy Attack DMG.'],
+    ['Heavy ATK', 'Ravage', '10.74%+25.04%', 'Demon Hypostasis Skill replacement, shares a cooldown with Encroach; considered Heavy Attack DMG.'],
+    ['Echo', 'Hellfire Absolution', '110.90%+90.74%×11', 'Ultimate barrage; considered Echo Skill DMG. Also grants +85% DMG Mult to Demon Hypostasis attacks for 14s.'],
+    ['Intro', 'Hellflare Overload', '94.12%', 'Swap-in opener strike.'],
+    ['Outro', 'Ashen Pursuit', '79.50%×3+556.50%', 'Pure-damage swap-out finisher; no team buff, so she\'s free to quickswap.'],
   ],
   // Re-verified in full 2026-08-31 against wutheringwaves.fandom.com/wiki/Iuno/Combat's Lv.10 Attribute
   // Scaling tables (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare).
@@ -4439,12 +4471,23 @@ const CHARACTER_ROTATIONS = {
   // Attacks as unused in practice (Basic Attacks/Dodge Counters restore Forte fastest and hit harder),
   // and the Liberation must be cast BEFORE entering the Demon Hypostasis combo since its +85% DMG Mult
   // buff applies to those very attacks. Rebuilt to match Prydwen's actual "Standard Rotation".
+  // Step types/names corrected 2026-09-01 to match SKILL_MULTIPLIERS.Galbrena's rebuilt rows above (see
+  // that section's comment for the Lv.1-vs-Lv.10 and type-reclassification fixes): Ascent of Malice and
+  // Hellfire Absolution moved off 'Skill'/'Liberation' to the types their own move text is "considered"
+  // as (Heavy ATK / Echo respectively) — under the old types+names, both steps had nothing to match and
+  // were silently resolving to 0 DMG, and the whole Basic Attack/Seraphic Execution combo strings never
+  // matched anything either. Split into per-stage steps that substring-match the new per-stage rows.
   'Galbrena': [
     { type: 'Intro', skill: 'Hellflare Overload' },
-    { type: 'Basic ATK', skill: 'Stage 2-4, 2-3', note: 'Threshold State combo, builds Sinflame (skips the weak Stage 1)' },
-    { type: 'Skill', skill: 'Ascent of Malice', note: 'at max Sinflame — enters Demon Hypostasis, endlag cancelled on hit by the Liberation' },
-    { type: 'Liberation', skill: 'Hellfire Absolution', duration: 14, note: 'cast right after entering Demon Hypostasis so its +85% DMG Mult buffs the whole combo that follows' },
-    { type: 'Basic ATK', skill: 'Seraphic Execution Stage 2-5, 3-5 (swap on final Stage 5)', note: 'Demon Hypostasis combo — Dodge Counter can substitute for Stage 3/4 for higher DMG and Forte if the enemy attacks' },
+    { type: 'Heavy ATK', skill: 'Basic Attack Stage 2', note: 'Threshold State combo, builds Sinflame (skips the weak Stage 1)' },
+    { type: 'Heavy ATK', skill: 'Basic Attack Stage 3' },
+    { type: 'Echo', skill: 'Basic Attack Stage 4' },
+    { type: 'Heavy ATK', skill: 'Ascent of Malice', note: 'at max Sinflame — enters Demon Hypostasis, endlag cancelled on hit by the Liberation' },
+    { type: 'Echo', skill: 'Hellfire Absolution', duration: 14, note: 'cast right after entering Demon Hypostasis so its +85% DMG Mult buffs the whole combo that follows' },
+    { type: 'Heavy ATK', skill: 'Seraphic Execution Stage 2' },
+    { type: 'Heavy ATK', skill: 'Seraphic Execution Stage 3', note: 'Dodge Counter (Purgatory Scourge) can substitute here for higher DMG and Forte if the enemy attacks' },
+    { type: 'Echo', skill: 'Seraphic Execution Stage 4' },
+    { type: 'Echo', skill: 'Seraphic Execution Stage 5', note: 'Demon Hypostasis combo finisher' },
     { type: 'Outro', skill: 'Ashen Pursuit', note: 'pure-damage swap-out, no team buff, quickswap freely' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry put
@@ -5301,11 +5344,20 @@ const RESONANCE_CHAIN_DATA = {
   //     capturable by the flat schema — TODO: needs Phase 2 schema for per-hit conditional buff windows).
   'Lingyang':     { s1: { totalMult: 0 }, s2: { totalMult: 0 }, s3: { basicDmg: 20, skillDmg: 10 }, s4: { elemDmg: 20 }, s5: { totalMult: 200 }, s6: { basicDmg: 100 } },
   // Galbrena S1: +2% CD per Afterflame (up to 80%). Averaged ~40
-  'Galbrena':     { s1: { critDmg: 80 }, s2: { atkPct: 90 }, s3: { libDmg: 130 }, s4: { allDmg: 20 }, s5: { skillDmg: 150 }, s6: { elemDmg: 60 } },
-  // Galbrena R-chain corrected 2026-08-16 via Prydwen/Game8: s1 max Afterflame Crit DMG scaling (+2%/pt, cap 80%, was 40);
-  // s2 Burning Drive ATK Bonus amplified +350% more (20% base × 4.5 = 90% ATK while active, was unfounded totalMult:40);
-  // s3 Liberation DMG Mult +130% (was critRate:12, no basis); s4 team +20% All-Attr DMG on team Echo Skill cast (was heavyDmg:40, no basis);
-  // s5 Encroach/Ascent of Malice/Ravage DMG Mult +150% (was totalMult:15); s6 core Demon Hypostasis attacks DMG Mult +60% (was deepen:40).
+  // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Galbrena/Combat, cross-checked
+  // against ww.nanoka.cc/character/1208 (both agree on every node's exact wording and value):
+  // S5: was skillDmg: 150 (wrong category) — the three buffed moves (Encroach, Ascent of Malice,
+  // Ravage) are each explicitly "considered Heavy Attack DMG" in their own move text despite being cast
+  // from the Resonance Skill slot. Corrected skillDmg -> heavyDmg.
+  // S6: was elemDmg: 60 (wrong category) — the four buffed Demon Hypostasis moves (Seraphic Execution,
+  // Flamewing Verdict, Hellsent Barrage, Purgatory Scourge) are each majority "considered Heavy Attack
+  // DMG" per their own move text (a portion of Seraphic Execution/Flamewing Verdict is Echo Skill DMG
+  // instead, not modeled separately here). Corrected elemDmg -> heavyDmg; value 60 already correct.
+  // TODO: needs Phase 2 schema — S6's additional conditional layer (Ascent of Malice consuming
+  // Afterflame grants +0.875% Fusion DMG Amp per point consumed, up to 35%) has no home in a flat node.
+  // S1 (critDmg: 80), S2 (atkPct: 90), S3 (libDmg: 130), S4 (allDmg: 20) already correct — value and
+  // category confirmed exact against both sources.
+  'Galbrena':     { s1: { critDmg: 80 }, s2: { atkPct: 90 }, s3: { libDmg: 130 }, s4: { allDmg: 20 }, s5: { heavyDmg: 150 }, s6: { heavyDmg: 60 } },
   // Iuno R-chain re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Iuno/Combat
   // "Resonance Chain" section (Chrome/Windows UA + google.com referer + jsRender):
   // s1 "Wax or Wane, All Gild the Bough": ATK +40% while in Lunar Cycle (atkPct:40, confirmed unchanged) —
