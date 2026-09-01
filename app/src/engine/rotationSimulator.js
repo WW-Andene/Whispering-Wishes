@@ -40,6 +40,28 @@ export class RotationSimulator {
     // — backs 'windowed-proc' (Yinlin S6-style repeatable capped procs), distinct from _windows
     // above because a proc window can fire MULTIPLE times up to maxProcs, not just once.
     this._procWindows = new Map();
+    // blockId -> time it next becomes eligible again — backs timing.cooldown enforcement (see
+    // isReady/useCooldown below). PHASE2_PLAN.md flagged this as a known gap: `timing.cooldown` was
+    // declared on many blocks (Rover's Thunderclap: 10s, Yinlin's Magnetic Roar: 12s, Augusta's S6:
+    // 1s, etc.) but nothing ever checked it — a block re-triggered every time its cast key appeared
+    // in firedTriggers, even within its own cooldown window. This only matters across a MULTI-loop
+    // or repeated-cast simulated rotation (a single canonical one-cast-per-skill loop never hits it
+    // in practice), but it's a real correctness gap for anything simulating more than one loop.
+    this._cooldowns = new Map();
+  }
+
+  /** Is `blockId` off cooldown (or never used) at the simulator's current time? */
+  isReady(blockId) {
+    const readyAt = this._cooldowns.get(blockId);
+    return readyAt == null || this.time >= readyAt;
+  }
+
+  /** Record that `blockId` was just used, starting its cooldown. Call this ONLY when isReady()
+   *  already returned true for it — this doesn't itself check readiness, so a caller that ignores
+   *  isReady() can still record overlapping activations (garbage in, garbage out, same as every
+   *  other method on this class). */
+  useCooldown(blockId, cooldownSeconds) {
+    this._cooldowns.set(blockId, this.time + cooldownSeconds);
   }
 
   /** Call for every 'cast:TYPE:SKILL' key that occurs, so requires-prior-cast can later check it. */
@@ -148,7 +170,10 @@ export class RotationSimulator {
  *   id whose dependency should be checked at this step. `triesProc` names a 'windowed-proc' block
  *   id whose window should be checked for a proc at this step (only fires if that block's window is
  *   currently open and under its cap — see openProcWindow/tryProc).
- * @returns {{ step: Object, firedTriggers: Set<string> }[]}
+ * @returns {{ step: Object, firedTriggers: Set<string>, ineligibleBlockIds: Set<string> }[]}
+ *   `ineligibleBlockIds` names blocks whose OWN `timing.cooldown` says they can't fire yet even
+ *   though their trigger key is present in `firedTriggers` (see cooldown-gated 'cast' blocks below)
+ *   — pass it as `ctx.ineligibleBlockIds` to resolveTriggerBlocks() to have it actually skip them.
  */
 export function simulateRotation(blocks, steps) {
   const sim = new RotationSimulator();
@@ -157,11 +182,15 @@ export function simulateRotation(blocks, steps) {
   const priorCastBlocks = blocks.filter(b => b.trigger.type === 'requires-prior-cast');
   const procBlocks = blocks.filter(b => b.trigger.type === 'windowed-proc');
   const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
+  // Cooldown-gated 'cast' blocks — trigger.on is the same TYPE:SKILL label attemptOn/checksAt/on
+  // (proc) already use, so matching a step to its own block(s) is the same lookup pattern.
+  const cooldownCastBlocks = blocks.filter(b => b.trigger.type === 'cast' && b.trigger.on && b.timing?.cooldown != null);
 
   const results = [];
   for (const ev of steps) {
     sim.advance(ev.stepSeconds ?? DEFAULT_STEP_SECONDS);
     const fired = new Set(['passive']); // passive blocks are always eligible, same as every prior test's convention
+    const ineligibleBlockIds = new Set();
 
     if (ev.isSwap) sim.registerSwap();
     if (ev.isSwapIn) sim.resetSegment();
@@ -176,6 +205,21 @@ export function simulateRotation(blocks, steps) {
       for (const b of procBlocks) {
         if (b.trigger.opensOnProc.includes(castKey)) {
           sim.openProcWindow(b.trigger.opensOnProc.join('|'), b.trigger.windowSeconds, b.trigger.maxProcs);
+        }
+      }
+      const label = `${ev.type}:${ev.skill}`;
+      for (const b of cooldownCastBlocks) {
+        if (b.trigger.on !== label) continue;
+        if (sim.isReady(b.id)) {
+          sim.useCooldown(b.id, b.timing.cooldown);
+        } else {
+          // Cast attempted while this specific block is still on cooldown — the raw input still
+          // shows up in `fired` (the button was pressed), but the block itself must not resolve
+          // this time. resolveTriggerBlocks() has no way to know this on its own (it only sees a
+          // shared trigger key, not per-block cooldown state), so the caller has to pass this set
+          // explicitly — same "name it in the state machine, apply it via ctx" split as every other
+          // conditional trigger type in this file.
+          ineligibleBlockIds.add(b.id);
         }
       }
     }
@@ -218,7 +262,7 @@ export function simulateRotation(blocks, steps) {
       }
     }
 
-    results.push({ step: ev, firedTriggers: fired });
+    results.push({ step: ev, firedTriggers: fired, ineligibleBlockIds });
   }
   return results;
 }

@@ -123,9 +123,35 @@ byte unmodified by this phase so far):
   is converted.
 
 Known gaps in the scaffold itself (not yet solved, don't assume otherwise):
-- No cooldown enforcement, no stacking-mode (`unique`/`stacking`/`refresh`)
-  logic — `STACKING_MODES` is declared in the schema but `triggerEngine.js`
-  doesn't read it yet.
+- **Cooldown enforcement: DONE 2026-09-01** — `RotationSimulator.isReady(blockId)`/
+  `useCooldown(blockId, cooldownSeconds)` (a `blockId -> readyAt` Map) plus
+  `simulateRotation()` auto-gating any `trigger.type: 'cast'` block whose
+  `timing.cooldown` is set: a repeated cast within cooldown still fires its raw
+  cast key (the input was pressed) but the specific block is added to a new
+  per-step `ineligibleBlockIds` Set, which `resolveTriggerBlocks()` now checks
+  (a new optional `ctx.ineligibleBlockIds` param) before applying a block's
+  effects — same "name the shape in the state machine, apply it via ctx" split
+  as every other conditional trigger type here. Proven with cooldown-blocked
+  and cooldown-elapsed cases in `rotationSimulator.test.js` (5 new tests,
+  using Yinlin's real 12s Magnetic Roar cooldown). Only matters for a
+  multi-loop/repeated-cast simulation — a single canonical one-cast-per-skill
+  rotation loop never hits it in practice, but it's a real correctness gap
+  closed for anything simulating more than one loop (or team interleaving,
+  once that lands).
+- **Stacking-mode (`unique`/`stacking`/`refresh`) logic — still NOT done.**
+  `STACKING_MODES` is declared in the schema but `triggerEngine.js` doesn't
+  read it. Deliberately NOT attempted in the same pass as cooldown: unlike
+  cooldown (a simple per-block "is it ready" check), stacking-mode only means
+  something when accumulating a buff's uptime across MULTIPLE
+  `resolveTriggerBlocks()` calls over a full simulated timeline (does a
+  re-triggering 'refresh' buff reset its duration instead of double-counting;
+  does a 'stacking' buff actually add per-instance) — that's the same
+  time-integrated overlap/uptime math `calcTeamStats.js` already has for
+  cross-character buffs (`buffs` array with `start`/`duration`, overlap-based
+  uptime fractions). Building a SECOND, parallel duration-accumulator inside
+  the engine instead of reusing/interoperating with that existing one is a
+  real design decision, not an implementation detail — flagged for the user
+  rather than guessed at silently.
 - `firedTriggers` has to be hand-constructed by the caller; nothing yet
   walks `CHARACTER_ROTATIONS` to derive it automatically for a real
   rotation simulation. That's design question 2 below, still unresolved.

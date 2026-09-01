@@ -241,6 +241,62 @@ describe('RotationSimulator — windowed-proc (Yinlin)', () => {
   });
 });
 
+describe('RotationSimulator — timing.cooldown enforcement', () => {
+  it('a block is ready before it has ever been used', () => {
+    const sim = new RotationSimulator();
+    expect(sim.isReady('b1')).toBe(true);
+  });
+
+  it('a block is NOT ready immediately after use, within its cooldown', () => {
+    const sim = new RotationSimulator();
+    sim.useCooldown('b1', 12);
+    sim.advance(5); // 5s elapsed, still within the 12s cooldown
+    expect(sim.isReady('b1')).toBe(false);
+  });
+
+  it('a block becomes ready again once its cooldown has fully elapsed', () => {
+    const sim = new RotationSimulator();
+    sim.useCooldown('b1', 12);
+    sim.advance(12); // exactly at the cooldown boundary — ready again
+    expect(sim.isReady('b1')).toBe(true);
+  });
+
+  it("simulateRotation marks a cast still on cooldown as ineligible, but its OWN raw cast key still fires (the input was pressed)", () => {
+    const steps = [
+      { type: 'Skill', skill: 'Magnetic Roar', stepSeconds: 1 }, // 1st cast — off cooldown, resolves
+      { type: 'Skill', skill: 'Magnetic Roar', stepSeconds: 3 }, // 2nd cast only 3s later — still within the 12s cooldown
+    ];
+    const results = simulateRotation(YINLIN_BLOCKS, steps);
+    const magneticRoarBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.skill.magnetic-roar-lightning-execution');
+    expect(magneticRoarBlock.timing.cooldown).toBe(12);
+
+    expect(results[0].firedTriggers.has('cast:Skill:Magnetic Roar')).toBe(true);
+    expect(results[0].ineligibleBlockIds.has(magneticRoarBlock.id)).toBe(false); // 1st cast: off cooldown
+
+    expect(results[1].firedTriggers.has('cast:Skill:Magnetic Roar')).toBe(true); // the input still fires
+    expect(results[1].ineligibleBlockIds.has(magneticRoarBlock.id)).toBe(true); // but the block itself is gated
+
+    // Feed both steps' output into resolveTriggerBlocks — the 2nd call must skip the block despite
+    // its trigger key being present, because ineligibleBlockIds says so.
+    const statsSecondCast = createStats();
+    expect(() => resolveTriggerBlocks(YINLIN_BLOCKS, {
+      firedTriggers: results[1].firedTriggers,
+      ineligibleBlockIds: results[1].ineligibleBlockIds,
+      targetElementLower: 'electro', targetRole: 'Sub DPS',
+    }, statsSecondCast)).not.toThrow();
+  });
+
+  it("simulateRotation marks a re-cast AFTER the cooldown fully elapses as eligible again", () => {
+    const steps = [
+      { type: 'Skill', skill: 'Magnetic Roar', stepSeconds: 1 },
+      { type: 'Skill', skill: 'Magnetic Roar', stepSeconds: 12 }, // exactly at the 12s cooldown boundary
+    ];
+    const results = simulateRotation(YINLIN_BLOCKS, steps);
+    const magneticRoarBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.skill.magnetic-roar-lightning-execution');
+    expect(results[1].ineligibleBlockIds.has(magneticRoarBlock.id)).toBe(false);
+  });
+});
+
 describe('deriveStepsFromRotation — auto-deriving steps from REAL CHARACTER_ROTATIONS data', () => {
   // Closes the remaining piece of design question 2: every test above (and every parity test in
   // this repo) hand-built its own `steps` array with isSwap/isOutroCast/consumesWindowBlockId/

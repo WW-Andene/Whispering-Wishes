@@ -24,12 +24,23 @@ import { applyBuff } from '../features/teams/calcEngine.js';
  * @param {string} ctx.targetName        Character whose stat accumulator effects should land on
  * @param {string} ctx.targetElementLower Target's element, lowercased (for condition.element gating)
  * @param {string} ctx.targetRole        Target's role (for condition.requiresRole gating)
+ * @param {Set<string>} [ctx.ineligibleBlockIds]  Block ids that must NOT resolve this call even
+ *                                          though their trigger key is present in firedTriggers —
+ *                                          currently produced by rotationSimulator.js's
+ *                                          simulateRotation() for 'cast' blocks still on their own
+ *                                          timing.cooldown (a cast key is shared across every block
+ *                                          that listens for it, so per-block cooldown state can't be
+ *                                          expressed as a trigger key alone; the state machine has to
+ *                                          name the exception explicitly). Optional — omitting it is
+ *                                          the same as passing an empty set, same as every prior call
+ *                                          site that predates this parameter.
  * @param {Object} stats                 Stat accumulator (createStats() shape from calcEngine.js)
  */
 export function resolveTriggerBlocks(blocks, ctx, stats) {
-  const { firedTriggers, targetElementLower, targetRole } = ctx;
+  const { firedTriggers, targetElementLower, targetRole, ineligibleBlockIds } = ctx;
   let totalMultBonus = 0;
   for (const block of blocks) {
+    if (ineligibleBlockIds?.has(block.id)) continue;
     if (!triggerFired(block.trigger, firedTriggers)) continue;
     if (!conditionHolds(block.condition, targetElementLower, targetRole)) continue;
     for (const effect of block.effects) {
