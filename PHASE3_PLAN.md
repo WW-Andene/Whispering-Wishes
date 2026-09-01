@@ -1026,11 +1026,76 @@ their real `totalER`/`libUptime` numbers.
 4 new tests (`calcTeamStatsWarnings.test.js`). Full suite: 1122/1122
 passing (85 files).
 
-**Next**: step 6/6 (final step) — delete the now-dead legacy code paths
-(`applyResonanceChain`'s calling code, the old inline permutation search
-inside `rotationTimeline` when `engineChosenOrder` exists, the RAW/FULL
-tier's legacy per-member math for a fully-converted team) — only once this
-step confirms every earlier step is trustworthy, which it now does.
+### Stage 4, step 6/6 — dead code removal, scope correction + closure (done, 2026-09-01)
+
+Removed one confirmed-dead local first (RAW tier's own unused `rawDps`,
+superseded by `soloDps` recomputing the same value — zero behavior
+change).
+
+**Then found "delete the legacy code" wasn't actually safe yet**, as
+originally planned: `effAtk`/`avgCrit`/`dmgBonus`/`defMult`/`resMult`/
+`score` (the main-DPS stat-panel fields) — plus the `critRate`/`critDmg`/
+`elemDmg`/`skillDmg`/`amplify`/`deepen`/`atkPct`/`defShred`/`resShred`/
+`defIgnore` fields returned alongside them — still came from the legacy
+buff-accumulation computation even for a fully-converted team; steps 1-4
+only ever overrode `totalRotDmg`/`memberDmgArr`/`dotDmgPerRotation`/
+`rotationTimeline`'s order, never these. So the legacy computation was
+genuinely still load-bearing, not dead, for every team regardless of
+conversion status — flagged to the user rather than silently deleting
+something still in use or silently leaving Stage 4 "done" with a real gap.
+**User decided**: extend scope to compose these from the engine too,
+closing the gap properly rather than leaving it or skipping cleanup.
+
+- For a fully-converted team, `resolveSimulatedTeamRotation` (Phase 2/
+  Stage 3 machinery, previously never called from `calcTeamStats.js`
+  itself) computes the main DPS's own REAL time-averaged received stats —
+  real buff windows overlapping their own real on-field segment, from the
+  same `engineChosenOrder` every other step already shares — replacing the
+  legacy `overlapUptimeForSeg` hand-rolled cross-character routing.
+- Combined with the main DPS's own gear delta (already available via step
+  1's `gearDeltaByName`, same additive-key folding `externalStats` uses
+  everywhere else in the engine), then `routeTypeBonuses` — the SAME
+  function the legacy path already used — collapses
+  `basicDmg`/`heavyDmg`/`libDmg`/`echoDmg`/`coordDmg` into the single
+  `skillDmg` bucket `calcDmgBonus` expects. This is a deliberately
+  DIFFERENT (less precise) representation than the per-hit engine
+  composition steps 1-3 use — appropriate for a one-number-per-stat summary
+  panel, not a per-hit total, same reasoning Stage 0 always applied to
+  gear composition.
+- `effAtk`/`avgCrit`/`dmgBonus`/`defMult`/`resMult`/`score` and the
+  underlying stat fields are all now `let` (were `const`) and reassigned
+  inside an `if (allMembersConverted && engineChosenOrder)` block, mirroring
+  every earlier step's "compute legacy first, override for a converted
+  team" pattern — a mixed team keeps the untouched legacy values.
+- 4 new tests (`calcTeamStatsStatPanel.test.js`): all stat-panel fields
+  finite and positive for a real converted team; `score`'s implied
+  `dmgBonus` (backed out algebraically from the same formula legacy always
+  used) lands in a sane range; solo and mixed-team cases both still
+  compute cleanly.
+
+**This closes the gap — the legacy FULL-tier computation is now genuinely
+unused whenever `allMembersConverted` is true** (its own output is
+overridden in every field steps 1-6 return). It still runs for a
+fully-converted team, though, since nothing in this pass added a real
+`if/else` branch around the ~600-line legacy block itself to skip it
+entirely — only its *outputs* get overridden afterward. Actually deleting
+that dead computation (not just overriding its results) is real further
+work, deliberately NOT attempted in this pass: it's a large, high-line-count
+structural edit against a fully-trusted-but-newly-so cutover, and the
+performance cost of "compute it and throw it away" was already measured
+acceptable back in the Stage 4 reconnaissance (engine composition itself
+is ~3x legacy's per-call cost, still sub-millisecond) — deleting the legacy
+block is a pure cleanup with no functional or performance urgency, better
+done as its own follow-up pass once this cutover has had real runway, not
+rushed into the same session it landed in.
+
+Full suite: 1126/1126 passing (86 files). Production build verified clean.
+
+**Stage 4 is now functionally complete**: every field `calcTeamStats()`
+returns comes from the engine for a fully-converted team (all 57 characters
+except unreleased Jingran), with the unmodified legacy computation kept as
+both the correctness fallback for a mixed team and, for now, unused-but-
+still-running scaffolding for a converted one.
 
 ## Stage 5 — Final verification and commit
 
@@ -1051,7 +1116,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
 - [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
 - [x] Stage 4 reconnaissance — full consumer-contract map (every field read outside calcTeamStats.js, by which component), measured perf check (engine ~3.1x slower/call than legacy but still sub-ms — not a blocker for autoEquip.js's search loop), and a 6-step phased implementation plan (solo tier -> team tier -> DOT -> rotationTimeline -> warnings -> dead code removal), each step independently tested/committed
-- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; step 2/6 done — FULL tier/`teamDps`/`memberDps` now calls `chooseOnFieldOrder` + `resolveHitComposedTeamDps` (which gained its own `externalStats` support) for a fully-converted team, same legacy fallback; step 3/6 done — DOT now composed via `engine/dotReactions.js`'s `resolveDotReactionDps` (pure plumbing swap), `dmgSources` needed no changes (already engine-correct via step 2); step 4/6 done, scope narrowed — `rotationTimeline`'s displayed on-field order now reuses the same `chooseOnFieldOrder` result `teamDps` was computed against (a new `engineChosenOrder`, hoisted and shared with step 2); its own segment-duration/buff-list display internals stay legacy/CHAR_BUFF_TABLE-driven, not rewritten to real engine windows in this pass — logged as deferred, not dropped; step 5/6 done — `warnings` needed zero code changes (never touched totalMult/mult math); step 6/6 remaining — dead code removal, the only remaining item)
+- [x] Stage 4 — the actual rewrite, functionally complete (shipping cadence: each step landed directly on `main` as finished, no feature-flag staging). All 6 steps done — solo/RAW tier, team/FULL tier, DOT, `rotationTimeline` order, `warnings`, and the main-DPS stat panel all now come from the engine for any fully-converted team (56 of 57 characters; unreleased Jingran is the sole legacy-fallback case). The old legacy computation still physically runs (its output is just overridden) rather than being deleted outright — see step 6's own writeup for why actual deletion is deferred as a separate follow-up, not a functional gap.
 - [ ] Stage 5 — final verify + commit
 
 Work proceeds stage by stage; each stage's own sub-tasks are committed

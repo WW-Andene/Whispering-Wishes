@@ -32,6 +32,7 @@ import { BLOCKS_BY_CHARACTER } from '../../engine/characterBlocks/index.js';
 import { deriveStepsFromRotation } from '../../engine/rotationSimulator.js';
 import { resolveHitComposedDps } from '../../engine/resolveHitComposedDps.js';
 import { resolveHitComposedTeamDps } from '../../engine/resolveHitComposedTeamDps.js';
+import { resolveSimulatedTeamRotation } from '../../engine/resolveSimulatedTeamRotation.js';
 import { resolveDotReactionDps } from '../../engine/dotReactions.js';
 import { chooseOnFieldOrder } from '../../engine/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/coordinatedAtk.js';
@@ -991,13 +992,53 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
     });
 
-    const effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
-    const avgCrit = calcAvgCrit(cr, cd);
-    const dmgBonus = calcDmgBonus(elemDmg, skillDmg, amplify, deepen);
-    const defMult = calcDefMult(enemyDef90, defShred, defIgnore);
+    let effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
+    let avgCrit = calcAvgCrit(cr, cd);
+    let dmgBonus = calcDmgBonus(elemDmg, skillDmg, amplify, deepen);
+    let defMult = calcDefMult(enemyDef90, defShred, defIgnore);
     const mainBaseRes = getEnemyRes(mainDps.d.element);
-    const resMult = calcResMult(mainBaseRes, resShred);
-    const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
+    let resMult = calcResMult(mainBaseRes, resShred);
+    let score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
+
+    // PHASE3_PLAN.md Stage 4 step 6: the main-DPS stat-panel fields above (effAtk/avgCrit/dmgBonus/
+    // defMult/resMult/score, plus the underlying cr/cd/elemDmg/skillDmg/amplify/deepen/atkPct/
+    // defShred/resShred/defIgnore returned at the bottom of this function) still came from the
+    // legacy buff-accumulation computation even for a fully-converted team — steps 1-3 only
+    // overrode totalRotDmg/memberDmgArr/dotDmgPerRotation, not these. Closing that gap here: for a
+    // fully-converted team, resolveSimulatedTeamRotation gives the main DPS's own REAL time-averaged
+    // received stats (real buff windows overlapping their own real on-field segment, from the same
+    // engineChosenOrder used everywhere else in this rewrite) instead of the legacy overlapUptimeForSeg
+    // hand-rolled routing. Combined with their own gear delta (already computed in step 1's
+    // gearDeltaByName) the same way externalStats folds into the engine everywhere else, then
+    // routeTypeBonuses (the SAME function the legacy path already used) collapses basicDmg/heavyDmg/
+    // libDmg/echoDmg/coordDmg into the single skillDmg bucket calcDmgBonus expects for this
+    // one-number-per-stat summary panel — a deliberately different (less precise) representation
+    // than the per-hit engine composition steps 1-3 use, appropriate for a stat *summary*, not a
+    // per-hit total.
+    if (allMembersConverted && engineChosenOrder) {
+      const { ownedSteps, blocksByOwner } = engineChosenOrder;
+      const { stats: mainReceived } = resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, mainDps.name, {
+        targetElementLower: (mainDps.d.element || '').toLowerCase(),
+        targetRole: mainDps.d.role,
+        sequenceByOwner: Object.fromEntries(mems.map(m => [m.name, m.seqLevel])),
+      });
+      const mainGearDelta = gearDeltaByName[mainDps.name] || {};
+      const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
+      const finalStats = { ...mainReceived };
+      for (const k of EXTERNAL_STAT_KEYS) { if (mainGearDelta[k]) finalStats[k] = (finalStats[k] || 0) + mainGearDelta[k]; }
+      routeTypeBonuses(finalStats, mainDps.d.dmgFocus || []);
+
+      atkPct = finalStats.atkPct; cr = finalStats.cr; cd = finalStats.cd; elemDmg = finalStats.elemDmg;
+      skillDmg = finalStats.skillDmg; amplify = finalStats.amplify; deepen = finalStats.deepen;
+      defShred = finalStats.defShred; resShred = finalStats.resShred; defIgnore = finalStats.defIgnore;
+
+      effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
+      avgCrit = calcAvgCrit(cr, cd);
+      dmgBonus = calcDmgBonus(elemDmg, skillDmg, amplify, deepen);
+      defMult = calcDefMult(enemyDef90, defShred, defIgnore);
+      resMult = calcResMult(mainBaseRes, resShred);
+      score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
+    }
 
     // ── DOT damage (ICD-aware, composed via engine/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /
     // Stage 4 step 3) ──
