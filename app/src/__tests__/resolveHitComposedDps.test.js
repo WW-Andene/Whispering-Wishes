@@ -12,6 +12,7 @@ import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blocks.js';
 import { SHOREKEEPER_BLOCKS } from '../engine/characterBlocks/shorekeeper.blocks.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
+import { JINHSI_BLOCKS } from '../engine/characterBlocks/jinhsi.blocks.js';
 import { parseSkillMultiplierHits, sumHitsAtkPct } from '../engine/skillMultiplierParser.js';
 
 // Zero DEF/RES so defMult/resMult both come out to exactly 1 — isolates the test to just the
@@ -260,5 +261,32 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     const avgCrit = 1 + (5 / 100) * (150 / 100 - 1);
     const expected = 1000 * avgCrit * ((112 + 14 + 14) / 100);
     expect(totalDamage).toBeCloseTo(expected, 6);
+  });
+});
+
+describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS data (Jinhsi)', () => {
+  it('computes a real total across her whole rotation — BOTH windowed casts land in real time order, so Overflowing Radiance/Illuminous Epiphany actually contribute (not the forfeited normal casts)', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jinhsi'], JINHSI_BLOCKS);
+    const { totalDamage, dps, hitLog } = resolveHitComposedDps(JINHSI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3500, 'spectro', 'Main DPS');
+
+    expect(totalDamage).toBeGreaterThan(0);
+    expect(dps).toBeGreaterThan(0);
+
+    const firedBlockIds = new Set(hitLog.map(h => h.blockId));
+    expect(firedBlockIds.has('jinhsi.basic.slash-of-breaking-dawn')).toBe(true);
+    expect(firedBlockIds.has('jinhsi.skill.overflowing-radiance')).toBe(true);
+    expect(firedBlockIds.has('jinhsi.liberation.purge-of-light')).toBe(true);
+    expect(firedBlockIds.has('jinhsi.forte.incarnation-basic-attack')).toBe(true);
+    expect(firedBlockIds.has('jinhsi.skill.illuminous-epiphany')).toBe(true);
+  });
+
+  it("her Forte Incarnation-Basic-ATK combo's real 13-hit total is independently hand-verifiable", () => {
+    const forteBlock = JINHSI_BLOCKS.find(b => b.id === 'jinhsi.forte.incarnation-basic-attack');
+    expect(forteBlock.damage.hits).toHaveLength(13); // 1+1+2+1+1+6+1
+    const steps = [{ type: 'Forte', skill: 'Incarnation - Basic Attack Stage 1-4', stepSeconds: 1 }];
+    const { totalDamage } = resolveHitComposedDps([forteBlock], steps, NEUTRAL_ENEMY, 1000);
+    const avgCrit = 1 + (5 / 100) * (150 / 100 - 1);
+    const expectedSum = 88.62 + 77.97 + 25.99 * 2 + 99.44 + 66.30 + 18.67 * 6 + 74.67;
+    expect(totalDamage).toBeCloseTo(1000 * avgCrit * (expectedSum / 100), 6);
   });
 });
