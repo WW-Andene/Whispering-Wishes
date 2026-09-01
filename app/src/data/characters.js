@@ -3713,7 +3713,8 @@ const SKILL_MULTIPLIERS = {
     ['Mid-air', 'Plunging Attack', '140.76%'],
     ['Dodge Counter', 'Standard', '125.43%+1.99%×25'],
     ['Skill', 'Awakening Gale / Skyfall Severance', '66.44%+99.66% → 23.37%×3+105.15%', 'Gale (3s CD, ground); mid-air Skyfall Severance (12s CD) strips negative statuses into Aero Erosion.'],
-    ['Forte', 'Cloudburst Dance / Unbound Flow', '128.80%+141.47% → 34.30%×5+723.03%', 'Cloudburst Dance heals the team on hit; at max Windstrings, Skill becomes Unbound Flow instead.'],
+    ['Forte', 'Cloudburst Dance', '128.80%+141.47%', 'Mid-air ATK combo, considered Resonance Skill DMG; heals the team on hit.'],
+    ['Forte', 'Unbound Flow', '34.30%×5+723.03%', 'At max Windstrings, Resonance Skill becomes this instead; considered Resonance Skill DMG.'],
     ['Liberation', 'Omega Storm', '536.79%', 'Also heals nearby team ~2090+77% ATK; can be cast mid-air near ground.'],
     ['Intro', 'Relentless Squall', '79.53%+119.29%'],
     ['Outro', "Storm's Echo", 'Aeolian Realm — Aero Erosion cap +3 (30s field, no direct DMG)'],
@@ -5037,13 +5038,13 @@ const CHARACTER_ROTATIONS = {
   ],
   'Rover: Aero': [
     { type: 'Intro', skill: 'Relentless Squall', note: 'Swap in — fires automatically, launches her into the air, and grants 20 Windstring (her Forte gauge, caps at 120).' },
-    { type: 'Forte', skill: 'Cloudburst Dance 1-2', note: 'While airborne from the Intro, tap Basic Attack twice in a row — this is her Forte mid-air combo, each hit grants 25 Windstring (now at 20+25+25=70) and heals nearby teammates slightly.' },
+    { type: 'Forte', skill: 'Cloudburst Dance', note: 'While airborne from the Intro, tap Basic Attack twice in a row — this is her Forte mid-air combo, each hit grants 25 Windstring (now at 20+25+25=70) and heals nearby teammates slightly. Skill name corrected 2026-09-01 from \'Cloudburst Dance 1-2\', which never matched the SKILL_MULTIPLIERS row (now split into its own row) and was silently resolving to 0 DMG.' },
     { type: 'Liberation', skill: 'Omega Storm', note: 'Press Liberation while still airborne or near the ground — it instantly grounds her (skipping the slow landing animation) and heals the whole team.' },
     { type: 'Skill', skill: 'Awakening Gale', note: 'Once grounded, press Skill — sends her back into the air. Only a 3s cooldown, so this is her main way to get airborne again for more Cloudburst Dances.' },
-    { type: 'Forte', skill: 'Cloudburst Dance 1-2', note: 'Tap Basic Attack twice again while airborne — now at 70+25+25=120/120 Windstring, fully capped.' },
+    { type: 'Forte', skill: 'Cloudburst Dance', note: 'Tap Basic Attack twice again while airborne — now at 70+25+25=120/120 Windstring, fully capped.' },
     { type: 'Skill', skill: 'Skyfall Severance', note: 'Optional: while still airborne, press Skill again to convert any Negative Status debuffs already on the enemy (Frazzle, Bane, etc.) into stacks of Aero Erosion. Skip this step entirely if nobody on your team applies those debuffs.' },
-    { type: 'Mid-air ATK', skill: 'Plunge', note: 'Press Heavy Attack (or just fall) to plunge back down to the ground.' },
-    { type: 'Forte', skill: 'Unbound Flow P1 (switch out)', note: 'Once grounded with full Windstring, her Skill becomes this automatically — press Skill once, then immediately swap to your next character. Part 2 of this attack resolves automatically off-field, so you don\'t need to wait for it.' },
+    { type: 'Mid-air', skill: 'Plunging Attack', note: 'Press Heavy Attack (or just fall) to plunge back down to the ground. Type/name corrected 2026-09-01 from \'Mid-air ATK\'/\'Plunge\', which never matched the SKILL_MULTIPLIERS row (type \'Mid-air\', name \'Plunging Attack\') and was silently resolving to 0 DMG.' },
+    { type: 'Forte', skill: 'Unbound Flow', note: 'Once grounded with full Windstring, her Skill becomes this automatically — press Skill once, then immediately swap to your next character. Part 2 of this attack resolves automatically off-field, so you don\'t need to wait for it.' },
     { type: 'Outro', skill: "Storm's Echo", duration: 30, note: 'Triggers automatically the instant you swap out. Raises the nearby team\'s maximum Aero Erosion stack cap by 3 for 30s.' },
   ],
   'Rover: Electro': [
@@ -6008,7 +6009,13 @@ const RESONANCE_CHAIN_DATA = {
   // as a bonus hit" via the matching Basic-ATK-type category — a reasonable fit since the value is exact,
   // though technically scoped to Stage 5 only rather than all Basic ATK hits.
   'Rover: Havoc':   { s1: { skillDmg: 30 }, s2: {}, s3: {}, s4: { resShred: 10 }, s5: { basicDmg: 50 }, s6: { critRate: 25 } },
-  'Rover: Aero':    { s1: { totalMult: 5 }, s2: { totalMult: 12 }, s3: { elemDmg: 15 }, s4: { skillDmg: 15 }, s5: { libDmg: 20 }, s6: { skillDmg: 30 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Rover/Combat (unified page), cross-checked
+  // against ww.nanoka.cc/character/1406 (both agree exactly). S1 (interruption resistance on Cloudburst
+  // Dance) and S2 (continuous team healing on Unbound Flow) have zero real DPS component and no matching
+  // category in this schema — zeroed both to {} per this project's hard rule against inventing values.
+  // TODO: needs Phase 2 schema for S1's interruption-resistance and S2's healing-bonus mechanics.
+  // S3/S4/S5/S6 confirmed correct, unchanged.
+  'Rover: Aero':    { s1: {}, s2: {}, s3: { elemDmg: 15 }, s4: { skillDmg: 15 }, s5: { libDmg: 20 }, s6: { skillDmg: 30 } },
   'Rover: Electro': { s1: { totalMult: 5 }, s2: { totalMult: 8 }, s3: { skillDmg: 20 }, s4: { libDmg: 20 }, s5: { critDmg: 20 }, s6: { skillDmg: 20 } },
   // corrected 2026-08-18: prior values (elemDmg:8/totalMult:10/elemDmg:8/atkPct:10/totalMult:10/elemDmg:12) had no basis
   // in Aalto's actual chain kit (fandom Combat page, Resonance Chain table). Real effects: S1 Shift Trick CD-4s (no
