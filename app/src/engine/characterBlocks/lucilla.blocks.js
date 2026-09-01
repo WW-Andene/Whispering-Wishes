@@ -81,6 +81,7 @@ export const LUCILLA_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
+    condition: { element: 'glacio' },
     condition: { requiresStance: 'Glacio Chafe mode' },
     effects: [{ stat: 'elemDmg', value: 60, stacking: 'refresh' }],
     note: 'Glacio Chafe mode: Amplifies Glacio Chafe DMG near the active Resonator by +60% for 30s (persists through the swap) — modeled team-wide since Chafe DMG isn\'t a separate category.',

@@ -101,6 +101,7 @@ export const SIGRIKA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: { duration: 99 }, // sentinel: refreshed by teammates' Echo Skill casts, no natural decay sourced
     target: { scope: 'whole-team' },
+    condition: { element: 'aero' },
     effects: [{ stat: 'elemDmg', value: 48 }],
     note: "Inherent True Names Aligned — Blessing of Runes, max 6 stacks (18% base + 30% at max): +48% Aero DMG to whichever Resonator is active, refreshed by teammates' Echo Skill casts — modeled at the max-stack value, team-wide.",
   },

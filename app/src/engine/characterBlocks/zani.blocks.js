@@ -104,6 +104,7 @@ export const ZANI_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
+    condition: { element: 'spectro' },
     effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh' }],
     note: "To allies hitting the Heliacal Ember-marked target — the target-marked gating isn't modeled (applied team-wide).",
   },

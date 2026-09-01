@@ -111,6 +111,7 @@ export const DENIA_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
+    condition: { element: 'fusion' },
     condition: { requiresStance: 'Fusion Burst mode' },
     effects: [{ stat: 'elemDmg', value: 60, stacking: 'refresh' }],
     note: 'Fusion Burst mode: Amplifies Fusion Burst DMG near the active Resonator by +60% for 30s — modeled as a team-wide elemDmg buff (closest existing category), mutually exclusive with the Tune Strain-mode block above.',

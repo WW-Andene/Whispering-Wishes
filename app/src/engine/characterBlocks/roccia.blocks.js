@@ -67,6 +67,7 @@ export const ROCCIA_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
+    condition: { element: 'havoc' },
     effects: [
       { stat: 'elemDmg', value: 20, stacking: 'refresh' },
       { stat: 'basicDmg', value: 25, stacking: 'refresh' },
@@ -94,6 +95,7 @@ export const ROCCIA_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Real Fantasy 1-3' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
+    condition: { element: 'havoc' },
     effects: [{ stat: 'elemDmg', value: 10, stacking: 'stacking', maxStacks: 4 }],
     note: 'Casting Real Fantasy grants the whole team +10% Havoc DMG Bonus for 30s, stacking up to 3 times (30% at max stacks); reaching max stacks grants a further +10% Havoc DMG Bonus for 30s (40% total) — modeled as per-stack 10% x4 cap (3 real stacks + the max-stack bonus), matching the real stacking mechanic more closely than a flat 40%.',
   },

@@ -96,6 +96,7 @@ export const CIACCONA_BLOCKS = [
     trigger: { type: 'cast', on: 'Basic ATK:Stage 4' },
     timing: { duration: 99 }, // sentinel: real trigger is the Ensemble Sylph summon from Mid-air-cancelling Stage 4, near-permanent uptime per its own audit note
     target: { scope: 'whole-team' },
+    condition: { element: 'aero' },
     effects: [{ stat: 'elemDmg', value: 24, stacking: 'refresh' }],
     note: 'Solo Concert: team +24% Aero DMG Bonus, from Basic ATK Stage 4\'s Ensemble Sylph summon, NOT Liberation itself — near-permanent uptime once active. Was wrongly allDmg (all-element) in an earlier version, corrected to elemDmg (Aero-only).',
   },
@@ -116,6 +117,7 @@ export const CIACCONA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'whole-team' },
+    condition: { element: 'aero' },
     effects: [{ stat: 'elemDmg', value: 40 }],
     note: 'Team +40% Aero DMG Bonus (corrected from allDmg to elemDmg per the 2026-09-01 re-audit — was granting a phantom all-element buff) — no specific cast trigger sourced, kept passive.',
   },

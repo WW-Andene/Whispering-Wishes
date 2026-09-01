@@ -86,6 +86,7 @@ export const CARTETHYIA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'swap-out' },
     timing: { duration: 20 }, target: { scope: 'next-on-field' },
+    condition: { element: 'aero' },
     effects: [{ stat: 'elemDmg', value: 17.5, stacking: 'refresh' }],
     note: "Boosts the incoming teammate's (not Cartethyia's own) Aero DMG against Negative-Status-afflicted targets — the Negative Status condition isn't modeled (applied unconditionally).",
   },

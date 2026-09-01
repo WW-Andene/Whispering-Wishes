@@ -58,6 +58,7 @@ export const AALTO_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
+    condition: { element: 'aero' },
     effects: [{ stat: 'elemDmg', value: 23, stacking: 'refresh' }],
     note: 'Incoming Resonator gets +23% Aero DMG Amp for 14s.',
   },

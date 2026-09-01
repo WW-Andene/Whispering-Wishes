@@ -76,6 +76,7 @@ export const VERINA_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Mid-air Attack: Starflower Blooms' },
     timing: { duration: 24 },
     target: { scope: 'whole-team' },
+    condition: { element: 'spectro' },
     effects: [{ stat: 'elemDmg', value: 15, stacking: 'refresh' }],
     note: 'Casting Heavy/Mid-air Attack Starflower Blooms, Liberation, or Outro Blossom raises the whole team\'s Spectro DMG Bonus by 15% for 24s (confirmed exact, team-wide) — modeled anchored to the Starflower Blooms cast used in her real rotation.',
   },

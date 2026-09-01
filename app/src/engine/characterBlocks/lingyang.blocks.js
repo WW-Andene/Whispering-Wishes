@@ -109,6 +109,7 @@ export const LINGYANG_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
+    condition: { element: 'glacio' },
     effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh' }],
     note: 'Outro Skill Frosty Marks increases the Glacio DMG Bonus of all team members by 20% for 30s (confirmed exact, team-wide).',
   },

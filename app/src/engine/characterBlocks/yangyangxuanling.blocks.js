@@ -85,6 +85,7 @@ export const YANGYANG_XUANLING_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
+    condition: { element: 'havoc' },
     effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh' }],
     note: "Havoc Bane appliers only, via As the Wind Wills — the 'only appliers benefit' gating isn't modeled (applied team-wide).",
   },

@@ -65,6 +65,7 @@ export const CHANGLI_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 10 },
     target: { scope: 'next-on-field' },
+    condition: { element: 'fusion' },
     effects: [
       { stat: 'elemDmg', value: 20, stacking: 'refresh' },
       { stat: 'libDmg', value: 25, stacking: 'refresh' },
