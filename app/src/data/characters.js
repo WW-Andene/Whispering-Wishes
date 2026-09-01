@@ -2508,13 +2508,17 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: 38% Heavy ATK DMG Amp. Off-field Coordinated ATK on Heavy ATK.',
   },
   'Danjin': {
-    // corrected 2026-08-18: Prydwen's own kit text calls this "23% Havoc DMG Deepen" (not "Bonus") —
-    // stat key changed from elemDmg to deepen to match; also matches CHARACTER_ROTATIONS' Outro row below.
-    outroBuffs: [{ stat: 'deepen', value: 23, target: 'next', duration: 14 }],
+    // Corrected back 2026-09-01: the 2026-08-18 change to 'deepen' was based on a Prydwen paraphrase.
+    // Re-verified directly against wutheringwaves.fandom.com/wiki/Danjin/Combat and ww.nanoka.cc/
+    // character/1602 (both agree word-for-word): "The incoming Resonator has their Havoc DMG Amplified
+    // by 23%" — this is a buff to the ally's own outgoing Havoc DMG (elemDmg), not a Deepen-type
+    // vulnerability debuff on the enemy (a different mechanic — Deepen means the target takes more
+    // damage from all attackers, not that one ally hits harder). Reverted deepen -> elemDmg.
+    outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14 }],
     libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 23% Havoc DMG Deepen to next.',
+    note: 'Outro: 23% Havoc DMG Amp to next.',
   },
   'Baizhi': {
     outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 6 }],
@@ -3937,8 +3941,14 @@ const SKILL_MULTIPLIERS = {
   // in particular had two fabricated skill names ("Crimson Moonrise" and "Crimson Arrival") that don't
   // exist anywhere on fandom; her real Liberation is "Crimson Bloom" and Intro is "Vindication".
   // Replaced with real Lv.10 values and exact move names from each character's fandom Combat page.
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Danjin/Combat, cross-checked against
+  // ww.nanoka.cc/character/1602 (both agree exactly) — every damage value was already correct. Corrected
+  // the Outro's mechanic label from "Deepen" to "Amp" (see CHARACTER_DATA.Danjin's comment above) and
+  // added the two entirely missing rows (Mid-air Attack, Dodge Counter).
   'Danjin': [
     ['Basic ATK', 'Execution Stage 1-3', '57.26% → 58.85% → 79.53%', 'Up to 3 consecutive Havoc strikes.'],
+    ['Mid-air', 'Attack', '98.61%'],
+    ['Dodge Counter', 'Standard', '63.62%×3'],
     ['Heavy ATK', 'Execution (hold)', '37.12%×3', 'Consumes HP-fueled Forte; heals if Forte Gauge ≥50%.'],
     ['Skill', 'Crimson Fragment: Carmine Gleam', '38.18%×2', 'Base Skill hit; costs 3% Max HP per attack.'],
     ['Skill', 'Crimson Erosion', '64.42%×2 → 59.65%×2', 'After Basic ATK 2/Dodge Counter/Intro; applies Incinerating Will (+20% DMG taken).'],
@@ -3947,7 +3957,7 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'Serene Vigil: Scatterbloom', '178.93%', 'Basic ATK follow-up after Chaoscleave.'],
     ['Liberation', 'Crimson Bloom', '49.09%×8 + 392.65% Scarlet Burst', 'Rapid Havoc combo plus a Scarlet Burst finisher; consumes HP per hit.'],
     ['Intro', 'Vindication', '49.71%×4', 'Unwavering strike; can chain into Crimson Erosion.'],
-    ['Outro', 'Duality', '+23% Havoc DMG Deepen (14s)', 'Buffs the incoming Resonator.'],
+    ['Outro', 'Duality', '+23% Havoc DMG Amp (14s)', 'Buffs the incoming Resonator.'],
   ],
   // corrected 2026-08-18: replaced the old generic "Stage 1-3" placeholder (fabricated move names
   // "Luminal Strike"/"Daybreak Signal"/"Light Surge" don't exist on the real kit, and the Outro
@@ -4859,13 +4869,18 @@ const CHARACTER_ROTATIONS = {
   // Standard Rotation added 2026-08-18 — sourced from wutheringwaves.fandom.com's Danjin/Combat
   // Instructions + Forte text (Crimson Erosion/Sanguine Pulse combo strings, Forte Circuit conditions).
   // This section was previously entirely missing for her.
+  // Step types/names corrected 2026-09-01 to match SKILL_MULTIPLIERS.Danjin's row types/names above:
+  // Crimson Erosion and Sanguine Pulse are Resonance Skill-type moves (per their own move text, "use
+  // Resonance Skill to perform...") but were typed 'Basic ATK' with names that matched no row at all;
+  // Chaoscleave's row is named 'Serene Vigil: Chaoscleave', not 'Heavy ATK: Chaoscleave'. All three steps
+  // were silently resolving to 0 DMG under the old type+name combination.
   'Danjin': [
     { type: 'Intro', skill: 'Vindication', note: 'unwavering strike, builds Concerto Energy' },
-    { type: 'Basic ATK', skill: 'Stage 2 into Crimson Erosion', note: 'after Basic ATK 2 (or Dodge Counter/Intro), cast Resonance Skill for the 2-hit Crimson Erosion combo, applying Incinerating Will (+20% DMG taken)' },
-    { type: 'Basic ATK', skill: 'Stage 3 into Sanguine Pulse', note: 'continue into Basic ATK 3, then Resonance Skill again for the 3-hit Sanguine Pulse combo, building Ruby Blossom stacks' },
+    { type: 'Skill', skill: 'Crimson Erosion', note: 'after Basic ATK 2 (or Dodge Counter/Intro), cast Resonance Skill for the 2-hit Crimson Erosion combo, applying Incinerating Will (+20% DMG taken)' },
+    { type: 'Skill', skill: 'Sanguine Pulse', note: 'continue into Basic ATK 3, then Resonance Skill again for the 3-hit Sanguine Pulse combo, building Ruby Blossom stacks' },
     { type: 'Liberation', skill: 'Crimson Bloom', note: 'rapid multi-hit Havoc burst plus Scarlet Burst finisher, consumes HP per hit' },
-    { type: 'Forte', skill: 'Heavy ATK: Chaoscleave', note: 'once Ruby Blossom reaches 60+, unleash Chaoscleave (heals Danjin, counts as Heavy ATK) into the Scatterbloom follow-up' },
-    { type: 'Outro', skill: 'Duality', duration: 14, note: 'grants the incoming Resonator 23% Havoc DMG Deepen for 14s' },
+    { type: 'Forte', skill: 'Serene Vigil: Chaoscleave', note: 'once Ruby Blossom reaches 60+, unleash Chaoscleave (heals Danjin, counts as Heavy ATK) into the Scatterbloom follow-up' },
+    { type: 'Outro', skill: 'Duality', duration: 14, note: 'grants the incoming Resonator 23% Havoc DMG Amp for 14s' },
   ],
   // Standard Rotation added 2026-08-18 — sourced from wutheringwaves.fandom.com's Yangyang/Combat
   // Instructions/Forte text and Prydwen's review ("the main and most reliable way to access Feather
