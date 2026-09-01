@@ -2914,12 +2914,25 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Tinkling Jade', '28.63% Max HP', 'Opener that enters Drizzle Stance.'],
     ['Outro', 'Rippling Waters', '25% All DMG Amp (30s) + stance-consumption team buffs', 'Buffs team All DMG; more Floral Epistle = bigger payoff.'],
   ],
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Qingxiao/Combat, cross-checked against
+  // ww.nanoka.cc/character/1413 (both agree on every value exactly — all pre-existing values were
+  // already correct). Fixed a real zero-damage rotation bug: nearly every CHARACTER_ROTATIONS.Qingxiao
+  // step used the full "Basic Attack - "/"Heavy Attack - " prefix (e.g. 'Heavy Attack - Stringblade'),
+  // but the row names here were unprefixed ('Stringblade') or entirely missing (Mid-air combo, Ephemeral
+  // Transcendence Basic ATK/Dodge Counter) — under the calc engine's substring-match lookup, a longer
+  // step name can never match a shorter row name, so most of her rotation was silently dealing 0 DMG.
+  // Renamed rows to match the rotation's own naming exactly and added every missing move.
   'Qingxiao': [
-    ['Basic ATK', 'Stringblade Stage 1-4', '30.13%×2 → 37.09%×2 → 24.36%×4 → 86.73%+5.43%×4'],
-    ['Heavy ATK', 'Stringblade', '14.62%×3+21.92%×6+263.03%'],
+    ['Basic ATK', 'Basic Attack - Stringblade Stage 1-4', '30.13%×2 → 37.09%×2 → 24.36%×4 → 86.73%+5.43%×4'],
+    ['Mid-air', 'Mid-air Attack - Stringblade Stage 1-3', '7.24%×5+54.28% → 44.89%+22.45%×2 → 11.14%×5+83.51%'],
+    ['Mid-air', 'Plunging Attack', '86.29%'],
+    ['Dodge Counter', 'Dodge Counter - Stringblade', '45.23%×4'],
+    ['Heavy ATK', 'Heavy Attack - Stringblade', '14.62%×3+21.92%×6+263.03%', 'Once Qin Heart and Sword Cadence are both full; consumes both and enters Ephemeral Transcendence.'],
     ['Skill', 'Severing Note: Judgement', '20.88%×2+97.42%'],
     ['Skill', 'Severing Note: Ascendant', '28.40%+33.13%×2'],
-    ['Forte', "Heaven's Reckoning: Ephemeral Transcendence", '27.84%×9+445.34%'],
+    ['Forte', 'Basic Attack - Ephemeral Transcendence Stage 1-4', '44.89%+22.45%×2 → 23.11%×5 → 20.88%×3+31.32%×2 → 18.10%×4+108.56%'],
+    ['Forte', 'Dodge Counter - Ephemeral Transcendence', '26.45%×4+158.66%'],
+    ['Forte', "Heavy Attack - Heaven's Reckoning: Ephemeral Transcendence", '27.84%×9+445.34%', 'Once Heart Sword Intent is full; consumes it and ends Ephemeral Transcendence.'],
     ['Liberation', 'Billows Beneath Heaven', '33.41%×10+1336.01%'],
     ['Intro', 'Tonality Shift', '39.79%+46.42%×2'],
     ['Outro', 'Lingering Song', '800% ATK'],
@@ -4990,7 +5003,7 @@ const CHARACTER_ROTATIONS = {
   'Qingxiao': [
     { type: 'Intro', skill: 'Tonality Shift', note: 'Swap in — fires automatically, deals Aero DMG, and grants 30 points of Sword Cadence plus Resonant Chime.' },
     { type: 'Mid-air', skill: 'Mid-air Attack - Stringblade Stage 1-3', note: "Qingxiao mostly fights airborne — hold Basic Attack while in the air for this 3-hit combo, building Qin Heart/Sword Cadence toward her Heavy Attack." },
-    { type: 'Basic ATK', skill: 'Basic Attack - Stringblade Stage 3-4', note: 'Landing from Mid-air Attack Stage 3 auto-chains into this if you keep holding/tapping Basic Attack — same combo, continued on the ground.' },
+    { type: 'Basic ATK', skill: 'Basic Attack - Stringblade Stage 1-4', note: 'Landing from Mid-air Attack Stage 3 auto-chains into Stage 3-4 if you keep holding/tapping Basic Attack — same combo, continued on the ground. Skill name corrected 2026-09-01 from \'Stage 3-4\', which never matched any row (the combo is stored as one Stage 1-4 row) and was silently resolving to 0 DMG.' },
     { type: 'Skill', skill: 'Severing Note: Judgement', note: 'Press Skill once — deals Aero DMG and grants 45 points of Qin Heart, pushing her toward a full Forte gauge.' },
     { type: 'Heavy ATK', skill: 'Heavy Attack - Stringblade', note: 'Once Qin Heart and Sword Cadence are both full, hold Basic Attack for this — consumes both gauges and sends her into the Ephemeral Transcendence state.' },
     { type: 'Forte', skill: 'Basic Attack - Ephemeral Transcendence Stage 1-4', note: 'While in Ephemeral Transcendence, hold/tap Basic Attack for this enhanced 4-hit combo — builds Heart Sword Intent toward the finisher.' },
@@ -5033,6 +5046,12 @@ const RESONANCE_CHAIN_DATA = {
   // DPS-focused schema.
   'Suisui':       { s1: {}, s2: { critDmg: 50 }, s3: {}, s4: {}, s5: { basicDmg: 100, heavyDmg: 100 }, s6: { critDmg: 500 } },
   // Qingxiao S2: Heavy ATK mult+40% (confirmed). S3: Liberation Crit DMG+100% (confirmed). S4: ATK+20% on team Tune Strain trigger. S5: Skill mult+100% (confirmed)
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Qingxiao/Combat, cross-checked against
+  // ww.nanoka.cc/character/1413 (both agree exactly) — every node already correct, no changes needed.
+  // S6's deepen: 40 is scoped narrower than a universal vulnerability in the real text (only applies to
+  // Heavy Attack - Stringblade, Heaven's Reckoning: Ephemeral Transcendence, Billows Beneath Heaven, and
+  // Juque Perdition, not her full kit), but 'deepen' is the closest available category and the value is
+  // exact, so kept as-is.
   'Qingxiao':     { s1: { critRate: 16 }, s2: { heavyDmg: 40 }, s3: { critDmg: 100 }, s4: { atkPct: 20 }, s5: { skillDmg: 100 }, s6: { deepen: 40 } },
   // Jingran S1: Skill mult+80% (confirmed). S2: Heavy ATK mult+46% (confirmed). S6: Heavy ATK DMG taken+40% (confirmed)
   'Jingran':      { s1: { skillDmg: 80 }, s2: { heavyDmg: 46 }, s3: { atkPct: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
