@@ -46,22 +46,27 @@
   `'libDmg'` — a documented precision improvement, not a behavior change to
   match. 8 new tests.
 
-**Remaining (Stage 3, items 4-5, none yet started):**
+- Stage 3, item 4 of 5 — Coordinated ATK off-field snapshot semantics.
+  Added `engine/coordinatedAtk.js` (`coordinatedMultShare()`, factoring out
+  the coord/field-time mult blend duplicated between calcTeamStats.js's RAW
+  and FULL tiers) and a `coordSnapshotDiscount` opt-in option on
+  `resolveSimulatedTeamRotation`/`resolveHitComposedTeamDps` that discounts
+  `'next-on-field'`-scoped buffs by legacy's exact 0.6 factor while leaving
+  `'whole-team'` buffs untouched — mapping legacy's outroBuffs-vs-libBuffs
+  distinction directly onto the engine's own scope vocabulary. 6 new tests.
+
+**Remaining (Stage 3, item 5, not yet started):**
 - The rotation on-field order-search itself (brute-force permutation +
   duration-aware scoring) — the engine currently assumes a GIVEN on-field
   order; it doesn't choose one the way `calcTeamStats.js` does.
-- Coordinated ATK off-field snapshot semantics (the 0.6 discount factor,
-  buffs-received-before-swap-out snapshotting) — no engine concept of
-  "coordinated/off-field damage" yet.
 - Lucilla's residual 8.01x ratio (flagged, not yet independently confirmed
   bug vs. real divergence — candidate cause noted in Stage 3's own section
   below).
 
 **Not started:** Stage 4 (the actual `calcTeamStats.js` rewrite) and Stage 5
 (final verification + commit) — both explicitly blocked on Stage 3's
-remaining 2 items per this plan's own ordering; attempting the rewrite
-before they're closed would silently drop those mechanics from the live
-calculator.
+remaining item per this plan's own ordering; attempting the rewrite before
+it's closed would silently drop that mechanic from the live calculator.
 
 **Every commit through this stage has been additive** — new engine files,
 new tests, an opt-in param on 2 existing engine functions. `calcTeamStats.js`
@@ -444,6 +449,48 @@ throughout (confirmed via `git diff --stat`).
 **Next**: Stage 3's remaining 2 items — the rotation on-field order-search,
 and Coordinated ATK off-field snapshot semantics.
 
+## Stage 3, item 4 — Coordinated ATK off-field snapshot semantics (done, 2026-09-01)
+
+This name covers TWO separate legacy mechanics, duplicated verbatim between
+calcTeamStats.js's RAW tier (:531-540) and FULL tier (:984-993, :1024-1090):
+
+1. **The coord/field-time mult blend** — a Coordinated ATK sub-DPS's own
+   damage-share blends a "coordinated" portion (scales with the MAIN DPS's
+   own on-field uptime) and an ordinary on-field portion (scales with this
+   character's own field-time ratio): `mult * (coordShare*coordUptime +
+   (1-coordShare)*fieldRatio)`.
+2. **The buff-snapshot discount** — an off-field Coordinated ATK character
+   doesn't receive a support's outro buff if that support swaps in AFTER
+   them (they already left); legacy applies a flat 0.6 discount specifically
+   to buffs targeted `'next'` (calcTeamStats.js:1046-1052), while leaving
+   whole-team/continuous buffs like libBuffs undiscounted (:1081-1089 has no
+   discount at all).
+
+- **`engine/coordinatedAtk.js`** (new): `coordinatedMultShare({coordShare,
+  coordUptime, fieldRatio})` factors out mechanic 1's formula (identical in
+  both legacy tiers) for Stage 4 reuse — pure math, no new engine mechanism
+  needed. `COORD_SNAPSHOT_DISCOUNT = 0.6` is legacy's exact constant.
+- Mechanic 2 maps directly onto the engine's EXISTING scope vocabulary:
+  legacy's `'next'`-target outro buffs are exactly what `target.scope:
+  'next-on-field'` already models (only reaches the team member immediately
+  after the buff's source), while legacy's undiscounted continuous buffs are
+  `target.scope: 'whole-team'`. So no new mechanism was needed here either —
+  just an opt-in `coordSnapshotDiscount` boolean on
+  `resolveSimulatedTeamRotation`/`resolveHitComposedTeamDps` that multiplies
+  a `'next-on-field'`-scoped block's contribution by `COORD_SNAPSHOT_DISCOUNT`
+  when set, and leaves `'whole-team'` blocks (and everything else) alone —
+  same no-gating-by-default pattern as sequence/libUptime gating.
+- **`coordinatedAtk.test.js`** (new, 6 tests): `coordinatedMultShare` matches
+  calcTeamStats.js's formula exactly for both pure-coord and hybrid kits;
+  `coordSnapshotDiscount` is opt-in/backward-compatible on both functions and
+  discounts by exactly 0.6 when set, verified against Augusta's real
+  `augusta.outro.battlesong` block (`elemDmg +15`, `next-on-field`).
+
+Full suite: 1085/1085 passing (76 files). `calcTeamStats.js` untouched
+throughout (confirmed via `git diff --stat`).
+
+**Next**: Stage 3's final item — the rotation on-field order-search.
+
 ## Stage 1 — Parity harness
 
 Extend `verifyEngineAgainstCalcTeamStats.test.js` (currently scoped to one
@@ -513,7 +560,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 0 — coverage audit
 - [x] Stage 1 — parity harness (all 56 converted characters swept; engine `externalStats` gap found+fixed; ratio distribution recorded, outliers flagged for Stage 2)
 - [x] Stage 2 — triage (root cause found for all 6 flagged outliers: no sequence-level gating anywhere in the engine — one systemic gap, not six bugs; likely a major contributor to the whole roster's elevated median too)
-- [ ] Stage 3 — close gaps (item 1/5 done: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5 done: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5 done: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; remaining: order-search, Coordinated ATK snapshot)
+- [ ] Stage 3 — close gaps (item 1/5 done: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5 done: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5 done: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5 done: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; remaining: order-search)
 - [ ] Stage 4 — rewrite
 - [ ] Stage 5 — final verify + commit
 
