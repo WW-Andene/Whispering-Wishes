@@ -119,23 +119,19 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     expect(hitLog.some(h => h.blockId === 'yinlin.chain.s6-pursuit-of-justice')).toBe(false);
 
     // Every 'cast'-triggered damage block DOES fire at least once in her real rotation (Basic ATK,
-    // Magnetic Roar, Lightning Execution, Thundering Wrath).
+    // Magnetic Roar, Lightning Execution, Thundering Wrath). Chameleon Cipher (resource-threshold)
+    // now ALSO fires — see trigger.resourceStepOn's own doc in triggerBlocks.schema.js: rather than
+    // building real gauge-accumulation simulation (no per-hit gain-rate data sourced anywhere yet),
+    // this trusts CHARACTER_ROTATIONS' own Forte:Chameleon Cipher step, which already asserts "the
+    // gauge is full here" via its real, sourced note text.
     const firedBlockIds = new Set(hitLog.map(h => h.blockId));
     expect(firedBlockIds.has('yinlin.basic.zapstrings-dance')).toBe(true);
     expect(firedBlockIds.has('yinlin.skill.magnetic-roar')).toBe(true);
     expect(firedBlockIds.has('yinlin.skill.lightning-execution')).toBe(true);
     expect(firedBlockIds.has('yinlin.liberation.thundering-wrath')).toBe(true);
-    // Chameleon Cipher does NOT fire here — a real, SEPARATE gap found while writing this test, not
-    // introduced by this file: its trigger.type is 'resource-threshold' (Judgment Points reaching
-    // 100), but simulateRotation() never simulates resource-gauge accumulation at all — there's no
-    // numeric Judgment Points state anywhere in the engine, and CHARACTER_ROTATIONS' own step data
-    // has no structured gauge values to derive it from (only prose notes like "Once Judgment Points
-    // hit 100/100"). Fixing that properly needs real resource-state simulation, a genuinely separate
-    // and larger piece of work than this hit-composition prototype — documented here rather than
-    // silently asserted as working. Judgement Strike (on-hit-triggered, off-field) correctly doesn't
-    // fire from a plain step walkthrough either, for an unrelated, expected reason (nothing in a
-    // simple rotation walkthrough represents "the target took damage").
-    expect(firedBlockIds.has('yinlin.forte.chameleon-cipher')).toBe(false);
+    expect(firedBlockIds.has('yinlin.forte.chameleon-cipher')).toBe(true);
+    // Judgement Strike (on-hit-triggered, off-field) correctly does NOT fire from a plain step
+    // walkthrough — nothing in a simple rotation sequence represents "the target took damage".
     expect(firedBlockIds.has('yinlin.coordatk.judgement-strike')).toBe(false);
   });
 });

@@ -97,7 +97,7 @@ export const YINLIN_BLOCKS = [
     id: 'yinlin.forte.chameleon-cipher',
     source: SOURCE,
     kind: 'damage',
-    trigger: { type: 'resource-threshold', resource: 'Judgment Points', threshold: 100 },
+    trigger: { type: 'resource-threshold', resource: 'Judgment Points', threshold: 100, resourceStepOn: 'Forte:Chameleon Cipher' },
     timing: {},
     target: { scope: 'self' },
     effects: [],

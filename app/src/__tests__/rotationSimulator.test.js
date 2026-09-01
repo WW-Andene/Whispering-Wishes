@@ -294,6 +294,33 @@ describe("simulateRotation — 'swap-out'/'swap-in' trigger keys actually fire",
   });
 });
 
+describe("deriveStepsFromRotation / simulateRotation — 'resource-threshold' trigger.resourceStepOn", () => {
+  it("auto-tags Yinlin's real Forte:Chameleon Cipher step with firesResourceThreshold", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yinlin'], YINLIN_BLOCKS);
+    const chameleonStep = steps.find(s => s.type === 'Forte' && s.skill === 'Chameleon Cipher');
+    const chameleonBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.forte.chameleon-cipher');
+    expect(chameleonStep.firesResourceThreshold).toBe(chameleonBlock.id);
+  });
+
+  it('simulateRotation fires the resource-threshold key on the tagged step, and NOT on any other step', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yinlin'], YINLIN_BLOCKS);
+    const results = simulateRotation(YINLIN_BLOCKS, steps);
+    const key = 'resource-threshold:Judgment Points:100';
+    const firingSteps = results.filter(r => r.firedTriggers.has(key));
+    expect(firingSteps).toHaveLength(1);
+    expect(firingSteps[0].step.type).toBe('Forte');
+    expect(firingSteps[0].step.skill).toBe('Chameleon Cipher');
+  });
+
+  it('end-to-end: the derived key resolves Chameleon Cipher through resolveTriggerBlocks, reaching its damage.hits via resolveHitComposedDps too (spot-checked here via the raw trigger, not re-running the whole DPS calc)', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yinlin'], YINLIN_BLOCKS);
+    const results = simulateRotation(YINLIN_BLOCKS, steps);
+    const chameleonBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.forte.chameleon-cipher');
+    const r = results.find(x => x.step.type === 'Forte' && x.step.skill === 'Chameleon Cipher');
+    expect(r.firedTriggers.has(`resource-threshold:${chameleonBlock.trigger.resource}:${chameleonBlock.trigger.threshold}`)).toBe(true);
+  });
+});
+
 describe('RotationSimulator — timing.cooldown enforcement', () => {
   it('a block is ready before it has ever been used', () => {
     const sim = new RotationSimulator();

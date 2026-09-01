@@ -97,6 +97,27 @@
  *                            omitted for triggers that aren't tied to one specific move
  * @property {string} [resource]      Name of the gauge this trigger reads, for 'resource-threshold'
  * @property {number} [threshold]     Value the resource must reach/cross
+ * @property {string} [resourceStepOn]  For 'resource-threshold': the `TYPE:SKILL` label (same
+ *                                    convention as `attemptOn`/`checksAt`/proc's `on`) of the
+ *                                    CHARACTER_ROTATIONS step that itself represents this threshold
+ *                                    being reached (Yinlin's Chameleon Cipher: resourceStepOn
+ *                                    'Forte:Chameleon Cipher'). Added 2026-09-01 rather than building
+ *                                    real gauge-accumulation simulation (tracking Judgment Points/
+ *                                    Electric Surge/Concerto Energy gain-per-hit, caps, etc. — a much
+ *                                    larger, currently-unsourced modeling task with no per-hit gain-rate
+ *                                    data anywhere in characters.js yet): a rotation guide's own step
+ *                                    sequence ALREADY encodes "the gauge is full here" simply by
+ *                                    placing this step at this point (Yinlin's own
+ *                                    CHARACTER_ROTATIONS note literally says "Once Judgment Points hit
+ *                                    100/100, her Heavy Attack is replaced by this automatically") —
+ *                                    reusing that existing, sourced assertion is honest (it derives
+ *                                    from real data, not a guess) even though it does NOT track a real
+ *                                    numeric gauge value the way `windowed-proc`'s time/count tracking
+ *                                    does. `deriveStepsFromRotation()` auto-tags the matching step;
+ *                                    `simulateRotation()`/`simulateTeamRotation()` fire the
+ *                                    'resource-threshold:...' key there. A future real gauge simulator
+ *                                    (if ever built) would supersede this, not conflict with it — this
+ *                                    field just names which step to trust in the meantime.
  * @property {string} [requiresActiveBlock]  For 'partner-outro-return': the id of ANOTHER block
  *                                    (this character's own outro buff, applied to a teammate) that
  *                                    must still be active — not yet expired, and not yet ended by an

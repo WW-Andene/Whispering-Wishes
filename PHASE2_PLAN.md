@@ -806,16 +806,43 @@ is a single tap ("Stage 1"), a different skill label than the proc's `on`
 ("Stage 1-4") — a genuine fact about this specific optimized rotation, not
 an engine gap.
 
+**`resource-threshold` triggers — DONE 2026-09-01 (same day).** Not real
+gauge-accumulation simulation (no per-hit gain-rate data — Judgment
+Points/Electric Surge/Concerto Energy gain-per-hit, caps — is sourced
+anywhere in `characters.js` yet; that would be a genuinely separate, larger
+modeling task). Instead added `trigger.resourceStepOn` — a `TYPE:SKILL`
+label, same convention as `attemptOn`/`checksAt`/proc's `on` — naming which
+`CHARACTER_ROTATIONS` step ITSELF represents the threshold being reached
+(Yinlin's Chameleon Cipher: `'Forte:Chameleon Cipher'`; Rover: Electro's
+Overshock damage AND selfbuff blocks: `'Forte:Overshock'`). This is honest,
+not a shortcut dressed up as one: the rotation guide's own step sequence
+already encodes "the gauge is full here" — Yinlin's own
+`CHARACTER_ROTATIONS` note literally says "Once Judgment Points hit
+100/100, her Heavy Attack is replaced by this automatically" — so reusing
+that existing, sourced assertion doesn't invent anything, it just wasn't
+being READ by the trigger-firing code before. `deriveStepsFromRotation()`
+auto-tags the matching step (`firesResourceThreshold`);
+`simulateRotation()`/`simulateTeamRotation()` fire the real
+`'resource-threshold:...'` key there — the SAME key format `triggerKey()`
+already produces, so this required zero changes to
+`resolveTriggerBlocks()`/`resolveHitComposedDps()`, only teaching the
+step-derivation/firing layer to read a field it was ignoring. Verified with
+3 new tests (`rotationSimulator.test.js`) plus updated
+`resolveHitComposedDps.test.js` end-to-end coverage — Yinlin's Chameleon
+Cipher (2-hit, 178.93%×2) now correctly appears in a real rotation's hit
+log, where it previously silently never fired. A future real gauge
+simulator, if ever built, supersedes this rather than conflicting with it.
+
 **Still not done, deliberately** (next increments, in roughly the order
-they build on each other): (1) resource-threshold gauge simulation, (2)
-extending the per-hit `damage.hits` data to the other 5 converted
-characters, (3) team-level integration (cross-character buffs landing on
-specific hits mid-combo, reusing `resolveSimulatedTeamRotation.js`'s
-routing logic generalized to `activeCountAt` the same way this stage
-generalized the single-character driver), (4) the actual `calcTeamStats.js`
-gating/wiring decision — still requires its own separate go-ahead, per the
-"never all-or-nothing" rule, and is not any closer to being decided than
-before this stage — this stage only proves the ARCHITECTURE is sound.
+they build on each other): (1) extending the per-hit `damage.hits` data to
+the other 5 converted characters, (2) team-level integration (cross-
+character buffs landing on specific hits mid-combo, reusing
+`resolveSimulatedTeamRotation.js`'s routing logic generalized to
+`activeCountAt` the same way Stage 1 generalized the single-character
+driver), (3) the actual `calcTeamStats.js` gating/wiring decision — still
+requires its own separate go-ahead, per the "never all-or-nothing" rule,
+and is not any closer to being decided than before this stage — none of
+this proves anything beyond the ARCHITECTURE being sound.
 
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.

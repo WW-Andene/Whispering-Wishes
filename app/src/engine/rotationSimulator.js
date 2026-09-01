@@ -249,6 +249,14 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
     if (ev.isOutroCast) fired.add('swap-out');
     if (ev.isSwapIn) fired.add('swap-in');
 
+    // 'resource-threshold' blocks: see deriveStepsFromRotation()'s own resourceStepOn handling and
+    // triggerBlocks.schema.js's doc for why this trusts the step itself rather than tracking a real
+    // gauge value — `firesResourceThreshold` names which block's threshold this step represents.
+    if (ev.firesResourceThreshold) {
+      const b = blocks.find(x => x.id === ev.firesResourceThreshold && x.trigger.type === 'resource-threshold');
+      if (b) fired.add(`resource-threshold:${b.trigger.resource}:${b.trigger.threshold}`);
+    }
+
     if (ev.type && ev.skill) {
       const castKey = `cast:${ev.type}:${ev.skill}`;
       fired.add(castKey);
@@ -359,6 +367,7 @@ export function deriveStepsFromRotation(rotation, blocks, stepSeconds = DEFAULT_
   const windowedBlocks = blocks.filter(b => b.trigger.type === 'windowed-cast' && b.trigger.attemptOn);
   const procBlocks = blocks.filter(b => b.trigger.type === 'windowed-proc' && b.trigger.on);
   const priorCastBlocks = blocks.filter(b => b.trigger.type === 'requires-prior-cast' && b.trigger.checksAt);
+  const resourceBlocks = blocks.filter(b => b.trigger.type === 'resource-threshold' && b.trigger.resourceStepOn);
   const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out' && b.kind === 'buff');
 
   return rotation.map((raw, i) => {
@@ -380,6 +389,9 @@ export function deriveStepsFromRotation(rotation, blocks, stepSeconds = DEFAULT_
 
     const priorCastBlock = label && priorCastBlocks.find(b => b.trigger.checksAt === label);
     if (priorCastBlock) step.checksPriorCast = priorCastBlock.id;
+
+    const resourceBlock = label && resourceBlocks.find(b => b.trigger.resourceStepOn === label);
+    if (resourceBlock) step.firesResourceThreshold = resourceBlock.id;
 
     return step;
   });
