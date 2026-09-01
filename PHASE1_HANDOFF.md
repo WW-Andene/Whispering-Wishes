@@ -18,9 +18,8 @@ rules, stat categories). This is a **Phase 1** pass: rewrite that data to be
 mechanically precise, sourced, and correctly wired to the `SKILL_MULTIPLIERS`
 lookup the calc engine uses. **Phase 2** (wiring this into `calcEngine.js` /
 `calcTeamStats.js` / `autoEquip.js` logic) is explicitly a separate, later
-step — do not start it without the user asking.
+step — do not start it without the user asking
 
-Work happens directly on branch `claude/wuthering-waves-character-data-xmq44i`
 in `ww-andene/whispering-wishes`. Commit + push per character (or small
 batch), no PR, no amend/rebase. The user explicitly prefers **absolute
 precision over speed** — one character done right beats five done shallow.
@@ -110,20 +109,6 @@ more developed":
    captured before. Don't assume the existing `desc` prose is complete —
    read the actual wiki Forte/Skill tables in full.
 
-## Site access — the technique that works (used successfully ~21 times)
-**As of this handoff, the `mcp__DP__web_fetch` tool (part of the "DP" MCP
-server) has disconnected** — a fresh session may need to reconnect it or
-find an equivalent headless-browser tool before this technique is usable
-again. When it's available:
-- `jsRender: true`
-- Real Chrome/Windows user-agent string (not a generic/default one)
-- `Referer: https://www.google.com/` (look like an inbound Google click)
-- `waitUntil: 'load'` (not `'networkidle'` — that often never fires on
-  these sites)
-- ~8000–9000ms extra wait after load before reading content
-- May need **2 attempts** — the first sometimes only returns a Cloudflare
-  interstitial, the second (immediately after) usually clears it
-
 Sources, in priority order:
 1. `https://wutheringwaves.fandom.com/wiki/<Character>/Combat` — primary,
    most mechanically precise. If `jsRender` fails twice, fall back to the
@@ -140,9 +125,6 @@ Sources, in priority order:
 4. `https://encore.moe/?lang=en` — occasionally useful, not load-bearing so
    far.
 
-Plain `WebFetch` (the generic tool, not `mcp__DP__web_fetch`) returned
-HTTP 402 in this environment in every attempt — don't bother with it.
-
 ## Hard rules (apply to every pass)
 - Do not invent/guess any mechanic or number — verify against source, or
   leave `// TODO: verify` / `// TODO: needs Phase 2 schema` rather than
@@ -154,8 +136,7 @@ HTTP 402 in this environment in every attempt — don't bother with it.
   source + date for every factual correction, matching the style already
   used throughout (see any of the 21 completed characters for examples).
 - Run `node --check app/src/data/characters.js` before every commit.
-- Commit and push to `claude/wuthering-waves-character-data-xmq44i` via
-  `git push -u origin claude/wuthering-waves-character-data-xmq44i` (retry
+- 
   up to 4x on network failure only, backoff 2s/4s/8s/16s). No PR.
 - One character per pass is the established, user-approved cadence — don't
   try to batch several characters into one pass to go faster; the user
