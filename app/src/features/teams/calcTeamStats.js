@@ -645,9 +645,29 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     });
 
     // ── FULL TIER: Base stats with team buffs ──
-    const mainStatKey = mainDps.scaling === 'HP' ? 'HP%' : mainDps.scaling === 'DEF' ? 'DEF%' : 'ATK%';
+    // PHASE3_PLAN.md Stage 4 step 6 cleanup: atkPct/cr/cd/elemDmg/skillDmg/deepen/defShred/resShred/
+    // defIgnore/amplify (declared here with their legacy baseline defaults) and dpsFocus/
+    // seqTotalMultBonus (read outside this block — dpsFocus by the pre-existing, already-dead `syn`
+    // scoring section a few hundred lines down that never actually gets returned; seqTotalMultBonus
+    // by the sub-DPS loop's own separately-gated legacy block below) are hoisted OUTSIDE the
+    // `!allMembersConverted` gate below so both legacy blocks (and any code between them) can still
+    // see them, while the actual buff-accumulation WORK stays gated — the whole point of this
+    // cleanup pass.
     let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, deepen = 0, defShred = 0, resShred = 0, defIgnore = 0;
     let amplify = 0; // WuWa DMG Amplification layer — separate from DMG Bonus, multiplicative
+    const dpsFocus = mainDps.d.dmgFocus || [];
+    let seqTotalMultBonus = 0;
+
+    // PHASE3_PLAN.md Stage 4 step 6 cleanup: this whole legacy main-DPS buff-accumulation
+    // computation (weapon/echo/resonance-chain/cross-character outro-lib-debuff routing) is now
+    // SKIPPED ENTIRELY for a fully-converted team — every variable it feeds
+    // (atkPct/cr/cd/elemDmg/skillDmg/deepen/defShred/resShred/defIgnore/amplify, and in turn
+    // effAtk/avgCrit/dmgBonus/defMult/resMult/score) is unconditionally overridden by the
+    // engine-composed block below (Stage 4 step 6's own `resolveSimulatedTeamRotation` call)
+    // regardless, so computing it first was pure wasted work once that override landed. Kept as the
+    // exact, unmodified fallback for a mixed team (currently only Jingran, unreleased).
+    if (!allMembersConverted) {
+    const mainStatKey = mainDps.scaling === 'HP' ? 'HP%' : mainDps.scaling === 'DEF' ? 'DEF%' : 'ATK%';
 
     if (mainDps.weapSubstat === 'Crit Rate') cr += parseFloat(mainDps.weapSubVal) || 0;
     if (mainDps.weapSubstat === 'Crit DMG') cd += parseFloat(mainDps.weapSubVal) || 0;
@@ -770,7 +790,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
     }
 
-    const dpsFocus = mainDps.d.dmgFocus || [];
     let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg, mainSkillDmg = wpSkillDmg;
     // Bridges the flat atkPct/cr/cd/elemDmg/deepen/amplify/resShred/defShred/defIgnore/echoDmg
     // accumulators (used throughout this whole FULL TIER section) into a single object applyBuff can
@@ -901,7 +920,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // again afterward, so those contributions were silently discarded for every character whose chain
     // grants one of these 5 stat types (100 such entries across the roster). Moving this block ahead
     // means it now correctly feeds the same pre-routing pools everything else here uses.
-    let seqTotalMultBonus = 0;
     const seqStats = { atkPct: 0, cr: 0, cd: 0, elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
     mems.forEach(m => {
       const isMain = m.name === mainDps.name;
@@ -991,6 +1009,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         }
       }
     });
+    }
 
     let effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
     let avgCrit = calcAvgCrit(cr, cd);
@@ -1063,6 +1082,13 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
 
     let totalRotDmg = 0;
     const memberDmgArr = [];
+    // PHASE3_PLAN.md Stage 4 step 6 cleanup: this whole legacy per-member damage loop (flat
+    // totalMult%-plus-hand-written-buff-routing) is now SKIPPED ENTIRELY for a fully-converted team —
+    // its only outputs, totalRotDmg/memberDmgArr, are unconditionally overridden by the engine-composed
+    // block right below (Stage 4 step 2) regardless, so computing it first was pure wasted work once
+    // that override landed. Kept as the exact, unmodified fallback for a mixed team (currently only
+    // Jingran, unreleased, lacks a converted TriggerBlocks file).
+    if (!allMembersConverted) {
     const mainOnField = Math.min(mainDps.d.onField || 15, rotTime * 0.8);
     const offFieldTime = Math.max(0, rotTime - mainOnField);
     // Proportional field time allocation based on each sub-DPS's actual needs
@@ -1265,13 +1291,14 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         memberDmgArr.push({ name: m.name, dmg: sDmg });
       }
     });
+    }
 
     // PHASE3_PLAN.md Stage 4 step 2: when EVERY team member has a converted TriggerBlocks file +
     // real CHARACTER_ROTATIONS, override totalRotDmg/memberDmgArr with real engine-composed team
-    // damage instead of the flat totalMult%-plus-hand-written-buff-routing computation above (which
-    // still ran, unmodified, as the fallback for a mixed team — a follow-up cleanup pass removes that
-    // now-redundant work once every step of this rewrite has landed, not before, per this project's
-    // "1 by 1" rule: each step stays independently revertable until the whole rewrite is trusted).
+    // damage instead of the flat totalMult%-plus-hand-written-buff-routing computation above — which,
+    // per step 6's own cleanup pass, is now itself gated behind `!allMembersConverted` and genuinely
+    // SKIPPED for a fully-converted team, not just computed-and-discarded. Still the exact, unmodified
+    // fallback for a mixed team (currently only Jingran, unreleased).
     // `engineChosenOrder` (computed once, near the top of this function, right before
     // rotationTimeline — Stage 4 step 4 also reuses it for rotationTimeline's own displayed order,
     // so both agree on the same real on-field sequence instead of two independently-derived guesses).
