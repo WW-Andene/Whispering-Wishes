@@ -856,17 +856,68 @@ work Yinlin/Rover: Electro's original damage-block sections took) — not
 attempted in this pass, flagged here rather than started blind or silently
 folded into a smaller-sounding checklist item.
 
-**Still not done, deliberately** (next increments, in roughly the order
-they build on each other): (1) damage blocks for Shorekeeper/Augusta/
-Jinhsi/Camellya (see finding above — a real conversion pass each, not a
-quick add), (2) team-level integration (cross-character buffs landing on
-specific hits mid-combo, reusing `resolveSimulatedTeamRotation.js`'s
-routing logic generalized to `activeCountAt` the same way Stage 1
-generalized the single-character driver), (3) the actual `calcTeamStats.js`
+**Shorekeeper/Augusta/Jinhsi/Camellya's damage blocks — DONE 2026-09-01
+(same day).** All four converted from scratch (each had zero damage blocks
+before this). Two genuinely new schema capabilities came out of this pass,
+both reused across characters rather than one-offs:
+- `damage.basis` (`'ATK'`/`'HP'`/`'DEF'`) + `damage.guaranteedCrit` —
+  Shorekeeper's Discernment scales off HP and is a guaranteed Crit, both
+  per its own already-sourced kit text. `resolveHitComposedDps.js` now
+  takes `baseStats` as `{atk, hp, def}` (a bare number stays valid
+  shorthand for `{atk}`) and throws a clear error if a block needs a base
+  stat that wasn't provided, rather than silently computing off
+  `undefined`.
+- Confirmed (again) that `'/'`-separated `SKILL_MULTIPLIERS` rows combining
+  multiple distinct moves in one string need splitting into separate
+  blocks per real `CHARACTER_ROTATIONS` step (Augusta's Thunderoar row:
+  Backstep/Spinslash/Uppercut; her Undying Sunlight row: Strike/Leap/
+  Plunge; Jinhsi's Forte row: Incarnation-Basic-ATK/three Illuminous
+  Epiphany sub-modes) — same precedent as Yinlin's Lightning Execution
+  split, now proven across `/`-joined rows too, not just `→`-joined ones.
+
+Two REAL, honestly-documented limitations found and left open rather than
+forced or silently glossed over:
+- **Camellya's `'Vining Waltz 1-4 / Blazing Waltz'` step appears twice in
+  her canonical rotation with the IDENTICAL label**, once in Blossom Mode
+  (Vining Waltz's real numbers) and once in Budding Mode (mechanically
+  Blazing Waltz instead — a different row, `21.95%×19`). Because both
+  occurrences share one `{type, skill}` key, one block fires identically
+  both times using the Vining Waltz values for both — the 2nd occurrence's
+  real damage is undercounted. Fixing this needs `CHARACTER_ROTATIONS`
+  itself to give the two occurrences distinct skill strings — the same
+  "zero-damage rotation-step" bug-class family this doc already tracks
+  (item 4), not something the block schema alone can solve.
+- **Camellya's Outro Twining's conditional +459.02% bonus (gated on Forte
+  Ephemeral having been cast earlier that segment) is still NOT composed
+  into a real hit** — only the unconditional base 329.24% is. The
+  conditional half is already NAMED by
+  `camellya.outro.twining-ephemeral-bonus` (a `'requires-prior-cast'`
+  utility block), but turning that into an actual extra damage instance
+  needs either a 2nd damage block sharing the Outro trigger plus the
+  prior-cast condition, or a schema change letting one damage block carry
+  a conditional bonus hit — neither attempted here. A real, separate next
+  increment, not silently folded into "Camellya's damage blocks are done."
+
+All 6 converted characters (Rover: Electro, Yinlin, Shorekeeper, Augusta,
+Jinhsi, Camellya) now have real `damage.hits` data and pass real
+end-to-end `resolveHitComposedDps` runs against their actual
+`CHARACTER_ROTATIONS` data — verified with 731→735 total suite tests
+across this whole session, all green, `calcTeamStats.js` untouched
+throughout (confirmed via `git diff --stat` after every single commit in
+this pass, not just checked once at the start).
+
+**Still not done, deliberately**: (1) team-level hit composition
+(cross-character buffs landing on specific hits mid-combo, reusing
+`resolveSimulatedTeamRotation.js`'s routing logic generalized to
+`activeCountAt` the same way Stage 1 generalized the single-character
+driver), (2) the two documented gaps above (Camellya's repeated-step
+ambiguity, her Twining conditional bonus), (3) the actual `calcTeamStats.js`
 gating/wiring decision — still requires its own separate go-ahead, per the
 "never all-or-nothing" rule, and is not any closer to being decided than
 before this stage — none of this proves anything beyond the ARCHITECTURE
-being sound.
+being sound. (4) Converting the remaining ~54 uncoverted characters to the
+engine at all — a separate, much larger, ongoing roster-coverage effort,
+distinct from "finishing the engine" itself.
 
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.

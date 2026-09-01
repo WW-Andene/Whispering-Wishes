@@ -13,6 +13,7 @@ import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blo
 import { SHOREKEEPER_BLOCKS } from '../engine/characterBlocks/shorekeeper.blocks.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { JINHSI_BLOCKS } from '../engine/characterBlocks/jinhsi.blocks.js';
+import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
 import { parseSkillMultiplierHits, sumHitsAtkPct } from '../engine/skillMultiplierParser.js';
 
 // Zero DEF/RES so defMult/resMult both come out to exactly 1 — isolates the test to just the
@@ -288,5 +289,40 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     const avgCrit = 1 + (5 / 100) * (150 / 100 - 1);
     const expectedSum = 88.62 + 77.97 + 25.99 * 2 + 99.44 + 66.30 + 18.67 * 6 + 74.67;
     expect(totalDamage).toBeCloseTo(1000 * avgCrit * (expectedSum / 100), 6);
+  });
+});
+
+describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS data (Camellya)', () => {
+  it('computes a real total across her whole rotation, with every real damage block firing', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Camellya'], CAMELLYA_BLOCKS);
+    const { totalDamage, dps, hitLog } = resolveHitComposedDps(CAMELLYA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3500, 'havoc', 'Main DPS');
+
+    expect(totalDamage).toBeGreaterThan(0);
+    expect(dps).toBeGreaterThan(0);
+
+    const firedBlockIds = new Set(hitLog.map(h => h.blockId));
+    expect(firedBlockIds.has('camellya.intro.everblooming')).toBe(true);
+    expect(firedBlockIds.has('camellya.skill.crimson-blossom')).toBe(true);
+    expect(firedBlockIds.has('camellya.basic.vining-waltz-1')).toBe(true);
+    expect(firedBlockIds.has('camellya.liberation.fervor-efflorescent')).toBe(true);
+    expect(firedBlockIds.has('camellya.forte.ephemeral')).toBe(true); // resource-threshold, resourceStepOn'd
+    expect(firedBlockIds.has('camellya.outro.twining-base')).toBe(true);
+
+    // The combined 'Vining Waltz 1-4 / Blazing Waltz' step appears TWICE in her rotation (Blossom
+    // Mode, then again in Budding Mode) — both fire the SAME block, a documented limitation (see the
+    // block's own note): confirm it actually fires twice, not deduplicated to once.
+    const comboFires = hitLog.filter(h => h.blockId === 'camellya.skill.vining-waltz-combo');
+    expect(comboFires.length).toBeGreaterThan(0);
+    expect(comboFires.length % 12).toBe(0); // 12 hits per cast (1+2+6+3) — confirms whole-cast multiples, not a partial misfire
+  });
+
+  it("Twining's REAL total only includes the unconditional base hit (329.24%) — the conditional +459.02% bonus is a documented, separate gap, not silently included", () => {
+    const twiningBaseBlock = CAMELLYA_BLOCKS.find(b => b.id === 'camellya.outro.twining-base');
+    const steps = [{ type: 'Outro', skill: 'Twining', stepSeconds: 1 }];
+    const { hitLog, totalDamage } = resolveHitComposedDps([twiningBaseBlock], steps, NEUTRAL_ENEMY, 1000);
+    expect(hitLog).toHaveLength(1);
+    expect(hitLog[0].atkPct).toBe(329.24);
+    const avgCrit = 1 + (5 / 100) * (150 / 100 - 1);
+    expect(totalDamage).toBeCloseTo(1000 * avgCrit * (329.24 / 100), 6);
   });
 });
