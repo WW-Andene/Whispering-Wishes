@@ -742,6 +742,108 @@ elemDmg, skillDmg, ..., teamDps, memberDps, rotationTimeline, warnings, ...`)
 so every consumer (`DamageCalculator.jsx`, `TeamsTab`, `DPSComparisonCard`,
 `RotationTimeline.jsx`) keeps working unchanged.
 
+### Stage 4 reconnaissance (done, 2026-09-01) — consumer contract, risk check, phased plan
+
+Before writing a single line of the rewrite: mapped every real consumer of
+`calcTeamStats()`'s return object, and measured (not guessed) the one
+concrete risk that actually mattered — engine-call performance in the
+autoEquip search loop.
+
+**Consumer contract — every field actually read outside `calcTeamStats.js`**
+(grepped field-by-field across every importer; anything not listed here is
+internal-only and can change shape freely without breaking a consumer):
+
+| Field | Consumers |
+|---|---|
+| `members` | `DamageCalculator.jsx`, `TeamsTab.jsx`, `autoEquip.js`, `DPSComparisonCard.jsx` |
+| `mainDps` | `DamageCalculator.jsx`, `DPSComparisonCard.jsx`, `RotationGuideCard.jsx` |
+| `allBuffs`, `allDebuffs` | `DamageCalculator.jsx` (buff/debuff list display) |
+| `effAtk`, `critRate`, `critDmg`, `elemDmg`, `skillDmg`, `amplify`, `deepen`, `atkPct`, `defShred`, `resShred`, `defIgnore`, `avgCrit` | `DamageCalculator.jsx` (stat breakdown panel); `critRate`/`critDmg`/`elemDmg`/`skillDmg`/`atkPct` also read directly by `characterCardRenderer.js`; `effAtk`/`critRate`/`critDmg`/`elemDmg`/`amplify`/`defShred`/`resShred` also read by `DPSComparisonCard.jsx` |
+| `score` | `TeamsTab.jsx`, `autoEquip.js` (team-suggestion ranking) |
+| `soloDps` / `rawDps` (alias) | `DamageCalculator.jsx`, `DPSComparisonCard.jsx` |
+| `teamDps` / `realDps` / `perfectDps` (aliases) | `DamageCalculator.jsx`, `TeamsTab.jsx`, `autoEquip.js`, `DPSComparisonCard.jsx` — `autoEquip.js`'s `teamDps` read is the hottest path (see perf check below) |
+| `synergyUplift` / `synergy` (alias, clamped) | `DamageCalculator.jsx`, `DPSComparisonCard.jsx` |
+| `dmgSources` | `DamageCalculator.jsx` (rotation/echo/DOT split bars) |
+| `warnings` | `DamageCalculator.jsx` (warning list) |
+| `memberDps` | `DamageCalculator.jsx` (per-member damage breakdown) |
+| `rotationTimeline` | `DamageCalculator.jsx`, `CharacterDetailModal.jsx` (solo Rotation Guide reuses this exact shape) |
+| `rotTime` | `DPSComparisonCard.jsx` |
+| `dotDps`, `hasFrazzle`, `hasErosion`, `hasFusionBurst`, `hasElectroFlare`, `energyCycleFactors`, `defMult`, `resMult` | **No consumer found outside `calcTeamStats.js` itself** — free to reshape/rename/drop without touching any component, as long as `dmgSources`/`warnings` (which are internally derived from some of these) keep producing their own documented shape |
+
+**Performance check (measured, not assumed)**: `autoEquip.js`'s
+`pickBestTeamForEnemy`/`computeAutoEquipEntryOptimized` call `calcTeamStats`
+in a search loop — potentially 50-100+ calls per "Auto Team" invocation
+(candidate teams × echo-preset trials). This was the one plausible reason
+NOT to do a straight cutover (a per-hit engine simulation is real work
+compared to legacy's flat arithmetic multiply). Benchmarked directly:
+legacy `calcTeamStats` (solo, 3-member team) averages **0.150ms/call**;
+the engine-composed equivalent (`buildTeamSteps` +
+`resolveHitComposedTeamDps` per member) averages **0.467ms/call** — ~3.1x
+slower, but still sub-millisecond. Even at the search loop's worst realistic
+volume (~100 calls, plus `chooseOnFieldOrder`'s own up-to-6x internal
+permutation cost per call), total added latency is on the order of a few
+hundred ms, not the multi-second UI freeze that would have been a real
+blocker. **Verdict: performance is not a blocker** — worth a final sanity
+check with real profiling once the rewrite lands (not a guess this time
+either), but not a reason to delay or design around.
+
+**Remaining wiring pieces** (not new engine gaps — Stage 3 closed all of
+those — just plumbing the rewrite itself has to do, per Stage 0's original
+"stays gear-side, composed around the engine" conclusion):
+- Weapon passives / echo set bonuses / echo substat rolls / shield-gated DEF
+  Ignore / 4-cost echo active-skill buffs: stay direct `calcEngine.js` calls
+  (`getWeaponPv`, `applyFullEchoSet`, `applyEchoStats`, `gateWeaponDefIgnore`,
+  `ECHO_SKILL_BUFFS` lookup) composed into each member's `externalStats`
+  delta — exactly the pattern the Stage 1 harness's own
+  `rawTierGearStats()`/`toExternalStatsDelta()` helpers already prove works.
+- `warnings` and `synergyUplift`: presentation-layer logic reading team
+  composition/`energyCycleFactors`/enemy RES, not DPS math — ports with
+  effectively unchanged logic once `teamDps`/`soloDps` come from the engine.
+- `dmgSources` (rotation/echo/DOT % split): a simple ratio of already-being-
+  computed totals (engine `teamDps` contribution, echo active-skill damage,
+  `dotReactions.js`'s `totalDmg`) — no new computation, just re-pointing the
+  three inputs at their engine-composed sources.
+
+**Proposed phased implementation (each its own commit, tested before the
+next, per this project's standing "1 by 1, full precision" rule — NOT
+attempted as one 1365-line diff)**:
+1. **Solo/RAW tier first** — replace `soloDps`/`rawDps` with
+   `resolveHitComposedDps` + gear `externalStats` + `sequence`. Lowest
+   blast radius (feeds `DPSComparisonCard`'s solo column and
+   `synergyUplift`'s denominator, nothing else yet); the Stage 1 harness
+   already IS this slice's test.
+2. **Team/FULL tier** — replace `teamDps`/`memberDps`/per-member stat
+   breakdown with `chooseOnFieldOrder` (or a given order when
+   `rotationOrderSearch` isn't warranted) → `resolveSimulatedTeamRotation` +
+   `resolveHitComposedTeamDps` per member, `libUptime`/`coordSnapshotDiscount`
+   wired per member's real role/focus. This is the actual cutover — every
+   other consumer (`TeamsTab`, `autoEquip`, `DamageCalculator`'s main
+   numbers) starts reading engine-derived `teamDps` here.
+3. **DOT + `dmgSources`** — wire `dotReactions.js`'s `resolveDotReactionDps`
+   in, re-derive the 3-way split.
+4. **`rotationTimeline`** — re-derive from the engine's own chosen order +
+   real block windows instead of the legacy hand-built segments/buffs
+   arrays; verify `CharacterDetailModal.jsx`'s solo Rotation Guide (which
+   reuses this exact shape) still renders.
+5. **`warnings`** — port with energyCycleFactors/RES logic unchanged.
+6. Delete the now-dead legacy code paths (`applyResonanceChain`,
+   `overlapUptimeForSeg`'s calling code, the RAW/FULL tier duplication,
+   the inline permutation search) — only after 1-5 are individually green,
+   not before, so a revert of any single step stays cheap.
+
+Each step gets its own before/after check against the full test suite
+(1096 as of this recon) plus a manual pass through `DamageCalculator.jsx`
+in the browser (per this project's own UI-verification standard) before
+moving to the next step — no step ships on "the diff looks right."
+
+**Open question for the user, not yet decided**: whether to ship each
+phased step directly to `main` as the live number (accepting that the
+displayed team score visibly shifts partway through, mid-rewrite, more than
+once) or stage the whole rewrite behind something invisible to players
+until step 6 lands. No infrastructure for a feature flag exists in this
+codebase today, so the second option would itself be new scope — flagging
+this explicitly rather than picking one silently.
+
 ## Stage 5 — Final verification and commit
 
 Re-run the full harness plus the existing full test suite (1065 tests as of
@@ -760,7 +862,8 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 2 — triage (root cause found for all 6 flagged outliers: no sequence-level gating anywhere in the engine — one systemic gap, not six bugs; likely a major contributor to the whole roster's elevated median too)
 - [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
 - [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
-- [ ] Stage 4 — the actual rewrite (not yet started)
+- [x] Stage 4 reconnaissance — full consumer-contract map (every field read outside calcTeamStats.js, by which component), measured perf check (engine ~3.1x slower/call than legacy but still sub-ms — not a blocker for autoEquip.js's search loop), and a 6-step phased implementation plan (solo tier -> team tier -> DOT -> rotationTimeline -> warnings -> dead code removal), each step independently tested/committed
+- [ ] Stage 4 — the actual rewrite (not yet started; open question logged above on shipping cadence — needs a decision before step 1 starts)
 - [ ] Stage 5 — final verify + commit
 
 Work proceeds stage by stage; each stage's own sub-tasks are committed
