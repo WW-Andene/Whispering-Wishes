@@ -4035,8 +4035,13 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Defense Formation', '208.76%', 'Havoc DMG opener; Basic ATK afterward casts Timed Counters directly.'],
     ['Outro', 'Iron Will', '+38% Resonance Skill DMG Amp (14s)', 'Buffs the incoming Resonator\'s Resonance Skill DMG.'],
   ],
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Yangyang/Combat, cross-checked against
+  // ww.nanoka.cc/character/1402 (both agree exactly) — every damage value was already correct. Added the
+  // two entirely missing rows (Mid-air Attack, Dodge Counter).
   'Yangyang': [
     ['Basic ATK', 'Feather as Blade Stage 1-4', '44.73% → 59.64% → 46.81%×2 → 59.36%×2+79.14%', 'Up to 4 consecutive Aero strikes.'],
+    ['Mid-air', 'Attack', '92.44%'],
+    ['Dodge Counter', 'Standard', '87.07%×2'],
     ['Heavy ATK', 'Feather as Blade (hold)', '19.88%×3', 'Lunge forward, consumes Stamina.'],
     ['Heavy ATK', 'Zephyr Song', '106.61%', 'Basic ATK follow-up after Heavy ATK or Dodge Counter.'],
     ['Skill', 'Zephyr Domain', '34.53%×4 + 207.19%', 'Whirling vortex groups nearby enemies.'],
@@ -4891,7 +4896,7 @@ const CHARACTER_ROTATIONS = {
     { type: 'Intro', skill: 'Cerulean Song', note: 'launches target airborne, grants 1 Melody stack' },
     { type: 'Skill', skill: 'Zephyr Domain', note: 'whirling vortex groups nearby enemies, grants 1 Melody stack' },
     { type: 'Heavy ATK', skill: 'Zephyr Song', note: 'Heavy ATK into follow-up Basic ATK grants the 3rd Melody stack' },
-    { type: 'Basic ATK', skill: 'Mid-air Attack: Feather Release', note: 'jump then Basic ATK to consume all 3 Melodies for the Forte Circuit burst finisher' },
+    { type: 'Forte', skill: 'Echoing Feathers: Feather Release', note: 'jump then Basic ATK to consume all 3 Melodies for the Forte Circuit burst finisher. Type/name corrected 2026-09-01 from \'Basic ATK\'/\'Mid-air Attack: Feather Release\', which never matched the SKILL_MULTIPLIERS row (type \'Forte\', name \'Echoing Feathers: Feather Release\') and was silently resolving to 0 DMG.' },
     { type: 'Liberation', skill: 'Wind Spirals', note: 'Cyclone burst groups enemies and generates Concerto Energy' },
     { type: 'Outro', skill: 'Whispering Breeze', duration: 5, note: 'funnels 4 Resonance Energy/s to the incoming Resonator for 5s — quickswap into the main DPS' },
   ],
@@ -6051,7 +6056,13 @@ const RESONANCE_CHAIN_DATA = {
   // Re-verified 2026-08-18 against fandom's Chain Node pages (Sapphire Skies/Nesting Twigs/Nature Sings/
   // Close Your Eyes/Winds Whisper/A Tribute to Life's Sweet Hymn wikitext) — all 6 values above confirmed
   // exact against the real node text, no changes needed.
-  'Yangyang':     { s1: { elemDmg: 15 }, s2: { totalMult: 5 }, s3: { skillDmg: 40 }, s4: { totalMult: 95 }, s5: { libDmg: 85 }, s6: { atkPct: 20 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Yangyang/Combat, cross-checked against
+  // ww.nanoka.cc/character/1402 (both agree exactly). S2 (totalMult: 5) was undocumented — real effect is
+  // purely 10 extra Resonance Energy on Heavy Attack hit (1/20s), zero DPS component. Zeroed to {}. S4's
+  // totalMult: 95 is the closest available fallback for a named-move DMG Mult buff (Feather Release) with
+  // no matching flat-schema category (it's cast via Mid-air Attack, and only its landing hit — not the
+  // main diving strikes — is separately "considered Basic Attack DMG"); value confirmed exact, kept as-is.
+  'Yangyang':     { s1: { elemDmg: 15 }, s2: {}, s3: { skillDmg: 40 }, s4: { totalMult: 95 }, s5: { libDmg: 85 }, s6: { atkPct: 20 } },
   // Removed 2026-08-18: this was a stale unsourced 'Youhu' duplicate key (atkPct/deepen on every node,
   // no basis in her real kit) that silently overrode the correctly-audited 'Youhu' entry earlier in this
   // object (see the real, sourced values a few lines up) — JS object literals let the later duplicate
