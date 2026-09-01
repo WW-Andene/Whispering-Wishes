@@ -2204,7 +2204,9 @@ const CHAR_BUFF_TABLE = {
       boostToTeam: 30, // Tag, You're It! (Inherent Skill): +30 Tune Break Boost (30s) to whichever Resonator inflicts Hack - Shifting
       baseTuneBreakBoost: 10, // 3.x char base stat
     },
-    note: 'Outro: deploys a turret for 14s and grants the next Resonator 15% All DMG Amp (14s), ramping to 35% Heavy ATK DMG Amp via stacking Overlimit. Both buffs target the incoming Resonator only, not the whole team. Huntress mode grants self 30% Crit DMG; Guts mode grants self 15% DEF Ignore (personal, not a team-wide DEF Shred debuff — fixed 2026-08-16, was miscategorized under debuffs as defShred). Tune Break: Hack Response - Meltdown is genuine (base kit, once/8s) but exact ruptureDmgMult not confirmed; Tag, You\'re It! confirmed +30 Tune Break Boost (30s) to whichever teammate inflicts Hack - Shifting.',
+    // Guts mode's DEF Ignore fixed 2026-08-16: it's personal (self-only), not a team-wide DEF Shred
+    // debuff — was miscategorized under debuffs as defShred.
+    note: 'Outro: deploys a turret for 14s and grants the next Resonator 15% All DMG Amp (14s), ramping to 35% Heavy ATK DMG Amp via stacking Overlimit. Both buffs target the incoming Resonator only, not the whole team. Huntress mode grants self 30% Crit DMG; Guts mode grants self 15% DEF Ignore. Tune Break: Hack Response - Meltdown is genuine (base kit, once/8s) but exact ruptureDmgMult not confirmed; Tag, You\'re It! confirmed +30 Tune Break Boost (30s) to whichever teammate inflicts Hack - Shifting.',
   },
   'Denia': {
     // value corrected 2026-08-31: was 40 (the conditional ceiling, "40% if they apply Tune Strain -
@@ -2396,7 +2398,9 @@ const CHAR_BUFF_TABLE = {
     // equipped. Hardcoding it here double-counted it and phantom-applied it with any other weapon equipped.
     weaponBuffs: [],
     debuffs: [{ stat: 'resShred', value: 15, duration: 35, condition: 'Fusion RES ignore, Glory (from Liberation): 3% base +3%/other Fusion Resonator up to 15% at 3 Fusion units' }],
-    note: 'Outro: +20% Fusion DMG + 25% Basic ATK DMG Amp (14s). Lib: up to 18% ATK team (35s), enables Wild Hunt. Fusion RES ignore up to 15% (35s), needs a mono-Fusion team for max value (S3 removes the requirement). (Corrected 2026-08-16: fixed Lib buff and RES-ignore durations, which were listed far too short; added missing self-buff and weapon buff.)',
+    // Corrected 2026-08-16: fixed Lib buff and RES-ignore durations, which were listed far too
+    // short; added missing self-buff and weapon buff.
+    note: 'Outro: +20% Fusion DMG + 25% Basic ATK DMG Amp (14s). Lib: up to 18% ATK team (35s), enables Wild Hunt. Fusion RES ignore up to 15% (35s), needs a mono-Fusion team for max value (S3 removes the requirement).',
   },
   // Re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Iuno/Combat "Forte > Details" and "Ebb and
   // Flow" sections (Chrome/Windows UA + google.com referer + jsRender, load+9s wait): outro duration corrected
@@ -2414,7 +2418,10 @@ const CHAR_BUFF_TABLE = {
       { stat: 'allDmg', value: 40, target: 'self', duration: 10, condition: 'Blessing of the Wan Light: +4% all DMG Amp per stack, max 10 stacks (40% total); gained by being Shielded inside the 30s Full Moon Domain (max 1 stack per 0.5s) — Derivation Inherent Skill instantly grants 5 stacks on Intro/Liberation cast; each new stack resets the 10s duration; ends early if swapped off-field' },
     ],
     debuffs: [],
-    note: 'Outro: 50% Heavy ATK DMG Amp for 10s (ends early if the incoming Resonator is swapped off-field; corrected from 14s 2026-08-31 — no source basis for 14s). Real team healing via New Moon Moonbow Basic ATK (13.03/13.03/24.43% healing per hit at Lv10), Moonbow Dodge Counter (16.29%), Arc Beyond the Edge (24.43%), Absolute Fullness (194.26% healing, once/25s) + 30s Full Moon Domain (5s-interval team HP/STA regen, 20 STA per tick). Self-shield via Waxing Ascent: 32% ATK, 15s, self-only, on every Basic/Heavy/Dodge/Skill/Liberation/Intro cast — not passed to the incoming Resonator. Liberation activates Lunar Cycle burst phase, no team DMG buff. (Corrected 2026-08-16: restored the team-heal claim — confirmed via a live re-check after her healing kit was omitted in the prior audit.)',
+    // Outro duration corrected 2026-08-31 from 14s to 10s — no source basis for 14s.
+    // Team-heal claim corrected 2026-08-16: restored after being omitted in a prior audit,
+    // confirmed via a live re-check.
+    note: 'Outro: 50% Heavy ATK DMG Amp for 10s (ends early if the incoming Resonator is swapped off-field). Real team healing via New Moon Moonbow Basic ATK (13.03/13.03/24.43% healing per hit at Lv10), Moonbow Dodge Counter (16.29%), Arc Beyond the Edge (24.43%), Absolute Fullness (194.26% healing, once/25s) + 30s Full Moon Domain (5s-interval team HP/STA regen, 20 STA per tick). Self-shield via Waxing Ascent: 32% ATK, 15s, self-only, on every Basic/Heavy/Dodge/Skill/Liberation/Intro cast — not passed to the incoming Resonator. Liberation activates Lunar Cycle burst phase, no team DMG buff.',
   },
   'Qiuyuan': {
     outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
@@ -2422,7 +2429,8 @@ const CHAR_BUFF_TABLE = {
     selfBuffs: [],
     weaponBuffs: [{ stat: 'echoDmg', value: 20, target: 'team', duration: 30, condition: 'Signature weapon (Emerald Sentence): triggers on Intro Skill cast' }],
     debuffs: [],
-    note: 'Outro: 50% Echo Skill DMG Amp (14s). Lib: conditional Crit DMG buff (up to +30% at 65%+ Crit Rate), not a flat Echo DMG buff. Sig weapon: 20% team Echo DMG on Intro cast. (Corrected 2026-08-16: Liberation buff was mislabeled as echoDmg — real effect is Crit DMG.)',
+    // Corrected 2026-08-16: Liberation buff was mislabeled as echoDmg — real effect is Crit DMG.
+    note: 'Outro: 50% Echo Skill DMG Amp (14s). Lib: conditional Crit DMG buff (up to +30% at 65%+ Crit Rate), not a flat Echo DMG buff. Sig weapon: 20% team Echo DMG on Intro cast.',
   },
   'Chisa': {
     outroBuffs: [],
@@ -2813,7 +2821,10 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [{ stat: 'critDmg', value: 60, target: 'self', duration: 99, condition: 'Aftersound: +2.5% CD per stack up to 24 stacks (60%); beyond 24, +1%/stack up to a 100% total cap' }],
     debuffs: [],
-    note: 'Outro (Unfinished Piece): +20% Havoc DMG + 25% Heavy ATK DMG Amp (14s). Self: up to 60-100% CD from Aftersound stacking. Intro is "Suite of Quietus" (base) / "Suite of Immortality" (Maestro-enhanced). (Corrected 2026-08-16: Outro skill name was wrong — file previously called it "Final Applause"; the real base Intro name "Suite of Quietus" was also missing, previously only the enhanced Maestro form was listed.)',
+    // Corrected 2026-08-16: Outro skill name was wrong — file previously called it "Final Applause";
+    // the real base Intro name "Suite of Quietus" was also missing, previously only the enhanced
+    // Maestro form was listed.
+    note: 'Outro (Unfinished Piece): +20% Havoc DMG + 25% Heavy ATK DMG Amp (14s). Self: up to 60-100% CD from Aftersound stacking. Intro is "Suite of Quietus" (base) / "Suite of Immortality" (Maestro-enhanced).',
   },
   // ── Electro characters with Electro Flare ──
   // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs previously described a specific
@@ -3726,7 +3737,9 @@ const SKILL_MULTIPLIERS = {
     ['Dodge Counter', 'Standard', '74.25%+74.25%'],
     ['Skill', 'Thunderclap', '100.20%×2', '10s cooldown; grapples toward the target and builds Electric Surge.'],
     ['Basic ATK', 'Repel', '56.12%+84.17%', 'Auto-chains from a single Basic Attack tap right after Thunderclap lands, replacing the normal Basic ATK combo restart.'],
-    ['Forte', 'Overshock', '80.72%×7+423.77%+423.77%', 'Once Electric Surge is fully capped, Skill becomes this instead — counted as Resonance Skill DMG replacement via the Forte Circuit; TAP to unleash (HOLD enters Apex Resonance instead). Type corrected 2026-09-01 from \'Skill\' to \'Forte\' to match CHARACTER_ROTATIONS.Rover: Electro\'s Forte/Overshock step, which never matched the old combined row and was silently resolving to 0 DMG.'],
+    // Type corrected 2026-09-01 from 'Skill' to 'Forte' to match CHARACTER_ROTATIONS.Rover: Electro's
+    // Forte/Overshock step, which never matched the old combined row and was silently resolving to 0 DMG.
+    ['Forte', 'Overshock', '80.72%×7+423.77%+423.77%', 'Once Electric Surge is fully capped, Skill becomes this instead — counted as Resonance Skill DMG replacement via the Forte Circuit; TAP to unleash (HOLD enters Apex Resonance instead).'],
     ['Forte', 'Apex Resonance: Thrum of All Sounds', 'TODO: verify — per-stage multipliers not yet sourced', 'Up to 7-stage ground + 6-stage aerial combo (Spectro/Havoc/Aero hits + Thunder Bane Electro pulses); consumes Thunder Rage each second while active.'],
     ['Liberation', 'Ultimate Tactics', '1192.86%', '25s cooldown.'],
     ['Intro', 'Thunderous Fury', '33.41%×2+100.21%'],
@@ -3923,8 +3936,9 @@ const SKILL_MULTIPLIERS = {
     ['Basic ATK', 'Mid-air Attack', '73.96%', 'Consumes STA; grants Trigram - Thunder on hit.'],
     ['Basic ATK', 'Heavy Attack - Mountain Over Thunder', '178.93%', 'Consumes 1 Trigram - Mountain + 1 Trigram - Thunder (in that order); grants Minor Yang.'],
     ['Basic ATK', 'Heavy Attack - Thunder Over Mountain', '89.47%', 'Consumes 1 Trigram - Thunder + 1 Trigram - Mountain (in that order); small DMG, also reduces target Vibration Strength; grants Minor Yang.'],
-    ['Basic ATK', 'Heavy Attack - Twin Mountains', '716 flat + 135.20% ATK', 'Consumes 2 Trigram - Mountain; heals all nearby team Resonators instead of dealing full DMG; grants Minor Yin. Flat value corrected 2026-09-01 from 360 (roughly half the real 716).'],
-    ['Basic ATK', 'Heavy Attack - Twin Thunders', '169 flat + 18.30% ATK', 'Consumes 2 Trigram - Thunder; heals all nearby team Resonators once/s for 8s; grants Minor Yin. Flat value corrected 2026-09-01 from 85 (roughly half the real 169).'],
+    // Flat values corrected 2026-09-01: were 360/85 (roughly half the real 716/169) for the two rows below.
+    ['Basic ATK', 'Heavy Attack - Twin Mountains', '716 flat + 135.20% ATK', 'Consumes 2 Trigram - Mountain; heals all nearby team Resonators instead of dealing full DMG; grants Minor Yin.'],
+    ['Basic ATK', 'Heavy Attack - Twin Thunders', '169 flat + 18.30% ATK', 'Consumes 2 Trigram - Thunder; heals all nearby team Resonators once/s for 8s; grants Minor Yin.'],
     ['Skill', 'In Shadow Thunder Stirs: Thunder Talisman', '58.40%', 'Pulls in nearby targets; can chain into Basic Attack Stage 4 right after cast.'],
     ['Skill', 'In Shadow Thunder Stirs: Pull-in Effect', '5.84%×10', 'Continuous DMG while pulling targets in.'],
     ['Liberation', 'Flashing Thunder Spell', '357.86%', 'Base-kit Liberation, used when Buling lacks both Minor Yin and Minor Yang.'],
@@ -4333,10 +4347,13 @@ const CHARACTER_ROTATIONS = {
     { type: 'Basic ATK', skill: 'Dimming Brush Stage 1-3', note: 'Tap Basic Attack 3 times for the full combo — fills the remaining Afflatus.' },
     { type: 'Skill', skill: 'Manifestation', note: 'At 60+ Afflatus, press Skill to consume 60 and summon Phantasmic Imprint - Left and Right.' },
     { type: 'Forte', skill: 'Heavy ATK: Conjuration', note: 'At 30+ Afflatus, HOLD Heavy Attack to consume 30 and summon Phantasmic Imprint - Middle.' },
-    { type: 'Forte', skill: 'Stroke of Genius', note: 'Press Skill to teleport to and consume a Phantasmic Imprint for an off-field-style Basic Attack-type hit — Jump Cancel out of the landing lag to chain into the next Imprint faster. Type corrected 2026-09-01 from \'Skill\' to \'Forte\' to match SKILL_MULTIPLIERS.Zhezhi\'s row type (was silently resolving to 0 DMG under the type===step.type lookup).' },
-    { type: 'Forte', skill: 'Stroke of Genius', note: '2nd cast — repeat for each Imprint placed, escalating into Creation\'s Zenith once Painter\'s Delight hits 2 stacks; cancel its endlag via Liberation. Type corrected 2026-09-01, see note above.' },
+    // Type corrected 2026-09-01 from 'Skill' to 'Forte' on this row and the two below (Stroke of
+    // Genius 2nd cast, Creation's Zenith) to match SKILL_MULTIPLIERS.Zhezhi's row type, which was
+    // silently resolving to 0 DMG under the type===step.type lookup.
+    { type: 'Forte', skill: 'Stroke of Genius', note: 'Press Skill to teleport to and consume a Phantasmic Imprint for an off-field-style Basic Attack-type hit — Jump Cancel out of the landing lag to chain into the next Imprint faster.' },
+    { type: 'Forte', skill: 'Stroke of Genius', note: '2nd cast — repeat for each Imprint placed, escalating into Creation\'s Zenith once Painter\'s Delight hits 2 stacks; cancel its endlag via Liberation.' },
     { type: 'Liberation', skill: 'Living Canvas', note: 'Press Liberation at any point in the rotation (also cancels Creation\'s Zenith endlag) — summons Inklit Spirits that perform Coordinated Attacks alongside the active Resonator for up to 30s.' },
-    { type: 'Forte', skill: "Creation's Zenith", note: 'Finisher — Dash Cancel out of it into Echo, Swap, or Outro to skip the remaining recovery. Type corrected 2026-09-01 from \'Skill\' to \'Forte\', see note above.' },
+    { type: 'Forte', skill: "Creation's Zenith", note: 'Finisher — Dash Cancel out of it into Echo, Swap, or Outro to skip the remaining recovery.' },
     { type: 'Outro', skill: 'Carve and Draw', duration: 14, note: 'Swap out to trigger this automatically — grants the incoming Resonator +20% Glacio DMG Amp and +25% Resonance Skill DMG Amp for 14s, plus 15 Resonance Energy via Inherent Skill Flourish.' },
   ],
   // Standard Rotation ("Easy & Basic Burst Combo") — sourced from Prydwen's "Gameplay and teams" tab for
@@ -4437,7 +4454,9 @@ const CHARACTER_ROTATIONS = {
   // Chrome UA + google.com referer + jsRender). Only 5 real inputs — one of the simplest kits in the game.
   'Lucilla': [
     { type: 'Intro', skill: 'Clip It', note: 'Swap into her — fires automatically, restores 100 of 150 Trace and inflicts 1 stack of Glacio Chafe.' },
-    { type: 'Skill', skill: 'Spotlight', note: 'Press and HOLD Skill to deploy the Focus Ring, then release it about a quarter-second in, right as the ring turns gold — a perfect release triggers Spotlight (restores 50 Trace, more than the 25 a missed "Compensate" release gives) and unlocks her Ultimate once she now holds all 3 Photos (1 Photo per 50 Trace restored). Skill name corrected 2026-09-01 from \'Phantom Frame → Spotlight\', which never matched the SKILL_MULTIPLIERS row name (arrow vs slash separator) and was silently resolving to 0 DMG.' },
+    // Skill name corrected 2026-09-01 from 'Phantom Frame → Spotlight', which never matched the
+    // SKILL_MULTIPLIERS row name (arrow vs slash separator) and was silently resolving to 0 DMG.
+    { type: 'Skill', skill: 'Spotlight', note: 'Press and HOLD Skill to deploy the Focus Ring, then release it about a quarter-second in, right as the ring turns gold — a perfect release triggers Spotlight (restores 50 Trace, more than the 25 a missed "Compensate" release gives) and unlocks her Ultimate once she now holds all 3 Photos (1 Photo per 50 Trace restored).' },
     { type: 'Liberation', skill: 'Clear As Day', duration: 10, note: 'Press Liberation (feel free to spam it — it won\'t fire until the Skill animation fully finishes) — costs no Resonance Energy, enters Reminiscence for ~10s, and grants +30% Basic ATK DMG Bonus for 10s in Glacio Chafe mode (or +30% Echo Skill DMG Bonus in Echo mode).' },
     { type: 'Basic ATK', skill: 'Tracing Forms Stage 1-3', note: 'HOLD Basic Attack and keep holding — Reminiscence auto-replaces her Basic Attack with this 3-stage combo, consuming her 3 Photos as it goes (each is an "Oblivion" hit inflicting Glacio Chafe in Chafe mode, or counted as a separate Echo Skill cast in Echo mode).' },
     { type: 'Basic ATK', skill: 'Letting It Go', note: 'Fires automatically once Stage 3 finishes or you release Basic Attack — an interruption-immune AoE finisher that fully restores Concerto Energy and ends Reminiscence.' },
@@ -4555,7 +4574,10 @@ const CHARACTER_ROTATIONS = {
   // "Opener Rotation" building up from Zephyr Stance is used only when it isn't).
   'Suisui': [
     { type: 'Intro', skill: 'Tinkling Jade', note: 'Swap into her — fires automatically, inflicts 1 stack of Glacio Chafe, consumes all Cloud Breath to pull in nearby targets, and immediately enters Drizzle Stance.' },
-    { type: 'Skill', skill: 'Drizzle Stance thrust', note: 'Press Skill — thrusts forward and restores Floral Epistle. Cancel its ending on the first hit by immediately pressing Dash (optional — only saves a few frames, skip it if the timing is tight). Capitalization corrected 2026-09-01 from \'Drizzle Stance Thrust\' (capital T), which never matched the SKILL_MULTIPLIERS row name \'Drizzle Stance thrust\' (case-sensitive substring match) and was silently resolving to 0 DMG.' },
+    // Capitalization corrected 2026-09-01 from 'Drizzle Stance Thrust' (capital T), which never
+    // matched the SKILL_MULTIPLIERS row name 'Drizzle Stance thrust' (case-sensitive substring
+    // match) and was silently resolving to 0 DMG.
+    { type: 'Skill', skill: 'Drizzle Stance thrust', note: 'Press Skill — thrusts forward and restores Floral Epistle. Cancel its ending on the first hit by immediately pressing Dash (optional — only saves a few frames, skip it if the timing is tight).' },
     { type: 'Basic ATK', skill: 'Drizzle Stance Stage 1-4', note: 'Tap Basic Attack 4 times — each hit restores more Floral Epistle toward the 600 cap; Stage 4 also inflicts Glacio Chafe. Cancel Stage 4\'s endlag by immediately pressing Liberation.' },
     { type: 'Liberation', skill: 'Song of Thoroughfare', duration: 30, note: 'Press Liberation right after Basic Attack Stage 4 to cancel its endlag — deploys Ceaseless Landscape for 30s, raising the max stack limit of Negative Statuses on affected targets by 3 for 15s per application, and letting DEF Ignore/RES Shred trigger off Havoc Bane consumption.' },
     { type: 'Outro', skill: 'Rippling Waters', duration: 30, note: 'Swap out to trigger this automatically. Grants the team +25% All DMG Amp for 30s; consumes all her banked Floral Epistle (aim for 400-600) to enter Roaming Transcendent for 30s, periodically performing Plume Steps that re-apply Glacio Chafe, heal the active Resonator, and grant Reflecting Shadows (extra interruption resistance) — the more Floral Epistle spent, the more Plume Steps and the stronger the follow-up ATK buff on future Outros.' },
@@ -4873,7 +4895,9 @@ const CHARACTER_ROTATIONS = {
     { type: 'Intro', skill: 'Freezing Thorns', note: 'creates 1 Ice Thorn' },
     { type: 'Liberation', skill: 'Glacial Gaze', note: 'creates 1 Glacier, grants 2 stacks of Clarity (expands Frostbite area)' },
     { type: 'Skill', skill: 'Eternal Frost', note: 'creates 1 Ice Prism, grants 1 stack of Clarity' },
-    { type: 'Forte', skill: 'Clarity of Mind: Detonate', note: 'detonates all 3 Ice constructs (Thorn/Prism/Glacier) at once for a large Concerto/Energy burst. Skill name corrected 2026-09-01 from \'Heavy ATK: Detonate\', which never matched the SKILL_MULTIPLIERS row name and was silently resolving to 0 DMG.' },
+    // Skill name corrected 2026-09-01 from 'Heavy ATK: Detonate', which never matched the
+    // SKILL_MULTIPLIERS row name and was silently resolving to 0 DMG.
+    { type: 'Forte', skill: 'Clarity of Mind: Detonate', note: 'detonates all 3 Ice constructs (Thorn/Prism/Glacier) at once for a large Concerto/Energy burst.' },
     { type: 'Forte', skill: 'Clarity of Mind: Detonate', note: 'second detonate to fully spend the loop before swapping' },
     { type: 'Outro', skill: 'Silversnow', duration: 14, note: 'grants next Resonator 38% Basic ATK DMG Amp — time this to land on the intended DPS' },
   ],
@@ -4882,7 +4906,9 @@ const CHARACTER_ROTATIONS = {
   'Aalto': [
     { type: 'Intro', skill: 'Feint Shot', note: 'rapid burst on entry, builds Mist Drops' },
     { type: 'Skill', skill: 'Shift Trick', note: 'summons a Mist Avatar and spreads Mist, taunting nearby enemies' },
-    { type: 'Basic ATK', skill: 'Half Truths Stage 1-5', note: 'Tap Basic Attack to Stage 4 — spreads Mist forward; passing through it triggers Mistcloak Dash. Skill name corrected 2026-09-01 from \'Stage 4\', which never matched the combo\'s \'Stage 1-5\' row name and was silently resolving to 0 DMG.' },
+    // Skill name corrected 2026-09-01 from 'Stage 4', which never matched the combo's 'Stage 1-5'
+    // row name and was silently resolving to 0 DMG.
+    { type: 'Basic ATK', skill: 'Half Truths Stage 1-5', note: 'Tap Basic Attack to Stage 4 — spreads Mist forward; passing through it triggers Mistcloak Dash.' },
     { type: 'Liberation', skill: 'Flower in the Mist', note: 'creates a Gate of Quandary — Mist Bullets passing through it deal amplified DMG' },
     { type: 'Forte', skill: 'Misty Cover', note: 'Mistcloak Dash consumes Mist Drops while passing through Mist/Gate for a burst of Mist Bullets' },
     { type: 'Outro', skill: 'Dissolving Mist', duration: 14, note: 'grants the incoming Resonator 23% Aero DMG Amp for 14s' },
@@ -4927,7 +4953,10 @@ const CHARACTER_ROTATIONS = {
     { type: 'Intro', skill: 'Cerulean Song', note: 'launches target airborne, grants 1 Melody stack' },
     { type: 'Skill', skill: 'Zephyr Domain', note: 'whirling vortex groups nearby enemies, grants 1 Melody stack' },
     { type: 'Heavy ATK', skill: 'Zephyr Song', note: 'Heavy ATK into follow-up Basic ATK grants the 3rd Melody stack' },
-    { type: 'Forte', skill: 'Echoing Feathers: Feather Release', note: 'jump then Basic ATK to consume all 3 Melodies for the Forte Circuit burst finisher. Type/name corrected 2026-09-01 from \'Basic ATK\'/\'Mid-air Attack: Feather Release\', which never matched the SKILL_MULTIPLIERS row (type \'Forte\', name \'Echoing Feathers: Feather Release\') and was silently resolving to 0 DMG.' },
+    // Type/name corrected 2026-09-01 from 'Basic ATK'/'Mid-air Attack: Feather Release', which never
+    // matched the SKILL_MULTIPLIERS row (type 'Forte', name 'Echoing Feathers: Feather Release')
+    // and was silently resolving to 0 DMG.
+    { type: 'Forte', skill: 'Echoing Feathers: Feather Release', note: 'jump then Basic ATK to consume all 3 Melodies for the Forte Circuit burst finisher.' },
     { type: 'Liberation', skill: 'Wind Spirals', note: 'Cyclone burst groups enemies and generates Concerto Energy' },
     { type: 'Outro', skill: 'Whispering Breeze', duration: 5, note: 'funnels 4 Resonance Energy/s to the incoming Resonator for 5s — quickswap into the main DPS' },
   ],
@@ -5029,8 +5058,12 @@ const CHARACTER_ROTATIONS = {
     { type: 'Outro', skill: 'Soundweaver', note: 'Triggers automatically on swap. This is the Short Burst Combo — for more field time as Main DPS, insert 1-3 Dark Surge Basic Attack strings (tap Basic Attack repeatedly, P1 through P5) before the Skill/Liberation/Echo finisher above.' },
   ],
   'Rover: Spectro': [
-    { type: 'Heavy ATK', skill: 'Standard / Resonance / Aftertune', note: 'Done as warm-up while another character is still on-field (or right as you swap in): press Heavy Attack, then tap Basic Attack right as it lands to chain into "Resonance", then tap Basic Attack again to chain into "Aftertune" — this fills Diminutive Sound (her Forte gauge) fast without a full Basic combo. Skill name corrected 2026-09-01 from \'Resonance → Aftertune\', which never matched the row name and was silently resolving to 0 DMG.' },
-    { type: 'Forte', skill: 'Resonating Whirl', note: 'Once Diminutive Sound is 50+, press Skill — it auto-upgrades into Resonating Spin (applies Spectro Frazzle), then tap Basic Attack right after to chain into the extra Resonating Whirl hit. Skill name corrected 2026-09-01 — Resonating Spin and Resonating Whirl are now separate rows; this step resolves to Whirl (Spin is credited in the note only).' },
+    // Skill name corrected 2026-09-01 from 'Resonance → Aftertune', which never matched the row
+    // name and was silently resolving to 0 DMG.
+    { type: 'Heavy ATK', skill: 'Standard / Resonance / Aftertune', note: 'Done as warm-up while another character is still on-field (or right as you swap in): press Heavy Attack, then tap Basic Attack right as it lands to chain into "Resonance", then tap Basic Attack again to chain into "Aftertune" — this fills Diminutive Sound (her Forte gauge) fast without a full Basic combo.' },
+    // Skill name corrected 2026-09-01 — Resonating Spin and Resonating Whirl are now separate rows;
+    // this step resolves to Whirl (Spin is credited in the note only).
+    { type: 'Forte', skill: 'Resonating Whirl', note: 'Once Diminutive Sound is 50+, press Skill — it auto-upgrades into Resonating Spin (applies Spectro Frazzle), then tap Basic Attack right after to chain into the extra Resonating Whirl hit.' },
     { type: 'Intro', skill: 'Waveshock', note: 'Swap in — fires automatically and adds a bit more Diminutive Sound.' },
     { type: 'Liberation', skill: 'Echoing Orchestra', note: 'Press Liberation — applies a full 6 stacks of Spectro Frazzle to the target in one hit.' },
     { type: 'Basic ATK', skill: 'Vibration Manifestation Stage 1-4', note: 'Tap Basic Attack twice to refill some more Diminutive Sound toward the next Forte cast.' },
@@ -5040,12 +5073,16 @@ const CHARACTER_ROTATIONS = {
   ],
   'Rover: Aero': [
     { type: 'Intro', skill: 'Relentless Squall', note: 'Swap in — fires automatically, launches her into the air, and grants 20 Windstring (her Forte gauge, caps at 120).' },
-    { type: 'Forte', skill: 'Cloudburst Dance', note: 'While airborne from the Intro, tap Basic Attack twice in a row — this is her Forte mid-air combo, each hit grants 25 Windstring (now at 20+25+25=70) and heals nearby teammates slightly. Skill name corrected 2026-09-01 from \'Cloudburst Dance 1-2\', which never matched the SKILL_MULTIPLIERS row (now split into its own row) and was silently resolving to 0 DMG.' },
+    // Skill name corrected 2026-09-01 from 'Cloudburst Dance 1-2', which never matched the
+    // SKILL_MULTIPLIERS row (now split into its own row) and was silently resolving to 0 DMG.
+    { type: 'Forte', skill: 'Cloudburst Dance', note: 'While airborne from the Intro, tap Basic Attack twice in a row — this is her Forte mid-air combo, each hit grants 25 Windstring (now at 20+25+25=70) and heals nearby teammates slightly.' },
     { type: 'Liberation', skill: 'Omega Storm', note: 'Press Liberation while still airborne or near the ground — it instantly grounds her (skipping the slow landing animation) and heals the whole team.' },
     { type: 'Skill', skill: 'Awakening Gale', note: 'Once grounded, press Skill — sends her back into the air. Only a 3s cooldown, so this is her main way to get airborne again for more Cloudburst Dances.' },
     { type: 'Forte', skill: 'Cloudburst Dance', note: 'Tap Basic Attack twice again while airborne — now at 70+25+25=120/120 Windstring, fully capped.' },
     { type: 'Skill', skill: 'Skyfall Severance', note: 'Optional: while still airborne, press Skill again to convert any Negative Status debuffs already on the enemy (Frazzle, Bane, etc.) into stacks of Aero Erosion. Skip this step entirely if nobody on your team applies those debuffs.' },
-    { type: 'Mid-air', skill: 'Plunging Attack', note: 'Press Heavy Attack (or just fall) to plunge back down to the ground. Type/name corrected 2026-09-01 from \'Mid-air ATK\'/\'Plunge\', which never matched the SKILL_MULTIPLIERS row (type \'Mid-air\', name \'Plunging Attack\') and was silently resolving to 0 DMG.' },
+    // Type/name corrected 2026-09-01 from 'Mid-air ATK'/'Plunge', which never matched the
+    // SKILL_MULTIPLIERS row (type 'Mid-air', name 'Plunging Attack') and was silently resolving to 0 DMG.
+    { type: 'Mid-air', skill: 'Plunging Attack', note: 'Press Heavy Attack (or just fall) to plunge back down to the ground.' },
     { type: 'Forte', skill: 'Unbound Flow', note: 'Once grounded with full Windstring, her Skill becomes this automatically — press Skill once, then immediately swap to your next character. Part 2 of this attack resolves automatically off-field, so you don\'t need to wait for it.' },
     { type: 'Outro', skill: "Storm's Echo", duration: 30, note: 'Triggers automatically the instant you swap out. Raises the nearby team\'s maximum Aero Erosion stack cap by 3 for 30s.' },
   ],
@@ -5069,7 +5106,9 @@ const CHARACTER_ROTATIONS = {
   'Qingxiao': [
     { type: 'Intro', skill: 'Tonality Shift', note: 'Swap in — fires automatically, deals Aero DMG, and grants 30 points of Sword Cadence plus Resonant Chime.' },
     { type: 'Mid-air', skill: 'Mid-air Attack - Stringblade Stage 1-3', note: "Qingxiao mostly fights airborne — hold Basic Attack while in the air for this 3-hit combo, building Qin Heart/Sword Cadence toward her Heavy Attack." },
-    { type: 'Basic ATK', skill: 'Basic Attack - Stringblade Stage 1-4', note: 'Landing from Mid-air Attack Stage 3 auto-chains into Stage 3-4 if you keep holding/tapping Basic Attack — same combo, continued on the ground. Skill name corrected 2026-09-01 from \'Stage 3-4\', which never matched any row (the combo is stored as one Stage 1-4 row) and was silently resolving to 0 DMG.' },
+    // Skill name corrected 2026-09-01 from 'Stage 3-4', which never matched any row (the combo is
+    // stored as one Stage 1-4 row) and was silently resolving to 0 DMG.
+    { type: 'Basic ATK', skill: 'Basic Attack - Stringblade Stage 1-4', note: 'Landing from Mid-air Attack Stage 3 auto-chains into Stage 3-4 if you keep holding/tapping Basic Attack — same combo, continued on the ground.' },
     { type: 'Skill', skill: 'Severing Note: Judgement', note: 'Press Skill once — deals Aero DMG and grants 45 points of Qin Heart, pushing her toward a full Forte gauge.' },
     { type: 'Heavy ATK', skill: 'Heavy Attack - Stringblade', note: 'Once Qin Heart and Sword Cadence are both full, hold Basic Attack for this — consumes both gauges and sends her into the Ephemeral Transcendence state.' },
     { type: 'Forte', skill: 'Basic Attack - Ephemeral Transcendence Stage 1-4', note: 'While in Ephemeral Transcendence, hold/tap Basic Attack for this enhanced 4-hit combo — builds Heart Sword Intent toward the finisher.' },
