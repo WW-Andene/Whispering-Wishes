@@ -1037,6 +1037,33 @@ roster (Jinhsi/Rover: Electro/Shorekeeper/Yinlin were already converted
 earlier in this phase, before the batch-of-10 cadence started; Jingran
 stays skipped until he ships).
 
+## Character-roster conversion — batch 3 of ~6 (2026-09-01)
+
+**Batch 3 — done, all individually verified, 892/892 suite passing:**
+Lingyang, Lucilla, Lucy, Lumi, Lupa, Luuk Herssen, Lynae, Mornye, Mortefi,
+Phoebe. `calcTeamStats.js` never touched.
+
+**Real omissions/corrections caught by reading full audit-comment context
+this batch**: Lingyang's S5 and Mortefi's S1/S5 modeled as real bonus-proc
+damage blocks (200%-ATK Glacio hit; 2x/4x extra Marcato hits) instead of
+the flat totalMult/zeroed approximations the tables themselves carried —
+same treatment as Yinlin/Calcharo/Jianxin's S6 in earlier batches; Mornye's
+S1/S4 correctly left unmodeled despite `RESONANCE_CHAIN_DATA` still
+storing stale nonzero values for both, because their own audit comments
+explicitly say "no basis"/"not a DPS stat" (same class of stale-data
+mismatch already caught for Chisa's S4 in batch 1); Lupa's S4 stale
+`totalMult:25` (off by a factor of 5 from its own sourcing comment's
+already-correct 125 value) corrected in the block, not just noted; Phoebe's
+two real +255%/+256% own-kit DMG Multiplier bonuses (Absolution mode,
+Starflash-vs-Frazzle) modeled as separate cast-scoped buff blocks distinct
+from her Resonance Chain, since they come from her base kit text, not S1-S6;
+Mornye's whole kit confirmed DEF-scaling (not ATK) via the SKILL_MULTIPLIERS
+row's own comment, so every damage block uses `basis: 'DEF'` — the first
+DEF-scaling character converted this phase.
+
+**Next**: batch 4 of 10, same cadence, continuing alphabetically from
+Phrolova through the remaining roster.
+
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
 - Follow the PerfectSuite numeric-scale rule (see `CLAUDE.md`) for any px

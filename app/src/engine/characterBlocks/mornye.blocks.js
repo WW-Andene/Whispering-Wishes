@@ -1,0 +1,112 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — engine/characterBlocks/mornye.blocks.js
+// Mornye converted to TriggerBlocks. Sourced from characters.js's already-audited
+// CHAR_BUFF_TABLE['Mornye'], RESONANCE_CHAIN_DATA['Mornye'] (+ its own audit
+// comment, read directly for each node's real mechanic), SKILL_MULTIPLIERS
+// ['Mornye'], and CHARACTER_ROTATIONS['Mornye']. No new numbers invented. Her
+// entire kit scales off DEF, not ATK (confirmed by SKILL_MULTIPLIERS' own row
+// comment), so every damage block below uses basis: 'DEF'. S1/S4 correctly have
+// NO block despite RESONANCE_CHAIN_DATA still storing a stale nonzero totalMult
+// for each — their own audit comment explicitly says "no basis"/"not a DPS stat",
+// so the real effect is pure utility (interrupt immunity/marker changes for S1,
+// team DEF/Healing for S4), matching the same "don't force-fit what the audit
+// itself flags as zero-DPS" rule already applied for Chisa's S4 in an earlier batch.
+// Basic ATK:Wide Field Observation Mode Stage 1-3 has no matching SKILL_MULTIPLIERS
+// row at all, not modeled.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+
+const SOURCE = 'Mornye';
+
+/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+export const MORNYE_BLOCKS = [
+  // ── Damage blocks (from SKILL_MULTIPLIERS — all DEF-scaling) ──
+  {
+    id: 'mornye.intro.convergence',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Intro:Convergence' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('202.79%'), basis: 'DEF' },
+    note: 'Clears Rest Mass Energy, immediately enters Wide Field Observation Mode for 30s, generates a Syntony Field (team healing, +50% Off-Tune Buildup Rate, interruption resistance, not modeled).',
+  },
+  {
+    id: 'mornye.skill.distributed-array',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Distributed Array' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('39.77%×4'), category: 'skillDmg', basis: 'DEF' },
+    note: 'Heals the team and summons Hover Cannons for more Fusion DMG (not modeled), builds the last of Relative Momentum. Basic ATK:Wide Field Observation Mode Stage 1-3, which precedes this in the real rotation, has no matching SKILL_MULTIPLIERS row at all, not modeled.',
+  },
+  {
+    id: 'mornye.forte.inversion',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Forte:Heavy Attack: Inversion' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('258.46%'), category: 'heavyDmg', basis: 'DEF' },
+    note: 'Once Relative Momentum hits 100/100, replaces Heavy Attack — counted as Heavy ATK DMG. Inflicts Observation Marker on the target for 30s.',
+  },
+  {
+    id: 'mornye.liberation.critical-protocol',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Critical Protocol' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('522.33%'), category: 'libDmg', basis: 'DEF' },
+    note: 'Replaces the Syntony Field with a stronger High Syntony Field for 25s (+20% team DEF, +40% Healing Multiplier on top of the base field, neither modeled).',
+  },
+
+  // ── Buff blocks (from CHAR_BUFF_TABLE) ──
+  {
+    id: 'mornye.outro.recursion',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'swap-out' },
+    timing: { duration: 30 },
+    target: { scope: 'whole-team' },
+    effects: [{ stat: 'allDmg', value: 25, stacking: 'refresh' }],
+    note: "Also causes any teammate's Tune Break damage on a target Mornye marked with Observation Marker to upgrade it to an Interfered Marker, boosting nearby teammates' DMG on that target up to +40% scaling with her Energy Regen above 100% — not modeled (cross-character trigger, no home in this schema).",
+  },
+
+  // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's
+  //    real mechanic; S1/S4 correctly have NO block — pure utility with zero DPS component per the
+  //    audit's own reasoning, despite RESONANCE_CHAIN_DATA itself still storing a stale nonzero value
+  //    for each) ──
+  // S1 correctly has NO block — interrupt immunity + Interfered Marker duration/condition changes, no
+  // flat % per the audit comment ("no basis"); RESONANCE_CHAIN_DATA['Mornye'].s1 still stores a stale
+  // totalMult:15 that was never actually correct, not force-fit into a block here.
+  {
+    id: 'mornye.chain.s2',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Forte:Heavy Attack: Inversion' },
+    timing: { duration: 30 }, // matches Observation Marker's own 30s duration, since this scales off targets carrying it
+    target: { scope: 'whole-team' },
+    effects: [{ stat: 'critDmg', value: 32 }],
+    note: 'Team Crit DMG +32% max vs Interfered Marker targets (confirmed exact value, corrected from a wrong deepen category) — Interfered Marker itself is upgraded from Observation Marker by an ALLY\'s Tune Break hit (a cross-character trigger this schema has no clean anchor for), modeled anchored to the Inversion cast that applies the base Observation Marker instead.',
+  },
+  {
+    id: 'mornye.chain.s3',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'totalMult', value: 10 }],
+    note: "Unlike every other node in this row, S3's own audit comment does not describe its real mechanic — the flat totalMult:10 value is used as-is rather than guessed at further; flagged here as unverified, not silently treated as fully precise.",
+  },
+  // S4 correctly has NO block — High Syntony Field healing +30%, not a DPS stat per the audit comment
+  // ("no basis"); RESONANCE_CHAIN_DATA['Mornye'].s4 still stores a stale totalMult:10 that was never
+  // actually correct, not force-fit into a block here.
+  {
+    id: 'mornye.chain.s5',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Liberation:Critical Protocol' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'libDmg', value: 40 }],
+    note: "Critical Protocol Liberation DMG Multiplier +40% (confirmed exact) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
+  },
+  {
+    id: 'mornye.chain.s6',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Liberation:Critical Protocol' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'libDmg', value: 400 }],
+    note: 'Critical Protocol DMG Multiplier +400% (confirmed exact, corrected from an unsourced deepen:15) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo\'s S5.',
+  },
+];
