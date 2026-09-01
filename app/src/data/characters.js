@@ -1384,7 +1384,12 @@ const CHARACTER_DATA = {
   ['Encore',        2400, 22, 15],  // Cosmos Rampage mode
   ['Lingyang',      2200, 24, 16],  // Lion Form aerials
   ['Jinhsi',        3200, 25, 12],  // Incarnation nuke (front-loaded burst)
-  ['Xiangli Yao',   2900, 25, 17],  // Mech form Liberation
+  // Comment corrected 2026-09-01: was "Mech form Liberation" — Xiangli Yao has no "Mech form" mechanic
+  // at all (that's Aemeath's Mech Form/Duet kit, confused with this entry); his real mechanic is the
+  // Intuition state entered via Resonance Liberation Cogitation Model, burned via repeated Law of Reigns
+  // casts. Numeric totalMult/rotTime/onField estimates left as-is (out of scope — no single source
+  // publishes this heuristic table's inputs to verify against).
+  ['Xiangli Yao',   2900, 25, 17],  // Intuition-state Liberation combo (enter via Cogitation Model, burn 3 Hypercubes via Law of Reigns)
   ['Camellya',      3100, 26, 19],  // Budding + Blossom full rotation
   ['Carlotta',      3400, 23, 14],  // Burst gunslinger, fast rotation
   ['Brant',         2700, 24, 17],  // Basic ATK chains + self-heal
@@ -3585,15 +3590,32 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Verdant Growth', '99.41%'],
     ['Outro', 'Blossom', 'All DMG Amp +15% (30s) + heal', 'Heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All DMG Amp +15% (30s) — confirmed "Amplified," not Deepen, per nanoka/CHAR_BUFF_TABLE\'s existing sourcing.'],
   ],
+  // Full audit 2026-09-01. Base rows (Probe/Standard/Plunging/Deduction→Decipher/Cogitation
+  // Model/Principle/Chain Rule) re-verified verbatim against wuwa.build's character #1305 sheet
+  // (Lv.10 exact multipliers, per-hit — not collapsed) — matched this file's pre-existing values
+  // exactly, no changes needed there. Two real bugs found and fixed:
+  // (1) the combined 'Intuition: Law of Reigns / Revamp' row lumped two different Forte-triggered
+  // moves' formulas into one string cell — split into two rows so each is independently addressable.
+  // (2) the combined 'Intuition: Pivot-Impale / Divergence / Unfathomed' row lumped THREE different
+  // moves under a single `type: 'Liberation'`, when per wutheringwaves.gg/thegamer.com's Forte
+  // breakdown only Unfathomed (the Dodge Counter replacement) is actually "counted as Resonance
+  // Liberation DMG" — Pivot-Impale (Basic ATK replacement) and Divergence (Resonance Skill
+  // replacement) are their own native DMG types. Split into 3 rows with correct `type` per move
+  // (matches this file's `type === step.type && n.includes(step.skill)` row-lookup convention —
+  // the old lumped rows meant CHARACTER_ROTATIONS steps for Divergence/Pivot-Impale/Revamp/Law of
+  // Reigns could never resolve a dmg row at all, a zero-damage-display bug).
   'Xiangli Yao': [
     ['Basic ATK', 'Probe Stage 1-5', '33.11%×2 → 99.61% → 39.76%×3 → 53.05%×2+26.53% → 198.81%'],
     ['Heavy ATK', 'Standard', '82.81%×2'],
     ['Mid-air', 'Plunging Attack', '123.27%'],
     ['Dodge Counter', 'Standard', '238.58%'],
     ['Skill', 'Deduction → Decipher', '198.81% → 397.82%', '5s cooldown; at 100 Capacity, Skill becomes Decipher instead (Liberation DMG).'],
-    ['Forte', 'Intuition: Law of Reigns / Revamp', '95.73%×4+255.28% (Law of Reigns) · 21.87%×4+65.61%×2 (Mid-air Revamp)', 'Both count as Liberation DMG; Law of Reigns unlocks at 5 Performance Capacity while in Intuition.'],
+    ['Forte', 'Law of Reigns', '95.73%×4+255.28%', 'Skill auto-replaced once Performance Capacity hits 5/5 in Intuition; consumes 1 of 3 Hypercubes per cast, counted as Resonance Liberation DMG per wutheringwaves.gg.'],
+    ['Forte', 'Revamp', '21.87%×4+65.61%×2', 'Mid-air Attack cast right after Divergence/Decipher; grants 3 Performance Capacity per hit, counted as Resonance Liberation DMG per wutheringwaves.gg.'],
     ['Liberation', 'Cogitation Model', '1466.06%', '25s cooldown; enters Intuition (24s) — enhances Basic ATK, Skill, and Dodge Counter.'],
-    ['Liberation', 'Intuition: Pivot-Impale / Divergence / Unfathomed', '119.67%→60.92%×4→133.25%×2 (Basic ATK) · 49.59%×3+173.55%×2 (Divergence Skill) · 38.83%×2+310.58% (Dodge Counter)', 'Enhanced versions of Basic ATK/Skill/Dodge Counter while in Intuition.'],
+    ['Basic ATK', 'Intuition: Pivot-Impale', '119.67% → 60.92%×4 → 133.25%×2', 'Basic/Heavy ATK replacement in Intuition (3-stage combo); Stage 1 hit grants 1 Performance Capacity, Stage 2/3 hits grant 2 each (5 total). Counted as Basic ATK DMG, NOT Liberation DMG, per wutheringwaves.gg — previously mis-lumped under a Liberation-type row.'],
+    ['Skill', 'Intuition: Divergence', '49.59%×3+173.55%×2', 'Resonance Skill replacement in Intuition; grants 2 Performance Capacity per cast. Counted as Skill DMG, NOT Liberation DMG, per wutheringwaves.gg — previously mis-lumped under a Liberation-type row.'],
+    ['Dodge Counter', 'Intuition: Unfathomed', '38.83%×2+310.58%', 'Dodge Counter replacement in Intuition; grants 2 Performance Capacity per cast. Counted as Resonance Liberation DMG per wutheringwaves.gg (the one sub-move of the old lumped row that really was Liberation-type).'],
     ['Intro', 'Principle', '99.41%×2'],
     ['Outro', 'Chain Rule', '237.63% ATK ×3 procs (8s, 2s ICD)', "Laser strikes on the incoming Resonator's first Basic ATK hit — pure DMG proc, no team buff."],
   ],
@@ -4471,20 +4493,26 @@ const CHARACTER_ROTATIONS = {
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Xiangli Yao (2026-08-18,
   // Chrome UA + google.com referer + jsRender). His 24s Intuition window is long and forgiving — dodges,
   // swaps, even mistakes fit inside it without losing the buffed state.
+  // Full audit 2026-09-01, sourced from wutheringwaves.gg's Xiangli Yao guide + wuwa.build/wutheringlab.com
+  // cross-references. Fixed a zero-damage-display bug affecting 4 of the original steps: `skill` strings
+  // 'Pivot-Impale P1/P2/P3', 'Mid-air Attack: Revamp', and 'Skill: Law of Reigns' were never a substring of
+  // any SKILL_MULTIPLIERS row name (the `type === step.type && n.includes(step.skill)` lookup), so those
+  // steps could never resolve a dmg value even before the SKILL_MULTIPLIERS split above. Renamed to exact
+  // substrings of the (now-split) row names: 'Revamp', 'Law of Reigns'. The 3-stage Pivot-Impale combo is
+  // also now one step (matching this file's convention elsewhere of one step per full multi-stage combo,
+  // e.g. Yinlin's 'Stage 1-4') instead of 3, since SKILL_MULTIPLIERS stores it as one combined per-hit string.
   'Xiangli Yao': [
     { type: 'Intro', skill: 'Principle', note: 'Swap into him — fires automatically, builds Capacity.' },
     { type: 'Skill', skill: 'Deduction', note: 'Press Skill, then immediately press Liberation to cancel its small hit — this only exists to trigger the Void Thunder Echo set\'s 5P effect and add Concerto Energy before the big cast.' },
     { type: 'Liberation', skill: 'Cogitation Model', duration: 24, note: 'Press Liberation — a big hit and enters Intuition for 24s: Basic/Heavy/Dodge Counter become Pivot-Impale, base Skill becomes Divergence, and he gains 3 Hypercube charges plus extra interruption resistance.' },
-    { type: 'Skill', skill: 'Divergence', note: 'Press Skill — a jump-attack, builds 2 Performance Capacity (of the 5 needed) toward Law of Reigns.' },
-    { type: 'Forte', skill: 'Mid-air Attack: Revamp', note: 'Press Basic Attack while airborne right after Divergence — builds 3 more Performance Capacity (now 5/5).' },
-    { type: 'Forte', skill: 'Skill: Law of Reigns', note: 'Once Performance Capacity hits 5/5, press Skill (auto-replaced) — consumes it all and 1 Hypercube for a big Liberation-type hit. 1 of 3 Hypercubes spent.' },
-    { type: 'Basic ATK', skill: 'Pivot-Impale P1', note: 'Divergence is on a 7s cooldown, so bridge the gap with his enhanced Basic combo instead — tap Basic Attack once for 1 Performance Capacity.' },
-    { type: 'Basic ATK', skill: 'Pivot-Impale P2', note: 'Tap Basic Attack again for 2 more Performance Capacity.' },
-    { type: 'Basic ATK', skill: 'Pivot-Impale P3', note: 'Tap Basic Attack a 3rd time for 2 more Performance Capacity (now 5/5 again).' },
-    { type: 'Forte', skill: 'Skill: Law of Reigns', note: 'Press Skill again — consumes the 2nd Hypercube.' },
-    { type: 'Skill', skill: 'Divergence', note: 'Should be off cooldown by now — press Skill for another jump-attack, 2 Performance Capacity.' },
-    { type: 'Forte', skill: 'Mid-air Attack: Revamp', note: 'Press Basic Attack while airborne — 3 more Performance Capacity (5/5).' },
-    { type: 'Forte', skill: 'Skill: Law of Reigns', note: 'Press Skill for the 3rd and final Hypercube — consuming it ends Intuition immediately, regardless of remaining duration.' },
+    { type: 'Skill', skill: 'Intuition: Divergence', note: 'Press Skill — a jump-attack, builds 2 Performance Capacity (of the 5 needed) toward Law of Reigns.' },
+    { type: 'Forte', skill: 'Revamp', note: 'Press Basic Attack while airborne right after Divergence — builds 3 more Performance Capacity (now 5/5).' },
+    { type: 'Forte', skill: 'Law of Reigns', note: 'Once Performance Capacity hits 5/5, press Skill (auto-replaced) — consumes it all and 1 Hypercube for a big Liberation-type hit. 1 of 3 Hypercubes spent.' },
+    { type: 'Basic ATK', skill: 'Intuition: Pivot-Impale', note: 'Divergence is on a 7s cooldown, so bridge the gap with his enhanced 3-stage Basic combo instead — Stage 1 hit grants 1 Performance Capacity, Stage 2/3 hits grant 2 each (5/5 total).' },
+    { type: 'Forte', skill: 'Law of Reigns', note: 'Press Skill again — consumes the 2nd Hypercube.' },
+    { type: 'Skill', skill: 'Intuition: Divergence', note: 'Should be off cooldown by now — press Skill for another jump-attack, 2 Performance Capacity.' },
+    { type: 'Forte', skill: 'Revamp', note: 'Press Basic Attack while airborne — 3 more Performance Capacity (5/5).' },
+    { type: 'Forte', skill: 'Law of Reigns', note: 'Press Skill for the 3rd and final Hypercube — consuming it ends Intuition immediately, regardless of remaining duration.' },
     { type: 'Echo', skill: 'Use Echo', note: 'Use your equipped Echo (Mech Abomination or a Nightmare summon) at any point during the long Intuition window — swap-cancel right after the last Law of Reigns if needed.' },
     { type: 'Outro', skill: 'Chain Rule', duration: 8, note: 'Swap out to trigger this automatically. For 8s, the first target the incoming Resonator\'s Basic Attack hits gets zapped by a laser (up to 3 procs, once every 2s).' },
   ],
@@ -4978,8 +5006,37 @@ const RESONANCE_CHAIN_DATA = {
   // than silently resolved either way.
   'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 0 }, /* TODO: needs Phase 2 schema — Sheep-counting Lullaby's Resonance Energy recovery (10 Energy, once per 10s) is pure utility with no DPS component */
     s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { skillDmg: 35 }, s6: { atkPct: 25 } },
-  // Xiangli Yao S1: extra hits (utility). S2: CD+30%. S3: skill mult+63% (large). S4: team Lib DMG+25%. S6: skill mult boost
-  'Xiangli Yao':  { s1: { totalMult: 10 }, s2: { critDmg: 30 }, s3: { skillDmg: 40 }, s4: { libDmg: 25 }, s5: { totalMult: 15 }, s6: { totalMult: 15 } },
+  // Xiangli Yao — full audit 2026-09-01 against wuwa.build's character #1305 Resonance Chain panel,
+  // cross-checked against wutheringlab.com/arabwuwa.com (all three agree on wording/values below).
+  // S1 "Prodigy of Protégés": Law of Reigns additionally launches 6 Convolution Matrices, each dealing
+  // Resonance Liberation DMG = 8% of Law of Reigns' own DMG Multiplier — 6 extra proc hits scaling off
+  // another move's multiplier, not a flat stat buff. Previous `totalMult: 10` was a fabricated filler
+  // number. Zeroed to {}.
+  // TODO: needs Phase 2 schema — can't represent "N bonus hits at X% of move Y's own multiplier" in
+  // the flat {stat: value} schema.
+  // S2 "Traces of Predecessors": Crit DMG +30% for 8s, triggered by casting Resonance Skill OR
+  // Resonance Liberation Cogitation Model — value/category already correct (critDmg: 30).
+  // S3 "Ruins of Ancient": was skillDmg: 40 (wrong value); real effect is DMG of Decipher/Deduction/
+  // Divergence/Law of Reigns +63% for 24s, up to 5 stacks. Corrected 40 -> 63. NOTE: Law of Reigns is
+  // itself counted as Liberation DMG (not Skill DMG, see CHARACTER_ROTATIONS comment above) — this
+  // single node buffs both a skillDmg-type set of moves (Decipher/Deduction/Divergence) and a
+  // libDmg-type move (Law of Reigns) at once; only the Skill-type portion is captured here.
+  // TODO: needs Phase 2 schema — the Law of Reigns (libDmg) portion of this same S3 buff has no home
+  // in a single-category node.
+  // S4 "Vessel of Rebirth": casting Cogitation Model grants the whole team +25% DMG Bonus to Resonance
+  // Liberation for 30s — value/category already correct (libDmg: 25).
+  // S5 "End of Stars": was totalMult: 15 (fabricated); real effect is Outro Chain Rule's own DMG
+  // Multiplier +222% AND Resonance Liberation Cogitation Model's own DMG Multiplier +100% — two
+  // separate multiplier boosts to two different named moves, not a flat total multiplier. Captured the
+  // Liberation-type portion as libDmg: 100.
+  // TODO: needs Phase 2 schema — the Outro Chain Rule +222% DMG Multiplier portion has no matching
+  // category in this schema (no "outro DMG" stat exists) and is not represented in the object below.
+  // S6 "Solace of the Ordinary": was totalMult: 15 (fabricated, wrong category and value); real effect
+  // is Law of Reigns' own DMG Multiplier +75% (per wuwa.build/arabwuwa's explicit node text — a
+  // secondary WebSearch-derived "damage progression" summary implied 76%, kept the primary node-text
+  // figure of 75% instead). Law of Reigns counted as Liberation DMG, so category totalMult -> libDmg,
+  // value 15 -> 75.
+  'Xiangli Yao':  { s1: {}, s2: { critDmg: 30 }, s3: { skillDmg: 63 }, s4: { libDmg: 25 }, s5: { libDmg: 100 }, s6: { libDmg: 75 } },
   // Aemeath S1: +300% Crit DMG for Heavy ATK in Instant Response (confirmed exact). S3: Between the Stars enhanced to
   // CD+60% (confirmed exact) + Heavenfall Edict: Finale DMG Mult+100% (was defIgnore:20, no basis at all — real S3 has
   // no DEF Ignore effect). S4: team +20% All-Attr DMG on Intro/Sync Strike/Duet cast (was totalMult:15, no basis).
@@ -5789,12 +5846,12 @@ const SKILL_ICONS = {
   'Xiangli Yao': {
     'Probe': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
-    'Mid-air Attack: Revamp': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // rotation-step phrasing for the Mid-air Attack, same generic weapon icon
+    'Revamp': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // rotation-step phrasing for the Mid-air Attack, same generic weapon icon (renamed 2026-09-01 from 'Mid-air Attack: Revamp' to match the CHARACTER_ROTATIONS step's shortened `skill` string under getSkillIcon's `skillName.includes(k)` lookup)
     'Deduction': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp',
     'Decipher': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp', // Forte-upgraded Skill, same wiki icon as base Deduction
-    'Divergence': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp', // Intuition state's Resonance Skill replacement for Deduction, same wiki icon
-    'Skill: Law of Reigns': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp', // Resonance Skill repeatedly cast during Intuition, no dedicated wiki icon — same as Deduction
-    'Pivot-Impale': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Intuition state's Basic Attack replacement, same generic weapon icon
+    'Divergence': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp', // Intuition state's Resonance Skill replacement for Deduction, same wiki icon (matches 'Intuition: Divergence' rotation step via substring)
+    'Law of Reigns': './characters/xiangli-yao/8D4YCpRh-skill-deduction.webp', // Resonance Skill repeatedly cast during Intuition, no dedicated wiki icon — same as Deduction (renamed 2026-09-01 from 'Skill: Law of Reigns' to match the CHARACTER_ROTATIONS step's shortened `skill` string)
+    'Pivot-Impale': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Intuition state's Basic Attack replacement, same generic weapon icon (matches 'Intuition: Pivot-Impale' rotation step via substring)
     'Forever Seeking': './characters/xiangli-yao/TMjphf6y-skill-forever-seeking.webp',
     'Cogitation Model': './characters/xiangli-yao/CKYDdBRY-skill-cogitation.webp',
     'Principle': './characters/xiangli-yao/cXpS7bBx-skill-principle.webp', // Intro Skill
