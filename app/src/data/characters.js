@@ -3864,8 +3864,13 @@ const SKILL_MULTIPLIERS = {
   // getSkillIcon() could never resolve an icon for them. Replaced with real Lv.10 Attribute Scaling
   // values and exact move names from wutheringwaves.fandom.com's Combat pages (Forte Details tables),
   // matching the Suisui-quality format (real names + desc column) instead of the old placeholder style.
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Aalto/Combat, cross-checked against
+  // ww.nanoka.cc/character/1403 (both agree exactly) — every pre-existing value was already correct.
+  // Added the two entirely missing rows (Mid-air Attack, Dodge Counter).
   'Aalto': [
     ['Basic ATK', 'Half Truths Stage 1-5', '31.81% → 53.02% → 47.72%×2 → 50.37%×2 → 179.73%', 'Up to 5 shots; Basic ATK 4 spreads Mist for 1.5s.'],
+    ['Mid-air', 'Attack', '59.65%'],
+    ['Dodge Counter', 'Standard', '214.12%'],
     ['Heavy ATK', 'Half Truths (aimed shot)', '35.79% → 80.52% fully charged', 'Charged aimed shot.'],
     ['Skill', 'Shift Trick', '59.65% per Mist Bullet', 'Mist Avatar taunts enemies and fires Mist Bullets around it.'],
     ['Liberation', 'Flower in the Mist', '397.62%', 'Gate of Quandary amplifies bullets passing through it.'],
@@ -4821,7 +4826,7 @@ const CHARACTER_ROTATIONS = {
   'Aalto': [
     { type: 'Intro', skill: 'Feint Shot', note: 'rapid burst on entry, builds Mist Drops' },
     { type: 'Skill', skill: 'Shift Trick', note: 'summons a Mist Avatar and spreads Mist, taunting nearby enemies' },
-    { type: 'Basic ATK', skill: 'Half Truths Stage 4', note: 'Basic ATK 4 spreads Mist forward; passing through it triggers Mistcloak Dash' },
+    { type: 'Basic ATK', skill: 'Half Truths Stage 1-5', note: 'Tap Basic Attack to Stage 4 — spreads Mist forward; passing through it triggers Mistcloak Dash. Skill name corrected 2026-09-01 from \'Stage 4\', which never matched the combo\'s \'Stage 1-5\' row name and was silently resolving to 0 DMG.' },
     { type: 'Liberation', skill: 'Flower in the Mist', note: 'creates a Gate of Quandary — Mist Bullets passing through it deal amplified DMG' },
     { type: 'Forte', skill: 'Misty Cover', note: 'Mistcloak Dash consumes Mist Drops while passing through Mist/Gate for a burst of Mist Bullets' },
     { type: 'Outro', skill: 'Dissolving Mist', duration: 14, note: 'grants the incoming Resonator 23% Aero DMG Amp for 14s' },
@@ -5918,9 +5923,18 @@ const RESONANCE_CHAIN_DATA = {
   // direct DPS stat, modeled as small totalMult utility). S2 Mist Avatar ATK+15% on taunted-target attacks (conditional
   // atkPct). S3 +2 Mist bullets at 50% Basic/Mid-air DMG (utility totalMult). S4 Mist Bullets (Resonance Skill) DMG+30%
   // (skillDmg, confirmed exact) + 30% DMG reduction in Mistcloak Dash (defensive, not modeled). S5 Aero DMG Bonus+25%
-  // for 6s in Mistcloak Dash (elemDmg, confirmed exact). S6 Liberation Crit Rate+8% (critRate, confirmed exact) + Heavy
-  // Attack thru Gate of Quandary DMG+50% (conditional, not separately modeled).
-  'Aalto':        { s1: { totalMult: 4 }, s2: { atkPct: 15 }, s3: { totalMult: 8 }, s4: { skillDmg: 30 }, s5: { elemDmg: 25 }, s6: { critRate: 8 } },
+  // for 6s in Mistcloak Dash (elemDmg, confirmed exact). S6 Liberation Crit Rate+8% (critRate, confirmed exact).
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Aalto/Combat, cross-checked against
+  // ww.nanoka.cc/character/1403 (both agree exactly). S1: was totalMult: 4 (undocumented placeholder) —
+  // real effect is purely a Resonance Skill cooldown -4s, zero DPS component. Zeroed to {}. S3: was
+  // totalMult: 8 (undocumented placeholder) — real effect is "2 more Mist Bullets, each dealing 50% of
+  // Basic/Mid-air ATK's own DMG" on passing through Mist, a bonus-hit-at-%-of-another-move effect with no
+  // flat-schema fit (same class documented elsewhere this pass, e.g. Xiangli Yao's S1). Zeroed to {}.
+  // TODO: needs Phase 2 schema for both S1's cooldown reduction and S3's bonus-hit mechanic.
+  // S6: the Heavy Attack-through-Gate-of-Quandary +50% DMG bonus (conditional, previously left
+  // unmodeled) is added as heavyDmg: 50 alongside the existing critRate: 8 — both are real, simultaneous
+  // components of the same node.
+  'Aalto':        { s1: {}, s2: { atkPct: 15 }, s3: {}, s4: { skillDmg: 30 }, s5: { elemDmg: 25 }, s6: { critRate: 8, heavyDmg: 50 } },
   // corrected 2026-08-18: prior values (all totalMult:5, s6 deepen:10) were unsourced placeholders — Baizhi's real
   // chain (fandom Combat page) is mostly healing/utility with no "deepen" (enemy DMG-taken debuff) node at all. S1
   // Emergency Plan +2.5 Resonance Energy per Concentration (utility, not modeled). S2 Emergency Plan (at 4
