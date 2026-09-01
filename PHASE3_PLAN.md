@@ -70,9 +70,11 @@
 
 **Stage 3 is now fully closed — all 5 items done.**
 
-- Lucilla's residual 8.01x ratio (flagged, not yet independently confirmed
-  bug vs. real divergence — candidate cause noted in Stage 3's own section
-  below).
+- Stage 4 kickoff: root-caused the residual ~2.03x roster-wide median (Case
+  1, documented `totalMult`-heuristic-vs-real-sum improvement — see Stage 4
+  kickoff section below) and individually confirmed Lucilla's 8.01x (same
+  Case 1, compounded by her unusually short 5s `onField` vs. a typical
+  Main DPS's 14-19s) — no open items left before the rewrite.
 
 **Not started:** Stage 4 (the actual `calcTeamStats.js` rewrite) and Stage 5
 (final verification + commit) — Stage 3 is now fully closed, so both are
@@ -368,6 +370,14 @@ that rotation step — plausible as intentional per the block's own note, but
 not yet independently confirmed against how often that step actually
 recurs in her real `CHARACTER_ROTATIONS` sequence). Not blocking further
 Stage 3 work — logged here so it isn't lost.
+
+**Update (Stage 4 kickoff, 2026-09-01)**: independently confirmed — see the
+"Stage 4 kickoff — Lucilla's 8.01x individually confirmed" section further
+down. The candidate cause above was ruled out (that rotation step occurs
+only once in her real `CHARACTER_ROTATIONS`, so both blocks fire once, not
+duplicated); the real driver is the same `totalMult`-heuristic-vs-real-sum
+root cause as the roster median, compounded by her unusually short 5s
+`onField` allocation. Case 1 (documented improvement), not a bug.
 
 Full suite: 1065/1065 passing. `calcTeamStats.js` untouched throughout
 (confirmed via `git diff --stat`).
@@ -673,6 +683,46 @@ independently confirmed) and any other outlier substantially above the new
 ~2x baseline still warrant a per-character look during Stage 4, the same
 way Stage 2 triaged the original 6 outliers individually rather than waving
 off the whole roster at once.
+
+## Stage 4 kickoff — Lucilla's 8.01x individually confirmed (done, 2026-09-01)
+
+Per Stage 2's own precedent (triage every outlier individually, don't wave
+the whole roster off at once), checked Lucilla's 8.01x — the single largest
+outlier, ~4x the new roster median — before starting the rewrite.
+
+**Ruled out the specific candidate cause Stage 3 item 1 had flagged**:
+`lucilla.basic.oblivion` and `lucilla.basic.tracing-forms` do share the
+exact same trigger (`Basic ATK:Tracing Forms Stage 1-3`), but
+`CHARACTER_ROTATIONS['Lucilla']` only contains that step ONCE
+(`characters.js:4442`) — both blocks fire exactly once per solo pass, not
+duplicated across repeated occurrences. Not a double-count bug.
+
+**Real explanation, confirmed via a hit-by-hit breakdown** (real weapon
+Freeze Frame + Wishes of Quiet Snowfall echo set, matching the harness's own
+gear inference): every block fires exactly once, each contributing a
+plausible, SKILL_MULTIPLIERS-accurate share of the 36407 total —
+`lucilla.basic.oblivion` (10376, from 3×285.48%) and
+`lucilla.basic.letting-it-go` (10274, from 84.81%×3+593.64%) alone account
+for well over half; nothing resembles an engine artifact. The actual driver
+is the SAME root cause as the roster median, compounded by Lucilla's
+specific role data: her `totalMult` heuristic is only **700**
+(`characters.js:1458`) against an **`onField` of just 5s** — both
+dramatically lower than a typical Main DPS's 2200-3400/14-19s, because her
+real kit is a brief-window Ultimate/buffer burst, not sustained on-field
+damage. The engine's solo harness (per Stage 0's own design) runs her FULL
+`CHARACTER_ROTATIONS` pass (Intro→Skill→Liberation→Basic combo→Outro,
+~10.5s derived) exactly like every other character gets — over DOUBLE her
+real 5s on-field allocation — while her `totalMult=700` was hand-calibrated
+assuming she's realistically credited for only that short window. Two
+compounding factors, both Case 1 (documented heuristic conservatism, not a
+bug): the general totalMult-vs-real-sum gap every character has, PLUS an
+unusually large legacy-side discount specific to her short-onField Sub-DPS/
+buffer role.
+
+**Conclusion**: Lucilla's 8.01x is independently confirmed as Case 1, same
+classification as the roster median — closes the one open item Stage 3
+item 1 left flagged. No further engine gap or bug found for her specifically;
+nothing here blocks starting the actual Stage 4 rewrite.
 
 **Practical consequence for the rewrite**: Stage 4 should NOT aim for
 numeric parity with legacy's `rawDps`/`teamDps` — that was always the wrong
