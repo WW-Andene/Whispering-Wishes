@@ -19,10 +19,71 @@
 // __tests__/triggerEngine-shorekeeper.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+
 const SOURCE = 'Shorekeeper';
 
 /** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
 export const SHOREKEEPER_BLOCKS = [
+  // ── Damage blocks (from SKILL_MULTIPLIERS) — added 2026-09-01, this character's FIRST damage
+  //    blocks (her original conversion only covered buffs/Resonance Chain). She's a healer, so most
+  //    of her kit is intentionally non-damage (End Loop/Outro carry no direct DMG at all per their
+  //    own kit text — correctly no damage block for either). ──
+  {
+    id: 'shorekeeper.basic.origin-calculus',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Basic ATK:Origin Calculus Stage 1-4' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('31.78% → 23.86%×2 → 23.32%×3 → 72.72%'), category: 'basicDmg' },
+    note: 'Tap Basic Attack 4 times — each hit grants 1 Collapsed Core and Empirical Data.',
+  },
+  {
+    id: 'shorekeeper.skill.chaos-theory',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Chaos Theory' },
+    timing: { cooldown: 16 },
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('31.31%×5'), category: 'skillDmg' },
+    note: '5 Dim Star Butterflies (31.31% each at Lv.10) — heal component (1313+5.97% HP) not modeled, same "no fabricated non-DPS number" rule as everywhere else in this schema.',
+  },
+  {
+    id: 'shorekeeper.forte.illation',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Forte:Illation' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // SKILL_MULTIPLIERS' combined row ('Flare Star Butterfly / Illation / Transmutation') names three
+    // separate moves in one row, per its own labels — only the 'Illation, Heavy ATK' figure applies to
+    // THIS block (the CHARACTER_ROTATIONS step this trigger matches); Flare Star Butterfly/
+    // Transmutation aren't separately triggered in her current CHARACTER_ROTATIONS sequence, so no
+    // block exists for them yet — same "only the block a real step needs" precedent as every other
+    // conversion so far.
+    damage: { hits: parseSkillMultiplierHits('18.97%×5'), category: 'heavyDmg' },
+    note: 'Once Empirical Data hits 5/5, HOLD Basic Attack (Heavy Attack replaced) — 18.97%×5 at Lv.10, converts pending Collapsed Cores into Flare Star Butterflies.',
+  },
+  {
+    id: 'shorekeeper.intro.discernment',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Intro:Discernment' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    // Scales off HP, not ATK, and is a GUARANTEED Crit — both straight from this cast's own
+    // CHARACTER_ROTATIONS note ("scales off her HP", "a guaranteed-Crit hit"), not a guess. See
+    // triggerBlocks.schema.js's DamageHits doc (basis/guaranteedCrit fields, added specifically for
+    // this cast) and resolveHitComposedDps.js's own handling of both.
+    damage: { hits: parseSkillMultiplierHits('19.64%×3'), category: 'libDmg', basis: 'HP', guaranteedCrit: true },
+    note: "Empowered Intro (only castable once Stellarealm has reached Supernal): 19.64%×3 at Lv.10, HP-scaling, guaranteed Crit, counted as Liberation DMG. shorekeeper.chain.s6-to-the-new-world (same 'Intro:Discernment' trigger) adds its own +42% DMG Mult/+500% Crit DMG on top of this specific cast, not as a persistent buff.",
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'shorekeeper.outro.binary-butterfly',

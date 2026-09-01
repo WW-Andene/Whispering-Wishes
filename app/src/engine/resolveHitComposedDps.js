@@ -42,9 +42,13 @@ import { buildBlockWindows, activeCountAt } from './blockWindows.js';
  * @param {Object} enemyContext
  * @param {number} enemyContext.enemyDef  Enemy DEF at the relevant level.
  * @param {number} enemyContext.enemyRes  Enemy RES (%) to this character's element.
- * @param {number} baseAtk  The character's own effective base ATK (before any atkPct buffs — those
- *   are applied per-hit from the point-in-time stat snapshot, same as calcTeamStats.js's own
- *   `mBase * (1 + atkPct/100)` pattern).
+ * @param {number|{atk: number, hp?: number, def?: number}} baseStats  The character's own effective
+ *   base stat(s) (before any %-buffs — those are applied per-hit from the point-in-time stat
+ *   snapshot, same as calcTeamStats.js's own `mBase * (1 + atkPct/100)` pattern). A bare number is
+ *   shorthand for `{atk: number}` — every hit is ATK-scaling unless its own block says otherwise via
+ *   `damage.basis`/`proc.basis` (see triggerBlocks.schema.js's DamageHits doc — added for
+ *   Shorekeeper's HP-scaling Discernment). Omitting `hp`/`def` when a block actually needs one
+ *   throws rather than silently computing a wrong number off `undefined`.
  * @param {string} [targetElementLower]
  * @param {string} [targetRole]
  * @returns {{
@@ -54,7 +58,8 @@ import { buildBlockWindows, activeCountAt } from './blockWindows.js';
  *   hitLog: {time: number, blockId: string, atkPct: number, damage: number, category: string}[],
  * }}
  */
-export function resolveHitComposedDps(blocks, steps, enemyContext, baseAtk, targetElementLower = null, targetRole = null) {
+export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null) {
+  const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
   const results = simulateRotation(blocks, steps);
   const totalTime = results.length ? results[results.length - 1].time : 0;
   const { enemyDef, enemyRes } = enemyContext;
@@ -90,14 +95,14 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseAtk, targ
   const damageBlocks = blocks
     .filter(b => b.kind === 'damage' && (b.damage?.hits?.length || b.proc))
     .map(b => b.damage?.hits?.length
-      ? { block: b, hits: b.damage.hits, category: b.damage.category }
-      : { block: b, hits: [{ atkPct: b.proc.atkPct }], category: b.proc.category });
+      ? { block: b, hits: b.damage.hits, category: b.damage.category, basis: b.damage.basis || 'ATK', guaranteedCrit: !!b.damage.guaranteedCrit }
+      : { block: b, hits: [{ atkPct: b.proc.atkPct }], category: b.proc.category, basis: 'ATK', guaranteedCrit: false });
 
   const hitLog = [];
   let totalDamage = 0;
 
   for (const r of results) {
-    for (const { block: db, hits, category } of damageBlocks) {
+    for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
       if (r.ineligibleBlockIds.has(db.id)) continue; // this specific cast is on cooldown
       if (!triggerFired(db.trigger, r.firedTriggers)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
@@ -105,13 +110,24 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseAtk, targ
       const stats = statsAtInstant(r.time);
       const categoryStat = category ? stats[category] || 0 : 0; // which stat pool this cast's DMG Bonus draws from
       const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify, stats.deepen);
-      const avgCrit = calcAvgCrit(stats.cr, stats.cd);
+      // A guaranteed-Crit hit (Shorekeeper's Discernment, per its own kit text) always lands at full
+      // Crit — calcAvgCrit's expected-value blend would silently undercount it, same category of bug
+      // as time-averaging a per-hit-scoped buff instead of applying it fully (see the file header).
+      const avgCrit = guaranteedCrit ? 1 + stats.cd / 100 : calcAvgCrit(stats.cr, stats.cd);
       const defMult = calcDefMult(enemyDef, stats.defShred, stats.defIgnore);
       const resMult = calcResMult(enemyRes, stats.resShred);
-      const effAtk = baseAtk * (1 + stats.atkPct / 100);
+      const baseStatKey = basis === 'HP' ? 'hp' : basis === 'DEF' ? 'def' : 'atk';
+      if (base[baseStatKey] == null) {
+        throw new Error(`resolveHitComposedDps: block '${db.id}' needs baseStats.${baseStatKey} (damage.basis: '${basis}'), but it wasn't provided.`);
+      }
+      // `atkPct` only scales ATK-basis hits — matches calcTeamStats.js's own convention (an HP/DEF
+      // scaler only gets partial/no credit from an ATK% buff, since it's not their scaling stat; this
+      // prototype doesn't track a separate hpPct/defPct accumulator at all yet, so an HP/DEF-basis
+      // hit correctly gets none of `atkPct`'s contribution rather than the wrong full credit).
+      const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
 
       for (const hit of hits) {
-        const damage = effAtk * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult;
+        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult;
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
       }

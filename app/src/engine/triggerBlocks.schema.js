@@ -75,10 +75,29 @@
  *                                        combo like Yinlin's 4-tap Basic ATK has one entry per stage,
  *                                        already expanded — a source row's `×N` shorthand becomes N
  *                                        separate entries, not one entry with a multiplier field).
+ *                                        The field is always named `atkPct` even when `basis` is
+ *                                        `'HP'`/`'DEF'` (matches calcTeamStats.js's own convention —
+ *                                        e.g. its `sKey`/`baseStat` handling — of keeping one %-value
+ *                                        field regardless of which base stat it scales off).
  * @property {string} [category]        Which of calcEngine.js's existing damage-type categories
  *                                        (basicDmg/heavyDmg/libDmg/skillDmg/echoDmg/coordDmg) this
  *                                        cast's damage counts as — same vocabulary/purpose as
  *                                        `Proc.category`.
+ * @property {string} [basis]           Which base stat these hits scale off: `'ATK'` (default,
+ *                                        omit for the common case) | `'HP'` | `'DEF'`. Added
+ *                                        2026-09-01 for Shorekeeper's Discernment (Intro), whose own
+ *                                        kit text says explicitly "scales off her HP, not ATK" — a
+ *                                        real, sourced fact, not a guess. `resolveHitComposedDps.js`
+ *                                        reads this to pick the right base value instead of silently
+ *                                        assuming every hit is ATK-scaling.
+ * @property {boolean} [guaranteedCrit] True if this cast is a guaranteed Crit per its own kit text
+ *                                        (Shorekeeper's Discernment: "a guaranteed-Crit hit," sourced
+ *                                        from the same CHARACTER_ROTATIONS note the rest of this
+ *                                        block's data comes from) — `resolveHitComposedDps.js` uses
+ *                                        the full `(1 + cd/100)` crit multiplier for these hits
+ *                                        instead of `calcAvgCrit`'s expected-value blend, which would
+ *                                        otherwise silently undercount a hit that can never actually
+ *                                        NOT crit.
  */
 
 /**

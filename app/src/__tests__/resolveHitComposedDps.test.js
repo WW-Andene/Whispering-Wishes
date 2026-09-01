@@ -10,6 +10,7 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blocks.js';
+import { SHOREKEEPER_BLOCKS } from '../engine/characterBlocks/shorekeeper.blocks.js';
 import { parseSkillMultiplierHits, sumHitsAtkPct } from '../engine/skillMultiplierParser.js';
 
 // Zero DEF/RES so defMult/resMult both come out to exactly 1 — isolates the test to just the
@@ -169,5 +170,51 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     expect(hitLog.every(h => h.atkPct === 100.20)).toBe(true);
     const avgCrit = 1 + (5 / 100) * (150 / 100 - 1);
     expect(totalDamage).toBeCloseTo(1000 * (100.20 / 100) * 2 * avgCrit, 6);
+  });
+});
+
+describe('resolveHitComposedDps — HP-scaling + guaranteed-Crit hits (Shorekeeper Discernment)', () => {
+  it('Discernment scales off baseStats.hp, not .atk, and lands at full Crit DMG regardless of Crit Rate', () => {
+    const discernmentBlock = SHOREKEEPER_BLOCKS.find(b => b.id === 'shorekeeper.intro.discernment');
+    expect(discernmentBlock.damage.basis).toBe('HP');
+    expect(discernmentBlock.damage.guaranteedCrit).toBe(true);
+
+    const steps = [{ type: 'Intro', skill: 'Discernment', stepSeconds: 1 }];
+    const { hitLog, totalDamage } = resolveHitComposedDps([discernmentBlock], steps, NEUTRAL_ENEMY, { atk: 999999, hp: 20000 });
+
+    expect(hitLog).toHaveLength(3); // 19.64%×3
+    // Guaranteed Crit -> full (1 + cd/100), NOT calcAvgCrit's blended expectation. Base Crit DMG is
+    // 150 (BASE_CRIT_DMG), so the multiplier is exactly 2.5, not calcAvgCrit(5,150)'s ~1.025.
+    const expectedPerHit = 20000 * (19.64 / 100) * 2.5;
+    expect(totalDamage).toBeCloseTo(expectedPerHit * 3, 6);
+    // Confirms the (deliberately absurd) baseStats.atk value was never touched — proves basis:'HP'
+    // actually routes to the HP base, not silently falling back to ATK.
+    expect(totalDamage).toBeLessThan(999999);
+  });
+
+  it('a block needing baseStats.hp throws a clear error if hp is not provided, rather than silently computing off undefined', () => {
+    const discernmentBlock = SHOREKEEPER_BLOCKS.find(b => b.id === 'shorekeeper.intro.discernment');
+    const steps = [{ type: 'Intro', skill: 'Discernment', stepSeconds: 1 }];
+    expect(() => resolveHitComposedDps([discernmentBlock], steps, NEUTRAL_ENEMY, { atk: 1000 })).toThrow(/baseStats\.hp/);
+  });
+});
+
+describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS data (Shorekeeper)', () => {
+  it('computes a real total across her whole rotation, with every real damage block firing exactly once (a healer with mostly non-damage kit still produces a real, non-zero, non-crashing total)', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Shorekeeper'], SHOREKEEPER_BLOCKS);
+    const { totalDamage, dps, hitLog } = resolveHitComposedDps(SHOREKEEPER_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, { atk: 2000, hp: 25000 }, 'spectro', 'Healer');
+
+    expect(totalDamage).toBeGreaterThan(0);
+    expect(dps).toBeGreaterThan(0);
+
+    const firedBlockIds = new Set(hitLog.map(h => h.blockId));
+    expect(firedBlockIds.has('shorekeeper.intro.discernment')).toBe(true);
+    expect(firedBlockIds.has('shorekeeper.basic.origin-calculus')).toBe(true);
+    expect(firedBlockIds.has('shorekeeper.forte.illation')).toBe(true);
+    expect(firedBlockIds.has('shorekeeper.skill.chaos-theory')).toBe(true);
+    // Liberation End Loop and Outro Binary Butterfly correctly contribute NO hits — both are
+    // explicitly no-direct-DMG per their own kit text (healing/buff-only), so no damage block exists
+    // for either.
+    expect(firedBlockIds.has('shorekeeper.liberation.end-loop')).toBe(false);
   });
 });
