@@ -203,41 +203,58 @@ implementation details:
 
 ## Actual current backlog / next steps (as of 2026-09-01)
 
-Converted so far: **Rover: Electro** (PoC, all always-on/passive nodes) and
-**Shorekeeper** (2 of ~60). Shorekeeper's S6 (Discernment cast-scoped
-totalMult+critDmg) proved `trigger.type: 'cast'` already models "only
-active during this specific cast" correctly with NO schema change needed —
-a block only activates when its trigger key is present in the caller's
-`firedTriggers` Set for that rotation step, so a cast-scoped bonus and a
-passive/always-on one are naturally distinguished by which trigger.type is
-used, not by extra condition logic. See
-`__tests__/triggerEngine-shorekeeper.test.js`'s "S6 is cast-scoped" test
-for the proof (asserts the bonus is absent when Discernment wasn't cast
-this step, present when it was).
+Converted so far: **Rover: Electro** (PoC, all always-on/passive nodes),
+**Shorekeeper** (cast-scoped node, no schema change needed), and
+**Augusta** (3 of ~60) — the first one that DID need a schema extension.
 
-Still not stress-tested by either conversion: cast-order/forfeit-window
-dependencies (Jinhsi's two 5s windows, Augusta's partner-Outro-back
-condition), cross-character partner conditions, multi-skill-shared-node
-values (Camellya S5), and discrete flat-ATK procs instead of %-modifiers
-(Yinlin/Jianxin/Calcharo S6-style). These will very likely require a real
-schema extension, not just another block file — see the updated backlog
-below.
+Shorekeeper's S6 (Discernment cast-scoped totalMult+critDmg) proved
+`trigger.type: 'cast'` already models "only active during this specific
+cast" correctly with NO schema change needed — a block only activates when
+its trigger key is present in the caller's `firedTriggers` Set for that
+rotation step. See `__tests__/triggerEngine-shorekeeper.test.js`'s "S6 is
+cast-scoped" test for the proof.
+
+Augusta's Majesty/Crown-of-Wills stack gain depends on a DIFFERENT
+character's action — the resonator she buffed via her own Outro must cast
+THEIR OWN Outro back before a third swap, or the condition is forfeited.
+Added a new `trigger.type: 'partner-outro-return'` with
+`requiresActiveBlock`/`maxInterveningSwaps` fields (see
+`triggerBlocks.schema.js`'s Trigger typedef) to name which OTHER block's
+active-window gates the trigger. Important limitation, made explicit in
+both the schema doc and the block's own note: **this only records the
+shape of the condition — it does not evaluate it.** Whether the referenced
+block is actually still active when the partner Outros is a real rotation-
+history question (design question 2, still open); resolveTriggerBlocks()
+just checks whether the caller already put the right key in
+`firedTriggers`, same as every other trigger type. Also confirmed Augusta's
+S4 (whole-team ATK+20%) is cast-scoped-but-persistent — unlike
+Shorekeeper's single-hit-scoped S6, it fires on a cast but then lasts 30s,
+proving `timing.duration` composes correctly with a `cast` trigger.
+
+Still not stress-tested: Jinhsi's two 5s cast-order forfeit windows (a
+self-contained, same-character version of the ordering problem Augusta's
+cross-character version hinted at — this is what will actually force
+design question 2's state machine to get built, since it needs to be
+evaluated moment-to-moment within one rotation, not just structurally
+named like Augusta's block is), Camellya's multi-skill-shared-node value,
+and discrete flat-ATK procs instead of %-modifiers (Yinlin/Jianxin/
+Calcharo S6-style — `effects[].stat` likely needs a new value shape, not
+just a new trigger type).
 
 1. **Convert one more character per pass, hardest cases first**, following
-   `roverElectro.blocks.js`/`shorekeeper.blocks.js`'s structure and writing
-   a parity test (`triggerEngine-<name>.test.js`) for each one before
-   moving on — same cadence/discipline as the Phase 1 data audit (one
-   character, verify, commit+push, next). Remaining priority order:
-   Augusta (partner-Outro-back condition — needs a new trigger/condition
-   shape entirely, since it depends on ANOTHER character's action, not
-   just this character's own trigger history), Jinhsi (two 5s cast-order
-   forfeit windows — this is what actually answers design question 2),
-   Camellya (cast-before-Outro dependency + one node with two multipliers
-   on two different skills — tests whether one block can/should have
-   per-effect trigger overrides or needs to split into two blocks),
-   Yinlin/Jianxin/Calcharo (discrete flat-ATK procs, not %-modifiers —
-   `effects[].stat` may need a new 'flatProc' variant, not just the
-   existing % stats).
+   `roverElectro.blocks.js`/`shorekeeper.blocks.js`/`augusta.blocks.js`'s
+   structure and writing a parity test (`triggerEngine-<name>.test.js`)
+   for each one before moving on — same cadence/discipline as the Phase 1
+   data audit (one character, verify, commit+push, next). Remaining
+   priority order: Jinhsi (two 5s cast-order forfeit windows — this is
+   what actually answers design question 2, since it needs real moment-
+   to-moment evaluation within a rotation, not just a structurally-named
+   condition like Augusta's), Camellya (cast-before-Outro dependency + one
+   node with two multipliers on two different skills — tests whether one
+   block can/should have per-effect trigger overrides or needs to split
+   into two blocks), Yinlin/Jianxin/Calcharo (discrete flat-ATK procs, not
+   %-modifiers — `effects[].stat` may need a new 'flatProc' variant, not
+   just the existing % stats).
 2. Grep `app/src/data/characters.js` for every `// TODO: needs Phase 2
    schema` comment left by the Phase 1 passes for the full sourced backlog
    of known-hard mechanics, one entry per real conditional mechanic found

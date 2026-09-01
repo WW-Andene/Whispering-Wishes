@@ -43,12 +43,33 @@
  * @property {string} type   One of: 'cast' (pressing a specific input) | 'swap-in' | 'swap-out' |
  *                            'passive' (always-on once conditions are met) | 'on-hit' |
  *                            'resource-threshold' (a gauge/stack count crossing a value) |
- *                            'negative-status-hit' | 'field-time'
+ *                            'negative-status-hit' | 'field-time' | 'partner-outro-return'
+ *                            (added for Augusta's Majesty/Crown-of-Wills mechanic — see below)
  * @property {string} [on]   The specific skill/move id this trigger fires on (matches a
  *                            CHARACTER_ROTATIONS-style {type, skill} pair when type === 'cast');
  *                            omitted for triggers that aren't tied to one specific move
  * @property {string} [resource]      Name of the gauge this trigger reads, for 'resource-threshold'
  * @property {number} [threshold]     Value the resource must reach/cross
+ * @property {string} [requiresActiveBlock]  For 'partner-outro-return': the id of ANOTHER block
+ *                                    (this character's own outro buff, applied to a teammate) that
+ *                                    must still be active — not yet expired, and not yet ended by an
+ *                                    intervening swap past the allowance below — when the buffed
+ *                                    teammate casts THEIR OWN Outro. This is the first trigger type
+ *                                    in this schema that depends on a DIFFERENT character's action
+ *                                    (the buffed partner's Outro cast), not just this character's own
+ *                                    trigger history — Augusta's Majesty stack only grants if the
+ *                                    exact resonator she buffed Outros back before a third swap
+ *                                    (wutheringwaves.fandom.com/wiki/Augusta/Combat). Whether the
+ *                                    referenced block is still active is a rotation-history/state-
+ *                                    machine question this schema does not itself answer (see
+ *                                    PHASE2_PLAN.md design question 2, still open) — this field only
+ *                                    records WHICH other block's active-window gates this trigger; a
+ *                                    real rotation simulator has to be the thing that evaluates it.
+ * @property {number} [maxInterveningSwaps]  How many character-swap events are allowed between this
+ *                                    trigger's own prior activation and the partner's return-Outro
+ *                                    before the condition is forfeited (Augusta: 1 — the partner's own
+ *                                    Outro-out IS that one swap; a swap to a third character before
+ *                                    that forfeits it).
  */
 
 /**
@@ -93,7 +114,7 @@
  *                                 'refresh' (re-triggering resets duration instead of adding)
  */
 
-export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time'];
+export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return'];
 export const BLOCK_KINDS = ['damage', 'buff', 'debuff', 'heal', 'utility'];
 export const TARGET_SCOPES = ['self', 'on-field', 'next-on-field', 'whole-team', 'marked-enemy', 'all-enemies'];
 export const STACKING_MODES = ['unique', 'stacking', 'refresh'];

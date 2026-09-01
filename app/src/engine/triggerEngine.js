@@ -43,6 +43,14 @@ export function resolveTriggerBlocks(blocks, ctx, stats) {
 function triggerKey(trigger) {
   if (trigger.type === 'cast') return `cast:${trigger.on}`;
   if (trigger.type === 'resource-threshold') return `resource-threshold:${trigger.resource}:${trigger.threshold}`;
+  // Keyed by the referenced block, not a fixed string — this trigger only fires for the ONE
+  // outro-buff block it names, e.g. a caller marking 'partner-outro-return:augusta.outro.battlesong'
+  // as fired asserts "the character buffed by that specific block just cast their own Outro while
+  // it was still active, within the allowed swap count." Evaluating whether that's actually true for
+  // a real rotation is the caller's job (a rotation simulator, not yet built — see
+  // triggerBlocks.schema.js's requiresActiveBlock doc) — this resolver only checks whether the key
+  // is present, same as every other trigger type.
+  if (trigger.type === 'partner-outro-return') return `partner-outro-return:${trigger.requiresActiveBlock}`;
   return trigger.type;
 }
 
