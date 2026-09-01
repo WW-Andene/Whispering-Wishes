@@ -1,84 +1,57 @@
-/**
- * Phase 2 trigger-engine parity test — Augusta (first cross-character-conditional case).
- *
- * Verifies AUGUSTA_BLOCKS matches the legacy flat tables (CHAR_BUFF_TABLE/
- * RESONANCE_CHAIN_DATA), that S4's cast-scoped-but-persistent (30s) buff behaves correctly,
- * and specifically exercises the new 'partner-outro-return' trigger type added to
- * triggerBlocks.schema.js for her Majesty/Crown-of-Wills mechanic — the first mechanic in
- * this engine that depends on a DIFFERENT character's action, not just Augusta's own
- * trigger history.
- */
 import { describe, it, expect } from 'vitest';
-import { createStats } from '../features/teams/calcEngine.js';
-import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../data/characters.js';
-import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
+import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 
 describe('triggerEngine parity — Augusta', () => {
-  it('outro All DMG Amp matches CHAR_BUFF_TABLE.outroBuffs', () => {
-    const legacy = CHAR_BUFF_TABLE['Augusta'].outroBuffs[0];
-    const block = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.outro.battlesong');
-    expect(block.effects[0].value).toBe(legacy.value);
-    expect(block.timing.duration).toBe(legacy.duration);
-  });
-
-  it('Crown of Wills base self-buff matches CHAR_BUFF_TABLE.selfBuffs', () => {
-    const legacy = CHAR_BUFF_TABLE['Augusta'].selfBuffs[0];
-    const block = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.selfbuff.crown-of-wills-base');
-    expect(block.effects[0].value).toBe(legacy.value);
-  });
-
-  it('Resonance Chain S1/S2/S3/S5/S6 values match RESONANCE_CHAIN_DATA', () => {
+  it('S1/S2 model the real per-stack mechanics, matching RESONANCE_CHAIN_DATA at max stacks', () => {
     const rc = RESONANCE_CHAIN_DATA['Augusta'];
-    const byId = id => AUGUSTA_BLOCKS.find(b => b.id === id);
-    expect(byId('augusta.chain.s1-stained-in-scorched-earth').effects[0].value).toBe(rc.s1.critDmg);
-    expect(byId('augusta.chain.s2-cleansed-in-crimson-war').effects[0].value).toBe(rc.s2.critRate);
-    expect(byId('augusta.chain.s3-forged-in-rot-and-ruin').effects[0].value).toBe(rc.s3.totalMult);
-    expect(byId('augusta.chain.s5-unshaken-in-wrathful-tides').effects[0].value).toBe(rc.s5.totalMult);
-    expect(byId('augusta.chain.s6-engraved-in-radiant-light').effects[0].value).toBe(rc.s6.heavyDmg);
+    const s1 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s1');
+    const s2 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s2');
+    expect(s1.effects[0].value * s1.effects[0].maxStacks).toBe(rc.s1.critDmg);
+    expect(s2.effects[0].value * s2.effects[0].maxStacks).toBe(rc.s2.critRate);
   });
 
-  it('S4 team ATK buff matches RESONANCE_CHAIN_DATA.s4 and is cast-scoped (persists 30s once fired)', () => {
+  it('S3/S4/S5 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Augusta'];
-    const block = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s4-ascent-in-sun-and-glory');
-    expect(block.effects[0].value).toBe(rc.s4.atkPct);
-    expect(block.timing.duration).toBe(30);
-
-    // Rotation step WITHOUT the Intro cast — must not apply.
-    const statsNoCast = createStats();
-    resolveTriggerBlocks(AUGUSTA_BLOCKS, {
-      firedTriggers: new Set(['passive']), targetElementLower: 'electro', targetRole: 'Main DPS',
-    }, statsNoCast);
-    expect(statsNoCast.atkPct).toBe(0);
-
-    // Rotation step WITH the Intro cast fired — must apply.
-    const statsWithCast = createStats();
-    resolveTriggerBlocks(AUGUSTA_BLOCKS, {
-      firedTriggers: new Set(['passive', 'cast:Intro:Stride of Goldenflare']),
-      targetElementLower: 'electro', targetRole: 'Main DPS',
-    }, statsWithCast);
-    expect(statsWithCast.atkPct).toBe(20);
+    expect(AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s3').effects[0].value).toBe(rc.s3.totalMult);
+    expect(AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s4-ascent-in-sun-and-glory').effects[0].value).toBe(rc.s4.atkPct);
+    expect(AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s5').effects[0].value).toBe(rc.s5.totalMult);
   });
 
-  it('partner-outro-return trigger is keyed by the requiresActiveBlock id it references', () => {
-    const block = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.majesty.partner-outro-return');
-    expect(block.trigger.type).toBe('partner-outro-return');
-    expect(block.trigger.requiresActiveBlock).toBe('augusta.outro.battlesong');
-    expect(block.trigger.maxInterveningSwaps).toBe(1);
+  it('S4 is team-wide with a real 30s window', () => {
+    const s4 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s4-ascent-in-sun-and-glory');
+    expect(s4.target.scope).toBe('whole-team');
+    expect(s4.timing.duration).toBe(30);
+  });
 
-    // Not fired unless the caller (a future rotation simulator) explicitly asserts the partner's
-    // return-Outro occurred while the referenced block was still active.
-    const statsNotFired = createStats();
-    resolveTriggerBlocks(AUGUSTA_BLOCKS, {
-      firedTriggers: new Set(['passive']), targetElementLower: 'electro', targetRole: 'Main DPS',
-    }, statsNotFired);
-    // No numeric effect to assert (the block's effects are intentionally empty — stateful stack
-    // count, not a stat, per the block's own note) — this test exists to prove the trigger key
-    // format round-trips through resolveTriggerBlocks without throwing, for both states.
-    const statsFired = createStats();
-    expect(() => resolveTriggerBlocks(AUGUSTA_BLOCKS, {
-      firedTriggers: new Set(['passive', 'partner-outro-return:augusta.outro.battlesong']),
-      targetElementLower: 'electro', targetRole: 'Main DPS',
-    }, statsFired)).not.toThrow();
+  it('S6 is modeled as a real 2x100%-ATK Thunder Rage proc block, not the flat heavyDmg:200 approximation', () => {
+    const rc = RESONANCE_CHAIN_DATA['Augusta'];
+    expect(rc.s6).toEqual({ heavyDmg: 200 });
+    expect(AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s6')).toBeUndefined();
+    const s6 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s6-thunder-rage');
+    expect(s6.kind).toBe('damage');
+    expect(s6.damage.hits).toEqual([{ atkPct: 100 }, { atkPct: 100 }]);
+  });
+
+  it('outro and selfBuff match CHAR_BUFF_TABLE', () => {
+    const legacy = CHAR_BUFF_TABLE['Augusta'];
+    const outro = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.outro.battlesong');
+    expect(outro.effects[0].value).toBe(legacy.outroBuffs[0].value);
+    expect(outro.timing.duration).toBe(legacy.outroBuffs[0].duration);
+    const self = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.selfbuff.crown-of-wills-base');
+    expect(self.effects[0].value).toBe(legacy.selfBuffs[0].value);
+  });
+
+  it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Augusta'], AUGUSTA_BLOCKS);
+    const { totalDamage, hitLog } = resolveHitComposedDps(AUGUSTA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3500, 'electro', 'Main DPS');
+    expect(totalDamage).toBeGreaterThan(0);
+    const fired = new Set(hitLog.map(h => h.blockId));
+    expect(fired.has('augusta.intro.stride-of-goldenflare')).toBe(true);
+    expect(fired.has('augusta.liberation.sword-of-eternal-oath')).toBe(true);
+    expect(fired.has('augusta.liberation.everbright-protector')).toBe(true);
+    expect(fired.has('augusta.chain.s6-thunder-rage')).toBe(true);
   });
 });

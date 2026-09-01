@@ -1119,6 +1119,49 @@ be a short final batch of 2, not 10.
 
 **Next**: batch 6 (final, 2 characters) — Augusta and Cartethyia.
 
+## Character-roster conversion — batch 6 of ~6, FINAL (2026-09-01)
+
+**Batch 6 — done, all individually verified, 996/996 suite passing:**
+Augusta, Cartethyia. `calcTeamStats.js` never touched.
+
+**Real omissions/corrections caught by reading full audit-comment context
+this batch**: Cartethyia's whole kit scales off Max HP (not ATK), so
+every one of her damage blocks uses `basis: 'HP'`; her S6 is correctly a
+debuff on enemies rather than a self-buff, and her weapon-specific
+debuff was intentionally left unmodeled to avoid double-counting the
+weapon's own passive value (same precedent as Qiuyuan). Augusta's S6
+was modeled as a real 2x100%-ATK Thunder Rage proc block instead of the
+flat `heavyDmg:200` RESONANCE_CHAIN_DATA approximation.
+
+**Regression caught by the mandatory pre-commit full-suite check**:
+Augusta's real "Majesty condition" — her Outro's stack payoff is
+conditional on the SAME buffed partner Outro-ing back to Augusta before
+a 3rd swap — was initially (incorrectly) written off as "out of scope."
+The engine's `partner-outro-return` trigger type already existed
+specifically to model this exact mechanic, and 4 pre-existing test files
+(`simulateTeamRotation.test.js`, `rotationSimulator.test.js`,
+`resolveHitComposedDps.test.js`, `resolveSimulatedTeamRotation.test.js`,
+all predating this conversion effort) already depended on it being
+wired up, with several exact block ids hardcoded
+(`augusta.outro.battlesong`,
+`augusta.heavy.thunderoar-backstep-spinslash-repeat`,
+`augusta.liberation.sunborne`, `augusta.liberation.everbright-protector`,
+`augusta.chain.s4-ascent-in-sun-and-glory`). Fixed by renaming
+`augusta.blocks.js`'s ids to match and adding the missing
+`augusta.outro.majesty-condition` block
+(`trigger.type: 'partner-outro-return'`, `requiresActiveBlock:
+'augusta.outro.battlesong'`, `maxInterveningSwaps: 1`, intentionally
+empty `effects` — a stateful stack-count payoff, not a flat DPS-stat
+effect). Full suite went from 4 failed/988 passed to 71 passed/996
+passed with zero regressions elsewhere.
+
+**Phase 2 character-roster conversion is now complete.** All released
+characters (52 total across 6 batches: 50 in batches 1-5 of 10, plus
+this final batch of 2) are converted to the TriggerBlock engine.
+Jingran remains deliberately excluded (unreleased, no rotation data).
+`calcTeamStats.js` (the live calculator) was never touched at any point
+in this effort.
+
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
 - Follow the PerfectSuite numeric-scale rule (see `CLAUDE.md`) for any px
