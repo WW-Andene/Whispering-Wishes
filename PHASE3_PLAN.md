@@ -175,6 +175,68 @@ distribution shape is what matters for triage:
 likely to hide a genuine bug rather than intended precision gain), then
 work down through the mid-range cluster.
 
+## Stage 2 result — root cause found: no sequence-level gating anywhere in the engine
+
+Investigated Lucilla's 40.03x outlier first (the most extreme). Her
+`lucilla.chain.s6` block grants `basicDmg +600` AND `echoDmg +600`,
+unconditionally, as `trigger: 'passive'` — same as every OTHER chain block
+(S1–S6) in every converted character's `.blocks.js` file. `resolveHitComposedDps`
+has no concept of "which Resonance Chain nodes this character actually owns"
+at all — every chain block simply always fires, as if every character were
+fully R6-awakened.
+
+`calcTeamStats.js`'s legacy path, by contrast, gates through
+`applyResonanceChain(stats, charName, seqLevel, isMainDps)`
+(`calcEngine.js:622-624`): `if (!rc || seqLevel <= 0) return 0;` — with no
+sequence explicitly equipped (this harness's solo teams, and any real
+player who hasn't built a character's chain), `seqLevel` defaults to `0`,
+so the legacy RAW tier applies **zero** chain bonus. The engine applies
+**all six**, unconditionally, always.
+
+**Quantified on Lucilla**: stripping her `lucilla.chain.*` blocks (S0
+baseline, matching what an unbuilt character should get) drops her engine
+dps from 11946 → 1772 — her ratio falls from 40.03x to ~4.1x, landing right
+in the middle of the roster's normal cluster.
+
+**Confirmed as the same root cause across all 6 flagged outliers** — every
+one has a large, unconditional, high-tier chain bonus:
+- Iuno: S6 `heavyDmg +1600` (unconditional)
+- Hiyuki: S6 `critDmg +500`
+- Roccia: S6 `defIgnore +60`, S5 `libDmg +20`/`heavyDmg +80`
+- Sanhua: S5 `critDmg +100`
+- Aemeath: S1 `critDmg +300`, S3 `libDmg +100`/`critDmg +60`
+- Lucilla: S6 `basicDmg +600`/`echoDmg +600` (the extreme case above)
+
+This is not six separate bugs — it's **one missing engine feature**:
+TriggerBlock's schema has no field for "the minimum owned Resonance Chain
+sequence this block requires," and none of `resolveHitComposedDps`/
+`resolveSimulatedTeamRotation`/`simulateRotation` take a sequence-level
+input to gate against. It's also very likely a major (not sole) contributor
+to the general elevated median (3.13x) across the WHOLE roster, not just
+the 6 flagged outliers — every character in this sweep got free S1-S6
+whether or not their engine-side chain-derived bonus was individually large
+enough to make them an "outlier." The remaining ~4x baseline even in
+Lucilla's S0-stripped case suggests a second, smaller, still-unidentified
+factor beyond chain-gating (candidates: `rawRotTime`'s field-time-capped
+window vs. the engine's full real-combo-length steps use different time
+denominators; a real per-hit sum legitimately exceeding a flat "sustained
+average" totalMult by design) — worth re-measuring once Stage 3 adds
+sequence gating and the harness can re-run at a true, comparable S0
+baseline across the whole roster, not just this one hand-checked case.
+
+**Stage 3, revised priority**: add sequence-level gating as the FIRST closed
+gap (ahead of DOT/energy-cycle/order-search from Stage 0 — this one affects
+literally every character's number, all the time, not just specific
+mechanics). Concretely: add `trigger.requiresSequence: N` (or an equivalent
+block-level field) to chain blocks during a follow-up pass over every
+`.blocks.js` file's `chain.s1`..`chain.s6` entries (numbered by their own id
+suffix, so N is mechanical to derive — `s3` → `requiresSequence: 3`, etc.),
+then thread a `sequence` parameter through `resolveHitComposedDps`/
+`resolveSimulatedTeamRotation`/`simulateRotation` to gate on it, mirroring
+`applyResonanceChain`'s own `s <= Math.min(seqLevel, 6)` loop exactly. Only
+once that's done does re-running this Stage 1/2 harness produce a genuinely
+apples-to-apples S0 (and, ideally, parameterized S1-S6) comparison.
+
 ## Stage 1 — Parity harness
 
 Extend `verifyEngineAgainstCalcTeamStats.test.js` (currently scoped to one
@@ -241,8 +303,8 @@ independently, one commit at a time, one-by-one per this project's standing
 
 - [x] Stage 0 — coverage audit
 - [x] Stage 1 — parity harness (all 56 converted characters swept; engine `externalStats` gap found+fixed; ratio distribution recorded, outliers flagged for Stage 2)
-- [ ] Stage 2 — triage
-- [ ] Stage 3 — close gaps
+- [x] Stage 2 — triage (root cause found for all 6 flagged outliers: no sequence-level gating anywhere in the engine — one systemic gap, not six bugs; likely a major contributor to the whole roster's elevated median too)
+- [ ] Stage 3 — close gaps (revised priority: sequence-level gating FIRST, then Stage 0's DOT/energy-cycle/order-search/Coordinated-ATK list)
 - [ ] Stage 4 — rewrite
 - [ ] Stage 5 — final verify + commit
 
