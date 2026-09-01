@@ -3204,12 +3204,30 @@ const SKILL_MULTIPLIERS = {
   // listed as '553.5%' vs the real 1100.42%), the same halving pattern already found and fixed across
   // Camellya/Carlotta/Roccia/Phoebe/Brant/Cantarella/Zani's rows. Outro (a DMG Amp buff description,
   // unaffected by this bug) is unchanged.
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Ciaccona/Combat, cross-checked against
+  // ww.nanoka.cc/character/1407 (both agree on every value exactly). Two bug classes fixed:
+  // (1) multi-hit stages collapsed bug — Basic ATK Stage 1-4 was stored as one summed-total string
+  // ('57.1% → 163.0% → 132.1% → 244.6%') instead of the real per-hit breakdown; split into 4 separate
+  // rows with exact per-hit values. (2) zero-damage rotation bug — CHARACTER_ROTATIONS.Ciaccona's steps
+  // reference 'Stage 3-4' and 'Stage 4', neither of which is a substring of the old lumped 'Stage 1-4'
+  // row name, so those steps silently resolved to 0 DMG; the per-stage split below fixes the lookup.
+  // Also added 5 entirely missing rows (Heavy ATK, Aimed Shot, Fully Charged Aimed Shot, Mid-air Attack,
+  // Dodge Counter) that had no SKILL_MULTIPLIERS entry at all.
   'Ciaccona': [
-    ['Basic ATK', 'Stage 1-4', '57.1% → 163.0% → 132.1% → 244.6%', 'Standard combo string; Stage 4 inflicts Aero Erosion.'],
-    ['Skill', 'Harmonic Allegro', '40.4%×4', 'Multi-hit Skill strike that inflicts Aero Erosion.'],
-    ['Forte', 'Quadruple Downbeat', '31.4%×10 + 314.0%', 'Forte finisher that consumes stacked Musical Essence.'],
-    ['Liberation', "Singer's Triple Cadenza", '1100.4% + Tonic 6.1%×20/tick', 'Ultimate nuke followed by a lingering damage-over-time field.'],
-    ['Intro', 'Roaming with the Wind', '189.1%', 'Swap-in opener that inflicts Aero Erosion and lets her combo straight into Basic ATK Stage 3.'],
+    ['Basic ATK', 'Stage 1', '57.06%'],
+    ['Basic ATK', 'Stage 2', '48.91%+24.46%×2+65.21%'],
+    ['Basic ATK', 'Stage 3', '33.02%×4'],
+    ['Basic ATK', 'Stage 4', '61.14%×4', 'Inflicts Aero Erosion, grants 1 Musical Essence, and starts Solo Concert (24% Aero DMG Bonus to nearby team).'],
+    ['Heavy ATK', 'Standard', '107.60%', 'Jump into mid-air and attack.'],
+    ['Heavy ATK', 'Aimed Shot', '32.61%', 'Aiming Mode tap-fire; considered Heavy ATK DMG.'],
+    ['Heavy ATK', 'Fully Charged Aimed Shot', '73.37%', 'Aiming Mode fully-charged shot; considered Heavy ATK DMG.'],
+    ['Mid-air', 'Attack Stage 1-2', '55.43%×2 → 24.46%×4'],
+    ['Dodge Counter', 'Standard', '57.17%×4'],
+    ['Skill', 'Harmonic Allegro', '40.39%×4', 'Multi-hit Skill strike that inflicts Aero Erosion.'],
+    ['Forte', 'Quadruple Downbeat', '31.41%×10+314.03%', 'Forte finisher that consumes 3 stacked Musical Essence; pulls in nearby targets.'],
+    ['Liberation', "Singer's Triple Cadenza", '1100.42%', 'Ultimate nuke that enters Recital.'],
+    ['Liberation', 'Symphonic Poem: Tonic', '6.12%×20 (over field duration)', 'Periodic pulse during Recital, triggered by successful green/yellow interaction prompts (also fires off-field).'],
+    ['Intro', 'Roaming with the Wind', '189.11%', 'Swap-in opener that inflicts Aero Erosion and lets her combo straight into Basic ATK Stage 3.'],
     ['Outro', 'Windcalling Tune', '+100% Aero Erosion DMG Amp (30s)', 'Swap-out buff amplifying Aero Erosion damage near the active Resonator.'],
   ],
   // Re-verified 2026-08-31 against wuthering.gg/characters/encore's Lv.1 skill-detail widget (Lv.1→Lv.10 growth
@@ -4450,13 +4468,14 @@ const CHARACTER_ROTATIONS = {
   // Chrome UA + google.com referer + jsRender).
   'Ciaccona': [
     { type: 'Intro', skill: 'Roaming with the Wind', note: 'Swap into her — fires automatically, inflicts 1 stack of Aero Erosion, and skips her straight to Basic Attack Stage 3.' },
-    { type: 'Basic ATK', skill: 'Stage 3-4', note: 'Tap Basic Attack twice — Stage 4 inflicts another Aero Erosion stack and grants 1 Musical Essence, then automatically starts a Solo Concert (24% Aero DMG Bonus to the nearby team).' },
-    { type: 'Mid-air', skill: 'Jump-cancel into Mid-air Attack 1-2', note: 'Press Jump immediately to cancel Basic Stage 4\'s Solo Concert animation early — this spawns a free "Ensemble Sylph" that finishes the attack and keeps Solo Concert active at no cost. While airborne, tap Basic Attack twice for the 2-hit Mid-air combo.' },
+    { type: 'Basic ATK', skill: 'Stage 3', note: 'Tap Basic Attack — resumes into Stage 3 off the Intro\'s combo-continue window.' },
+    { type: 'Basic ATK', skill: 'Stage 4', note: 'Tap Basic Attack again — inflicts another Aero Erosion stack and grants 1 Musical Essence, then automatically starts a Solo Concert (24% Aero DMG Bonus to the nearby team).' },
+    { type: 'Mid-air', skill: 'Attack Stage 1-2', note: 'Press Jump immediately to cancel Basic Stage 4\'s Solo Concert animation early — this spawns a free "Ensemble Sylph" that finishes the attack and keeps Solo Concert active at no cost. While airborne, tap Basic Attack twice for the 2-hit Mid-air combo.' },
     { type: 'Basic ATK', skill: 'Stage 4', note: 'Mid-air Attack Stage 2 auto-chains into Basic Attack Stage 4 — tap Basic Attack once, granting a 2nd Musical Essence.' },
     { type: 'Skill', skill: 'Harmonic Allegro', note: 'Press Skill to cancel Basic Stage 4\'s ending — inflicts another Aero Erosion stack and restores Concerto Energy.' },
-    { type: 'Forte', skill: 'Heavy Attack: Quadruple Downbeat', note: 'Once Musical Essence hits 3/3, HOLD Basic Attack (Heavy Attack replaced) — consumes all 3 for a big pull-in hit, inflicting Aero Erosion and restoring a large 25 Concerto Energy.' },
+    { type: 'Forte', skill: 'Quadruple Downbeat', note: 'Once Musical Essence hits 3/3, HOLD Basic Attack (Heavy Attack replaced) — consumes all 3 for a big pull-in hit, inflicting Aero Erosion and restoring a large 25 Concerto Energy.' },
     { type: 'Liberation', skill: "Singer's Triple Cadenza", note: 'Press Liberation right as the Heavy Attack hits, to cancel its ending — a big AoE hit that enters Recital: for the duration, sound waves let her tap the green (Aero Erosion) or yellow (Spectro Frazzle) prompt for a periodic Symphonic Poem: Tonic pulse, even off-field.' },
-    { type: 'Liberation', skill: 'Symphonic Poem: Tonic (optional)', note: 'Optionally tap the on-screen prompt once to switch her Recital mode to Spectro Frazzle if your team needs it instead of Aero Erosion — otherwise she stays on Aero Erosion by default.' },
+    { type: 'Liberation', skill: 'Symphonic Poem: Tonic', note: 'Optional: tap the on-screen prompt once to switch her Recital mode to Spectro Frazzle if your team needs it instead of Aero Erosion — otherwise she stays on Aero Erosion by default.' },
     { type: 'Outro', skill: 'Windcalling Tune', duration: 30, note: 'Swap out to trigger this automatically (Recital persists off-field, still pulsing Tonics on its own). Amplifies Aero Erosion DMG near the active Resonator by +100% for 30s.' },
   ],
   // Standard DPS Rotation — re-verified in full 2026-08-31 against wutheringwaves.fandom.com/wiki/Zani/Combat
@@ -5453,11 +5472,22 @@ const RESONANCE_CHAIN_DATA = {
   // no basis). S6: Unseen Snare-Finality: targets take 30% more Negative Status DMG (was deepen:15, wrong value)
   'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { libDmg: 100 }, s6: { deepen: 30 } },
   // Ciaccona S1: ATK+35% after Basic ATK (conditional)
-  'Ciaccona':     { s1: { atkPct: 35 }, s2: { allDmg: 40 }, s3: { totalMult: 10 }, s4: { defIgnore: 45 }, s5: { libDmg: 40 }, s6: { libDmg: 220 } },
-  // Ciaccona R-chain corrected 2026-08-16 via Nanoka/Prydwen/Game8: s1 Basic ATK cast +35% ATK confirmed correct;
-  // s2 during Liberation, team +40% Aero DMG Bonus (was totalMult:15, wrong category); s3 +1 Musical Essence/+1 Skill charge, utility with no direct DPS stat, totalMult fallback (was elemDmg:10, no basis);
-  // s4 ignores 45% DEF on Quadruple Downbeat/Liberation DMG (was deepen:10, wrong category/value); s5 +40% Liberation DMG Bonus (was totalMult:10, wrong category);
-  // s6 Solo Concert pulse deals 220% ATK Aero DMG counted as Liberation DMG (was elemDmg:15, wrong category/value).
+  // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Ciaccona/Combat, cross-checked
+  // against ww.nanoka.cc/character/1407 (both agree on every node's exact wording):
+  // S2: was allDmg: 40 (wrong category) — real effect is team +40% Aero DMG Bonus specifically
+  // (elemDmg), not an all-element DMG buff. Corrected allDmg -> elemDmg.
+  // S3: was totalMult: 10 (fabricated, no basis) — real effect is "+1 Musical Essence segment on Basic
+  // Attack Stage 4" + "+1 charge on Resonance Skill Harmonic Allegro", both pure resource/utility with
+  // no percentage DPS component. Zeroed to {}.
+  // S6: was libDmg: 220 (wrong shape) — real effect is a standalone proc, not a Liberation DMG% buff:
+  // each Solo Concert pulse deals a flat 220% of Ciaccona's ATK as Aero DMG, counted as Liberation DMG.
+  // A flat %-of-ATK bonus hit doesn't fit the {stat: value} buff schema (same class of gap as Xiangli
+  // Yao's S1 and Zhezhi's S5/S6, documented above). Zeroed to {}.
+  // S1 (atkPct: 35), S4 (defIgnore: 45), S5 (libDmg: 40) already correct — value and category confirmed
+  // exact against both sources.
+  // TODO: needs Phase 2 schema — S3's resource/charge grant and S6's flat-%-of-ATK bonus hit have no
+  // home in a single-category flat node.
+  'Ciaccona':     { s1: { atkPct: 35 }, s2: { elemDmg: 40 }, s3: {}, s4: { defIgnore: 45 }, s5: { libDmg: 40 }, s6: {} },
   // Cantarella S1-S6 fully re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Cantarella/Combat's
   // "Resonance Chain" table (verbatim node text below) — every prior value was an unsourced approximation
   // with no basis in her real chain kit, and 2 of 6 nodes carried a fabricated DPS number on what are actually
