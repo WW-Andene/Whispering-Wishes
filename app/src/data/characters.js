@@ -4083,6 +4083,9 @@ const SKILL_MULTIPLIERS = {
   // Forte Circuit's Thunder Wedge Detonation/Rumbling Spark/Thunder Uprising/Thunderweaver rows were
   // entirely missing. Outro Lightning Manipulation has no DMG multiplier at all (pure Vibration
   // Strength depletion) — the old "+15% Liberation DMG Amp" value had no basis anywhere on the page.
+  // Full audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Yuanwu/Combat, cross-checked against
+  // ww.nanoka.cc/character/1303 (both agree exactly) — every pre-existing value was already correct.
+  // Added the three entirely missing Lightning Infused enhanced-state rows.
   'Yuanwu': [
     ['Basic ATK', 'Leihuangquan Stage 1-5', '49.11% → 51.81%×2 → 21.84%×2+32.76%×2 → 51.81%×2 → 49.11%×2+65.48%', 'Up to 5 consecutive Electro strikes.'],
     ['Heavy ATK', 'Leihuangquan (hold)', '159.05%', 'Consumes STA to attack the target.'],
@@ -4096,6 +4099,9 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'Thunder Uprising', '39.77%', 'Replaces Resonance Skill Thunder Wedge when "Readiness" is full.'],
     ['Forte', 'Thunderweaver', '31.02%+20.68%×2', 'Basic ATK within 3s of a Heavy ATK/successful Counterattack while Lightning Infused, counted as Basic ATK DMG.'],
     ['Intro', 'Thunder Bombardment', '63.62%', 'Electro DMG opener.'],
+    ['Basic ATK', 'Lightning Infused Stage 1-5', '24.56% → 25.91%×2 → 10.92%×2+16.38%×2 → 11.46%×5 → 16.37%×3+32.74%', 'Enhanced Basic ATK combo while in Lightning Infused.'],
+    ['Heavy ATK', 'Lightning Infused (hold)', '31.02%', 'Enhanced Heavy ATK while in Lightning Infused.'],
+    ['Dodge Counter', 'Lightning Infused', '43.27%+32.45%×2', 'Enhanced Dodge Counter while in Lightning Infused.'],
     ['Outro', 'Lightning Manipulation', 'No DMG (Vibration Strength depletion)', 'Thunderbolts centered on the skill target; deals no DMG, greatly depletes enemy Vibration Strength.'],
   ],
 };
@@ -6102,7 +6108,19 @@ const RESONANCE_CHAIN_DATA = {
   // Resonance Liberation DMG Bonus+50% (confirmed exact, modeled as libDmg). S6 Defender of All Realms —
   // nearby team members gain +32% DEF for 3s while within Thunder Wedge's range (confirmed exact,
   // team-wide DEF buff; no team-DEF% stat in schema, kept as totalMult).
-  'Yuanwu':       { s1: { totalMult: 4 }, s2: { totalMult: 3 }, s3: { totalMult: 6 }, s4: { totalMult: 8 }, s5: { libDmg: 50 }, s6: { totalMult: 8 } },
+  // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Yuanwu/Combat, cross-checked against
+  // ww.nanoka.cc/character/1303 (both agree exactly). Yuanwu's kit is almost entirely DEF-scaling, and
+  // this schema has no DEF%/attack-speed/shield category, so the prior "kept as small totalMult"
+  // placeholders on S1/S2/S3/S4/S6 had no real derivation — replaced with {} per this project's hard
+  // rule against inventing values, and documented the real (non-representable) mechanics instead:
+  // S1: Lightning Infused grants +20% Basic ATK Speed and +20% Heavy ATK Speed (attack-speed, not a DMG%).
+  // S2: Thunder Bombardment restores 15 extra Resonance Energy (pure utility).
+  // S3: Thunder Wedge's Coordinated ATK deals a bonus hit equal to 20% of Yuanwu's DEF (a flat
+  // DEF-scaling bonus-hit addition, same unrepresentable class as other bonus-hit nodes this pass).
+  // S4: casting Blazing Might grants a Shield equal to 200% of Yuanwu's DEF for 10s (shield, not DPS).
+  // S6: nearby team gains DEF +32% for 3s (team-wide DEF buff, no matching category).
+  // TODO: needs Phase 2 schema for DEF%, attack-speed, shield, and DEF-scaling-bonus-hit mechanics.
+  'Yuanwu':       { s1: {}, s2: {}, s3: {}, s4: {}, s5: { libDmg: 50 }, s6: {} },
 };
 
 // [SECTION:SKILL_ICONS] — Per-character skill-name → icon URL, matched against SKILL_MULTIPLIERS/
