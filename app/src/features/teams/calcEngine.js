@@ -1024,15 +1024,50 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // Score any buff generically via real formula-derived uplift — this is what lets a completely
     // off-meta pairing (any character whose CHAR_BUFF_TABLE just happens to fit) get credited the
     // same way a hand-curated team would, instead of only recognizing patterns someone hardcoded.
-    const scoreBuff = (b) => {
-      if (!buffApplies(b)) return;
+    const buffScoreContribution = (b) => {
+      if (!buffApplies(b)) return 0;
       const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField);
-      if (uplift <= 0) return;
-      score += uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
+      if (uplift <= 0) return 0;
+      return uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
+    };
+    const applyBuffTag = (b) => {
       if (b.stat === 'deepen' || b.stat === 'offTune') tags.push('Deepen');
       else if (b.stat === 'basicDmg') tags.push('ATK Amp');
       else if (b.stat === 'heavyDmg') tags.push('Heavy Amp');
       else if (b.stat === 'echoDmg') tags.push('Echo Amp');
+    };
+    const scoreBuff = (b) => {
+      const contribution = buffScoreContribution(b);
+      if (contribution <= 0) return;
+      score += contribution;
+      applyBuffTag(b);
+    };
+    // outroBuffs from a dual-mode Hybrid (e.g. Denia: Fusion Burst vs Tune Strain, Lucilla: Glacio
+    // Chafe vs Echo mode — both characters' own `desc` field says so explicitly: "depending on
+    // Resonance Mode") represent ALTERNATIVE builds a player picks one of, not simultaneous effects —
+    // unlike every other multi-entry outroBuffs case in this table (e.g. Yinlin's elemDmg + libDmg,
+    // Roccia's elemDmg + basicDmg), which really do fire together off the SAME outro cast. Found via
+    // a real audit (Encore+Shorekeeper recommendations): scoring both of Denia's mode-locked buffs at
+    // once inflated her above Encore's own curated real partners (Brant/Lupa), crediting a team state
+    // that can't actually happen in one rotation. The existing data convention already names the
+    // mechanic ("... mode" in the condition text) for every dual-mode entry — group by that literal
+    // marker and take only the single best-applying one per group instead of summing, while every
+    // other outroBuffs entry (no "mode" in its condition) keeps summing exactly as before.
+    const scoreOutroBuffs = (list) => {
+      const modeGroup = list.filter(b => (b.condition || '').toLowerCase().includes('mode'));
+      const rest = list.filter(b => !modeGroup.includes(b));
+      rest.forEach(scoreBuff);
+      if (!modeGroup.length) return;
+      let best = null;
+      let bestContribution = -Infinity;
+      modeGroup.forEach(b => {
+        const contribution = buffScoreContribution(b);
+        if (contribution > bestContribution) { bestContribution = contribution; best = b; }
+      });
+      if (best && bestContribution > 0) {
+        score += bestContribution;
+        applyBuffTag(best);
+      }
     };
     members.forEach(m => {
       if (m === mainDps) return;
@@ -1047,7 +1082,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       const scoreBeforeMember = score;
       const bt = CHAR_BUFF_TABLE[m];
       if (bt) {
-        (bt.outroBuffs || []).forEach(scoreBuff);
+        scoreOutroBuffs(bt.outroBuffs || []);
         // selfBuffs with target:'team' are a real, deliberate data convention (see Sigrika's Blessing
         // of Runes — "+48% Aero DMG to whichever Resonator is active", explicitly NOT self-only despite
         // living in the selfBuffs array — and Rover: Electro's Overshock team ATK buff) for a passive,
