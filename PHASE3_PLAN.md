@@ -836,13 +836,49 @@ Each step gets its own before/after check against the full test suite
 in the browser (per this project's own UI-verification standard) before
 moving to the next step — no step ships on "the diff looks right."
 
-**Open question for the user, not yet decided**: whether to ship each
-phased step directly to `main` as the live number (accepting that the
-displayed team score visibly shifts partway through, mid-rewrite, more than
-once) or stage the whole rewrite behind something invisible to players
-until step 6 lands. No infrastructure for a feature flag exists in this
-codebase today, so the second option would itself be new scope — flagging
-this explicitly rather than picking one silently.
+**Decided (user, 2026-09-01)**: ship each phased step directly to `main` as
+the live number, no feature-flag staging — Auto Team/Auto Equip's own perf
+question is deliberately deferred to be looked at once the whole rewrite is
+done, not per-step.
+
+### Stage 4, step 1/6 — RAW tier (`soloDps`/`rawDps`) (done, 2026-09-01)
+
+Replaced the RAW tier's per-member flat `totalMult%` formula with a real
+`resolveHitComposedDps` call (gear composed into `externalStats` from the
+SAME `rStats` object the legacy path already built — handed over BEFORE
+`routeTypeBonuses` flattens it, since the engine reads
+basicDmg/heavyDmg/libDmg/echoDmg/coordDmg by their own real per-hit category
+and doesn't need that legacy-only flattening at all; `sequence` from the
+member's own equipped Resonance Chain; `cooldownSteadyState: true` per the
+Stage 4 kickoff root-cause finding) for any character with both a converted
+`.blocks.js` and a `CHARACTER_ROTATIONS` entry. Falls back to the unchanged
+legacy formula otherwise (currently only Jingran, unreleased).
+
+- **`engine/characterBlocks/index.js`** (new): `BLOCKS_BY_CHARACTER`, a
+  production name -> `TriggerBlock[]` registry — this mapping only existed
+  before as a hardcoded array inside `phase3-parityHarness.test.js`,
+  test-only. 57 entries (one per `.blocks.js` file), verified against
+  `CHARACTER_DATA` for drift.
+- The field-time/Coordinated-ATK discount (`coordinatedMultShare`) is
+  computed once, as a plain 0-1 `fieldMultFactor`, and reused identically
+  by both the engine and legacy branches — a character's realistic
+  on-field time share doesn't depend on which formula produces their raw
+  output, so this was factored out rather than duplicated a third time.
+- 10 new tests across `characterBlocksIndex.test.js` (registry integrity)
+  and `calcTeamStatsEngineRawTier.test.js` (solo/mixed-team/fallback/
+  sequence-gating wiring, at the live `calcTeamStats()` level, not just the
+  underlying engine primitives). Re-running the Stage 1 harness now shows
+  ~1.000 ratios across the roster — expected and correct: the harness's
+  "legacy" comparator IS this same code now, so it's validating the wiring
+  stayed self-consistent, not an independent check anymore (small
+  deviations like Yinlin's 1.027 come from `cooldownSteadyState`, which the
+  harness itself still doesn't pass, being correctly live in production).
+
+Full suite: 1104/1104 passing (80 files). Production build verified clean.
+
+**Next**: step 2/6 — the Team/FULL tier (`teamDps`/`memberDps`), the actual
+cutover every other consumer (`TeamsTab`, `autoEquip.js`,
+`DamageCalculator.jsx`'s main numbers) starts reading from.
 
 ## Stage 5 — Final verification and commit
 
@@ -863,7 +899,7 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
 - [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
 - [x] Stage 4 reconnaissance — full consumer-contract map (every field read outside calcTeamStats.js, by which component), measured perf check (engine ~3.1x slower/call than legacy but still sub-ms — not a blocker for autoEquip.js's search loop), and a 6-step phased implementation plan (solo tier -> team tier -> DOT -> rotationTimeline -> warnings -> dead code removal), each step independently tested/committed
-- [ ] Stage 4 — the actual rewrite (not yet started; open question logged above on shipping cadence — needs a decision before step 1 starts)
+- [ ] Stage 4 — the actual rewrite (shipping cadence decided: each step lands directly on `main` as it's finished, not staged behind a flag; step 1/6 done — RAW tier/`soloDps`/`rawDps` now calls `resolveHitComposedDps` via new `engine/characterBlocks/index.js` registry, legacy fallback for not-yet-converted characters; steps 2-6 remaining)
 - [ ] Stage 5 — final verify + commit
 
 Work proceeds stage by stage; each stage's own sub-tasks are committed
