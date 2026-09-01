@@ -2,7 +2,10 @@
 
 **PHASE COMPLETE (2026-09-01)** — all 5 stages done, 1126/1126 tests
 passing, verified against the real running app. See "Stage 5 — Final
-verification and commit" near the bottom for the closing writeup.
+verification and commit" near the bottom for the closing writeup. The one
+item Stage 5 deferred (physically skipping, not just overriding, the dead
+legacy FULL-tier computation) has since also been done — see "Post-phase
+cleanup" right after Stage 5.
 
 ## Current status (updated 2026-09-01)
 
@@ -1155,6 +1158,51 @@ pass is physically deleting the now-unused-but-still-running legacy
 computation (flagged in step 6, not a functional gap — see its own
 writeup for why it was deferred).
 
+## Post-phase cleanup — physically skip the dead legacy FULL-tier computation (done, 2026-09-01)
+
+The item Stage 4 step 6 and Stage 5 both explicitly deferred: the legacy
+FULL-tier computation was still physically *running* for a fully-converted
+team (its output just discarded/overridden), not actually skipped. This
+pass closes that gap by wrapping the two remaining unconditional legacy
+blocks in `if (!allMembersConverted) { ... }`:
+
+- The main-DPS buff-accumulation block (weapon/echo-set/echo-skill-buff/
+  resonance-chain/cross-character-outro-lib-debuff computation, the ~340-line
+  span feeding `mainDps`'s buff totals).
+- The sub-DPS `mems.forEach` loop feeding `totalRotDmg`/`memberDmgArr`
+  (already overridden by step 2's engine block for a converted team, now
+  also not computed at all in that case).
+
+**Scoping bug found and fixed before it shipped**: two separate
+`if (!allMembersConverted) { ... }` blocks testing the *same* condition do
+NOT share scope with each other. Cross-referencing every variable declared
+inside the main-DPS block against later usages found two cross-block
+dependencies that a naive wrap would have broken:
+- `seqTotalMultBonus`, declared inside the main-DPS block, is read inside
+  the (separately wrapped) sub-DPS loop.
+- `dpsFocus`, declared inside the main-DPS block, is read by the
+  pre-existing, still-present dead `syn` scoring code further down the
+  file (unrelated to Phase 3, left untouched).
+
+Both would have thrown `ReferenceError` specifically when
+`!allMembersConverted` is true — i.e. exactly the Jingran mixed-team
+fallback path, the one path where these blocks actually execute. Fixed by
+hoisting `let seqTotalMultBonus = 0;` and `const dpsFocus = mainDps.d.dmgFocus || [];`
+to the pre-existing pre-wrap `let` declarations block (alongside
+`atkPct`/`cr`/`cd`/etc.), before either wrap, and removing the now-duplicate
+inner declarations.
+
+**Verification**: full test suite (1126/1126, 86 files), production build
+clean, and a manual probe script confirming `teamDps`/`soloDps`/`effAtk`/
+`score` are byte-identical pre- and post-cleanup for three real teams
+(Yinlin+Augusta+Rover: Electro, Sigrika+Qiuyuan+Ciaccona — both fully
+converted — and Jingran+Verina, the mixed-team fallback path). Pure
+dead-code-skip, zero behavior change, both branches confirmed correct.
+
+The legacy FULL-tier computation is now genuinely `!allMembersConverted`-
+gated end to end — it neither runs nor is overridden for a fully-converted
+team, and remains the exact, unmodified fallback for a mixed team.
+
 ## Status
 
 - [x] Stage 0 — coverage audit
@@ -1163,7 +1211,7 @@ writeup for why it was deferred).
 - [x] Stage 3 — close gaps (item 1/5: sequence-level gating, roster-wide median 3.13x->2.03x, max 40.03x->8.01x; item 2/5: DOT reactions composed around the engine via engine/dotReactions.js; item 3/5: energy-cycle-gated Liberation uptime via engine/energyCycleGating.js's libUptimeOf() + a libUptime param on resolveHitComposedDps/resolveHitComposedTeamDps; item 4/5: Coordinated ATK off-field snapshot semantics via engine/coordinatedAtk.js's coordinatedMultShare() + a coordSnapshotDiscount option on resolveSimulatedTeamRotation/resolveHitComposedTeamDps; item 5/5: the rotation on-field order-search via engine/rotationOrderSearch.js's chooseOnFieldOrder() — ALL 5 ITEMS DONE)
 - [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
 - [x] Stage 4 reconnaissance — full consumer-contract map (every field read outside calcTeamStats.js, by which component), measured perf check (engine ~3.1x slower/call than legacy but still sub-ms — not a blocker for autoEquip.js's search loop), and a 6-step phased implementation plan (solo tier -> team tier -> DOT -> rotationTimeline -> warnings -> dead code removal), each step independently tested/committed
-- [x] Stage 4 — the actual rewrite, functionally complete (shipping cadence: each step landed directly on `main` as finished, no feature-flag staging). All 6 steps done — solo/RAW tier, team/FULL tier, DOT, `rotationTimeline` order, `warnings`, and the main-DPS stat panel all now come from the engine for any fully-converted team (56 of 57 characters; unreleased Jingran is the sole legacy-fallback case). The old legacy computation still physically runs (its output is just overridden) rather than being deleted outright — see step 6's own writeup for why actual deletion is deferred as a separate follow-up, not a functional gap.
+- [x] Stage 4 — the actual rewrite, functionally complete (shipping cadence: each step landed directly on `main` as finished, no feature-flag staging). All 6 steps done — solo/RAW tier, team/FULL tier, DOT, `rotationTimeline` order, `warnings`, and the main-DPS stat panel all now come from the engine for any fully-converted team (56 of 57 characters; unreleased Jingran is the sole legacy-fallback case). The old legacy computation no longer physically runs for a fully-converted team — see "Post-phase cleanup" for the follow-up pass that gated it behind `!allMembersConverted`.
 - [x] Stage 5 — final verify + commit (1126/1126 tests, production build clean, real Playwright-driven browser verification against the live app confirmed every consumer — stat panel, DPS cards, damage sources, member breakdown, warnings, Rotation Guide — renders correctly with real engine-composed output and zero attributable console errors)
 
 **Phase 3 is complete.**
