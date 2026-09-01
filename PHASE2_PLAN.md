@@ -786,15 +786,33 @@ roster or to team-level integration.
   repeatable extra hit) is a distinct next increment on top of this one,
   not silently folded in as if already solved.
 
+**Proc composition — DONE 2026-09-01 (same day, immediately after Stage 1).**
+Turned out to need almost no new machinery: a `'windowed-proc'` block's
+trigger key already only appears in a step's `firedTriggers` on the exact
+step where `RotationSimulator.tryProc()` succeeded (same
+`triggerFired()`/`triggerKey()` path every other trigger type already goes
+through) — `resolveHitComposedDps.js` just needed to stop skipping blocks
+whose real number lives in `proc` instead of `damage.hits`. Converts a
+`proc` field to an equivalent single-hit `{atkPct, category}` on the fly.
+Verified with 3 tests using Yinlin's real S6 Furious Thunder: a hand-built
+rotation that actually lands a qualifying Basic ATK inside the 30s
+post-Liberation window adds a real 419.59%-ATK hit; the same rotation with
+the window closed first adds nothing; 5 qualifying attempts inside one
+window produce exactly 4 proc hits (the `maxProcs` cap), not 5. Also
+confirmed (not a regression, an already-known finding restated with the new
+capability in place): her REAL `CHARACTER_ROTATIONS` sequence still
+produces zero proc hits, since her canonical post-Liberation Basic ATK step
+is a single tap ("Stage 1"), a different skill label than the proc's `on`
+("Stage 1-4") — a genuine fact about this specific optimized rotation, not
+an engine gap.
+
 **Still not done, deliberately** (next increments, in roughly the order
-they build on each other): (1) proc composition (`proc` field → actual
-extra hits, reusing `activeCountAt`-style window queries against
-`windowed-proc` blocks), (2) resource-threshold gauge simulation, (3)
+they build on each other): (1) resource-threshold gauge simulation, (2)
 extending the per-hit `damage.hits` data to the other 5 converted
-characters, (4) team-level integration (cross-character buffs landing on
+characters, (3) team-level integration (cross-character buffs landing on
 specific hits mid-combo, reusing `resolveSimulatedTeamRotation.js`'s
 routing logic generalized to `activeCountAt` the same way this stage
-generalized the single-character driver), (5) the actual `calcTeamStats.js`
+generalized the single-character driver), (4) the actual `calcTeamStats.js`
 gating/wiring decision — still requires its own separate go-ahead, per the
 "never all-or-nothing" rule, and is not any closer to being decided than
 before this stage — this stage only proves the ARCHITECTURE is sound.

@@ -72,15 +72,50 @@ describe('resolveHitComposedDps — a passive buff correctly boosts only its own
   });
 });
 
+describe('resolveHitComposedDps — proc composition (S6 Furious Thunder)', () => {
+  it('a hand-built rotation that actually LANDS a qualifying Basic ATK inside the post-Liberation proc window adds a real extra hit at 419.59% ATK', () => {
+    const s6 = YINLIN_BLOCKS.find(b => b.id === 'yinlin.chain.s6-pursuit-of-justice');
+    const steps = [
+      { type: 'Liberation', skill: 'Thundering Wrath', stepSeconds: 1 }, // opens the 30s window
+      { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 3, triesProc: s6.id }, // well within it
+    ];
+    const { hitLog } = resolveHitComposedDps(YINLIN_BLOCKS, steps, { enemyDef: 0, enemyRes: 0 }, 1000, 'electro', 'Sub DPS');
+    const procHits = hitLog.filter(h => h.blockId === s6.id);
+    expect(procHits).toHaveLength(1);
+    expect(procHits[0].atkPct).toBe(419.59);
+    expect(procHits[0].category).toBe('skillDmg');
+  });
+
+  it('the SAME rotation but with the qualifying Basic ATK landing AFTER the 30s window closes adds no extra hit', () => {
+    const s6 = YINLIN_BLOCKS.find(b => b.id === 'yinlin.chain.s6-pursuit-of-justice');
+    const steps = [
+      { type: 'Liberation', skill: 'Thundering Wrath', stepSeconds: 1 },
+      { type: 'Echo', skill: 'Use Echo', stepSeconds: 31 }, // stalls past the 30s window
+      { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 0.5, triesProc: s6.id },
+    ];
+    const { hitLog } = resolveHitComposedDps(YINLIN_BLOCKS, steps, { enemyDef: 0, enemyRes: 0 }, 1000, 'electro', 'Sub DPS');
+    expect(hitLog.filter(h => h.blockId === s6.id)).toHaveLength(0);
+  });
+
+  it('4 qualifying Basic ATKs within one window produce exactly 4 proc hits — the 5th does not (maxProcs cap)', () => {
+    const s6 = YINLIN_BLOCKS.find(b => b.id === 'yinlin.chain.s6-pursuit-of-justice');
+    const basicStep = { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1-4", stepSeconds: 1, triesProc: s6.id };
+    const steps = [
+      { type: 'Liberation', skill: 'Thundering Wrath', stepSeconds: 1 },
+      basicStep, basicStep, basicStep, basicStep, basicStep, // 5 attempts, cap is 4
+    ];
+    const { hitLog } = resolveHitComposedDps(YINLIN_BLOCKS, steps, { enemyDef: 0, enemyRes: 0 }, 1000, 'electro', 'Sub DPS');
+    expect(hitLog.filter(h => h.blockId === s6.id)).toHaveLength(4);
+  });
+});
+
 describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS data (Yinlin)', () => {
-  it("computes a real total across her whole rotation, and the S6 Furious Thunder proc (kind:'damage' with a `proc` field, not `damage.hits`) correctly contributes ZERO here — proc composition is a documented next increment, not silently included as if solved", () => {
+  it("computes a real total across her whole rotation; the S6 Furious Thunder proc correctly contributes ZERO here — a genuine finding about THIS canonical rotation (established earlier in rotationSimulator.test.js), not an engine limitation: her real post-Liberation Basic ATK step is a single tap (\"Stage 1\"), a different skill label than the proc's `on` (\"Stage 1-4\"), so nothing in this specific sequence attempts a qualifying hit inside the open window", () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yinlin'], YINLIN_BLOCKS);
     const { totalDamage, dps, hitLog } = resolveHitComposedDps(YINLIN_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'electro', 'Sub DPS');
 
     expect(totalDamage).toBeGreaterThan(0);
     expect(dps).toBeGreaterThan(0);
-    const s6 = YINLIN_BLOCKS.find(b => b.id === 'yinlin.chain.s6-pursuit-of-justice');
-    expect(s6.damage).toBeUndefined(); // only `proc` is populated for S6, not `damage.hits`
     expect(hitLog.some(h => h.blockId === 'yinlin.chain.s6-pursuit-of-justice')).toBe(false);
 
     // Every 'cast'-triggered damage block DOES fire at least once in her real rotation (Basic ATK,

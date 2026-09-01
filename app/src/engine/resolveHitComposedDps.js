@@ -6,6 +6,13 @@
 // mid-combo (that's the natural next increment, reusing resolveSimulatedTeamRotation.js's routing,
 // once this single-character slice is trusted).
 //
+// Proc composition (Yinlin S6 Furious Thunder-style discrete extra hits, declared via a block's
+// `proc` field instead of `damage.hits`) is handled too, added same day: a 'windowed-proc' block
+// already resolves through the exact same triggerFired()/triggerKey() machinery every other trigger
+// type uses (its key only lands in a step's firedTriggers on the specific step where
+// RotationSimulator.tryProc() actually succeeded), so no new firing logic was needed — this file just
+// needed to stop skipping blocks whose real number lives in `proc` instead of `damage`.
+//
 // Sums REAL per-hit damage (block.damage.hits, populated so far only for Yinlin — see her block
 // file) across a full simulated rotation, instead of calcTeamStats.js's single flat
 // `totalMult × avgCrit × dmgBonus × ...` multiplication. For each hit landing at a real simulated
@@ -73,26 +80,37 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseAtk, targ
     return stats;
   }
 
-  const damageBlocks = blocks.filter(b => b.kind === 'damage' && b.damage?.hits?.length);
+  // A block contributes real hits either via `damage.hits` (a normal cast's per-hit %ATK) or via
+  // `proc` (a discrete extra-hit like Yinlin's S6 Furious Thunder — see triggerBlocks.schema.js's
+  // Proc typedef). Both resolve through the exact SAME triggerFired()/triggerKey() machinery
+  // already used for every other trigger type in this engine — a 'windowed-proc' block's trigger
+  // key only appears in a step's `firedTriggers` on the specific step where
+  // RotationSimulator.tryProc() actually succeeded, so no new firing logic is needed here at all;
+  // this just needed to stop skipping blocks whose real number lives in `proc` instead of `damage`.
+  const damageBlocks = blocks
+    .filter(b => b.kind === 'damage' && (b.damage?.hits?.length || b.proc))
+    .map(b => b.damage?.hits?.length
+      ? { block: b, hits: b.damage.hits, category: b.damage.category }
+      : { block: b, hits: [{ atkPct: b.proc.atkPct }], category: b.proc.category });
+
   const hitLog = [];
   let totalDamage = 0;
 
   for (const r of results) {
-    for (const db of damageBlocks) {
+    for (const { block: db, hits, category } of damageBlocks) {
       if (r.ineligibleBlockIds.has(db.id)) continue; // this specific cast is on cooldown
       if (!triggerFired(db.trigger, r.firedTriggers)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
 
       const stats = statsAtInstant(r.time);
-      const category = db.damage.category; // e.g. 'basicDmg', 'skillDmg' — which stat pool this cast's DMG Bonus draws from
-      const categoryStat = category ? stats[category] || 0 : 0;
+      const categoryStat = category ? stats[category] || 0 : 0; // which stat pool this cast's DMG Bonus draws from
       const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify, stats.deepen);
       const avgCrit = calcAvgCrit(stats.cr, stats.cd);
       const defMult = calcDefMult(enemyDef, stats.defShred, stats.defIgnore);
       const resMult = calcResMult(enemyRes, stats.resShred);
       const effAtk = baseAtk * (1 + stats.atkPct / 100);
 
-      for (const hit of db.damage.hits) {
+      for (const hit of hits) {
         const damage = effAtk * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult;
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
