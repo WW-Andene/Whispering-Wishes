@@ -1,5 +1,9 @@
 # Phase 3 — Cut `calcTeamStats.js` over to the TriggerBlock engine
 
+**PHASE COMPLETE (2026-09-01)** — all 5 stages done, 1126/1126 tests
+passing, verified against the real running app. See "Stage 5 — Final
+verification and commit" near the bottom for the closing writeup.
+
 ## Current status (updated 2026-09-01)
 
 **Done:**
@@ -1097,16 +1101,59 @@ except unreleased Jingran), with the unmodified legacy computation kept as
 both the correctness fallback for a mixed team and, for now, unused-but-
 still-running scaffolding for a converted one.
 
-## Stage 5 — Final verification and commit
+## Stage 5 — Final verification and commit (done, 2026-09-01)
 
-Re-run the full harness plus the existing full test suite (1065 tests as of
-Stage 3 item 1; check the current count when this stage actually runs, it
-will have grown), confirm no
-consumer component broke (manual check of the Damage Calculator UI), then
-commit. This is the only stage that touches the live file — everything
-before it is additive (new tests, new engine code) and safe to land
-independently, one commit at a time, one-by-one per this project's standing
-"1 by 1, full precision" rule.
+**Full test suite**: 1126/1126 passing, 86 files (grown from the 1065
+recorded at Stage 3 item 1, as expected — every stage since added its own
+tests, none removed). Production build (`vite build --mode production`)
+verified clean at every step of Stage 4, most recently right before this
+closure.
+
+**Real browser verification** (not `import`-and-`console.log` — the actual
+app, driven end-to-end): launched the Vite dev server, opened the Teams
+tab, and selected a real curated team (Sigrika + Qiuyuan + Ciaccona — all
+three fully converted, exercising every engine path Stage 4 touched) via
+Playwright against the real running app. Confirmed, reading the live DOM
+and screenshots, not assumed:
+- **Team DPS 21,766/s**, **Solo DPS 8,434/s**, **Synergy Uplift +158%** —
+  all rendered, finite, plausible numbers in the Damage Calculator's main
+  panel.
+- **Stat panel**: `+12.0% ATK`, `+107.0% Elem DMG`, `+172.4% Skill DMG`,
+  `25.0% Crit Rate`, `228.6% Crit DMG` — real buff badges attributed to
+  the correct source characters (Sigrika/Qiuyuan/Ciaccona), confirming
+  step 6's `resolveSimulatedTeamRotation`-based stat panel renders
+  correctly, not just computes correctly in isolation.
+- **Damage Sources**: Rotation 99% / DOT-Reactions 1% — sane split (step
+  3's `dmgSources`).
+- **Damage Distribution**: Sigrika 48% / Qiuyuan 27% / Ciaccona 26% (step
+  2's `memberDps`).
+- **Warnings**: "No healer in team", two real low-ER warnings correctly
+  naming Qiuyuan and Ciaccona with their real ER%/libUptime numbers (step
+  5's untouched-but-verified logic).
+- **Rotation Guide**: Ciaccona (6s) → Qiuyuan (6s) → Sigrika (16s, Main
+  DPS last) — matches `chooseOnFieldOrder`'s real engine order (step 4),
+  with real buff hand-off labels and a real skill-by-skill sequence
+  rendered per block.
+- **Console**: zero errors attributable to this rewrite. The only network
+  failures observed (`/null/presence/....json`, a missing background audio
+  file) are pre-existing, unrelated to `calcTeamStats.js` or the damage
+  engine — confirmed by reproducing them independent of team selection.
+
+No consumer component broke: `DamageCalculator.jsx`'s full UI (stat panel,
+DPS cards, damage-source bars, member breakdown, warnings, Rotation Guide)
+rendered correctly end-to-end against real, engine-composed output.
+
+**Phase 3 is complete.** `calcTeamStats.js` now computes real per-hit,
+per-character, cross-buff-aware team damage via the TriggerBlock engine
+for any fully-converted team (56 of 57 characters — Jingran, unreleased,
+is the sole legacy-fallback case), with zero silent regressions: every
+divergence from the old flat `totalMult%` numbers was individually
+root-caused and classified (Case 1, documented improvement) before this
+rewrite touched a single line of the live file, exactly as this phase's
+own opening goal demanded. The one item deliberately left for a future
+pass is physically deleting the now-unused-but-still-running legacy
+computation (flagged in step 6, not a functional gap — see its own
+writeup for why it was deferred).
 
 ## Status
 
@@ -1117,8 +1164,10 @@ independently, one commit at a time, one-by-one per this project's standing
 - [x] Stage 4 kickoff — root-caused the residual ~2.03x median gap the Stage 1 harness never closed: confirmed via `characters.js`'s own ROTATION_DATA header comment that legacy `totalMult` is a hand-authored heuristic table ("sum of ATK% multipliers... Sources: Prydwen, WutheringLab, community rotation testing"), not derived from real `SKILL_MULTIPLIERS` data — Case 1 (expected, documented improvement) per Stage 2's own classification, not a bug. Also found and fixed a real (if currently low-impact, pending cooldown data) engine gap along the way: added an opt-in `cooldownSteadyState` param to `resolveHitComposedDps`/`resolveHitComposedTeamDps` so a long-cooldown hit landing once in a shorter derived pass doesn't get over-credited as if it recurs every pass.
 - [x] Stage 4 reconnaissance — full consumer-contract map (every field read outside calcTeamStats.js, by which component), measured perf check (engine ~3.1x slower/call than legacy but still sub-ms — not a blocker for autoEquip.js's search loop), and a 6-step phased implementation plan (solo tier -> team tier -> DOT -> rotationTimeline -> warnings -> dead code removal), each step independently tested/committed
 - [x] Stage 4 — the actual rewrite, functionally complete (shipping cadence: each step landed directly on `main` as finished, no feature-flag staging). All 6 steps done — solo/RAW tier, team/FULL tier, DOT, `rotationTimeline` order, `warnings`, and the main-DPS stat panel all now come from the engine for any fully-converted team (56 of 57 characters; unreleased Jingran is the sole legacy-fallback case). The old legacy computation still physically runs (its output is just overridden) rather than being deleted outright — see step 6's own writeup for why actual deletion is deferred as a separate follow-up, not a functional gap.
-- [ ] Stage 5 — final verify + commit
+- [x] Stage 5 — final verify + commit (1126/1126 tests, production build clean, real Playwright-driven browser verification against the live app confirmed every consumer — stat panel, DPS cards, damage sources, member breakdown, warnings, Rotation Guide — renders correctly with real engine-composed output and zero attributable console errors)
 
-Work proceeds stage by stage; each stage's own sub-tasks are committed
-individually rather than held until the whole phase is done, since only
-Stage 4/5 touch the live file — everything earlier is purely additive.
+**Phase 3 is complete.**
+
+Work proceeded stage by stage; each stage's own sub-tasks were committed
+individually rather than held until the whole phase was done, since only
+Stage 4/5 touched the live file — everything earlier was purely additive.
