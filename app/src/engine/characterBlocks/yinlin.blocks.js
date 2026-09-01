@@ -31,13 +31,18 @@
 // __tests__/rotationSimulator.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+
 const SOURCE = 'Yinlin';
 
 /** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
 export const YINLIN_BLOCKS = [
-  // ── Damage blocks (from SKILL_MULTIPLIERS — per-hit % stays in the flat table until the raw
-  //    damage-per-hit formula path is migrated, same documented boundary as every other
-  //    converted character's damage blocks; these carry the trigger/timing wiring only) ──
+  // ── Damage blocks (from SKILL_MULTIPLIERS). `damage.hits` populated 2026-09-01 as the Stage 1
+  //    proof-of-concept for the "totalMult -> hit-composed DPS" design doc (PHASE2_PLAN.md) — real
+  //    per-hit %ATK, parsed straight from these same already-audited SKILL_MULTIPLIERS strings via
+  //    skillMultiplierParser.js, no new numbers invented. `effects` stays [] (damage.hits is a
+  //    SEPARATE field for raw hit damage, not a %-modifier — see triggerBlocks.schema.js's own doc
+  //    for why it's kept out of effects). ──
   {
     id: 'yinlin.basic.zapstrings-dance',
     source: SOURCE,
@@ -46,17 +51,36 @@ export const YINLIN_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
+    damage: { hits: parseSkillMultiplierHits("28.81% → 33.82%×2 → 13.99%×7 → 75.16%"), category: 'basicDmg' },
     note: "28.81% → 33.82%×2 → 13.99%×7 → 75.16% at Lv.10 across the 4-stage combo; also restores Judgment Points and can carry Furious Thunder procs while yinlin.chain.s6-pursuit-of-justice's window is open (see below).",
   },
   {
-    id: 'yinlin.skill.magnetic-roar-lightning-execution',
+    id: 'yinlin.skill.magnetic-roar',
     source: SOURCE,
     kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Magnetic Roar' },
     timing: { cooldown: 12 },
     target: { scope: 'self' },
     effects: [],
-    note: 'Magnetic Roar (59.65%×3) puts Yinlin into 10s Execution Mode and applies Sinner\'s Mark; Lightning Execution (89.47%×4) only casts free as the immediate follow-up — cast late, or swap out first, and it goes on a separate cooldown instead.',
+    damage: { hits: parseSkillMultiplierHits('59.65%×3'), category: 'skillDmg' },
+    note: 'Magnetic Roar: 59.65%×3 at Lv.10. Puts Yinlin into 10s Execution Mode and applies Sinner\'s Mark.',
+  },
+  {
+    id: 'yinlin.skill.lightning-execution',
+    source: SOURCE,
+    kind: 'damage',
+    // Split into its OWN block 2026-09-01 (was previously folded into yinlin.skill.magnetic-roar as
+    // one combined block sharing Magnetic Roar's trigger, which meant this cast's own real
+    // 'cast:Skill:Lightning Execution' key — the exact key CHARACTER_ROTATIONS' own separate
+    // Lightning Execution step produces — could never resolve through simulateRotation() on its own.
+    // A real gap, found while building the Stage 1 hit-composed prototype: two rotation steps need
+    // two blocks, same "split shared multi-hit nodes" precedent Camellya's S5 already established.
+    trigger: { type: 'cast', on: 'Skill:Lightning Execution' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('89.47%×4'), category: 'skillDmg' },
+    note: 'Lightning Execution: 89.47%×4 at Lv.10. Only castable for free as the immediate follow-up to Magnetic Roar — cast late, or swap out first, and it goes on a separate cooldown instead. That cast-order dependency is NOT modeled as a trigger condition yet (unconditional cast trigger here) — same simplification the flat table already carried; not attempted in this pass, which was scoped to the hit-composition data prerequisite only.',
   },
   {
     id: 'yinlin.liberation.thundering-wrath',
@@ -66,6 +90,7 @@ export const YINLIN_BLOCKS = [
     timing: { cooldown: 16 },
     target: { scope: 'self' },
     effects: [],
+    damage: { hits: parseSkillMultiplierHits('116.56%×7'), category: 'libDmg' },
     note: '116.56%×7 at Lv.10; re-applies Sinner\'s Mark. Also OPENS the S6 Furious Thunder proc window — see yinlin.chain.s6-pursuit-of-justice below.',
   },
   {
@@ -76,6 +101,7 @@ export const YINLIN_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
+    damage: { hits: parseSkillMultiplierHits('178.93%×2'), category: 'heavyDmg' },
     note: '178.93%×2 at Lv.10; auto-replaces Heavy Attack at 100/100 Judgment Points, consumes all 100, upgrades any Sinner\'s Mark on the target to an 18s Punishment Mark.',
   },
   {
@@ -87,6 +113,7 @@ export const YINLIN_BLOCKS = [
     timing: { cooldown: 1 },
     target: { scope: 'marked-enemy' },
     effects: [],
+    damage: { hits: parseSkillMultiplierHits('78.64%'), category: 'coordDmg' },
     note: '78.64% at Lv.10; a Punishment-Marked target taking ANY damage (even off-field) auto-triggers this Coordinated ATK, capped 1/second.',
   },
 

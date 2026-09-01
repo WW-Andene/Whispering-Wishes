@@ -52,6 +52,33 @@
  *                                   damage block already in this codebase (Rover's Thunderclap,
  *                                   etc.) — resolveTriggerBlocks() does not compute proc damage
  *                                   yet; this field only names the shape.
+ * @property {DamageHits} [damage]  For a `kind: 'damage'` block: the real per-hit `%ATK` values for
+ *                                   this cast, parsed from SKILL_MULTIPLIERS via
+ *                                   skillMultiplierParser.js's `parseSkillMultiplierHits()` — no new
+ *                                   numbers invented, same sourcing discipline as everywhere else in
+ *                                   this schema. Added 2026-09-01 alongside the "totalMult →
+ *                                   hit-composed DPS" design doc in PHASE2_PLAN.md — this is that
+ *                                   design's data prerequisite (step 1), populated for Yinlin as the
+ *                                   Stage 1 proof-of-concept. Kept OUT of `effects` for the exact same
+ *                                   reason `proc` is: `effects[].stat` is %-modifier-only
+ *                                   (resolved through `applyBuff()`), while a hit's own raw %ATK is a
+ *                                   whole damage instance, not a modifier. `effects: []` on a damage
+ *                                   block WITHOUT a populated `damage` field is still the documented
+ *                                   boundary it always was — this field is additive, not a
+ *                                   requirement every damage block must carry yet (most of the
+ *                                   roster's damage blocks still don't have one).
+ */
+
+/**
+ * @typedef {Object} DamageHits
+ * @property {{atkPct: number}[]} hits  One entry per individual hit in this cast (a multi-stage
+ *                                        combo like Yinlin's 4-tap Basic ATK has one entry per stage,
+ *                                        already expanded — a source row's `×N` shorthand becomes N
+ *                                        separate entries, not one entry with a multiplier field).
+ * @property {string} [category]        Which of calcEngine.js's existing damage-type categories
+ *                                        (basicDmg/heavyDmg/libDmg/skillDmg/echoDmg/coordDmg) this
+ *                                        cast's damage counts as — same vocabulary/purpose as
+ *                                        `Proc.category`.
  */
 
 /**

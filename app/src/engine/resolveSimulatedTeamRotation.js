@@ -35,7 +35,7 @@
 import { createStats, applyBuff } from '../features/teams/calcEngine.js';
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 import { triggerFired, conditionHolds } from './triggerEngine.js';
-import { timeWeightedAverageConcurrency } from './resolveSimulatedRotation.js';
+import { buildBlockWindows, timeWeightedAverageConcurrency } from './blockWindows.js';
 
 /**
  * @param {Object[]} ownedSteps  Same shape buildTeamSteps()/simulateTeamRotation() take — each step
@@ -112,38 +112,7 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
       continue;
     }
 
-    const stackingMode = block.effects[0]?.stacking || 'unique';
-    const maxStacks = block.effects[0]?.maxStacks ?? Infinity;
-    const windows = [];
-    let lastWindow = null;
-    for (const r of ownResults) {
-      if (r.ineligibleBlockIds.has(block.id)) continue;
-      if (!triggerFired(block.trigger, r.firedTriggers)) continue;
-      if (!conditionHolds(block.condition, targetElementLower, targetRole)) continue;
-
-      const now = r.time;
-      const duration = block.timing.duration;
-      if (stackingMode === 'stacking') {
-        const w = { start: now, end: now + duration };
-        windows.push(w);
-        lastWindow = w;
-      } else if (stackingMode === 'refresh') {
-        if (lastWindow && now < lastWindow.end) {
-          lastWindow.end = now + duration;
-        } else {
-          const w = { start: now, end: now + duration };
-          windows.push(w);
-          lastWindow = w;
-        }
-      } else {
-        if (!lastWindow || now >= lastWindow.end) {
-          const w = { start: now, end: now + duration };
-          windows.push(w);
-          lastWindow = w;
-        }
-      }
-    }
-
+    const { windows, stackingMode, maxStacks } = buildBlockWindows(block, ownResults, targetElementLower, targetRole);
     if (!windows.length) continue;
 
     // Denominator is always the TARGET's own on-field segment — for a self-scoped block this is the

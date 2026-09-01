@@ -320,7 +320,7 @@ describe('RotationSimulator — timing.cooldown enforcement', () => {
       { type: 'Skill', skill: 'Magnetic Roar', stepSeconds: 3 }, // 2nd cast only 3s later — still within the 12s cooldown
     ];
     const results = simulateRotation(YINLIN_BLOCKS, steps);
-    const magneticRoarBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.skill.magnetic-roar-lightning-execution');
+    const magneticRoarBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.skill.magnetic-roar');
     expect(magneticRoarBlock.timing.cooldown).toBe(12);
 
     expect(results[0].firedTriggers.has('cast:Skill:Magnetic Roar')).toBe(true);
@@ -345,7 +345,7 @@ describe('RotationSimulator — timing.cooldown enforcement', () => {
       { type: 'Skill', skill: 'Magnetic Roar', stepSeconds: 12 }, // exactly at the 12s cooldown boundary
     ];
     const results = simulateRotation(YINLIN_BLOCKS, steps);
-    const magneticRoarBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.skill.magnetic-roar-lightning-execution');
+    const magneticRoarBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.skill.magnetic-roar');
     expect(results[1].ineligibleBlockIds.has(magneticRoarBlock.id)).toBe(false);
   });
 });

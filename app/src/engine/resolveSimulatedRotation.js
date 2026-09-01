@@ -45,7 +45,12 @@
 
 import { createStats, applyBuff } from '../features/teams/calcEngine.js';
 import { simulateRotation } from './rotationSimulator.js';
-import { triggerKey, triggerFired, conditionHolds } from './triggerEngine.js';
+import { triggerFired, conditionHolds } from './triggerEngine.js';
+// buildBlockWindows is used for every continuous-uptime buff/debuff below (shared with
+// resolveSimulatedTeamRotation.js, extracted 2026-09-01 so the two drivers can't silently drift
+// apart on how 'unique'/'refresh'/'stacking' turn trigger firings into windows) — conditionHolds is
+// still imported directly here too, for the passive-block branch's own single check.
+import { buildBlockWindows, timeWeightedAverageConcurrency } from './blockWindows.js';
 
 /**
  * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks
@@ -97,43 +102,9 @@ export function resolveSimulatedRotation(blocks, steps, opts = {}) {
       continue;
     }
 
-    // Real continuous-uptime buff/debuff — walk every step, open/refresh/stack a window each time
-    // this block's OWN trigger actually fires (not merely "is still active from a prior step").
-    const stackingMode = block.effects[0]?.stacking || 'unique';
-    const maxStacks = block.effects[0]?.maxStacks ?? Infinity;
-    const windows = [];
-    let lastWindow = null;
-
-    for (const r of results) {
-      if (r.ineligibleBlockIds.has(block.id)) continue; // cooldown-gated this step
-      if (!triggerFired(block.trigger, r.firedTriggers)) continue;
-      if (!conditionHolds(block.condition, targetElementLower, targetRole)) continue;
-
-      const now = r.time;
-      const duration = block.timing.duration;
-      if (stackingMode === 'stacking') {
-        const w = { start: now, end: now + duration };
-        windows.push(w);
-        lastWindow = w;
-      } else if (stackingMode === 'refresh') {
-        if (lastWindow && now < lastWindow.end) {
-          lastWindow.end = now + duration; // extend in place, don't open a second window
-        } else {
-          const w = { start: now, end: now + duration };
-          windows.push(w);
-          lastWindow = w;
-        }
-      } else {
-        // 'unique' (default): a re-trigger while still active is a genuine no-op — doesn't extend,
-        // doesn't stack, doesn't do anything, same as the real game mechanic this models.
-        if (!lastWindow || now >= lastWindow.end) {
-          const w = { start: now, end: now + duration };
-          windows.push(w);
-          lastWindow = w;
-        }
-      }
-    }
-
+    // Real continuous-uptime buff/debuff — build its window history via the shared helper (also used
+    // by resolveSimulatedTeamRotation.js, so the two drivers can't drift on this logic).
+    const { windows, stackingMode, maxStacks } = buildBlockWindows(block, results, targetElementLower, targetRole);
     if (!windows.length) continue; // never triggered this rotation
 
     const avgMultiplier = timeWeightedAverageConcurrency(windows, { start: 0, end: totalTime }, stackingMode === 'stacking' ? maxStacks : 1);
@@ -152,31 +123,8 @@ function applyEffects(block, multiplier, stats, addTotalMult) {
   }
 }
 
-// Generalizes calcTeamStats.js's overlapUptimeForSeg (one window vs. one fixed recipient span,
-// overlap-length / recipient-length) to N possibly-overlapping windows summed and capped, integrated
-// against an arbitrary recipient segment {start, end} — for this single-character driver, that
-// segment is always {start: 0, end: totalTime} (the whole simulated span, since it resolves a
-// character's own kit against themselves, so the "recipient window" IS the whole timeline). Exported
-// (and generalized to take a segment rather than a bare totalTime) so
-// resolveSimulatedTeamRotation.js can reuse the EXACT same math for a genuinely different recipient
-// segment — another character's own on-field window — instead of a second, possibly-drifting copy.
-// A sweep over every window boundary keeps this exact rather than sampled — each sub-interval
-// between consecutive boundaries has a genuinely constant concurrent count, so summing
-// (count * intervalLength) over all sub-intervals and dividing by the segment's length is the exact
-// time-weighted average, not an approximation.
-export function timeWeightedAverageConcurrency(windows, seg, cap) {
-  if (!seg || !(seg.end > seg.start)) return 0;
-  const segLen = seg.end - seg.start;
-  const clamped = windows.map(w => ({ start: Math.max(seg.start, w.start), end: Math.min(seg.end, w.end) })).filter(w => w.end > w.start);
-  if (!clamped.length) return 0;
-  const boundaries = [...new Set([seg.start, seg.end, ...clamped.flatMap(w => [w.start, w.end])])].sort((a, b) => a - b);
-  let area = 0;
-  for (let i = 0; i < boundaries.length - 1; i++) {
-    const t0 = boundaries[i], t1 = boundaries[i + 1];
-    if (t1 <= t0) continue;
-    const mid = (t0 + t1) / 2;
-    const count = clamped.filter(w => w.start <= mid && mid < w.end).length;
-    area += Math.min(count, cap) * (t1 - t0);
-  }
-  return area / segLen;
-}
+// Re-exported for backward compatibility — this function's real definition now lives in
+// blockWindows.js (extracted 2026-09-01 alongside buildBlockWindows(), which this file's own
+// window-building now delegates to). Existing importers of `timeWeightedAverageConcurrency` from
+// THIS file (resolveSimulatedTeamRotation.js, this file's own test suite) keep working unchanged.
+export { timeWeightedAverageConcurrency };

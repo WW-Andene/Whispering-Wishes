@@ -612,6 +612,193 @@ attempted.
    that the new schema renders correctly in the UI, not just computes
    correctly. Not started.
 
+## Design doc: totalMult → hit-composed DPS (scoped 2026-09-01, NOT yet decided/built)
+
+Asked for by the user after discovering (see the finding above, same date)
+that `calcTeamStats.js`'s real DPS formula never consumed `SKILL_MULTIPLIERS`
+in the first place — it multiplies `rEff × (d.totalMult / 100) × avgCrit ×
+dmgBonus × defMult × resMult`, where `d.totalMult` is ONE hand-entered
+scalar per character (`characters.js:1375`: "sum of ATK% multipliers in one
+full rotation"). This section scopes what actually replacing that with real
+per-hit composition would mean — explicitly a DESIGN DOC, not a decision to
+build it. Nothing below has been implemented against `calcTeamStats.js`
+itself; see "Stage 1" at the bottom for what WAS actually built this pass
+(a standalone, unwired prototype).
+
+### Why the current architecture is a real fidelity ceiling, not just "less precise"
+
+`totalMult` isn't merely an approximation of the same information a
+hit-composed sum would produce — it's structurally incapable of
+representing anything Phase 2 exists to model:
+- A buff that's only active for ONE specific hit (Shorekeeper's S6: +42%
+  totalMult/+500% Crit DMG on the Discernment hit only) gets averaged
+  across the WHOLE `totalMult` scalar instead of applying at full strength
+  to exactly the hit it's meant for and zero elsewhere.
+- A cast-order-dependent forfeit (Jinhsi's two 5s windows, Yinlin's 30s/
+  4-proc Furious Thunder cap) has NO way to lower `totalMult` when the
+  real-game condition is missed — the flat scalar assumes the average case
+  always happens, so a rotation that actually violates the window shows
+  IDENTICAL DPS to one that doesn't. This is the literal thing Phase 2 was
+  greenlit to fix, and `totalMult` cannot express it no matter how precise
+  the engine's trigger evaluation gets underneath it.
+- Team-wide/cross-character buffs already get REAL uptime-weighted
+  treatment via `overlapUptimeForSeg` (see the verification-layer entry
+  above) — but that real uptime fraction still only scales the SAME flat
+  `totalMult`, not individual hits, so a buff active for the first half of
+  a character's combo (and NOT the crit-heavy second half) is
+  indistinguishable from one active for the second half instead.
+
+### Proposed architecture (not yet built beyond Stage 1 below)
+
+1. **Data prerequisite — per-hit `%ATK` on damage blocks.** Every converted
+   character's `kind: 'damage'` blocks currently carry `effects: []`
+   (documented boundary since Rover: Electro's PoC). A real number needs to
+   live somewhere — proposed as a new `TriggerBlock.damage` field (mirroring
+   the `proc` field's precedent): `{ hits: [{ atkPct, statCategory }] }`,
+   parsed from `SKILL_MULTIPLIERS`' existing percent-string rows (e.g.
+   `'28.81% → 33.82%×2 → 13.99%×7 → 75.16%'`), so no new numbers are
+   invented — same sourcing discipline as everything else in this schema.
+2. **Point-in-time buff query.** Every existing driver
+   (`resolveSimulatedRotation.js`/`resolveSimulatedTeamRotation.js`)
+   answers "what's the time-WEIGHTED AVERAGE contribution of this block
+   over a whole segment" — hit composition needs the opposite: "what's
+   ACTIVE at this exact instant." Proposed: refactor the shared per-block
+   window-building logic (identical in both existing drivers today) into
+   one place with two aggregation modes — the existing
+   `timeWeightedAverageConcurrency` (integrate over a segment) and a NEW
+   `activeCountAt(windows, instant, cap)` (sample a single instant) — so a
+   hit-composed calculator can ask "what buffs are live right when this
+   specific hit lands" using the SAME window history the averaged drivers
+   already build, not a third parallel implementation.
+3. **Per-hit damage formula.** Reuses `calcEngine.js`'s existing, already-
+   tested primitives verbatim — `calcAvgCrit`, `calcDmgBonus`,
+   `calcDefMult`, `calcResMult` — exactly the same formula shape
+   `calcTeamStats.js`'s FULL tier already uses per-character, just
+   evaluated ONCE PER HIT with that hit's own point-in-time stats instead
+   of once per character with a segment-averaged one.
+4. **Rotation-level sum.** DPS = (sum of every hit's damage across one
+   full simulated rotation) / rotation time — replacing `totalMult`'s
+   single multiplication entirely for whichever character has real
+   per-hit data.
+5. **Where this would plug into `calcTeamStats.js`.** NOT a rewrite — a
+   new, parallel, per-character-gated code path (same "verified parity
+   test or fall back to the legacy path" rule this doc has stated since
+   before Rover: Electro was even converted): a character with a verified
+   block set AND real per-hit damage data could route through the new
+   calculator instead of `totalMult`; every other character keeps working
+   exactly as today. `calcTeamStats.js` itself is NOT touched by this
+   design doc or by Stage 1 below.
+
+### Verification strategy (if/when this is actually built out)
+
+Exact equality with the legacy `totalMult` number is explicitly the WRONG
+bar — the whole point is that hit composition is more precise, so it's
+SUPPOSED to diverge whenever a conditional/cast-order mechanic the flat
+scalar could never represent actually matters. The right checks: (a)
+same-order-of-magnitude sanity bounds against the legacy number for a
+rotation with no missed conditions (the common case), and (b) a rotation
+that DELIBERATELY violates a cast-order window (e.g. a Jinhsi rotation that
+misses her 5s Overflowing Radiance window) must show LOWER hit-composed DPS
+than the same rotation executed correctly — a discrimination test the
+legacy `totalMult` path structurally cannot pass either way, since it has
+no mechanism to notice the difference at all.
+
+### Open risks/questions, not resolved here
+
+- Per-hit-scoped guaranteed-crit effects (Shorekeeper's S6: that ONE hit is
+  a guaranteed crit, not `avgCrit`'s expected-value blend) need a new
+  per-hit override the schema doesn't have yet.
+- `DEFAULT_STEP_SECONDS` (1.5s, an explicit engineering placeholder, never
+  real per-move animation timing) matters MORE under hit composition than
+  under buff-averaging — exact hit ORDER and window timing now directly
+  determines the DPS number, not just an averaged uptime fraction. Real
+  animation timing may be worth sourcing before this is trusted broadly.
+- Whether/how to surface this to users at all before every character has
+  both a verified block set AND real per-hit data (a toggle? Only for
+  characters where it's ready? None of this is decided.)
+
+### Stage 1 — what was actually BUILT this pass (2026-09-01) — DONE
+
+Scoped narrowly and deliberately: prove the architecture end-to-end for
+ONE already-converted character, standalone, verified against hand-checked
+numbers — NOT wired into `calcTeamStats.js`, NOT yet extended to the whole
+roster or to team-level integration.
+
+- `engine/skillMultiplierParser.js` — `parseSkillMultiplierHits(str)` turns
+  a `SKILL_MULTIPLIERS`-style percent string (e.g. `'28.81% → 33.82%×2 →
+  13.99%×7 → 75.16%'`) into a real per-hit array, expanding `×N` shorthand
+  into N separate hit entries. No new numbers invented — re-expresses the
+  same already-audited strings. Deliberately narrow: doesn't try to
+  algorithmically tell apart "one skill's own multi-stage combo" from "two
+  different skills combined in one row" (both use `→` in the source data)
+  — that judgment call still needs a human reading the kit text, same as
+  every other per-character interpretation this schema has ever needed
+  (Camellya's S5 split is the precedent). 5 tests against real strings.
+- New `TriggerBlock.damage` field (`{ hits: [{atkPct}], category }`) —
+  kept OUT of `effects` for the same reason `proc` is (a hit is a whole
+  damage instance, not a %-modifier `applyBuff()` can resolve).
+- **Yinlin's damage blocks populated** with real per-hit data via the
+  parser: Basic ATK (4-stage combo, 11 hits), Thundering Wrath (7 hits),
+  Chameleon Cipher (2 hits). **Found and fixed a real gap while doing
+  this**: Magnetic Roar and Lightning Execution had been folded into ONE
+  combined block sharing Magnetic Roar's trigger — meaning Lightning
+  Execution's own real `cast:Skill:Lightning Execution` key (exactly what
+  `CHARACTER_ROTATIONS`' own separate Lightning Execution step produces)
+  could never resolve through `simulateRotation()` on its own. Split into
+  two blocks (`yinlin.skill.magnetic-roar` / `yinlin.skill.lightning-
+  execution`), same "split shared multi-hit nodes into multiple blocks"
+  precedent Camellya's S5 already established — not a new pattern, just a
+  case that had been missed.
+- `engine/blockWindows.js` — extracted the window-building logic that had
+  been duplicated near-verbatim in `resolveSimulatedRotation.js` and
+  `resolveSimulatedTeamRotation.js` into one shared place
+  (`buildBlockWindows()`), so the two drivers can no longer silently drift
+  apart on how `unique`/`refresh`/`stacking` behave. Both files refactored
+  to use it; `timeWeightedAverageConcurrency` now lives here too
+  (re-exported from `resolveSimulatedRotation.js` for backward
+  compatibility). Added the actual NEW piece this stage needed:
+  `activeCountAt(windows, instant, cap)` — the point-in-time counterpart
+  to the existing time-INTEGRATED query, answering "is this buff active
+  RIGHT NOW" instead of "what's its average contribution over a span."
+- `engine/resolveHitComposedDps.js` — the actual prototype: sums real
+  per-hit damage across a full simulated rotation using
+  `calcEngine.js`'s existing, already-tested `calcAvgCrit`/`calcDmgBonus`/
+  `calcDefMult`/`calcResMult` primitives (reused verbatim, same formula
+  shape `calcTeamStats.js`'s own FULL tier already uses per character —
+  just evaluated per HIT with that hit's own point-in-time stat snapshot
+  instead of once per character with a segment-averaged one).
+  Verified with 4 tests: a hand-computed baseline (zero DEF/RES, no buffs
+  — the total matches an independently computed reference number, not
+  just "whatever the code produces"), a passive buff correctly boosting
+  only its own damage category (S1's skillDmg+70 raises Magnetic Roar's
+  damage by exactly 70%, leaves Basic ATK's untouched), and a real
+  end-to-end run against Yinlin's actual `CHARACTER_ROTATIONS` data.
+  **Found and documented (not fixed) a further real gap** while writing
+  the end-to-end test: `trigger.type: 'resource-threshold'` (Chameleon
+  Cipher's own trigger — Judgment Points reaching 100) never fires through
+  `simulateRotation()` at all — there is NO resource-gauge simulation
+  anywhere in the engine, and `CHARACTER_ROTATIONS`' step data has no
+  structured gauge values to derive one from (only prose notes). Real,
+  separate, larger work than this prototype — documented in the test
+  itself rather than silently asserted as working.
+  S6 Furious Thunder (a `proc`, not `damage.hits`) correctly contributes
+  ZERO to this prototype's total — proc composition (a discrete, capped,
+  repeatable extra hit) is a distinct next increment on top of this one,
+  not silently folded in as if already solved.
+
+**Still not done, deliberately** (next increments, in roughly the order
+they build on each other): (1) proc composition (`proc` field → actual
+extra hits, reusing `activeCountAt`-style window queries against
+`windowed-proc` blocks), (2) resource-threshold gauge simulation, (3)
+extending the per-hit `damage.hits` data to the other 5 converted
+characters, (4) team-level integration (cross-character buffs landing on
+specific hits mid-combo, reusing `resolveSimulatedTeamRotation.js`'s
+routing logic generalized to `activeCountAt` the same way this stage
+generalized the single-character driver), (5) the actual `calcTeamStats.js`
+gating/wiring decision — still requires its own separate go-ahead, per the
+"never all-or-nothing" rule, and is not any closer to being decided than
+before this stage — this stage only proves the ARCHITECTURE is sound.
+
 ## Hard rules carried over from Phase 1
 - Never touch `MapTab.jsx` or anything connected to it, ever, no exceptions.
 - Follow the PerfectSuite numeric-scale rule (see `CLAUDE.md`) for any px
