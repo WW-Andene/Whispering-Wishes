@@ -1,0 +1,61 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — engine/triggerEngine.js
+// Resolves a set of TriggerBlocks (see triggerBlocks.schema.js) for a given team/
+// rotation context into stat contributions, using the SAME applyBuff() stat switch
+// calcEngine.js already uses — so a converted character's blocks feed the existing
+// damage formula unchanged, and their output can be diffed against the legacy flat-
+// table path (CHAR_BUFF_TABLE/RESONANCE_CHAIN_DATA) for verification before cutover.
+//
+// This module is additive: it does not modify calcEngine.js/calcTeamStats.js/
+// autoEquip.js, and nothing in the live calculator imports it yet. It's exercised by
+// the parity test in __tests__/triggerEngine-rover-electro.test.js.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import { applyBuff } from '../features/teams/calcEngine.js';
+
+/**
+ * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks
+ * @param {Object} ctx
+ * @param {string} ctx.activeCharacter   Name of the character whose block is being evaluated
+ *                                        as "self" for trigger purposes
+ * @param {Set<string>} ctx.firedTriggers  Trigger keys ('cast:Skill:Thunderclap', 'swap-in',
+ *                                          'resource-threshold:Electric Surge:120', ...) known
+ *                                          to have occurred in this rotation pass
+ * @param {string} ctx.targetName        Character whose stat accumulator effects should land on
+ * @param {string} ctx.targetElementLower Target's element, lowercased (for condition.element gating)
+ * @param {string} ctx.targetRole        Target's role (for condition.requiresRole gating)
+ * @param {Object} stats                 Stat accumulator (createStats() shape from calcEngine.js)
+ */
+export function resolveTriggerBlocks(blocks, ctx, stats) {
+  const { firedTriggers, targetElementLower, targetRole } = ctx;
+  let totalMultBonus = 0;
+  for (const block of blocks) {
+    if (!triggerFired(block.trigger, firedTriggers)) continue;
+    if (!conditionHolds(block.condition, targetElementLower, targetRole)) continue;
+    for (const effect of block.effects) {
+      if (effect.stat === 'totalMult') { totalMultBonus += effect.value; continue; }
+      applyBuff(stats, effect.stat, effect.value, {});
+    }
+  }
+  return totalMultBonus;
+}
+
+function triggerKey(trigger) {
+  if (trigger.type === 'cast') return `cast:${trigger.on}`;
+  if (trigger.type === 'resource-threshold') return `resource-threshold:${trigger.resource}:${trigger.threshold}`;
+  return trigger.type;
+}
+
+function triggerFired(trigger, firedTriggers) {
+  if (trigger.type === 'passive') return true;
+  return firedTriggers.has(triggerKey(trigger));
+}
+
+function conditionHolds(condition, targetElementLower, targetRole) {
+  if (!condition) return true;
+  if (condition.element && condition.element.toLowerCase() !== targetElementLower) return false;
+  if (condition.requiresRole && condition.requiresRole.length && !condition.requiresRole.includes(targetRole)) return false;
+  return true;
+}
+
+export { triggerKey };
