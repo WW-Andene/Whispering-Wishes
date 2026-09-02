@@ -9,9 +9,9 @@ describe('triggerEngine parity — Yangyang: Xuanling', () => {
     const rc = RESONANCE_CHAIN_DATA['Yangyang: Xuanling'];
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s1').effects[0].value).toBe(rc.s1.totalMult);
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s2').effects[0].value).toBe(rc.s2.heavyDmg);
-    expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
+    expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s3').effects[0].value).toBe(rc.s3.heavyDmg);
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s4').effects[0].value).toBe(rc.s4.atkPct);
-    expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s5').effects[0].value).toBe(rc.s5.totalMult);
+    expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s5').effects).toEqual([]);
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s6').effects[0].value).toBe(rc.s6.heavyDmg);
   });
 

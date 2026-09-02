@@ -3,11 +3,12 @@
 // Yangyang: Xuanling converted to TriggerBlocks. Sourced from characters.js's
 // already-audited CHAR_BUFF_TABLE['Yangyang: Xuanling'], RESONANCE_CHAIN_DATA
 // ['Yangyang: Xuanling'], SKILL_MULTIPLIERS['Yangyang: Xuanling'], and
-// CHARACTER_ROTATIONS['Yangyang: Xuanling']. No new numbers invented. Two real
-// CHARACTER_ROTATIONS steps (Mid-air:Feather Fall, Basic ATK:Havoc in Bloom
-// Stage 1-3) have NO matching SKILL_MULTIPLIERS row at all, not modeled.
+// CHARACTER_ROTATIONS['Yangyang: Xuanling']. No new numbers invented.
 // Hush of a Thousand Voices is counted as Heavy Attack DMG per its own kit text
-// despite being cast from the Liberation slot.
+// despite being cast from the Liberation slot. Two real CHARACTER_ROTATIONS steps
+// (Mid-air:Feather Fall, Basic ATK:Havoc in Bloom Stage 1-3) previously had NO
+// matching SKILL_MULTIPLIERS row at all, silently dealing 0 DMG — fixed 2026-09-02
+// against a fresh Prydwen dump, both now modeled with real numbers (heavyDmg).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -51,7 +52,23 @@ export const YANGYANG_XUANLING_BLOCKS = [
     trigger: { type: 'cast', on: 'Heavy ATK:Heavy Attack: Feather Sword Stance' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('21.71%+195.34%'), category: 'heavyDmg' },
-    note: 'Once Azure Plume is capped — applies 2 Havoc Bane stacks, grants Streaming Storm (+160% Crit DMG on the next few Feather-stance hits, see yangyangxuanling.selfbuff.bated-breath below), auto-chains into Mid-air Attack: Feather Fall (no matching SKILL_MULTIPLIERS row, not modeled).',
+    note: 'Once Azure Plume is capped — applies 2 Havoc Bane stacks, grants Streaming Storm (+160% Crit DMG on the next few Feather-stance hits, see yangyangxuanling.selfbuff.bated-breath below), auto-chains into Mid-air Attack: Feather Fall (see block below).',
+  },
+  {
+    id: 'yangyangxuanling.midair.feather-fall',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Mid-air:Feather Fall' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('14.80%×3+66.57%'), category: 'heavyDmg' },
+    note: 'Added 2026-09-02 against a fresh Prydwen dump — this real CHARACTER_ROTATIONS step had no matching SKILL_MULTIPLIERS row at all, silently dealing 0 DMG. Consumes all Azure Plume, grants Hark the Wind (12s, upgrades Basic Attack to Havoc in Bloom).',
+  },
+  {
+    id: 'yangyangxuanling.basic.havoc-in-bloom-stage1-3',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Basic ATK:Havoc in Bloom Stage 1-3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('39.79%×3 → 89.25%+66.94%×2 → 23.98%×5+279.69%'), category: 'heavyDmg' },
+    note: "Added 2026-09-02 against a fresh Prydwen dump — this real CHARACTER_ROTATIONS step had no matching SKILL_MULTIPLIERS row at all, silently dealing 0 DMG. Replaces Basic Attack during Hark the Wind; considered Heavy Attack DMG despite the Basic Attack slot, per the kit's own text.",
   },
   {
     id: 'yangyangxuanling.liberation.hush-of-a-thousand-voices',
@@ -59,7 +76,7 @@ export const YANGYANG_XUANLING_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Hush of a Thousand Voices' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('1988.10%'), category: 'heavyDmg' },
-    note: 'Counted as Heavy ATK DMG despite the Liberation slot. Consumes all Melody, restores 1 Azure Plume, maxes Havoc Bane on hit. Basic ATK:Havoc in Bloom Stage 1-3, cast right before this, has no matching SKILL_MULTIPLIERS row at all, not modeled.',
+    note: 'Counted as Heavy ATK DMG despite the Liberation slot. Consumes all Melody, restores 1 Azure Plume, maxes Havoc Bane on hit.',
   },
   {
     id: 'yangyangxuanling.heavy.azure-sword-stance',
@@ -140,8 +157,8 @@ export const YANGYANG_XUANLING_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'cast', on: 'Liberation:Hush of a Thousand Voices' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 175 }],
-    note: "Hush of a Thousand Voices' own DMG Multiplier +175% (confirmed exact) — kept as libDmg per this file's convention for a Liberation-type move's own multiplier, matching the same pattern as Roccia's S5/Sigrika's S5, even though the damage block above is categorized heavyDmg for the real hit. Cast-scoped (instant, no persistent duration).",
+    effects: [{ stat: 'heavyDmg', value: 175 }],
+    note: "Hush of a Thousand Voices' own DMG Multiplier +175% (confirmed exact) — cast-scoped (instant, no persistent duration). Corrected 2026-09-02 from libDmg to heavyDmg: the damage block this node scopes to (yangyangxuanling.liberation.hush-of-a-thousand-voices) is itself categorized heavyDmg (counted as Heavy Attack DMG per kit text), so a libDmg buff never actually applied to it — same bug class as Sigrika's S5, which this note used to cite as its own (also-buggy) precedent.",
   },
   {
     id: 'yangyangxuanling.chain.s4',
@@ -153,11 +170,10 @@ export const YANGYANG_XUANLING_BLOCKS = [
   },
   {
     id: 'yangyangxuanling.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'utility', effects: [],
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 5 }],
-    note: 'Flat value used as-is — no adjacent audit comment beyond the RESONANCE_CHAIN_DATA line itself, flagged as unverified. Kept passive.',
+    note: 'S5 (fatal-blow save: no-down + heal 50% Max HP + 3s DMG/interruption immunity, once per 10 min) is purely survivability/utility — no DPS component per its own kit text. Was a fabricated totalMult:5, corrected 2026-09-02: independently confirmed via Prydwen\'s own simulation, S4 and S5 produce byte-identical DMG/DPS (2,783,354 / 274,492 both).',
   },
   {
     id: 'yangyangxuanling.chain.s6',
