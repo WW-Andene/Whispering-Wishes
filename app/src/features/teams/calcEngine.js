@@ -776,13 +776,36 @@ const TYPE_STAT_TO_FOCUS = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', libDm
 // character with no share data (or a type whose real share happens to exactly equal "1 divided by
 // however many types they qualify for") is completely unaffected — only a genuinely dominant or
 // genuinely minor type moves score up or down from where it used to sit.
+//
+// Recalibrated 2026-09-02 (found via two real recommendation audits). The ORIGINAL formula
+// (`share * qualifyingTypeCount`, uncapped) let a type-specific buff run away for a DPS whose
+// rotation happens to touch few move-type categories: Carlotta+Zhezhi's 3rd-slot list ranked Taoqi —
+// T4 tier, a single narrow 'next'-only 38% skillDmg outro buff — ABOVE Shorekeeper (Carlotta's own
+// twice-curated real partner, three genuine team-wide buffs combined), because Carlotta's 77.8% Skill
+// share × only 3 qualifying categories hit a 2.33x multiplier with no ceiling.
+//
+// The first fix tried — pure `share`, no count factor at all — is the mathematically "correct" isolated
+// quantity (the real fraction of this DPS's damage the buff actually touches), and it did fix Taoqi.
+// But it broke a SEPARATE, already-validated case: Mortefi (Augusta's own real curated partner, built
+// specifically around her Heavy ATK-heavy kit) fell behind Rebecca (not curated) once Mortefi's
+// heavyDmg buff was discounted to Augusta's raw 41.7% Heavy ATK share — Augusta's damage is genuinely
+// split across 4 close-ish categories (Heavy ATK 41.7% / Skill 25% / Liberation 25% / Echo 8.3%), so
+// pure share over-corrects: Heavy ATK is still clearly her *largest* category, and a buff to it should
+// still meaningfully outscore a universal buff of comparable %, not fall to ~42% of one.
+//
+// Landed on: keep the original share*count formula (still the best available signal for "how
+// concentrated is this DPS's damage in the buffed type," since raw share alone can't distinguish
+// "genuinely dominant type" from "type mildly ahead of an even split") but CAP it at 1.3 — low enough
+// that Taoqi's 2.33x inflation can't repeat (any qualifyingTypeCount/share combination collapses to at
+// most a 30% boost over a universal buff of the same %), high enough that Mortefi's real, meaningfully-
+// dominant-type buff still outranks Rebecca's discounted-plus-universal combination. Verified against
+// all 4 known cases (Taoqi<Shorekeeper, Mortefi>Rebecca, Denia<Lupa, Phoebe<Shorekeeper) before landing.
 function typeShareMultiplier(stat, dpsName) {
   const focus = TYPE_STAT_TO_FOCUS[stat];
   if (!focus) return 1;
   const shares = computeDamageTypeShares(dpsName);
   if (!shares || shares[focus] == null) return 1;
-  const qualifyingTypeCount = Object.keys(shares).length;
-  return shares[focus] * qualifyingTypeCount;
+  return Math.min(shares[focus] * Object.keys(shares).length, 1.3);
 }
 
 // ── Mechanic-grounded synergy uplift: replaces flat "+8 points for a deepen buff, +6 for elemDmg"
