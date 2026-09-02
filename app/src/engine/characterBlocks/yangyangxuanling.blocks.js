@@ -167,13 +167,26 @@ export const YANGYANG_XUANLING_BLOCKS = [
     effects: [{ stat: 'heavyDmg', value: 175 }],
     note: "Hush of a Thousand Voices' own DMG Multiplier +175% (confirmed exact) — cast-scoped (instant, no persistent duration). Corrected 2026-09-02 from libDmg to heavyDmg: the damage block this node scopes to (yangyangxuanling.liberation.hush-of-a-thousand-voices) is itself categorized heavyDmg (counted as Heavy Attack DMG per kit text), so a libDmg buff never actually applied to it — same bug class as Sigrika's S5, which this note used to cite as its own (also-buggy) precedent.",
   },
+  // S4 corrected 2026-09-02 against a fresh Prydwen dump: real effect is "casting Intro, Sword Stance
+  // Switch: Azure/Feather, or Sword Stance Flow: Azure/Feather grants the WHOLE TEAM +20% ATK for
+  // 20s" — was modeled as a passive Yangyang-only self-buff (target: 'self', trigger: 'passive'),
+  // matching neither the real target (whole-team) nor the real trigger (specific casts). Split into
+  // one block per real trigger (her kit only has one modeled name for both stance-switch directions
+  // and for the Forte-Circuit-named "Flow" variant — see chain.s1's own note above), both refreshing
+  // the same team-wide 20s buff rather than stacking.
   {
-    id: 'yangyangxuanling.chain.s4',
+    id: 'yangyangxuanling.chain.s4-intro',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 20 }],
-    note: 'Flat value used as-is — no adjacent audit comment beyond the RESONANCE_CHAIN_DATA line itself, flagged as unverified. Kept passive.',
+    trigger: { type: 'cast', on: 'Intro:Skybound Feather' },
+    timing: { duration: 20 }, target: { scope: 'whole-team' },
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh' }],
+  },
+  {
+    id: 'yangyangxuanling.chain.s4-switch',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Skill:Sword Stance Switch' },
+    timing: { duration: 20 }, target: { scope: 'whole-team' },
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh' }],
   },
   {
     id: 'yangyangxuanling.chain.s5',

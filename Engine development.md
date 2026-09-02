@@ -213,21 +213,28 @@ This applies to any future "flagged as unverified" character-data fix, including
 
 ---
 
-## 8. Schema has no way to target "whoever triggers an external effect" — real bug on Qingxiao S4, same class already flagged for Yangyang: Xuanling S4
+## 8. Schema has no way to target "whoever triggers an external effect" — real bug on Qingxiao S4; Yangyang: Xuanling's own S4 FIXED (it was a simpler case)
 
 **Found**: 2026-09-02, full-roster audit pass (Aemeath, Hiyuki, Luuk Herssen, Qingxiao, Sigrika,
 Denia — requested explicitly, not opportunistic).
 
-**Where**: `app/src/data/characters.js`, `RESONANCE_CHAIN_DATA['Qingxiao'].s4` (`{ atkPct: 20 }`) and
-its matching `qingxiao.blocks.js` block (`qingxiao.chain.s4`, `target: { scope: 'self' }`).
+**Yangyang: Xuanling S4 — fixed 2026-09-02.** Turned out NOT to need new schema capability: her real
+effect ("casting Intro, Sword Stance Switch: Azure/Feather, or Sword Stance Flow: Azure/Feather grants
+the WHOLE TEAM +20% ATK for 20s") only needed the already-existing `whole-team` target scope plus a
+real cast trigger, instead of `target: 'self'` + `trigger: 'passive'`. Split into
+`yangyangxuanling.chain.s4-intro` and `yangyangxuanling.chain.s4-switch` (both refresh the same 20s
+team buff rather than stacking). `RESONANCE_CHAIN_DATA['Yangyang: Xuanling'].s4`'s flat `atkPct:20`
+value is unchanged (magnitude was always correct) — only the engine block's scope/trigger changed.
 
-Real S4 effect (per `Characters data dump/Qingxiao/Qingxiao.md`): *"After any teammate inflicts
-Shifting, THEIR ATK +20% for 8s."* The buff belongs to whichever ally triggers the condition, not to
-Qingxiao — but it's modeled as a self-buff on Qingxiao, because (per the engine block's own note)
-there's no schema mechanism for "an ally's own action grants that same ally a buff, sourced from a
-third character's passive." This is the exact same gap already flagged for Yangyang: Xuanling's S4
-(team-wide ATK on Intro/Switch/Flow cast) in item 3's history — not a new discovery of the underlying
-limitation, but a second concrete instance of it.
+**Qingxiao S4 — still open, genuinely needs new schema capability.** `app/src/data/characters.js`,
+`RESONANCE_CHAIN_DATA['Qingxiao'].s4` (`{ atkPct: 20 }`) and its matching `qingxiao.blocks.js` block
+(`qingxiao.chain.s4`, `target: { scope: 'self' }`). Real effect (per
+`Characters data dump/Qingxiao/Qingxiao.md`): *"After any teammate inflicts Shifting, THEIR ATK +20%
+for 8s."* Unlike Xuanling's case, the buff belongs to whichever ally triggers the condition —
+Qingxiao's own kit never casts anything at that moment, so there is no cast on HER block to anchor a
+`whole-team` buff to; the recipient is specifically "whoever performed the triggering action," a
+target scope that doesn't exist yet (`self`/`next-on-field`/`whole-team` are the only three). This one
+does need the schema work described in the fix shape below.
 
 **Fix shape**: needs a new trigger/target combination in the schema (something like "target: whoever
 caused `trigger.type`", distinct from the existing `self`/`next-on-field`/`whole-team` scopes) — not a

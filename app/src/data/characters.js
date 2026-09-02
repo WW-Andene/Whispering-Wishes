@@ -5390,6 +5390,11 @@ const RESONANCE_CHAIN_DATA = {
   // DMG/interruption for 3s, once per 10 min" is purely defensive with zero real DPS component —
   // confirmed independently via Prydwen's own Damage Output by Sequence table: S4 and S5 are
   // byte-identical (2,783,354 DMG / 274,492 DPS both). Zeroed the fabricated totalMult:5 to {}.
+  // S4's atkPct:20 magnitude is correct (confirmed via a fresh Prydwen dump) but this flat table has
+  // no way to express its real scope — a whole-team buff on casting Intro/Sword Stance Switch/Flow,
+  // not a self-only passive. Fixed properly in yangyangxuanling.blocks.js (chain.s4-intro/-switch,
+  // target: 'whole-team', cast-triggered); this row is only read self-only by the legacy fallback
+  // tier, which per Engine development.md item 2 only runs for the Jingran mixed-team case today.
   'Yangyang: Xuanling': { s1: {}, s2: { heavyDmg: 100 }, s3: { heavyDmg: 175 }, s4: { atkPct: 20 }, s5: {}, s6: { heavyDmg: 40 } },
   // Hiyuki S1/S2: Foreclaimed/Iai skills are "considered Resonance Liberation DMG" per kit.
   // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Hiyuki/Combat — its Attribute Scaling

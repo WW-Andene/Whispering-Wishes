@@ -14,13 +14,26 @@ describe('triggerEngine parity — Yangyang: Xuanling', () => {
     expect(s1.damage.category).toBe('heavyDmg');
   });
 
-  it('S2-S6 match RESONANCE_CHAIN_DATA exactly', () => {
+  it('S2,S3,S5,S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Yangyang: Xuanling'];
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s2').effects[0].value).toBe(rc.s2.heavyDmg);
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s3').effects[0].value).toBe(rc.s3.heavyDmg);
-    expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s4').effects[0].value).toBe(rc.s4.atkPct);
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s5').effects).toEqual([]);
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s6').effects[0].value).toBe(rc.s6.heavyDmg);
+  });
+
+  it('S4 is a whole-team, cast-triggered buff (fixed 2026-09-02) — not a self-only passive', () => {
+    const rc = RESONANCE_CHAIN_DATA['Yangyang: Xuanling'];
+    const intro = YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s4-intro');
+    const switchBlock = YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s4-switch');
+    expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s4')).toBeUndefined();
+    for (const b of [intro, switchBlock]) {
+      expect(b.target.scope).toBe('whole-team');
+      expect(b.trigger.type).toBe('cast');
+      expect(b.timing.duration).toBe(20);
+      expect(b.effects[0].value).toBe(rc.s4.atkPct);
+      expect(b.effects[0].stacking).toBe('refresh');
+    }
   });
 
   it('Hush of a Thousand Voices is correctly heavyDmg (counted as Heavy ATK DMG)', () => {
