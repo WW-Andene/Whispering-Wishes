@@ -263,10 +263,40 @@ tackle them — simplest mechanic/fewest interactions first):
 | Denia | Fusion Burst | **Migrated 2026-09-02** (tuneBreak itself deferred to 1.5) |
 | Aemeath | Fusion Burst | **Migrated 2026-09-02** (tuneBreak itself deferred to 1.5) |
 | Ciaccona | Erosion | **Migrated 2026-09-02** |
-| Cartethyia | Erosion | **Deliberately deferred** — see note below |
-| Phoebe | Frazzle (real-mode check needed first — see Phase 0 note) | Not started |
-| Rover: Spectro | Frazzle | Not started |
+| Cartethyia | Erosion | **Deliberately deferred** — see note above |
+| Rover: Spectro | Frazzle | **Migrated 2026-09-02** |
+| Phoebe | Frazzle | **Deliberately deferred** — see note below |
 | Lynae, Aemeath, Denia, Mornye, Luuk Herssen, Rebecca, Lucy | Tune Break | Not started (1.5, last) |
+
+### Frazzle migration — Rover: Spectro done, Phoebe deferred (a real, pre-existing data bug found)
+
+Rover: Spectro's two real Frazzle-applying moves (`roverspectro.forte.resonating-whirl`: 2 stacks,
+`roverspectro.liberation.echoing-orchestra`: 6 stacks) sum to his legacy pre-combined value (8) exactly
+— a clean port, same shape as Ciaccona's Erosion migration.
+
+**Phoebe deferred, and a pre-existing bug found, not introduced by this migration**: her own
+`characterBlocks` file header already states her real modeled `CHARACTER_ROTATIONS` stays entirely in
+Absolution mode, never Confession (her two Confession-only buff blocks are already marked
+`assumedInactive: true` for exactly this reason). But her `CHAR_BUFF_TABLE.debuffs.frazzle` value (18)
+is explicitly scoped "18 stacks per rotation **in Confession mode**" — meaning this value is ALREADY
+inert/wrong for her real modeled scenario on the CURRENT legacy path too, today, independent of this
+merge. Her kit text does confirm she applies SOME Frazzle in Absolution mode too ("Enters Absolution
+mode, applies 1 Spectro Frazzle stack" per Forte cast), but no sourced aggregate total for that exists
+yet in anything read so far. Migrating her now would mean either porting the wrong (Confession-mode)
+number forward, unchanged, or inventing a new Absolution-mode total — both rejected. Logged here (not
+silently fixed) since it's a real, separate, pre-existing correctness issue independent of the engine
+merge itself: worth a dedicated audit pass sourcing her real Absolution-mode Frazzle total before either
+the legacy value or a migrated block gets a real number.
+
+2 new tests (mirroring Erosion's mixed-migration safety pair) prove Rover: Spectro's migration doesn't
+drop Phoebe's (still-wrong-but-unchanged) legacy contribution. Full suite: 1249 tests passing (up from
+1247).
+
+**All four non-Tune-Break DOT mechanics now have a working TriggerBlock-native resolver, proven in
+production on 5 real characters** (Buling, Denia, Aemeath, Ciaccona, Rover: Spectro). Only Tune Break
+(1.5, the most complex, deliberately saved for last) remains before Phase 3 (retiring the legacy DOT
+functions entirely) can start — and even Phase 3 will keep Cartethyia and Phoebe's legacy paths alive
+until their own real data gaps are resolved, not silently ported.
 
 ### Erosion migration — Ciaccona done, Cartethyia deferred, and a real mixed-migration safety issue found
 

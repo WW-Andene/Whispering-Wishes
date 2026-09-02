@@ -18,7 +18,7 @@ import {
   calcResMult,
 } from '../features/teams/calcEngine.js';
 import { CHAR_BUFF_TABLE } from '../data/characters.js';
-import { resolveElectroFlareFromBlocks, resolveFusionBurstFromBlocks, resolveErosionFromBlocks } from './dotReactionsFromBlocks.js';
+import { resolveElectroFlareFromBlocks, resolveFusionBurstFromBlocks, resolveErosionFromBlocks, resolveFrazzleFromBlocks } from './dotReactionsFromBlocks.js';
 import { DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 
 /**
@@ -74,7 +74,21 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const fusionBurstResMult = calcResMult(getEnemyRes('Fusion'), resShred);
   const electroFlareResMult = calcResMult(getEnemyRes('Electro'), resShred);
 
-  const frazzle = calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
+  // Frazzle (ENGINE_MERGE_PLAN.md Phase 2 — Rover: Spectro migrated; Phoebe deliberately NOT migrated
+  // — her own CHARACTER_ROTATIONS/block-file comments confirm her real modeled rotation stays in
+  // Absolution mode, never Confession, meaning her legacy `debuffs.frazzle` value (18, explicitly
+  // "in Confession mode") is inert/wrong for that same modeled scenario even on the LEGACY path today
+  // — a pre-existing data bug this migration found but does NOT fix by porting it forward; her real
+  // Absolution-mode Frazzle contribution — she does apply some, "1 stack" per Forte cast per her own
+  // kit text — has no sourced aggregate total anywhere yet). Same mixed-migration safety check as
+  // Erosion: only prefer blocks when every frazzle-flagged member present has a dotApplier block.
+  const hasPhoebe = members.some(m => m.name === 'Phoebe');
+  const frazzleFlaggedMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'frazzle'));
+  const allFrazzleMembersHaveBlocks = blocksByOwner && frazzleFlaggedMembers.every(m =>
+    (blocksByOwner[m.name] || []).some(b => b.dotApplier?.mechanic === 'frazzle'));
+  const frazzle = allFrazzleMembersHaveBlocks
+    ? resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, frazzleResMult, hasPhoebe)
+    : calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
   // Erosion (ENGINE_MERGE_PLAN.md Phase 2 — Ciaccona migrated; Cartethyia deliberately NOT migrated
   // yet — her legacy value (6) assumes an uncounted Rover: Aero teammate raising her effective stack
   // cap, a real conditional fact this migration won't blindly port without resolving it first). Unlike

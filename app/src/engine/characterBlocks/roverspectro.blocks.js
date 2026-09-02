@@ -41,6 +41,13 @@ export const ROVER_SPECTRO_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('198.81%+675.96%'), category: 'libDmg' },
     note: 'Delayed blast; applies a full 6 stacks of Spectro Frazzle to the target in one hit.',
+    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — matches this block's own note (6
+    // stacks) and CHAR_BUFF_TABLE.debuffs.frazzle's already-sourced condition text exactly.
+    // resolveFrazzleFromBlocks SUMS this with roverspectro.forte.resonating-whirl's own 2 stacks below
+    // (2+6=8), matching the legacy pre-combined value exactly, not double-counted (Frazzle's real
+    // interaction rule per ENGINE_MERGE_PLAN.md 1.1 — two separate real application points genuinely
+    // add together, unlike Erosion's MAX rule).
+    dotApplier: { mechanic: 'frazzle', value: 6 },
   },
   {
     id: 'roverspectro.basic.vibration-manifestation-stage1-4',
@@ -62,6 +69,11 @@ export const ROVER_SPECTRO_BLOCKS = [
     // right after it — both rows' hits combined.
     damage: { hits: [...parseSkillMultiplierHits('129.08%×2'), ...parseSkillMultiplierHits('39.77%')], category: 'skillDmg' },
     note: 'At 50+ Diminutive Sound, Skill auto-upgrades into Resonating Spin (2 Spectro Frazzle stacks + Shimmer, which stops decay), immediately chained into the Resonating Whirl Basic ATK follow-up. Fires twice in the real rotation.',
+    // dotApplier added 2026-09-02 — see roverspectro.liberation.echoing-orchestra's own comment (this
+    // block's 2 stacks + that one's 6 = the legacy pre-combined 8, summed correctly by
+    // resolveFrazzleFromBlocks). Value stays 2 regardless of this block firing twice in the modeled
+    // rotation — the SAME "declared kit fact, not per-cast" convention the legacy value already used.
+    dotApplier: { mechanic: 'frazzle', value: 2 },
   },
   {
     id: 'roverspectro.forte.resonating-echoes',

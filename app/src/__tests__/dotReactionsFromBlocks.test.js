@@ -5,7 +5,7 @@
 // end-to-end check against Buling's actual blocks (her Electro Flare application, the first real
 // migration target).
 import { describe, it, expect } from 'vitest';
-import { calcDefMult, calcResMult, calcElectroFlareDmg, calcFusionBurstDmg, calcErosionDmg } from '../features/teams/calcEngine.js';
+import { calcDefMult, calcResMult, calcElectroFlareDmg, calcFusionBurstDmg, calcErosionDmg, calcFrazzleDmg } from '../features/teams/calcEngine.js';
 import {
   resolveFrazzleFromBlocks, resolveErosionFromBlocks, resolveFusionBurstFromBlocks, resolveElectroFlareFromBlocks,
 } from '../engine/dotReactionsFromBlocks.js';
@@ -13,6 +13,7 @@ import { resolveDotReactionDps } from '../engine/dotReactions.js';
 import { BULING_BLOCKS } from '../engine/characterBlocks/buling.blocks.js';
 import { DENIA_BLOCKS } from '../engine/characterBlocks/denia.blocks.js';
 import { CIACCONA_BLOCKS } from '../engine/characterBlocks/ciaccona.blocks.js';
+import { ROVER_SPECTRO_BLOCKS } from '../engine/characterBlocks/roverspectro.blocks.js';
 import { filterExclusiveModeBlocks, gateBlocksBySequence } from '../engine/sequenceGating.js';
 
 const defMult = calcDefMult(800, 0, 0);
@@ -102,6 +103,25 @@ describe('dotReactionsFromBlocks — Erosion (synthetic, MAX not SUM across appl
     const withBoth = resolveErosionFromBlocks({ X: [a, b] }, 20, defMult, resMult);
     const withMaxOnly = resolveErosionFromBlocks({ X: [b] }, 20, defMult, resMult);
     expect(withBoth.dmg).toBeCloseTo(withMaxOnly.dmg, 6);
+  });
+});
+
+describe('dotReactionsFromBlocks — Frazzle mixed-migration safety (Rover: Spectro migrated, Phoebe deliberately NOT — ENGINE_MERGE_PLAN.md)', () => {
+  const getEnemyRes = () => 10;
+
+  it('Rover: Spectro solo (fully migrated) matches calcFrazzleDmg exactly, summing his own 2 real application points to 8', () => {
+    const blocksByOwner = { 'Rover: Spectro': ROVER_SPECTRO_BLOCKS };
+    const fromDots = resolveDotReactionDps([{ name: 'Rover: Spectro' }], 20, defMult, 0, getEnemyRes, resMult, null, blocksByOwner);
+    const legacy = calcFrazzleDmg([{ name: 'Rover: Spectro' }], 20, defMult, resMult);
+    expect(fromDots.breakdown.frazzle.dmg).toBeCloseTo(legacy.dmg, 6);
+  });
+
+  it('a team with Rover: Spectro (migrated) AND Phoebe (still legacy-only) does NOT drop Phoebe — falls back to the full legacy calculation for both', () => {
+    const blocksByOwner = { 'Rover: Spectro': ROVER_SPECTRO_BLOCKS, Phoebe: [] };
+    const members = [{ name: 'Rover: Spectro' }, { name: 'Phoebe' }];
+    const fromDots = resolveDotReactionDps(members, 20, defMult, 0, getEnemyRes, resMult, null, blocksByOwner);
+    const legacyBoth = calcFrazzleDmg(members, 20, defMult, resMult);
+    expect(fromDots.breakdown.frazzle.dmg).toBeCloseTo(legacyBoth.dmg, 6);
   });
 });
 
