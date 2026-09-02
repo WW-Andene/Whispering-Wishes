@@ -422,26 +422,58 @@ simple stat buff — don't force-fit into the same fix):
    describe what it ACTUALLY does (her mode-conditional Fusion Burst status application), and flagged
    the Trail-removal scaling as a separate, still-open, unmodeled gap in her own `note`.
 
-   **Fix, extending (not duplicating) Lynae's pattern**: `calcFusionBurstDmg()` gained an `excludeNames`
-   param (default `[]`, every existing caller unaffected) so a caller can ask "would this reaction still
-   fire WITHOUT member X's own participation." `dotReactions.js`'s `resolveDotReactionDps` computes, for
-   any `tuneBreak.exclusiveCandidates` entry whose character has the new
-   `tuneBreak.competesWithFusionBurstReaction` flag (Aemeath only), a real `fusionBurstDeltaIfExcluded`
-   (today's total minus the total without them). `calcTeamStats.js`'s resolution loop became a real
-   three-way comparison (Fusion baseline / Rupture / Strain — Strain is structurally always a loss for a
-   character with no strain fields, like Aemeath, so this stays exactly Lynae's original two-way
-   comparison for her). Verified by actually running `calcTeamStats(['Aemeath'], ...)` and
-   `calcTeamStats(['Aemeath','Denia','Lynae'], ...)`: both now resolve Aemeath to **Fusion Burst mode**
-   — matching the real meta text this time, backed by a computed comparison instead of the earlier
-   text-only deduction. New test file `aemeathTuneBreakModeExclusivity.test.js` (3 tests). Full suite:
-   1229 tests passing (up from 1226).
+   **First fix attempt (marginal delta) — extending Lynae's pattern, turned out unsound with a second
+   competitor.** `calcFusionBurstDmg()` gained an `excludeNames` param (default `[]`, every existing
+   caller unaffected). `dotReactions.js` computed, for a `tuneBreak.exclusiveCandidates` entry flagged
+   `competesWithFusionBurstReaction`, a `fusionBurstDeltaIfExcluded` (today's total minus the total
+   without them), and `calcTeamStats.js` compared Fusion/Rupture/Strain totals using that single delta.
+   Verified against `calcTeamStats(['Aemeath'], ...)` alone: correctly resolved Fusion Burst mode.
+
+   **Then found broken while also fixing Denia's own, separate, real gap** — she was completely absent
+   from `calcFusionBurstDmg()`'s applier gate despite her own kit inflicting real, sourced Fusion Burst
+   status in Fusion Burst mode (`denia.blocks.js`'s own damage-block notes already said so); added her
+   `debuffs.fusionBurst` entry and the same `modeExclusive`/`competesWithFusionBurstReaction` flags as
+   Aemeath's fix, both fully legitimate on their own. But adding a SECOND real competitor for the same
+   shared reaction broke the marginal-delta approach: for a real Aemeath+Denia+Lynae team, Aemeath's own
+   `fusionBurstDeltaIfExcluded` collapsed to ~0 (excluding just Aemeath still leaves Denia alone keeping
+   the reaction active), making her Rupture option look free — which flipped her resolved stance to
+   Tune Rupture, inconsistent with her own solo resolution and the real meta text, and cascaded into
+   flipping Denia to Tune Strain too via the SAME stale-baseline bug (candidates were evaluated against
+   a `preGrandTotal` frozen before earlier candidates in the same pass were resolved). A marginal
+   "delta if this ONE member is excluded" is a real trap once TWO members can each independently keep a
+   boolean-gated reaction alive — excluding one reads as free precisely because the other covers it,
+   which says nothing about whether that member's OWN mode choice is actually free.
+
+   **Real fix: full combinatorial resolution**, not another delta patch. `calcTeamStats.js`'s resolution
+   block now enumerates every exclusive candidate's own valid option set (`{fusion, rupture, strain}` for
+   a fusion-competing character, `{rupture, strain}` otherwise — a Cartesian product, 18 combinations for
+   this 3-candidate case, trivial to evaluate since real teams have at most a couple of mode-locked
+   members) and computes each combination's REAL final total directly — including a fresh
+   `calcFusionBurstDmg()` call (via `dotReactions.js`'s new `recomputeFusionBurstDmg()` wrapper) for
+   whichever subset opted into Fusion for that specific combination — then keeps the best. No marginal
+   deltas, no stale baselines, no order dependency.
+
+   Verified end-to-end: `calcTeamStats(['Aemeath'], ...)` and the real
+   `calcTeamStats(['Aemeath','Denia','Lynae'], ...)` now agree — Aemeath resolves to **Fusion Burst
+   mode** in both (matching her own solo answer AND the real meta text), Denia resolves to **Tune
+   Strain mode** (not redundantly co-covering Fusion Burst once Aemeath already does — she gets more
+   from her own Strain response instead), Lynae stays **Tune Rupture mode** (unaffected, as expected —
+   she doesn't compete with the Fusion Burst reaction at all). Two new test files:
+   `aemeathTuneBreakModeExclusivity.test.js` (3 tests) and `aemeathDeniaLynaeModeResolution.test.js` (2
+   tests, the real 3-member interaction, including a consistency check that Aemeath's resolved stance
+   doesn't change between solo and team runs — the exact invariant the marginal-delta bug violated).
+   Full suite: 1231 tests passing (up from 1226).
 
    **Still open**: this whole resolution mechanism only compares what THIS single-target rotation
    calculator can see. Prydwen's own text says Fusion Burst is Aemeath's strongest mode specifically
    because of AoE/quickswap value — nothing this app models. The computed answer (Fusion Burst) happens
    to agree with the real meta verdict here, but that agreement isn't guaranteed in general for a
    dual-mode character whose real advantage is AoE-shaped; flag this explicitly rather than treat every
-   future resolved stance as automatically meta-correct.
+   future resolved stance as automatically meta-correct. Also: the combinatorial search only spans
+   `tuneBreakExclusiveCandidates` (characters with a `tuneBreak.modeExclusive` flag) — Denia's own
+   Outro-buff mode split (resolved separately via `filterExclusiveModeBlocks` in the TriggerBlock engine)
+   and this Tune Break resolution are still two independent mechanisms that don't cross-check each
+   other; a composition where they'd disagree hasn't been found, but nothing guarantees they can't.
 3. **Migration — not started.** Qingxiao S4 specifically still uses the old `target:{scope:'self'}` /
    flat `atkPct` approximation (not yet migrated to `ally-action`+`trigger-actor`); `denia.chain.s2`
    still only models its flat Banish multiplier, not the Fusion-Burst/Tune-Strain-mode reactive buff

@@ -2354,20 +2354,37 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [{ stat: 'allDmg', value: 15, target: 'next', duration: 16, condition: 'Tune Strain mode' }, { stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Fusion Burst mode' }],
     libBuffs: [],
     selfBuffs: [],
-    debuffs: [],
+    // debuffs.fusionBurst added 2026-09-02 (Engine development.md item 9 — same gap class as
+    // Aemeath's, found while comparing Aemeath's own Rupture-vs-Fusion candidates for a real
+    // Aemeath+Denia+Lynae composition): Denia was completely absent from calcFusionBurstDmg()'s
+    // "does anyone apply Fusion Burst" gate, even though her own `denia.blocks.js` damage-block notes
+    // confirm "each hit inflicting Fusion Burst or Tune Strain - Shifting depending on Resonance Mode"
+    // — a real, sourced Fusion-Burst-mode-only status application that was simply never wired into the
+    // legacy CHAR_BUFF_TABLE DOT-reaction gate at all (not a double-count like Aemeath's, an outright
+    // missing flag). `value`/`duration` carry no live weight, same pre-existing simplification as every
+    // other fusionBurst-flagged character (calcFusionBurstDmg's formula doesn't scale by them).
+    debuffs: [{ stat: 'fusionBurst', value: 30, duration: 30, condition: 'Fusion Burst mode only: Basic ATK/Liberation hits inflict Fusion Burst' }],
     // Added 2026-08-18 against Prydwen's live kit breakdown — tuneBreak sub-object was entirely
     // missing despite Denia having a full Tune Strain response kit (Tune Strain mode only; she has
     // no Tune Rupture Response, so no ruptureDmgMult). Forte Circuit "Shattered Hours": 0.12% total
     // DMG per Tune Break Boost point per Tune Strain - Interfered stack; +1 to the target's max Tune
     // Strain - Interfered stack cap while she's in the team. Inherent Skill "Etched Colors" (Tune
     // Strain mode, during Entropy Shift): +10 Tune Break Boost team-wide, up to +40 conditionally.
+    //
+    // modeExclusive + competesWithFusionBurstReaction (added 2026-09-02): her Tune Strain response
+    // fields below were being applied unconditionally to every team she's on, same as the Fusion Burst
+    // participation gap above — even though her own kit marks the Strain response as Tune-Strain-mode
+    // only. Now resolved by comparing real final team totals (Fusion vs Strain — no Rupture side for
+    // her, ruptureDmgDelta stays 0, so that candidate never wins), same mechanism as Aemeath's fix.
     tuneBreak: {
       boostToTeam: 10, // Etched Colors (Tune Strain mode): +10 Tune Break Boost team, up to 40 conditionally (ER-scaling)
       baseTuneBreakBoost: 10, // 3.x char base stat
       strainDmgPerStack: 0.12, // per stack of Tune Strain - Interfered, per point of Tune Break Boost
       maxStrainStacks: 3, // base 2 + 1 from Denia (Tune Strain mode only)
+      modeExclusive: true,
+      competesWithFusionBurstReaction: true,
     },
-    note: 'Dual Resonance Mode: Fusion Burst mode Outro amplifies team Fusion Burst DMG by 60% (30s); Tune Strain mode Outro grants the next Resonator 15-40% All DMG Amp (16s). Tune Break kit (Tune Strain mode only): Tune Strain response 0.12% DMG/stack/Boost, +1 max Strain stack, +10 Tune Break Boost team (Etched Colors).',
+    note: 'Dual Resonance Mode: Fusion Burst mode Outro amplifies team Fusion Burst DMG by 60% (30s) and inflicts Fusion Burst (calcFusionBurstDmg reaction, added 2026-09-02 — previously missing entirely); Tune Strain mode Outro grants the next Resonator 15-40% All DMG Amp (16s) and her Tune Strain response (0.12% DMG/stack/Boost, +1 max Strain stack, +10 Tune Break Boost team via Etched Colors). Now resolved mode-exclusively (2026-09-02) instead of the Strain kit firing unconditionally with no Fusion Burst credit at all.',
   },
   'Lucilla': {
     outroBuffs: [{ stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Glacio Chafe mode' }, { stat: 'echoDmg', value: 50, target: 'next', duration: 14, condition: 'Echo mode' }],

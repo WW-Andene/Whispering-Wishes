@@ -74,18 +74,16 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const electroFlare = calcElectroFlareDmg(members, rotTime, defMult, electroFlareResMult);
   const tuneBreak = calcTuneBreakDmg(members, rotTime, defMult, mainResMult, energyCycleFactors);
 
-  // Engine development.md item 9 (Aemeath's mode-exclusivity fix): a tuneBreak exclusive candidate
-  // flagged competesWithFusionBurstReaction (Aemeath: her Rupture-mode Starburst proc vs her own
-  // Fusion-Burst-mode status application, which is what actually feeds the shared fusionBurst reaction
-  // above) needs to know what that reaction's total would be WITHOUT this member's own participation,
-  // so calcTeamStats.js can compare real "keep the Fusion contribution" vs "swap it for Starburst"
-  // totals — same real-total-comparison principle as the Rupture-vs-Strain resolution already does.
-  const tuneBreakExclusiveCandidates = (tuneBreak.exclusiveCandidates || []).map(candidate => {
-    const competesWithFusion = CHAR_BUFF_TABLE[candidate.name]?.tuneBreak?.competesWithFusionBurstReaction;
-    if (!competesWithFusion) return candidate;
-    const fusionWithoutMember = calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult, [candidate.name]);
-    return { ...candidate, fusionBurstDeltaIfExcluded: fusionBurst.dmg - fusionWithoutMember.dmg };
-  });
+  // Engine development.md item 9 (Aemeath's mode-exclusivity fix): flag which exclusive candidates
+  // compete with the shared fusionBurst reaction above — calcTeamStats.js needs this to run its own
+  // proper combinatorial resolution (see its own comment for why a single marginal "delta if excluded"
+  // number, tried first, was NOT sound once a SECOND competing member — Denia — existed: excluding one
+  // of two co-appliers from a reaction that only needs ONE of them to stay active reads as zero
+  // marginal cost, which is a real artifact of the boolean gate, not a meaningful signal on its own).
+  const tuneBreakExclusiveCandidates = (tuneBreak.exclusiveCandidates || []).map(candidate => ({
+    ...candidate,
+    competesWithFusionBurstReaction: !!CHAR_BUFF_TABLE[candidate.name]?.tuneBreak?.competesWithFusionBurstReaction,
+  }));
 
   const totalDmg = frazzle.dmg + erosion.dmg + fusionBurst.dmg + electroFlare.dmg + tuneBreak.dmg;
 
@@ -94,6 +92,24 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
     dps: rotTime > 0 ? totalDmg / rotTime : 0,
     tuneBreakDeepenMult: tuneBreak.deepenMult,
     tuneBreakExclusiveCandidates,
+    // fusionBurstResMult exposed so calcTeamStats.js's own combinatorial mode-exclusivity resolution
+    // (see its own comment) can recompute calcFusionBurstDmg for an arbitrary exclude-set without
+    // re-deriving this RES lookup itself or importing calcEngine.js's calcResMult directly.
+    fusionBurstResMult,
     breakdown: { frazzle, erosion, fusionBurst, electroFlare, tuneBreak },
   };
+}
+
+/**
+ * Recomputes the shared Fusion Burst reaction for a specific exclude-set — a thin wrapper so callers
+ * outside this file (calcTeamStats.js's combinatorial mode-exclusivity resolution) don't need to
+ * import calcEngine.js's calcFusionBurstDmg directly or re-derive fusionBurstResMult themselves.
+ * @param {Object[]} members
+ * @param {number} rotTime
+ * @param {number} defMult
+ * @param {number} fusionBurstResMult  From resolveDotReactionDps()'s own return value.
+ * @param {string[]} excludeNames
+ */
+export function recomputeFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult, excludeNames) {
+  return calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult, excludeNames);
 }

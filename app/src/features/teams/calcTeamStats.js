@@ -33,7 +33,7 @@ import { deriveStepsFromRotation } from '../../engine/rotationSimulator.js';
 import { resolveHitComposedDps } from '../../engine/resolveHitComposedDps.js';
 import { resolveHitComposedTeamDps } from '../../engine/resolveHitComposedTeamDps.js';
 import { resolveSimulatedTeamRotation } from '../../engine/resolveSimulatedTeamRotation.js';
-import { resolveDotReactionDps } from '../../engine/dotReactions.js';
+import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/dotReactions.js';
 import { chooseOnFieldOrder } from '../../engine/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/coordinatedAtk.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/sequenceGating.js';
@@ -1428,28 +1428,58 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // Resolved BEFORE the DOT-distribution loop below so a Rupture win's added dmg is actually
     // reflected in the member breakdown it feeds, not just the aggregate grandTotal.
     {
-      const preGrandTotal = totalRotDmg + echoActiveDmg + dotDmgPerRotation;
-      for (const candidate of dotResult.tuneBreakExclusiveCandidates) {
-        // fusionBurstDeltaIfExcluded (Aemeath's case, Engine development.md item 9): this member's own
-        // participation in the shared Fusion Burst reaction is ALSO part of what Rupture mode gives up
-        // — preGrandTotal already includes it unconditionally (today's baseline = "Fusion candidate"),
-        // so both the Rupture and Strain candidates below have to subtract it out for a fair real-total
-        // comparison. 0 for a member with no such competing reaction (Lynae), so this stays exactly the
-        // Rupture-vs-Strain-only comparison for her — no behavior change there.
-        const fusionDelta = candidate.fusionBurstDeltaIfExcluded || 0;
-        const totalIfFusion = preGrandTotal * tuneBreakDeepenMult;
-        const totalIfRupture = (preGrandTotal - fusionDelta + candidate.ruptureDmgDelta) * tuneBreakDeepenMult;
-        const totalIfStrain = (preGrandTotal - fusionDelta) * (tuneBreakDeepenMult * (1 + candidate.strainDeepenDelta));
-        if (totalIfFusion >= totalIfRupture && totalIfFusion >= totalIfStrain) {
-          tuneBreakResolvedStances.push({ name: candidate.name, stance: 'Fusion Burst mode' });
-        } else if (totalIfRupture >= totalIfStrain) {
-          dotDmgPerRotation += candidate.ruptureDmgDelta - fusionDelta;
-          tuneBreakResolvedStances.push({ name: candidate.name, stance: 'Tune Rupture mode' });
-        } else {
-          dotDmgPerRotation -= fusionDelta;
-          tuneBreakDeepenMult *= (1 + candidate.strainDeepenDelta);
-          tuneBreakResolvedStances.push({ name: candidate.name, stance: 'Tune Strain mode' });
+      const candidates = dotResult.tuneBreakExclusiveCandidates;
+      if (candidates.length) {
+        // Full combinatorial resolution (Engine development.md item 9) — replaced an earlier
+        // marginal-"delta if this one member is excluded" approach after it produced a real wrong
+        // answer once TWO members (Aemeath, Denia) both competed for the SAME shared boolean-gated
+        // Fusion Burst reaction: excluding just one of two co-appliers reads as zero marginal cost
+        // (the OTHER one alone keeps the reaction active), which made that member's own mode choice
+        // look free when it wasn't actually independent of the other's. A full enumeration over every
+        // candidate's own valid options — cheap, since real teams have at most a couple of mode-locked
+        // members — has no such blind spot: each combination's real final total is computed directly,
+        // including a fresh calcFusionBurstDmg() call for whichever subset of fusion-competing
+        // candidates opted in for that specific combination.
+        //
+        // Clean baseline: strip the shared Fusion Burst reaction's dmg out of dotDmgPerRotation (its
+        // real value depends on which candidates opt in, enumerated below) — the exclusive candidates'
+        // OWN tuneBreak rupture/strain contributions are already excluded by calcTuneBreakDmg itself,
+        // only the fusion reaction needs stripping here.
+        const baseDotDmg = dotDmgPerRotation - dotResult.breakdown.fusionBurst.dmg;
+        const baseGrandTotal = totalRotDmg + echoActiveDmg + baseDotDmg;
+
+        const optionsFor = (c) => c.competesWithFusionBurstReaction ? ['fusion', 'rupture', 'strain'] : ['rupture', 'strain'];
+        // Cartesian product of every candidate's own option list — e.g. Aemeath{fusion,rupture,strain}
+        // × Denia{fusion,rupture,strain} × Lynae{rupture,strain} = 18 combinations, trivial to evaluate.
+        let combos = [[]];
+        for (const c of candidates) {
+          const opts = optionsFor(c);
+          combos = combos.flatMap(prefix => opts.map(opt => [...prefix, opt]));
         }
+
+        let best = null;
+        for (const combo of combos) {
+          const excludeNames = candidates
+            .filter((c, i) => c.competesWithFusionBurstReaction && combo[i] !== 'fusion')
+            .map(c => c.name);
+          const fusionDmg = excludeNames.length
+            ? recomputeFusionBurstDmg(mems, rotTime, defMult, dotResult.fusionBurstResMult, excludeNames).dmg
+            : dotResult.breakdown.fusionBurst.dmg;
+          let dmgAdj = fusionDmg, multAdj = 1;
+          candidates.forEach((c, i) => {
+            if (combo[i] === 'rupture') dmgAdj += c.ruptureDmgDelta;
+            else if (combo[i] === 'strain') multAdj *= (1 + c.strainDeepenDelta);
+          });
+          const total = (baseGrandTotal + dmgAdj) * (tuneBreakDeepenMult * multAdj);
+          if (!best || total > best.total) best = { total, dmgAdj, multAdj, combo };
+        }
+
+        dotDmgPerRotation = baseDotDmg + best.dmgAdj;
+        tuneBreakDeepenMult = tuneBreakDeepenMult * best.multAdj;
+        candidates.forEach((c, i) => {
+          const stance = best.combo[i] === 'fusion' ? 'Fusion Burst mode' : best.combo[i] === 'rupture' ? 'Tune Rupture mode' : 'Tune Strain mode';
+          tuneBreakResolvedStances.push({ name: c.name, stance });
+        });
       }
     }
 
