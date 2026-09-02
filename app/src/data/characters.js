@@ -1556,7 +1556,13 @@ const CHARACTER_DATA = {
   ['Lucilla',        'ATK'],
   ['Baizhi',         'HP'],
   ['Taoqi',          'DEF'],
-  ['Yuanwu',         'ATK'],
+  // Corrected 2026-09-02 (fresh Prydwen dump cross-check): was 'ATK' — but EVERY one of his real
+  // Lv.10 multipliers (Thunder Wedge, Rumbling Spark, Liberation, all Lightning Infused attacks,
+  // Thunder Uprising, Intro) is explicitly DEF-scaling per the source, and the page's own endgame
+  // stat guidance prioritizes DEF (1800+) over ATK (1200+, explicitly "skippable"). This field
+  // determines the base stat his damage multiplies against (calcTeamStats.js's baseStat/atkPct
+  // routing) — was silently computing his damage off ATK instead of DEF entirely.
+  ['Yuanwu',         'DEF'],
   ['Youhu',          'HP'],
   ['Buling',         'ATK'],
 ].forEach(([name, statScaling]) => {

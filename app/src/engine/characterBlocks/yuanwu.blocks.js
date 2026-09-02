@@ -8,6 +8,15 @@
 // almost entirely attack-speed/DEF%/shield/resource-scaling, with no matching
 // category in this ATK-DPS-focused schema, per the audit's own zeroing (only S5
 // carries a real representable value).
+//
+// Fixed 2026-09-02 (found while re-auditing against a fresh Prydwen dump): added
+// `basis: 'DEF'` to every damage block below — resolveHitComposedDps.js's own doc
+// says every hit is ATK-scaling BY DEFAULT unless the block says otherwise, and
+// none of these did, despite every one of Yuanwu's real multipliers being
+// explicitly DEF-scaling (his own dump literally suffixes every value with "DEF").
+// Same fix applied to CHARACTER_DATA['Yuanwu'].statScaling (was 'ATK', corrected
+// to 'DEF') — this was a live-DPS-relevant bug, not cosmetic, same pattern as
+// Taoqi/Mornye (both already correctly carry basis: 'DEF' on every block).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -22,14 +31,14 @@ export const YUANWU_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Thunder Bombardment' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('63.62%') },
+    damage: { hits: parseSkillMultiplierHits('63.62%'), basis: 'DEF' },
   },
   {
     id: 'yuanwu.skill.thunder-wedge',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Thunder Wedge' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('23.86%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('23.86%'), category: 'skillDmg', basis: 'DEF' },
     note: 'Summons Thunder Wedge (lasts 12s), forms a Thunder Field around it — the on-field character\'s hits inside trigger a Coordinated ATK (7.96%, 1x/1.2s, not modeled). Fires twice in the real rotation.',
   },
   {
@@ -39,7 +48,7 @@ export const YUANWU_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     // Combines Thunder Wedge Detonation (59.65%) with Blazing Might's own hit (174.96%x2) — the
     // rotation's own note says this cast detonates the active Thunder Wedge AND deals its own blow.
-    damage: { hits: [...parseSkillMultiplierHits('59.65%'), ...parseSkillMultiplierHits('174.96%×2')], category: 'libDmg' },
+    damage: { hits: [...parseSkillMultiplierHits('59.65%'), ...parseSkillMultiplierHits('174.96%×2')], category: 'libDmg', basis: 'DEF' },
     note: 'Detonates the active Thunder Wedge (counted as Resonance Skill DMG) and grants Forte Circuit Lightning Infused (Interruption Resistance) to the nearby team for 10s (not modeled), then a powerful blow.',
   },
   {
@@ -49,7 +58,7 @@ export const YUANWU_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     // Combines Thunder Wedge Detonation (59.65%) with Rumbling Spark's own hit (108.54%) — the
     // rotation's own note says this cast detonates Thunder Wedge again on the way into Lightning Infused.
-    damage: { hits: [...parseSkillMultiplierHits('59.65%'), ...parseSkillMultiplierHits('108.54%')], category: 'skillDmg' },
+    damage: { hits: [...parseSkillMultiplierHits('59.65%'), ...parseSkillMultiplierHits('108.54%')], category: 'skillDmg', basis: 'DEF' },
     note: 'Once Forte Gauge is full, hold Skill to consume all Readiness and enter Lightning Infused, detonating the active Thunder Wedge on the way in.',
   },
   {

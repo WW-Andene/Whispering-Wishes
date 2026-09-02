@@ -24,8 +24,11 @@ describe('triggerEngine parity — Yuanwu', () => {
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
+    // baseStats needs both atk and def now: 2026-09-02 fixed his damage blocks to basis: 'DEF' (he's a
+    // DEF-scaler per a fresh Prydwen dump — every one of his real multipliers is explicitly DEF-scaling,
+    // was defaulting to ATK-scaling before this fix, same as CHARACTER_DATA['Yuanwu'].statScaling).
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yuanwu'], YUANWU_BLOCKS);
-    const { totalDamage, hitLog } = resolveHitComposedDps(YUANWU_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 2000, 'electro', 'Support');
+    const { totalDamage, hitLog } = resolveHitComposedDps(YUANWU_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, { atk: 2000, def: 2000 }, 'electro', 'Support');
     expect(totalDamage).toBeGreaterThan(0);
     const fired = new Set(hitLog.map(h => h.blockId));
     expect(fired.has('yuanwu.intro.thunder-bombardment')).toBe(true);
