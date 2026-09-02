@@ -1516,7 +1516,13 @@ const CHARACTER_DATA = {
   // Rotation (Intro + Inkwash 3-4 + Liberation + To Teach/To Save/To Sacrifice + Outro's 100% ATK)
   // using the corrected values, not the stale 1200 (itself ~half of 2337, confirming the same bug).
   ['Qiuyuan',       2337, 25, 6],   // Echo Skill DMG buff
-  ['Chisa',         1100, 25, 6],   // DEF Shred support
+  // totalMult corrected 2026-09-02 (fresh Prydwen dump cross-check, same class of bug as Augusta's/
+  // Qiuyuan's totalMult fixes above): was 1100, ~53.5% of the real ~2056 sum across her real Loop
+  // Rotation (Intro + Basic Stage2/Rending Lunge/Death Snip + Liberation + Skill: Serrated Loop +
+  // Forte Sawring-Blitz 2-3 + Sawring-Eradication) using her own (already-correct) SKILL_MULTIPLIERS
+  // row values — close enough to the established ~0.51-0.53 halving-bug ratio to be the same class of
+  // stale, pre-correction heuristic rather than normal estimation noise.
+  ['Chisa',         2056, 25, 6],   // DEF Shred support
   ['Lynae',         1300, 25, 6],   // Tune Break support
   ['Mornye',        800,  25, 5],   // Healer + Off-Tune
   ['Rebecca',       1900, 24, 9],   // Huntress/Guts stance swap, turret buff
@@ -1651,7 +1657,11 @@ const CHARACTER_DATA = {
   ['Galbrena',      'T0.5', 'T1'],
   ['Iuno',          'T0.5', 'T3'],
   ['Luuk Herssen',  'T0',   'T1.5'],
-  ['Chisa',         'T0',   'T0.5'],
+  // tier corrected 2026-09-02 against a fresh Prydwen dump: was 'T0.5' for Whimpering Wastes — that
+  // was actually the Value Tier List's WW figure, mismatched against the standard Ratings section's
+  // own ToA figure (T0) already used for the first column. The dump's standard Ratings section lists
+  // T0 for BOTH ToA and WW (its own Value Tier List separately shows T0/T0.5) — matched consistently.
+  ['Chisa',         'T0',   'T0'],
   ['Verina',        'T0.5', 'T0.5'],
   ['Carlotta',      'T1',   'T3'],
   ['Zani',          'T1',   'T1.5'],
@@ -2547,7 +2557,12 @@ const CHAR_BUFF_TABLE = {
   'Chisa': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
+    // selfBuffs added 2026-09-02 (fresh Prydwen dump cross-check): Inherent Skill "All Ends Here" was
+    // entirely unmodeled — casting Intro or Liberation grants a real, unconditional self Havoc DMG Amp
+    // (the accompanying +20% Healing Bonus isn't a DPS-relevant stat, so only the DMG half is modeled).
+    selfBuffs: [
+      { stat: 'elemDmg', value: 20, duration: 12, condition: 'Inherent Skill All Ends Here, on casting Intro or Resonance Liberation' },
+    ],
     debuffs: [
       { stat: 'defIgnore', value: 18, duration: 30, condition: "Thread of Bane: only benefits teammates who themselves apply/deal Negative Status DMG, not a free-for-all team buff" },
       { stat: 'defShred', value: 12, duration: 2, condition: 'Havoc Bane: 1 stack (2% DEF Shred) per hit on an Unseen Snare target, up to 6 stacks, refreshed every 2s' },
@@ -6105,9 +6120,17 @@ const RESONANCE_CHAIN_DATA = {
   'Danjin':       { s1: { atkPct: 30 }, s2: { totalMult: 20 }, s3: { libDmg: 30 }, s4: { critRate: 15 }, s5: { elemDmg: 15 }, s6: { atkPct: 20 } },
   // Chisa S1: ATK+30% on Unseen Snare (not defShred, confirmed exact). S2: team +50% All-Attr DMG for allies with
   // Thread of Bane (was deepen:10, wrong stat+value — real 10% Havoc RES ignore is the smaller of two S2 effects).
-  // S4: improves Havoc Bane trigger rate (utility). S5: Moment of Nihility Liberation DMG Mult+100% (was totalMult:10,
-  // no basis). S6: Unseen Snare-Finality: targets take 30% more Negative Status DMG (was deepen:15, wrong value)
-  'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { libDmg: 100 }, s6: { deepen: 30 } },
+  // S3 corrected 2026-09-02 (fresh Prydwen dump cross-check, missed by the earlier S1/S2/S4/S5/S6 audit pass
+  // noted above): was totalMult:10, an unexplained placeholder — real effect is Sawring-Blitz/Chainsaw Mode
+  // Dodge Counter/Sawring-Eradication DMG Multiplier +120% (a 2nd, separate copy of Woven Myriad-Convergence's
+  // own +120%, which is what her Liberation already grants). Since those 3 moves are explicitly "considered
+  // Resonance Liberation DMG" per her own kit text (confirmed by Prydwen's own damage-type breakdown: Liberation
+  // is 84.5% of her real rotation damage), modeled as libDmg — the smaller secondary effect (a further +120% to
+  // just the Ring-of-Chainsaw consumption bonus specifically) is left unmodeled, same "larger effect only"
+  // precedent already used for S2 above. S4: improves Havoc Bane trigger rate (utility). S5: Moment of Nihility
+  // Liberation DMG Mult+100% (was totalMult:10, no basis). S6: Unseen Snare-Finality: targets take 30% more
+  // Negative Status DMG (was deepen:15, wrong value)
+  'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { libDmg: 120 }, s4: { totalMult: 10 }, s5: { libDmg: 100 }, s6: { deepen: 30 } },
   // Ciaccona S1: ATK+35% after Basic ATK (conditional)
   // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Ciaccona/Combat, cross-checked
   // against ww.nanoka.cc/character/1407 (both agree on every node's exact wording):

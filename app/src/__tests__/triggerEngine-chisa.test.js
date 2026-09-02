@@ -8,7 +8,7 @@ describe('triggerEngine parity — Chisa', () => {
   it('S1/S3/S5/S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Chisa'];
     expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s1').effects[0].value).toBe(rc.s1.atkPct);
-    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s3').effects[0].value).toBe(rc.s3.totalMult);
+    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
     expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
     expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s6').effects[0].value).toBe(rc.s6.deepen);
   });
@@ -38,9 +38,12 @@ describe('triggerEngine parity — Chisa', () => {
     expect(hb.kind).toBe('debuff');
   });
 
-  it('the Intro self-buff (+20% Havoc DMG, 12s) is sourced from CHARACTER_ROTATIONS despite CHAR_BUFF_TABLE.selfBuffs being empty', () => {
+  it('the Intro/Liberation self-buff (+20% Havoc DMG, 12s) matches CHAR_BUFF_TABLE.selfBuffs', () => {
+    // Was asserting CHAR_BUFF_TABLE.selfBuffs was empty (a real gap vs. the engine, which already had
+    // this buff) — fixed 2026-09-02 against a fresh Prydwen dump, both now agree.
     const legacy = CHAR_BUFF_TABLE['Chisa'];
-    expect(legacy.selfBuffs).toEqual([]);
+    expect(legacy.selfBuffs[0].value).toBe(20);
+    expect(legacy.selfBuffs[0].duration).toBe(12);
     const self = CHISA_BLOCKS.find(b => b.id === 'chisa.selfbuff.reverberance-return');
     expect(self.effects[0].value).toBe(20);
     expect(self.timing.duration).toBe(12);
