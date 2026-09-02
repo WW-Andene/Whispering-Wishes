@@ -164,6 +164,44 @@ specifically against the source before assuming it's fine.
 
 ---
 
+## 6. Systematic sweep: `flagged as unverified` Resonance Chain nodes across `characterBlocks/*.js`
+
+**Found**: 2026-09-02, while building the engine work list. A grep for the exact phrase "flagged as
+unverified" across `characterBlocks/*.js` turns up 2 characters with untouched placeholder chain
+nodes, same class as the Chisa/Mornye missed-S3 and Yangyang: Xuanling S1 bugs already fixed:
+
+- **Yangyang: Xuanling S1** — fixed 2026-09-02 (see her own audit comment in `characters.js` and
+  `yangyangxuanling.blocks.js`). Was `totalMult:10`; real effect is a discrete 337.98% ATK proc.
+- **Rover: Aero** — S1/S3/S5 still flagged unverified in `roveraero.blocks.js`, not yet checked. No
+  dump on file for this character; needs a fresh source before touching.
+
+Re-run `grep -rn "flagged as unverified" app/src/engine/characterBlocks/*.js` after any future fix to
+confirm the list has shrunk, not just moved.
+
+**Fix shape**: character-by-character data-accuracy work, not an engine architecture change — handle
+opportunistically as dumps become available, same process as every other character audit in this
+project.
+
+---
+
+## 7. Process lesson: verify a "fresh dump" actually adds new information before citing it as the source
+
+**Found**: 2026-09-02, on the Yangyang: Xuanling S1 fix above. The user supplied a dump in-chat to
+confirm S1's real effect — but that exact text (337.98% ATK, Stagnate, interrupt immunity) was already
+present, verbatim, in the existing `Characters data dump/Yangyang Xuanling/Yangyang Xuanling.md` file
+from an earlier session. The fix itself was correct, confirmed independently against both copies of
+the text — but the commit message said "confirmed against a fresh, user-provided Prydwen dump," which
+overstated what the new message actually contributed (nothing — the answer was already on disk, an
+earlier audit pass on the same file just never reached S1 before moving on).
+
+**Takeaway, not a code fix**: before asking for or citing a "fresh dump" as the source of a fix, check
+whether the answer is already sitting in an existing `Characters data dump/*/*.md` file. If it is, say
+so plainly instead of implying new information was needed — the finding is still real and the fix
+still stands, but the sourcing claim in the commit/explanation has to match what actually happened.
+This applies to any future "flagged as unverified" character-data fix, including item 6 above.
+
+---
+
 ## How to add to this file
 
 When an audit turns up a real engine/calculator limitation (as opposed to a
