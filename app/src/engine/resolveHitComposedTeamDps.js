@@ -92,18 +92,22 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
   const allBlocks = Object.values(blocksByOwner).flat();
 
   // Every buff/debuff block that can reach targetName — same routing rules as
-  // resolveSimulatedTeamRotation.js, pre-built ONCE (not per-hit).
+  // resolveSimulatedTeamRotation.js, pre-built ONCE (not per-hit). `trigger-actor` (Engine
+  // development.md item 9) is included here too: unlike every other scope, whether it actually
+  // reaches targetName can't be pre-decided from the block alone — it depends on whether
+  // targetName's OWN steps ever fire the block's named action, checked below when building windows.
   const relevantBuffBlocks = allBlocks.filter(b => {
     if (b.kind !== 'buff' && b.kind !== 'debuff') return false;
     const scope = b.target?.scope;
     return (scope === 'self' && b.source === targetName)
       || scope === 'whole-team'
+      || scope === 'trigger-actor'
       || (scope === 'next-on-field' && isImmediateNext(order, b.source, targetName));
   });
   const passiveRelevant = relevantBuffBlocks.filter(b => b.trigger.type === 'passive');
   const windowedRelevant = relevantBuffBlocks
     .filter(b => b.trigger.type !== 'passive' && b.timing?.duration != null)
-    .map(b => ({ block: b, ...buildBlockWindows(b, results.filter(r => r.owner === b.source), targetElementLower, targetRole) }));
+    .map(b => ({ block: b, ...buildBlockWindows(b, resultsForBlock(b, targetName, results), targetElementLower, targetRole) }));
 
   const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
   function statsAtInstant(instant) {
@@ -175,6 +179,20 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
 function isImmediateNext(order, ownerA, ownerB) {
   const i = order.indexOf(ownerA);
   return i >= 0 && order[i + 1] === ownerB;
+}
+
+// Engine development.md item 9: which subset of `allResults` buildBlockWindows() should scan for
+// a given buff block, from the perspective of computing targetName's own stats. Every existing
+// scope keeps the pre-item-9 behavior (only the block's own owner's steps matter). The two new
+// cases: an 'ally-action'-triggered block (whole-team/self/all-enemies target) can fire off ANY
+// team member's step, so it needs the full cross-owner results list, not just its owner's; a
+// 'trigger-actor'-targeted block reaches targetName specifically when TARGETNAME's own steps are
+// the ones firing the action — so it's evaluated against targetName's own results, regardless of
+// which character's kit the block itself belongs to.
+function resultsForBlock(block, targetName, allResults) {
+  if (block.target?.scope === 'trigger-actor') return allResults.filter(r => r.owner === targetName);
+  if (block.trigger.type === 'ally-action') return allResults;
+  return allResults.filter(r => r.owner === block.source);
 }
 
 function applyEffects(block, multiplier, stats) {

@@ -232,6 +232,7 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
     sim.advance(ev.stepSeconds ?? DEFAULT_STEP_SECONDS);
     const fired = new Set(['passive']); // passive blocks are always eligible, same as every prior test's convention
     const ineligibleBlockIds = new Set();
+    const actionTags = new Set(); // 'ally-action' support — see the collection loop below
 
     // registerSwap()/the swap clock are global (no owner) — every swap counts against every open
     // partner-outro window across the WHOLE team, not just this step's own owner. resetSegment IS
@@ -284,6 +285,19 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
           ineligibleBlockIds.add(b.id);
         }
       }
+      // 'ally-action' support (Engine development.md item 9): collect which real-game status/action
+      // tags THIS step's own cast applies, from any of this owner's OWN blocks whose trigger matches
+      // this exact cast and that carry `appliesTags` (usually the damage block for this same move).
+      // Cooldown-ineligible blocks (just computed above) don't count as actually resolving, so their
+      // tags don't fire either. Attached to the result row below as `actionTags` — a GLOBAL, owner-
+      // tagged event stream any OTHER team member's 'ally-action' trigger can scan across every
+      // owner's results, not just its own (see buildBlockWindows.js's own doc for how consumers read
+      // this cross-character, unlike every other trigger type which is intentionally owner-scoped).
+      for (const b of blocks) {
+        if (b.trigger.type !== 'cast' || b.trigger.on !== label || !b.appliesTags?.length) continue;
+        if (ineligibleBlockIds.has(b.id)) continue;
+        for (const tag of b.appliesTags) actionTags.add(tag);
+      }
     }
 
     if (ev.checksPriorCast) {
@@ -324,7 +338,7 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
       }
     }
 
-    results.push({ step: ev, owner, firedTriggers: fired, ineligibleBlockIds, time: sim.time });
+    results.push({ step: ev, owner, firedTriggers: fired, ineligibleBlockIds, actionTags, time: sim.time });
   }
   return results;
 }

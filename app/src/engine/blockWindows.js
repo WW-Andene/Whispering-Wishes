@@ -22,10 +22,13 @@ import { triggerFired, conditionHolds } from './triggerEngine.js';
  *   — this function is only meaningful for continuous-uptime buff/debuff blocks, not passive
  *   (always-on, no window needed) or duration-less per-hit-scoped ones (see resolveSimulatedRotation.js's
  *   own file header for why those two cases are handled separately by callers, not here).
- * @param {{firedTriggers: Set<string>, ineligibleBlockIds: Set<string>, time: number}[]} ownResults
+ * @param {{firedTriggers: Set<string>, ineligibleBlockIds: Set<string>, actionTags: Set<string>, time: number}[]} ownResults
  *   The subset of simulateRotation()/simulateTeamRotation() results relevant to this block — for a
  *   single-character driver, every result; for a team driver, only the results belonging to this
- *   block's own owner (a block's activation history only depends on its OWNER's steps).
+ *   block's own owner (a block's activation history only depends on its OWNER's steps) — EXCEPT for
+ *   a `trigger.type: 'ally-action'` block (Engine development.md item 9), which is the one case that
+ *   deliberately breaks this rule: pass the FULL, all-owners results list for those, since the
+ *   trigger can fire off ANY team member's step, not just this block's own owner's.
  * @param {string} [targetElementLower]
  * @param {string} [targetRole]
  * @returns {{windows: {start:number, end:number}[], stackingMode: string, maxStacks: number}}
@@ -38,7 +41,12 @@ export function buildBlockWindows(block, ownResults, targetElementLower = null, 
 
   for (const r of ownResults) {
     if (r.ineligibleBlockIds.has(block.id)) continue; // cooldown-gated this step
-    if (!triggerFired(block.trigger, r.firedTriggers)) continue;
+    // 'ally-action' blocks are keyed by a cross-character status tag (r.actionTags), not the normal
+    // owner-scoped firedTriggers Set every other trigger type uses — see this function's own
+    // ownResults doc above for why callers must pass the full results list for these.
+    if (block.trigger.type === 'ally-action') {
+      if (!r.actionTags?.has(block.trigger.action)) continue;
+    } else if (!triggerFired(block.trigger, r.firedTriggers)) continue;
     if (!conditionHolds(block.condition, targetElementLower, targetRole)) continue;
 
     const now = r.time;

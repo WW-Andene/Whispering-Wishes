@@ -36,6 +36,21 @@
  * @property {string} [note]        Human-readable sourcing/mechanic note (same convention as
  *                                   the free-text `note` fields already used throughout
  *                                   characters.js — keep provenance attached to the data)
+ * @property {string[]} [appliesTags]  Added 2026-09-02 alongside the 'ally-action' trigger/
+ *                                   'trigger-actor' target (see triggerBlocks.schema.js's Trigger/
+ *                                   Target docs, and Engine development.md item 9 for the audit
+ *                                   this closes): names which real-game status/action this block's
+ *                                   own resolution counts as applying (e.g. `['shifting']`,
+ *                                   `['fusion-burst']`, `['havoc-bane']`, `['echo-skill-cast']`) —
+ *                                   sourced strictly from that move's own kit text ("inflicts
+ *                                   Shifting", "counted as casting Echo Skill", etc.), never
+ *                                   inferred. Any OTHER character's `ally-action` trigger naming
+ *                                   this same tag fires the instant this block resolves, regardless
+ *                                   of whose block it is — this is what makes `appliesTags` do real
+ *                                   work instead of being flavor metadata: it's the only thing that
+ *                                   makes a Denia/Lynae/Qingxiao Shifting-application step visible
+ *                                   to another character's reactive buff at all. Omit entirely for
+ *                                   the common case (a block that applies no tracked status).
  * @property {Proc} [proc]          For a discrete, repeatable extra-hit proc (Yinlin S6-style —
  *                                   see Proc typedef below) — the raw flat-ATK-scaling damage
  *                                   instance this block represents. Kept OUT of `effects` on
@@ -110,10 +125,23 @@
  *                            'windowed-cast' (added for Jinhsi's cast-order forfeit windows —
  *                            see below) | 'requires-prior-cast' (added for Camellya's Twining —
  *                            see below) | 'windowed-proc' (added for Yinlin's Furious Thunder —
- *                            see below)
+ *                            see below) | 'ally-action' (added 2026-09-02 for the "when ANY team
+ *                            member performs action X, [someone] gains buff Y" pattern audited in
+ *                            Engine development.md item 9 — Qingxiao's/Denia's Shifting/Fusion Burst
+ *                            reactive buffs, Cartethyia's/Sigrika's/Luuk Herssen's/Galbrena's/
+ *                            Mornye's whole-team buffs on an ally's own action, none of which are
+ *                            anchored to the block OWNER's own cast — see below)
  * @property {string} [on]   The specific skill/move id this trigger fires on (matches a
  *                            CHARACTER_ROTATIONS-style {type, skill} pair when type === 'cast');
  *                            omitted for triggers that aren't tied to one specific move
+ * @property {string} [action]  For 'ally-action': the tag name (matches a damage block's own
+ *                            `appliesTags` entry, see DamageHits below) this trigger fires on,
+ *                            regardless of WHICH team member's step actually applied that tag —
+ *                            unlike every other trigger type, this one is NOT scoped to the block's
+ *                            own owner's steps; it fires the instant any team member's own damage
+ *                            block with a matching tag resolves. E.g. `{ type: 'ally-action',
+ *                            action: 'shifting' }` fires whenever Denia, Lynae, Qingxiao, or anyone
+ *                            else in the team lands a hit tagged `appliesTags: ['shifting']`.
  * @property {string} [resource]      Name of the gauge this trigger reads, for 'resource-threshold'
  * @property {number} [threshold]     Value the resource must reach/cross
  * @property {string} [resourceStepOn]  For 'resource-threshold': the `TYPE:SKILL` label (same
@@ -308,7 +336,15 @@
 /**
  * @typedef {Object} Target
  * @property {string} scope   One of: 'self' | 'on-field' | 'next-on-field' | 'whole-team' |
- *                              'marked-enemy' | 'all-enemies'
+ *                              'marked-enemy' | 'all-enemies' | 'trigger-actor' (added 2026-09-02
+ *                              alongside the 'ally-action' trigger type — see its own doc above —
+ *                              for a buff whose recipient is specifically whichever team member's
+ *                              own step caused the trigger to fire, e.g. Qingxiao S4: "after any
+ *                              teammate inflicts Shifting, THEIR ATK +20%" goes to that specific
+ *                              ally, not Qingxiao and not the whole team. Only meaningful paired
+ *                              with `trigger.type: 'ally-action'` — resolved per-candidate-target by
+ *                              checking whether THAT target's own steps fired the named action, not
+ *                              pre-filterable the way self/whole-team/next-on-field are)
  * @property {string} [filter] Optional extra restriction within scope (e.g. 'Coordinated ATK
  *                               role only')
  */
@@ -338,7 +374,7 @@
  *                                 rule as everywhere else in this schema).
  */
 
-export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast', 'requires-prior-cast', 'windowed-proc'];
+export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast', 'requires-prior-cast', 'windowed-proc', 'ally-action'];
 export const BLOCK_KINDS = ['damage', 'buff', 'debuff', 'heal', 'utility'];
-export const TARGET_SCOPES = ['self', 'on-field', 'next-on-field', 'whole-team', 'marked-enemy', 'all-enemies'];
+export const TARGET_SCOPES = ['self', 'on-field', 'next-on-field', 'whole-team', 'marked-enemy', 'all-enemies', 'trigger-actor'];
 export const STACKING_MODES = ['unique', 'stacking', 'refresh'];

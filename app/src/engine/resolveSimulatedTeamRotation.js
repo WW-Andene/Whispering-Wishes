@@ -105,16 +105,22 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
     if (block.kind !== 'buff' && block.kind !== 'debuff') continue;
     const blockOwner = block.source;
     const scope = block.target?.scope;
+    // 'trigger-actor' (Engine development.md item 9) is included here too: whether it reaches
+    // targetName isn't decidable from the block alone — resolved below via resultsForBlock(), same
+    // as resolveHitComposedTeamDps.js's own identical addition.
     const relevantToTarget =
       (scope === 'self' && blockOwner === targetName) ||
       scope === 'whole-team' ||
+      scope === 'trigger-actor' ||
       (scope === 'next-on-field' && isImmediateNext(order, blockOwner, targetName));
     if (!relevantToTarget) continue;
     if (sequenceByOwner && Object.prototype.hasOwnProperty.call(sequenceByOwner, blockOwner) && !sequenceAllows(block, sequenceByOwner[blockOwner])) continue;
 
-    // A block's OWN activation history only depends on ITS OWNER's steps — a target merely
-    // RECEIVING it plays no part in whether/when it fires.
-    const ownResults = results.filter(r => r.owner === blockOwner);
+    // A block's OWN activation history normally only depends on ITS OWNER's steps — a target merely
+    // RECEIVING it plays no part in whether/when it fires. Two exceptions (Engine development.md
+    // item 9): 'ally-action' triggers fire off ANY team member's step, and 'trigger-actor' targets
+    // resolve against targetName's OWN steps regardless of the block's owner — see resultsForBlock().
+    const ownResults = resultsForBlock(block, targetName, results);
 
     if (block.trigger.type === 'passive') {
       if (!conditionHolds(block.condition, targetElementLower, targetRole)) continue;
@@ -125,7 +131,10 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
 
     const hasDuration = block.timing?.duration != null;
     if (!hasDuration) {
-      const everFired = ownResults.some(r => !r.ineligibleBlockIds.has(block.id) && triggerFired(block.trigger, r.firedTriggers));
+      const everFired = ownResults.some(r => {
+        if (r.ineligibleBlockIds.has(block.id)) return false;
+        return block.trigger.type === 'ally-action' ? r.actionTags?.has(block.trigger.action) : triggerFired(block.trigger, r.firedTriggers);
+      });
       if (everFired) perHitScopedBlockIds.push(block.id);
       continue;
     }
@@ -153,6 +162,15 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
 function isImmediateNext(order, ownerA, ownerB) {
   const i = order.indexOf(ownerA);
   return i >= 0 && order[i + 1] === ownerB;
+}
+
+// Engine development.md item 9 — see resolveHitComposedTeamDps.js's identical function for the
+// full rationale (kept as a same-named twin rather than a shared import, matching this file's own
+// existing convention of duplicating isImmediateNext() above rather than cross-importing).
+function resultsForBlock(block, targetName, allResults) {
+  if (block.target?.scope === 'trigger-actor') return allResults.filter(r => r.owner === targetName);
+  if (block.trigger.type === 'ally-action') return allResults;
+  return allResults.filter(r => r.owner === block.source);
 }
 
 function applyEffects(block, multiplier, stats, addTotalMult) {

@@ -263,6 +263,77 @@ re-verified each against its existing `Characters data dump/*/*.md` file.
 
 ---
 
+## 9. "Ally-action" reactive buffs — full audit + phased plan (item 8 generalized)
+
+**Found**: 2026-09-02, generalizing item 8's Qingxiao/Yangyang: Xuanling S4 fixes into a full sweep.
+Grepped every `characterBlocks/*.js` for the marker phrase "cross-character trigger" plus a broader
+sweep for "a teammate"/"an ally"/"any team member" language, then cross-checked each hit's real kit
+text against its `Characters data dump/` file.
+
+The underlying pattern: an effect phrased as *"when ANY team member performs action X, [someone] gains
+buff Y"* — not the buff owner's own cast, so nothing in `CHARACTER_ROTATIONS` for that character
+anchors it. Splits into two shapes:
+
+**Category A — target scope is already correct (self/whole-team/all-enemies); only the trigger is
+wrong** (currently `passive`, i.e. always-on/overcredited, or anchored to the wrong character's own
+cast as an approximation):
+- Cartethyia S4 (whole-team +20% All DMG on any ally inflicting one of 6 named statuses)
+- Galbrena's Afterflame (S1 self-stacking + the matching enemy debuff), stacks on ANY ally's Echo
+  Skill cast
+- Luuk Herssen S4 (whole-team +20% All DMG on ally Tune Break)
+- Mornye's chain.s2 (whole-team Crit DMG, currently anchored to her own Inversion cast as a stand-in
+  for the real "ally Tune Break hit" trigger)
+- Sigrika S4 (whole-team ATK on ally Echo Skill cast)
+- Hiyuki's Fine Snow self-buff (scales with ally Glacio Chafe/Havoc Bane applications)
+- Sigrika's Blessing of Runes (targets "whichever Resonator is active," refreshed by ally Echo Skill
+  casts — needs `next-on-field`-style dynamic self-tracking, not a fixed target, but not `trigger-actor`
+  either since it always targets the active member regardless of who triggered it)
+
+**Category B — genuinely needs a new dynamic target scope**, since the recipient is specifically
+whoever performed the triggering action, not a fixed self/team/enemy scope:
+- Qingxiao S4 (whoever inflicts Shifting gets +20% ATK) — fixed via item 8's investigation, not yet
+  code-fixed (blocked on this schema work)
+- **Denia S2, Fusion Burst mode** (whoever inflicts Fusion Burst gets +50% Fusion DMG Bonus, 15s) —
+  found during this sweep, not previously flagged at all; `denia.chain.s2`'s current note doesn't even
+  mention this half of the real effect, only the flat +40% Banish multiplier
+- **Denia S2, Tune Strain mode** (whoever inflicts Tune Strain-Shifting gets +20 Tune Break Boost,
+  15s) — same, found during this sweep, not previously flagged
+
+**Out of scope for this mechanism** (state-transition or one-off procs on an ally's action, not a
+simple stat buff — don't force-fit into the same fix):
+- Mornye's Outro (an ally's Tune Break hit upgrades Observation Marker to Interfered Marker — a status
+  transition, not a stat grant)
+- Cartethyia (an ally maxing Erosion stacks on an already-capped target instantly procs bonus Erosion
+  DMG — a one-off damage proc, not a buff)
+
+**Fix shape — phased plan**:
+1. **Schema — DONE 2026-09-02.** Added `trigger.type: 'ally-action'` (`{ type: 'ally-action', action:
+   '<tag>' }`, fires off ANY team member's step carrying a matching tag) and `target.scope:
+   'trigger-actor'` (resolves to whichever character's own step fired it) to `triggerBlocks.schema.js`,
+   plus a new `appliesTags: string[]` field on damage blocks. Wired end to end:
+   `rotationSimulator.js`'s `simulateStepsCore` now collects each step's fired `appliesTags` into a
+   new `actionTags` Set on every result row (owner-tagged, but readable across owners — unlike every
+   other trigger type, which stays intentionally owner-scoped); `blockWindows.js`'s
+   `buildBlockWindows` matches `ally-action` blocks against `r.actionTags` instead of the normal
+   `firedTriggers` key lookup; `resolveHitComposedTeamDps.js` and `resolveSimulatedTeamRotation.js`
+   both gained a shared `resultsForBlock(block, targetName, allResults)` helper that routes to the
+   right results subset (full team for `ally-action`, `targetName`'s own results for
+   `trigger-actor`, unchanged owner-only for everything else). Proven with a new, fully synthetic
+   test (`allyActionTrigger.test.js`, 6 tests, hand-built 2-character scenario — not real character
+   data) covering both category shapes, including the specific negative case that mattered most:
+   a `trigger-actor` block does NOT reach its own owning character when that character never performs
+   the triggering action themselves (the exact bug class Qingxiao's S4 had). Purely additive — full
+   suite (1221 tests, up from 1215) passing, zero existing behavior changed.
+2. **Tags — not started.** Annotate the relevant existing damage blocks across the roster with what
+   status/action they apply (Shifting, Fusion Burst, Havoc Bane, Tune Break, Echo Skill cast, etc.) as
+   `appliesTags` data — needed before any real character's `ally-action` trigger can find anything to
+   fire on.
+3. **Migration — not started.** Convert the 10 known cases above one at a time (Category A first —
+   simpler, no new target type needed once step 1 landed — then Category B), each with its own
+   dedicated test, same process as every other character fix in this log.
+
+---
+
 ## How to add to this file
 
 When an audit turns up a real engine/calculator limitation (as opposed to a
