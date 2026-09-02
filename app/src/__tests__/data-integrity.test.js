@@ -185,7 +185,15 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Augusta[10] "Liberation: Sublime is the Sun: Sunborne ×9"',
     'Augusta[11] "Liberation: Sublime is the Sun: Everbright Protector"',
     'Phrolova[1] "Basic ATK: Stage 3"',
+    // Phrolova[2]/[4]/[6]: added real 'Forte' rows for both moves 2026-09-02 (were previously
+    // skipped entirely — no Forte type existed in SKILL_MULTIPLIERS at all). The rotation step is a
+    // combined "X / Y" player-choice string (either move can be used), same shape as Camellya's
+    // "Vining Waltz 1-4 / Blazing Waltz" steps — never resolves to either single-move row by design,
+    // display correctly shows no dmg number for this kind of step.
+    'Phrolova[2] "Forte: Movement of Fate and Finality / Murmurs in a Haunting Dream"',
     'Phrolova[3] "Skill: Whispers in a Fleeting Dream"',
+    'Phrolova[4] "Forte: Movement of Fate and Finality / Murmurs in a Haunting Dream"',
+    'Phrolova[6] "Forte: Movement of Fate and Finality / Murmurs in a Haunting Dream"',
     'Phrolova[9] "Liberation: Waltz of Forsaken Depths"',
     'Qiuyuan[1] "Basic ATK: Inkwash Stage 3-4"',
     'Rover: Electro[1] "Basic ATK: Deterrence 1-4"',

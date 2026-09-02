@@ -49,4 +49,38 @@ describe('triggerEngine parity — Phrolova', () => {
     expect(fired.has('phrolova.heavy.scarlet-coda')).toBe(true);
     expect(fired.has('phrolova.liberation.waltz-of-forsaken-depths')).toBe(true);
   });
+
+  // Fixed 2026-09-02 (Phase 0.5 follow-up, fresh Prydwen dump): the 3 real Forte rotation steps
+  // ("Movement of Fate and Finality / Murmurs in a Haunting Dream") previously matched NO block at
+  // all, leaving S1's own totalMult bonus permanently inert.
+  it('the Forte follow-up damage block fires for all 3 real rotation occurrences', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phrolova'], PHROLOVA_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(PHROLOVA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'havoc', 'Main DPS');
+    const forteHits = hitLog.filter(h => h.blockId === 'phrolova.forte.movement-of-fate-and-finality');
+    // 7 hits/cast (4×37.88% + 3×117.83%) × 3 real rotation occurrences of this Forte step.
+    expect(forteHits.length).toBe(21);
+  });
+
+  it('S1 totalMult is no longer inert — raises the Forte follow-up damage', () => {
+    const withoutS1 = PHROLOVA_BLOCKS.filter(b => b.id !== 'phrolova.chain.s1');
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phrolova'], PHROLOVA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS1 = resolveHitComposedDps(PHROLOVA_BLOCKS, steps, ctx, 3000, 'havoc', 'Main DPS', null, 6);
+    const without = resolveHitComposedDps(withoutS1, steps, ctx, 3000, 'havoc', 'Main DPS', null, 6);
+    expect(withS1.totalDamage).toBeGreaterThan(without.totalDamage);
+  });
+
+  it('S6 Apparition of Beyond-Hecate is real, gated to sequence 6, and echoDmg-categorized', () => {
+    const s6 = PHROLOVA_BLOCKS.find(b => b.id === 'phrolova.chain.s6-apparition');
+    expect(s6.damage.category).toBe('echoDmg');
+    expect(s6.damage.hits.reduce((sum, h) => sum + h.atkPct, 0)).toBeCloseTo(216.42, 1);
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phrolova'], PHROLOVA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const atS6 = resolveHitComposedDps(PHROLOVA_BLOCKS, steps, ctx, 3000, 'havoc', 'Main DPS', null, 6);
+    const atS0 = resolveHitComposedDps(PHROLOVA_BLOCKS, steps, ctx, 3000, 'havoc', 'Main DPS', null, 0);
+    const s6Fired = atS6.hitLog.some(h => h.blockId === 'phrolova.chain.s6-apparition');
+    const s0Fired = atS0.hitLog.some(h => h.blockId === 'phrolova.chain.s6-apparition');
+    expect(s6Fired).toBe(true);
+    expect(s0Fired).toBe(false);
+  });
 });

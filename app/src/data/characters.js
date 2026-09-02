@@ -3917,10 +3917,17 @@ const SKILL_MULTIPLIERS = {
   // one row short of the other 10-level tables on the same page; nanoka's Skill Attributes panel
   // confirms the true Lv.10 value is 80.61%+120.9x%, matching the existing 80.6% + 120.9% below — the
   // fandom figure was simply the Lv.9 row, an artifact of a truncated column in that extraction.)
+  // Added 2026-09-02 against a fresh Prydwen dump: 'Movement of Fate and Finality' and 'Murmurs in a
+  // Haunting Dream' previously had NO row at all despite being 3 real CHARACTER_ROTATIONS steps (Forte
+  // follow-ups on Basic ATK Stage 3 / Skill while in Reincarnate) — left phrolova.blocks.js's S1 chain
+  // bonus (+80% DMG Multiplier on both) permanently inert. Values now sourced verbatim from the dump's
+  // own Lv.10 Multipliers table.
   'Phrolova': [
     ['Basic ATK', 'Stage 1-3', '106.9% → 95.4% → 196.1%', 'Standard combo string, builds Aftersound/Notes.'],
     ['Heavy ATK', 'Scarlet Coda', '33.0%×2 + 12.4%×8 + 495.1% (+82.55% per stack)', 'Empowered Heavy ATK, damage scales with stacked Aftersound.'],
     ['Skill', 'Whispers in Fleeting Dream', '106.0%×2', 'Quick Skill strike that enters Reincarnate.'],
+    ['Forte', 'Movement of Fate and Finality', '37.88%×4 + 117.83%×3', 'Reincarnate follow-up via Basic Attack — single-target, Stagnates, ends Reincarnate. Counted as Resonance Skill DMG.'],
+    ['Forte', 'Murmurs in a Haunting Dream', '23.21%×4 + 46.41% + 324.82%', 'Reincarnate follow-up via Resonance Skill — groups adds, ends Reincarnate. Counted as Resonance Skill DMG.'],
     ['Intro', 'Suite of Quietus', '80.6% + 120.9%', 'Base swap-in opener strike.'],
     ['Intro', 'Suite of Immortality', '596.4%', 'Enhanced Intro used only while in Maestro state — much stronger than the base opener.'],
     ['Liberation', 'Maestro State: Hecate', 'Strings 347.9% / Winds 330.5% / Cadenza 347.9%', 'Summons Hecate for sustained off-field Havoc DMG during Maestro.'],
@@ -5816,6 +5823,9 @@ const RESONANCE_CHAIN_DATA = {
   //   totalMult as the category since it buffs two specific Forte-follow-up multipliers, not a general
   //   stat bucket). Also grants Volatile Note - Cadenza every 4s out-of-combat if she holds <2 Notes and
   //   isn't in Maestro — TODO: needs Phase 2 schema (conditional out-of-combat resource regen, not a DPS stat).
+  //   Corrected 2026-09-02: this node was inert (no matching SKILL_MULTIPLIERS row for either buffed
+  //   move) until a fresh Prydwen dump gave real values for Movement of Fate and Finality/Murmurs in a
+  //   Haunting Dream (see SKILL_MULTIPLIERS['Phrolova'] above) — now a live +80% totalMult on real damage.
   // S2 "A Rope Tied to a Life Beyond": Scarlet Coda DMG Mult +75% (magnitude was already correct) BUT the
   //   wiki explicitly states "This instance of damage is considered Resonance Skill DMG" — so the correct
   //   stat category is skillDmg, NOT heavyDmg (Scarlet Coda replaces Heavy Attack as an input, but its
@@ -5843,6 +5853,12 @@ const RESONANCE_CHAIN_DATA = {
   //   as the headline stat). TODO: needs Phase 2 schema for the on-field/off-field branch and the +24%
   //   Enhanced Attack-Hecate-specific multiplier (echoDmg-typed, since Enhanced Attack-Hecate is Echo Skill
   //   DMG) to be tracked alongside the +60% elemDmg rather than overwritten by it.
+  //   Corrected 2026-09-02: this node ALSO grants "Apparition of Beyond-Hecate" — a real, previously
+  //   entirely-unmodeled S6-only damage instance (216.42% ATK, Havoc, considered Echo Skill DMG, grants
+  //   8 Aftersound on hit) fired during Movement of Fate and Finality/Murmurs in a Haunting Dream, per a
+  //   fresh Prydwen dump. Can't be represented by this flat {stat:value} table (it's a real damage HIT,
+  //   not a stat bonus) — modeled instead as its own gated TriggerBlock, phrolova.chain.s6-apparition,
+  //   in phrolova.blocks.js.
   'Phrolova':     { s1: { totalMult: 80 }, s2: { skillDmg: 75 }, s3: { echoDmg: 80 }, s4: { allDmg: 20 }, s5: {}, s6: { elemDmg: 60 } },
   // Brant R-chain — verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Brant/Combat
   // (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare):

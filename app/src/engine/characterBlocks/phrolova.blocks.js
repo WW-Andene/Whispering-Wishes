@@ -3,15 +3,22 @@
 // Phrolova converted to TriggerBlocks. Sourced from characters.js's already-audited
 // CHAR_BUFF_TABLE['Phrolova'], RESONANCE_CHAIN_DATA['Phrolova'] (+ its own detailed
 // audit comment, read directly for each node's real mechanic), SKILL_MULTIPLIERS
-// ['Phrolova'], and CHARACTER_ROTATIONS['Phrolova']. No new numbers invented. Her
-// Forte follow-ups (Movement of Fate and Finality / Murmurs in a Haunting Dream)
-// — 3 real CHARACTER_ROTATIONS steps — have NO matching SKILL_MULTIPLIERS row at
-// all, so they're not modeled, and S1 (which scopes those same moves) is inert as
-// a result (documented, not silently dropped). S5 correctly has NO block — purely
-// defensive, zero DPS component. The rotation's Liberation step name ("Waltz of
-// Forsaken Depths") doesn't match SKILL_MULTIPLIERS' row name ("Curtain Call"),
-// but both describe the identical mechanic (ends Resolving Chord, enters
-// Maestro) — treated as the same move, sourced from Curtain Call's value.
+// ['Phrolova'], and CHARACTER_ROTATIONS['Phrolova']. No new numbers invented. S5
+// correctly has NO block — purely defensive, zero DPS component. The rotation's
+// Liberation step name ("Waltz of Forsaken Depths") doesn't match SKILL_MULTIPLIERS'
+// row name ("Curtain Call"), but both describe the identical mechanic (ends
+// Resolving Chord, enters Maestro) — treated as the same move, sourced from Curtain
+// Call's value.
+//
+// Corrected 2026-09-02 against a fresh Prydwen dump (`Characters data dump/Phrolova/
+// Phrolova.md`): her two Forte follow-ups (Movement of Fate and Finality / Murmurs
+// in a Haunting Dream — 3 real CHARACTER_ROTATIONS steps) previously had no matching
+// SKILL_MULTIPLIERS row at all, leaving S1's own +80% totalMult bonus permanently
+// inert. Both moves now have real, sourced values and their own damage blocks below
+// (S1 is live). Also added `phrolova.chain.s6-apparition`, a real S6-only damage hit
+// (Apparition of Beyond-Hecate, 216.42% ATK) fired during those same two moves —
+// previously entirely unmodeled, not just miscategorized (confirmed via the dump,
+// absent from every prior source this file was built from).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -44,6 +51,21 @@ export const PHROLOVA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('106.0%×2'), category: 'skillDmg' },
     note: 'Grants 1 Volatile Note: Winds, re-enters Reincarnate.',
+  },
+  {
+    id: 'phrolova.forte.movement-of-fate-and-finality',
+    source: SOURCE, kind: 'damage',
+    // CHARACTER_ROTATIONS' own Forte steps use the combined "Movement of Fate and Finality / Murmurs
+    // in a Haunting Dream" label (a real in-game player choice between the two, picked per encounter —
+    // single-target vs. group) — same shape, same limitation, as Camellya's own
+    // 'Skill:Vining Waltz 1-4 / Blazing Waltz' block: this fires identically for all 3 real occurrences
+    // and cannot distinguish which of the two was actually chosen each time. Uses Movement of Fate and
+    // Finality's own values (the single-target move), matching Prydwen's own "1 Target scenario" calc
+    // benchmark this file's other values are already sourced from.
+    trigger: { type: 'cast', on: 'Forte:Movement of Fate and Finality / Murmurs in a Haunting Dream' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('37.88%×4 + 117.83%×3'), category: 'skillDmg' },
+    note: 'Reincarnate follow-up (Movement of Fate and Finality variant used) — single-target, Stagnates, ends Reincarnate. Considered Resonance Skill DMG per its own kit text despite the Basic ATK input. Buffed by chain.s1 (+80% totalMult). The Murmurs in a Haunting Dream (grouping) variant — 23.21%×4 + 46.41% + 324.82%, also skillDmg — is undercounted whenever the real rotation would have used it instead; not separately representable since the rotation step doesn\'t distinguish the two.',
   },
   {
     id: 'phrolova.basic.stage1-3',
@@ -104,7 +126,7 @@ export const PHROLOVA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 80 }],
-    note: "Haunting Dream DMG Multiplier +80% (buffs the two Forte follow-up moves — Movement of Fate and Finality / Murmurs in a Haunting Dream) — those moves have NO matching SKILL_MULTIPLIERS row at all, so this block is present per the source data but does not modify anything modeled (inert, not silently dropped). Also grants Volatile Note - Cadenza every 4s out-of-combat under certain conditions, not modeled.",
+    note: "DMG Multiplier of Movement of Fate and Finality / Murmurs in a Haunting Dream both +80% — now live against phrolova.forte.movement-of-fate-and-finality / phrolova.forte.murmurs-in-a-haunting-dream (fixed 2026-09-02, real values sourced from a fresh Prydwen dump). Also grants Volatile Note - Cadenza every 4s out-of-combat under certain conditions, not modeled.",
   },
   {
     id: 'phrolova.chain.s2',
@@ -142,5 +164,21 @@ export const PHROLOVA_BLOCKS = [
     target: { scope: 'self' },
     effects: [{ stat: 'elemDmg', value: 60 }],
     note: 'On-field-during-Maestro case: Phrolova gains +60% Havoc DMG Bonus (the larger of two conditional branches — off-field instead grants a +40% DMG-taken debuff on enemies, not modeled here). Modeled anchored to the Liberation cast that enters Maestro, scoped to its 24s window. The separate +24% Enhanced Attack-Hecate DMG Multiplier (echoDmg-typed) this same node also grants is not tracked alongside this elemDmg value, per the audit\'s own TODO.',
+  },
+  // Added 2026-09-02 (fresh Prydwen dump): S6 ALSO commands Hecate to cast a real damage instance,
+  // Apparition of Beyond-Hecate (216.42% ATK, considered Echo Skill DMG, grants 8 Aftersound on hit —
+  // the Aftersound grant itself not modeled, same class as every other stack-grant already left out of
+  // this file), during EITHER Forte follow-up. Gated to sequence 6 via the `.chain.s6-<suffix>` id
+  // convention (sequenceGating.js). Same combined-label limitation as the Forte damage block above —
+  // fires once per real occurrence of the combined rotation step, using Movement of Fate and Finality's
+  // side of the choice. Previously entirely unmodeled (not merely miscategorized) — absent from
+  // RESONANCE_CHAIN_DATA's flat {stat:value} table since it's a real hit, not a stat bonus.
+  {
+    id: 'phrolova.chain.s6-apparition',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Forte:Movement of Fate and Finality / Murmurs in a Haunting Dream' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('216.42%'), category: 'echoDmg' },
+    note: 'S6: Apparition of Beyond-Hecate, 216.42% ATK, considered Echo Skill DMG, fired alongside the Forte follow-up. Also grants 8 Aftersound stacks on hit, not modeled.',
   },
 ];
