@@ -63,12 +63,13 @@ export const CIACCONA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Mid-air:Attack Stage 1-2' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // Flagged 2026-09-02 (same class of gap as the Intro block above, found in the same team-engine
-    // check): no `category` set either — no source text confirms whether her Mid-air Attack counts as
-    // basicDmg (the common WW default for an un-overridden Mid-air Attack) or something else. Cartethyia's
-    // own `cartethyia.midair.cartethyia-plunging-attack` has the identical gap — this looks like a real,
-    // recurring pattern worth a dedicated cross-character pass, not guessed here per-character.
-    damage: { hits: [...parseSkillMultiplierHits('55.43%×2'), ...parseSkillMultiplierHits('24.46%×4')] },
+    // Fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks have no dedicated damage
+    // type of their own — they inherit Basic ATK or Heavy ATK DMG depending on the character's specific
+    // kit, per an explicit override elsewhere in the kit text if one applies) plus this dump's own kit
+    // STRUCTURE — Mid-air Attack is listed under her "Basic Attack — Quadruple Time Steps" section, not
+    // a separate Heavy Attack section, and no override text anywhere calls it Heavy ATK DMG — confirms
+    // basicDmg, not a guess.
+    damage: { hits: [...parseSkillMultiplierHits('55.43%×2'), ...parseSkillMultiplierHits('24.46%×4')], category: 'basicDmg' },
   },
   {
     id: 'ciaccona.skill.harmonic-allegro',

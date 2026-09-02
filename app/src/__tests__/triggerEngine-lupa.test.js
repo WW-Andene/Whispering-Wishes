@@ -5,6 +5,15 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { LUPA_BLOCKS } from '../engine/characterBlocks/lupa.blocks.js';
 
 describe('triggerEngine parity — Lupa', () => {
+  // Fixed 2026-09-02: category was previously unset. WuWa's own general mechanic (Mid-air/Plunging
+  // Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure
+  // (listed under "Basic Attack — Flaming Star", contrasted with Firestrike's explicit Heavy ATK
+  // override on Mid-air Stage 3 specifically) confirms basicDmg for the base Stage 1-2 combo.
+  it('Mid-air Attack Stage 1-2 is basicDmg-categorized', () => {
+    const block = LUPA_BLOCKS.find(b => b.id === 'lupa.midair.attack-stage1-2');
+    expect(block.damage.category).toBe('basicDmg');
+  });
+
   it('S1/S5/S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Lupa'];
     expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s1').effects[0].value).toBe(rc.s1.critRate);

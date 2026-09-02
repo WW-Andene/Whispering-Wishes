@@ -86,8 +86,8 @@ export const CARTETHYIA_BLOCKS = [
     // 3.30%×3 / 11.29%×3 HP. By the point this step fires in the real modeled rotation, all 3 shadow
     // types (Discord via Intro, Divinity via Basic 4, Virtue via Skill) are already up, so the
     // 3-Shadows-Recalled value is the one that actually applies.
-    damage: { hits: parseSkillMultiplierHits('11.29%×3'), basis: 'HP' },
-    note: "Recalls all 3 currently-held Sword Shadows (Discord/Divinity/Virtue) at once, granting Fleurdelys the corresponding Heart of Virtue/Mandate of Divinity/Power of Discord buffs for the whole Manifest window — WHICH shadow grants WHICH buff (and each buff's own further per-effect magnitude) is stateful/combinatorial and not modeled, per CHARACTER_ROTATIONS's own TODO. Only this move's own real DMG is captured here.",
+    damage: { hits: parseSkillMultiplierHits('11.29%×3'), basis: 'HP', category: 'basicDmg' },
+    note: "Recalls all 3 currently-held Sword Shadows (Discord/Divinity/Virtue) at once, granting Fleurdelys the corresponding Heart of Virtue/Mandate of Divinity/Power of Discord buffs for the whole Manifest window — WHICH shadow grants WHICH buff (and each buff's own further per-effect magnitude) is stateful/combinatorial and not modeled, per CHARACTER_ROTATIONS's own TODO. Only this move's own real DMG is captured here. category fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus this dump's own kit structure — listed under \"Basic Attack — Sword to Carve My Forms\", not Heavy Attack — confirms basicDmg.",
   },
   {
     id: 'cartethyia.liberation.blade-of-howling-squall',

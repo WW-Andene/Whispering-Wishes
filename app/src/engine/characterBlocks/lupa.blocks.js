@@ -60,8 +60,8 @@ export const LUPA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Mid-air:Attack Stage 1-2' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('76.73% → 77.23%+19.31%×4') },
-    note: 'Builds toward Firestrike. Flagged 2026-09-02: no `category` set — same recurring cross-character Mid-air Attack gap as Ciaccona\'s/Cartethyia\'s own blocks, no source text confirming which category applies.',
+    damage: { hits: parseSkillMultiplierHits('76.73% → 77.23%+19.31%×4'), category: 'basicDmg' },
+    note: "Builds toward Firestrike. Fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure — listed under \"Basic Attack — Flaming Star\", not Heavy Attack — confirms basicDmg. Note the contrast with Mid-air Attack STAGE 3, which gets explicitly REPLACED by Firestrike (its own block, lupa.heavy.firestrike, correctly heavyDmg) — the base Stage 1-2 combo modeled here stays basicDmg.",
   },
   {
     id: 'lupa.heavy.firestrike',

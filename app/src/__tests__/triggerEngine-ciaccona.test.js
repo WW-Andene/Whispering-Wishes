@@ -5,6 +5,14 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CIACCONA_BLOCKS } from '../engine/characterBlocks/ciaccona.blocks.js';
 
 describe('triggerEngine parity — Ciaccona', () => {
+  // Fixed 2026-09-02: category was previously unset. WuWa's own general mechanic (Mid-air/Plunging
+  // Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure
+  // (listed under "Basic Attack — Quadruple Time Steps") confirms basicDmg.
+  it('Mid-air Attack is basicDmg-categorized', () => {
+    const block = CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.midair.attack-stage1-2');
+    expect(block.damage.category).toBe('basicDmg');
+  });
+
   it('S3 stays correctly unmodeled (no block) — pure resource-grant per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Ciaccona'];
     expect(rc.s3).toEqual({});

@@ -70,6 +70,10 @@ describe('triggerEngine parity — Cartethyia', () => {
     expect(block).toBeDefined();
     expect(block.damage.hits.length).toBeGreaterThan(0);
     expect(block.damage.hits.reduce((s, h) => s + h.atkPct, 0)).toBeCloseTo(33.87, 1); // 11.29% x 3
+    // Fixed 2026-09-02: category was previously unset. WuWa's own general mechanic (Mid-air/Plunging
+    // Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus the dump's own kit
+    // structure (listed under "Basic Attack — Sword to Carve My Forms") confirms basicDmg.
+    expect(block.damage.category).toBe('basicDmg');
 
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Cartethyia'], CARTETHYIA_BLOCKS);
     const { hitLog } = resolveHitComposedDps(CARTETHYIA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, { hp: 40000 }, 'aero', 'Main DPS');
