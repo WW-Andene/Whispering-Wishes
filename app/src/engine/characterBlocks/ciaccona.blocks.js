@@ -4,9 +4,16 @@
 // CHAR_BUFF_TABLE['Ciaccona'], RESONANCE_CHAIN_DATA['Ciaccona'] (+ its own detailed
 // 2026-09-01 re-audit comment, read directly for each node's real mechanic),
 // SKILL_MULTIPLIERS['Ciaccona'], and CHARACTER_ROTATIONS['Ciaccona']. No new numbers
-// invented. S3/S6 correctly have NO block — real resource-grant/flat-%ATK-proc
-// mechanics with no home in the flat {stat: value} schema, per the audit's own
-// zeroing (same "don't force-fit" rule already applied throughout this file).
+// invented. S3 correctly has NO block — real effect ("+1 Musical Essence segment" +
+// "+1 Harmonic Allegro charge") is pure resource/utility, zero DPS component.
+//
+// Fixed 2026-09-02 against a fresh Prydwen dump (`Characters data dump/Ciaccona/
+// Ciaccona.md`, same session as Phrolova's Apparition of Beyond-Hecate fix): S6 was
+// previously zeroed to {} in RESONANCE_CHAIN_DATA too, correctly NOT force-fit as a
+// {stat:value} buff (its real shape — a flat 220% ATK Aero DMG hit while in Solo
+// Concert, counted as Liberation DMG — doesn't fit that schema) but also never built
+// as its own gated damage block. Added `ciaccona.chain.s6` below, same pattern as
+// Phrolova's chain.s6-apparition.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -148,8 +155,20 @@ export const CIACCONA_BLOCKS = [
     effects: [{ stat: 'libDmg', value: 40 }],
     note: "Real scope: Singer's Triple Cadenza's own DMG Multiplier +40% — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
   },
-  // S6 correctly has NO block — real effect is a standalone proc (each Solo Concert pulse deals a
-  // flat 220% of Ciaccona's ATK as Aero DMG, counted as Liberation DMG), not a Liberation DMG% buff.
-  // A flat %-of-ATK bonus hit doesn't fit the {stat: value} buff schema (same class of gap already
-  // flagged for Xiangli Yao's S1 and Zhezhi's S5/S6) — zeroed to {} per the source audit.
+  // Added 2026-09-02: S6's real effect is a standalone proc (each Solo Concert pulse deals a flat 220%
+  // of Ciaccona's ATK as Aero DMG, counted as Liberation DMG), not a Liberation DMG% buff — RESONANCE_
+  // CHAIN_DATA correctly zeroes it to {} rather than force-fitting it as a {stat:value} buff (same class
+  // of gap already flagged for Xiangli Yao's S1 and Zhezhi's S5/S6), but that left it unbuilt entirely.
+  // Modeled as a real damage block instead, gated to sequence 6 via the `.chain.s6` id convention
+  // (sequenceGating.js). Anchored to the same Basic ATK Stage 4 cast that starts Solo Concert
+  // (ciaccona.libbuff.solo-concert) — one representative pulse per real Stage 4 cast, same
+  // "representative tick" pattern already used for ciaccona.liberation.symphonic-poem-tonic above.
+  {
+    id: 'ciaccona.chain.s6',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Basic ATK:Stage 4' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('220%'), category: 'libDmg' },
+    note: 'S6: while in Solo Concert, Ciaccona or an Ensemble Sylph deals a pulse of Aero DMG = 220% ATK, considered Resonance Liberation DMG. Modeled as one representative pulse per Basic ATK Stage 4 cast (the same cast that starts/maintains Solo Concert), not the real periodic timing.',
+  },
 ];

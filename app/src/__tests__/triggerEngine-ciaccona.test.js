@@ -5,12 +5,28 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CIACCONA_BLOCKS } from '../engine/characterBlocks/ciaccona.blocks.js';
 
 describe('triggerEngine parity — Ciaccona', () => {
-  it('S3/S6 stay correctly unmodeled (no block) — resource-grant / flat-%ATK-proc per RESONANCE_CHAIN_DATA', () => {
+  it('S3 stays correctly unmodeled (no block) — pure resource-grant per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Ciaccona'];
     expect(rc.s3).toEqual({});
-    expect(rc.s6).toEqual({});
     expect(CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.chain.s3')).toBeUndefined();
-    expect(CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.chain.s6')).toBeUndefined();
+  });
+
+  // Fixed 2026-09-02 (fresh Prydwen dump): S6 is correctly zeroed to {} in RESONANCE_CHAIN_DATA (its
+  // real shape, a flat 220% ATK proc, doesn't fit that flat {stat:value} table) but that had left it
+  // entirely unbuilt — added as its own gated `kind:'damage'` block instead.
+  it('S6 is a real, sequence-6-gated damage block (not a RESONANCE_CHAIN_DATA stat)', () => {
+    const rc = RESONANCE_CHAIN_DATA['Ciaccona'];
+    expect(rc.s6).toEqual({});
+    const s6 = CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.chain.s6');
+    expect(s6.kind).toBe('damage');
+    expect(s6.damage.category).toBe('libDmg');
+    expect(s6.damage.hits.reduce((sum, h) => sum + h.atkPct, 0)).toBeCloseTo(220, 1);
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Ciaccona'], CIACCONA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const atS6 = resolveHitComposedDps(CIACCONA_BLOCKS, steps, ctx, 3500, 'aero', 'Sub DPS', null, 6);
+    const atS5 = resolveHitComposedDps(CIACCONA_BLOCKS, steps, ctx, 3500, 'aero', 'Sub DPS', null, 5);
+    expect(atS6.hitLog.some(h => h.blockId === 'ciaccona.chain.s6')).toBe(true);
+    expect(atS5.hitLog.some(h => h.blockId === 'ciaccona.chain.s6')).toBe(false);
   });
 
   it('S1/S2/S4/S5 match RESONANCE_CHAIN_DATA exactly', () => {

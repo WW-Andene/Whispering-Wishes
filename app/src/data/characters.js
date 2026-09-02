@@ -6293,11 +6293,15 @@ const RESONANCE_CHAIN_DATA = {
   // S6: was libDmg: 220 (wrong shape) — real effect is a standalone proc, not a Liberation DMG% buff:
   // each Solo Concert pulse deals a flat 220% of Ciaccona's ATK as Aero DMG, counted as Liberation DMG.
   // A flat %-of-ATK bonus hit doesn't fit the {stat: value} buff schema (same class of gap as Xiangli
-  // Yao's S1 and Zhezhi's S5/S6, documented above). Zeroed to {}.
+  // Yao's S1 and Zhezhi's S5/S6, documented above). Zeroed to {} in this table — but FIXED 2026-09-02
+  // (fresh Prydwen dump, same session as Phrolova's Apparition of Beyond-Hecate fix) as a real gated
+  // `kind:'damage'` TriggerBlock instead: `ciaccona.chain.s6` in ciaccona.blocks.js, anchored to the
+  // same Basic ATK Stage 4 cast that starts Solo Concert (matches this comment's own "periodic pulse"
+  // reading, same representative-tick pattern already used for Symphonic Poem: Tonic).
   // S1 (atkPct: 35), S4 (defIgnore: 45), S5 (libDmg: 40) already correct — value and category confirmed
   // exact against both sources.
-  // TODO: needs Phase 2 schema — S3's resource/charge grant and S6's flat-%-of-ATK bonus hit have no
-  // home in a single-category flat node.
+  // TODO: needs Phase 2 schema — S3's resource/charge grant still has no home in a single-category flat
+  // node (S6's flat-%-of-ATK bonus hit no longer needs one — see ciaccona.blocks.js).
   'Ciaccona':     { s1: { atkPct: 35 }, s2: { elemDmg: 40 }, s3: {}, s4: { defIgnore: 45 }, s5: { libDmg: 40 }, s6: {} },
   // Cantarella S1-S6 fully re-verified 2026-08-31 against wutheringwaves.fandom.com/wiki/Cantarella/Combat's
   // "Resonance Chain" table (verbatim node text below) — every prior value was an unsourced approximation
