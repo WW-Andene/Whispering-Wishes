@@ -101,8 +101,8 @@ enhancement). BOOM! Fireworks!: 63.62%+572.58%. Cooldown 25s; Resonance Cost 125
   grants, for 12s: BOTH Huntress's and Guts's Stat Bonuses simultaneously (regardless of current mode);
   Hot Hand can't regen during this window and drains 10/s instead.
 
-**Multipliers (Lv.10):** Hack Response-Meltdown: 1186.50% Tune AMP. Rat-tat-tat!: Huntress:
-10.00%+10.00%+10.00%+160.00%+10.00%. Bang-bang-bang!: Guts: 140.00%.
+**Multipliers (Lv.10):** Hack Response-Meltdown: 2358.89% Tune AMP. Rat-tat-tat!: Huntress:
+19.89%+19.89%+19.89%+318.10%+19.89%. Bang-bang-bang!: Guts: 278.34%.
 
 ### Forte Circuit (2nd section) — Hack - Meltdown
 When the target's Off-Tune Level is full, Rebecca can cast Tune Break on it. Inflicts Hack - Shifting and
