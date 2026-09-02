@@ -9,6 +9,16 @@
 // worth 2% each, up to 15 stacks base) is modeled at its documented flat ceiling
 // value rather than the real nonlinear per-stack curve, which this schema's
 // single value+maxStacks stacking shape can't represent losslessly.
+//
+// appliesTags: ['shifting'] added 2026-09-02 (Engine development.md item 9, Phase 2) on every real
+// damage-dealing block: Forte Circuit's own Draw and Sunder text, confirmed verbatim from the raw
+// Prydwen page, is "Qingxiao inflicts Tune Strain - Shifting on the target after dealing damage
+// WITH SKILLS. Each skill can only trigger this once for the same target" — "skills" here is the
+// game's own generic term for any of her active abilities (Basic/Heavy/Skill/Liberation/Forte/Intro/
+// Outro), not narrowly the Resonance Skill button; confirmed by explicit user clarification after an
+// initial narrower reading was flagged as ambiguous rather than assumed. This is what makes her own
+// S4 (chain.s4-actor, see below) self-trigger on nearly every one of her own casts, not just her
+// Resonance Skill.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -22,7 +32,7 @@ export const QINGXIAO_BLOCKS = [
     id: 'qingxiao.intro.tonality-shift',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Tonality Shift' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('39.79%+46.42%×2') },
     note: 'Grants 30 points of Sword Cadence plus Resonant Chime.',
   },
@@ -30,7 +40,7 @@ export const QINGXIAO_BLOCKS = [
     id: 'qingxiao.midair.stringblade-stage1-3',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Mid-air:Mid-air Attack - Stringblade Stage 1-3' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('7.24%×5+54.28% → 44.89%+22.45%×2 → 11.14%×5+83.51%') },
     note: 'Builds Qin Heart/Sword Cadence toward her Heavy Attack.',
   },
@@ -38,7 +48,7 @@ export const QINGXIAO_BLOCKS = [
     id: 'qingxiao.basic.stringblade-stage1-4',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Basic ATK:Basic Attack - Stringblade Stage 1-4' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('30.13%×2 → 37.09%×2 → 24.36%×4 → 86.73%+5.43%×4'), category: 'basicDmg' },
     note: 'Ground continuation of the Mid-air Attack combo.',
   },
@@ -46,7 +56,7 @@ export const QINGXIAO_BLOCKS = [
     id: 'qingxiao.skill.severing-note-judgement',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Severing Note: Judgement' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('20.88%×2+97.42%'), category: 'skillDmg' },
     note: 'Grants 45 points of Qin Heart.',
   },
@@ -54,7 +64,7 @@ export const QINGXIAO_BLOCKS = [
     id: 'qingxiao.heavy.stringblade',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Heavy ATK:Heavy Attack - Stringblade' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('14.62%×3+21.92%×6+263.03%'), category: 'heavyDmg' },
     note: 'Once Qin Heart and Sword Cadence are both full; consumes both and enters Ephemeral Transcendence.',
   },
@@ -62,7 +72,7 @@ export const QINGXIAO_BLOCKS = [
     id: 'qingxiao.forte.ephemeral-transcendence-stage1-4',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Basic Attack - Ephemeral Transcendence Stage 1-4' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('44.89%+22.45%×2 → 23.11%×5 → 20.88%×3+31.32%×2 → 18.10%×4+108.56%'), category: 'basicDmg' },
     note: 'Enhanced 4-hit combo while in Ephemeral Transcendence, builds Heart Sword Intent toward the finisher.',
   },
@@ -70,7 +80,7 @@ export const QINGXIAO_BLOCKS = [
     id: 'qingxiao.forte.heavens-reckoning',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: "Forte:Heavy Attack - Heaven's Reckoning: Ephemeral Transcendence" },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('27.84%×9+445.34%'), category: 'heavyDmg' },
     note: 'Once Heart Sword Intent is full; consumes it and ends Ephemeral Transcendence. Her single hardest-hitting move.',
   },
@@ -78,7 +88,7 @@ export const QINGXIAO_BLOCKS = [
     id: 'qingxiao.liberation.billows-beneath-heaven',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Billows Beneath Heaven' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('33.41%×10+1336.01%'), category: 'libDmg' },
     note: 'Best saved for last so pre-Ultimate buffs are fully stacked before it fires.',
   },
@@ -86,7 +96,7 @@ export const QINGXIAO_BLOCKS = [
     id: 'qingxiao.outro.lingering-song',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: [{ atkPct: 800 }] },
   },
 
