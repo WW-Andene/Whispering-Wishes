@@ -1294,7 +1294,15 @@ const CHARACTER_DATA = {
   ['Jianxin',       ['Skill'],                       ['Shield', 'Grouping', 'Aero Buff'],     []],
   ['Mornye',        ['Liberation'],                  ['Heal'],                                ['Off-Tune']],
   ['Rebecca',       ['Basic ATK', 'Heavy ATK'],      ['Heavy ATK Buff', 'All DMG Amp'],       ['Hack - Shifting']],
-  ['Denia',         ['Liberation', 'Skill'],         ['Fusion DMG Buff', 'Tune Break Boost'], ['Fusion Burst', 'Tune Strain - Shifting']],
+  // dmgFocus dropped 'Skill' 2026-09-02 against a fresh Prydwen dump: her real damage-output
+  // simulation (Fusion Burst mode, S0) puts Skill at just 1.75% (8,174 of 467,866 total DMG) — smaller
+  // than Basic ATK's 2.14% and Echo's 4.39%, neither of which were ever in dmgFocus either. All three
+  // are trivial slices next to Liberation's dominant 60.81%, unlike e.g. Qingxiao's Basic ATK (22.8%,
+  // kept for being "comparable to Liberation's 28.5%, not a trivial slice"). Same class of fix as
+  // Aemeath's and Sigrika's: drop every category that isn't a real, non-trivial damage source instead
+  // of crediting a skillDmg buff to a character whose Skill-slot hits (Phantom Bubble, Banish Stage 1)
+  // barely register.
+  ['Denia',         ['Liberation'],                  ['Fusion DMG Buff', 'Tune Break Boost'], ['Fusion Burst', 'Tune Strain - Shifting']],
   ['Lucilla',       ['Liberation', 'Echo'],          ['Glacio DMG Buff', 'Echo Skill DMG Buff'], ['Glacio Chafe']],
   ['Suisui',        ['Skill', 'Outro'],              ['Heal', 'All DMG Amp'],                 []],
   ['Baizhi',        ['Skill'],                       ['Heal'],                                []],
