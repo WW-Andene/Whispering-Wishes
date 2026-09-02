@@ -1206,7 +1206,12 @@ const CHARACTER_DATA = {
   ['Augusta',       ['Heavy ATK', 'Skill'],          ['Shield'],                              []],
   ['Galbrena',      ['Echo', 'Heavy ATK'],           [],                                      []],
   ['Luuk Herssen',  ['Basic ATK'],                   [],                                      []],
-  ['Aemeath',       ['Liberation', 'Skill'],         [],                                      ['Fusion Burst']],
+  // dmgFocus corrected 2026-09-02 (fresh Prydwen dump cross-check, same class of bug as Augusta's):
+  // was ['Liberation', 'Skill'] — but Prydwen's own real damage-output simulation shows Skill at a
+  // genuine 0% for her, matching her kit text exactly: both Seraphic Duet: Overture and Encore (her
+  // only Skill-button casts) are explicitly "considered Resonance Liberation DMG". She has no real
+  // skillDmg-categorized damage at all — a skillDmg buff was being wrongly credited to her.
+  ['Aemeath',       ['Liberation'],                  [],                                      ['Fusion Burst']],
   ['Sigrika',       ['Echo', 'Heavy ATK'],           [],                                      []],
   ['Chixia',        ['Skill', 'Basic ATK'],          [],                                      []],
   ['Qingxiao',      ['Heavy ATK', 'Liberation'],     [],                                      ['Tune Strain - Interfered']],
@@ -3190,7 +3195,12 @@ const SKILL_MULTIPLIERS = {
     ['Charged ATK', 'Mech Charged I / II', '92.83% / 232.00%', 'Mech-form charged strike, very high single hits.'],
     ['Skill', 'Sync Strikes', 'Armament Merge 26.92%+40.38%+67.29% / Call of Dawn 16.33%×3+114.28%', 'Skill triggers different follow-ups depending on which form she is in.'],
     ['Skill', 'Seraphic Duet', 'Overture 17.90%+14.92%×6+23.86%×3+59.65%×3 / Encore 17.90%×4+35.79%×3+178.93%', 'Longer Skill combo, Encore variant hits when chained after Overture.'],
-    ['Liberation', 'Heavenfall Edict', 'Overdrive 200.80%+267.74%×3 / Finale 1789.29%', 'Ultimate; Finale is a massive burst that scales with team buffs.'],
+    // Corrected 2026-09-02 (fresh Prydwen dump cross-check): was Overdrive 200.80%+267.74%×3 / Finale
+    // 1789.29% — every other row for Aemeath matched the fresh dump exactly (Basic/Charged/Sync
+    // Strikes/Duet), but this row alone was consistently ~1.0754x too high across all 4 values
+    // (200.80/186.72 = 267.74/248.96 = 1789.29/1663.83, all within 0.00003 of each other — a real,
+    // systematic discrepancy, not rounding noise). Retightened to the fresh dump's exact figures.
+    ['Liberation', 'Heavenfall Edict', 'Overdrive 186.72%+248.96%×3 / Finale 1663.83%', 'Ultimate; Finale is a massive burst that scales with team buffs.'],
     ['Intro', 'Songs Across the Universe', '13.46%×2 + 107.66%', 'Intro Skill used when swapping in from human form.'],
     ['Intro', 'Debut of Meteoric Radiance', '65.30% + 97.95%', 'Intro Skill used when swapping in from Mech Form.'],
     ['Outro', 'Silent Protection', '10-20% All-DMG Amp to team (20s), mode-dependent', 'Swap-out buff to the whole team; strength depends on which form she left in.'],
@@ -5508,7 +5518,19 @@ const RESONANCE_CHAIN_DATA = {
   // CD+60% (confirmed exact) + Heavenfall Edict: Finale DMG Mult+100% (was defIgnore:20, no basis at all — real S3 has
   // no DEF Ignore effect). S4: team +20% All-Attr DMG on Intro/Sync Strike/Duet cast (was totalMult:15, no basis).
   // S6: Aemeath's Liberation DMG taken by targets +40% (confirmed exact value, recategorized from totalMult to libDmg)
-  'Aemeath':      { s1: { critDmg: 300 }, s2: { totalMult: 25 }, s3: { libDmg: 100, critDmg: 60 }, s4: { allDmg: 20 }, s5: { totalMult: 40 }, s6: { libDmg: 40 } },
+  // S5 zeroed 2026-09-02 (found while cross-checking a fresh Prydwen dump — this row was never covered
+  // by the audit comment above, unlike every other node here): was totalMult:40, a fabricated number.
+  // Real S5 effect ("On kill, reset Starflux to 100%; on fatal damage, revive with a team shield
+  // instead of dying, once per 10 min") is purely survivability/utility, zero DPS component — confirmed
+  // via Prydwen's own damage-output simulation, where S4 and S5 produce byte-identical DMG/DPS.
+  // S2 note: also never covered by the audit comment above — "Seraphic Duet Overture/Encore DMG
+  // Multiplier +100% each" is the real S2 effect, currently modeled as totalMult:25 with no derivation
+  // shown anywhere. Left AS-IS (not touched in this pass) — flagging rather than guessing a
+  // replacement, since unlike S5 there's no independent confirmation (e.g. an S1==S2 DPS match) proving
+  // the current value wrong, and Duet's damage is itself libDmg-categorized (same bucket S3's Finale
+  // buff already uses), so blindly reassigning this to libDmg could double up against S3 instead of
+  // fixing anything. Needs its own dedicated verification pass.
+  'Aemeath':      { s1: { critDmg: 300 }, s2: { totalMult: 25 }, s3: { libDmg: 100, critDmg: 60 }, s4: { allDmg: 20 }, s5: {}, s6: { libDmg: 40 } },
   // Zani S1: +50% Spectro DMG (confirmed exact). S2: CR+20% + mult boost. S4: team ATK+20%
   'Zani':         { s1: { elemDmg: 50 }, s2: { critRate: 20, skillDmg: 80 }, s3: { libDmg: 200 }, s4: { atkPct: 20 }, s5: { libDmg: 120 }, s6: { heavyDmg: 40 } },
   // Zani R-chain corrected 2026-08-16 via Nanoka/Prydwen: s1 Targeted Action/Forcible Riposte +50% Spectro DMG confirmed correct;
