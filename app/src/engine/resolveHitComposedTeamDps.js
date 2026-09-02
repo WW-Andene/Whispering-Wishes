@@ -22,6 +22,7 @@ import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createS
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 import { triggerFired, conditionHolds } from './triggerEngine.js';
 import { buildBlockWindows, activeCountAt } from './blockWindows.js';
+import { cumulativeTieredValue } from './tieredStacking.js';
 import { COORD_SNAPSHOT_DISCOUNT } from './coordinatedAtk.js';
 
 /**
@@ -205,6 +206,7 @@ function resultsForBlock(block, targetName, allResults) {
 
 function applyEffects(block, multiplier, stats) {
   for (const effect of block.effects) {
-    applyBuff(stats, effect.stat, effect.value * multiplier, {});
+    const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
+    applyBuff(stats, effect.stat, value, {});
   }
 }

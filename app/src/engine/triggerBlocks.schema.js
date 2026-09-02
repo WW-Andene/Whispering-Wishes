@@ -430,7 +430,23 @@
  *                                 this had no consumer to enforce it until now. Omit for a
  *                                 'stacking' effect whose real cap isn't sourced yet (kept
  *                                 uncapped rather than guessing a number — same "don't fabricate"
- *                                 rule as everywhere else in this schema).
+ *                                 rule as everywhere else in this schema). For a `tiers`-bearing
+ *                                 effect (see below), set this to the SUM of every tier's own
+ *                                 `count` (the real total stack cap).
+ * @property {{count: number, value: number}[]} [tiers]  ENGINE_MERGE_PLAN.md Phase 0.5 gap #1, added
+ *                                 2026-09-02: a nonlinear/multi-tier per-stack curve (e.g. Qingxiao's
+ *                                 Mindlock — first 7 stacks worth 7% each, remaining 8 worth 2% each,
+ *                                 `[{count:7,value:7},{count:8,value:2}]`) that a single flat `value`
+ *                                 can't represent losslessly. When present, every resolver's own
+ *                                 `applyEffects()` computes the real cumulative value via
+ *                                 `tieredStacking.js`'s `cumulativeTieredValue(tiers, stackCount)`
+ *                                 INSTEAD of `value * stackCount` — `value` is then unused/should be
+ *                                 omitted. Only meaningful on a real `stacking`-mode effect whose
+ *                                 stack count is genuinely tracked by a real trigger (this field alone
+ *                                 does not retrofit a flat passive approximation into a dynamic
+ *                                 mechanic — the block also needs a real per-stack trigger, e.g. an
+ *                                 `ally-action` tag for a cross-character stacking condition, which may
+ *                                 itself be a separate prerequisite).
  */
 
 export const TRIGGER_TYPES = ['cast', 'swap-in', 'swap-out', 'passive', 'on-hit', 'resource-threshold', 'negative-status-hit', 'field-time', 'partner-outro-return', 'windowed-cast', 'requires-prior-cast', 'windowed-proc', 'ally-action'];

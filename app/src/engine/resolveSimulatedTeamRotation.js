@@ -36,6 +36,7 @@ import { createStats, applyBuff } from '../features/teams/calcEngine.js';
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 import { triggerFired, conditionHolds } from './triggerEngine.js';
 import { buildBlockWindows, timeWeightedAverageConcurrency } from './blockWindows.js';
+import { cumulativeTieredValue } from './tieredStacking.js';
 import { sequenceAllows } from './sequenceGating.js';
 import { COORD_SNAPSHOT_DISCOUNT } from './coordinatedAtk.js';
 
@@ -175,7 +176,7 @@ function resultsForBlock(block, targetName, allResults) {
 
 function applyEffects(block, multiplier, stats, addTotalMult) {
   for (const effect of block.effects) {
-    const value = effect.value * multiplier;
+    const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
     if (effect.stat === 'totalMult') { addTotalMult(value); continue; }
     applyBuff(stats, effect.stat, value, {});
   }

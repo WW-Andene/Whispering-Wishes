@@ -51,6 +51,7 @@ import { triggerFired, conditionHolds } from './triggerEngine.js';
 // apart on how 'unique'/'refresh'/'stacking' turn trigger firings into windows) — conditionHolds is
 // still imported directly here too, for the passive-block branch's own single check.
 import { buildBlockWindows, timeWeightedAverageConcurrency } from './blockWindows.js';
+import { cumulativeTieredValue } from './tieredStacking.js';
 
 /**
  * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks
@@ -117,7 +118,7 @@ export function resolveSimulatedRotation(blocks, steps, opts = {}) {
 
 function applyEffects(block, multiplier, stats, addTotalMult) {
   for (const effect of block.effects) {
-    const value = effect.value * multiplier;
+    const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
     if (effect.stat === 'totalMult') { addTotalMult(value); continue; }
     applyBuff(stats, effect.stat, value, {});
   }
