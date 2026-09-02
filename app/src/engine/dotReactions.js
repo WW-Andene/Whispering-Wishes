@@ -18,6 +18,7 @@ import {
   calcResMult,
 } from '../features/teams/calcEngine.js';
 import { CHAR_BUFF_TABLE } from '../data/characters.js';
+import { resolveElectroFlareFromBlocks } from './dotReactionsFromBlocks.js';
 import { DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 
 /**
@@ -54,6 +55,11 @@ export function rotTimeFromSteps(ownedSteps) {
  * @param {number} mainResMult  The main damager's own resMult — Tune Break's fallback per Stage 0.
  * @param {Object|null} [energyCycleFactors]  calcEnergyCycles() output, keyed by character name —
  *   only Tune Break's Mornye-specific ER-scaled amp reads this (see calcTuneBreakDmg's own comment).
+ * @param {Object<string, import('./triggerBlocks.schema.js').TriggerBlock[]>|null} [blocksByOwner]
+ *   ENGINE_MERGE_PLAN.md Phase 2: each team member's own real TriggerBlocks, keyed by name — when
+ *   supplied, migrated mechanics (Electro Flare so far) are resolved from real `dotApplier`-tagged
+ *   blocks (`dotReactionsFromBlocks.js`) instead of `CHAR_BUFF_TABLE`'s flat fields. Omit only when
+ *   blocks genuinely aren't available (falls back to the fully-legacy behavior for every mechanic).
  * @returns {{
  *   totalDmg: number,
  *   dps: number,
@@ -62,7 +68,7 @@ export function rotTimeFromSteps(ownedSteps) {
  *   breakdown: {frazzle: Object, erosion: Object, fusionBurst: Object, electroFlare: Object, tuneBreak: Object},
  * }}
  */
-export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEnemyRes, mainResMult, energyCycleFactors = null) {
+export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEnemyRes, mainResMult, energyCycleFactors = null, blocksByOwner = null) {
   const frazzleResMult = calcResMult(getEnemyRes('Spectro'), resShred);
   const erosionResMult = calcResMult(getEnemyRes('Havoc'), resShred);
   const fusionBurstResMult = calcResMult(getEnemyRes('Fusion'), resShred);
@@ -71,7 +77,19 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const frazzle = calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
   const erosion = calcErosionDmg(members, rotTime, defMult, erosionResMult);
   const fusionBurst = calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult);
-  const electroFlare = calcElectroFlareDmg(members, rotTime, defMult, electroFlareResMult);
+  // Electro Flare (ENGINE_MERGE_PLAN.md Phase 2, first migrated mechanic): prefer the TriggerBlock-
+  // native resolver when blocksByOwner is available (real production callers always have it by the
+  // time DOT reactions are resolved) — parity with the legacy formula proven in
+  // dotReactionsFromBlocks.test.js. Buling's CHAR_BUFF_TABLE.electroFlare flag is DELIBERATELY still
+  // kept (not retired) — calcTeamStats.js's own `dotContributors` filter still reads it to decide who
+  // gets a share of the DOT total in the per-member damage BREAKDOWN display, a separate concern from
+  // which formula computes the total itself; removing it would silently drop her from that attribution
+  // even though her real damage is still correctly counted in the total. Legacy calcElectroFlareDmg()
+  // stays only as the fallback for a caller that genuinely can't supply blocksByOwner (this file's own
+  // dotReactions.test.js, proving the OLD behavior still works standalone).
+  const electroFlare = blocksByOwner
+    ? resolveElectroFlareFromBlocks(blocksByOwner, rotTime, defMult, electroFlareResMult)
+    : calcElectroFlareDmg(members, rotTime, defMult, electroFlareResMult);
   const tuneBreak = calcTuneBreakDmg(members, rotTime, defMult, mainResMult, energyCycleFactors);
 
   // Engine development.md item 9 (Aemeath's mode-exclusivity fix): flag which exclusive candidates

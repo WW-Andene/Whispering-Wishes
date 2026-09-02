@@ -229,12 +229,51 @@ every mechanic below).
   tbMember, not just the one being evaluated), and already has the most session-added special-casing.
   Do this one LAST in Phase 2, after the simpler four have proven the porting methodology.
 
+## Phase 2 — infrastructure built + first real migration (2026-09-02)
+
+Built `engine/dotReactionsFromBlocks.js`: real, tested (`dotReactionsFromBlocks.test.js`, 7 tests)
+TriggerBlock-native resolvers for Frazzle/Erosion/Fusion Burst/Electro Flare — each proven to match its
+`calcEngine.js` legacy counterpart's exact formula, including the real interaction rules (Frazzle SUMS
+across applying blocks, Erosion takes the MAX, Fusion Burst/Electro Flare are pure boolean gates).
+Added the `dotApplier` field to `triggerBlocks.schema.js` (a new `DotApplier` typedef) for characters to
+declare their own real, sourced contribution on the block whose trigger IS the actual applying move.
+
+**Buling migrated (Electro Flare) — the first real end-to-end character migration, proof that the
+whole approach works in production, not just in isolated tests.** Her two real Electro Flare
+application points (`buling.intro.summon-and-smite`, `buling.liberation.flashing-thunder-spell-harmony`
+— both confirmed via her own `CHARACTER_ROTATIONS` step notes) now carry `dotApplier: {mechanic:
+'electroFlare'}`. `dotReactions.js`'s `resolveDotReactionDps` gained an optional `blocksByOwner` param;
+when supplied (every real `calcTeamStats.js` call now passes `engineChosenOrder.blocksByOwner`),
+Electro Flare resolves from her real blocks instead of `CHAR_BUFF_TABLE.electroFlare` — legacy
+`calcElectroFlareDmg()` stays only as the fallback for a caller with no blocks available (this file's
+own test, proving the pre-migration behavior still works standalone). Her `CHAR_BUFF_TABLE.electroFlare
+= true` flag was DELIBERATELY kept, not removed — it still has a real, separate live use
+(`calcTeamStats.js`'s `dotContributors` filter, which decides who gets a share of the DOT total in the
+per-member damage breakdown display) that migrating the damage FORMULA doesn't retire. Verified
+end-to-end with a real `calcTeamStats(['Buling','Aemeath'],...)` call (not just unit tests):
+`hasElectroFlare: true`, real `dotDps`, Buling correctly attributed her share. Full suite: 1242 tests
+passing (up from 1235).
+
+**Migration checklist** (DOT-flagged characters from Phase 0's table, in the order Phase 2 intends to
+tackle them — simplest mechanic/fewest interactions first):
+
+| Character | Mechanic | Status |
+|---|---|---|
+| Buling | Electro Flare | **Migrated 2026-09-02** |
+| Denia | Fusion Burst (+ tuneBreak, deferred to 1.5) | Not started |
+| Aemeath | Fusion Burst (+ tuneBreak, deferred to 1.5) | Not started |
+| Ciaccona | Erosion | Not started |
+| Cartethyia | Erosion | Not started |
+| Phoebe | Frazzle (real-mode check needed first — see Phase 0 note) | Not started |
+| Rover: Spectro | Frazzle | Not started |
+| Lynae, Aemeath, Denia, Mornye, Luuk Herssen, Rebecca, Lucy | Tune Break | Not started (1.5, last) |
+
 ## Status
 
-**Current phase: 1 → 2 transition.** Inventory (Phase 0) and formula extraction (Phase 1) both done and
-documented above. No character migration (Phase 2) started yet — next concrete step is designing the
-Frazzle/Erosion team-wide-aggregate TriggerBlock shape (flagged as an open design decision in 1.1),
-since that decision needs to be made before Phoebe/Rover: Spectro/Cartethyia/Ciaccona can be migrated.
+**Current phase: 2, in progress.** Infrastructure (`dotReactionsFromBlocks.js`) built and tested. One
+character (Buling) fully migrated end-to-end and verified in production. Next: Fusion Burst
+(Denia/Aemeath) — reuses the same boolean-gate pattern Electro Flare just proved, lowest-risk next step
+before tackling Erosion's MAX-aggregation or Frazzle's SUM-aggregation + Phoebe's real-mode question.
 
 ## Constraints (repeated here, not just in the mandate, so they're never missed mid-phase)
 

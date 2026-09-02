@@ -61,6 +61,29 @@
  *                                   "assume whichever mode nets more value" read, not live mode
  *                                   tracking (no state machine exists for that). Omit entirely for
  *                                   the common case (a block that applies no tracked status).
+ * @property {DotApplier} [dotApplier]  Added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2): marks a block
+ *                                   as one character's real, sourced contribution to a shared,
+ *                                   team-wide DOT reaction (Frazzle/Erosion/Fusion Burst/Electro
+ *                                   Flare/Tune Break) — the exact same five mechanics
+ *                                   `calcEngine.js`'s `calcFrazzleDmg` etc. compute today from
+ *                                   `CHAR_BUFF_TABLE[name].debuffs`/`.electroFlare`/`.tuneBreak`, now
+ *                                   sourced from the block that actually casts the applying move
+ *                                   instead of a flat per-character table entry disconnected from any
+ *                                   trigger. Read by `engine/dotReactionsFromBlocks.js`, NOT by
+ *                                   `resolveHitComposedTeamDps`/`resolveSimulatedTeamRotation` (a DOT
+ *                                   reaction's damage isn't a per-hit or per-target buff in the sense
+ *                                   those resolvers model — it's a shared pool every real applier
+ *                                   contributes to, matching `calcEngine.js`'s own per-mechanic
+ *                                   aggregation rule, which `dotReactionsFromBlocks.js` reproduces
+ *                                   exactly: SUM of appliers' `value` for Frazzle, MAX for Erosion, a
+ *                                   boolean "does anyone apply it" gate for Fusion Burst, single-value
+ *                                   for Electro Flare's starting stack seed). Put on the block whose
+ *                                   own `trigger` is the REAL move that applies the status per that
+ *                                   character's kit text (e.g. Buling's Intro and enhanced Liberation
+ *                                   both deploy Electro Flare) — never a synthetic marker block, so a
+ *                                   block that stops firing (cooldown-ineligible, sequence-gated below
+ *                                   the owner's real chain level) correctly stops contributing too,
+ *                                   something the old flat-table approach couldn't express at all.
  * @property {Proc} [proc]          For a discrete, repeatable extra-hit proc (Yinlin S6-style —
  *                                   see Proc typedef below) — the raw flat-ATK-scaling damage
  *                                   instance this block represents. Kept OUT of `effects` on
@@ -291,6 +314,18 @@
  *                                Resonance Skill DMG" -> category: 'skillDmg'). Descriptive only —
  *                                resolveTriggerBlocks() doesn't route proc damage through
  *                                applyBuff() yet (see the TriggerBlock.proc doc above).
+ */
+
+/**
+ * @typedef {Object} DotApplier
+ * @property {'frazzle'|'erosion'|'fusionBurst'|'electroFlare'} mechanic  Which shared DOT reaction
+ *   this block contributes to — same five mechanics `calcEngine.js`'s five `calc*Dmg` functions
+ *   compute today, see ENGINE_MERGE_PLAN.md Phase 1 for each one's exact formula/constants.
+ * @property {number} [value]  This character's own real, sourced stack contribution (Frazzle: summed
+ *   across every real applier on the team; Erosion: the MAX across appliers, not summed — see
+ *   ENGINE_MERGE_PLAN.md 1.1/1.2 for why these differ). Omit for `fusionBurst`/`electroFlare`, whose
+ *   `calcEngine.js` formulas don't scale by a per-applier value at all (a boolean "does anyone apply
+ *   it" gate) — see ENGINE_MERGE_PLAN.md 1.3/1.4.
  */
 
 /**

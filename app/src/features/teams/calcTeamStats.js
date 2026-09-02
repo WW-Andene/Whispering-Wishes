@@ -1109,7 +1109,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // calcEngine.js functions, same rotTime/defMult/resShred inputs, byte-identical output; the actual
     // engine-vs-legacy `rotTime` reconciliation stays step 4's job (rotationTimeline itself), not this
     // one — DOT keeps using the same shared `rotTime` every other FULL-tier total already does.
-    const dotResult = resolveDotReactionDps(mems, rotTime, defMult, resShred, getEnemyRes, resMult, energyCycleFactors);
+    const dotResult = resolveDotReactionDps(mems, rotTime, defMult, resShred, getEnemyRes, resMult, energyCycleFactors, engineChosenOrder?.blocksByOwner || null);
     let dotDmgPerRotation = dotResult.totalDmg;
     const hasFrazzle = dotResult.breakdown.frazzle.active;
     const hasErosion = dotResult.breakdown.erosion.active;
