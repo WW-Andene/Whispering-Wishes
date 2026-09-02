@@ -68,7 +68,21 @@ export const CHISA_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Sawring - Eradication' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('51.54% + 206.13%') },
-    note: 'Real DMG also scales +2.59% per Ring of Chainsaw consumed, up to 100 — not modeled (no stacking-scalar field in this schema for a per-resource-unit damage bonus), base 2-hit value used. Also grants the team a Shield, not modeled (no DPS component).',
+    note: 'Real DMG also scales +2.59% per Ring of Chainsaw consumed, up to 100 — the per-Ring scalar is now modeled as chisa.forte.sawring-eradication-ring-scalar below (Phase 0.5 gap #7, fixed 2026-09-02), at the documented cap. Also grants the team a Shield, not modeled (no DPS component).',
+  },
+  {
+    id: 'chisa.forte.sawring-eradication-ring-scalar',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Forte:Sawring - Eradication' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // ENGINE_MERGE_PLAN.md Phase 0.5 gap #7, fixed 2026-09-02: same proportional-second-hit pattern as
+    // Denia's Dark Core scalar and gap #6 (Brant's S6 secondary blast) — a same-instant, same-category
+    // hit scales in exact proportion through the shared multiplier chain. Eradication is cast after
+    // consuming ALL remaining Ring of Chainsaw and ending Chainsaw Mode (dump: "Consumes all remaining
+    // Ring of Chainsaw and ends Chainsaw Mode"), modeled at the documented 100-point cap: base hit sums
+    // to 257.67% (51.54+206.13), ×2.59 (i.e. 2.59% per point × 100 points) = 667.365% additional hit.
+    damage: { hits: [{ atkPct: 667.365 }] },
+    note: '+2.59% DMG Multiplier per Ring of Chainsaw consumed (up to 100), modeled at the documented cap (259% total, i.e. this hit = 2.59× the base hit).',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE, plus the Intro self-buff sourced from CHARACTER_ROTATIONS'

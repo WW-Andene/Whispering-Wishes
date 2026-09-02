@@ -88,7 +88,25 @@ export const DENIA_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Banish - Breakdown Form Stage 2' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('112.01%'), category: 'libDmg' },
-    note: 'Counted as Resonance Liberation DMG despite the Skill input. Real DMG also gets +150% Multiplier per Dark Core consumed (all held Dark Cores spent on cast) — not modeled (no stacking-scalar field for a per-resource-unit damage bonus), base value used.',
+    note: 'Counted as Resonance Liberation DMG despite the Skill input. Real DMG also gets +150% Multiplier per Dark Core consumed (all held Dark Cores spent on cast) — the per-Dark-Core scalar itself is now modeled as denia.liberation.banish-breakdown-stage2-dark-core-scalar below (Phase 0.5 gap #7, fixed 2026-09-02), at the documented base-kit cap of 3 Dark Cores.',
+  },
+  {
+    id: 'denia.liberation.banish-breakdown-stage2-dark-core-scalar',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Banish - Breakdown Form Stage 2' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // ENGINE_MERGE_PLAN.md Phase 0.5 gap #7, fixed 2026-09-02: "+150% DMG Multiplier per Dark Core
+    // consumed" is a per-resource-unit scalar on the SAME hit as denia.liberation.banish-breakdown-stage2
+    // — modeled the same proportional-second-hit way gap #6 (Brant's S6 secondary blast) established:
+    // a same-instant, same-category hit under the same active buffs scales in exact proportion through
+    // the shared crit/dmgBonus/defMult/resMult chain, so "+450% multiplier on THIS hit" (documented
+    // base-kit cap of 3 Dark Cores × 150%, dump: "holds up to 3 (5 at S3)") is just an additional hit
+    // worth 4.5× the base hit's own %ATK: 112.01% × 4.5 = 504.045%. (A `scopedToBlockId` totalMult buff
+    // was tried first but doesn't actually fire in the hit-composed resolvers — a cast-scoped, no-
+    // duration buff only feeds the LEGACY totalMultBonus path, not this one — so the proportional-hit
+    // shape is used instead, consistent with gap #6.)
+    damage: { hits: [{ atkPct: 504.045 }], category: 'libDmg' },
+    note: '+150% DMG Multiplier per Dark Core consumed on Stage 2 cast, modeled at the base-kit 3-Dark-Core cap (450% total, i.e. this hit = 4.5× the base hit) — S3 raises the cap to 5, not modeled here (would need real evidence the modeled rotation reliably holds 5 at cast time).',
   },
   {
     id: 'denia.liberation.final-act-breakdown',

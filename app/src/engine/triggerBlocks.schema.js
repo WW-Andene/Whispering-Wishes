@@ -449,6 +449,20 @@
  *                                 there at its category's normal (broader, over-crediting) scope, the
  *                                 same class of accepted imprecision already documented for other
  *                                 stat-panel-vs-real-engine gaps in this codebase.
+ *                                 CAVEAT (found 2026-09-02, Phase 0.5 gap #7): only works on a real
+ *                                 `trigger.type: 'passive'` block — `statsAtInstant()` in the two
+ *                                 hit-composed resolvers only ever reads from `passiveBlocks`
+ *                                 (any-duration-ignored) or `buffWindows` (requires `timing.duration !=
+ *                                 null`). A `trigger.type: 'cast'` buff with NO duration (the established
+ *                                 "cast-scoped instant" shape used throughout this schema, e.g.
+ *                                 Calcharo's S5) matches NEITHER filter and is silently never applied by
+ *                                 either hit-composed resolver at all — `scopedToBlockId` on such a
+ *                                 block is a no-op, not a scoping restriction. For a genuinely
+ *                                 cast-scoped, same-instant bonus, use the proportional-second-hit
+ *                                 pattern instead (a real `kind:'damage'` block with its own
+ *                                 `damage.hits`, computed as the target fraction × the base hit's own
+ *                                 summed %ATK — see Brant's `chain.s6-secondary-blast` or Denia's Dark
+ *                                 Core scalar for worked examples).
  * @property {{count: number, value: number}[]} [tiers]  ENGINE_MERGE_PLAN.md Phase 0.5 gap #1, added
  *                                 2026-09-02: a nonlinear/multi-tier per-stack curve (e.g. Qingxiao's
  *                                 Mindlock — first 7 stacks worth 7% each, remaining 8 worth 2% each,
