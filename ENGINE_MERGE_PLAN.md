@@ -48,6 +48,25 @@ The rest of this document (the old "Phase 0/1/2" numbering) is being restructure
 order below — old phase numbers are kept as headers for continuity with prior commits, but their
 CONTENT is now understood as partial Phase-A/Phase-B work, not a separately-numbered track.
 
+### Phase A tracker — solo, per-character, all 8 dimensions
+
+One row per character (58 total, Jingran excluded — unreleased). `Audited` = actually re-read block by
+block against all 8 dimensions this pass, not assumed correct because it was touched for a different
+reason earlier in the session. Default status for every character not yet listed: **not started**.
+
+| Character | Status | Findings |
+|---|---|---|
+| Aemeath | **Audited 2026-09-02** | Clean — every damage block's category justified (present or deliberately absent with a reason), all 4 real Fusion-Burst-applying moves tagged, mode-symmetric self-buffs correctly unconditional, Sync Strike consistently unmodeled (matches her own un-modeled CHARACTER_ROTATIONS — not a gap). No fixes needed. |
+| Denia | **Audited 2026-09-02** | Clean — same standard. Stage-1-only block correctly NOT tagged as a Fusion Burst applier (only Stage 3/4 do per kit text); Final Act: Breakdown Form correctly left untagged (no kit-text confirmation it applies Fusion Burst, not assumed). No fixes needed. |
+| *(remaining 56 characters)* | Not started | — |
+
+**Realistic pacing note**: a genuine 8-dimension audit takes real reading time per character (both
+already-audited ones here had ~15-17 blocks each, cross-checked individually). At this rate, the full
+roster is a multi-session undertaking, consistent with the user's own "even a year" framing — this
+tracker is the mechanism for resuming correctly across sessions without re-deriving what's already been
+verified, and for making visible, at a glance, exactly how much of the roster is actually done versus
+assumed.
+
 ---
 
 ## 0. Why two engines exist today (as-found, verified by reading code, not assumed)
