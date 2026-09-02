@@ -859,10 +859,15 @@ const CHARACTER_DATA = {
     // Battle Pass 4★s (ahead of Waltz in Masquerade, Fusion Accretion, Jinzhou Keeper); Rectifier of
     // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Stringmaster', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
-    // teams corrected 2026-08-18: current sources cite 'Denia + Lynae + Mornye' (triple Tune Strain)
-    // as her actual best Tune Strain comp, not Luuk Herssen. Fusion Burst pairing with Aemeath still
-    // confirmed valid.
-    teams: ['Denia + Lynae + Mornye', 'Denia + Aemeath + Lupa'] },
+    // teams corrected 2026-09-02 against a fresh Prydwen dump: the prior 'Denia + Lynae + Mornye' entry
+    // was wrong — Lynae never appears anywhere on Denia's page (Kit/Review/Build/Gameplay and
+    // teams/Calculations, all checked), and it contradicted the reciprocal entries already in this same
+    // file for Aemeath (line 776: 'Aemeath + Denia + Chisa'), Luuk Herssen (line 762: 'Luuk Herssen +
+    // Denia + Mornye') and Qingxiao (line 911: 'Qingxiao + Denia + Mornye'). The dump's own Synergies/
+    // Example Teams sections confirm: Fusion Burst pairs her only with Aemeath (Chisa or Lupa 3rd slot);
+    // Tune Strain pairs her with either Qingxiao or Luuk Herssen, always alongside Mornye ("not
+    // recommended for Tune Strain without Mornye involved").
+    teams: ['Aemeath + Denia + Chisa', 'Qingxiao + Denia + Mornye'] },
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
     skills: ['Flaming Sakura Blade Art', 'Frostblight', 'Foreclaiming', 'Frostedge'],
