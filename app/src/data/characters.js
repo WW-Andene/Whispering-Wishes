@@ -1376,7 +1376,7 @@ const CHARACTER_DATA = {
   ['Augusta',       10300, 463, 1112, 125],
   ['Iuno',          10525, 450, 1124, 125],
   ['Galbrena',      10300, 462, 1112, 125],
-  ['Qiuyuan',       12237, 375, 1197, 125],
+  ['Qiuyuan',       12238, 375, 1198, 125],
   ['Chisa',         10775, 438, 1137, 125],
   ['Lynae',         12238, 375, 1198, 125],
   ['Mornye',        15375, 288, 1357, 175],
@@ -3803,15 +3803,23 @@ const SKILL_MULTIPLIERS = {
     ['Liberation', 'Curtain Call', '465.2%', 'Ultimate cast that ends Resolving Chord and enters Maestro.'],
     ['Outro', 'Unfinished Piece', '+20% Havoc DMG + 25% Heavy ATK DMG Amp (14s)', 'Swap-out buff to the next Resonator; grants Hecate 2 bonus attacks if cast during Maestro.'],
   ],
+  // Corrected 2026-09-02 against a fresh Prydwen dump (Lv.10 Multipliers tables): every damage row was
+  // roughly half its real value and several multi-hit stages were summed instead of per-hit — the same
+  // halving pattern already found and fixed on Camellya's/Carlotta's/Roccia's rows (e.g. Basic ATK Stage 1
+  // was '21%' vs the real 41.76%; Liberation was '400%' vs the real 795.24%). Also added the missing
+  // Mid-air Attack and Dodge Counter rows, and split Forte's 3 Heavy ATK finishers into per-hit values
+  // instead of a single summed number each.
   'Qiuyuan': [
-    ['Basic ATK', 'Stage 1-3', '21% → 35% → 82.6%', 'Standard combo before entering Inkwash form.'],
-    ['Heavy ATK', 'Standard', '83.3%', 'Charged strike, a solid single hit.'],
-    ['Skill', 'Through the Groves', '36.1%×3', 'Multi-hit Skill strike.'],
-    ['Skill', 'Undaunted Wayfarer', '16.3% + 16.3%×3 + 43.4%', 'Held version of her Skill, extended combo.'],
-    ['Forte', 'Inkwash 1-4', '60% → 93.3% → 73.6% → 86.7%', 'Forte-transformed combo string, her main damage form.'],
-    ['Forte', 'To Teach / To Save / To Sacrifice', '230% / 105.5% / 109.5%', 'Heavy ATK finishers in Inkwash form, each with a different follow-up effect.'],
-    ['Liberation', 'Sundering Strike', '400%', 'Ultimate nuke.'],
-    ['Intro', 'Attack the Must-Defend', '4.8%×5 + 24% + 72%', 'Swap-in opener, counted as Heavy ATK DMG.'],
+    ['Basic ATK', 'Stage 1-3', '41.76% → 34.80%×2 → 24.64%×4+65.69%', 'Standard combo before entering Inkwash form.'],
+    ['Heavy ATK', 'Standard', '165.61%', 'Charged strike, a solid single hit.'],
+    ['Mid-air ATK', 'Plunging Attack', '116.91%'],
+    ['Dodge Counter', 'Standard', '194.84%+27.84%×3'],
+    ['Skill', 'Through the Groves', '71.84%×3', 'Multi-hit Skill strike.'],
+    ['Skill', 'Undaunted Wayfarer', '32.33% + 32.33%×3 + 86.21%', 'Held version of her Skill, extended combo.'],
+    ['Forte', 'Inkwash 1-4', '59.65%×2 → 55.65%×2+74.20% → 14.58%×5+72.87% → 172.37%', 'Forte-transformed combo string, her main damage form.'],
+    ['Forte', 'To Teach / To Save / To Sacrifice', '91.44%×5 / 38.44%×3+31.45%×3 / 217.70%', 'Heavy ATK finishers in Inkwash form, each with a different follow-up effect.'],
+    ['Liberation', 'Sundering Strike', '795.24%', 'Ultimate nuke.'],
+    ['Intro', 'Attack the Must-Defend', '9.55%×5 + 47.72% + 143.15%', 'Swap-in opener, counted as Heavy ATK DMG.'],
     ['Outro', 'Strike Before Ready', '100% ATK + 50% Echo Skill DMG Amp (14s)', 'Swap-out buff granting the next Resonator Echo Skill DMG Amp.'],
   ],
   // Corrected 2026-08-17 against ww.nanoka.cc's character #1606 sheet (Lv.10 skill attributes): every

@@ -22,7 +22,7 @@ export const QIUYUAN_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Attack the Must-Defend' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('4.8%×5 + 24% + 72%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('9.55%×5 + 47.72% + 143.15%'), category: 'heavyDmg' },
     note: 'Counted as Heavy ATK DMG per its own kit text. Grants 400 of 600 Forte, skips straight to Inkwash Stage 3.',
   },
   {
@@ -32,7 +32,7 @@ export const QIUYUAN_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row 'Inkwash 1-4' has 4 arrow-separated stages; this step uses stages 3-4 (per its own label,
     // since the Intro already skipped to Stage 3).
-    damage: { hits: parseSkillMultiplierHits('73.6% → 86.7%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('14.58%×5+72.87% → 172.37%'), category: 'basicDmg' },
     note: 'Fills Forte to 600.',
   },
   {
@@ -40,7 +40,7 @@ export const QIUYUAN_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Through the Groves' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('36.1%×3'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('71.84%×3'), category: 'skillDmg' },
     note: 'Optional — best cast before this rotation via quickswap, skipped if not needed for Energy.',
   },
   {
@@ -48,7 +48,7 @@ export const QIUYUAN_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Sundering Strike' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('400%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('795.24%'), category: 'libDmg' },
     note: "Cancels the Skill's endlag on hit, grants self/team Crit DMG at 65%+ Crit Rate (see qiuyuan.libbuff.crit-dmg below).",
   },
   {
@@ -56,9 +56,10 @@ export const QIUYUAN_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:To Teach / To Save / To Sacrifice' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // 3 alternative Heavy ATK finishers (230% / 105.5% / 109.5%) — "To Teach" (the strongest/first-
-    // listed) is used as a representative value; the other two follow-up effects are not modeled.
-    damage: { hits: parseSkillMultiplierHits('230%') },
+    // 3 alternative Heavy ATK finishers (91.44%×5 / 38.44%×3+31.45%×3 / 217.70%) — "To Teach" (the
+    // strongest/first-listed) is used as a representative value; the other two follow-up effects are
+    // not modeled.
+    damage: { hits: parseSkillMultiplierHits('91.44%×5') },
     note: 'Heavy ATK finisher sequence in Inkwash form, empties Forte and restores Concerto Energy. Only "To Teach" is modeled — "To Save"/"To Sacrifice" have different follow-up effects, not separately represented.',
   },
   {
