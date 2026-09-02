@@ -2829,7 +2829,20 @@ const CHAR_BUFF_TABLE = {
       { stat: 'critDmg', value: 60, target: 'self', duration: 99, condition: 'Inherent Skill Between the Stars: Tune Rupture mode 20% per Resonator ×3 stacks, or Fusion Burst mode 30% per Resonator ×2 stacks (both max 60%, resets on team change/mode switch)' },
       { stat: 'deepen', value: 25, target: 'self', duration: 99, condition: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25%' },
     ],
-    debuffs: [{ stat: 'fusionBurst', value: 30, duration: 30, condition: 'Rupturous Trail / Fusion Trail: stacks up to 30 (60 at RC6), each stack removed by Seraphic Duet grants scaling DMG Mult' }],
+    // debuffs.fusionBurst corrected 2026-09-02 (Engine development.md item 9): this entry's ONLY real
+    // functional effect anywhere in the codebase is marking her as a "Fusion Burst applier" for the
+    // shared calcFusionBurstDmg() reaction (calcEngine.js's applyBuff() switch has no case for the
+    // 'fusionBurst' stat, so `value`/`condition` here were pure inert documentation, not a live per-
+    // stack DMG Mult as the old comment implied — the real Trail-removal scaling mechanic they were
+    // describing has no field this schema can represent and stays an undocumented approximation gap,
+    // same class of limitation as several other characters' nonlinear per-stack mechanics). What this
+    // entry SHOULD represent, and now does: her real, sourced, mode-conditional Fusion Burst status
+    // application ("In Resonance Mode - Fusion Burst, Basic Stage 3/4 (either form), Sync Strikes, and
+    // both Intro skills inflict Fusion Burst on hit") — active ONLY in Fusion Burst mode, mutually
+    // exclusive with her Tune Rupture mode's Starburst proc below. `value`/`condition` still carry no
+    // live weight (calcFusionBurstDmg's own formula doesn't scale by them, same pre-existing
+    // simplification for every fusionBurst-flagged character), so left as documentation only.
+    debuffs: [{ stat: 'fusionBurst', value: 30, duration: 30, condition: 'Fusion Burst mode only: Basic Stage 3/4/Sync Strikes/Intro skills inflict Fusion Burst on hit' }],
     // Added 2026-08-18 against Prydwen's live kit page (JS-rendered fetch). Confirmed genuine Tune
     // Rupture Response — Forte Circuit "Unlanded Melody": "Responding to Tune Rupture - Interfered:
     // when Resonators in the team trigger Tune Break on the target and cause them to be affected by
@@ -2838,16 +2851,25 @@ const CHAR_BUFF_TABLE = {
     // 2026-09-02 (Engine development.md item 9, investigating her real mode-choice magnitude): a fresh
     // dump's own Forte Circuit multipliers table gives it directly — "Tune Rupture Response: Starburst
     // | 596.43% Tune AMP" (Lv.10), closing the exact gap this comment used to flag as "not confirmed,
-    // omitted rather than guessed." No "Tune Break Boost" team buff or stack-cap increase found
-    // anywhere in her kit text, so boostToTeam/maxStrainStacks/strainDmgPerStack stay omitted — she has
-    // no Tune Strain-side response at all (this node is Rupture-response only, no dual-response shape
-    // like Mornye's). Not marked modeExclusive: unlike Lynae, she has no OTHER tuneBreak field that
-    // would double-count against this one.
+    // omitted rather than guessed" — cross-confirmed identically on a second source (nanoka.cc). No
+    // "Tune Break Boost" team buff or stack-cap increase found anywhere in her kit text, so
+    // boostToTeam/maxStrainStacks/strainDmgPerStack stay omitted — she has no Tune Strain-side response
+    // at all (this node is Rupture-response only, no dual-response shape like Mornye's).
+    //
+    // modeExclusive + competesWithFusionBurstReaction (added 2026-09-02): real bug found investigating
+    // this — Starburst (Rupture-mode-only) and the fusionBurst reaction above (Fusion-Burst-mode-only)
+    // were BOTH being counted unconditionally for any team with her in it, even though her own kit text
+    // marks each as active in exactly one, opposite mode. calcTuneBreakDmg/calcFusionBurstDmg now
+    // resolve these three-way (Fusion / Rupture / Strain-not-applicable-here) by comparing real final
+    // team totals, same principle as Lynae's own mode-exclusivity fix — see dotReactions.js's own
+    // comment for the mechanism.
     tuneBreak: {
       baseTuneBreakBoost: 10, // 3.x char base stat
       ruptureDmgMult: 596.43, // Tune Rupture Response — Starburst (confirmed exact, Lv.10)
+      modeExclusive: true,
+      competesWithFusionBurstReaction: true,
     },
-    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced Seraphic Duet scales off Rupturous/Fusion Trail (up to 30 stacks = 300% mult, 4%/10% per stack removed). Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption. Self-buff: up to 60% CD via Between the Stars. Tune Break: Tune Rupture Response - Starburst confirmed exact 596.43% (2026-09-02, was "not confirmed, omitted").',
+    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced Seraphic Duet scales off Rupturous/Fusion Trail (up to 30 stacks = 300% mult, 4%/10% per stack removed) — this per-stack scaling isn\'t modeled (no field for it), an open gap. Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption. Self-buff: up to 60% CD via Between the Stars. Tune Break: Starburst (Rupture, 596.43%) vs the Fusion Burst reaction (Fusion) are now resolved mode-exclusively (2026-09-02) instead of both firing unconditionally.',
   },
   // corrected 2026-08-18: removed "Weapon passive: Aero DMG +12%" — this assumed a fixed generic weapon
   // baseline regardless of which weapon is actually equipped, double-counting with the equipped weapon's

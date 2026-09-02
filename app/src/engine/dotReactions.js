@@ -17,6 +17,7 @@ import {
   calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
   calcResMult,
 } from '../features/teams/calcEngine.js';
+import { CHAR_BUFF_TABLE } from '../data/characters.js';
 import { DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 
 /**
@@ -73,13 +74,26 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const electroFlare = calcElectroFlareDmg(members, rotTime, defMult, electroFlareResMult);
   const tuneBreak = calcTuneBreakDmg(members, rotTime, defMult, mainResMult, energyCycleFactors);
 
+  // Engine development.md item 9 (Aemeath's mode-exclusivity fix): a tuneBreak exclusive candidate
+  // flagged competesWithFusionBurstReaction (Aemeath: her Rupture-mode Starburst proc vs her own
+  // Fusion-Burst-mode status application, which is what actually feeds the shared fusionBurst reaction
+  // above) needs to know what that reaction's total would be WITHOUT this member's own participation,
+  // so calcTeamStats.js can compare real "keep the Fusion contribution" vs "swap it for Starburst"
+  // totals — same real-total-comparison principle as the Rupture-vs-Strain resolution already does.
+  const tuneBreakExclusiveCandidates = (tuneBreak.exclusiveCandidates || []).map(candidate => {
+    const competesWithFusion = CHAR_BUFF_TABLE[candidate.name]?.tuneBreak?.competesWithFusionBurstReaction;
+    if (!competesWithFusion) return candidate;
+    const fusionWithoutMember = calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult, [candidate.name]);
+    return { ...candidate, fusionBurstDeltaIfExcluded: fusionBurst.dmg - fusionWithoutMember.dmg };
+  });
+
   const totalDmg = frazzle.dmg + erosion.dmg + fusionBurst.dmg + electroFlare.dmg + tuneBreak.dmg;
 
   return {
     totalDmg,
     dps: rotTime > 0 ? totalDmg / rotTime : 0,
     tuneBreakDeepenMult: tuneBreak.deepenMult,
-    tuneBreakExclusiveCandidates: tuneBreak.exclusiveCandidates || [],
+    tuneBreakExclusiveCandidates,
     breakdown: { frazzle, erosion, fusionBurst, electroFlare, tuneBreak },
   };
 }

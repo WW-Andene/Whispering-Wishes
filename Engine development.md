@@ -394,6 +394,54 @@ simple stat buff — don't force-fit into the same fix):
    real `calcTeamStats` resolution, `winningStanceForOwner` no longer returning `null` for Lynae, and the
    rotation simulator actually tagging `tune-rupture-shifting` (not `shifting`) on her real blocks. Full
    suite (1226 tests, up from 1221) passing.
+
+   **Aemeath — same class of bug found and fixed 2026-09-02, cross-reaction this time.** Investigating
+   which mode a theoretical Aemeath+Denia+Lynae team should assume (user's own question) surfaced a real
+   bug distinct from Lynae's: Aemeath's Tune Rupture Response - Starburst (596.43% Tune AMP, sourced
+   from a fresh Prydwen dump AND cross-confirmed identically on a second source, nanoka.cc — filled in
+   after her own `tuneBreak` comment had flagged it "not confirmed, omitted rather than guessed" since
+   2026-08-18) and her participation in the SHARED `calcFusionBurstDmg()` reaction were both being
+   counted unconditionally, even though her own kit text marks each as active in exactly one, opposite
+   Resonance Mode. Worth recording the reasoning misstep that preceded the fix: an early pass concluded
+   "no Fusion-Burst-specific bonus is written in her kit text, so Rupture must be the stronger choice
+   numerically" — a text-only deduction, not a computed one. Actually running the numbers
+   (`calcTuneBreakDmg` vs `calcFusionBurstDmg` for her solo, real rotation time) showed the opposite:
+   the generic Fusion Burst reaction (40,645 dmg/rotation) outweighs Starburst (19,765) — because her
+   Fusion-mode strength was never a bespoke per-character number to begin with, it flows through the
+   SAME shared reaction formula every Fusion Burst applier in the roster uses. Lesson: "the text doesn't
+   name a number" and "the mechanic is weak" are not the same claim — always compute before concluding
+   one implies the other.
+
+   Also found while tracing this: her `debuffs: [{stat:'fusionBurst', value:30, condition:'Rupturous
+   Trail/Fusion Trail...'}]` entry's `value`/`condition` were pure inert documentation — `applyBuff()`
+   has no `case 'fusionBurst'`, so the ONLY real effect of that entry anywhere in the codebase is
+   marking her as a participant in `calcFusionBurstDmg()`'s boolean "does anyone apply this" gate. The
+   entry's own comment described her Trail-stack-removal DMG Mult scaling (a real, sourced, but
+   currently unrepresentable-by-this-schema mechanic, same class of gap as Qingxiao's Mindlock curve) —
+   misleading, since that value was never actually applied. Recomposed the entry's `condition` text to
+   describe what it ACTUALLY does (her mode-conditional Fusion Burst status application), and flagged
+   the Trail-removal scaling as a separate, still-open, unmodeled gap in her own `note`.
+
+   **Fix, extending (not duplicating) Lynae's pattern**: `calcFusionBurstDmg()` gained an `excludeNames`
+   param (default `[]`, every existing caller unaffected) so a caller can ask "would this reaction still
+   fire WITHOUT member X's own participation." `dotReactions.js`'s `resolveDotReactionDps` computes, for
+   any `tuneBreak.exclusiveCandidates` entry whose character has the new
+   `tuneBreak.competesWithFusionBurstReaction` flag (Aemeath only), a real `fusionBurstDeltaIfExcluded`
+   (today's total minus the total without them). `calcTeamStats.js`'s resolution loop became a real
+   three-way comparison (Fusion baseline / Rupture / Strain — Strain is structurally always a loss for a
+   character with no strain fields, like Aemeath, so this stays exactly Lynae's original two-way
+   comparison for her). Verified by actually running `calcTeamStats(['Aemeath'], ...)` and
+   `calcTeamStats(['Aemeath','Denia','Lynae'], ...)`: both now resolve Aemeath to **Fusion Burst mode**
+   — matching the real meta text this time, backed by a computed comparison instead of the earlier
+   text-only deduction. New test file `aemeathTuneBreakModeExclusivity.test.js` (3 tests). Full suite:
+   1229 tests passing (up from 1226).
+
+   **Still open**: this whole resolution mechanism only compares what THIS single-target rotation
+   calculator can see. Prydwen's own text says Fusion Burst is Aemeath's strongest mode specifically
+   because of AoE/quickswap value — nothing this app models. The computed answer (Fusion Burst) happens
+   to agree with the real meta verdict here, but that agreement isn't guaranteed in general for a
+   dual-mode character whose real advantage is AoE-shaped; flag this explicitly rather than treat every
+   future resolved stance as automatically meta-correct.
 3. **Migration — not started.** Qingxiao S4 specifically still uses the old `target:{scope:'self'}` /
    flat `atkPct` approximation (not yet migrated to `ally-action`+`trigger-actor`); `denia.chain.s2`
    still only models its flat Banish multiplier, not the Fusion-Burst/Tune-Strain-mode reactive buff

@@ -1430,12 +1430,23 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     {
       const preGrandTotal = totalRotDmg + echoActiveDmg + dotDmgPerRotation;
       for (const candidate of dotResult.tuneBreakExclusiveCandidates) {
-        const totalIfRupture = (preGrandTotal + candidate.ruptureDmgDelta) * tuneBreakDeepenMult;
-        const totalIfStrain = preGrandTotal * (tuneBreakDeepenMult * (1 + candidate.strainDeepenDelta));
-        if (totalIfRupture >= totalIfStrain) {
-          dotDmgPerRotation += candidate.ruptureDmgDelta;
+        // fusionBurstDeltaIfExcluded (Aemeath's case, Engine development.md item 9): this member's own
+        // participation in the shared Fusion Burst reaction is ALSO part of what Rupture mode gives up
+        // — preGrandTotal already includes it unconditionally (today's baseline = "Fusion candidate"),
+        // so both the Rupture and Strain candidates below have to subtract it out for a fair real-total
+        // comparison. 0 for a member with no such competing reaction (Lynae), so this stays exactly the
+        // Rupture-vs-Strain-only comparison for her — no behavior change there.
+        const fusionDelta = candidate.fusionBurstDeltaIfExcluded || 0;
+        const totalIfFusion = preGrandTotal * tuneBreakDeepenMult;
+        const totalIfRupture = (preGrandTotal - fusionDelta + candidate.ruptureDmgDelta) * tuneBreakDeepenMult;
+        const totalIfStrain = (preGrandTotal - fusionDelta) * (tuneBreakDeepenMult * (1 + candidate.strainDeepenDelta));
+        if (totalIfFusion >= totalIfRupture && totalIfFusion >= totalIfStrain) {
+          tuneBreakResolvedStances.push({ name: candidate.name, stance: 'Fusion Burst mode' });
+        } else if (totalIfRupture >= totalIfStrain) {
+          dotDmgPerRotation += candidate.ruptureDmgDelta - fusionDelta;
           tuneBreakResolvedStances.push({ name: candidate.name, stance: 'Tune Rupture mode' });
         } else {
+          dotDmgPerRotation -= fusionDelta;
           tuneBreakDeepenMult *= (1 + candidate.strainDeepenDelta);
           tuneBreakResolvedStances.push({ name: candidate.name, stance: 'Tune Strain mode' });
         }

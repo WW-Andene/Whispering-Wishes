@@ -511,8 +511,16 @@ export function calcErosionDmg(members, rotTime, defMult, resMult) {
 
 // Fusion Burst's stack-DMG table isn't published on the wiki (only Frazzle/Erosion are); this stays
 // a rough approximation rather than a verified lookup like the two above.
-export function calcFusionBurstDmg(members, rotTime, defMult, resMult) {
-  const has = members.some(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'fusionBurst'));
+//
+// excludeNames (added 2026-09-02, Engine development.md item 9 — Aemeath's mode-exclusivity fix):
+// lets a caller ask "would this reaction still be active WITHOUT member X's participation" — needed
+// for a member whose own `debuffs.fusionBurst` entry is mode-conditional (Aemeath only inflicts real
+// Fusion Burst status while in Fusion Burst mode; her Tune Rupture mode instead grants her the
+// separate Starburst tuneBreak proc, mutually exclusive with this reaction — see her own
+// tuneBreak.competesWithFusionBurstReaction comment in characters.js). Doesn't change the formula
+// itself, only who counts toward the `has` gate — every existing caller (empty default) is unaffected.
+export function calcFusionBurstDmg(members, rotTime, defMult, resMult, excludeNames = []) {
+  const has = members.some(m => !excludeNames.includes(m.name) && CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'fusionBurst'));
   if (!has) return { dmg: 0, active: false };
   const explosions = Math.max(1, Math.floor(rotTime / Math.max(FUSION_BURST_THRESHOLD, 8)));
   const dmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (FUSION_BURST_THRESHOLD * 0.5) * FUSION_TRAIL_MULT;
