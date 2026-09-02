@@ -81,23 +81,38 @@ export const REBECCA_BLOCKS = [
     ],
     note: 'Also summons a turret dealing 2.5% Electro DMG/hit for 14s, and grants a stacking Heavy ATK DMG Amp (0.5%/0.2s, up to +35%) — neither modeled (no DPS component for the turret; the stacking Heavy ATK Amp is folded into the flat heavyDmg value above rather than modeled as a real ramp).',
   },
+  // Fixed 2026-09-02 (Engine development.md item 10 audit): both blocks below were `trigger:'passive'`
+  // — always active simultaneously for her whole modeled rotation. Her own kit text says otherwise:
+  // Huntress and Guts are mutually exclusive in-combo STATES she alternates through within a single
+  // rotation (Intro starts Huntress then auto-switches Guts; Basic ATK: Guts Stage 1-3 happens in Guts;
+  // Skill "switches her back to Huntress mode (gains +30% Crit DMG there)"; every step after Skill
+  // stays Huntress per CHARACTER_ROTATIONS['Rebecca']'s own step notes) — a real double-counting bug,
+  // same class as Lynae/Aemeath/Denia's Tune Break fixes, just within one character's own combo instead
+  // of a team-composition choice. Now cast-triggered at her kit's own explicit real transition points:
+  // Guts's DEF Ignore is scoped to the short window her kit describes it for (Guts Stage 1-3's own 3
+  // hits, immediately before Skill fires and switches her back — 2s covers this one real combo segment
+  // in the modeled rotation, not a sourced exact timer, same class of documented approximation as every
+  // other duration-less real mechanic in this codebase); Huntress's Crit DMG opens on Skill's own cast
+  // (her kit's own stated re-entry point) and lasts the rest of the modeled loop (no further mode
+  // switch happens after Skill in the modeled rotation, so a long sentinel duration is accurate here,
+  // not just a placeholder).
   {
     id: 'rebecca.selfbuff.huntress',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: { duration: 999 }, // sentinel: conditional on Huntress mode, no natural decay sourced
+    trigger: { type: 'cast', on: "Skill:It's Big Boomin' Time!" },
+    timing: { duration: 999 }, // sentinel: no further mode switch after Skill in the modeled rotation
     target: { scope: 'self' },
     effects: [{ stat: 'critDmg', value: 30 }],
-    note: 'Huntress mode: +30% Crit DMG.',
+    note: 'Huntress mode: +30% Crit DMG — opens on Skill\'s own cast ("switches her back to Huntress mode"), her kit\'s own real re-entry trigger.',
   },
   {
     id: 'rebecca.selfbuff.guts',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: { duration: 999 }, // sentinel: conditional on Guts mode, no natural decay sourced
+    trigger: { type: 'cast', on: 'Basic ATK:Guts Stage 1-3' },
+    timing: { duration: 2 },
     target: { scope: 'self' },
     effects: [{ stat: 'defIgnore', value: 15 }],
-    note: 'Guts mode: DEF Ignore +15% (matches the 15% DEF ignore already noted on Guts Stage 1-3\'s own kit text).',
+    note: 'Guts mode: DEF Ignore +15% (matches the 15% DEF ignore already noted on Guts Stage 1-3\'s own kit text) — scoped to that one real combo segment, not her whole rotation.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 re-audit comment for

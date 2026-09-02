@@ -518,6 +518,60 @@ no effect," and the two are not distinguishable without this kind of second chec
 
 ---
 
+## 11. Systematic roster-wide dual-mode audit (started 2026-09-02)
+
+The user asked for a full, structured audit of every character's mode-conditional mechanics rather
+than continuing to find these one at a time by accident. Manually re-reading 60+ character files isn't
+tractable in reasonable time, so this audit is **script-driven**: a scan over `CHAR_BUFF_TABLE` and
+`BLOCKS_BY_CHARACTER` for every `condition`/`requiresStance` string containing the literal word "mode"
+(the same marker `sequenceGating.js`'s own `filterExclusiveModeBlocks`/`winningStanceForOwner` already
+use), surfacing every character with SOME dual-mode signal, in either system, for individual review.
+Kept intentionally re-runnable (not a one-off script) — re-run this scan any time a new character is
+converted or a `characters.js` edit touches a `condition` string, to catch regressions the same way.
+
+**First pass results (9 characters flagged):**
+
+| Character | Status | Action |
+|---|---|---|
+| Camellya | `Budding Mode` — single stance, no rival, a real always-entered part of her rotation (documented exception in `sequenceGating.js`'s own comment) | None needed |
+| Phoebe | Legacy + TriggerBlock both reference `Confession mode`, but her real mode is Absolution — already handled via `condition.assumedInactive` on the Confession-mode blocks | None needed (legacy `condition` text is dead for a converted character anyway, per item 10 above) |
+| Lynae | `tuneBreak.modeExclusive`, resolved via `confirmedWinningStance` | Already fixed this session |
+| Mornye | `tuneBreak` has both rupture+strain fields, `modeExclusive: false` | Correct as-is — she's a generic responder to whichever Interfered type the team's OTHER appliers produce, not herself mode-locked (verified against her own kit text earlier this session) |
+| Luuk Herssen | `tuneBreak.strainDmgPerStack` only, no rupture side | Correct as-is — no rival field to be exclusive against |
+| Aemeath | `tuneBreak.modeExclusive` + `competesWithFusionBurstReaction` | Already fixed this session |
+| **Rebecca** | **Huntress/Guts self-buffs both `trigger:'passive'` — always active simultaneously, contradicting her own kit's mutually-exclusive in-combo states** | **Fixed below** |
+| Lucilla | Legacy + TriggerBlock both correctly reference `Glacio Chafe mode`/`Echo mode`, matching stance strings in both systems | Verified consistent, no action needed |
+| Denia | `tuneBreak.modeExclusive` + `competesWithFusionBurstReaction`, TriggerBlock outro split | Already fixed this session |
+
+**Rebecca fix**: `rebecca.selfbuff.huntress` (+30% Crit DMG) and `rebecca.selfbuff.guts` (+15% DEF
+Ignore) were both `trigger:'passive'` — always on for her ENTIRE modeled rotation simultaneously, even
+though her own kit text (confirmed via her own `CHARACTER_ROTATIONS` step notes) describes them as
+mutually exclusive in-combo states she alternates through mid-rotation: Intro starts Huntress then
+auto-switches Guts; Basic ATK: Guts Stage 1-3 happens in Guts; Skill "switches her back to Huntress
+mode (gains +30% Crit DMG there)"; every step after Skill stays Huntress. A real double-counting bug —
+same class as Lynae/Aemeath/Denia's Tune Break fixes, just within one character's own combo timeline
+instead of a team-composition choice, so the fix shape is different: not a mode-exclusivity RESOLVER
+(nothing to choose between — the real game alternates both, deterministically, within one rotation),
+just correcting each block's `trigger` to fire at its own real, kit-text-confirmed transition point
+(`cast` on `Basic ATK:Guts Stage 1-3` for Guts, `cast` on `Skill:It's Big Boomin' Time!` for Huntress)
+instead of firing from t=0 unconditionally. Guts's window is bounded to 2s (an estimate scoped to that
+one real 3-hit combo segment, not a sourced exact timer — documented as such); Huntress's is left at
+the existing `999` sentinel since no further mode switch happens after Skill in her modeled rotation.
+4 new tests (`rebeccaHuntressGutsModeFix.test.js`) verify both blocks now have real, partial uptime
+(`avgMultiplier < 1`, where a passive block would show full uptime) and that Guts's window opens before
+Huntress's, matching the real combo order. Full suite: 1235 tests passing (up from 1231).
+
+**Next in this audit**: re-run the scan after any future character conversion; the script itself only
+catches the "mode" text marker, not every possible double-counting shape (Rebecca's own bug wasn't a
+`requiresStance` condition at all — it was two unconditional `passive` triggers that SHOULD have been
+mutually exclusive per plain kit-text reading, which the script's narrow "mode" grep didn't catch on
+its own; found by reading her kit text directly after the script flagged her legacy `selfBuffs`
+conditions as a starting point). A broader pass — every character's `passive`-triggered TriggerBlocks,
+cross-checked against whether their own kit text implies a state that isn't actually always-on — is the
+logical next audit layer, not yet run.
+
+---
+
 ## How to add to this file
 
 When an audit turns up a real engine/calculator limitation (as opposed to a
