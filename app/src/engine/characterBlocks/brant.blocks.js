@@ -45,6 +45,23 @@ export const BRANT_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('47.2%×2 + 94.4% + 188.9%×2 + 1322.1%'), category: 'basicDmg' },
     note: "Counted as Basic ATK DMG per its own CHARACTER_ROTATIONS note. Also grants the team a 30s shield, not modeled (no DPS component).",
   },
+  {
+    id: 'brant.chain.s6-secondary-blast',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Forte:Returned from Ashes' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // ENGINE_MERGE_PLAN.md Phase 0.5 gap #6, fixed 2026-09-02: S6's real "secondary blast worth 30% of
+    // Returned from Ashes' own DMG" turns out not to need any new %-of-another-block's-damage field at
+    // all — since this block fires at the SAME instant as brant.forte.returned-from-ashes under the
+    // SAME active buffs, a plain %ATK-equivalent hit scales in exact proportion through the shared
+    // crit/dmgBonus/defMult/resMult chain (both = effBase * X * avgCrit * dmgBonus * ... at that
+    // instant, so a 0.3x %ATK hit IS exactly 0.3x that hit's real damage, whatever buffs are active).
+    // 566.61% = 30% of the base hit's own summed %ATK (47.2×2 + 94.4 + 188.9×2 + 1322.1 = 1888.7,
+    // ×0.3 = 566.61) — chain.sN-suffix gates this to sequence 6+ only, matching sequenceGating.js's
+    // established `<char>.chain.sN-<suffix>` convention (see e.g. Qingxiao's chain.s4-actor).
+    damage: { hits: [{ atkPct: 566.61 }], category: 'basicDmg' },
+    note: "S6: Returned from Ashes also grants a secondary blast worth 30% of its own DMG (confirmed exact) — modeled as a proportional second hit at the same instant, same category, gated to sequence 6.",
+  },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
@@ -114,6 +131,6 @@ export const BRANT_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 30 }],
-    note: "Mid-air Attack's own DMG Multiplier +30%. Real node ALSO grants a secondary blast on Returned from Ashes worth 30% of its own DMG — a percent-of-another-hit's-damage mechanic this schema can't represent yet, same TODO the flat table's own audit comment carries.",
+    note: "Mid-air Attack's own DMG Multiplier +30%. Real node ALSO grants a secondary blast on Returned from Ashes worth 30% of its own DMG — now modeled separately as brant.chain.s6-secondary-blast (Phase 0.5 gap #6, fixed 2026-09-02), a real damage block rather than a stat modifier.",
   },
 ];
