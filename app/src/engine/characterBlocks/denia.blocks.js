@@ -58,7 +58,15 @@ export const DENIA_BLOCKS = [
     // CHARACTER_ROTATIONS' own note says "Tap Basic Attack 4 times" — the full combo, unlike the
     // Stagecraft-Form step above.
     damage: { hits: parseSkillMultiplierHits('36.51% → 37.51%+14.07%×4 → 62.39% → 35.54%+82.92%'), category: 'basicDmg' },
-    note: 'Builds Conformal Charge toward 100, each hit inflicting Fusion Burst or Tune Strain - Shifting depending on Resonance Mode (not modeled, no DPS component).',
+    // appliesTags added 2026-09-02 (Engine development.md item 9, Phase 2): the %ATK values above are
+    // IDENTICAL either mode — only the side-effect status differs, so both mode variants are listed on
+    // this ONE block rather than duplicating it (which would double-count her real damage). Gated by
+    // sequenceGating.js's winningStanceForOwner() — see triggerBlocks.schema.js's appliesTags doc.
+    appliesTags: [
+      { tag: 'fusion-burst', requiresStance: 'Fusion Burst mode' },
+      { tag: 'shifting', requiresStance: 'Tune Strain mode' },
+    ],
+    note: 'Builds Conformal Charge toward 100, each hit inflicting Fusion Burst or Tune Strain - Shifting depending on Resonance Mode.',
   },
   {
     id: 'denia.skill.banish-breakdown-stage1',
@@ -90,6 +98,13 @@ export const DENIA_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Erosion Field' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('136.33%'), category: 'libDmg' },
+    // appliesTags added 2026-09-02 (Engine development.md item 9, Phase 2) — same mode-gated shape as
+    // denia.basic.breakdown-stage1-4 above, per this block's own note (applies Fusion Burst/Shifting
+    // regardless of which mode Denia swapped out in).
+    appliesTags: [
+      { tag: 'fusion-burst', requiresStance: 'Fusion Burst mode' },
+      { tag: 'shifting', requiresStance: 'Tune Strain mode' },
+    ],
     note: 'Off-field zone left by Final Act - Breakdown Form; pulls in and hits nearby targets every 4s for 30s, applying Fusion Burst/Tune Strain even after Denia swaps out. Modeled as one representative tick, not the full sustained-duration mechanic.',
   },
 

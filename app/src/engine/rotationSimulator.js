@@ -21,6 +21,8 @@
 // always has been.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { winningStanceForOwner } from './sequenceGating.js';
+
 // Not a sourced animation-timing value — a placeholder pace for spacing simulated
 // rotation steps when the caller doesn't supply a real one via `stepSeconds`.
 export const DEFAULT_STEP_SECONDS = 1.5;
@@ -210,6 +212,15 @@ export function simulateRotation(blocks, steps) {
 // inherently cross-character/global, not per-owner).
 function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
   const allBlocks = Object.values(blocksByOwner).flat();
+  // Engine development.md item 9 (Denia/Lynae mode-conditional appliesTags gap): resolved once per
+  // owner up front, not per step — the "assumed active mode" for a dual-mode character doesn't
+  // change mid-rotation in this theoretical-optimizer reading (see winningStanceForOwner's own
+  // comment), and every tag-entry check below just reads this cache.
+  const ownerStances = new Map();
+  const stanceForOwner = (owner) => {
+    if (!ownerStances.has(owner)) ownerStances.set(owner, winningStanceForOwner(allBlocks, owner));
+    return ownerStances.get(owner);
+  };
   // partnerBlocks is intentionally NOT scoped per-owner: a 'partner-outro-return' block can belong
   // to any team member (in practice, so far, only Augusta-shaped kits have one) and its
   // `requiresActiveBlock` references THAT SAME member's own outro-buff block id — which step's
@@ -296,7 +307,13 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
       for (const b of blocks) {
         if (b.trigger.type !== 'cast' || b.trigger.on !== label || !b.appliesTags?.length) continue;
         if (ineligibleBlockIds.has(b.id)) continue;
-        for (const tag of b.appliesTags) actionTags.add(tag);
+        for (const entry of b.appliesTags) {
+          // Bare-string entries (Qingxiao's shape) are unconditional, as before. Object entries
+          // ({tag, requiresStance} — Denia/Lynae's shape) only fire when this owner's own resolved
+          // mode (see stanceForOwner above) matches — added 2026-09-02, Engine development.md item 9.
+          if (typeof entry === 'string') { actionTags.add(entry); continue; }
+          if (entry.requiresStance == null || stanceForOwner(owner) === entry.requiresStance) actionTags.add(entry.tag);
+        }
       }
     }
 

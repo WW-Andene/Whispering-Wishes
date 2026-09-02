@@ -324,32 +324,42 @@ simple stat buff — don't force-fit into the same fix):
    a `trigger-actor` block does NOT reach its own owning character when that character never performs
    the triggering action themselves (the exact bug class Qingxiao's S4 had). Purely additive — full
    suite (1221 tests, up from 1215) passing, zero existing behavior changed.
-2. **Tags — started 2026-09-02, blocked on a real gap for the mode-locked characters.**
-   `qingxiao.blocks.js`: tagged every real damage-dealing block (`appliesTags: ['shifting']`) —
-   confirmed unconditional after the user supplied Draw and Sunder's exact raw text ("inflicts Tune
-   Strain - Shifting on the target after dealing damage WITH SKILLS... each skill can only trigger
-   this once for the same target" — "skills" is the game's generic term for her whole active kit, not
-   narrowly the Resonance Skill button).
+2. **Tags — Denia's mode-lock gap closed 2026-09-02.** `qingxiao.blocks.js`: tagged every real
+   damage-dealing block (`appliesTags: ['shifting']`) — confirmed unconditional after the user
+   supplied Draw and Sunder's exact raw text ("inflicts Tune Strain - Shifting on the target after
+   dealing damage WITH SKILLS... each skill can only trigger this once for the same target" —
+   "skills" is the game's generic term for her whole active kit, not narrowly the Resonance Skill
+   button).
 
-   **Denia and Lynae intentionally NOT tagged yet** — both are dual-mode characters (Denia: Fusion
-   Burst / Tune Strain; Lynae: Tune Rupture / Tune Strain) whose Shifting/Fusion-Burst-applying moves
-   only apply that status in ONE of their two modes, per their own kit text (`denia.blocks.js`'s
-   `denia.basic.breakdown-stage1-4` block already carries a note: *"each hit inflicting Fusion Burst
-   or Tune Strain - Shifting depending on Resonance Mode"*). `appliesTags` as built in Phase 1 has no
-   conditional gating at all — it fires unconditionally whenever the block resolves. Tagging these
-   blocks now would make the tag fire in the WRONG mode too, a real correctness bug worse than leaving
-   them untagged. `conditionHolds()`/`requiresStance` (already used to split Denia's own outro into
-   two mode-specific blocks) is evaluated CONSUMER-side (per target, in
-   `resolveHitComposedTeamDps.js`/`resolveSimulatedTeamRotation.js`), not at the moment
-   `rotationSimulator.js` records `actionTags` — so there's no hook today to gate a tag's firing on
-   the SOURCE character's own stance/mode state. Needs a schema/engine addition (check
-   `block.condition.requiresStance` against that owner's own declared mode before adding its
-   `appliesTags` to the step's `actionTags` Set, inside `simulateStepsCore`) before Denia/Lynae — and
-   likely other dual-mode/stance characters — can be safely tagged.
-3. **Migration — not started**, blocked on item 2's remaining gap for any case involving a mode-locked
-   applier (Qingxiao S4 specifically needs Denia/Lynae tagged too, not just Qingxiao's own self-trigger
-   case, to be a real fix). Convert the 10 known cases one at a time (Category A first — simpler, no
-   new target type needed — then Category B), each with its own dedicated test.
+   **The mode-lock gap itself**, reframed by the user as a theoretical-optimizer question rather than
+   live-game-state tracking ("le mode importe peu, on est sur du théorique... prend le mode qui donne
+   le plus de dégâts" — the mode barely matters, this is theoretical, assume whichever mode gives the
+   most damage): `appliesTags` entries can now optionally be `{tag, requiresStance}` objects instead
+   of bare strings (schema doc updated, `triggerBlocks.schema.js`). `sequenceGating.js` gained
+   `winningStanceForOwner(blocks, owner)`, which reuses the EXACT SAME "highest `blockMagnitude()`
+   wins" rule `filterExclusiveModeBlocks` already applies to Denia's real outro rivalry (Tune Strain
+   +15% All DMG vs Fusion Burst +60% elemDmg — Fusion Burst already silently won there before this
+   change, any time Denia is on a team) — aggregated across every one of that owner's mode-tagged
+   blocks, not just one trigger group, so one assumed mode comes out per owner.
+   `rotationSimulator.js`'s `simulateStepsCore` now resolves each owner's stance once (cached) and, for
+   an object `appliesTags` entry, only adds the tag when `requiresStance` matches that owner's resolved
+   stance. `denia.basic.breakdown-stage1-4` and `denia.liberation.erosion-field` (the two blocks whose
+   own notes already documented "Fusion Burst or Tune Strain - Shifting depending on Resonance Mode")
+   are now tagged with both variants, correctly mutually exclusive. Full suite (1221 tests) passing,
+   zero existing behavior changed (bare-string entries — Qingxiao's shape — are unaffected).
+
+   Direct consequence for the app's assumed mode: Denia currently ALWAYS resolves to **Fusion Burst**
+   (her own kit's rival-block magnitudes favor it, 60 > 15 — this was already true of her outro pick
+   before today, `appliesTags` tagging just now agrees with it too). **Lynae still NOT tagged** — same
+   mechanism now exists for her, but her actual dual-mode blocks (Tune Rupture / Tune Strain via
+   Photochromic Flux, ~3 blocks per an earlier grep) haven't been read closely enough yet to tag
+   correctly; that's the next concrete step, not a further architecture gap.
+3. **Migration — not started.** Qingxiao S4 specifically still uses the old `target:{scope:'self'}` /
+   flat `atkPct` approximation (not yet migrated to `ally-action`+`trigger-actor`); `denia.chain.s2`
+   still only models its flat Banish multiplier, not the Fusion-Burst/Tune-Strain-mode reactive buff
+   half of S2 at all (a real, previously-unflagged gap, found while re-reading `denia.blocks.js` for
+   this item). Convert the 10 known cases one at a time (Category A first — simpler, no new target
+   type needed — then Category B), each with its own dedicated test.
 
 ---
 

@@ -36,20 +36,30 @@
  * @property {string} [note]        Human-readable sourcing/mechanic note (same convention as
  *                                   the free-text `note` fields already used throughout
  *                                   characters.js — keep provenance attached to the data)
- * @property {string[]} [appliesTags]  Added 2026-09-02 alongside the 'ally-action' trigger/
- *                                   'trigger-actor' target (see triggerBlocks.schema.js's Trigger/
- *                                   Target docs, and Engine development.md item 9 for the audit
- *                                   this closes): names which real-game status/action this block's
- *                                   own resolution counts as applying (e.g. `['shifting']`,
- *                                   `['fusion-burst']`, `['havoc-bane']`, `['echo-skill-cast']`) —
- *                                   sourced strictly from that move's own kit text ("inflicts
- *                                   Shifting", "counted as casting Echo Skill", etc.), never
- *                                   inferred. Any OTHER character's `ally-action` trigger naming
- *                                   this same tag fires the instant this block resolves, regardless
- *                                   of whose block it is — this is what makes `appliesTags` do real
- *                                   work instead of being flavor metadata: it's the only thing that
- *                                   makes a Denia/Lynae/Qingxiao Shifting-application step visible
- *                                   to another character's reactive buff at all. Omit entirely for
+ * @property {Array<string|{tag: string, requiresStance: string}>} [appliesTags]  Added 2026-09-02
+ *                                   alongside the 'ally-action' trigger/'trigger-actor' target (see
+ *                                   triggerBlocks.schema.js's Trigger/Target docs, and Engine
+ *                                   development.md item 9 for the audit this closes): names which
+ *                                   real-game status/action this block's own resolution counts as
+ *                                   applying (e.g. `['shifting']`, `['fusion-burst']`,
+ *                                   `['havoc-bane']`, `['echo-skill-cast']`) — sourced strictly from
+ *                                   that move's own kit text ("inflicts Shifting", "counted as
+ *                                   casting Echo Skill", etc.), never inferred. Any OTHER character's
+ *                                   `ally-action` trigger naming this same tag fires the instant this
+ *                                   block resolves, regardless of whose block it is — this is what
+ *                                   makes `appliesTags` do real work instead of being flavor
+ *                                   metadata: it's the only thing that makes a Denia/Lynae/Qingxiao
+ *                                   Shifting-application step visible to another character's
+ *                                   reactive buff at all. A bare string entry is unconditional
+ *                                   (Qingxiao's shape — her Shifting application never depends on a
+ *                                   mode). An `{tag, requiresStance}` object entry (Denia/Lynae's
+ *                                   shape — needed because a SINGLE mode-invariant-damage block can
+ *                                   apply a DIFFERENT status per Resonance Mode) only fires when
+ *                                   `sequenceGating.js`'s `winningStanceForOwner()` resolves that
+ *                                   owner's assumed mode to this exact stance text — see that
+ *                                   function's own comment for why this is a theoretical-optimizer
+ *                                   "assume whichever mode nets more value" read, not live mode
+ *                                   tracking (no state machine exists for that). Omit entirely for
  *                                   the common case (a block that applies no tracked status).
  * @property {Proc} [proc]          For a discrete, repeatable extra-hit proc (Yinlin S6-style —
  *                                   see Proc typedef below) — the raw flat-ATK-scaling damage

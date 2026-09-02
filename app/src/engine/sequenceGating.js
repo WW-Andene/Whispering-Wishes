@@ -116,3 +116,27 @@ export function filterExclusiveModeBlocks(blocks) {
   if (!losers.size) return blocks;
   return blocks.filter(b => !losers.has(b.id));
 }
+
+// Added 2026-09-02 for Engine development.md item 9's Denia/Lynae mode-conditional `appliesTags`
+// blocker: `appliesTags` entries (rotationSimulator.js) need a per-OWNER "which mode is assumed
+// active" answer, not just a per-trigger-group winner — a mode-invariant damage block (e.g. Denia's
+// Basic ATK: Breakdown Form, identical %ATK either mode) has nothing of its own to compare, only a
+// side-effect tag that differs. Rather than invent a second, disconnected heuristic, this reuses the
+// EXACT same "highest blockMagnitude wins" rule filterExclusiveModeBlocks already applies to Denia's
+// real outro rivalry (Tune Strain +15% vs Fusion Burst +60% -> Fusion Burst already wins there today)
+// — aggregated across every one of that owner's mode-tagged blocks (not just one trigger group), so a
+// character with several small per-group rivalries still resolves to one single assumed mode, matching
+// the user's own framing: "pick whichever mode gives the most damage for this composition."
+export function winningStanceForOwner(blocks, owner) {
+  const ownerModeBlocks = blocks.filter(b => b.source === owner && modeGroupKey(b));
+  if (!ownerModeBlocks.length) return null;
+  const byStance = new Map();
+  ownerModeBlocks.forEach(b => {
+    const stance = b.condition.requiresStance;
+    const mag = blockMagnitude(b);
+    byStance.set(stance, Math.max(byStance.get(stance) ?? -Infinity, mag));
+  });
+  let winner = null, best = -Infinity;
+  byStance.forEach((mag, stance) => { if (mag > best) { best = mag; winner = stance; } });
+  return winner;
+}
