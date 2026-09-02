@@ -48,6 +48,59 @@ The rest of this document (the old "Phase 0/1/2" numbering) is being restructure
 order below — old phase numbers are kept as headers for continuity with prior commits, but their
 CONTENT is now understood as partial Phase-A/Phase-B work, not a separately-numbered track.
 
+### Phase 0.5 — schema-completeness inventory (MUST happen before resuming Phase A)
+
+User correction: the schema (`triggerBlocks.schema.js`) has been extended reactively, per-character,
+as each new shape was hit (`dotApplier` only when DOT migration started, `ally-action`/`trigger-actor`
+only when Qingxiao's S4 was investigated, `requiresStance` on `appliesTags` only for Denia/Lynae,
+`confirmedWinningStance` only for Lynae's specific edge case) — never surveyed completely up front. That
+means Aemeath/Denia/Lynae/Qingxiao's Phase A audits were checked against a schema that might still be
+incomplete, not a stable vocabulary. Correct order: inventory every distinct mechanic SHAPE the roster
+actually needs, first — a real `grep` sweep (`"this schema"`/`"no home"`/`"not representable"` across
+every `characterBlocks/*.js` file, 275 raw hits, deduplicated below into 17 distinct primitive gaps),
+not from memory. Then decide, per gap, whether it's worth a real schema addition or a legitimate,
+permanent scope boundary (a non-DPS mechanic this calculator correctly never modeled) — and only THEN
+resume Phase A with a vocabulary that isn't still shifting under it.
+
+**Real gaps — affect an actual computed DPS/buff number, worth a schema primitive eventually:**
+
+| # | Gap | Example characters | What's missing |
+|---|---|---|---|
+| 1 | Nonlinear/multi-tier per-stack curve | Qingxiao (Mindlock: 7 stacks@7% + rest@2%), Yangyang: Xuanling (Unbroken Vow: 3@10%+3@12%), Sigrika (2%/1% ER above 125%, capped) | `effects[].stacking` only supports a flat value × count; no tiered or formula curve |
+| 2 | Cross-character `ally-action` trigger NOT YET RETROFITTED onto existing blocks | Cartethyia (any ally inflicts a listed status → team +20%), Luuk Herssen (ally Tune Break → team allDmg), Qingxiao S4, Sigrika (ally Echo Skill cast → team atkPct), Mornye ×2, Galbrena | The MECHANISM exists (built this session for Qingxiao's own appliesTags work) but a real backlog of ~7+ already-existing blocks still use the old self-scoped-passive approximation instead |
+| 3 | Per-move-type-scoped stat (not a whole damage category) | Aemeath (Finale-specific deepen, Heavy-ATK-only Crit DMG), Iuno (Absolute-Fullness-specific bonuses) | Stats route to a whole category (basicDmg/heavyDmg/etc.), not one specific move within a category |
+| 4 | Resource-cap-increase field (raises a stack cap, not a %stat) | Qingxiao S1 (Mindlock cap 15→25), Chisa (Negative Status/Electro Rage cap +3) | No field for "raise another mechanic's own stack ceiling" |
+| 5 | Frequency/tick-rate stat (changes DOT interval, not a flat %) | Denia S4 (Erosion Field 4s→3s tick rate) | No frequency-scaling stat exists |
+| 6 | Percent-of-another-block's-damage | Brant (secondary blast = 30% of a DIFFERENT hit's own damage) | Damage hits scale off ATK/HP/DEF only, never off another block's resolved output |
+| 7 | Per-resource-unit-consumed scalar | Denia (+150%/Dark Core consumed), Chisa (+2.59%/Ring of Chainsaw stack, up to 100) | No stacking-scalar field tied to a spent-at-cast-time resource count |
+| 8 | Flat (non-%) damage component alongside %ATK | Buling ("169 flat + 18.30% ATK") | `DamageHits` only models %ATK/%HP/%DEF, no flat additive term |
+| 9 | Sustained/continuous channel or repeated-tick-from-one-cast | Baizhi (Remnant Entities auto-attack every 2.5s; a 48.86%/s continuous channel) | A block is a discrete hit-list, not a sustained/repeating effect |
+| 10 | Early-forfeit/consumption trigger (duration cut short by a specific event) | Carlotta, Changli, Yinlin (buff ends early if the recipient swaps out before its full duration) | `timing.duration` is a flat fixed window, no "or until event X" clause |
+| 11 | Buff-of-a-buff / multiplier-of-a-multiplier | Youhu (a buff that DOUBLES another already-active effect) | `effects[].value` is always additive to a base stat, never multiplicative on another buff |
+| 12 | Defensive/reactive "on being hit" trigger | Danjin (loses a stack per hit SHE takes) | No trigger type for "this character was hit," only for casting/passive/ally-action |
+| 13 | HP-threshold condition | Danjin S5 (+15% more when HP<60%) | `condition` has no HP-threshold field (already explicitly flagged in her own file header) |
+| 14 | Off-field summon-chain/repeating proc | Cantarella (Diffusion: up to 21 Coordinated ATK summons over 30s) | Different shape than the existing `windowed-proc` (self-cast-triggered, capped) — this is team-hit-triggered |
+| 15 | Stateful re-cast/extra-move-loop unlock | Roccia (Reality Recreation — a re-triggering follow-up loop) | No "this cast unlocks a repeatable extra action" primitive |
+| 16 | Dedicated damage-type category missing | Xiangli Yao ("Outro DMG" — no such stat exists separate from libDmg/etc.) | The 6 existing categories (basicDmg/heavyDmg/libDmg/skillDmg/echoDmg/coordDmg) don't cover every real "considered X DMG" kit phrase |
+| 17 | Per-hit basis split within one block | Cartethyia (some hits in the same real mechanic scale off a DIFFERENT basis than others) | `damage.basis` is one value per block, not per-hit |
+
+**Legitimate scope boundaries — NOT schema gaps, deliberately never modeled (this is a DPS calculator,
+not a full combat simulator) — listed so they're never mistaken for a TODO:** heal amounts (Baizhi,
+Shorekeeper, Chisa, Buling, Mornye), shield values (Augusta, Chisa, Aemeath S5), interruption immunity /
+cooldown resets / non-DPS resource grants (Camellya, Iuno), survivability/revive mechanics (Aemeath S5,
+Augusta). These stay exactly as documented in each file — "no DPS component, not modeled" is the
+correct, final answer for these, not a gap awaiting a primitive.
+
+**Decision on what to build now vs defer**: gap #2 (the `ally-action` retrofit backlog) is the highest-
+value, lowest-risk one to close first — the mechanism already exists and is tested, this is purely
+applying it to ~7 already-identified blocks, each independently verifiable against its own character's
+real kit text (same rigor as Qingxiao's own appliesTags work). Gaps #1/#3/#4/#5/#7/#8/#9/#17 each need a
+real schema design decision (a new field shape) before touching any character — those are the next
+Phase 0.5 sub-step, not started yet. Gaps #6/#10/#11/#12/#13/#14/#15/#16 are each currently single-
+character-scoped (only one roster member needs them so far) — lower priority than the multi-character
+gaps, deferred until either a second character needs the same shape (confirming it's a real pattern, not
+a one-off) or they're reached in the per-character Phase A pass.
+
 ### Phase A tracker — solo, per-character, all 8 dimensions
 
 One row per character (58 total, Jingran excluded — unreleased). `Audited` = actually re-read block by
