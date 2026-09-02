@@ -212,14 +212,14 @@ item 12) — now a 3rd confirmed instance. Fixed by converting to `trigger:{type
 `scopedToBlockId:'carlotta.liberation.fatal-finale'` (Augusta's S3 scoping pattern), so it fires and
 applies only to Fatal Finale's own hit.
 
-**Found, NOT fixed — flagged rather than guessed**: `carlotta.chain.s1` (+12.5% Crit Rate on DMG
-dealt to a Deconstructed target) has the identical dead cast-scoped/no-duration `kind:'buff'` shape and
-is therefore also currently a no-op. Unlike S2's fix, S1's real condition ("any DMG landing on a
-Deconstructed target") is broad and not naturally expressible via `scopedToBlockId` (which scopes to
-specific named blocks, not a runtime debuff-presence condition) without guessing which of Carlotta's
-many damage blocks should be included — since Deconstruction is kept near-permanently up via Ars Gratia
-Artis, a blanket unconditional Crit Rate passive would likely be close to correct but isn't sourced as
-"unconditional," so it's logged here as a known gap rather than force-fit.
+**Fixed 2026-09-02 (2nd pass, re-read after first flagging this too hastily)**: `carlotta.chain.s1`
+(+12.5% Crit Rate on DMG dealt to a Deconstructed target) has the identical dead cast-scoped/no-duration
+`kind:'buff'` shape — a 4th confirmed instance of the item-12 bug. First left unfixed on the theory that
+an unconditional Crit Rate would be an unsourced guess — but this dump's own Review section (above)
+quotes the source directly: "This debuff lasts for 4 seconds but with the Inherent Ability active, it
+should always be active." That's an explicit, sourced basis for treating Deconstruction uptime as
+continuous through her real rotation, not a guess. Fixed by converting to `trigger:{type:'passive'}`,
+unscoped (unlike S2, which is scoped to one named move).
 
 **Fixed 2026-09-02 (2nd pass)**: SKILL_MULTIPLIERS was missing 3 rows the pasted text has right at the
 top of its own Multipliers table — Mid-air Attack DMG (104.78%), Customary Greetings DMG

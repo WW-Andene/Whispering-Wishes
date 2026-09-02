@@ -616,12 +616,14 @@ a pure multiplier on an EXISTING single hit rather than an additional hit of its
 converted to `trigger:{type:'passive'}` + `effects[0].scopedToBlockId:'carlotta.liberation.fatal-finale'`
 (the scoping mechanism already built for Augusta's S3 over-crediting fix), which makes it visible to
 `statsAtInstant()` via the `passiveBlocks` bucket while staying scoped to only the one move it's sourced
-to boost. A 4th related instance was found alongside it on the same character — Carlotta's `chain.s1`
-(+12.5% Crit Rate on DMG dealt to a Deconstructed target) — but left unfixed: its real condition is a
-runtime debuff-presence check ("any hit landing on a Deconstructed target"), not a fixed named move, so
-neither the proportional-hit pattern nor `scopedToBlockId` can express it without guessing which blocks
-to include. Logged as a documented gap in `ENGINE_MERGE_PLAN.md`'s Carlotta tracker row rather than
-force-fit.
+to boost. **4th confirmed instance, same pass**: Carlotta's `chain.s1` (+12.5% Crit Rate on DMG dealt
+to a Deconstructed target) has the identical dead-buff shape and was initially left unfixed on the
+theory that its runtime debuff-presence condition ("any hit landing on a Deconstructed target") can't
+be expressed via `scopedToBlockId` without guessing which blocks to include — but a closer re-read of
+the source found the fix didn't need that mechanism at all: the pasted text's own Review section states
+outright that Deconstruction, "with the Inherent Ability active, it should always be active." That's a
+direct, sourced basis for modeling S1 as an unconditional passive (not scoped to specific blocks like
+S2), so it was fixed the same pass by converting to `trigger:{type:'passive'}`.
 
 **Fix shape, not yet done**: (1) a real architecture fix — either make `statsAtInstant()` also check a
 3rd bucket of "cast-scoped, same-instant-only" buffs (blocks matching this shape, applied only to hits at

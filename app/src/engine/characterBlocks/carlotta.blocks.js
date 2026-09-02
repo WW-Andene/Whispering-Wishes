@@ -113,12 +113,20 @@ export const CARLOTTA_BLOCKS = [
   {
     id: 'carlotta.chain.s1',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Liberation:Era of New Wave' },
+    // Fixed 2026-09-02 (re-read after being flagged as "found, not fixed" too hastily): was
+    // `trigger:{type:'cast', on:'Liberation:Era of New Wave'}` with no `timing.duration` — the same
+    // dead cast-scoped/no-duration no-op shape as S2/Lupa's S4/Verina's S6 (Engine development.md
+    // item 12), so this never actually applied. Previously left unfixed on the theory that "Crit
+    // Rate on a Deconstructed target" was an unsourced blanket guess if made unconditional — but the
+    // pasted text's own Review section says outright: "This debuff lasts for 4 seconds but with the
+    // Inherent Ability [Ars Gratia Artis] active, it should always be active." That's a direct source
+    // for treating Deconstruction uptime as continuous through her real rotation, so an unconditional
+    // passive +12.5% Crit Rate is the sourced fix, not a guess.
+    trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    condition: { requiresStance: 'Deconstructed target' },
     effects: [{ stat: 'critRate', value: 12.5 }],
-    note: '+12.5% Crit Rate on that instance of DMG when hitting a Deconstructed target — single-hit-scoped condition, modeled as cast-scoped on the Deconstruction-applying Liberation cast. Chromatic Splendor hitting a Dispersion target also restores 30 Substance, a resource-economy effect with no DPS stat, not modeled.',
+    note: "+12.5% Crit Rate, sourced as effectively unconditional per the kit text's own \"should always be active\" claim about Deconstruction uptime with Ars Gratia Artis. Chromatic Splendor hitting a Dispersion target also restores 30 Substance, a resource-economy effect with no DPS stat, not modeled.",
   },
   {
     id: 'carlotta.chain.s2',

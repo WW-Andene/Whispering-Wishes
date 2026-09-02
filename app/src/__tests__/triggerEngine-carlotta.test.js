@@ -15,9 +15,22 @@ describe('triggerEngine parity — Carlotta', () => {
     expect(CARLOTTA_BLOCKS.find(b => b.id === 'carlotta.chain.s6').effects[0].value).toBe(rc.s6.totalMult);
   });
 
-  it('S1 is conditional on hitting a Deconstructed target, not an unconditional passive', () => {
+  // Fixed 2026-09-02: S1 was `trigger:{type:'cast', on:'Liberation:Era of New Wave'}` with no
+  // `timing.duration` — the same dead cast-scoped/no-duration no-op shape as S2, so it never
+  // actually applied. Converted to an unconditional passive per the kit text's own Review-section
+  // claim that Deconstruction "should always be active" with Ars Gratia Artis — a direct source,
+  // not a guess.
+  it('S1 actually fires as an unconditional passive Crit Rate buff (not a dead no-op)', () => {
     const s1 = CARLOTTA_BLOCKS.find(b => b.id === 'carlotta.chain.s1');
-    expect(s1.condition.requiresStance).toBe('Deconstructed target');
+    expect(s1.trigger.type).toBe('passive');
+    expect(s1.effects[0].stat).toBe('critRate');
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Carlotta'], CARLOTTA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS1 = resolveHitComposedDps(CARLOTTA_BLOCKS, steps, ctx, 3500, 'glacio', 'Main DPS', null, 1);
+    const withoutS1Blocks = CARLOTTA_BLOCKS.filter(b => b.id !== 'carlotta.chain.s1');
+    const withoutS1 = resolveHitComposedDps(withoutS1Blocks, steps, ctx, 3500, 'glacio', 'Main DPS', null, 1);
+    expect(withS1.totalDamage).toBeGreaterThan(withoutS1.totalDamage);
   });
 
   // Fixed 2026-09-02: S2 was `trigger:{type:'cast', on:'Liberation:Fatal Finale'}` with no
