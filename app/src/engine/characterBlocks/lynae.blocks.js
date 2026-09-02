@@ -17,14 +17,18 @@
 // appliesTags added 2026-09-02 (Engine development.md item 9, Phase 2) on every Photochromic-Flux-
 // inflicting block, gated by sequenceGating.js's winningStanceForOwner() (see triggerBlocks.schema.js's
 // appliesTags doc). Unlike Denia, Lynae has NO sourced rival-magnitude buff block to resolve which mode
-// wins today — her real per-mode differences (Tune Rupture Response - Spectral Analysis proc; Tune
-// Strain's per-stack Tune Break Boost scaling) are both nonlinear/uncertain-scope mechanics not yet
-// modeled as blocks, so fabricating a magnitude just to force a winner was deliberately avoided (same
-// discipline as this file's own S6 zeroing below). winningStanceForOwner() therefore currently returns
-// null for Lynae, meaning NEITHER stance-gated tag fires yet — a known, intentional conservative gap,
-// not a bug. The dump's own meta guidance ("always Tune Rupture — bigger raw damage increase — unless
-// the Main DPS has a direct Tune Strain synergy") already answers which mode a real team should assume;
-// it just isn't wired into the engine's own magnitude-resolution mechanism yet.
+// wins via the generic effects[]-magnitude comparison — her real per-mode differences (Tune Rupture
+// Response - Spectral Analysis proc; Tune Strain's per-stack Tune Break Boost scaling) are both
+// nonlinear/uncertain-scope mechanics not yet modeled as blocks, so fabricating a magnitude just to
+// force a winner was deliberately avoided (same discipline as this file's own S6 zeroing below).
+// RESOLVED, not left conservative: the `lynae.stancevote.tune-rupture` marker block near the end of
+// this file gives `winningStanceForOwner()` an explicit, independently-verified answer
+// (`confirmedWinningStance`) via `calcEngine.js`'s now-fixed `calcTuneBreakDmg()` mode-exclusivity
+// resolution — Tune Rupture mode — so her `appliesTags` DO correctly fire (`tune-rupture-shifting`),
+// confirmed by `lynaeTuneBreakModeExclusivity.test.js`'s own assertion that
+// `winningStanceForOwner(LYNAE_BLOCKS, 'Lynae')` returns `'Tune Rupture mode'`, not `null`. (An earlier
+// version of this comment said neither tag fires — stale as of the marker block being added later in
+// this same file; corrected here during the Phase A audit, ENGINE_MERGE_PLAN.md.)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
