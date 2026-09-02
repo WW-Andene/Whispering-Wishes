@@ -157,6 +157,13 @@ plausible some or all of these are genuinely correct — some older-generation
 healers may legitimately have a higher base Energy pool — so this needs a
 real dump/wiki check per character, not a blind global "set to 125".
 
+Also found (2026-09-02, full-roster audit pass): `Denia` stores `maxEnergy: 150`
+— a third distinct value, not matching the 125-default or the 175-miscopy
+pattern either. The existing `Characters data dump/Denia/Denia.md` file has no
+Base Stats section at all (never captured when that dump was made), so this
+can't be checked against it — needs a fresh dump specifically covering Denia's
+Stats tab before touching this number.
+
 **Fix shape**: no code change — a data-accuracy backlog item. When any of
 Verina/Baizhi/Suisui comes up for a dump-based audit, check `Max Energy`
 specifically against the source before assuming it's fine.
@@ -198,6 +205,49 @@ whether the answer is already sitting in an existing `Characters data dump/*/*.m
 so plainly instead of implying new information was needed — the finding is still real and the fix
 still stands, but the sourcing claim in the commit/explanation has to match what actually happened.
 This applies to any future "flagged as unverified" character-data fix, including item 6 above.
+
+---
+
+## 8. Schema has no way to target "whoever triggers an external effect" — real bug on Qingxiao S4, same class already flagged for Yangyang: Xuanling S4
+
+**Found**: 2026-09-02, full-roster audit pass (Aemeath, Hiyuki, Luuk Herssen, Qingxiao, Sigrika,
+Denia — requested explicitly, not opportunistic).
+
+**Where**: `app/src/data/characters.js`, `RESONANCE_CHAIN_DATA['Qingxiao'].s4` (`{ atkPct: 20 }`) and
+its matching `qingxiao.blocks.js` block (`qingxiao.chain.s4`, `target: { scope: 'self' }`).
+
+Real S4 effect (per `Characters data dump/Qingxiao/Qingxiao.md`): *"After any teammate inflicts
+Shifting, THEIR ATK +20% for 8s."* The buff belongs to whichever ally triggers the condition, not to
+Qingxiao — but it's modeled as a self-buff on Qingxiao, because (per the engine block's own note)
+there's no schema mechanism for "an ally's own action grants that same ally a buff, sourced from a
+third character's passive." This is the exact same gap already flagged for Yangyang: Xuanling's S4
+(team-wide ATK on Intro/Switch/Flow cast) in item 3's history — not a new discovery of the underlying
+limitation, but a second concrete instance of it.
+
+**Fix shape**: needs a new trigger/target combination in the schema (something like "target: whoever
+caused `trigger.type`", distinct from the existing `self`/`next-on-field`/`whole-team` scopes) — not a
+value fix. Track alongside item 1's `condition` schema work, since both are the same underlying
+"engine can't model buffs anchored to a cross-character action" limitation.
+
+---
+
+## Full-roster audit pass, 2026-09-02 — summary
+
+User requested a full audit (not just tier/tags) of: Aemeath, Hiyuki, Luuk Herssen, Qingxiao, Sigrika,
+Yangyang: Xuanling, Denia, Lucilla, Lynae, Qiuyuan, Chisa, Mornye, Suisui, The Shorekeeper. All 14 had
+already been through at least one prior audit pass earlier in this same working session; this pass
+re-verified each against its existing `Characters data dump/*/*.md` file.
+
+- **Fixed this pass**: Sigrika's S3 (`totalMult:15` → `{}`, zero real DPS component, same class as
+  Chisa's/Mornye's earlier missed-S3 bugs).
+- **Found, not fixed** (schema limitation, item 8 above): Qingxiao's S4.
+- **Found, not fixed** (data gap, item 5 above): Denia's `maxEnergy: 150`, unverifiable — no Stats
+  section in her existing dump file.
+- **Reviewed, confirmed already correct, no changes**: Aemeath (including a deliberately-left-flagged
+  S2 — re-confirmed the existing caution was sound, not overridden), Hiyuki, Luuk Herssen, Denia's S1-S3/
+  S5/S6, Qingxiao's S1-S3/S5/S6.
+- **Already fixed earlier in this same session** (not re-touched, just re-verified clean): Yangyang:
+  Xuanling, Lucilla, Lynae, Qiuyuan, Chisa, Mornye, Suisui, The Shorekeeper.
 
 ---
 

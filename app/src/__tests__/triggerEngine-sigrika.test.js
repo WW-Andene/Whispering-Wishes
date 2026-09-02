@@ -5,11 +5,16 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { SIGRIKA_BLOCKS } from '../engine/characterBlocks/sigrika.blocks.js';
 
 describe('triggerEngine parity — Sigrika', () => {
-  it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
+  it('S3 stays correctly unmodeled (no block) — pure resource-cap utility, zero DPS component, fixed 2026-09-02', () => {
+    const rc = RESONANCE_CHAIN_DATA['Sigrika'];
+    expect(rc.s3).toEqual({});
+    expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s3')).toBeUndefined();
+  });
+
+  it('S1,S2,S4,S5,S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Sigrika'];
     expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s1').effects[0].value).toBe(rc.s1.totalMult);
     expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s2').effects[0].value).toBe(rc.s2.echoDmg);
-    expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s3').effects[0].value).toBe(rc.s3.totalMult);
     expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s4').effects[0].value).toBe(rc.s4.atkPct);
     expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s5').effects[0].value).toBe(rc.s5.echoDmg);
     expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s6').effects[0].value).toBe(rc.s6.deepen);

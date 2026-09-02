@@ -133,14 +133,10 @@ export const SIGRIKA_BLOCKS = [
     effects: [{ stat: 'echoDmg', value: 120 }],
     note: "Learn My True Name's own DMG Multiplier +120% (considered Echo Skill DMG, confirmed exact) — cast-scoped (instant, no persistent duration).",
   },
-  {
-    id: 'sigrika.chain.s3',
-    source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 15 }],
-    note: 'Innate Gift stack cap raised 2->4, no flat DMG% component — kept as an approximated totalMult per the source\'s own reasoning, not a real derivation.',
-  },
+  // S3 correctly has NO block — corrected 2026-09-02: Innate Gift stack cap raised to 4 (+ persists
+  // through Learn My True Name cast/swap-out) is pure resource utility, zero DPS component, unlike
+  // S1's genuine +70% multiplier that legitimately warrants a totalMult approximation.
+  // RESONANCE_CHAIN_DATA['Sigrika'].s3 is now correctly {} to match.
   {
     id: 'sigrika.chain.s4',
     source: SOURCE, kind: 'buff',

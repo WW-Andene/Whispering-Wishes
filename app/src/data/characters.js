@@ -5938,7 +5938,13 @@ const RESONANCE_CHAIN_DATA = {
   // flat +30% DMG-taken debuff (the Innate Gift? DEF Ignore enhancement is a separate, smaller +7.5%/
   // stack up to 30% conditional bonus, not this). Corrected defIgnore:15 -> deepen:30, matching the
   // same 'deepen' convention already used for Qingxiao's identically-worded S6 effect.
-  'Sigrika':      { s1: { totalMult: 15 }, s2: { echoDmg: 120 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { echoDmg: 30 }, s6: { deepen: 30 } },
+  // S3 corrected 2026-09-02 against the existing Prydwen dump: was totalMult:15, mislabeled as an
+  // "approximated" value in the same style as S1's genuine +70% multiplier approximation — but S3's
+  // real effect ("Innate Gift? cap raised to 4, no longer removed by Learn My True Name cast or
+  // swap-out, only clears after 30s continuously out of combat") has zero DMG% component at all to
+  // approximate from, unlike S1. Same "no real DPS component" pattern already fixed on Chisa's/
+  // Mornye's own missed-S3 nodes. Zeroed to {}.
+  'Sigrika':      { s1: { totalMult: 15 }, s2: { echoDmg: 120 }, s3: {}, s4: { atkPct: 20 }, s5: { echoDmg: 30 }, s6: { deepen: 30 } },
   // Luuk Herssen (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +150% Mid-air ATK DMG, simplified as basicDmg
   // ~15 DPS impact (documented approximation, kept). S2: Rewritten in Winter's Margins DMG Mult+60% — was totalMult:40, no basis.
   // S3: Aureole of Execution forms +136% in Aureate Judge (conditional, no flat unconditional %) — was critDmg:25 with no
