@@ -1214,7 +1214,11 @@ const CHARACTER_DATA = {
   ['Aemeath',       ['Liberation'],                  [],                                      ['Fusion Burst']],
   ['Sigrika',       ['Echo', 'Heavy ATK'],           [],                                      []],
   ['Chixia',        ['Skill', 'Basic ATK'],          [],                                      []],
-  ['Qingxiao',      ['Heavy ATK', 'Liberation'],     [],                                      ['Tune Strain - Interfered']],
+  // dmgFocus gained 'Basic ATK' 2026-09-02 against a fresh Prydwen dump: her damage-output simulation
+  // shows Basic at a genuine 22.8% share (Basic Attack - Stringblade + Ephemeral Transcendence's own
+  // Basic Attack, both correctly categorized basicDmg in the engine blocks) — comparable in size to
+  // Liberation's 28.5%, not a trivial slice that should be gated out of basicDmg-buff relevance.
+  ['Qingxiao',      ['Heavy ATK', 'Liberation', 'Basic ATK'], [],                                ['Tune Strain - Interfered']],
   ['Jingran',       ['Heavy ATK', 'Liberation'],     [],                                      []],
   ['Yangyang: Xuanling', ['Heavy ATK', 'Basic ATK'], [],                                      ['Havoc Bane']],
   ['Hiyuki',        ['Liberation', 'Basic ATK'],     [],                                      ['Glacio Chafe']],
@@ -1639,6 +1643,11 @@ const CHARACTER_DATA = {
   ['Yangyang',      'T4',   'T4'],
   ['Youhu',         'T4',   'T4'],
   ['Yuanwu',        'T4',   'T4'],
+  // Added 2026-09-02 against a fresh Prydwen dump: Qingxiao was entirely missing from this table (a
+  // 3.6-patch release-day gap, same as Jingran, who is left untouched here since no fresh source for
+  // him was checked this pass). Standard-list values used, matching this table's established
+  // convention (e.g. Augusta/Luuk Herssen use their standard T0/T1.5-style lists, not the Value list).
+  ['Qingxiao',      'T0',   'T1'],
 ].forEach(([name, toa, ww]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } });
 });
@@ -2158,7 +2167,12 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [
       { stat: 'critDmg', value: 100, target: 'self', duration: 999, condition: 'Resonance Chain 3 — Billows Beneath Heaven Crit DMG' },
-      { stat: 'skillDmg', value: 49, target: 'self', duration: 30, condition: 'Inherent Skill To Know, To Banish — +2%/Mindlock stack (+5% more for the first 7), up to 15 stacks base kit' },
+      // Fixed 2026-09-02 against a fresh Prydwen dump: was wrongly stored as skillDmg — Inherent Skill To
+      // Know, To Banish's real move list (Heavy Attack - Stringblade, Ephemeral Transcendence Basic ATK/
+      // Dodge Counter, Heaven's Reckoning, Liberation) is entirely Heavy/Basic/Liberation, not a single
+      // Skill-button cast at all (Severing Note isn't affected). No single category stat spans all three,
+      // so kept as totalMult — same documented-approximation pattern used elsewhere in this file.
+      { stat: 'totalMult', value: 49, target: 'self', duration: 30, condition: 'Inherent Skill To Know, To Banish — +2%/Mindlock stack (+5% more for the first 7), up to 15 stacks base kit' },
     ],
     debuffs: [{ stat: 'deepen', value: 49, duration: 30, condition: 'Base kit Forte (Mindlock) — targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 stacks; Resonance Chain 6 adds a further flat +40%' }],
     note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic (base kit: up to 15 stacks, ~49% combined DMG Amp/Taken at cap — first 7 stacks each worth 7%, remaining stacks worth 2% each; S1/S2 raise the stack cap to 25). Pre-release kit data (releases 2026-08-20) — subject to change at launch.',
