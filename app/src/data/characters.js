@@ -2834,15 +2834,20 @@ const CHAR_BUFF_TABLE = {
     // Rupture Response — Forte Circuit "Unlanded Melody": "Responding to Tune Rupture - Interfered:
     // when Resonators in the team trigger Tune Break on the target and cause them to be affected by
     // Tune Rupture - Interfered, Aemeath triggers Tune Rupture Response - Starburst. The same target
-    // can only be damaged by this skill once every 8s." However the exact ruptureDmgMult (%ATK) for
-    // Starburst renders client-side in a "Multipliers" table widget that isn't exposed in text
-    // extraction (same gap as the prior audit pass) — omitted rather than guessed. No "Tune Break
-    // Boost" team buff or stack-cap increase found anywhere in her kit text, so boostToTeam and
-    // maxStrainStacks are also omitted. Only the generic 3.x base stat is filled in.
+    // can only be damaged by this skill once every 8s." Exact ruptureDmgMult found and filled in
+    // 2026-09-02 (Engine development.md item 9, investigating her real mode-choice magnitude): a fresh
+    // dump's own Forte Circuit multipliers table gives it directly — "Tune Rupture Response: Starburst
+    // | 596.43% Tune AMP" (Lv.10), closing the exact gap this comment used to flag as "not confirmed,
+    // omitted rather than guessed." No "Tune Break Boost" team buff or stack-cap increase found
+    // anywhere in her kit text, so boostToTeam/maxStrainStacks/strainDmgPerStack stay omitted — she has
+    // no Tune Strain-side response at all (this node is Rupture-response only, no dual-response shape
+    // like Mornye's). Not marked modeExclusive: unlike Lynae, she has no OTHER tuneBreak field that
+    // would double-count against this one.
     tuneBreak: {
       baseTuneBreakBoost: 10, // 3.x char base stat
+      ruptureDmgMult: 596.43, // Tune Rupture Response — Starburst (confirmed exact, Lv.10)
     },
-    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced Seraphic Duet scales off Rupturous/Fusion Trail (up to 30 stacks = 300% mult, 4%/10% per stack removed). Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption. Self-buff: up to 60% CD via Between the Stars. Tune Break: confirmed genuine Tune Rupture Response (Starburst, base kit, once/8s) but exact ruptureDmgMult not confirmed; tuneBreak sub-object only carries the generic base Boost stat pending that number.',
+    note: 'Strongest DPS in game. Dual mode: Tune Rupture (ST) / Fusion Burst (AoE). Enhanced Seraphic Duet scales off Rupturous/Fusion Trail (up to 30 stacks = 300% mult, 4%/10% per stack removed). Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption. Self-buff: up to 60% CD via Between the Stars. Tune Break: Tune Rupture Response - Starburst confirmed exact 596.43% (2026-09-02, was "not confirmed, omitted").',
   },
   // corrected 2026-08-18: removed "Weapon passive: Aero DMG +12%" — this assumed a fixed generic weapon
   // baseline regardless of which weapon is actually equipped, double-counting with the equipped weapon's
