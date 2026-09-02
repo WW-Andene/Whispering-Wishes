@@ -49,6 +49,33 @@ describe('triggerEngine parity — Ciaccona', () => {
     expect(lib.target.scope).toBe('whole-team');
   });
 
+  // Fixed 2026-09-02: Quadruple Downbeat had NO damage.category at all (found while checking the team
+  // engine's routing), meaning any teammate's Heavy ATK DMG Bonus was silently worth zero on her real
+  // Heavy Attack replacement — the same false-negative class as an unset totalMult accumulator.
+  it('Quadruple Downbeat is heavyDmg-categorized and actually receives heavyDmg bonuses', () => {
+    const block = CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.forte.quadruple-downbeat');
+    expect(block.damage.category).toBe('heavyDmg');
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Ciaccona'], CIACCONA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withoutBonus = resolveHitComposedDps(CIACCONA_BLOCKS, steps, ctx, 3500, 'aero', 'Sub DPS');
+    const withBonus = resolveHitComposedDps(CIACCONA_BLOCKS, steps, ctx, 3500, 'aero', 'Sub DPS', { heavyDmg: 50 });
+    const hitWithout = withoutBonus.hitLog.find(h => h.blockId === 'ciaccona.forte.quadruple-downbeat');
+    const hitWith = withBonus.hitLog.find(h => h.blockId === 'ciaccona.forte.quadruple-downbeat');
+    expect(hitWith.damage).toBeGreaterThan(hitWithout.damage);
+  });
+
+  // Fixed 2026-09-02: dmgFocus was missing 'Heavy ATK' and 'Liberation' — her 2nd- and 1st-largest real
+  // damage categories per the dump's own profile — meaning routeTypeBonuses() silently zeroed any
+  // teammate's Heavy ATK/Liberation DMG Bonus for her in the real team-composition engine.
+  it('dmgFocus includes Heavy ATK and Liberation, her largest real damage categories', async () => {
+    const { CHARACTER_DATA } = await import('../data/characters.js');
+    const focus = CHARACTER_DATA['Ciaccona'].dmgFocus;
+    expect(focus).toContain('Heavy ATK');
+    expect(focus).toContain('Liberation');
+    expect(focus).toContain('Basic ATK');
+    expect(focus).toContain('Skill');
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Ciaccona'], CIACCONA_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(CIACCONA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3500, 'aero', 'Sub DPS');

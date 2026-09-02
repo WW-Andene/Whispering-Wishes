@@ -29,6 +29,12 @@ export const CIACCONA_BLOCKS = [
     trigger: { type: 'cast', on: 'Intro:Roaming with the Wind' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('189.11%') },
+    // Flagged 2026-09-02: no `category` set (found while checking her team-engine routing) — neither
+    // this dump nor the fandom source this file cites gives an explicit "counted as X DMG" for her
+    // Intro, so no basis to guess one (skillDmg/basicDmg/heavyDmg all plausible, unconfirmed). Means
+    // this hit currently gets ZERO category-specific DMG Bonus routing from any teammate buff
+    // (resolveHitComposedDps.js: `categoryStat = category ? stats[category] : 0`) — a real, open gap,
+    // not silently accepted as correct. Needs a real source before assigning one.
     note: 'Inflicts Aero Erosion, skips straight to Basic ATK Stage 3.',
     // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — value:3 matches her
     // CHAR_BUFF_TABLE.debuffs.erosion's own already-sourced value ("3 stacks Aero Erosion, ticks every
@@ -58,6 +64,11 @@ export const CIACCONA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Mid-air:Attack Stage 1-2' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // Flagged 2026-09-02 (same class of gap as the Intro block above, found in the same team-engine
+    // check): no `category` set either — no source text confirms whether her Mid-air Attack counts as
+    // basicDmg (the common WW default for an un-overridden Mid-air Attack) or something else. Cartethyia's
+    // own `cartethyia.midair.cartethyia-plunging-attack` has the identical gap — this looks like a real,
+    // recurring pattern worth a dedicated cross-character pass, not guessed here per-character.
     damage: { hits: [...parseSkillMultiplierHits('55.43%×2'), ...parseSkillMultiplierHits('24.46%×4')] },
   },
   {
@@ -74,8 +85,15 @@ export const CIACCONA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Quadruple Downbeat' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('31.41%×10+314.03%') },
-    note: 'Consumes all 3 stacked Musical Essence, inflicts Aero Erosion, restores 25 Concerto Energy.',
+    // Fixed 2026-09-02: had NO damage.category at all — meant this block (her Heavy Attack REPLACEMENT
+    // at 3 Musical Essence, no kit-text override to a different category the way Phrolova's Scarlet
+    // Coda/Ciaccona's own S6 have) got zero credit from any teammate's Heavy ATK DMG Bonus buff in
+    // resolveHitComposedDps.js's routing (`categoryStat = category ? stats[category] : 0`). Confirmed
+    // via the dump's own damage profile: her "Heavy" bucket (40,925, 2nd-largest) is exactly this move
+    // plus base Heavy Attack, which her real modeled rotation never actually casts (always 3 Musical
+    // Essence by the time Heavy Attack comes up).
+    damage: { hits: parseSkillMultiplierHits('31.41%×10+314.03%'), category: 'heavyDmg' },
+    note: 'Consumes all 3 stacked Musical Essence, inflicts Aero Erosion, restores 25 Concerto Energy. Replaces Heavy Attack outright — no kit-text override to a different category, so counted as heavyDmg (matches the dump\'s own damage-profile "Heavy" bucket).',
     dotApplier: { mechanic: 'erosion', value: 3 },
   },
   {

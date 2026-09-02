@@ -1259,7 +1259,13 @@ const CHARACTER_DATA = {
   // Prydwen's own review explicitly notes she's "similar to Coordinated Attackers (even though she
   // isn't one)". Her off-field damage instead comes from Ensemble Sylph clones (Basic ATK) and her
   // Liberation's lingering Recital state.
-  ['Ciaccona',      ['Basic ATK', 'Skill'],          ['Aero Buff'],                           ['Erosion']],
+  // Corrected 2026-09-02 against a fresh Prydwen dump's own damage-profile breakdown: 'Heavy ATK' and
+  // 'Liberation' were both missing despite being her 2nd- and 1st-largest real damage categories
+  // (Heavy 40,925 via Quadruple Downbeat, Liberation 67,722 via Singer's Triple Cadenza + Symphonic
+  // Poem: Tonic — both bigger than 'Skill', which stayed in dmgFocus at just 9,370) — meant any
+  // teammate's Heavy ATK or Liberation DMG Bonus buff was silently routed to zero for her in
+  // calcTeamStats.js's routeTypeBonuses(). Same class of finding as Cartethyia's own dmgFocus fix.
+  ['Ciaccona',      ['Basic ATK', 'Heavy ATK', 'Liberation', 'Skill'], ['Aero Buff'],          ['Erosion']],
   ['Lupa',          ['Liberation', 'Skill'],         ['DMG Buff'],                            ['Fusion RES Shred']],
   // dmg-type tag corrected 2026-09-02 against a fresh Prydwen dump: 'Heavy ATK' was wrongly kept for
   // Absolute Fullness (the 2026-08-17 correction's own comment claimed it was "true Heavy ATK" — wrong,
