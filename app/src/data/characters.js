@@ -5362,15 +5362,23 @@ const RESONANCE_CHAIN_DATA = {
   'Jingran':      { s1: { skillDmg: 80 }, s2: { heavyDmg: 46 }, s3: { atkPct: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
   // Yangyang: Xuanling S2: Heavy/Mid-air/Havoc-in-Bloom DMG+100% (confirmed exact). S3: Hush of a Thousand Voices
   // Liberation DMG+175% (confirmed exact via Nanoka/Prydwen 2026-08-16 cross-check; was 80, didn't match comment or kit)
-  // S3/S5 re-audited 2026-09-02 against a fresh Prydwen dump: S3 was libDmg despite Hush of a Thousand
-  // Voices' own real damage hit being categorized heavyDmg (her Liberation is entirely "considered Heavy
-  // Attack DMG" per kit text) — a libDmg buff on a heavyDmg-categorized hit never actually applies.
-  // Corrected libDmg -> heavyDmg (same bug class as Sigrika's S5, which this row's old comment had
-  // wrongly cited as its own precedent). S5 "On a fatal blow... immune to DMG/interruption for 3s, once
-  // per 10 min" is purely defensive with zero real DPS component — confirmed independently via
-  // Prydwen's own Damage Output by Sequence table: S4 and S5 are byte-identical (2,783,354 DMG /
-  // 274,492 DPS both). Zeroed the fabricated totalMult:5 to {}.
-  'Yangyang: Xuanling': { s1: { totalMult: 10 }, s2: { heavyDmg: 100 }, s3: { heavyDmg: 175 }, s4: { atkPct: 20 }, s5: {}, s6: { heavyDmg: 40 } },
+  // S1 re-audited 2026-09-02 against a fresh Prydwen dump (user-provided): was totalMult:10, an
+  // unexplained placeholder flagged as unverified by the engine block's own note. Real S1 effect:
+  // casting Resonance Skill - Sword Stance Flow: Azure/Feather summons Shadow of Xuanling: Unfaltering,
+  // dealing a flat 337.98% ATK Havoc DMG hit "considered Heavy Attack DMG" — a discrete proc, not a %
+  // stat modifier, so it doesn't belong in this table at all (same "not a totalMult-shaped effect"
+  // treatment as other characters' chain-granted procs, e.g. Lingyang's S5). Zeroed to {}; the real
+  // damage is now a dedicated chain.s1 damage block in yangyangxuanling.blocks.js. S1 also Stagnates
+  // nearby enemies and grants interruption immunity on 3 specific moves — pure utility, no DPS
+  // component, not modeled. S3/S5 re-audited 2026-09-02 against a fresh Prydwen dump: S3 was libDmg
+  // despite Hush of a Thousand Voices' own real damage hit being categorized heavyDmg (her Liberation
+  // is entirely "considered Heavy Attack DMG" per kit text) — a libDmg buff on a heavyDmg-categorized
+  // hit never actually applies. Corrected libDmg -> heavyDmg (same bug class as Sigrika's S5, which
+  // this row's old comment had wrongly cited as its own precedent). S5 "On a fatal blow... immune to
+  // DMG/interruption for 3s, once per 10 min" is purely defensive with zero real DPS component —
+  // confirmed independently via Prydwen's own Damage Output by Sequence table: S4 and S5 are
+  // byte-identical (2,783,354 DMG / 274,492 DPS both). Zeroed the fabricated totalMult:5 to {}.
+  'Yangyang: Xuanling': { s1: {}, s2: { heavyDmg: 100 }, s3: { heavyDmg: 175 }, s4: { atkPct: 20 }, s5: {}, s6: { heavyDmg: 40 } },
   // Hiyuki S1/S2: Foreclaimed/Iai skills are "considered Resonance Liberation DMG" per kit.
   // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Hiyuki/Combat — its Attribute Scaling
   // collapsibles render the wrong content for this character (a template/Lua bug specific to this page,

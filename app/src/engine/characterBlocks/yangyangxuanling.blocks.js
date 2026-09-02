@@ -138,11 +138,18 @@ export const YANGYANG_XUANLING_BLOCKS = [
   //    confirmed-exact comment, S1/S4/S5/S6 flagged as unverified beyond their flat values) ──
   {
     id: 'yangyangxuanling.chain.s1',
-    source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 10 }],
-    note: 'Flat value used as-is — no adjacent audit comment beyond the RESONANCE_CHAIN_DATA line itself, flagged as unverified. Kept passive.',
+    source: SOURCE, kind: 'damage',
+    // Sword Stance Flow: Azure/Feather is Prydwen's Forte-Circuit name for the same dash-cancel move
+    // modeled elsewhere in this file (and in CHARACTER_ROTATIONS) as "Sword Stance Switch: Azure/
+    // Feather" — the base Resonance Skill kit section never uses "Flow" at all, only "Switch", for
+    // what's otherwise an identical Heavy-ATK-categorized stance-swap move. Gated on the same trigger
+    // as yangyangxuanling.skill.sword-stance-switch above so this proc actually fires in her real
+    // modeled rotation (which casts Sword Stance Switch twice), rather than a "Sword Stance Flow"
+    // trigger string with no matching CHARACTER_ROTATIONS step that would silently never fire.
+    trigger: { type: 'cast', on: 'Skill:Sword Stance Switch' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: [{ atkPct: 337.98 }], category: 'heavyDmg' },
+    note: "Corrected 2026-09-02 against a fresh Prydwen dump (was a flat totalMult:10 buff, flagged unverified — not a real %-stat effect at all): S1 makes Sword Stance Flow/Switch summon Shadow of Xuanling: Unfaltering, a discrete 337.98% ATK Havoc DMG proc considered Heavy Attack DMG. Also Stagnates nearby enemies and grants 3 specific moves interruption immunity — pure utility, no DPS component, not modeled.",
   },
   {
     id: 'yangyangxuanling.chain.s2',

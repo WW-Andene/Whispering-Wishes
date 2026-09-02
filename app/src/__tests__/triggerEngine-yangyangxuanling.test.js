@@ -5,9 +5,17 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { YANGYANG_XUANLING_BLOCKS } from '../engine/characterBlocks/yangyangxuanling.blocks.js';
 
 describe('triggerEngine parity — Yangyang: Xuanling', () => {
-  it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
+  it('S1 is correctly {} in RESONANCE_CHAIN_DATA (a discrete proc, not a %-stat modifier) and modeled as a real damage block', () => {
     const rc = RESONANCE_CHAIN_DATA['Yangyang: Xuanling'];
-    expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s1').effects[0].value).toBe(rc.s1.totalMult);
+    expect(rc.s1).toEqual({});
+    const s1 = YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s1');
+    expect(s1.kind).toBe('damage');
+    expect(s1.damage.hits[0].atkPct).toBe(337.98);
+    expect(s1.damage.category).toBe('heavyDmg');
+  });
+
+  it('S2-S6 match RESONANCE_CHAIN_DATA exactly', () => {
+    const rc = RESONANCE_CHAIN_DATA['Yangyang: Xuanling'];
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s2').effects[0].value).toBe(rc.s2.heavyDmg);
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s3').effects[0].value).toBe(rc.s3.heavyDmg);
     expect(YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s4').effects[0].value).toBe(rc.s4.atkPct);
