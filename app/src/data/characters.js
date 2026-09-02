@@ -1348,7 +1348,7 @@ const CHARACTER_DATA = {
   ['Yangyang: Xuanling', 11025, 425, 1149, 150],
   ['Denia',         11025, 425, 1148, 150],
   ['Lucilla',       12238, 375, 1198, 150],
-  ['Hiyuki',        10300, 462, 1112, 125],
+  ['Hiyuki',        10300, 463, 1112, 125],
   ['Suisui',        16713, 288, 1100, 175],
   ['Qingxiao',      10300, 463, 1112, 125],
   // Jingran: nanoka shows "Base DEF -" because his kit fixes combat DEF to 0 (not an unpublished
