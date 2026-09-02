@@ -13,11 +13,21 @@ describe('triggerEngine parity — Augusta', () => {
     expect(s2.effects[0].value * s2.effects[0].maxStacks).toBe(rc.s2.critRate);
   });
 
-  it('S3/S4/S5 match RESONANCE_CHAIN_DATA exactly', () => {
+  it('S3/S4 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Augusta'];
     expect(AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s3').effects[0].value).toBe(rc.s3.totalMult);
     expect(AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s4-ascent-in-sun-and-glory').effects[0].value).toBe(rc.s4.atkPct);
-    expect(AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s5').effects[0].value).toBe(rc.s5.totalMult);
+  });
+
+  // S5 (Glory's Favor shield value +50%) has zero DPS component — a purely defensive stat, no basis
+  // for any damage number. Zeroed 2026-09-02 in both RESONANCE_CHAIN_DATA and this engine block (was
+  // a fabricated totalMult:15 "approximate DPS-uptime proxy" in both, the exact "invented number with
+  // no basis" shape this codebase's own rule removes elsewhere, e.g. Brant's S1/Phrolova's S5).
+  it('S5 has no DPS component in either RESONANCE_CHAIN_DATA or the engine block', () => {
+    const rc = RESONANCE_CHAIN_DATA['Augusta'];
+    expect(rc.s5).toEqual({});
+    const s5 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s5');
+    expect(s5.effects).toEqual([]);
   });
 
   it('S4 is team-wide with a real 30s window', () => {

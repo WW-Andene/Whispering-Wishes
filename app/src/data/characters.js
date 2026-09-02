@@ -5603,7 +5603,11 @@ const RESONANCE_CHAIN_DATA = {
   //   secondary instance).
   'Brant':        { s1: { allDmg: 60 }, s2: { critRate: 30 }, s3: { totalMult: 42 }, s4: {}, s5: { basicDmg: 15 }, s6: { totalMult: 30 } },
   // Augusta S1: +15% CD per Crown stack x2=30% (confirmed). S2: +20% CR per stack + excess CR→CD conversion
-  'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 40 }, s3: { totalMult: 25 }, s4: { atkPct: 20 }, s5: { totalMult: 15 }, s6: { heavyDmg: 200 } },
+  // s5 zeroed 2026-09-02 (found while cross-checking a fresh Prydwen source dump): was totalMult:15, a
+  // fabricated number with no basis in the node's own text (same shape as Brant's S1/Phrolova's S5,
+  // both correctly zeroed elsewhere in this table for the identical reason) — Glory's Favor shield
+  // value +50% is a purely defensive stat, zero DPS component, per the comment block below.
+  'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 40 }, s3: { totalMult: 25 }, s4: { atkPct: 20 }, s5: {}, s6: { heavyDmg: 200 } },
   // Augusta R-chain — verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Augusta/Combat
   // (Chrome/Windows UA + google.com referer + jsRender, load+8s wait to clear Cloudflare):
   // s1 "Stained in Scorched Earth": Crown of Wills +15% Crit DMG per stack (max stack raised 1→2) = 30% at 2 stacks. Confirmed correct.
@@ -5617,7 +5621,8 @@ const RESONANCE_CHAIN_DATA = {
   // s4 "Ascent in Sun and Glory": casting Intro Skill - Stride of Goldenflare grants the WHOLE TEAM +20% ATK for 30s
   //     (not self-only, not a permanent buff — duration-gated).
   // s5 "Unshaken in Wrathful Tides": Inherent Skill - Glory's Favor shield value +50% — a survivability stat, no direct
-  //     DPS number; totalMult:15 kept as an approximate DPS-uptime proxy, not a real modeled effect.
+  //     DPS number; zeroed to {} 2026-09-02 (was totalMult:15, a fabricated approximate-uptime proxy with no basis
+  //     in the node's own text — same "don't force-fit a lossy value" rule already applied to Brant's S1/Phrolova's S5).
   // s6 "Engraved in Radiant Light": Crown of Wills max stacks 2→4; CR-over-150%→CD conversion up to +50% (separate,
   //     unmodeled, same caveat as s2); AND casting Thunderoar: Spinslash or Uppercut grants 2 Crown of Wills stacks
   //     (capped at 2 stacks/sec) AND triggers "Thunder Rage" — 2 separate Electro Heavy-ATK hits at 100% ATK each (200%

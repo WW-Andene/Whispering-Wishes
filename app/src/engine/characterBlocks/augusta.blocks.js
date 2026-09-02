@@ -183,12 +183,19 @@ export const AUGUSTA_BLOCKS = [
     note: 'Casting Intro Skill - Stride of Goldenflare grants the WHOLE TEAM +20% ATK for 30s (confirmed exact, team-wide).',
   },
   {
+    // Zeroed 2026-09-02 (found while cross-checking a fresh Prydwen source dump against this file):
+    // was `totalMult: 15`, a fabricated number with the SAME "no basis in the node's own text" shape
+    // this codebase's own rule elsewhere removes (see Brant's S1/Phrolova's S5, both zeroed for the
+    // identical reason) — this node's own comment already admitted "not a real modeled effect," an
+    // approximate DPS-uptime proxy standing in for a purely defensive stat (Glory's Favor shield value
+    // +50%) with zero DPS component. That fabricated 15% was still live in this real damage-calculating
+    // engine file (not just the legacy flat table), inflating any S5+ Augusta build's damage by a made-
+    // up amount for a node that deals no damage at all.
     id: 'augusta.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'utility',
     trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 15 }],
-    note: "Inherent Skill - Glory's Favor shield value +50% — a survivability stat, no direct DPS number; totalMult:15 kept as an approximate DPS-uptime proxy per the audit comment's own reasoning, not a real modeled effect.",
+    timing: {}, target: { scope: 'self' }, effects: [],
+    note: "Unshaken in Wrathful Tides: Inherent Skill Glory's Favor shield value +50% — purely defensive, no DPS component, not representable in this schema.",
   },
   {
     id: 'augusta.chain.s6-thunder-rage',
