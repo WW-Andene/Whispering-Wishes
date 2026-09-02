@@ -13,6 +13,43 @@ anything architecture-scale — individual character data bugs unrelated to the 
 
 ---
 
+## ORDER CORRECTION (user, 2026-09-02) — mandatory phase gate, applies retroactively to everything below
+
+The original Phase 2 work (Buling/Denia/Aemeath/Ciaccona/Rover: Spectro DOT migrations) jumped straight
+to CROSS-character interaction logic (Denia/Aemeath's Fusion Burst combinatorial resolver) before every
+character was individually, atomically decomposed. **Corrected, explicit order, binding for all
+remaining work:**
+
+1. **Phase A — solo block-decomposition, per character, one at a time.** Every character gets broken
+   down into blocks along EVERY one of these dimensions, sourced from their own kit dump + real
+   `CHARACTER_ROTATIONS`/`SKILL_MULTIPLIERS` — nothing cross-referencing another character yet:
+   - **élément** (element) — the block's own damage element, and any element-scoped condition
+   - **dot** — which shared DOT reaction (if any) this block feeds (`dotApplier`)
+   - **type dégât** (damage type) — `kind:'damage'`, its `damage.category`
+     (basicDmg/heavyDmg/libDmg/skillDmg/echoDmg/coordDmg) or lack thereof, and why
+   - **type buff** — `kind:'buff'`, its `effects[].stat`
+   - **type debuff** — `kind:'debuff'`, its `effects[].stat`, target (self vs enemy)
+   - **timing** — `trigger.type`, `timing.duration`/`cooldown`, stacking mode
+   - **condition** — `condition.element`/`requiresRole`/`requiresStance`/`assumedInactive` — every
+     conditional fact from the kit text, not just the ones that happened to matter for a prior fix
+   - **context** — `target.scope`, sequence/Resonance-Chain gating (`requiredSequenceOf`), and which
+     real rotation step/context this block fires in
+   Done ONE character at a time, verified complete on all 8 dimensions before moving to the next.
+2. **Phase B — cross-character interactions.** Only once every character in a given team/comparison has
+   passed Phase A: shared DOT-reaction aggregation, `ally-action` reactive buffs, mode-resolution
+   spanning multiple characters, etc. (This is what Denia/Aemeath's Fusion Burst resolver already is —
+   valid work, but it should be revisited/re-verified once both their OWN Phase A passes are confirmed
+   complete, not assumed complete because a narrow slice of it — Tune Break/Fusion Burst specifically —
+   was already touched.)
+3. **Phase C — theorize.** Team-composition optimization, "which mode should I actually run" advice,
+   etc. — only once B is solid.
+
+The rest of this document (the old "Phase 0/1/2" numbering) is being restructured under this corrected
+order below — old phase numbers are kept as headers for continuity with prior commits, but their
+CONTENT is now understood as partial Phase-A/Phase-B work, not a separately-numbered track.
+
+---
+
 ## 0. Why two engines exist today (as-found, verified by reading code, not assumed)
 
 **System A — Legacy** (`characters.js`'s `CHAR_BUFF_TABLE`/`RESONANCE_CHAIN_DATA`/`SKILL_MULTIPLIERS`/
