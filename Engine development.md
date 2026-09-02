@@ -9,71 +9,74 @@ target, not a place for quick edits).
 
 ---
 
-## 1. Debuff `condition` text isn't machine-enforced for `defIgnore`/`defShred`
+## 1. Debuff `condition` text isn't machine-enforced for `defIgnore`/`defShred` — confirmed present in BOTH the legacy calc and the modern engine
 
-**Found**: 2026-09-02, while auditing Chisa's Thread of Bane debuff.
+**Found**: 2026-09-02, while auditing Chisa's Thread of Bane debuff. **Re-confirmed 2026-09-02** while
+correcting this file's stale Phase 3 status (below) — this gap is NOT limited to the legacy tier the
+way it first looked; it's structural in the modern engine's schema too.
 
-**Where**: `app/src/features/teams/calcEngine.js`, `applyBuff()` (~line 374).
+**Where (legacy)**: `app/src/features/teams/calcEngine.js`, `applyBuff()` (~line 374). Only actually
+*parses* the free-text `condition` field for 3 stat types — `elemDmg` (element-name match), and
+`deepen`/`offTune`/`allDmg` (via `universalStatApplies`). For every other stat, including `defIgnore`
+and `defShred`, `condition` is accepted as a parameter but never read — the value is just added
+unconditionally.
 
-`applyBuff` only actually *parses* the free-text `condition` field for 3 stat
-types — `elemDmg` (element-name match), and `deepen`/`offTune`/`allDmg` (via
-`universalStatApplies`). For every other stat, including `defIgnore` and
-`defShred`, `condition` is accepted as a parameter but never read — the value
-is just added unconditionally.
+**Where (modern engine)**: `app/src/engine/triggerBlocks.schema.js`'s `Condition` type +
+`triggerEngine.js`'s `conditionHolds()` (~line 93). The engine's structured `condition` object only
+supports `element`, `requiresRole`, `requiresStance`, and `assumedInactive` gates — there is no gate
+type at all for "recipient must themselves apply/deal a specific status." Chisa's own engine block
+(`chisa.blocks.js`, `chisa.debuff.thread-of-bane`) documents this explicitly in its own note: *"not
+modeled as a per-teammate condition (schema condition doesn't have a 'deals Negative Status DMG'
+gate), applied team-wide."* So this isn't a legacy-only quirk that Phase 3's engine cutover already
+fixed — the engine was built without this gate type existing at all, and inherited the same blind spot.
 
-**Concrete symptom**: Chisa's Thread of Bane debuff
-(`{ stat: 'defIgnore', value: 18, condition: "only benefits teammates who
-themselves apply/deal Negative Status DMG" }`, `CHAR_BUFF_TABLE.Chisa` in
-`characters.js`) currently applies its +18% DEF Ignore to the main DPS
-unconditionally, even when that DPS doesn't apply any Negative Status
-themselves — the condition is documentation-only in the data, not enforced by
-the calculator.
+**Concrete symptom**: Chisa's Thread of Bane debuff (`+18% defIgnore`) applies to the main DPS (or any
+team-wide recipient) unconditionally, even when that DPS doesn't apply any Negative Status themselves
+— in both the legacy fallback AND the now-primary engine path.
 
-**Scope**: not Chisa-specific. Any character whose `debuffs` entry carries a
-`condition` string gated on the *recipient's* own kit (as opposed to
-`dpsElLower`-style element gating, which IS enforced) has this same silent
-gap. Worth a grep across `CHAR_BUFF_TABLE` for `debuffs` entries with a
-`condition` string to size the real blast radius before fixing.
+**Scope**: not Chisa-specific. Any character whose `debuffs`/buff entry carries a `condition` string
+gated on the *recipient's own kit* (as opposed to `dpsElLower`-style element gating, which IS enforced
+in both systems) has this same silent gap — grep `CHAR_BUFF_TABLE` for `debuffs`/`buffs` entries with a
+prose `condition` string, and grep `characterBlocks/*.js` for a `note` admitting the same "not modeled
+as a condition" pattern, to size the real blast radius before fixing.
 
-**Fix shape**: extend `applyBuff`'s gating (or add a sibling helper next to
-`universalStatApplies`) to recognize a `condition` pattern like "only
-benefits teammates who themselves apply/deal Negative Status DMG" and check
-it against the recipient's own `dmgFocus`/debuff-application capability,
-mirroring how `elemDmg` conditions are already parsed. Needs its own care —
-`universalStatApplies` already encodes a specific string-matching convention
-worth following rather than inventing a second one.
+**Fix shape**: this needs a real schema addition, not a one-off patch — add a new `Condition` gate type
+(e.g. `requiresOwnEffect: 'negativeStatus' | ...`) to `triggerBlocks.schema.js`, teach
+`conditionHolds()` to check it against the target's own `dmgFocus`/kit capability, and mirror the same
+concept in legacy's `applyBuff`/`universalStatApplies` for the (now much smaller, Jingran-only)
+fallback path. Since the engine is the primary path post-Phase-3, prioritize the engine-side fix.
 
 ---
 
-## 2. Legacy fallback tier never applies a sub-DPS's own Resonance Chain
+## 2. Legacy fallback tier never applies a sub-DPS's own Resonance Chain — CONFIRMED low-impact, Phase 3 IS complete (correction below)
 
-**Found**: 2026-09-02, while verifying Chisa's S3 fix was correctly wired.
+**Found**: 2026-09-02, while verifying Chisa's S3 fix was correctly wired. **Corrected 2026-09-02**:
+this entry originally said Phase 3's `calcTeamStats.js` rewrite (Stage 4/5) "hasn't started" — that
+was wrong, sourced from reading only the first ~150 lines of `PHASE3_PLAN.md` (an in-progress status
+snapshot partway through that same day's work), not the full file. The file's own top banner and final
+"Status" section are unambiguous: **Phase 3 is complete** (2026-09-01) — Stage 4 (the actual rewrite)
+and Stage 5 (final verification) are both done, plus two follow-up passes after Stage 5 itself (a
+Critical FULL-tier sequence-gating bug found+fixed, and the dead legacy computation physically gated
+behind `!allMembersConverted` so it no longer even runs for a converted team). See
+`PHASE3_PLAN.md`'s "Status" section (near the end of the file) for the real, current state — always
+read the whole file, not just the top, since it's a working log that gets appended to, not a doc that
+gets fully rewritten in place.
 
 **Where**: `app/src/features/teams/calcTeamStats.js`, the single
-`applyResonanceChain(seqStats, m.name, m.seqLevel, isMain)` call (~line 935)
-inside the main-DPS stats block.
+`applyResonanceChain(seqStats, m.name, m.seqLevel, isMain)` call (~line 935) inside the main-DPS stats
+block — this is legacy code specifically, now confirmed to only physically execute for a mixed team
+(`!allMembersConverted`, i.e. any team including unreleased Jingran — currently no other case reaches
+it at all).
 
-`applyResonanceChain` is called exactly once per team, looping over every
-member but only ever accumulating into `seqStats`, which feeds the **main
-DPS's** stats. A team member who isn't the main DPS never gets their own
-Resonance Chain applied to their own personal (sub-DPS) damage anywhere in
-the legacy RAW/FULL-tier formula — regardless of what stat type their nodes
-use, including nodes that legitimately should self-apply (e.g. a sub-DPS's
-own `libDmg`/`basicDmg`/`heavyDmg` sequence bonus).
+**Real remaining impact**: effectively none today. The engine's `allMembersConverted` path
+(`resolveHitComposedTeamDps` + `engine/sequenceGating.js`) is the actual, primary path for every real
+team (56 of 57 characters converted), and correctly gates + applies each member's own sequence level
+to their own damage — including a Critical bug fix in that exact area during Phase 3's post-completion
+audit (see `PHASE3_PLAN.md`'s "FULL-tier teamDps ignored owned Resonance Chain sequence" writeup).
 
-**Mitigated in practice**: `PHASE3_PLAN.md` Stage 4's `allMembersConverted`
-path (`resolveHitComposedTeamDps` + `engine/sequenceGating.js`) already
-applies each member's own sequence level correctly for any team where every
-member has a converted `characterBlocks/*.js` file — which is effectively
-every team today (per Stage 4's own note, the only unconverted holdout is
-Jingran, unreleased). So this gap is real but currently low-blast-radius:
-it only bites the day a second unconverted character exists, or for direct
-callers of the legacy RAW/FULL tier that bypass the engine path.
-
-**Fix shape**: this is exactly the kind of thing `PHASE3_PLAN.md` Stage 4/5
-(the actual `calcTeamStats.js` rewrite, not yet started as of this writing)
-is meant to retire wholesale rather than patch piecemeal — flagging here so
-it isn't lost, not proposing a standalone patch.
+**Fix shape**: not worth fixing on its own — the only path that still hits this gap is the Jingran
+mixed-team fallback, and Jingran is unreleased. Revisit only if a second unconverted character appears,
+or fold it into whatever eventually replaces the legacy fallback entirely.
 
 ---
 
@@ -121,17 +124,15 @@ totalMult" doesn't get lost between conversations.
 
 ---
 
-## 4. Phase 3 rewrite itself — carried over from `PHASE3_PLAN.md`
+## 4. Phase 3 rewrite itself — COMPLETE, correcting an earlier wrong entry here
 
-Not rediscovered here, just cross-referenced so this file is a real single
-list: `PHASE3_PLAN.md` documents Stage 4 (`calcTeamStats.js`'s actual
-internals swapped for engine calls) and Stage 5 (final verification + commit)
-as **not started**. Everything through Stage 3 (coverage audit, parity
-harness, sequence gating, DOT reactions, energy-cycle-gated Liberation
-uptime, Coordinated ATK snapshot semantics, rotation order-search) is done
-and additive-only — `calcTeamStats.js` itself hasn't been touched by that
-effort yet. Items 1 and 2 above are exactly the kind of legacy-tier
-correctness gap Stage 4 is meant to retire.
+This entry previously (wrongly) said Stage 4/5 hadn't started — corrected in item 2 above. Phase 3
+(`calcTeamStats.js`'s internals swapped for real engine calls) is fully complete as of 2026-09-01,
+including two post-completion follow-up passes (a Critical sequence-gating bug in the FULL tier, and
+physically gating the dead legacy computation). Nothing left to do here — this section stays only as a
+pointer: if a future audit turns up a `calcTeamStats.js`-shaped gap, check `PHASE3_PLAN.md`'s own
+"Status" section first to see whether it's already been through this rewrite before assuming it's
+untouched legacy code.
 
 ---
 
