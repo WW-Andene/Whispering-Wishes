@@ -77,10 +77,10 @@ resume Phase A with a vocabulary that isn't still shifting under it.
 | 7 | Per-resource-unit-consumed scalar | Denia (+150%/Dark Core consumed), Chisa (+2.59%/Ring of Chainsaw stack, up to 100) | No stacking-scalar field tied to a spent-at-cast-time resource count |
 | 8 | Flat (non-%) damage component alongside %ATK | Buling ("169 flat + 18.30% ATK") | **Fixed 2026-09-02.** Added optional `hit.flat` field (`triggerBlocks.schema.js`), read by both `resolveHitComposedDps.js` and `resolveHitComposedTeamDps.js` as `(effBase*(atkPct/100) + flat) * avgCrit * dmgBonus * defMult * resMult * ...` (added to the base-damage term before the multiplier chain, matching WuWa's own formula — not a separate standalone hit). `parseSkillMultiplierHits()` gained an optional 2nd `flat` argument, attached to the first parsed hit only. Applied to `buling.heavy.twin-thunders` (was previously dropping the flat 169 entirely, only modeling the 18.30% ATK portion). 4 new tests, full suite green (1259/1259), no parity regression on Buling's Stage 1 harness check. |
 | 9 | Sustained/continuous channel or repeated-tick-from-one-cast | Baizhi (Remnant Entities auto-attack every 2.5s; a 48.86%/s continuous channel) | A block is a discrete hit-list, not a sustained/repeating effect |
-| 10 | Early-forfeit/consumption trigger (duration cut short by a specific event) | Carlotta, Changli, Yinlin (buff ends early if the recipient swaps out before its full duration) | `timing.duration` is a flat fixed window, no "or until event X" clause |
+| 10 | Early-forfeit/consumption trigger (duration cut short by a specific event) | Carlotta, Changli, Yinlin (buff ends early if the recipient swaps out before its full duration) | **Investigated 2026-09-02, not fixed — real infrastructure gap, correctly scoped as non-trivial.** `blockWindows.js`'s `buildBlockWindows()` only receives the block's OWNER's own step results (`ownResults`, see its own jsdoc) — for a `target.scope:'next-on-field'` buff, "forfeit early if the RECIPIENT swaps out" needs that recipient's OWN swap-out time, a different character's step data this function has no access to at all today. A real fix needs a new optional param (the recipient's own swap-out instants) threaded through `blockWindows.js` AND both `resolveSimulatedTeamRotation.js`/`resolveHitComposedTeamDps.js`'s own call sites (the only two places that actually know both the source's and the recipient's step timelines at once) — a genuine multi-file structural change, not a `timing` field addition. Deferred to a dedicated pass, not attempted as a quick fix. |
 | 11 | Buff-of-a-buff / multiplier-of-a-multiplier | Youhu (a buff that DOUBLES another already-active effect) | `effects[].value` is always additive to a base stat, never multiplicative on another buff |
-| 12 | Defensive/reactive "on being hit" trigger | Danjin (loses a stack per hit SHE takes) | No trigger type for "this character was hit," only for casting/passive/ally-action |
-| 13 | HP-threshold condition | Danjin S5 (+15% more when HP<60%) | `condition` has no HP-threshold field (already explicitly flagged in her own file header) |
+| 12 | Defensive/reactive "on being hit" trigger | Danjin (loses a stack per hit SHE takes) | **Investigated 2026-09-02, not fixed — needs unsourced data, not just a trigger type.** Even if a `'on-hit-taken'` trigger type were added, it needs an enemy-attack timeline (when the character gets hit, how often) — nothing in the engine or the character data sources this at all (real fights have variable, per-encounter enemy attack patterns, not a fixed script like a Resonator's own combo). Adding the trigger type alone would have no real data to drive it. Deferred — same class of blocker as the DOT deferrals (Cartethyia's Erosion, Phoebe's Frazzle): the mechanism would be easy, the DATA isn't there. |
+| 13 | HP-threshold condition | Danjin S5 (+15% more when HP<60%) | **Investigated 2026-09-02, not fixed — needs a whole new simulation dimension, not a condition field.** Confirmed via `grep -rn "hpPct\|currentHp"` across `engine/*.js`: the engine has NO live-HP tracking anywhere, solo or team — every resolver works off buffs/debuffs and static base stats, never a character's own HP changing over time from damage taken/healing received. A real HP-threshold condition needs that whole simulation layer built first (which itself needs sourced damage-taken/healing-received data per fight, not just a formula). Reclassified out of the "new condition/trigger types" tier into "structurally novel, last" alongside gaps #9/#14/#15 — this is bigger than a condition field. |
 | 14 | Off-field summon-chain/repeating proc | Cantarella (Diffusion: up to 21 Coordinated ATK summons over 30s) | Different shape than the existing `windowed-proc` (self-cast-triggered, capped) — this is team-hit-triggered |
 | 15 | Stateful re-cast/extra-move-loop unlock | Roccia (Reality Recreation — a re-triggering follow-up loop) | No "this cast unlocks a repeatable extra action" primitive |
 | 16 | Dedicated damage-type category missing | Xiangli Yao ("Outro DMG" — no such stat exists separate from libDmg/etc.) | **Fixed 2026-09-02.** Added a 7th `outroDmg` category alongside the existing 6: `createStats()`/`applyBuff()` (`calcEngine.js`) and both resolvers' `EXTERNAL_STAT_KEYS` now recognize it. `xianglyao.outro.chain-rule` tagged `category:'outroDmg'`; new `xianglyao.chain.s5-outro` block captures the previously-unrepresented +222% Outro Chain Rule DMG Multiplier (was entirely missing before, not just mis-categorized — the audit's own TODO had left it out). 3 new tests, full suite green (1262/1262). |
@@ -489,8 +489,20 @@ own "entirely HP-scaling" confirmation makes this very likely a source-formattin
 mixed-basis mechanic; no schema change made on unconfirmed grounds. Full suite green: 1262 passing
 (117 files).
 
-Next: move to gap category (3) — new condition/trigger types (#13 HP-threshold condition, #10
-early-forfeit/consumption trigger, #12 on-being-hit trigger), per the agreed priority order.
+Gap category (3) — new condition/trigger types — is now also fully investigated: all three candidates
+(#13 HP-threshold, #10 early-forfeit-on-swap, #12 on-being-hit) turned out to need real infrastructure
+this session hasn't built (a live-HP simulation layer, cross-character step access inside
+`blockWindows.js`, and an enemy-attack timeline respectively) rather than a quick field/trigger-type
+addition — none forced through as a shallow fix. #13 reclassified into the "structurally novel, last"
+tier; #10 deferred to a dedicated multi-file pass; #12 deferred pending sourced data, same class as the
+DOT deferrals.
+
+Remaining gap categories per the priority order: (4) complex calc shapes (#1 nonlinear stacking curve —
+now also the blocker for #4/Qingxiao, #3 per-move-scoped stat, #6 %-of-another-block's-damage, #7
+per-resource-consumed scalar, #11 buff-of-a-buff); (5) structurally novel simulation mechanics, last (#9
+sustained channel — now also the blocker for #5/Denia, #13 HP-threshold, #14 off-field summon-chain, #15
+stateful re-cast loop). Every one of the 17 originally-inventoried gaps has now had at least one real
+investigation pass; none remain purely theoretical.
 
 ## Constraints (repeated here, not just in the mandate, so they're never missed mid-phase)
 
