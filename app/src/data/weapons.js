@@ -226,7 +226,11 @@ const WEAPON_DATA = {
   // Intro Skill; not "Aero DMG +12%, Skill +24%".
   'Emerald Sentence': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Qiuyuan signature. Jade sword passing an emerald sentence on the unjust. ATK with Echo Skill-triggered Heavy ATK DMG and team Echo Skill buff.',
-    passive: 'When A Heart Settles: ATK +12%. Echo Skill within 10s of Intro Skill/Basic Attack → self Heavy ATK DMG +12% (stacks x2, 30s, 10s trigger interval). Intro Skill → team Echo Skill DMG +20% (30s)', pv: { atkPct: 12, heavyDmg: 24 }, tv: { echoDmg: 20, duration: 30 }, bestFor: ['Qiuyuan'],
+    // corrected 2026-09-02 against a fresh Prydwen dump: the Echo Skill-triggered stack (Bamboo Cleaver)
+    // grants +30% Heavy ATK DMG Bonus per stack (up to 2 stacks = 60%, 12s duration, 10s retrigger cooldown)
+    // — was wrongly entered as +12% per stack (pv.heavyDmg: 24 for the 2-stack total instead of 60), likely
+    // confused with the flat +12% ATK passive listed just before it in the same sentence.
+    passive: 'When A Heart Settles: ATK +12%. Echo Skill within 10s of Intro Skill/Basic Attack → self Heavy ATK DMG +30% (stacks x2, 12s, 10s trigger interval). Intro Skill → team Echo Skill DMG +20% (30s)', pv: { atkPct: 12, heavyDmg: 60 }, tv: { echoDmg: 20, duration: 30 }, bestFor: ['Qiuyuan'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   // corrected 2026-08-18 (5★ audit): Liberation DMG was a flat +24%; real effect (Thread of Fate) grants
   // it as +8% per stack up to 3 stacks (same 24% max, but stacking, not flat) — clarified for accuracy.
