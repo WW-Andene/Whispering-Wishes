@@ -674,7 +674,7 @@ const CHARACTER_DATA = {
   // Aero DMG (also Liberation DMG), heals nearby allies, and drops a 30s Full Moon Domain that restores
   // team HP/STA every 5s — gaining a Shield inside it grants a stack of Blessing of the Wan Light (below).
   'Iuno': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Sub DPS',
-    desc: 'Priestess of Septimont\'s Tetragon Temple. Aero Sub-DPS built around Sentience (0-100: +40 on Intro, +60 on Liberation, +25 on Closing/Unfinished Refrain). Resonance Skill or Liberation activates Lunar Cycle (15s), toggling Half Moon ⇄ New Moon via Heavy ATK - Flux (25 STA); in New Moon, Basic ATK/Arc Beyond the Edge/Dodge Counter consume Sentience to raise their own DMG Multiplier and heal the team — this damage is categorized as Resonance Liberation DMG. At full Concerto Energy, Heavy ATK becomes Absolute Fullness (once/25s): ends Lunar Cycle, heals the team, and drops a 30s Full Moon Domain — Shields gained inside it grant stacking Blessing of the Wan Light (+4%/stack all DMG Amp, max 10 stacks, resets on refresh, ends if swapped off-field). Outro grants the incoming ally +50% Heavy ATK DMG Amp for 10s (ends early if they\'re swapped out).',
+    desc: 'Priestess of Septimont\'s Tetragon Temple. Aero Sub-DPS built around Sentience (0-100: +40 on Intro, +60 on Liberation, +25 on Closing/Unfinished Refrain). Resonance Skill or Liberation activates Lunar Cycle (15s), toggling Half Moon ⇄ New Moon via Heavy ATK - Flux (25 STA); in New Moon, Basic ATK/Arc Beyond the Edge/Dodge Counter consume Sentience to raise their own DMG Multiplier and heal the team — this damage is categorized as Resonance Liberation DMG. At full Concerto Energy, Heavy ATK becomes Absolute Fullness (once/25s): ends Lunar Cycle, heals the team, and drops a 30s Full Moon Domain — Shields gained inside it grant stacking Blessing of the Wan Light (+4%/stack all DMG Amp, max 10 stacks, resets on refresh, ends if swapped off-field). Outro grants the incoming ally +50% Heavy ATK DMG Amp for 14s (ends early if they\'re swapped out).',
     skills: ['Moon Steps', 'Foresight Fugue', 'Beneath Lunar Tides', 'Ebb and Flow'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Sliverglow Bloom' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
@@ -1261,10 +1261,13 @@ const CHARACTER_DATA = {
   // Liberation's lingering Recital state.
   ['Ciaccona',      ['Basic ATK', 'Skill'],          ['Aero Buff'],                           ['Erosion']],
   ['Lupa',          ['Liberation', 'Skill'],         ['DMG Buff'],                            ['Fusion RES Shred']],
-  // dmg-type tag corrected 2026-08-17: Iuno's actual rotation damage (Moonbow Basic ATK, Arc Beyond the
-  // Edge, and the Flux jump-attacks) is explicitly "considered as Resonance Liberation DMG" per Prydwen's
-  // kit breakdown — only Absolute Fullness and the base Moonring combo are true Heavy ATK/Basic ATK.
-  ['Iuno',          ['Liberation', 'Heavy ATK'],     ['Heavy ATK Buff', 'Heal', 'Shield'],    []],
+  // dmg-type tag corrected 2026-09-02 against a fresh Prydwen dump: 'Heavy ATK' was wrongly kept for
+  // Absolute Fullness (the 2026-08-17 correction's own comment claimed it was "true Heavy ATK" — wrong,
+  // its kit text explicitly says "considered as Resonance Liberation DMG", same as her other
+  // Heavy-ATK-slot moves). Her real damage-profile calc page confirms a flat 0% Heavy ATK share in both
+  // her DPS and Hybrid rotations — 'Liberation' alone is her real dmgFocus (Basic Moonring combo is
+  // real Basic ATK DMG but goes unused in her modeled rotation entirely, per the same calc page).
+  ['Iuno',          ['Liberation'],                  ['Heavy ATK Buff', 'Heal', 'Shield'],    []],
   // dmg-type tag corrected 2026-08-17: Qiuyuan's actual rotation damage (Inkwash Basic ATK Stage 3-4 and
   // his Forte Heavy Attack finishers) is explicitly "considered as Heavy Attack DMG" per Prydwen's kit
   // breakdown, and the Forte finishers are additionally "considered as performing Echo Skill" — his
@@ -1683,7 +1686,11 @@ const CHARACTER_DATA = {
   ['Augusta',       'T1',   'T1'],
   ['Cartethyia',    'T0.5', 'T1.5'],
   ['Galbrena',      'T0.5', 'T1'],
-  ['Iuno',          'T0.5', 'T3'],
+  // Corrected 2026-09-02 against a fresh Prydwen dump: was ['T0.5','T3'], which matches NEITHER of her
+  // two real rated roles (DPS: T0.5 ToA / T4 WW; Hybrid: T1 ToA / T1.5 WW — stale value, source
+  // unclear). Since CHARACTER_DATA['Iuno'].role is 'Sub DPS' (this app models her as support/hybrid,
+  // not standalone Main DPS — see her dmgFocus/buffs tags), the Hybrid-role rating is the correct match.
+  ['Iuno',          'T1', 'T1.5'],
   ['Luuk Herssen',  'T0',   'T1.5'],
   // tier corrected 2026-09-02 against a fresh Prydwen dump: was 'T0.5' for Whimpering Wastes — that
   // was actually the Value Tier List's WW figure, mismatched against the standard Ratings section's
@@ -3685,7 +3692,7 @@ const SKILL_MULTIPLIERS = {
     ['Skill', 'Arc Beyond the Edge', '219.79%×2', 'Skill replacement in New Moon, 2 charges, consumes Sentience per cast; counted as Resonance Liberation DMG. Lv.10.'],
     ['Heavy ATK', 'Flux: Moonbow', '250.51%', 'Heavy ATK replacement in Half Moon (25 STA) — switches Half Moon → New Moon; counted as Resonance Liberation DMG. Lv.10.'],
     ['Heavy ATK', 'Flux: Moonring', '79.18%×4', 'Heavy ATK replacement in New Moon (25 STA) — switches New Moon → Half Moon; counted as Resonance Liberation DMG. Lv.10, per-hit.'],
-    ['Heavy ATK', 'Absolute Fullness', '159.05%', 'Forte-empowered Heavy ATK at full Concerto Energy (once per 25s); ends Lunar Cycle. Lv.10 (was the Lv.1 value 80%).'],
+    ['Heavy ATK', 'Absolute Fullness', '159.05%', 'Forte-empowered Heavy ATK at full Concerto Energy (once per 25s); ends Lunar Cycle. Counted as Resonance Liberation DMG despite the Heavy ATK slot (corrected 2026-09-02 against a fresh dump — same pattern as Flux: Moonbow/Moonring above, previously not noted here). Lv.10 (was the Lv.1 value 80%).'],
     ['Liberation', 'Beneath Lunar Tides', '1093.46%', 'Ultimate strike that activates the Lunar Cycle; no team buff, purely personal damage. Lv.10 (was the Lv.1 value 550%).'],
     ['Intro', 'Illuminated Manifestation', '15.91%×7 + 47.72%', 'Swap-in opener that also restores 40 Sentience. Lv.10.'],
     ['Outro', 'From Gloom to Gleam', '100%', 'Swap-out strike that grants the next Resonator +50% Heavy ATK DMG Amp for 10s.'],
@@ -4972,8 +4979,8 @@ const CHARACTER_ROTATIONS = {
     { type: 'Heavy ATK', skill: 'Flux: Moonbow', note: 'HOLD Heavy Attack (25 STA) — switches Half Moon → New Moon; this hit itself counts as Resonance Liberation DMG.' },
     { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'Tap Basic Attack for the Moonbow combo (counted as Resonance Liberation DMG) — while in New Moon this consumes Sentience per hit to boost its own DMG Multiplier and heal the team on hit; base values used here (see SKILL_MULTIPLIERS TODO on the unmodeled Sentience-enhanced variant).' },
     { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'Press Skill for the New Moon follow-up (counted as Resonance Liberation DMG) — 2 charges, consumes Sentience per cast to boost its own DMG Multiplier; can recover Iuno from hitstun/launch.' },
-    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'HOLD Heavy Attack for the Forte finisher (usable once per 25s, requires full Concerto Energy) — ends Lunar Cycle, heals nearby allies, and drops a 30s Full Moon Domain; optional but worth casting for the team heal/Blessing of the Wan Light uptime, especially with Augusta on the team.' },
-    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 10, note: 'Swap out to trigger this automatically — grants the incoming Resonator +50% Heavy Attack DMG Amp for 10s, ending early if they are swapped off-field. Does not interrupt an in-progress Absolute Fullness.' },
+    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'HOLD Heavy Attack for the Forte finisher (usable once per 25s, requires full Concerto Energy) — ends Lunar Cycle, heals nearby allies, and drops a 30s Full Moon Domain; counted as Resonance Liberation DMG despite the Heavy ATK slot (corrected 2026-09-02, same fact as Flux: Moonbow above). Optional but worth casting for the team heal/Blessing of the Wan Light uptime, especially with Augusta on the team.' },
+    { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'Swap out to trigger this automatically — grants the incoming Resonator +50% Heavy Attack DMG Amp for 14s (corrected 2026-09-02 — this row still said 10s, a leftover from before the CHAR_BUFF_TABLE entry above was corrected BACK to 14s), ending early if they are swapped off-field. Does not interrupt an in-progress Absolute Fullness.' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
   // skipped her Mid-air Attack entirely — the step that recalls all 3 Sword Shadows and grants their
@@ -5990,11 +5997,17 @@ const RESONANCE_CHAIN_DATA = {
   //     TODO: needs Phase 2 schema if shield-value mechanics are ever modeled.
   // s5 "A Thousand Futile Glimpses": +20% Resonance Liberation DMG Bonus (libDmg:20, confirmed unchanged —
   //     correct category since it's an explicit "Resonance Liberation DMG Bonus," not a generic buff).
-  // s6 "I Am the Constant in the Chaos": DMG Multiplier of Absolute Fullness (a Heavy ATK) +1600% (heavyDmg:
-  //     1600, confirmed unchanged — correct category, it's Iuno's Forte-empowered Heavy ATK). Also, on cast:
-  //     re-enters Lunar Cycle - New Moon, grants 100 Sentience, and resets Arc Beyond the Edge's cooldown —
-  //     all three unmodeled (no cooldown-reset/Sentience-grant stat in this schema).
-  'Iuno':         { s1: { atkPct: 40 }, s2: { allDmg: 40 }, s3: { libDmg: 65 }, s4: { totalMult: 0 }, s5: { libDmg: 20 }, s6: { heavyDmg: 1600 } },
+  // s6 "I Am the Constant in the Chaos": DMG Multiplier of Absolute Fullness +1600% — CORRECTED
+  //     2026-09-02 against a fresh Prydwen dump from heavyDmg:1600 to libDmg:1600. The prior comment's
+  //     "correct category, it's Iuno's Forte-empowered Heavy ATK" was wrong: Absolute Fullness's own
+  //     kit text explicitly says it "deals Aero DMG to nearby targets, considered as Resonance
+  //     Liberation DMG" despite the Heavy ATK slot used to cast it — the exact same pattern already
+  //     correctly applied to her Flux: Moonbow/Moonring Heavy-ATK-slot moves elsewhere in this file.
+  //     Confirmed independently by the calc page's own damage profile: a flat 0 Heavy ATK share in
+  //     both her DPS and Hybrid rotations. Also, on cast: re-enters Lunar Cycle - New Moon, grants 100
+  //     Sentience, and resets Arc Beyond the Edge's cooldown — all three unmodeled (no cooldown-reset/
+  //     Sentience-grant stat in this schema).
+  'Iuno':         { s1: { atkPct: 40 }, s2: { allDmg: 40 }, s3: { libDmg: 65 }, s4: { totalMult: 0 }, s5: { libDmg: 20 }, s6: { libDmg: 1600 } },
   // Sigrika (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +70% DMG mult to specific skills (rotation-averaged).
   // S2: Learn My True Name DMG Mult+120% (considered Echo Skill DMG) — was totalMult:40, no basis. S3: Innate Gift? stack
   // cap 2->4, no flat %, was critRate:12 with no basis — kept as totalMult. S4: team ATK+20% on ally Echo Skill cast —

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { IUNO_BLOCKS } from '../engine/characterBlocks/iuno.blocks.js';
@@ -17,7 +17,37 @@ describe('triggerEngine parity — Iuno', () => {
     expect(IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s2').effects[0].value).toBe(rc.s2.allDmg);
     expect(IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
     expect(IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
-    expect(IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s6').effects[0].value).toBe(rc.s6.heavyDmg);
+    expect(IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s6').effects[0].value).toBe(rc.s6.libDmg);
+  });
+
+  // Found 2026-09-02 against a fresh Prydwen dump: Absolute Fullness (both its own damage block and its
+  // S6 chain bonus) was wrongly categorized heavyDmg — its own kit text explicitly says "considered as
+  // Resonance Liberation DMG" despite the Heavy ATK slot, the same pattern already correctly applied to
+  // Flux: Moonbow/Moonring elsewhere in this file. Confirmed independently by the calc page's own
+  // damage profile: a flat 0% Heavy ATK share in both her DPS and Hybrid rotations.
+  it("Absolute Fullness (damage block + S6 chain bonus) is libDmg, not heavyDmg — she has zero real Heavy ATK DMG", () => {
+    const rc = RESONANCE_CHAIN_DATA['Iuno'];
+    expect(rc.s6).toEqual({ libDmg: 1600 });
+    expect(rc.s6.heavyDmg).toBeUndefined();
+    const absoluteFullness = IUNO_BLOCKS.find(b => b.id === 'iuno.heavy.absolute-fullness');
+    expect(absoluteFullness.damage.category).toBe('libDmg');
+    const s6 = IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s6');
+    expect(s6.effects[0]).toEqual({ stat: 'libDmg', value: 1600 });
+  });
+
+  it("dmgFocus is ['Liberation'] only — 'Heavy ATK' removed since she has zero real Heavy ATK DMG share", () => {
+    expect(CHARACTER_DATA['Iuno'].dmgFocus).toEqual(['Liberation']);
+  });
+
+  it('Outro duration is 14s everywhere (CHAR_BUFF_TABLE, the TriggerBlock, CHARACTER_ROTATIONS, and desc all agree)', () => {
+    const legacy = CHAR_BUFF_TABLE['Iuno'];
+    expect(legacy.outroBuffs[0].duration).toBe(14);
+    const block = IUNO_BLOCKS.find(b => b.id === 'iuno.outro.gloom-to-gleam-buff');
+    expect(block.timing.duration).toBe(14);
+    const rotationOutro = CHARACTER_ROTATIONS['Iuno'].find(s => s.type === 'Outro');
+    expect(rotationOutro.duration).toBe(14);
+    expect(CHARACTER_DATA['Iuno'].desc).toContain('for 14s');
+    expect(CHARACTER_DATA['Iuno'].desc).not.toContain('for 10s');
   });
 
   it('outro damage buff and selfBuff match CHAR_BUFF_TABLE', () => {

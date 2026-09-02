@@ -61,8 +61,8 @@ export const IUNO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Heavy ATK:Absolute Fullness' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('159.05%'), category: 'heavyDmg' },
-    note: 'Forte-empowered Heavy ATK at full Concerto Energy (once per 25s) — ends Lunar Cycle, heals nearby allies, drops a 30s Full Moon Domain (none modeled, no DPS component).',
+    damage: { hits: parseSkillMultiplierHits('159.05%'), category: 'libDmg' },
+    note: 'Forte-empowered Heavy ATK at full Concerto Energy (once per 25s) — corrected 2026-09-02 from heavyDmg to libDmg against a fresh Prydwen dump: "deals Aero DMG to nearby targets, considered as Resonance Liberation DMG" — the exact same Heavy-ATK-slot-but-Liberation-categorized pattern already correctly applied to iuno.heavy.flux-moonbow above (this file\'s own header comment names the pattern), just missed here. Confirmed by the calc page\'s own damage profile showing a flat 0 Heavy ATK share in both DPS and Hybrid modes. Ends Lunar Cycle, heals nearby allies, drops a 30s Full Moon Domain (none modeled, no DPS component).',
   },
   {
     id: 'iuno.outro.from-gloom-to-gleam',
@@ -146,7 +146,7 @@ export const IUNO_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'cast', on: 'Heavy ATK:Absolute Fullness' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 1600 }],
-    note: "Absolute Fullness' own DMG Multiplier +1600% (confirmed exact, correct heavyDmg category — it's Iuno's Forte-empowered Heavy ATK) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. On-cast re-entry into Lunar Cycle - New Moon, 100 Sentience grant, and Arc Beyond the Edge cooldown reset are NOT modeled (no home in this schema).",
+    effects: [{ stat: 'libDmg', value: 1600 }],
+    note: "Absolute Fullness' own DMG Multiplier +1600% (confirmed exact value) — corrected 2026-09-02 from heavyDmg to libDmg against a fresh Prydwen dump: Absolute Fullness is explicitly \"considered as Resonance Liberation DMG\" despite the Heavy ATK slot used to cast it (same real fact as iuno.heavy.absolute-fullness's own category fix above — a heavyDmg-stat bonus here would have applied to a damage category she has zero real hits in). Cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. On-cast re-entry into Lunar Cycle - New Moon, 100 Sentience grant, and Arc Beyond the Edge cooldown reset are NOT modeled (no home in this schema).",
   },
 ];
