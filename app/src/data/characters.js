@@ -2163,7 +2163,12 @@ const CHARACTER_DATA = {
   ['Phrolova', ['Main Damage Dealer', 'Resonance Skill Damage', 'Havoc DMG Amplification', 'Heavy Attack DMG Amplification']],
   ['Augusta', ['Main Damage Dealer', 'Heavy Attack Damage', 'DMG Amplification']],
   ['Iuno', ['Support and Healer', 'Concerto Efficiency', 'Resonance Liberation Damage', 'Heavy Attack DMG Amplification']],
-  ['Galbrena', ['Main Damage Dealer', 'Heavy Attack Damage']],
+  // Fixed 2026-09-02: was missing 'Echo Skill Damage' — the pasted damage-profile breakdown shows
+  // Echo (290,945, 57.1%) as her single LARGEST damage bucket, bigger than Heavy (163,569, 32.1%),
+  // matching SKILL_MULTIPLIERS' own extensive "considered Echo Skill DMG" rows (Basic/Seraphic
+  // Execution Stage 4-5, Volley/Flamewing Verdict Stage 3, and her whole Liberation-slot Hellfire
+  // Absolution ultimate).
+  ['Galbrena', ['Main Damage Dealer', 'Heavy Attack Damage', 'Echo Skill Damage']],
   ['Qiuyuan', ['Concerto Efficiency', 'Heavy Attack Damage', 'Echo Skill DMG Amplification']],
   ['Chisa', ['Support and Healer', 'Resonance Liberation Damage', 'Havoc Bane']],
   ['Buling', ['Support and Healer', 'DMG Amplification', 'Electro Flare']],
@@ -3701,6 +3706,14 @@ const SKILL_MULTIPLIERS = {
     ['Heavy ATK', 'Hellsent Barrage Sustained Fire', '29.83% (per tick)', 'Demon Hypostasis mid-air hold; considered Heavy Attack DMG.'],
     ['Heavy ATK', 'Ravage', '10.74%+25.04%', 'Demon Hypostasis Skill replacement, shares a cooldown with Encroach; considered Heavy Attack DMG.'],
     ['Echo', 'Hellfire Absolution', '110.90%+90.74%×11', 'Ultimate barrage; considered Echo Skill DMG. Also grants +85% DMG Mult to Demon Hypostasis attacks for 14s.'],
+    // Added 2026-09-02, sourced from the pasted Prydwen text's own Forte Circuit Multipliers table —
+    // was entirely missing (a real gap, not a rounding fix). Value is a flat 666 fixed DMG number,
+    // NOT an ATK%-scaling hit ("considered Basic Attack DMG that does not bear any effect from DMG
+    // buffs"), a shape parseSkillMultiplierHits' existing flat+%ATK 2nd-arg mechanism doesn't cover
+    // (that's for a flat component ON TOP OF a %ATK hit, not a standalone unbuffable flat number) —
+    // recorded here as reference data only, no engine block wired, matching the Review section's own
+    // explicit "Hellstride ... will go unused" confirmation (her real rotation never casts it).
+    ['Basic ATK', 'Hellstride', '666 flat (unbuffable)', 'Dodge-triggered fixed-DMG poke; confirmed unused in her real rotation per source review text.'],
     ['Intro', 'Hellflare Overload', '94.12%', 'Swap-in opener strike.'],
     ['Outro', 'Ashen Pursuit', '79.50%×3+556.50%', 'Pure-damage swap-out finisher; no team buff, so she\'s free to quickswap.'],
   ],

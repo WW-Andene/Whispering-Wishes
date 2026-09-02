@@ -27,6 +27,46 @@ describe('triggerEngine parity — Galbrena', () => {
     expect(s6.effects[0].stat).toBe('heavyDmg');
   });
 
+  // Fixed 2026-09-02: S3 had 2 stacked bugs. (1) `trigger:{type:'cast',...}` with no `timing.duration`
+  // — the same dead cast-scoped/no-duration no-op shape as Carlotta's S1/S2 — converted to
+  // `trigger:{type:'passive'}` + `scopedToBlockId`. (2) `stat:'libDmg'` — category-gated stats only
+  // apply to hits whose own `damage.category` matches exactly, and Hellfire Absolution's block is
+  // `category:'echoDmg'`, so S3 was also a category-mismatched no-op. Fixed to `echoDmg`.
+  it("S3 actually boosts Hellfire Absolution's damage (was a dead no-op, doubly)", () => {
+    const s3 = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.chain.s3');
+    expect(s3.trigger.type).toBe('passive');
+    expect(s3.effects[0].stat).toBe('echoDmg');
+    expect(s3.effects[0].scopedToBlockId).toBe('galbrena.echo.hellfire-absolution');
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Galbrena'], GALBRENA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS3 = resolveHitComposedDps(GALBRENA_BLOCKS, steps, ctx, 3000, 'fusion', 'Main DPS', null, 3);
+    const withoutS3Blocks = GALBRENA_BLOCKS.filter(b => b.id !== 'galbrena.chain.s3');
+    const withoutS3 = resolveHitComposedDps(withoutS3Blocks, steps, ctx, 3000, 'fusion', 'Main DPS', null, 3);
+    const hellfireHit = withS3.hitLog.find(h => h.blockId === 'galbrena.echo.hellfire-absolution');
+    const hellfireHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'galbrena.echo.hellfire-absolution');
+    expect(hellfireHit.damage).toBeGreaterThan(hellfireHitNoS3.damage);
+  });
+
+  // Fixed 2026-09-02: S4 was `target:{scope:'self'}` — the kit text is explicit this is team-wide
+  // ("all Resonators in the team gain 20% all-Attribute DMG Bonus for 20s" on any teammate's Echo
+  // Skill cast).
+  it('S4 is team-wide, not self-only', () => {
+    const s4 = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.chain.s4');
+    expect(s4.target.scope).toBe('whole-team');
+  });
+
+  // Fixed 2026-09-02: S6 previously only had a `heavyDmg` effect, missing the Echo-tagged stages
+  // (Seraphic Execution Stage 4/5, Flamewing Verdict Stage 3) of the same named moves its own kit
+  // text lists as whole abilities.
+  it('S6 covers both the heavyDmg AND echoDmg stages of its 4 named moves', () => {
+    const s6 = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.chain.s6');
+    expect(s6.effects).toHaveLength(2);
+    expect(s6.effects.map(e => e.stat).sort()).toEqual(['echoDmg', 'heavyDmg']);
+    expect(s6.effects[0].value).toBe(60);
+    expect(s6.effects[1].value).toBe(60);
+  });
+
   it('Afterflame debuff matches CHAR_BUFF_TABLE with the real per-stack mechanic (1.5 x40 = 60 max)', () => {
     const legacy = CHAR_BUFF_TABLE['Galbrena'];
     const af = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.debuff.afterflame');

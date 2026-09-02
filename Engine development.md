@@ -625,6 +625,16 @@ outright that Deconstruction, "with the Inherent Ability active, it should alway
 direct, sourced basis for modeling S1 as an unconditional passive (not scoped to specific blocks like
 S2), so it was fixed the same pass by converting to `trigger:{type:'passive'}`.
 
+**5th confirmed instance, 2026-09-02**: Galbrena's `chain.s3` (Hellfire Absolution DMG Multiplier
++130%), same `kind:'buff', trigger:{type:'cast',...}, timing:{}` shape — found only after a new test
+proved the "fixed" block (its `stat` had already been corrected from a separate `libDmg`→`echoDmg`
+category-gating bug) still produced byte-identical totals with/without it, the exact same
+detection method used on Lupa's S4 originally. Fixed the same way as Carlotta's S2 — converted to
+`trigger:{type:'passive'}` + `scopedToBlockId:'galbrena.echo.hellfire-absolution'`. Worth noting for
+any future roster sweep: a block can carry BOTH the dead-trigger bug AND an unrelated category
+mismatch at once (as this one did) — fixing only the visible stat/category bug without also checking
+the trigger shape leaves it silently broken.
+
 **Fix shape, not yet done**: (1) a real architecture fix — either make `statsAtInstant()` also check a
 3rd bucket of "cast-scoped, same-instant-only" buffs (blocks matching this shape, applied only to hits at
 their own exact trigger instant, not before/after), or add a cheap default `timing.duration` (e.g. 0.1s)

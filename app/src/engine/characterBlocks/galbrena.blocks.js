@@ -151,18 +151,41 @@ export const GALBRENA_BLOCKS = [
   {
     id: 'galbrena.chain.s3',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Echo:Hellfire Absolution' },
+    // Fixed 2026-09-02: this was ALSO `trigger:{type:'cast', on:'Echo:Hellfire Absolution'}` with no
+    // `timing.duration` — the same dead cast-scoped/no-duration `kind:'buff'` no-op shape found on
+    // Carlotta's S1/S2 (Engine development.md item 12; matches neither `passiveBlocks`
+    // [trigger.type==='passive'] nor `buffWindows` [duration != null] in
+    // resolveHitComposedDps.js's statsAtInstant()), so even after fixing its stat (below) it still
+    // never applied — proven by a test showing byte-identical totals with/without this block.
+    // Converted to `trigger:{type:'passive'}` + `scopedToBlockId` (Augusta's S3 / Carlotta's S2
+    // pattern) so it actually fires and stays scoped to only Hellfire Absolution's own hit.
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 130 }],
-    note: "Real scope: Hellfire Absolution's own DMG Multiplier +130% (her Echo-slot ultimate, functionally her Liberation-equivalent per RESONANCE_CHAIN_DATA's libDmg categorization) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
+    // Also fixed: was `stat:'libDmg'` — a real category-gating bug, silently zero-effect regardless
+    // of the dead-trigger issue above. Category-specific stats (skillDmg/basicDmg/heavyDmg/libDmg/
+    // echoDmg/coordDmg) only apply to hits whose own `damage.category` matches exactly, and
+    // `galbrena.echo.hellfire-absolution`'s block above is `category:'echoDmg'`, not `'libDmg'` —
+    // RESONANCE_CHAIN_DATA's `s3.libDmg` field name is a legacy "her Liberation-slot node" label
+    // (kept as-is, used for display), not a literal damage-category claim. Fixed the engine stat
+    // to `echoDmg` to actually apply to the real hit.
+    effects: [{ stat: 'echoDmg', value: 130, scopedToBlockId: 'galbrena.echo.hellfire-absolution' }],
+    note: "Real scope: Hellfire Absolution's own DMG Multiplier +130% (her Echo-slot ultimate).",
   },
   {
     id: 'galbrena.chain.s4',
     source: SOURCE, kind: 'buff',
+    // Fixed 2026-09-02: was `target:{scope:'self'}` — the pasted kit text is explicit this is
+    // team-wide: "When Resonators in the team cast Echo Skill, all Resonators in the team gain 20%
+    // all-Attribute DMG Bonus for 20s." CHAR_BUFF_TABLE's "no team support kit" note describes her
+    // base-kit selfBuffs, not this Resonance Chain node — S1-S6 aren't in CHAR_BUFF_TABLE at all, so
+    // that note never actually covered S4. Fixed scope to whole-team. The real trigger (ANY
+    // teammate's Echo Skill cast) has no clean anchor in this schema (same cross-character-trigger
+    // gap as her own Afterflame mechanic below) — kept passive/unconditional as an approximation
+    // rather than force-fitting a fake trigger, same documented tradeoff used elsewhere in this file.
     trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
+    timing: {}, target: { scope: 'whole-team' },
     effects: [{ stat: 'allDmg', value: 20 }],
-    note: "Confirmed exact value/category, no team-wide scope stated — modeled self-scoped per her own CHAR_BUFF_TABLE note ('no team support kit'), unlike other characters' team-wide allDmg nodes.",
+    note: 'Real mechanic: any teammate casting Echo Skill grants the WHOLE TEAM +20% all-Attribute DMG Bonus for 20s.',
   },
   {
     id: 'galbrena.chain.s5',
@@ -177,7 +200,17 @@ export const GALBRENA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 60 }],
-    note: "DMG Multiplier of the 4 Demon Hypostasis moves (Seraphic Execution, Flamewing Verdict, Hellsent Barrage, Purgatory Scourge) +60% (corrected elemDmg -> heavyDmg per the re-audit; value already correct) — kept passive, applies whenever those blocks above fire. Additional conditional layer (Ascent of Malice consuming Afterflame grants up to +35% Fusion DMG Amp) not modeled (no home in a flat node, per the audit's own TODO).",
+    // Fixed 2026-09-02: added a 2nd `echoDmg` effect. The kit text names Seraphic Execution and
+    // Flamewing Verdict as WHOLE moves ("the DMG Multipliers of Basic Attack - Seraphic Execution,
+    // Heavy Attack - Flamewing Verdict, ... are additionally increased by 60%"), but SKILL_MULTIPLIERS
+    // categorizes their own Stage 4/5 (Seraphic Execution) and Stage 3 (Flamewing Verdict) as
+    // `echoDmg`, not `heavyDmg` — a single `heavyDmg` effect silently missed those stages entirely
+    // (category-gated stats only apply to matching-category hits). Both effects target the same 4
+    // named moves' real damage.category split.
+    effects: [
+      { stat: 'heavyDmg', value: 60 },
+      { stat: 'echoDmg', value: 60 },
+    ],
+    note: "DMG Multiplier of the 4 Demon Hypostasis moves (Seraphic Execution, Flamewing Verdict, Hellsent Barrage, Purgatory Scourge) +60%, split across both real damage.category tags those moves carry (heavyDmg for most stages, echoDmg for Seraphic Execution Stage 4/5 and Flamewing Verdict Stage 3) — kept passive, applies whenever those blocks above fire. Additional conditional layer (Ascent of Malice consuming Afterflame grants up to +35% Fusion DMG Amp) not modeled (no home in a flat node, per the audit's own TODO).",
   },
 ];
