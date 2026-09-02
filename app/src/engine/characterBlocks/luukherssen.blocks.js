@@ -148,7 +148,7 @@ export const LUUK_HERSSEN_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 15 }],
-    note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
+    note: 'Intro (Before Injection of Dawn) and Outro (Bow to the Last Light) DMG Bonus +80%, plus Golden Reflux DMG Multiplier +50% (cooldown -2s, +1 charge, unrepresentable here) — two separate conditional pieces, kept as the same totalMult documented-approximation pattern as S1/S3 (corrected 2026-09-02: the prior note wrongly claimed this was a single confirmed-exact flat bonus).',
   },
   {
     id: 'luukherssen.chain.s6',

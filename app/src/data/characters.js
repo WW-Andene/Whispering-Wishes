@@ -5789,6 +5789,11 @@ const RESONANCE_CHAIN_DATA = {
   // S3: Aureole of Execution forms +136% in Aureate Judge (conditional, no flat unconditional %) — was critDmg:25 with no
   // basis, kept as totalMult. S4: team All DMG+20% (not Basic DMG) on ally Tune Break — was basicDmg:40 (wrong stat AND
   // value). S6: Endnotes stacking grants Liberation DMG+40%/stack up to +120% — was defIgnore:15, no basis at all.
+  // S5 re-audited 2026-09-02 against a fresh Prydwen dump: NOT a single unexplained flat bonus (the engine block's
+  // old note wrongly called it "confirmed exact, no further scope detail sourced") — real effect is two separate
+  // conditional pieces: Intro/Outro DMG Bonus +80%, and Golden Reflux DMG Multiplier +50% (+CD -2s, +1 charge, both
+  // unrepresentable here). Kept as the same totalMult:15 documented-approximation pattern as S1/S3, now with an
+  // accurate comment instead of a false "exact" claim.
   'Luuk Herssen': { s1: { basicDmg: 15 }, s2: { libDmg: 60 }, s3: { totalMult: 15 }, s4: { allDmg: 20 }, s5: { totalMult: 15 }, s6: { libDmg: 120 } },
   // Lupa S1: CR+20% for 10s (not elemDmg)
   // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Lupa/Combat, cross-checked against
