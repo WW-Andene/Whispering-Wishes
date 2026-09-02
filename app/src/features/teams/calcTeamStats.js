@@ -836,6 +836,34 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
             }
           }
         });
+        // target: 'team' outroBuffs — found completely unhandled 2026-09-02 (Engine development.md
+        // item 10): none of the three places this file reads outroBuffs (this one, the rotation-
+        // timeline builder, the mode-3 team-application loop) ever checked for 'team', only
+        // 'next'/'enemy'/'ally' — 11 real, sourced roster-wide entries (Denia's Fusion Burst mode
+        // Outro +60% elemDmg, Lucilla's Glacio Chafe mode Outro +60% elemDmg, Aemeath's own +10% All
+        // DMG Outro, etc.) were dead data, contributing zero DPS regardless of team composition. Same
+        // outro-triggered timing convention as the 'next'/'ally' branch above (fires at THIS member's
+        // own outroStart, not blockStart — a real cast event, not passive from swap-in) since a 'team'
+        // outro buff is still triggered by casting the Outro, just with a wider recipient set; same
+        // routing table as 'next' (isAmplify layer, same stat list) since WuWa's own Outro buffs are
+        // always DMG Amplification regardless of recipient scope.
+        (bt.outroBuffs || []).forEach(b => {
+          if (b.target !== 'team') return;
+          const uptime = overlapUptime(outroStart(m.name), b.duration || 30);
+          const val = b.value * uptime;
+          if (b.stat === 'atkPct') {
+            mainStats.atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
+          } else if (['allDmg', 'elemDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'skillDmg'].includes(b.stat)) {
+            applyBuff(mainStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsFocus, dpsElLower: mainDpsElLower });
+          } else if (b.stat === 'deepen') {
+            applyBuff(mainStats, 'deepen', val, { condition: b.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
+          } else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'resShred' || b.stat === 'defShred') {
+            applyBuff(mainStats, b.stat, val);
+          }
+          // 'totalMult' (Rover: Aero's Storm's Echo outro) deliberately falls through unhandled here,
+          // same as every other 'totalMult'-stat buff in this per-stat routing table — it's summed
+          // separately elsewhere in this file, not through applyBuff()'s stat switch.
+        });
       }
 
       // Sonata set p5 team/next ATK% buffs (Rejuvenating Glow/Halo of Starry Radiance's heal-triggered

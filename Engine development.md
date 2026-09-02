@@ -483,6 +483,41 @@ simple stat buff — don't force-fit into the same fix):
 
 ---
 
+## 10. `outroBuffs` `target: 'team'` — real legacy gap found, low practical impact (2026-09-02)
+
+**Where**: `calcTeamStats.js`'s three consumers of `CHAR_BUFF_TABLE[name].outroBuffs` (the non-main
+buff-application loop, the rotation-timeline builder, the synergy-score loop) — none of them ever
+checked for `b.target === 'team'`, only `'next'/'enemy'/'ally'`. Found while investigating why
+Aemeath's resolved Tune Break stance seemed to ignore Denia's own resolved stance.
+
+**Symptom**: a `target: 'team'` `outroBuffs` entry is inert data — contributes exactly 0 to any
+computed stat, in any team composition. 11 real, sourced entries across the roster have this shape
+(Denia's Fusion Burst mode Outro +60% elemDmg, Lucilla's Glacio Chafe mode Outro +60% elemDmg,
+Aemeath's own +10% All DMG Outro, Buling, Ciaccona, Rover: Havoc, and others — full list in the
+2026-09-02 commit that fixed this).
+
+**Blast radius, corrected after over-claiming it once**: initially reported this as breaking Denia's
+real synergy with Aemeath in the exact composition under discussion — WRONG, based on a broken test (a
+`CHAR_BUFF_TABLE['Denia'] = {...}` reassignment from a separate script silently failed to propagate,
+almost certainly a module-resolution quirk between the debug script and the app's own import graph, not
+a real finding). The CORRECT test — comparing `calcTeamStats(['Aemeath','Denia','Lynae'],...)` against
+`calcTeamStats(['Aemeath','Lynae'],...)` (two full real calls, no in-place mutation) — showed Denia
+contributes +110,034 to Aemeath's damage, and a direct `resolveHitComposedTeamDps` call (also
+unmutated) confirmed her Fusion Burst outro block correctly reaches Aemeath via the MODERN TriggerBlock
+engine, provided team order puts the main DPS last (which `chooseOnFieldOrder` always guarantees). So:
+**the modern, converted-character path was never broken** — `outroBuffs`'s `target:'team'` dead code
+only affects the LEGACY per-member buff loop, which is itself gated behind `!allMembersConverted` and
+therefore already skipped for any fully-converted team (the overwhelming majority of real usage today).
+Real bug, real fix (now merged), but it only matters for a mixed team with an unconverted member —
+currently none exist in the released roster.
+
+**Process lesson, stated plainly since it happened twice in one session**: verify a "before/after"
+comparison via two INDEPENDENT calls to the real function (different team compositions), never via
+in-place mutation of shared module state — a silently-failed mutation looks identical to "this data has
+no effect," and the two are not distinguishable without this kind of second check.
+
+---
+
 ## How to add to this file
 
 When an audit turns up a real engine/calculator limitation (as opposed to a
