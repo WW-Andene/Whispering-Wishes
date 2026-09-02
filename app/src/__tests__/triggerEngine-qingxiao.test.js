@@ -5,6 +5,13 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { QINGXIAO_BLOCKS } from '../engine/characterBlocks/qingxiao.blocks.js';
 
 describe('triggerEngine parity — Qingxiao', () => {
+  // Fixed 2026-09-02: category was previously unset. WuWa's own general mechanic (Mid-air/Plunging
+  // Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure
+  // (listed under "Basic Attack — Strings to Steel") confirms basicDmg.
+  it('Mid-air Attack - Stringblade is basicDmg-categorized', () => {
+    expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.midair.stringblade-stage1-3').damage.category).toBe('basicDmg');
+  });
+
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Qingxiao'];
     expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.chain.s1').effects[0].value).toBe(rc.s1.critRate);

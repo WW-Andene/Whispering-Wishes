@@ -41,7 +41,10 @@ export const QINGXIAO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Mid-air:Mid-air Attack - Stringblade Stage 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
-    damage: { hits: parseSkillMultiplierHits('7.24%×5+54.28% → 44.89%+22.45%×2 → 11.14%×5+83.51%') },
+    // category fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks inherit Basic
+    // ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure — listed under
+    // "Basic Attack — Strings to Steel", not Heavy Attack — confirms basicDmg.
+    damage: { hits: parseSkillMultiplierHits('7.24%×5+54.28% → 44.89%+22.45%×2 → 11.14%×5+83.51%'), category: 'basicDmg' },
     note: 'Builds Qin Heart/Sword Cadence toward her Heavy Attack.',
   },
   {

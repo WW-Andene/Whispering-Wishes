@@ -5,6 +5,14 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { LUUK_HERSSEN_BLOCKS } from '../engine/characterBlocks/luukherssen.blocks.js';
 
 describe('triggerEngine parity — Luuk Herssen', () => {
+  // Fixed 2026-09-02: category was previously unset on both Mid-air blocks. WuWa's own general mechanic
+  // (Mid-air/Plunging Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus the dump's
+  // own kit structure (listed under "Basic Attack — Such is Light") confirms basicDmg.
+  it('both Mid-air Attack blocks are basicDmg-categorized', () => {
+    expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.midair.jump-scythe-resection-stage2-3').damage.category).toBe('basicDmg');
+    expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.midair.basic1-jump-resection2-3').damage.category).toBe('basicDmg');
+  });
+
   it('S1-S5 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Luuk Herssen'];
     expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s1').effects[0].value).toBe(rc.s1.basicDmg);

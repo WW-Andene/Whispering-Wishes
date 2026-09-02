@@ -30,7 +30,10 @@ export const LUUK_HERSSEN_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Mid-air:Jump: Scythe Resection Stage 2-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('50.42%×2 → 74.92%×2') },
+    // category fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks inherit Basic
+    // ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure — listed under
+    // "Basic Attack — Such is Light", not Heavy Attack — confirms basicDmg.
+    damage: { hits: parseSkillMultiplierHits('50.42%×2 → 74.92%×2'), category: 'basicDmg' },
     note: 'Jump-input airborne combo (does slightly more damage/Energy than the Basic-input variant), restores Ichor Flow, applies Tune Strain.',
   },
   {
@@ -55,8 +58,10 @@ export const LUUK_HERSSEN_BLOCKS = [
     trigger: { type: 'cast', on: 'Mid-air:Basic 1 → Jump: Resection 2-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // No separate SKILL_MULTIPLIERS row for the "Basic 1" prefix hit — the Resection Stage 2-3 segment
-    // is used as a representative value for the combo cycle this step performs.
-    damage: { hits: parseSkillMultiplierHits('50.42%×2 → 74.92%×2') },
+    // is used as a representative value for the combo cycle this step performs. category fixed
+    // 2026-09-02: same basis as the sibling Mid-air block above (Basic Attack section, no Heavy
+    // override) — basicDmg.
+    damage: { hits: parseSkillMultiplierHits('50.42%×2 → 74.92%×2'), category: 'basicDmg' },
     note: 'Jump back into the airborne combo for a further cycle. No separate row for the leading Basic Attack input, not modeled. Fires twice in the real rotation.',
   },
   {
