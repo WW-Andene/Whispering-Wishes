@@ -2426,16 +2426,25 @@ const CHAR_BUFF_TABLE = {
   // buff ends early if that Resonator is swapped off-field — none of that conditionality was previously
   // documented. Waxing Ascent self-shield duration (15s) added — was previously undocumented.
   'Iuno': {
-    outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 10, condition: 'From Gloom to Gleam — ends early if the incoming Resonator is switched off-field; casting Outro does NOT interrupt an in-progress Absolute Fullness' }],
+    outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 14, condition: 'From Gloom to Gleam — ends early if the incoming Resonator is switched off-field; casting Outro does NOT interrupt an in-progress Absolute Fullness' }],
     libBuffs: [],
     selfBuffs: [
-      { stat: 'allDmg', value: 40, target: 'self', duration: 10, condition: 'Blessing of the Wan Light: +4% all DMG Amp per stack, max 10 stacks (40% total); gained by being Shielded inside the 30s Full Moon Domain (max 1 stack per 0.5s) — Derivation Inherent Skill instantly grants 5 stacks on Intro/Liberation cast; each new stack resets the 10s duration; ends early if swapped off-field' },
+      { stat: 'allDmg', value: 40, target: 'team', duration: 10, condition: 'Blessing of the Wan Light: +4% all DMG Amp per stack, max 10 stacks (40% total) to whichever Resonator receives the shield — gained by being Shielded inside the 30s Full Moon Domain (max 1 stack per 0.5s) — Derivation Inherent Skill instantly grants 5 stacks on Intro/Liberation cast; each new stack resets the 10s duration; ends early if the receiving Resonator is swapped off-field' },
     ],
     debuffs: [],
-    // Outro duration corrected 2026-08-31 from 14s to 10s — no source basis for 14s.
-    // Team-heal claim corrected 2026-08-16: restored after being omitted in a prior audit,
-    // confirmed via a live re-check.
-    note: 'Outro: 50% Heavy ATK DMG Amp for 10s (ends early if the incoming Resonator is swapped off-field). Real team healing via New Moon Moonbow Basic ATK (13.03/13.03/24.43% healing per hit at Lv10), Moonbow Dodge Counter (16.29%), Arc Beyond the Edge (24.43%), Absolute Fullness (194.26% healing, once/25s) + 30s Full Moon Domain (5s-interval team HP/STA regen, 20 STA per tick). Self-shield via Waxing Ascent: 32% ATK, 15s, self-only, on every Basic/Heavy/Dodge/Skill/Liberation/Intro cast — not passed to the incoming Resonator. Liberation activates Lunar Cycle burst phase, no team DMG buff.',
+    // Outro duration corrected BACK to 14s 2026-09-02 — the 2026-08-31 change to 10s ("no source
+    // basis for 14s") was itself wrong. Re-verified against two independent live sources
+    // (wuthering.gg, and a web search aggregating game8/prydwen/sportskeeda) while auditing Augusta's
+    // real-world curated recommendation list: "The incoming Resonator gains 50% Heavy Attack DMG
+    // Amplification for 14s" — both agree, neither shows 10s anywhere.
+    // Blessing of the Wan Light target corrected 2026-09-02 from 'self' to 'team' — same audit, same
+    // two sources: both explicitly describe it as benefiting "the receiving Resonator"/"whichever
+    // Resonator receives the shield" inside the Full Moon Domain, NOT Iuno exclusively. This is the
+    // exact mechanism the community credits as giving Augusta "a whopping 90% DMG Amplification...
+    // in total" (this 40% base-kit max + the outro's 50% heavyDmg = 90%, matching precisely) — was
+    // wrongly self-only, so this 40% never reached any teammate at all, understating Iuno as a
+    // recommended partner for every Heavy-ATK-focused Main DPS she's actually built around.
+    note: 'Outro: 50% Heavy ATK DMG Amp for 14s (ends early if the incoming Resonator is swapped off-field). Blessing of the Wan Light: up to +40% all DMG Amp (10 stacks) to whichever Resonator receives the shield inside Full Moon Domain, not Iuno-exclusive. Real team healing via New Moon Moonbow Basic ATK (13.03/13.03/24.43% healing per hit at Lv10), Moonbow Dodge Counter (16.29%), Arc Beyond the Edge (24.43%), Absolute Fullness (194.26% healing, once/25s) + 30s Full Moon Domain (5s-interval team HP/STA regen, 20 STA per tick). Self-shield via Waxing Ascent: 32% ATK, 15s, self-only, on every Basic/Heavy/Dodge/Skill/Liberation/Intro cast — not passed to the incoming Resonator. Liberation activates Lunar Cycle burst phase, no team DMG buff.',
   },
   'Qiuyuan': {
     outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
