@@ -5159,6 +5159,18 @@ const CHARACTER_ROTATIONS = {
   // Liberation DMG") with its name capitalization fixed to match the row exactly ('With', not 'with') —
   // the old lowercase 'with' silently broke the case-sensitive substring match on top of the wrong type,
   // a second independent reason this step was resolving to 0 DMG.
+  // Corrected 2026-09-02 against a fresh Prydwen dump: the Forte-finisher step named the BASE 'Dance
+  // With the Wolf' (56.02%+42.02%×4+336.11%, ~672% total) — but the dump's own Review/Gameplay text is
+  // explicit that the real rotation ALWAYS uses the enhanced 'Dance With the Wolf: Climax'
+  // (75.63%+56.72%×4+453.75%, ~1256% total, nearly double) instead: "using Firestrike and Wolf's Claw
+  // gave us 2 Wolfaith, so now her Forte Enhanced Skill, 'Dance With the Wolf - Climax,' can be cast...
+  // [the base version] never sees use" — Foebreaker (2 steps earlier here) already puts her in Burning
+  // Matchpoint by this point, which is exactly the Climax's own real cast condition. A prior session's
+  // engine file (lupa.blocks.js) had already documented this exact mismatch as a deliberate "matches
+  // CHARACTER_ROTATIONS as given" choice rather than a bug — this dump is the real source proving
+  // CHARACTER_ROTATIONS itself was wrong, not lupa.blocks.js's own reading of it. Fixed here; see
+  // lupa.blocks.js for the matching engine-side fix (also unblocks S4's own +125% Climax DMG Multiplier
+  // buff, previously inert for the identical reason).
   'Lupa': [
     { type: 'Intro', skill: 'Try Focusing, Eh?' },
     { type: 'Liberation', skill: 'Fire-Kissed Glory', duration: 35, note: 'fully restores Wolflame, grants team Pack Hunt + Glory buffs' },
@@ -5166,7 +5178,7 @@ const CHARACTER_ROTATIONS = {
     { type: 'Mid-air', skill: 'Attack Stage 1-2', note: 'builds toward Firestrike' },
     { type: 'Heavy ATK', skill: 'Firestrike', note: 'consumes 50 Wolflame, grants 1 Wolfaith' },
     { type: 'Heavy ATK', skill: "Wolf's Claw", note: 'press Basic after Firestrike, consumes 50 Wolflame, grants 1 more Wolfaith' },
-    { type: 'Liberation', skill: 'Dance With the Wolf', note: 'Forte finisher, consumes both Wolfaith' },
+    { type: 'Liberation', skill: 'Dance With the Wolf: Climax', note: 'Forte finisher, consumes both Wolfaith — always the Climax variant since Foebreaker (above) already entered Burning Matchpoint' },
     { type: 'Outro', skill: 'Stand by Me, Warrior', duration: 14, note: 'grants next Resonator Fusion + Basic ATK DMG Amp' },
   ],
   // Corrected 2026-08-17 against Prydwen's live "Gameplay and teams" rotation: the previous entry
@@ -6075,6 +6087,14 @@ const RESONANCE_CHAIN_DATA = {
   // S2: allDmg -> elemDmg (Fusion DMG Bonus is element-specific, not all-element); value 40 already
   // correct as the max-stacked total (20%/stack ×2 stacks, matching this file's existing convention of
   // storing the stacking cap, e.g. Sanhua's S6 atkPct).
+  // Corrected 2026-09-02 (2 findings from a fresh Prydwen dump): (1) CHARACTER_ROTATIONS['Lupa'] named
+  // the wrong Forte-finisher move (base 'Dance With the Wolf' instead of the Climax variant her real
+  // rotation always casts) — fixed there, which for the first time gave S4 a real cast to anchor to.
+  // (2) That exposed S4's `libDmg` buff-effect shape can't actually apply in the hit-composed resolvers
+  // at all (a cast-scoped, no-duration buff is a silent no-op — see lupa.blocks.js's own header comment,
+  // a ~65-block-wide architecture gap logged in Engine development.md). S4 is now modeled as a real
+  // damage block (a proportional 2nd hit) in lupa.blocks.js instead of a stat here — this table's own
+  // s4.libDmg:125 stays as the documented real value/category, just no longer the thing the engine reads.
   'Lupa':         { s1: { critRate: 20 }, s2: { elemDmg: 40 }, s3: { libDmg: 100 }, s4: { libDmg: 125 }, s5: { libDmg: 15 }, s6: { defIgnore: 30 } },
   // Verina S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Verina/Combat's
   // Resonance Chain section (Chrome UA + google.com referer + jsRender), cross-checked against

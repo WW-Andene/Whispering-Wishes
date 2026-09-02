@@ -4,11 +4,19 @@
 // CHAR_BUFF_TABLE['Lupa'], RESONANCE_CHAIN_DATA['Lupa'] (+ its own detailed
 // 2026-09-01 re-audit comment, read directly for each node's real mechanic),
 // SKILL_MULTIPLIERS['Lupa'], and CHARACTER_ROTATIONS['Lupa']. No new numbers
-// invented. S3/S4 scope moves (Nowhere to Run! / Dance With the Wolf: Climax)
-// that are NOT used in her real CHARACTER_ROTATIONS (which stays on the base
-// Dance With the Wolf, not the Climax upgrade, and never enters Wild Hunt state)
-// — both blocks are present but inert in the standard rotation, same as Jiyan's
-// S6/Finale and Lumi's S5/Laser in earlier batches.
+// invented. S3 (Nowhere to Run!) stays correctly inert: reaching Wild Hunt needs
+// 2 TEAMMATE Intro casts within Pack Hunt's window, which her own solo-modeled
+// CHARACTER_ROTATIONS (only her own steps) has no way to reach — same class as
+// Jiyan's S6/Finale and Lumi's S5/Laser in earlier batches.
+//
+// Corrected 2026-09-02 against a fresh Prydwen dump: S4 (Dance With the Wolf:
+// Climax) was ALSO wrongly treated as inert — but unlike S3, this one only
+// depends on Lupa's OWN Burning Matchpoint state (entered via her own Foebreaker
+// cast, already a real step in her rotation), no teammate dependency at all. The
+// dump proves the real bug was CHARACTER_ROTATIONS itself naming the wrong move
+// (the base 'Dance With the Wolf', not the Climax upgrade her rotation actually
+// casts) — fixed there and here together; see lupa.liberation.dance-with-the-
+// wolf-climax's own note below.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -23,6 +31,9 @@ export const LUPA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Try Focusing, Eh?' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // Flagged 2026-09-02: no `category` set — no source text confirms which category applies. Same open
+    // gap class already flagged on Ciaccona's/Cartethyia's own uncategorized Intro/Mid-air blocks (means
+    // this hit currently gets zero category-specific DMG Bonus routing from any teammate buff).
     damage: { hits: parseSkillMultiplierHits('29.76%+42.16%×4') },
   },
   {
@@ -47,7 +58,7 @@ export const LUPA_BLOCKS = [
     trigger: { type: 'cast', on: 'Mid-air:Attack Stage 1-2' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('76.73% → 77.23%+19.31%×4') },
-    note: 'Builds toward Firestrike.',
+    note: 'Builds toward Firestrike. Flagged 2026-09-02: no `category` set — same recurring cross-character Mid-air Attack gap as Ciaccona\'s/Cartethyia\'s own blocks, no source text confirming which category applies.',
   },
   {
     id: 'lupa.heavy.firestrike',
@@ -65,13 +76,23 @@ export const LUPA_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('72.15%+18.04%×4+96.19%'), category: 'heavyDmg' },
     note: 'Replaces Heavy ATK at 50+ Wolflame and 1+ Wolfaith; consumes 50 Wolflame, grants 1 more Wolfaith.',
   },
+  // Fixed 2026-09-02 against a fresh Prydwen dump: this block was anchored to the BASE 'Dance With the
+  // Wolf' cast (56.02%+42.02%×4+336.11%, ~672% total) — matching CHARACTER_ROTATIONS['Lupa'] as it was
+  // previously written, which this file's own prior header comment explicitly (and, it turns out,
+  // wrongly) treated as authoritative. The dump proves CHARACTER_ROTATIONS itself was the actual bug:
+  // her real modeled rotation ALWAYS casts the enhanced 'Dance With the Wolf: Climax' instead
+  // (75.63%+56.72%×4+453.75%, ~1256% total, nearly double) since Foebreaker (2 steps earlier in her
+  // real rotation) already puts her in Burning Matchpoint — Climax's own real cast condition. Renamed
+  // this block's id/trigger/value to match. This also un-inerts lupa.chain.s4's own +125% Climax DMG
+  // Multiplier buff below, which was already correctly anchored to the Climax cast label and simply had
+  // nothing to scope onto before now.
   {
-    id: 'lupa.liberation.dance-with-the-wolf',
+    id: 'lupa.liberation.dance-with-the-wolf-climax',
     source: SOURCE, kind: 'damage',
-    trigger: { type: 'cast', on: 'Liberation:Dance With the Wolf' },
+    trigger: { type: 'cast', on: 'Liberation:Dance With the Wolf: Climax' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('56.02%+42.02%×4+336.11%'), category: 'libDmg' },
-    note: 'Forte finisher at 2 Wolfaith, consumes both; considered Resonance Liberation DMG.',
+    damage: { hits: parseSkillMultiplierHits('75.63%+56.72%×4+453.75%'), category: 'libDmg' },
+    note: 'Forte finisher at 2 Wolfaith while in Burning Matchpoint, consumes both Wolfaith, removes Burning Matchpoint; considered Resonance Liberation DMG. Always the variant her real rotation uses — the weaker base Dance With the Wolf (no Burning Matchpoint requirement) is never actually cast in her modeled rotation per the source dump\'s own text.',
   },
   {
     id: 'lupa.outro.stand-by-me-warrior',
@@ -143,13 +164,28 @@ export const LUPA_BLOCKS = [
     effects: [{ stat: 'libDmg', value: 100 }],
     note: "Nowhere to Run!'s own DMG Multiplier +100% (recategorized from totalMult to libDmg per the re-audit — that move's own text confirms it's 'considered Resonance Liberation DMG') — cast-scoped (instant, no persistent duration). Nowhere to Run! replaces the next Intro Skill only in Wild Hunt state, which her real CHARACTER_ROTATIONS never enters, so this block is present but does not fire in the standard rotation.",
   },
+  // Corrected 2026-09-02, 2nd pass: fixing the rotation-name bug above (Climax now really fires) exposed
+  // a DEEPER, separate architecture gap while testing — resolveHitComposedDps.js's statsAtInstant() only
+  // reads `passiveBlocks` (trigger.type === 'passive') and `buffWindows` (blocks with `timing.duration !=
+  // null`); a `kind:'buff'` block with `trigger:{type:'cast',...}` and `timing:{}` (cast-scoped, no
+  // duration — this block's exact prior shape) matches NEITHER filter and is a silent no-op in every
+  // hit-composed resolver, confirmed by a failing test (`withS4.totalDamage` === `noS4.totalDamage`
+  // exactly). This is NOT unique to Lupa — a rough codebase scan found ~65 blocks shaped this way; logged
+  // as its own architecture-scale finding in Engine development.md rather than mass-fixed here. For THIS
+  // block specifically, converted from a `libDmg` buff-effect (which could never apply, even once the
+  // rotation-name bug was fixed) into a real `kind:'damage'` proportional-second-hit block instead — the
+  // exact same pattern Brant's S6/Denia's S4/Chisa's S4 already established for a same-instant, same-
+  // move-only DMG Multiplier that a cast-scoped buff can't actually deliver. Delta = Climax's own base
+  // total (75.63+56.72×4+453.75 = 756.26) at +125% (×2.25 = 1701.585) minus the base total = 945.325,
+  // added as one same-instant proportional hit, same category, gated to sequence 4 via the `.chain.s4`
+  // id convention (sequenceGating.js).
   {
     id: 'lupa.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Dance With the Wolf: Climax' },
-    timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 125 }],
-    note: "Dance With the Wolf: Climax's own DMG Multiplier +125% (recategorized from totalMult to libDmg per the re-audit, same reasoning as S3; also fixes a stale data bug where the sourcing comment already said 125 but the stored value was still totalMult:25, off by a factor of 5 and never actually applied) — cast-scoped (instant, no persistent duration). Her real CHARACTER_ROTATIONS uses the base Dance With the Wolf, not the Climax upgrade, so this block is present but does not fire in the standard rotation.",
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('945.325%'), category: 'libDmg' },
+    note: "S4: Dance With the Wolf: Climax's own DMG Multiplier +125% (confirmed exact — also fixes a stale prior data bug where an earlier version of this file stored totalMult:25 instead of the sourced 125, a factor-of-5 error). Modeled as a proportional second hit at the same instant as lupa.liberation.dance-with-the-wolf-climax (945.325% = 125% of that block's own 756.26% base total), not a buff effect — see this block's own header comment for why a buff-shaped version can't actually apply here.",
   },
   {
     id: 'lupa.chain.s5',

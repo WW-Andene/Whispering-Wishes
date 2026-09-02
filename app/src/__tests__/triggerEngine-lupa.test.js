@@ -12,20 +12,35 @@ describe('triggerEngine parity — Lupa', () => {
     expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s6').effects[0].value).toBe(rc.s6.defIgnore);
   });
 
-  it('S2/S3/S4 model the real per-stack/scoped mechanics, matching the max/scoped RESONANCE_CHAIN_DATA values', () => {
+  it('S2/S3 model the real per-stack/scoped mechanics, matching the max/scoped RESONANCE_CHAIN_DATA values', () => {
     const rc = RESONANCE_CHAIN_DATA['Lupa'];
     const s2 = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s2');
     expect(s2.effects[0].value * s2.effects[0].maxStacks).toBe(rc.s2.elemDmg);
     expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
-    expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s4').effects[0].value).toBe(rc.s4.libDmg);
   });
 
-  it('S3/S4 are correctly libDmg, not the old wrong totalMult category, and the stale S4 magnitude bug is fixed', () => {
+  it('S3 is correctly libDmg, not the old wrong totalMult category', () => {
     const s3 = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s3');
-    const s4 = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s4');
     expect(s3.effects[0].stat).toBe('libDmg');
-    expect(s4.effects[0].stat).toBe('libDmg');
-    expect(s4.effects[0].value).toBe(125);
+  });
+
+  // Fixed 2026-09-02, 2nd pass (see this block's own header comment in lupa.blocks.js): S4 was a
+  // `kind:'buff'` libDmg effect, but that shape (cast-scoped, no timing.duration) is a silent no-op in
+  // every hit-composed resolver — statsAtInstant() only reads passiveBlocks/buffWindows, neither of
+  // which a no-duration cast-triggered buff matches. Converted to a real `kind:'damage'` proportional
+  // 2nd-hit block instead, same pattern as Brant's S6/Denia's S4/Chisa's S4.
+  it("S4 is a real damage block (not an ineffective buff), gated to sequence 4, worth 125% of Climax's own base total", () => {
+    const s4 = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s4');
+    expect(s4.kind).toBe('damage');
+    expect(s4.damage.category).toBe('libDmg');
+    const s4Total = s4.damage.hits.reduce((sum, h) => sum + h.atkPct, 0);
+    expect(s4Total).toBeCloseTo(945.325, 1);
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lupa'], LUPA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const atS4 = resolveHitComposedDps(LUPA_BLOCKS, steps, ctx, 3000, 'fusion', 'Sub DPS', null, 4);
+    const atS3 = resolveHitComposedDps(LUPA_BLOCKS, steps, ctx, 3000, 'fusion', 'Sub DPS', null, 3);
+    expect(atS4.hitLog.some(h => h.blockId === 'lupa.chain.s4')).toBe(true);
+    expect(atS3.hitLog.some(h => h.blockId === 'lupa.chain.s4')).toBe(false);
   });
 
   it('outro, libBuff, selfBuff, and debuff match CHAR_BUFF_TABLE', () => {
@@ -48,7 +63,26 @@ describe('triggerEngine parity — Lupa', () => {
     const fired = new Set(hitLog.map(h => h.blockId));
     expect(fired.has('lupa.intro.try-focusing-eh')).toBe(true);
     expect(fired.has('lupa.liberation.fire-kissed-glory')).toBe(true);
-    expect(fired.has('lupa.liberation.dance-with-the-wolf')).toBe(true);
+    expect(fired.has('lupa.liberation.dance-with-the-wolf-climax')).toBe(true);
     expect(fired.has('lupa.heavy.wolfs-claw')).toBe(true);
+  });
+
+  // Fixed 2026-09-02 against a fresh Prydwen dump: CHARACTER_ROTATIONS['Lupa'] previously named the
+  // Forte finisher as the BASE 'Dance With the Wolf' (~672% total, no Burning Matchpoint requirement) —
+  // a real data bug, not a legitimate approximation, since her rotation always enters Burning Matchpoint
+  // via Foebreaker 2 steps earlier, and the dump's own text confirms the base version "never sees use."
+  // This silently computed roughly HALF her real Forte-finisher damage, and left S4's own +125% Climax
+  // DMG Multiplier buff permanently inert (its trigger already correctly named the Climax cast — nothing
+  // in the rotation ever matched it).
+  it("the Forte finisher fires the Climax variant (not the weaker base version) and S4's buff is no longer inert", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lupa'], LUPA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withoutS4 = LUPA_BLOCKS.filter(b => b.id !== 'lupa.chain.s4');
+    const withS4 = resolveHitComposedDps(LUPA_BLOCKS, steps, ctx, 3000, 'fusion', 'Sub DPS', null, 6);
+    const noS4 = resolveHitComposedDps(withoutS4, steps, ctx, 3000, 'fusion', 'Sub DPS', null, 6);
+    expect(withS4.totalDamage).toBeGreaterThan(noS4.totalDamage);
+    // The old base-version block id no longer exists at all — renamed, not left as a dead duplicate.
+    expect(LUPA_BLOCKS.find(b => b.id === 'lupa.liberation.dance-with-the-wolf')).toBeUndefined();
+    expect(withS4.hitLog.filter(h => h.blockId === 'lupa.liberation.dance-with-the-wolf-climax').length).toBe(6);
   });
 });

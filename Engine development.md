@@ -572,6 +572,56 @@ logical next audit layer, not yet run.
 
 ---
 
+## 12. `kind:'buff'` blocks with `trigger:{type:'cast',...}` and no `timing.duration` are a silent no-op in every hit-composed resolver — found 2026-09-02, ~65 occurrences roster-wide, not yet fixed broadly
+
+**Found**: while fixing Lupa's S4 (Dance With the Wolf: Climax's own +125% DMG Multiplier). Its block was
+`kind:'buff', trigger:{type:'cast', on:'Liberation:Dance With the Wolf: Climax'}, timing:{}` — a cast-
+scoped, same-move-only, non-persistent buff, a shape used throughout this codebase (documented inline
+elsewhere as "cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's
+S5"). Fixing an unrelated `CHARACTER_ROTATIONS` bug (see `characters.js`'s own Lupa comment) finally gave
+this block a real cast to fire from — and a test proving it actually raised computed damage
+(`withS4.totalDamage > noS4.totalDamage`) FAILED: the two totals were byte-identical.
+
+**Root cause**: `resolveHitComposedDps.js`'s `statsAtInstant()` (~line 128) builds its per-hit stats
+snapshot from exactly two sources — `passiveBlocks` (`trigger.type === 'passive'`) and `buffWindows`
+(buff/debuff blocks where `timing.duration != null`, built once via `buildBlockWindows()`). A block that
+is BOTH `trigger.type === 'cast'` AND has no `timing.duration` matches neither filter — `buffBlocks`'s own
+filter (~line 115) explicitly requires `timing?.duration != null`. It is silently invisible to every
+per-hit stats computation, including at the exact instant of its own trigger cast. `resolveHitComposedTeamDps.js`
+shares this same architecture (not independently re-verified per-line here, but uses the identical
+`buildBlockWindows`/passiveBlocks split) — worth confirming when acted on.
+
+**Scope**: a rough regex scan (`kind:'buff'` blocks with a `trigger:{type:'cast',...}` and `timing:{}`
+within ~80 chars) found **~65 matches across `engine/characterBlocks/*.js`** — not manually verified one
+by one (the regex is crude and likely has some false positives/negatives), but the shape is clearly
+common, not a one-off. Some of these may be harmless in practice (e.g. `assumedInactive`/mode-conditional
+ones already gated out some other way, or genuinely low-value effects), but any of them representing a
+real, sourced, non-trivial DMG Multiplier — the exact shape Lupa's S4 was — is silently contributing
+ZERO to computed DPS today, the same false-negative class as the already-found-and-fixed `totalMult`
+architecture bug.
+
+**Already fixed this session, as individual cases, NOT via an architecture change**: Lupa's S4 — converted
+from a `libDmg` buff-effect to a real `kind:'damage'` proportional-2nd-hit block (945.325% = 125% of
+Dance With the Wolf: Climax's own 756.26% base total), same pattern already established for Brant's
+S6/Denia's S4/Chisa's S4 gap #6/#7 fixes. This works precisely BECAUSE those cases are "boost THIS one
+move's own damage by X%" — expressible as a proportional second hit at the same instant. A genuinely
+different shape (e.g. a cast-scoped buff meant to persist a few seconds and apply to OTHER subsequent
+hits, not just its own trigger) would need a real `timing.duration` added instead — a data fix, not an
+architecture fix, once identified.
+
+**Fix shape, not yet done**: (1) a real architecture fix — either make `statsAtInstant()` also check a
+3rd bucket of "cast-scoped, same-instant-only" buffs (blocks matching this shape, applied only to hits at
+their own exact trigger instant, not before/after), or add a cheap default `timing.duration` (e.g. 0.1s)
+so `buildBlockWindows()` treats them as a 1-instant window; (2) OR a systematic per-block sweep: for each
+of the ~65 matches, read the real kit text and either (a) it's genuinely a same-move-only multiplier →
+convert to the Brant/Denia/Lupa-S4 proportional-2nd-hit pattern, (b) it has a real, sourced duration that
+was simply never entered → add `timing.duration`, or (c) it's meant to apply broadly to future hits with
+no clean sourced duration → flag as a real, documented gap, same "don't force-fit a lossy value" rule
+already used throughout this file. Neither path attempted broadly yet — Lupa's S4 was fixed as an
+isolated case because it was directly in scope, not as a template applied roster-wide.
+
+---
+
 ## How to add to this file
 
 When an audit turns up a real engine/calculator limitation (as opposed to a
