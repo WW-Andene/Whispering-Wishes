@@ -161,6 +161,17 @@ export function createStats() {
     libDmg: 0, echoDmg: 0, coordDmg: 0, outroDmg: 0,
     deepen: 0, amplify: 0,
     defShred: 0, resShred: 0, defIgnore: 0,
+    // totalMult (added 2026-09-02, ENGINE_MERGE_PLAN.md totalMult architecture-bug fix): a flat
+    // fallback multiplier for real kit bonuses that don't map to a dedicated category stat — was
+    // previously accepted by `applyBuff()`'s switch as a real case in NEITHER `resolveHitComposedDps.js`
+    // nor `resolveHitComposedTeamDps.js` (both explicitly skipped it, "no accumulator here yet"), and
+    // even where `resolveSimulatedTeamRotation.js` DID accumulate it (its own separate
+    // `totalMultBonus` return value), `calcTeamStats.js`'s only caller for a fully-converted team
+    // discarded that return field entirely — so a `stat:'totalMult'` effect (38 blocks across 24
+    // character files at the time this was found) contributed ZERO to any actually-computed DPS
+    // number in the app, in every real code path, despite being a real sourced kit bonus. See
+    // ENGINE_MERGE_PLAN.md's own writeup for the full investigation.
+    totalMult: 0,
   };
 }
 
@@ -396,6 +407,7 @@ export function applyBuff(stats, buff, value, options = {}) {
     case 'skillDmg':  stats[target || 'skillDmg'] += value; break;
     case 'coordDmg':  stats[target || 'coordDmg'] += value; break;
     case 'outroDmg':  stats[target || 'outroDmg'] += value; break;
+    case 'totalMult': stats.totalMult += value; break;
     case 'critRate':  stats.cr += value; break;
     case 'critDmg':   stats.cd += value; break;
     case 'resShred':  stats.resShred += value; break;

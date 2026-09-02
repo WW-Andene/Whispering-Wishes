@@ -169,7 +169,11 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
         // real kit text carries alongside the %ATK term (e.g. Buling's "169 flat + 18.30% ATK") — WuWa's
         // own damage formula treats it as part of the base-damage term, subject to the same
         // crit/dmgBonus/defMult/resMult chain as the %ATK portion, not a separate standalone hit.
-        const damage = (effBase * (hit.atkPct / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate;
+        // `stats.totalMult` (fixed 2026-09-02, same architecture-bug fix as resolveHitComposedDps.js —
+        // see its own comment on this exact line for the full writeup): applied as its own
+        // multiplicative factor, matching legacy calcTeamStats.js's `mult * (1 + seqTotalMultBonus/100)`
+        // pattern.
+        const damage = (effBase * (hit.atkPct / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
       }
@@ -201,7 +205,6 @@ function resultsForBlock(block, targetName, allResults) {
 
 function applyEffects(block, multiplier, stats) {
   for (const effect of block.effects) {
-    if (effect.stat === 'totalMult') continue; // no dedicated accumulator here yet, same as resolveHitComposedDps.js
     applyBuff(stats, effect.stat, effect.value * multiplier, {});
   }
 }

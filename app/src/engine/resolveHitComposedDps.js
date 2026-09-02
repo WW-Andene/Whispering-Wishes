@@ -191,7 +191,15 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
         // real kit text carries alongside the %ATK term (e.g. Buling's "169 flat + 18.30% ATK") — WuWa's
         // own damage formula treats it as part of the base-damage term, subject to the same
         // crit/dmgBonus/defMult/resMult chain as the %ATK portion, not a separate standalone hit.
-        const damage = (effBase * (hit.atkPct / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate;
+        // `stats.totalMult` (fixed 2026-09-02 — was previously silently skipped/dead in this resolver
+        // entirely, see ENGINE_MERGE_PLAN.md's totalMult architecture-bug writeup): a flat fallback
+        // multiplier for real kit bonuses that don't map to a dedicated category stat (e.g. Qingxiao's
+        // Mindlock deepen, kept on the ENEMY side as `deepen` — see her own block file for the
+        // self-buff duplicate this also fixed) — applied as its own multiplicative factor on top of
+        // the crit/dmgBonus/defMult/resMult chain, matching legacy calcTeamStats.js's own
+        // `mult * (1 + seqTotalMultBonus/100)` pattern (the flat-tier totalMult% is itself always a
+        // separate multiplicative factor from dmgBonus, never summed into it).
+        const damage = (effBase * (hit.atkPct / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
       }
@@ -203,7 +211,6 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
 
 function applyEffects(block, multiplier, stats) {
   for (const effect of block.effects) {
-    if (effect.stat === 'totalMult') continue; // no dedicated accumulator here yet — not needed for Stage 1's proof
     applyBuff(stats, effect.stat, effect.value * multiplier, {});
   }
 }

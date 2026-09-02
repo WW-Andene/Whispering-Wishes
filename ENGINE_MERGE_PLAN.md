@@ -62,6 +62,74 @@ not from memory. Then decide, per gap, whether it's worth a real schema addition
 permanent scope boundary (a non-DPS mechanic this calculator correctly never modeled) — and only THEN
 resume Phase A with a vocabulary that isn't still shifting under it.
 
+## totalMult architecture bug — found 2026-09-02, fixed same day
+
+**Found while designing a fix for gap #1** (Qingxiao's Mindlock nonlinear stacking curve): investigating
+her `stat:'totalMult'` block led to tracing exactly how `totalMult` effects are consumed, which turned
+up a real, previously-undiscovered systemic bug spanning **38 TriggerBlocks across 24 character files**
+(every character using `stat:'totalMult'` as the documented fallback for a real kit bonus that doesn't
+map to a dedicated category stat).
+
+**The bug**: all three production code paths that compute displayed DPS silently dropped `totalMult`
+contributions entirely:
+- `resolveHitComposedDps.js`/`resolveHitComposedTeamDps.js` (the real per-hit engine composition, used
+  for Main DPS's actual total damage): `applyEffects()` explicitly special-cased `effect.stat ===
+  'totalMult'` with a bare `continue` — "no dedicated accumulator here yet," a documented Stage-1
+  prototype-scope gap, not silent, but never closed once the resolvers went into real production use.
+- `resolveSimulatedTeamRotation.js` (used for the FULL-tier stat-panel summary) DID accumulate it into
+  its own `totalMultBonus` return field — but `calcTeamStats.js`'s only caller for a fully-converted
+  team (`allMembersConverted && engineChosenOrder`, line ~1076) destructured only `{ stats: mainReceived
+  }`, silently discarding `totalMultBonus`.
+- The one place a totalMult-style bonus WAS applied (`seqTotalMultBonus`, sourced from legacy
+  `RESONANCE_CHAIN_DATA` via `applyResonanceChain()`, not from TriggerBlocks at all) only fires inside
+  the `!allMembersConverted` legacy per-member loop — dead for any fully-converted team.
+
+**Net effect**: for every fully-converted character (58 of 59 released), any TriggerBlock using
+`stat:'totalMult'` contributed **exactly zero** to their actual computed DPS, in every real code path,
+despite being a real, sourced kit bonus intentionally modeled that way. This is architecture-level, not
+a per-character data bug, and affects roughly 40% of the roster's character files.
+
+**Fix** (all committed together):
+- `calcEngine.js`: added a real `totalMult: 0` accumulator to `createStats()` and a matching
+  `case 'totalMult': stats.totalMult += value; break;` in `applyBuff()`.
+- `resolveHitComposedDps.js`/`resolveHitComposedTeamDps.js`: removed the `continue`-skip in
+  `applyEffects()` (now flows through `applyBuff()` like every other stat) and multiplied
+  `(1 + stats.totalMult / 100)` into the final per-hit damage formula — a separate multiplicative
+  factor on top of crit/dmgBonus/defMult/resMult, matching legacy's own `mult * (1 +
+  seqTotalMultBonus/100)` pattern (a flat-tier totalMult% has always been a distinct multiplicative
+  factor from dmgBonus, never summed into it).
+- `calcTeamStats.js`: the `allMembersConverted` branch now destructures `totalMultBonus` too and folds
+  it into `score` the same way.
+- `resolveSimulatedTeamRotation.js`'s own totalMult interception (via its `addTotalMult` callback,
+  bypassing `applyBuff` on purpose) was left untouched — no double-counting risk, since it never reaches
+  the new `applyBuff` case at all in that file.
+
+**Qingxiao's own data, uncovered by the same investigation** (not just architecture): her Mindlock value
+was independently WRONG (documented as ~49% at the 15-stack cap; the dump's own text — "+65% DMG
+Amplification... 7% for the first 7 stacks, 2% for the next 8" — computes to 7×7+8×2=65, a plain
+arithmetic error, not a rounding call). AND she had a genuine duplicate: `qingxiao.selfbuff.mindlock`
+(self `totalMult`) and `qingxiao.debuff.mindlock` (enemy `deepen`) modeled the exact SAME real mechanic
+twice (confirmed against the raw dump — both are one single enemy-side "DMG taken" amplification, not a
+separate self-buff) — invisible while `totalMult` was dead everywhere, but would have DOUBLE-COUNTED
+Mindlock's real contribution once the architecture fix landed. Removed the duplicate self-buff block,
+kept the enemy debuff as the single correct model, corrected its value to 65. Also found and fixed
+`chain.s1`'s note wrongly attributing the Mindlock stack-cap-to-25 raise to S1 (it's S2, confirmed
+against the dump — S1's own real 2nd effect is an entirely separate, currently unmodeled proc: Swordlight
+Ward + Exorcising Seal → Juque Perdition, 400% ATK once/sec, logged for future work, not built now).
+Legacy `CHAR_BUFF_TABLE['Qingxiao']` values corrected to match (49→65) for consistency, even though that
+selfBuffs entry is independently dead in the legacy mainStats path too (a separate, narrower version of
+the same class of bug — its `stat:'totalMult'` isn't in the legacy loop's allowed-stat list either).
+
+7 tests added (3 direct totalMult-fix tests, 2 updated Qingxiao tests reflecting the removed duplicate
+block and corrected value). Full suite green: 1265 passing (118 files). No regression on the Stage 1
+parity harness (expected — that harness compares RAW-tier, pre-buff numbers on both sides, so a
+buff-application fix doesn't move it).
+
+This is exactly the class of finding the user warned about going in ("la plupart des perso n'ont pas
+était dump corrected... tu va sûrement trouvé des problème") — except architecture-level rather than a
+single character's data, and found specifically BECAUSE this session started actually reading dump text
+end-to-end instead of trusting existing "already audited" comments at face value.
+
 **Real gaps — affect an actual computed DPS/buff number, worth a schema primitive eventually:**
 
 | # | Gap | Example characters | What's missing |
@@ -503,6 +571,16 @@ per-resource-consumed scalar, #11 buff-of-a-buff); (5) structurally novel simula
 sustained channel — now also the blocker for #5/Denia, #13 HP-threshold, #14 off-field summon-chain, #15
 stateful re-cast loop). Every one of the 17 originally-inventoried gaps has now had at least one real
 investigation pass; none remain purely theoretical.
+
+**Interrupt, fixed same day, out of the gap-priority order**: while designing gap #1's fix, uncovered and
+fixed the totalMult architecture bug (see its own section above) — `stat:'totalMult'` (38 blocks, 24
+character files) was contributing zero to any computed DPS in every real production path. Fixed at the
+architecture level (`calcEngine.js`, both hit-composed resolvers, `calcTeamStats.js`), plus Qingxiao's
+own data bugs this surfaced (wrong Mindlock value 49→65, a duplicate self-buff/enemy-debuff pair, and a
+misattributed S1/S2 note). Full suite green: 1265 passing (118 files). Gap #1 itself (the nonlinear
+stacking curve, needed for a fully-correct Mindlock model at 15 or 25 stacks) is still open — this fix
+only corrected the existing flat-ceiling approximation's VALUE and made it actually apply, not the
+tiered-curve shape.
 
 ## Constraints (repeated here, not just in the mandate, so they're never missed mid-phase)
 

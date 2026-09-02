@@ -16,11 +16,9 @@ describe('Qingxiao — audit fixes against a fresh Prydwen dump', () => {
     expect(CHARACTER_DATA['Qingxiao'].tier).toEqual({ toa: 'T0', ww: 'T1' });
   });
 
-  it("Inherent Skill To Know, To Banish's self-buff uses totalMult, not the wrong skillDmg category (its real move list has no Skill-button cast in it)", () => {
+  it("Inherent Skill To Know, To Banish's real move list has no Skill-button cast in it, so the legacy selfBuffs entry uses totalMult, not the wrong skillDmg category (the TriggerBlock side later removed the duplicate self-buff entirely — see qingxiao.blocks.js's own removal note — since it modeled the SAME mechanic as qingxiao.debuff.mindlock, an enemy-side debuff, not a real second self-buff)", () => {
     const buff = CHAR_BUFF_TABLE['Qingxiao'].selfBuffs.find(b => b.condition.includes('To Know, To Banish'));
     expect(buff.stat).toBe('totalMult');
-
-    const block = QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.selfbuff.mindlock');
-    expect(block.effects[0].stat).toBe('totalMult');
+    expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.selfbuff.mindlock')).toBeUndefined();
   });
 });

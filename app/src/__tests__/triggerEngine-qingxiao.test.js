@@ -21,12 +21,12 @@ describe('triggerEngine parity — Qingxiao', () => {
     expect(s6.target.scope).toBe('all-enemies');
   });
 
-  it('Mindlock selfBuff and debuff match CHAR_BUFF_TABLE at the flat ceiling values', () => {
+  it('Mindlock debuff matches CHAR_BUFF_TABLE at the flat ceiling value (corrected 2026-09-02: the duplicate selfbuff.mindlock TriggerBlock was removed — see qingxiao.blocks.js\'s own removal note; the legacy selfBuffs[1] totalMult entry is kept only because it\'s pinned by a separate test, but was never applied to any real computed DPS number either)', () => {
     const legacy = CHAR_BUFF_TABLE['Qingxiao'];
-    const self = QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.selfbuff.mindlock');
     const deb = QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.debuff.mindlock');
-    expect(self.effects[0].value).toBe(legacy.selfBuffs[1].value);
+    expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.selfbuff.mindlock')).toBeUndefined();
     expect(deb.effects[0].value).toBe(legacy.debuffs[0].value);
+    expect(deb.effects[0].value).toBe(65);
     expect(deb.kind).toBe('debuff');
   });
 

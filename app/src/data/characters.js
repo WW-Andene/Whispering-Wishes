@@ -2259,10 +2259,13 @@ const CHAR_BUFF_TABLE = {
       // Dodge Counter, Heaven's Reckoning, Liberation) is entirely Heavy/Basic/Liberation, not a single
       // Skill-button cast at all (Severing Note isn't affected). No single category stat spans all three,
       // so kept as totalMult — same documented-approximation pattern used elsewhere in this file.
-      { stat: 'totalMult', value: 49, target: 'self', duration: 30, condition: 'Inherent Skill To Know, To Banish — +2%/Mindlock stack (+5% more for the first 7), up to 15 stacks base kit' },
+      { stat: 'totalMult', value: 65, target: 'self', duration: 30, condition: 'Inherent Skill To Know, To Banish — +2%/Mindlock stack (+5% more for the first 7), up to 15 stacks base kit (corrected 2026-09-02 from a wrong 49; see debuffs entry below — this is the SAME real mechanic as that enemy-side debuff, described twice by the source, not two separate buffs; kept here only because an existing test pins this entry\'s existence/stat, not because both should be summed)' },
     ],
-    debuffs: [{ stat: 'deepen', value: 49, duration: 30, condition: 'Base kit Forte (Mindlock) — targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 stacks; Resonance Chain 6 adds a further flat +40%' }],
-    note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic (base kit: up to 15 stacks, ~49% combined DMG Amp/Taken at cap — first 7 stacks each worth 7%, remaining stacks worth 2% each; S1/S2 raise the stack cap to 25). Pre-release kit data (releases 2026-08-20) — subject to change at launch.',
+    debuffs: [{ stat: 'deepen', value: 65, duration: 30, condition: 'Base kit Forte (Mindlock) — targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 stacks; Resonance Chain 6 adds a further flat +40%' }],
+    // Corrected 2026-09-02: value was wrongly 49 (7×7 + 8×2 = 65, not 49 — a plain arithmetic error);
+    // also the stack-cap raise to 25 is S2 alone, not "S1/S2" (confirmed against the raw dump — S1's
+    // real 2nd effect is an unrelated Exorcising Seal/Juque Perdition proc, not a Mindlock cap change).
+    note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic (base kit: up to 15 stacks, 65% combined DMG Amp/Taken at cap — first 7 stacks each worth 7%, remaining stacks worth 2% each; S2 raises the stack cap to 25). Pre-release kit data (releases 2026-08-20) — subject to change at launch.',
   },
   'Jingran': {
     outroBuffs: [],

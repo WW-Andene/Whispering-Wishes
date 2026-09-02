@@ -1073,7 +1073,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // per-hit total.
     if (allMembersConverted && engineChosenOrder) {
       const { ownedSteps, blocksByOwner } = engineChosenOrder;
-      const { stats: mainReceived } = resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, mainDps.name, {
+      const { stats: mainReceived, totalMultBonus: mainTotalMultBonus } = resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, mainDps.name, {
         targetElementLower: (mainDps.d.element || '').toLowerCase(),
         targetRole: mainDps.d.role,
         sequenceByOwner: Object.fromEntries(mems.map(m => [m.name, m.seqLevel])),
@@ -1093,7 +1093,13 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       dmgBonus = calcDmgBonus(elemDmg, skillDmg, amplify, deepen);
       defMult = calcDefMult(enemyDef90, defShred, defIgnore);
       resMult = calcResMult(mainBaseRes, resShred);
-      score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
+      // `mainTotalMultBonus` (fixed 2026-09-02, ENGINE_MERGE_PLAN.md totalMult architecture-bug fix):
+      // resolveSimulatedTeamRotation() already computed this real accumulator, but this caller
+      // previously discarded it entirely (only ever destructured `stats`) — silently dropping every
+      // `stat:'totalMult'` TriggerBlock's contribution to the FULL-tier stat-panel score for every
+      // fully-converted team. Applied the same way legacy's own `seqTotalMultBonus` is applied to
+      // `mult` in the `!allMembersConverted` branch above: a separate multiplicative factor.
+      score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult * (1 + mainTotalMultBonus / 100));
     }
 
     // ── DOT damage (ICD-aware, composed via engine/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /

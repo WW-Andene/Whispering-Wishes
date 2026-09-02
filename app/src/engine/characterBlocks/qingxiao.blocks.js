@@ -101,23 +101,22 @@ export const QINGXIAO_BLOCKS = [
   },
 
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE, base-kit Mindlock mechanic) ──
-  {
-    id: 'qingxiao.selfbuff.mindlock',
-    source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: { duration: 30 },
-    target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 49 }],
-    note: "Inherent Skill To Know, To Banish: +2%/Mindlock stack (+5% more for the first 7), up to 15 base-kit stacks (~49% at cap) — modeled at the documented flat ceiling value rather than the real nonlinear per-stack curve (first 7 stacks worth 7% each, remaining worth 2% each), which this schema's stacking shape can't represent losslessly. Damage scales with team-inflicted Tune Strain - Interfered. Corrected 2026-09-02 from a wrong skillDmg category — the real move list (Heavy Attack - Stringblade, Ephemeral Transcendence Basic ATK/Dodge Counter, Heaven's Reckoning, Liberation) has no Skill-button cast in it at all; no single category spans Heavy+Basic+Liberation, so kept as totalMult.",
-  },
+  // qingxiao.selfbuff.mindlock REMOVED 2026-09-02: it duplicated the SAME real mechanic as
+  // qingxiao.debuff.mindlock below (confirmed against the raw dump — Characters data dump/Qingxiao/
+  // Qingxiao.md lines 41 and 60, both describing ONE enemy-side "DMG taken" amplification, not a
+  // separate self-buff) — modeled twice via two different stat channels (self totalMult AND enemy
+  // deepen). This was invisible while `stat:'totalMult'` was a dead no-op everywhere in the engine
+  // (see ENGINE_MERGE_PLAN.md's totalMult architecture-bug writeup, fixed same day) — once totalMult
+  // actually applies, keeping both would double-count Mindlock's real damage contribution. The single
+  // correct model is the enemy-side debuff below.
   {
     id: 'qingxiao.debuff.mindlock',
     source: SOURCE, kind: 'debuff',
     trigger: { type: 'passive' },
     timing: { duration: 30 },
     target: { scope: 'all-enemies' },
-    effects: [{ stat: 'deepen', value: 49 }],
-    note: 'Base kit Forte (Mindlock): targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 stacks (~49% at cap) — same flat-ceiling approximation as the selfBuff above. S6 chain adds a further flat +40% (see qingxiao.chain.s6).',
+    effects: [{ stat: 'deepen', value: 65 }],
+    note: 'Base kit Forte (Mindlock) + Inherent Skill To Know, To Banish (same single mechanic, described twice in the dump): targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 base-kit stacks — corrected 2026-09-02 from a wrong 49% to the dump\'s own confirmed "+65% DMG Amplification... 7% for the first 7 stacks, 2% for the next 8" (7×7 + 8×2 = 65, not 49 — the prior value was simply arithmetically wrong). Modeled at the documented flat ceiling value rather than the real nonlinear per-stack curve, which this schema\'s stacking shape can\'t represent losslessly (ENGINE_MERGE_PLAN.md Phase 0.5 gap #1). S2 (not S1 — see that node\'s own corrected note) raises the stack cap to 25 (not modeled — tied to gap #1). S6 chain adds a further flat +40% (see qingxiao.chain.s6).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 re-audit comment for
@@ -128,7 +127,7 @@ export const QINGXIAO_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'critRate', value: 16 }],
-    note: 'Confirmed exact value/category. Also raises the Mindlock stack cap from 15 to 25 (not modeled, no stacking-cap-increase field in this schema).',
+    note: "Corrected 2026-09-02 against the raw dump (Characters data dump/Qingxiao/Qingxiao.md line 69): Crit Rate +16% is real and confirmed, but the stack-cap raise this note previously attributed to S1 actually belongs to S2 (see that node's own note) — S1's OWN real additional mechanic is a separate, currently entirely UNMODELED proc: Swordlight Ward cap +1 (to 2), 25 Exorcising Seal on combat entry, and \"after a Basic Attack/Mid-air/Ephemeral Transcendence Basic hit lands, if she has Exorcising Seal, consumes it to trigger Juque Perdition — Aero DMG = 400% ATK, considered Basic Attack DMG (once per second)\" (Exorcising Seal caps at 25). A real, sourced DPS-contributing proc, not yet built — logged as a new Phase A finding, not modeled here (needs a windowed-proc-style block with a real per-second ICD and a 25-charge consumable resource, more than a quick addition).",
   },
   {
     id: 'qingxiao.chain.s2',
@@ -136,7 +135,7 @@ export const QINGXIAO_BLOCKS = [
     trigger: { type: 'cast', on: 'Heavy ATK:Heavy Attack - Stringblade' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'heavyDmg', value: 40 }],
-    note: "Heavy Attack multiplier +40% (confirmed) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
+    note: "Heavy Attack multiplier +40% (confirmed) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. Corrected 2026-09-02: ALSO raises the Mindlock stack cap from 15 to 25 (after combat entry) — was previously wrongly attributed to S1's own note; not modeled here either (tied to ENGINE_MERGE_PLAN.md Phase 0.5 gap #1, the unbuilt nonlinear stacking curve).",
   },
   {
     id: 'qingxiao.chain.s3',
