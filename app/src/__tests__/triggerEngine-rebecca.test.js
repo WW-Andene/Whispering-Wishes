@@ -17,6 +17,16 @@ describe('triggerEngine parity — Rebecca', () => {
     expect(REBECCA_BLOCKS.find(b => b.id === 'rebecca.liberation.boom-fireworks').damage.category).toBe('basicDmg');
   });
 
+  // Value locked in 2026-09-02: a nanoka.cc .mht snapshot's raw Lv.10 table showed
+  // 19.89%×3+318.10%+19.89%, conflicting with the user's own directly-pasted Prydwen text
+  // (10.00%×3+160.00%+10.00%). Per standing instruction, user-pasted Prydwen text wins a real
+  // conflict — the user also independently re-checked and confirmed the Prydwen number.
+  it("Rat-tat-tat! uses the Prydwen-sourced value (10/10/10/160/10), not the nanoka.cc one", () => {
+    const block = REBECCA_BLOCKS.find(b => b.id === 'rebecca.forte.rat-tat-tat-huntress');
+    const total = block.damage.hits.reduce((sum, h) => sum + h.atkPct, 0);
+    expect(total).toBeCloseTo(200, 1); // 10+10+10+160+10
+  });
+
   it('S4 stays correctly unmodeled (no block) — buff-to-a-buff, no flat-schema equivalent per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Rebecca'];
     expect(rc.s4).toEqual({});

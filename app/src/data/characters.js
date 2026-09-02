@@ -2361,11 +2361,15 @@ const CHAR_BUFF_TABLE = {
     // per-target granularity for tuneBreak — same approximation already used elsewhere). Forte Circuit
     // "Hack - Meltdown" (Hack Response): "When any Resonator in the team deals Tune Break DMG and
     // inflicts the Hack - Interfered, Rebecca triggers Hack - Meltdown on the target... once every 8s"
-    // — genuine, but exact ruptureDmgMult (%ATK) not sourced (multiplier table renders client-side,
-    // not in text extraction). maxStrainStacks omitted — no stack-cap increase found in her kit text.
+    // — genuine, ruptureDmgMult now sourced 2026-09-02 from the user's own pasted Prydwen text
+    // (Hack Response - Meltdown DMG: 1186.50% Tune AMP, Lv.10) — user-pasted Prydwen text takes
+    // priority per standing instruction (a nanoka.cc .mht snapshot showed 2358.89% instead; conflict
+    // resolved in Prydwen's favor after the user directly re-checked the number). maxStrainStacks
+    // omitted — no stack-cap increase found in her kit text.
     tuneBreak: {
       boostToTeam: 30, // Tag, You're It! (Inherent Skill): +30 Tune Break Boost (30s) to whichever Resonator inflicts Hack - Shifting
       baseTuneBreakBoost: 10, // 3.x char base stat
+      ruptureDmgMult: 1186.5, // Hack Response - Meltdown (confirmed exact, Lv.10)
     },
     // Guts mode's DEF Ignore fixed 2026-08-16: it's personal (self-only), not a team-wide DEF Shred
     // debuff — was miscategorized under debuffs as defShred.
@@ -3295,7 +3299,12 @@ const SKILL_MULTIPLIERS = {
     // this move uses type:'Forte' — the type mismatch meant findSkillMultiplierRow() could never match
     // this row against that rotation step at all (exact AND fuzzy match both require t === step.type),
     // a silent zero-DMG display bug independent of the category question below.
-    ['Forte', 'Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts', '19.89%×3+318.10%+19.89% / 278.34%', 'Forte finisher once Fervor is maxed. Considered Basic Attack DMG per its own kit text, despite replacing Heavy Attack.'],
+    // Value corrected 2026-09-02: was 19.89%×3+318.10%+19.89% / 278.34% (matching a nanoka.cc .mht
+    // snapshot's own raw Lv.10 table) — but the user's own directly-pasted Prydwen text gives
+    // 10.00%×3+160.00%+10.00% / 140.00% instead, and confirmed by re-checking Prydwen directly that
+    // this is correct. Per standing instruction, user-pasted Prydwen text takes priority over other
+    // sources on a real conflict — corrected to Prydwen's value.
+    ['Forte', 'Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts', '10.00%×3+160.00%+10.00% / 140.00%', 'Forte finisher once Fervor is maxed. Considered Basic Attack DMG per its own kit text, despite replacing Heavy Attack.'],
     ['Skill', "It's Big Boomin' Time! / Come 'n' Get Me!", '23.66%×4+35.49%×4 / 23.66%+4.74%+23.66%×2+137.22%+11.83%×2', 'Closes distance and swaps stance.'],
     ['Liberation', "Party 'til Dawn!", '24.30% / 48.60% (1st enhancement) / 72.90% (2nd enhancement), auto-fires repeatedly for 9.5s', 'Mk. 31 HMG channel; pressing/holding Basic ATK or Liberation during it ramps to the next firepower tier and builds Overload faster.'],
     ['Liberation', 'BOOM! Fireworks!', '63.62%+572.58%', 'Auto-casts when the channel ends or Overload maxes.'],

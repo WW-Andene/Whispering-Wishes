@@ -46,7 +46,11 @@ export const REBECCA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Rat-tat-tat!: Huntress' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('19.89%×3+318.10%+19.89%'), category: 'basicDmg' },
+    // Value corrected 2026-09-02: was 19.89%×3+318.10%+19.89% (a nanoka.cc .mht snapshot's own raw
+    // Lv.10 table) — the user's own directly-pasted Prydwen text gives 10.00%×3+160.00%+10.00%
+    // instead, re-confirmed correct by the user directly. Per standing instruction, user-pasted
+    // Prydwen text takes priority over other sources on a real conflict.
+    damage: { hits: parseSkillMultiplierHits('10.00%×3+160.00%+10.00%'), category: 'basicDmg' },
     note: 'Once Fervor hits 120/120, replaces Heavy Attack — but its own kit text explicitly says "considered Basic Attack DMG" (fixed 2026-09-02 from a wrong heavyDmg category — same "considered X DMG despite the input slot" pattern as Phrolova\'s Scarlet Coda/Ciaccona\'s Quadruple Downbeat, just the reverse miscategorization). See rebecca.chain.s6-bonus-hit below for the S6-granted bonus proc on this cast.',
   },
   {
