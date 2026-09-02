@@ -238,20 +238,20 @@ Uses the extra Heavy-ATK-based Forte generation available at Sequence 1+ to fit 
 ## Calculations
 
 ### Real Damage-Type Breakdown (Prydwen's own simulated rotation, S0, buffed team: Denia+Chisa)
+Confirmed via the pie chart's own color-coded legend (3 pages: Basic+Liberation, Intro+Echo, Fusion Burst):
+
 | Type | DMG | Share |
 |---|---|---|
 | Basic ATK | 91,118 | 6.0% |
 | Heavy ATK | 0 | 0% |
 | Skill | 0 | 0% |
-| **Liberation** | 849,871 | **34.0%** |
-| Intro | 19,006 | ~1% |
+| **Liberation** | 849,871 | **56.4%** (green, largest wedge) |
+| Intro | 19,006 | 1.3% |
 | Outro | 0 | 0% |
-| Echo | 34,765 | ~1% |
-| **Fusion Burst** | 512,904 | **56.4%*** |
+| Echo | 34,765 | 2.3% |
+| **Fusion Burst** | 512,904 | **34.0%** (yellow) |
 
-*(Percentages as displayed in the source pie chart: Basic 6%, Liberation 34%, "1/3" wedge ~unlabeled precisely, Fusion Burst 56.4% — the exact wedge-to-row correspondence for the smaller slices wasn't fully legible in this dump; Liberation and Fusion Burst dominate regardless.)*
-
-Note: her real, damage-computed profile shows a distinct **"Fusion Burst" damage type** (proc/status damage from her own kit, not tied to a specific button) as her single largest source (56.4%), with Liberation (34%) second and Basic ATK (6%) a distant third — Skill and Heavy ATK are a real 0% (every one of her nominal Skill-slot casts — Seraphic Duet — is explicitly "counted as Resonance Liberation DMG" per the Kit tab, and she has no practical-rotation Heavy ATK usage besides the one Sync-Rate-refill cast which wasn't in this specific calc run).
+Note: her real, damage-computed profile shows **Liberation** as her single largest damage source (56.4% — Heavenfall Edict Overdrive/Finale plus both Seraphic Duet casts, which are explicitly "counted as Resonance Liberation DMG"), with the distinct **"Fusion Burst" damage type** (proc/status damage from her own kit, not tied to a specific button) second at 34.0%, and Basic ATK (6.0%) a distant third — Skill and Heavy ATK are a real 0%, since every one of her nominal Skill-slot casts is Liberation-categorized and she has no practical-rotation Heavy ATK usage besides the one Sync-Rate-refill cast (not in this specific calc run).
 
 ### Damage Output by Sequence (S0→S6, 1-target, solo — no team/buff contribution)
 Rotation time: 11.69s. Build: Everbright Polestar R1, 5pc Trailblazing Star, Sigillum main echo (Crit DMG / ATK% / Fusion DMG / ATK% / ATK%).
