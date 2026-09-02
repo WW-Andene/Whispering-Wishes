@@ -315,6 +315,15 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
           if (entry.requiresStance == null || stanceForOwner(owner) === entry.requiresStance) actionTags.add(entry.tag);
         }
       }
+      // Universal 'echo-skill-cast' tag (added 2026-09-02, ENGINE_MERGE_PLAN.md Phase 0.5 gap #2 —
+      // Sigrika's S4 retrofit): using an equipped Echo isn't a per-character KIT fact the way Shifting
+      // application is (any character can use ANY Echo, unrelated to their own kit) — real
+      // CHARACTER_ROTATIONS data already represents it uniformly as `{type:'Echo', skill:'Use Echo'}`
+      // for whoever casts it, so this tag fires directly off the step's own `type`, not off a
+      // per-character `appliesTags` declaration nobody would sensibly own. One small universal rule
+      // here benefits every current/future character with an "ally casts Echo Skill" reactive mechanic,
+      // not just Sigrika.
+      if (ev.type === 'Echo') actionTags.add('echo-skill-cast');
     }
 
     if (ev.checksPriorCast) {

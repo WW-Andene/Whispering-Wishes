@@ -67,7 +67,8 @@ resume Phase A with a vocabulary that isn't still shifting under it.
 | # | Gap | Example characters | What's missing |
 |---|---|---|---|
 | 1 | Nonlinear/multi-tier per-stack curve | Qingxiao (Mindlock: 7 stacks@7% + rest@2%), Yangyang: Xuanling (Unbroken Vow: 3@10%+3@12%), Sigrika (2%/1% ER above 125%, capped) | `effects[].stacking` only supports a flat value × count; no tiered or formula curve |
-| 2 | Cross-character `ally-action` trigger NOT YET RETROFITTED onto existing blocks | ~~Qingxiao S4~~ **fixed 2026-09-02**. Remaining: Cartethyia (any ally inflicts a listed status → team +20% — needs 6 status tags roster-wide, most don't exist yet as `appliesTags`, see its own note below), Luuk Herssen (ally Tune Break → team allDmg), Sigrika (ally Echo Skill cast → team atkPct), Mornye ×2, Galbrena | The MECHANISM exists (built this session) — Qingxiao's own retrofit proves the pattern (dump's exact text confirmed the real recipient was `trigger-actor`, not `self` — the block was wrong on 3 counts, not just missing the trigger type). Each remaining case needs its own real kit-text check before retrofitting, same as Qingxiao's — not a mechanical find-and-replace. |
+| 2 | Cross-character `ally-action` trigger NOT YET RETROFITTED onto existing blocks | ~~Qingxiao S4~~ **fixed 2026-09-02**. ~~Sigrika S4~~ **fixed 2026-09-02** (also introduced the new universal `'echo-skill-cast'` action tag in `rotationSimulator.js`, fired directly off any step's own `{type:'Echo'}` shape — using an equipped Echo isn't a per-character kit fact the way Shifting/Tune Break application is, so no per-character `appliesTags` declaration would make sense; benefits any future "ally casts Echo Skill" mechanic too, not just Sigrika). **Luuk Herssen S4 — investigated, deferred** (see its own note below, blocked on Tune Break cast tagging, not a quick retrofit). Remaining: Cartethyia (any ally inflicts a listed status → team +20% — needs 6 status tags roster-wide, most don't exist yet as `appliesTags`, see its own note below), Mornye ×2, Galbrena | The MECHANISM exists (built this session) — Qingxiao's and Sigrika's own retrofits prove the pattern. Each remaining case needs its own real kit-text check before retrofitting — not a mechanical find-and-replace. |
+| 2a | Luuk Herssen S4 deferral detail | Dump's exact text: "S4: After any team member deals Tune Break DMG, the whole team deals +20% DMG for 20s (unstackable)." Needs a `'tune-break-cast'` action tag that doesn't exist anywhere in the roster yet — ties to the much larger, previously-identified "Off-Tune Level gauge" mechanic (requires knowing which of the ~9 characters who can cast Tune Break — Qingxiao, Yangyang: Xuanling, Lucilla, Sigrika, Hiyuki, Suisui, Mornye, Lynae, Aemeath — actually do so in their modeled rotations, each needing individual kit-text verification before the tag can be applied anywhere). Deferred, not fixed, same reasoning class as Cartethyia's/Phoebe's DOT deferrals — the prerequisite is bigger than this one block. **Also found, separately, not yet acted on:** Luuk Herssen's own dump (line 67) describes an "Uncaused Diagnosis" self-buff — "After any nearby teammate inflicts Shifting or deals Tune Break DMG, Luuk's ATK +25% for 20s" — with NO matching block anywhere in `luukherssen.blocks.js` (confirmed via grep). This is a second, previously-unflagged real gap (missing block entirely, not a wrong existing one), same `'tune-break-cast'` prerequisite plus the already-existing `'shifting'` tag for its other half. Logged here 2026-09-02 for future work. | — |
 | 3 | Per-move-type-scoped stat (not a whole damage category) | Aemeath (Finale-specific deepen, Heavy-ATK-only Crit DMG), Iuno (Absolute-Fullness-specific bonuses) | Stats route to a whole category (basicDmg/heavyDmg/etc.), not one specific move within a category |
 | 4 | Resource-cap-increase field (raises a stack cap, not a %stat) | Qingxiao S1 (Mindlock cap 15→25), Chisa (Negative Status/Electro Rage cap +3) | No field for "raise another mechanic's own stack ceiling" |
 | 5 | Frequency/tick-rate stat (changes DOT interval, not a flat %) | Denia S4 (Erosion Field 4s→3s tick rate) | No frequency-scaling stat exists |
@@ -462,12 +463,20 @@ exactly. Full suite: 1245 tests passing (up from 1242).
 
 ## Status
 
-**Current phase: 2, in progress.** Infrastructure (`dotReactionsFromBlocks.js`) built and tested. Three
-characters (Buling, Denia, Aemeath) fully migrated end-to-end and verified in production, including the
-harder mode-conditional case. Next: Erosion (Ciaccona/Cartethyia) — MAX-aggregation, no mode conditions
-to worry about, should be simpler than Fusion Burst's stanceOverrides work; Frazzle
-(Phoebe/Rover: Spectro) after that, with Phoebe's real-mode question (is she even in Confession mode at
-all, matching her existing `assumedInactive` TriggerBlock treatment) resolved before porting her.
+**Current phase: mixed — Phase 2 (DOT migration) substantially done for 4 of 5 mechanics (Electro Flare/
+Buling, Fusion Burst/Denia+Aemeath, Erosion/Ciaccona, Frazzle/Rover: Spectro all migrated and verified;
+Tune Break deliberately last, untouched); Phase A (per-character 8-dimension solo audit) at 4/58
+characters (Aemeath, Denia, Lynae, Qingxiao); Phase 0.5 (schema-completeness gap closure) actively
+working gap #2 (ally-action retrofit backlog) — Qingxiao S4 and Sigrika S4 fixed and tested 2026-09-02
+(the latter also added a new universal `'echo-skill-cast'` action tag), Luuk Herssen S4 investigated and
+deferred (blocked on the larger Tune Break cast-tagging prerequisite, see gap #2a), remaining backlog
+items (Cartethyia, Mornye ×2, Galbrena) not yet started. Gaps #1, #3–#17 have had no schema design work
+yet. Full suite green: 1255 passing (115 files).
+
+Next: continue the ally-action backlog (Cartethyia's S4 needs 6 status tags, most not yet populated as
+`appliesTags` anywhere in the roster — the next real prerequisite-heavy case), then move to gap category
+(2) — simple additive schema fields (#8 flat damage, #4 stack-cap-increase, #5 frequency/tick-rate, #16
+missing damage categories, #17 per-hit basis split).
 
 ## Constraints (repeated here, not just in the mandate, so they're never missed mid-phase)
 

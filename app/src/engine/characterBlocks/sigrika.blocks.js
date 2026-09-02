@@ -140,10 +140,19 @@ export const SIGRIKA_BLOCKS = [
   {
     id: 'sigrika.chain.s4',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'whole-team' },
-    effects: [{ stat: 'atkPct', value: 20 }],
-    note: 'Team ATK +20% on ally Echo Skill cast (confirmed exact, team-wide) — a cross-character trigger (an ALLY casting Echo Skill, not Sigrika\'s own cast) this schema has no clean anchor for, kept passive as an approximation.',
+    // Retrofitted 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #2), same pattern as Qingxiao's
+    // chain.s4, using the dump's own exact text: "Any teammate's Echo Skill cast grants the whole
+    // team +20% ATK for 20s." Casting an Echo isn't a per-character kit fact (any character can use
+    // any equipped Echo), so this reads the new universal 'echo-skill-cast' action tag
+    // (rotationSimulator.js, fired directly off any step's own {type:'Echo'} shape) rather than a
+    // per-character appliesTags declaration. Was previously modeled as an unconditional, permanent,
+    // passive team buff — wrong on two counts: wrong trigger (passive instead of ally-action) and
+    // wrong duration (indefinite instead of the real 20s window).
+    trigger: { type: 'ally-action', action: 'echo-skill-cast' },
+    timing: { duration: 20 },
+    target: { scope: 'whole-team' },
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh' }],
+    note: "Any teammate's Echo Skill cast grants the whole team +20% ATK for 20s — confirmed verbatim from the dump.",
   },
   {
     id: 'sigrika.chain.s5',
