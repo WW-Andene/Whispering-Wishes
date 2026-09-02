@@ -96,15 +96,14 @@ cross-checked against independently reconstructed rotation sums), `totalMult`
 was very likely derived from the same broken source and inherited the same
 error — worth checking whenever a `SKILL_MULTIPLIERS` row gets corrected.
 
-**Open, lower-confidence items** (found but *not* touched, since the
-evidence isn't as clean as the 3 confirmed fixes above): Lucilla
-(stored/reconstructed ratio ≈0.31) and Lynae (≈0.37) stood out as the two
-largest outliers among the 13 characters checked. Both are plausible real
-bugs, but my reconstruction carries real uncertainty (which combo
-stage/hold-duration/optional-step to count is a judgment call, not something
-read verbatim off a table) — not confident enough to edit blind. Worth a
-fresh, careful pass (ideally cross-checked against a Prydwen calc-notes
-rotation string or a video) before touching either number.
+**Lucilla and Lynae — fixed 2026-09-02.** Originally flagged as lower-confidence
+(ratios ≈0.31/≈0.37, judgment calls involved in reconstructing their rotations
+by hand). Re-verified with a stricter method: both characters' `CHARACTER_ROTATIONS`
+steps name the exact `SKILL_MULTIPLIERS` row they use at each step (including
+Lucilla's "Spotlight" step matching one of 3 named alternatives on its row by
+exact label) — a mechanical row-for-row match, not a judgment call. Recomputed
+totals: Lucilla 700 → 2280, Lynae 1300 → 3558. Both corrected in `characters.js`
+with an audit comment showing the exact step-by-step sum.
 
 Mornye (2026-09-02): reconstructed ratio ≈0.57 (stored 800 vs. a reconstructed
 ~1405 using her Loop Rotation) — flagged, not fixed. Weaker evidence than the

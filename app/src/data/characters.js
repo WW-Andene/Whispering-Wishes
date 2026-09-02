@@ -1529,14 +1529,26 @@ const CHARACTER_DATA = {
   // row values — close enough to the established ~0.51-0.53 halving-bug ratio to be the same class of
   // stale, pre-correction heuristic rather than normal estimation noise.
   ['Chisa',         2056, 25, 6],   // DEF Shred support
-  ['Lynae',         1300, 25, 6],   // Tune Break support
+  // totalMult corrected 2026-09-02: was 1300, ~36.5% of the real ~3558 sum across her exact modeled
+  // Loop Rotation (CHARACTER_ROTATIONS['Lynae']) matched unambiguously to SKILL_MULTIPLIERS row-for-
+  // row (Intro 22.48%×10 + Liberation 87.48%×10 + Skill 139.31%+46.44%×3 + Heavy ATK 277.78%×2 +
+  // Polychrome Leap 33.80%×3+16.90%×6+13.10%×8 + Forte: Visual Impact 1216.72% + Outro's own 100%
+  // ATK hit) — every step names the exact row it uses, removing the ambiguity flagged when this was
+  // first raised (see Engine development.md item 3).
+  ['Lynae',         3558, 25, 6],   // Tune Break support
   ['Mornye',        800,  25, 5],   // Healer + Off-Tune
   ['Rebecca',       1900, 24, 9],   // Huntress/Guts stance swap, turret buff
   ['Denia',         1700, 24, 8],   // Stagecraft/Breakdown Form swap, Fusion Burst/Tune Strain
   // 5★ Healers/Support — low totalMult
   ['Verina',        600,  25, 4],   // Quick heal + ATK buff + deepen
   ['Jianxin',       800,  25, 6],   // Shield + grouping
-  ['Lucilla',       700,  25, 5],   // Photo-consuming Ultimate, Glacio Chafe/Echo Skill buffer
+  // totalMult corrected 2026-09-02: was 700, ~30.7% of the real ~2280 sum across her exact modeled
+  // rotation (CHARACTER_ROTATIONS['Lucilla']) matched unambiguously to SKILL_MULTIPLIERS row-for-row
+  // (Intro: Clip It 97.42% + Skill: Spotlight 82.35%×2+274.48%+109.80% [the 3rd of 3 named row
+  // alternatives, matching the rotation step's own "Spotlight" label exactly] + Liberation: Clear As
+  // Day 142.74% + Basic ATK: Tracing Forms Stage 1-3 + Basic ATK: Letting It Go 84.81%×3+593.64%) —
+  // removes the ambiguity flagged when this was first raised (see Engine development.md item 3).
+  ['Lucilla',       2280, 25, 5],   // Photo-consuming Ultimate, Glacio Chafe/Echo Skill buffer
   ['Shorekeeper',   500,  25, 3],   // Stellarealm crit buff + heal
   ['Suisui',        700,  25, 6],   // Zephyr heal / Drizzle DMG stance swap + Outro All DMG Amp
   // 4★
