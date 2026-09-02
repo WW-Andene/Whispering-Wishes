@@ -165,7 +165,11 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
         ? Math.min(1, fieldDuration / db.timing.cooldown) : 1;
 
       for (const hit of hits) {
-        const damage = effBase * (hit.atkPct / 100) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate;
+        // `hit.flat` (Phase 0.5 gap #8, added 2026-09-02): a non-%ATK additive damage component some
+        // real kit text carries alongside the %ATK term (e.g. Buling's "169 flat + 18.30% ATK") — WuWa's
+        // own damage formula treats it as part of the base-damage term, subject to the same
+        // crit/dmgBonus/defMult/resMult chain as the %ATK portion, not a separate standalone hit.
+        const damage = (effBase * (hit.atkPct / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate;
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
       }

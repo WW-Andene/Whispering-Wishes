@@ -119,14 +119,22 @@
 
 /**
  * @typedef {Object} DamageHits
- * @property {{atkPct: number}[]} hits  One entry per individual hit in this cast (a multi-stage
- *                                        combo like Yinlin's 4-tap Basic ATK has one entry per stage,
- *                                        already expanded — a source row's `×N` shorthand becomes N
- *                                        separate entries, not one entry with a multiplier field).
+ * @property {{atkPct: number, flat?: number}[]} hits  One entry per individual hit in this cast (a
+ *                                        multi-stage combo like Yinlin's 4-tap Basic ATK has one entry
+ *                                        per stage, already expanded — a source row's `×N` shorthand
+ *                                        becomes N separate entries, not one entry with a multiplier
+ *                                        field).
  *                                        The field is always named `atkPct` even when `basis` is
  *                                        `'HP'`/`'DEF'` (matches calcTeamStats.js's own convention —
  *                                        e.g. its `sKey`/`baseStat` handling — of keeping one %-value
  *                                        field regardless of which base stat it scales off).
+ *                                        `flat` (optional, added 2026-09-02, Phase 0.5 gap #8): a
+ *                                        non-%ATK additive damage component some real kit text carries
+ *                                        alongside the %ATK term (e.g. Buling's "169 flat + 18.30%
+ *                                        ATK") — `resolveHitComposedDps.js`/`resolveHitComposedTeamDps.js`
+ *                                        add it to the base-damage term before crit/dmgBonus/defMult/
+ *                                        resMult, matching WuWa's own formula (it is NOT a separate
+ *                                        standalone hit). Omit for the common all-%ATK case.
  * @property {string} [category]        Which of calcEngine.js's existing damage-type categories
  *                                        (basicDmg/heavyDmg/libDmg/skillDmg/echoDmg/coordDmg) this
  *                                        cast's damage counts as — same vocabulary/purpose as

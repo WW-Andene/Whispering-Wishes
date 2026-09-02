@@ -75,8 +75,8 @@ export const BULING_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Basic ATK:Heavy Attack - Twin Thunders' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('18.30%'), category: 'basicDmg' },
-    note: 'Real value is "169 flat + 18.30% ATK" — the flat 169 component has no home in this schema (only %ATK hits are modeled), so only the ATK-scaling portion is captured. Primarily a team-heal move (once/s for 8s), not modeled.',
+    damage: { hits: parseSkillMultiplierHits('18.30%', 169), category: 'basicDmg' },
+    note: 'Real value is "169 flat + 18.30% ATK" — retrofitted 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #8, new hit.flat field) to capture both components; previously only the %ATK portion was modeled. Primarily a team-heal move (once/s for 8s), not modeled.',
   },
   {
     id: 'buling.liberation.flashing-thunder-spell-harmony',
