@@ -1361,7 +1361,10 @@ const CHARACTER_DATA = {
   ['Changli',       10388, 463, 1100, 125],
   ['Zhezhi',        12250, 375, 1198, 125],
   ['Xiangli Yao',   10625, 425, 1222, 125],
-  ['Shorekeeper',   16713, 288, 1100, 175],
+  // maxEnergy corrected 2026-09-02 against a fresh Prydwen dump (same bug class as Mornye's own
+  // maxEnergy fix above): was 175 — the dump's Stats section states Max Energy 125; 175 is actually
+  // her Liberation's own Resonance Energy Cost figure, again likely miscopied from the same page.
+  ['Shorekeeper',   16713, 288, 1100, 125],
   ['Camellya',      10325, 450, 1161, 125],
   ['Carlotta',      12450, 463, 1198, 125],
   ['Roccia',        12250, 375, 1198, 125],
@@ -1642,7 +1645,10 @@ const CHARACTER_DATA = {
   ['Lynae',         'T0',   'T1'],
   ['Qiuyuan',       'T0',   'T0'],
   ['Mornye',        'T0',   'T1'],
-  ['Shorekeeper',   'T0',   'T0'],
+  // tier corrected 2026-09-02 against a fresh Prydwen dump: was 'T0' for Whimpering Wastes — the
+  // dump's Ratings section clearly lists T0 (ToA) / T0.5 (WW), matched exactly by its own Value Tier
+  // List too (T0 / T0.5).
+  ['Shorekeeper',   'T0',   'T0.5'],
   // Confirmed via prydwen.gg (last updated 01/Aug/2026)
   ['Suisui',        'T0',   'T0.5'],
   ['Yangyang: Xuanling', 'T0', 'T0'],

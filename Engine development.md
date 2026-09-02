@@ -135,6 +135,34 @@ correctness gap Stage 4 is meant to retire.
 
 ---
 
+## 5. `maxEnergy` sometimes miscopied from the Liberation's own Energy Cost
+
+**Found**: 2026-09-02, first on Mornye, then confirmed again on Shorekeeper —
+both stored `maxEnergy: 175` when the fresh Prydwen dump's Stats section
+stated `125`, and both characters' Liberation happens to cost exactly 175
+Resonance Energy. Same source page, two adjacent numbers, easy to grab the
+wrong one when transcribing by hand.
+
+**Not purely a data-accuracy footnote** — this is a real *pattern*, not two
+isolated typos, so it's worth a systematic check rather than waiting for
+each character to come up in a dump pass individually.
+
+**Open, unverified**: `Verina`, `Baizhi`, and `Suisui` also currently store
+`maxEnergy: 175` in `characters.js`'s `BASE_STATS` table — every other
+character in that table is `125` except these + the two now-fixed cases.
+Not touched, since none of these three has a corroborating fresh-dump
+"Max Energy" figure in this pass (Suisui's Prydwen page has no stats
+published at all yet; Verina/Baizhi weren't part of this audit). It's
+plausible some or all of these are genuinely correct — some older-generation
+healers may legitimately have a higher base Energy pool — so this needs a
+real dump/wiki check per character, not a blind global "set to 125".
+
+**Fix shape**: no code change — a data-accuracy backlog item. When any of
+Verina/Baizhi/Suisui comes up for a dump-based audit, check `Max Energy`
+specifically against the source before assuming it's fine.
+
+---
+
 ## How to add to this file
 
 When an audit turns up a real engine/calculator limitation (as opposed to a
