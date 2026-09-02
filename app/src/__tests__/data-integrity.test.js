@@ -128,7 +128,9 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Calcharo[4] "Basic ATK: Hounds Roar"',
     'Calcharo[6] "Basic ATK: Hounds Roar"',
     'Lucilla[5] "Echo: Use Echo"',
-    'Rebecca[3] "Forte: Rat-tat-tat!: Huntress"',
+    // Rebecca[3] "Forte: Rat-tat-tat!: Huntress" now resolves — fixed 2026-09-02, its SKILL_MULTIPLIERS
+    // row's type was 'Heavy ATK' instead of 'Forte' (a silent lookup mismatch, previously missing this
+    // baseline entirely; unrelated to the category fix on the same row).
     'Lucy[3] "Basic ATK: Locked Thread Stage 2-4"',
     'Lucy[5] "Basic ATK: Thread Shredding Stage 1-4"',
     'Lucy[6] "Heavy ATK: Dual Threading"',

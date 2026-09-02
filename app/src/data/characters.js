@@ -1317,7 +1317,13 @@ const CHARACTER_DATA = {
   ['Shorekeeper',   ['Liberation'],                  ['Crit Buff', 'Heal'],                   []],
   ['Jianxin',       ['Skill'],                       ['Shield', 'Grouping', 'Aero Buff'],     []],
   ['Mornye',        ['Liberation'],                  ['Heal'],                                ['Off-Tune']],
-  ['Rebecca',       ['Basic ATK', 'Heavy ATK'],      ['Heavy ATK Buff', 'All DMG Amp'],       ['Hack - Shifting']],
+  // dmgFocus corrected 2026-09-02 against a fresh Prydwen dump's own damage-profile breakdown: was
+  // ['Basic ATK', 'Heavy ATK'], but her literal 'Heavy ATK' category is 0 — her real Rat-tat-tat!/
+  // Bang-bang-bang! Forte Heavy Attack AND her whole Liberation sequence (Mk. 31 HMG + BOOM!
+  // Fireworks!) are both explicitly "considered Basic Attack DMG" per her own kit text (confirmed by
+  // the profile's own Liberation bucket also reading exactly 0). 'Skill' is her only other real nonzero
+  // category (20,774, vs. Heavy ATK's true 0) — replaced 'Heavy ATK' with 'Skill'.
+  ['Rebecca',       ['Basic ATK', 'Skill'],          ['Heavy ATK Buff', 'All DMG Amp'],       ['Hack - Shifting']],
   // dmgFocus dropped 'Skill' 2026-09-02 against a fresh Prydwen dump: her real damage-output
   // simulation (Fusion Burst mode, S0) puts Skill at just 1.75% (8,174 of 467,866 total DMG) — smaller
   // than Basic ATK's 2.14% and Echo's 4.39%, neither of which were ever in dmgFocus either. All three
@@ -3285,7 +3291,11 @@ const SKILL_MULTIPLIERS = {
     ['Basic ATK', 'Guts Stage 1-3', '61.69%×2 → 84.50% → 33.77%×2+157.57%'],
     ['Heavy ATK', 'Standard - Huntress', '16.90%×2'],
     ['Heavy ATK', 'Standard - Guts', '202.79%'],
-    ['Heavy ATK', 'Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts', '19.89%×3+318.10%+19.89% / 278.34%', 'Forte finisher once Fervor is maxed.'],
+    // type corrected 2026-09-02: was 'Heavy ATK', but CHARACTER_ROTATIONS['Rebecca']'s own real step for
+    // this move uses type:'Forte' — the type mismatch meant findSkillMultiplierRow() could never match
+    // this row against that rotation step at all (exact AND fuzzy match both require t === step.type),
+    // a silent zero-DMG display bug independent of the category question below.
+    ['Forte', 'Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts', '19.89%×3+318.10%+19.89% / 278.34%', 'Forte finisher once Fervor is maxed. Considered Basic Attack DMG per its own kit text, despite replacing Heavy Attack.'],
     ['Skill', "It's Big Boomin' Time! / Come 'n' Get Me!", '23.66%×4+35.49%×4 / 23.66%+4.74%+23.66%×2+137.22%+11.83%×2', 'Closes distance and swaps stance.'],
     ['Liberation', "Party 'til Dawn!", '24.30% / 48.60% (1st enhancement) / 72.90% (2nd enhancement), auto-fires repeatedly for 9.5s', 'Mk. 31 HMG channel; pressing/holding Basic ATK or Liberation during it ramps to the next firepower tier and builds Overload faster.'],
     ['Liberation', 'BOOM! Fireworks!', '63.62%+572.58%', 'Auto-casts when the channel ends or Overload maxes.'],

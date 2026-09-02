@@ -5,6 +5,18 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { REBECCA_BLOCKS } from '../engine/characterBlocks/rebecca.blocks.js';
 
 describe('triggerEngine parity — Rebecca', () => {
+  // Fixed 2026-09-02 against a fresh Prydwen dump: 3 blocks were miscategorized (the reverse of the
+  // usual pattern — wrongly tagged heavyDmg/libDmg when the kit text explicitly overrides them to
+  // Basic Attack DMG). Rat-tat-tat!/Bang-bang-bang! and the Mk. 31 HMG channel both say "considered
+  // Basic Attack DMG" outright; BOOM! Fireworks! has no explicit override text but the dump's own
+  // damage-profile shows a literal 0 in the Liberation bucket, confirming Prydwen counts the whole
+  // Liberation sequence as Basic Attack DMG too.
+  it('Rat-tat-tat!, Party \'til Dawn!, and BOOM! Fireworks! are all basicDmg, not heavyDmg/libDmg', () => {
+    expect(REBECCA_BLOCKS.find(b => b.id === 'rebecca.forte.rat-tat-tat-huntress').damage.category).toBe('basicDmg');
+    expect(REBECCA_BLOCKS.find(b => b.id === 'rebecca.liberation.party-til-dawn').damage.category).toBe('basicDmg');
+    expect(REBECCA_BLOCKS.find(b => b.id === 'rebecca.liberation.boom-fireworks').damage.category).toBe('basicDmg');
+  });
+
   it('S4 stays correctly unmodeled (no block) — buff-to-a-buff, no flat-schema equivalent per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Rebecca'];
     expect(rc.s4).toEqual({});

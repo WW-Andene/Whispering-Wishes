@@ -46,8 +46,8 @@ export const REBECCA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Rat-tat-tat!: Huntress' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('19.89%×3+318.10%+19.89%'), category: 'heavyDmg' },
-    note: 'Once Fervor hits 120/120, replaces Heavy Attack. See rebecca.chain.s6-bonus-hit below for the S6-granted bonus proc on this cast.',
+    damage: { hits: parseSkillMultiplierHits('19.89%×3+318.10%+19.89%'), category: 'basicDmg' },
+    note: 'Once Fervor hits 120/120, replaces Heavy Attack — but its own kit text explicitly says "considered Basic Attack DMG" (fixed 2026-09-02 from a wrong heavyDmg category — same "considered X DMG despite the input slot" pattern as Phrolova\'s Scarlet Coda/Ciaccona\'s Quadruple Downbeat, just the reverse miscategorization). See rebecca.chain.s6-bonus-hit below for the S6-granted bonus proc on this cast.',
   },
   {
     id: 'rebecca.liberation.party-til-dawn',
@@ -56,16 +56,16 @@ export const REBECCA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     // Base (un-enhanced) tier used — the channel's ramp-up firepower (up to 2 enhancements, 48.60%/
     // 72.90%) and its auto-fire-for-9.5s mechanic are not modeled (base per-shot value used).
-    damage: { hits: parseSkillMultiplierHits('24.30%'), category: 'libDmg' },
-    note: 'Deploys the Mk. 31 HMG for 9.5s, auto-firing Basic ATK DMG; pressing/holding Basic Attack or Liberation during the channel ramps firepower and builds Overload faster — not modeled.',
+    damage: { hits: parseSkillMultiplierHits('24.30%'), category: 'basicDmg' },
+    note: 'Deploys the Mk. 31 HMG for 9.5s, auto-firing Basic ATK DMG (fixed 2026-09-02: category was libDmg, directly contradicting this note\'s own prose, which already said "Basic ATK DMG" — the kit text\'s own explicit override was simply never applied to the code); pressing/holding Basic Attack or Liberation during the channel ramps firepower and builds Overload faster — not modeled.',
   },
   {
     id: 'rebecca.liberation.boom-fireworks',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:BOOM! Fireworks!' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('63.62%+572.58%'), category: 'libDmg' },
-    note: "Auto-casts when the channel ends or Overload maxes. Swap-cancelling this banks 10 Concerto Energy for the next loop.",
+    damage: { hits: parseSkillMultiplierHits('63.62%+572.58%'), category: 'basicDmg' },
+    note: "Auto-casts when the channel ends or Overload maxes. Swap-cancelling this banks 10 Concerto Energy for the next loop. category fixed 2026-09-02: was libDmg — the dump's own damage-profile breakdown shows a literal 0 in the 'Liberation' bucket despite the Ultimate obviously dealing real damage, meaning Prydwen counts the WHOLE Liberation sequence (both the HMG auto-fire, which party-til-dawn's own text explicitly calls Basic ATK DMG, and this finisher) as Basic Attack DMG.",
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
