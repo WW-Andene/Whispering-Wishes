@@ -62,6 +62,9 @@ describe('triggerEngine parity — Lupa', () => {
     expect(totalDamage).toBeGreaterThan(0);
     const fired = new Set(hitLog.map(h => h.blockId));
     expect(fired.has('lupa.intro.try-focusing-eh')).toBe(true);
+    // Fixed 2026-09-02: the dump's own row label ("Skill Damage", not a move-specific name) confirms
+    // this is plain Resonance Skill DMG — was previously left uncategorized on a first pass.
+    expect(LUPA_BLOCKS.find(b => b.id === 'lupa.intro.try-focusing-eh').damage.category).toBe('skillDmg');
     expect(fired.has('lupa.liberation.fire-kissed-glory')).toBe(true);
     expect(fired.has('lupa.liberation.dance-with-the-wolf-climax')).toBe(true);
     expect(fired.has('lupa.heavy.wolfs-claw')).toBe(true);

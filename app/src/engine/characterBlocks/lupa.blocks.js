@@ -31,10 +31,13 @@ export const LUPA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Try Focusing, Eh?' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // Flagged 2026-09-02: no `category` set — no source text confirms which category applies. Same open
-    // gap class already flagged on Ciaccona's/Cartethyia's own uncategorized Intro/Mid-air blocks (means
-    // this hit currently gets zero category-specific DMG Bonus routing from any teammate buff).
-    damage: { hits: parseSkillMultiplierHits('29.76%+42.16%×4') },
+    // Fixed 2026-09-02: the dump's own multiplier row labels this move's damage generically "Skill
+    // Damage" — contrast with Nowhere to Run! (same Intro Skill section) whose row is instead named
+    // after the MOVE itself ("Nowhere to Run! DMG"), paired with explicit prose "considered Resonance
+    // Liberation DMG". Prydwen's own convention: a move-specific row name flags a non-default category
+    // (called out in prose); the generic "Skill Damage" label means plain Resonance Skill DMG, no prose
+    // override needed. Missed this signal on the first pass — corrected to skillDmg.
+    damage: { hits: parseSkillMultiplierHits('29.76%+42.16%×4'), category: 'skillDmg' },
   },
   {
     id: 'lupa.liberation.fire-kissed-glory',

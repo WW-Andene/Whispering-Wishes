@@ -28,13 +28,12 @@ export const CIACCONA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Roaming with the Wind' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('189.11%') },
-    // Flagged 2026-09-02: no `category` set (found while checking her team-engine routing) — neither
-    // this dump nor the fandom source this file cites gives an explicit "counted as X DMG" for her
-    // Intro, so no basis to guess one (skillDmg/basicDmg/heavyDmg all plausible, unconfirmed). Means
-    // this hit currently gets ZERO category-specific DMG Bonus routing from any teammate buff
-    // (resolveHitComposedDps.js: `categoryStat = category ? stats[category] : 0`) — a real, open gap,
-    // not silently accepted as correct. Needs a real source before assigning one.
+    // Fixed 2026-09-02: the dump's own multiplier row labels this move's damage generically "Skill
+    // Damage" (not e.g. "Roaming with the Wind DMG") — same convention confirmed on Lupa's Try Focusing,
+    // Eh?: a move-specific row name flags a non-default category (paired with explicit "considered X
+    // DMG" prose elsewhere in these dumps); the generic "Skill Damage" label means plain Resonance
+    // Skill DMG, no override needed. Missed this signal on the first pass — corrected to skillDmg.
+    damage: { hits: parseSkillMultiplierHits('189.11%'), category: 'skillDmg' },
     note: 'Inflicts Aero Erosion, skips straight to Basic ATK Stage 3.',
     // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — value:3 matches her
     // CHAR_BUFF_TABLE.debuffs.erosion's own already-sourced value ("3 stacks Aero Erosion, ticks every

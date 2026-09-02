@@ -82,6 +82,9 @@ describe('triggerEngine parity — Ciaccona', () => {
     expect(totalDamage).toBeGreaterThan(0);
     const fired = new Set(hitLog.map(h => h.blockId));
     expect(fired.has('ciaccona.intro.roaming-with-the-wind')).toBe(true);
+    // Fixed 2026-09-02: the dump's own row label ("Skill Damage", not "Roaming with the Wind DMG")
+    // confirms this is plain Resonance Skill DMG — was previously left uncategorized on a first pass.
+    expect(CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.intro.roaming-with-the-wind').damage.category).toBe('skillDmg');
     expect(fired.has('ciaccona.forte.quadruple-downbeat')).toBe(true);
     expect(fired.has("ciaccona.liberation.singers-triple-cadenza")).toBe(true);
   });
