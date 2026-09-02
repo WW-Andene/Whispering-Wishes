@@ -1271,7 +1271,15 @@ const CHARACTER_DATA = {
   // Buff tags were also entirely missing her Heal (Moment of Nihility/Death Snip) and Shield (Sawring -
   // Eradication) kit.
   ['Chisa',         ['Basic ATK', 'Liberation'],     ['Heal', 'Shield'],                      ['DEF Shred']],
-  ['Lynae',         ['Liberation', 'Skill'],         ['Tune Break DMG Buff'],                 ['Off-Tune']],
+  // dmgFocus corrected 2026-09-02 against a fresh Prydwen dump: was ['Liberation', 'Skill'] — but the
+  // damage-output pie chart shows Basic ATK at a dominant 38.1% share (202,837 of 532,802 total DMG),
+  // LARGER than Liberation's 13.9% and far larger than Skill's trivial 4.4% (same "not a trivial slice"
+  // vs. "trivial slice" distinction as Qingxiao's kept 22.8% vs. Denia's dropped 1.75%). Basic ATK's
+  // real share comes mostly from Basic Attack - Visual Impact/Iridescent Splash (1216.72%/304.18%,
+  // literally named "Basic Attack -" in their own move text, not a Forte-exclusive category) — the
+  // engine block for Visual Impact had no damage.category at all (fixed alongside this), silently
+  // missing every real Basic ATK DMG buff from teammates on her single biggest hit.
+  ['Lynae',         ['Basic ATK', 'Liberation'],     ['Tune Break DMG Buff'],                 ['Off-Tune']],
   // dmg-type tag corrected 2026-08-18: Danjin's own Prydwen kit breakdown says the Resonance Skill is
   // "the core of her kit, which all of her combo options revolve around" (Crimson Fragment/Erosion,
   // Sanguine Pulse) — 'Skill' was missing entirely. buff tag corrected: her Outro is worded "23% Havoc
@@ -1615,7 +1623,9 @@ const CHARACTER_DATA = {
   ['Sigrika',       'T0',   'T0'],
   ['Ciaccona',      'T0',   'T1'],
   ['Lupa',          'T0',   'T0.5'],
-  ['Lynae',         'T0',   'T0.5'],
+  // tier corrected 2026-09-02 against a fresh Prydwen dump: Whimpering Wastes was 'T0.5' — the dump's
+  // own Ratings section clearly lists T0 (ToA) / T1 (WW), matched exactly by its Value Tier List too.
+  ['Lynae',         'T0',   'T1'],
   ['Qiuyuan',       'T0',   'T0'],
   ['Mornye',        'T0',   'T1'],
   ['Shorekeeper',   'T0',   'T0'],
@@ -2184,7 +2194,11 @@ const CHAR_BUFF_TABLE = {
     tuneBreak: {
       boostToTeam: 40, // Visual Impact grants +40 Tune Break Boost teamwide
       baseTuneBreakBoost: 10, // 3.x char base stat
-      ruptureDmgMult: 350, // Tune Rupture Response — Spectral Analysis: ~350% ATK Level-scaled
+      // corrected 2026-09-02 against a fresh Prydwen dump: was an unsourced "~350% ATK Level-scaled"
+      // estimate — the dump's own Forte Circuit multipliers table gives the real Lv.10 value directly,
+      // stated identically in two places ("Tune Rupture Response - Spectral Analysis DMG: 1880.75% Tune
+      // AMP" and "Spectral Analysis - Discorded Tune DMG: 1880.75%").
+      ruptureDmgMult: 1880.75, // Tune Rupture Response — Spectral Analysis (confirmed exact, Lv.10)
       strainDmgPerStack: 0.12, // per stack of Strain Interfered, per point of Tune Break Boost = +0.12% total DMG
       maxStrainStacks: 3, // base 2 + 1 from Lynae
     },
@@ -3714,12 +3728,19 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Before Injection of Dawn', '72.67%×3', 'Opener that also inflicts Tune Strain.'],
     ['Outro', 'Bow to the Last Light', '500%', 'Simple finishing nuke on swap-out.'],
   ],
+  // Real zero-damage rotation-step bug fixed 2026-09-02 against a fresh Prydwen dump (same class of bug
+  // as Yangyang: Xuanling's Feather Fall/Havoc in Bloom): CHARACTER_ROTATIONS.Lynae's own
+  // 'Basic ATK:Polychrome Leap ×3' step (one of only 7 real steps in her whole rotation) had no matching
+  // row here at all — the engine block file's own header comment explicitly flagged this as "NO matching
+  // SKILL_MULTIPLIERS row at all — not modeled rather than guessed." The fresh dump's Forte Circuit
+  // multipliers table actually has all 3 stages (previously not sourced), added below.
   'Lynae': [
     ['Basic ATK', 'Stage 1-3', '86.19% → 52.39%×3 → 123.37%', 'Standard combo before entering her Kaleidoscopic mode.'],
     ['Heavy ATK', 'Spark Collision Lv.3', '277.78%×2', 'Fully-charged heavy hit, a big single burst of damage.'],
     ['Basic ATK', 'Kaleidoscopic 1-5', '82.81% → 38.87%×2 → 37.75%×3 → 29.75%×2+44.62%×2 → 75.54%+15.11%×5+100.72%', 'Extended empowered combo used once her Kaleidoscopic mode is active.'],
-    ['Forte', 'Visual Impact', '1216.72%', 'Massive Forte finisher, her main source of burst damage.'],
-    ['Forte', 'Iridescent Splash', '304.18%', 'Secondary Forte follow-up hit.'],
+    ['Basic ATK', 'Polychrome Leap ×3', '33.80%×3 → 16.90%×6 → 13.10%×8', 'Airborne Jump attack chain (3 stages while in Kaleidoscopic Parade); each stage consumes 1/3 Lumiflow and grants 1 True Color point.'],
+    ['Forte', 'Visual Impact', '1216.72%', "Massive Forte finisher, her main source of burst damage. Literally named \"Basic Attack - Visual Impact\" — considered real Basic Attack DMG, not a separate Forte category."],
+    ['Forte', 'Iridescent Splash', '304.18%', "Secondary Forte follow-up hit. Literally named \"Basic Attack - Iridescent Splash\" — considered real Basic Attack DMG."],
     ['Skill', 'Lynae-Style Palettes', '139.31% + 46.44%×3', 'Skill that builds up her paint/mode resource while dealing damage.'],
     ['Skill', 'Additive Color', '116.31%×2', 'Quick follow-up Skill strike.'],
     ['Liberation', 'Prismatic Overblast', '87.48%×10', 'Ultimate multi-hit barrage.'],
@@ -5927,9 +5948,34 @@ const RESONANCE_CHAIN_DATA = {
   //   flat schema will otherwise apply critDmg:500 as if it were an always-on team/self Crit DMG stat,
   //   which massively overstates its real (single-hit, Discernment-only) scope.
   'Shorekeeper':  { s1: {}, s2: { atkPct: 40 }, s3: {}, s4: {}, s5: {}, s6: { totalMult: 42, critDmg: 500 } },
-  // Lynae S2: team +25% All DMG Amp, self-gain portion (confirmed exact). S4: ATK+20% (was totalMult:10, no basis).
-  // S5: Prismatic Overblast Liberation DMG Mult+70% (was totalMult:15, no basis)
-  'Lynae':        { s1: { totalMult: 10 }, s2: { allDmg: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { libDmg: 70 }, s6: { totalMult: 40 } },
+  // Lynae fully re-audited 2026-09-02 against a fresh Prydwen dump — the prior comment here claimed S1's
+  // totalMult:10 and S3's totalMult:15 had already been "corrected" (moved to S4/S5 as atkPct:20/
+  // libDmg:70), but S1 and S3 below still literally carried those same stale placeholder values
+  // unfixed — an incomplete prior edit. Real values:
+  // S1 "Sequence Node 1": Basic Attack - Polychrome Leap's own DMG Multiplier +120% (was the stale
+  // totalMult:10 placeholder). Now cast-scopable since Polychrome Leap's own SKILL_MULTIPLIERS row was
+  // added above (was previously entirely unmodeled). Utility half (Spray Paint duration/pull-in,
+  // interruption immunity, Overflow restore out of combat) has no DPS component, not modeled.
+  // S2: team +25% All DMG Amp, self-gain portion (confirmed exact, unchanged) — PLUS a second, separate
+  // real effect entirely missing before this read: "Outro Skill gains: casting Outro Skill grants the
+  // incoming Resonator 25% All-DMG Amplification for 14s" (additive on top of the base-kit Outro's own
+  // 15% All DMG + 25% Liberation DMG). Same stat name (allDmg) but a genuinely different scope (self vs.
+  // next-on-field) that this flat single-key schema can't hold in one field — modeled as an additional
+  // sequence-gated chain block (lynae.chain.s2-outro-bonus) rather than folded into this key.
+  // S3 "Sequence Node 3": Basic Attack - Visual Impact AND Basic Attack - Iridescent Splash's own DMG
+  // Multiplier +90% (was the stale totalMult:15 placeholder). Premixed Hue's Additive Color stacking
+  // buff (up to 25 stacks × 55%, gated on Lumiflow≥120) has no DPS component in the modeled rotation
+  // (Additive Color isn't cast in it), not modeled.
+  // S4: ATK+20% (confirmed exact, unchanged).
+  // S5: Prismatic Overblast Liberation DMG Mult+70% (confirmed exact, unchanged).
+  // S6 "Sequence Node 6": up to +90% DMG on Polychrome Leap/Visual Impact via 3 stacks of Color of Soul
+  // (30%/stack), but stacks are only gained by casting Kaleidoscopic Parade - Graffiti Blast or Mid-air
+  // Heavy Attack — both exclusive to the S6-only alternate rotation that CHARACTER_ROTATIONS['Lynae']
+  // explicitly doesn't model (see that table's own header comment). Zero reachable DPS component in the
+  // modeled rotation — was an unsourced totalMult:40 fabrication, zeroed to {} (same "no real DPS
+  // component in the modeled system" pattern as Shorekeeper's S1/S3/S4/S5 above). TODO: needs Phase 2
+  // schema (a per-cast stacking buff gated to an alternate, unmodeled rotation branch).
+  'Lynae':        { s1: { basicDmg: 120 }, s2: { allDmg: 25 }, s3: { basicDmg: 90 }, s4: { atkPct: 20 }, s5: { libDmg: 70 }, s6: {} },
   // Mornye (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: interrupt immunity + Interfered Marker duration/
   // condition changes, no flat % (was allDmg:15, no basis). S2: team Crit DMG+32% max vs Interfered Marker targets (was
   // deepen:10, wrong stat+value). S4: High Syntony Field healing+30%, not a DPS stat (was atkPct:10, no basis).

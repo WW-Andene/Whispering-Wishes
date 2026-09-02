@@ -7,12 +7,12 @@ import { LYNAE_BLOCKS } from '../engine/characterBlocks/lynae.blocks.js';
 describe('triggerEngine parity — Lynae', () => {
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Lynae'];
-    expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s1').effects[0].value).toBe(rc.s1.totalMult);
+    expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s1').effects[0].value).toBe(rc.s1.basicDmg);
     expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s2').effects[0].value).toBe(rc.s2.allDmg);
-    expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s3').effects[0].value).toBe(rc.s3.totalMult);
+    expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s3').effects[0].value).toBe(rc.s3.basicDmg);
     expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s4').effects[0].value).toBe(rc.s4.atkPct);
     expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
-    expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s6').effects[0].value).toBe(rc.s6.totalMult);
+    expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s6').effects).toEqual([]);
   });
 
   it('outro and libBuff match CHAR_BUFF_TABLE', () => {
