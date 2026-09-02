@@ -222,6 +222,41 @@ Echo timing: best cast right at the end of the rotation (swap-cancel it immediat
 
 **Generalist supports**: **Shorekeeper**, **Verina**, **Mornye** — "the two best generalist Supports by heaps and bounds... Shorekeeper and Verina can slot in almost any team in the game as they provide high team-wide ATK% and 15% DMG Amplify. Shorekeeper additionally provides CRIT Rate and CRIT DMG, always making her the best third slot teammate for Augusta teams, but Verina is a close, more accessible second provided Shorekeeper isn't available. Mornye may also see niche use cases alongside Lynae and Rebecca due to their synergy with Tune Rupture and Hack mechanics respectively."
 
+---
+
+## Calculations
+
+### Real Damage-Type Breakdown (Prydwen's own simulated rotation, S0, buffed team: Iuno+Shorekeeper)
+| Type | DMG | Share |
+|---|---|---|
+| Basic ATK | 0 | 0.00% |
+| **Heavy ATK** | 335,431 | **74.58%** |
+| **Skill** | 75,044 | **16.69%** |
+| Liberation | 0 | **0.00%** |
+| Intro | 10,208 | 2.27% |
+| Outro | 0 | 0.00% |
+| Echo | 29,054 | 6.46% |
+| **Total** | **449,737** | 100% |
+
+Confirms independently, from Prydwen's own real damage simulation (not just kit-text reading): **Augusta deals literally zero real "Liberation"-category damage** — every Liberation-slot move she has is fully absorbed into the Heavy ATK bucket, matching the "considered as Heavy Attack DMG" reclassification on every one of those moves. Her damage is genuinely Heavy ATK-dominant (74.6%) with a real, secondary Skill component (16.7%) — not evenly split, and Liberation isn't a real category for her at all.
+
+### Damage Output by Sequence (S0→S6, 1-target, solo — no team/buff contribution)
+Rotation time: 11.17s. Build: Thunderflare Dominion R1, 5pc Crown of Valor + 2pc Void Thunder, The False Sovereign main echo (Crit Rate / Electro DMG ×2 / ATK% ×2).
+
+| Sequence | DMG | DPS | Relative % |
+|---|---|---|---|
+| S0 | 1,147,511 | 102,731 | 100.00% |
+| S1 | 1,351,780 | 121,018 | 117.80% |
+| S2 | 1,702,065 | 152,378 | 148.33% |
+| S3 | 1,986,583 | 177,849 | 173.12% |
+| S4 | 2,136,517 | 191,272 | 186.19% |
+| S5 | 2,136,517 | 191,272 | 186.19% |
+| S6 | 3,035,663 | 271,769 | 264.54% |
+
+Note S4 and S5 produce identical DMG/DPS — consistent with S5 (Glory's Favor shield +50%) having zero real DPS component, exactly as already corrected in this app's data (RESONANCE_CHAIN_DATA/engine block zeroed, not the prior fabricated totalMult:15 "proxy").
+
+Prydwen's own caveat: "Listed character calculations are done without buffs or any damage contribution from teammates (full solo)... DPS and DMG aren't perfect metrics for a character's individual value... don't compare the numbers between characters."
+
 ### Example Team ("Best Team")
 Augusta + **{Iuno / Lynae / Rebecca / Mortefi}** (outro buffer slot) + **{Shorekeeper / Verina / Mornye}** (generalist support slot).
 Note: Mornye is niche — only pair her alongside Rebecca (Hack synergy) or Lynae (Tune Rupture synergy).
