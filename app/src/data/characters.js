@@ -1195,7 +1195,15 @@ const CHARACTER_DATA = {
   ['Zani',          ['Heavy ATK', 'Liberation'],     [],                                      ['Frazzle']],
   ['Cartethyia',    ['Basic ATK'],                   [],                                      ['Erosion']],
   ['Phrolova',      ['Echo', 'Skill'],               [],                                      []],
-  ['Augusta',       ['Heavy ATK', 'Liberation'],     ['Shield'],                              []],
+  // dmgFocus corrected 2026-09-02 (final Augusta audit pass, cross-checked against a fresh Prydwen
+  // dump): was ['Heavy ATK', 'Liberation'] — but EVERY one of her Liberation-slot damage instances is
+  // explicitly "considered as Heavy Attack DMG" per her own kit text (Sword of Eternal Oath, Sunborne,
+  // Everbright Protector all say so) — she has ZERO true Liberation-categorized damage. Her real
+  // second damage type is Skill (Warrior's Blade + Undying Sunlight: Strike/Leap, none reclassified —
+  // only Undying Sunlight: Plunge is, to Heavy ATK). This field gates scoreTeamComposition's type-
+  // specific buff matching (buffApplies/dpsFocus) — was wrongly crediting a libDmg buff as applying to
+  // her (she has none) and wrongly rejecting a skillDmg buff (she has real Skill damage).
+  ['Augusta',       ['Heavy ATK', 'Skill'],          ['Shield'],                              []],
   ['Galbrena',      ['Echo', 'Heavy ATK'],           [],                                      []],
   ['Luuk Herssen',  ['Basic ATK'],                   [],                                      []],
   ['Aemeath',       ['Liberation', 'Skill'],         [],                                      ['Fusion Burst']],
@@ -1320,7 +1328,7 @@ const CHARACTER_DATA = {
   ['Cartethyia',    14800, 313, 611,  125],
   ['Lupa',          11913, 388, 1186, 125],
   ['Phrolova',      10775, 438, 1137, 125],
-  ['Augusta',       10300, 462, 1112, 125],
+  ['Augusta',       10300, 463, 1112, 125],
   ['Iuno',          10525, 450, 1124, 125],
   ['Galbrena',      10300, 462, 1112, 125],
   ['Qiuyuan',       12237, 375, 1197, 125],
@@ -1416,7 +1424,13 @@ const CHARACTER_DATA = {
   // game8 build guides) without the base-stat-unit bug making her a 5x outlier no real enemy RES
   // swing could ever overcome.
   ['Cartethyia',    110, 25, 16],  // HP scaling + Erosion — totalMult is %HP here, NOT %ATK (see comment above)
-  ['Augusta',       2800, 23, 15],  // Heavy ATK + Shield
+  // totalMult corrected 2026-09-02 (final Augusta audit pass): was 2800 — the halving-bug fix to her
+  // SKILL_MULTIPLIERS row (see that table's own audit comment) means this table's own documented
+  // definition ("sum of ATK% multipliers in one full rotation") now sums to ~6601 across her real
+  // 13-step rotation using the corrected values, not the stale 2800. Feeds real sub-DPS power scoring
+  // (normalizedDpsPowerScore/calcSubDpsFieldMultRatio in calcEngine.js, subDpsMembers in
+  // calcTeamStats.js) whenever Augusta is placed as a sub-DPS rather than the main carry.
+  ['Augusta',       6601, 23, 15],  // Heavy ATK + Shield
   ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
   ['Luuk Herssen',  2400, 23, 16],  // Basic ATK chains
   ['Aemeath',       3800, 24, 15],  // Strongest DPS: Res. Liberation + Fusion Burst/Tune Rupture extra multipliers
@@ -1571,7 +1585,10 @@ const CHARACTER_DATA = {
   ['Rebecca',       'T0.5', 'T1'],
   ['Lucy',          'T1',   'T2'],
   ['Phrolova',      'T0.5', 'T0'],
-  ['Augusta',       'T0.5', 'T1'],
+  // toa corrected 2026-09-02 (final Augusta audit pass): was 'T0.5' — the fresh Prydwen dump's Review
+  // tab states T1 for BOTH DPS tiers (Tower of Adversity and Whimpering Wastes) and BOTH the regular
+  // and "Value" tier lists, all four saying T1 — no T0.5 anywhere in that source.
+  ['Augusta',       'T1',   'T1'],
   ['Cartethyia',    'T0.5', 'T1.5'],
   ['Galbrena',      'T0.5', 'T1'],
   ['Iuno',          'T0.5', 'T3'],

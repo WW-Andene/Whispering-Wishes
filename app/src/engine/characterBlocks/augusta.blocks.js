@@ -117,11 +117,15 @@ export const AUGUSTA_BLOCKS = [
     note: '9 rapid Heavy ATK-type hits during the frozen time window of Sworn Allegiance.',
   },
   {
+    // category corrected 2026-09-02 (final Augusta audit pass): had no `category` at all — the fresh
+    // Prydwen dump confirms "Deal Electro DMG, considered as Heavy Attack DMG", matching every other
+    // Liberation-slot move in her kit (Sword of Eternal Oath, Sunborne — both already correctly tagged
+    // heavyDmg above). This was the one omission.
     id: 'augusta.liberation.everbright-protector',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Sublime is the Sun: Everbright Protector' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('238.58% + 894.65% + 5.97%×10') },
+    damage: { hits: parseSkillMultiplierHits('238.58% + 894.65% + 5.97%×10'), category: 'heavyDmg' },
     note: 'Ends Sworn Allegiance, consumes all Crown of Wills stacks, deploys Ruler\'s Realm.',
   },
   {

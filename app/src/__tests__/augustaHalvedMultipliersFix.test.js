@@ -36,3 +36,15 @@ describe("Augusta's damage blocks carry the real (not halved) Lv.10 multipliers"
     expect(values[2]).toBeCloseTo(5.97, 2);
   });
 });
+
+describe('Augusta — final audit pass fixes (dmgFocus, missing category, base stats, tier, totalMult)', () => {
+  it('dmgFocus is Heavy ATK + Skill, not Liberation (she has zero true libDmg-categorized damage)', async () => {
+    const { CHARACTER_DATA } = await import('../data/characters.js');
+    expect(CHARACTER_DATA['Augusta'].dmgFocus).toEqual(['Heavy ATK', 'Skill']);
+  });
+
+  it('Everbright Protector damage block is categorized heavyDmg, matching every other reclassified Liberation-slot move', () => {
+    const block = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.liberation.everbright-protector');
+    expect(block.damage.category).toBe('heavyDmg');
+  });
+});
