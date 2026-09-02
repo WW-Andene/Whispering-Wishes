@@ -13,6 +13,18 @@
 // unset entirely, silently missing every real Basic ATK DMG buff on her single
 // biggest hit — fixed). Iridescent Splash/Additive Color still aren't used in her
 // real rotation, not modeled.
+//
+// appliesTags added 2026-09-02 (Engine development.md item 9, Phase 2) on every Photochromic-Flux-
+// inflicting block, gated by sequenceGating.js's winningStanceForOwner() (see triggerBlocks.schema.js's
+// appliesTags doc). Unlike Denia, Lynae has NO sourced rival-magnitude buff block to resolve which mode
+// wins today — her real per-mode differences (Tune Rupture Response - Spectral Analysis proc; Tune
+// Strain's per-stack Tune Break Boost scaling) are both nonlinear/uncertain-scope mechanics not yet
+// modeled as blocks, so fabricating a magnitude just to force a winner was deliberately avoided (same
+// discipline as this file's own S6 zeroing below). winningStanceForOwner() therefore currently returns
+// null for Lynae, meaning NEITHER stance-gated tag fires yet — a known, intentional conservative gap,
+// not a bug. The dump's own meta guidance ("always Tune Rupture — bigger raw damage increase — unless
+// the Main DPS has a direct Tune Strain synergy") already answers which mode a real team should assume;
+// it just isn't wired into the engine's own magnitude-resolution mechanism yet.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -27,6 +39,16 @@ export const LYNAE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Time to Show Some Colors!' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // appliesTags added 2026-09-02 (Engine development.md item 9, Phase 2), sourced verbatim from the
+    // dump's own "Resonance Mode" line: "Photochromic Flux (from Polychrome Leap/Iridescent
+    // Splash/Visual Impact/Intro) inflicts Tune Rupture - Shifting (Rupture mode) or Tune Strain -
+    // Shifting (Strain mode)". Gated by sequenceGating.js's winningStanceForOwner() — see
+    // triggerBlocks.schema.js's appliesTags doc and this file's own note on why NEITHER currently
+    // fires (no sourced rival-magnitude block exists yet to resolve her assumed mode).
+    appliesTags: [
+      { tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' },
+      { tag: 'shifting', requiresStance: 'Tune Strain mode' },
+    ],
     damage: { hits: parseSkillMultiplierHits('22.48%×10') },
     note: 'Restores 100 Overflow, inflicts Photochromic Flux (Tune Rupture or Tune Strain, per chosen Resonance Mode).',
   },
@@ -61,6 +83,11 @@ export const LYNAE_BLOCKS = [
     trigger: { type: 'cast', on: 'Basic ATK:Polychrome Leap ×3' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('33.80%×3 → 16.90%×6 → 13.10%×8'), category: 'basicDmg' },
+    // appliesTags added 2026-09-02 — same mode-gated shape as lynae.intro.time-to-show-some-colors above.
+    appliesTags: [
+      { tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' },
+      { tag: 'shifting', requiresStance: 'Tune Strain mode' },
+    ],
     note: 'Airborne Jump attack chain (3 stages while in Kaleidoscopic Parade), each stage consuming 1/3 Lumiflow and granting 1 True Color point (caps at 3), inflicting Photochromic Flux each time.',
   },
   {
@@ -72,6 +99,11 @@ export const LYNAE_BLOCKS = [
     // real Basic Attack DMG, not a Forte-exclusive category. Was previously uncategorized entirely,
     // silently missing every real Basic ATK DMG buff from teammates on her single biggest hit.
     damage: { hits: parseSkillMultiplierHits('1216.72%'), category: 'basicDmg' },
+    // appliesTags added 2026-09-02 — same mode-gated shape as lynae.intro.time-to-show-some-colors above.
+    appliesTags: [
+      { tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' },
+      { tag: 'shifting', requiresStance: 'Tune Strain mode' },
+    ],
     note: 'With all 3 True Color banked — her big Forte finisher, consumes all 3 True Color, inflicts Photochromic Flux, grants the nearby team +40 Tune Break Boost for 30s (not modeled, no DPS component).',
   },
   {

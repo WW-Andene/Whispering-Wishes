@@ -350,10 +350,26 @@ simple stat buff — don't force-fit into the same fix):
 
    Direct consequence for the app's assumed mode: Denia currently ALWAYS resolves to **Fusion Burst**
    (her own kit's rival-block magnitudes favor it, 60 > 15 — this was already true of her outro pick
-   before today, `appliesTags` tagging just now agrees with it too). **Lynae still NOT tagged** — same
-   mechanism now exists for her, but her actual dual-mode blocks (Tune Rupture / Tune Strain via
-   Photochromic Flux, ~3 blocks per an earlier grep) haven't been read closely enough yet to tag
-   correctly; that's the next concrete step, not a further architecture gap.
+   before today, `appliesTags` tagging just now agrees with it too).
+
+   **Lynae tagged 2026-09-02** — `lynae.intro.time-to-show-some-colors`, `lynae.basic.polychrome-leap`,
+   `lynae.forte.visual-impact` (every real Photochromic-Flux-inflicting block) now carry
+   `{tag:'tune-rupture-shifting', requiresStance:'Tune Rupture mode'}` /
+   `{tag:'shifting', requiresStance:'Tune Strain mode'}`, sourced verbatim from her dump's own
+   "Resonance Mode" line. **Deliberately left unresolved**, though: `winningStanceForOwner()` needs a
+   sourced rival-magnitude BUFF block per stance to pick a winner, and Lynae — unlike Denia — has none
+   in the modeled rotation: her real per-mode differences (Tune Rupture Response - Spectral Analysis, a
+   1880.75%-multiplier proc; Tune Strain's own nonlinear per-stack Tune Break Boost scaling) are both
+   real, sourced mechanics but neither is built as an engine block yet, and fabricating a placeholder
+   magnitude just to force a decision was rejected (same discipline as this session's own "never invent
+   a number" standing lesson). Net effect: `winningStanceForOwner()` returns `null` for Lynae today, so
+   NEITHER stance-gated tag fires — a known, intentional conservative gap, not a bug; her Photochromic
+   Flux application is invisible to any `ally-action` consumer until this is closed. The dump's own meta
+   verdict already answers the practical question ("always Tune Rupture — bigger raw damage increase —
+   unless the Main DPS has a direct Tune Strain synergy, e.g. Luuk Herssen"); it just isn't wired into
+   the magnitude-resolution mechanism. Closing it needs the Tune Rupture Response - Spectral Analysis
+   proc modeled as a real damage/buff block (giving Tune Rupture mode a genuine sourced magnitude) —
+   not yet done. Full suite (1221 tests) still passing after this tagging pass.
 3. **Migration — not started.** Qingxiao S4 specifically still uses the old `target:{scope:'self'}` /
    flat `atkPct` approximation (not yet migrated to `ally-action`+`trigger-actor`); `denia.chain.s2`
    still only models its flat Banish multiplier, not the Fusion-Burst/Tune-Strain-mode reactive buff
