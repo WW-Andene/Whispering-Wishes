@@ -123,10 +123,17 @@ export const CARLOTTA_BLOCKS = [
   {
     id: 'carlotta.chain.s2',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Liberation:Fatal Finale' },
+    // Fixed 2026-09-02: this was `trigger:{type:'cast',...}` with no `timing.duration` — a
+    // `kind:'buff'` block in that exact shape is a silent no-op in resolveHitComposedDps.js's
+    // statsAtInstant() (it only reads passiveBlocks [trigger.type==='passive'] and buffWindows
+    // [duration != null]), the same architecture bug already found and fixed on Lupa's S4/Verina's
+    // S6 (Engine development.md item 12). Converted to passive + scopedToBlockId (Augusta's S3
+    // pattern) so it only ever boosts Fatal Finale's own hit, matching the real "Fatal Finale's own
+    // DMG Multiplier +126%" mechanic, without needing a cast-window that never gets built.
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 126 }],
-    note: "Real scope: Fatal Finale's own DMG Multiplier +126% — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
+    effects: [{ stat: 'totalMult', value: 126, scopedToBlockId: 'carlotta.liberation.fatal-finale' }],
+    note: "Real scope: Fatal Finale's own DMG Multiplier +126%.",
   },
   {
     id: 'carlotta.chain.s3',

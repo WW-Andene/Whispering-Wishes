@@ -20,6 +20,29 @@ describe('triggerEngine parity — Carlotta', () => {
     expect(s1.condition.requiresStance).toBe('Deconstructed target');
   });
 
+  // Fixed 2026-09-02: S2 was `trigger:{type:'cast', on:'Liberation:Fatal Finale'}` with no
+  // `timing.duration` — a kind:'buff' block in that shape is a silent no-op in
+  // resolveHitComposedDps.js's statsAtInstant() (only passiveBlocks/buffWindows are read), the
+  // same dead-buff bug already fixed on Lupa's S4/Verina's S6. Converted to passive +
+  // scopedToBlockId so it actually fires and only boosts Fatal Finale's own hit.
+  it("S2 actually boosts Fatal Finale's damage (not a dead cast-scoped no-duration no-op)", () => {
+    const s2 = CARLOTTA_BLOCKS.find(b => b.id === 'carlotta.chain.s2');
+    expect(s2.trigger.type).toBe('passive');
+    expect(s2.effects[0].scopedToBlockId).toBe('carlotta.liberation.fatal-finale');
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Carlotta'], CARLOTTA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS2 = resolveHitComposedDps(CARLOTTA_BLOCKS, steps, ctx, 3500, 'glacio', 'Main DPS', null, 2);
+    const withoutS2Blocks = CARLOTTA_BLOCKS.filter(b => b.id !== 'carlotta.chain.s2');
+    const withoutS2 = resolveHitComposedDps(withoutS2Blocks, steps, ctx, 3500, 'glacio', 'Main DPS', null, 2);
+    const fatalHit = withS2.hitLog.find(h => h.blockId === 'carlotta.liberation.fatal-finale');
+    const fatalHitNoS2 = withoutS2.hitLog.find(h => h.blockId === 'carlotta.liberation.fatal-finale');
+    expect(fatalHit.damage).toBeGreaterThan(fatalHitNoS2.damage);
+    const skillHit = withS2.hitLog.find(h => h.blockId === 'carlotta.skill.art-of-violence');
+    const skillHitNoS2 = withoutS2.hitLog.find(h => h.blockId === 'carlotta.skill.art-of-violence');
+    expect(skillHit.damage).toBeCloseTo(skillHitNoS2.damage, 5);
+  });
+
   it('S4 is team-wide (not self-only), matching the audit-confirmed real target', () => {
     const s4 = CARLOTTA_BLOCKS.find(b => b.id === 'carlotta.chain.s4');
     expect(s4.target.scope).toBe('whole-team');
