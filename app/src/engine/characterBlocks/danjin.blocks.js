@@ -64,6 +64,7 @@ export const DANJIN_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
+    condition: { element: 'havoc' },
     effects: [{ stat: 'elemDmg', value: 23, stacking: 'refresh' }],
     note: 'Havoc DMG Amp to the incoming Resonator (elemDmg, not deepen — a buff to the ally\'s own outgoing DMG, not a vulnerability debuff on the enemy, per the 2026-09-01 correction).',
   },

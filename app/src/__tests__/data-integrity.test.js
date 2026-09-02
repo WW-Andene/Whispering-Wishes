@@ -160,7 +160,8 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Aemeath[9] "Liberation: Heavenfall Edict: Finale"',
     'Aemeath[10] "Skill: Form Switch"',
     'Lynae[3] "Heavy ATK: Spark Collision (full charge)"',
-    'Lynae[4] "Basic ATK: Polychrome Leap ×3"',
+    // Lynae[4] "Basic ATK: Polychrome Leap ×3" now resolves — fixed 2026-09-02, a real zero-damage
+    // rotation-step bug (SKILL_MULTIPLIERS row added, previously entirely missing).
     'Lynae[5] "Forte: Mid-air Attack: Visual Impact"',
     'Mornye[1] "Basic ATK: Wide Field Observation Mode Stage 1-3"',
     'Mornye[3] "Forte: Heavy Attack: Inversion"',

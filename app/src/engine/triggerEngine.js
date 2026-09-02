@@ -92,8 +92,18 @@ function triggerFired(trigger, firedTriggers) {
 
 function conditionHolds(condition, targetElementLower, targetRole) {
   if (!condition) return true;
+  // A block explicitly confirmed (via this character's own real CHARACTER_ROTATIONS/desc — see
+  // triggerBlocks.schema.js's Condition.assumedInactive doc) to never actually occur never fires.
+  // Currently only Phoebe's two Confession-mode outro blocks — the mutual-exclusion handling below
+  // (filterExclusiveModeBlocks) can't reach these on its own since Absolution, her real mode, isn't
+  // represented by any rival requiresStance-tagged block to compare against.
+  if (condition.assumedInactive) return false;
   if (condition.element && condition.element.toLowerCase() !== targetElementLower) return false;
   if (condition.requiresRole && condition.requiresRole.length && !condition.requiresRole.includes(targetRole)) return false;
+  // condition.requiresStance is otherwise still purely descriptive here — see its schema doc for why
+  // (no state machine tracks which stance is active) and for the two enforced exceptions
+  // (assumedInactive, just above; mutually-exclusive "mode" sibling groups, handled upstream by
+  // filterExclusiveModeBlocks before blocks ever reach this resolver).
   return true;
 }
 

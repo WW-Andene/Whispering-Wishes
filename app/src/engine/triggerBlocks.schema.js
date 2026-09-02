@@ -261,7 +261,37 @@
  *                                       "Aero Erosion DMG Amp only")
  * @property {string[]} [requiresRole] Block only applies if its target has one of these roles
  * @property {string} [requiresStance] e.g. 'Parry Stance', 'Apex Resonance', 'Ephemeral
- *                                       Transcendence' — kit-specific stance-gated moves
+ *                                       Transcendence' — kit-specific stance-gated moves. Purely
+ *                                       descriptive by default: conditionHolds() has no state machine
+ *                                       tracking which stance is actually active, so a block naming one
+ *                                       still fires whenever its trigger fires (same limitation as every
+ *                                       other not-yet-simulated conditional type in this schema — see
+ *                                       'windowed-cast'/'requires-prior-cast' above). Two purpose-built
+ *                                       exceptions DO get enforced, both added 2026-09-02 after a real
+ *                                       audit found this silence was live-DPS-relevant, not cosmetic:
+ *                                       (1) `assumedInactive` (below) for a stance explicitly confirmed
+ *                                       never entered by this character's own modeled rotation; (2) when
+ *                                       ≥2 sibling blocks (same `source`) each name a DISTINCT stance
+ *                                       whose text contains "mode" — a real, mutually-exclusive
+ *                                       Resonance-Mode choice, not just descriptive flavor text — only
+ *                                       the single highest-value one is kept (filterExclusiveModeBlocks
+ *                                       in sequenceGating.js). Every other requiresStance value (HP/RES
+ *                                       thresholds, enemy states, stacking gauges, etc.) is still purely
+ *                                       descriptive and needs its own real state-tracking mechanism
+ *                                       before it can be enforced — do not assume it's already gated.
+ * @property {boolean} [assumedInactive] True marks a block whose stance is CONFIRMED (via this
+ *                                       character's own real CHARACTER_ROTATIONS/desc — not a guess)
+ *                                       to never actually occur, so conditionHolds() always rejects it.
+ *                                       Currently only Phoebe's two Confession-mode outro blocks: her
+ *                                       modeled rotation is Absolution-only, and her own `note` field
+ *                                       already said "her real rotation stays in Absolution mode, so
+ *                                       this block does not fire" before this flag existed to actually
+ *                                       enforce it. NOT a general "assume every untagged stance is off"
+ *                                       switch — e.g. Camellya's Budding Mode chain blocks (s3/s6) have
+ *                                       no rival stance and no such confirmation; they're a real, always-
+ *                                       entered part of her own rotation (her own note's accepted TODO
+ *                                       says they currently apply unconditionally, same as the legacy
+ *                                       flat table) and must NOT get this flag.
  * @property {boolean} [teamWide]      True if this affects the whole team, not just target
  */
 

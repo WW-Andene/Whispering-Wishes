@@ -86,6 +86,7 @@ export const BAIZHI_BLOCKS = [
     trigger: { type: 'passive' },
     timing: { duration: 20 }, // same "Euphonia pickup" trigger as baizhi.libbuff.euphonia-atk above, same simplification
     target: { scope: 'whole-team' },
+    condition: { element: 'glacio' },
     effects: [{ stat: 'elemDmg', value: 12 }],
     note: 'Euphonia pickup grants team Glacio DMG Bonus+12% for 20s — same real trigger as baizhi.libbuff.euphonia-atk, same "no identifiable rotation step" simplification.',
   },

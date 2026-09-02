@@ -36,7 +36,7 @@ import { resolveSimulatedTeamRotation } from '../../engine/resolveSimulatedTeamR
 import { resolveDotReactionDps } from '../../engine/dotReactions.js';
 import { chooseOnFieldOrder } from '../../engine/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/coordinatedAtk.js';
-import { gateBlocksBySequence } from '../../engine/sequenceGating.js';
+import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/sequenceGating.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
 // Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
@@ -174,7 +174,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // "counted as if R6" bug Stage 3 item 1 already fixed for the RAW/solo tier, silently reintroduced
     // here since this tier never threaded m.seqLevel through at all.
     const engineChosenOrder = allMembersConverted
-      ? chooseOnFieldOrder(mems.map(m => ({ name: m.name, blocks: gateBlocksBySequence(BLOCKS_BY_CHARACTER[m.name], m.seqLevel), rotation: CHARACTER_ROTATIONS[m.name] })), mainDps.name)
+      ? chooseOnFieldOrder(mems.map(m => ({ name: m.name, blocks: filterExclusiveModeBlocks(gateBlocksBySequence(BLOCKS_BY_CHARACTER[m.name], m.seqLevel)), rotation: CHARACTER_ROTATIONS[m.name] })), mainDps.name)
       : null;
 
     const rotationTimeline = (() => {
@@ -830,7 +830,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
             } else if (['allDmg', 'elemDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'skillDmg'].includes(b.stat)) {
               applyBuff(mainStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsFocus, dpsElLower: mainDpsElLower });
             } else if (b.stat === 'deepen') {
-              applyBuff(mainStats, 'deepen', val, { condition: b.condition, dpsElLower: mainDpsElLower });
+              applyBuff(mainStats, 'deepen', val, { condition: b.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
             } else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'resShred' || b.stat === 'defShred') {
               applyBuff(mainStats, b.stat, val);
             }
@@ -860,7 +860,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           const uptime = overlapUptime(blockStart(m.name), b.duration || 25);
           const val = b.value * uptime;
           if (b.stat === 'atkPct') { if (mainDps.scaling === 'ATK') mainStats.atkPct += val; }
-          else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(mainStats, b.stat, val, { condition: b.condition, dpsElLower: mainDpsElLower });
+          else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(mainStats, b.stat, val, { condition: b.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
           else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'echoDmg') applyBuff(mainStats, b.stat, val);
         }
       });
@@ -880,7 +880,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           const uptime = overlapUptime(blockStart(m.name), b.duration || 25);
           const val = b.value * uptime;
           if (b.stat === 'atkPct') { if (mainDps.scaling === 'ATK') mainStats.atkPct += val; }
-          else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(mainStats, b.stat, val, { condition: b.condition, dpsElLower: mainDpsElLower });
+          else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(mainStats, b.stat, val, { condition: b.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
           else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'echoDmg') applyBuff(mainStats, b.stat, val);
         });
       }
@@ -912,7 +912,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         // except for this one uncapped bonus. Discounted, not zeroed, since she still spends SOME
         // on-field time via her own rotation block, just not enough to assume the full value.
         const selfStateDiscount = (db.stat === 'deepen' || db.stat === 'offTune') && !isMain && CHARACTER_DATA[m.name]?.role === 'Main DPS' ? 0.35 : 1;
-        applyBuff(mainStats, db.stat, db.value * selfStateDiscount, { condition: db.condition, dpsElLower: mainDpsElLower });
+        applyBuff(mainStats, db.stat, db.value * selfStateDiscount, { condition: db.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
       });
     });
     ({ atkPct, cr, cd, elemDmg, deepen, amplify, resShred, defShred, defIgnore, echoDmg } = mainStats);
@@ -1197,9 +1197,9 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
                 // with a type-specific outro (Iuno's 50% Heavy ATK Amp, Lucy's Basic ATK Amp, Qiuyuan's
                 // Echo Amp, etc., 14 characters carry one) applied its full value to ANY sub-DPS
                 // regardless of whether that sub-DPS's own dmgFocus includes that attack type at all.
-                applyBuff(sStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsFocus: focus, dpsElLower: subElLower });
+                applyBuff(sStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsFocus: focus, dpsElLower: subElLower, dpsName: m.name });
               } else if (b.stat === 'deepen') {
-                applyBuff(sStats, 'deepen', val, { condition: b.condition, dpsElLower: subElLower });
+                applyBuff(sStats, 'deepen', val, { condition: b.condition, dpsElLower: subElLower, dpsName: m.name });
               } else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'resShred' || b.stat === 'defShred') {
                 applyBuff(sStats, b.stat, val);
               }
@@ -1222,13 +1222,13 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
               const uptime = overlapUptimeForSeg(sSeg, blockStart(other.name), b.duration || 25);
               const val = b.value * uptime;
               if (b.stat === 'atkPct') { sStats.atkPct += m.scaling === 'ATK' ? val : val * 0.25; }
-              else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(sStats, b.stat, val, { condition: b.condition, dpsElLower: subElLower });
+              else if (b.stat === 'allDmg' || b.stat === 'elemDmg') applyBuff(sStats, b.stat, val, { condition: b.condition, dpsElLower: subElLower, dpsName: m.name });
               else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'echoDmg') applyBuff(sStats, b.stat, val);
             }
           });
           (obt.debuffs || []).forEach(db => {
             if (db.stat === 'havocBane') { sStats.defShred += db.value * 2; return; }
-            applyBuff(sStats, db.stat, db.value, { condition: db.condition, dpsElLower: subElLower });
+            applyBuff(sStats, db.stat, db.value, { condition: db.condition, dpsElLower: subElLower, dpsName: m.name });
           });
         });
         const mbt = CHAR_BUFF_TABLE[m.name];
@@ -1240,7 +1240,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
             if (['atkPct', 'elemDmg', 'critRate', 'critDmg', 'defIgnore', 'deepen', 'echoDmg'].includes(b.stat)) applyBuff(sStats, b.stat, val);
           });
           (mbt.debuffs || []).forEach(db => {
-            applyBuff(sStats, db.stat, db.value, { condition: db.condition, dpsElLower: subElLower });
+            applyBuff(sStats, db.stat, db.value, { condition: db.condition, dpsElLower: subElLower, dpsName: m.name });
           });
         }
         ({ atkPct: sAtkPct, cr: sCr, cd: sCd, elemDmg: sElem, deepen: sDeepen, amplify: sAmplify, echoDmg: sEchoDmg, defShred: sDefShred, resShred: sResShred, defIgnore: sDefIgnore } = sStats);
@@ -1496,7 +1496,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         // Not actually universal — an element-restricted deepen (Ciaccona's "Aero Erosion DMG Amp
         // only", Phoebe's "Spectro Frazzle DMG Amp (Confession)") credited full synergy points here
         // even against an unrelated main DPS.
-        if (b.stat === 'deepen') { if (universalStatApplies(b.condition, (mainEl || '').toLowerCase())) syn += 5; }
+        if (b.stat === 'deepen') { if (universalStatApplies(b.condition, (mainEl || '').toLowerCase(), mainDps.name)) syn += 5; }
         else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) syn += 5;
         else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) syn += 5;
         else if (b.stat === 'libDmg' && dpsFocus.includes('Liberation')) syn += 3;

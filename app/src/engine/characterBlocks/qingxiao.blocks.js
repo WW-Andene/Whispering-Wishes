@@ -97,8 +97,8 @@ export const QINGXIAO_BLOCKS = [
     trigger: { type: 'passive' },
     timing: { duration: 30 },
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 49 }],
-    note: "Inherent Skill To Know, To Banish: +2%/Mindlock stack (+5% more for the first 7), up to 15 base-kit stacks (~49% at cap) — modeled at the documented flat ceiling value rather than the real nonlinear per-stack curve (first 7 stacks worth 7% each, remaining worth 2% each), which this schema's stacking shape can't represent losslessly. Damage scales with team-inflicted Tune Strain - Interfered.",
+    effects: [{ stat: 'totalMult', value: 49 }],
+    note: "Inherent Skill To Know, To Banish: +2%/Mindlock stack (+5% more for the first 7), up to 15 base-kit stacks (~49% at cap) — modeled at the documented flat ceiling value rather than the real nonlinear per-stack curve (first 7 stacks worth 7% each, remaining worth 2% each), which this schema's stacking shape can't represent losslessly. Damage scales with team-inflicted Tune Strain - Interfered. Corrected 2026-09-02 from a wrong skillDmg category — the real move list (Heavy Attack - Stringblade, Ephemeral Transcendence Basic ATK/Dodge Counter, Heaven's Reckoning, Liberation) has no Skill-button cast in it at all; no single category spans Heavy+Basic+Liberation, so kept as totalMult.",
   },
   {
     id: 'qingxiao.debuff.mindlock',

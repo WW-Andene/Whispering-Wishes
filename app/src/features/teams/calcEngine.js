@@ -372,14 +372,14 @@ const TYPE_FOCUS_MAP = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', libDmg: '
 // of at every call site. Passing neither dpsFocus nor dpsElLower skips gating entirely (e.g. a
 // character's own selfBuffs, which are inherently about their own damage and need no target-matching).
 export function applyBuff(stats, buff, value, options = {}) {
-  const { isAmplify = false, condition, dpsFocus, dpsElLower } = options;
+  const { isAmplify = false, condition, dpsFocus, dpsElLower, dpsName } = options;
   if (dpsFocus && TYPE_FOCUS_MAP[buff] && !dpsFocus.includes(TYPE_FOCUS_MAP[buff])) return;
   if (dpsElLower != null) {
     if (buff === 'elemDmg') {
       const cond = (condition || '').toLowerCase();
       if (cond && !cond.includes(dpsElLower) && !cond.includes('all')) return;
     } else if (buff === 'deepen' || buff === 'offTune' || buff === 'allDmg') {
-      if (!universalStatApplies(condition, dpsElLower)) return;
+      if (!universalStatApplies(condition, dpsElLower, dpsName)) return;
     }
   }
   const target = isAmplify ? 'amplify' : null;
@@ -666,9 +666,30 @@ export function applyResonanceChain(stats, charName, seqLevel, isMainDps) {
 // were silently applied in full to the actual displayed DPS number for ANY paired main/sub DPS,
 // regardless of element match.
 const ELEMENT_NAMES = ['fusion', 'spectro', 'aero', 'glacio', 'electro', 'havoc'];
-export function universalStatApplies(condition, targetElementLower) {
+// A deepen buff can also be locked to a specific DAMAGE MECHANIC rather than (or in addition to) an
+// element — e.g. Phoebe's outro is "Spectro Frazzle DMG Amp", which only amplifies Frazzle-type
+// damage, not a Spectro DPS's general output. Found via a real recommendation audit (Jinhsi+Zhezhi):
+// the buff's condition mentions "spectro" (Jinhsi's own element), so the element-only check above let
+// it through in full for Jinhsi — who neither deals nor scales off Frazzle at all (her own `desc`'s
+// dmgFocus is Skill/Liberation burst damage) — inflating her score 486.2 vs. her real curated partner
+// Shorekeeper's 314.5. Phoebe's own kit description says outright she's "built specifically to
+// empower Zani, her only current Frazzle-DPS partner" — Zani's Heavy Slash combo is explicitly
+// "flagged as both Heavy Attack and Spectro Frazzle DMG" per her own `desc`, i.e. her own hits are
+// computed under the Frazzle category, unlike every other character (whose damage a Frazzle DMG Amp
+// buff does nothing for). Ciaccona's outro ("Aero Erosion DMG Amp only") has the identical shape for
+// Erosion — kept here as an empty allow-list until a character whose own damage is documented as
+// Erosion-flagged the same way Zani's is for Frazzle exists (Ciaccona's own outro buffs "the incoming
+// Resonator", not herself, and no current kit text says any character's own hits are Erosion-typed).
+// Deliberately a small, explicit, data-driven list — not a heuristic guess — so it only ever rejects
+// what's actually confirmed, and extends the same way the last two audits' fixes did (grouped mode
+// buffs, element-gated elemDmg) instead of another one-off hardcode.
+const MECHANIC_DAMAGE_APPLIERS = { frazzle: ['Zani'], erosion: [] };
+export function universalStatApplies(condition, targetElementLower, targetName) {
   const cond = (condition || '').toLowerCase();
   if (!cond) return true;
+  for (const [mechanic, appliers] of Object.entries(MECHANIC_DAMAGE_APPLIERS)) {
+    if (cond.includes(mechanic) && !appliers.includes(targetName)) return false;
+  }
   const mentioned = ELEMENT_NAMES.filter(el => cond.includes(el));
   if (mentioned.length === 0) return true; // no element named — a genuine universal/trigger condition
   return mentioned.includes(targetElementLower);
@@ -755,13 +776,36 @@ const TYPE_STAT_TO_FOCUS = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', libDm
 // character with no share data (or a type whose real share happens to exactly equal "1 divided by
 // however many types they qualify for") is completely unaffected — only a genuinely dominant or
 // genuinely minor type moves score up or down from where it used to sit.
+//
+// Recalibrated 2026-09-02 (found via two real recommendation audits). The ORIGINAL formula
+// (`share * qualifyingTypeCount`, uncapped) let a type-specific buff run away for a DPS whose
+// rotation happens to touch few move-type categories: Carlotta+Zhezhi's 3rd-slot list ranked Taoqi —
+// T4 tier, a single narrow 'next'-only 38% skillDmg outro buff — ABOVE Shorekeeper (Carlotta's own
+// twice-curated real partner, three genuine team-wide buffs combined), because Carlotta's 77.8% Skill
+// share × only 3 qualifying categories hit a 2.33x multiplier with no ceiling.
+//
+// The first fix tried — pure `share`, no count factor at all — is the mathematically "correct" isolated
+// quantity (the real fraction of this DPS's damage the buff actually touches), and it did fix Taoqi.
+// But it broke a SEPARATE, already-validated case: Mortefi (Augusta's own real curated partner, built
+// specifically around her Heavy ATK-heavy kit) fell behind Rebecca (not curated) once Mortefi's
+// heavyDmg buff was discounted to Augusta's raw 41.7% Heavy ATK share — Augusta's damage is genuinely
+// split across 4 close-ish categories (Heavy ATK 41.7% / Skill 25% / Liberation 25% / Echo 8.3%), so
+// pure share over-corrects: Heavy ATK is still clearly her *largest* category, and a buff to it should
+// still meaningfully outscore a universal buff of comparable %, not fall to ~42% of one.
+//
+// Landed on: keep the original share*count formula (still the best available signal for "how
+// concentrated is this DPS's damage in the buffed type," since raw share alone can't distinguish
+// "genuinely dominant type" from "type mildly ahead of an even split") but CAP it at 1.3 — low enough
+// that Taoqi's 2.33x inflation can't repeat (any qualifyingTypeCount/share combination collapses to at
+// most a 30% boost over a universal buff of the same %), high enough that Mortefi's real, meaningfully-
+// dominant-type buff still outranks Rebecca's discounted-plus-universal combination. Verified against
+// all 4 known cases (Taoqi<Shorekeeper, Mortefi>Rebecca, Denia<Lupa, Phoebe<Shorekeeper) before landing.
 function typeShareMultiplier(stat, dpsName) {
   const focus = TYPE_STAT_TO_FOCUS[stat];
   if (!focus) return 1;
   const shares = computeDamageTypeShares(dpsName);
   if (!shares || shares[focus] == null) return 1;
-  const qualifyingTypeCount = Object.keys(shares).length;
-  return shares[focus] * qualifyingTypeCount;
+  return Math.min(shares[focus] * Object.keys(shares).length, 1.3);
 }
 
 // ── Mechanic-grounded synergy uplift: replaces flat "+8 points for a deepen buff, +6 for elemDmg"
@@ -1000,7 +1044,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // this only rejects when the condition explicitly names a DIFFERENT element than the DPS's own. A
     // condition with no element mentioned at all (most of them: pure activation-trigger text, e.g.
     // Denia's "Tune Strain mode..." allDmg outro) stays universal, exactly as its stat name promises.
-    const deepenBuffApplies = (b) => universalStatApplies(b.condition, dpsEl);
+    const deepenBuffApplies = (b) => universalStatApplies(b.condition, dpsEl, mainDps);
     // A type-specific buff (basicDmg/heavyDmg/echoDmg/skillDmg/coordDmg) only routes into the DPS's
     // damage at all if their dmgFocus actually includes that attack type — routeTypeBonuses in this
     // same file enforces the identical gate for the real damage calc, so scoring has to match it or
@@ -1024,15 +1068,50 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // Score any buff generically via real formula-derived uplift — this is what lets a completely
     // off-meta pairing (any character whose CHAR_BUFF_TABLE just happens to fit) get credited the
     // same way a hand-curated team would, instead of only recognizing patterns someone hardcoded.
-    const scoreBuff = (b) => {
-      if (!buffApplies(b)) return;
+    const buffScoreContribution = (b) => {
+      if (!buffApplies(b)) return 0;
       const uplift = uptimeScaledUplift(b.stat, b.value, b.duration, dpsOnField);
-      if (uplift <= 0) return;
-      score += uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
+      if (uplift <= 0) return 0;
+      return uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
+    };
+    const applyBuffTag = (b) => {
       if (b.stat === 'deepen' || b.stat === 'offTune') tags.push('Deepen');
       else if (b.stat === 'basicDmg') tags.push('ATK Amp');
       else if (b.stat === 'heavyDmg') tags.push('Heavy Amp');
       else if (b.stat === 'echoDmg') tags.push('Echo Amp');
+    };
+    const scoreBuff = (b) => {
+      const contribution = buffScoreContribution(b);
+      if (contribution <= 0) return;
+      score += contribution;
+      applyBuffTag(b);
+    };
+    // outroBuffs from a dual-mode Hybrid (e.g. Denia: Fusion Burst vs Tune Strain, Lucilla: Glacio
+    // Chafe vs Echo mode — both characters' own `desc` field says so explicitly: "depending on
+    // Resonance Mode") represent ALTERNATIVE builds a player picks one of, not simultaneous effects —
+    // unlike every other multi-entry outroBuffs case in this table (e.g. Yinlin's elemDmg + libDmg,
+    // Roccia's elemDmg + basicDmg), which really do fire together off the SAME outro cast. Found via
+    // a real audit (Encore+Shorekeeper recommendations): scoring both of Denia's mode-locked buffs at
+    // once inflated her above Encore's own curated real partners (Brant/Lupa), crediting a team state
+    // that can't actually happen in one rotation. The existing data convention already names the
+    // mechanic ("... mode" in the condition text) for every dual-mode entry — group by that literal
+    // marker and take only the single best-applying one per group instead of summing, while every
+    // other outroBuffs entry (no "mode" in its condition) keeps summing exactly as before.
+    const scoreOutroBuffs = (list) => {
+      const modeGroup = list.filter(b => (b.condition || '').toLowerCase().includes('mode'));
+      const rest = list.filter(b => !modeGroup.includes(b));
+      rest.forEach(scoreBuff);
+      if (!modeGroup.length) return;
+      let best = null;
+      let bestContribution = -Infinity;
+      modeGroup.forEach(b => {
+        const contribution = buffScoreContribution(b);
+        if (contribution > bestContribution) { bestContribution = contribution; best = b; }
+      });
+      if (best && bestContribution > 0) {
+        score += bestContribution;
+        applyBuffTag(best);
+      }
     };
     members.forEach(m => {
       if (m === mainDps) return;
@@ -1047,7 +1126,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       const scoreBeforeMember = score;
       const bt = CHAR_BUFF_TABLE[m];
       if (bt) {
-        (bt.outroBuffs || []).forEach(scoreBuff);
+        scoreOutroBuffs(bt.outroBuffs || []);
         // selfBuffs with target:'team' are a real, deliberate data convention (see Sigrika's Blessing
         // of Runes — "+48% Aero DMG to whichever Resonator is active", explicitly NOT self-only despite
         // living in the selfBuffs array — and Rover: Electro's Overshock team ATK buff) for a passive,
@@ -1162,27 +1241,23 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       }
     });
   }
-  // Element
-  // Fixed 2026-09-01 (found via a character-recommendation audit — a same-element Sub DPS with no
-  // real kit synergy, e.g. Rebecca, was outranking Augusta's actual curated partners like Mortefi/
-  // Iuno/Shorekeeper/Verina, none of whom share her element): Resonance (+12) and Mono (+8) fired
-  // TOGETHER whenever every member present shared an element, stacking to +20 — correct for a
-  // genuine, COMPLETE 3-member mono team, but this same condition (elSet.size === 1) is ALSO
-  // trivially true for any 2-member hypothetical that happens to match — which is exactly what
-  // TeamsTab.jsx's "which teammate should I add next" candidate scoring evaluates while only one
-  // slot is filled. At that point "these 2 share an element" and "this will be a mono-element team"
-  // are NOT the same claim — the still-unpicked 3rd slot could easily not match — but the old check
-  // couldn't tell them apart and paid the full committed-mono bonus early, on unearned confidence,
-  // enough on its own to outweigh a genuinely synergistic but different-element curated partner's
-  // dedicated buff. Now the full +20 requires an ACTUALLY COMPLETE 3-member team (members.length
-  // >= 3) that's genuinely mono; an incomplete team (this scorer's own team-building/candidate-
-  // ranking use case) or a complete-but-partial-match team both fall through to the smaller +12
-  // partial-resonance credit whenever at least one duplicate element exists — same total as before
-  // for a real, finished mono team, but no more crediting a still-open 3rd slot as already decided.
-  const els = members.map(m => CHARACTER_DATA[m]?.element).filter(Boolean);
-  const elSet = new Set(els);
-  if (members.length >= 3 && elSet.size === 1 && els.length > 1) { score += 20; tags.push('Mono'); }
-  else if (els.length > elSet.size) { score += 12; tags.push('Resonance'); }
+  // Element — REMOVED 2026-09-02 (found via a follow-up recommendation audit, after a user's real-
+  // game-knowledge check: "being same element gives you nothing in the game unless [a] specific
+  // buff [requires it] — there are a lot of teams NOT of the same element", citing a real, played
+  // mixed-element trio (Qingxiao + Denia + Mornye) as counter-evidence). Confirmed against the
+  // codebase's own domain knowledge: Wuthering Waves has no mono-element/elemental-reaction team
+  // mechanic — unlike games that do (e.g. Genshin's elemental reactions), sharing an element between
+  // teammates does nothing on its own. The only real elemental synergy is a SPECIFIC character's
+  // elemDmg buff actually naming the recipient's element — already scored correctly, separately,
+  // elsewhere in this function via elemBuffApplies (buffScoreContribution/scoreBuff), which requires
+  // that literal match. This flat, unconditional bonus for element overlap (previously +12 for any
+  // partial match, +20 for a complete mono team) was awarding synergy that doesn't mechanically
+  // exist, on top of whatever real elemDmg-buff credit already applied correctly — confirmed as the
+  // exact mechanism that let Rebecca (Electro, same as Augusta, but no element-locked buff at all)
+  // outrank Iuno, Augusta's own curated real partner (Aero — off-element, but with a real, genuine
+  // heavyDmg buff): Rebecca's ONLY edge over an off-element pick with equal/better real synergy was
+  // this ungrounded +12. Removed entirely rather than re-tuned, since no version of "same element
+  // matters on its own" is true here to calibrate toward.
   // BiS weapon
   let hasBis = false, hasGoodWeapon = false;
   members.forEach(m => {

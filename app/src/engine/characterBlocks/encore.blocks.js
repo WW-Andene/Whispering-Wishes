@@ -106,6 +106,7 @@ export const ENCORE_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Cosmos Rupture' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
+    condition: { element: 'fusion' },
     effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh' }],
     note: 'Heavy Attack Cosmos Rupture increases team Fusion DMG Bonus by 20% for 30s (confirmed exact, team-wide per the audit comment).',
   },

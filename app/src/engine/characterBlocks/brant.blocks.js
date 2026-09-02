@@ -53,6 +53,7 @@ export const BRANT_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
+    condition: { element: 'fusion' },
     effects: [
       { stat: 'elemDmg', value: 20, stacking: 'refresh' },
       { stat: 'skillDmg', value: 25, stacking: 'refresh' },

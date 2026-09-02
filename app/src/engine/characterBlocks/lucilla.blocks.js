@@ -43,8 +43,14 @@ export const LUCILLA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Clear As Day' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('142.74%'), category: 'libDmg' },
-    note: 'Costs no Resonance Energy, enters Reminiscence for ~10s.',
+    // category corrected 2026-09-02: her own move text makes this DMG mode-dependent and NEVER
+    // Liberation-type ("When in Resonance Mode - Glacio Chafe, the DMG dealt is considered Basic
+    // Attack DMG... When in Resonance Mode - Echo, the DMG dealt is considered Echo Skill DMG") — was
+    // libDmg, which meant real Basic ATK DMG buffs from teammates were silently skipping this hit.
+    // Modeled as basicDmg (Glacio Chafe mode, the modeled default elsewhere in this file); Echo mode
+    // would be echoDmg instead, not separately fired, same convention as the other dual-mode blocks.
+    damage: { hits: parseSkillMultiplierHits('142.74%'), category: 'basicDmg' },
+    note: 'Costs no Resonance Energy, enters Reminiscence for ~10s. Glacio Chafe mode: considered Basic Attack DMG (modeled). Echo mode: considered Echo Skill DMG instead — not separately fired.',
   },
   {
     id: 'lucilla.basic.tracing-forms',
@@ -81,7 +87,7 @@ export const LUCILLA_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
-    condition: { requiresStance: 'Glacio Chafe mode' },
+    condition: { element: 'glacio', requiresStance: 'Glacio Chafe mode' },
     effects: [{ stat: 'elemDmg', value: 60, stacking: 'refresh' }],
     note: 'Glacio Chafe mode: Amplifies Glacio Chafe DMG near the active Resonator by +60% for 30s (persists through the swap) — modeled team-wide since Chafe DMG isn\'t a separate category.',
   },

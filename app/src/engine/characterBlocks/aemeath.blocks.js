@@ -14,6 +14,16 @@
 // Attack twice"/"3 times") to confirm the tap COUNT matches the stage count sliced —
 // 'Mech Stage 3-4' (2 taps) = stages 3+4; 'Mech Stage 2-4' (3 taps) = stages 2+3+4;
 // 'Aemeath Stage 2-4' (3 taps) = stages 2+3+4. Exact, not approximated.
+//
+// Re-audited 2026-09-02 against a fresh Prydwen dump: every row matched exactly EXCEPT
+// Heavenfall Edict (Overdrive/Finale), which was consistently ~1.0754x too high across
+// all 4 values (a precise, systematic discrepancy, not rounding — see
+// SKILL_MULTIPLIERS['Aemeath']'s own audit comment in characters.js). Retightened both
+// damage blocks below to the fresh dump's exact figures. Also zeroed S5's fabricated
+// totalMult:40 (no DPS component — see aemeath.chain.s5's own note) and corrected
+// CHARACTER_DATA['Aemeath'].dmgFocus (was wrongly including 'Skill' — her real damage-
+// output simulation shows a genuine 0% Skill share, matching her kit text: both Seraphic
+// Duet casts are "considered Resonance Liberation DMG").
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -43,7 +53,7 @@ export const AEMEATH_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Heavenfall Edict: Overdrive' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('200.80%+267.74%×3'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('186.72%+248.96%×3'), category: 'libDmg' },
   },
   {
     id: 'aemeath.basic.mech-stage-2-4',
@@ -90,7 +100,7 @@ export const AEMEATH_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Heavenfall Edict: Finale' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('1789.29%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('1663.83%'), category: 'libDmg' },
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
@@ -144,7 +154,20 @@ export const AEMEATH_BLOCKS = [
     effects: [{ stat: 'allDmg', value: 20 }],
     note: 'Real mechanic per RESONANCE_CHAIN_DATA\'s own audit comment: team +20% All-Attr DMG specifically ON casting Intro/Sync Strike/Duet — not a passive always-on buff. Modeled as passive (whole-team, correctly, unlike the earlier draft of this block) because no real duration is sourced for the cast-triggered version (CHAR_BUFF_TABLE/RESONANCE_CHAIN_DATA give no timer for this node) — inventing one to build a proper cast-refresh model would be fabricating data, so this stays a documented simplification rather than a fabricated timing.',
   },
-  { id: 'aemeath.chain.s5', source: SOURCE, kind: 'buff', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'totalMult', value: 40 }] },
+  // Zeroed 2026-09-02 (found while cross-checking a fresh Prydwen dump against this file — no prior
+  // audit comment ever justified this row, unlike every other S-node here): was `totalMult: 40`, a
+  // fabricated number with no basis — S5's real effect ("On kill, reset Starflux to 100%; on fatal
+  // damage, revive with a team shield instead of dying, once per 10 min") is purely a
+  // survivability/utility mechanic, zero DPS component. Confirmed independently via Prydwen's own
+  // damage-output simulation: S4 and S5 produce byte-identical DMG/DPS (2,581,963/220,869 both) —
+  // exactly the same S4==S5 signal already found and fixed for Augusta's own fabricated S5.
+  {
+    id: 'aemeath.chain.s5',
+    source: SOURCE, kind: 'utility',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'On defeating a target directly: reset Starflux to 100%. On taking fatal damage: enter a 5s revive state instead of dying, granting the team a Shield = 360% of her ATK, then revives at full HP + 30 Resonance Energy (once per 10 min). Purely defensive/utility, no DPS component, not representable in this schema.',
+  },
   {
     id: 'aemeath.chain.s6',
     source: SOURCE, kind: 'debuff',

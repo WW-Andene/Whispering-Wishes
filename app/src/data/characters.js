@@ -859,10 +859,15 @@ const CHARACTER_DATA = {
     // Battle Pass 4★s (ahead of Waltz in Masquerade, Fusion Accretion, Jinzhou Keeper); Rectifier of
     // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Stringmaster', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
-    // teams corrected 2026-08-18: current sources cite 'Denia + Lynae + Mornye' (triple Tune Strain)
-    // as her actual best Tune Strain comp, not Luuk Herssen. Fusion Burst pairing with Aemeath still
-    // confirmed valid.
-    teams: ['Denia + Lynae + Mornye', 'Denia + Aemeath + Lupa'] },
+    // teams corrected 2026-09-02 against a fresh Prydwen dump: the prior 'Denia + Lynae + Mornye' entry
+    // was wrong — Lynae never appears anywhere on Denia's page (Kit/Review/Build/Gameplay and
+    // teams/Calculations, all checked), and it contradicted the reciprocal entries already in this same
+    // file for Aemeath (line 776: 'Aemeath + Denia + Chisa'), Luuk Herssen (line 762: 'Luuk Herssen +
+    // Denia + Mornye') and Qingxiao (line 911: 'Qingxiao + Denia + Mornye'). The dump's own Synergies/
+    // Example Teams sections confirm: Fusion Burst pairs her only with Aemeath (Chisa or Lupa 3rd slot);
+    // Tune Strain pairs her with either Qingxiao or Luuk Herssen, always alongside Mornye ("not
+    // recommended for Tune Strain without Mornye involved").
+    teams: ['Aemeath + Denia + Chisa', 'Qingxiao + Denia + Mornye'] },
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
     skills: ['Flaming Sakura Blade Art', 'Frostblight', 'Foreclaiming', 'Frostedge'],
@@ -1195,13 +1200,35 @@ const CHARACTER_DATA = {
   ['Zani',          ['Heavy ATK', 'Liberation'],     [],                                      ['Frazzle']],
   ['Cartethyia',    ['Basic ATK'],                   [],                                      ['Erosion']],
   ['Phrolova',      ['Echo', 'Skill'],               [],                                      []],
-  ['Augusta',       ['Heavy ATK', 'Liberation'],     ['Shield'],                              []],
+  // dmgFocus corrected 2026-09-02 (final Augusta audit pass, cross-checked against a fresh Prydwen
+  // dump): was ['Heavy ATK', 'Liberation'] — but EVERY one of her Liberation-slot damage instances is
+  // explicitly "considered as Heavy Attack DMG" per her own kit text (Sword of Eternal Oath, Sunborne,
+  // Everbright Protector all say so) — she has ZERO true Liberation-categorized damage. Her real
+  // second damage type is Skill (Warrior's Blade + Undying Sunlight: Strike/Leap, none reclassified —
+  // only Undying Sunlight: Plunge is, to Heavy ATK). This field gates scoreTeamComposition's type-
+  // specific buff matching (buffApplies/dpsFocus) — was wrongly crediting a libDmg buff as applying to
+  // her (she has none) and wrongly rejecting a skillDmg buff (she has real Skill damage).
+  ['Augusta',       ['Heavy ATK', 'Skill'],          ['Shield'],                              []],
   ['Galbrena',      ['Echo', 'Heavy ATK'],           [],                                      []],
   ['Luuk Herssen',  ['Basic ATK'],                   [],                                      []],
-  ['Aemeath',       ['Liberation', 'Skill'],         [],                                      ['Fusion Burst']],
-  ['Sigrika',       ['Echo', 'Heavy ATK'],           [],                                      []],
+  // dmgFocus corrected 2026-09-02 (fresh Prydwen dump cross-check, same class of bug as Augusta's):
+  // was ['Liberation', 'Skill'] — but Prydwen's own real damage-output simulation shows Skill at a
+  // genuine 0% for her, matching her kit text exactly: both Seraphic Duet: Overture and Encore (her
+  // only Skill-button casts) are explicitly "considered Resonance Liberation DMG". She has no real
+  // skillDmg-categorized damage at all — a skillDmg buff was being wrongly credited to her.
+  ['Aemeath',       ['Liberation'],                  [],                                      ['Fusion Burst']],
+  // dmgFocus dropped 'Heavy ATK' 2026-09-02 against a fresh Prydwen dump: her real damage-output
+  // simulation shows Heavy at a genuine 0% share, matching her kit text exactly — "Heavy Attack -
+  // Schemata of Runes deals Echo Skill DMG" and every Runic Outburst/Chain Whip/Soliskin variant is
+  // explicitly "(considered Echo Skill DMG)". She has no real heavyDmg-categorized damage at all (the
+  // engine blocks' own heavyDmg category on those two hits was itself a bug, fixed alongside this).
+  ['Sigrika',       ['Echo'],                        [],                                      []],
   ['Chixia',        ['Skill', 'Basic ATK'],          [],                                      []],
-  ['Qingxiao',      ['Heavy ATK', 'Liberation'],     [],                                      ['Tune Strain - Interfered']],
+  // dmgFocus gained 'Basic ATK' 2026-09-02 against a fresh Prydwen dump: her damage-output simulation
+  // shows Basic at a genuine 22.8% share (Basic Attack - Stringblade + Ephemeral Transcendence's own
+  // Basic Attack, both correctly categorized basicDmg in the engine blocks) — comparable in size to
+  // Liberation's 28.5%, not a trivial slice that should be gated out of basicDmg-buff relevance.
+  ['Qingxiao',      ['Heavy ATK', 'Liberation', 'Basic ATK'], [],                                ['Tune Strain - Interfered']],
   ['Jingran',       ['Heavy ATK', 'Liberation'],     [],                                      []],
   ['Yangyang: Xuanling', ['Heavy ATK', 'Basic ATK'], [],                                      ['Havoc Bane']],
   ['Hiyuki',        ['Liberation', 'Basic ATK'],     [],                                      ['Glacio Chafe']],
@@ -1244,7 +1271,15 @@ const CHARACTER_DATA = {
   // Buff tags were also entirely missing her Heal (Moment of Nihility/Death Snip) and Shield (Sawring -
   // Eradication) kit.
   ['Chisa',         ['Basic ATK', 'Liberation'],     ['Heal', 'Shield'],                      ['DEF Shred']],
-  ['Lynae',         ['Liberation', 'Skill'],         ['Tune Break DMG Buff'],                 ['Off-Tune']],
+  // dmgFocus corrected 2026-09-02 against a fresh Prydwen dump: was ['Liberation', 'Skill'] — but the
+  // damage-output pie chart shows Basic ATK at a dominant 38.1% share (202,837 of 532,802 total DMG),
+  // LARGER than Liberation's 13.9% and far larger than Skill's trivial 4.4% (same "not a trivial slice"
+  // vs. "trivial slice" distinction as Qingxiao's kept 22.8% vs. Denia's dropped 1.75%). Basic ATK's
+  // real share comes mostly from Basic Attack - Visual Impact/Iridescent Splash (1216.72%/304.18%,
+  // literally named "Basic Attack -" in their own move text, not a Forte-exclusive category) — the
+  // engine block for Visual Impact had no damage.category at all (fixed alongside this), silently
+  // missing every real Basic ATK DMG buff from teammates on her single biggest hit.
+  ['Lynae',         ['Basic ATK', 'Liberation'],     ['Tune Break DMG Buff'],                 ['Off-Tune']],
   // dmg-type tag corrected 2026-08-18: Danjin's own Prydwen kit breakdown says the Resonance Skill is
   // "the core of her kit, which all of her combo options revolve around" (Crimson Fragment/Erosion,
   // Sanguine Pulse) — 'Skill' was missing entirely. buff tag corrected: her Outro is worded "23% Havoc
@@ -1267,8 +1302,26 @@ const CHARACTER_DATA = {
   ['Jianxin',       ['Skill'],                       ['Shield', 'Grouping', 'Aero Buff'],     []],
   ['Mornye',        ['Liberation'],                  ['Heal'],                                ['Off-Tune']],
   ['Rebecca',       ['Basic ATK', 'Heavy ATK'],      ['Heavy ATK Buff', 'All DMG Amp'],       ['Hack - Shifting']],
-  ['Denia',         ['Liberation', 'Skill'],         ['Fusion DMG Buff', 'Tune Break Boost'], ['Fusion Burst', 'Tune Strain - Shifting']],
-  ['Lucilla',       ['Liberation', 'Echo'],          ['Glacio DMG Buff', 'Echo Skill DMG Buff'], ['Glacio Chafe']],
+  // dmgFocus dropped 'Skill' 2026-09-02 against a fresh Prydwen dump: her real damage-output
+  // simulation (Fusion Burst mode, S0) puts Skill at just 1.75% (8,174 of 467,866 total DMG) — smaller
+  // than Basic ATK's 2.14% and Echo's 4.39%, neither of which were ever in dmgFocus either. All three
+  // are trivial slices next to Liberation's dominant 60.81%, unlike e.g. Qingxiao's Basic ATK (22.8%,
+  // kept for being "comparable to Liberation's 28.5%, not a trivial slice"). Same class of fix as
+  // Aemeath's and Sigrika's: drop every category that isn't a real, non-trivial damage source instead
+  // of crediting a skillDmg buff to a character whose Skill-slot hits (Phantom Bubble, Banish Stage 1)
+  // barely register.
+  ['Denia',         ['Liberation'],                  ['Fusion DMG Buff', 'Tune Break Boost'], ['Fusion Burst', 'Tune Strain - Shifting']],
+  // dmgFocus corrected 2026-09-02 against a fresh Prydwen dump: was ['Liberation', 'Echo'] — but her
+  // own kit text makes Clear As Day's DMG mode-dependent and NEVER Liberation-type ("When in Resonance
+  // Mode - Glacio Chafe, the DMG dealt is considered Basic Attack DMG... When in Resonance Mode - Echo,
+  // the DMG dealt is considered Echo Skill DMG"), confirmed by the damage-output pie chart showing a
+  // genuine 0% Liberation share in both modes (same class of bug as Augusta's). Her real second focus
+  // is Basic ATK: 28% share in Glacio Chafe mode (dominant secondary after the Glacio Bite reaction
+  // itself) and still 16.7% in Echo mode — comparable in size to Qingxiao's kept 22.8% Basic ATK slice,
+  // not trivial. RESONANCE_CHAIN_DATA's S3/S5/S6 nodes below were already recategorized off libDmg to
+  // {basicDmg, echoDmg} in an earlier pass; only this array and the engine block's own damage.category
+  // for Clear As Day (fixed alongside this) still had the stale libDmg categorization.
+  ['Lucilla',       ['Basic ATK', 'Echo'],           ['Glacio DMG Buff', 'Echo Skill DMG Buff'], ['Glacio Chafe']],
   ['Suisui',        ['Skill', 'Outro'],              ['Heal', 'All DMG Amp'],                 []],
   ['Baizhi',        ['Skill'],                       ['Heal'],                                []],
   // buff tag corrected 2026-08-18: fandom's Taoqi/Combat Outro Skill "Iron Will" text is "Resonance
@@ -1320,7 +1373,7 @@ const CHARACTER_DATA = {
   ['Cartethyia',    14800, 313, 611,  125],
   ['Lupa',          11913, 388, 1186, 125],
   ['Phrolova',      10775, 438, 1137, 125],
-  ['Augusta',       10300, 462, 1112, 125],
+  ['Augusta',       10300, 463, 1112, 125],
   ['Iuno',          10525, 450, 1124, 125],
   ['Galbrena',      10300, 462, 1112, 125],
   ['Qiuyuan',       12237, 375, 1197, 125],
@@ -1329,13 +1382,13 @@ const CHARACTER_DATA = {
   ['Mornye',        15375, 288, 1357, 175],
   ['Luuk Herssen',  10300, 463, 1112, 125],
   ['Aemeath',       11025, 425, 1149, 125],
-  ['Sigrika',       10775, 437, 1136, 125],
+  ['Sigrika',       10775, 438, 1137, 125],
   ['Rebecca',       11600, 400, 1173, 150],
   ['Lucy',          11025, 425, 1148, 150],
   ['Yangyang: Xuanling', 11025, 425, 1149, 150],
   ['Denia',         11025, 425, 1148, 150],
   ['Lucilla',       12238, 375, 1198, 150],
-  ['Hiyuki',        10300, 462, 1112, 125],
+  ['Hiyuki',        10300, 463, 1112, 125],
   ['Suisui',        16713, 288, 1100, 175],
   ['Qingxiao',      10300, 463, 1112, 125],
   // Jingran: nanoka shows "Base DEF -" because his kit fixes combat DEF to 0 (not an unpublished
@@ -1416,7 +1469,13 @@ const CHARACTER_DATA = {
   // game8 build guides) without the base-stat-unit bug making her a 5x outlier no real enemy RES
   // swing could ever overcome.
   ['Cartethyia',    110, 25, 16],  // HP scaling + Erosion — totalMult is %HP here, NOT %ATK (see comment above)
-  ['Augusta',       2800, 23, 15],  // Heavy ATK + Shield
+  // totalMult corrected 2026-09-02 (final Augusta audit pass): was 2800 — the halving-bug fix to her
+  // SKILL_MULTIPLIERS row (see that table's own audit comment) means this table's own documented
+  // definition ("sum of ATK% multipliers in one full rotation") now sums to ~6601 across her real
+  // 13-step rotation using the corrected values, not the stale 2800. Feeds real sub-DPS power scoring
+  // (normalizedDpsPowerScore/calcSubDpsFieldMultRatio in calcEngine.js, subDpsMembers in
+  // calcTeamStats.js) whenever Augusta is placed as a sub-DPS rather than the main carry.
+  ['Augusta',       6601, 23, 15],  // Heavy ATK + Shield
   ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
   ['Luuk Herssen',  2400, 23, 16],  // Basic ATK chains
   ['Aemeath',       3800, 24, 15],  // Strongest DPS: Res. Liberation + Fusion Burst/Tune Rupture extra multipliers
@@ -1542,7 +1601,13 @@ const CHARACTER_DATA = {
   ['Lucilla',        'ATK'],
   ['Baizhi',         'HP'],
   ['Taoqi',          'DEF'],
-  ['Yuanwu',         'ATK'],
+  // Corrected 2026-09-02 (fresh Prydwen dump cross-check): was 'ATK' — but EVERY one of his real
+  // Lv.10 multipliers (Thunder Wedge, Rumbling Spark, Liberation, all Lightning Infused attacks,
+  // Thunder Uprising, Intro) is explicitly DEF-scaling per the source, and the page's own endgame
+  // stat guidance prioritizes DEF (1800+) over ATK (1200+, explicitly "skippable"). This field
+  // determines the base stat his damage multiplies against (calcTeamStats.js's baseStat/atkPct
+  // routing) — was silently computing his damage off ATK instead of DEF entirely.
+  ['Yuanwu',         'DEF'],
   ['Youhu',          'HP'],
   ['Buling',         'ATK'],
 ].forEach(([name, statScaling]) => {
@@ -1558,7 +1623,9 @@ const CHARACTER_DATA = {
   ['Sigrika',       'T0',   'T0'],
   ['Ciaccona',      'T0',   'T1'],
   ['Lupa',          'T0',   'T0.5'],
-  ['Lynae',         'T0',   'T0.5'],
+  // tier corrected 2026-09-02 against a fresh Prydwen dump: Whimpering Wastes was 'T0.5' — the dump's
+  // own Ratings section clearly lists T0 (ToA) / T1 (WW), matched exactly by its Value Tier List too.
+  ['Lynae',         'T0',   'T1'],
   ['Qiuyuan',       'T0',   'T0'],
   ['Mornye',        'T0',   'T1'],
   ['Shorekeeper',   'T0',   'T0'],
@@ -1571,7 +1638,10 @@ const CHARACTER_DATA = {
   ['Rebecca',       'T0.5', 'T1'],
   ['Lucy',          'T1',   'T2'],
   ['Phrolova',      'T0.5', 'T0'],
-  ['Augusta',       'T0.5', 'T1'],
+  // toa corrected 2026-09-02 (final Augusta audit pass): was 'T0.5' — the fresh Prydwen dump's Review
+  // tab states T1 for BOTH DPS tiers (Tower of Adversity and Whimpering Wastes) and BOTH the regular
+  // and "Value" tier lists, all four saying T1 — no T0.5 anywhere in that source.
+  ['Augusta',       'T1',   'T1'],
   ['Cartethyia',    'T0.5', 'T1.5'],
   ['Galbrena',      'T0.5', 'T1'],
   ['Iuno',          'T0.5', 'T3'],
@@ -1611,6 +1681,11 @@ const CHARACTER_DATA = {
   ['Yangyang',      'T4',   'T4'],
   ['Youhu',         'T4',   'T4'],
   ['Yuanwu',        'T4',   'T4'],
+  // Added 2026-09-02 against a fresh Prydwen dump: Qingxiao was entirely missing from this table (a
+  // 3.6-patch release-day gap, same as Jingran, who is left untouched here since no fresh source for
+  // him was checked this pass). Standard-list values used, matching this table's established
+  // convention (e.g. Augusta/Luuk Herssen use their standard T0/T1.5-style lists, not the Value list).
+  ['Qingxiao',      'T0',   'T1'],
 ].forEach(([name, toa, ww]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } });
 });
@@ -2119,7 +2194,11 @@ const CHAR_BUFF_TABLE = {
     tuneBreak: {
       boostToTeam: 40, // Visual Impact grants +40 Tune Break Boost teamwide
       baseTuneBreakBoost: 10, // 3.x char base stat
-      ruptureDmgMult: 350, // Tune Rupture Response — Spectral Analysis: ~350% ATK Level-scaled
+      // corrected 2026-09-02 against a fresh Prydwen dump: was an unsourced "~350% ATK Level-scaled"
+      // estimate — the dump's own Forte Circuit multipliers table gives the real Lv.10 value directly,
+      // stated identically in two places ("Tune Rupture Response - Spectral Analysis DMG: 1880.75% Tune
+      // AMP" and "Spectral Analysis - Discorded Tune DMG: 1880.75%").
+      ruptureDmgMult: 1880.75, // Tune Rupture Response — Spectral Analysis (confirmed exact, Lv.10)
       strainDmgPerStack: 0.12, // per stack of Strain Interfered, per point of Tune Break Boost = +0.12% total DMG
       maxStrainStacks: 3, // base 2 + 1 from Lynae
     },
@@ -2130,7 +2209,12 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [
       { stat: 'critDmg', value: 100, target: 'self', duration: 999, condition: 'Resonance Chain 3 — Billows Beneath Heaven Crit DMG' },
-      { stat: 'skillDmg', value: 49, target: 'self', duration: 30, condition: 'Inherent Skill To Know, To Banish — +2%/Mindlock stack (+5% more for the first 7), up to 15 stacks base kit' },
+      // Fixed 2026-09-02 against a fresh Prydwen dump: was wrongly stored as skillDmg — Inherent Skill To
+      // Know, To Banish's real move list (Heavy Attack - Stringblade, Ephemeral Transcendence Basic ATK/
+      // Dodge Counter, Heaven's Reckoning, Liberation) is entirely Heavy/Basic/Liberation, not a single
+      // Skill-button cast at all (Severing Note isn't affected). No single category stat spans all three,
+      // so kept as totalMult — same documented-approximation pattern used elsewhere in this file.
+      { stat: 'totalMult', value: 49, target: 'self', duration: 30, condition: 'Inherent Skill To Know, To Banish — +2%/Mindlock stack (+5% more for the first 7), up to 15 stacks base kit' },
     ],
     debuffs: [{ stat: 'deepen', value: 49, duration: 30, condition: 'Base kit Forte (Mindlock) — targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 stacks; Resonance Chain 6 adds a further flat +40%' }],
     note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic (base kit: up to 15 stacks, ~49% combined DMG Amp/Taken at cap — first 7 stacks each worth 7%, remaining stacks worth 2% each; S1/S2 raise the stack cap to 25). Pre-release kit data (releases 2026-08-20) — subject to change at launch.',
@@ -2426,16 +2510,25 @@ const CHAR_BUFF_TABLE = {
   // buff ends early if that Resonator is swapped off-field — none of that conditionality was previously
   // documented. Waxing Ascent self-shield duration (15s) added — was previously undocumented.
   'Iuno': {
-    outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 10, condition: 'From Gloom to Gleam — ends early if the incoming Resonator is switched off-field; casting Outro does NOT interrupt an in-progress Absolute Fullness' }],
+    outroBuffs: [{ stat: 'heavyDmg', value: 50, target: 'next', duration: 14, condition: 'From Gloom to Gleam — ends early if the incoming Resonator is switched off-field; casting Outro does NOT interrupt an in-progress Absolute Fullness' }],
     libBuffs: [],
     selfBuffs: [
-      { stat: 'allDmg', value: 40, target: 'self', duration: 10, condition: 'Blessing of the Wan Light: +4% all DMG Amp per stack, max 10 stacks (40% total); gained by being Shielded inside the 30s Full Moon Domain (max 1 stack per 0.5s) — Derivation Inherent Skill instantly grants 5 stacks on Intro/Liberation cast; each new stack resets the 10s duration; ends early if swapped off-field' },
+      { stat: 'allDmg', value: 40, target: 'team', duration: 10, condition: 'Blessing of the Wan Light: +4% all DMG Amp per stack, max 10 stacks (40% total) to whichever Resonator receives the shield — gained by being Shielded inside the 30s Full Moon Domain (max 1 stack per 0.5s) — Derivation Inherent Skill instantly grants 5 stacks on Intro/Liberation cast; each new stack resets the 10s duration; ends early if the receiving Resonator is swapped off-field' },
     ],
     debuffs: [],
-    // Outro duration corrected 2026-08-31 from 14s to 10s — no source basis for 14s.
-    // Team-heal claim corrected 2026-08-16: restored after being omitted in a prior audit,
-    // confirmed via a live re-check.
-    note: 'Outro: 50% Heavy ATK DMG Amp for 10s (ends early if the incoming Resonator is swapped off-field). Real team healing via New Moon Moonbow Basic ATK (13.03/13.03/24.43% healing per hit at Lv10), Moonbow Dodge Counter (16.29%), Arc Beyond the Edge (24.43%), Absolute Fullness (194.26% healing, once/25s) + 30s Full Moon Domain (5s-interval team HP/STA regen, 20 STA per tick). Self-shield via Waxing Ascent: 32% ATK, 15s, self-only, on every Basic/Heavy/Dodge/Skill/Liberation/Intro cast — not passed to the incoming Resonator. Liberation activates Lunar Cycle burst phase, no team DMG buff.',
+    // Outro duration corrected BACK to 14s 2026-09-02 — the 2026-08-31 change to 10s ("no source
+    // basis for 14s") was itself wrong. Re-verified against two independent live sources
+    // (wuthering.gg, and a web search aggregating game8/prydwen/sportskeeda) while auditing Augusta's
+    // real-world curated recommendation list: "The incoming Resonator gains 50% Heavy Attack DMG
+    // Amplification for 14s" — both agree, neither shows 10s anywhere.
+    // Blessing of the Wan Light target corrected 2026-09-02 from 'self' to 'team' — same audit, same
+    // two sources: both explicitly describe it as benefiting "the receiving Resonator"/"whichever
+    // Resonator receives the shield" inside the Full Moon Domain, NOT Iuno exclusively. This is the
+    // exact mechanism the community credits as giving Augusta "a whopping 90% DMG Amplification...
+    // in total" (this 40% base-kit max + the outro's 50% heavyDmg = 90%, matching precisely) — was
+    // wrongly self-only, so this 40% never reached any teammate at all, understating Iuno as a
+    // recommended partner for every Heavy-ATK-focused Main DPS she's actually built around.
+    note: 'Outro: 50% Heavy ATK DMG Amp for 14s (ends early if the incoming Resonator is swapped off-field). Blessing of the Wan Light: up to +40% all DMG Amp (10 stacks) to whichever Resonator receives the shield inside Full Moon Domain, not Iuno-exclusive. Real team healing via New Moon Moonbow Basic ATK (13.03/13.03/24.43% healing per hit at Lv10), Moonbow Dodge Counter (16.29%), Arc Beyond the Edge (24.43%), Absolute Fullness (194.26% healing, once/25s) + 30s Full Moon Domain (5s-interval team HP/STA regen, 20 STA per tick). Self-shield via Waxing Ascent: 32% ATK, 15s, self-only, on every Basic/Heavy/Dodge/Skill/Liberation/Intro cast — not passed to the incoming Resonator. Liberation activates Lunar Cycle burst phase, no team DMG buff.',
   },
   'Qiuyuan': {
     outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
@@ -2996,11 +3089,18 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Question the Tombs', '198.81%'],
     ['Outro', 'Rising Fortune and Ebbing Evil', '795% ATK'],
   ],
+  // Two real zero-damage rotation-step bugs fixed 2026-09-02 against a fresh Prydwen dump: 'Mid-air:
+  // Feather Fall' and 'Basic ATK:Havoc in Bloom Stage 1-3' — both real CHARACTER_ROTATIONS steps used
+  // in her actual rotation — had no matching row at all here (flagged in the engine block file's own
+  // header comment), meaning both dealt silent 0 DMG in every calculation. Added below with their real
+  // Lv.10 multipliers; Havoc in Bloom is explicitly "considered Heavy Attack DMG" per its own kit text.
   'Yangyang: Xuanling': [
     ['Basic ATK', 'Azure/Feather Stance Stage 1-4', '47.72% → 20.14%×2+60.41% → 30.21%+70.48% → 18.57%×2+148.49% (Azure) / 39.77%×2 → 33.56%×3 → 14.86%+7.43%×3+37.14% → 71.58%×2+95.43% (Feather)', 'Combo in either stance; Stage 4 applies Havoc Bane.'],
     ['Skill', 'Sword Stance Switch', '69.95%+15.55%×3 (Azure) / 33.56%×3 (Feather)', 'Swaps between Azure and Feather Sword Stance.'],
     ['Heavy ATK', 'Azure Sword Stance', '135.16%×2+180.21%', 'Big cyclone hit once Azure Plume is maxed.'],
     ['Heavy ATK', 'Feather Sword Stance', '21.71%+195.34%', 'Empowered hit once Azure Plume is maxed.'],
+    ['Heavy ATK', 'Feather Fall', '14.80%×3+66.57%', 'Auto-chains off Heavy Attack: Feather Sword Stance; consumes Azure Plume, grants Hark the Wind (12s).'],
+    ['Heavy ATK', 'Havoc in Bloom Stage 1-3', '39.79%×3 → 89.25%+66.94%×2 → 23.98%×5+279.69%', 'Replaces Basic Attack during Hark the Wind; considered Heavy Attack DMG despite the Basic Attack slot.'],
     ['Liberation', 'Hush of a Thousand Voices', '1988.10%', 'Ultimate nuke, maxes Havoc Bane on hit.'],
     ['Forte', 'Shadow of Xuanling', '337.98% ATK (summon proc)', 'Bonus summon hit on her next stance-swap Skill.'],
     ['Intro', 'Skybound Feather', '116.59%', 'Opener that applies Havoc Bane.'],
@@ -3133,16 +3233,22 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Clip It: Hard Cut', '149.41%', 'Replaces Clip It while in Reminiscence.'],
     ['Outro', 'Montage', '60% Glacio Chafe DMG Amp (Chafe mode) / 50% Echo Skill DMG Amp to next (Echo mode)', 'Buffs Glacio Chafe DMG or next ally Echo Skill DMG.'],
   ],
+  // Re-audited verbatim 2026-09-02 against a fresh Prydwen.gg Augusta page dump: every single one of
+  // her 22 Lv.10 damage values below was off by a consistent ~1.988x ratio (i.e. roughly HALF the real
+  // value) — the exact same "halving pattern" bug class already found and fixed for Camellya/Carlotta/
+  // Roccia/Phoebe/Brant (see the comment on Brant's own row just below), just missed for Augusta until
+  // now. Confirmed systematic, not rounding noise: computed the new/old ratio for all 22 values, every
+  // one landed at 1.986-1.991. Retightened every value to Prydwen's exact Lv.10 figures.
   'Augusta': [
-    ['Basic ATK', "Hunter's Path", '28.9% → 33.7%×2 → 33%×3 → 32.5%×3', 'Standard combo string, builds toward her Majesty/Crown resources.'],
-    ['Heavy ATK', 'Steelclash', '23.3%×3', 'Base charged combo.'],
-    ['Heavy ATK', 'Thunderoar', 'Backstep 27% / Spinslash 71.3%×3 / Uppercut 90%×2', 'Empowered Heavy ATK combo, unlocked at full Ascendancy.'],
-    ['Skill', "Warrior's Blade", '110%×3', 'Multi-hit Skill strike with a brief time-stop on cast.'],
-    ['Liberation', 'Sword of Eternal Oath', '16.6%×2 + 66.4%×3 + 16.6%×2 + 287.6%', 'Standard Ultimate combo nuke.'],
-    ['Liberation', 'Sunborne', '60% ×9 slashes', 'Alt Ultimate opener when holding the input at 2 Majesty stacks.'],
-    ['Liberation', 'Everbright Protector', '120% + 450% + 3%×10', 'Finisher following Sunborne, deploys Ruler\'s Realm.'],
-    ['Forte', 'Undying Sunlight', 'Strike 70%×2 / Leap 112%+14%×2 / Plunge 43.6%+392%', 'Forte-empowered combo, Plunge consumes all Ascendancy for a big finisher.'],
-    ['Intro', 'Stride of Goldenflare', '50%×2', 'Swap-in opener strike.'],
+    ['Basic ATK', "Hunter's Path", '57.46% → 67.00%×2 → 65.61%×3 → 64.63%×3', 'Standard combo string, builds toward her Majesty/Crown resources.'],
+    ['Heavy ATK', 'Steelclash', '46.39%×3', 'Base charged combo.'],
+    ['Heavy ATK', 'Thunderoar', 'Backstep 53.68% / Spinslash 141.72%×3 / Uppercut 178.93%×2', 'Empowered Heavy ATK combo, unlocked at full Ascendancy.'],
+    ['Skill', "Warrior's Blade", '218.70%×3', 'Multi-hit Skill strike with a brief time-stop on cast.'],
+    ['Liberation', 'Sword of Eternal Oath', '32.99%×2 + 131.94%×3 + 32.99%×2 + 571.7%', 'Standard Ultimate combo nuke.'],
+    ['Liberation', 'Sunborne', '119.29% ×9 slashes', 'Alt Ultimate opener when holding the input at 2 Majesty stacks.'],
+    ['Liberation', 'Everbright Protector', '238.58% + 894.65% + 5.97%×10', 'Finisher following Sunborne, deploys Ruler\'s Realm.'],
+    ['Forte', 'Undying Sunlight', 'Strike 139.17%×2 / Leap 222.67%+27.84%×2 / Plunge 86.59%+779.24%', 'Forte-empowered combo, Plunge consumes all Ascendancy for a big finisher.'],
+    ['Intro', 'Stride of Goldenflare', '99.41%×2', 'Swap-in opener strike.'],
     ['Outro', 'Battlesong of the Unyielding', '+15% All DMG Amp (14s)', 'Grants the next Resonator +15% All-Attribute DMG Amp for 14s, which ends immediately if they are swapped out. Conditional payoff: Augusta gains +1 Majesty stack AND +1 Crown of Wills stack ONLY if that SAME Resonator casts their own Outro Skill back to Augusta while this buff is still up — swap to a third character first and the buff (and the stack chance) is forfeited. Verified verbatim wutheringwaves.fandom.com/wiki/Augusta/Combat, 2026-08-31.'],
   ],
   'Aemeath': [
@@ -3152,7 +3258,12 @@ const SKILL_MULTIPLIERS = {
     ['Charged ATK', 'Mech Charged I / II', '92.83% / 232.00%', 'Mech-form charged strike, very high single hits.'],
     ['Skill', 'Sync Strikes', 'Armament Merge 26.92%+40.38%+67.29% / Call of Dawn 16.33%×3+114.28%', 'Skill triggers different follow-ups depending on which form she is in.'],
     ['Skill', 'Seraphic Duet', 'Overture 17.90%+14.92%×6+23.86%×3+59.65%×3 / Encore 17.90%×4+35.79%×3+178.93%', 'Longer Skill combo, Encore variant hits when chained after Overture.'],
-    ['Liberation', 'Heavenfall Edict', 'Overdrive 200.80%+267.74%×3 / Finale 1789.29%', 'Ultimate; Finale is a massive burst that scales with team buffs.'],
+    // Corrected 2026-09-02 (fresh Prydwen dump cross-check): was Overdrive 200.80%+267.74%×3 / Finale
+    // 1789.29% — every other row for Aemeath matched the fresh dump exactly (Basic/Charged/Sync
+    // Strikes/Duet), but this row alone was consistently ~1.0754x too high across all 4 values
+    // (200.80/186.72 = 267.74/248.96 = 1789.29/1663.83, all within 0.00003 of each other — a real,
+    // systematic discrepancy, not rounding noise). Retightened to the fresh dump's exact figures.
+    ['Liberation', 'Heavenfall Edict', 'Overdrive 186.72%+248.96%×3 / Finale 1663.83%', 'Ultimate; Finale is a massive burst that scales with team buffs.'],
     ['Intro', 'Songs Across the Universe', '13.46%×2 + 107.66%', 'Intro Skill used when swapping in from human form.'],
     ['Intro', 'Debut of Meteoric Radiance', '65.30% + 97.95%', 'Intro Skill used when swapping in from Mech Form.'],
     ['Outro', 'Silent Protection', '10-20% All-DMG Amp to team (20s), mode-dependent', 'Swap-out buff to the whole team; strength depends on which form she left in.'],
@@ -3617,12 +3728,19 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Before Injection of Dawn', '72.67%×3', 'Opener that also inflicts Tune Strain.'],
     ['Outro', 'Bow to the Last Light', '500%', 'Simple finishing nuke on swap-out.'],
   ],
+  // Real zero-damage rotation-step bug fixed 2026-09-02 against a fresh Prydwen dump (same class of bug
+  // as Yangyang: Xuanling's Feather Fall/Havoc in Bloom): CHARACTER_ROTATIONS.Lynae's own
+  // 'Basic ATK:Polychrome Leap ×3' step (one of only 7 real steps in her whole rotation) had no matching
+  // row here at all — the engine block file's own header comment explicitly flagged this as "NO matching
+  // SKILL_MULTIPLIERS row at all — not modeled rather than guessed." The fresh dump's Forte Circuit
+  // multipliers table actually has all 3 stages (previously not sourced), added below.
   'Lynae': [
     ['Basic ATK', 'Stage 1-3', '86.19% → 52.39%×3 → 123.37%', 'Standard combo before entering her Kaleidoscopic mode.'],
     ['Heavy ATK', 'Spark Collision Lv.3', '277.78%×2', 'Fully-charged heavy hit, a big single burst of damage.'],
     ['Basic ATK', 'Kaleidoscopic 1-5', '82.81% → 38.87%×2 → 37.75%×3 → 29.75%×2+44.62%×2 → 75.54%+15.11%×5+100.72%', 'Extended empowered combo used once her Kaleidoscopic mode is active.'],
-    ['Forte', 'Visual Impact', '1216.72%', 'Massive Forte finisher, her main source of burst damage.'],
-    ['Forte', 'Iridescent Splash', '304.18%', 'Secondary Forte follow-up hit.'],
+    ['Basic ATK', 'Polychrome Leap ×3', '33.80%×3 → 16.90%×6 → 13.10%×8', 'Airborne Jump attack chain (3 stages while in Kaleidoscopic Parade); each stage consumes 1/3 Lumiflow and grants 1 True Color point.'],
+    ['Forte', 'Visual Impact', '1216.72%', "Massive Forte finisher, her main source of burst damage. Literally named \"Basic Attack - Visual Impact\" — considered real Basic Attack DMG, not a separate Forte category."],
+    ['Forte', 'Iridescent Splash', '304.18%', "Secondary Forte follow-up hit. Literally named \"Basic Attack - Iridescent Splash\" — considered real Basic Attack DMG."],
     ['Skill', 'Lynae-Style Palettes', '139.31% + 46.44%×3', 'Skill that builds up her paint/mode resource while dealing damage.'],
     ['Skill', 'Additive Color', '116.31%×2', 'Quick follow-up Skill strike.'],
     ['Liberation', 'Prismatic Overblast', '87.48%×10', 'Ultimate multi-hit barrage.'],
@@ -5195,7 +5313,15 @@ const RESONANCE_CHAIN_DATA = {
   'Jingran':      { s1: { skillDmg: 80 }, s2: { heavyDmg: 46 }, s3: { atkPct: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
   // Yangyang: Xuanling S2: Heavy/Mid-air/Havoc-in-Bloom DMG+100% (confirmed exact). S3: Hush of a Thousand Voices
   // Liberation DMG+175% (confirmed exact via Nanoka/Prydwen 2026-08-16 cross-check; was 80, didn't match comment or kit)
-  'Yangyang: Xuanling': { s1: { totalMult: 10 }, s2: { heavyDmg: 100 }, s3: { libDmg: 175 }, s4: { atkPct: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
+  // S3/S5 re-audited 2026-09-02 against a fresh Prydwen dump: S3 was libDmg despite Hush of a Thousand
+  // Voices' own real damage hit being categorized heavyDmg (her Liberation is entirely "considered Heavy
+  // Attack DMG" per kit text) — a libDmg buff on a heavyDmg-categorized hit never actually applies.
+  // Corrected libDmg -> heavyDmg (same bug class as Sigrika's S5, which this row's old comment had
+  // wrongly cited as its own precedent). S5 "On a fatal blow... immune to DMG/interruption for 3s, once
+  // per 10 min" is purely defensive with zero real DPS component — confirmed independently via
+  // Prydwen's own Damage Output by Sequence table: S4 and S5 are byte-identical (2,783,354 DMG /
+  // 274,492 DPS both). Zeroed the fabricated totalMult:5 to {}.
+  'Yangyang: Xuanling': { s1: { totalMult: 10 }, s2: { heavyDmg: 100 }, s3: { heavyDmg: 175 }, s4: { atkPct: 20 }, s5: {}, s6: { heavyDmg: 40 } },
   // Hiyuki S1/S2: Foreclaimed/Iai skills are "considered Resonance Liberation DMG" per kit.
   // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Hiyuki/Combat — its Attribute Scaling
   // collapsibles render the wrong content for this character (a template/Lua bug specific to this page,
@@ -5470,7 +5596,19 @@ const RESONANCE_CHAIN_DATA = {
   // CD+60% (confirmed exact) + Heavenfall Edict: Finale DMG Mult+100% (was defIgnore:20, no basis at all — real S3 has
   // no DEF Ignore effect). S4: team +20% All-Attr DMG on Intro/Sync Strike/Duet cast (was totalMult:15, no basis).
   // S6: Aemeath's Liberation DMG taken by targets +40% (confirmed exact value, recategorized from totalMult to libDmg)
-  'Aemeath':      { s1: { critDmg: 300 }, s2: { totalMult: 25 }, s3: { libDmg: 100, critDmg: 60 }, s4: { allDmg: 20 }, s5: { totalMult: 40 }, s6: { libDmg: 40 } },
+  // S5 zeroed 2026-09-02 (found while cross-checking a fresh Prydwen dump — this row was never covered
+  // by the audit comment above, unlike every other node here): was totalMult:40, a fabricated number.
+  // Real S5 effect ("On kill, reset Starflux to 100%; on fatal damage, revive with a team shield
+  // instead of dying, once per 10 min") is purely survivability/utility, zero DPS component — confirmed
+  // via Prydwen's own damage-output simulation, where S4 and S5 produce byte-identical DMG/DPS.
+  // S2 note: also never covered by the audit comment above — "Seraphic Duet Overture/Encore DMG
+  // Multiplier +100% each" is the real S2 effect, currently modeled as totalMult:25 with no derivation
+  // shown anywhere. Left AS-IS (not touched in this pass) — flagging rather than guessing a
+  // replacement, since unlike S5 there's no independent confirmation (e.g. an S1==S2 DPS match) proving
+  // the current value wrong, and Duet's damage is itself libDmg-categorized (same bucket S3's Finale
+  // buff already uses), so blindly reassigning this to libDmg could double up against S3 instead of
+  // fixing anything. Needs its own dedicated verification pass.
+  'Aemeath':      { s1: { critDmg: 300 }, s2: { totalMult: 25 }, s3: { libDmg: 100, critDmg: 60 }, s4: { allDmg: 20 }, s5: {}, s6: { libDmg: 40 } },
   // Zani S1: +50% Spectro DMG (confirmed exact). S2: CR+20% + mult boost. S4: team ATK+20%
   'Zani':         { s1: { elemDmg: 50 }, s2: { critRate: 20, skillDmg: 80 }, s3: { libDmg: 200 }, s4: { atkPct: 20 }, s5: { libDmg: 120 }, s6: { heavyDmg: 40 } },
   // Zani R-chain corrected 2026-08-16 via Nanoka/Prydwen: s1 Targeted Action/Forcible Riposte +50% Spectro DMG confirmed correct;
@@ -5594,7 +5732,11 @@ const RESONANCE_CHAIN_DATA = {
   //   secondary instance).
   'Brant':        { s1: { allDmg: 60 }, s2: { critRate: 30 }, s3: { totalMult: 42 }, s4: {}, s5: { basicDmg: 15 }, s6: { totalMult: 30 } },
   // Augusta S1: +15% CD per Crown stack x2=30% (confirmed). S2: +20% CR per stack + excess CR→CD conversion
-  'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 40 }, s3: { totalMult: 25 }, s4: { atkPct: 20 }, s5: { totalMult: 15 }, s6: { heavyDmg: 200 } },
+  // s5 zeroed 2026-09-02 (found while cross-checking a fresh Prydwen source dump): was totalMult:15, a
+  // fabricated number with no basis in the node's own text (same shape as Brant's S1/Phrolova's S5,
+  // both correctly zeroed elsewhere in this table for the identical reason) — Glory's Favor shield
+  // value +50% is a purely defensive stat, zero DPS component, per the comment block below.
+  'Augusta':      { s1: { critDmg: 30 }, s2: { critRate: 40 }, s3: { totalMult: 25 }, s4: { atkPct: 20 }, s5: {}, s6: { heavyDmg: 200 } },
   // Augusta R-chain — verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Augusta/Combat
   // (Chrome/Windows UA + google.com referer + jsRender, load+8s wait to clear Cloudflare):
   // s1 "Stained in Scorched Earth": Crown of Wills +15% Crit DMG per stack (max stack raised 1→2) = 30% at 2 stacks. Confirmed correct.
@@ -5608,7 +5750,8 @@ const RESONANCE_CHAIN_DATA = {
   // s4 "Ascent in Sun and Glory": casting Intro Skill - Stride of Goldenflare grants the WHOLE TEAM +20% ATK for 30s
   //     (not self-only, not a permanent buff — duration-gated).
   // s5 "Unshaken in Wrathful Tides": Inherent Skill - Glory's Favor shield value +50% — a survivability stat, no direct
-  //     DPS number; totalMult:15 kept as an approximate DPS-uptime proxy, not a real modeled effect.
+  //     DPS number; zeroed to {} 2026-09-02 (was totalMult:15, a fabricated approximate-uptime proxy with no basis
+  //     in the node's own text — same "don't force-fit a lossy value" rule already applied to Brant's S1/Phrolova's S5).
   // s6 "Engraved in Radiant Light": Crown of Wills max stacks 2→4; CR-over-150%→CD conversion up to +50% (separate,
   //     unmodeled, same caveat as s2); AND casting Thunderoar: Spinslash or Uppercut grants 2 Crown of Wills stacks
   //     (capped at 2 stacks/sec) AND triggers "Thunder Rage" — 2 separate Electro Heavy-ATK hits at 100% ATK each (200%
@@ -5717,13 +5860,26 @@ const RESONANCE_CHAIN_DATA = {
   // Sigrika (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +70% DMG mult to specific skills (rotation-averaged).
   // S2: Learn My True Name DMG Mult+120% (considered Echo Skill DMG) — was totalMult:40, no basis. S3: Innate Gift? stack
   // cap 2->4, no flat %, was critRate:12 with no basis — kept as totalMult. S4: team ATK+20% on ally Echo Skill cast —
-  // was echoDmg:40 (wrong stat AND value). S5: Where Trust Leads Me! DMG Mult+30% (Liberation, counted as Echo Skill DMG) — was totalMult:15.
-  'Sigrika':      { s1: { totalMult: 15 }, s2: { echoDmg: 120 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { libDmg: 30 }, s6: { defIgnore: 15 } },
+  // was echoDmg:40 (wrong stat AND value). S5/S6 re-audited 2026-09-02 against a fresh Prydwen dump:
+  // S5 "Where Trust Leads Me! DMG Mult+30%" was stored as libDmg despite this row's own real damage
+  // hit being categorized echoDmg (her Liberation is entirely "counted as Echo Skill DMG" per kit text
+  // and the 0%-Liberation/89.9%-Echo real damage-output simulation) — a libDmg buff on an echoDmg-
+  // categorized hit never actually applies. Corrected libDmg -> echoDmg. S6 "Targets take 30% more DMG
+  // from Sigrika" was stored as defIgnore:15 with no sourcing comment at all — real primary effect is a
+  // flat +30% DMG-taken debuff (the Innate Gift? DEF Ignore enhancement is a separate, smaller +7.5%/
+  // stack up to 30% conditional bonus, not this). Corrected defIgnore:15 -> deepen:30, matching the
+  // same 'deepen' convention already used for Qingxiao's identically-worded S6 effect.
+  'Sigrika':      { s1: { totalMult: 15 }, s2: { echoDmg: 120 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { echoDmg: 30 }, s6: { deepen: 30 } },
   // Luuk Herssen (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +150% Mid-air ATK DMG, simplified as basicDmg
   // ~15 DPS impact (documented approximation, kept). S2: Rewritten in Winter's Margins DMG Mult+60% — was totalMult:40, no basis.
   // S3: Aureole of Execution forms +136% in Aureate Judge (conditional, no flat unconditional %) — was critDmg:25 with no
   // basis, kept as totalMult. S4: team All DMG+20% (not Basic DMG) on ally Tune Break — was basicDmg:40 (wrong stat AND
   // value). S6: Endnotes stacking grants Liberation DMG+40%/stack up to +120% — was defIgnore:15, no basis at all.
+  // S5 re-audited 2026-09-02 against a fresh Prydwen dump: NOT a single unexplained flat bonus (the engine block's
+  // old note wrongly called it "confirmed exact, no further scope detail sourced") — real effect is two separate
+  // conditional pieces: Intro/Outro DMG Bonus +80%, and Golden Reflux DMG Multiplier +50% (+CD -2s, +1 charge, both
+  // unrepresentable here). Kept as the same totalMult:15 documented-approximation pattern as S1/S3, now with an
+  // accurate comment instead of a false "exact" claim.
   'Luuk Herssen': { s1: { basicDmg: 15 }, s2: { libDmg: 60 }, s3: { totalMult: 15 }, s4: { allDmg: 20 }, s5: { totalMult: 15 }, s6: { libDmg: 120 } },
   // Lupa S1: CR+20% for 10s (not elemDmg)
   // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Lupa/Combat, cross-checked against
@@ -5792,9 +5948,34 @@ const RESONANCE_CHAIN_DATA = {
   //   flat schema will otherwise apply critDmg:500 as if it were an always-on team/self Crit DMG stat,
   //   which massively overstates its real (single-hit, Discernment-only) scope.
   'Shorekeeper':  { s1: {}, s2: { atkPct: 40 }, s3: {}, s4: {}, s5: {}, s6: { totalMult: 42, critDmg: 500 } },
-  // Lynae S2: team +25% All DMG Amp, self-gain portion (confirmed exact). S4: ATK+20% (was totalMult:10, no basis).
-  // S5: Prismatic Overblast Liberation DMG Mult+70% (was totalMult:15, no basis)
-  'Lynae':        { s1: { totalMult: 10 }, s2: { allDmg: 25 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { libDmg: 70 }, s6: { totalMult: 40 } },
+  // Lynae fully re-audited 2026-09-02 against a fresh Prydwen dump — the prior comment here claimed S1's
+  // totalMult:10 and S3's totalMult:15 had already been "corrected" (moved to S4/S5 as atkPct:20/
+  // libDmg:70), but S1 and S3 below still literally carried those same stale placeholder values
+  // unfixed — an incomplete prior edit. Real values:
+  // S1 "Sequence Node 1": Basic Attack - Polychrome Leap's own DMG Multiplier +120% (was the stale
+  // totalMult:10 placeholder). Now cast-scopable since Polychrome Leap's own SKILL_MULTIPLIERS row was
+  // added above (was previously entirely unmodeled). Utility half (Spray Paint duration/pull-in,
+  // interruption immunity, Overflow restore out of combat) has no DPS component, not modeled.
+  // S2: team +25% All DMG Amp, self-gain portion (confirmed exact, unchanged) — PLUS a second, separate
+  // real effect entirely missing before this read: "Outro Skill gains: casting Outro Skill grants the
+  // incoming Resonator 25% All-DMG Amplification for 14s" (additive on top of the base-kit Outro's own
+  // 15% All DMG + 25% Liberation DMG). Same stat name (allDmg) but a genuinely different scope (self vs.
+  // next-on-field) that this flat single-key schema can't hold in one field — modeled as an additional
+  // sequence-gated chain block (lynae.chain.s2-outro-bonus) rather than folded into this key.
+  // S3 "Sequence Node 3": Basic Attack - Visual Impact AND Basic Attack - Iridescent Splash's own DMG
+  // Multiplier +90% (was the stale totalMult:15 placeholder). Premixed Hue's Additive Color stacking
+  // buff (up to 25 stacks × 55%, gated on Lumiflow≥120) has no DPS component in the modeled rotation
+  // (Additive Color isn't cast in it), not modeled.
+  // S4: ATK+20% (confirmed exact, unchanged).
+  // S5: Prismatic Overblast Liberation DMG Mult+70% (confirmed exact, unchanged).
+  // S6 "Sequence Node 6": up to +90% DMG on Polychrome Leap/Visual Impact via 3 stacks of Color of Soul
+  // (30%/stack), but stacks are only gained by casting Kaleidoscopic Parade - Graffiti Blast or Mid-air
+  // Heavy Attack — both exclusive to the S6-only alternate rotation that CHARACTER_ROTATIONS['Lynae']
+  // explicitly doesn't model (see that table's own header comment). Zero reachable DPS component in the
+  // modeled rotation — was an unsourced totalMult:40 fabrication, zeroed to {} (same "no real DPS
+  // component in the modeled system" pattern as Shorekeeper's S1/S3/S4/S5 above). TODO: needs Phase 2
+  // schema (a per-cast stacking buff gated to an alternate, unmodeled rotation branch).
+  'Lynae':        { s1: { basicDmg: 120 }, s2: { allDmg: 25 }, s3: { basicDmg: 90 }, s4: { atkPct: 20 }, s5: { libDmg: 70 }, s6: {} },
   // Mornye (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: interrupt immunity + Interfered Marker duration/
   // condition changes, no flat % (was allDmg:15, no basis). S2: team Crit DMG+32% max vs Interfered Marker targets (was
   // deepen:10, wrong stat+value). S4: High Syntony Field healing+30%, not a DPS stat (was atkPct:10, no basis).

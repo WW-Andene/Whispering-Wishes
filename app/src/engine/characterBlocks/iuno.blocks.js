@@ -77,7 +77,11 @@ export const IUNO_BLOCKS = [
     id: 'iuno.outro.gloom-to-gleam-buff',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'swap-out' },
-    timing: { duration: 10 },
+    // Duration corrected 2026-09-02 from 10s to 14s — verified against two independent live sources
+    // (wuthering.gg, a web search aggregating game8/prydwen/sportskeeda) while auditing Augusta's
+    // real-world curated recommendation list ("Iuno + Augusta"): "The incoming Resonator gains 50%
+    // Heavy Attack DMG Amplification for 14s." No source found for the prior 10s value.
+    timing: { duration: 14 },
     target: { scope: 'next-on-field' },
     effects: [{ stat: 'heavyDmg', value: 50, stacking: 'refresh' }],
     note: 'Ends early if the incoming Resonator is swapped off-field, not modeled. Casting Outro does NOT interrupt an in-progress Absolute Fullness.',
@@ -87,9 +91,17 @@ export const IUNO_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'cast', on: 'Liberation:Beneath Lunar Tides' },
     timing: { duration: 10 },
-    target: { scope: 'self' },
+    // Target corrected 2026-09-02 from 'self' to 'whole-team' — verified against two independent live
+    // sources while auditing Augusta's real-world curated recommendation list. Both quote it as
+    // benefiting "the receiving Resonator"/"whichever Resonator receives the shield" inside the Full
+    // Moon Domain, NOT Iuno exclusively — this is the exact mechanism the community credits as giving
+    // Augusta "a whopping 90% DMG Amplification... in total" (this 40% base-kit max + the outro's 50%
+    // heavyDmg above = 90%, matching precisely). Was wrongly self-only, so this 40% never reached any
+    // teammate at all — same-shaped bug as iuno.chain.s2 just below, which already correctly models
+    // the Resonance-Chain-gated ADDITIONAL 40% as whole-team.
+    target: { scope: 'whole-team' },
     effects: [{ stat: 'allDmg', value: 4, stacking: 'stacking', maxStacks: 10 }],
-    note: 'Blessing of the Wan Light: +4% all DMG Amp per stack, max 10 stacks (40% total); gained by being Shielded inside the 30s Full Moon Domain (max 1 stack per 0.5s), each new stack resets the 10s duration, ends early if swapped off-field (not modeled). Derivation Inherent Skill instantly grants 5 stacks on Intro/Liberation cast — modeled anchored to the Liberation cast, per-stack stacking rather than the flat 40% total.',
+    note: 'Blessing of the Wan Light: +4% all DMG Amp per stack, max 10 stacks (40% total) to whichever Resonator receives the shield inside the 30s Full Moon Domain (max 1 stack per 0.5s), each new stack resets the 10s duration, ends early if the receiving Resonator is swapped off-field (not modeled). Derivation Inherent Skill instantly grants 5 stacks on Intro/Liberation cast — modeled anchored to the Liberation cast, per-stack stacking rather than the flat 40% total.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for
