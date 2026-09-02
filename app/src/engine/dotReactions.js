@@ -18,7 +18,7 @@ import {
   calcResMult,
 } from '../features/teams/calcEngine.js';
 import { CHAR_BUFF_TABLE } from '../data/characters.js';
-import { resolveElectroFlareFromBlocks, resolveFusionBurstFromBlocks } from './dotReactionsFromBlocks.js';
+import { resolveElectroFlareFromBlocks, resolveFusionBurstFromBlocks, resolveErosionFromBlocks } from './dotReactionsFromBlocks.js';
 import { DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 
 /**
@@ -75,7 +75,21 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const electroFlareResMult = calcResMult(getEnemyRes('Electro'), resShred);
 
   const frazzle = calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
-  const erosion = calcErosionDmg(members, rotTime, defMult, erosionResMult);
+  // Erosion (ENGINE_MERGE_PLAN.md Phase 2 — Ciaccona migrated; Cartethyia deliberately NOT migrated
+  // yet — her legacy value (6) assumes an uncounted Rover: Aero teammate raising her effective stack
+  // cap, a real conditional fact this migration won't blindly port without resolving it first). Unlike
+  // Electro Flare/Fusion Burst (where every real applier in the roster is fully migrated, so the
+  // blocks-only path is complete), Erosion is a MIXED migration state — switching wholesale to
+  // block-only would silently make Cartethyia's real, still-legacy-only Erosion contribution
+  // invisible whenever she's on a team. Only prefer blocks when every erosion-flagged member present
+  // in THIS team is actually block-tagged; otherwise fall back to the full legacy path for everyone,
+  // so a not-yet-migrated character is never silently dropped.
+  const erosionFlaggedMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'erosion'));
+  const allErosionMembersHaveBlocks = blocksByOwner && erosionFlaggedMembers.every(m =>
+    (blocksByOwner[m.name] || []).some(b => b.dotApplier?.mechanic === 'erosion'));
+  const erosion = allErosionMembersHaveBlocks
+    ? resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, erosionResMult)
+    : calcErosionDmg(members, rotTime, defMult, erosionResMult);
   // Fusion Burst (ENGINE_MERGE_PLAN.md Phase 2 — Denia/Aemeath migrated): same block-preference
   // pattern as Electro Flare below, with one addition — `dotApplier.requiresStance` (Denia/Aemeath are
   // BOTH mode-conditional appliers, unlike Buling) is resolved via the SAME `winningStanceForOwner()`

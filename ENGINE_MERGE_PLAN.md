@@ -262,11 +262,38 @@ tackle them — simplest mechanic/fewest interactions first):
 | Buling | Electro Flare | **Migrated 2026-09-02** |
 | Denia | Fusion Burst | **Migrated 2026-09-02** (tuneBreak itself deferred to 1.5) |
 | Aemeath | Fusion Burst | **Migrated 2026-09-02** (tuneBreak itself deferred to 1.5) |
-| Ciaccona | Erosion | Not started |
-| Cartethyia | Erosion | Not started |
+| Ciaccona | Erosion | **Migrated 2026-09-02** |
+| Cartethyia | Erosion | **Deliberately deferred** — see note below |
 | Phoebe | Frazzle (real-mode check needed first — see Phase 0 note) | Not started |
 | Rover: Spectro | Frazzle | Not started |
 | Lynae, Aemeath, Denia, Mornye, Luuk Herssen, Rebecca, Lucy | Tune Break | Not started (1.5, last) |
+
+### Erosion migration — Ciaccona done, Cartethyia deferred, and a real mixed-migration safety issue found
+
+Ciaccona's own `debuffs.erosion.value: 3` matches her real per-move kit values exactly (2/1/2 stacks
+across 3 real applying moves, all tagged) — a clean, unconditional port, same shape as Buling's Electro
+Flare. Cartethyia's legacy value is `6`, with its own comment "6 stacks with Rover (3 base)" — this
+isn't a literal per-move stack value at all, it's an ALREADY-CONDITIONAL number that assumes an uncounted
+Rover: Aero teammate raises her effective cap (consistent with `EROSION_STACK_TABLE`'s own comment,
+"stacks >3 need Aero Rover Outro" — a real, pre-existing conditional fact in the legacy data itself,
+not something this migration is introducing). Porting her blindly with `value: 6` would misrepresent it
+as an unconditional per-move stack; porting with her real per-move values (not yet extracted from her
+kit text) would silently change her computed number without resolving whether the Rover assumption is
+still valid. Deferred rather than guessed.
+
+**Found and fixed a real mixed-migration safety gap while wiring this**: the same
+`blocksByOwner ? resolveXFromBlocks(...) : calcXDmg(...)` pattern that was SAFE for Electro Flare and
+Fusion Burst (every real roster applier for those two mechanics is now fully migrated) would have been
+UNSAFE for Erosion — switching wholesale the moment `blocksByOwner` exists would silently make
+Cartethyia's real, still-legacy-only contribution invisible on any team with her AND a migrated
+character (Ciaccona) both present, since the blocks-only resolver only reads `dotApplier`-tagged blocks
+and has no way to know about her. Fixed by checking, at the point of computing `erosion`, whether EVERY
+erosion-flagged member actually present in THIS team has a `dotApplier`-tagged block — only then
+prefer the blocks path; otherwise fall back to the full legacy calculation for the whole mechanic. This
+same check needs to be applied when Frazzle is migrated too (Phoebe/Rover: Spectro, both still legacy
+today — a team with one migrated and one not-yet-migrated Frazzle applier would hit the identical gap).
+2 new tests prove this exact scenario doesn't drop Cartethyia. Full suite: 1247 tests passing (up from
+1245).
 
 ### Denia/Aemeath Fusion Burst migration — the mode-conditional case, solved properly
 

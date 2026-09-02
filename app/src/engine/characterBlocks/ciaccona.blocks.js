@@ -23,6 +23,12 @@ export const CIACCONA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('189.11%') },
     note: 'Inflicts Aero Erosion, skips straight to Basic ATK Stage 3.',
+    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — value:3 matches her
+    // CHAR_BUFF_TABLE.debuffs.erosion's own already-sourced value ("3 stacks Aero Erosion, ticks every
+    // 2s"). resolveErosionFromBlocks takes the MAX across every applying block, not a sum, so tagging
+    // each of her 4 real Erosion-inflicting moves with the same value is correct, not redundant double
+    // counting.
+    dotApplier: { mechanic: 'erosion', value: 3 },
   },
   {
     id: 'ciaccona.basic.stage3',
@@ -38,6 +44,7 @@ export const CIACCONA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('61.14%×4'), category: 'basicDmg' },
     note: 'Inflicts Aero Erosion, grants 1 Musical Essence, and starts Solo Concert (24% Aero DMG Bonus to nearby team — see ciaccona.libbuff.solo-concert below). Fires twice in the real rotation (real, repeated cast, not a bug).',
+    dotApplier: { mechanic: 'erosion', value: 3 },
   },
   {
     id: 'ciaccona.midair.attack-stage1-2',
@@ -53,6 +60,7 @@ export const CIACCONA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('40.39%×4'), category: 'skillDmg' },
     note: 'Inflicts another Aero Erosion stack, restores Concerto Energy.',
+    dotApplier: { mechanic: 'erosion', value: 3 },
   },
   {
     id: 'ciaccona.forte.quadruple-downbeat',
@@ -61,6 +69,7 @@ export const CIACCONA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('31.41%×10+314.03%') },
     note: 'Consumes all 3 stacked Musical Essence, inflicts Aero Erosion, restores 25 Concerto Energy.',
+    dotApplier: { mechanic: 'erosion', value: 3 },
   },
   {
     id: 'ciaccona.liberation.singers-triple-cadenza',

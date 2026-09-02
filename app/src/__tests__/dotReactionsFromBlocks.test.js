@@ -5,12 +5,14 @@
 // end-to-end check against Buling's actual blocks (her Electro Flare application, the first real
 // migration target).
 import { describe, it, expect } from 'vitest';
-import { calcDefMult, calcResMult, calcElectroFlareDmg, calcFusionBurstDmg } from '../features/teams/calcEngine.js';
+import { calcDefMult, calcResMult, calcElectroFlareDmg, calcFusionBurstDmg, calcErosionDmg } from '../features/teams/calcEngine.js';
 import {
   resolveFrazzleFromBlocks, resolveErosionFromBlocks, resolveFusionBurstFromBlocks, resolveElectroFlareFromBlocks,
 } from '../engine/dotReactionsFromBlocks.js';
+import { resolveDotReactionDps } from '../engine/dotReactions.js';
 import { BULING_BLOCKS } from '../engine/characterBlocks/buling.blocks.js';
 import { DENIA_BLOCKS } from '../engine/characterBlocks/denia.blocks.js';
+import { CIACCONA_BLOCKS } from '../engine/characterBlocks/ciaccona.blocks.js';
 import { filterExclusiveModeBlocks, gateBlocksBySequence } from '../engine/sequenceGating.js';
 
 const defMult = calcDefMult(800, 0, 0);
@@ -100,5 +102,30 @@ describe('dotReactionsFromBlocks — Erosion (synthetic, MAX not SUM across appl
     const withBoth = resolveErosionFromBlocks({ X: [a, b] }, 20, defMult, resMult);
     const withMaxOnly = resolveErosionFromBlocks({ X: [b] }, 20, defMult, resMult);
     expect(withBoth.dmg).toBeCloseTo(withMaxOnly.dmg, 6);
+  });
+});
+
+describe('dotReactionsFromBlocks — Erosion mixed-migration safety (Ciaccona migrated, Cartethyia deliberately NOT — ENGINE_MERGE_PLAN.md)', () => {
+  const getEnemyRes = () => 10;
+
+  it('Ciaccona solo (fully migrated) matches calcErosionDmg exactly via resolveDotReactionDps blocks path', () => {
+    const blocksByOwner = { Ciaccona: CIACCONA_BLOCKS };
+    const fromDots = resolveDotReactionDps([{ name: 'Ciaccona' }], 20, defMult, 0, getEnemyRes, resMult, null, blocksByOwner);
+    const legacy = calcErosionDmg([{ name: 'Ciaccona' }], 20, defMult, resMult);
+    expect(fromDots.breakdown.erosion.dmg).toBeCloseTo(legacy.dmg, 6);
+  });
+
+  it('a team with Ciaccona (migrated) AND Cartethyia (still legacy-only) does NOT silently drop Cartethyia — falls back to the full legacy calculation for both rather than only counting Ciaccona\'s blocks', () => {
+    const blocksByOwner = { Ciaccona: CIACCONA_BLOCKS, Cartethyia: [] }; // Cartethyia has no dotApplier-tagged blocks yet
+    const members = [{ name: 'Ciaccona' }, { name: 'Cartethyia' }];
+    const fromDots = resolveDotReactionDps(members, 20, defMult, 0, getEnemyRes, resMult, null, blocksByOwner);
+    const legacyBoth = calcErosionDmg(members, 20, defMult, resMult);
+    // Must match the full legacy (both-considered) result, NOT the blocks-only (Ciaccona-only) result,
+    // proving Cartethyia's real contribution wasn't silently dropped by the migration.
+    expect(fromDots.breakdown.erosion.dmg).toBeCloseTo(legacyBoth.dmg, 6);
+    const blocksOnlyWouldGive = resolveErosionFromBlocks(blocksByOwner, 20, defMult, resMult);
+    // Cartethyia's real legacy value (6) is higher than Ciaccona's (3) -- if she'd been dropped, the
+    // blocks-only number would differ from the correct legacy-both number.
+    expect(blocksOnlyWouldGive.dmg).not.toBeCloseTo(legacyBoth.dmg, 6);
   });
 });
