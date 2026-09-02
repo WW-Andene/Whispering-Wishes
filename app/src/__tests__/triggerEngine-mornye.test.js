@@ -48,5 +48,8 @@ describe('triggerEngine parity — Mornye', () => {
     expect(fired.has('mornye.intro.convergence')).toBe(true);
     expect(fired.has('mornye.liberation.critical-protocol')).toBe(true);
     expect(fired.has('mornye.forte.inversion')).toBe(true);
+    // Regression check for the 2026-09-02 fix: her real rotation's Basic ATK step
+    // ('Wide Field Observation Mode Stage 1-3') must actually fire a damage block now.
+    expect(fired.has('mornye.basic.wide-field-stage1-3')).toBe(true);
   });
 });
