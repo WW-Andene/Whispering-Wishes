@@ -5850,15 +5850,17 @@ const RESONANCE_CHAIN_DATA = {
   //   debuff, not a self buff); on-field: Phrolova gains +60% Havoc DMG Bonus (elemDmg) instead. Modeled
   //   the larger, self-buff, on-field case as elemDmg:60 (was elemDmg:24, which was actually the node's
   //   separate flat +24% Enhanced Attack-Hecate DMG Mult — correct number, wrong node component to surface
-  //   as the headline stat). TODO: needs Phase 2 schema for the on-field/off-field branch and the +24%
-  //   Enhanced Attack-Hecate-specific multiplier (echoDmg-typed, since Enhanced Attack-Hecate is Echo Skill
-  //   DMG) to be tracked alongside the +60% elemDmg rather than overwritten by it.
+  //   as the headline stat). TODO: needs Phase 2 schema for the on-field/off-field branch (the off-field
+  //   +40% enemy DMG-taken debuff case is still not modeled).
   //   Corrected 2026-09-02: this node ALSO grants "Apparition of Beyond-Hecate" — a real, previously
   //   entirely-unmodeled S6-only damage instance (216.42% ATK, Havoc, considered Echo Skill DMG, grants
   //   8 Aftersound on hit) fired during Movement of Fate and Finality/Murmurs in a Haunting Dream, per a
   //   fresh Prydwen dump. Can't be represented by this flat {stat:value} table (it's a real damage HIT,
   //   not a stat bonus) — modeled instead as its own gated TriggerBlock, phrolova.chain.s6-apparition,
-  //   in phrolova.blocks.js.
+  //   in phrolova.blocks.js. The +24% Enhanced Attack-Hecate multiplier is ALSO now modeled (fixed
+  //   2026-09-02, once phrolova.liberation.hecate-attack existed to scope it to) — as a 2nd effects[]
+  //   entry on phrolova.chain.s6 in phrolova.blocks.js, via scopedToBlockId, not representable in this
+  //   flat table (RESONANCE_CHAIN_DATA has one stat per node, not a list).
   'Phrolova':     { s1: { totalMult: 80 }, s2: { skillDmg: 75 }, s3: { echoDmg: 80 }, s4: { allDmg: 20 }, s5: {}, s6: { elemDmg: 60 } },
   // Brant R-chain — verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Brant/Combat
   // (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare):

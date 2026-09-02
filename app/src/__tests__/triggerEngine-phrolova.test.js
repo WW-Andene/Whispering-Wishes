@@ -83,4 +83,30 @@ describe('triggerEngine parity — Phrolova', () => {
     expect(s6Fired).toBe(true);
     expect(s0Fired).toBe(false);
   });
+
+  // Fixed 2026-09-02: Hecate's own attacks during Maestro were the largest previously-zero gap in her
+  // kit (Echo = 43.9% of her total damage per the source dump) — SKILL_MULTIPLIERS already had the
+  // 'Liberation, Maestro State: Hecate' row, it had just never been converted into a firing block.
+  it('Hecate\'s attack block fires off the Liberation cast and is echoDmg-categorized', () => {
+    const block = PHROLOVA_BLOCKS.find(b => b.id === 'phrolova.liberation.hecate-attack');
+    expect(block.damage.category).toBe('echoDmg');
+    expect(block.trigger).toEqual({ type: 'cast', on: 'Liberation:Waltz of Forsaken Depths' });
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phrolova'], PHROLOVA_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(PHROLOVA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'havoc', 'Main DPS');
+    expect(hitLog.some(h => h.blockId === 'phrolova.liberation.hecate-attack')).toBe(true);
+  });
+
+  it('S6\'s +24% Enhanced Attack-Hecate multiplier is scoped only to Hecate\'s attack block', () => {
+    const s6 = PHROLOVA_BLOCKS.find(b => b.id === 'phrolova.chain.s6');
+    const hecateBonus = s6.effects.find(e => e.stat === 'echoDmg');
+    expect(hecateBonus.value).toBe(24);
+    expect(hecateBonus.scopedToBlockId).toBe('phrolova.liberation.hecate-attack');
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phrolova'], PHROLOVA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const atS6 = resolveHitComposedDps(PHROLOVA_BLOCKS, steps, ctx, 3000, 'havoc', 'Main DPS', null, 6);
+    const atS5 = resolveHitComposedDps(PHROLOVA_BLOCKS, steps, ctx, 3000, 'havoc', 'Main DPS', null, 5);
+    const hecateHitS6 = atS6.hitLog.find(h => h.blockId === 'phrolova.liberation.hecate-attack');
+    const hecateHitS5 = atS5.hitLog.find(h => h.blockId === 'phrolova.liberation.hecate-attack');
+    expect(hecateHitS6.damage).toBeGreaterThan(hecateHitS5.damage);
+  });
 });

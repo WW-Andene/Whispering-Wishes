@@ -19,6 +19,14 @@
 // (Apparition of Beyond-Hecate, 216.42% ATK) fired during those same two moves —
 // previously entirely unmodeled, not just miscategorized (confirmed via the dump,
 // absent from every prior source this file was built from).
+//
+// Also fixed 2026-09-02: `phrolova.liberation.hecate-attack` — Hecate's own attacks during Maestro
+// were the largest previously-zero-contribution gap in her kit (Echo = 43.9% of her total damage per
+// the source dump), despite SKILL_MULTIPLIERS' 'Liberation, Maestro State: Hecate' row already having
+// real values for them — that row had simply never been converted into a firing block. Modeled as one
+// representative tick anchored to the Liberation cast (same pattern as Denia's Erosion Field), not the
+// real repeating/conditional off-field mechanic — see that block's own note. This also unblocked S6's
+// separate +24% Enhanced Attack-Hecate multiplier (now scoped onto it via scopedToBlockId).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -93,6 +101,26 @@ export const PHROLOVA_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('465.2%'), category: 'libDmg' },
     note: 'Costs no Resonance Energy, castable only in Resolving Chord. Ends Resolving Chord and enters Maestro for 24s: +120% self ATK (not modeled, see phrolova.chain.s6 for the S6 Maestro on-field bonus), Hecate fights alongside her.',
   },
+  // Added 2026-09-02: Hecate's own attacks during the 24s Maestro window — sourced from
+  // SKILL_MULTIPLIERS' existing 'Liberation, Maestro State: Hecate' row (Strings 347.9% / Winds 330.5% /
+  // Cadenza 347.9%), which was already in characters.js but had never been converted into a real firing
+  // block — the largest previously-zero gap in her kit (Echo is 43.9% of her total damage profile per
+  // the source dump, entirely from Hecate). Anchored to the same Liberation cast that starts Maestro,
+  // same "one representative tick, not the full sustained mechanic" pattern already used for Denia's
+  // Erosion Field (denia.liberation.erosion-field) — the REAL mechanic is a repeating auto-attack every
+  // ~1.2-1.5s (per the Review tab's own text) for up to 24s, cued by the player on-field (every 2nd
+  // Basic Attack-Hecate becomes Enhanced) or auto-triggered off-field by any teammate's Echo Skill cast
+  // (capped 10/Maestro) — neither the real cadence nor the on-field/off-field branching is modeled here.
+  // Uses the Strings variant (matches Cadenza's identical value, the majority of the 3-way split;
+  // Winds is 330.5%, a documented slight undercount when Winds is the real note playing).
+  {
+    id: 'phrolova.liberation.hecate-attack',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Waltz of Forsaken Depths' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('104.38% + 243.55%'), category: 'echoDmg' },
+    note: 'Enhanced Attack-Hecate: Strings, one representative tick of Hecate\'s repeating off-field Maestro attacks (considered Echo Skill DMG). See this file\'s header comment for what the real repeating/conditional mechanic still isn\'t modeled.',
+  },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
@@ -142,7 +170,7 @@ export const PHROLOVA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'echoDmg', value: 80 }],
-    note: 'Echo Skill DMG Amplified +80% (confirmed exact) — Enhanced Attack-Hecate is an off-field mechanic with no direct rotation cast to anchor a trigger to, kept passive. Also converts all Volatile Notes to Cadenza on Scarlet Coda cast and applies a 20% ATK reduction debuff (15s) to Enhanced Attack-Hecate: Cadenza targets, neither modeled.',
+    note: 'Echo Skill DMG Amplified +80% (confirmed exact) — kept passive/self rather than anchored to a specific cast, since it buffs the whole echoDmg category (both phrolova.liberation.hecate-attack and phrolova.chain.s6-apparition, added 2026-09-02) not one single move. Also converts all Volatile Notes to Cadenza on Scarlet Coda cast and applies a 20% ATK reduction debuff (15s) to Enhanced Attack-Hecate: Cadenza targets, neither modeled.',
   },
   {
     id: 'phrolova.chain.s4',
@@ -162,8 +190,15 @@ export const PHROLOVA_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Waltz of Forsaken Depths' },
     timing: { duration: 24 }, // matches Maestro's own 24s window
     target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 60 }],
-    note: 'On-field-during-Maestro case: Phrolova gains +60% Havoc DMG Bonus (the larger of two conditional branches — off-field instead grants a +40% DMG-taken debuff on enemies, not modeled here). Modeled anchored to the Liberation cast that enters Maestro, scoped to its 24s window. The separate +24% Enhanced Attack-Hecate DMG Multiplier (echoDmg-typed) this same node also grants is not tracked alongside this elemDmg value, per the audit\'s own TODO.',
+    effects: [
+      { stat: 'elemDmg', value: 60 },
+      // Added 2026-09-02: now buildable — phrolova.liberation.hecate-attack exists to scope this to.
+      // scopedToBlockId restricts this +24% to Hecate's own attack block only (not Phrolova's whole
+      // echoDmg category), matching the node's real text exactly (only Enhanced Attack-Hecate's own
+      // Multiplier, not a general Echo Skill DMG buff — that's chain.s3's separate +80% echoDmg).
+      { stat: 'echoDmg', value: 24, scopedToBlockId: 'phrolova.liberation.hecate-attack' },
+    ],
+    note: 'On-field-during-Maestro case: Phrolova gains +60% Havoc DMG Bonus (the larger of two conditional branches — off-field instead grants a +40% DMG-taken debuff on enemies, not modeled here). Modeled anchored to the Liberation cast that enters Maestro, scoped to its 24s window. The separate +24% Enhanced Attack-Hecate DMG Multiplier is now modeled too (fixed 2026-09-02), scoped via scopedToBlockId to phrolova.liberation.hecate-attack specifically so it doesn\'t also inflate her own echoDmg-categorized hits.',
   },
   // Added 2026-09-02 (fresh Prydwen dump): S6 ALSO commands Hecate to cast a real damage instance,
   // Apparition of Beyond-Hecate (216.42% ATK, considered Echo Skill DMG, grants 8 Aftersound on hit —
