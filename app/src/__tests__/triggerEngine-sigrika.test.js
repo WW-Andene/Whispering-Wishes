@@ -11,8 +11,8 @@ describe('triggerEngine parity — Sigrika', () => {
     expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s2').effects[0].value).toBe(rc.s2.echoDmg);
     expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s3').effects[0].value).toBe(rc.s3.totalMult);
     expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s4').effects[0].value).toBe(rc.s4.atkPct);
-    expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
-    expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s6').effects[0].value).toBe(rc.s6.defIgnore);
+    expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s5').effects[0].value).toBe(rc.s5.echoDmg);
+    expect(SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s6').effects[0].value).toBe(rc.s6.deepen);
   });
 
   it('selfBuffs match CHAR_BUFF_TABLE at their documented cap/max-stack values', () => {

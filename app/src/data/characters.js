@@ -1212,7 +1212,12 @@ const CHARACTER_DATA = {
   // only Skill-button casts) are explicitly "considered Resonance Liberation DMG". She has no real
   // skillDmg-categorized damage at all — a skillDmg buff was being wrongly credited to her.
   ['Aemeath',       ['Liberation'],                  [],                                      ['Fusion Burst']],
-  ['Sigrika',       ['Echo', 'Heavy ATK'],           [],                                      []],
+  // dmgFocus dropped 'Heavy ATK' 2026-09-02 against a fresh Prydwen dump: her real damage-output
+  // simulation shows Heavy at a genuine 0% share, matching her kit text exactly — "Heavy Attack -
+  // Schemata of Runes deals Echo Skill DMG" and every Runic Outburst/Chain Whip/Soliskin variant is
+  // explicitly "(considered Echo Skill DMG)". She has no real heavyDmg-categorized damage at all (the
+  // engine blocks' own heavyDmg category on those two hits was itself a bug, fixed alongside this).
+  ['Sigrika',       ['Echo'],                        [],                                      []],
   ['Chixia',        ['Skill', 'Basic ATK'],          [],                                      []],
   // dmgFocus gained 'Basic ATK' 2026-09-02 against a fresh Prydwen dump: her damage-output simulation
   // shows Basic at a genuine 22.8% share (Basic Attack - Stringblade + Ephemeral Transcendence's own
@@ -1346,7 +1351,7 @@ const CHARACTER_DATA = {
   ['Mornye',        15375, 288, 1357, 175],
   ['Luuk Herssen',  10300, 463, 1112, 125],
   ['Aemeath',       11025, 425, 1149, 125],
-  ['Sigrika',       10775, 437, 1136, 125],
+  ['Sigrika',       10775, 438, 1137, 125],
   ['Rebecca',       11600, 400, 1173, 150],
   ['Lucy',          11025, 425, 1148, 150],
   ['Yangyang: Xuanling', 11025, 425, 1149, 150],
@@ -5796,8 +5801,16 @@ const RESONANCE_CHAIN_DATA = {
   // Sigrika (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +70% DMG mult to specific skills (rotation-averaged).
   // S2: Learn My True Name DMG Mult+120% (considered Echo Skill DMG) — was totalMult:40, no basis. S3: Innate Gift? stack
   // cap 2->4, no flat %, was critRate:12 with no basis — kept as totalMult. S4: team ATK+20% on ally Echo Skill cast —
-  // was echoDmg:40 (wrong stat AND value). S5: Where Trust Leads Me! DMG Mult+30% (Liberation, counted as Echo Skill DMG) — was totalMult:15.
-  'Sigrika':      { s1: { totalMult: 15 }, s2: { echoDmg: 120 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { libDmg: 30 }, s6: { defIgnore: 15 } },
+  // was echoDmg:40 (wrong stat AND value). S5/S6 re-audited 2026-09-02 against a fresh Prydwen dump:
+  // S5 "Where Trust Leads Me! DMG Mult+30%" was stored as libDmg despite this row's own real damage
+  // hit being categorized echoDmg (her Liberation is entirely "counted as Echo Skill DMG" per kit text
+  // and the 0%-Liberation/89.9%-Echo real damage-output simulation) — a libDmg buff on an echoDmg-
+  // categorized hit never actually applies. Corrected libDmg -> echoDmg. S6 "Targets take 30% more DMG
+  // from Sigrika" was stored as defIgnore:15 with no sourcing comment at all — real primary effect is a
+  // flat +30% DMG-taken debuff (the Innate Gift? DEF Ignore enhancement is a separate, smaller +7.5%/
+  // stack up to 30% conditional bonus, not this). Corrected defIgnore:15 -> deepen:30, matching the
+  // same 'deepen' convention already used for Qingxiao's identically-worded S6 effect.
+  'Sigrika':      { s1: { totalMult: 15 }, s2: { echoDmg: 120 }, s3: { totalMult: 15 }, s4: { atkPct: 20 }, s5: { echoDmg: 30 }, s6: { deepen: 30 } },
   // Luuk Herssen (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: +150% Mid-air ATK DMG, simplified as basicDmg
   // ~15 DPS impact (documented approximation, kept). S2: Rewritten in Winter's Margins DMG Mult+60% — was totalMult:40, no basis.
   // S3: Aureole of Execution forms +136% in Aureate Judge (conditional, no flat unconditional %) — was critDmg:25 with no
