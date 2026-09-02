@@ -1303,7 +1303,17 @@ const CHARACTER_DATA = {
   // of crediting a skillDmg buff to a character whose Skill-slot hits (Phantom Bubble, Banish Stage 1)
   // barely register.
   ['Denia',         ['Liberation'],                  ['Fusion DMG Buff', 'Tune Break Boost'], ['Fusion Burst', 'Tune Strain - Shifting']],
-  ['Lucilla',       ['Liberation', 'Echo'],          ['Glacio DMG Buff', 'Echo Skill DMG Buff'], ['Glacio Chafe']],
+  // dmgFocus corrected 2026-09-02 against a fresh Prydwen dump: was ['Liberation', 'Echo'] — but her
+  // own kit text makes Clear As Day's DMG mode-dependent and NEVER Liberation-type ("When in Resonance
+  // Mode - Glacio Chafe, the DMG dealt is considered Basic Attack DMG... When in Resonance Mode - Echo,
+  // the DMG dealt is considered Echo Skill DMG"), confirmed by the damage-output pie chart showing a
+  // genuine 0% Liberation share in both modes (same class of bug as Augusta's). Her real second focus
+  // is Basic ATK: 28% share in Glacio Chafe mode (dominant secondary after the Glacio Bite reaction
+  // itself) and still 16.7% in Echo mode — comparable in size to Qingxiao's kept 22.8% Basic ATK slice,
+  // not trivial. RESONANCE_CHAIN_DATA's S3/S5/S6 nodes below were already recategorized off libDmg to
+  // {basicDmg, echoDmg} in an earlier pass; only this array and the engine block's own damage.category
+  // for Clear As Day (fixed alongside this) still had the stale libDmg categorization.
+  ['Lucilla',       ['Basic ATK', 'Echo'],           ['Glacio DMG Buff', 'Echo Skill DMG Buff'], ['Glacio Chafe']],
   ['Suisui',        ['Skill', 'Outro'],              ['Heal', 'All DMG Amp'],                 []],
   ['Baizhi',        ['Skill'],                       ['Heal'],                                []],
   // buff tag corrected 2026-08-18: fandom's Taoqi/Combat Outro Skill "Iron Will" text is "Resonance
