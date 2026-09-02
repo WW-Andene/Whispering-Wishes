@@ -35,7 +35,7 @@ import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createS
 import { simulateRotation } from './rotationSimulator.js';
 import { triggerFired, conditionHolds } from './triggerEngine.js';
 import { buildBlockWindows, activeCountAt } from './blockWindows.js';
-import { gateBlocksBySequence } from './sequenceGating.js';
+import { gateBlocksBySequence, filterExclusiveModeBlocks } from './sequenceGating.js';
 
 /**
  * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks  One character's own block set.
@@ -103,7 +103,7 @@ import { gateBlocksBySequence } from './sequenceGating.js';
  */
 export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null, externalStats = null, sequence = null, libUptime = null, cooldownSteadyState = false) {
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
-  blocks = gateBlocksBySequence(blocks, sequence);
+  blocks = filterExclusiveModeBlocks(gateBlocksBySequence(blocks, sequence));
   const results = simulateRotation(blocks, steps);
   const totalTime = results.length ? results[results.length - 1].time : 0;
   const { enemyDef, enemyRes } = enemyContext;
