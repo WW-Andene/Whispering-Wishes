@@ -120,19 +120,24 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
   // BASE_CRIT_RATE/BASE_CRIT_DMG — createStats() below already supplies that baseline once per
   // instant) — see this function's own jsdoc above for why this exists and what shape it expects.
   const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'outroDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
-  function statsAtInstant(instant) {
+  // `hitBlockId` (Phase 0.5 gap #3, added 2026-09-02): the SPECIFIC damage block this stats snapshot is
+  // being built for, so an effect carrying `scopedToBlockId` (e.g. Aemeath's "+300% Crit DMG for Heavy
+  // ATK specifically") only contributes when it's actually THIS hit's own block, not every hit sharing
+  // the same broader category. Omit (undefined) for a non-per-hit caller (none currently) — a scoped
+  // effect simply never fires without a real hitBlockId to compare against.
+  function statsAtInstant(instant, hitBlockId) {
     const stats = createStats();
     if (externalStats) {
       for (const k of EXTERNAL_STAT_KEYS) { if (externalStats[k]) stats[k] += externalStats[k]; }
     }
     for (const pb of passiveBlocks) {
       if (!conditionHolds(pb.condition, targetElementLower, targetRole)) continue;
-      applyEffects(pb, 1, stats);
+      applyEffects(pb, 1, stats, hitBlockId);
     }
     for (const { block, windows, stackingMode, maxStacks } of buffWindows) {
       const cap = stackingMode === 'stacking' ? maxStacks : 1;
       const count = activeCountAt(windows, instant, cap);
-      if (count > 0) applyEffects(block, count, stats);
+      if (count > 0) applyEffects(block, count, stats, hitBlockId);
     }
     return stats;
   }
@@ -159,7 +164,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
       if (!triggerFired(db.trigger, r.firedTriggers)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
 
-      const stats = statsAtInstant(r.time);
+      const stats = statsAtInstant(r.time, db.id);
       const categoryStat = category ? stats[category] || 0 : 0; // which stat pool this cast's DMG Bonus draws from
       const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify, stats.deepen);
       // A guaranteed-Crit hit (Shorekeeper's Discernment, per its own kit text) always lands at full
@@ -210,8 +215,12 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
   return { totalDamage, totalTime, dps: totalTime > 0 ? totalDamage / totalTime : 0, hitLog };
 }
 
-function applyEffects(block, multiplier, stats) {
+function applyEffects(block, multiplier, stats, hitBlockId) {
   for (const effect of block.effects) {
+    // `scopedToBlockId` (Phase 0.5 gap #3, added 2026-09-02): a buff narrower than a whole damage
+    // category — e.g. Aemeath's "+300% Crit DMG for Heavy ATK specifically" — only contributes to the
+    // ONE named block's own hits, not every hit sharing that block's broader damage category.
+    if (effect.scopedToBlockId && effect.scopedToBlockId !== hitBlockId) continue;
     const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
     applyBuff(stats, effect.stat, value, {});
   }

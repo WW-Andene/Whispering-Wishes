@@ -111,14 +111,17 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
     .map(b => ({ block: b, ...buildBlockWindows(b, resultsForBlock(b, targetName, results), targetElementLower, targetRole) }));
 
   const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'outroDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
-  function statsAtInstant(instant) {
+  // `hitBlockId` (Phase 0.5 gap #3, added 2026-09-02) — see resolveHitComposedDps.js's own identical
+  // comment for the full rationale: lets an effect's `scopedToBlockId` restrict its contribution to one
+  // specific damage block instead of a whole category.
+  function statsAtInstant(instant, hitBlockId) {
     const stats = createStats();
     if (externalStats) {
       for (const k of EXTERNAL_STAT_KEYS) { if (externalStats[k]) stats[k] += externalStats[k]; }
     }
     for (const pb of passiveRelevant) {
       if (!conditionHolds(pb.condition, targetElementLower, targetRole)) continue;
-      applyEffects(pb, 1, stats);
+      applyEffects(pb, 1, stats, hitBlockId);
     }
     for (const { block, windows, stackingMode, maxStacks } of windowedRelevant) {
       const cap = stackingMode === 'stacking' ? maxStacks : 1;
@@ -126,7 +129,7 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       // Same 'next-on-field'-only snapshot discount as resolveSimulatedTeamRotation.js — see this
       // function's own opts.coordSnapshotDiscount jsdoc above.
       if (coordSnapshotDiscount && block.target?.scope === 'next-on-field') count *= COORD_SNAPSHOT_DISCOUNT;
-      if (count > 0) applyEffects(block, count, stats);
+      if (count > 0) applyEffects(block, count, stats, hitBlockId);
     }
     return stats;
   }
@@ -148,7 +151,7 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       if (!triggerFired(db.trigger, r.firedTriggers)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
 
-      const stats = statsAtInstant(r.time);
+      const stats = statsAtInstant(r.time, db.id);
       const categoryStat = category ? stats[category] || 0 : 0;
       const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify, stats.deepen);
       const avgCrit = guaranteedCrit ? 1 + stats.cd / 100 : calcAvgCrit(stats.cr, stats.cd);
@@ -204,8 +207,10 @@ function resultsForBlock(block, targetName, allResults) {
   return allResults.filter(r => r.owner === block.source);
 }
 
-function applyEffects(block, multiplier, stats) {
+function applyEffects(block, multiplier, stats, hitBlockId) {
   for (const effect of block.effects) {
+    // `scopedToBlockId` (Phase 0.5 gap #3) — see resolveHitComposedDps.js's identical comment.
+    if (effect.scopedToBlockId && effect.scopedToBlockId !== hitBlockId) continue;
     const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
     applyBuff(stats, effect.stat, value, {});
   }

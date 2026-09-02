@@ -433,6 +433,22 @@
  *                                 rule as everywhere else in this schema). For a `tiers`-bearing
  *                                 effect (see below), set this to the SUM of every tier's own
  *                                 `count` (the real total stack cap).
+ * @property {string} [scopedToBlockId]  ENGINE_MERGE_PLAN.md Phase 0.5 gap #3, added 2026-09-02: some
+ *                                 real kit bonuses are scoped to ONE SPECIFIC move, not a whole damage
+ *                                 category (e.g. Aemeath's "+300% Crit DMG for Heavy ATK specifically"
+ *                                 — she has only one Heavy ATK damage block, but plenty of OTHER hits
+ *                                 also carry a Crit DMG stat pool that shouldn't receive this). Set to
+ *                                 the exact `id` of the ONE damage block this effect should apply to —
+ *                                 every OTHER hit (including other hits sharing the same `category`)
+ *                                 gets none of it. Only enforced by the two HIT-COMPOSED resolvers
+ *                                 (`resolveHitComposedDps.js`/`resolveHitComposedTeamDps.js`, which
+ *                                 already iterate per-hit); the two time-averaged legacy resolvers
+ *                                 (`resolveSimulatedRotation.js`/`resolveSimulatedTeamRotation.js`)
+ *                                 compute one flat stat snapshot for the WHOLE rotation and have no
+ *                                 per-hit granularity to scope against — a scoped effect still applies
+ *                                 there at its category's normal (broader, over-crediting) scope, the
+ *                                 same class of accepted imprecision already documented for other
+ *                                 stat-panel-vs-real-engine gaps in this codebase.
  * @property {{count: number, value: number}[]} [tiers]  ENGINE_MERGE_PLAN.md Phase 0.5 gap #1, added
  *                                 2026-09-02: a nonlinear/multi-tier per-stack curve (e.g. Qingxiao's
  *                                 Mindlock — first 7 stacks worth 7% each, remaining 8 worth 2% each,

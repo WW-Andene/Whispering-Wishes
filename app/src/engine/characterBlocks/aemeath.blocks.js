@@ -144,8 +144,8 @@ export const AEMEATH_BLOCKS = [
     timing: { duration: 99 }, // same sentinel convention as above
     target: { scope: 'self' },
     condition: { requiresStance: 'Max Between the Stars stacks' },
-    effects: [{ stat: 'deepen', value: 25 }],
-    note: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25% — kept general "deepen" rather than scoped to Finale specifically (this schema has no per-move deepen field yet), same approximation the flat table already carried.',
+    effects: [{ stat: 'deepen', value: 25, scopedToBlockId: 'aemeath.liberation.heavenfall-edict-finale' }],
+    note: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25% — scoped 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #3, new scopedToBlockId field) to only her Finale hit, not general "deepen" across her whole kit as previously modeled. Only enforced by the hit-composed resolvers; the legacy time-averaged path still applies it at the broader scope (see the field\'s own schema doc).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each
@@ -156,11 +156,11 @@ export const AEMEATH_BLOCKS = [
     trigger: { type: 'passive' },
     condition: { requiresStance: 'Instant Response' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 300 }],
-    note: '+300% Crit DMG for Heavy ATK specifically, while in Instant Response — this schema has no per-move-type crit field, so the condition gates on the STANCE only; the real "Heavy ATK only" scoping isn\'t modeled (same limitation as every other move-scoped stat this schema can\'t narrow beyond a whole damage category).',
+    effects: [{ stat: 'critDmg', value: 300, scopedToBlockId: 'aemeath.heavy.mech-charged-ii' }],
+    note: '+300% Crit DMG for Heavy ATK specifically, while in Instant Response — scoped 2026-09-02 (Phase 0.5 gap #3) to her one real Heavy ATK block (aemeath.heavy.mech-charged-ii), not general critDmg across her whole kit as previously modeled; the STANCE condition (requiresStance) still gates whether it\'s active at all. Only enforced by the hit-composed resolvers, see the field\'s own schema doc.',
   },
   { id: 'aemeath.chain.s2', source: SOURCE, kind: 'buff', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'totalMult', value: 25 }] },
-  { id: 'aemeath.chain.s3', source: SOURCE, kind: 'buff', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'libDmg', value: 100 }, { stat: 'critDmg', value: 60 }], note: "libDmg:100 = Heavenfall Edict: Finale's own DMG Mult +100% (not general Liberation DMG); critDmg:60 = a further extension of Between the Stars, on top of the two selfbuff blocks above." },
+  { id: 'aemeath.chain.s3', source: SOURCE, kind: 'buff', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'libDmg', value: 100, scopedToBlockId: 'aemeath.liberation.heavenfall-edict-finale' }, { stat: 'critDmg', value: 60 }], note: "libDmg:100 = Heavenfall Edict: Finale's own DMG Mult +100% (not general Liberation DMG) — scoped 2026-09-02 (Phase 0.5 gap #3) to only that hit, since her other libDmg-categorized block (aemeath.heavy.mech-charged-ii) previously also wrongly received it; critDmg:60 = a further extension of Between the Stars, on top of the two selfbuff blocks above (correctly general, not move-scoped)." },
   {
     id: 'aemeath.chain.s4',
     source: SOURCE, kind: 'buff',
