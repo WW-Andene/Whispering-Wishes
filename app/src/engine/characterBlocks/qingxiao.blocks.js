@@ -149,10 +149,21 @@ export const QINGXIAO_BLOCKS = [
   {
     id: 'qingxiao.chain.s4',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 20 }],
-    note: 'ATK +20% on team Tune Strain trigger — a cross-character trigger (an ALLY applying Tune Break, not Qingxiao\'s own cast) this schema has no clean anchor for, kept passive as an approximation.',
+    // Retrofitted 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #2 — the ally-action mechanism
+    // existed but this block predated it) using the dump's own exact text: "After any teammate
+    // inflicts Shifting, their ATK +20% for 8s." — "their" is the ALLY who inflicted it, not Qingxiao
+    // herself (this includes Qingxiao when SHE inflicts Shifting via her own kit, since every one of
+    // her real damage blocks already carries appliesTags:['shifting'] — her own casts now correctly
+    // self-trigger this too, not as a special case, just because 'shifting' is a shared tag any
+    // 'ally-action' consumer reads regardless of source). Was previously modeled as an unconditional,
+    // permanent SELF buff — wrong on three counts: wrong recipient (self instead of whoever applied
+    // Shifting), wrong trigger (passive instead of ally-action), wrong duration (indefinite instead of
+    // the real 8s window).
+    trigger: { type: 'ally-action', action: 'shifting' },
+    timing: { duration: 8 },
+    target: { scope: 'trigger-actor' },
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh' }],
+    note: 'After any teammate inflicts Shifting, THEIR (the inflictor\'s) ATK +20% for 8s — confirmed verbatim from the dump.',
   },
   {
     id: 'qingxiao.chain.s5',
