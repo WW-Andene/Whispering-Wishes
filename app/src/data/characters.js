@@ -1379,7 +1379,10 @@ const CHARACTER_DATA = {
   ['Qiuyuan',       12238, 375, 1198, 125],
   ['Chisa',         10775, 438, 1137, 125],
   ['Lynae',         12238, 375, 1198, 125],
-  ['Mornye',        15375, 288, 1357, 175],
+  // maxEnergy corrected 2026-09-02 against a fresh Prydwen dump: was 175 — the dump's Stats section
+  // states Max Energy 125 (matching every other 5-star's baseline); 175 is actually her Liberation's
+  // own Resonance Energy Cost figure, likely miscopied from the same page's Multipliers table.
+  ['Mornye',        15375, 288, 1357, 125],
   ['Luuk Herssen',  10300, 463, 1112, 125],
   ['Aemeath',       11025, 425, 1149, 125],
   ['Sigrika',       10775, 438, 1137, 125],
@@ -3767,8 +3770,20 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Time to Show Some Colors!', '22.48%×10', 'Swap-in opener with several rapid hits.'],
     ['Outro', "Let's Hit the Road!", '100% ATK + 15% All DMG / 25% Liberation DMG Amp', 'Swap-out buff granting the next Resonator All-DMG or Liberation DMG Amp.'],
   ],
+  // Corrected 2026-09-02 against a fresh Prydwen dump: CHARACTER_ROTATIONS['Mornye']'s real (and only)
+  // Basic ATK step is 'Wide Field Observation Mode Stage 1-3' — this row had no entry containing that
+  // name at all (the only Basic ATK row was her un-enhanced base combo, never used in her real
+  // rotation), so findSkillMultiplierRow's fuzzy match failed outright — the "silent zero-DMG bug
+  // class" its own dev-mode warning calls out. Added the missing Wide Field Basic/Dodge Counter rows
+  // plus Heavy Attack/Mid-air Attack (present in the dump's Multipliers table but missing here too),
+  // keeping the un-enhanced Basic ATK/Dodge Counter rows for reference since they're still real values.
   'Mornye': [
-    ['Basic ATK', 'Stage 1-4', '22.27%+16.71%×2 → 23.86%×2+17.90%×4 → 41.36%+10.34%×6 → 135.20%', 'Standard combo string, scales off DEF like all her damage.'],
+    ['Basic ATK', 'Stage 1-4', '22.27%+16.71%×2 → 23.86%×2+17.90%×4 → 41.36%+10.34%×6 → 135.20%', 'Standard combo string, scales off DEF like all her damage. Not used in her real rotation — see Wide Field Observation Mode below.'],
+    ['Basic ATK', 'Wide Field Observation Mode Stage 1-3', '13.92%×4 → 25.85%×4 → 9.31%×4+33.09%×2', 'Her real Basic Attack combo — replaces plain Basic ATK while in Wide Field Observation Mode, builds Relative Momentum.'],
+    ['Heavy Attack', 'Standard', '11.10%+11.10%+14.80%'],
+    ['Mid-air Attack', 'Plunging Attack', '98.61%'],
+    ['Dodge Counter', 'Standard', '162.23%'],
+    ['Dodge Counter', 'Wide Field Observation Mode', '25.85%×4'],
     ['Skill', 'Optimal Solution', '179.73%', 'Marks an enemy and deals DEF-scaling damage.'],
     ['Skill', 'Distributed Array', '39.77%×4', 'Multi-hit follow-up Skill.'],
     ['Forte', 'Geopotential Shift', '44.14% + 99.02%', 'Forte strike that also fuels her healing/support kit.'],
@@ -6006,10 +6021,14 @@ const RESONANCE_CHAIN_DATA = {
   'Lynae':        { s1: { basicDmg: 120 }, s2: { allDmg: 25 }, s3: { basicDmg: 90 }, s4: { atkPct: 20 }, s5: { libDmg: 70 }, s6: {} },
   // Mornye (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: interrupt immunity + Interfered Marker duration/
   // condition changes, no flat % (was allDmg:15, no basis). S2: team Crit DMG+32% max vs Interfered Marker targets (was
-  // deepen:10, wrong stat+value). S4: High Syntony Field healing+30%, not a DPS stat (was atkPct:10, no basis).
-  // S5: Critical Protocol Liberation DMG Mult+40% (was totalMult:10, no basis). S6: Critical Protocol DMG Mult+400%
-  // (was deepen:15, no basis)
-  'Mornye':       { s1: { totalMult: 15 }, s2: { critDmg: 32 }, s3: { totalMult: 10 }, s4: { totalMult: 10 }, s5: { libDmg: 40 }, s6: { libDmg: 400 } },
+  // deepen:10, wrong stat+value). S3 corrected 2026-09-02 (fresh Prydwen dump cross-check, missed by the above audit
+  // pass — same gap class as Chisa's own missed S3): was totalMult:10, an unexplained placeholder — real effect is
+  // "casting Distributed Array additionally restores 25 Concerto Energy and 100 Relative Momentum, once every 25s",
+  // pure resource restoration with zero DPS component, zeroed to {} (same "no real DPS component" pattern already
+  // used on Lynae's S6/Shorekeeper's S1/S3/S4/S5). S4: High Syntony Field healing+30%, not a DPS stat (was atkPct:10,
+  // no basis). S5: Critical Protocol Liberation DMG Mult+40% (was totalMult:10, no basis). S6: Critical Protocol DMG
+  // Mult+400% (was deepen:15, no basis)
+  'Mornye':       { s1: { totalMult: 15 }, s2: { critDmg: 32 }, s3: {}, s4: { totalMult: 10 }, s5: { libDmg: 40 }, s6: { libDmg: 400 } },
   // Roccia R-chain re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Roccia/Combat's
   // Resonance Chain section (Chrome/Windows UA + google.com referer + jsRender). Every prior value was
   // fabricated (no basis in any node's real effect):

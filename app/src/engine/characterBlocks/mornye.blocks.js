@@ -11,8 +11,9 @@
 // so the real effect is pure utility (interrupt immunity/marker changes for S1,
 // team DEF/Healing for S4), matching the same "don't force-fit what the audit
 // itself flags as zero-DPS" rule already applied for Chisa's S4 in an earlier batch.
-// Basic ATK:Wide Field Observation Mode Stage 1-3 has no matching SKILL_MULTIPLIERS
-// row at all, not modeled.
+// Basic ATK:Wide Field Observation Mode Stage 1-3 now has a matching SKILL_MULTIPLIERS row
+// (added 2026-09-02 against a fresh Prydwen dump, closing a real "silent zero-DMG" gap — her
+// real rotation's Basic Attack step had no damage block at all before this).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -31,12 +32,20 @@ export const MORNYE_BLOCKS = [
     note: 'Clears Rest Mass Energy, immediately enters Wide Field Observation Mode for 30s, generates a Syntony Field (team healing, +50% Off-Tune Buildup Rate, interruption resistance, not modeled).',
   },
   {
+    id: 'mornye.basic.wide-field-stage1-3',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Basic ATK:Wide Field Observation Mode Stage 1-3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('13.92%×4 → 25.85%×4 → 9.31%×4+33.09%×2'), category: 'basicDmg', basis: 'DEF' },
+    note: 'Her real Basic Attack combo — replaces plain Basic ATK while in Wide Field Observation Mode, builds Relative Momentum toward 100.',
+  },
+  {
     id: 'mornye.skill.distributed-array',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Distributed Array' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('39.77%×4'), category: 'skillDmg', basis: 'DEF' },
-    note: 'Heals the team and summons Hover Cannons for more Fusion DMG (not modeled), builds the last of Relative Momentum. Basic ATK:Wide Field Observation Mode Stage 1-3, which precedes this in the real rotation, has no matching SKILL_MULTIPLIERS row at all, not modeled.',
+    note: 'Heals the team and summons Hover Cannons for more Fusion DMG (not modeled), builds the last of Relative Momentum.',
   },
   {
     id: 'mornye.forte.inversion',
@@ -82,14 +91,10 @@ export const MORNYE_BLOCKS = [
     effects: [{ stat: 'critDmg', value: 32 }],
     note: 'Team Crit DMG +32% max vs Interfered Marker targets (confirmed exact value, corrected from a wrong deepen category) — Interfered Marker itself is upgraded from Observation Marker by an ALLY\'s Tune Break hit (a cross-character trigger this schema has no clean anchor for), modeled anchored to the Inversion cast that applies the base Observation Marker instead.',
   },
-  {
-    id: 'mornye.chain.s3',
-    source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 10 }],
-    note: "Unlike every other node in this row, S3's own audit comment does not describe its real mechanic — the flat totalMult:10 value is used as-is rather than guessed at further; flagged here as unverified, not silently treated as fully precise.",
-  },
+  // S3 correctly has NO block — corrected 2026-09-02 against a fresh Prydwen dump: real effect is
+  // "casting Distributed Array additionally restores 25 Concerto Energy and 100 Relative Momentum,
+  // once every 25s", pure resource restoration with zero DPS component (same "no real DPS component"
+  // pattern as S1/S4 above); RESONANCE_CHAIN_DATA['Mornye'].s3 is now correctly {} to match.
   // S4 correctly has NO block — High Syntony Field healing +30%, not a DPS stat per the audit comment
   // ("no basis"); RESONANCE_CHAIN_DATA['Mornye'].s4 still stores a stale totalMult:10 that was never
   // actually correct, not force-fit into a block here.

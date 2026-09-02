@@ -13,10 +13,15 @@ describe('triggerEngine parity — Mornye', () => {
     expect(MORNYE_BLOCKS.find(b => b.id === 'mornye.chain.s4')).toBeUndefined();
   });
 
-  it('S2/S3/S5/S6 match RESONANCE_CHAIN_DATA exactly', () => {
+  it('S3 stays correctly unmodeled (no block) — pure resource restoration, zero DPS component, fixed 2026-09-02', () => {
+    const rc = RESONANCE_CHAIN_DATA['Mornye'];
+    expect(rc.s3).toEqual({});
+    expect(MORNYE_BLOCKS.find(b => b.id === 'mornye.chain.s3')).toBeUndefined();
+  });
+
+  it('S2/S5/S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Mornye'];
     expect(MORNYE_BLOCKS.find(b => b.id === 'mornye.chain.s2').effects[0].value).toBe(rc.s2.critDmg);
-    expect(MORNYE_BLOCKS.find(b => b.id === 'mornye.chain.s3').effects[0].value).toBe(rc.s3.totalMult);
     expect(MORNYE_BLOCKS.find(b => b.id === 'mornye.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
     expect(MORNYE_BLOCKS.find(b => b.id === 'mornye.chain.s6').effects[0].value).toBe(rc.s6.libDmg);
   });

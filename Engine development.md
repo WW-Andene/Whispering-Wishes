@@ -103,6 +103,18 @@ read verbatim off a table) — not confident enough to edit blind. Worth a
 fresh, careful pass (ideally cross-checked against a Prydwen calc-notes
 rotation string or a video) before touching either number.
 
+Mornye (2026-09-02): reconstructed ratio ≈0.57 (stored 800 vs. a reconstructed
+~1405 using her Loop Rotation) — flagged, not fixed. Weaker evidence than the
+3 confirmed cases for a different reason: her `SKILL_MULTIPLIERS` row was
+missing the Wide Field Observation Mode Basic Attack entirely until this same
+audit pass added it (see the `characters.js`/`mornye.blocks.js` commit), so
+`totalMult` was very likely hand-set against an incomplete rotation rather
+than uniformly halved — a different failure mode than Augusta/Qiuyuan/Chisa's
+clean 2x. Also lower real-world stakes than the other three: Prydwen's own
+guide explicitly skips personal-damage calculations for her ("her performance
+... almost entirely revolve[s] around her team"), so this is a low-priority
+backlog item, not a live-score concern.
+
 **Fix shape**: no code change needed — this is a data-accuracy backlog item,
 not an engine architecture gap. Tracking here mainly so "Lucilla/Lynae
 totalMult" doesn't get lost between conversations.
