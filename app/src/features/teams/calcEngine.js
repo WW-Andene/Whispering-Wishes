@@ -537,9 +537,25 @@ export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
 // Rupture/Hack response skills per wiki) with no generic formula published — this stays a generic
 // stack/boost approximation driven entirely by CHAR_BUFF_TABLE[name].tuneBreak fields; accuracy
 // depends on those per-character values being filled in correctly (tracked separately).
+//
+// modeExclusive (added 2026-09-02, Engine development.md item 9): a real bug found while auditing
+// Lynae's dual-mode tagging — her OWN tuneBreak object carries BOTH ruptureDmgMult (Tune Rupture
+// Response - Spectral Analysis, her Rupture-mode-only proc) AND strainDmgPerStack/maxStrainStacks
+// (her Strain-mode-only per-stack response), but her real Resonance Mode is mutually exclusive — she
+// can never have both active on the same run. Every OTHER tbMember with strain/rupture fields
+// (currently only Mornye) is a genuine generic RESPONDER, not a mode-locked applier: her own
+// ruptureDmgMult/strainDmgPerStack fire off whichever Interfered TYPE the team's actual appliers
+// produce, so both CAN legitimately coexist for her (e.g. a team with both a Rupture and a Strain
+// applier) — nothing to fix there. `modeExclusive: true` marks a character whose OWN rupture/strain
+// contributions must be resolved to exactly one, and this function no longer folds their contribution
+// into the unconditional `dmg`/`deepenMult` totals — instead it's returned as `exclusiveCandidates`
+// for the caller to resolve by comparing REAL final totals (see calcTeamStats.js's own resolution
+// right after `grandTotal` is known), not a fabricated unit conversion between flat DOT damage and a
+// multiplicative deepen (the two are not comparable in isolation — see this session's own
+// investigation into why a context-free comparator can't do this honestly).
 export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycleFactors) {
   const tbMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
-  if (!tbMembers.length) return { dmg: 0, deepenMult: 1 };
+  if (!tbMembers.length) return { dmg: 0, deepenMult: 1, exclusiveCandidates: [] };
   let totalBoost = 0;
   tbMembers.forEach(m => {
     const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
@@ -547,13 +563,17 @@ export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycle
   });
   const hasAccel = tbMembers.some(m => CHAR_BUFF_TABLE[m.name].tuneBreak.boostToTeam > 20);
   const breaksPerRot = hasAccel ? Math.min(2, Math.max(1, Math.floor(rotTime / 12))) : 1;
+  const uptimeFactor = rotTime > 0 ? Math.min(1, (8 * breaksPerRot) / rotTime) : 0;
   let dmg = TUNE_BREAK_BASE_DMG * (1 + totalBoost * 0.01) * breaksPerRot * defMult;
-  tbMembers.forEach(m => {
+
+  const sharedMembers = tbMembers.filter(m => !CHAR_BUFF_TABLE[m.name].tuneBreak.modeExclusive);
+  sharedMembers.forEach(m => {
     const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
     if (tb.ruptureDmgMult) {
       dmg += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100) * breaksPerRot * defMult * resMult;
     }
   });
+
   let deepenMult = 1;
   const mornyeMem = tbMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.interferedDmgAmp);
   if (mornyeMem) {
@@ -564,19 +584,35 @@ export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycle
     const ampCap = CHAR_BUFF_TABLE[mornyeMem.name].tuneBreak.interferedDmgAmp;
     const totalER = energyCycleFactors?.[mornyeMem.name]?.totalER ?? (100 + ampCap / 0.25);
     const amp = Math.min(ampCap, Math.max(0, totalER - 100) * 0.25);
-    deepenMult *= 1 + (amp / 100) * Math.min(1, (8 * breaksPerRot) / rotTime);
+    deepenMult *= 1 + (amp / 100) * uptimeFactor;
   }
-  const maxStrain = Math.max(...tbMembers.map(m => CHAR_BUFF_TABLE[m.name].tuneBreak.maxStrainStacks || 0));
-  if (maxStrain > 0 && totalBoost > 0) {
+  const sharedMaxStrain = Math.max(0, ...sharedMembers.map(m => CHAR_BUFF_TABLE[m.name].tuneBreak.maxStrainStacks || 0));
+  if (sharedMaxStrain > 0 && totalBoost > 0) {
     // Read each character's own strainDmgPerStack rather than assuming the 0.12 every current
     // Tune Strain character happens to share — a future character with a different rate would
     // otherwise silently get the wrong value.
-    const strainRateMember = tbMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.strainDmgPerStack != null);
+    const strainRateMember = sharedMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.strainDmgPerStack != null);
     const strainDmgPerStack = strainRateMember ? CHAR_BUFF_TABLE[strainRateMember.name].tuneBreak.strainDmgPerStack : 0.12;
-    const strainPct = maxStrain * totalBoost * strainDmgPerStack;
-    deepenMult *= 1 + (strainPct / 100) * Math.min(1, (8 * breaksPerRot) / rotTime);
+    const strainPct = sharedMaxStrain * totalBoost * strainDmgPerStack;
+    deepenMult *= 1 + (strainPct / 100) * uptimeFactor;
   }
-  return { dmg, deepenMult };
+
+  // Mode-exclusive members: compute each one's OWN Rupture-only and Strain-only deltas in isolation
+  // (their own contribution alone, on top of the shared/generic totalBoost every tbMember feeds),
+  // for the caller to pick between using real final totals.
+  const exclusiveMembers = tbMembers.filter(m => CHAR_BUFF_TABLE[m.name].tuneBreak.modeExclusive);
+  const exclusiveCandidates = exclusiveMembers.map(m => {
+    const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+    const ruptureDmgDelta = tb.ruptureDmgMult
+      ? DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100) * breaksPerRot * defMult * resMult
+      : 0;
+    const strainDeepenDelta = (tb.maxStrainStacks && tb.strainDmgPerStack && totalBoost > 0)
+      ? (tb.maxStrainStacks * totalBoost * tb.strainDmgPerStack / 100) * uptimeFactor
+      : 0;
+    return { name: m.name, ruptureDmgDelta, strainDeepenDelta };
+  });
+
+  return { dmg, deepenMult, exclusiveCandidates };
 }
 
 // ── Energy cycle tracking ──

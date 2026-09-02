@@ -57,6 +57,7 @@ export function rotTimeFromSteps(ownedSteps) {
  *   totalDmg: number,
  *   dps: number,
  *   tuneBreakDeepenMult: number,
+ *   tuneBreakExclusiveCandidates: Object[],
  *   breakdown: {frazzle: Object, erosion: Object, fusionBurst: Object, electroFlare: Object, tuneBreak: Object},
  * }}
  */
@@ -78,6 +79,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
     totalDmg,
     dps: rotTime > 0 ? totalDmg / rotTime : 0,
     tuneBreakDeepenMult: tuneBreak.deepenMult,
+    tuneBreakExclusiveCandidates: tuneBreak.exclusiveCandidates || [],
     breakdown: { frazzle, erosion, fusionBurst, electroFlare, tuneBreak },
   };
 }

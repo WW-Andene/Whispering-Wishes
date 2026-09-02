@@ -1082,12 +1082,15 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // engine-vs-legacy `rotTime` reconciliation stays step 4's job (rotationTimeline itself), not this
     // one — DOT keeps using the same shared `rotTime` every other FULL-tier total already does.
     const dotResult = resolveDotReactionDps(mems, rotTime, defMult, resShred, getEnemyRes, resMult, energyCycleFactors);
-    const dotDmgPerRotation = dotResult.totalDmg;
+    let dotDmgPerRotation = dotResult.totalDmg;
     const hasFrazzle = dotResult.breakdown.frazzle.active;
     const hasErosion = dotResult.breakdown.erosion.active;
     const hasFusionBurst = dotResult.breakdown.fusionBurst.active;
     const hasElectroFlare = dotResult.breakdown.electroFlare.active;
-    const tuneBreakDeepenMult = dotResult.tuneBreakDeepenMult;
+    let tuneBreakDeepenMult = dotResult.tuneBreakDeepenMult;
+    // Resolved once grandTotal is known below (Engine development.md item 9's mode-exclusivity fix) —
+    // exposed on the return value mainly so tests/other consumers can see which mode(s) were assumed.
+    let tuneBreakResolvedStances = [];
 
     let totalRotDmg = 0;
     const memberDmgArr = [];
@@ -1417,6 +1420,28 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
     });
 
+    // Mode-exclusive Tune Break candidates (Engine development.md item 9): resolve each mode-locked
+    // character's own Rupture-vs-Strain contribution to whichever ACTUALLY yields more total damage
+    // for this real composition — comparing real final totals (not a fabricated unit conversion
+    // between flat DOT damage and a multiplicative deepen, which aren't comparable in isolation; see
+    // calcTuneBreakDmg's own comment for why this needs `totalRotDmg`/`echoActiveDmg` already final.
+    // Resolved BEFORE the DOT-distribution loop below so a Rupture win's added dmg is actually
+    // reflected in the member breakdown it feeds, not just the aggregate grandTotal.
+    {
+      const preGrandTotal = totalRotDmg + echoActiveDmg + dotDmgPerRotation;
+      for (const candidate of dotResult.tuneBreakExclusiveCandidates) {
+        const totalIfRupture = (preGrandTotal + candidate.ruptureDmgDelta) * tuneBreakDeepenMult;
+        const totalIfStrain = preGrandTotal * (tuneBreakDeepenMult * (1 + candidate.strainDeepenDelta));
+        if (totalIfRupture >= totalIfStrain) {
+          dotDmgPerRotation += candidate.ruptureDmgDelta;
+          tuneBreakResolvedStances.push({ name: candidate.name, stance: 'Tune Rupture mode' });
+        } else {
+          tuneBreakDeepenMult *= (1 + candidate.strainDeepenDelta);
+          tuneBreakResolvedStances.push({ name: candidate.name, stance: 'Tune Strain mode' });
+        }
+      }
+    }
+
     // Distribute DOT damage proportionally to members who enable it
     const dotContributors = mems.filter(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
@@ -1547,7 +1572,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
     });
 
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, energyCycleFactors, warnings, memberDps, rotationTimeline, rotTime,
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, energyCycleFactors, warnings, memberDps, rotationTimeline, rotTime, tuneBreakResolvedStances,
       // Legacy aliases for DPSComparisonCard compatibility
       rawDps: soloDps, realDps: teamDps, perfectDps: teamDps, synergy: Math.min(100, Math.max(0, synergyUplift)) };
 }

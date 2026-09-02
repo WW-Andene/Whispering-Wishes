@@ -213,4 +213,31 @@ export const LYNAE_BLOCKS = [
     effects: [],
     note: 'Up to +90% DMG on Polychrome Leap/Visual Impact via Color of Soul stacks (30%/stack, max 3) gained by casting Graffiti Blast/Mid-air Heavy Attack — both exclusive to the S6-only alternate rotation, not modeled in this file. No reachable DPS component in the modeled standard rotation.',
   },
+
+  // Added 2026-09-02 (Engine development.md item 9) — resolves the appliesTags mode gap above.
+  // Deliberately NOT a live damage/buff contributor (empty effects, kind:'utility' — costs nothing in
+  // any DPS computation): its only job is to hand sequenceGating.js's winningStanceForOwner() an
+  // explicit, SOURCED answer for which mode her appliesTags entries should resolve to, since her real
+  // per-mode difference can't be reduced to a comparable effects[] magnitude (Rupture's Spectral
+  // Analysis is a flat DOT-engine proc; Strain's response is a %-deepen multiplier — not the same unit,
+  // and this function has no ATK/team context to convert between them honestly — see
+  // winningStanceForOwner's own comment on confirmedWinningStance).
+  //
+  // Verdict source: calcEngine.js's calcTuneBreakDmg() now resolves Lynae's real mode-exclusivity bug
+  // (she used to get BOTH ruptureDmgMult and strainDmgPerStack simultaneously — a real, separately
+  // fixed bug, see her tuneBreak.modeExclusive comment in characters.js) by comparing ACTUAL final team
+  // totals under each candidate. Ran calcTeamStats.js directly (not hand math) for both a solo Lynae
+  // team and a real comp (Lynae/Aemeath/Mornye): both resolved to Tune Rupture mode — matching the
+  // dump's own explicit meta text ("always Tune Rupture — bigger raw damage increase — unless the Main
+  // DPS has a direct Tune Strain synergy, e.g. Luuk Herssen"). No Tune Strain confirmedWinningStance
+  // block exists (would just be dead weight — the check above returns on first match either way).
+  {
+    id: 'lynae.stancevote.tune-rupture',
+    source: SOURCE, kind: 'utility',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    condition: { requiresStance: 'Tune Rupture mode', confirmedWinningStance: true },
+    effects: [],
+    note: 'Not a real buff — see the block above this array entry for the full sourcing of this verdict.',
+  },
 ];

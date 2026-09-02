@@ -352,24 +352,48 @@ simple stat buff — don't force-fit into the same fix):
    (her own kit's rival-block magnitudes favor it, 60 > 15 — this was already true of her outro pick
    before today, `appliesTags` tagging just now agrees with it too).
 
-   **Lynae tagged 2026-09-02** — `lynae.intro.time-to-show-some-colors`, `lynae.basic.polychrome-leap`,
-   `lynae.forte.visual-impact` (every real Photochromic-Flux-inflicting block) now carry
-   `{tag:'tune-rupture-shifting', requiresStance:'Tune Rupture mode'}` /
+   **Lynae tagged AND resolved 2026-09-02** — `lynae.intro.time-to-show-some-colors`,
+   `lynae.basic.polychrome-leap`, `lynae.forte.visual-impact` (every real Photochromic-Flux-inflicting
+   block) carry `{tag:'tune-rupture-shifting', requiresStance:'Tune Rupture mode'}` /
    `{tag:'shifting', requiresStance:'Tune Strain mode'}`, sourced verbatim from her dump's own
-   "Resonance Mode" line. **Deliberately left unresolved**, though: `winningStanceForOwner()` needs a
-   sourced rival-magnitude BUFF block per stance to pick a winner, and Lynae — unlike Denia — has none
-   in the modeled rotation: her real per-mode differences (Tune Rupture Response - Spectral Analysis, a
-   1880.75%-multiplier proc; Tune Strain's own nonlinear per-stack Tune Break Boost scaling) are both
-   real, sourced mechanics but neither is built as an engine block yet, and fabricating a placeholder
-   magnitude just to force a decision was rejected (same discipline as this session's own "never invent
-   a number" standing lesson). Net effect: `winningStanceForOwner()` returns `null` for Lynae today, so
-   NEITHER stance-gated tag fires — a known, intentional conservative gap, not a bug; her Photochromic
-   Flux application is invisible to any `ally-action` consumer until this is closed. The dump's own meta
-   verdict already answers the practical question ("always Tune Rupture — bigger raw damage increase —
-   unless the Main DPS has a direct Tune Strain synergy, e.g. Luuk Herssen"); it just isn't wired into
-   the magnitude-resolution mechanism. Closing it needs the Tune Rupture Response - Spectral Analysis
-   proc modeled as a real damage/buff block (giving Tune Rupture mode a genuine sourced magnitude) —
-   not yet done. Full suite (1221 tests) still passing after this tagging pass.
+   "Resonance Mode" line. Initially left deliberately unresolved: `winningStanceForOwner()`'s generic
+   `blockMagnitude()` comparator needs both mode candidates to be the same SHAPE of stat bonus to
+   compare honestly, and Lynae's real difference isn't that shape — Rupture's Spectral Analysis is a
+   flat proc computed through the DOT-reaction engine's own Lv.90 formula, Strain's response is a
+   %-deepen multiplier; forcing those through the same comparator would mean fabricating a fake
+   conversion rate, which was correctly rejected rather than done.
+
+   **Closed properly, in two steps, rather than faked:**
+   1. **Fixed a real, separate legacy bug found during this investigation**: `calcTuneBreakDmg()`
+      (`calcEngine.js`) was applying Lynae's `ruptureDmgMult` AND `strainDmgPerStack`/`maxStrainStacks`
+      SIMULTANEOUSLY for any team containing her — her own kit's two mode-locked response fields have
+      no mutual exclusivity enforced at all, unlike a genuine dual-mode split (Mornye has the same two
+      field names, but legitimately CAN have both active — she's a generic responder to whichever
+      Interfered type the team's OTHER appliers produce, not herself mode-locked, so nothing to fix
+      there). Added `tuneBreak.modeExclusive: true` (Lynae only, `characters.js`) and restructured
+      `calcTuneBreakDmg()` to return a mode-locked member's own rupture/strain contributions as
+      `exclusiveCandidates` instead of folding them in unconditionally. `calcTeamStats.js` resolves each
+      candidate right after its own real `grandTotal` is known (before `dotDmgPerRotation`'s per-member
+      distribution, so the breakdown stays consistent) by comparing the ACTUAL total damage under each
+      candidate and keeping the larger — real numbers, not a fabricated unit conversion — and exposes
+      the resolution as `stats.tuneBreakResolvedStances`.
+   2. **Wired that same real resolution into the tag-gating question**: `winningStanceForOwner()` gained
+      a `confirmedWinningStance` check (an explicit, sourced pointer used only when the generic magnitude
+      comparison genuinely can't apply — never a substitute for it when it can, as Denia's case still
+      proves) — checked before the magnitude fallback. `lynae.blocks.js` gained one inert marker block
+      (`lynae.stancevote.tune-rupture`, `kind:'utility'`, empty `effects`, costs nothing in any DPS path)
+      carrying `condition:{requiresStance:'Tune Rupture mode', confirmedWinningStance:true}`. The verdict
+      itself wasn't hand-computed — `calcTeamStats(['Lynae'], ...)` and
+      `calcTeamStats(['Lynae','Aemeath','Mornye'], ...)` were actually RUN against the now-fixed
+      resolver: both resolved to Tune Rupture mode, matching the dump's own meta text ("always Tune
+      Rupture — bigger raw damage increase — unless the Main DPS has a direct Tune Strain synergy, e.g.
+      Luuk Herssen"), two independent real sources agreeing.
+
+   New test file `lynaeTuneBreakModeExclusivity.test.js` (5 tests) proves both fixes end-to-end: the
+   exclusivity split, a no-regression check that Mornye's own legitimate dual response is untouched, the
+   real `calcTeamStats` resolution, `winningStanceForOwner` no longer returning `null` for Lynae, and the
+   rotation simulator actually tagging `tune-rupture-shifting` (not `shifting`) on her real blocks. Full
+   suite (1226 tests, up from 1221) passing.
 3. **Migration — not started.** Qingxiao S4 specifically still uses the old `target:{scope:'self'}` /
    flat `atkPct` approximation (not yet migrated to `ally-action`+`trigger-actor`); `denia.chain.s2`
    still only models its flat Banish multiplier, not the Fusion-Burst/Tune-Strain-mode reactive buff

@@ -130,6 +130,16 @@ export function filterExclusiveModeBlocks(blocks) {
 export function winningStanceForOwner(blocks, owner) {
   const ownerModeBlocks = blocks.filter(b => b.source === owner && modeGroupKey(b));
   if (!ownerModeBlocks.length) return null;
+  // confirmedWinningStance (added 2026-09-02, Lynae's case): an explicit, sourced pointer for when the
+  // real per-mode difference genuinely can't be reduced to a comparable `effects[].value` (Lynae's own
+  // Rupture-mode bonus is a flat DOT-engine proc, her Strain-mode bonus a %-deepen multiplier — not the
+  // same unit, and this function has no ATK/team context to convert between them honestly). Set ONLY
+  // on the block matching a verdict independently verified by actually RUNNING calcTeamStats.js's own
+  // now-fixed calcTuneBreakDmg mode-exclusivity resolution (real numbers, not a guess) — never a
+  // fabricated magnitude forced through the comparison below just to make one exist. Checked first
+  // since it's a stronger source of truth than the generic magnitude heuristic when both are present.
+  const confirmed = ownerModeBlocks.find(b => b.condition.confirmedWinningStance);
+  if (confirmed) return confirmed.condition.requiresStance;
   const byStance = new Map();
   ownerModeBlocks.forEach(b => {
     const stance = b.condition.requiresStance;

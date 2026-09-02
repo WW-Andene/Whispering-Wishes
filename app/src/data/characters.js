@@ -2237,6 +2237,15 @@ const CHAR_BUFF_TABLE = {
       ruptureDmgMult: 1880.75, // Tune Rupture Response — Spectral Analysis (confirmed exact, Lv.10)
       strainDmgPerStack: 0.12, // per stack of Strain Interfered, per point of Tune Break Boost = +0.12% total DMG
       maxStrainStacks: 3, // base 2 + 1 from Lynae
+      // modeExclusive added 2026-09-02 (Engine development.md item 9): ruptureDmgMult and
+      // strainDmgPerStack/maxStrainStacks above are BOTH Lynae's own kit — mutually exclusive by her
+      // real Resonance Mode (Rupture vs Strain), unlike a generic responder (e.g. Mornye) who can
+      // legitimately have both active if the team's OTHER members supply both Interfered types. Was a
+      // real bug before this flag existed: calcTuneBreakDmg applied both simultaneously for any team
+      // with Lynae in it. calcEngine.js's calcTuneBreakDmg() now resolves these to exactly one, chosen
+      // by comparing real final team totals (see calcTeamStats.js's own resolution step), not a
+      // fabricated cross-unit magnitude guess.
+      modeExclusive: true,
     },
     note: 'Lib: 24% All DMG (30s, confirmed exact 2026-08-16). Outro: 15% All DMG + 25% Lib Amp to next (14s) — was miscategorized as deepen, no basis. Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost.',
   },
