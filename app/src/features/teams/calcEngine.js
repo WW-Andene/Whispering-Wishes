@@ -158,7 +158,7 @@ export function createStats() {
   return {
     atkPct: 0, cr: BASE_CRIT_RATE, cd: BASE_CRIT_DMG,
     elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0,
-    libDmg: 0, echoDmg: 0, coordDmg: 0,
+    libDmg: 0, echoDmg: 0, coordDmg: 0, outroDmg: 0,
     deepen: 0, amplify: 0,
     defShred: 0, resShred: 0, defIgnore: 0,
   };
@@ -395,6 +395,7 @@ export function applyBuff(stats, buff, value, options = {}) {
     case 'echoDmg':   stats[target || 'echoDmg'] += value; break;
     case 'skillDmg':  stats[target || 'skillDmg'] += value; break;
     case 'coordDmg':  stats[target || 'coordDmg'] += value; break;
+    case 'outroDmg':  stats[target || 'outroDmg'] += value; break;
     case 'critRate':  stats.cr += value; break;
     case 'critDmg':   stats.cd += value; break;
     case 'resShred':  stats.resShred += value; break;

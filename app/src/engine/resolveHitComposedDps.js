@@ -118,7 +118,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
   // externalStats is a pure DELTA (gear's own contribution only, cr/cd NOT pre-seeded with
   // BASE_CRIT_RATE/BASE_CRIT_DMG — createStats() below already supplies that baseline once per
   // instant) — see this function's own jsdoc above for why this exists and what shape it expects.
-  const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
+  const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'outroDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
   function statsAtInstant(instant) {
     const stats = createStats();
     if (externalStats) {

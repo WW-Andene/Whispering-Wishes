@@ -72,8 +72,8 @@ export const XIANGLI_YAO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: [{ atkPct: 237.63 }, { atkPct: 237.63 }, { atkPct: 237.63 }] },
-    note: "Laser strikes on the incoming Resonator's first Basic ATK hit — pure DMG proc (3 procs over 8s, 2s ICD), no team buff.",
+    damage: { hits: [{ atkPct: 237.63 }, { atkPct: 237.63 }, { atkPct: 237.63 }], category: 'outroDmg' },
+    note: "Laser strikes on the incoming Resonator's first Basic ATK hit — pure DMG proc (3 procs over 8s, 2s ICD), no team buff. Retrofitted 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #16, new outroDmg category) to tag this as Outro DMG, matching S5's now-representable +222% bonus below.",
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
@@ -126,7 +126,15 @@ export const XIANGLI_YAO_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Cogitation Model' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'libDmg', value: 100 }],
-    note: "Cogitation Model's own DMG Multiplier +100% — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. This node ALSO grants Outro Chain Rule's own DMG Multiplier +222%, which has no matching category in this schema (no \"outro DMG\" stat exists) and is not represented, per the audit's own TODO.",
+    note: "Cogitation Model's own DMG Multiplier +100% — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. This node ALSO grants Outro Chain Rule's own DMG Multiplier +222%, now captured separately below (xianglyao.chain.s5-outro) since the new outroDmg category (Phase 0.5 gap #16, 2026-09-02) gives it a real home.",
+  },
+  {
+    id: 'xianglyao.chain.s5-outro',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Liberation:Cogitation Model' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'outroDmg', value: 222 }],
+    note: "Retrofitted 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #16): Cogitation Model also grants Outro Chain Rule's own DMG Multiplier +222% — previously unrepresented entirely since no outroDmg category existed. Cast-scoped to Cogitation Model, same single-hit-scoped pattern as the sibling S5 node above; only affects xianglyao.outro.chain-rule's own hits (category: 'outroDmg').",
   },
   {
     id: 'xianglyao.chain.s6',
