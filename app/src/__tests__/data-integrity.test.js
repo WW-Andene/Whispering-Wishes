@@ -131,10 +131,11 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     // Rebecca[3] "Forte: Rat-tat-tat!: Huntress" now resolves — fixed 2026-09-02, its SKILL_MULTIPLIERS
     // row's type was 'Heavy ATK' instead of 'Forte' (a silent lookup mismatch, previously missing this
     // baseline entirely; unrelated to the category fix on the same row).
-    'Lucy[3] "Basic ATK: Locked Thread Stage 2-4"',
-    'Lucy[5] "Basic ATK: Thread Shredding Stage 1-4"',
-    'Lucy[6] "Heavy ATK: Dual Threading"',
-    'Lucy[8] "Liberation: Old Net Deep Dive"',
+    // Lucy[3]/[5]/[6]/[8] now all resolve — fixed 2026-09-02 against a real prydwen.gg .mht snapshot:
+    // SKILL_MULTIPLIERS['Lucy'] was rebuilt with real per-move rows (previously a truncated/collapsed
+    // table missing Thread Shredding Stage 1-4 and Dual Threading entirely, and naming 'Locked Thread
+    // Stage 1-4'/'Netrunner: Override' instead of the rotation's own 'Locked Thread Stage 2-4'/
+    // 'Old Net Deep Dive' step names).
     'Sigrika[1] "Basic ATK: Stage 2-4"',
     'Sigrika[3] "Forte: Heavy ATK: Schemata of Runes (Chain Whip)"',
     'Sigrika[5] "Basic ATK: Stage 2-4"',

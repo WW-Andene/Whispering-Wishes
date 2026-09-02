@@ -2346,17 +2346,19 @@ const CHAR_BUFF_TABLE = {
     // separate mechanic). Forte Circuit "Data Crash": "Responding to Hack - Interfered: when
     // Resonators in the team trigger Tune Break on the target and cause them to be affected by
     // Hack - Interfered, Lucy applies Hack Response - Data Crash on the target. Each target can be
-    // inflicted with this effect up to 1 time every 8s." Exact ruptureDmgMult (%ATK) for Data Crash
-    // renders client-side in a "Multipliers" table widget not exposed in text extraction — omitted
-    // rather than guessed (Prydwen's own review text separately confirms "the damage multipliers
-    // function in the exact same way" as Tune Rupture, without giving the number). No Tune Break
-    // Boost team buff or stack-cap increase found in Lucy's own kit text (Rebecca's kit is the one
-    // that grants +30 Tune Break Boost, modeled on her entry instead) — boostToTeam/maxStrainStacks
+    // inflicted with this effect up to 1 time every 8s."
+    // ruptureDmgMult now sourced 2026-09-02 from a real prydwen.gg .mht snapshot (confirmed via its
+    // own Snapshot-Content-Location header, not client-render-blocked this time): the Multipliers
+    // table lists "Hack Response - Data Crash: 1094.19%+68.39%×4 Tune AMP" — summed to a single flat
+    // ruptureDmgMult per the same convention already used for Rebecca's Meltdown. No Tune Break Boost
+    // team buff or stack-cap increase found in Lucy's own kit text (Rebecca's kit is the one that
+    // grants +30 Tune Break Boost, modeled on her entry instead) — boostToTeam/maxStrainStacks
     // omitted.
     tuneBreak: {
       baseTuneBreakBoost: 10, // 3.x char base stat
+      ruptureDmgMult: 1367.75, // Hack Response - Data Crash: 1094.19% + 68.39%×4 (confirmed exact, Lv.10)
     },
-    note: 'Outro: 25% Basic ATK DMG Amp to next Resonator (14s) + team-wide Countermeasure Program (Hack - Interfered triggers +20% All DMG Amp). Tune Break: Hack is confirmed the same generic Tune Break family; Hack Response - Data Crash is genuine (base kit, once/8s) but exact ruptureDmgMult not confirmed.',
+    note: 'Outro: 25% Basic ATK DMG Amp to next Resonator (14s) + team-wide Countermeasure Program (Hack - Interfered triggers +20% All DMG Amp). Tune Break: Hack is confirmed the same generic Tune Break family; Hack Response - Data Crash is genuine (base kit, once/8s), ruptureDmgMult 1367.75 (1094.19%+68.39%×4).',
   },
   'Rebecca': {
     outroBuffs: [{ stat: 'heavyDmg', value: 35, target: 'next', duration: 14 }, { stat: 'allDmg', value: 15, target: 'next', duration: 14 }],
@@ -3280,11 +3282,44 @@ const SKILL_MULTIPLIERS = {
     ['Liberation', 'Frostedge', '156.15%', 'Opener hit that applies Glacio Chafe; considered Resonance Liberation DMG despite the Intro Skill input.'],
     ['Outro', 'Snowlight Blessing', 'Team Glacio DMG +20% vs Chafe-affected targets (20s)', 'Buffs team Glacio DMG on Chafe-affected enemies (excludes Hiyuki herself).'],
   ],
+  // Rebuilt 2026-09-02 from a real prydwen.gg .mht snapshot (confirmed genuine via its own
+  // Snapshot-Content-Location header, not client-render-blocked this time — every "Multipliers"
+  // widget's exact per-move table was readable). Replaces the prior single collapsed-string rows,
+  // which had 2 real, sourced bugs plus 2 real data-completeness gaps:
+  // (1) 'Locked Thread Stage 1-4' Stage 1 segment was '12.15%×6+48.59%' — a fabricated ×6 (real
+  //     value is a single 12.15% hit, no repeat) — split into its own row and corrected.
+  // (2) 'Payload / Pulse Interference / Deadlock' combined 3 different moves into 1 row, whose own
+  //     Payload segment was truncated with a literal "..." in the stored string (documented in
+  //     lucy.blocks.js as "a lower bound, not a fabricated completion") — now split into 3 real rows
+  //     matching CHARACTER_ROTATIONS' own step names, with Payload's real 2-hit (Charge + Follow-Up)
+  //     breakdown fully sourced, no more truncation.
+  // (3) 'Basic ATK: Thread Shredding Stage 1-4' and 'Heavy ATK: Dual Threading' — both real
+  //     CHARACTER_ROTATIONS steps with NO matching row at all (silently 0 DMG, flagged in
+  //     data-integrity.test.js's KNOWN_UNRESOLVED_BASELINE and lucy.blocks.js's own "not modeled
+  //     rather than guessed" comment) — now added with real sourced values.
+  // Also added the previously entirely-missing base (non-Forte) Heavy Attack Stage 1/2, Plunging
+  // Attack, Dodge Counter, and their Algorithm Compaction variants as reference data — none of these
+  // are used in her real rotation (the Review section explicitly confirms "all Heavy Attacks
+  // [outside Forte replacements]... will go unused" and Mid-air/Dodge Counter aren't in the rotation
+  // either), so no engine blocks wired for them, matching the Carlotta Mid-air-row precedent.
   'Lucy': [
-    ['Basic ATK', 'Locked Thread Stage 1-4', '12.15%×6+48.59% → 20.66%+20.05%×2 → 36.06%×2+48.08% → 31.02%+15.51%×3+38.77%×2', 'Standard combo; hold for extended attacks.'],
+    ['Basic ATK', 'Locked Thread Stage 1', '12.15%+48.59%'],
+    ['Basic ATK', 'Locked Thread Stage 2-4', '20.66%+20.05%×2 → 36.06%×2+48.08% → 31.02%+15.51%×3+38.77%×2', 'Builds the last of her TCP toward 100.'],
+    ['Heavy ATK', 'Heavy Attack Stage 1', '22.10%+22.10%+29.47%', 'Base (non-Forte) Heavy Attack; confirmed unused in her real rotation.'],
+    ['Heavy ATK', 'Heavy Attack Stage 2', '56.86%×2+18.96%×3+56.86%×2', 'Base (non-Forte) Heavy Attack; confirmed unused in her real rotation.'],
+    ['Heavy ATK', 'Plunging Attack', '58.16%+58.16%', 'Confirmed unused in her real rotation.'],
+    ['Heavy ATK', 'Dodge Counter', '59.32%+79.09%+59.32%', 'Confirmed unused in her real rotation.'],
+    ['Heavy ATK', 'Mid-air Attack - Algorithm Compaction', '62.63%+62.63%', 'Confirmed unused in her real rotation.'],
+    ['Heavy ATK', 'Dodge Counter - Algorithm Compaction', '38.97%×5', 'Confirmed unused in her real rotation.'],
+    ['Basic ATK', 'Thread Shredding Stage 1-4', '19.49%×4 → 22.27%×5 → 28.12%×5 → 25.06%×5', 'Algorithm Compaction Basic ATK replacement; builds Root Access toward 100.'],
+    ['Heavy ATK', 'Single Threading', '23.39%×5', 'Algorithm Compaction Heavy ATK replacement before Root Access is maxed; confirmed unused in her real rotation (she reaches max Root Access before needing a plain Heavy Attack).'],
+    ['Heavy ATK', 'Dual Threading', '33.41%×5', 'Once Root Access is maxed, replaces Single Threading — consumes all Root Access, auto-chains into Multi-threading.'],
     ['Heavy ATK', 'Multi-threading', '59.65%+59.65%×3 (+270% SQL bonus)', 'Empowered finisher, stronger with SQL stacks.'],
-    ['Skill', 'Payload / Pulse Interference / Deadlock', '20.05%+10.03%+40.09%+... / 30.86%×2+61.72%×3+61.72% / 51.70%+206.77%', 'Builds TCP; Deadlock is the max-TCP upgrade.'],
-    ['Liberation', 'Netrunner: Override', '894.65% (up to 1789.29% as Old Net Deep Dive)', 'Ultimate: marks and nukes enemies with chosen debuffs.'],
+    ['Skill', 'Payload', '20.05%+10.03%+40.09%+10.03%+20.05%', "Charge DMG (20.05%+10.03%) plus its automatic Follow-Up Attack (40.09%+10.03%+20.05%) — both fire off one Skill press, combined per CHARACTER_ROTATIONS' single 'Payload' step."],
+    ['Skill', 'Pulse Interference', '30.86%×2+61.72%×3+61.72%', 'Fires automatically off the Payload follow-up.'],
+    ['Skill', 'Deadlock', '51.70%+206.77%', 'Max-TCP Skill upgrade; considered Heavy Attack DMG despite the Skill input.'],
+    ['Liberation', 'Netrunner: Override', '894.65%', 'Base Ultimate; considered Heavy Attack DMG despite the Liberation input.'],
+    ['Liberation', 'Old Net Deep Dive', '1789.29%', 'Upgraded Ultimate (after casting Multi-threading in Algorithm Compaction); considered Heavy Attack DMG.'],
     ['Forte', 'Hack Response - Data Crash', '1094.19%+68.39%×4 (Hack DMG)', 'Bonus DMG on Hack-Interfered targets.'],
     ['Intro', 'Outdated Hallucination', '69.14%×2', 'Opener that reveals enemies through walls.'],
     ['Outro', 'Countermeasure Program', '25% Basic ATK DMG Amp to next + team Hack-Shifting response', "Buffs next ally's Basic ATK DMG."],
@@ -5571,8 +5606,16 @@ const RESONANCE_CHAIN_DATA = {
   // None of this reduces to a flat always-on heavyDmg% (calcEngine.js applies heavyDmg unconditionally to every Heavy
   // ATK instance, which the real effect isn't), so it's modeled via totalMult like other complex/conditional S2 nodes.
   // S3: Override DMG Mult+50% + Crit DMG+100% on Liberation (confirmed exact). S4: team +20% All-Attr DMG on
-  // Hack-Shifting (confirmed)
-  'Lucy':         { s1: { atkPct: 20 }, s2: { totalMult: 30 }, s3: { libDmg: 50, critDmg: 100 }, s4: { allDmg: 20 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
+  // Hack-Shifting for 20s (confirmed exact — a real .mht snapshot 2026-09-02 confirms 20s, not the
+  // previously-assumed 25s). S1 is conditional on casting Intro (+20% ATK for 14s), not unconditional.
+  // S5 zeroed 2026-09-02: was a fabricated totalMult:5 with no textual basis — a real .mht snapshot's
+  // S5 text is 100% defensive (Optical Illusion stack cap, HP-triggered Shield), no DMG Multiplier
+  // anywhere, matching the "invented number with no basis" removal precedent (Augusta's S5/Brant's
+  // S1/Phrolova's S5). S6 also grants +60% Hack DMG (on top of the +40% Heavy ATK DMG already
+  // modeled) — not added here, this schema has no "hackDmg" category (only skillDmg/basicDmg/
+  // heavyDmg/libDmg/echoDmg/coordDmg + the separate, non-hit-composed tuneBreak.ruptureDmgMult table),
+  // documented as a real, sourced gap rather than force-fit into the wrong category.
+  'Lucy':         { s1: { atkPct: 20 }, s2: { totalMult: 30 }, s3: { libDmg: 50, critDmg: 100 }, s4: { allDmg: 20 }, s5: {}, s6: { heavyDmg: 40 } },
   // Rebecca S2: team +20% All-Attribute DMG on Intro/Lib (confirmed exact). S3: Liberation DMG Mult+60% (confirmed exact)
   // Re-audited 2026-09-01 against wutheringwaves.fandom.com/wiki/Rebecca/Combat, cross-checked against
   // ww.nanoka.cc/character/1308 (both agree exactly). S1 (basicDmg: 50, "Huntress/Guts core moves DMG

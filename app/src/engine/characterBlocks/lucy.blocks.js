@@ -3,12 +3,13 @@
 // Lucy converted to TriggerBlocks. Sourced from characters.js's already-audited
 // CHAR_BUFF_TABLE['Lucy'], RESONANCE_CHAIN_DATA['Lucy'] (+ its own audit comment,
 // read directly for each node's real mechanic), SKILL_MULTIPLIERS['Lucy'], and
-// CHARACTER_ROTATIONS['Lucy']. No new numbers invented. Several real
-// CHARACTER_ROTATIONS steps (Basic ATK:Thread Shredding Stage 1-4, Heavy
-// ATK:Dual Threading) have NO matching SKILL_MULTIPLIERS row at all — not
-// modeled rather than guessed. The 'Payload / Pulse Interference / Deadlock'
-// row's first segment is itself truncated with a literal "..." in the source
-// string, documented as incomplete rather than treated as the real full value.
+// CHARACTER_ROTATIONS['Lucy']. No new numbers invented.
+//
+// Fixed 2026-09-02 against a real prydwen.gg .mht snapshot (SKILL_MULTIPLIERS rebuilt from it, see
+// that table's own header comment): Payload's previously-truncated value ("...") is now the real
+// full Charge+Follow-Up total; lucy.basic.thread-shredding-stage1-4 and
+// lucy.heavy.dual-threading are newly added — both are real CHARACTER_ROTATIONS steps that
+// previously had no matching SKILL_MULTIPLIERS row at all (silently 0 DMG).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -31,11 +32,12 @@ export const LUCY_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Payload' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // Row 'Payload / Pulse Interference / Deadlock' has 3 arrow/slash-separated segments — Payload's
-    // own segment ('20.05%+10.03%+40.09%+...') is itself truncated with a literal "..." in the source
-    // string; only the numeric tokens actually present are used.
-    damage: { hits: parseSkillMultiplierHits('20.05%+10.03%+40.09%'), category: 'skillDmg' },
-    note: "Applies Hack: Shifting, auto-chains into Pulse Interference. Source row for this segment is itself incomplete ('...'), so this is a lower bound on the real value, not a fabricated completion.",
+    // Fixed 2026-09-02: previously '20.05%+10.03%+40.09%' — a lower bound, since the old source
+    // string was truncated with a literal "...". A real .mht snapshot gives the full split: Charge
+    // DMG (20.05%+10.03%) plus its automatic Follow-Up Attack (40.09%+10.03%+20.05%), combined here
+    // since both fire off the one 'Payload' rotation step.
+    damage: { hits: parseSkillMultiplierHits('20.05%+10.03%+40.09%+10.03%+20.05%'), category: 'skillDmg' },
+    note: 'Charge + automatic Follow-Up Attack. Applies Hack: Shifting, auto-chains into Pulse Interference.',
   },
   {
     id: 'lucy.skill.pulse-interference',
@@ -65,12 +67,32 @@ export const LUCY_BLOCKS = [
     note: 'Once TCP hits 100/100, replaces Skill — counted as Heavy ATK DMG. Applies Hack: Shifting, enters 8s Algorithm Compaction (+65% Spectro DMG Bonus, 1 SQL stack).',
   },
   {
+    id: 'lucy.basic.thread-shredding-stage1-4',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Basic ATK:Thread Shredding Stage 1-4' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // Added 2026-09-02: previously not modeled (no matching SKILL_MULTIPLIERS row at all — this real
+    // rotation step was silently 0 DMG), now sourced from a real .mht snapshot.
+    damage: { hits: parseSkillMultiplierHits('19.49%×4 → 22.27%×5 → 28.12%×5 → 25.06%×5'), category: 'heavyDmg' },
+    note: 'Algorithm Compaction Basic ATK replacement (considered Heavy Attack DMG per its own kit text) — builds Root Access toward 100.',
+  },
+  {
+    id: 'lucy.heavy.dual-threading',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Heavy ATK:Dual Threading' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // Added 2026-09-02: previously not modeled (no matching SKILL_MULTIPLIERS row at all — this real
+    // rotation step was silently 0 DMG), now sourced from a real .mht snapshot.
+    damage: { hits: parseSkillMultiplierHits('33.41%×5'), category: 'heavyDmg' },
+    note: 'Once Root Access hits 100/100, replaces Single Threading — consumes all Root Access, auto-chains straight into Multi-threading.',
+  },
+  {
     id: 'lucy.heavy.multi-threading',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Heavy ATK:Multi-threading' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('59.65%+59.65%×3'), category: 'heavyDmg' },
-    note: 'Fires automatically off Dual Threading, consumes banked SQL stack for a +270% DMG Multiplier bonus (see lucy.chain.s2 below), applies Hack: Shifting. Heavy ATK:Dual Threading itself has no matching SKILL_MULTIPLIERS row — not modeled (auto-chains straight into this).',
+    note: 'Fires automatically off Dual Threading, consumes banked SQL stack for a +270% DMG Multiplier bonus (see lucy.chain.s2 below), applies Hack: Shifting.',
   },
   {
     id: 'lucy.liberation.old-net-deep-dive',
@@ -108,17 +130,27 @@ export const LUCY_BLOCKS = [
   {
     id: 'lucy.chain.s1',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
+    // Fixed 2026-09-02: was `trigger:{type:'passive'}`, modeled as an unconditional always-on +20%
+    // ATK — but the source is explicit this is conditional: "Casting Intro Skill - Outdated
+    // Hallucination increases ATK by 20% for 14s." Converted to cast-scoped on the real Intro cast
+    // with the real 14s duration (still a real, sourced buffWindow shape, not the dead cast+no-duration
+    // no-op pattern — this one HAS a duration, so it correctly enters buffWindows).
+    trigger: { type: 'cast', on: 'Intro:Outdated Hallucination' },
+    timing: { duration: 14 }, target: { scope: 'self' },
     effects: [{ stat: 'atkPct', value: 20 }],
-    note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
+    note: 'Casting Intro Skill grants +20% ATK for 14s.',
   },
   {
     id: 'lucy.chain.s2',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Heavy ATK:Multi-threading' },
+    // Fixed 2026-09-02: was `trigger:{type:'cast',...}` with no `timing.duration` — the same dead
+    // cast-scoped/no-duration `kind:'buff'` no-op shape found on Carlotta's S1/S2 and Galbrena's S3
+    // (Engine development.md item 12), so this never actually applied. Converted to
+    // `trigger:{type:'passive'}` + `scopedToBlockId` (Augusta's S3 pattern) so it fires and stays
+    // scoped to only Multi-threading's own hit.
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 30 }],
+    effects: [{ stat: 'totalMult', value: 30, scopedToBlockId: 'lucy.heavy.multi-threading' }],
     note: "Raises Heavy Attack - Multi-threading's SQL DMG Mult from 270% to 560% (conditional, only on SQL-consuming casts) and grants +32 starting RAM (from 24, resource-economy, not modeled) — none of this reduces to a flat always-on heavyDmg% (calcEngine.js applies heavyDmg unconditionally to every Heavy ATK instance, which the real effect isn't), kept as an approximated totalMult per the audit comment's own reasoning. See lucy.chain.s2-bonus-hit below for the node's separately-representable real bonus hit.",
   },
   {
@@ -132,30 +164,45 @@ export const LUCY_BLOCKS = [
   {
     id: 'lucy.chain.s3',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Liberation:Old Net Deep Dive' },
+    // Fixed 2026-09-02: 2 stacked bugs, same shape as Galbrena's S3. (1) was `trigger:{type:'cast',
+    // ...}` with no `timing.duration` — the same dead cast-scoped/no-duration no-op shape as S2
+    // above — converted to `trigger:{type:'passive'}` + `scopedToBlockId`. (2) `stat:'libDmg'` when
+    // its target block (`lucy.liberation.old-net-deep-dive`) is `category:'heavyDmg'` (Old Net Deep
+    // Dive's Override is "considered Heavy Attack DMG" per its own kit text) — category-gated stats
+    // only apply to matching-category hits, so this was ALSO independently a no-op. Fixed to
+    // `heavyDmg`. `critDmg` isn't category-gated, so it only had the dead-trigger bug, not this one.
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'libDmg', value: 50 },
-      { stat: 'critDmg', value: 100 },
+      { stat: 'heavyDmg', value: 50, scopedToBlockId: 'lucy.liberation.old-net-deep-dive' },
+      { stat: 'critDmg', value: 100, scopedToBlockId: 'lucy.liberation.old-net-deep-dive' },
     ],
-    note: "Override DMG Mult +50% + Crit DMG +100% on Liberation (confirmed exact) — cast-scoped (instant, no persistent duration).",
+    note: "Override DMG Mult +50% + Crit DMG +100% on Liberation (confirmed exact).",
   },
   {
     id: 'lucy.chain.s4',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'cast', on: 'Skill:Payload' },
-    timing: { duration: 25 }, // matches the Outro's own 25s Hack-Shifting response window per CHARACTER_ROTATIONS' note
+    // Fixed 2026-09-02: duration was 25 (the Outro's OWN separate 25s Countermeasure Program window,
+    // per lucy.outro.countermeasure-program's note above) — conflated two different real buffs, not a
+    // rounding drift. S4's own kit text is explicit: "...gain 20% all-Attribute DMG Bonus for 20s."
+    timing: { duration: 20 },
     target: { scope: 'whole-team' },
     effects: [{ stat: 'allDmg', value: 20, stacking: 'refresh' }],
-    note: 'Team +20% All-Attribute DMG on Hack-Shifting (confirmed exact, team-wide) — modeled on the Payload cast, the first real rotation step that applies Hack: Shifting.',
+    note: 'Team +20% All-Attribute DMG on Hack-Shifting for 20s (confirmed exact, team-wide) — modeled on the Payload cast, the first real rotation step that applies Hack: Shifting.',
   },
   {
     id: 'lucy.chain.s5',
     source: SOURCE, kind: 'buff',
+    // Fixed 2026-09-02: was `totalMult:5` with no textual basis at all — a real .mht snapshot's S5
+    // text is 100% defensive/survivability ("Optical Illusion stack limit increased to 2... gains a
+    // Shield equal to 150% of ATK for 10s"), no DMG Multiplier mentioned anywhere. Zeroed, matching
+    // the established "invented number with no basis" removal precedent (e.g. Augusta's S5,
+    // Brant's S1, Phrolova's S5).
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 5 }],
-    note: 'Confirmed exact value, no further scope detail sourced beyond the flat value — kept passive.',
+    effects: [],
+    note: 'Purely defensive: Optical Illusion stack cap 1→2, HP<50% auto-triggers a stack (180s CD), grants a 150%-ATK 10s Shield on trigger. Zero DPS component — no fabricated value.',
   },
   {
     id: 'lucy.chain.s6',
