@@ -1510,7 +1510,12 @@ const CHARACTER_DATA = {
   ['Lupa',          2000, 24, 10],  // Liberation burst + team buff
   ['Phrolova',      1800, 24, 8],   // Echo Skill focused
   ['Iuno',          1500, 25, 8],   // Heavy ATK buff + heal
-  ['Qiuyuan',       1200, 25, 6],   // Echo Skill DMG buff
+  // totalMult corrected 2026-09-02 (same pattern as Augusta's fix above): was 1200 — the halving-bug
+  // fix to Qiuyuan's SKILL_MULTIPLIERS row means this table's own documented definition ("sum of
+  // ATK% multipliers in one full rotation") now sums to ~2337 across his real Standard Hybrid
+  // Rotation (Intro + Inkwash 3-4 + Liberation + To Teach/To Save/To Sacrifice + Outro's 100% ATK)
+  // using the corrected values, not the stale 1200 (itself ~half of 2337, confirming the same bug).
+  ['Qiuyuan',       2337, 25, 6],   // Echo Skill DMG buff
   ['Chisa',         1100, 25, 6],   // DEF Shred support
   ['Lynae',         1300, 25, 6],   // Tune Break support
   ['Mornye',        800,  25, 5],   // Healer + Off-Tune
