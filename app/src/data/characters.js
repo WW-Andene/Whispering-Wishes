@@ -1198,7 +1198,14 @@ const CHARACTER_DATA = {
   // Heavy Slash multiplier) and her Resonance Liberation Rekindle (+120% multiplier), which build guides
   // note she "needs to deal most of her damage."
   ['Zani',          ['Heavy ATK', 'Liberation'],     [],                                      ['Frazzle']],
-  ['Cartethyia',    ['Basic ATK'],                   [],                                      ['Erosion']],
+  // dmgFocus corrected 2026-09-02 against a fresh Prydwen dump's own damage-profile breakdown: was
+  // ['Basic ATK'] only — but her real profile is Basic 51.6% / Liberation 23.6% / Debuff(Erosion) 12.5%
+  // / Skill 6.6% / Intro 3.4% / Echo 3.4%. Liberation is a major, second-largest share (Blade of
+  // Howling Squall + the libDmg-categorized Fleurdelys transform hits) — missing it meant any
+  // teammate's Liberation DMG Bonus buff was silently dropped for her. Skill stays excluded (6.6%,
+  // comparable to Intro's un-included 3.4%, same "too minor to warrant inclusion" bar already applied
+  // elsewhere, e.g. Zani's own dmgFocus correction above).
+  ['Cartethyia',    ['Basic ATK', 'Liberation'],     [],                                      ['Erosion']],
   ['Phrolova',      ['Echo', 'Skill'],               [],                                      []],
   // dmgFocus corrected 2026-09-02 (final Augusta audit pass, cross-checked against a fresh Prydwen
   // dump): was ['Heavy ATK', 'Liberation'] — but EVERY one of her Liberation-slot damage instances is
@@ -3517,6 +3524,7 @@ const SKILL_MULTIPLIERS = {
     ['Heavy ATK', 'Fleurdelys Enhanced', '7.78%×2 + 3.89%HP', 'Charged strike in Fleurdelys form.'],
     ['Skill', 'Base Form', '6.89%×3 + 8.86%HP', 'Skill strike that applies 2 stacks of Aero Erosion and summons Sword of Virtue\'s Shadow (max 1, 20s).'],
     ['Skill', 'Fleurdelys 1-2', '24.8%HP / 24.8%HP', "Fleurdelys-form Skill variants (Sword to Answer Waves' Call / May Tempest Break the Tides) — see CHARACTER_ROTATIONS for the cast-order window between them."],
+    ['Mid-air', 'Cartethyia Plunging Attack (3 Shadows Recalled)', '11.29%×3', 'Real modeled-rotation value — fixed 2026-09-02 against a fresh Prydwen dump (previously had no row at all, a silent zero-DMG gap). By the point this step fires in her real rotation, all 3 Sword Shadow types (Discord/Divinity/Virtue) are already up, so the 3-Shadows-Recalled variant is the one that actually applies; the 0/1/2-Shadow variants (5.65% / 5.65% / 3.30%×3) are real too but not used by the modeled rotation.'],
     ['Liberation', "A Knight's Heartfelt Prayers", 'Costs 50% Max HP (25% at Resonance Chain S5; free below 50% HP)', 'Ultimate that transforms her into Fleurdelys form for 12s and clears all Conviction; no direct damage.'],
     ['Liberation', 'Blade of Howling Squall', '13.12%×7 HP', 'Fleurdelys-form Ultimate finisher, cast at 120 Conviction; restores 50% Max HP, removes ALL Aero Erosion stacks from the target (each stack removed Amplifies DMG taken by 20%, up to 5 stacks = +100%), and ends Manifest.'],
     ['Intro', "Sword to Mark Tide's Trace", '2.08%×3 + 6.24%HP', "Base-form swap-in opener; inflicts 2 Aero Erosion stacks and summons Sword of Discord's Shadow (max 1, 20s)."],
@@ -4978,7 +4986,7 @@ const CHARACTER_ROTATIONS = {
     { type: 'Intro', skill: "Sword to Mark Tide's Trace", note: "Swap into her — fires automatically, inflicts 2 Aero Erosion stacks, and grants Sword of Discord's Shadow (max 1, 20s duration)." },
     { type: 'Basic ATK', skill: 'Base Form 1-4', note: "Tap Basic Attack 4 times — Stage 4 inflicts 1 Aero Erosion stack and grants Sword of Divinity's Shadow (max 1, 20s duration)." },
     { type: 'Skill', skill: 'Base Form', note: "Press Skill — inflicts 2 Aero Erosion stacks and grants Sword of Virtue's Shadow (max 1, 20s duration)." },
-    { type: 'Mid-air', skill: 'Cartethyia Plunging Attack', note: 'Jump then tap Basic Attack to plunge down — recalls ALL Sword Shadows currently up (max 3, one of each type); the specific combination of shadow types recalled determines which of Heart of Virtue / Mandate of Divinity / Power of Discord buffs Fleurdelys receives for the whole upcoming Manifest window. TODO: needs Phase 2 schema — which shadow grants which buff, and the buff\'s exact per-effect magnitude, is stateful/combinatorial and not capturable as a flat multiplier.' },
+    { type: 'Mid-air', skill: 'Cartethyia Plunging Attack', note: 'Jump then tap Basic Attack to plunge down — recalls ALL Sword Shadows currently up (max 3, one of each type); the specific combination of shadow types recalled determines which of Heart of Virtue / Mandate of Divinity / Power of Discord buffs Fleurdelys receives for the whole upcoming Manifest window. Real DMG now sourced and modeled (2026-09-02, 11.29%×3 HP at the 3-Shadows-Recalled value this rotation step reaches) — TODO still open only for the STATEFUL part: which shadow grants which buff, and the buff\'s exact per-effect magnitude, is stateful/combinatorial and not capturable as a flat multiplier.' },
     { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", duration: 12, note: 'Press Liberation — costs 50% Max HP (25% at S5, free if HP already below 50%); transforms her into Fleurdelys (Manifest) for 12s and clears all Conviction to 0. Ending Manifest does NOT clear Resonance Energy.' },
     { type: 'Skill', skill: "Fleurdelys 1", note: "Press Skill for Sword to Answer Waves' Call — restores Conviction on hit." },
     { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Tap Basic Attack — chains Mid-air Plunge Stage 3 into Basic Attack Stage 3-5, restoring Conviction on hit.' },

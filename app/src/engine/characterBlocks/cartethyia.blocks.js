@@ -11,10 +11,12 @@
 // the same row (e.g. Heavy ATK Fleurdelys Enhanced) — treated as fully HP-scaling
 // per her declared base stat, documented as an approximation rather than split
 // across two bases (which this schema's single-basis-per-block shape can't do).
-// Mid-air:Cartethyia Plunging Attack has NO matching SKILL_MULTIPLIERS row (its
-// own real effect is stateful/combinatorial per the rotation's own TODO), not
-// modeled. The weapon-specific debuff (Sig weapon Defier's Thorn) is intentionally
-// NOT modeled — hardcoding a weapon's own passive here would double-count it.
+// Mid-air:Cartethyia Plunging Attack's real DMG is now sourced and modeled (2026-09-02, against a
+// fresh Prydwen dump — Characters data dump/Cartethyia/Cartethyia.md — which the prior source page
+// this file was built from was simply missing). The STATEFUL half of that mechanic (which Sword Shadow
+// combo grants which of Heart of Virtue/Mandate of Divinity/Power of Discord to Fleurdelys) is still
+// not modeled, per CHARACTER_ROTATIONS's own TODO. The weapon-specific debuff (Sig weapon Defier's
+// Thorn) is intentionally NOT modeled — hardcoding a weapon's own passive here would double-count it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -74,6 +76,20 @@ export const CARTETHYIA_BLOCKS = [
     note: "May Tempest Break the Tides — must follow Fleurdelys 1 within a short (unpublished-exact) follow-up window or falls back to Skill's normal cooldown, forfeiting this cast for the Manifest window.",
   },
   {
+    id: 'cartethyia.midair.cartethyia-plunging-attack',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Mid-air:Cartethyia Plunging Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // Fixed 2026-09-02 against a fresh Prydwen dump: previously had NO SKILL_MULTIPLIERS row at all,
+    // a silent zero-DMG gap despite being a real, always-cast step in her modeled rotation. Real value
+    // has 4 variants depending on how many Sword Shadows are recalled (0/1/2/3): 5.65% / 5.65% /
+    // 3.30%×3 / 11.29%×3 HP. By the point this step fires in the real modeled rotation, all 3 shadow
+    // types (Discord via Intro, Divinity via Basic 4, Virtue via Skill) are already up, so the
+    // 3-Shadows-Recalled value is the one that actually applies.
+    damage: { hits: parseSkillMultiplierHits('11.29%×3'), basis: 'HP' },
+    note: "Recalls all 3 currently-held Sword Shadows (Discord/Divinity/Virtue) at once, granting Fleurdelys the corresponding Heart of Virtue/Mandate of Divinity/Power of Discord buffs for the whole Manifest window — WHICH shadow grants WHICH buff (and each buff's own further per-effect magnitude) is stateful/combinatorial and not modeled, per CHARACTER_ROTATIONS's own TODO. Only this move's own real DMG is captured here.",
+  },
+  {
     id: 'cartethyia.liberation.blade-of-howling-squall',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Blade of Howling Squall' },
@@ -122,7 +138,7 @@ export const CARTETHYIA_BLOCKS = [
       { stat: 'basicDmg', value: 50 },
       { stat: 'totalMult', value: 200 },
     ],
-    note: "DMG Multiplier of Basic ATK/Heavy ATK/Dodge Counter/Intro Skill +50% (basicDmg) AND DMG Multiplier of Mid-air Attack +200% specifically (totalMult fallback, since there's no dedicated mid-air-only stat) — kept passive, applies broadly. Also raises Erosion's max-stack cap +3 within range on Liberation1 cast and reduces Skill cooldown per Sword Shadow type recalled via Mid-air Attack, neither modeled.",
+    note: "DMG Multiplier of Basic ATK/Heavy ATK/Dodge Counter/Intro Skill +50% (basicDmg) AND DMG Multiplier of Mid-air Attack +200% specifically (totalMult fallback, since there's no dedicated mid-air-only stat) — kept passive, applies broadly. Also raises Erosion's max-stack cap +3 within range on Liberation1 cast, and reduces Skill cooldown per Sword Shadow type recalled via Mid-air Attack (up to -3s at 3 distinct types) — neither modeled. A third real effect (confirmed 2026-09-02 against a fresh dump, previously not captured in this note at all): the NEXT direct-damage hit after Liberation1 cast inflicts 3 Erosion stacks on all nearby targets AND immediately triggers their Erosion DMG once without consuming stacks — a real proc-shaped mechanic, not modeled (no home in this schema for a one-shot conditional proc tied to a resource-cap-raise cast).",
   },
   {
     id: 'cartethyia.chain.s3',

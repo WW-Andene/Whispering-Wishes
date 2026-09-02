@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CARTETHYIA_BLOCKS } from '../engine/characterBlocks/cartethyia.blocks.js';
@@ -60,5 +60,26 @@ describe('triggerEngine parity — Cartethyia', () => {
     expect(fired.has("cartethyia.intro.sword-to-mark-tides-trace")).toBe(true);
     expect(fired.has('cartethyia.liberation.blade-of-howling-squall')).toBe(true);
     expect(fired.has('cartethyia.basic.fleurdelys-1-5')).toBe(true);
+  });
+
+  // Found 2026-09-02 against a fresh Prydwen dump: her own Mid-air Attack (Cartethyia Plunging Attack)
+  // had NO SKILL_MULTIPLIERS row at all — a silent zero-DMG gap despite being a real step in her
+  // modeled rotation (CHARACTER_ROTATIONS's own 'Mid-air:Cartethyia Plunging Attack' step).
+  it('Mid-air Attack (Cartethyia Plunging Attack) is a real, non-zero damage block and fires in her rotation', () => {
+    const block = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.midair.cartethyia-plunging-attack');
+    expect(block).toBeDefined();
+    expect(block.damage.hits.length).toBeGreaterThan(0);
+    expect(block.damage.hits.reduce((s, h) => s + h.atkPct, 0)).toBeCloseTo(33.87, 1); // 11.29% x 3
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Cartethyia'], CARTETHYIA_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(CARTETHYIA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, { hp: 40000 }, 'aero', 'Main DPS');
+    expect(hitLog.some(h => h.blockId === 'cartethyia.midair.cartethyia-plunging-attack')).toBe(true);
+  });
+
+  // Found 2026-09-02 against the same fresh dump's own damage-profile breakdown (Liberation = 23.6% of
+  // her real damage, second only to Basic Attack) — dmgFocus was missing 'Liberation' entirely, meaning
+  // any teammate's Liberation DMG Bonus buff was silently dropped for her.
+  it("dmgFocus includes 'Liberation' (23.6% of her real damage profile), not just 'Basic ATK'", () => {
+    expect(CHARACTER_DATA['Cartethyia'].dmgFocus).toEqual(expect.arrayContaining(['Basic ATK', 'Liberation']));
   });
 });
