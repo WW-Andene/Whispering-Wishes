@@ -2206,11 +2206,16 @@ const CHAR_BUFF_TABLE = {
   // Corrected against ww.nanoka.cc character/1503 — Outro Blossom grants All DMG Amp, not DMG Deepen
   // (she has no Deepen anywhere in her kit).
   'Verina': {
-    outroBuffs: [{ stat: 'allDmg', value: 15, target: 'team', duration: 30 }],
+    // stat corrected 2026-09-02 against a fresh, user-pasted Prydwen text (priority source): was
+    // allDmg ("confirmed Amplified" per a prior session's note), but the kit text explicitly says
+    // "15% all-Type DMG Deepen for 30s" — this table's own separate dmgFocus buff-tag entry
+    // (['ATK Buff', 'DMG Deepen', 'Heal']) already said Deepen too, an internal contradiction the
+    // prior check missed. Fixed to deepen.
+    outroBuffs: [{ stat: 'deepen', value: 15, target: 'team', duration: 30 }],
     libBuffs: [{ stat: 'atkPct', value: 20, target: 'team', duration: 20 }],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro Blossom: heals the incoming Resonator + All DMG Amp +15% (30s) for the nearby team. Inherent Gift of Nature: team ATK +20%/20s on Forte/Liberation/Outro triggers.',
+    note: 'Outro Blossom: heals the incoming Resonator + All-Type DMG Deepen +15% (30s) for the nearby team. Inherent Gift of Nature: team ATK +20%/20s on Forte/Liberation/Outro triggers.',
   },
   // Corrected 2026-08-17 against Prydwen's live build page: outroBuffs' target was 'next' (single
   // incoming Resonator), but Prydwen explicitly states Binary Butterfly "grants the entire party a 15%
@@ -4100,7 +4105,7 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'Heavy/Mid-air Attack: Starflower Blooms', '64.95%+97.42% (Heavy) · 67.64%+63.82%+30.50%×3 (Mid-air)', 'Consumes 1 Photosynthesis Energy (cap 4) per cast to heal the team (1188 + 29.75% ATK at Lv.10) and restore 12 Concerto Energy.'],
     ['Liberation', 'Arboreal Flourish', '198.81%', '175 Energy, 25s cooldown. Heals the team (950 + 23.80% ATK at Lv.10) and applies a 12s Photosynthesis Mark; marked-target hits trigger a healing Coordinated Attack (9.95% ATK DMG, 428 + 10.71% ATK heal), capped 1/s.'],
     ['Intro', 'Verdant Growth', '99.41%'],
-    ['Outro', 'Blossom', 'All DMG Amp +15% (30s) + heal', 'Heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All DMG Amp +15% (30s) — confirmed "Amplified," not Deepen, per nanoka/CHAR_BUFF_TABLE\'s existing sourcing.'],
+    ['Outro', 'Blossom', 'All-Type DMG Deepen +15% (30s) + heal', 'Heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All-Type DMG Deepen +15% (30s). Corrected 2026-09-02 against a fresh, user-pasted Prydwen text (priority source) — was wrongly noted as "Amplified" (a prior session\'s claim); the kit text explicitly says "Deepen", matching this file\'s own dmgFocus buff-tag entry.'],
   ],
   // Full audit 2026-09-01. Base rows (Probe/Standard/Plunging/Deduction→Decipher/Cogitation
   // Model/Principle/Chain Rule) re-verified verbatim against wuwa.build's character #1305 sheet
@@ -4617,7 +4622,7 @@ const CHARACTER_ROTATIONS = {
     { type: 'Skill', skill: 'Botany Experiment', note: 'Press Skill, then immediately cancel it with the Liberation below to save time — this skips the hit and its Resonance Energy gain, but Concerto Energy is still gained. Also grants 1 Photosynthesis Energy on cast.' },
     { type: 'Liberation', skill: 'Arboreal Flourish', note: 'Press Liberation right after Botany Experiment to cancel it — 175 Energy, 25s cooldown. Heals the team (950 + 23.80% ATK at Lv.10) and applies a 12s Photosynthesis Mark for Coordinated-Attack healing.' },
     { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'Jump, then tap Basic Attack up to 3 times to spend all 4 Photosynthesis Energy stacks (1 per cast, cap 4) on Starflower Blooms — each cast heals the team (1188 + 29.75% ATK at Lv.10) and refills 12 Concerto Energy. A Concerto-generating weapon (Variation/Stellar Symphony) lets the last cast be skipped.' },
-    { type: 'Outro', skill: 'Blossom', note: 'Swap out to trigger this automatically — heals the incoming Resonator for 19% ATK/s over 6s and grants the whole nearby team +15% All DMG Amp for 30s.' },
+    { type: 'Outro', skill: 'Blossom', note: 'Swap out to trigger this automatically — heals the incoming Resonator for 19% ATK/s over 6s and grants the whole nearby team +15% All-Type DMG Deepen for 30s.' },
   ],
   // Standard Rotation — re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Jinhsi/Combat
   // (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare). This is the
@@ -6137,8 +6142,11 @@ const RESONANCE_CHAIN_DATA = {
   // S6 "Joyous Harvest": Heavy/Mid-air Attack Starflower Blooms deal 20% more DMG (real DPS component,
   //   matches the existing totalMult:20 magnitude and category — unchanged) AND additionally trigger 1
   //   Coordinated Attack + team heal on cast, both equal to Liberation's Photosynthesis Mark's own CA
-  //   DMG/heal values. TODO: needs Phase 2 schema to add that extra on-cast Coordinated Attack DPS/heal
-  //   proc — only the flat +20% DMG Mult on Starflower Blooms itself is captured here.
+  //   DMG/heal values. Corrected 2026-09-02: the totalMult:20 stat here could never actually apply in
+  //   the hit-composed resolvers (a cast-scoped, no-duration buff — see Engine development.md item 12) —
+  //   now modeled as a real damage block (verina.chain.s6, a proportional 2nd hit) in verina.blocks.js.
+  //   The Coordinated Attack proc is ALSO now modeled (verina.chain.s6-coordinated-attack, 9.95% ATK
+  //   coordDmg) — its team heal stays unmodeled (no DPS component).
   'Verina':       { s1: {}, s2: {}, s3: {}, s4: { elemDmg: 15 }, s5: {}, s6: { totalMult: 20 } },
   // Shorekeeper S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Shorekeeper/Combat
   // (MediaWiki API action=parse, section=Resonance Chain — bypassed the Combat page's Cloudflare interstitial),
