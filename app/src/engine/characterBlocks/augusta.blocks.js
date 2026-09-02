@@ -12,6 +12,15 @@
 // before a 3rd swap) is modeled via the engine's dedicated
 // 'partner-outro-return' trigger type — see augusta.outro.battlesong and
 // augusta.outro.majesty-condition below.
+//
+// Re-audited 2026-09-02 against a fresh Prydwen.gg source dump (see
+// characters.js's SKILL_MULTIPLIERS['Augusta'] for the full ratio verification):
+// every damage block below was carrying the exact same value SKILL_MULTIPLIERS
+// had — which was itself off by a consistent ~1.988x (roughly HALF the real
+// value) across all 11 hits, the same "halving pattern" bug class already fixed
+// for Camellya/Carlotta/Roccia/Phoebe/Brant, just missed for Augusta until now.
+// Retightened every hit to Prydwen's exact Lv.10 figures — a real, live-DPS-
+// relevant fix, not cosmetic: this engine file feeds the actual damage calculator.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -26,7 +35,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Stride of Goldenflare' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('50%×2') },
+    damage: { hits: parseSkillMultiplierHits('99.41%×2') },
     note: 'Fully restores Prowess and 20% Ascendancy.',
   },
   {
@@ -35,7 +44,7 @@ export const AUGUSTA_BLOCKS = [
     trigger: { type: 'cast', on: 'Heavy ATK:Thunderoar: Backstep' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row 'Thunderoar' has 3 slash-separated variants — the Backstep segment matches this step.
-    damage: { hits: parseSkillMultiplierHits('27%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('53.68%'), category: 'heavyDmg' },
     note: 'Once Prowess is capped, replaces Heavy Attack — consumes all Prowess.',
   },
   {
@@ -43,7 +52,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Heavy ATK:Thunderoar: Spinslash' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('71.3%×3'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('141.72%×3'), category: 'heavyDmg' },
     note: 'Auto-chains off Backstep — a whirling follow-up hit. See augusta.chain.s6-thunder-rage below for the S6-granted bonus hits on this cast.',
   },
   {
@@ -51,7 +60,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: "Skill:Warrior's Blade" },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('110%×3'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('218.70%×3'), category: 'skillDmg' },
     note: 'A dash-slam hit with a brief time-stop on cast, restores 10% Ascendancy.',
   },
   {
@@ -61,7 +70,7 @@ export const AUGUSTA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     // 2nd Backstep-into-Spinslash pass, collapsed into one CHARACTER_ROTATIONS step — both segments
     // of the row combined.
-    damage: { hits: [...parseSkillMultiplierHits('27%'), ...parseSkillMultiplierHits('71.3%×3')], category: 'heavyDmg' },
+    damage: { hits: [...parseSkillMultiplierHits('53.68%'), ...parseSkillMultiplierHits('141.72%×3')], category: 'heavyDmg' },
     note: 'Once Prowess refills, repeats the Backstep-into-Spinslash combo.',
   },
   {
@@ -69,7 +78,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Sword of Eternal Oath' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('16.6%×2 + 66.4%×3 + 16.6%×2 + 287.6%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('32.99%×2 + 131.94%×3 + 32.99%×2 + 571.7%'), category: 'heavyDmg' },
     note: 'Counted as Heavy ATK DMG despite the Liberation slot. Restores the last 40% Ascendancy, capping it at 100%.',
   },
   {
@@ -77,7 +86,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Undying Sunlight: Strike' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('70%×2'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('139.17%×2'), category: 'skillDmg' },
     note: 'Once Ascendancy is capped, replaces Skill.',
   },
   {
@@ -85,7 +94,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Undying Sunlight: Leap' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('112%+14%×2'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('222.67%+27.84%×2'), category: 'skillDmg' },
     note: 'Auto-chains off Strike.',
   },
   {
@@ -93,7 +102,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Undying Sunlight: Plunge' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('43.6%+392%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('86.59%+779.24%'), category: 'heavyDmg' },
     note: 'Counted as Heavy ATK DMG. Consumes all Ascendancy, grants 1 Majesty stack.',
   },
   {
@@ -101,7 +110,10 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Sublime is the Sun: Sunborne ×9' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('60% ×9'), category: 'heavyDmg' },
+    // Fixed 2026-09-02: was '119.29% ×9' (with a space before ×) — parseSkillMultiplierHits' token
+    // regex requires × immediately after %, so the space silently dropped the ×9 count entirely,
+    // producing a SINGLE hit instead of the 9 this block's own note (and its real kit) describes.
+    damage: { hits: parseSkillMultiplierHits('119.29%×9'), category: 'heavyDmg' },
     note: '9 rapid Heavy ATK-type hits during the frozen time window of Sworn Allegiance.',
   },
   {
@@ -109,7 +121,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Sublime is the Sun: Everbright Protector' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('120% + 450% + 3%×10') },
+    damage: { hits: parseSkillMultiplierHits('238.58% + 894.65% + 5.97%×10') },
     note: 'Ends Sworn Allegiance, consumes all Crown of Wills stacks, deploys Ruler\'s Realm.',
   },
   {

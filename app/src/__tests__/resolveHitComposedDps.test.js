@@ -254,13 +254,16 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
     expect(plungeBlock.damage.category).toBe('heavyDmg');
   });
 
-  it("Undying Sunlight: Leap's real hits (112%+14%×2) are independently hand-verifiable", () => {
+  it("Undying Sunlight: Leap's real hits (222.67%+27.84%×2) are independently hand-verifiable", () => {
+    // Values corrected 2026-09-02: this row (and Augusta's entire kit) was previously off by a
+    // consistent ~1.988x — roughly HALF its real value — found re-auditing against a fresh Prydwen
+    // source dump; see SKILL_MULTIPLIERS['Augusta']'s own audit comment in characters.js.
     const leapBlock = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.skill.undying-sunlight-leap');
     const steps = [{ type: 'Skill', skill: 'Undying Sunlight: Leap', stepSeconds: 1 }];
     const { hitLog, totalDamage } = resolveHitComposedDps([leapBlock], steps, NEUTRAL_ENEMY, 1000);
-    expect(hitLog.map(h => h.atkPct)).toEqual([112, 14, 14]);
+    expect(hitLog.map(h => h.atkPct)).toEqual([222.67, 27.84, 27.84]);
     const avgCrit = 1 + (5 / 100) * (150 / 100 - 1);
-    const expected = 1000 * avgCrit * ((112 + 14 + 14) / 100);
+    const expected = 1000 * avgCrit * ((222.67 + 27.84 + 27.84) / 100);
     expect(totalDamage).toBeCloseTo(expected, 6);
   });
 });

@@ -3142,16 +3142,22 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Clip It: Hard Cut', '149.41%', 'Replaces Clip It while in Reminiscence.'],
     ['Outro', 'Montage', '60% Glacio Chafe DMG Amp (Chafe mode) / 50% Echo Skill DMG Amp to next (Echo mode)', 'Buffs Glacio Chafe DMG or next ally Echo Skill DMG.'],
   ],
+  // Re-audited verbatim 2026-09-02 against a fresh Prydwen.gg Augusta page dump: every single one of
+  // her 22 Lv.10 damage values below was off by a consistent ~1.988x ratio (i.e. roughly HALF the real
+  // value) — the exact same "halving pattern" bug class already found and fixed for Camellya/Carlotta/
+  // Roccia/Phoebe/Brant (see the comment on Brant's own row just below), just missed for Augusta until
+  // now. Confirmed systematic, not rounding noise: computed the new/old ratio for all 22 values, every
+  // one landed at 1.986-1.991. Retightened every value to Prydwen's exact Lv.10 figures.
   'Augusta': [
-    ['Basic ATK', "Hunter's Path", '28.9% → 33.7%×2 → 33%×3 → 32.5%×3', 'Standard combo string, builds toward her Majesty/Crown resources.'],
-    ['Heavy ATK', 'Steelclash', '23.3%×3', 'Base charged combo.'],
-    ['Heavy ATK', 'Thunderoar', 'Backstep 27% / Spinslash 71.3%×3 / Uppercut 90%×2', 'Empowered Heavy ATK combo, unlocked at full Ascendancy.'],
-    ['Skill', "Warrior's Blade", '110%×3', 'Multi-hit Skill strike with a brief time-stop on cast.'],
-    ['Liberation', 'Sword of Eternal Oath', '16.6%×2 + 66.4%×3 + 16.6%×2 + 287.6%', 'Standard Ultimate combo nuke.'],
-    ['Liberation', 'Sunborne', '60% ×9 slashes', 'Alt Ultimate opener when holding the input at 2 Majesty stacks.'],
-    ['Liberation', 'Everbright Protector', '120% + 450% + 3%×10', 'Finisher following Sunborne, deploys Ruler\'s Realm.'],
-    ['Forte', 'Undying Sunlight', 'Strike 70%×2 / Leap 112%+14%×2 / Plunge 43.6%+392%', 'Forte-empowered combo, Plunge consumes all Ascendancy for a big finisher.'],
-    ['Intro', 'Stride of Goldenflare', '50%×2', 'Swap-in opener strike.'],
+    ['Basic ATK', "Hunter's Path", '57.46% → 67.00%×2 → 65.61%×3 → 64.63%×3', 'Standard combo string, builds toward her Majesty/Crown resources.'],
+    ['Heavy ATK', 'Steelclash', '46.39%×3', 'Base charged combo.'],
+    ['Heavy ATK', 'Thunderoar', 'Backstep 53.68% / Spinslash 141.72%×3 / Uppercut 178.93%×2', 'Empowered Heavy ATK combo, unlocked at full Ascendancy.'],
+    ['Skill', "Warrior's Blade", '218.70%×3', 'Multi-hit Skill strike with a brief time-stop on cast.'],
+    ['Liberation', 'Sword of Eternal Oath', '32.99%×2 + 131.94%×3 + 32.99%×2 + 571.7%', 'Standard Ultimate combo nuke.'],
+    ['Liberation', 'Sunborne', '119.29% ×9 slashes', 'Alt Ultimate opener when holding the input at 2 Majesty stacks.'],
+    ['Liberation', 'Everbright Protector', '238.58% + 894.65% + 5.97%×10', 'Finisher following Sunborne, deploys Ruler\'s Realm.'],
+    ['Forte', 'Undying Sunlight', 'Strike 139.17%×2 / Leap 222.67%+27.84%×2 / Plunge 86.59%+779.24%', 'Forte-empowered combo, Plunge consumes all Ascendancy for a big finisher.'],
+    ['Intro', 'Stride of Goldenflare', '99.41%×2', 'Swap-in opener strike.'],
     ['Outro', 'Battlesong of the Unyielding', '+15% All DMG Amp (14s)', 'Grants the next Resonator +15% All-Attribute DMG Amp for 14s, which ends immediately if they are swapped out. Conditional payoff: Augusta gains +1 Majesty stack AND +1 Crown of Wills stack ONLY if that SAME Resonator casts their own Outro Skill back to Augusta while this buff is still up — swap to a third character first and the buff (and the stack chance) is forfeited. Verified verbatim wutheringwaves.fandom.com/wiki/Augusta/Combat, 2026-08-31.'],
   ],
   'Aemeath': [
