@@ -157,12 +157,17 @@ plausible some or all of these are genuinely correct — some older-generation
 healers may legitimately have a higher base Energy pool — so this needs a
 real dump/wiki check per character, not a blind global "set to 125".
 
-Also found (2026-09-02, full-roster audit pass): `Denia` stores `maxEnergy: 150`
-— a third distinct value, not matching the 125-default or the 175-miscopy
-pattern either. The existing `Characters data dump/Denia/Denia.md` file has no
-Base Stats section at all (never captured when that dump was made), so this
-can't be checked against it — needs a fresh dump specifically covering Denia's
-Stats tab before touching this number.
+Noted in passing (2026-09-02, full-roster audit pass): `Denia` stores
+`maxEnergy: 150` — a third distinct value, not matching the 125-default or the
+175-miscopy pattern either. This is NOT a flagged discrepancy the way Mornye's
+and Shorekeeper's were — those two had a fresh dump explicitly stating `125`
+against a stored `175`, a real contradiction. Denia's own dump file just never
+had its Base Stats section captured (a gap in that .md file, created in an
+earlier session), so there is zero evidence either way on this number — it was
+already live in the app before this whole audit thread started, same as every
+other character's base stats, and nothing found so far contradicts it. Not
+worth a "needs verification" flag on its own; only revisit if a fresh dump for
+Denia happens to include her Stats tab anyway.
 
 **Fix shape**: no code change — a data-accuracy backlog item. When any of
 Verina/Baizhi/Suisui comes up for a dump-based audit, check `Max Energy`
@@ -241,8 +246,8 @@ re-verified each against its existing `Characters data dump/*/*.md` file.
 - **Fixed this pass**: Sigrika's S3 (`totalMult:15` → `{}`, zero real DPS component, same class as
   Chisa's/Mornye's earlier missed-S3 bugs).
 - **Found, not fixed** (schema limitation, item 8 above): Qingxiao's S4.
-- **Found, not fixed** (data gap, item 5 above): Denia's `maxEnergy: 150`, unverifiable — no Stats
-  section in her existing dump file.
+- Denia's `maxEnergy: 150` was initially over-flagged here as a "data gap needing verification" —
+  corrected: it's not a discrepancy, just a missing section in her own dump file. See item 5's note.
 - **Reviewed, confirmed already correct, no changes**: Aemeath (including a deliberately-left-flagged
   S2 — re-confirmed the existing caution was sound, not overridden), Hiyuki, Luuk Herssen, Denia's S1-S3/
   S5/S6, Qingxiao's S1-S3/S5/S6.
