@@ -35,14 +35,28 @@ const CHARACTER_DATA = {
     // teams corrected 2026-08-18: Sanhua was Havoc Rover's original 1.0-era buffer pairing; current
     // sources consistently name Roccia as his best current buffer instead (her Havoc/Basic ATK Outro).
     teams: ['Rover: Havoc + Roccia + Verina', 'Rover: Havoc + Yinlin + Shorekeeper'] },
+  // Fixed 2026-09-02 against a real prydwen.gg .mht snapshot (confirmed genuine via its own
+  // Snapshot-Content-Location header). Prior data had 3 real, confidently-sourced bugs: bestWeapon
+  // was 'Emerald of Genesis' — not even mentioned anywhere in the source's Best Weapons section,
+  // which shows ONLY her own signature (Bloodpact's Pledge, 100% at R1, 121.12% at R5) — no other
+  // weapon is compared at all in this build guide. bestEchoes named 'Gusts of Welkin 5pc' (not
+  // mentioned in source) and 'Reminiscence: Fleurdelys' as the primary main echo, when the source's
+  // actual best/default set is Rejuvenating Glow (100%) with Bell-Borne Geochelone as ITS main echo
+  // (Fleurdelys is the main echo for the situational alt set, Windward Pilgrimage, only worth it in
+  // high-investment Cartethyia+Ciaccona teams). teams named 'Rover: Aero + Jinhsi + Shorekeeper' —
+  // Jinhsi is never mentioned anywhere in the source; real Synergies/Example Teams name only
+  // Cartethyia+Ciaccona (best team), Iuno+Ciaccona (Main DPS Iuno team), and Jiyan+Ciaccona (Jiyan
+  // team). weaponAlts left as-is (unconfirmed, not contradicted) — the source's Best Weapons section
+  // genuinely shows no alternative weapons at all for this character, so there's nothing here to
+  // confirm OR contradict the existing alt5/alt4/alt3 entries against.
   'Rover: Aero': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Healer',
     desc: "A wanderer who awoke with no memory on the shores of Solaris. Aero attunement: a healer/support whose Skyfall Severance strips Spectro Frazzle, Havoc Bane, Fusion Burst, Glacio Chafe, and Electro Flare stacks off a target and converts each into a stack of Aero Erosion, while Forte and Liberation both heal the team.",
     skills: ['Wind Cutter', 'Illusion Breaker', 'Cycle of Wind', 'Omega Storm'],
     ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
-    bestEchoes: ['Reminiscence: Fleurdelys', 'Gusts of Welkin 5pc'], bestWeapon: 'Emerald of Genesis',
+    bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: "Bloodpact's Pledge",
     weaponAlts: { alt5: ["Bloodpact's Pledge", 'Laser Shearer'], alt4: ['Overture', 'Lunar Cutter'], alt3: ['Sword of Voyager'] },
-    teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Rover: Aero + Jinhsi + Shorekeeper'] },
+    teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Iuno + Ciaccona + Rover: Aero'] },
   'Rover: Electro': { rarity: 5, element: 'Electro', weapon: 'Sword', role: 'Sub DPS',
     desc: 'A wanderer who awoke with no memory on the shores of Solaris. Electro attunement: a Parry Stance hybrid — hold Basic ATK for interrupt immunity and 60% DMG reduction, then spend Electric Surge on a team ATK buff or Apex Resonance, unlocking the multi-element Thrum of All Sounds Forte combo. Currently the weakest attunement, lacking a strong DPS partner.',
     skills: ['Deterrence', 'Thunderclap', "Myriad Omens' Mandate", 'Ultimate Tactics'],
@@ -3119,12 +3133,20 @@ const CHAR_BUFF_TABLE = {
     debuffs: [{ stat: 'resShred', value: 10, duration: 20, condition: 'S4 (3 copies): Devastation/Liberation hit → Havoc RES Shred -10% (20s). Chain-gated, not innate.' }],
     note: 'On-field Havoc main DPS. Hold Heavy ATK at full Umbra to cast Devastation and enter Dark Surge — an enhanced Basic/Heavy/Skill state ending in Liberation Deadening Abyss, a 1520% ATK single-target nuke.',
   },
+  // Fixed 2026-09-02 against a real prydwen.gg .mht snapshot: outroBuffs and libBuffs both stored a
+  // real, non-DPS mechanic under a fabricated 'totalMult' key — neither Outro's Aero Erosion stack-cap
+  // increase nor Liberation's healing formula is a damage multiplier, so encoding either one as
+  // totalMult would inject a false DMG bonus into any consumer that reads it at face value (the
+  // TriggerBlocks engine already independently avoided using these two fields, per
+  // roveraero.blocks.js's own header comment — this only fixes the raw data table itself). Zeroed
+  // both, real mechanics documented in the note instead, matching the "invented number with no basis"
+  // removal precedent used elsewhere (e.g. Augusta's S5, Lucy's S5).
   'Rover: Aero': {
-    outroBuffs: [{ stat: 'totalMult', value: 3, target: 'team', duration: 30, condition: "Outro Storm's Echo: Aeolian Realm — team's Aero Erosion stack cap +3 for 10s per hit (30s field)." }],
-    libBuffs: [{ stat: 'totalMult', value: 77, target: 'team', duration: 0, condition: 'Liberation Omega Storm heals nearby team ~2090 + 77% ATK.' }],
+    outroBuffs: [],
+    libBuffs: [],
     selfBuffs: [],
     debuffs: [],
-    note: "Healer/support. Mid-air Skill Skyfall Severance strips Spectro Frazzle, Havoc Bane, Fusion Burst, Glacio Chafe, and Electro Flare stacks off the target hit and converts each into a stack of Aero Erosion. Forte Cloudburst Dance and Liberation Omega Storm both heal the team.",
+    note: "Healer/support. Mid-air Skill Skyfall Severance strips Spectro Frazzle, Havoc Bane, Fusion Burst, Glacio Chafe, and Electro Flare stacks off the target hit and converts each into a stack of Aero Erosion. Forte Cloudburst Dance and Liberation Omega Storm both heal the team (no direct DMG buff). Outro Storm's Echo (Aeolian Realm, 30s): +3 max Aero Erosion stack cap on hit (10s) for the whole team — a stacking-limit increase, not a damage multiplier, so it has zero direct DPS component of its own; it enables OTHER team members (e.g. Cartethyia) to bank more Aero Erosion stacks. Liberation Omega Storm heals nearby team ~2090 flat + 77% ATK — a heal, not a damage buff.",
   },
   'Rover: Electro': {
     outroBuffs: [{ stat: 'allDmg', value: 25, target: 'ally', duration: 14, condition: 'Outro Rumbling Thunders: incoming Resonator gains Electro Core — next Negative Status hit grants All DMG Amp +25% (14s).' }],

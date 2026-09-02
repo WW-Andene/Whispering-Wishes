@@ -649,6 +649,13 @@ is modeled as `kind:'buff'` with `trigger:{type:'cast',...}` and no `timing.dura
 this bug on sight — don't wait to stumble onto it via a coincidental "no visible effect" test.** 3 of
 the last 3 characters processed (Carlotta, Galbrena, Lucy) each had at least one instance.
 
+**8th confirmed instance, 2026-09-02**: Rover: Aero's `chain.s5` (Omega Storm DMG Mult +20%) — same
+`kind:'buff', trigger:{type:'cast',...}, timing:{}` shape, found immediately on sight per the standing
+rule above rather than via a coincidental test failure. Fixed the same way — `trigger:{type:'passive'}`
++ `scopedToBlockId`. 4 of the last 4 characters processed (Carlotta, Galbrena, Lucy, Rover: Aero) each
+had at least one instance — this shape is clearly not rare, and checking for it is now a standard part
+of this project's per-character pass, not an occasional lucky find.
+
 **Fix shape, not yet done**: (1) a real architecture fix — either make `statsAtInstant()` also check a
 3rd bucket of "cast-scoped, same-instant-only" buffs (blocks matching this shape, applied only to hits at
 their own exact trigger instant, not before/after), or add a cheap default `timing.duration` (e.g. 0.1s)

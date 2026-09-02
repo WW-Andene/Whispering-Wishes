@@ -3,16 +3,19 @@
 // Rover: Aero converted to TriggerBlocks. Sourced from characters.js's already-
 // audited CHAR_BUFF_TABLE['Rover: Aero'], RESONANCE_CHAIN_DATA['Rover: Aero'],
 // SKILL_MULTIPLIERS['Rover: Aero'], and CHARACTER_ROTATIONS['Rover: Aero']. No new
-// numbers invented. Unlike most other rows in this file, RESONANCE_CHAIN_DATA's
-// own line for Rover: Aero has no adjacent per-node audit comment (the nearby
-// comment block actually documents Rover: Electro's chain, confirmed by its node
-// names — Celestial Ingenuity/Overshock — which belong to the Electro attunement,
-// not Aero) — S1/S2 are already correctly empty in the source data, and S3-S6 are
-// used as-is, flagged here as unverified beyond their flat values rather than
-// silently treated as fully precise. Both her outroBuffs and libBuffs store
-// non-DPS values (an Aero Erosion stack-cap increase, a flat+%ATK healing
-// formula) under a 'totalMult' key that doesn't actually represent a damage
-// multiplier — neither is modeled, to avoid injecting a false DMG bonus.
+// numbers invented. S1/S2 are correctly empty (no DPS component — pure
+// resource/healing mechanics). S3-S6 confirmed exact 2026-09-02 against a real
+// prydwen.gg .mht snapshot (resolving the previous "no adjacent audit comment,
+// flagged as unverified" gap) — 3 real bugs found and fixed that pass: S4 was
+// modeled as an unconditional passive when the kit text is explicit it's a 5s
+// window on Cloudburst Dance cast; S5 was a dead cast-scoped/no-duration
+// `kind:'buff'` no-op (Engine development.md item 12); S6 was an unscoped passive
+// silently over-crediting her other skillDmg-categorized moves instead of only
+// Unbound Flow. Both her outroBuffs and libBuffs store non-DPS values (an Aero
+// Erosion stack-cap increase, a flat+%ATK healing formula) — CHAR_BUFF_TABLE
+// itself previously fabricated these under a 'totalMult' key (fixed 2026-09-02),
+// and this file never used them to begin with, to avoid injecting a false DMG
+// bonus.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -88,30 +91,46 @@ export const ROVER_AERO_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'elemDmg', value: 15 }],
-    note: 'Flat value used as-is — no adjacent audit comment sourced beyond the RESONANCE_CHAIN_DATA line itself, flagged as unverified rather than silently treated as fully precise. Kept passive.',
+    note: '+15% Aero DMG Bonus, unconditional (confirmed exact against a real .mht snapshot 2026-09-02).',
   },
   {
     id: 'roveraero.chain.s4',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
+    // Fixed 2026-09-02 against a real prydwen.gg .mht snapshot (confirms S3-S6 exactly, resolving the
+    // "no adjacent audit comment" gap this file previously flagged): was `trigger:{type:'passive'}`,
+    // modeled as unconditional — the real kit text is explicit this is conditional: "Casting Mid-air
+    // Attack Cloudburst Dance increases Resonance Skill DMG Bonus by 15% for 5s." Converted to a real
+    // cast-scoped 5s buffWindow.
+    trigger: { type: 'cast', on: 'Forte:Cloudburst Dance' },
+    timing: { duration: 5 }, target: { scope: 'self' },
     effects: [{ stat: 'skillDmg', value: 15 }],
-    note: 'Flat value used as-is — no adjacent audit comment sourced beyond the RESONANCE_CHAIN_DATA line itself, flagged as unverified. Kept passive.',
+    note: 'Casting Cloudburst Dance grants +15% Resonance Skill DMG Bonus for 5s.',
   },
   {
     id: 'roveraero.chain.s5',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Liberation:Omega Storm' },
+    // Fixed 2026-09-02: was `trigger:{type:'cast',...}` with no `timing.duration` — the same dead
+    // cast-scoped/no-duration `kind:'buff'` no-op shape found on Carlotta's S1/S2, Galbrena's S3, and
+    // Lucy's S2/S3 (Engine development.md item 12) — never actually applied. Converted to
+    // `trigger:{type:'passive'}` + `scopedToBlockId` so it fires and stays scoped to only Omega
+    // Storm's own hit.
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 20 }],
-    note: "Modeled as Omega Storm's own DMG Multiplier +20%, matching this file's established convention for libDmg-categorized chain nodes (Calcharo's S5 and others) — cast-scoped (instant, no persistent duration). No adjacent audit comment confirms this specific scoping, flagged as unverified.",
+    effects: [{ stat: 'libDmg', value: 20, scopedToBlockId: 'roveraero.liberation.omega-storm' }],
+    note: "Omega Storm's own DMG Multiplier +20% (confirmed exact against a real .mht snapshot).",
   },
   {
     id: 'roveraero.chain.s6',
     source: SOURCE, kind: 'buff',
+    // Fixed 2026-09-02: was an unscoped passive `skillDmg:30` — since `skillDmg` applies to EVERY
+    // skillDmg-categorized hit unconditionally, this was silently over-crediting Cloudburst
+    // Dance/Awakening Gale/Skyfall Severance too, none of which S6's own kit text lists ("The DMG
+    // Multiplier of Resonance Skill Unbound Flow is increased by 30%" — Unbound Flow only). Fixed via
+    // `scopedToBlockId` (Augusta's S3 over-crediting fix pattern), same double-check now applied
+    // roster-wide.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 30 }],
-    note: 'Flat value used as-is — no adjacent audit comment sourced beyond the RESONANCE_CHAIN_DATA line itself, flagged as unverified. Kept passive.',
+    effects: [{ stat: 'skillDmg', value: 30, scopedToBlockId: 'roveraero.forte.unbound-flow' }],
+    note: "Unbound Flow's own DMG Multiplier +30% (confirmed exact against a real .mht snapshot) — scoped to only that move, not her whole skillDmg-categorized kit.",
   },
 ];
