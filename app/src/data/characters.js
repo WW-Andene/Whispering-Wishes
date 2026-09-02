@@ -3534,6 +3534,14 @@ const SKILL_MULTIPLIERS = {
     ['Basic ATK', 'Necessary Measures 1-3', '65.91% → 60.08%+73.43% → 139.93%+23.33%×4'], // was '66.4% → 134.4% → 234.6%'
     ['Heavy ATK', 'Standard', '22.82%×4 + 60.84%'], // was '153.0%' (real total 152.12%)
     ['Heavy ATK', 'Containment Tactics', '34.23%×4 + 91.26%'], // was '229.6%' (real total 228.18%)
+    // Added 2026-09-02, sourced from the pasted Prydwen text's own Skills tab — was previously
+    // entirely missing (not a rounding fix, a real gap). None of these 3 rows are wired into a
+    // CHARACTER_ROTATIONS step (her burst rotation uses Mid-air Atk purely to reposition, per the
+    // kit text's own "no damage focus" framing), so this only fills the data table, no engine block
+    // added for them.
+    ['Mid-air', 'Attack', '104.78%'],
+    ['Mid-air', 'Customary Greetings', '107.99% + 131.99%'],
+    ['Dodge Counter', 'Riposte', '103.77% + 137.55%'],
     ['Forte', 'Imminent Oblivion', '66.83%×5 + 501.21%'], // was '67.2%×5 + 504.2%' (real total 835.36%, not 840.2%)
     ['Skill', 'Art of Violence', '144.11%×2'], // was '145.0%×2' (real total 288.22%, not 290%)
     ['Skill', 'Chromatic Splendor', '112.73%×2 + 338.18%'], // was '113.4%×2 + 340.2%' (real total 563.64%, not 567%)

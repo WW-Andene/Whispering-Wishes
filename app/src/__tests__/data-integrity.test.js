@@ -199,6 +199,12 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Phrolova[9] "Liberation: Waltz of Forsaken Depths"',
     'Qiuyuan[1] "Basic ATK: Inkwash Stage 3-4"',
     'Rover: Electro[1] "Basic ATK: Deterrence 1-4"',
+    // Added 2026-09-02 alongside the new 'Mid-air'/'Attack' SKILL_MULTIPLIERS row (sourced from the
+    // pasted Prydwen text, previously missing entirely): the rotation step's own skill string is
+    // "Plunging Attack" (repositioning-only per its note, no damage focus), which doesn't
+    // substring-match the row name "Attack" or "Customary Greetings" — correctly stays unresolved,
+    // matching the step's own intentionally-no-damage framing.
+    'Carlotta[3] "Mid-air: Plunging Attack"',
   ]);
 
   it('no NEW rotation step fails to resolve against SKILL_MULTIPLIERS (baseline-tracked, see comment above)', () => {

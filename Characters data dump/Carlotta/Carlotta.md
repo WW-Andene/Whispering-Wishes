@@ -221,9 +221,13 @@ many damage blocks should be included — since Deconstruction is kept near-perm
 Artis, a blanket unconditional Crit Rate passive would likely be close to correct but isn't sourced as
 "unconditional," so it's logged here as a known gap rather than force-fit.
 
-Missing SKILL_MULTIPLIERS rows (present in source, absent from the app): Mid-air Attack DMG (104.78%),
-Customary Greetings DMG (107.99%+131.99%), Dodge Counter DMG (103.77%+137.55%). None of these are used
-in CHARACTER_ROTATIONS (Mid-air Atk is pure repositioning in her rotation, matching source text calling
-it "no damage focus"), so this is a data-completeness gap, not a live DPS-affecting bug — not added
-this pass to avoid inventing block wiring for moves the rotation doesn't use, but the multiplier numbers
-above are sourced and ready if a future rotation variant needs them.
+**Fixed 2026-09-02 (2nd pass)**: SKILL_MULTIPLIERS was missing 3 rows the pasted text has right at the
+top of its own Multipliers table — Mid-air Attack DMG (104.78%), Customary Greetings DMG
+(107.99%+131.99%), Dodge Counter DMG (103.77%+137.55%). Added as `['Mid-air', 'Attack', ...]`,
+`['Mid-air', 'Customary Greetings', ...]`, `['Dodge Counter', 'Riposte', ...]`. None of these are wired
+into a new engine block since CHARACTER_ROTATIONS's Mid-air step is pure repositioning (no damage focus
+per its own note) — the rotation doesn't use any of these 3 moves for damage — but the sourced
+multiplier numbers now live in the data table rather than being omitted. `data-integrity.test.js`'s
+`Carlotta[3] "Mid-air: Plunging Attack"` step correctly stays in the KNOWN_UNRESOLVED_BASELINE list
+(its own skill string "Plunging Attack" doesn't name-match either new Mid-air row, by design — it's a
+repositioning-only step).
