@@ -18,7 +18,7 @@ import {
   calcResMult,
 } from '../features/teams/calcEngine.js';
 import { CHAR_BUFF_TABLE } from '../data/characters.js';
-import { resolveElectroFlareFromBlocks } from './dotReactionsFromBlocks.js';
+import { resolveElectroFlareFromBlocks, resolveFusionBurstFromBlocks } from './dotReactionsFromBlocks.js';
 import { DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
 
 /**
@@ -76,7 +76,15 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
 
   const frazzle = calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
   const erosion = calcErosionDmg(members, rotTime, defMult, erosionResMult);
-  const fusionBurst = calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult);
+  // Fusion Burst (ENGINE_MERGE_PLAN.md Phase 2 — Denia/Aemeath migrated): same block-preference
+  // pattern as Electro Flare below, with one addition — `dotApplier.requiresStance` (Denia/Aemeath are
+  // BOTH mode-conditional appliers, unlike Buling) is resolved via the SAME `winningStanceForOwner()`
+  // this session already built and tested for their Tune Break exclusivity, not a second mechanism.
+  // Their legacy `debuffs.fusionBurst` flags stay in place for `dotContributors` attribution, same
+  // reasoning as Buling's kept `electroFlare` flag below.
+  const fusionBurst = blocksByOwner
+    ? resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, fusionBurstResMult)
+    : calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult);
   // Electro Flare (ENGINE_MERGE_PLAN.md Phase 2, first migrated mechanic): prefer the TriggerBlock-
   // native resolver when blocksByOwner is available (real production callers always have it by the
   // time DOT reactions are resolved) — parity with the legacy formula proven in
@@ -119,15 +127,24 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
 }
 
 /**
- * Recomputes the shared Fusion Burst reaction for a specific exclude-set — a thin wrapper so callers
- * outside this file (calcTeamStats.js's combinatorial mode-exclusivity resolution) don't need to
- * import calcEngine.js's calcFusionBurstDmg directly or re-derive fusionBurstResMult themselves.
+ * Recomputes the shared Fusion Burst reaction for a specific hypothesis (calcTeamStats.js's own
+ * combinatorial mode resolver testing one combination) — a thin wrapper so that caller doesn't need to
+ * import calcEngine.js's/dotReactionsFromBlocks.js's own functions directly or re-derive
+ * fusionBurstResMult itself.
  * @param {Object[]} members
  * @param {number} rotTime
  * @param {number} defMult
  * @param {number} fusionBurstResMult  From resolveDotReactionDps()'s own return value.
- * @param {string[]} excludeNames
+ * @param {string[]} excludeNames  Legacy (CHAR_BUFF_TABLE-driven) candidates this hypothesis excludes.
+ * @param {Object<string,import('./triggerBlocks.schema.js').TriggerBlock[]>|null} [blocksByOwner]
+ *   ENGINE_MERGE_PLAN.md Phase 2: when supplied, prefers the block-based resolver.
+ * @param {Object<string,string>|null} [stanceOverrides]  Block-based (migrated) candidates this
+ *   hypothesis is testing — keyed by owner name, value is the stance being tried for THIS combination,
+ *   overriding `winningStanceForOwner()`'s own single fixed answer (see `collectAppliers`'s own doc in
+ *   dotReactionsFromBlocks.js for why the search needs this instead of the natural resolution).
  */
-export function recomputeFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult, excludeNames) {
-  return calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult, excludeNames);
+export function recomputeFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult, excludeNames, blocksByOwner = null, stanceOverrides = null) {
+  return blocksByOwner
+    ? resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, fusionBurstResMult, excludeNames, stanceOverrides)
+    : calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult, excludeNames);
 }

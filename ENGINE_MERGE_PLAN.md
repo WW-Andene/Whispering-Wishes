@@ -260,20 +260,46 @@ tackle them — simplest mechanic/fewest interactions first):
 | Character | Mechanic | Status |
 |---|---|---|
 | Buling | Electro Flare | **Migrated 2026-09-02** |
-| Denia | Fusion Burst (+ tuneBreak, deferred to 1.5) | Not started |
-| Aemeath | Fusion Burst (+ tuneBreak, deferred to 1.5) | Not started |
+| Denia | Fusion Burst | **Migrated 2026-09-02** (tuneBreak itself deferred to 1.5) |
+| Aemeath | Fusion Burst | **Migrated 2026-09-02** (tuneBreak itself deferred to 1.5) |
 | Ciaccona | Erosion | Not started |
 | Cartethyia | Erosion | Not started |
 | Phoebe | Frazzle (real-mode check needed first — see Phase 0 note) | Not started |
 | Rover: Spectro | Frazzle | Not started |
 | Lynae, Aemeath, Denia, Mornye, Luuk Herssen, Rebecca, Lucy | Tune Break | Not started (1.5, last) |
 
+### Denia/Aemeath Fusion Burst migration — the mode-conditional case, solved properly
+
+Unlike Buling's unconditional applier, Denia's/Aemeath's real Fusion Burst application is
+mode-conditional (`dotApplier.requiresStance: 'Fusion Burst mode'`, new field, same shape as
+`appliesTags`'s own `{tag, requiresStance}`). This surfaced a real architectural tension worth
+recording: `collectAppliers()`'s default resolution (`winningStanceForOwner()`) answers "what does this
+owner's OWN blocks naturally resolve to", but `calcTeamStats.js`'s combinatorial mode resolver needs to
+TEST hypotheses ("what if Denia picked Strain") — reusing the single fixed natural answer inside a
+search meant to explore alternatives would collapse every hypothesis to the same result. Solved with a
+`stanceOverrides` param (keyed by owner name) that takes priority over `winningStanceForOwner()` when
+supplied — the combinatorial resolver passes an explicit override per candidate per combo; every other
+caller (the live rotation simulator, `appliesTags` gating, etc.) omits it and gets the natural
+resolution. `recomputeFusionBurstDmg()` (`dotReactions.js`) threads `blocksByOwner`/`stanceOverrides`
+through; `calcTeamStats.js`'s resolver now ALWAYS computes an explicit hypothesis per combo (previously
+it shortcut to reusing the baseline when nothing was excluded — removed, since that baseline reflected
+the natural resolution, not necessarily the combo being tested).
+
+Verified end-to-end: `calcTeamStats(['Aemeath','Denia','Lynae'],...)` produces byte-identical numbers
+to the pre-migration run (244,892 / 107,156 / 188,670 / teamDps 17,443) — the migration is provably
+transparent, not just "still passes the existing tests." 3 new dedicated tests
+(`dotReactionsFromBlocks.test.js`) prove `stanceOverrides` on Denia's real blocks: natural resolution
+(Fusion Burst, matches her outro rivalry), forced-out override, forced-in override matching natural
+exactly. Full suite: 1245 tests passing (up from 1242).
+
 ## Status
 
-**Current phase: 2, in progress.** Infrastructure (`dotReactionsFromBlocks.js`) built and tested. One
-character (Buling) fully migrated end-to-end and verified in production. Next: Fusion Burst
-(Denia/Aemeath) — reuses the same boolean-gate pattern Electro Flare just proved, lowest-risk next step
-before tackling Erosion's MAX-aggregation or Frazzle's SUM-aggregation + Phoebe's real-mode question.
+**Current phase: 2, in progress.** Infrastructure (`dotReactionsFromBlocks.js`) built and tested. Three
+characters (Buling, Denia, Aemeath) fully migrated end-to-end and verified in production, including the
+harder mode-conditional case. Next: Erosion (Ciaccona/Cartethyia) — MAX-aggregation, no mode conditions
+to worry about, should be simpler than Fusion Burst's stanceOverrides work; Frazzle
+(Phoebe/Rover: Spectro) after that, with Phoebe's real-mode question (is she even in Confession mode at
+all, matching her existing `assumedInactive` TriggerBlock treatment) resolved before porting her.
 
 ## Constraints (repeated here, not just in the mandate, so they're never missed mid-phase)
 

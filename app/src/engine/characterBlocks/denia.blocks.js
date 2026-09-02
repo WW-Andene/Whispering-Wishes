@@ -66,6 +66,12 @@ export const DENIA_BLOCKS = [
       { tag: 'fusion-burst', requiresStance: 'Fusion Burst mode' },
       { tag: 'shifting', requiresStance: 'Tune Strain mode' },
     ],
+    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — the SAME real Fusion Burst
+    // application this block's own appliesTags entry already names, now also feeding the shared
+    // Fusion Burst DOT reaction total (dotReactionsFromBlocks.js) instead of CHAR_BUFF_TABLE's
+    // debuffs.fusionBurst flag. Reuses the identical winningStanceForOwner() resolution as appliesTags
+    // — one mode decision, two consumers, not two independent mode mechanisms.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
     note: 'Builds Conformal Charge toward 100, each hit inflicting Fusion Burst or Tune Strain - Shifting depending on Resonance Mode.',
   },
   {
@@ -105,6 +111,9 @@ export const DENIA_BLOCKS = [
       { tag: 'fusion-burst', requiresStance: 'Fusion Burst mode' },
       { tag: 'shifting', requiresStance: 'Tune Strain mode' },
     ],
+    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — same rationale as
+    // denia.basic.breakdown-stage1-4 above.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
     note: 'Off-field zone left by Final Act - Breakdown Form; pulls in and hits nearby targets every 4s for 30s, applying Fusion Burst/Tune Strain even after Denia swaps out. Modeled as one representative tick, not the full sustained-duration mechanic.',
   },
 

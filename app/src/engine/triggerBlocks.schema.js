@@ -326,6 +326,12 @@
  *   ENGINE_MERGE_PLAN.md 1.1/1.2 for why these differ). Omit for `fusionBurst`/`electroFlare`, whose
  *   `calcEngine.js` formulas don't scale by a per-applier value at all (a boolean "does anyone apply
  *   it" gate) — see ENGINE_MERGE_PLAN.md 1.3/1.4.
+ * @property {string} [requiresStance]  Added for Denia/Aemeath's Fusion Burst migration: this
+ *   applier block only counts when `sequenceGating.js`'s `winningStanceForOwner()` resolves the
+ *   OWNER's own assumed mode to this exact stance text — same shape and resolution mechanism as
+ *   `appliesTags`'s own `{tag, requiresStance}` form (reused, not duplicated), since a mode-locked
+ *   character's real DOT-reaction participation is exactly as mode-conditional as their `appliesTags`
+ *   already are. Omit for an unconditional applier (Buling's Electro Flare).
  */
 
 /**

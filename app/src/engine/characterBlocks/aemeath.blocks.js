@@ -39,6 +39,11 @@ export const AEMEATH_BLOCKS = [
     trigger: { type: 'cast', on: 'Intro:Debut of Meteoric Radiance' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('65.30% + 97.95%') },
+    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — CHARACTER_ROTATIONS' own step note:
+    // "applies Tune Rupture/Fusion Burst depending on her Resonance Mode." Fusion-Burst-mode-only per
+    // her kit text; gated the same way her tuneBreak.competesWithFusionBurstReaction resolution already
+    // is (winningStanceForOwner), not a second mode mechanism.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
   },
   {
     id: 'aemeath.basic.mech-stage-3-4',
@@ -47,6 +52,10 @@ export const AEMEATH_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('3.89%×6+81.54%+11.65% + 40.38%+94.21%'), category: 'basicDmg' },
     note: '2 taps (per step note) = stage 3 + stage 4 of the 4-stage Mech Form combo.',
+    // dotApplier added 2026-09-02 — Basic Stage 3/4 inflicts Fusion Burst per her kit text (Forte
+    // Circuit "To Sculpt the Silence": Basic Stage 3/4, Sync Strikes, both Intro skills), Fusion-Burst-
+    // mode only.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
   },
   {
     id: 'aemeath.liberation.heavenfall-edict-overdrive',
@@ -62,6 +71,9 @@ export const AEMEATH_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('18.57%+74.26% + 3.89%×6+81.54%+11.65% + 40.38%+94.21%'), category: 'basicDmg' },
     note: '3 taps (per step note) = stages 2+3+4 of the 4-stage Mech Form combo.',
+    // dotApplier added 2026-09-02 — bundles Stage 3/4 (her kit's real Fusion Burst trigger) alongside
+    // Stage 2, same combo-bundling approximation this block already makes for its own damage.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
   },
   {
     id: 'aemeath.skill.seraphic-duet-encore',
@@ -78,6 +90,9 @@ export const AEMEATH_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('13.89%+20.84%+34.73% + 9.32%×3+18.63%+46.56% + 6.73%×5+100.94%'), category: 'basicDmg' },
     note: '3 taps (per step note) = stages 2+3+4 of the 4-stage Aemeath Form combo.',
+    // dotApplier added 2026-09-02 — same real Basic Stage 3/4 trigger as her Mech-form combos above,
+    // in base Aemeath Form instead.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
   },
   {
     id: 'aemeath.skill.seraphic-duet-overture',

@@ -1485,13 +1485,29 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           combos = combos.flatMap(prefix => opts.map(opt => [...prefix, opt]));
         }
 
+        // Real hypothesis per combo, not a "reuse the baseline when nothing's excluded" shortcut
+        // (ENGINE_MERGE_PLAN.md Phase 2 — Denia/Aemeath's Fusion Burst migration): the baseline
+        // `dotResult.breakdown.fusionBurst.dmg` reflects whatever `winningStanceForOwner()` naturally
+        // resolves for a BLOCK-migrated candidate, which is a DIFFERENT question than "what if this
+        // combo's own hypothesis holds" — reusing it as a shortcut would silently reintroduce the exact
+        // stale-baseline class of bug this resolver was built to eliminate. Always pass an explicit
+        // stanceOverrides entry for every fusion-competing candidate in the combo (both `excludeNames`
+        // for any still-legacy/unmigrated candidate and `stanceOverrides` for block-migrated ones are
+        // populated together — a candidate might be either shape).
+        const blocksByOwnerForFusion = engineChosenOrder?.blocksByOwner || null;
         let best = null;
         for (const combo of combos) {
+          const fusionCompetingInCombo = candidates.filter((c, i) => c.competesWithFusionBurstReaction);
           const excludeNames = candidates
             .filter((c, i) => c.competesWithFusionBurstReaction && combo[i] !== 'fusion')
             .map(c => c.name);
-          const fusionDmg = excludeNames.length
-            ? recomputeFusionBurstDmg(mems, rotTime, defMult, dotResult.fusionBurstResMult, excludeNames).dmg
+          const stanceOverrides = {};
+          candidates.forEach((c, i) => {
+            if (!c.competesWithFusionBurstReaction) return;
+            stanceOverrides[c.name] = combo[i] === 'fusion' ? 'Fusion Burst mode' : '__not-fusion-this-combo__';
+          });
+          const fusionDmg = fusionCompetingInCombo.length
+            ? recomputeFusionBurstDmg(mems, rotTime, defMult, dotResult.fusionBurstResMult, excludeNames, blocksByOwnerForFusion, stanceOverrides).dmg
             : dotResult.breakdown.fusionBurst.dmg;
           let dmgAdj = fusionDmg, multAdj = 1;
           candidates.forEach((c, i) => {

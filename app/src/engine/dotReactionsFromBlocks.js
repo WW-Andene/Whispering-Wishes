@@ -23,16 +23,41 @@ import {
   FUSION_BURST_THRESHOLD, FUSION_TRAIL_MULT,
   FLARE_TICK_INTERVAL, FLARE_STACK_MULT,
 } from '../features/teams/calcEngine.js';
+import { winningStanceForOwner } from './sequenceGating.js';
 
 function lookupStackMult(table, stacks) {
   const idx = Math.max(0, Math.min(table.length - 1, Math.round(stacks)));
   return table[idx];
 }
 
-/** Every dotApplier-tagged block across the whole team, keyed by mechanic. */
-function collectAppliers(blocksByOwner, mechanic) {
+/**
+ * Every dotApplier-tagged block across the whole team, keyed by mechanic — filtered by mode where the
+ * block declares one. `dotApplier.requiresStance` (added alongside Denia/Aemeath's migration, same
+ * shape/rationale as `appliesTags`'s own `{tag, requiresStance}` — see triggerBlocks.schema.js) only
+ * counts the block when the owner's resolved mode matches the exact stance text. By default that
+ * resolution is `winningStanceForOwner()` (the SAME resolution this session already built and tested
+ * for Denia/Aemeath's Tune Break exclusivity) — but `stanceOverrides` (keyed by owner name) takes
+ * priority when a caller passes one, needed by calcTeamStats.js's own combinatorial resolver: THAT
+ * resolver enumerates hypothetical stances per candidate ("what if Denia picked Strain instead") to
+ * find the real global optimum, which is a fundamentally different question than "what does this one
+ * owner's own blocks resolve to in isolation" — reusing `winningStanceForOwner`'s single fixed answer
+ * inside a search that's supposed to be TESTING alternatives would make every hypothesis collapse to
+ * the same one answer, defeating the search. A block with no `requiresStance` counts unconditionally
+ * regardless of any override (Buling's Electro Flare shape).
+ */
+function collectAppliers(blocksByOwner, mechanic, stanceOverrides = null) {
   const allBlocks = Object.values(blocksByOwner).flat();
-  return allBlocks.filter(b => b.dotApplier?.mechanic === mechanic);
+  const stanceCache = new Map();
+  const ownerStance = (owner) => {
+    if (stanceOverrides && Object.prototype.hasOwnProperty.call(stanceOverrides, owner)) return stanceOverrides[owner];
+    if (!stanceCache.has(owner)) stanceCache.set(owner, winningStanceForOwner(allBlocks, owner));
+    return stanceCache.get(owner);
+  };
+  return allBlocks.filter(b => {
+    if (b.dotApplier?.mechanic !== mechanic) return false;
+    const stance = b.dotApplier.requiresStance;
+    return stance == null || ownerStance(b.source) === stance;
+  });
 }
 
 /**
@@ -77,8 +102,8 @@ export function resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, resMul
  * applier count or their own value at all (matches calcFusionBurstDmg exactly). `excludeNames` kept
  * for parity with the legacy function's own 2026-09-02 addition (Aemeath's mode-exclusivity fix).
  */
-export function resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, resMult, excludeNames = []) {
-  const appliers = collectAppliers(blocksByOwner, 'fusionBurst').filter(b => !excludeNames.includes(b.source));
+export function resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, resMult, excludeNames = [], stanceOverrides = null) {
+  const appliers = collectAppliers(blocksByOwner, 'fusionBurst', stanceOverrides).filter(b => !excludeNames.includes(b.source));
   if (!appliers.length) return { dmg: 0, active: false };
   const explosions = Math.max(1, Math.floor(rotTime / Math.max(FUSION_BURST_THRESHOLD, 8)));
   const dmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (FUSION_BURST_THRESHOLD * 0.5) * FUSION_TRAIL_MULT;

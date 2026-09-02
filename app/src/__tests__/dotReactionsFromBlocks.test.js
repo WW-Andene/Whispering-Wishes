@@ -10,6 +10,8 @@ import {
   resolveFrazzleFromBlocks, resolveErosionFromBlocks, resolveFusionBurstFromBlocks, resolveElectroFlareFromBlocks,
 } from '../engine/dotReactionsFromBlocks.js';
 import { BULING_BLOCKS } from '../engine/characterBlocks/buling.blocks.js';
+import { DENIA_BLOCKS } from '../engine/characterBlocks/denia.blocks.js';
+import { filterExclusiveModeBlocks, gateBlocksBySequence } from '../engine/sequenceGating.js';
 
 const defMult = calcDefMult(800, 0, 0);
 const resMult = calcResMult(10, 0);
@@ -65,6 +67,29 @@ describe('dotReactionsFromBlocks — Frazzle (synthetic, SUMS per-block value, r
     const combined = resolveFrazzleFromBlocks({ Rover: [forte, lib] }, 20, defMult, resMult, false);
     const singleEquivalent = resolveFrazzleFromBlocks({ Rover: [{ ...forte, dotApplier: { mechanic: 'frazzle', value: 8 } }] }, 20, defMult, resMult, false);
     expect(combined.dmg).toBeCloseTo(singleEquivalent.dmg, 6);
+  });
+});
+
+describe('dotReactionsFromBlocks — Fusion Burst mode-conditional appliers (Denia, real blocks) with stanceOverrides', () => {
+  // Denia's real dotApplier-tagged blocks are Fusion-Burst-mode-only per her own kit text — the
+  // resolver has to be able to gate on that, and calcTeamStats.js's combinatorial resolver needs to
+  // override the natural winningStanceForOwner() answer per-hypothesis (see collectAppliers's own doc).
+  const deniaBlocks = filterExclusiveModeBlocks(gateBlocksBySequence(DENIA_BLOCKS, 0));
+
+  it('counts Denia as a Fusion Burst applier when her own blocks naturally resolve to Fusion Burst mode (her outro rivalry: 60 > 15)', () => {
+    const result = resolveFusionBurstFromBlocks({ Denia: deniaBlocks }, 30, defMult, resMult);
+    expect(result.active).toBe(true);
+  });
+
+  it('stanceOverrides forces her OUT of the gate for a hypothesis testing Tune Strain, even though her natural resolution is Fusion Burst', () => {
+    const result = resolveFusionBurstFromBlocks({ Denia: deniaBlocks }, 30, defMult, resMult, [], { Denia: 'Tune Strain mode' });
+    expect(result).toEqual({ dmg: 0, active: false });
+  });
+
+  it('stanceOverrides forcing her INTO Fusion Burst mode matches the natural (unoverridden) resolution exactly — same real number either way', () => {
+    const natural = resolveFusionBurstFromBlocks({ Denia: deniaBlocks }, 30, defMult, resMult);
+    const overridden = resolveFusionBurstFromBlocks({ Denia: deniaBlocks }, 30, defMult, resMult, [], { Denia: 'Fusion Burst mode' });
+    expect(overridden.dmg).toBeCloseTo(natural.dmg, 6);
   });
 });
 
