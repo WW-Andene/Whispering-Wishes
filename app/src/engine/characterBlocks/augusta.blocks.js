@@ -35,7 +35,11 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Stride of Goldenflare' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('99.41%×2') },
+    // category fixed 2026-09-02 against a fresh Prydwen dump: the multiplier row is labeled generically
+    // "Skill Damage" (not "Stride of Goldenflare DMG"), the same convention already confirmed on Lupa's
+    // Try Focusing, Eh?/Ciaccona's Roaming with the Wind — a generic "Skill Damage" label means plain
+    // Resonance Skill DMG.
+    damage: { hits: parseSkillMultiplierHits('99.41%×2'), category: 'skillDmg' },
     note: 'Fully restores Prowess and 20% Ascendancy.',
   },
   {
@@ -186,8 +190,26 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 25 }],
-    note: '+25% DMG Multiplier specifically on Heavy Attack - Thunderoar: Backstep/Spinslash/Uppercut and their Dodge Counter equivalents (not a generic Heavy ATK buff) — kept passive, applies to those blocks above (her only Heavy ATK hits anyway, per the audit comment).',
+    // Fixed 2026-09-02 against a fresh Prydwen dump: was a single unscoped totalMult effect — a prior
+    // session's note claimed this was safe since "her only Heavy ATK hits anyway," but that's wrong:
+    // totalMult applies unconditionally to EVERY hit regardless of category (calcEngine.js's `(1 +
+    // stats.totalMult/100)` factor, not category-gated), so it was silently over-crediting her real
+    // skillDmg hits too (Warrior's Blade, Undying Sunlight: Strike/Leap) and her Intro — none of which
+    // are in S3's real move list. The kit text names exactly 6 moves: Thunderoar: Backstep/Spinslash/
+    // Uppercut (+ their Dodge Counter equivalents), Undying Sunlight: Plunge, Sublime is the Sun:
+    // Sunborne, and Sublime is the Sun: Everbright Protector — notably NOT Undying Sunlight: Strike/Leap
+    // despite those being the same Forte family. Scoped via scopedToBlockId (Phase 0.5 gap #3's
+    // mechanism) to each real block that fires in her modeled rotation; Uppercut has no block (never
+    // used in the modeled rotation) so isn't listed.
+    effects: [
+      { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.heavy.thunderoar-backstep' },
+      { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.heavy.thunderoar-spinslash' },
+      { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.heavy.thunderoar-backstep-spinslash-repeat' },
+      { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.skill.undying-sunlight-plunge' },
+      { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.liberation.sunborne' },
+      { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.liberation.everbright-protector' },
+    ],
+    note: '+25% DMG Multiplier specifically on Thunderoar: Backstep/Spinslash/Uppercut (+ Dodge Counter equivalents), Undying Sunlight: Plunge, and Sublime is the Sun: Sunborne/Everbright Protector — NOT a generic Heavy ATK buff (Undying Sunlight: Strike/Leap are excluded despite also being heavyDmg... actually skillDmg-categorized, and correctly excluded either way per the kit text\'s own explicit move list).',
   },
   {
     id: 'augusta.chain.s4-ascent-in-sun-and-glory',

@@ -1,262 +1,295 @@
 # Augusta — Prydwen.gg source dump (cleaned)
 
-Source: prydwen.gg/wuthering-waves/characters/augusta
-Last updated (per page): 20/August/2026 · Last review update: Patch 2.6 · Last major build/calcs update: Patch 3.0
-
-5★ Electro Broadblade, DPS.
-
----
+5★ Electro, Broadblade, Main DPS. Heavy-Attack-focused DPS who builds through 3 stacked resources
+(Prowess, Ascendancy, Majesty) toward a devastating time-stopping 2nd Ultimate (Sublime is the Sun),
+ending her rotation. Real-life last update: review Patch 2.6, calcs Patch 3.0, profile 20/August/2026.
 
 ## Kit
 
 ### Basic Attack — Hunter's Path
-
-- **Basic Attack**: up to 4 consecutive attacks, Electro DMG.
-- **Heavy Attack – Steelclash**: consumes STA, Electro DMG. Press Normal Attack shortly after to chain into Basic Attack Stage 2.
-- **Mid-air Attack**: consumes STA, plunging attack, Electro DMG.
-- **Dodge Counter**: press Normal Attack after a successful Dodge, Electro DMG.
-- **Mid-air Dodge Counter**: press Normal Attack after a successful Mid-air Dodge, consumes STA, Electro DMG.
-- **Heavy Attack – Thunderoar: Backstep**: replaces Steelclash when Prowess is full — Electro DMG, consumes all Prowess. Release/press Normal Attack again shortly after to chain into **Thunderoar: Spinslash** (also available if Augusta stays grounded for a while after this skill is interrupted).
-- **Heavy Attack – Thunderoar: Spinslash**: whirling Broadblade attack, Electro DMG.
-- **Heavy Attack – Thunderoar: Uppercut**: press Jump with full Prowess (or after Skill/Steelclash/Dodge-Counter-Steelclash under specific conditions) — Electro DMG, consumes all Prowess.
-- **Dodge Counter – Heavy Attack: Steelclash**: replaces Dodge Counter when Prowess is full — Electro DMG, **counted as Heavy Attack DMG**.
-- **Dodge Counter – Thunderoar: Backstep**: when Ascendancy is full, press Normal Attack after a successful ground Dodge — replaces Dodge Counter / Dodge Counter-Steelclash — Electro DMG, **counted as Heavy Attack DMG**. Chains into Spinslash the same way as the Heavy Attack version.
-
-**Prowess** (0–100): gained from Basic Attack, Heavy Attack-Steelclash, Mid-air Attack, Mid-air Dodge Counter, Resonance Skill-Warrior's Blade, Dodge Counter, or Dodge Counter-Steelclash landing damage. Fully restored on **Intro Skill – Stride of Goldenflare**.
+- **Basic Attack**: up to 4 hits, Electro DMG.
+- **Heavy Attack - Steelclash**: STA cost, Electro DMG. Normal Attack shortly after chains into Basic
+  Stage 2.
+- **Mid-air Attack**: STA cost, Plunging Attack, Electro DMG.
+- **Dodge Counter**: post-Dodge Normal Attack, Electro DMG.
+- **Mid-air Dodge Counter**: post-mid-air-Dodge Normal Attack, STA cost, Plunging Attack, Electro DMG.
+- **Heavy Attack - Thunderoar: Backstep** (replaces Steelclash at full Prowess): Electro DMG, consumes
+  all Prowess. Release/re-press Normal Attack within a window during it to chain into Thunderoar:
+  Spinslash (also reachable if she stays grounded a bit after this move is interrupted).
+- **Heavy Attack - Thunderoar: Spinslash**: whirls the Broadblade, Electro DMG.
+- **Heavy Attack - Thunderoar: Uppercut** (Jump at full Prowess, OR pressing Skill/Jump at full Prowess
+  during Warrior's Blade, OR releasing/re-pressing Normal Attack/Jump at full Prowess during Steelclash/
+  Dodge Counter-Steelclash): Electro DMG, consumes all Prowess.
+- **Dodge Counter - Heavy Attack: Steelclash** (replaces Dodge Counter at full Prowess): Electro DMG,
+  considered Heavy Attack DMG.
+- **Dodge Counter - Thunderoar: Backstep** (replaces both Dodge Counter and its Steelclash variant, at
+  full Ascendancy — grounded, post-successful-Dodge Normal Attack): Electro DMG, considered Heavy Attack
+  DMG. Same Spinslash-chain window rule as base Backstep.
+- **Prowess** (cap 100): gained on damaging hits from Basic Attack, Heavy Attack-Steelclash, Mid-air
+  Attack, Mid-air Dodge Counter, Resonance Skill-Warrior's Blade, Dodge Counter, or Dodge Counter-Heavy
+  Attack: Steelclash. Fully restored by casting Intro Skill (Stride of Goldenflare).
 
 **Multipliers (Lv.10):**
-| Move | Value |
-|---|---|
-| Basic ATK Stage 1 | 57.46% |
-| Basic ATK Stage 2 | 67.00%×2 |
-| Basic ATK Stage 3 | 65.61%×3 |
-| Basic ATK Stage 4 | 64.63%×3 |
-| Heavy Attack: Steelclash | 46.39%×3 |
-| Mid-air Attack | 59.65%×2 |
-| Dodge Counter | 67.00%×2 |
-| Mid-air Dodge Counter | 59.65%×2 |
-| Heavy Attack: Steelclash STA cost | 20 |
-| Mid-air Attack STA cost | 30 |
-| Mid-air Dodge Counter STA cost | 30 |
-| Thunderoar: Backstep | 53.68% |
-| Thunderoar: Spinslash | 141.72%×3 |
-| Thunderoar: Uppercut | 178.93%×2 |
-| Dodge Counter – Heavy Attack: Steelclash | 46.39%×3 |
-| Dodge Counter – Thunderoar: Backstep | 53.68% |
-| Thunderoar: Spinslash STA cost | 20 |
-| Thunderoar: Uppercut STA cost | 20 |
-| Dodge Counter – Heavy Attack: Steelclash STA cost | 20 |
+- Stage 1: 57.46%
+- Stage 2: 67.00%×2
+- Stage 3: 65.61%×3
+- Stage 4: 64.63%×3
+- Heavy Attack: Steelclash: 46.39%×3
+- Mid-air Attack: 59.65%×2
+- Dodge Counter: 67.00%×2
+- Mid-air Dodge Counter: 59.65%×2
+- Heavy Attack - Thunderoar: Backstep: 53.68%
+- Heavy Attack - Thunderoar: Spinslash: 141.72%×3
+- Heavy Attack - Thunderoar: Uppercut: 178.93%×2
+- Dodge Counter - Heavy Attack: Steelclash: 46.39%×3
+- Dodge Counter - Thunderoar: Backstep: 53.68%
+- STA costs: Steelclash 20, Mid-air Attack 30, Mid-air Dodge Counter 30, Thunderoar: Spinslash 20,
+  Thunderoar: Uppercut 20, Dodge Counter-Steelclash 20.
 
 ### Resonance Skill — Warrior's Blade
+Leaps and slams down her Broadblade, Electro DMG.
 
-Leaps and slams her Broadblade down, Electro DMG.
-- Skill DMG (Lv.10): **218.70%×3**
-- Cooldown: 15s · Concerto Regen: 10
+**Multipliers (Lv.10):** 218.70%×3. Cooldown 15s. Concerto Regen 10.
 
 ### Resonance Liberation — Sunward Conquest
-
-- **Liberation – Sword of Eternal Oath**: press-and-release cast. Sweeps her Broadblade forward, Electro DMG, **counted as Heavy Attack DMG**.
-- **Liberation – Sublime is the Sun**: at 2 stacks of Majesty, **hold** Liberation instead. Costs 2 Majesty stacks, no Resonance Energy. Generates **Ruler's Realm** and enters **Sworn Allegiance** for 7s: time is stopped, resonator switching disabled; only Sunborne/Everbright Protector/Dodge (and Mid-air Attack while airborne) can be performed. Any environmental/gameplay interaction ends Sworn Allegiance early without triggering Everbright Protector.
-  - **Sublime is the Sun – Sunborne**: press/hold Normal Attack in Sworn Allegiance. Electro DMG, **counted as Heavy Attack DMG**. After 9 casts, press Normal Attack or Liberation to trigger Everbright Protector.
-  - **Sublime is the Sun – Everbright Protector**: Electro DMG, **counted as Heavy Attack DMG**. Ends Sworn Allegiance, consumes all Crown of Wills stacks, forces every other team member off-field. Auto-casts when Sworn Allegiance's duration ends; can be triggered early by holding Liberation during Sworn Allegiance.
-
-**Ruler's Realm** (30s): any team member casting their Intro Skill inside it gains a shield = `650 + 5% of Augusta's Max HP` for 10s (unstackable, does not pass to the next incoming resonator on swap).
-
-**Majesty** (0–2): +1 from casting Resonance Skill-Undying Sunlight: Plunge; +1 from a teammate casting their own Outro Skill while under Augusta's Outro Skill (Battlesong of the Unyielding) buff.
+- **Sword of Eternal Oath** (press-and-release Liberation): sweeps her Broadblade forward, Electro DMG,
+  **considered Heavy Attack DMG**.
+- **Sublime is the Sun** (hold Liberation, at 2 Majesty stacks): costs no Resonance Energy, instead
+  consumes 2 Majesty stacks. Generates **Ruler's Realm** and enters **Sworn Allegiance** for 7s — time
+  stops, Resonator switching disabled; only Sublime is the Sun-Sunborne/Everbright Protector and Dodge
+  can be performed (Mid-air Attack available while airborne). Environmental/gameplay interactions end
+  Sworn Allegiance early WITHOUT triggering Everbright Protector.
+  - **Sunborne**: (hold/press Normal Attack in Sworn Allegiance) Electro DMG, **considered Heavy Attack
+    DMG**. After 9 casts, Normal Attack/Liberation triggers Everbright Protector.
+  - **Everbright Protector**: Electro DMG, **considered Heavy Attack DMG**. Ends Sworn Allegiance,
+    consumes all Crown of Wills stacks, forces every other team Resonator off-field. Auto-casts when
+    Sworn Allegiance's timer ends; can be triggered early by holding Liberation during Sworn Allegiance.
+  - **Ruler's Realm** (30s): any team Resonator casting their Intro Skill within it gains a Shield = 650 +
+    5% Augusta's Max HP for 10s (non-stackable, doesn't pass to an incoming Resonator).
+  - **Majesty** (cap 2): 1 stack from casting Undying Sunlight: Plunge; 1 stack from any teammate casting
+    THEIR Outro Skill while under Augusta's own Outro (Battlesong of the Unyielding) effect.
 
 **Multipliers (Lv.10):**
-| Move | Value |
-|---|---|
-| Liberation – Sword of Eternal Oath | 32.99%×2 + 131.94%×3 + 32.99%×2 + 571.7% |
-| Sublime is the Sun – Sunborne | 119.29% |
-| Sublime is the Sun – Everbright Protector | 238.58% + 894.65% + 5.97%×10 |
-| Sword of Eternal Oath cooldown | 25s |
-| Sword of Eternal Oath Resonance cost | 125 |
-| Sword of Eternal Oath Concerto Regen | 20 |
-| Sublime is the Sun cooldown | 25s |
-| Everbright Protector cooldown | 3s |
+- Sword of Eternal Oath: 32.99%×2 + 131.94%×3 + 32.99%×2 + 571.7%
+- Sunborne: 119.29%
+- Everbright Protector: 238.58% + 894.65% + 5.97%×10
+- Sword of Eternal Oath: cooldown 25s, Resonance Cost 125, Concerto Regen 20
+- Sublime is the Sun: cooldown 25s
+- Everbright Protector: cooldown 3s
 
 ### Forte Circuit — Call Me By the Sun
-
-- **Resonance Skill – Undying Sunlight: Strike**: replaces Warrior's Blade at full Ascendancy. Electro DMG. Press Normal Attack or Skill during the action to chain into **Undying Sunlight: Leap**. Re-castable shortly after being interrupted. Can be cast mid-air.
-- **Resonance Skill – Undying Sunlight: Leap**: Electro DMG. Press Normal Attack or Skill during the action to chain into **Undying Sunlight: Plunge**. Re-castable after being interrupted. Can ONLY be cast mid-air.
-- **Resonance Skill – Undying Sunlight: Plunge**: consumes all Ascendancy. Electro DMG, **counted as Heavy Attack DMG**. Grants 1 Majesty stack. Can ONLY be cast mid-air.
-- **Dodge Counter – Undying Sunlight: Strike**: at full Ascendancy, press Skill after a successful ground Dodge (or Normal Attack/Skill after a Mid-air Dodge). Electro DMG, **counted as Resonance Skill DMG**. Chains into Leap the same way.
-
-**Ascendancy** (0–100): gained from Normal Attacks landing. Intro (Stride of Goldenflare) restores 20%; base Resonance Skill (Warrior's Blade) restores 10%; Liberation (Sword of Eternal Oath) restores 40%.
+- **Undying Sunlight: Strike** (replaces Warrior's Blade at full Ascendancy): Electro DMG. Normal Attack
+  or Skill during it chains into Undying Sunlight: Leap. Re-castable shortly after being interrupted.
+  Castable mid-air.
+- **Undying Sunlight: Leap**: Electro DMG. Normal Attack or Skill during it chains into Undying Sunlight:
+  Plunge. Re-castable after being interrupted. Only castable mid-air.
+- **Undying Sunlight: Plunge**: consumes all Ascendancy, Electro DMG, **considered Heavy Attack DMG**.
+  Grants 1 Majesty stack. Only castable mid-air.
+- **Dodge Counter - Undying Sunlight: Strike** (at full Ascendancy — press Skill after a grounded Dodge,
+  OR Normal Attack/Skill after a mid-air Dodge): Electro DMG, **considered Resonance Skill DMG**. Same
+  Leap-chain rule as base Strike.
+- **Ascendancy** (cap 100): gained on damaging Normal Attack hits. Intro Skill cast restores 20%; base
+  Resonance Skill (Warrior's Blade) cast restores 10%; Sword of Eternal Oath (Liberation) cast restores
+  40%.
 
 **Multipliers (Lv.10):**
-| Move | Value |
-|---|---|
-| Undying Sunlight: Strike | 139.17%×2 |
-| Undying Sunlight: Leap | 222.67% + 27.84%×2 |
-| Undying Sunlight: Plunge | 86.59% + 779.24% |
-| Mid-air Dodge Counter – Undying Sunlight: Strike | 139.17%×2 |
-| Undying Sunlight: Plunge Concerto Regen | 7 |
-| Undying Sunlight: Strike STA cost | 10 |
-| Undying Sunlight: Leap STA cost | 10 |
+- Undying Sunlight: Strike: 139.17%×2
+- Undying Sunlight: Leap: 222.67% + 27.84%×2
+- Undying Sunlight: Plunge: 86.59% + 779.24%
+- Mid-air Dodge Counter-Undying Sunlight: Strike: 139.17%×2
+- Undying Sunlight: Plunge Concerto Regen 7; Strike/Leap STA cost 10 each.
 
 ### Inherent Skills
-
-- **Glory's Favor**: on dealing damage, gain a shield = `350 + 2.5% Max HP` for 5s, triggerable once per 0.5s, unstackable, does not pass to the incoming resonator on swap. (Defensive only — no DPS stat.)
-- **Blazing Valor**: after 4s out of combat, gain (once per 4s): if Majesty < 1 stack, restore 1 stack; fully restore Crown of Wills. (Utility/ramp-up only — no DPS stat.)
+- **Glory's Favor**: dealing damage grants a Shield = 350 + 2.5% Max HP for 5s (0.5s ICD, non-stackable,
+  doesn't pass to an incoming Resonator).
+- **Blazing Valor**: after 4s+ out of combat, gains (once per 4s): if Majesty < 1 stack, restore 1;
+  fully restore Crown of Wills.
 
 ### Intro Skill — Stride of Goldenflare
-Electro DMG. Multiplier (Lv.10): **99.41%×2**. Concerto Regen: 10.
+Deals Electro DMG.
+
+**Multipliers (Lv.10):** 99.41%×2. Concerto Regen 10.
 
 ### Outro Skill — Battlesong of the Unyielding
-The next resonator switched in gains, for 14s (ends immediately if they're swapped out): **+15% DMG Amplification for ALL Attributes**.
-Casting the Outro also grants Augusta 1 Majesty stack and 1 Crown of Wills stack.
+The next Resonator switched in gains, for 14s (ends immediately on their own swap-out): +15% DMG
+Amplification for ALL Attributes. Casting this Outro also grants Augusta herself 1 Majesty stack and 1
+Crown of Wills stack.
 
-**Crown of Wills**: each stack grants **+15% Electro DMG Bonus**, capped at **1 stack at base kit** (S0/S1 raise the cap — see Resonance Chain). All stacks are removed when Sublime is the Sun: Everbright Protector ends.
+**Crown of Wills**: each stack grants +15% Electro DMG Bonus, cap 1 stack (base kit). All stacks removed
+when Everbright Protector ends.
 
-### Resonance Chain (Sequences)
+### Resonance Chain (S1-S6)
+- **S1**: Each Crown of Wills stack ALSO grants +15% Crit DMG. Crown of Wills cap raised to 2. Casting
+  Intro Skill now also grants 1 Crown of Wills stack. Undying Sunlight: Strike/Leap/Plunge gain
+  interruption immunity.
+- **S2**: Crown of Wills gains an additional effect — each stack grants +20% Crit Rate. For every 1% Crit
+  Rate over 100%, gain +2% Crit DMG, up to +100%.
+- **S3**: DMG Multipliers of Thunderoar: Backstep, Dodge Counter-Thunderoar: Backstep, Thunderoar:
+  Spinslash, Thunderoar: Uppercut, Undying Sunlight: Plunge, Sublime is the Sun: Sunborne, AND Sublime is
+  the Sun: Everbright Protector all +25%.
+- **S4**: Casting Intro Skill grants the WHOLE TEAM +20% ATK for 30s.
+- **S5**: Glory's Favor's Shield strength +50%.
+- **S6**: Crown of Wills cap raised to 4. For every 1% Crit Rate over 150%, gain +2% Crit DMG, up to
+  +50% (additional to S2's own cap). Casting Thunderoar: Spinslash or Thunderoar: Uppercut grants 2
+  Crown of Wills stacks (capped at once per 1s via this specific source). Casting Thunderoar: Spinslash
+  or Thunderoar: Uppercut ALSO triggers "Thunder Rage" — 2 separate Electro DMG instances, each = 100%
+  ATK, **considered Heavy Attack DMG**.
 
-- **S1**: Each Crown of Wills stack also gives +15% Crit DMG. Max Crown of Wills stacks raised to 2. Casting Intro (Stride of Goldenflare) now grants 1 Crown of Wills stack. Undying Sunlight: Strike/Leap/Plunge become interruption-immune.
-- **S2**: Crown of Wills also gives +20% Crit Rate per stack. For every 1% Crit Rate over 100%, gain +2% Crit DMG (up to +100%).
-- **S3**: +25% DMG Multiplier on: Thunderoar Backstep/Spinslash/Uppercut (+ Dodge Counter-Thunderoar: Backstep), Undying Sunlight: Plunge, and Sublime is the Sun (Sunborne + Everbright Protector).
-- **S4**: Casting Intro (Stride of Goldenflare) grants the whole team +20% ATK for 30s.
-- **S5**: Inherent Skill "Glory's Favor" shield strength +50%.
-- **S6**: Max Crown of Wills stacks raised to 4. For every 1% Crit Rate over 150%, gain +2% Crit DMG (up to +50%). Thunderoar Spinslash/Uppercut grant 2 Crown of Wills stacks (capped at 2 stacks per 1s, via "Engraved in Radiant Light"). Casting either also triggers "Thunder Rage": 2 instances of Electro DMG at 100% ATK each, **counted as Heavy Attack DMG**.
-
-### Minor Fortes
+### Minor Fortes (Total)
 Crit Rate +8%, ATK% +12%.
 
 ### Base Stats (Lv.90, incl. minor fortes)
-HP 10300 · ATK 463 · DEF 1112 · Max Energy 125 · Crit Rate 5% · Crit DMG 150%
-
----
+HP 10300 | ATK 463 | DEF 1112 | Max Energy 125 | Crit Rate 5% | Crit DMG 150% | Healing Bonus 0% |
+Electro DMG Bonus 0%.
 
 ## Review
 
-**DPS tier**: T1 (both Tower of Adversity and Whimpering Wastes, standard and value lists).
+**DPS tier**: **T1** (ToA, standard) / **T1** (WW, standard) — **T1** (ToA, Value list) / **T1** (WW,
+Value list).
 
 **Pros**
-- Very high single-target and AoE damage.
-- Works with premium teammates or F2P options (strong even without heavy investment).
-- Fully invulnerable during her 2nd Ultimate (time stop).
-- Cool visual (summons a blazing sun).
+- Very high single-target AND AoE damage alike.
+- Works with premium teammates OR without — great F2P options let her perform without heavy investment.
+- Fully stops time (and is invulnerable) during her 2nd Ultimate cast.
+- Summons a striking blazing sun visual on her 2nd Ultimate (cosmetic).
 
 **Cons**
-- ~Half her damage is backloaded into her 2nd Ultimate — bad for killing multiple small groups quickly (Whimpering Wastes); the time-stop also prevents next-wave spawns, risking wasted damage without careful timing.
-- Her passive shields are weak — they exist mainly to trigger her signature weapon/echo set effects, not to actually tank damage.
-- Very hard to fit into quickswap comps due to Outro mechanics.
-- Shields don't grant interruption immunity — still need to dodge.
+- Roughly half her damage is concentrated in her 2nd Ultimate — backloaded damage isn't ideal for
+  clearing several small enemy groups (Whimpering Wastes), and the timestop can prevent the next wave
+  from spawning, wasting damage without careful timing.
+- Her Shields have negligible strength — they exist purely to trigger her Signature weapon/Echo set
+  buffs, not to meaningfully block damage.
+- Very difficult to use in quickswap teams due to her Outro mechanics (not impossible, just hard to force).
+- Shields don't grant interruption immunity — still need to actively dodge to avoid rotation delays.
 
-**Key mechanics summary**
-- **Prowess**: Forte gauge for Enhanced Heavy Attacks, built from most of her hits.
-- **Ascendancy**: second Forte gauge, built from Basic Attacks/Intro/base Liberation/base Skill — lets her cast an enhanced Resonance Skill to gain Majesty.
-- **Majesty** (2 points): 1 from her Outro, 1 from an enhanced Skill at full Ascendancy. At 2 points, unlocks her 2nd Ultimate for a rotation-ending burst.
-- Starts combat with 1 Majesty (2nd Inherent Skill) — no ramp-up issue on turn 1 despite no initial Outro.
-- 1st Inherent Skill: gains a small non-stacking shield for 5s every 0.5s on dealing damage.
-
-**Intro**: restores 20% Ascendancy + full Prowess (plus normal Concerto Energy gain).
-
-**Prowess/Ascendancy usage notes**: Uppercut (full Prowess + Jump) sends her airborne — generally avoid, since staying grounded maximizes damage. Standard combo is Backstep → (Basic Attack) → Spinslash, achievable via Heavy Attack or a full-Prowess Dodge Counter. Base Resonance Skill and Intro both restore full Prowess; base Liberation gives the remaining 10% Ascendancy — needs enough Energy Regen (~110–120% depending on team) to reliably have Liberation ready.
-
-**Ascendancy usage**: at full Ascendancy, press Skill then Basic Attack/Skill twice more (leap + plunge) to fill Majesty. Getting interrupted mid-sequence isn't punishing — she can just re-cast the enhanced Skill chain.
-
-**2nd Ultimate & Outro**: holding Liberation at 2 Majesty enters the 7s time-stop stance — 9 rapid Heavy Attacks (spam/hold Basic Attack) then a finisher (Basic Attack again). This sequence also grants the whole team **Ruler's Realm** for 30s (stronger Intro-triggered shields).
-Outro Skill gives the incoming character **+15% DMG Amplify for the standard 14s** (note: this is described elsewhere in this same page/community writeups as a Heavy ATK DMG Amp specifically — see Synergies section, which explicitly discusses "Heavy DMG buffing"; treat as Heavy ATK-type amplify, not All-DMG, pending direct confirmation), restores 1 Majesty if that character casts their own Outro back, and gives Augusta +15% Electro DMG Bonus for her next rotation. **All of these effects end early on swap** — meaning the character Augusta outros into can't be swapped out again until they cast their own Outro back, or it wrecks Augusta's Majesty generation. This is the core reason she's largely incompatible with quickswap.
-
-**Conclusion**: top-tier damage dealer. Works great with the free unit Mortefi or the flexible Shorekeeper; reaches an even higher ceiling with her best buffer, Iuno.
-
----
+**Review summary**: Heavy-Attack-focused DPS built around 3 stacked resources. **Prowess** (1st Forte
+gauge) unlocks Enhanced Heavy Attacks, gained from most of her real abilities dealing damage. **Ascendancy**
+(2nd Forte gauge, restored via Basic Attacks/Intro/base Liberation/base Skill) unlocks an Enhanced
+Resonance Skill sequence that generates **Majesty**. Majesty (cap 2, one from Undying Sunlight: Plunge, one
+from a teammate's Outro cast while under Augusta's own Outro effect) unlocks her devastating 2nd Ultimate
+(Sublime is the Sun), ending her rotation. She starts combat with 1 free Majesty stack (2nd Inherent
+Skill) — no ramp-up issue on her opening rotation despite lacking an Outro to draw from yet. Her real
+combo for building Prowess/generating Ascendancy: Heavy Attack-Backstep into Spinslash (or the same via
+Dodge Counter at full Prowess) — NEVER Uppercut, which launches her airborne, undesirable since she wants
+to stay grounded. Her Ascendancy-consuming Enhanced Skill sequence (Strike → Leap → Plunge, chained via
+repeated Normal Attack/Skill presses) restores Majesty to full when Plunge lands — safe to interrupt and
+re-cast if needed. Holding Liberation at 2 Majesty enters her 2nd Ultimate stance for 7s: time stops, she
+can't switch out, and performs exactly 9 Sunborne hits (spam/hold Basic Attack) then a finishing
+Everbright Protector (another Basic Attack press) — this sequence also grants the whole team Ruler's
+Realm (30s), a stronger Shield on any teammate's Intro cast. Her Outro grants the incoming Resonator +15%
+All-Attribute DMG Amplification for 14s (forfeit on swap), restores her own Majesty if that Resonator
+casts THEIR Outro too, and grants Augusta +15% Electro DMG Bonus (via Crown of Wills) for her next
+rotation — but ALL of this expires on swap, making her notably quickswap-unfriendly (the character she
+Outros into effectively can't be swapped out of until they cast their own Outro, or it disrupts her
+Majesty generation and slows her next rotation significantly). Best paired with Mortefi (free, strong
+Heavy DMG buffer) or Shorekeeper (flexible generalist) for an easily accessible, still very strong
+baseline; reaches an even higher ceiling with her best buffer, Iuno.
 
 ## Build
 
-### Best Weapons (buffs assumed: Iuno + Shorekeeper team, per Prydwen's own calc note)
-| Weapon | Score |
-|---|---|
-| Thunderflare Dominion (R1, signature) | 100.00% |
-| Verdant Summit (R1) | 90.30% |
-| Ages of Harvest (R1) | 80.40% |
-| Wildfire Mark (R1) | 77.30% |
-| Radiance Cleaver (R1) | 77.30% |
-| Kumokiri (R1) | 77.20% |
-| Lustrous Razor (R1) | 74.30% |
-| Aureate Zenith (R5, 4★) | 73.20% |
-| Autumntrace (R5, 4★) | 71.00% |
-| Waning Redshift (R5, 4★) | 66.50% |
-| Helios Cleaver (R5, 4★) | 63.90% |
-| Meditations on Mercy (R5, 4★, craftable) | 60.70% |
+**Best Weapons** (calculated with Iuno + Moongazer's Sigil/Crown of Valor+Sierra Gale set + Lady of the
+Sea, and Shorekeeper + Variation/Rejuvenating Glow set + Fallacy of No Return as teammates):
+1. **Thunderflare Dominion (signature, R1)** — 100.00%. ATK+12%. Intro/Skill cast: +20% Heavy Attack DMG
+   Bonus (15s). Gaining a Shield: Heavy Attack DMG ignores 7.2% target DEF (7s, stacks ×5, 0.5s ICD, up
+   to 36% DEF Ignore at max stacks). Stats: ATK 675 (highest Base ATK in the game), Crit Rate 12.1%. Best
+   by a wide margin — specialized for her, real use of every effect it grants.
+2. **Verdant Summit** — 90.30%. Resonance Attribute DMG+12%. Intro/Liberation cast: +24% Heavy Attack DMG
+   Bonus (stacks ×2, 14s). Stats: ATK 587, Crit DMG 48.6%. Comparable performance to her signature —
+   easily-accessed ~48% Heavy Attack DMG Bonus plus 12% general DMG Bonus and strong stats.
+3. **Ages of Harvest** — 80.40%. Attribute DMG+12%. Intro/Skill cast: +24% Resonance Skill DMG Bonus
+   (12s, both instances). Stats: ATK 587, Crit Rate 24.3%. Real (if modest) Skill DMG share plus good
+   Base ATK/DMG Bonus/Crit Rate.
+4. **Wildfire Mark** — 77.30%. ATK+12%. Its own passive is entirely useless on Augusta (does buff Mortefi
+   if present, but he's far from her main damage) — used purely as an ATK/Crit DMG stat-stick.
+5. **Radiance Cleaver (best permanent option)** — 77.30%. ATK+12%. Simple ATK/Crit DMG stick, strongest
+   permanently-available choice for her.
+6. **Kumokiri** — 74.30%. ATK+12%. Simple ATK/Crit Rate stick — no use of its Liberation DMG passives.
+7. **Lustrous Razor (Standard Banner)** — 73.20%. ER+12.8%. Real use of the ER boost; its Liberation DMG
+   increase is useless on her, still fully usable and performs fantastically regardless.
+8. **Aureate Zenith (R5, best 4★, Battle Pass)** — 71.00%. Massive ATK/Heavy Attack DMG Bonus/Crit DMG
+   especially at R5 — held back only by lower Base ATK vs. 5-stars; a good choice if skipping pulls for
+   Augusta specifically in favor of this weapon.
+9. **Autumntrace (R5, Battle Pass)** — 66.50%. Good ATK/Crit Rate, held back by low Base ATK like all
+   4-stars.
+10. **Waning Redshift (R5, best non-Battle-Pass 4★)** — 63.90%. Flat Resonance Energy on Skill cast means
+    she needs zero ER investment — but a plain ATK buff alone isn't enough to stand out further.
+11. **Helios Cleaver (R5)** — 60.70%. ATK-stacking on repeated Skill casts, which she can't fully utilize
+    — lags behind other options.
+12. **Meditations on Mercy (R5, F2P craftable, last resort)** — passive entirely unused on her; pure ATK
+    stat-stick, but guaranteed-craftable.
 
-(Note: the page's own listed order/percentages don't perfectly line up 1:1 with the weapon-name order after "Meditations on Mercy" — no percentage was captured for it in the source dump; verify against a live re-check if precision matters.)
+**Best Echo Set**: **Crown of Valor** (100.00%, her best set by far). 3pc: gaining a Shield grants +6%
+ATK and +4% Crit DMG for 4s (0.5s ICD, stacks ×5 — up to +30% ATK/+20% Crit DMG total). Augusta is the
+ONLY character in the game able to fully stack this effect. Combine with a 2pc set of choice: **Void
+Thunder** (recommended), Endless Resonance, Reel of Spliced Memories, Moonlit Clouds, Empyrean Anthem, or
+Tidebreaking Courage.
+- Main Echo: **The False Sovereign** — a Transform+Summon Echo (55.35%×4 Electro DMG on Transform),
+  grants +12% Electro DMG Bonus and +12% Heavy Attack DMG Bonus in the main slot; also unconditionally
+  summoned to deal 405% Electro DMG whenever an Intro Skill is cast. One Transform use is typically spent
+  at the end of a rotation; a 2nd use is harder to fit in without quickswapping. The best Echo for her in
+  any situation.
 
-**Signature (Thunderflare Dominion)**: highest base ATK in the game (traded for less Crit Rate), gives Heavy ATK DMG Bonus + ATK%, and lets Heavy ATK DMG ignore up to 36% target DEF at 5 stacks (via applying shields) — ramps up but best-in-slot regardless.
+**Best Echo Stats**: 4-cost Crit Rate/Crit DMG · 3-cost Electro DMG · 3-cost Electro DMG/ATK% · 1-cost
+ATK%×2.
+**Substat priority**: Energy Regen (until satisfied) > Crit Rate = Crit DMG > ATK% = Heavy Attack DMG% >
+ATK > Resonance Skill DMG%.
 
-### Best Echo Set
-**Crown of Valor** (100%) — the standout set for Augusta specifically: +6% ATK and +4% Crit DMG for 4s per Shield application, stacks ×5 every 0.5s (max +30% ATK / +20% Crit DMG). Augusta is described as "the only character in the game who's able to fully stack up this effect."
-Pair with (recommended): 2pc Void Thunder. Alternatives: 2pc Endless Resonance, Reel of Spliced Memories, 2pc Moonlit Clouds, Empyrean Anthem, Tidebreaking Courage.
+**Best Endgame Stats (Lv.90)**: HP 14500+ | DEF 1100+ | ATK 2000-2800+ | Crit Rate 65-80%+ | Crit DMG
+210-260%+ | Energy Regen 116-125% (lower end with Mortefi+Shorekeeper, higher end with Iuno+Shorekeeper)
+| Electro DMG Bonus 40-70%+.
 
-**Main echo**: The False Sovereign — Transform+Summon type, +12% Electro DMG and +12% Heavy DMG Bonus passively in the main slot; unconditionally summons on any Intro Skill cast (both team members', not just her own), plus extra damage on Transform casts.
+**Skill Priority**: Resonance Liberation > Forte Circuit > Basic Attack > Resonance Skill > Intro Skill.
+Skill and Intro can be skipped when leveling to save resources at minimal damage loss.
 
-**Best Echo Stats**: 4-cost Crit Rate/Crit DMG · 3-cost Electro DMG · 3-cost Electro DMG > ATK% · 1-cost ATK% ×2.
-**Substat priority**: Energy Regen (until satisfied) > Crit Rate = Crit DMG > ATK% = Heavy ATK DMG% > ATK > Resonance Skill DMG%.
+## Gameplay and Teams
 
-### Endgame Stat Targets (Lv.90)
-HP 14500+ · DEF 1100+ · ATK 2000–2800+ · Crit Rate 65–80%+ · Crit DMG 210–260%+ · Energy Regen 116–125% (low end with Mortefi+Shorekeeper, high end with Iuno+Shorekeeper) · Electro DMG Bonus 40–70%+.
+**Damage profile** (1-target scenario): Heavy ~74.6% · Skill ~16.7% · Intro/Echo (smaller slices) (Basic
+0 · Heavy 335,431 · Skill 75,044 · Liberation 0 · Intro 10,208 · Outro 0 · Echo 29,054 — Liberation shows
+0 despite the Ultimate obviously dealing real damage, meaning the whole Liberation sequence, per the
+kit's own explicit "considered Heavy Attack DMG" text on both Sword of Eternal Oath AND every Sublime is
+the Sun component, is categorized as Heavy).
 
-### Skill Priority
-Liberation > Forte Circuit > Basic Attack > Skill > Intro (Skill and Intro can be skipped to save resources at minimal DPS loss).
+**Rotation time**: 11.17s (1-target scenario, S0-S6 benchmark team).
 
----
+**Core Rotation**: Intro → Heavy Attack: Backstep → Heavy Attack: Spinslash → Skill → Heavy Attack:
+Backstep → Heavy Attack: Spinslash → Liberation: Sword of Eternal Oath → Forte: Skill: Undying Sunlight:
+Strike → Leap → Plunge → Liberation: Sublime is the Sun → Sunborne ×9 → Everbright Protector → Outro.
 
-## Gameplay & Teams
+Notes on real-game rotation mechanics:
+- Echo timing: best used right at the very end of the whole rotation, swap-cancelled immediately after.
+- Near-incompatible with quickswap: she wants to stay under her own Outro-received Amplify buff, her
+  Outro mechanic forces the recipient not to swap out early, and ~half her damage concentrates in her 2nd
+  Ultimate — all pushing toward a long, uninterrupted field presence.
+- Best-effort quickswap workaround: fit an extra The False Sovereign Transform cast into a secondary
+  buffer's own rotation (only if it doesn't cost rotation time), and cast a 2nd The False Sovereign right
+  after her 2nd Ultimate sequence ends, before swapping out for her Outro.
+- Animation-cancel points: the FIRST Spinslash's endlag cancels into her base Resonance Skill; the SECOND
+  Spinslash's endlag cancels into her base Resonance Liberation.
+- Filler options if extra time is needed (team-dependent): a few Normal Attacks into an extra Backstep +
+  Spinslash combo, OR a Heavy Attack cancelled via Dash (avoiding the undesirable Uppercut) into a normal
+  Backstep + Spinslash combo (the 2nd option is faster).
+- Important team-building warning: her 2nd Ultimate's field instantly kills all on-field entities,
+  including summons like Phrolova's Hecate — makes that specific pairing close to unusable.
 
-### Core Rotation
-Intro → Heavy Attack: Backstep → Heavy Attack: Spinslash → Skill → Heavy Attack: Backstep → Heavy Attack: Spinslash → Liberation: Sword of Eternal Oath → Forte Skill: Undying Sunlight (Strike → Leap → Plunge) → Liberation: Sublime is the Sun → Sunborne ×9 → Everbright Protector → Outro.
+**Sequence value** (1-target scenario, S0-S6 benchmark team, S0 = 100% baseline):
+- S0: 1,147,511 DMG / 102,731 DPS (100.00%)
+- S1: 1,351,780 DMG / 121,018 DPS (117.80%)
+- S2: 1,702,065 DMG / 152,378 DPS (148.33%)
+- S3: 1,986,583 DMG / 177,849 DPS (173.12%)
+- S4: 2,136,517 DMG / 191,272 DPS (186.19%)
+- S5: 2,136,517 DMG / 191,272 DPS (186.19%) — identical total to S4 in this solo-calc benchmark (S5's own
+  defensive Shield-strength buff adds nothing to a single-character solo-calc number).
+- S6: 3,035,663 DMG / 271,769 DPS (264.54%)
 
-Echo timing: best cast right at the end of the rotation (swap-cancel it immediately after).
+**Synergies**:
+- **Outro buffers (best to good)**: Iuno (best by far — high personal damage plus a total ~90% DMG
+  Amplification to Augusta), Mortefi and Rebecca (close seconds, strong Heavy DMG buffing), Lynae (may
+  outperform those two specifically alongside Mornye, given her unmatched generalist buffing potential).
+- **3rd-slot generalist supports**: Shorekeeper (best — high team-wide ATK% + 15% DMG Amplify, plus real
+  Crit Rate/Crit DMG), Verina (close, more accessible 2nd choice if Shorekeeper isn't available), Mornye
+  (niche — only worthwhile alongside Lynae or Rebecca specifically, for their Tune Rupture/Hack synergies
+  respectively).
 
-**Tips**
-- Near-incompatible with quickswap — the Outro-boosted incoming character can't be swapped out until they've Outro'd back, and roughly half her damage is front/mid-loaded before her 2nd Ultimate.
-- Best available compromise: one extra "The False Sovereign" active Echo cast worked into your secondary buffer's own rotation (after the 3rd character's own Outro fires), plus one right before Augusta swaps out to Outro at rotation's end.
-- Spinslash endlag can be cancelled: 1st Spinslash → base Resonance Skill; 2nd Spinslash → base Liberation.
-- Filler if needed: extra Basic Attacks into another Backstep+Spinslash, or a Heavy Attack cancelled with a dash (to avoid the undesirable Uppercut) into Backstep+Spinslash.
-- **Warning**: her 2nd Ultimate's field instantly kills all on-field entities — including summons like Phrolova's Hecate. Effectively incompatible with Phrolova; factor this into team building.
-
-### Synergies
-
-**Outro buffers** (best pairing partners): **Iuno**, **Lynae**, **Rebecca**, **Mortefi** — "Iuno is the best by far due to her high personal damage and giving a whopping 90% DMG Amplification effect to Augusta in total, however Mortefi and Rebecca are close seconds in the Heavy DMG buffing department. Lynae may also prove more effective than those two in conjunction with Mornye as the extent of their generalist buffing potential is unparalleled."
-
-**Generalist supports**: **Shorekeeper**, **Verina**, **Mornye** — "the two best generalist Supports by heaps and bounds... Shorekeeper and Verina can slot in almost any team in the game as they provide high team-wide ATK% and 15% DMG Amplify. Shorekeeper additionally provides CRIT Rate and CRIT DMG, always making her the best third slot teammate for Augusta teams, but Verina is a close, more accessible second provided Shorekeeper isn't available. Mornye may also see niche use cases alongside Lynae and Rebecca due to their synergy with Tune Rupture and Hack mechanics respectively."
-
----
-
-## Calculations
-
-### Real Damage-Type Breakdown (Prydwen's own simulated rotation, S0, buffed team: Iuno+Shorekeeper)
-| Type | DMG | Share |
-|---|---|---|
-| Basic ATK | 0 | 0.00% |
-| **Heavy ATK** | 335,431 | **74.58%** |
-| **Skill** | 75,044 | **16.69%** |
-| Liberation | 0 | **0.00%** |
-| Intro | 10,208 | 2.27% |
-| Outro | 0 | 0.00% |
-| Echo | 29,054 | 6.46% |
-| **Total** | **449,737** | 100% |
-
-Confirms independently, from Prydwen's own real damage simulation (not just kit-text reading): **Augusta deals literally zero real "Liberation"-category damage** — every Liberation-slot move she has is fully absorbed into the Heavy ATK bucket, matching the "considered as Heavy Attack DMG" reclassification on every one of those moves. Her damage is genuinely Heavy ATK-dominant (74.6%) with a real, secondary Skill component (16.7%) — not evenly split, and Liberation isn't a real category for her at all.
-
-### Damage Output by Sequence (S0→S6, 1-target, solo — no team/buff contribution)
-Rotation time: 11.17s. Build: Thunderflare Dominion R1, 5pc Crown of Valor + 2pc Void Thunder, The False Sovereign main echo (Crit Rate / Electro DMG ×2 / ATK% ×2).
-
-| Sequence | DMG | DPS | Relative % |
-|---|---|---|---|
-| S0 | 1,147,511 | 102,731 | 100.00% |
-| S1 | 1,351,780 | 121,018 | 117.80% |
-| S2 | 1,702,065 | 152,378 | 148.33% |
-| S3 | 1,986,583 | 177,849 | 173.12% |
-| S4 | 2,136,517 | 191,272 | 186.19% |
-| S5 | 2,136,517 | 191,272 | 186.19% |
-| S6 | 3,035,663 | 271,769 | 264.54% |
-
-Note S4 and S5 produce identical DMG/DPS — consistent with S5 (Glory's Favor shield +50%) having zero real DPS component, exactly as already corrected in this app's data (RESONANCE_CHAIN_DATA/engine block zeroed, not the prior fabricated totalMult:15 "proxy").
-
-Prydwen's own caveat: "Listed character calculations are done without buffs or any damage contribution from teammates (full solo)... DPS and DMG aren't perfect metrics for a character's individual value... don't compare the numbers between characters."
-
-### Example Team ("Best Team")
-Augusta + **{Iuno / Lynae / Rebecca / Mortefi}** (outro buffer slot) + **{Shorekeeper / Verina / Mornye}** (generalist support slot).
-Note: Mornye is niche — only pair her alongside Rebecca (Hack synergy) or Lynae (Tune Rupture synergy).
+**Example Teams**:
+1. **Best Team**: Augusta + Iuno/Lynae/Rebecca/Mortefi + Shorekeeper/Verina/Mornye — Mornye is niche, only
+   worth considering with Rebecca or Lynae on the team (for their respective Hack/Tune Rupture synergies).

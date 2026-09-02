@@ -5,6 +5,39 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 
 describe('triggerEngine parity — Augusta', () => {
+  // Fixed 2026-09-02 against a fresh Prydwen dump: S3's totalMult:25 was a single UNSCOPED effect — a
+  // prior session's note claimed this was safe since "her only Heavy ATK hits anyway," but totalMult
+  // applies unconditionally to every hit regardless of category, so it was over-crediting her skillDmg
+  // hits (Warrior's Blade, Undying Sunlight: Strike/Leap) and Intro too — none of which S3's real kit
+  // text lists. Scoped via scopedToBlockId to exactly the 6 real moves named in the kit text.
+  it("S3's +25% only applies to its real named moves, not her whole kit", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Augusta'], AUGUSTA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS3 = resolveHitComposedDps(AUGUSTA_BLOCKS, steps, ctx, 3000, 'electro', 'Main DPS', null, 3);
+    const skillHit = withS3.hitLog.find(h => h.blockId === "augusta.skill.warriors-blade");
+    const introHit = withS3.hitLog.find(h => h.blockId === 'augusta.intro.stride-of-goldenflare');
+    const backstepHit = withS3.hitLog.find(h => h.blockId === 'augusta.heavy.thunderoar-backstep');
+
+    const withoutS3Blocks = AUGUSTA_BLOCKS.filter(b => b.id !== 'augusta.chain.s3');
+    const withoutS3 = resolveHitComposedDps(withoutS3Blocks, steps, ctx, 3000, 'electro', 'Main DPS', null, 3);
+    const skillHitNoS3 = withoutS3.hitLog.find(h => h.blockId === "augusta.skill.warriors-blade");
+    const introHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'augusta.intro.stride-of-goldenflare');
+    const backstepHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'augusta.heavy.thunderoar-backstep');
+
+    // Named moves DO get boosted by S3.
+    expect(backstepHit.damage).toBeGreaterThan(backstepHitNoS3.damage);
+    // Un-named moves must NOT be boosted by S3.
+    expect(skillHit.damage).toBeCloseTo(skillHitNoS3.damage, 5);
+    expect(introHit.damage).toBeCloseTo(introHitNoS3.damage, 5);
+  });
+
+  // Fixed 2026-09-02: the dump's own row label ("Skill Damage", not "Stride of Goldenflare DMG")
+  // confirms this is plain Resonance Skill DMG — was previously left uncategorized.
+  it('Intro (Stride of Goldenflare) is skillDmg-categorized', () => {
+    const block = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.intro.stride-of-goldenflare');
+    expect(block.damage.category).toBe('skillDmg');
+  });
+
   it('S1/S2 model the real per-stack mechanics, matching RESONANCE_CHAIN_DATA at max stacks', () => {
     const rc = RESONANCE_CHAIN_DATA['Augusta'];
     const s1 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s1');
