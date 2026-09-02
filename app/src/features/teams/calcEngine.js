@@ -372,14 +372,14 @@ const TYPE_FOCUS_MAP = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', libDmg: '
 // of at every call site. Passing neither dpsFocus nor dpsElLower skips gating entirely (e.g. a
 // character's own selfBuffs, which are inherently about their own damage and need no target-matching).
 export function applyBuff(stats, buff, value, options = {}) {
-  const { isAmplify = false, condition, dpsFocus, dpsElLower } = options;
+  const { isAmplify = false, condition, dpsFocus, dpsElLower, dpsName } = options;
   if (dpsFocus && TYPE_FOCUS_MAP[buff] && !dpsFocus.includes(TYPE_FOCUS_MAP[buff])) return;
   if (dpsElLower != null) {
     if (buff === 'elemDmg') {
       const cond = (condition || '').toLowerCase();
       if (cond && !cond.includes(dpsElLower) && !cond.includes('all')) return;
     } else if (buff === 'deepen' || buff === 'offTune' || buff === 'allDmg') {
-      if (!universalStatApplies(condition, dpsElLower)) return;
+      if (!universalStatApplies(condition, dpsElLower, dpsName)) return;
     }
   }
   const target = isAmplify ? 'amplify' : null;
@@ -666,9 +666,30 @@ export function applyResonanceChain(stats, charName, seqLevel, isMainDps) {
 // were silently applied in full to the actual displayed DPS number for ANY paired main/sub DPS,
 // regardless of element match.
 const ELEMENT_NAMES = ['fusion', 'spectro', 'aero', 'glacio', 'electro', 'havoc'];
-export function universalStatApplies(condition, targetElementLower) {
+// A deepen buff can also be locked to a specific DAMAGE MECHANIC rather than (or in addition to) an
+// element — e.g. Phoebe's outro is "Spectro Frazzle DMG Amp", which only amplifies Frazzle-type
+// damage, not a Spectro DPS's general output. Found via a real recommendation audit (Jinhsi+Zhezhi):
+// the buff's condition mentions "spectro" (Jinhsi's own element), so the element-only check above let
+// it through in full for Jinhsi — who neither deals nor scales off Frazzle at all (her own `desc`'s
+// dmgFocus is Skill/Liberation burst damage) — inflating her score 486.2 vs. her real curated partner
+// Shorekeeper's 314.5. Phoebe's own kit description says outright she's "built specifically to
+// empower Zani, her only current Frazzle-DPS partner" — Zani's Heavy Slash combo is explicitly
+// "flagged as both Heavy Attack and Spectro Frazzle DMG" per her own `desc`, i.e. her own hits are
+// computed under the Frazzle category, unlike every other character (whose damage a Frazzle DMG Amp
+// buff does nothing for). Ciaccona's outro ("Aero Erosion DMG Amp only") has the identical shape for
+// Erosion — kept here as an empty allow-list until a character whose own damage is documented as
+// Erosion-flagged the same way Zani's is for Frazzle exists (Ciaccona's own outro buffs "the incoming
+// Resonator", not herself, and no current kit text says any character's own hits are Erosion-typed).
+// Deliberately a small, explicit, data-driven list — not a heuristic guess — so it only ever rejects
+// what's actually confirmed, and extends the same way the last two audits' fixes did (grouped mode
+// buffs, element-gated elemDmg) instead of another one-off hardcode.
+const MECHANIC_DAMAGE_APPLIERS = { frazzle: ['Zani'], erosion: [] };
+export function universalStatApplies(condition, targetElementLower, targetName) {
   const cond = (condition || '').toLowerCase();
   if (!cond) return true;
+  for (const [mechanic, appliers] of Object.entries(MECHANIC_DAMAGE_APPLIERS)) {
+    if (cond.includes(mechanic) && !appliers.includes(targetName)) return false;
+  }
   const mentioned = ELEMENT_NAMES.filter(el => cond.includes(el));
   if (mentioned.length === 0) return true; // no element named — a genuine universal/trigger condition
   return mentioned.includes(targetElementLower);
@@ -1000,7 +1021,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // this only rejects when the condition explicitly names a DIFFERENT element than the DPS's own. A
     // condition with no element mentioned at all (most of them: pure activation-trigger text, e.g.
     // Denia's "Tune Strain mode..." allDmg outro) stays universal, exactly as its stat name promises.
-    const deepenBuffApplies = (b) => universalStatApplies(b.condition, dpsEl);
+    const deepenBuffApplies = (b) => universalStatApplies(b.condition, dpsEl, mainDps);
     // A type-specific buff (basicDmg/heavyDmg/echoDmg/skillDmg/coordDmg) only routes into the DPS's
     // damage at all if their dmgFocus actually includes that attack type — routeTypeBonuses in this
     // same file enforces the identical gate for the real damage calc, so scoring has to match it or
