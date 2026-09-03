@@ -25,10 +25,28 @@ describe('triggerEngine parity — Yinlin', () => {
       firedTriggers, targetElementLower: 'electro', targetRole: 'Sub DPS',
     }, blockStats);
 
-    // S1 (skillDmg 70) + S3 (skillDmg 55) both route to skillDmg.
-    expect(blockStats.skillDmg).toBe(legacyStats.skillDmg);
+    // S1 (skillDmg 70) is the only unscoped skillDmg chain node now (S3 was fixed 2026-09-03 to
+    // coordDmg, matching Judgment Strike's real Coordinated Attack categorization). blockStats also
+    // carries the +10 skillDmg from yinlin.selfbuff.deadly-focus-dmg (Inherent Skill Deadly Focus) —
+    // resolveTriggerBlocks() (this aggregate path) doesn't honor scopedToBlockId the way
+    // resolveHitComposedDps() does, so that scoped effect still lands in the flat tally here; it was
+    // deliberately left out of RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE to avoid over-crediting Magnetic
+    // Roar/Furious Thunder in the legacy flat engine, so the two paths now differ by exactly that +10
+    // (same kind of intentional asymmetry as S6 Furious Thunder below).
+    expect(blockStats.skillDmg).toBe(legacyStats.skillDmg + 10);
+    expect(blockStats.coordDmg).toBe(legacyStats.coordDmg); // S3
     expect(blockStats.libDmg).toBe(legacyStats.libDmg); // S5
     expect(blockStats.atkPct).toBe(legacyStats.atkPct); // S4
+  });
+
+  it("Inherent Skill Deadly Focus: Lightning Execution DMG+10% is scoped (not a broad skillDmg over-credit), and self ATK+10%/4s matches CHAR_BUFF_TABLE", () => {
+    const legacy = CHAR_BUFF_TABLE['Yinlin'].selfBuffs.find(b => b.stat === 'atkPct');
+    const dmgBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.selfbuff.deadly-focus-dmg');
+    expect(dmgBlock.effects[0].scopedToBlockId).toBe('yinlin.skill.lightning-execution');
+    expect(dmgBlock.effects[0].stat).toBe('skillDmg');
+    const atkBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.selfbuff.deadly-focus-atk');
+    expect(atkBlock.effects[0].value).toBe(legacy.value);
+    expect(atkBlock.timing.duration).toBe(legacy.duration);
   });
 
   it('outro Strategist buff matches CHAR_BUFF_TABLE.outroBuffs', () => {

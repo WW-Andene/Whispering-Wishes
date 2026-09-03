@@ -133,8 +133,12 @@ describe('resolveSimulatedRotation — end-to-end against REAL CHARACTER_ROTATIO
       targetElementLower: 'electro', targetRole: 'Sub DPS',
     });
     expect(totalTime).toBeGreaterThan(0);
-    // S1 (skillDmg 70, passive) + S3 (skillDmg 55, passive) always apply in full regardless of timing.
-    expect(stats.skillDmg).toBe(125);
+    // S1 (skillDmg 70, passive) + Inherent Skill Deadly Focus (skillDmg 10, passive, scoped but not
+    // excluded by this non-hit-scoped resolver) always apply in full regardless of timing. S3 was fixed
+    // 2026-09-03 from a skillDmg miscategorization to coordDmg+55, matching Judgment Strike's real
+    // Coordinated Attack type (see coordDmg assertion below).
+    expect(stats.skillDmg).toBe(80);
+    expect(stats.coordDmg).toBe(55);
     // Yinlin's own kit has no duration-less 'cast'-triggered damage-modifier block (S6 Furious
     // Thunder is a 'windowed-proc', not a plain 'cast' block, so it isn't scanned for per-hit-scoped
     // exclusion here — confirms this driver doesn't spuriously flag trigger types it doesn't model).

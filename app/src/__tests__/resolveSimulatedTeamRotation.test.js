@@ -21,17 +21,19 @@ const MEMBERS = [
 ];
 
 describe('resolveSimulatedTeamRotation — self-scoped blocks only apply to their own owner', () => {
-  it("Yinlin's own passive Resonance Chain buffs (S1 skillDmg+70, S3 skillDmg+55) apply in full when resolving Yinlin as target", () => {
+  it("Yinlin's own passive Resonance Chain buffs (S1 skillDmg+70) plus Inherent Skill Deadly Focus (skillDmg+10, scoped but not excluded by this non-hit-scoped resolver) apply in full when resolving Yinlin as target; S3 (coordDmg+55, fixed 2026-09-03 from a skillDmg miscategorization matching Judgment Strike's real Coordinated Attack type) lands separately", () => {
     const { ownedSteps, blocksByOwner } = buildTeamSteps(MEMBERS);
     const { stats } = resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, 'Yinlin', { targetElementLower: 'electro', targetRole: 'Sub DPS' });
-    expect(stats.skillDmg).toBe(125);
+    expect(stats.skillDmg).toBe(80);
+    expect(stats.coordDmg).toBe(55);
   });
 
   it("Yinlin's self-scoped buffs do NOT leak onto Augusta when resolving Augusta as target", () => {
     const { ownedSteps, blocksByOwner } = buildTeamSteps(MEMBERS);
     const { stats } = resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, 'Augusta', { targetElementLower: 'electro', targetRole: 'Main DPS' });
-    // Yinlin's S1/S3 skillDmg bonuses must not appear on Augusta's own stats.
+    // Yinlin's S1/S3/Deadly Focus bonuses must not appear on Augusta's own stats.
     expect(stats.skillDmg).toBe(0);
+    expect(stats.coordDmg).toBe(0);
   });
 });
 
@@ -51,7 +53,11 @@ describe("resolveSimulatedTeamRotation — 'whole-team' scoped blocks route from
     // partway through her combo) — so this must land strictly between 0 and 1, not at either extreme.
     expect(targetSegment.start).toBeGreaterThan(1.5); // Yinlin swaps in only after Augusta's steps
     const atkFromS4 = 20 * s4Activity.avgMultiplier;
-    expect(stats.atkPct).toBeCloseTo(atkFromS4, 10); // no other atkPct-contributing block in this team's relevant set
+    // Yinlin's own Inherent Skill Deadly Focus (yinlin.selfbuff.deadly-focus-atk, added 2026-09-03) also
+    // contributes atkPct within her own segment — account for it alongside Augusta's S4 routing.
+    const deadlyFocusActivity = activity['yinlin.selfbuff.deadly-focus-atk=>Yinlin'];
+    const atkFromDeadlyFocus = deadlyFocusActivity ? 10 * deadlyFocusActivity.avgMultiplier : 0;
+    expect(stats.atkPct).toBeCloseTo(atkFromS4 + atkFromDeadlyFocus, 10);
   });
 
   it("Augusta's own S4 buff ALSO applies to Augusta herself (whole-team includes the source), verified by resolving Augusta as target", () => {

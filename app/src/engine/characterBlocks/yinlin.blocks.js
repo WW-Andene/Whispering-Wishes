@@ -142,6 +142,34 @@ export const YINLIN_BLOCKS = [
     effects: [{ stat: 'critRate', value: 15, stacking: 'refresh' }],
     note: "Inherent Skill Pain Immersion: Crit Rate +15% for 5s after casting Magnetic Roar.",
   },
+  {
+    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: Inherent Skill Deadly Focus was entirely
+    // missing from this file. Two components, both real: (1) Lightning Execution DMG+10% vs Sinner's-
+    // Marked targets — since the modeled rotation always has Sinner's Mark up by the time Lightning
+    // Execution casts (applied by Intro, re-applied by Thundering Wrath), scoped here directly to
+    // yinlin.skill.lightning-execution to avoid over-crediting Magnetic Roar/Furious Thunder, her other
+    // skillDmg-categorized moves. (2) self ATK+10% for 4s on trigger — see the separate
+    // yinlin.selfbuff.deadly-focus-atk block below (also added in CHAR_BUFF_TABLE.selfBuffs).
+    id: 'yinlin.selfbuff.deadly-focus-dmg',
+    source: SOURCE,
+    kind: 'buff',
+    trigger: { type: 'passive' },
+    condition: { requiresStance: "Sinner's Mark" },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [{ stat: 'skillDmg', value: 10, scopedToBlockId: 'yinlin.skill.lightning-execution' }],
+    note: "Inherent Skill Deadly Focus: Lightning Execution DMG +10% vs Sinner's-Marked targets.",
+  },
+  {
+    id: 'yinlin.selfbuff.deadly-focus-atk',
+    source: SOURCE,
+    kind: 'buff',
+    trigger: { type: 'cast', on: 'Skill:Lightning Execution' },
+    timing: { duration: 4 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'atkPct', value: 10, stacking: 'refresh' }],
+    note: "Inherent Skill Deadly Focus: self ATK +10% for 4s after Lightning Execution hits a Sinner's-Marked target — modeled as unconditional on the cast, matching the same rotation-always-marked simplification as the DMG component above.",
+  },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — re-verified 2026-08-31) ──
   {
@@ -171,8 +199,8 @@ export const YINLIN_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 55 }],
-    note: "Judgement Strike's DMG Multiplier +55% (Judgement Strike is explicitly \"considered Skill DMG\" per its own kit text).",
+    effects: [{ stat: 'coordDmg', value: 55 }],
+    note: "Judgement Strike's DMG Multiplier +55%. Fixed 2026-09-03: previously modeled as skillDmg, but Judgment Strike is a Coordinated Attack (yinlin.coordatk.judgement-strike is categorized coordDmg, matching the source's own Review/Synergies text) — the old skillDmg value was a dead-for-its-intended-target buff that instead over-credited Magnetic Roar/Lightning Execution/Furious Thunder.",
   },
   {
     id: 'yinlin.chain.s4-steadfast-conviction',

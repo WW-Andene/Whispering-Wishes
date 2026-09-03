@@ -693,6 +693,12 @@ export function applyResonanceChain(stats, charName, seqLevel, isMainDps) {
       if (lvl.heavyDmg) stats.heavyDmg += lvl.heavyDmg;
       if (lvl.libDmg) stats.libDmg += lvl.libDmg;
       if (lvl.echoDmg) stats.echoDmg += lvl.echoDmg;
+      // coordDmg added 2026-09-03: found while fixing Yinlin's S3 (Judgment Strike is a Coordinated
+      // Attack, not Skill DMG) — RESONANCE_CHAIN_DATA already supported a coordDmg key (used elsewhere,
+      // e.g. weapon/echo parsing at line ~219 and applyBuff's 'coordDmg' case), but this function had no
+      // branch for it, so any Resonance Chain node using coordDmg was silently dropped for a main-DPS
+      // character.
+      if (lvl.coordDmg) stats.coordDmg += lvl.coordDmg;
       if (lvl.deepen) stats.deepen += lvl.deepen;
       if (lvl.defIgnore) stats.defIgnore += lvl.defIgnore;
       if (lvl.defShred) stats.defShred += lvl.defShred;

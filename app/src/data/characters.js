@@ -2629,7 +2629,15 @@ const CHAR_BUFF_TABLE = {
       { stat: 'libDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critRate', value: 15, target: 'self', duration: 5, condition: 'Inherent Skill Pain Immersion: Crit Rate +15% for 5s after Magnetic Roar.' }],
+    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: Inherent Skill Deadly Focus was entirely
+    // missing. Its own ATK+10%/4s self component is a plain self-stat, safe to add here; the accompanying
+    // "Lightning Execution DMG+10% vs Sinner's-Marked targets" component is NOT added here since it would
+    // over-credit her other skillDmg-categorized moves (Magnetic Roar, Furious Thunder) in this flat,
+    // unscoped table — modeled instead with scopedToBlockId in yinlin.blocks.js only.
+    selfBuffs: [
+      { stat: 'critRate', value: 15, target: 'self', duration: 5, condition: 'Inherent Skill Pain Immersion: Crit Rate +15% for 5s after Magnetic Roar.' },
+      { stat: 'atkPct', value: 10, target: 'self', duration: 4, condition: "Inherent Skill Deadly Focus: self ATK +10% for 4s after Lightning Execution hits a Sinner's-Marked target." },
+    ],
     debuffs: [],
     note: 'Off-field Electro sub-DPS via Coordinated Attacks (Electromagnetic Blast on Sinner\'s Mark targets, Judgement Strike on Punishment Mark targets). Outro: Electro DMG Amp +20% + Liberation DMG Amp +25% (14s) for the incoming Resonator — ends early if that Resonator is switched out. No RES Shred in her kit.',
   },
@@ -4387,7 +4395,7 @@ const SKILL_MULTIPLIERS = {
     ['Skill', 'Magnetic Roar → Lightning Execution', '59.65%×3 → 89.47%×4', '12s cooldown; Magnetic Roar puts Yinlin in Execution Mode, applies Sinner\'s Mark.'],
     ['Skill', 'Electromagnetic Blast', '19.89%', 'Basic ATK/Dodge Counter hits (up to 4) trigger this on Sinner\'s/Punishment-marked targets.'],
     ['Forte', 'Chameleon Cipher', '178.93%×2', 'At full Judgement Points, Heavy ATK becomes Chameleon Cipher: upgrades Sinner\'s Mark to Punishment Mark.'],
-    ['Forte', 'Judgment Strike', '78.64% (1/s)', 'Coordinated ATK triggered when a Punishment Mark target takes damage; considered Skill DMG.'],
+    ['Forte', 'Judgment Strike', '78.64% (1/s)', 'Coordinated ATK triggered when a Punishment Mark target takes damage; considered Coordinated ATK DMG (corrected 2026-09-03 from a self-contradictory "considered Skill DMG" note).'],
     ['Liberation', 'Thundering Wrath', '116.56%×7', '16s cooldown; applies Sinner\'s Mark.'],
     ['Intro', 'Raging Storm', '14.32%×10', 'Applies Sinner\'s Mark.'],
     ['Outro', 'Strategist', 'Electro DMG Amp +20% + Liberation DMG Amp +25% (14s)', 'Grants the incoming Resonator these buffs; no direct DMG.'],
@@ -6687,7 +6695,13 @@ const RESONANCE_CHAIN_DATA = {
   //   no basis in the real 419.59% figure — zeroed to {}.
   // TODO: needs Phase 2 schema — S6's Furious Thunder needs an "extra proc: X% ATK, up to N times, window
   //   Ys after trigger skill" stat shape; the real number is 419.59% ATK per proc, cap 4 procs/30s window.
-  'Yinlin':       { s1: { skillDmg: 70 }, s2: {}, s3: { skillDmg: 55 }, s4: { atkPct: 20 }, s5: { libDmg: 100 }, s6: {} },
+  // s3 corrected 2026-09-03 against a real prydwen.gg .mht snapshot: was skillDmg:55, but Judgment Strike
+  // is explicitly a Coordinated Attack (per the source's own Review/Synergies text — "Yinlin having the
+  // highest personal damage of any Coordinated Attack DPS"), matching its coordDmg categorization in
+  // SKILL_MULTIPLIERS/yinlin.blocks.js — not Skill DMG. The old value silently over-buffed her real
+  // skillDmg-categorized moves (Magnetic Roar, Lightning Execution, Furious Thunder) while never
+  // touching Judgment Strike, its actual intended target.
+  'Yinlin':       { s1: { skillDmg: 70 }, s2: {}, s3: { coordDmg: 55 }, s4: { atkPct: 20 }, s5: { libDmg: 100 }, s6: {} },
   // Changli S1-S6 re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Changli/Combat
   // (Resonance Chain section) — every prior value in this row was wrong (placeholder-looking, no basis
   // found in the wiki text), same pattern already caught for Jinhsi/Camellya/Yinlin/Chisa/etc:
