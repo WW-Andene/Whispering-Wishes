@@ -126,10 +126,10 @@ export const ROCCIA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'libDmg', value: 20 },
+      { stat: 'heavyDmg', value: 20, scopedToBlockId: 'roccia.liberation.commedia-improvviso' },
       { stat: 'heavyDmg', value: 80 },
     ],
-    note: "Unconditionally increases Liberation Commedia Improvviso!'s DMG Multiplier by +20% (libDmg, matching this file's convention for a Liberation-type move's own multiplier, even though Commedia's damage block above is categorized heavyDmg) and Heavy Attack's DMG Multiplier by +80% (heavyDmg, applies to roccia.forte.real-fantasy and roccia.liberation.commedia-improvviso above) — kept passive, applies broadly.",
+    note: "Unconditionally increases Liberation Commedia Improvviso!'s own DMG Multiplier by +20% and Heavy Attack's DMG Multiplier by +80%. Fixed 2026-09-03: the +20% was previously modeled as a plain libDmg-category effect, but Commedia's damage block above is categorized heavyDmg (per its own kit text), so that effect could never match any block and was a dead buff — now scopedToBlockId'd to roccia.liberation.commedia-improvviso specifically (heavyDmg category, so it stacks additively with the broad +80% on that one block only, not on roccia.forte.real-fantasy).",
   },
   {
     id: 'roccia.chain.s6',

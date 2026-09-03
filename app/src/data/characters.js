@@ -488,7 +488,7 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Nightmare: Impermanence Heron', 'Midnight Veil 5pc'], bestWeapon: 'Tragicomedy',
     weaponAlts: { alt5: ['Solsworn Ciphers', 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
-    teams: ['Roccia + Camellya + Shorekeeper', 'Roccia + Cantarella + Verina'] },
+    teams: ['Roccia + Camellya + Shorekeeper', 'Roccia + Phrolova + Cantarella'] },
   // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
   // and ww.nanoka.cc's character #1506 sheet. desc: title "Graceful Luminescence" (nanoka) prepended
   // and blurb rewritten — previous desc only described her Confession/support mode ("applies Frazzle...
@@ -1830,7 +1830,7 @@ const CHARACTER_DATA = {
   // throughout this table), not the Value list.
   ['Camellya',      'T2',   'T3'],
   ['Danjin',        'T3',   'T3'],
-  ['Roccia',        'T3',   'T2'],
+  ['Roccia',        'T3',   'T3'],
   ['Yinlin',        'T3',   'T4'],
   ['Calcharo',      'T4',   'T4'],
   ['Chixia',        'T4',   'T4'],

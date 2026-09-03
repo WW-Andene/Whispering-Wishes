@@ -27,11 +27,14 @@ describe('triggerEngine parity — Roccia', () => {
     expect(s2.target.scope).toBe('whole-team');
   });
 
-  it('S5 carries both real effects, matching RESONANCE_CHAIN_DATA exactly', () => {
+  it('S5 carries both real effects, matching RESONANCE_CHAIN_DATA exactly — the Commedia-specific +20% is scoped, not a broad libDmg dead buff', () => {
     const rc = RESONANCE_CHAIN_DATA['Roccia'];
     const s5 = ROCCIA_BLOCKS.find(b => b.id === 'roccia.chain.s5');
-    expect(s5.effects.find(e => e.stat === 'libDmg').value).toBe(rc.s5.libDmg);
-    expect(s5.effects.find(e => e.stat === 'heavyDmg').value).toBe(rc.s5.heavyDmg);
+    const scoped = s5.effects.find(e => e.scopedToBlockId === 'roccia.liberation.commedia-improvviso');
+    expect(scoped.stat).toBe('heavyDmg');
+    expect(scoped.value).toBe(rc.s5.libDmg);
+    const broad = s5.effects.find(e => e.stat === 'heavyDmg' && !e.scopedToBlockId);
+    expect(broad.value).toBe(rc.s5.heavyDmg);
   });
 
   it('Real Fantasy and Commedia Improvviso! are both correctly heavyDmg', () => {
