@@ -44,4 +44,13 @@ describe('triggerEngine parity — Danjin', () => {
     expect(fired.has('danjin.liberation.crimson-bloom')).toBe(true);
     expect(fired.has('danjin.forte.chaoscleave')).toBe(true);
   });
+
+  it('Inherent Skill Overflow matches CHAR_BUFF_TABLE and is the only heavyDmg-categorized buff (no over-crediting risk)', () => {
+    const legacy = CHAR_BUFF_TABLE['Danjin'];
+    const overflow = DANJIN_BLOCKS.find(b => b.id === 'danjin.selfbuff.overflow');
+    expect(overflow.effects[0].value).toBe(legacy.selfBuffs[0].value);
+    expect(overflow.timing.duration).toBe(legacy.selfBuffs[0].duration);
+    const heavyDmgBlocks = DANJIN_BLOCKS.filter(b => b.kind === 'damage' && b.damage?.category === 'heavyDmg');
+    expect(heavyDmgBlocks.map(b => b.id)).toEqual(['danjin.forte.chaoscleave']);
+  });
 });

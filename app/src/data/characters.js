@@ -1053,11 +1053,16 @@ const CHARACTER_DATA = {
     skills: ['Execution', 'Crimson Fragment', 'Crimson Bloom', 'Serene Vigil'],
     ascension: { boss: 'Strife Tacet Core', common: 'Ring', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Metallic Drip' },
-    bestEchoes: ['Nightmare: Crownless', 'Havoc Eclipse 5pc'], bestWeapon: 'Blazing Brilliance',
+    // bestEchoes/weaponAlts.alt5 corrected 2026-09-03 against a fresh Prydwen dump: bestEchoes named
+    // 'Nightmare: Crownless' — never mentioned anywhere in this source; its actual #1 Best Echo Set is
+    // Moonlit Clouds (main echo Impermanence Heron), with Havoc Eclipse (main echo Dreamless) filed
+    // under a separate "Special Echo Sets" section, not the top pick. weaponAlts.alt5 was missing Red
+    // Spring (100.34%, this source's actual #2 weapon, ahead of Emerald of Genesis at 100.00%).
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Blazing Brilliance',
     // weaponAlts added 2026-08-18 from Prydwen's ranked weapon list (all already tagged bestFor Danjin
     // in weapons.js): Emerald of Genesis (100.00%, standard 5★), Commando of Conviction (81.08%) and
     // Endless Collapse (80.72%) as top 4★s, Originite: Type II as the 3★ craftable option.
-    weaponAlts: { alt5: ['Emerald of Genesis'], alt4: ['Commando of Conviction', 'Endless Collapse'], alt3: ['Originite: Type II'] },
+    weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Commando of Conviction', 'Endless Collapse'], alt3: ['Originite: Type II'] },
     teams: ['Danjin + Camellya + Shorekeeper', 'Danjin + Camellya + Verina', 'Danjin + Cantarella + Verina', 'Danjin + Phrolova + Cantarella'] },
   // Audited 2026-08-18 via wutheringwaves.fandom.com (infobox/MediaWiki API) + prydwen.gg Kit/Build/
   // Gameplay tabs. desc: fandom infobox `role` field is "Concerto Efficiency;Traction;Resonance
@@ -2853,9 +2858,12 @@ const CHAR_BUFF_TABLE = {
     // for ANY off-element placed DPS.
     outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14, condition: 'Havoc DMG Amp' }],
     libBuffs: [],
-    selfBuffs: [],
+    // selfBuffs: added Overflow 2026-09-03 against a real prydwen.gg .mht snapshot — this Inherent
+    // Skill was entirely missing here and from danjin.blocks.js, despite Sanguine Pulse always
+    // preceding her Forte Heavy Attack (Chaoscleave) in the real modeled rotation.
+    selfBuffs: [{ stat: 'heavyDmg', value: 30, target: 'self', duration: 5, condition: 'Inherent Skill Overflow: casting Resonance Skill Sanguine Pulse → Heavy Attack DMG +30% for 5s.' }],
     debuffs: [],
-    note: 'Outro: 23% Havoc DMG Amp to next.',
+    note: 'Outro: 23% Havoc DMG Amp to next. Overflow (+30% Heavy ATK DMG/5s after Sanguine Pulse) directly buffs Chaoscleave, her real rotation\'s Heavy-ATK-categorized Forte finisher.',
   },
   'Baizhi': {
     outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 6 }],
@@ -4540,7 +4548,12 @@ const SKILL_MULTIPLIERS = {
     ['Skill', 'Crimson Erosion', '64.42%×2 → 59.65%×2', 'After Basic ATK 2/Dodge Counter/Intro; applies Incinerating Will (+20% DMG taken).'],
     ['Skill', 'Sanguine Pulse', '56.07%×2 → 42.95%×3 → 64.42%×3', 'After Basic ATK 3, up to 3 consecutive strikes.'],
     ['Forte', 'Serene Vigil: Chaoscleave', '59.65%×7', 'At 60+ Ruby Blossom, Heavy ATK finisher; heals Danjin.'],
-    ['Forte', 'Serene Vigil: Scatterbloom', '178.93%', 'Basic ATK follow-up after Chaoscleave.'],
+    // Scatterbloom value corrected 2026-09-03 (was 178.93%, source is exactly 179%); 2 Full Energy rows
+    // added the same pass — real, higher-tier (~2.4x) variants at 120+ Ruby Blossom, used in the
+    // "Damage Dealer Combo" rotation this source names but not the one currently modeled here.
+    ['Forte', 'Serene Vigil: Scatterbloom', '179%', 'Basic ATK follow-up after Chaoscleave.'],
+    ['Forte', 'Serene Vigil: Chaoscleave (Full Energy)', '143.15%×7', 'At 120+ Ruby Blossom, consumes 120 to empower this and the following Scatterbloom instead of the half-power version above.'],
+    ['Forte', 'Serene Vigil: Scatterbloom (Full Energy)', '429.43%', 'Basic ATK follow-up after a Full Energy Chaoscleave.'],
     ['Liberation', 'Crimson Bloom', '49.09%×8 + 392.65% Scarlet Burst', 'Rapid Havoc combo plus a Scarlet Burst finisher; consumes HP per hit.'],
     ['Intro', 'Vindication', '49.71%×4', 'Unwavering strike; can chain into Crimson Erosion.'],
     ['Outro', 'Duality', '+23% Havoc DMG Amp (14s)', 'Buffs the incoming Resonator.'],

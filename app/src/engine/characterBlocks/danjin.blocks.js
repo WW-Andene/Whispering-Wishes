@@ -54,10 +54,23 @@ export const DANJIN_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Serene Vigil: Chaoscleave' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('59.65%×7'), category: 'heavyDmg' },
-    note: 'Counts as Heavy ATK per its own CHARACTER_ROTATIONS note, at 60+ Ruby Blossom. Heals Danjin, not modeled. Scatterbloom follow-up (178.93%) has no own CHARACTER_ROTATIONS step, not separately modeled.',
+    note: 'Counts as Heavy ATK per its own CHARACTER_ROTATIONS note, at 60+ Ruby Blossom. Heals Danjin, not modeled. Scatterbloom follow-up (179%, corrected 2026-09-03 from a stale 178.93%) has no own CHARACTER_ROTATIONS step, not separately modeled. The higher-tier "Full Energy" variants (120+ Ruby Blossom) belong to a different rotation (the source\'s "Damage Dealer Combo") than the one modeled here, not used.',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
+  {
+    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: this Inherent Skill (Overflow) was
+    // entirely missing before this pass. Sanguine Pulse always precedes Chaoscleave (her only real
+    // heavyDmg-categorized damage block) in the modeled rotation, so no scopedToBlockId is needed —
+    // no other heavyDmg block exists here to over-credit.
+    id: 'danjin.selfbuff.overflow',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Skill:Sanguine Pulse' },
+    timing: { duration: 5 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'heavyDmg', value: 30 }],
+    note: 'Inherent Skill Overflow: Heavy Attack DMG +30% for 5s after casting Sanguine Pulse — directly buffs Chaoscleave.',
+  },
   {
     id: 'danjin.outro.duality',
     source: SOURCE, kind: 'buff',
