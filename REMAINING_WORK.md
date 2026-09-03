@@ -165,17 +165,39 @@ attempted again on a hunch.
 
 ### 1c. Phase A — per-character full audit, mostly not done
 
-The plan's own methodology for reaching "fully merged": an 8-dimension
-solo audit per character (SKILL_MULTIPLIERS / CHARACTER_ROTATIONS /
-RESONANCE_CHAIN_DATA / CHAR_BUFF_TABLE / dmgFocus / weapon data / echo data /
-engine-block parity, all cross-checked against a fresh source). 9 characters
-(Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc, Rover: Aero,
-Jiyan, **Yinlin — added 2026-09-03**) have gone through this as a *complete*
-8-dimension pass. Many more have had *partial*, targeted fixes from later
-sessions' dump-verification passes (see the `Characters data dump/` audit
-trail and this session's `auditBlockCoverage.mjs` sweep — that sweep covers
-3 of the 8 dimensions: rotation-step/chain/buff-table coverage, not the
-full 8). The remaining ~48 characters have not had a full Phase A pass. Not
+The plan's own methodology for reaching "fully merged": a 9-dimension solo
+audit per character, all cross-checked against a fresh source dump:
+1. SKILL_MULTIPLIERS
+2. CHARACTER_ROTATIONS
+3. RESONANCE_CHAIN_DATA
+4. CHAR_BUFF_TABLE
+5. dmgFocus
+6. weapon data (bestWeapon/weaponAlts)
+7. echo data (bestEchoes)
+8. engine-block parity — **updated 2026-09-03**: every component, element,
+   and mechanic of the character's kit (every named move/state/proc the kit
+   text describes, not just the moves already present in
+   `<name>.blocks.js`) must actually be segmented, categorized (a real
+   `damage.category`, matching kit-text override language where present —
+   e.g. "considered Resonance Skill DMG" on a move cast from a different
+   slot), and wired into the engine — not just "does every existing block
+   have a category," but "does every real kit component that should have a
+   block, have one."
+9. icons — **added 2026-09-03**: every skill/rotation-step icon
+   (`SKILL_ICONS`) and Resonance Chain node icon (`CHAIN_NODE_ICONS`) is
+   actually wired, including reusing an existing generic/shared icon
+   (Basic ATK, Liberation, etc.) where the character has no unique art
+   sourced yet rather than leaving the slot unpopulated.
+
+9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
+Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
+version of this pass; **Calcharo — added 2026-09-03, first character
+audited under the updated 9-dimension methodology** (see below). Many more
+have had *partial*, targeted fixes from later sessions' dump-verification
+passes (see the `Characters data dump/` audit trail and an earlier
+session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
+dimensions: rotation-step/chain/buff-table coverage, not the full set).
+The remaining ~47 characters have not had a full Phase A pass. Not
 urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
@@ -257,6 +279,35 @@ Closing the last dimension found `dmgFocus` was `['Coordinated ATK',
 both real, already correctly `libDmg`/`heavyDmg`-categorized damage per her
 own dump's Damage Profile, silently rejecting real teammate buffs. 1 new
 test, full suite green: 1376/1376.
+
+**Calcharo pass (2026-09-03) — first character audited under the updated
+9-dimension methodology (dimension 8 broadened to real kit-component
+coverage, dimension 9 icons added)**: his `Characters data dump/` file
+already existed from an earlier pass, with SKILL_MULTIPLIERS/
+CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/weapon/echo/tier
+all already confirmed clean, and one real bug already fixed then
+(`chain.s4`'s scope/trigger/duration). Closing dimensions 8-9 this pass
+found 2 more real bugs, both the same shape: `calcharo.intro.wanted-outlaw`
+and `calcharo.outro.shadowy-raid` were both entirely uncategorized
+(`damage.category` missing) despite being real, sourced damage — Intro
+5.1% (20,081) and Outro 7.6% (29,693) of his total per the dump's Damage
+Profile — silently rejecting Resonance Skill DMG Bonus and Outro DMG Bonus
+respectively on that damage. Fixed to `skillDmg` (Intro — the dump's own
+multiplier row is labeled generically "Skill Damage", same convention as
+Augusta's Stride of Goldenflare) and `outroDmg` (Outro — his own direct
+damage on swap-out, not a team buff, same shape as Rover: Havoc's
+Soundweaver). `dmgFocus` gained `'Outro'` accordingly; `'Skill'` (Intro's
+5.1%) stays excluded — it sits in the ambiguous gap between this project's
+own established exclude precedent (4.6%/5.5%, Rover: Spectro) and include
+precedent (6.8%+, Yinlin/Denia/Iuno), nearer the exclude side. Resonance
+Skill (Extermination Order, 2.3%) stays unmodeled — real but never fires in
+the app's own CHARACTER_ROTATIONS, same "deliberately unmodeled" precedent
+as Rover: Havoc's skipped Basic ATK step. Icons (dimension 9) checked and
+confirmed already fully wired — every rotation move and all 6 Resonance
+Chain nodes have a real icon, including 2 correctly-reused shared/generic
+icons (Basic ATK weapon icon, also covering Heavy ATK/Mid-air/Dodge
+Counter/Hounds Roar) — no gap found. 3 new tests, full suite green:
+1379/1379.
 
 ---
 

@@ -1326,7 +1326,19 @@ const CHARACTER_DATA = {
   // libDmg-categorized at all, confirming it. Skill (8.9%, real, already correctly skillDmg-categorized
   // as jiyan.skill.windqueller, fires twice in his real rotation) was missing and is added instead.
   ['Jiyan',         ['Heavy ATK', 'Skill'],           [],                                      []],
-  ['Calcharo',      ['Liberation', 'Basic ATK'],     [],                                      []],
+  // dmgFocus gained 'Outro' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): Outro (Shadowy Raid) is a
+  // genuine 7.6% (29,693) damage share — his own direct damage on swap-out, not a team buff — now fixed
+  // to outroDmg category in calcharo.blocks.js (was uncategorized, silently rejecting Outro DMG Bonus).
+  // Intro (Wanted Outlaw, 5.1%/20,081) also got its missing skillDmg category fixed this pass, but stays
+  // OUT of dmgFocus: 5.1% sits in the ambiguous gap between this project's own established exclude
+  // (4.6%/5.5%, Rover: Spectro) and include (6.8%+, Yinlin/Denia/Iuno) precedents, and is nearer the
+  // exclude side — treated as "low single digits" per the same convention as Lucy's dropped Liberation
+  // focus, not a guess. Echo (5.2%) stays excluded too — generic equipped-Echo damage, not his own kit's
+  // Echo Skill button, same distinction already drawn for Rover: Spectro. Resonance Skill (Extermination
+  // Order, 2.3%/9,050) is real but never fires in the app's own modeled CHARACTER_ROTATIONS (the dump's
+  // own "Optimized Burst Combo" skips straight from Intro to Liberation) — no engine block needed for it,
+  // same "deliberately unmodeled, not a bug" precedent as Rover: Havoc's skipped Basic ATK step.
+  ['Calcharo',      ['Liberation', 'Basic ATK', 'Outro'], [],                                  []],
   ['Encore',        ['Basic ATK', 'Skill'],          [],                                      []],
   ['Lingyang',      ['Basic ATK'],                   [],                                      []],
   ['Jinhsi',        ['Skill', 'Liberation'],         [],                                      []],

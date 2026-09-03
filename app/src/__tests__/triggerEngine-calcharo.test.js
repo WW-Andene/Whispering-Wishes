@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CALCHARO_BLOCKS } from '../engine/characterBlocks/calcharo.blocks.js';
@@ -64,5 +64,19 @@ describe('triggerEngine parity — Calcharo', () => {
     expect(fired.has('calcharo.outro.shadowy-raid')).toBe(true);
     expect(fired.has('calcharo.forte.death-messenger')).toBe(true);
     expect(fired.has('calcharo.chain.s6-phantoms')).toBe(true);
+  });
+
+  it("Intro (Wanted Outlaw) is skillDmg-categorized (was uncategorized) — dump's own multiplier row is labeled generically \"Skill Damage\"", () => {
+    const intro = CALCHARO_BLOCKS.find(b => b.id === 'calcharo.intro.wanted-outlaw');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("Outro (Shadowy Raid) is outroDmg-categorized (was uncategorized) — his own kit text: own direct damage, not a team buff", () => {
+    const outro = CALCHARO_BLOCKS.find(b => b.id === 'calcharo.outro.shadowy-raid');
+    expect(outro.damage.category).toBe('outroDmg');
+  });
+
+  it("dmgFocus gains 'Outro' (real 7.6% share, now outroDmg-categorized) — Intro (5.1%) and Echo (5.2%, generic equipped-Echo damage) both stay excluded per this project's own precedent", () => {
+    expect(CHARACTER_DATA['Calcharo'].dmgFocus).toEqual(['Liberation', 'Basic ATK', 'Outro']);
   });
 });
