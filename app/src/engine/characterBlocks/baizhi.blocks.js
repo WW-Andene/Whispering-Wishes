@@ -20,7 +20,10 @@ export const BAIZHI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Overflowing Frost' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('79.53%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus. The dump's own multiplier table labels this row generically
+    // "Skill Damage", same convention as Calcharo/Encore/Jianxin/Lingyang/Aalto.
+    damage: { hits: parseSkillMultiplierHits('79.53%'), category: 'skillDmg' },
     note: 'Row also lists "+ heal", not modeled (no fabricated non-DPS number).',
   },
   {

@@ -192,8 +192,8 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto — added 2026-09-03, first six characters audited under the updated
-9-dimension methodology** (see below). Many more
+Aalto, Baizhi — added 2026-09-03, first seven characters audited under
+the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -429,6 +429,20 @@ it — a real, sourced, structurally-ambiguous S3 gap for a future pass to
 resolve once that ambiguity can be settled, not silently dropped. Icons
 (dimension 9) checked and confirmed already fully wired. 3 new tests, full
 suite green: 1393/1393.
+
+**Baizhi pass (2026-09-03)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 3 real bugs (base stats off-by-
+1, a wrong ToA/WW tier, a wrong `bestEchoes` main-echo pick) and correctly
+noting no Damage Profile percentages exist for her (source: "Baizhi
+calculations aren't available yet," a genuine gap in the source itself,
+not extraction). Redoing dimensions 5/8/9 found `baizhi.intro.overflowing-
+frost` uncategorized (fixed to `skillDmg`, generic "Skill Damage" row
+label) and `dmgFocus` missing `'Liberation'`/`'Heavy ATK'` despite both
+already being real, correctly `libDmg`/`heavyDmg`-categorized blocks
+(Momentary Union, Destined Promise channel) firing in her real
+`CHARACTER_ROTATIONS` — fixed to `['Skill', 'Liberation', 'Heavy ATK']`.
+Icons (dimension 9) checked and confirmed already fully wired. 2 new
+tests, full suite green: 1395/1395.
 
 ---
 

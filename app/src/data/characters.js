@@ -1561,7 +1561,11 @@ const CHARACTER_DATA = {
   // for Clear As Day (fixed alongside this) still had the stale libDmg categorization.
   ['Lucilla',       ['Basic ATK', 'Echo'],           ['Glacio DMG Buff', 'Echo Skill DMG Buff'], ['Glacio Chafe']],
   ['Suisui',        ['Skill', 'Outro'],              ['Heal', 'All DMG Amp'],                 []],
-  ['Baizhi',        ['Skill'],                       ['Heal'],                                []],
+  // dmgFocus gained 'Liberation'/'Heavy ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): her dump
+  // has no Damage Profile percentages (a Support, unlike DPS characters' dumps), but both are real,
+  // already correctly libDmg/heavyDmg-categorized blocks (Momentary Union, Destined Promise channel)
+  // firing in her real CHARACTER_ROTATIONS, were silently rejecting real teammate DMG Bonus buffs.
+  ['Baizhi',        ['Skill', 'Liberation', 'Heavy ATK'], ['Heal'],                            []],
   // buff tag corrected 2026-08-18: the wiki's Taoqi/Combat Outro Skill "Iron Will" text is "Resonance
   // Skill DMG Amplified by 38%" — matches the 'Skill DMG Amp' convention used for Lumi/Baizhi/Buling's
   // identical Amp-type buffs below, not the "Deepen" wording (which belongs to a different, unsourced
