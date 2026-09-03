@@ -2570,8 +2570,12 @@ const CHAR_BUFF_TABLE = {
     ],
     libBuffs: [],
     selfBuffs: [],
-    debuffs: [{ stat: 'frazzle', value: 18, duration: 15, condition: '18 stacks per rotation in Confession mode' }],
-    note: 'Confession: applies 18 Frazzle stacks. Outro: Spectro RES -10% + 100% Frazzle DMG Amp. Frazzle = Level-scaling DOT, not ATK-based.',
+    // Frazzle stack count corrected 2026-09-02 against a real prydwen.gg .mht snapshot: was 18 with no
+    // derivation shown. Recomputed directly from the source's own Confession rotation (Forte: Utter
+    // Confession ×1 → 1 stack; Liberation: Dawn of Enlightenment (Confession) ×1 → 8 stacks; Forte:
+    // Starflash (Confession) ×2 → 5 stacks each = 10) = 1 + 8 + 10 = 19, not 18.
+    debuffs: [{ stat: 'frazzle', value: 19, duration: 15, condition: '19 stacks per rotation in Confession mode (1 Utter Confession + 8 Liberation + 5×2 Starflash)' }],
+    note: 'Confession: applies 19 Frazzle stacks. Outro: Spectro RES -10% + 100% Frazzle DMG Amp. Frazzle = Level-scaling DOT, not ATK-based.',
   },
   // Corrected 2026-08-17 against Prydwen's live build page: selfBuffs was empty, missing her real
   // Inherent Skill "Poison" (+6% Havoc DMG Bonus per Echo Skill cast, 10s, stacks up to 2x/12% cap) —
@@ -4023,6 +4027,11 @@ const SKILL_MULTIPLIERS = {
     ['Skill', "Chamuel's Star 1-3", '59.4% → 39.8%×2 → 28.9%×6'],
     ['Forte', 'Starflash', '82.7%×3'],
     ['Forte', 'Absolution Litany', '638.2%'],
+    // Added 2026-09-02, sourced from a real prydwen.gg .mht snapshot's own Forte Circuit Multipliers
+    // table — was entirely missing (Confession mode's own Forte cast, the direct counterpart to
+    // Absolution Litany). Not wired into an engine block since CHARACTER_ROTATIONS['Phoebe'] only
+    // models her Absolution rotation (never Confession) — reference data only.
+    ['Forte', 'Utter Confession', '187.9%', "Confession mode's Forte Circuit cast (parallel to Absolution Litany); applies 1 Spectro Frazzle stack, refills Divine Voice to 60. Confirmed unused in the modeled (Absolution-only) rotation."],
     ['Liberation', 'Dawn of Enlightenment', '401.6% (+255% DMG Mult in Absolution / 8 Frazzle stacks applied in Confession, no DMG Mult change)'],
     ['Intro', 'Golden Grace', '198.8%'],
     ['Outro', 'Attentive Heart', '528.4% (+255% DMG Mult in Absolution / grants Silent Prayer support buff in Confession)'],

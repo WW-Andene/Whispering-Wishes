@@ -28,6 +28,52 @@ describe('triggerEngine parity — Phoebe', () => {
     expect(attentive.effects[0].value).toBe(255);
   });
 
+  // Fixed 2026-09-02: 6 separate blocks (the 3 own-kit multipliers above, plus S1/S2/S3) were all
+  // kind:'buff' with a non-passive trigger and no timing.duration — the item-12 dead-buff architecture
+  // bug. Together they covered nearly her entire multiplier stack, so this was a massive silent
+  // undercount. Each is now trigger:{type:'passive'} + scopedToBlockId (or category-gated, for S3).
+  it('the 3 own-kit multipliers actually apply (were dead no-ops)', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phoebe'], PHOEBE_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withAll = resolveHitComposedDps(PHOEBE_BLOCKS, steps, ctx, 3000, 'spectro', 'Sub DPS');
+    const strippedIds = new Set([
+      'phoebe.kit.dawn-of-enlightenment-absolution-mult',
+      'phoebe.kit.attentive-heart-absolution-mult',
+      'phoebe.kit.starflash-frazzle-amp',
+    ]);
+    const withoutKitMults = resolveHitComposedDps(PHOEBE_BLOCKS.filter(b => !strippedIds.has(b.id)), steps, ctx, 3000, 'spectro', 'Sub DPS');
+    expect(withAll.totalDamage).toBeGreaterThan(withoutKitMults.totalDamage * 2);
+  });
+
+  it('S1/S2/S3 actually apply and stay correctly scoped (were dead no-ops)', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phoebe'], PHOEBE_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+
+    const withS1 = resolveHitComposedDps(PHOEBE_BLOCKS, steps, ctx, 3000, 'spectro', 'Sub DPS', null, 1);
+    const withoutS1 = resolveHitComposedDps(PHOEBE_BLOCKS.filter(b => b.id !== 'phoebe.chain.s1'), steps, ctx, 3000, 'spectro', 'Sub DPS', null, 1);
+    const dawnHit = withS1.hitLog.find(h => h.blockId === 'phoebe.liberation.dawn-of-enlightenment');
+    const dawnHitNoS1 = withoutS1.hitLog.find(h => h.blockId === 'phoebe.liberation.dawn-of-enlightenment');
+    expect(dawnHit.damage).toBeGreaterThan(dawnHitNoS1.damage);
+    const introHit = withS1.hitLog.find(h => h.blockId === 'phoebe.intro.golden-grace');
+    const introHitNoS1 = withoutS1.hitLog.find(h => h.blockId === 'phoebe.intro.golden-grace');
+    expect(introHit.damage).toBeCloseTo(introHitNoS1.damage, 5);
+
+    const withS2 = resolveHitComposedDps(PHOEBE_BLOCKS, steps, ctx, 3000, 'spectro', 'Sub DPS', null, 2);
+    const withoutS2 = resolveHitComposedDps(PHOEBE_BLOCKS.filter(b => b.id !== 'phoebe.chain.s2'), steps, ctx, 3000, 'spectro', 'Sub DPS', null, 2);
+    const outroHit = withS2.hitLog.find(h => h.blockId === 'phoebe.outro.attentive-heart');
+    const outroHitNoS2 = withoutS2.hitLog.find(h => h.blockId === 'phoebe.outro.attentive-heart');
+    expect(outroHit.damage).toBeGreaterThan(outroHitNoS2.damage);
+    const dawnHitS2 = withS2.hitLog.find(h => h.blockId === 'phoebe.liberation.dawn-of-enlightenment');
+    const dawnHitNoS2 = withoutS2.hitLog.find(h => h.blockId === 'phoebe.liberation.dawn-of-enlightenment');
+    expect(dawnHitS2.damage).toBeCloseTo(dawnHitNoS2.damage, 5);
+
+    const withS3 = resolveHitComposedDps(PHOEBE_BLOCKS, steps, ctx, 3000, 'spectro', 'Sub DPS', null, 3);
+    const withoutS3 = resolveHitComposedDps(PHOEBE_BLOCKS.filter(b => b.id !== 'phoebe.chain.s3'), steps, ctx, 3000, 'spectro', 'Sub DPS', null, 3);
+    const starflashHit = withS3.hitLog.find(h => h.blockId === 'phoebe.forte.starflash');
+    const starflashHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'phoebe.forte.starflash');
+    expect(starflashHit.damage).toBeGreaterThan(starflashHitNoS3.damage);
+  });
+
   it('outro debuff and buff match CHAR_BUFF_TABLE (Confession-mode only)', () => {
     const legacy = CHAR_BUFF_TABLE['Phoebe'];
     const resshred = PHOEBE_BLOCKS.find(b => b.id === 'phoebe.outro.confession-resshred');

@@ -78,30 +78,38 @@ export const PHOEBE_BLOCKS = [
 
   // ── Own-kit DMG Multiplier bonuses (NOT Resonance Chain — real, sourced values from her base kit
   //    text, cast-scoped like every other "own multiplier" block in this file) ──
+  // Fixed 2026-09-03: all 3 of these were `kind:'buff'` blocks with a non-passive trigger
+  // (`'cast'`/`'swap-out'`) and NO `timing.duration` — the item-12 dead-buff architecture bug
+  // (Engine development.md): resolveHitComposedDps.js's statsAtInstant() only reads `passiveBlocks`
+  // (trigger.type==='passive') and `buffWindows` (duration != null); any non-passive trigger with no
+  // duration is invisible regardless of trigger type. All 3 were silent no-ops — together they cover
+  // nearly her entire multiplier stack (+255% Liberation, +255% Outro, +256% Starflash Frazzle Amp).
+  // Fixed via `trigger:{type:'passive'}` + `scopedToBlockId`, matching the pattern used everywhere
+  // else this bug was found this session.
   {
     id: 'phoebe.kit.dawn-of-enlightenment-absolution-mult',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Liberation:Dawn of Enlightenment' },
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 255 }],
-    note: 'Dawn of Enlightenment deals a single (non-chained) hit with DMG Multiplier +255% while in Absolution mode (base kit, not Resonance Chain) — cast-scoped (instant, no persistent duration).',
+    effects: [{ stat: 'totalMult', value: 255, scopedToBlockId: 'phoebe.liberation.dawn-of-enlightenment' }],
+    note: 'Dawn of Enlightenment deals a single (non-chained) hit with DMG Multiplier +255% while in Absolution mode (base kit, not Resonance Chain).',
   },
   {
     id: 'phoebe.kit.attentive-heart-absolution-mult',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'swap-out' },
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 255 }],
-    note: 'Attentive Heart deals a final hit with DMG Multiplier +255% while in Absolution mode (base kit, not Resonance Chain) — cast-scoped (instant, no persistent duration).',
+    effects: [{ stat: 'totalMult', value: 255, scopedToBlockId: 'phoebe.outro.attentive-heart' }],
+    note: 'Attentive Heart deals a final hit with DMG Multiplier +255% while in Absolution mode (base kit, not Resonance Chain).',
   },
   {
     id: 'phoebe.kit.starflash-frazzle-amp',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Forte:Starflash' },
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     condition: { requiresStance: 'target carries Spectro Frazzle' },
-    effects: [{ stat: 'totalMult', value: 256 }],
-    note: 'Starflash gains +256% DMG Amp against targets already carrying Spectro Frazzle (base kit, not Resonance Chain) — cast-scoped (instant, no persistent duration).',
+    effects: [{ stat: 'totalMult', value: 256, scopedToBlockId: 'phoebe.forte.starflash' }],
+    note: 'Starflash gains +256% DMG Amp against targets already carrying Spectro Frazzle (base kit, not Resonance Chain).',
   },
 
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE) — both Confession-mode-only, present per legacy
@@ -129,29 +137,31 @@ export const PHOEBE_BLOCKS = [
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's
   //    real mechanic) ──
+  // Fixed 2026-09-03: S1-S3 had the identical dead cast-scoped/swap-out-scoped no-duration no-op shape
+  // as the 3 kit-multiplier blocks above — all 3 were silent no-ops too.
   {
     id: 'phoebe.chain.s1',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Liberation:Dawn of Enlightenment' },
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 225 }],
-    note: "In Absolution, Dawn of Enlightenment's own DMG Multiplier +225% additional (in Confession instead +90% DMG Mult and max-stack Frazzle application, not modeled since her real rotation stays in Absolution) — cast-scoped (instant, no persistent duration).",
+    effects: [{ stat: 'libDmg', value: 225, scopedToBlockId: 'phoebe.liberation.dawn-of-enlightenment' }],
+    note: "In Absolution, Dawn of Enlightenment's own DMG Multiplier +225% additional (in Confession instead +90% DMG Mult and max-stack Frazzle application, not modeled since her real rotation stays in Absolution).",
   },
   {
     id: 'phoebe.chain.s2',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'swap-out' },
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'deepen', value: 120 }],
-    note: 'In Absolution, Outro DMG to Frazzle-afflicted targets +120% Amp (in Confession instead increases Silent Prayer\'s own Frazzle DMG Amp by another 120%, not modeled) — cast-scoped to the Outro (instant, no persistent duration).',
+    effects: [{ stat: 'deepen', value: 120, scopedToBlockId: 'phoebe.outro.attentive-heart' }],
+    note: 'In Absolution, Outro DMG to Frazzle-afflicted targets +120% Amp (in Confession instead increases Silent Prayer\'s own Frazzle DMG Amp by another 120%, not modeled) — scoped to the Outro (not category-gated, so scopedToBlockId is required to avoid over-crediting her whole kit).',
   },
   {
     id: 'phoebe.chain.s3',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Forte:Starflash' },
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'heavyDmg', value: 91 }],
-    note: "Starflash DMG Multiplier +91% in Absolution (+249% in Confession, not modeled) — cast-scoped (instant, no persistent duration).",
+    note: "Starflash DMG Multiplier +91% in Absolution (+249% in Confession, not modeled) — heavyDmg is category-gated and Starflash is her only heavyDmg-categorized block, so this stays correctly scoped without needing scopedToBlockId.",
   },
   {
     id: 'phoebe.chain.s4',

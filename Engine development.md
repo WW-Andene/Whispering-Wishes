@@ -670,6 +670,22 @@ finale` damage block exists to scope to (Finale is never cast in the modeled `CH
 non-passive trigger type is used (`'cast'`, `'swap-out'`, or any other) — not just blocks that happen to
 read `trigger:{type:'cast',...}`.
 
+**11th-16th confirmed instances, 2026-09-03 — Phoebe, by far the worst case found**: applying the
+updated standing rule to Phoebe's blocks (`phoebe.blocks.js`) turned up SIX separate instances at once
+— `phoebe.kit.dawn-of-enlightenment-absolution-mult` (+255% Liberation DMG Mult), `phoebe.kit.
+attentive-heart-absolution-mult` (+255% Outro DMG Mult), `phoebe.kit.starflash-frazzle-amp` (+256%
+Starflash Frazzle-target Amp), `chain.s1` (+225% additional Liberation Mult), `chain.s2` (+120% Outro
+Frazzle Amp), `chain.s3` (+91% Starflash Mult). Together these ARE essentially her entire kit's
+multiplier stack — the two headline +255% bonuses on her two biggest hits, plus a further +256% Amp on
+her main burst-window Heavy Attack, were ALL silent no-ops. Every one fixed via the same
+passive+scopedToBlockId pattern (chain.s3 didn't need `scopedToBlockId` since `heavyDmg` is
+category-gated and Starflash is her only `heavyDmg`-tagged block — a useful reminder that
+`scopedToBlockId` is only NEEDED when the stat isn't already category-gated to exactly one real target,
+per Brant's `chain.s6` case). This is the single worst concentration of this bug found in any character
+this session, and reinforces that the fix-shape decisions below (a real architecture-level fix, not
+continued one-off patching) are worth prioritizing — at this rate, most of the roster likely has at
+least one instance, and probably several characters have Phoebe-scale concentrations still undiscovered.
+
 **Fix shape, not yet done**: (1) a real architecture fix — either make `statsAtInstant()` also check a
 3rd bucket of "cast-scoped, same-instant-only" buffs (blocks matching this shape, applied only to hits at
 their own exact trigger instant, not before/after), or add a cheap default `timing.duration` (e.g. 0.1s)
