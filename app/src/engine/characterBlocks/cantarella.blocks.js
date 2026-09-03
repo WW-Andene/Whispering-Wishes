@@ -5,9 +5,12 @@
 // 2026-08-31 audit comment, read directly for each node's real mechanic),
 // SKILL_MULTIPLIERS['Cantarella'], and CHARACTER_ROTATIONS['Cantarella']. No new numbers
 // invented. Several real mechanics have no home in this schema yet and are documented
-// rather than force-fit (Jolt's auto-proc hit, the Diffusion Coordinated ATK summon
-// chain, S4's healing-only effect, S5's +5 Dreamweaver hit-count cap) — matching the
-// same "don't fabricate a value" rule the source file's own audit already applied.
+// rather than force-fit (Jolt's auto-proc hit, S4's healing-only effect, S5's +5
+// Dreamweaver hit-count cap) — matching the same "don't fabricate a value" rule the
+// source file's own audit already applied. The Diffusion Coordinated ATK summon chain
+// WAS one of these (closed 2026-09-03, REMAINING_WORK.md 1a) — see
+// cantarella.liberation.diffusion-summons below, built on a new `crossCharacterHit`
+// windowed-proc variant (triggerBlocks.schema.js).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -45,7 +48,31 @@ export const CANTARELLA_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Beneath the Sea' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('376.00%'), category: 'libDmg' },
-    note: 'Also applies Diffusion: for 30s (or 21 Dreamweaver hits, whichever first) every hit landed by her or the team can summon a Coordinated ATK (14.54% each, 21 max) — an off-field summon-chain mechanic with no home in this schema yet, not modeled (same class of gap already flagged for her own S5 Dreamweaver-cap chain node).',
+    note: 'Also applies Diffusion — see cantarella.liberation.diffusion-summons below for the modeled Coordinated ATK summon chain.',
+  },
+  {
+    // Added 2026-09-03 (REMAINING_WORK.md 1a — the off-field summon-chain gap, closed): the numbers
+    // were always fully sourced (SKILL_MULTIPLIERS['Cantarella']'s own Liberation row: '376.00% +
+    // 14.54%×21'), the blocker was purely the engine — 'windowed-proc' only ever fired off the block
+    // OWNER's own hits (Yinlin's S6 shape). Extended it with a `crossCharacterHit` flag (schema doc in
+    // triggerBlocks.schema.js has the full design) so ANY team member's landed hit can advance the
+    // window while it's open, not just Cantarella's own — matching the kit text exactly ("every hit
+    // SHE OR THE TEAM lands"). `on` is deliberately omitted (no move-type filter, unlike Yinlin's S6)
+    // since Diffusion procs off literally any hit. `minProcInterval: 1` enforces the real "up to 1 per
+    // second" cap even when multiple qualifying hits land in close succession.
+    id: 'cantarella.liberation.diffusion-summons',
+    source: SOURCE, kind: 'damage',
+    trigger: {
+      type: 'windowed-proc',
+      opensOnProc: ['cast:Liberation:Beneath the Sea'],
+      windowSeconds: 30,
+      maxProcs: 21,
+      crossCharacterHit: true,
+      minProcInterval: 1,
+    },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('14.54%'), category: 'coordDmg' },
+    note: 'Diffusion: for 30s after Flowing Suffocation (or until 21 Dreamweavers are summoned, whichever first), every hit landed by her or the team can summon a Coordinated ATK, up to 1/second, 14.54% ATK Havoc DMG each, 21 max (S5 raises this cap to 26 — not modeled here, see the Resonance Chain section\'s own "S4/S5 correctly have NO block" comment below).',
   },
   {
     id: 'cantarella.heavy.delusive-dive',

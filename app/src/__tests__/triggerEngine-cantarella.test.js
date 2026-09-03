@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
+import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CANTARELLA_BLOCKS } from '../engine/characterBlocks/cantarella.blocks.js';
 
@@ -49,5 +50,45 @@ describe('triggerEngine parity — Cantarella', () => {
     expect(fired.has('cantarella.liberation.flowing-suffocation')).toBe(true);
     expect(fired.has('cantarella.forte.phantom-sting')).toBe(true);
     expect(fired.has('cantarella.forte.perception-drain')).toBe(true);
+  });
+
+  // Closed 2026-09-03 (REMAINING_WORK.md 1a): Diffusion's off-field Coordinated ATK summon chain,
+  // previously undocumented/unmodeled ("no home in this schema yet") — now a real crossCharacterHit
+  // windowed-proc block, sourced verbatim from SKILL_MULTIPLIERS['Cantarella']'s own Liberation row
+  // ('376.00% + 14.54%×21').
+  it('Diffusion is a real windowed-proc block with the sourced 14.54%/21-max/30s/1-per-second shape', () => {
+    const b = CANTARELLA_BLOCKS.find(x => x.id === 'cantarella.liberation.diffusion-summons');
+    expect(b.trigger).toEqual({
+      type: 'windowed-proc',
+      opensOnProc: ['cast:Liberation:Beneath the Sea'],
+      windowSeconds: 30,
+      maxProcs: 21,
+      crossCharacterHit: true,
+      minProcInterval: 1,
+    });
+    expect(b.damage.hits.reduce((s, h) => s + h.atkPct, 0)).toBeCloseTo(14.54, 2);
+    expect(b.damage.category).toBe('coordDmg');
+  });
+
+  it('fires from her own solo rotation (own hits qualify too, no move-type filter)', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Cantarella'], CANTARELLA_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(CANTARELLA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'havoc', 'Sub DPS');
+    expect(hitLog.some(h => h.blockId === 'cantarella.liberation.diffusion-summons')).toBe(true);
+  });
+
+  it("in a real team context, an ALLY's hit (not just Cantarella's own) advances the window and the resulting damage is credited to Cantarella", () => {
+    const allyBlocks = [
+      { id: 'ally.basic.hit', source: 'Ally', kind: 'damage', trigger: { type: 'cast', on: 'Basic ATK:Hit' }, timing: {}, target: { scope: 'self' }, effects: [], damage: { hits: [{ atkPct: 30 }] } },
+    ];
+    const steps = [
+      { owner: 'Cantarella', type: 'Liberation', skill: 'Beneath the Sea', stepSeconds: 1 },
+      { owner: 'Ally', type: 'Basic ATK', skill: 'Hit', stepSeconds: 2 },
+    ];
+    const blocksByOwner = { Cantarella: CANTARELLA_BLOCKS, Ally: allyBlocks };
+    const { hitLog } = resolveHitComposedTeamDps(steps, blocksByOwner, 'Cantarella', { enemyDef: 800, enemyRes: 10 }, { atk: 1000 }, { targetElementLower: 'havoc', targetRole: 'Sub DPS' });
+    const procHits = hitLog.filter(h => h.blockId === 'cantarella.liberation.diffusion-summons');
+    // Cantarella's own Liberation cast (t=1) qualifies too, then Ally's hit at t=3 (2s later, past
+    // minProcInterval:1) procs again.
+    expect(procHits.map(h => h.time)).toEqual([1, 3]);
   });
 });

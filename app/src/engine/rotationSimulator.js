@@ -126,7 +126,7 @@ export class RotationSimulator {
    *  before the prior 30s window closed) restarts the count, matching "in the first 30s after
    *  casting" being anchored to the MOST RECENT cast, not accumulating across casts. */
   openProcWindow(windowKey, windowSeconds, maxProcs, owner) {
-    this._procWindows.set(this.#ns(windowKey, owner), { openedAt: this.time, windowSeconds, count: 0, maxProcs });
+    this._procWindows.set(this.#ns(windowKey, owner), { openedAt: this.time, windowSeconds, count: 0, maxProcs, lastProcAt: null });
   }
 
   /** Call when a qualifying hit (the proc block's `on` type) occurs while a proc window might be
@@ -134,14 +134,20 @@ export class RotationSimulator {
    *  windowSeconds of when it opened) AND the count must be under maxProcs. Increments the count
    *  on a successful proc; closes (deletes) the window once it's both expired and exhausted is not
    *  required — expiry alone doesn't delete the entry (a later hit checks elapsed time again), but
-   *  once maxProcs is reached the window is removed since no further check can ever succeed. */
-  tryProc(windowKey, owner) {
+   *  once maxProcs is reached the window is removed since no further check can ever succeed.
+   *  `minInterval` (added alongside `crossCharacterHit` — Cantarella's Diffusion, "up to 1 Coordinated
+   *  Attack per second"): when set, a hit within `minInterval` seconds of the window's own last
+   *  successful proc doesn't count — still a legitimate qualifying hit, it just doesn't advance the
+   *  window this time (no side effect, can proc again once enough time passes). */
+  tryProc(windowKey, owner, minInterval) {
     const k = this.#ns(windowKey, owner);
     const w = this._procWindows.get(k);
     if (!w) return false;
     if ((this.time - w.openedAt) > w.windowSeconds) { this._procWindows.delete(k); return false; }
     if (w.count >= w.maxProcs) return false;
+    if (minInterval && w.lastProcAt != null && (this.time - w.lastProcAt) < minInterval) return false;
     w.count += 1;
+    w.lastProcAt = this.time;
     if (w.count >= w.maxProcs) this._procWindows.delete(k);
     return true;
   }
@@ -227,6 +233,13 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
   // isOutroCast should open that gate is resolved per-step below by looking up the CURRENT step's
   // own owner's outro block, then searching this global list for a match.
   const partnerBlocks = allBlocks.filter(b => b.trigger.type === 'partner-outro-return');
+  // Cross-character 'windowed-proc' blocks (Cantarella's Diffusion — REMAINING_WORK.md 1a): NOT
+  // scoped per-owner, same reason partnerBlocks isn't — the window OPENS off its owner's own cast
+  // (handled by the normal per-owner procBlocks loop below, since blocksByOwner[owner] already
+  // includes the block when iterating that owner's own steps), but ADVANCING it happens off every
+  // step ANY team member takes, checked unconditionally on every iteration below rather than needing
+  // a hand-set `ev.triesProc` flag the way single-owner windowed-proc blocks do.
+  const crossCharacterProcBlocks = allBlocks.filter(b => b.trigger.type === 'windowed-proc' && b.trigger.crossCharacterHit);
 
   const results = [];
   for (const ev of ownedSteps) {
@@ -278,7 +291,15 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
       }
       for (const b of procBlocks) {
         if (b.trigger.opensOnProc.includes(castKey)) {
-          sim.openProcWindow(b.trigger.opensOnProc.join('|'), b.trigger.windowSeconds, b.trigger.maxProcs, owner);
+          // crossCharacterHit blocks are keyed by the block's own declared owner (b.source), not the
+          // step's owner — needed for solo mode, where every step's `owner` is forced to '' regardless
+          // of which character's blocks they're from (simulateRotation()'s single-character shorthand),
+          // but the cross-character advancement pass below (crossCharacterProcBlocks) always looks the
+          // window up under b.source since it runs for steps belonging to OTHER owners too, who have no
+          // reason to know what key this step's own owner used. Every other windowed-proc block keeps
+          // using the step's own `owner`, unchanged.
+          const openOwner = b.trigger.crossCharacterHit ? b.source : owner;
+          sim.openProcWindow(b.trigger.opensOnProc.join('|'), b.trigger.windowSeconds, b.trigger.maxProcs, openOwner);
         }
       }
       const label = `${ev.type}:${ev.skill}`;
@@ -324,6 +345,20 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
       // here benefits every current/future character with an "ally casts Echo Skill" reactive mechanic,
       // not just Sigrika.
       if (ev.type === 'Echo') actionTags.add('echo-skill-cast');
+
+      // Cross-character 'windowed-proc' advancement (Cantarella's Diffusion): checked on EVERY
+      // step's own qualifying hit, regardless of whose kit the block belongs to — `on`, when set,
+      // still restricts which hit TYPE counts (same label match as the per-owner path); when omitted
+      // (Diffusion's real text has no move-type filter — "every hit she or the team lands"), any
+      // step with a real cast/hit label qualifies. `owner` passed to tryProc is the BLOCK's own
+      // owner (b.source), not this step's owner — the window belongs to whoever opened it.
+      for (const b of crossCharacterProcBlocks) {
+        if (b.trigger.on && b.trigger.on !== label) continue;
+        const windowKey = b.trigger.opensOnProc.join('|');
+        if (sim.tryProc(windowKey, b.source, b.trigger.minProcInterval)) {
+          fired.add(`windowed-proc:${windowKey}`);
+        }
+      }
     }
 
     if (ev.checksPriorCast) {

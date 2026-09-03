@@ -145,42 +145,63 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
   const hitLog = [];
   let totalDamage = 0;
 
-  for (const r of targetResults) {
-    for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
+  function pushHit(r, db, hits, category, basis, guaranteedCrit) {
+    const stats = statsAtInstant(r.time, db.id);
+    const categoryStat = category ? stats[category] || 0 : 0;
+    const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify, stats.deepen);
+    const avgCrit = guaranteedCrit ? 1 + stats.cd / 100 : calcAvgCrit(stats.cr, stats.cd);
+    const defMult = calcDefMult(enemyDef, stats.defShred, stats.defIgnore);
+    const resMult = calcResMult(enemyRes, stats.resShred);
+    const baseStatKey = basis === 'HP' ? 'hp' : basis === 'DEF' ? 'def' : 'atk';
+    if (base[baseStatKey] == null) {
+      throw new Error(`resolveHitComposedTeamDps: block '${db.id}' needs baseStats.${baseStatKey} (damage.basis: '${basis}'), but it wasn't provided.`);
+    }
+    const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
+
+    const libGate = (libUptime != null && category === 'libDmg') ? libUptime : 1;
+    const fieldDuration = targetSegment.end - targetSegment.start;
+    const cooldownGate = (cooldownSteadyState && db.timing?.cooldown && fieldDuration > 0)
+      ? Math.min(1, fieldDuration / db.timing.cooldown) : 1;
+
+    for (const hit of hits) {
+      // `hit.flat` (Phase 0.5 gap #8, added 2026-09-02): a non-%ATK additive damage component some
+      // real kit text carries alongside the %ATK term (e.g. Buling's "169 flat + 18.30% ATK") — WuWa's
+      // own damage formula treats it as part of the base-damage term, subject to the same
+      // crit/dmgBonus/defMult/resMult chain as the %ATK portion, not a separate standalone hit.
+      // `stats.totalMult` (fixed 2026-09-02, same architecture-bug fix as resolveHitComposedDps.js —
+      // see its own comment on this exact line for the full writeup): applied as its own
+      // multiplicative factor, matching legacy calcTeamStats.js's `mult * (1 + seqTotalMultBonus/100)`
+      // pattern.
+      const damage = (effBase * (hit.atkPct / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
+      totalDamage += damage;
+      hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
+    }
+  }
+
+  // Cantarella's Diffusion (REMAINING_WORK.md 1a): a `crossCharacterHit` windowed-proc damage block
+  // still deals ITS OWN damage (credited to targetName, same as every other damage block — the file
+  // header's "only targetName's own blocks deal damage" rule is unchanged), but the successful proc
+  // that fires it can land on a STEP BELONGING TO A DIFFERENT TEAM MEMBER (rotationSimulator.js's own
+  // cross-character advancement pass writes the fired key onto whichever step actually triggered it).
+  // So this one damage-block shape needs to scan ALL team results for its fired key, not just
+  // targetResults — every other damage block keeps the original owner-only scan below.
+  for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
+    if (db.trigger.type !== 'windowed-proc' || !db.trigger.crossCharacterHit) continue;
+    for (const r of results) {
       if (r.ineligibleBlockIds.has(db.id)) continue;
       if (!triggerFired(db.trigger, r.firedTriggers)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
+      pushHit(r, db, hits, category, basis, guaranteedCrit);
+    }
+  }
 
-      const stats = statsAtInstant(r.time, db.id);
-      const categoryStat = category ? stats[category] || 0 : 0;
-      const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify, stats.deepen);
-      const avgCrit = guaranteedCrit ? 1 + stats.cd / 100 : calcAvgCrit(stats.cr, stats.cd);
-      const defMult = calcDefMult(enemyDef, stats.defShred, stats.defIgnore);
-      const resMult = calcResMult(enemyRes, stats.resShred);
-      const baseStatKey = basis === 'HP' ? 'hp' : basis === 'DEF' ? 'def' : 'atk';
-      if (base[baseStatKey] == null) {
-        throw new Error(`resolveHitComposedTeamDps: block '${db.id}' needs baseStats.${baseStatKey} (damage.basis: '${basis}'), but it wasn't provided.`);
-      }
-      const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
-
-      const libGate = (libUptime != null && category === 'libDmg') ? libUptime : 1;
-      const fieldDuration = targetSegment.end - targetSegment.start;
-      const cooldownGate = (cooldownSteadyState && db.timing?.cooldown && fieldDuration > 0)
-        ? Math.min(1, fieldDuration / db.timing.cooldown) : 1;
-
-      for (const hit of hits) {
-        // `hit.flat` (Phase 0.5 gap #8, added 2026-09-02): a non-%ATK additive damage component some
-        // real kit text carries alongside the %ATK term (e.g. Buling's "169 flat + 18.30% ATK") — WuWa's
-        // own damage formula treats it as part of the base-damage term, subject to the same
-        // crit/dmgBonus/defMult/resMult chain as the %ATK portion, not a separate standalone hit.
-        // `stats.totalMult` (fixed 2026-09-02, same architecture-bug fix as resolveHitComposedDps.js —
-        // see its own comment on this exact line for the full writeup): applied as its own
-        // multiplicative factor, matching legacy calcTeamStats.js's `mult * (1 + seqTotalMultBonus/100)`
-        // pattern.
-        const damage = (effBase * (hit.atkPct / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
-        totalDamage += damage;
-        hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
-      }
+  for (const r of targetResults) {
+    for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
+      if (db.trigger.type === 'windowed-proc' && db.trigger.crossCharacterHit) continue; // handled above
+      if (r.ineligibleBlockIds.has(db.id)) continue;
+      if (!triggerFired(db.trigger, r.firedTriggers)) continue;
+      if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
+      pushHit(r, db, hits, category, basis, guaranteedCrit);
     }
   }
 

@@ -308,6 +308,31 @@
  *                                    it, how long, the cap, which hits qualify); real elapsed-time +
  *                                    count tracking is rotationSimulator.js's job (see
  *                                    `openProcWindow`/`tryProc`, added alongside this trigger type).
+ * @property {boolean} [crossCharacterHit] Added 2026-09-03 (Cantarella's Diffusion — REMAINING_WORK.md
+ *                                    1a's off-field summon-chain gap): when true, ANY team member's
+ *                                    landed hit can advance this proc window, not just the block
+ *                                    owner's own — combining 'ally-action''s "fires off anyone's step"
+ *                                    shape with 'windowed-proc''s window/cap tracking, the cross-
+ *                                    character variant the plain mechanism never needed before (every
+ *                                    prior windowed-proc block, e.g. Yinlin's S6, only cared about its
+ *                                    OWN owner's hits). `on` is typically omitted with this flag —
+ *                                    Diffusion's real text is "every hit SHE OR THE TEAM lands", no
+ *                                    move-type filter — meaning every real step everywhere qualifies,
+ *                                    not just one named move. The window itself still only OPENS off
+ *                                    the owner's own `opensOnProc` cast, same as always; only which
+ *                                    hits can ADVANCE it once open is cross-character. Evaluated in
+ *                                    rotationSimulator.js's main step loop directly (no `ev.triesProc`
+ *                                    needed — every qualifying step across the whole team is checked
+ *                                    automatically), and in resolveHitComposedTeamDps.js's damage loop
+ *                                    (scans ALL team members' result rows for a matching fired key on
+ *                                    this specific block, not just the block owner's own rows, since
+ *                                    the proc can now land on a step belonging to someone else).
+ * @property {number} [minProcInterval] Added alongside `crossCharacterHit`: a real-time rate limit in
+ *                                    seconds between successful procs on the SAME window (Diffusion:
+ *                                    "up to 1 Coordinated Attack per second" — multiple qualifying
+ *                                    hits landing within the same second still only proc once).
+ *                                    Omitted (or 0) means no rate limit beyond `maxProcs` itself, the
+ *                                    same behavior every prior windowed-proc block already had.
  */
 
 /**

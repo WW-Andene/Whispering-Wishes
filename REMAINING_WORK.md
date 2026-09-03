@@ -68,11 +68,25 @@ infrastructure. None need HP/live-state tracking except where noted.
   `blockWindows.js` and the two team resolvers that already see both
   characters' step timelines — real multi-file plumbing, not a new
   simulation dimension.
-- **Cantarella's off-field summon-chain** (Diffusion: up to 21 Coordinated ATK
-  summons over 30s, numbers already sourced — 14.54%/summon, 21 max, 30s
-  window). Needs `windowed-proc` extended to fire off ANY team member's step,
-  not just the block owner's — a genuine new trigger-type combination, sized
-  similarly to the totalMult architecture fix, self-contained.
+- ~~Cantarella's off-field summon-chain~~ — **closed 2026-09-03.** Added
+  `windowed-proc`'s cross-character variant: `trigger.crossCharacterHit`
+  (ANY team member's landed step can advance a window opened by someone
+  else's cast, not just the owner's own — schema doc in
+  `triggerBlocks.schema.js` has the full design) and `trigger.minProcInterval`
+  (real-time rate limit between successful procs on the same window, for
+  Diffusion's "up to 1 per second" cap). `RotationSimulator` gained
+  `minInterval` support on `tryProc()`; `rotationSimulator.js`'s main step
+  loop gained an owner-agnostic advancement pass so no `ev.triesProc` flag is
+  needed; `resolveHitComposedTeamDps.js` gained a second scan (ALL team
+  results, not just the target's own) for this one block shape specifically —
+  every other damage block is unaffected. `cantarella.liberation.diffusion-
+  summons` added using the already-sourced 14.54%/21-max/30s numbers, no new
+  data invented. New test files `crossCharacterWindowedProc.test.js` (5
+  tests, synthetic mechanism proof) plus 3 new tests in
+  `triggerEngine-cantarella.test.js` (real character, both solo and team
+  contexts). S5's cap raise to 26 stays unmodeled (documented, sequence-
+  conditional on top of an already-new mechanism — a follow-up, not part of
+  this fix).
 
 **Still blocked on missing source data (no dump file / no dump section covers it):**
 - Baizhi — sustained-channel gap (Remnant Entities), no dump file at all.
