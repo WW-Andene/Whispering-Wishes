@@ -2502,7 +2502,7 @@ const CHAR_BUFF_TABLE = {
     // Corrected 2026-09-02: value was wrongly 49 (7×7 + 8×2 = 65, not 49 — a plain arithmetic error);
     // also the stack-cap raise to 25 is S2 alone, not "S1/S2" (confirmed against the raw dump — S1's
     // real 2nd effect is an unrelated Exorcising Seal/Juque Perdition proc, not a Mindlock cap change).
-    note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic (base kit: up to 15 stacks, 65% combined DMG Amp/Taken at cap — first 7 stacks each worth 7%, remaining stacks worth 2% each; S2 raises the stack cap to 25). Pre-release kit data (releases 2026-08-20) — subject to change at launch.',
+    note: 'Pure single-target DPS, no team buffs. Damage scales with team-inflicted Tune Strain - Interfered via her Mindlock stacking mechanic (base kit: up to 15 stacks, 65% combined DMG Amp/Taken at cap — first 7 stacks each worth 7%, remaining stacks worth 2% each; S2 raises the stack cap to 25).',
   },
   'Jingran': {
     outroBuffs: [],
@@ -5446,7 +5446,7 @@ const CHARACTER_ROTATIONS = {
     // consumes up to 40 Blaze" — matching the 10/20 previously marked as an unconfirmed community
     // breakdown. Total per full pass: 10+20+40 = 70 Blaze (matches the source's own "her standard
     // combo consumes 140 Blaze" for 2 full passes).
-    { type: 'Forte', skill: 'Heavy Slash: Daybreak', note: 'Now in Inferno Mode with ≥30 Blaze, press Basic Attack (auto-replaced) — counted as Heavy ATK + Spectro Frazzle DMG, consumes 10 Blaze. If Zani is instead hit during this pre-release Ready Stance, it auto-parries into Heavy Slash: Lightsmash (same DMG as Dawning) rather than continuing the Daybreak→Dawning→Nightfall string.' },
+    { type: 'Forte', skill: 'Heavy Slash: Daybreak', note: 'Now in Inferno Mode with ≥30 Blaze, press Basic Attack (auto-replaced) — counted as Heavy ATK + Spectro Frazzle DMG, consumes 10 Blaze. If Zani is instead hit during this Ready Stance, it auto-parries into Heavy Slash: Lightsmash (same DMG as Dawning) rather than continuing the Daybreak→Dawning→Nightfall string.' },
     { type: 'Forte', skill: 'Heavy Slash: Dawning', note: 'Press Basic Attack again — auto-chains at >30 remaining Blaze.' },
     { type: 'Forte', skill: 'Heavy Slash: Nightfall', note: 'Press Basic Attack once more — consumes up to 40 Blaze, each point adding +9.95% DMG Multiplier (max level); this is her hardest-hitting single attack. If Nightfall Stage 1 gets interrupted, pressing Basic Attack again casts Nightfall Stage 2 instead of restarting the string.' },
     { type: 'Forte', skill: 'Heavy Slash: Daybreak → Dawning → Nightfall', note: 'Repeat the full 3-hit string a 2nd time — with allies feeding enough Spectro Frazzle, Blaze should refill for another full pass.' },
