@@ -193,7 +193,7 @@ function isImmediateNext(order, ownerA, ownerB) {
   return i >= 0 && order[i + 1] === ownerB;
 }
 
-// Engine development.md item 9: which subset of `allResults` buildBlockWindows() should scan for
+// the engine-architecture history (git log) item 9: which subset of `allResults` buildBlockWindows() should scan for
 // a given buff block, from the perspective of computing targetName's own stats. Every existing
 // scope keeps the pre-item-9 behavior (only the block's own owner's steps matter). The two new
 // cases: an 'ally-action'-triggered block (whole-team/self/all-enemies target) can fire off ANY

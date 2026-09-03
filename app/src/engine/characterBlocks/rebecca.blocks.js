@@ -85,7 +85,7 @@ export const REBECCA_BLOCKS = [
     ],
     note: 'Also summons a turret dealing 2.5% Electro DMG/hit for 14s, and grants a stacking Heavy ATK DMG Amp (0.5%/0.2s, up to +35%) — neither modeled (no DPS component for the turret; the stacking Heavy ATK Amp is folded into the flat heavyDmg value above rather than modeled as a real ramp).',
   },
-  // Fixed 2026-09-02 (Engine development.md item 10 audit): both blocks below were `trigger:'passive'`
+  // Fixed 2026-09-02 (the engine-architecture history (git log) item 10 audit): both blocks below were `trigger:'passive'`
   // — always active simultaneously for her whole modeled rotation. Her own kit text says otherwise:
   // Huntress and Guts are mutually exclusive in-combo STATES she alternates through within a single
   // rotation (Intro starts Huntress then auto-switches Guts; Basic ATK: Guts Stage 1-3 happens in Guts;

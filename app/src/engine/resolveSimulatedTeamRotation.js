@@ -106,7 +106,7 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
     if (block.kind !== 'buff' && block.kind !== 'debuff') continue;
     const blockOwner = block.source;
     const scope = block.target?.scope;
-    // 'trigger-actor' (Engine development.md item 9) is included here too: whether it reaches
+    // 'trigger-actor' (the engine-architecture history (git log) item 9) is included here too: whether it reaches
     // targetName isn't decidable from the block alone — resolved below via resultsForBlock(), same
     // as resolveHitComposedTeamDps.js's own identical addition.
     const relevantToTarget =
@@ -118,7 +118,7 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
     if (sequenceByOwner && Object.prototype.hasOwnProperty.call(sequenceByOwner, blockOwner) && !sequenceAllows(block, sequenceByOwner[blockOwner])) continue;
 
     // A block's OWN activation history normally only depends on ITS OWNER's steps — a target merely
-    // RECEIVING it plays no part in whether/when it fires. Two exceptions (Engine development.md
+    // RECEIVING it plays no part in whether/when it fires. Two exceptions (the engine-architecture history (git log)
     // item 9): 'ally-action' triggers fire off ANY team member's step, and 'trigger-actor' targets
     // resolve against targetName's OWN steps regardless of the block's owner — see resultsForBlock().
     const ownResults = resultsForBlock(block, targetName, results);
@@ -165,7 +165,7 @@ function isImmediateNext(order, ownerA, ownerB) {
   return i >= 0 && order[i + 1] === ownerB;
 }
 
-// Engine development.md item 9 — see resolveHitComposedTeamDps.js's identical function for the
+// the engine-architecture history (git log) item 9 — see resolveHitComposedTeamDps.js's identical function for the
 // full rationale (kept as a same-named twin rather than a shared import, matching this file's own
 // existing convention of duplicating isImmediateNext() above rather than cross-importing).
 function resultsForBlock(block, targetName, allResults) {

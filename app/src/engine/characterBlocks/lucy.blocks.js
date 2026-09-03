@@ -145,7 +145,7 @@ export const LUCY_BLOCKS = [
     source: SOURCE, kind: 'buff',
     // Fixed 2026-09-02: was `trigger:{type:'cast',...}` with no `timing.duration` — the same dead
     // cast-scoped/no-duration `kind:'buff'` no-op shape found on Carlotta's S1/S2 and Galbrena's S3
-    // (Engine development.md item 12), so this never actually applied. Converted to
+    // (the engine-architecture history (git log) item 12), so this never actually applied. Converted to
     // `trigger:{type:'passive'}` + `scopedToBlockId` (Augusta's S3 pattern) so it fires and stays
     // scoped to only Multi-threading's own hit.
     trigger: { type: 'passive' },

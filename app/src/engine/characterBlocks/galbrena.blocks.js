@@ -153,7 +153,7 @@ export const GALBRENA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     // Fixed 2026-09-02: this was ALSO `trigger:{type:'cast', on:'Echo:Hellfire Absolution'}` with no
     // `timing.duration` — the same dead cast-scoped/no-duration `kind:'buff'` no-op shape found on
-    // Carlotta's S1/S2 (Engine development.md item 12; matches neither `passiveBlocks`
+    // Carlotta's S1/S2 (the engine-architecture history (git log) item 12; matches neither `passiveBlocks`
     // [trigger.type==='passive'] nor `buffWindows` [duration != null] in
     // resolveHitComposedDps.js's statsAtInstant()), so even after fixing its stat (below) it still
     // never applied — proven by a test showing byte-identical totals with/without this block.

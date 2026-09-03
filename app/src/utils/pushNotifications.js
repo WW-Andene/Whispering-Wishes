@@ -16,7 +16,7 @@
 //      APK builds and runs fine without it, FCM registration just fails).
 //   2. FIREBASE_SERVICE_ACCOUNT_JSON, FIREBASE_DB_URL, and PUSH_ADMIN_SECRET
 //      set as server-side env vars (Vercel project settings, NOT prefixed
-//      with VITE_ — those get bundled into client JS). See CAPACITOR_APP.md.
+//      with VITE_ — those get bundled into client JS). See NATIVE_APP.md.
 // Without both, registerTokenWithServer() below fails silently (caught,
 // logged) and the app behaves exactly as if this file didn't exist.
 // ═══════════════════════════════════════════════════════════════════════════════

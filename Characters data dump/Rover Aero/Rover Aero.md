@@ -214,7 +214,7 @@ already matched this source exactly. Several real bugs found and fixed:
 5. `chain.s4` was modeled as an unconditional passive `skillDmg:15` — the kit text is explicit this is
    a 5s window on Cloudburst Dance cast. Converted to a real cast-scoped buffWindow.
 6. `chain.s5` was `kind:'buff', trigger:{type:'cast',...}, timing:{}` — the same dead cast-scoped/
-   no-duration no-op shape found on Carlotta/Galbrena/Lucy (Engine development.md item 12, 8th
+   no-duration no-op shape found on Carlotta/Galbrena/Lucy (the engine-architecture history (git log) item 12, 8th
    confirmed instance) — never actually applied. Fixed via `trigger:{type:'passive'}` +
    `scopedToBlockId`.
 7. `chain.s6` was an unscoped passive `skillDmg:30` — silently over-crediting Cloudburst

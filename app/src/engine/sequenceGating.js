@@ -117,7 +117,7 @@ export function filterExclusiveModeBlocks(blocks) {
   return blocks.filter(b => !losers.has(b.id));
 }
 
-// Added 2026-09-02 for Engine development.md item 9's Denia/Lynae mode-conditional `appliesTags`
+// Added 2026-09-02 for the engine-architecture history (git log) item 9's Denia/Lynae mode-conditional `appliesTags`
 // blocker: `appliesTags` entries (rotationSimulator.js) need a per-OWNER "which mode is assumed
 // active" answer, not just a per-trigger-group winner — a mode-invariant damage block (e.g. Denia's
 // Basic ATK: Breakdown Form, identical %ATK either mode) has nothing of its own to compare, only a

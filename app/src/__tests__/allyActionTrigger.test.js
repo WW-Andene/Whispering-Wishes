@@ -1,5 +1,5 @@
 /**
- * Engine development.md item 9 — the "ally-action" trigger type + "trigger-actor" target scope.
+ * the engine-architecture history (git log) item 9 — the "ally-action" trigger type + "trigger-actor" target scope.
  *
  * Proves the new cross-character mechanism itself (hand-built synthetic blocks, not real character
  * data — real character migrations are a separate, later step per the item's own phased plan): a
@@ -26,7 +26,7 @@ const APPLIER_BLOCKS = [
   },
 ];
 
-describe('ally-action trigger + trigger-actor target (Engine development.md item 9)', () => {
+describe('ally-action trigger + trigger-actor target (the engine-architecture history (git log) item 9)', () => {
   // Applier gets a 2nd step after Shift so their own on-field segment [0,3] extends PAST the
   // instant (t=1) the trigger fires — resolveSimulatedTeamRotation measures a buff's time-weighted
   // overlap against the RECIPIENT's own segment, so a single-step Applier (segment [0,1] ending

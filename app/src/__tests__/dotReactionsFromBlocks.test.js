@@ -1,4 +1,4 @@
-// ENGINE_MERGE_PLAN.md Phase 2 — proves dotReactionsFromBlocks.js's four migrated mechanics
+// the engine-merge history (git log) Phase 2 — proves dotReactionsFromBlocks.js's four migrated mechanics
 // (Frazzle/Erosion/Fusion Burst/Electro Flare; Tune Break stays on the legacy path per Phase 1's own
 // "do this one last" note) produce results that follow the SAME formulas as calcEngine.js's original
 // five functions — verified with synthetic block sets whose real math is hand-computable, plus a real
@@ -106,7 +106,7 @@ describe('dotReactionsFromBlocks — Erosion (synthetic, MAX not SUM across appl
   });
 });
 
-describe('dotReactionsFromBlocks — Frazzle mixed-migration safety (Rover: Spectro migrated, Phoebe deliberately NOT — ENGINE_MERGE_PLAN.md)', () => {
+describe('dotReactionsFromBlocks — Frazzle mixed-migration safety (Rover: Spectro migrated, Phoebe deliberately NOT — the engine-merge history (git log))', () => {
   const getEnemyRes = () => 10;
 
   it('Rover: Spectro solo (fully migrated) matches calcFrazzleDmg exactly, summing his own 2 real application points to 8', () => {
@@ -125,7 +125,7 @@ describe('dotReactionsFromBlocks — Frazzle mixed-migration safety (Rover: Spec
   });
 });
 
-describe('dotReactionsFromBlocks — Erosion mixed-migration safety (Ciaccona migrated, Cartethyia deliberately NOT — ENGINE_MERGE_PLAN.md)', () => {
+describe('dotReactionsFromBlocks — Erosion mixed-migration safety (Ciaccona migrated, Cartethyia deliberately NOT — the engine-merge history (git log))', () => {
   const getEnemyRes = () => 10;
 
   it('Ciaccona solo (fully migrated) matches calcErosionDmg exactly via resolveDotReactionDps blocks path', () => {

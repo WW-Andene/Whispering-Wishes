@@ -1,4 +1,4 @@
-// ENGINE_MERGE_PLAN.md Phase 0.5 gap #3 — a buff scoped to ONE SPECIFIC move, not a whole damage
+// the engine-merge history (git log) Phase 0.5 gap #3 — a buff scoped to ONE SPECIFIC move, not a whole damage
 // category. Aemeath's chain.s1 ("+300% Crit DMG for Heavy ATK specifically") was previously modeled as
 // a general critDmg buff, over-crediting every OTHER hit sharing critDmg's pool too. `scopedToBlockId`
 // restricts an effect's contribution to exactly one damage block's own hits.
@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { AEMEATH_BLOCKS } from '../engine/characterBlocks/aemeath.blocks.js';
 
-describe('scopedToBlockId (ENGINE_MERGE_PLAN.md Phase 0.5 gap #3)', () => {
+describe('scopedToBlockId (the engine-merge history (git log) Phase 0.5 gap #3)', () => {
   it('a scoped effect only boosts its named block, not another block sharing the same stat', () => {
     const scopedBuff = {
       id: 'test.scoped-buff', source: 'Test', kind: 'buff',

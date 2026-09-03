@@ -1687,7 +1687,7 @@ const CHARACTER_DATA = {
   // row (Intro 22.48%×10 + Liberation 87.48%×10 + Skill 139.31%+46.44%×3 + Heavy ATK 277.78%×2 +
   // Polychrome Leap 33.80%×3+16.90%×6+13.10%×8 + Forte: Visual Impact 1216.72% + Outro's own 100%
   // ATK hit) — every step names the exact row it uses, removing the ambiguity flagged when this was
-  // first raised (see Engine development.md item 3).
+  // first raised (see the engine-architecture history (git log) item 3).
   ['Lynae',         3558, 25, 6],   // Tune Break support
   ['Mornye',        800,  25, 5],   // Healer + Off-Tune
   ['Rebecca',       1900, 24, 9],   // Huntress/Guts stance swap, turret buff
@@ -1700,7 +1700,7 @@ const CHARACTER_DATA = {
   // (Intro: Clip It 97.42% + Skill: Spotlight 82.35%×2+274.48%+109.80% [the 3rd of 3 named row
   // alternatives, matching the rotation step's own "Spotlight" label exactly] + Liberation: Clear As
   // Day 142.74% + Basic ATK: Tracing Forms Stage 1-3 + Basic ATK: Letting It Go 84.81%×3+593.64%) —
-  // removes the ambiguity flagged when this was first raised (see Engine development.md item 3).
+  // removes the ambiguity flagged when this was first raised (see the engine-architecture history (git log) item 3).
   ['Lucilla',       2280, 25, 5],   // Photo-consuming Ultimate, Glacio Chafe/Echo Skill buffer
   ['Shorekeeper',   500,  25, 3],   // Stellarealm crit buff + heal
   ['Suisui',        700,  25, 6],   // Zephyr heal / Drizzle DMG stance swap + Outro All DMG Amp
@@ -2425,7 +2425,7 @@ const CHAR_BUFF_TABLE = {
       ruptureDmgMult: 1880.75, // Tune Rupture Response — Spectral Analysis (confirmed exact, Lv.10)
       strainDmgPerStack: 0.12, // per stack of Strain Interfered, per point of Tune Break Boost = +0.12% total DMG
       maxStrainStacks: 3, // base 2 + 1 from Lynae
-      // modeExclusive added 2026-09-02 (Engine development.md item 9): ruptureDmgMult and
+      // modeExclusive added 2026-09-02 (the engine-architecture history (git log) item 9): ruptureDmgMult and
       // strainDmgPerStack/maxStrainStacks above are BOTH Lynae's own kit — mutually exclusive by her
       // real Resonance Mode (Rupture vs Strain), unlike a generic responder (e.g. Mornye) who can
       // legitimately have both active if the team's OTHER members supply both Interfered types. Was a
@@ -2551,7 +2551,7 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [{ stat: 'allDmg', value: 15, target: 'next', duration: 16, condition: 'Tune Strain mode' }, { stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Fusion Burst mode' }],
     libBuffs: [],
     selfBuffs: [],
-    // debuffs.fusionBurst added 2026-09-02 (Engine development.md item 9 — same gap class as
+    // debuffs.fusionBurst added 2026-09-02 (the engine-architecture history (git log) item 9 — same gap class as
     // Aemeath's, found while comparing Aemeath's own Rupture-vs-Fusion candidates for a real
     // Aemeath+Denia+Lynae composition): Denia was completely absent from calcFusionBurstDmg()'s
     // "does anyone apply Fusion Burst" gate, even though her own `denia.blocks.js` damage-block notes
@@ -3067,7 +3067,7 @@ const CHAR_BUFF_TABLE = {
       { stat: 'critDmg', value: 60, target: 'self', duration: 99, condition: 'Inherent Skill Between the Stars: Tune Rupture mode 20% per Resonator ×3 stacks, or Fusion Burst mode 30% per Resonator ×2 stacks (both max 60%, resets on team change/mode switch)' },
       { stat: 'deepen', value: 25, target: 'self', duration: 99, condition: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25%' },
     ],
-    // debuffs.fusionBurst corrected 2026-09-02 (Engine development.md item 9): this entry's ONLY real
+    // debuffs.fusionBurst corrected 2026-09-02 (the engine-architecture history (git log) item 9): this entry's ONLY real
     // functional effect anywhere in the codebase is marking her as a "Fusion Burst applier" for the
     // shared calcFusionBurstDmg() reaction (calcEngine.js's applyBuff() switch has no case for the
     // 'fusionBurst' stat, so `value`/`condition` here were pure inert documentation, not a live per-
@@ -3086,7 +3086,7 @@ const CHAR_BUFF_TABLE = {
     // when Resonators in the team trigger Tune Break on the target and cause them to be affected by
     // Tune Rupture - Interfered, Aemeath triggers Tune Rupture Response - Starburst. The same target
     // can only be damaged by this skill once every 8s." Exact ruptureDmgMult found and filled in
-    // 2026-09-02 (Engine development.md item 9, investigating her real mode-choice magnitude): a fresh
+    // 2026-09-02 (the engine-architecture history (git log) item 9, investigating her real mode-choice magnitude): a fresh
     // dump's own Forte Circuit multipliers table gives it directly — "Tune Rupture Response: Starburst
     // | 596.43% Tune AMP" (Lv.10), closing the exact gap this comment used to flag as "not confirmed,
     // omitted rather than guessed" — cross-confirmed identically on a second source (nanoka.cc). No
@@ -5750,7 +5750,7 @@ const CHARACTER_ROTATIONS = {
   ],
   // Standard Rotation — sourced from Prydwen's "Gameplay and teams" tab for Qingxiao (2026-08-20,
   // Chrome UA + google.com referer + jsRender, same technique as the rest of this file's Prydwen
-  // pulls). Fills the gap flagged in the 2026-08-20 (session 4) Update_report.md entry — she was one
+  // pulls). Fills the gap flagged in the 2026-08-20 (session 4) the content-refresh history (git log) entry — she was one
   // of only 2 of 58 characters (with Jingran) missing an entry here. Prydwen's own step list uses a
   // generic "Heavy:" prefix for held-Basic-Attack chains (including the mid-air ones); renamed to the
   // real skill names/types from SKILL_MULTIPLIERS['Qingxiao'] and the kit text so it reads consistently
@@ -5834,7 +5834,7 @@ const RESONANCE_CHAIN_DATA = {
   // no way to express its real scope — a whole-team buff on casting Intro/Sword Stance Switch/Flow,
   // not a self-only passive. Fixed properly in yangyangxuanling.blocks.js (chain.s4-intro/-switch,
   // target: 'whole-team', cast-triggered); this row is only read self-only by the legacy fallback
-  // tier, which per Engine development.md item 2 only runs for the Jingran mixed-team case today.
+  // tier, which per the engine-architecture history (git log) item 2 only runs for the Jingran mixed-team case today.
   'Yangyang: Xuanling': { s1: {}, s2: { heavyDmg: 100 }, s3: { heavyDmg: 175 }, s4: { atkPct: 20 }, s5: {}, s6: { heavyDmg: 40 } },
   // Hiyuki S1/S2: Foreclaimed/Iai skills are "considered Resonance Liberation DMG" per kit.
   // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Hiyuki/Combat — its Attribute Scaling
@@ -6460,7 +6460,7 @@ const RESONANCE_CHAIN_DATA = {
   // rotation always casts) — fixed there, which for the first time gave S4 a real cast to anchor to.
   // (2) That exposed S4's `libDmg` buff-effect shape can't actually apply in the hit-composed resolvers
   // at all (a cast-scoped, no-duration buff is a silent no-op — see lupa.blocks.js's own header comment,
-  // a ~65-block-wide architecture gap logged in Engine development.md). S4 is now modeled as a real
+  // a ~65-block-wide architecture gap logged in the engine-architecture history (git log)). S4 is now modeled as a real
   // damage block (a proportional 2nd hit) in lupa.blocks.js instead of a stat here — this table's own
   // s4.libDmg:125 stays as the documented real value/category, just no longer the thing the engine reads.
   'Lupa':         { s1: { critRate: 20 }, s2: { elemDmg: 40 }, s3: { libDmg: 100 }, s4: { libDmg: 125 }, s5: { libDmg: 15 }, s6: { defIgnore: 30 } },
@@ -6487,7 +6487,7 @@ const RESONANCE_CHAIN_DATA = {
   //   matches the existing totalMult:20 magnitude and category — unchanged) AND additionally trigger 1
   //   Coordinated Attack + team heal on cast, both equal to Liberation's Photosynthesis Mark's own CA
   //   DMG/heal values. Corrected 2026-09-02: the totalMult:20 stat here could never actually apply in
-  //   the hit-composed resolvers (a cast-scoped, no-duration buff — see Engine development.md item 12) —
+  //   the hit-composed resolvers (a cast-scoped, no-duration buff — see the engine-architecture history (git log) item 12) —
   //   now modeled as a real damage block (verina.chain.s6, a proportional 2nd hit) in verina.blocks.js.
   //   The Coordinated Attack proc is ALSO now modeled (verina.chain.s6-coordinated-attack, 9.95% ATK
   //   coordDmg) — its team heal stays unmodeled (no DPS component).
@@ -7902,7 +7902,7 @@ const SKILL_ICONS = {
     'Thunderous Fury': './characters/rover-electro/Kj3cKLdS-Skill-Thunderous-Fury.webp', // Intro Skill
     'Rumbling Thunders': './characters/rover-electro/Zpw7cvMr-Skill-Rumbling-Thunders.webp', // Outro Skill
   },
-  // added 2026-08-20 — fills the dead-end logged in the 2026-08-20 (session 4) Update_report.md entry.
+  // added 2026-08-20 — fills the dead-end logged in the 2026-08-20 (session 4) the content-refresh history (git log) entry.
   // Sourced from static.nanoka.cc's SkillIconQingxiao atlas (SP_IconQingxiaoB1/C1/D1/D2/QTE/T/Y.webp),
   // re-hosted on ibb.co. Letter/order convention (B=Basic ATK, C=Resonance Skill, D=Forte Circuit
   // [2 icons for her 2 Forte-state moves], QTE=Resonance Liberation, T=Intro, Y=Outro) matches the
@@ -8461,7 +8461,7 @@ const CHAIN_NODE_ICONS = {
     s5: './characters/buling/NdSwppx6-Sequence-Node-Forum-Ban-New-Account.webp',
     s6: './characters/buling/bRH5Fycd-Sequence-Node-Almighty-Forum-Lord-of-Thunder-Spell.webp',
   },
-  // added 2026-08-20 — fills the dead-end logged in the 2026-08-20 (session 4) Update_report.md entry.
+  // added 2026-08-20 — fills the dead-end logged in the 2026-08-20 (session 4) the content-refresh history (git log) entry.
   // Fandom still has zero Sequence_Node_*/Skill_* uploads for Qingxiao, but DV's JS-capable web_fetch
   // recovered this session and rendered ww.nanoka.cc/character/1413 directly; its network requests
   // exposed the game's own static.nanoka.cc CDN asset paths (SkillIcon/SkillIconQingxiao/SP_IconQingxiao*

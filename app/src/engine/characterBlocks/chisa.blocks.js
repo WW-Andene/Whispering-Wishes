@@ -75,7 +75,7 @@ export const CHISA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Sawring - Eradication' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // ENGINE_MERGE_PLAN.md Phase 0.5 gap #7, fixed 2026-09-02: same proportional-second-hit pattern as
+    // the engine-merge history (git log) Phase 0.5 gap #7, fixed 2026-09-02: same proportional-second-hit pattern as
     // Denia's Dark Core scalar and gap #6 (Brant's S6 secondary blast) — a same-instant, same-category
     // hit scales in exact proportion through the shared multiplier chain. Eradication is cast after
     // consuming ALL remaining Ring of Chainsaw and ending Chainsaw Mode (dump: "Consumes all remaining

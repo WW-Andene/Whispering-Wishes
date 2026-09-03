@@ -5,7 +5,7 @@
 // (portraits/, spine/), banner videos (animated-bg/), and convene
 // animations (convene-animations/) — the directories the native
 // (Capacitor) app build actually excludes from its bundle to stay a
-// reasonable size (see CAPACITOR_APP.md, capacitor-build/build.mjs's
+// reasonable size (see NATIVE_APP.md, capacitor-build/build.mjs's
 // EXCLUDED_DIRS) — plus every other locally-shipped icon/art directory
 // (characters/, banners/, echoes/, materials/, misc-assets/,
 // achievements/, ui-icons/), which already ship inside the native bundle

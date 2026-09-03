@@ -55,7 +55,7 @@ export const BRANT_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Returned from Ashes' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // ENGINE_MERGE_PLAN.md Phase 0.5 gap #6, fixed 2026-09-02: S6's real "secondary blast worth 30% of
+    // the engine-merge history (git log) Phase 0.5 gap #6, fixed 2026-09-02: S6's real "secondary blast worth 30% of
     // Returned from Ashes' own DMG" turns out not to need any new %-of-another-block's-damage field at
     // all — since this block fires at the SAME instant as brant.forte.returned-from-ashes under the
     // SAME active buffs, a plain %ATK-equivalent hit scales in exact proportion through the shared

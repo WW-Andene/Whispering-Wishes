@@ -56,7 +56,7 @@ export function rotTimeFromSteps(ownedSteps) {
  * @param {Object|null} [energyCycleFactors]  calcEnergyCycles() output, keyed by character name —
  *   only Tune Break's Mornye-specific ER-scaled amp reads this (see calcTuneBreakDmg's own comment).
  * @param {Object<string, import('./triggerBlocks.schema.js').TriggerBlock[]>|null} [blocksByOwner]
- *   ENGINE_MERGE_PLAN.md Phase 2: each team member's own real TriggerBlocks, keyed by name — when
+ *   the engine-merge history (git log) Phase 2: each team member's own real TriggerBlocks, keyed by name — when
  *   supplied, migrated mechanics (Electro Flare so far) are resolved from real `dotApplier`-tagged
  *   blocks (`dotReactionsFromBlocks.js`) instead of `CHAR_BUFF_TABLE`'s flat fields. Omit only when
  *   blocks genuinely aren't available (falls back to the fully-legacy behavior for every mechanic).
@@ -74,7 +74,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const fusionBurstResMult = calcResMult(getEnemyRes('Fusion'), resShred);
   const electroFlareResMult = calcResMult(getEnemyRes('Electro'), resShred);
 
-  // Frazzle (ENGINE_MERGE_PLAN.md Phase 2 — Rover: Spectro migrated; Phoebe deliberately NOT migrated
+  // Frazzle (the engine-merge history (git log) Phase 2 — Rover: Spectro migrated; Phoebe deliberately NOT migrated
   // — her own CHARACTER_ROTATIONS/block-file comments confirm her real modeled rotation stays in
   // Absolution mode, never Confession, meaning her legacy `debuffs.frazzle` value (18, explicitly
   // "in Confession mode") is inert/wrong for that same modeled scenario even on the LEGACY path today
@@ -89,7 +89,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const frazzle = allFrazzleMembersHaveBlocks
     ? resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, frazzleResMult, hasPhoebe)
     : calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
-  // Erosion (ENGINE_MERGE_PLAN.md Phase 2 — Ciaccona migrated; Cartethyia deliberately NOT migrated
+  // Erosion (the engine-merge history (git log) Phase 2 — Ciaccona migrated; Cartethyia deliberately NOT migrated
   // yet — her legacy value (6) assumes an uncounted Rover: Aero teammate raising her effective stack
   // cap, a real conditional fact this migration won't blindly port without resolving it first). Unlike
   // Electro Flare/Fusion Burst (where every real applier in the roster is fully migrated, so the
@@ -104,7 +104,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const erosion = allErosionMembersHaveBlocks
     ? resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, erosionResMult)
     : calcErosionDmg(members, rotTime, defMult, erosionResMult);
-  // Fusion Burst (ENGINE_MERGE_PLAN.md Phase 2 — Denia/Aemeath migrated): same block-preference
+  // Fusion Burst (the engine-merge history (git log) Phase 2 — Denia/Aemeath migrated): same block-preference
   // pattern as Electro Flare below, with one addition — `dotApplier.requiresStance` (Denia/Aemeath are
   // BOTH mode-conditional appliers, unlike Buling) is resolved via the SAME `winningStanceForOwner()`
   // this session already built and tested for their Tune Break exclusivity, not a second mechanism.
@@ -113,7 +113,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const fusionBurst = blocksByOwner
     ? resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, fusionBurstResMult)
     : calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult);
-  // Electro Flare (ENGINE_MERGE_PLAN.md Phase 2, first migrated mechanic): prefer the TriggerBlock-
+  // Electro Flare (the engine-merge history (git log) Phase 2, first migrated mechanic): prefer the TriggerBlock-
   // native resolver when blocksByOwner is available (real production callers always have it by the
   // time DOT reactions are resolved) — parity with the legacy formula proven in
   // dotReactionsFromBlocks.test.js. Buling's CHAR_BUFF_TABLE.electroFlare flag is DELIBERATELY still
@@ -128,7 +128,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
     : calcElectroFlareDmg(members, rotTime, defMult, electroFlareResMult);
   const tuneBreak = calcTuneBreakDmg(members, rotTime, defMult, mainResMult, energyCycleFactors);
 
-  // Engine development.md item 9 (Aemeath's mode-exclusivity fix): flag which exclusive candidates
+  // the engine-architecture history (git log) item 9 (Aemeath's mode-exclusivity fix): flag which exclusive candidates
   // compete with the shared fusionBurst reaction above — calcTeamStats.js needs this to run its own
   // proper combinatorial resolution (see its own comment for why a single marginal "delta if excluded"
   // number, tried first, was NOT sound once a SECOND competing member — Denia — existed: excluding one
@@ -165,7 +165,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
  * @param {number} fusionBurstResMult  From resolveDotReactionDps()'s own return value.
  * @param {string[]} excludeNames  Legacy (CHAR_BUFF_TABLE-driven) candidates this hypothesis excludes.
  * @param {Object<string,import('./triggerBlocks.schema.js').TriggerBlock[]>|null} [blocksByOwner]
- *   ENGINE_MERGE_PLAN.md Phase 2: when supplied, prefers the block-based resolver.
+ *   the engine-merge history (git log) Phase 2: when supplied, prefers the block-based resolver.
  * @param {Object<string,string>|null} [stanceOverrides]  Block-based (migrated) candidates this
  *   hypothesis is testing — keyed by owner name, value is the stance being tried for THIS combination,
  *   overriding `winningStanceForOwner()`'s own single fixed answer (see `collectAppliers`'s own doc in

@@ -41,11 +41,11 @@ export const ROVER_SPECTRO_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('198.81%+675.96%'), category: 'libDmg' },
     note: 'Delayed blast; applies a full 6 stacks of Spectro Frazzle to the target in one hit.',
-    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — matches this block's own note (6
+    // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — matches this block's own note (6
     // stacks) and CHAR_BUFF_TABLE.debuffs.frazzle's already-sourced condition text exactly.
     // resolveFrazzleFromBlocks SUMS this with roverspectro.forte.resonating-whirl's own 2 stacks below
     // (2+6=8), matching the legacy pre-combined value exactly, not double-counted (Frazzle's real
-    // interaction rule per ENGINE_MERGE_PLAN.md 1.1 — two separate real application points genuinely
+    // interaction rule per the engine-merge history (git log) 1.1 — two separate real application points genuinely
     // add together, unlike Erosion's MAX rule).
     dotApplier: { mechanic: 'frazzle', value: 6 },
   },

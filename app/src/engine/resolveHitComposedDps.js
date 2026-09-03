@@ -198,7 +198,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
         // own damage formula treats it as part of the base-damage term, subject to the same
         // crit/dmgBonus/defMult/resMult chain as the %ATK portion, not a separate standalone hit.
         // `stats.totalMult` (fixed 2026-09-02 — was previously silently skipped/dead in this resolver
-        // entirely, see ENGINE_MERGE_PLAN.md's totalMult architecture-bug writeup): a flat fallback
+        // entirely, see the engine-merge history (git log)'s totalMult architecture-bug writeup): a flat fallback
         // multiplier for real kit bonuses that don't map to a dedicated category stat (e.g. Qingxiao's
         // Mindlock deepen, kept on the ENEMY side as `deepen` — see her own block file for the
         // self-buff duplicate this also fixed) — applied as its own multiplicative factor on top of

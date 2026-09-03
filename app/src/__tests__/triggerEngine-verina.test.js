@@ -20,7 +20,7 @@ describe('triggerEngine parity — Verina', () => {
     expect(s4.target.scope).toBe('whole-team');
   });
 
-  // Fixed 2026-09-02: S6 was a dead `kind:'buff'` stat (Engine development.md item 12's architecture
+  // Fixed 2026-09-02: S6 was a dead `kind:'buff'` stat (the engine-architecture history (git log) item 12's architecture
   // gap — a cast-scoped, no-duration buff is a silent no-op) — converted to a real damage block, plus
   // its previously-entirely-unmodeled Coordinated Attack proc was added as its own block.
   it("S6 is a real, sequence-6-gated damage block (proportional 2nd hit + Coordinated Attack proc)", () => {

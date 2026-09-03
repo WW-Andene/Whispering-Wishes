@@ -58,7 +58,7 @@ export const DENIA_BLOCKS = [
     // CHARACTER_ROTATIONS' own note says "Tap Basic Attack 4 times" — the full combo, unlike the
     // Stagecraft-Form step above.
     damage: { hits: parseSkillMultiplierHits('36.51% → 37.51%+14.07%×4 → 62.39% → 35.54%+82.92%'), category: 'basicDmg' },
-    // appliesTags added 2026-09-02 (Engine development.md item 9, Phase 2): the %ATK values above are
+    // appliesTags added 2026-09-02 (the engine-architecture history (git log) item 9, Phase 2): the %ATK values above are
     // IDENTICAL either mode — only the side-effect status differs, so both mode variants are listed on
     // this ONE block rather than duplicating it (which would double-count her real damage). Gated by
     // sequenceGating.js's winningStanceForOwner() — see triggerBlocks.schema.js's appliesTags doc.
@@ -66,7 +66,7 @@ export const DENIA_BLOCKS = [
       { tag: 'fusion-burst', requiresStance: 'Fusion Burst mode' },
       { tag: 'shifting', requiresStance: 'Tune Strain mode' },
     ],
-    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — the SAME real Fusion Burst
+    // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — the SAME real Fusion Burst
     // application this block's own appliesTags entry already names, now also feeding the shared
     // Fusion Burst DOT reaction total (dotReactionsFromBlocks.js) instead of CHAR_BUFF_TABLE's
     // debuffs.fusionBurst flag. Reuses the identical winningStanceForOwner() resolution as appliesTags
@@ -95,7 +95,7 @@ export const DENIA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Banish - Breakdown Form Stage 2' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // ENGINE_MERGE_PLAN.md Phase 0.5 gap #7, fixed 2026-09-02: "+150% DMG Multiplier per Dark Core
+    // the engine-merge history (git log) Phase 0.5 gap #7, fixed 2026-09-02: "+150% DMG Multiplier per Dark Core
     // consumed" is a per-resource-unit scalar on the SAME hit as denia.liberation.banish-breakdown-stage2
     // — modeled the same proportional-second-hit way gap #6 (Brant's S6 secondary blast) established:
     // a same-instant, same-category hit under the same active buffs scales in exact proportion through
@@ -122,14 +122,14 @@ export const DENIA_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Erosion Field' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('136.33%'), category: 'libDmg' },
-    // appliesTags added 2026-09-02 (Engine development.md item 9, Phase 2) — same mode-gated shape as
+    // appliesTags added 2026-09-02 (the engine-architecture history (git log) item 9, Phase 2) — same mode-gated shape as
     // denia.basic.breakdown-stage1-4 above, per this block's own note (applies Fusion Burst/Shifting
     // regardless of which mode Denia swapped out in).
     appliesTags: [
       { tag: 'fusion-burst', requiresStance: 'Fusion Burst mode' },
       { tag: 'shifting', requiresStance: 'Tune Strain mode' },
     ],
-    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — same rationale as
+    // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — same rationale as
     // denia.basic.breakdown-stage1-4 above.
     dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
     note: 'Off-field zone left by Final Act - Breakdown Form; pulls in and hits nearby targets every 4s for 30s, applying Fusion Burst/Tune Strain even after Denia swaps out. Modeled as one representative tick, not the full sustained-duration mechanic.',

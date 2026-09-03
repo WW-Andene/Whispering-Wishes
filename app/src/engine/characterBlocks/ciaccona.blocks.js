@@ -35,7 +35,7 @@ export const CIACCONA_BLOCKS = [
     // Skill DMG, no override needed. Missed this signal on the first pass — corrected to skillDmg.
     damage: { hits: parseSkillMultiplierHits('189.11%'), category: 'skillDmg' },
     note: 'Inflicts Aero Erosion, skips straight to Basic ATK Stage 3.',
-    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — value:3 matches her
+    // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — value:3 matches her
     // CHAR_BUFF_TABLE.debuffs.erosion's own already-sourced value ("3 stacks Aero Erosion, ticks every
     // 2s"). resolveErosionFromBlocks takes the MAX across every applying block, not a sum, so tagging
     // each of her 4 real Erosion-inflicting moves with the same value is correct, not redundant double

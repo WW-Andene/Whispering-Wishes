@@ -20,7 +20,7 @@ import { registerPlugin } from '@capacitor/core';
 // OS/OEM-tuned primitives (PRIMITIVE_TICK/PRIMITIVE_CLICK/PRIMITIVE_LOW_TICK)
 // — the same category of API that makes stock Android UI taps feel crisp
 // rather than buzzy, closer to a quick tap on thin glass than a motor buzz.
-// No iOS build exists yet (see CAPACITOR_APP.md) — if one gets added,
+// No iOS build exists yet (see NATIVE_APP.md) — if one gets added,
 // @capacitor/haptics' iOS side (Apple's Taptic Engine via UIFeedbackGenerator)
 // is already good and would need its own branch here instead of this plugin.
 const GlassHaptics = registerPlugin('GlassHaptics');

@@ -836,7 +836,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
             }
           }
         });
-        // target: 'team' outroBuffs — found completely unhandled 2026-09-02 (Engine development.md
+        // target: 'team' outroBuffs — found completely unhandled 2026-09-02 (the engine-architecture history (git log)
         // item 10): none of the three places this file reads outroBuffs (this one, the rotation-
         // timeline builder, the mode-3 team-application loop) ever checked for 'team', only
         // 'next'/'enemy'/'ally' — 11 real, sourced roster-wide entries (Denia's Fusion Burst mode
@@ -1093,7 +1093,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       dmgBonus = calcDmgBonus(elemDmg, skillDmg, amplify, deepen);
       defMult = calcDefMult(enemyDef90, defShred, defIgnore);
       resMult = calcResMult(mainBaseRes, resShred);
-      // `mainTotalMultBonus` (fixed 2026-09-02, ENGINE_MERGE_PLAN.md totalMult architecture-bug fix):
+      // `mainTotalMultBonus` (fixed 2026-09-02, the engine-merge history (git log) totalMult architecture-bug fix):
       // resolveSimulatedTeamRotation() already computed this real accumulator, but this caller
       // previously discarded it entirely (only ever destructured `stats`) — silently dropping every
       // `stat:'totalMult'` TriggerBlock's contribution to the FULL-tier stat-panel score for every
@@ -1122,7 +1122,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const hasFusionBurst = dotResult.breakdown.fusionBurst.active;
     const hasElectroFlare = dotResult.breakdown.electroFlare.active;
     let tuneBreakDeepenMult = dotResult.tuneBreakDeepenMult;
-    // Resolved once grandTotal is known below (Engine development.md item 9's mode-exclusivity fix) —
+    // Resolved once grandTotal is known below (the engine-architecture history (git log) item 9's mode-exclusivity fix) —
     // exposed on the return value mainly so tests/other consumers can see which mode(s) were assumed.
     let tuneBreakResolvedStances = [];
 
@@ -1454,7 +1454,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
     });
 
-    // Mode-exclusive Tune Break candidates (Engine development.md item 9): resolve each mode-locked
+    // Mode-exclusive Tune Break candidates (the engine-architecture history (git log) item 9): resolve each mode-locked
     // character's own Rupture-vs-Strain contribution to whichever ACTUALLY yields more total damage
     // for this real composition — comparing real final totals (not a fabricated unit conversion
     // between flat DOT damage and a multiplicative deepen, which aren't comparable in isolation; see
@@ -1464,7 +1464,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     {
       const candidates = dotResult.tuneBreakExclusiveCandidates;
       if (candidates.length) {
-        // Full combinatorial resolution (Engine development.md item 9) — replaced an earlier
+        // Full combinatorial resolution (the engine-architecture history (git log) item 9) — replaced an earlier
         // marginal-"delta if this one member is excluded" approach after it produced a real wrong
         // answer once TWO members (Aemeath, Denia) both competed for the SAME shared boolean-gated
         // Fusion Burst reaction: excluding just one of two co-appliers reads as zero marginal cost
@@ -1492,7 +1492,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         }
 
         // Real hypothesis per combo, not a "reuse the baseline when nothing's excluded" shortcut
-        // (ENGINE_MERGE_PLAN.md Phase 2 — Denia/Aemeath's Fusion Burst migration): the baseline
+        // (the engine-merge history (git log) Phase 2 — Denia/Aemeath's Fusion Burst migration): the baseline
         // `dotResult.breakdown.fusionBurst.dmg` reflects whatever `winningStanceForOwner()` naturally
         // resolves for a BLOCK-migrated candidate, which is a DIFFERENT question than "what if this
         // combo's own hypothesis holds" — reusing it as a shortcut would silently reintroduce the exact

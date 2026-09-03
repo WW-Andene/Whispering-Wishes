@@ -26,7 +26,7 @@ import { triggerFired, conditionHolds } from './triggerEngine.js';
  *   The subset of simulateRotation()/simulateTeamRotation() results relevant to this block — for a
  *   single-character driver, every result; for a team driver, only the results belonging to this
  *   block's own owner (a block's activation history only depends on its OWNER's steps) — EXCEPT for
- *   a `trigger.type: 'ally-action'` block (Engine development.md item 9), which is the one case that
+ *   a `trigger.type: 'ally-action'` block (the engine-architecture history (git log) item 9), which is the one case that
  *   deliberately breaks this rule: pass the FULL, all-owners results list for those, since the
  *   trigger can fire off ANY team member's step, not just this block's own owner's.
  * @param {string} [targetElementLower]

@@ -9,7 +9,7 @@
 // flagged as unverified" gap) — 3 real bugs found and fixed that pass: S4 was
 // modeled as an unconditional passive when the kit text is explicit it's a 5s
 // window on Cloudburst Dance cast; S5 was a dead cast-scoped/no-duration
-// `kind:'buff'` no-op (Engine development.md item 12); S6 was an unscoped passive
+// `kind:'buff'` no-op (the engine-architecture history (git log) item 12); S6 was an unscoped passive
 // silently over-crediting her other skillDmg-categorized moves instead of only
 // Unbound Flow. Both her outroBuffs and libBuffs store non-DPS values (an Aero
 // Erosion stack-cap increase, a flat+%ATK healing formula) — CHAR_BUFF_TABLE
@@ -75,7 +75,7 @@ export const ROVER_AERO_BLOCKS = [
     // type of its own; it inherits Basic or Heavy ATK DMG per the character's own kit structure — her
     // Mid-air Attack sits under the same "Basic Attack — Wind Cutter" family header as her other Basic
     // ATK-slot moves, with no separate Heavy Attack override), resolves to basicDmg — closes the
-    // cross-character Mid-air sweep noted in ENGINE_MERGE_PLAN.md as still open for this character.
+    // cross-character Mid-air sweep noted in the engine-merge history (git log) as still open for this character.
     damage: { hits: parseSkillMultiplierHits('140.76%'), category: 'basicDmg' },
     note: 'Plunges back down to the ground.',
   },
@@ -117,7 +117,7 @@ export const ROVER_AERO_BLOCKS = [
     source: SOURCE, kind: 'buff',
     // Fixed 2026-09-02: was `trigger:{type:'cast',...}` with no `timing.duration` — the same dead
     // cast-scoped/no-duration `kind:'buff'` no-op shape found on Carlotta's S1/S2, Galbrena's S3, and
-    // Lucy's S2/S3 (Engine development.md item 12) — never actually applied. Converted to
+    // Lucy's S2/S3 (the engine-architecture history (git log) item 12) — never actually applied. Converted to
     // `trigger:{type:'passive'}` + `scopedToBlockId` so it fires and stays scoped to only Omega
     // Storm's own hit.
     trigger: { type: 'passive' },

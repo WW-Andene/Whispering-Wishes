@@ -1,4 +1,4 @@
-// ENGINE_MERGE_PLAN.md Phase 0.5 gap #8 — a flat (non-%ATK) additive damage component alongside a
+// the engine-merge history (git log) Phase 0.5 gap #8 — a flat (non-%ATK) additive damage component alongside a
 // %ATK hit, e.g. Buling's Twin Thunders: "169 flat + 18.30% ATK". Previously only the %ATK portion
 // was modeled (no field existed for the flat term at all). This tests both the parser helper and the
 // resolvers' damage formula treat it as part of the base-damage term (added before crit/dmgBonus/
@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import { parseSkillMultiplierHits } from '../engine/skillMultiplierParser.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 
-describe('DamageHits.flat — non-%ATK additive component (ENGINE_MERGE_PLAN.md Phase 0.5 gap #8)', () => {
+describe('DamageHits.flat — non-%ATK additive component (the engine-merge history (git log) Phase 0.5 gap #8)', () => {
   it('parseSkillMultiplierHits attaches a flat value to the first parsed hit only', () => {
     const hits = parseSkillMultiplierHits('18.30%', 169);
     expect(hits).toEqual([{ atkPct: 18.30, flat: 169 }]);

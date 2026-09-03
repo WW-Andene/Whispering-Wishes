@@ -14,7 +14,7 @@
 // biggest hit — fixed). Iridescent Splash/Additive Color still aren't used in her
 // real rotation, not modeled.
 //
-// appliesTags added 2026-09-02 (Engine development.md item 9, Phase 2) on every Photochromic-Flux-
+// appliesTags added 2026-09-02 (the engine-architecture history (git log) item 9, Phase 2) on every Photochromic-Flux-
 // inflicting block, gated by sequenceGating.js's winningStanceForOwner() (see triggerBlocks.schema.js's
 // appliesTags doc). Unlike Denia, Lynae has NO sourced rival-magnitude buff block to resolve which mode
 // wins via the generic effects[]-magnitude comparison — her real per-mode differences (Tune Rupture
@@ -28,7 +28,7 @@
 // confirmed by `lynaeTuneBreakModeExclusivity.test.js`'s own assertion that
 // `winningStanceForOwner(LYNAE_BLOCKS, 'Lynae')` returns `'Tune Rupture mode'`, not `null`. (An earlier
 // version of this comment said neither tag fires — stale as of the marker block being added later in
-// this same file; corrected here during the Phase A audit, ENGINE_MERGE_PLAN.md.)
+// this same file; corrected here during the Phase A audit, the engine-merge history (git log).)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -43,7 +43,7 @@ export const LYNAE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Time to Show Some Colors!' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // appliesTags added 2026-09-02 (Engine development.md item 9, Phase 2), sourced verbatim from the
+    // appliesTags added 2026-09-02 (the engine-architecture history (git log) item 9, Phase 2), sourced verbatim from the
     // dump's own "Resonance Mode" line: "Photochromic Flux (from Polychrome Leap/Iridescent
     // Splash/Visual Impact/Intro) inflicts Tune Rupture - Shifting (Rupture mode) or Tune Strain -
     // Shifting (Strain mode)". Gated by sequenceGating.js's winningStanceForOwner() — see
@@ -218,7 +218,7 @@ export const LYNAE_BLOCKS = [
     note: 'Up to +90% DMG on Polychrome Leap/Visual Impact via Color of Soul stacks (30%/stack, max 3) gained by casting Graffiti Blast/Mid-air Heavy Attack — both exclusive to the S6-only alternate rotation, not modeled in this file. No reachable DPS component in the modeled standard rotation.',
   },
 
-  // Added 2026-09-02 (Engine development.md item 9) — resolves the appliesTags mode gap above.
+  // Added 2026-09-02 (the engine-architecture history (git log) item 9) — resolves the appliesTags mode gap above.
   // Deliberately NOT a live damage/buff contributor (empty effects, kind:'utility' — costs nothing in
   // any DPS computation): its only job is to hand sequenceGating.js's winningStanceForOwner() an
   // explicit, SOURCED answer for which mode her appliesTags entries should resolve to, since her real

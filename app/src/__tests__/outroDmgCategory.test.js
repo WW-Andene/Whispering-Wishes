@@ -1,4 +1,4 @@
-// ENGINE_MERGE_PLAN.md Phase 0.5 gap #16 — a dedicated 'outroDmg' damage-type category. Xiangli Yao's
+// the engine-merge history (git log) Phase 0.5 gap #16 — a dedicated 'outroDmg' damage-type category. Xiangli Yao's
 // S5 grants Outro Chain Rule's own DMG Multiplier +222%, which previously had no matching category
 // in this schema (the 6 existing categories don't cover "Outro DMG") and was entirely unrepresented.
 import { describe, it, expect } from 'vitest';
@@ -8,7 +8,7 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { XIANGLI_YAO_BLOCKS } from '../engine/characterBlocks/xianglyao.blocks.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 
-describe("outroDmg category (ENGINE_MERGE_PLAN.md Phase 0.5 gap #16)", () => {
+describe("outroDmg category (the engine-merge history (git log) Phase 0.5 gap #16)", () => {
   it('createStats() initializes outroDmg to 0 and applyBuff() routes it correctly', () => {
     const stats = createStats();
     expect(stats.outroDmg).toBe(0);

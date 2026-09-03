@@ -145,7 +145,7 @@ export const ZANI_BLOCKS = [
     note: '+50% Spectro DMG (confirmed exact) — no further scope detail sourced beyond the flat value, kept passive.',
   },
   // Fixed 2026-09-03: S2 and S3 were both `kind:'buff'` with `trigger:{type:'cast',...}` and no
-  // `timing.duration` — the item-12 dead-buff architecture bug (Engine development.md), silent no-ops.
+  // `timing.duration` — the item-12 dead-buff architecture bug (the engine-architecture history (git log)), silent no-ops.
   {
     id: 'zani.chain.s2',
     source: SOURCE, kind: 'buff',

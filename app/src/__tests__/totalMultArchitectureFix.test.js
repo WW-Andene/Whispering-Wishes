@@ -1,4 +1,4 @@
-// ENGINE_MERGE_PLAN.md totalMult architecture-bug fix (2026-09-02). Investigated while designing a
+// the engine-merge history (git log) totalMult architecture-bug fix (2026-09-02). Investigated while designing a
 // tiered-stacking curve for Qingxiao's Mindlock (Phase 0.5 gap #1) and found `stat: 'totalMult'` — used
 // as a fallback effect stat across 38 TriggerBlocks in 24 character files — contributed EXACTLY ZERO to
 // any actually-computed DPS number in the app, in all three real production paths:
@@ -15,7 +15,7 @@ import { createStats, applyBuff } from '../features/teams/calcEngine.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
 
-describe('totalMult architecture-bug fix (ENGINE_MERGE_PLAN.md)', () => {
+describe('totalMult architecture-bug fix (the engine-merge history (git log))', () => {
   it('createStats() initializes totalMult to 0 and applyBuff() routes it correctly', () => {
     const stats = createStats();
     expect(stats.totalMult).toBe(0);

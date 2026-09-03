@@ -61,7 +61,7 @@
  *                                   "assume whichever mode nets more value" read, not live mode
  *                                   tracking (no state machine exists for that). Omit entirely for
  *                                   the common case (a block that applies no tracked status).
- * @property {DotApplier} [dotApplier]  Added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2): marks a block
+ * @property {DotApplier} [dotApplier]  Added 2026-09-02 (the engine-merge history (git log) Phase 2): marks a block
  *                                   as one character's real, sourced contribution to a shared,
  *                                   team-wide DOT reaction (Frazzle/Erosion/Fusion Burst/Electro
  *                                   Flare/Tune Break) — the exact same five mechanics
@@ -168,7 +168,7 @@
  *                            see below) | 'windowed-proc' (added for Yinlin's Furious Thunder —
  *                            see below) | 'ally-action' (added 2026-09-02 for the "when ANY team
  *                            member performs action X, [someone] gains buff Y" pattern audited in
- *                            Engine development.md item 9 — Qingxiao's/Denia's Shifting/Fusion Burst
+ *                            the engine-architecture history (git log) item 9 — Qingxiao's/Denia's Shifting/Fusion Burst
  *                            reactive buffs, Cartethyia's/Sigrika's/Luuk Herssen's/Galbrena's/
  *                            Mornye's whole-team buffs on an ally's own action, none of which are
  *                            anchored to the block OWNER's own cast — see below)
@@ -328,12 +328,12 @@
  * @typedef {Object} DotApplier
  * @property {'frazzle'|'erosion'|'fusionBurst'|'electroFlare'} mechanic  Which shared DOT reaction
  *   this block contributes to — same five mechanics `calcEngine.js`'s five `calc*Dmg` functions
- *   compute today, see ENGINE_MERGE_PLAN.md Phase 1 for each one's exact formula/constants.
+ *   compute today, see the engine-merge history (git log) Phase 1 for each one's exact formula/constants.
  * @property {number} [value]  This character's own real, sourced stack contribution (Frazzle: summed
  *   across every real applier on the team; Erosion: the MAX across appliers, not summed — see
- *   ENGINE_MERGE_PLAN.md 1.1/1.2 for why these differ). Omit for `fusionBurst`/`electroFlare`, whose
+ *   the engine-merge history (git log) 1.1/1.2 for why these differ). Omit for `fusionBurst`/`electroFlare`, whose
  *   `calcEngine.js` formulas don't scale by a per-applier value at all (a boolean "does anyone apply
- *   it" gate) — see ENGINE_MERGE_PLAN.md 1.3/1.4.
+ *   it" gate) — see the engine-merge history (git log) 1.3/1.4.
  * @property {string} [requiresStance]  Added for Denia/Aemeath's Fusion Burst migration: this
  *   applier block only counts when `sequenceGating.js`'s `winningStanceForOwner()` resolves the
  *   OWNER's own assumed mode to this exact stance text — same shape and resolution mechanism as
@@ -433,7 +433,7 @@
  *                                 rule as everywhere else in this schema). For a `tiers`-bearing
  *                                 effect (see below), set this to the SUM of every tier's own
  *                                 `count` (the real total stack cap).
- * @property {string} [scopedToBlockId]  ENGINE_MERGE_PLAN.md Phase 0.5 gap #3, added 2026-09-02: some
+ * @property {string} [scopedToBlockId]  the engine-merge history (git log) Phase 0.5 gap #3, added 2026-09-02: some
  *                                 real kit bonuses are scoped to ONE SPECIFIC move, not a whole damage
  *                                 category (e.g. Aemeath's "+300% Crit DMG for Heavy ATK specifically"
  *                                 — she has only one Heavy ATK damage block, but plenty of OTHER hits
@@ -463,7 +463,7 @@
  *                                 `damage.hits`, computed as the target fraction × the base hit's own
  *                                 summed %ATK — see Brant's `chain.s6-secondary-blast` or Denia's Dark
  *                                 Core scalar for worked examples).
- * @property {{count: number, value: number}[]} [tiers]  ENGINE_MERGE_PLAN.md Phase 0.5 gap #1, added
+ * @property {{count: number, value: number}[]} [tiers]  the engine-merge history (git log) Phase 0.5 gap #1, added
  *                                 2026-09-02: a nonlinear/multi-tier per-stack curve (e.g. Qingxiao's
  *                                 Mindlock — first 7 stacks worth 7% each, remaining 8 worth 2% each,
  *                                 `[{count:7,value:7},{count:8,value:2}]`) that a single flat `value`

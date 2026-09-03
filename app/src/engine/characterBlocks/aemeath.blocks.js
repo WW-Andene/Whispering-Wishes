@@ -39,7 +39,7 @@ export const AEMEATH_BLOCKS = [
     trigger: { type: 'cast', on: 'Intro:Debut of Meteoric Radiance' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('65.30% + 97.95%') },
-    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — CHARACTER_ROTATIONS' own step note:
+    // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — CHARACTER_ROTATIONS' own step note:
     // "applies Tune Rupture/Fusion Burst depending on her Resonance Mode." Fusion-Burst-mode-only per
     // her kit text; gated the same way her tuneBreak.competesWithFusionBurstReaction resolution already
     // is (winningStanceForOwner), not a second mode mechanism.
@@ -145,7 +145,7 @@ export const AEMEATH_BLOCKS = [
     target: { scope: 'self' },
     condition: { requiresStance: 'Max Between the Stars stacks' },
     effects: [{ stat: 'deepen', value: 25, scopedToBlockId: 'aemeath.liberation.heavenfall-edict-finale' }],
-    note: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25% — scoped 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #3, new scopedToBlockId field) to only her Finale hit, not general "deepen" across her whole kit as previously modeled. Only enforced by the hit-composed resolvers; the legacy time-averaged path still applies it at the broader scope (see the field\'s own schema doc).',
+    note: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25% — scoped 2026-09-02 (the engine-merge history (git log) Phase 0.5 gap #3, new scopedToBlockId field) to only her Finale hit, not general "deepen" across her whole kit as previously modeled. Only enforced by the hit-composed resolvers; the legacy time-averaged path still applies it at the broader scope (see the field\'s own schema doc).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each

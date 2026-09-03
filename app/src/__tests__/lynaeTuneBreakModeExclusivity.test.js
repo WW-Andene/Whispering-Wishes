@@ -1,4 +1,4 @@
-// Engine development.md item 9 — two real bugs fixed together, in logic order:
+// the engine-architecture history (git log) item 9 — two real bugs fixed together, in logic order:
 //   1. calcTuneBreakDmg() used to apply Lynae's ruptureDmgMult AND strainDmgPerStack/maxStrainStacks
 //      simultaneously, even though her real Resonance Mode makes them mutually exclusive (unlike a
 //      generic responder like Mornye, who legitimately can have both active if the team's OTHER
@@ -6,7 +6,7 @@
 //      own real-total comparison (calcTuneBreakDmg's own comment has the full rationale).
 //   2. That same now-fixed resolution is what backs sequenceGating.js's winningStanceForOwner()
 //      confirmedWinningStance check for Lynae's appliesTags gating (lynae.blocks.js's
-//      'lynae.stancevote.tune-rupture' marker block) — closing Engine development.md's own
+//      'lynae.stancevote.tune-rupture' marker block) — closing the engine-architecture history (git log)'s own
 //      previously-logged "neither tag fires" gap.
 import { describe, it, expect } from 'vitest';
 import { calcTeamStats } from '../features/teams/calcTeamStats.js';

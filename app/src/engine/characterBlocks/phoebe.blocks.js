@@ -81,7 +81,7 @@ export const PHOEBE_BLOCKS = [
   //    text, cast-scoped like every other "own multiplier" block in this file) ──
   // Fixed 2026-09-03: all 3 of these were `kind:'buff'` blocks with a non-passive trigger
   // (`'cast'`/`'swap-out'`) and NO `timing.duration` — the item-12 dead-buff architecture bug
-  // (Engine development.md): resolveHitComposedDps.js's statsAtInstant() only reads `passiveBlocks`
+  // (the engine-architecture history (git log)): resolveHitComposedDps.js's statsAtInstant() only reads `passiveBlocks`
   // (trigger.type==='passive') and `buffWindows` (duration != null); any non-passive trigger with no
   // duration is invisible regardless of trigger type. All 3 were silent no-ops — together they cover
   // nearly her entire multiplier stack (+255% Liberation, +255% Outro, +256% Starflash Frazzle Amp).

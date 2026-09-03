@@ -16,7 +16,7 @@ describe('triggerEngine parity — Lucy', () => {
   });
 
   // Fixed 2026-09-02: S2 was `trigger:{type:'cast',...}` with no `timing.duration` — the same dead
-  // cast-scoped/no-duration no-op shape as Carlotta's S1/S2 and Galbrena's S3 (Engine development.md
+  // cast-scoped/no-duration no-op shape as Carlotta's S1/S2 and Galbrena's S3 (the engine-architecture history (git log)
   // item 12) — converted to passive + scopedToBlockId so it actually fires.
   it("S2 actually boosts Multi-threading's damage (was a dead no-op)", () => {
     const rc = RESONANCE_CHAIN_DATA['Lucy'];

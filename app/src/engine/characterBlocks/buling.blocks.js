@@ -21,11 +21,11 @@ export const BULING_BLOCKS = [
     trigger: { type: 'cast', on: 'Intro:Summon and Smite' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('131.10%') },
-    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2, first migration target): her own kit
+    // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2, first migration target): her own kit
     // text — "applies Electro Flare (Inherent Skill)" on Intro — confirmed in CHARACTER_ROTATIONS's
     // own step note. No per-character stack value sourced for Electro Flare anywhere (calcEngine.js's
     // own calcElectroFlareDmg starts from a hardcoded seed of 10, not read from CHAR_BUFF_TABLE either
-    // — flagged as an open question in ENGINE_MERGE_PLAN.md 1.4, not invented here).
+    // — flagged as an open question in the engine-merge history (git log) 1.4, not invented here).
     dotApplier: { mechanic: 'electroFlare' },
   },
   {
@@ -85,7 +85,7 @@ export const BULING_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Flashing Thunder Spell: Harmony' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('536.79%'), category: 'libDmg' },
-    // dotApplier added 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 2) — her own kit text: "enhanced
+    // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — her own kit text: "enhanced
     // Liberation deploys the Five Thunders Spell Array (Electro Flare)", confirmed in
     // CHARACTER_ROTATIONS's own step note. A SECOND real Electro Flare application point (alongside
     // her Intro above) — dotReactionsFromBlocks.js's own "has ANY applier" boolean gate means this

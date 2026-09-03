@@ -31,7 +31,7 @@ const BASE_ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:4173', // Vite's default `vite preview` / self-host/server.js port
   // Fixed, well-known origins Capacitor's WebView sends the Origin header as for the bundled
-  // native app (see CAPACITOR_APP.md) — 'capacitor://localhost' on iOS, 'https://localhost' on
+  // native app (see NATIVE_APP.md) — 'capacitor://localhost' on iOS, 'https://localhost' on
   // Android with the default HTTPS scheme. Not user-specific like a tunnel domain, so these are
   // safe to bake in permanently rather than push onto every self-hoster via EXTRA_ALLOWED_ORIGINS.
   'capacitor://localhost',

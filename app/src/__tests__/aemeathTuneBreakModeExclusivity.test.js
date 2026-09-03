@@ -1,4 +1,4 @@
-// Engine development.md item 9 — Aemeath's mode-exclusivity fix, cross-reaction case.
+// the engine-architecture history (git log) item 9 — Aemeath's mode-exclusivity fix, cross-reaction case.
 //
 // Real bug found investigating this: her Tune Rupture Response - Starburst proc (596.43%, active
 // only in Tune Rupture mode per her own kit text) and her participation in the shared

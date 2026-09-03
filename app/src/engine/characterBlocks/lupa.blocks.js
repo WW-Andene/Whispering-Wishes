@@ -174,7 +174,7 @@ export const LUPA_BLOCKS = [
   // duration — this block's exact prior shape) matches NEITHER filter and is a silent no-op in every
   // hit-composed resolver, confirmed by a failing test (`withS4.totalDamage` === `noS4.totalDamage`
   // exactly). This is NOT unique to Lupa — a rough codebase scan found ~65 blocks shaped this way; logged
-  // as its own architecture-scale finding in Engine development.md rather than mass-fixed here. For THIS
+  // as its own architecture-scale finding in the engine-architecture history (git log) rather than mass-fixed here. For THIS
   // block specifically, converted from a `libDmg` buff-effect (which could never apply, even once the
   // rotation-name bug was fixed) into a real `kind:'damage'` proportional-second-hit block instead — the
   // exact same pattern Brant's S6/Denia's S4/Chisa's S4 already established for a same-instant, same-

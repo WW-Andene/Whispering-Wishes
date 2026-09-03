@@ -128,7 +128,7 @@ export const CARLOTTA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     // Fixed 2026-09-02 (re-read after being flagged as "found, not fixed" too hastily): was
     // `trigger:{type:'cast', on:'Liberation:Era of New Wave'}` with no `timing.duration` — the same
-    // dead cast-scoped/no-duration no-op shape as S2/Lupa's S4/Verina's S6 (Engine development.md
+    // dead cast-scoped/no-duration no-op shape as S2/Lupa's S4/Verina's S6 (the engine-architecture history (git log)
     // item 12), so this never actually applied. Previously left unfixed on the theory that "Crit
     // Rate on a Deconstructed target" was an unsourced blanket guess if made unconditional — but the
     // pasted text's own Review section says outright: "This debuff lasts for 4 seconds but with the
@@ -148,7 +148,7 @@ export const CARLOTTA_BLOCKS = [
     // `kind:'buff'` block in that exact shape is a silent no-op in resolveHitComposedDps.js's
     // statsAtInstant() (it only reads passiveBlocks [trigger.type==='passive'] and buffWindows
     // [duration != null]), the same architecture bug already found and fixed on Lupa's S4/Verina's
-    // S6 (Engine development.md item 12). Converted to passive + scopedToBlockId (Augusta's S3
+    // S6 (the engine-architecture history (git log) item 12). Converted to passive + scopedToBlockId (Augusta's S3
     // pattern) so it only ever boosts Fatal Finale's own hit, matching the real "Fatal Finale's own
     // DMG Multiplier +126%" mechanic, without needing a cast-window that never gets built.
     trigger: { type: 'passive' },

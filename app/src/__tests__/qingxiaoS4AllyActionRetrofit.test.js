@@ -1,4 +1,4 @@
-// ENGINE_MERGE_PLAN.md Phase 0.5 gap #2 — the ally-action retrofit backlog. qingxiao.chain.s4 used to
+// the engine-merge history (git log) Phase 0.5 gap #2 — the ally-action retrofit backlog. qingxiao.chain.s4 used to
 // be modeled as an unconditional, permanent SELF buff (+20% ATK, trigger:'passive', target:'self') —
 // wrong on three counts against the dump's own exact text: "After any teammate inflicts Shifting,
 // THEIR ATK +20% for 8s." The recipient is whoever inflicted Shifting (which can be Qingxiao herself,
@@ -11,7 +11,7 @@ import { simulateTeamRotation } from '../engine/rotationSimulator.js';
 import { resolveSimulatedTeamRotation } from '../engine/resolveSimulatedTeamRotation.js';
 import { QINGXIAO_BLOCKS } from '../engine/characterBlocks/qingxiao.blocks.js';
 
-describe('Qingxiao chain.s4 — ally-action retrofit (ENGINE_MERGE_PLAN.md Phase 0.5 gap #2)', () => {
+describe('Qingxiao chain.s4 — ally-action retrofit (the engine-merge history (git log) Phase 0.5 gap #2)', () => {
   const s4 = QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.chain.s4');
 
   it('is a real ally-action/trigger-actor block now, not a passive self buff', () => {

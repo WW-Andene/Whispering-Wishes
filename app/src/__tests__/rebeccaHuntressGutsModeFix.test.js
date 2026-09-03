@@ -1,4 +1,4 @@
-// Engine development.md item 10 audit — found while systematically scanning the roster for
+// the engine-architecture history (git log) item 10 audit — found while systematically scanning the roster for
 // dual-mode characters: rebecca.selfbuff.huntress (+30% Crit DMG) and rebecca.selfbuff.guts (+15%
 // DEF Ignore) were BOTH trigger:'passive' — always active simultaneously for her entire modeled
 // rotation, even though her own kit text describes Huntress/Guts as mutually exclusive in-combo
@@ -12,7 +12,7 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { REBECCA_BLOCKS } from '../engine/characterBlocks/rebecca.blocks.js';
 
-describe('Rebecca Huntress/Guts mode fix (Engine development.md item 10)', () => {
+describe('Rebecca Huntress/Guts mode fix (the engine-architecture history (git log) item 10)', () => {
   const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Rebecca'], REBECCA_BLOCKS);
   const { stats, activity } = resolveSimulatedRotation(REBECCA_BLOCKS, steps);
 

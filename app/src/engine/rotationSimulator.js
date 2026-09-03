@@ -212,7 +212,7 @@ export function simulateRotation(blocks, steps) {
 // inherently cross-character/global, not per-owner).
 function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
   const allBlocks = Object.values(blocksByOwner).flat();
-  // Engine development.md item 9 (Denia/Lynae mode-conditional appliesTags gap): resolved once per
+  // the engine-architecture history (git log) item 9 (Denia/Lynae mode-conditional appliesTags gap): resolved once per
   // owner up front, not per step — the "assumed active mode" for a dual-mode character doesn't
   // change mid-rotation in this theoretical-optimizer reading (see winningStanceForOwner's own
   // comment), and every tag-entry check below just reads this cache.
@@ -296,7 +296,7 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
           ineligibleBlockIds.add(b.id);
         }
       }
-      // 'ally-action' support (Engine development.md item 9): collect which real-game status/action
+      // 'ally-action' support (the engine-architecture history (git log) item 9): collect which real-game status/action
       // tags THIS step's own cast applies, from any of this owner's OWN blocks whose trigger matches
       // this exact cast and that carry `appliesTags` (usually the damage block for this same move).
       // Cooldown-ineligible blocks (just computed above) don't count as actually resolving, so their
@@ -310,12 +310,12 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
         for (const entry of b.appliesTags) {
           // Bare-string entries (Qingxiao's shape) are unconditional, as before. Object entries
           // ({tag, requiresStance} — Denia/Lynae's shape) only fire when this owner's own resolved
-          // mode (see stanceForOwner above) matches — added 2026-09-02, Engine development.md item 9.
+          // mode (see stanceForOwner above) matches — added 2026-09-02, the engine-architecture history (git log) item 9.
           if (typeof entry === 'string') { actionTags.add(entry); continue; }
           if (entry.requiresStance == null || stanceForOwner(owner) === entry.requiresStance) actionTags.add(entry.tag);
         }
       }
-      // Universal 'echo-skill-cast' tag (added 2026-09-02, ENGINE_MERGE_PLAN.md Phase 0.5 gap #2 —
+      // Universal 'echo-skill-cast' tag (added 2026-09-02, the engine-merge history (git log) Phase 0.5 gap #2 —
       // Sigrika's S4 retrofit): using an equipped Echo isn't a per-character KIT fact the way Shifting
       // application is (any character can use ANY Echo, unrelated to their own kit) — real
       // CHARACTER_ROTATIONS data already represents it uniformly as `{type:'Echo', skill:'Use Echo'}`

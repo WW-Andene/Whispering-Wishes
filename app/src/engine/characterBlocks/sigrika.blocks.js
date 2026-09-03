@@ -140,7 +140,7 @@ export const SIGRIKA_BLOCKS = [
   {
     id: 'sigrika.chain.s4',
     source: SOURCE, kind: 'buff',
-    // Retrofitted 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #2), same pattern as Qingxiao's
+    // Retrofitted 2026-09-02 (the engine-merge history (git log) Phase 0.5 gap #2), same pattern as Qingxiao's
     // chain.s4, using the dump's own exact text: "Any teammate's Echo Skill cast grants the whole
     // team +20% ATK for 20s." Casting an Echo isn't a per-character kit fact (any character can use
     // any equipped Echo), so this reads the new universal 'echo-skill-cast' action tag

@@ -1,4 +1,4 @@
-// Engine development.md item 9 — the real 3-member interaction that exposed why a marginal
+// the engine-architecture history (git log) item 9 — the real 3-member interaction that exposed why a marginal
 // "delta if this one member is excluded" resolution isn't sound once TWO members (Aemeath, Denia)
 // compete for the SAME shared boolean-gated Fusion Burst reaction: excluding just one of two
 // co-appliers reads as zero marginal cost (the other alone keeps the reaction active), which made
@@ -8,7 +8,7 @@
 import { describe, it, expect } from 'vitest';
 import { calcTeamStats } from '../features/teams/calcTeamStats.js';
 
-describe('Aemeath + Denia + Lynae — joint mode resolution (Engine development.md item 9)', () => {
+describe('Aemeath + Denia + Lynae — joint mode resolution (the engine-architecture history (git log) item 9)', () => {
   it('resolves Aemeath to Fusion Burst (matching her own solo resolution), Denia to Tune Strain (not redundantly covering Fusion Burst once Aemeath already does), Lynae to Tune Rupture', () => {
     const stats = calcTeamStats(['Aemeath', 'Denia', 'Lynae'], 0, 'Aemeath', {}, '', 90);
     const byName = Object.fromEntries(stats.tuneBreakResolvedStances.map(s => [s.name, s.stance]));

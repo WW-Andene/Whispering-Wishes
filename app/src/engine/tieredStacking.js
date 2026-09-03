@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — engine/tieredStacking.js
-// ENGINE_MERGE_PLAN.md Phase 0.5 gap #1: a nonlinear/multi-tier per-stack curve (e.g. Qingxiao's
+// the engine-merge history (git log) Phase 0.5 gap #1: a nonlinear/multi-tier per-stack curve (e.g. Qingxiao's
 // Mindlock — first 7 stacks worth 7% each, remaining stacks worth 2% each) that `effects[].value ×
 // count` (a single flat value per stack) can't represent losslessly — every such mechanic in the
 // roster was previously kept as one flat number at the DOCUMENTED CEILING stack count, an

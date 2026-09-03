@@ -207,7 +207,7 @@ wutheringwaves.fandom.com and re-confirmed here — no value discrepancies found
 `kind:'buff'` block with `trigger:{type:'cast', on:'Liberation:Fatal Finale'}` and no
 `timing.duration` — this exact shape is a silent no-op in `resolveHitComposedDps.js`'s
 `statsAtInstant()` (only `passiveBlocks` [trigger.type==='passive'] and `buffWindows` [duration != null]
-are read), the same architecture bug already found on Lupa's S4 and Verina's S6 (Engine development.md
+are read), the same architecture bug already found on Lupa's S4 and Verina's S6 (the engine-architecture history (git log)
 item 12) — now a 3rd confirmed instance. Fixed by converting to `trigger:{type:'passive'}` +
 `scopedToBlockId:'carlotta.liberation.fatal-finale'` (Augusta's S3 scoping pattern), so it fires and
 applies only to Fatal Finale's own hit.

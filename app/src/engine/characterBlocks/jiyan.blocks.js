@@ -95,7 +95,7 @@ export const JIYAN_BLOCKS = [
     id: 'jiyan.chain.s5-outro-mult',
     source: SOURCE, kind: 'buff',
     // Fixed 2026-09-03: was `trigger:{type:'swap-out'}` with no `timing.duration` — a new variant of
-    // the item-12 dead-buff architecture bug (Engine development.md): resolveHitComposedDps.js's
+    // the item-12 dead-buff architecture bug (the engine-architecture history (git log)): resolveHitComposedDps.js's
     // statsAtInstant() only reads `passiveBlocks` (trigger.type==='passive') and `buffWindows`
     // (duration != null) — ANY non-passive trigger type with no duration is invisible, not just
     // 'cast' specifically (the shape found on every prior instance this session). Converted to
@@ -120,7 +120,7 @@ export const JIYAN_BLOCKS = [
     source: SOURCE, kind: 'buff',
     // Fixed 2026-09-03 (correctness fix, no live DPS impact today): was `trigger:{type:'cast',...}`
     // with no `timing.duration` — the same dead cast-scoped/no-duration no-op shape found repeatedly
-    // this session (Engine development.md item 12). Doesn't currently matter for the modeled rotation
+    // this session (the engine-architecture history (git log) item 12). Doesn't currently matter for the modeled rotation
     // since no `jiyan.forte.emerald-storm-finale` damage block exists to scope to (Finale is never
     // cast in the real CHARACTER_ROTATIONS), but fixed anyway for correctness and in case a Finale
     // block is ever added.

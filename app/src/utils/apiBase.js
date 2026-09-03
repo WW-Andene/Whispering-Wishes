@@ -6,7 +6,7 @@
 // Inside Capacitor, the JS bundle is served from capacitor://localhost (iOS)
 // or https://localhost (Android) — there is no server at that origin, so a
 // relative path would 404. VITE_API_BASE_URL (set at build time — see
-// capacitor.config.json's build step in CAPACITOR_APP.md) points those
+// capacitor.config.json's build step in NATIVE_APP.md) points those
 // requests at wherever the app is actually hosted (Vercel or a self-host
 // tunnel), while every other feature (calculator, planner, collection,
 // teams, tracker) stays fully bundled and offline-capable regardless.

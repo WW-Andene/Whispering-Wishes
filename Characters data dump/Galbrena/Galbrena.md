@@ -237,7 +237,7 @@ except one genuinely missing row (Hellstride, see below).
    damage profile. Fixed to add the tag.
 2. `galbrena.chain.s3` had 2 stacked bugs, both fixed: (a) `trigger:{type:'cast', on:'Echo:Hellfire
    Absolution'}` with no `timing.duration` — the same dead cast-scoped/no-duration `kind:'buff'`
-   no-op shape as Carlotta's S1/S2 (Engine development.md item 12), converted to
+   no-op shape as Carlotta's S1/S2 (the engine-architecture history (git log) item 12), converted to
    `trigger:{type:'passive'}` + `scopedToBlockId:'galbrena.echo.hellfire-absolution'`; (b)
    `stat:'libDmg'` when the block it's meant to boost (`galbrena.echo.hellfire-absolution`) is
    `category:'echoDmg'` — category-gated stats only apply to matching-category hits, so this was

@@ -1,19 +1,19 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — engine/dotReactionsFromBlocks.js
-// ENGINE_MERGE_PLAN.md Phase 2: the TriggerBlock-native replacement for engine/dotReactions.js's
+// the engine-merge history (git log) Phase 2: the TriggerBlock-native replacement for engine/dotReactions.js's
 // composition of calcEngine.js's five DOT-reaction functions. Reads each character's real
 // `dotApplier`-tagged blocks (triggerBlocks.schema.js's own doc has the full rationale) instead of
 // CHAR_BUFF_TABLE's flat `debuffs`/`electroFlare` fields — SAME formulas, SAME constants, ported
-// verbatim from calcEngine.js (see ENGINE_MERGE_PLAN.md Phase 1 for each mechanic's exact
+// verbatim from calcEngine.js (see the engine-merge history (git log) Phase 1 for each mechanic's exact
 // derivation), just a different data source. Tune Break is deliberately NOT ported here yet
-// (ENGINE_MERGE_PLAN.md 1.5 — most complex of the five, already has extensive session-added
+// (the engine-merge history (git log) 1.5 — most complex of the five, already has extensive session-added
 // mode-exclusivity logic on the legacy path; migrated last, once this simpler four-mechanic pattern
 // is proven in real character migrations).
 //
 // Migration is per-character, not all-or-nothing: a character with a `dotApplier` block is read from
 // here; the legacy calcEngine.js functions (dotReactions.js) still separately read CHAR_BUFF_TABLE for
 // whoever ISN'T migrated yet. calcTeamStats.js is responsible for not double-counting a migrated
-// character on both paths (ENGINE_MERGE_PLAN.md Phase 2's own per-character checklist tracks this).
+// character on both paths (the engine-merge history (git log) Phase 2's own per-character checklist tracks this).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import {
@@ -61,7 +61,7 @@ function collectAppliers(blocksByOwner, mechanic, stanceOverrides = null) {
 }
 
 /**
- * Frazzle — ENGINE_MERGE_PLAN.md 1.1. `maxStacksRaw` sums every applying BLOCK's own `value` (not
+ * Frazzle — the engine-merge history (git log) 1.1. `maxStacksRaw` sums every applying BLOCK's own `value` (not
  * just one per character — Rover: Spectro's Forte (2) and Liberation (6) are two real, separate
  * application points, more precise than the legacy table's single pre-summed 8). `numSources` counts
  * unique OWNERS (matches calcFrazzleDmg's own `appliers.length`, an ICD-per-character divisor, not
@@ -83,7 +83,7 @@ export function resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, resMul
 }
 
 /**
- * Erosion — ENGINE_MERGE_PLAN.md 1.2. `baseStacks` is the MAX across every applying block's own
+ * Erosion — the engine-merge history (git log) 1.2. `baseStacks` is the MAX across every applying block's own
  * `value` (not summed — a real, different interaction rule than Frazzle's, preserved exactly).
  */
 export function resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, resMult) {
@@ -98,7 +98,7 @@ export function resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, resMul
 }
 
 /**
- * Fusion Burst — ENGINE_MERGE_PLAN.md 1.3. Pure boolean "does anyone apply it" gate, doesn't scale by
+ * Fusion Burst — the engine-merge history (git log) 1.3. Pure boolean "does anyone apply it" gate, doesn't scale by
  * applier count or their own value at all (matches calcFusionBurstDmg exactly). `excludeNames` kept
  * for parity with the legacy function's own 2026-09-02 addition (Aemeath's mode-exclusivity fix).
  */
@@ -111,7 +111,7 @@ export function resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, re
 }
 
 /**
- * Electro Flare — ENGINE_MERGE_PLAN.md 1.4. Same boolean gate as Fusion Burst; the starting stack
+ * Electro Flare — the engine-merge history (git log) 1.4. Same boolean gate as Fusion Burst; the starting stack
  * seed (10) and halving-on-tick are both unsourced/wiki-approximated per calcElectroFlareDmg's own
  * comment, ported verbatim rather than "fixed" without a real source.
  */

@@ -161,7 +161,7 @@ export function createStats() {
     libDmg: 0, echoDmg: 0, coordDmg: 0, outroDmg: 0,
     deepen: 0, amplify: 0,
     defShred: 0, resShred: 0, defIgnore: 0,
-    // totalMult (added 2026-09-02, ENGINE_MERGE_PLAN.md totalMult architecture-bug fix): a flat
+    // totalMult (added 2026-09-02, the engine-merge history (git log) totalMult architecture-bug fix): a flat
     // fallback multiplier for real kit bonuses that don't map to a dedicated category stat — was
     // previously accepted by `applyBuff()`'s switch as a real case in NEITHER `resolveHitComposedDps.js`
     // nor `resolveHitComposedTeamDps.js` (both explicitly skipped it, "no accumulator here yet"), and
@@ -170,7 +170,7 @@ export function createStats() {
     // discarded that return field entirely — so a `stat:'totalMult'` effect (38 blocks across 24
     // character files at the time this was found) contributed ZERO to any actually-computed DPS
     // number in the app, in every real code path, despite being a real sourced kit bonus. See
-    // ENGINE_MERGE_PLAN.md's own writeup for the full investigation.
+    // the engine-merge history (git log)'s own writeup for the full investigation.
     totalMult: 0,
   };
 }
@@ -525,7 +525,7 @@ export function calcErosionDmg(members, rotTime, defMult, resMult) {
 // Fusion Burst's stack-DMG table isn't published on the wiki (only Frazzle/Erosion are); this stays
 // a rough approximation rather than a verified lookup like the two above.
 //
-// excludeNames (added 2026-09-02, Engine development.md item 9 — Aemeath's mode-exclusivity fix):
+// excludeNames (added 2026-09-02, the engine-architecture history (git log) item 9 — Aemeath's mode-exclusivity fix):
 // lets a caller ask "would this reaction still be active WITHOUT member X's participation" — needed
 // for a member whose own `debuffs.fusionBurst` entry is mode-conditional (Aemeath only inflicts real
 // Fusion Burst status while in Fusion Burst mode; her Tune Rupture mode instead grants her the
@@ -559,7 +559,7 @@ export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
 // stack/boost approximation driven entirely by CHAR_BUFF_TABLE[name].tuneBreak fields; accuracy
 // depends on those per-character values being filled in correctly (tracked separately).
 //
-// modeExclusive (added 2026-09-02, Engine development.md item 9): a real bug found while auditing
+// modeExclusive (added 2026-09-02, the engine-architecture history (git log) item 9): a real bug found while auditing
 // Lynae's dual-mode tagging — her OWN tuneBreak object carries BOTH ruptureDmgMult (Tune Rupture
 // Response - Spectral Analysis, her Rupture-mode-only proc) AND strainDmgPerStack/maxStrainStacks
 // (her Strain-mode-only per-stack response), but her real Resonance Mode is mutually exclusive — she

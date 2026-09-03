@@ -10,7 +10,7 @@
 // value rather than the real nonlinear per-stack curve, which this schema's
 // single value+maxStacks stacking shape can't represent losslessly.
 //
-// appliesTags: ['shifting'] added 2026-09-02 (Engine development.md item 9, Phase 2) on every real
+// appliesTags: ['shifting'] added 2026-09-02 (the engine-architecture history (git log) item 9, Phase 2) on every real
 // damage-dealing block: Forte Circuit's own Draw and Sunder text, confirmed verbatim from the raw
 // Prydwen page, is "Qingxiao inflicts Tune Strain - Shifting on the target after dealing damage
 // WITH SKILLS. Each skill can only trigger this once for the same target" — "skills" here is the
@@ -109,7 +109,7 @@ export const QINGXIAO_BLOCKS = [
   // Qingxiao.md lines 41 and 60, both describing ONE enemy-side "DMG taken" amplification, not a
   // separate self-buff) — modeled twice via two different stat channels (self totalMult AND enemy
   // deepen). This was invisible while `stat:'totalMult'` was a dead no-op everywhere in the engine
-  // (see ENGINE_MERGE_PLAN.md's totalMult architecture-bug writeup, fixed same day) — once totalMult
+  // (see the engine-merge history (git log)'s totalMult architecture-bug writeup, fixed same day) — once totalMult
   // actually applies, keeping both would double-count Mindlock's real damage contribution. The single
   // correct model is the enemy-side debuff below.
   {
@@ -119,7 +119,7 @@ export const QINGXIAO_BLOCKS = [
     timing: { duration: 30 },
     target: { scope: 'all-enemies' },
     effects: [{ stat: 'deepen', value: 65 }],
-    note: 'Base kit Forte (Mindlock) + Inherent Skill To Know, To Banish (same single mechanic, described twice in the dump): targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 base-kit stacks — corrected 2026-09-02 from a wrong 49% to the dump\'s own confirmed "+65% DMG Amplification... 7% for the first 7 stacks, 2% for the next 8" (7×7 + 8×2 = 65, not 49 — the prior value was simply arithmetically wrong). Modeled at the documented flat ceiling value rather than the real nonlinear per-stack curve, which this schema\'s stacking shape can\'t represent losslessly (ENGINE_MERGE_PLAN.md Phase 0.5 gap #1). S2 (not S1 — see that node\'s own corrected note) raises the stack cap to 25 (not modeled — tied to gap #1). S6 chain adds a further flat +40% (see qingxiao.chain.s6).',
+    note: 'Base kit Forte (Mindlock) + Inherent Skill To Know, To Banish (same single mechanic, described twice in the dump): targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 base-kit stacks — corrected 2026-09-02 from a wrong 49% to the dump\'s own confirmed "+65% DMG Amplification... 7% for the first 7 stacks, 2% for the next 8" (7×7 + 8×2 = 65, not 49 — the prior value was simply arithmetically wrong). Modeled at the documented flat ceiling value rather than the real nonlinear per-stack curve, which this schema\'s stacking shape can\'t represent losslessly (the engine-merge history (git log) Phase 0.5 gap #1). S2 (not S1 — see that node\'s own corrected note) raises the stack cap to 25 (not modeled — tied to gap #1). S6 chain adds a further flat +40% (see qingxiao.chain.s6).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 re-audit comment for
@@ -138,7 +138,7 @@ export const QINGXIAO_BLOCKS = [
     trigger: { type: 'cast', on: 'Heavy ATK:Heavy Attack - Stringblade' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'heavyDmg', value: 40 }],
-    note: "Heavy Attack multiplier +40% (confirmed) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. Corrected 2026-09-02: ALSO raises the Mindlock stack cap from 15 to 25 (after combat entry) — was previously wrongly attributed to S1's own note; not modeled here either (tied to ENGINE_MERGE_PLAN.md Phase 0.5 gap #1, the unbuilt nonlinear stacking curve).",
+    note: "Heavy Attack multiplier +40% (confirmed) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. Corrected 2026-09-02: ALSO raises the Mindlock stack cap from 15 to 25 (after combat entry) — was previously wrongly attributed to S1's own note; not modeled here either (tied to the engine-merge history (git log) Phase 0.5 gap #1, the unbuilt nonlinear stacking curve).",
   },
   {
     id: 'qingxiao.chain.s3',
@@ -151,7 +151,7 @@ export const QINGXIAO_BLOCKS = [
   {
     id: 'qingxiao.chain.s4',
     source: SOURCE, kind: 'buff',
-    // Retrofitted 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #2 — the ally-action mechanism
+    // Retrofitted 2026-09-02 (the engine-merge history (git log) Phase 0.5 gap #2 — the ally-action mechanism
     // existed but this block predated it) using the dump's own exact text: "After any teammate
     // inflicts Shifting, their ATK +20% for 8s." — "their" is the ALLY who inflicted it, not Qingxiao
     // herself (this includes Qingxiao when SHE inflicts Shifting via her own kit, since every one of

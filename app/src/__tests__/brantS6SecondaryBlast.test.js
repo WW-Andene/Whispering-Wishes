@@ -1,4 +1,4 @@
-// ENGINE_MERGE_PLAN.md Phase 0.5 gap #6 — a %-of-another-block's-damage mechanic. Brant's S6 grants
+// the engine-merge history (git log) Phase 0.5 gap #6 — a %-of-another-block's-damage mechanic. Brant's S6 grants
 // Returned from Ashes a secondary blast worth 30% of its own DMG, previously unrepresented (kept as a
 // TODO on the chain.s6 totalMult block's note, no real damage modeled). Turns out to need no new
 // %-of-another-block field at all: since the secondary blast fires at the SAME instant under the SAME
@@ -9,7 +9,7 @@ import { sumHitsAtkPct } from '../engine/skillMultiplierParser.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { BRANT_BLOCKS } from '../engine/characterBlocks/brant.blocks.js';
 
-describe("Brant S6 secondary blast (ENGINE_MERGE_PLAN.md Phase 0.5 gap #6)", () => {
+describe("Brant S6 secondary blast (the engine-merge history (git log) Phase 0.5 gap #6)", () => {
   it('the secondary blast is exactly 30% of the base hit\'s own summed %ATK', () => {
     const base = BRANT_BLOCKS.find(b => b.id === 'brant.forte.returned-from-ashes');
     const secondary = BRANT_BLOCKS.find(b => b.id === 'brant.chain.s6-secondary-blast');

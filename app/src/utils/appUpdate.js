@@ -59,7 +59,7 @@ export async function checkForUpdate() {
 // REQUEST_INSTALL_PACKAGES permission for the app itself: since the
 // download's origin is the browser app the user already granted "install
 // unknown apps" to (the same one-time step self-hosting the first APK
-// required — see CAPACITOR_APP.md), not this app.
+// required — see NATIVE_APP.md), not this app.
 export async function downloadUpdate(downloadUrl) {
   await Browser.open({ url: downloadUrl });
 }

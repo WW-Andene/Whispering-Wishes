@@ -1,4 +1,4 @@
-// ENGINE_MERGE_PLAN.md Phase 0.5 gap #1 — a nonlinear/multi-tier per-stack curve. Previously every such
+// the engine-merge history (git log) Phase 0.5 gap #1 — a nonlinear/multi-tier per-stack curve. Previously every such
 // mechanic (Qingxiao's Mindlock, Yangyang: Xuanling's Unbroken Vow, Sigrika's ER-scaling) was kept as a
 // single flat value at the documented ceiling stack count — exactly right at that one count, wrong
 // everywhere below it. `cumulativeTieredValue()` is the real fix: computes the true progressive-tier
@@ -11,7 +11,7 @@ import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.j
 
 const MINDLOCK_TIERS = [{ count: 7, value: 7 }, { count: 8, value: 2 }];
 
-describe('cumulativeTieredValue (ENGINE_MERGE_PLAN.md Phase 0.5 gap #1)', () => {
+describe('cumulativeTieredValue (the engine-merge history (git log) Phase 0.5 gap #1)', () => {
   it('matches Qingxiao\'s own dump-confirmed value at the 15-stack cap: 7×7 + 8×2 = 65', () => {
     expect(cumulativeTieredValue(MINDLOCK_TIERS, 15)).toBe(65);
   });
