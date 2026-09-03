@@ -211,7 +211,18 @@ export const JINHSI_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 45 }],
-    note: 'DMG Multiplier of Resonance Skill Illuminous Epiphany +45%. A SEPARATE +45% increase to the per-Incandescence-consumed conversion rate (compounding with S5\'s Incandescence-spend scaling) also exists but has no representable stat here — TODO: needs Phase 2 schema to hold both the flat skill-mult bonus and the scaling-rate bonus, same limitation as the flat table.',
+    effects: [
+      { stat: 'skillDmg', value: 45 },
+      // Fixed 2026-09-03: the SEPARATE +45% conversion-rate bonus (compounding with S5's
+      // Incandescence-spend scaling) has no dedicated "per-resource-consumed rate" stat in this
+      // engine, but since jinhsi.skill.illuminous-epiphany is the ONLY skillDmg-categorized block
+      // this rate bonus could possibly touch, a second scopedToBlockId'd +45% on that one block
+      // reproduces the real compounding total (+90% to Illuminous Epiphany specifically, +45% to
+      // any other skillDmg move) without fabricating a new mechanic — the existing scoping tool
+      // already built for exactly this "named-move-specific bonus" shape (see Aemeath's Heavy ATK
+      // Crit DMG scoping in triggerBlocks.schema.js's own Effect.scopedToBlockId doc).
+      { stat: 'skillDmg', value: 45, scopedToBlockId: 'jinhsi.skill.illuminous-epiphany' },
+    ],
+    note: "DMG Multiplier of Resonance Skill Illuminous Epiphany +45%, PLUS a separate +45% conversion-rate bonus that only ever affects that same move — modeled as a second skillDmg effect scoped to jinhsi.skill.illuminous-epiphany, giving it +90% total while every other skillDmg move gets the unscoped +45% alone.",
   },
 ];

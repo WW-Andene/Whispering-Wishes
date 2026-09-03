@@ -50,4 +50,12 @@ describe('triggerEngine parity — Xiangli Yao', () => {
     expect(fired.has('xianglyao.forte.law-of-reigns')).toBe(true);
     expect(fired.has('xianglyao.outro.chain-rule')).toBe(true);
   });
+
+  it('S3 covers both the Skill-type portion (skillDmg) AND the Law of Reigns portion (libDmg) of the same buff', () => {
+    const s3 = XIANGLI_YAO_BLOCKS.find(b => b.id === 'xianglyao.chain.s3');
+    expect(s3.effects).toEqual([
+      { stat: 'skillDmg', value: 63 },
+      { stat: 'libDmg', value: 63 },
+    ]);
+  });
 });

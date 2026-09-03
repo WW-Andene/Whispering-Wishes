@@ -7,6 +7,7 @@ import { describe, it, expect } from 'vitest';
 import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS } from '../data/characters.js';
 import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
 import { parseSkillMultiplierHits } from '../engine/skillMultiplierParser.js';
+import { requiredSequenceOf } from '../engine/sequenceGating.js';
 
 describe('triggerEngine parity — Camellya', () => {
   it('Seedbed/Epiphyte self-buffs match CHAR_BUFF_TABLE.selfBuffs', () => {
@@ -54,5 +55,15 @@ describe('triggerEngine parity — Camellya', () => {
     // The rotation actually casts this step — confirms it's not a dead/unused row.
     const usesIt = CHARACTER_ROTATIONS['Camellya'].some(step => step.type === 'Skill' && step.skill === 'Floral Ravage');
     expect(usesIt).toBe(true);
+  });
+
+  it('S6 Forte Circuit: Perennial deals 100% of Ephemeral\'s own DMG as basicDmg, gated to sequence 6', () => {
+    const ephemeral = CAMELLYA_BLOCKS.find(b => b.id === 'camellya.forte.ephemeral');
+    const perennial = CAMELLYA_BLOCKS.find(b => b.id === 'camellya.chain.s6-perennial');
+    const ephemeralTotal = ephemeral.damage.hits.reduce((sum, h) => sum + h.atkPct, 0);
+    const perennialTotal = perennial.damage.hits.reduce((sum, h) => sum + h.atkPct, 0);
+    expect(perennialTotal).toBeCloseTo(ephemeralTotal, 5);
+    expect(perennial.damage.category).toBe('basicDmg');
+    expect(requiredSequenceOf(perennial)).toBe(6);
   });
 });

@@ -13,9 +13,11 @@
 // across two bases (which this schema's single-basis-per-block shape can't do).
 // Mid-air:Cartethyia Plunging Attack's real DMG is now sourced and modeled (2026-09-02, against a
 // fresh Prydwen dump — Characters data dump/Cartethyia/Cartethyia.md — which the prior source page
-// this file was built from was simply missing). The STATEFUL half of that mechanic (which Sword Shadow
-// combo grants which of Heart of Virtue/Mandate of Divinity/Power of Discord to Fleurdelys) is still
-// not modeled, per CHARACTER_ROTATIONS's own TODO. The weapon-specific debuff (Sig weapon Defier's
+// this file was built from was simply missing). The "which Sword Shadow grants which buff" question
+// (2026-09-03) turns out to be moot: her real modeled rotation always holds all 3 shadow types by the
+// time she recalls them, so all 3 buffs always apply together — Mandate of Divinity's real +50% Aero
+// Erosion DMG Amp is modeled (cartethyia.manifest.mandate-of-divinity); Heart of Virtue/Power of
+// Discord are genuine CC/utility with no DPS stat. The weapon-specific debuff (Sig weapon Defier's
 // Thorn) is intentionally NOT modeled — hardcoding a weapon's own passive here would double-count it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -87,7 +89,27 @@ export const CARTETHYIA_BLOCKS = [
     // types (Discord via Intro, Divinity via Basic 4, Virtue via Skill) are already up, so the
     // 3-Shadows-Recalled value is the one that actually applies.
     damage: { hits: parseSkillMultiplierHits('11.29%×3'), basis: 'HP', category: 'basicDmg' },
-    note: "Recalls all 3 currently-held Sword Shadows (Discord/Divinity/Virtue) at once, granting Fleurdelys the corresponding Heart of Virtue/Mandate of Divinity/Power of Discord buffs for the whole Manifest window — WHICH shadow grants WHICH buff (and each buff's own further per-effect magnitude) is stateful/combinatorial and not modeled, per CHARACTER_ROTATIONS's own TODO. Only this move's own real DMG is captured here. category fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus this dump's own kit structure — listed under \"Basic Attack — Sword to Carve My Forms\", not Heavy Attack — confirms basicDmg.",
+    note: "Recalls all 3 currently-held Sword Shadows (Discord/Divinity/Virtue) at once, granting Fleurdelys the corresponding Heart of Virtue/Mandate of Divinity/Power of Discord buffs for the whole Manifest window. Only this move's own real DMG is captured here — Mandate of Divinity's real DMG Amp is modeled separately below (cartethyia.manifest.mandate-of-divinity). category fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus this dump's own kit structure — listed under \"Basic Attack — Sword to Carve My Forms\", not Heavy Attack — confirms basicDmg.",
+  },
+  {
+    // Added 2026-09-03 against a fresh Prydwen dump: the previously-undetermined "which shadow grants
+    // which buff" question turns out to be moot for her real modeled rotation — CHARACTER_ROTATIONS
+    // always has all 3 Sword Shadow types up by the time this recall fires (see the note above), so
+    // all 3 buffs (Heart of Virtue/Mandate of Divinity/Power of Discord) always apply together, not
+    // conditionally. Of the three, only Mandate of Divinity carries a real DMG number (+50% Aero
+    // Erosion DMG Amp) — Heart of Virtue (Stagnate field + interrupt resistance) and Power of Discord
+    // (Erosion-stack-equalizing utility) are genuine CC/utility with no DPS stat to hold, same
+    // "correctly zeroed" treatment as every other pure-utility mechanic in this schema. Modeled with
+    // the same stat/condition convention as Ciaccona's own Aero Erosion DMG Amp
+    // (ciaccona.outro.windcalling-tune): 'deepen' scoped via condition.element to Aero only.
+    id: 'cartethyia.manifest.mandate-of-divinity',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Mid-air:Cartethyia Plunging Attack' },
+    condition: { element: 'aero' },
+    timing: { duration: 99 }, // sentinel: lasts the whole Manifest window, real end-on-transform-back not tracked
+    target: { scope: 'self' },
+    effects: [{ stat: 'deepen', value: 50 }],
+    note: 'Mandate of Divinity: Aero Erosion DMG Amp +50% (and tick interval halved, not modeled as a DPS stat since it doesn\'t change total damage, just its timing) for enemies near Fleurdelys, for the whole Manifest window.',
   },
   {
     id: 'cartethyia.liberation.blade-of-howling-squall',

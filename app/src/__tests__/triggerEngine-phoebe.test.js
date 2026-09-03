@@ -3,6 +3,7 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { PHOEBE_BLOCKS } from '../engine/characterBlocks/phoebe.blocks.js';
+import { requiredSequenceOf } from '../engine/sequenceGating.js';
 
 describe('triggerEngine parity — Phoebe', () => {
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
@@ -91,5 +92,15 @@ describe('triggerEngine parity — Phoebe', () => {
     expect(fired.has('phoebe.liberation.dawn-of-enlightenment')).toBe(true);
     expect(fired.has('phoebe.forte.starflash')).toBe(true);
     expect(fired.has('phoebe.outro.attentive-heart')).toBe(true);
+  });
+
+  it("S6's free extra Starflash reuses Starflash's own 82.7%x3 multiplier as a proportional second hit, gated to sequence 6", () => {
+    const starflash = PHOEBE_BLOCKS.find(b => b.id === 'phoebe.forte.starflash');
+    const freeStarflash = PHOEBE_BLOCKS.find(b => b.id === 'phoebe.chain.s6-free-starflash');
+    const starflashTotal = starflash.damage.hits.reduce((sum, h) => sum + h.atkPct, 0);
+    const freeTotal = freeStarflash.damage.hits.reduce((sum, h) => sum + h.atkPct, 0);
+    expect(freeTotal).toBeCloseTo(starflashTotal, 5);
+    expect(freeStarflash.damage.category).toBe('heavyDmg');
+    expect(requiredSequenceOf(freeStarflash)).toBe(6);
   });
 });

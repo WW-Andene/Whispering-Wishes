@@ -78,4 +78,16 @@ describe('triggerEngine parity — Jinhsi', () => {
     const s4 = JINHSI_BLOCKS.find(b => b.id === 'jinhsi.chain.s4-benevolent-grace');
     expect(s4.timing.duration).toBe(20);
   });
+
+  it('S6 carries both the unscoped +45% skillDmg AND a 2nd +45% scoped to Illuminous Epiphany only (the real compounding conversion-rate bonus)', () => {
+    const s6 = JINHSI_BLOCKS.find(b => b.id === 'jinhsi.chain.s6-thawing-triumph');
+    expect(s6.effects).toHaveLength(2);
+    const unscoped = s6.effects.find(e => !e.scopedToBlockId);
+    const scoped = s6.effects.find(e => e.scopedToBlockId);
+    expect(unscoped.stat).toBe('skillDmg');
+    expect(unscoped.value).toBe(45);
+    expect(scoped.stat).toBe('skillDmg');
+    expect(scoped.value).toBe(45);
+    expect(scoped.scopedToBlockId).toBe('jinhsi.skill.illuminous-epiphany');
+  });
 });

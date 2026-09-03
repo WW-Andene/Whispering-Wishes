@@ -9,8 +9,9 @@
 // inert in the standard rotation. Two real own-kit DMG Multiplier bonuses (+255%
 // Absolution on Liberation/Outro, +256% Frazzle-target Amp on Starflash) are kit-
 // inherent (not Resonance Chain) and modeled as separate cast-scoped buff blocks,
-// distinct from S1-S6. S6's free bonus Starflash proc is left unmodeled per the
-// audit's own TODO (no exact %ATK sourced for that specific instance).
+// distinct from S1-S6. S6's free bonus Starflash proc is modeled (added 2026-09-03,
+// see phoebe.chain.s6-free-starflash) by reusing Starflash's own multiplier — a
+// fresh source pull confirmed it's the same move, not a uniquely-scaled instance.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -188,6 +189,20 @@ export const PHOEBE_BLOCKS = [
     timing: { duration: 20 },
     target: { scope: 'self' },
     effects: [{ stat: 'atkPct', value: 10 }],
-    note: 'In Absolution/Confession, summoning a Ring of Mirrors (Resonance Skill cast) grants +10% ATK for 20s. Also triggers one free extra Starflash at the ring (no Divine Voice cost) and +2s stagnation/all-target application, neither modeled — no exact %ATK sourced for the free Starflash instance and no home for the non-DPS stagnation utility in this schema, per the audit\'s own TODO.',
+    note: 'In Absolution/Confession, summoning a Ring of Mirrors (Resonance Skill cast) grants +10% ATK for 20s. Also triggers one free extra Starflash — modeled as a separate real damage block, phoebe.chain.s6-free-starflash below. The +2s stagnation/all-target application is non-DPS CC utility, still not modeled.',
+  },
+  {
+    // Added 2026-09-03: the "free extra Starflash" IS Starflash itself (no unique multiplier of its
+    // own is ever published — the dump's own kit text just says "free extra Starflash", i.e. the
+    // same move, not a new one), so this reuses phoebe.forte.starflash's own summed %ATK as a
+    // proportional-second-hit at the same instant, same shape as Brant's chain.s6-secondary-blast/
+    // Camellya's chain.s6-perennial. 82.7%×3 = 248.1%. Anchored to the same Ring of Mirrors cast as
+    // chain.s6 above; sN-suffix gates this to sequence 6 only.
+    id: 'phoebe.chain.s6-free-starflash',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:To Where Light Shines' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: [{ atkPct: 248.1 }], category: 'heavyDmg' },
+    note: 'S6: summoning a Ring of Mirrors triggers one free extra Starflash (no Divine Voice cost, not counted as a Heavy Attack cast) — reuses Starflash\'s own 82.7%×3 multiplier, gated to sequence 6.',
   },
 ];

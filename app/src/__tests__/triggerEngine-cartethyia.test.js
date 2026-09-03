@@ -86,4 +86,11 @@ describe('triggerEngine parity — Cartethyia', () => {
   it("dmgFocus includes 'Liberation' (23.6% of her real damage profile), not just 'Basic ATK'", () => {
     expect(CHARACTER_DATA['Cartethyia'].dmgFocus).toEqual(expect.arrayContaining(['Basic ATK', 'Liberation']));
   });
+
+  it('Mandate of Divinity grants +50% Aero Erosion DMG Amp (deepen, element-scoped) on the Sword Shadow recall', () => {
+    const block = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.manifest.mandate-of-divinity');
+    expect(block.trigger).toEqual({ type: 'cast', on: 'Mid-air:Cartethyia Plunging Attack' });
+    expect(block.condition.element).toBe('aero');
+    expect(block.effects[0]).toEqual({ stat: 'deepen', value: 50 });
+  });
 });

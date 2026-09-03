@@ -3,6 +3,7 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CARLOTTA_BLOCKS } from '../engine/characterBlocks/carlotta.blocks.js';
+import { requiredSequenceOf } from '../engine/sequenceGating.js';
 
 describe('triggerEngine parity — Carlotta', () => {
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
@@ -88,5 +89,12 @@ describe('triggerEngine parity — Carlotta', () => {
     expect(fired.has('carlotta.liberation.death-knell-x4')).toBe(true);
     expect(fired.has('carlotta.liberation.fatal-finale')).toBe(true);
     expect(fired.has('carlotta.outro.closing-remark')).toBe(true);
+  });
+
+  it('S3 Kaleidoscope Sparks fires an extra 1032.18%-ATK strike on the same Outro cast, gated to sequence 3', () => {
+    const block = CARLOTTA_BLOCKS.find(b => b.id === 'carlotta.chain.s3-kaleidoscope-sparks');
+    expect(block.trigger.type).toBe('swap-out');
+    expect(block.damage.hits).toEqual([{ atkPct: 1032.18 }]);
+    expect(requiredSequenceOf(block)).toBe(3);
   });
 });

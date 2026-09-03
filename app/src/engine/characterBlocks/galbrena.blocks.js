@@ -211,6 +211,20 @@ export const GALBRENA_BLOCKS = [
       { stat: 'heavyDmg', value: 60 },
       { stat: 'echoDmg', value: 60 },
     ],
-    note: "DMG Multiplier of the 4 Demon Hypostasis moves (Seraphic Execution, Flamewing Verdict, Hellsent Barrage, Purgatory Scourge) +60%, split across both real damage.category tags those moves carry (heavyDmg for most stages, echoDmg for Seraphic Execution Stage 4/5 and Flamewing Verdict Stage 3) — kept passive, applies whenever those blocks above fire. Additional conditional layer (Ascent of Malice consuming Afterflame grants up to +35% Fusion DMG Amp) not modeled (no home in a flat node, per the audit's own TODO).",
+    note: "DMG Multiplier of the 4 Demon Hypostasis moves (Seraphic Execution, Flamewing Verdict, Hellsent Barrage, Purgatory Scourge) +60%, split across both real damage.category tags those moves carry (heavyDmg for most stages, echoDmg for Seraphic Execution Stage 4/5 and Flamewing Verdict Stage 3) — kept passive, applies whenever those blocks above fire. Additional conditional layer modeled separately below (galbrena.selfbuff.ascent-fusion-amp).",
+  },
+  {
+    // Added 2026-09-03: Ascent of Malice consuming Afterflame stacks grants up to +35% Fusion DMG
+    // Amp — scales with the same Afterflame stack count already approximated passively elsewhere in
+    // this file (galbrena.debuff.afterflame/galbrena.chain.s1), so kept at its real sourced cap value
+    // as a passive approximation, matching that same established convention rather than inventing a
+    // new per-stack consumption trigger this schema doesn't track.
+    id: 'galbrena.selfbuff.ascent-fusion-amp',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Heavy ATK:Ascent of Malice' },
+    condition: { element: 'fusion' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'elemDmg', value: 35 }],
+    note: 'Ascent of Malice consuming Afterflame grants up to +35% Fusion DMG Amp (capped value, scales with consumed Afterflame stacks) — cast-scoped to Ascent of Malice.',
   },
 ];

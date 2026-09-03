@@ -178,7 +178,17 @@ export const HIYUKI_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 500 }],
-    note: 'Foreclaiming: Inward Vision/Blade Liberation Crit DMG +500% (corrected from 100 per the audit) — kept passive. A further conditional +40% Crit DMG at 2 Snow Rust stacks and +25% Glacio Bite DMG taken at 3 stacks are NOT modeled (stacking on top of an already-conditional Inherent Skill mechanic with no clean single-node home in this schema, per the audit\'s own TODO).',
+    // Fixed 2026-09-03: added the further conditional +40% Crit DMG at 2 Snow Rust stacks — same
+    // sourced stat (critDmg), so a second flat effect on the same passive block cleanly stacks it
+    // additively with the base +500%, matching this file's own "kept at ceiling" convention already
+    // used for hiyuki.chain.s2's Glacio Bite ramp. The +25% Glacio Bite DMG TAKEN at 3 stacks is a
+    // genuinely different concept (a debuff on the enemy's Glacio-Bite-specific damage taken, not a
+    // Crit DMG stat) with no matching stat key anywhere in this engine's vocabulary — real engine
+    // work (a new stat category), not a data-modeling gap, so still left undone and documented.
+    effects: [
+      { stat: 'critDmg', value: 500 },
+      { stat: 'critDmg', value: 40 },
+    ],
+    note: 'Foreclaiming: Inward Vision/Blade Liberation Crit DMG +500% (corrected from 100 per the audit), PLUS a further +40% Crit DMG at 2 Snow Rust stacks (kept at ceiling, same convention as hiyuki.chain.s2) — kept passive. The +25% Glacio Bite DMG TAKEN at 3 stacks has no matching stat key in this engine (a Glacio-Bite-specific enemy debuff, not a Crit DMG modifier) and is not modeled — real engine work, not a data gap.',
   },
 ];

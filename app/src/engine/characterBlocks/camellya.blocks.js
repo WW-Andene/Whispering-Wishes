@@ -103,6 +103,24 @@ export const CAMELLYA_BLOCKS = [
     note: 'Once Concerto Energy is full and off its own 25s cooldown, replaces Skill. Costs 70 Concerto Energy, consumes all Crimson Buds, enters 15s Budding Mode.',
   },
   {
+    // Added 2026-09-03: S6 unlocks Forte Circuit: Perennial, a whole new skill dealing Havoc DMG
+    // "equal to 100% of Ephemeral's DMG" (per the fresh source dump's own kit text) — considered
+    // Basic Attack DMG. Same proportional-second-hit shape as Brant's chain.s6-secondary-blast, just
+    // at 100% instead of a fraction: 1262.45% = camellya.forte.ephemeral's own summed %ATK. Anchored
+    // to the same trigger as Ephemeral itself (the real "within 15s, Concerto full, off 25s internal
+    // cooldown" gating is not separately tracked — same simplification already accepted for every
+    // other windowed-cast-shaped mechanic in this schema); sN-suffix gates this to sequence 6 only.
+    id: 'camellya.chain.s6-perennial',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'resource-threshold', resource: 'Concerto Energy', threshold: 70, resourceStepOn: 'Forte:Ephemeral' },
+    timing: { cooldown: 25 },
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: [{ atkPct: 1262.45 }], category: 'basicDmg' },
+    note: "S6 Forte Circuit: Perennial — deals Havoc DMG equal to 100% of Ephemeral's own DMG (considered Basic Attack DMG per its own kit text), recovers 50 Crimson Pistils, enters Budding Mode. Gated to sequence 6.",
+  },
+  {
     id: 'camellya.liberation.fervor-efflorescent',
     source: SOURCE,
     kind: 'damage',
@@ -273,6 +291,6 @@ export const CAMELLYA_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 150 }],
-    note: "Sweet Dream's (Budding Mode's) DMG Multiplier +150% additional. Also unlocks Forte Circuit: Perennial (a whole new skill, triggerable within 15s of Ephemeral when Concerto Energy is full/off cooldown) — not representable as a flat stat bonus, same TODO the flat table carries.",
+    note: "Sweet Dream's (Budding Mode's) DMG Multiplier +150% additional. Also unlocks Forte Circuit: Perennial — modeled as a separate real damage block, camellya.chain.s6-perennial above.",
   },
 ];

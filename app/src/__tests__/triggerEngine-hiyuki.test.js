@@ -47,4 +47,12 @@ describe('triggerEngine parity — Hiyuki', () => {
     expect(fired.has('hiyuki.liberation.iai')).toBe(true);
     expect(fired.has('hiyuki.liberation.foreclaiming-blade-liberation')).toBe(true);
   });
+
+  it('S6 carries both the base +500% Crit DMG AND the further +40% at 2 Snow Rust stacks', () => {
+    const s6 = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.chain.s6');
+    expect(s6.effects).toEqual([
+      { stat: 'critDmg', value: 500 },
+      { stat: 'critDmg', value: 40 },
+    ]);
+  });
 });

@@ -94,4 +94,11 @@ describe('triggerEngine parity — Galbrena', () => {
     expect(fired.has('galbrena.heavy.ascent-of-malice')).toBe(true);
     expect(fired.has('galbrena.echo.seraphic-execution-stage5')).toBe(true);
   });
+
+  it('Ascent of Malice consuming Afterflame grants +35% Fusion DMG Amp', () => {
+    const block = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.selfbuff.ascent-fusion-amp');
+    expect(block.trigger).toEqual({ type: 'cast', on: 'Heavy ATK:Ascent of Malice' });
+    expect(block.condition.element).toBe('fusion');
+    expect(block.effects[0]).toEqual({ stat: 'elemDmg', value: 35 });
+  });
 });

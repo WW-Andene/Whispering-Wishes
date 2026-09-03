@@ -108,8 +108,15 @@ export const XIANGLI_YAO_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Intuition: Divergence' },
     timing: { duration: 24 },
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 63 }],
-    note: "DMG of Decipher/Deduction/Divergence/Law of Reigns +63% for 24s, up to 5 stacks (corrected from a wrong value of 40) — only the Skill-type portion (Decipher/Deduction/Divergence) is captured here as skillDmg; the Law of Reigns (libDmg) portion of this same buff has no home in a single-category node, per the audit's own TODO.",
+    // Fixed 2026-09-03: added the missing libDmg effect. The real buff covers BOTH Skill-type moves
+    // (Decipher/Deduction/Divergence) AND Law of Reigns (libDmg-categorized) — a single node can carry
+    // multiple effects with different stat keys, so this just needed the 2nd effect added, not a new
+    // schema field (same "no schema change needed" resolution as Camellya's S5 multi-skill node).
+    effects: [
+      { stat: 'skillDmg', value: 63 },
+      { stat: 'libDmg', value: 63 },
+    ],
+    note: "DMG of Decipher/Deduction/Divergence/Law of Reigns +63% for 24s, up to 5 stacks (corrected from a wrong value of 40) — both the Skill-type portion (skillDmg) and the Law of Reigns portion (libDmg) are now captured.",
   },
   {
     id: 'xianglyao.chain.s4',

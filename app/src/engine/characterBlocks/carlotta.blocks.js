@@ -4,9 +4,9 @@
 // CHAR_BUFF_TABLE['Carlotta'], RESONANCE_CHAIN_DATA['Carlotta'] (+ its own detailed
 // 2026-08-31 audit comment, read directly for each node's real mechanic),
 // SKILL_MULTIPLIERS['Carlotta'], and CHARACTER_ROTATIONS['Carlotta']. No new numbers
-// invented. Several real mechanics have no home in this schema and are documented
-// rather than force-fit: S3's Kaleidoscope Sparks extra Outro strike, S1's Substance
-// resource-economy effect.
+// invented. S3's Kaleidoscope Sparks extra Outro strike is modeled directly (added
+// 2026-09-03, see carlotta.chain.s3-kaleidoscope-sparks). S1's Substance resource-
+// economy effect has no DPS component and has no home in this schema.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -87,6 +87,19 @@ export const CARLOTTA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('794.2%') },
   },
+  {
+    // Added 2026-09-03: S3's Kaleidoscope Sparks — a real extra strike on the SAME Outro cast, same
+    // "extra hit at the same instant" shape already established by Brant's chain.s6-secondary-blast
+    // (a real, sourced flat %ATK value, not a proportion, so modeled directly rather than derived).
+    // sN-suffixed id gates this to sequence 3+ via sequenceGating.js's own <char>.chain.sN-<suffix>
+    // convention.
+    id: 'carlotta.chain.s3-kaleidoscope-sparks',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'swap-out' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('1032.18%') },
+    note: 'S3 Kaleidoscope Sparks: Closing Remark gains 1 additional 1032.18%-ATK strike on the same Outro cast, gated to sequence 3+.',
+  },
 
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE) ──
   {
@@ -149,7 +162,7 @@ export const CARLOTTA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 93 }],
-    note: "Real scope: Art of Violence's AND Chromatic Splendor's own DMG Multiplier both +93% — kept passive (applies to both skills' own blocks above whenever they fire) rather than cast-scoping to only one. ALSO enables Outro Skill Kaleidoscope Sparks (Closing Remark gains 1 additional 1032.18%-ATK strike) — a whole new action this flat schema can't add onto the Outro block without conflating it with this bonus, not modeled (documented TODO in the source audit).",
+    note: "Real scope: Art of Violence's AND Chromatic Splendor's own DMG Multiplier both +93% — kept passive (applies to both skills' own blocks above whenever they fire) rather than cast-scoping to only one. ALSO enables Outro Skill Kaleidoscope Sparks — modeled as a separate real damage block, carlotta.chain.s3-kaleidoscope-sparks above.",
   },
   {
     id: 'carlotta.chain.s4',
