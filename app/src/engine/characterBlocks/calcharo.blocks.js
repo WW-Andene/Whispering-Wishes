@@ -92,7 +92,7 @@ export const CALCHARO_BLOCKS = [
   },
   { id: 'calcharo.chain.s3', source: SOURCE, kind: 'buff', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'elemDmg', value: 25 }] },
   {
-    // Fixed 2026-09-03 against a real prydwen.gg .mht snapshot: was modeled as a passive, self-scoped,
+    // Fixed 2026-09-03 against a real browser snapshot: was modeled as a passive, self-scoped,
     // duration-less buff — but the real mechanic is "After casting Outro Skill Shadowy Raid, Electro
     // DMG Bonus of all team members +20% for 30s": whole-team scoped, cast-triggered on Outro, with a
     // real 30s duration. The flat RESONANCE_CHAIN_DATA['Calcharo'].s4 (elemDmg: 20) has no scope/timing

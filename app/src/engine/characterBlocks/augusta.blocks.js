@@ -13,13 +13,13 @@
 // 'partner-outro-return' trigger type — see augusta.outro.battlesong and
 // augusta.outro.majesty-condition below.
 //
-// Re-audited 2026-09-02 against a fresh Prydwen.gg source dump (see
+// Re-audited 2026-09-02 against a fresh the source.gg source dump (see
 // characters.js's SKILL_MULTIPLIERS['Augusta'] for the full ratio verification):
 // every damage block below was carrying the exact same value SKILL_MULTIPLIERS
 // had — which was itself off by a consistent ~1.988x (roughly HALF the real
 // value) across all 11 hits, the same "halving pattern" bug class already fixed
 // for Camellya/Carlotta/Roccia/Phoebe/Brant, just missed for Augusta until now.
-// Retightened every hit to Prydwen's exact Lv.10 figures — a real, live-DPS-
+// Retightened every hit to the source's exact Lv.10 figures — a real, live-DPS-
 // relevant fix, not cosmetic: this engine file feeds the actual damage calculator.
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -35,7 +35,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Stride of Goldenflare' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // category fixed 2026-09-02 against a fresh Prydwen dump: the multiplier row is labeled generically
+    // category fixed 2026-09-02 against a fresh the source dump: the multiplier row is labeled generically
     // "Skill Damage" (not "Stride of Goldenflare DMG"), the same convention already confirmed on Lupa's
     // Try Focusing, Eh?/Ciaccona's Roaming with the Wind — a generic "Skill Damage" label means plain
     // Resonance Skill DMG.
@@ -122,7 +122,7 @@ export const AUGUSTA_BLOCKS = [
   },
   {
     // category corrected 2026-09-02 (final Augusta audit pass): had no `category` at all — the fresh
-    // Prydwen dump confirms "Deal Electro DMG, considered as Heavy Attack DMG", matching every other
+    // the source dump confirms "Deal Electro DMG, considered as Heavy Attack DMG", matching every other
     // Liberation-slot move in her kit (Sword of Eternal Oath, Sunborne — both already correctly tagged
     // heavyDmg above). This was the one omission.
     id: 'augusta.liberation.everbright-protector',
@@ -190,7 +190,7 @@ export const AUGUSTA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    // Fixed 2026-09-02 against a fresh Prydwen dump: was a single unscoped totalMult effect — a prior
+    // Fixed 2026-09-02 against a fresh the source dump: was a single unscoped totalMult effect — a prior
     // session's note claimed this was safe since "her only Heavy ATK hits anyway," but that's wrong:
     // totalMult applies unconditionally to EVERY hit regardless of category (calcEngine.js's `(1 +
     // stats.totalMult/100)` factor, not category-gated), so it was silently over-crediting her real
@@ -221,7 +221,7 @@ export const AUGUSTA_BLOCKS = [
     note: 'Casting Intro Skill - Stride of Goldenflare grants the WHOLE TEAM +20% ATK for 30s (confirmed exact, team-wide).',
   },
   {
-    // Zeroed 2026-09-02 (found while cross-checking a fresh Prydwen source dump against this file):
+    // Zeroed 2026-09-02 (found while cross-checking a fresh the source source dump against this file):
     // was `totalMult: 15`, a fabricated number with the SAME "no basis in the node's own text" shape
     // this codebase's own rule elsewhere removes (see Brant's S1/Phrolova's S5, both zeroed for the
     // identical reason) — this node's own comment already admitted "not a real modeled effect," an

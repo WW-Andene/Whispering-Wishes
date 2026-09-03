@@ -4,7 +4,7 @@
 // CHAR_BUFF_TABLE['Lynae'], RESONANCE_CHAIN_DATA['Lynae'] (+ its own 2026-09-02
 // re-audit comment, read directly for each node's real mechanic),
 // SKILL_MULTIPLIERS['Lynae'], and CHARACTER_ROTATIONS['Lynae']. No new numbers
-// invented. Re-audited 2026-09-02 against a fresh Prydwen dump: Basic ATK:Polychrome
+// invented. Re-audited 2026-09-02 against a fresh the source dump: Basic ATK:Polychrome
 // Leap x3 (one of only 7 real rotation steps) previously had NO matching
 // SKILL_MULTIPLIERS row at all and dealt 0 DMG — fixed, now modeled below. Visual
 // Impact/Iridescent Splash are literally named "Basic Attack - Visual Impact" /

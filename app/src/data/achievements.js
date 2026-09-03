@@ -2,13 +2,13 @@
 // Achievement data — fused from two sources, fetched 2026-08-14:
 //  - wuwatracker.com's embedded Next.js RSC payload (/fr/achievements): real
 //    per-achievement version numbers + hidden flags for 1171 achievements.
-//  - nanoka.cc's static achievement.json: real série/category names, real group
+//  - the source's static achievement.json: real série/category names, real group
 //    icon codes (converted to wuwatracker's own icon-hosting URL pattern, confirmed
 //    fetchable — fills gaps where wuwatracker's own iconSrc field is a generic
 //    placeholder), and 2 real achievements (Rover: Electro's "A Monkey Could Do It"
 //    / "Purple Flash") that were simply missing from wuwatracker's payload.
 //
-// The 2 nanoka-only achievements above have no confirmed version/hidden data from
+// The 2 the source-only achievements above have no confirmed version/hidden data from
 // either source (never appeared in wuwatracker's payload) — version is inferred from
 // Rover: Electro's known v3.4 release, hidden defaults to false absent evidence.
 // Everything else in ACHIEVEMENTS is real confirmed data, not inferred.

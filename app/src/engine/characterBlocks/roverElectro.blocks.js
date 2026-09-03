@@ -78,7 +78,7 @@ export const ROVER_ELECTRO_BLOCKS = [
     timing: { cooldown: 25 },
     target: { scope: 'self' },
     effects: [],
-    // Fixed 2026-09-03 against a fresh Prydwen dump: was 1192.86%, real value is 1109.22%.
+    // Fixed 2026-09-03 against a fresh the source dump: was 1192.86%, real value is 1109.22%.
     damage: { hits: parseSkillMultiplierHits('1109.22%'), category: 'libDmg' },
   },
   {

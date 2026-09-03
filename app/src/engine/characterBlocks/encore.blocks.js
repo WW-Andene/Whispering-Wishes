@@ -98,7 +98,7 @@ export const ENCORE_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Cosmos Rupture' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'libDmg', value: 40 }],
-    // Corrected 2026-09-03 against a fresh Prydwen dump: was stat:'heavyDmg', a dead/no-op buff — both
+    // Corrected 2026-09-03 against a fresh the source dump: was stat:'heavyDmg', a dead/no-op buff — both
     // Cloudy Frenzy and Cosmos Rupture are explicitly named "Resonance Liberation" by the source (not
     // "Heavy Attack"), matching their own kit text and SKILL_MULTIPLIERS['Encore']'s "counted as
     // Resonance Liberation DMG" note for both rows; encore.forte.cosmos-rupture above already uses
@@ -130,6 +130,6 @@ export const ENCORE_BLOCKS = [
     timing: { duration: 10 },
     target: { scope: 'self' },
     effects: [{ stat: 'atkPct', value: 5, stacking: 'stacking', maxStacks: 5 }],
-    note: 'Gains 1 stack of Lost Lamb per damage instance during Cosmos Rave, each +5% ATK for 10s, stacking up to 5 times (25% max) — per the two-source majority (fandom + wuthering.gg both say 5 stacks/25%, vs. Prydwen\'s outlier "6 stacks", flagged in the source audit rather than silently resolved). Modeled as per-stack 5% x5 cap, anchored to the Cosmos: Rampage cast as a representative damage-instance trigger.',
+    note: 'Gains 1 stack of Lost Lamb per damage instance during Cosmos Rave, each +5% ATK for 10s, stacking up to 5 times (25% max) — per the two-source majority (two independent sources both say 5 stacks/25%, vs. a third source\'s outlier "6 stacks", flagged in the source audit rather than silently resolved). Modeled as per-stack 5% x5 cap, anchored to the Cosmos: Rampage cast as a representative damage-instance trigger.',
   },
 ];

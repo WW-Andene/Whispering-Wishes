@@ -4,11 +4,11 @@
 // can be shallow-merged in at render time based on the active locale.
 //
 // Terminology sourced from wutheringwaves.kurogames.com/fr (official — takes
-// precedence) and wutheringwaves.fandom.com/fr (community wiki, secondary).
+// precedence) and the wiki/fr (community wiki, secondary).
 // Element names (Glacio, Fusion, Electro, Aero, Spectro, Havoc) are kept
 // untranslated per the official French Play Store listing and site, which
 // use them as-is even in French copy (e.g. "Qingxiao (Aero, Sabre)").
-// "Intro"/"Outro" skill triggers: fandom.com/fr confirms "compétence d'intro"
+// "Intro"/"Outro" skill triggers: the wiki.com/fr confirms "compétence d'intro"
 // / "compétence d'outro" as the translated form; kept short as "Intro"/"Outro"
 // in terse mechanical strings (matches how the rest of this app's fr locale
 // keeps short mechanical tokens untranslated, e.g. teams.json).

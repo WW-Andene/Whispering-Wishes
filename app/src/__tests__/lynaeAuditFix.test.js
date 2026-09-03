@@ -1,4 +1,4 @@
-// Cross-check of Lynae against a fresh Prydwen.gg source dump (following the same treatment already
+// Cross-check of Lynae against a fresh the source.gg source dump (following the same treatment already
 // applied to Augusta/Yuanwu/Aemeath/Hiyuki/Luuk Herssen/Qingxiao/Sigrika/Yangyang: Xuanling/Denia/
 // Lucilla). Base stats, teams, CHAR_BUFF_TABLE's outroBuffs/libBuffs/tuneBreak (except ruptureDmgMult),
 // and RESONANCE_CHAIN_DATA's S4/S5 nodes already matched the fresh dump exactly. Real gaps found:
@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS } from '../data/characters.js';
 import { LYNAE_BLOCKS } from '../engine/characterBlocks/lynae.blocks.js';
 
-describe('Lynae — audit fixes against a fresh Prydwen dump', () => {
+describe('Lynae — audit fixes against a fresh the source dump', () => {
   it("dmgFocus gains 'Basic ATK' (dominant real 38.1% share, mostly from Visual Impact/Iridescent " +
     "Splash — literally named 'Basic Attack -' in their own move text) and drops the now-trivial " +
     "'Skill' (4.4% share)", () => {

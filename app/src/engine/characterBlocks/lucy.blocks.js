@@ -5,7 +5,7 @@
 // read directly for each node's real mechanic), SKILL_MULTIPLIERS['Lucy'], and
 // CHARACTER_ROTATIONS['Lucy']. No new numbers invented.
 //
-// Fixed 2026-09-02 against a real prydwen.gg .mht snapshot (SKILL_MULTIPLIERS rebuilt from it, see
+// Fixed 2026-09-02 against a real browser snapshot (SKILL_MULTIPLIERS rebuilt from it, see
 // that table's own header comment): Payload's previously-truncated value ("...") is now the real
 // full Charge+Follow-Up total; lucy.basic.thread-shredding-stage1-4 and
 // lucy.heavy.dual-threading are newly added — both are real CHARACTER_ROTATIONS steps that

@@ -12,7 +12,7 @@
 // team DEF/Healing for S4), matching the same "don't force-fit what the audit
 // itself flags as zero-DPS" rule already applied for Chisa's S4 in an earlier batch.
 // Basic ATK:Wide Field Observation Mode Stage 1-3 now has a matching SKILL_MULTIPLIERS row
-// (added 2026-09-02 against a fresh Prydwen dump, closing a real "silent zero-DMG" gap — her
+// (added 2026-09-02 against a fresh the source dump, closing a real "silent zero-DMG" gap — her
 // real rotation's Basic Attack step had no damage block at all before this).
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -91,7 +91,7 @@ export const MORNYE_BLOCKS = [
     effects: [{ stat: 'critDmg', value: 32 }],
     note: 'Team Crit DMG +32% max vs Interfered Marker targets (confirmed exact value, corrected from a wrong deepen category) — Interfered Marker itself is upgraded from Observation Marker by an ALLY\'s Tune Break hit (a cross-character trigger this schema has no clean anchor for), modeled anchored to the Inversion cast that applies the base Observation Marker instead.',
   },
-  // S3 correctly has NO block — corrected 2026-09-02 against a fresh Prydwen dump: real effect is
+  // S3 correctly has NO block — corrected 2026-09-02 against a fresh the source dump: real effect is
   // "casting Distributed Array additionally restores 25 Concerto Energy and 100 Relative Momentum,
   // once every 25s", pure resource restoration with zero DPS component (same "no real DPS component"
   // pattern as S1/S4 above); RESONANCE_CHAIN_DATA['Mornye'].s3 is now correctly {} to match.

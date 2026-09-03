@@ -451,7 +451,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       });
       const { timeline, buffs } = best;
 
-      // ── Rotation blocks — Prydwen-style: one self-contained block per character (what THEY do
+      // ── Rotation blocks — the source-style: one self-contained block per character (what THEY do
       // on field, independent of the rest of the team), plus what it hands off to / inherits from
       // its neighbors in the sequence, so the whole team rotation reads as a chain of blocks rather
       // than one flat, undifferentiated buff dump. One block per on-field window, in the order
@@ -483,7 +483,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           buffs.filter(b => (b.owner || b.source) !== seg.name && b.start <= seg.start + 0.05 && b.start + b.duration > seg.start + 0.05)
             .map(fmtBuff)
         )];
-        // Verified skill-by-skill sequence from Prydwen.gg's "Standard Rotation" guides — real
+        // Verified skill-by-skill sequence from the source.gg's "Standard Rotation" guides — real
         // combat data, not derived from CHAR_BUFF_TABLE like the rest of this block. CHARACTER_ROTATIONS
         // (type/skill/note per step, 56 of 58 characters) is the richer, actively-maintained dataset —
         // prefer it over the older CHARACTER_DATA[name].rotation plain-string array, which only exists

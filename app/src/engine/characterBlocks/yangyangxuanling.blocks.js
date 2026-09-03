@@ -8,7 +8,7 @@
 // despite being cast from the Liberation slot. Two real CHARACTER_ROTATIONS steps
 // (Mid-air:Feather Fall, Basic ATK:Havoc in Bloom Stage 1-3) previously had NO
 // matching SKILL_MULTIPLIERS row at all, silently dealing 0 DMG — fixed 2026-09-02
-// against a fresh Prydwen dump, both now modeled with real numbers (heavyDmg).
+// against a fresh the source dump, both now modeled with real numbers (heavyDmg).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -60,7 +60,7 @@ export const YANGYANG_XUANLING_BLOCKS = [
     trigger: { type: 'cast', on: 'Mid-air:Feather Fall' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('14.80%×3+66.57%'), category: 'heavyDmg' },
-    note: 'Added 2026-09-02 against a fresh Prydwen dump — this real CHARACTER_ROTATIONS step had no matching SKILL_MULTIPLIERS row at all, silently dealing 0 DMG. Consumes all Azure Plume, grants Hark the Wind (12s, upgrades Basic Attack to Havoc in Bloom).',
+    note: 'Added 2026-09-02 against a fresh the source dump — this real CHARACTER_ROTATIONS step had no matching SKILL_MULTIPLIERS row at all, silently dealing 0 DMG. Consumes all Azure Plume, grants Hark the Wind (12s, upgrades Basic Attack to Havoc in Bloom).',
   },
   {
     id: 'yangyangxuanling.basic.havoc-in-bloom-stage1-3',
@@ -68,7 +68,7 @@ export const YANGYANG_XUANLING_BLOCKS = [
     trigger: { type: 'cast', on: 'Basic ATK:Havoc in Bloom Stage 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('39.79%×3 → 89.25%+66.94%×2 → 23.98%×5+279.69%'), category: 'heavyDmg' },
-    note: "Added 2026-09-02 against a fresh Prydwen dump — this real CHARACTER_ROTATIONS step had no matching SKILL_MULTIPLIERS row at all, silently dealing 0 DMG. Replaces Basic Attack during Hark the Wind; considered Heavy Attack DMG despite the Basic Attack slot, per the kit's own text.",
+    note: "Added 2026-09-02 against a fresh the source dump — this real CHARACTER_ROTATIONS step had no matching SKILL_MULTIPLIERS row at all, silently dealing 0 DMG. Replaces Basic Attack during Hark the Wind; considered Heavy Attack DMG despite the Basic Attack slot, per the kit's own text.",
   },
   {
     id: 'yangyangxuanling.liberation.hush-of-a-thousand-voices',
@@ -139,7 +139,7 @@ export const YANGYANG_XUANLING_BLOCKS = [
   {
     id: 'yangyangxuanling.chain.s1',
     source: SOURCE, kind: 'damage',
-    // Sword Stance Flow: Azure/Feather is Prydwen's Forte-Circuit name for the same dash-cancel move
+    // Sword Stance Flow: Azure/Feather is the source's Forte-Circuit name for the same dash-cancel move
     // modeled elsewhere in this file (and in CHARACTER_ROTATIONS) as "Sword Stance Switch: Azure/
     // Feather" — the base Resonance Skill kit section never uses "Flow" at all, only "Switch", for
     // what's otherwise an identical Heavy-ATK-categorized stance-swap move. Gated on the same trigger
@@ -149,7 +149,7 @@ export const YANGYANG_XUANLING_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Sword Stance Switch' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: [{ atkPct: 337.98 }], category: 'heavyDmg' },
-    note: "Corrected 2026-09-02 against a fresh Prydwen dump (was a flat totalMult:10 buff, flagged unverified — not a real %-stat effect at all): S1 makes Sword Stance Flow/Switch summon Shadow of Xuanling: Unfaltering, a discrete 337.98% ATK Havoc DMG proc considered Heavy Attack DMG. Also Stagnates nearby enemies and grants 3 specific moves interruption immunity — pure utility, no DPS component, not modeled.",
+    note: "Corrected 2026-09-02 against a fresh the source dump (was a flat totalMult:10 buff, flagged unverified — not a real %-stat effect at all): S1 makes Sword Stance Flow/Switch summon Shadow of Xuanling: Unfaltering, a discrete 337.98% ATK Havoc DMG proc considered Heavy Attack DMG. Also Stagnates nearby enemies and grants 3 specific moves interruption immunity — pure utility, no DPS component, not modeled.",
   },
   {
     id: 'yangyangxuanling.chain.s2',
@@ -167,7 +167,7 @@ export const YANGYANG_XUANLING_BLOCKS = [
     effects: [{ stat: 'heavyDmg', value: 175 }],
     note: "Hush of a Thousand Voices' own DMG Multiplier +175% (confirmed exact) — cast-scoped (instant, no persistent duration). Corrected 2026-09-02 from libDmg to heavyDmg: the damage block this node scopes to (yangyangxuanling.liberation.hush-of-a-thousand-voices) is itself categorized heavyDmg (counted as Heavy Attack DMG per kit text), so a libDmg buff never actually applied to it — same bug class as Sigrika's S5, which this note used to cite as its own (also-buggy) precedent.",
   },
-  // S4 corrected 2026-09-02 against a fresh Prydwen dump: real effect is "casting Intro, Sword Stance
+  // S4 corrected 2026-09-02 against a fresh the source dump: real effect is "casting Intro, Sword Stance
   // Switch: Azure/Feather, or Sword Stance Flow: Azure/Feather grants the WHOLE TEAM +20% ATK for
   // 20s" — was modeled as a passive Yangyang-only self-buff (target: 'self', trigger: 'passive'),
   // matching neither the real target (whole-team) nor the real trigger (specific casts). Split into
@@ -193,7 +193,7 @@ export const YANGYANG_XUANLING_BLOCKS = [
     source: SOURCE, kind: 'utility', effects: [],
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    note: 'S5 (fatal-blow save: no-down + heal 50% Max HP + 3s DMG/interruption immunity, once per 10 min) is purely survivability/utility — no DPS component per its own kit text. Was a fabricated totalMult:5, corrected 2026-09-02: independently confirmed via Prydwen\'s own simulation, S4 and S5 produce byte-identical DMG/DPS (2,783,354 / 274,492 both).',
+    note: 'S5 (fatal-blow save: no-down + heal 50% Max HP + 3s DMG/interruption immunity, once per 10 min) is purely survivability/utility — no DPS component per its own kit text. Was a fabricated totalMult:5, corrected 2026-09-02: independently confirmed via the source\'s own simulation, S4 and S5 produce byte-identical DMG/DPS (2,783,354 / 274,492 both).',
   },
   {
     id: 'yangyangxuanling.chain.s6',

@@ -12,7 +12,7 @@
 //
 // appliesTags: ['shifting'] added 2026-09-02 (the engine-architecture history (git log) item 9, Phase 2) on every real
 // damage-dealing block: Forte Circuit's own Draw and Sunder text, confirmed verbatim from the raw
-// Prydwen page, is "Qingxiao inflicts Tune Strain - Shifting on the target after dealing damage
+// the source page, is "Qingxiao inflicts Tune Strain - Shifting on the target after dealing damage
 // WITH SKILLS. Each skill can only trigger this once for the same target" — "skills" here is the
 // game's own generic term for any of her active abilities (Basic/Heavy/Skill/Liberation/Forte/Intro/
 // Outro), not narrowly the Resonance Skill button; confirmed by explicit user clarification after an

@@ -51,7 +51,7 @@ describe('triggerEngine parity — Verina', () => {
     expect(lib.target.scope).toBe('whole-team');
   });
 
-  // Fixed 2026-09-02 against a fresh, user-pasted Prydwen text: her Outro was wrongly stat:'allDmg'
+  // Fixed 2026-09-02 against a fresh, user-pasted the source text: her Outro was wrongly stat:'allDmg'
   // ("Amplified") when the kit text explicitly says "Deepen" — a prior session's own note claimed this
   // was confirmed, but this file's own dmgFocus buff-tag entry already said 'DMG Deepen', an internal
   // contradiction that check missed.

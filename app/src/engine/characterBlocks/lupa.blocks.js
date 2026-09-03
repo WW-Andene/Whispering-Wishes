@@ -9,7 +9,7 @@
 // CHARACTER_ROTATIONS (only her own steps) has no way to reach — same class as
 // Jiyan's S6/Finale and Lumi's S5/Laser in earlier batches.
 //
-// Corrected 2026-09-02 against a fresh Prydwen dump: S4 (Dance With the Wolf:
+// Corrected 2026-09-02 against a fresh the source dump: S4 (Dance With the Wolf:
 // Climax) was ALSO wrongly treated as inert — but unlike S3, this one only
 // depends on Lupa's OWN Burning Matchpoint state (entered via her own Foebreaker
 // cast, already a real step in her rotation), no teammate dependency at all. The
@@ -34,7 +34,7 @@ export const LUPA_BLOCKS = [
     // Fixed 2026-09-02: the dump's own multiplier row labels this move's damage generically "Skill
     // Damage" — contrast with Nowhere to Run! (same Intro Skill section) whose row is instead named
     // after the MOVE itself ("Nowhere to Run! DMG"), paired with explicit prose "considered Resonance
-    // Liberation DMG". Prydwen's own convention: a move-specific row name flags a non-default category
+    // Liberation DMG". the source's own convention: a move-specific row name flags a non-default category
     // (called out in prose); the generic "Skill Damage" label means plain Resonance Skill DMG, no prose
     // override needed. Missed this signal on the first pass — corrected to skillDmg.
     damage: { hits: parseSkillMultiplierHits('29.76%+42.16%×4'), category: 'skillDmg' },
@@ -79,7 +79,7 @@ export const LUPA_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('72.15%+18.04%×4+96.19%'), category: 'heavyDmg' },
     note: 'Replaces Heavy ATK at 50+ Wolflame and 1+ Wolfaith; consumes 50 Wolflame, grants 1 more Wolfaith.',
   },
-  // Fixed 2026-09-02 against a fresh Prydwen dump: this block was anchored to the BASE 'Dance With the
+  // Fixed 2026-09-02 against a fresh the source dump: this block was anchored to the BASE 'Dance With the
   // Wolf' cast (56.02%+42.02%×4+336.11%, ~672% total) — matching CHARACTER_ROTATIONS['Lupa'] as it was
   // previously written, which this file's own prior header comment explicitly (and, it turns out,
   // wrongly) treated as authoritative. The dump proves CHARACTER_ROTATIONS itself was the actual bug:

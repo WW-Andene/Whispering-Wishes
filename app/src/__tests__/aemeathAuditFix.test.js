@@ -1,4 +1,4 @@
-// Regression tests found while cross-checking Aemeath against a fresh Prydwen.gg source dump
+// Regression tests found while cross-checking Aemeath against a fresh the source.gg source dump
 // (following the same treatment already applied to Augusta and Yuanwu).
 import { describe, it, expect } from 'vitest';
 import { CHARACTER_DATA, RESONANCE_CHAIN_DATA } from '../data/characters.js';
@@ -12,7 +12,7 @@ describe('Aemeath — final audit pass fixes', () => {
   it('Resonance Chain S5 has no DPS component in either RESONANCE_CHAIN_DATA or the engine block', () => {
     // S5 (Starflux reset on kill / revive-on-fatal-damage) is purely survivability/utility — no DPS
     // component per its own kit text. Was a fabricated totalMult:40 in both places, never covered by
-    // this row's own audit comment (unlike every other node). Independently confirmed via Prydwen's own
+    // this row's own audit comment (unlike every other node). Independently confirmed via the source's own
     // simulation: S4 and S5 produce byte-identical DMG/DPS (2,581,963 / 220,869 both).
     expect(RESONANCE_CHAIN_DATA['Aemeath'].s5).toEqual({});
     const s5 = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.chain.s5');

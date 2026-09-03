@@ -19,11 +19,11 @@ export const DOT_BASE_FACTOR = 1.25078; // Base damage coefficient for DOT ticks
 // DOT mechanic constants (extracted from inline magic numbers)
 export const FRAZZLE_TICK_INTERVAL = 3;    // Frazzle ticks every 3s, consumes 1 stack
 export const FRAZZLE_ICD_PER_SOURCE = 2.5; // Application ICD per source (seconds)
-// Fandom "Negative Status" page: DMG ticks every 3s for both Frazzle and Erosion — the 15s figure
+// the wiki "Negative Status" page: DMG ticks every 3s for both Frazzle and Erosion — the 15s figure
 // for Erosion is how often its stacks decay, not the tick rate (was wrongly used as tick interval).
 export const EROSION_TICK_INTERVAL = 3;    // Erosion ticks every 3s, does NOT consume stacks
 export const EROSION_DURATION = 15;        // Erosion debuff duration (seconds)
-// Stack multiplier tables straight from the Fandom "Negative Status" page (Base DMG = Level Mult ×
+// Stack multiplier tables straight from the the wiki "Negative Status" page (Base DMG = Level Mult ×
 // 1.25078 × Stack Mult). These are non-linear, not a flat per-stack multiplier — index = stack count.
 export const FRAZZLE_STACK_TABLE = [0, 0.240, 0.4355, 0.6298, 0.8251, 1.020, 1.216, 1.409, 1.605, 1.800, 1.995];
 export const EROSION_STACK_TABLE = [0, 0.360, 0.899, 1.799, 2.698, 3.597, 4.497]; // stacks >3 need Aero Rover Outro
@@ -56,7 +56,7 @@ export const ER_THRESHOLD_STANDARD = 140;  // Support/other roles below the 175-
 export const ER_THRESHOLD_HEALER = 140;    // ER threshold for 175-cost healers
 
 // Echo main stat values by cost tier — rarity-5, max-level (the endgame BiS assumption this
-// calculator targets) roll ceilings, sourced from wutheringwaves.fandom.com/wiki/Echo/Stats §
+// calculator targets) roll ceilings, sourced from the wiki/Echo/Stats §
 // "Mainstats" (fetched 2026-08-25). DEF% is deliberately rolled higher than ATK%/HP% at every
 // tier to compensate for it being the weaker stat, and 1-cost HP% is rolled higher than its own
 // ATK%/DEF% — both real, confirmed asymmetries, not typos.
@@ -74,7 +74,7 @@ export const ECHO_MAIN_STAT_VALUES = {
 
 // Echo substat values — probability-weighted average of each stat's real roll grades, using
 // Kuro's own KR-law-mandated disclosed per-grade roll chances (source:
-// wutheringwaves.fandom.com/wiki/Echo/Stats § "Detailed substat values distribution", citing
+// the wiki/Echo/Stats § "Detailed substat values distribution", citing
 // wutheringwaves.kurogames.com's official disclosure; fetched 2026-08-25). Crit Rate/Crit DMG
 // use their own front-loaded chances [23.33%, 23.33%, 23.33%, 8%, 8%, 8%, 3%, 3%]; all other
 // 8-grade substats (ATK%/HP%/DEF%/ER/DMG bonuses/flat HP) share chances [6.80%, 7.77%, 20.39%,
@@ -101,7 +101,7 @@ export const ECHO_FLAT_SUB_STAT_VALUES = {
 };
 
 // Every real, discrete roll grade for each substat — same source as ECHO_SUB_STAT_VALUES/
-// ECHO_FLAT_SUB_STAT_VALUES above (wutheringwaves.fandom.com/wiki/Echo/Stats § "Detailed substat
+// ECHO_FLAT_SUB_STAT_VALUES above (the wiki/Echo/Stats § "Detailed substat
 // values distribution", Kuro's own KR-law-mandated disclosure), lowest grade first. ATK/DEF
 // (flat) only have 4 real grades; every other substat has 8. Lets a specific echo store which
 // grade it actually rolled instead of always using the probability-weighted average above.

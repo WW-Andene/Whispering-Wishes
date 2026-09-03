@@ -146,7 +146,7 @@ export const CAMELLYA_BLOCKS = [
     // Added 2026-09-03: SKILL_MULTIPLIERS['Camellya'] was missing a 'Skill, Floral Ravage' row entirely
     // even though CHARACTER_ROTATIONS['Camellya'] already casts 'Skill:Floral Ravage' as its
     // Blossom-Mode-ending step — that step was silently resolving to 0 DMG. Row added (52.61%×5,
-    // confirmed against a fresh Prydwen dump), block added here to match.
+    // confirmed against a fresh the source dump), block added here to match.
     id: 'camellya.skill.floral-ravage',
     source: SOURCE,
     kind: 'damage',

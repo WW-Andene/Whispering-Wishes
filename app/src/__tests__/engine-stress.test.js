@@ -39,7 +39,7 @@ const ALL_WEAPON_NAMES = Object.keys(WEAPON_DATA);
 const ALL_ENEMIES = [...new Set([...ALL_1COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_4COST_ECHOES])];
 
 // ── Wiki-transcribed reference formulas (same source as damage-calc.test.js:
-// wutheringwaves.fandom.com/wiki/Damage, action=parse, fetched 2026-08-19) ──
+// the wiki/Damage, action=parse, fetched 2026-08-19) ──
 function WIKI_calcDefMult(attackerFactor, enemyDef, defShredPct, defIgnorePct) {
   const shreddedDef = enemyDef * Math.max(0, 1 - defShredPct / 100);
   const denom = attackerFactor + shreddedDef * Math.max(0, 1 - defIgnorePct / 100);

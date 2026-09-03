@@ -9,7 +9,7 @@
 /** @type {Record<string, import('../types.js').WeaponData>} */
 const WEAPON_DATA = {
   // 5★ Weapons
-  // v3.4/3.5 signature weapons — baseAtk/substat/passive re-verified against nanoka.cc's live weapon
+  // v3.4/3.5 signature weapons — baseAtk/substat/passive re-verified against the source's live weapon
   // pages (Lv.90 stats, R1 passive text) on 2026-08-14, replacing this session's earlier per-archetype
   // convention guesses, which turned out wrong on both the stat values and the passive effects.
   'Skull Thrasher': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 500, subStatValue: '+72.0%',
@@ -42,7 +42,7 @@ const WEAPON_DATA = {
     passive: 'ATK +12%. After inflicting Fusion Burst/Tune Strain: self Resonance Liberation DMG +36% (5s); during that window, team members inflicting Fusion Burst/Tune Strain gain ATK +24% (15s). Same-name effects can\'t stack.',
     pv: { atkPct: 12, libDmg: 36 }, bestFor: ['Denia'],
     ascensionMaterials: { forgery: 'String', common: 'Exoswarm Core' } },
-  // v3.6 — real ATK/substat pulled from nanoka.cc's live weapon page (Lv.90)
+  // v3.6 — real ATK/substat pulled from the source's live weapon page (Lv.90)
   'Thousandfold Deliverance': { rarity: 5, type: 'Broadblade', stat: 'HP', baseAtk: 412, subStatValue: '+72.2%',
     desc: "Jingran signature (\"Hark, Spirits and Stars\"). Casting Intro Skill or gaining a Shield builds stacking self Crit DMG and Heavy ATK DEF Ignore, fitting his Shield-focused HP-scaling kit.",
     passive: 'All-Attribute DMG +12%. Intro Skill or gaining a Shield: self Crit DMG +4% (up to 6 stacks/24%; at 6 stacks, Heavy ATK Crit Rate +12%). Casting Heavy Attack consumes up to 2 stacks for Heavy ATK DEF Ignore +15% each (up to 30%, 2s).',
@@ -53,14 +53,14 @@ const WEAPON_DATA = {
     passive: 'ATK +12%. Inflicting Tune Strain - Shifting grants 11.2% Aero DMG Bonus (2s, stacks ×5, 0.5s ICD); at max stacks, duration extends to 30s and Aero DMG ignores 10% DEF',
     pv: { atkPct: 12, elemDmg: 56, defIgnore: 10 }, bestFor: ['Qingxiao'],
     ascensionMaterials: { forgery: 'Polarizer', common: 'Mech Core' } },
-  // v3.5 — real ATK/substat pulled from nanoka.cc's live weapon page (Lv.90)
+  // v3.5 — real ATK/substat pulled from the source's live weapon page (Lv.90)
   "Firstlight's Herald": { rarity: 5, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+77.0%',
     desc: "Suisui signature. Dawn-forged rectifier etched with the divine bird's legend. Grants Max HP and Liberation energy regen, culminating in a team ATK buff.",
     passive: 'Max HP +12%. Liberation restores 8 Concerto Energy (20s ICD). Inflicting Glacio Chafe + applying healing while on-field grants the next Outro both effects (6s); with both active, team ATK +20%',
     pv: { atkPct: 20 }, bestFor: ['Suisui', 'Shorekeeper'],
     ascensionMaterials: { forgery: 'String', common: 'Exoswarm Core' } },
   // corrected 2026-08-18 (5★ audit): passive was a fabricated "ATK/DMG-type" description that didn't match
-  // nanoka.cc's actual R1 effect (Swordsworn) at all — real effect is an Attr DMG Bonus baseline plus a
+  // the source's actual R1 effect (Swordsworn) at all — real effect is an Attr DMG Bonus baseline plus a
   // Heavy ATK DMG stack gained from Intro Skill/Liberation, not "Heavy Attack hits grant Skill DMG".
   'Verdant Summit': { rarity: 5, type: 'Broadblade', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
     desc: 'Jiyan signature. Verdant blade that commands the wind. Intro Skill/Liberation stack Heavy ATK DMG.',
@@ -83,7 +83,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   'Abyss Surges': { rarity: 5, type: 'Gauntlets', stat: 'ATK%', baseAtk: 587, subStatValue: '+36.4%',
     desc: 'Standard 5★. Gauntlets surging with abyssal power. Energy Regen with Basic/Skill DMG cross-buffs.',
-    passive: 'Stormy Resolution: Energy Regen +12.8%. Resonance Skill hit → self Basic ATK DMG +10% (8s). Basic Attack hit → self Resonance Skill DMG +10% (8s)', pv: { basicDmg: 10, skillDmg: 10 }, bestFor: ['Jianxin', 'Lingyang', 'Xiangli Yao', 'Yuanwu', 'Youhu'], // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this as his top free/standard-5★ pick (85.01%, "one of the top Gauntlets options... he's free!"). Youhu tag added 2026-08-18: this is her own signature weapon (bestWeapon in CHARACTER_DATA), ranked #3 on Prydwen's Best Weapons for her.
+    passive: 'Stormy Resolution: Energy Regen +12.8%. Resonance Skill hit → self Basic ATK DMG +10% (8s). Basic Attack hit → self Resonance Skill DMG +10% (8s)', pv: { basicDmg: 10, skillDmg: 10 }, bestFor: ['Jianxin', 'Lingyang', 'Xiangli Yao', 'Yuanwu', 'Youhu'], // Yuanwu tag added 2026-08-18: the source's Best Weapons list ranks this as his top free/standard-5★ pick (85.01%, "one of the top Gauntlets options... he's free!"). Youhu tag added 2026-08-18: this is her own signature weapon (bestWeapon in CHARACTER_DATA), ranked #3 on the source's Best Weapons for her.
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Cosmic Ripples': { rarity: 5, type: 'Rectifier', stat: 'ATK%', baseAtk: 500, subStatValue: '+54.0%',
     desc: 'Standard 5★. Rectifier resonating with cosmic ripples. Energy Regen with stacking Basic ATK DMG buff on hit.',
@@ -105,10 +105,10 @@ const WEAPON_DATA = {
   // Resonance Skill DMG, not "Fusion DMG +12%, Resonance Skill +24%").
   'Blazing Brilliance': { rarity: 5, type: 'Sword', stat: 'Crit DMG', baseAtk: 587, subStatValue: '+48.6%',
     desc: 'Changli signature. Sword ablaze with undying brilliance. ATK with stacking Resonance Skill DMG.',
-    // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #1 weapon (102.39%) despite being
+    // 'Yangyang' added 2026-08-18: the source's Build tab ranks this her #1 weapon (102.39%) despite being
     // Changli's signature — usable on any Sword user with heavy Resonance Skill DMG, listed as her
     // primary alt5 alongside the more widely-obtainable standard Emerald of Genesis (bestWeapon).
-    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #1 weapon overall (108.39%),
+    // 'Sanhua' added 2026-08-18: the source's Build tab ranks this her #1 weapon overall (108.39%),
     // making it her bestWeapon despite also being Changli's signature.
     passive: 'Crimson Phoenix: ATK +12%. Dealing DMG → 1 Searing Feather stack (0.5s ICD); Resonance Skill → 5 stacks. Each stack: self Resonance Skill DMG +4% (max x14/+56%; resets 12s after reaching cap)', pv: { atkPct: 12, skillDmg: 56 }, bestFor: ['Changli', 'Rover', 'Yangyang', 'Sanhua'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
@@ -134,13 +134,13 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Red Spring': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Camellya signature. Crimson blade blooming like a red spring flower. ATK buff with stacking Basic ATK DMG.',
-    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #2 weapon (103.32%), a strong
+    // 'Sanhua' added 2026-08-18: the source's Build tab ranks this her #2 weapon (103.32%), a strong
     // Basic ATK-focused alt5 alongside Blazing Brilliance.
     passive: 'ATK +12%, Basic ATK DMG +10% per stack (max x3), +40% Basic DMG on Concerto consumed', pv: { atkPct: 12, basicDmg: 50 }, bestFor: ['Camellya', 'Rover', 'Changli', 'Sanhua'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'The Last Dance': { rarity: 5, type: 'Pistols', stat: 'Crit DMG', baseAtk: 500, subStatValue: '+72.0%',
     desc: 'Carlotta signature. Elegant pistols for one final, perfect dance. ATK buff with Res. Skill DMG on Intro/Lib.',
-    passive: 'ATK +12%, Intro/Lib → Res. Skill DMG +48% for 5s', pv: { atkPct: 12, skillDmg: 48 }, bestFor: ['Carlotta', 'Aalto', 'Chixia', 'Mortefi'], // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his #1 option at 106.12%, ahead of his own signature Static Mist
+    passive: 'ATK +12%, Intro/Lib → Res. Skill DMG +48% for 5s', pv: { atkPct: 12, skillDmg: 48 }, bestFor: ['Carlotta', 'Aalto', 'Chixia', 'Mortefi'], // Mortefi tag added 2026-08-18: the source's Best Weapons list ranks this his #1 option at 106.12%, ahead of his own signature Static Mist
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
   // corrected 2026-08-18 (5★ audit): passive was fabricated — no "team ATK" or "Outro Skill DMG" buff
   // exists on this weapon; real effect (Fool's Warble) is a flat ATK baseline plus a self Heavy ATK DMG
@@ -226,7 +226,7 @@ const WEAPON_DATA = {
   // Intro Skill; not "Aero DMG +12%, Skill +24%".
   'Emerald Sentence': { rarity: 5, type: 'Sword', stat: 'Crit Rate', baseAtk: 587, subStatValue: '+24.3%',
     desc: 'Qiuyuan signature. Jade sword passing an emerald sentence on the unjust. ATK with Echo Skill-triggered Heavy ATK DMG and team Echo Skill buff.',
-    // corrected 2026-09-02 against a fresh Prydwen dump: the Echo Skill-triggered stack (Bamboo Cleaver)
+    // corrected 2026-09-02 against a fresh the source dump: the Echo Skill-triggered stack (Bamboo Cleaver)
     // grants +30% Heavy ATK DMG Bonus per stack (up to 2 stacks = 60%, 12s duration, 10s retrigger cooldown)
     // — was wrongly entered as +12% per stack (pv.heavyDmg: 24 for the 2-stack total instead of 60), likely
     // confused with the flat +12% ATK passive listed just before it in the same sentence.
@@ -256,7 +256,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Waveworn Shard', common: 'Mech Core' } },
   // Standard 5★ Weapons (Lustrous Tide pool - v3.0)
   // corrected 2026-08-18 (5★ audit): all five "Lustrous Tide" standard-5★ weapons below had fabricated
-  // passives (wrong stat baseline and/or wrong trigger condition entirely) — re-sourced from nanoka.cc's
+  // passives (wrong stat baseline and/or wrong trigger condition entirely) — re-sourced from the source's
   // raw effect data. Radiance Cleaver/Laser Shearer/Pulsation Bracer share the same base mechanic (bonus
   // DMG on hitting a Tune Strain-Interfered target); Phasic Homogenizer/Boson Astrolabe share theirs
   // (bonus on any team member casting a Tune Break skill).
@@ -299,17 +299,17 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Marcato': { rarity: 4, type: 'Gauntlets', stat: 'Energy Regen', baseAtk: 337, subStatValue: '+51.8%',
     desc: 'Surging waves shattering all like a deadly hymn. Restores Concerto Energy on Skill use.',
-    passive: 'Resonance Skill → restore 8 Concerto Energy (20s CD)', bestFor: ['Yuanwu', 'Gauntlet users', 'Jianxin', 'Youhu'], // Youhu tag added 2026-08-18: Prydwen's Best Weapons #1 pick for her by far, thanks to its Energy Regen main stat and Concerto generation easing her Outro access.
+    passive: 'Resonance Skill → restore 8 Concerto Energy (20s CD)', bestFor: ['Yuanwu', 'Gauntlet users', 'Jianxin', 'Youhu'], // Youhu tag added 2026-08-18: the source's Best Weapons #1 pick for her by far, thanks to its Energy Regen main stat and Concerto generation easing her Outro access.
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Lunar Cutter': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Sword born from an alien star\'s light. Gains ATK stacks on swap-in.',
-    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #6 weapon (83.96%) — good for Hybrid
+    // 'Sanhua' added 2026-08-18: the source's Build tab ranks this her #6 weapon (83.96%) — good for Hybrid
     // characters with minimal field time, like Sanhua's fast rotation.
     passive: 'Swap-in → 6 Oath stacks, each +2% ATK (max 6 stacks/+12%). Loses 1 stack every 2s. On kill: regain 6 stacks. 12s CD on swap-in trigger.', pv: { atkPct: 12 }, bestFor: ['Sword users', 'Rover', 'Sanhua'],
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Thunderbolt': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Huanglong ceremonial pistols, resilient and enduring. Stacking Skill DMG on Basic/Heavy hits.',
-    passive: 'Basic/Heavy ATK hit → Res. Skill DMG +7% per stack (max x3, 10s per stack, 1s trigger interval)', pv: { skillDmg: 21 }, bestFor: ['Chixia', 'Pistol users', 'Mortefi'], // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his 4★ alt at 83.07%
+    passive: 'Basic/Heavy ATK hit → Res. Skill DMG +7% per stack (max x3, 10s per stack, 1s trigger interval)', pv: { skillDmg: 21 }, bestFor: ['Chixia', 'Pistol users', 'Mortefi'], // Mortefi tag added 2026-08-18: the source's Best Weapons list ranks this his 4★ alt at 83.07%
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
 
   'Overture': { rarity: 4, type: 'Sword', stat: 'Energy Regen', baseAtk: 337, subStatValue: '+51.8%',
@@ -350,7 +350,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Somnoire Anchor': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'Dreamkeeper\'s anchor from twilight shores. Stacking ATK buff on dealing damage.',
-    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #7 weapon (76.66%), a free F2P
+    // 'Sanhua' added 2026-08-18: the source's Build tab ranks this her #7 weapon (76.66%), a free F2P
     // option for extended field time — loses value fast on her quick-swap rotation.
     passive: 'Dealing DMG → 1 Hiss stack per 1s, each +2% ATK (max x10, 3s/stack). Swap-off clears all. At 10 stacks: Crit Rate +6%.', pv: { atkPct: 20, critRate: 6 }, bestFor: ['Sword DPS', 'Sanhua'], 
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
@@ -361,18 +361,18 @@ const WEAPON_DATA = {
   'Celestial Spiral': { rarity: 4, type: 'Gauntlets', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'Galactic radiance spiraling toward tragic demise. Skill grants Resonance Energy and ATK buff.',
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Gauntlet DPS', 'Lingyang', 'Youhu'], 
-    ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } }, // Youhu tag added 2026-08-18: Prydwen's Best Weapons #4 pick for her, a flat Resonance Energy bonus every 20s.
+    ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } }, // Youhu tag added 2026-08-18: the source's Best Weapons #4 pick for her, a flat Resonance Energy bonus every 20s.
   'Relativistic Jet': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'A blazar\'s incessant course of cosmic destruction. Skill grants Resonance Energy and ATK buff.',
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Pistol DPS', 'Aalto', 'Mortefi'], 
-    ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } }, // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his top 4★ alt at 83.92%, noting it "significantly reduces Energy requirements"
+    ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } }, // Mortefi tag added 2026-08-18: the source's Best Weapons list ranks this his top 4★ alt at 83.92%, noting it "significantly reduces Energy requirements"
   'Endless Collapse': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 462, subStatValue: '+18.2%',
     desc: 'The collapsing heart of a dying blazar. Skill grants Resonance Energy and ATK buff.',
-    // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #4 weapon (82.82%), a good F2P
+    // 'Yangyang' added 2026-08-18: the source's Build tab ranks this her #4 weapon (82.82%), a good F2P
     // Energy Regen option for her when she has Energy issues.
-    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #5 weapon (84.52%), a great F2P
+    // 'Sanhua' added 2026-08-18: the source's Build tab ranks this her #5 weapon (84.52%), a great F2P
     // 4★ option when her Energy is short.
-    // 'Danjin' added 2026-08-18 (Danjin/Yangyang/Sanhua re-audit): Prydwen's Build tab ranks this her
+    // 'Danjin' added 2026-08-18 (Danjin/Yangyang/Sanhua re-audit): the source's Build tab ranks this her
     // #5 weapon (80.72%) — her weaponAlts already pointed at it but bestFor was missing the tag.
     passive: 'Resonance Skill → +6 Resonance Energy, ATK +10% for 16s (20s CD)', pv: { atkPct: 10 }, bestFor: ['Sword DPS', 'Rover', 'Changli', 'Yangyang', 'Sanhua', 'Danjin'], 
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
@@ -382,15 +382,15 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
   'Lumingloss': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Luminous sword with a glossy ceremonial edge. Basic and Heavy ATK DMG boost after Skill.',
-    // 'Yangyang' added 2026-08-18: Prydwen's Build tab ranks this her #3 weapon / top 4★ (82.96%).
-    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #7 weapon (80.65%), an easy-to-trigger
+    // 'Yangyang' added 2026-08-18: the source's Build tab ranks this her #3 weapon / top 4★ (82.96%).
+    // 'Sanhua' added 2026-08-18: the source's Build tab ranks this her #7 weapon (80.65%), an easy-to-trigger
     // 4★ pick for characters using Skill multiple times per rotation, like Sanhua.
     passive: 'Resonance Skill → Basic & Heavy ATK DMG +20% for 10s (1 stack max, 1s trigger interval)', pv: { basicDmg: 20, heavyDmg: 20 }, bestFor: ['Sword DPS', 'Changli', 'Yangyang', 'Sanhua'], 
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Commando of Conviction': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Spirits unite in resounding gorges of valor. ATK boost on Intro Skill.',
-    // 'Danjin' added 2026-08-18: Prydwen ranks this her #4 weapon overall (81.08%), a top F2P Sword pick.
-    // 'Sanhua' added 2026-08-18: Prydwen's Build tab ranks this her #4 weapon (85.50%), the best generic
+    // 'Danjin' added 2026-08-18: the source ranks this her #4 weapon overall (81.08%), a top F2P Sword pick.
+    // 'Sanhua' added 2026-08-18: the source's Build tab ranks this her #4 weapon (85.50%), the best generic
     // F2P Sword pick — near-unconditional bonus since Sanhua always uses her Intro Skill.
     passive: 'Intro Skill → ATK +15% for 15s', pv: { atkPct: 15 }, bestFor: ['Sword users', 'Rover', 'Danjin', 'Sanhua'], 
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
@@ -413,19 +413,19 @@ const WEAPON_DATA = {
   'Stonard': { rarity: 4, type: 'Gauntlets', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
     desc: 'Ceremonial gauntlets of Huanglong\'s magistrate. Liberation DMG boost after Skill.',
     passive: 'Resonance Skill → Liberation DMG +18% for 15s', pv: { libDmg: 18 }, bestFor: ['Gauntlet DPS', 'Jianxin', 'Xiangli Yao', 'Yuanwu'], 
-    ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } }, // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this 93.03%, his best 4★ alt behind Amity Accord
+    ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } }, // Yuanwu tag added 2026-08-18: the source's Best Weapons list ranks this 93.03%, his best 4★ alt behind Amity Accord
   'Amity Accord': { rarity: 4, type: 'Gauntlets', stat: 'DEF%', baseAtk: 337, subStatValue: '+61.6%',
     desc: 'Rangers\' comradeship, armor against the chill of stars. Liberation DMG boost on Intro Skill.',
     passive: 'Intro Skill → Liberation DMG +20% for 15s', pv: { libDmg: 20 }, bestFor: ['Gauntlet supports', 'Yuanwu'], 
-    ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } }, // Yuanwu tag added 2026-08-18: Prydwen's Best Weapons list ranks this 100% (2nd overall, top DEF-scaler pick)
+    ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } }, // Yuanwu tag added 2026-08-18: the source's Best Weapons list ranks this 100% (2nd overall, top DEF-scaler pick)
   'Novaburst': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Pistols erupting with nova-like force. Stacking ATK boost on dash/dodge.',
     passive: 'Dash/dodge → ATK +4% (max x3, 8s)', pv: { atkPct: 12 }, bestFor: ['Pistol DPS', 'Mortefi'], 
-    ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } }, // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his 4★ alt at 83.64%
+    ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } }, // Mortefi tag added 2026-08-18: the source's Best Weapons list ranks this his 4★ alt at 83.64%
   'Undying Flame': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Pistols burning with an undying flame. Skill DMG boost on Intro Skill.',
     passive: 'Intro Skill → Res. Skill DMG +20% for 15s', pv: { skillDmg: 20 }, bestFor: ['Pistol DPS', 'Mortefi'], 
-    ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } }, // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his 4★ alt at 81.87%
+    ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } }, // Mortefi tag added 2026-08-18: the source's Best Weapons list ranks this his 4★ alt at 81.87%
   'Helios Cleaver': { rarity: 4, type: 'Broadblade', stat: 'ATK%', baseAtk: 412, subStatValue: '+30.4%',
     desc: 'Broadblade forged in sunfire. Gradual stacking ATK buff after Skill use.',
     passive: 'After Res. Skill → ATK +3% every 2s (max x4, 12s)', pv: { atkPct: 12 }, bestFor: ['Broadblade DPS'], 
@@ -433,12 +433,12 @@ const WEAPON_DATA = {
   'Dauntless Evernight': { rarity: 4, type: 'Broadblade', stat: 'DEF%', baseAtk: 337, subStatValue: '+61.6%',
     desc: 'Broadblade that cuts through the longest night. ATK and DEF boost on Intro Skill.',
     passive: 'Intro Skill → ATK +8%, DEF +15% for 15s', pv: { atkPct: 8, defPct: 15 }, bestFor: ['Taoqi', 'Broadblade supports'], 
-    ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } }, // Taoqi tag added 2026-08-18: Prydwen's Best Weapons list ranks this as her free/signature #2 pick (107.54%), just below Discord.
+    ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } }, // Taoqi tag added 2026-08-18: the source's Best Weapons list ranks this as her free/signature #2 pick (107.54%), just below Discord.
   'Autumntrace': { rarity: 4, type: 'Broadblade', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
     desc: 'Huanglong\'s golden ginkgo, prosperous and long-lasting. Stacking ATK on Basic/Heavy hits.',
     passive: 'Basic/Heavy ATK DMG → ATK +4% per stack (max x5, 7s per stack, 1s trigger interval)', pv: { atkPct: 20 }, bestFor: ['Broadblade DPS', 'Jiyan', 'Calcharo', 'Jinhsi', 'Lumi'], 
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
-  // corrected 2026-08-18 (4★ audit): Crit Rate substat is an exact 20.25% at Lv.90 R1 (nanoka.cc's raw
+  // corrected 2026-08-18 (4★ audit): Crit Rate substat is an exact 20.25% at Lv.90 R1 (the source's raw
   // stat table), which the game's toFixed(1)-style rounding renders as +20.3%, not +20.2%.
   'Solar Flame': { rarity: 4, type: 'Pistols', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
     desc: 'Pistols burning with solar fire. Stacking ATK and Heavy ATK DMG on hits.',
@@ -449,7 +449,7 @@ const WEAPON_DATA = {
     passive: 'Liberation → ATK +7.2%, Liberation DMG +10.8% for 15s', pv: { atkPct: 7.2, libDmg: 10.8 }, bestFor: ['Sword DPS'], 
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   // ── 4★ Craftable ──
-  // corrected 2026-08-18 (4★ audit): Energy Regen substat was +32.3%, nanoka.cc's raw Lv.90 stat table
+  // corrected 2026-08-18 (4★ audit): Energy Regen substat was +32.3%, the source's raw Lv.90 stat table
   // shows an exact 32.4%.
   'Broadblade#41': { rarity: 4, type: 'Broadblade', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+32.4%',
     desc: 'Craftable broadblade. ATK and healing boost when HP is high or low.',
@@ -461,7 +461,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   'Gauntlets#21D': { rarity: 4, type: 'Gauntlets', stat: 'Energy Regen', baseAtk: 387, subStatValue: '+38.9%',
     desc: 'Craftable gauntlets. Counter-focused design with adaptive sustain.',
-    passive: 'Mastermind: Dash/dodge → ATK +8%, Dodge Counter DMG +50% for 8s, heal 5% HP on Counter (6s CD)', bestFor: ['Jianxin', 'Youhu'], // Youhu tag added 2026-08-18: Prydwen's Best Weapons #2 pick for her — Energy Regen main stat plus an ATK% boost after dashing/dodging, improving her healing and Liberation access.
+    passive: 'Mastermind: Dash/dodge → ATK +8%, Dodge Counter DMG +50% for 8s, heal 5% HP on Counter (6s CD)', bestFor: ['Jianxin', 'Youhu'], // Youhu tag added 2026-08-18: the source's Best Weapons #2 pick for her — Energy Regen main stat plus an ATK% boost after dashing/dodging, improving her healing and Liberation access.
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Rectifier#25': { rarity: 4, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 337, subStatValue: '+51.8%',
     desc: 'Craftable rectifier. Adaptive support with conditional heal or ATK buff.',
@@ -469,7 +469,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
   'Pistols#26': { rarity: 4, type: 'Pistols', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Craftable pistols. Stacking ATK buff while avoiding damage.',
-    passive: 'Omniscient: No DMG taken → ATK +6% every 5s (max 2 stacks, 8s). Taking DMG: lose 1 stack, heal 5% HP', bestFor: ['Pistol users', 'Mortefi'], // Mortefi tag added 2026-08-18: Prydwen's Best Weapons list ranks this his 4★ alt at 82.65%
+    passive: 'Omniscient: No DMG taken → ATK +6% every 5s (max 2 stacks, 8s). Taking DMG: lose 1 stack, heal 5% HP', bestFor: ['Pistol users', 'Mortefi'], // Mortefi tag added 2026-08-18: the source's Best Weapons list ranks this his 4★ alt at 82.65%
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
 
   // ── 4★ Battle Pass (Hunter's Growl series) ──
@@ -487,7 +487,7 @@ const WEAPON_DATA = {
     ascensionMaterials: { forgery: 'Helix', common: 'Ring' } },
 
   // ── 3★ Guardian Series (Craftable in Jinzhou) ──
-  // Source: game8.co — all stats, passives, materials, bestFor verified per weapon page
+  // Source: the source — all stats, passives, materials, bestFor verified per weapon page
   'Guardian Sword': { rarity: 3, type: 'Sword', stat: 'HP%', baseAtk: 300, subStatValue: '+30.4%',
     desc: 'Craftable sword forged in Jinzhou. Enhances Resonance Skill effectiveness.',
     passive: 'Unified: Resonance Skill DMG +12%', pv: { skillDmg: 12 }, bestFor: ['Cartethyia', 'Changli', 'Yangyang'],
@@ -511,7 +511,7 @@ const WEAPON_DATA = {
 
   // ── 3★ Voyager Series ──
   // corrected 2026-08-18 (3★ audit): Sword/Rectifier/Broadblade Energy Regen substat was off by 0.1pp
-  // (+32.3% vs nanoka.cc's live Lv.90 value of +32.4%); Guardian/Pistols/Gauntlets substats verified correct.
+  // (+32.3% vs the source's live Lv.90 value of +32.4%); Guardian/Pistols/Gauntlets substats verified correct.
   'Sword of Voyager': { rarity: 3, type: 'Sword', stat: 'Energy Regen', baseAtk: 300, subStatValue: '+32.4%',
     desc: 'Travel sword built for sustained adventuring. Restores energy on Skill use.',
     passive: 'Crusade: Resonance Skill → restore 8 Resonance Energy (20s CD)', bestFor: ['Rover'],
@@ -535,7 +535,7 @@ const WEAPON_DATA = {
 
   // ── 3★ Night Series ──
   // corrected 2026-08-18 (3★ audit): all five Night-series passives share the single in-game name
-  // "Valiance" per nanoka.cc's live weapon pages — the per-type names (Tenacity/Chivalry/Assemble/Arrival)
+  // "Valiance" per the source's live weapon pages — the per-type names (Tenacity/Chivalry/Assemble/Arrival)
   // previously here were fabricated; effect text (Intro Skill → ATK +8% for 10s) was already correct.
   'Sword of Night': { rarity: 3, type: 'Sword', stat: 'ATK%', baseAtk: 325, subStatValue: '+24.3%',
     desc: 'Midnight-forged sword. Empowers the wielder on swap-in.',
@@ -571,10 +571,10 @@ const WEAPON_DATA = {
     desc: 'Huaxu Academy pistols for technical verification. Heals on Dodge Counter.',
     passive: 'Alacrity: Dodge Counter → heal 1.6% Max HP (6s CD)', bestFor: [],
     ascensionMaterials: { forgery: 'Phlogiston', common: 'Ring' } },
-  // corrected 2026-08-18 (3★ audit): Crit DMG substat was +40.4%, nanoka.cc's live Lv.90 page shows +40.5%.
+  // corrected 2026-08-18 (3★ audit): Crit DMG substat was +40.4%, the source's live Lv.90 page shows +40.5%.
   'Originite: Type IV': { rarity: 3, type: 'Gauntlets', stat: 'Crit DMG', baseAtk: 300, subStatValue: '+40.5%',
     desc: 'Huaxu Academy gauntlets for technical verification. Heals on Basic ATK hit.',
-    passive: 'Rejuvenate: Basic ATK DMG → heal 0.5% Max HP (3s CD)', bestFor: ['Lingyang', 'Yuanwu'], // Yuanwu tag added 2026-08-18: Prydwen's dedicated Support-role weapon pick — its Basic ATK self-heal is what triggers the Rejuvenating Glow 5pc set (his actual meta build), despite low raw combat stats
+    passive: 'Rejuvenate: Basic ATK DMG → heal 0.5% Max HP (3s CD)', bestFor: ['Lingyang', 'Yuanwu'], // Yuanwu tag added 2026-08-18: the source's dedicated Support-role weapon pick — its Basic ATK self-heal is what triggers the Rejuvenating Glow 5pc set (his actual meta build), despite low raw combat stats
     ascensionMaterials: { forgery: 'Cadence', common: 'Howler Core' } },
   'Originite: Type V': { rarity: 3, type: 'Rectifier', stat: 'HP%', baseAtk: 300, subStatValue: '+30.4%',
     desc: 'Huaxu Academy rectifier for technical verification. Heals on Intro Skill.',
@@ -589,7 +589,7 @@ const WEAPON_DATA = {
 
   // ── 2★ Tyro Series ──
   // corrected 2026-08-18 (1★/2★ audit): baseAtk/subStatValue were guesses (200/+18.2%) that didn't match
-  // any in-game level breakpoint — re-verified against nanoka.cc's live weapon pages at their actual max
+  // any in-game level breakpoint — re-verified against the source's live weapon pages at their actual max
   // level, Lv.70 (1-2★ weapons cap at Lv.70, not Lv.90 like higher rarities), giving ATK 209/+12.3% ATK.
   'Tyro Sword': { rarity: 2, type: 'Sword', stat: 'ATK%', baseAtk: 209, subStatValue: '+12.3%',
     desc: 'The birth of revolutionary tides. A sword designed for novice Resonators. Contains a power not to be underestimated under its simple outlook.',
@@ -614,7 +614,7 @@ const WEAPON_DATA = {
 
   // ── 1★ Training Series ──
   // corrected 2026-08-18 (1★/2★ audit): baseAtk/subStatValue were guesses (100/+12.1%); re-verified
-  // against nanoka.cc's live weapon pages at their actual max level, Lv.70, giving ATK 190/+9.5% ATK.
+  // against the source's live weapon pages at their actual max level, Lv.70, giving ATK 190/+9.5% ATK.
   'Training Sword': { rarity: 1, type: 'Sword', stat: 'ATK%', baseAtk: 190, subStatValue: '+9.5%',
     desc: 'This sword is designed specifically for training and teaching, offering only the basic features.',
     passive: 'Persevere: ATK +4%', bestFor: [], 

@@ -1,6 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — features/teams/RotationGuideCard.jsx (extracted from DamageCalculator.jsx)
-// Rotation Guide — Prydwen-style: one self-contained block per character (readable on its
+// Rotation Guide — source-style: one self-contained block per character (readable on its
 // own — what THEY do on field) chained to its neighbors via explicit inherited/handed-off
 // buffs, instead of one flat list mixing everyone's numbers together. Pure UI, driven
 // entirely by the already-computed rotationTimeline data.
@@ -33,7 +33,7 @@ export function RotationGuideCard({ rotationTimeline }) {
                 </div>
                 <div className="text-sm text-gray-500 mt-1 pl-7">{step.reason}</div>
 
-                {/* Verified skill-by-skill sequence (Prydwen.gg "Standard Rotation") — real combat
+                {/* Verified skill-by-skill sequence (the source "Standard Rotation") — real combat
                     data, shown first since it's the most concrete/actionable part of the block.
                     Every abbreviation was replaced with the full action-type word plus a plain-
                     English explanation of what that TYPE of action generally does (a new player

@@ -79,7 +79,7 @@ describe('triggerEngine parity — Lupa', () => {
     expect(fired.has('lupa.heavy.wolfs-claw')).toBe(true);
   });
 
-  // Fixed 2026-09-02 against a fresh Prydwen dump: CHARACTER_ROTATIONS['Lupa'] previously named the
+  // Fixed 2026-09-02 against a fresh the source dump: CHARACTER_ROTATIONS['Lupa'] previously named the
   // Forte finisher as the BASE 'Dance With the Wolf' (~672% total, no Burning Matchpoint requirement) —
   // a real data bug, not a legitimate approximation, since her rotation always enters Burning Matchpoint
   // via Foebreaker 2 steps earlier, and the dump's own text confirms the base version "never sees use."

@@ -15,7 +15,7 @@
 // 'Mech Stage 3-4' (2 taps) = stages 3+4; 'Mech Stage 2-4' (3 taps) = stages 2+3+4;
 // 'Aemeath Stage 2-4' (3 taps) = stages 2+3+4. Exact, not approximated.
 //
-// Re-audited 2026-09-02 against a fresh Prydwen dump: every row matched exactly EXCEPT
+// Re-audited 2026-09-02 against a fresh the source dump: every row matched exactly EXCEPT
 // Heavenfall Edict (Overdrive/Finale), which was consistently ~1.0754x too high across
 // all 4 values (a precise, systematic discrepancy, not rounding — see
 // SKILL_MULTIPLIERS['Aemeath']'s own audit comment in characters.js). Retightened both
@@ -169,11 +169,11 @@ export const AEMEATH_BLOCKS = [
     effects: [{ stat: 'allDmg', value: 20 }],
     note: 'Real mechanic per RESONANCE_CHAIN_DATA\'s own audit comment: team +20% All-Attr DMG specifically ON casting Intro/Sync Strike/Duet — not a passive always-on buff. Modeled as passive (whole-team, correctly, unlike the earlier draft of this block) because no real duration is sourced for the cast-triggered version (CHAR_BUFF_TABLE/RESONANCE_CHAIN_DATA give no timer for this node) — inventing one to build a proper cast-refresh model would be fabricating data, so this stays a documented simplification rather than a fabricated timing.',
   },
-  // Zeroed 2026-09-02 (found while cross-checking a fresh Prydwen dump against this file — no prior
+  // Zeroed 2026-09-02 (found while cross-checking a fresh the source dump against this file — no prior
   // audit comment ever justified this row, unlike every other S-node here): was `totalMult: 40`, a
   // fabricated number with no basis — S5's real effect ("On kill, reset Starflux to 100%; on fatal
   // damage, revive with a team shield instead of dying, once per 10 min") is purely a
-  // survivability/utility mechanic, zero DPS component. Confirmed independently via Prydwen's own
+  // survivability/utility mechanic, zero DPS component. Confirmed independently via the source's own
   // damage-output simulation: S4 and S5 produce byte-identical DMG/DPS (2,581,963/220,869 both) —
   // exactly the same S4==S5 signal already found and fixed for Augusta's own fabricated S5.
   {

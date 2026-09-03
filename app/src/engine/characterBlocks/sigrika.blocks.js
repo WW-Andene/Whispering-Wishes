@@ -50,7 +50,7 @@ export const SIGRIKA_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Schemata of Runes (Chain Whip)' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('117.67%+205.92%+264.75%'), category: 'echoDmg' },
-    note: 'Consumes 2 Runes of the same type for Runic Chain Whip (Stagnates nearby targets, not modeled). Sourced from the single "Runic Outburst" row (no per-variant breakdown published). Category corrected 2026-09-02 from heavyDmg to echoDmg — the kit text explicitly says "Heavy Attack - Schemata of Runes deals Echo Skill DMG" and Runic Chain Whip itself is "(considered Echo Skill DMG)"; a fresh Prydwen dump\'s damage-output simulation shows Heavy at a genuine 0% share.',
+    note: 'Consumes 2 Runes of the same type for Runic Chain Whip (Stagnates nearby targets, not modeled). Sourced from the single "Runic Outburst" row (no per-variant breakdown published). Category corrected 2026-09-02 from heavyDmg to echoDmg — the kit text explicitly says "Heavy Attack - Schemata of Runes deals Echo Skill DMG" and Runic Chain Whip itself is "(considered Echo Skill DMG)"; a fresh the source dump\'s damage-output simulation shows Heavy at a genuine 0% share.',
   },
   {
     id: 'sigrika.liberation.where-trust-leads-me',

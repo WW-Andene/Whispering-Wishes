@@ -7,7 +7,7 @@
 // invented. S3 correctly has NO block — real effect ("+1 Musical Essence segment" +
 // "+1 Harmonic Allegro charge") is pure resource/utility, zero DPS component.
 //
-// Fixed 2026-09-02 against a fresh Prydwen dump (`Characters data dump/Ciaccona/
+// Fixed 2026-09-02 against a fresh the source dump (`Characters data dump/Ciaccona/
 // Ciaccona.md`, same session as Phrolova's Apparition of Beyond-Hecate fix): S6 was
 // previously zeroed to {} in RESONANCE_CHAIN_DATA too, correctly NOT force-fit as a
 // {stat:value} buff (its real shape — a flat 220% ATK Aero DMG hit while in Solo

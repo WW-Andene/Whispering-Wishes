@@ -5,8 +5,8 @@
 // opposite of "best by far".
 //
 // Traced to two real data bugs in Iuno's kit (CHAR_BUFF_TABLE + the live TriggerBlock engine file),
-// verified against two independent live sources (wuthering.gg, and a web search aggregating game8/
-// prydwen/sportskeeda) before touching anything:
+// verified against two independent live sources (wuthering.gg, and a web search aggregating the source/
+// the source/sportskeeda) before touching anything:
 //
 // 1. Her outro's duration was 10s; both sources quote "The incoming Resonator gains 50% Heavy Attack
 //    DMG Amplification for 14s" — no source found for 10s. (An earlier 2026-08-31 audit had actually

@@ -75,7 +75,7 @@ export const LINGYANG_BLOCKS = [
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
-    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: this Inherent Skill (Diligent
+    // Added 2026-09-03 against a real browser snapshot: this Inherent Skill (Diligent
     // Practice) was entirely missing before this pass, despite CHARACTER_ROTATIONS['Lingyang']
     // already alternating Basic ATK and Skill (Mountain Roamer) specifically to exploit it, per the
     // source's own Rotation section. Scoped to lingyang.skill.ancient-arts (Mountain Roamer) only via

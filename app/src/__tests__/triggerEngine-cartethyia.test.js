@@ -62,7 +62,7 @@ describe('triggerEngine parity — Cartethyia', () => {
     expect(fired.has('cartethyia.basic.fleurdelys-1-5')).toBe(true);
   });
 
-  // Found 2026-09-02 against a fresh Prydwen dump: her own Mid-air Attack (Cartethyia Plunging Attack)
+  // Found 2026-09-02 against a fresh the source dump: her own Mid-air Attack (Cartethyia Plunging Attack)
   // had NO SKILL_MULTIPLIERS row at all — a silent zero-DMG gap despite being a real step in her
   // modeled rotation (CHARACTER_ROTATIONS's own 'Mid-air:Cartethyia Plunging Attack' step).
   it('Mid-air Attack (Cartethyia Plunging Attack) is a real, non-zero damage block and fires in her rotation', () => {

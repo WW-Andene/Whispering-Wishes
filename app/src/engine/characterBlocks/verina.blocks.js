@@ -7,7 +7,7 @@
 // S3/S5 correctly have NO block — pure resource/healing-percent utility with zero
 // DPS component, per the audit's own zeroing. Her real rotation cancels Botany
 // Experiment's hit with the Liberation, so it deals no damage, and she has no
-// Intro cast at all (Prydwen rates it "unusable").
+// Intro cast at all (the source rates it "unusable").
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -40,7 +40,7 @@ export const VERINA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Mid-air Attack: Starflower Blooms' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // category fixed 2026-09-02 against a fresh, user-pasted Prydwen text: was unset — the kit text
+    // category fixed 2026-09-02 against a fresh, user-pasted the source text: was unset — the kit text
     // explicitly says "Mid-air Attack: Starflower Blooms deals Spectro DMG, considered as Basic Attack
     // damage" — confirmed basicDmg.
     damage: { hits: parseSkillMultiplierHits('67.64%+63.82%+30.50%×3'), category: 'basicDmg' },
@@ -52,7 +52,7 @@ export const VERINA_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 30 }, target: { scope: 'whole-team' },
     effects: [{ stat: 'deepen', value: 15, stacking: 'refresh' }],
-    note: 'Also heals the incoming Resonator 19% ATK/s for 6s, not modeled (no DPS component). Corrected 2026-09-02 against a fresh, user-pasted Prydwen text (priority source): the kit text explicitly says "15% all-Type DMG Deepen for 30s" — was wrongly stat:\'allDmg\' (a prior session\'s note claimed "confirmed Amplified, not Deepen," but this file\'s own dmgFocus buff-tag entry (characters.js, structured combat-data table) already said [\'ATK Buff\', \'DMG Deepen\', \'Heal\'] — an internal contradiction the prior check missed). Fixed to deepen.',
+    note: 'Also heals the incoming Resonator 19% ATK/s for 6s, not modeled (no DPS component). Corrected 2026-09-02 against a fresh, user-pasted the source text (priority source): the kit text explicitly says "15% all-Type DMG Deepen for 30s" — was wrongly stat:\'allDmg\' (a prior session\'s note claimed "confirmed Amplified, not Deepen," but this file\'s own dmgFocus buff-tag entry (characters.js, structured combat-data table) already said [\'ATK Buff\', \'DMG Deepen\', \'Heal\'] — an internal contradiction the prior check missed). Fixed to deepen.',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──

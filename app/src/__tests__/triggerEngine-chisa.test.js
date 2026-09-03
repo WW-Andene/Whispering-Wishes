@@ -40,7 +40,7 @@ describe('triggerEngine parity — Chisa', () => {
 
   it('the Intro/Liberation self-buff (+20% Havoc DMG, 12s) matches CHAR_BUFF_TABLE.selfBuffs', () => {
     // Was asserting CHAR_BUFF_TABLE.selfBuffs was empty (a real gap vs. the engine, which already had
-    // this buff) — fixed 2026-09-02 against a fresh Prydwen dump, both now agree.
+    // this buff) — fixed 2026-09-02 against a fresh the source dump, both now agree.
     const legacy = CHAR_BUFF_TABLE['Chisa'];
     expect(legacy.selfBuffs[0].value).toBe(20);
     expect(legacy.selfBuffs[0].duration).toBe(12);

@@ -256,7 +256,7 @@ describe('resolveHitComposedDps — end-to-end against REAL CHARACTER_ROTATIONS 
 
   it("Undying Sunlight: Leap's real hits (222.67%+27.84%×2) are independently hand-verifiable", () => {
     // Values corrected 2026-09-02: this row (and Augusta's entire kit) was previously off by a
-    // consistent ~1.988x — roughly HALF its real value — found re-auditing against a fresh Prydwen
+    // consistent ~1.988x — roughly HALF its real value — found re-auditing against a fresh the source
     // source dump; see SKILL_MULTIPLIERS['Augusta']'s own audit comment in characters.js.
     const leapBlock = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.skill.undying-sunlight-leap');
     const steps = [{ type: 'Skill', skill: 'Undying Sunlight: Leap', stepSeconds: 1 }];

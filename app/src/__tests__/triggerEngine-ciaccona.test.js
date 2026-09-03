@@ -19,7 +19,7 @@ describe('triggerEngine parity — Ciaccona', () => {
     expect(CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.chain.s3')).toBeUndefined();
   });
 
-  // Fixed 2026-09-02 (fresh Prydwen dump): S6 is correctly zeroed to {} in RESONANCE_CHAIN_DATA (its
+  // Fixed 2026-09-02 (fresh the source dump): S6 is correctly zeroed to {} in RESONANCE_CHAIN_DATA (its
   // real shape, a flat 220% ATK proc, doesn't fit that flat {stat:value} table) but that had left it
   // entirely unbuilt — added as its own gated `kind:'damage'` block instead.
   it('S6 is a real, sequence-6-gated damage block (not a RESONANCE_CHAIN_DATA stat)', () => {

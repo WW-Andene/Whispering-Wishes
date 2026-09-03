@@ -49,7 +49,7 @@ const ELEMENT_SHAPES = {
   Fusion: '△', Electro: '◇', Aero: '○', Glacio: '□', Havoc: '✕', Spectro: '☆',
 };
 // Official in-game element icons (T_IconElementAttri* UI assets), re-hosted on ibb.co.
-// Source: static.nanoka.cc asset CDN, traced from its client bundle 2026-08-17.
+// Source: the source asset CDN, traced from its client bundle 2026-08-17.
 const ELEMENT_ICONS = {
   Glacio:  './ui-icons/i.ibb.co-60n11MZg-Element-Glacio.webp',
   Fusion:  './ui-icons/i.ibb.co-RpbkMNCt-Element-Fusion.webp',
@@ -60,7 +60,7 @@ const ELEMENT_ICONS = {
 };
 const getElementIcon = (el) => ELEMENT_ICONS[el] || null;
 // Official in-game weapon-type icons (SP_IconNor* UI assets), re-hosted on ibb.co.
-// Source: static.nanoka.cc/assets/ww/UIResources/Common/Atlas/SkillIcon/SkillIconNor/, 2026-08-17.
+// Source: the source/assets/ww/UIResources/Common/Atlas/SkillIcon/SkillIconNor/, 2026-08-17.
 const WEAPON_TYPE_ICONS = {
   Broadblade: './ui-icons/i.ibb.co-JF8qY50h-Weapon-Type-Broadblade.webp',
   Sword:      './ui-icons/i.ibb.co-Xx5RH0dH-Weapon-Type-Sword.webp',
@@ -70,7 +70,7 @@ const WEAPON_TYPE_ICONS = {
 };
 const getWeaponTypeIcon = (type) => WEAPON_TYPE_ICONS[type] || null;
 // Official in-game stat icons (T_Iconproperty* UI assets for ATK/HP/DEF/Energy Regen; Crit Rate/Crit
-// DMG from the wutheringwaves.fandom.com wiki, since nanoka's Crit Rate filename couldn't be found).
+// DMG from the wiki, since the source's Crit Rate filename couldn't be found).
 // Re-hosted on ibb.co. Keys are the base stat name — '%' suffixes (e.g. weapon substat 'ATK%') are
 // stripped by getStatIcon() before lookup.
 const STAT_ICONS = {
@@ -87,7 +87,7 @@ const getStatIcon = (stat) => {
   return STAT_ICONS[key] || null;
 };
 // Official Sonata (echo) set icons (T_IconSonata* UI assets), re-hosted on ibb.co.
-// Source: wutheringwaves.fandom.com/wiki/Sonata, traced 2026-08-17.
+// Source: the wiki/Sonata, traced 2026-08-17.
 const SET_ICONS = {
   'Freezing Frost':            './ui-icons/i.ibb.co-b5cjDwZP-Icon-Freezing-Frost.webp',
   'Molten Rift':                './ui-icons/i.ibb.co-q3qYZYrP-Icon-Molten-Rift.webp',
@@ -127,7 +127,7 @@ const SET_ICONS = {
 };
 const getSetIcon = (setName) => SET_ICONS[setName] || null;
 // In-game faction emblem/logo icons, re-hosted on ibb.co.
-// Source: wutheringwaves.fandom.com/wiki/Category:Factions, traced 2026-08-17.
+// Source: the wiki/Category:Factions, traced 2026-08-17.
 // NOT a complete faction list — the wiki only has a proper emblem/logo image
 // for these; other factions (e.g. Ghost Hounds, Court of Savantae, Ministry of
 // War) have no dedicated icon asset there, so they're intentionally omitted
@@ -154,9 +154,9 @@ const FACTION_ICONS = {
   // nation and a faction shares one emblem rather than needing two).
   'Lahai-Roi':             './ui-icons/i.ibb.co-0jpmLZTp-Region-royafrostlands.webp',
   // Added 2026-08-18 for Qingxiao's audit: Mengzhou is a city within Huanglong (like Jinzhou) with its
-  // own dedicated emblem, sourced from fandom's File:Mengzhou_Emblem.png (uploaded for her 3.6 release).
+  // own dedicated emblem, sourced from the wiki's File:Mengzhou_Emblem.png (uploaded for her 3.6 release).
   'Mengzhou':              './ui-icons/i.ibb.co-hJV68MmF-mengzhou-emblem.webp',
-  // Added 2026-08-18 for Baizhi's 4★ audit, sourced from fandom's File:Huaxu_Academy.png.
+  // Added 2026-08-18 for Baizhi's 4★ audit, sourced from the wiki's File:Huaxu_Academy.png.
   'Huaxu Academy':         './ui-icons/i.ibb.co-hFdM9DTy-huaxu-academy.webp',
 };
 const getFactionIcon = (faction) => FACTION_ICONS[faction] || null;
@@ -175,13 +175,13 @@ const REGION_ICONS = {
   // Lupa/Phrolova's, per REGION_DATA in characters.js) had no icon at all until now.
   'Rinascita': './ui-icons/i.ibb.co-hFwcxxhG-rinascita-emblem.webp',
   // Fixed 2026-08-17 (was File:Lahai-Roi.png, a 1920x1080 gameplay screenshot, not an emblem — wrong
-  // asset for a badge icon). The nation's own {{Nation Infobox}} on fandom lists File:Roya_Frostlands_
+  // asset for a badge icon). The nation's own {{Nation Infobox}} on the wiki lists File:Roya_Frostlands_
   // Emblem.png as ITS emblem too (Lahai-Roi is the underground nation beneath the surface Roya
   // Frostlands, and the wiki has never made a separate emblem for the two) — same asset as the
   // 'Roya Frostlands' entry below, matching the wiki's own convention rather than guessing a new icon.
   'Lahai-Roi': './ui-icons/i.ibb.co-0jpmLZTp-Region-royafrostlands.webp',
   // Added 2026-08-17: Aemeath's birthplace (distinct from her Lahai-Roi region tie above) — sourced
-  // from fandom's own File:Roya_Frostlands_Emblem.png. New Federation (Lynae/Mornye's birthplace) has
+  // from the wiki's own File:Roya_Frostlands_Emblem.png. New Federation (Lynae/Mornye's birthplace) has
   // no dedicated emblem asset on the wiki, so it's intentionally left unset rather than guessed.
   'Roya Frostlands': './ui-icons/i.ibb.co-0jpmLZTp-Region-royafrostlands.webp',
 };
@@ -189,7 +189,7 @@ const getRegionIcon = (region) => REGION_ICONS[region] || null;
 
 // Combat Role tag icons — the small badge row (Main Damage Dealer, Heavy Attack DMG, Traction, DMG
 // Amplification, Tune Rupture Response, etc.) shown on each character's infobox, distinct from the
-// single `role` field (Main DPS/Sub DPS/Healer/etc.) already used elsewhere. Source: fandom's own
+// single `role` field (Main DPS/Sub DPS/Healer/etc.) already used elsewhere. Source: the wiki's own
 // Combat_Roles wiki page (the fixed, game-wide icon set — every character just picks a subset of these
 // same ~38 icons), re-hosted on ibb.co (2026-08-17). Keys match the infobox `role` field's tag text
 // exactly (semicolon-separated in wikitext, see characters.js's COMBAT_ROLE_DATA comment).

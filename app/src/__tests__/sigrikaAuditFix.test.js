@@ -1,4 +1,4 @@
-// Cross-check of Sigrika against a fresh Prydwen.gg source dump (following the same treatment
+// Cross-check of Sigrika against a fresh the source.gg source dump (following the same treatment
 // already applied to Augusta/Yuanwu/Aemeath/Hiyuki/Luuk Herssen/Qingxiao). Rotation, SKILL_MULTIPLIERS,
 // tier, statScaling, and the CHAR_BUFF_TABLE self/team buffs already matched the fresh dump exactly.
 // Real gaps found:
@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { CHARACTER_DATA, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { SIGRIKA_BLOCKS } from '../engine/characterBlocks/sigrika.blocks.js';
 
-describe('Sigrika — audit fixes against a fresh Prydwen dump', () => {
+describe('Sigrika — audit fixes against a fresh the source dump', () => {
   it('has the correct Lv.90 base ATK/DEF (was 437/1136, should be 438/1137)', () => {
     expect(CHARACTER_DATA['Sigrika'].baseAtk).toBe(438);
     expect(CHARACTER_DATA['Sigrika'].baseDef).toBe(1137);

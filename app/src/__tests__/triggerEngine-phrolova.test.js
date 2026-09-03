@@ -50,7 +50,7 @@ describe('triggerEngine parity — Phrolova', () => {
     expect(fired.has('phrolova.liberation.waltz-of-forsaken-depths')).toBe(true);
   });
 
-  // Fixed 2026-09-02 (Phase 0.5 follow-up, fresh Prydwen dump): the 3 real Forte rotation steps
+  // Fixed 2026-09-02 (Phase 0.5 follow-up, fresh the source dump): the 3 real Forte rotation steps
   // ("Movement of Fate and Finality / Murmurs in a Haunting Dream") previously matched NO block at
   // all, leaving S1's own totalMult bonus permanently inert.
   it('the Forte follow-up damage block fires for all 3 real rotation occurrences', () => {

@@ -1,7 +1,7 @@
 /**
  * Damage Calculator Formula Tests — real-engine verification against Kuro's own published formula.
  *
- * Source of truth: wutheringwaves.fandom.com/wiki/Damage, fetched verbatim via the wiki's api.php
+ * Source of truth: the wiki/Damage, fetched verbatim via the wiki's api.php
  * (action=parse, page=Damage) on 2026-08-19. That page is Wuthering Waves' official documented
  * combat formula (RES Multiplier, DEF Multiplier, DMG Bonus, Hardness) — not a community guess.
  * Every `WIKI_*` function below is a direct transcription of that page's math, kept deliberately

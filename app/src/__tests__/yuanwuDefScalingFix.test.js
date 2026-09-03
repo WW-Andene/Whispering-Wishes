@@ -1,4 +1,4 @@
-// Regression test found while cross-checking Yuanwu against a fresh Prydwen.gg source dump. Every one
+// Regression test found while cross-checking Yuanwu against a fresh the source.gg source dump. Every one
 // of his real Lv.10 multipliers is explicitly DEF-scaling (the source suffixes every value with "DEF")
 // — Thunder Wedge, Thunder Wedge Detonation, Rumbling Spark, Blazing Might, Thunder Bombardment, and
 // every Lightning Infused attack. His own endgame stat guidance also prioritizes DEF (1800+) over ATK
