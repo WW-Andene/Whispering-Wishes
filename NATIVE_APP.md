@@ -5,11 +5,8 @@ Wrapper Capacitor qui embarque le build de l'app directement dans le binaire
 planificateur, la collection, les teams et le tracker fonctionnent **à 100%
 hors-ligne, pour toujours** — même si l'hébergement web meurt.
 
-**Testé de bout en bout dans cet environnement** : build réel, APK généré,
-contenu vérifié (fichiers inclus/exclus corrects, service worker patché
-présent). Pas de virtualisation matérielle disponible ici pour lancer un
-émulateur — un test d'installation sur un vrai appareil/émulateur reste à
-faire avant publication.
+Pour l'état d'avancement (ce qui reste à tester/publier), voir
+`REMAINING_WORK.md`.
 
 ## Pourquoi `dist-native/` et pas juste `dist/`
 
@@ -129,7 +126,7 @@ debug) — Android Studio guide à travers la création d'une clé de signature
 lors du "Generate Signed Bundle".
 
 ### 5. iOS
-Pas scaffoldé (nécessite un Mac + Xcode, indisponibles ici). Une fois sur un
+Pas scaffoldé (nécessite un Mac + Xcode). Une fois sur un
 Mac avec le repo :
 ```bash
 npm install @capacitor/ios
@@ -149,9 +146,7 @@ Mêmes fichiers `dist-native/`/`capacitor.config.json` réutilisés tels quels.
 - **Test réel** : installer l'APK debug sur un appareil/émulateur et vérifier
   que la carte se charge bien depuis `VITE_API_BASE_URL`, et que les
   animations/fonds de bannière/vidéos de convocation/bande sonore se
-  chargent bien depuis jsDelivr — non testé en exécution réelle dans cet
-  environnement (vérifié uniquement via `curl` que jsDelivr sert les bons
-  fichiers pour chaque catégorie).
+  chargent bien depuis jsDelivr.
 - **Compte développeur Google Play** : 25$ (paiement unique) —
   https://play.google.com/console/signup
 

@@ -116,7 +116,7 @@ npm run build
 npm test
 ```
 
-For running your own persistent instance instead of just a local dev server, see `SELF_HOSTING.md`. For building the native Android app, see `CAPACITOR_APP.md`.
+For running your own persistent instance instead of just a local dev server, see `SELF_HOSTING.md`. For building the native Android app, see `NATIVE_APP.md`.
 
 ---
 
