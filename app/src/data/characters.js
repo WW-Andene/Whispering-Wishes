@@ -1496,7 +1496,14 @@ const CHARACTER_DATA = {
   ['Danjin',        ['Basic ATK', 'Heavy ATK', 'Skill'], ['Havoc DMG Deepen'],                 []],
   ['Mortefi',       ['Heavy ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
   ['Sanhua',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
-  ['Aalto',         ['Coordinated ATK'],             [],                                      []],
+  // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was ['Coordinated ATK'] — a
+  // fabricated/wrong entry, since Aalto has NO Coordinated Attack mechanic anywhere in his kit (no
+  // mention in the dump, no coordDmg block in aalto.blocks.js). His real dump's Damage Profile shows
+  // Basic ATK 35.7% (dominant), Skill 31%, Liberation 14.8%, and Intro ~10% (now folded into the
+  // already-included Skill category via aalto.intro.feint-shot's skillDmg fix, since both share the
+  // dump's generic "Skill Damage" row label) — all real, all silently uncredited. Echo (11.9%) stays
+  // excluded — generic equipped-Echo damage, not his own kit's Echo Skill button.
+  ['Aalto',         ['Basic ATK', 'Skill', 'Liberation'], [],                                  []],
   // dmgFocus corrected 2026-08-18: her Forte Details table (the wiki's Lumi/Combat page) funnels nearly
   // every attack — Energized Pounce/Rebound, Glare, Red Spotlight Basic/Heavy ATK, Laser — into "counted
   // as Basic Attack DMG" explicitly; only her Liberation (Squeakie Express) and Resonance Skill

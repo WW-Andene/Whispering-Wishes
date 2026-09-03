@@ -191,8 +191,8 @@ audit per character, all cross-checked against a fresh source dump:
 
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
-version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina —
-added 2026-09-03, first five characters audited under the updated
+version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
+Aalto — added 2026-09-03, first six characters audited under the updated
 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
@@ -402,6 +402,33 @@ all, matching `CHARACTER_ROTATIONS` never including it — the dump's own
 Review section calls it "functionally unusable," and her real rotation
 swaps in cold. Icons (dimension 9) checked and confirmed already fully
 wired. 1 new test, full suite green: 1391/1391.
+
+**Aalto pass (2026-09-03)**: his `Characters data dump/` file already
+existed, with an earlier pass having fixed 2 real bugs (base stats off-by-
+1, a wrong `teams` partner). Redoing dimensions 5/8/9 found the clearest
+bug of any character audited so far: `dmgFocus` was `['Coordinated ATK']`
+— entirely **fabricated**, since Aalto has no Coordinated Attack mechanic
+anywhere in his kit (no mention in the dump, no `coordDmg` block in
+`aalto.blocks.js` at all), while his real dump's Damage Profile (Basic ATK
+35.7% dominant, Skill 31%, Liberation 14.8%, Intro ~10%) was entirely
+absent. Fixed to `['Basic ATK', 'Skill', 'Liberation']` — Echo (11.9%)
+stays excluded as generic equipped-Echo damage. Dimension 8 also found
+`aalto.intro.feint-shot` and `aalto.forte.misty-cover` both uncategorized
+— fixed to `skillDmg` (Intro: dump's generic "Skill Damage" row label;
+Forte: same-named "Mist Missile" at the identical 59.65% multiplier as
+Shift Trick's explicitly-Skill-DMG-labeled version, a strong enough
+inference to categorize rather than leave with no basis at all). Also
+found and corrected a false claim: `aalto.chain.s3`'s own comment said "no
+DPS component sourced yet," but the dump is explicit S3 has a real
+mechanic (Basic/Mid-air Attack through the Gate of Quandary generates 2
+bonus bullets at 50% of that attack's own DMG) — comment fixed to state
+this accurately. **Left unmodeled on purpose, not fabricated**: genuinely
+ambiguous whether "that attack" means the whole multi-stage Basic ATK
+combo this schema treats as one block, or each individual sub-hit within
+it — a real, sourced, structurally-ambiguous S3 gap for a future pass to
+resolve once that ambiguity can be settled, not silently dropped. Icons
+(dimension 9) checked and confirmed already fully wired. 3 new tests, full
+suite green: 1393/1393.
 
 ---
 

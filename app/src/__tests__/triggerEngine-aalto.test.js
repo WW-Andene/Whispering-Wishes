@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createStats, applyResonanceChain } from '../features/teams/calcEngine.js';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS } from '../data/characters.js';
 import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
@@ -33,5 +33,16 @@ describe('triggerEngine parity — Aalto', () => {
     const fired = new Set(hitLog.map(h => h.blockId));
     expect(fired.has('aalto.basic.half-truths')).toBe(true);
     expect(fired.has('aalto.liberation.flower-in-the-mist')).toBe(true);
+  });
+
+  it("Intro (Feint Shot) and Forte (Misty Cover) are both skillDmg-categorized (were uncategorized)", () => {
+    const intro = AALTO_BLOCKS.find(b => b.id === 'aalto.intro.feint-shot');
+    const forte = AALTO_BLOCKS.find(b => b.id === 'aalto.forte.misty-cover');
+    expect(intro.damage.category).toBe('skillDmg');
+    expect(forte.damage.category).toBe('skillDmg');
+  });
+
+  it("dmgFocus is ['Basic ATK', 'Skill', 'Liberation'] — was ['Coordinated ATK'], fabricated: Aalto has no Coordinated Attack mechanic anywhere in his kit", () => {
+    expect(CHARACTER_DATA['Aalto'].dmgFocus).toEqual(['Basic ATK', 'Skill', 'Liberation']);
   });
 });
