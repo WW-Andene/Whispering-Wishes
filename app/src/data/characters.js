@@ -1376,7 +1376,13 @@ const CHARACTER_DATA = {
   // adjacent focus removed entirely since no other listed dmgFocus term reflects Tune Break DMG.
   ['Lucy',          ['Heavy ATK'],                   [],                                      ['Hack - Shifting']],
   // 5★ Sub DPS
-  ['Rover: Spectro', ['Skill', 'Liberation'],        [],                                      ['Frazzle']],
+  // dmgFocus gained 'Heavy ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's
+  // Damage Profile: Heavy is a genuine 9.2% (15,731) share, comparable to already-included categories
+  // elsewhere (contrast the "low single digits" exclusion precedent on Lucy's dropped Liberation focus)
+  // — was silently rejecting a real teammate Heavy ATK DMG Bonus. Basic ATK (4.6%) and the equipped
+  // Echo's own damage (5.5%, not her own kit's Echo Skill button — a different character shape
+  // entirely, e.g. Sigrika/Galbrena) both stay excluded, consistent with that same precedent.
+  ['Rover: Spectro', ['Skill', 'Liberation', 'Heavy ATK'], [],                                 ['Frazzle']],
   ['Rover: Havoc',   ['Heavy ATK', 'Basic ATK'],     ['Crit Rate Buff'],                      ['Havoc RES Shred']],
   ['Rover: Aero',    ['Skill'],                      ['Heal', 'Erosion Cap Buff'],            []],
   ['Rover: Electro', ['Skill', 'Liberation'],        ['ATK Buff', 'All DMG Amp'],             ['Electro Flare']],

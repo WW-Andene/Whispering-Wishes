@@ -23,7 +23,11 @@ export const ROVER_SPECTRO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Heavy ATK:Standard / Resonance / Aftertune' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('19.27%×5 → 76.05% → 126.75%') },
+    // Fixed 2026-09-03 (Phase A audit — REMAINING_WORK.md 1c): had no damage.category at all — a
+    // real Heavy-ATK-slot move with no "considered X DMG" override in the kit text (the dump's own
+    // Damage Profile shows Heavy at a genuine 9.2%/15,731 share, comparable to categories already
+    // included in dmgFocus elsewhere) — silently zeroed any teammate's Heavy ATK DMG Bonus.
+    damage: { hits: parseSkillMultiplierHits('19.27%×5 → 76.05% → 126.75%'), category: 'heavyDmg' },
     note: 'Warm-up combo: charged Heavy ATK into timed-press Resonance follow-up into Aftertune finisher. Fills Diminutive Sound fast without a full Basic combo.',
   },
   {
@@ -80,8 +84,12 @@ export const ROVER_SPECTRO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Resonating Echoes' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('79.53%+159.05%'), category: 'basicDmg' },
-    note: 'Separate Basic ATK combo cast after Resonating Spin fully ends.',
+    // Fixed 2026-09-03 (Phase A audit — REMAINING_WORK.md 1c): was category:'basicDmg' — but her own
+    // kit text is explicit ("Resonance Skill: Resonating Echoes ... considered Resonance Skill DMG"),
+    // the same "considered X DMG" override pattern found roster-wide this session. A Basic ATK DMG
+    // Bonus was being wrongly credited to this hit while a real Skill DMG Bonus was wrongly denied.
+    damage: { hits: parseSkillMultiplierHits('79.53%+159.05%'), category: 'skillDmg' },
+    note: "Basic-ATK-button cast after Resonating Spin fully ends, but the kit text overrides it to Resonance Skill DMG (same override her own Forte Circuit section states for Resonating Spin/Whirl too).",
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 re-audit comment for
