@@ -227,10 +227,14 @@ const CHARACTER_DATA = {
     skills: ['Majestic Fists', 'Ancient Arts', 'Unification of Spirits', "Strive: Lion's Vigor"],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    // bestEchoes corrected 2026-08-18: Endless Resonance is a real Glacio-DMG set (not a mismatch),
-    // but multiple current sources rank it as Lingyang's second-best set (quickswap-only) — his actual
-    // #1 is Freezing Frost, a straight Glacio DMG% set that fits his on-field Basic/Heavy ATK rotation.
-    bestEchoes: ['Mech Abomination', 'Freezing Frost 5pc'], bestWeapon: 'Abyss Surges',
+    // bestEchoes corrected 2026-09-03 against a fresh Prydwen dump, superseding the 2026-08-18 note
+    // above (based on a stale/different source): this source ranks Endless Resonance #1 (100%, "his
+    // best set" for the Hypercarry playstyle he generally uses), Frosty Resolve #2 (98.90%, his best
+    // quickswap-compatible set), and Freezing Frost #3 (97.80%, ranked lowest of the three specifically
+    // because its main echo Lampylumen Myriad takes too long to execute). 'Mech Abomination' was
+    // already correct as the main echo — it's Endless Resonance's own main echo per this source, not
+    // Freezing Frost's (whose main echo is Lampylumen Myriad) — only the paired set name was wrong.
+    bestEchoes: ['Mech Abomination', 'Endless Resonance 5pc'], bestWeapon: 'Abyss Surges',
     weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
     teams: ['Lingyang + Lynae + Zhezhi', 'Lingyang + Sanhua + Verina'] },
   // Full audit 2026-08-17 against wutheringwaves.fandom.com (MediaWiki API) and ww.nanoka.cc/
@@ -1800,7 +1804,9 @@ const CHARACTER_DATA = {
   ['Yinlin',        'T3',   'T4'],
   ['Calcharo',      'T4',   'T4'],
   ['Chixia',        'T4',   'T4'],
-  ['Lingyang',      'T4',   'T3'],
+  // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T4','T3'] — a ToA/WW swap. The
+  // dump's own Ratings section clearly lists T3 (ToA) / T4 (WW), matched by its Value Tier List too.
+  ['Lingyang',      'T3',   'T4'],
   ['Aalto',         'T4',   'T4'],
   ['Jianxin',       'T4',   'T4'],
   ['Lumi',          'T4',   'T4'],
@@ -3042,12 +3048,19 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'On-field Fusion main DPS. Builds Mayhem (caps 100) from Basic ATK/Skill/Intro hits; at full Mayhem, Heavy ATK enters a 70% DMG-reduction state (survives swap-out) and casts a big Liberation-DMG finisher (Cloudy Frenzy / Cosmos Rupture) on exit. Liberation Cosmos Rave (125 Energy, 16s CD) replaces her whole kit with enhanced Fusion versions for a fixed 10s. Outro Thermal Field is a pure DoT proc, no team buff — free to quickswap.',
   },
+  // selfBuffs: added Diligent Practice 2026-09-03 against a real prydwen.gg .mht snapshot — this
+  // Inherent Skill was entirely missing here and from lingyang.blocks.js, despite the source's own
+  // Rotation section explicitly naming it as the reason his burst rotation alternates Basic/Skill
+  // ("to take advantage of his Inherent Skill: Diligent Practice").
   'Lingyang': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'elemDmg', value: 50, target: 'self', duration: 14, condition: "Liberation Strive: Lion's Vigor grants self Glacio DMG Bonus +50% for 14s." }],
+    selfBuffs: [
+      { stat: 'elemDmg', value: 50, target: 'self', duration: 14, condition: "Liberation Strive: Lion's Vigor grants self Glacio DMG Bonus +50% for 14s." },
+      { stat: 'totalMult', value: 150, target: 'self', duration: 3, condition: "Inherent Skill Diligent Practice: in Striding Lion state, within 3s after each Basic Attack, the next Resonance Skill Mountain Roamer deals an additional 150% of Mountain Roamer's own damage (considered Resonance Skill DMG)." },
+    ],
     debuffs: [],
-    note: "On-field Glacio main DPS. Forte Circuit's Striding Lion state (entered via Heavy ATK Glorious Plunge at full Lion's Spirit) unlocks airborne enhanced attacks. Outro Frosty Marks is a pure-DMG AoE proc, not a team buff, though S4 Resonance Chain grants team Glacio DMG +20%/30s on it.",
+    note: "On-field Glacio main DPS. Forte Circuit's Striding Lion state (entered via Heavy ATK Glorious Plunge at full Lion's Spirit) unlocks airborne enhanced attacks. Outro Frosty Marks is a pure-DMG AoE proc, not a team buff, though S4 Resonance Chain grants team Glacio DMG +20%/30s on it. Diligent Practice (+150% Mountain Roamer DMG within 3s of a Basic Attack) is the core mechanic his real rotation alternates Basic/Skill to keep active.",
   },
   'Cartethyia': {
     outroBuffs: [{ stat: 'elemDmg', value: 17.5, target: 'next', duration: 20, condition: 'Aero DMG vs Negative Status targets' }],

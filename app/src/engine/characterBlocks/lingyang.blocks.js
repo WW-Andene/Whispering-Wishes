@@ -75,6 +75,21 @@ export const LINGYANG_BLOCKS = [
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
+    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: this Inherent Skill (Diligent
+    // Practice) was entirely missing before this pass, despite CHARACTER_ROTATIONS['Lingyang']
+    // already alternating Basic ATK and Skill (Mountain Roamer) specifically to exploit it, per the
+    // source's own Rotation section. Scoped to lingyang.skill.ancient-arts (Mountain Roamer) only via
+    // scopedToBlockId, avoiding over-crediting Feral Gyrate or any other skillDmg-categorized hit —
+    // same "over-crediting" caution as Augusta's S3 fix.
+    id: 'lingyang.selfbuff.diligent-practice',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Basic ATK:Majestic Fists' },
+    timing: { duration: 3 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'totalMult', value: 150, scopedToBlockId: 'lingyang.skill.ancient-arts' }],
+    note: "Inherent Skill Diligent Practice: in Striding Lion state, within 3s after each Basic Attack (Feral Gyrate), the next Mountain Roamer deals an additional 150% of its own damage, considered Resonance Skill DMG.",
+  },
+  {
     id: 'lingyang.selfbuff.strive',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'cast', on: "Liberation:Strive: Lion's Vigor" },

@@ -44,6 +44,14 @@ describe('triggerEngine parity — Lingyang', () => {
     expect(self.timing.duration).toBe(legacy.selfBuffs[0].duration);
   });
 
+  it('Diligent Practice matches CHAR_BUFF_TABLE and is scoped to Mountain Roamer only (no over-crediting)', () => {
+    const legacy = CHAR_BUFF_TABLE['Lingyang'];
+    const diligent = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.selfbuff.diligent-practice');
+    expect(diligent.effects[0].value).toBe(legacy.selfBuffs[1].value);
+    expect(diligent.timing.duration).toBe(legacy.selfBuffs[1].duration);
+    expect(diligent.effects[0].scopedToBlockId).toBe('lingyang.skill.ancient-arts');
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lingyang'], LINGYANG_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(LINGYANG_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'glacio', 'Main DPS');
