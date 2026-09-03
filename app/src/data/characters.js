@@ -1042,12 +1042,18 @@ const CHARACTER_DATA = {
     skills: ['POW POW', 'Whizzing Fight Spirit', 'Blazing Flames', 'Heroic Bullets'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
-    // bestWeapon corrected 2026-08-18: was 'The Last Dance' (Aalto's signature — a copy/mixup between
-    // the two Pistols users), unsupported by any source for Chixia; her actual BiS 5* Pistol is Static
-    // Mist per multiple build guides (previously demoted to weaponAlts.alt5).
-    bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Static Mist',
-    weaponAlts: { alt5: ['The Last Dance'], alt4: ['Thunderbolt', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
-    teams: ['Chixia + Brant + Verina', 'Chixia + Changli + Baizhi'] },
+    // bestWeapon corrected 2026-09-03 against a fresh Prydwen dump: 'Static Mist' was previously used as
+    // BiS (see the reverted 2026-08-18 note below), but this source explicitly ranks The Last Dance
+    // (Carlotta's signature) at 108.35% — ahead of Static Mist's 100% — with no QOL caveat favoring
+    // Static Mist over it for Chixia specifically. Swapped so bestWeapon matches the source's own top
+    // calculated pick; Static Mist demoted to weaponAlts.alt5.
+    bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'The Last Dance',
+    weaponAlts: { alt5: ['Static Mist'], alt4: ['Thunderbolt', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
+    // teams: 'Chixia + Changli + Baizhi' corrected 2026-09-03 — Baizhi is never mentioned anywhere in
+    // this source's Synergies section for Chixia (which explicitly names Brant, Changli, Lupa, Verina,
+    // and Shorekeeper only); swapped to Shorekeeper, one of the two explicitly-named generalist Healing
+    // Support options, matching the source's own "Changli Team" example.
+    teams: ['Chixia + Brant + Verina', 'Chixia + Changli + Shorekeeper'] },
   'Danjin': { rarity: 4, element: 'Havoc', weapon: 'Sword', role: 'Sub DPS',
     // desc expanded 2026-08-18 (Fandom + Prydwen): lore half is Fandom's "Scarlet Shade" Midnight Ranger
     // who hunts thieves/bandits for retribution; gameplay half is Prydwen's Hybrid framing — a fast
@@ -1514,7 +1520,7 @@ const CHARACTER_DATA = {
   // 4★
   ['Aalto',         9850,  262, 1075, 150],
   ['Baizhi',        12813, 213, 1002, 175],
-  ['Chixia',        9087,  300, 953,  150],
+  ['Chixia',        9088,  300, 953,  150],
   // corrected 2026-08-18: HP/ATK/DEF were slightly off (9437/262/1148) vs Prydwen's exact Lv.90 stat
   // screen (9438/263/1149) — Energy already matched.
   ['Danjin',        9438,  263, 1149, 100],
