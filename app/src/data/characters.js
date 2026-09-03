@@ -1822,7 +1822,7 @@ const CHARACTER_DATA = {
   // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T2','T1.5'] — the dump's own Ratings
   // section (Hybrid role) clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List shows T3/T3.
   ['Changli',       'T2',   'T3'],
-  ['Zhezhi',        'T2',   'T3'],
+  ['Zhezhi',        'T3',   'T4'],
   ['Baizhi',        'T2',   'T3'],
   // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T3','T2'] — a ToA/WW swap. The dump's
   // own Ratings section clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List is the one that
@@ -2647,7 +2647,11 @@ const CHAR_BUFF_TABLE = {
       { stat: 'skillDmg', value: 25, target: 'next', duration: 14 },
     ],
     libBuffs: [],
-    selfBuffs: [],
+    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: Inherent Skill Calligrapher's Touch was
+    // entirely missing — self ATK+6% for 27s on Stroke of Genius/Creation's Zenith cast, stacking up to
+    // 3 times (18% max). Anchored here to the flat max-stack value, same simplification convention
+    // already used by this character's own S3 Resonance Chain node for the same trigger set.
+    selfBuffs: [{ stat: 'atkPct', value: 18, target: 'self', duration: 27, condition: "Inherent Skill Calligrapher's Touch: ATK +6% per stack (up to 3, 27s) on Stroke of Genius/Creation's Zenith cast." }],
     debuffs: [],
     note: 'Outro: +20% Glacio DMG Amp + 25% Res. Skill DMG Amp (14s). Off-field painter DMG.',
   },

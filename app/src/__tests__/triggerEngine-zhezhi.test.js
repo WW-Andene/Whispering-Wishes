@@ -38,6 +38,14 @@ describe('triggerEngine parity — Zhezhi', () => {
     expect(outro.effects.find(e => e.stat === 'skillDmg').value).toBe(legacy.outroBuffs[1].value);
   });
 
+  it("Inherent Skill Calligrapher's Touch models real per-stack stacking (6 x3 stacks = 18 max), matching CHAR_BUFF_TABLE's flat max-stack value", () => {
+    const legacy = CHAR_BUFF_TABLE['Zhezhi'].selfBuffs[0];
+    const block = ZHEZHI_BLOCKS.find(b => b.id === 'zhezhi.selfbuff.calligraphers-touch');
+    expect(block.effects[0].value * block.effects[0].maxStacks).toBe(legacy.value);
+    expect(block.effects[0].stacking).toBe('stacking');
+    expect(block.timing.duration).toBe(legacy.duration);
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Zhezhi'], ZHEZHI_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(ZHEZHI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 2500, 'glacio', 'Sub DPS');

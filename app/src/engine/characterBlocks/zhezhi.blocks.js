@@ -100,6 +100,20 @@ export const ZHEZHI_BLOCKS = [
     effects: [{ stat: 'basicDmg', value: 18 }],
     note: "Creation's Zenith (base kit, not Resonance Chain): needs 2 stacks of Painter's Delight and also grants +18% Basic ATK DMG Bonus for 27s — sourced directly from SKILL_MULTIPLIERS' own row text.",
   },
+  {
+    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: Inherent Skill Calligrapher's Touch was
+    // entirely missing from both this file and CHAR_BUFF_TABLE. Modeled with real per-stack stacking
+    // (unlike the flat CHAR_BUFF_TABLE entry, which stores only the flat 18% max-stack value) — anchored
+    // to the Stroke of Genius cast, matching zhezhi.chain.s6-bonus-hit's own anchor precedent for the
+    // same trigger set (Stroke of Genius/Creation's Zenith).
+    id: 'zhezhi.selfbuff.calligraphers-touch',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Forte:Stroke of Genius' },
+    timing: { duration: 27 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3 }],
+    note: "Inherent Skill Calligrapher's Touch: self ATK +6% per stack (up to 3, 27s) on Stroke of Genius/Creation's Zenith cast.",
+  },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own detailed audit comment for each
   //    node's real mechanic; S2/S5/S6 correctly have NO block — resource-cap-increase and bonus-hit-at-
