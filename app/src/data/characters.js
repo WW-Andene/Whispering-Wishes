@@ -1030,7 +1030,11 @@ const CHARACTER_DATA = {
     skills: ['Destined Promise', 'Emergency Plan', 'Momentary Union', 'Cycle of Life'],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Howler Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
-    bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
+    // bestEchoes corrected 2026-09-03 against a fresh Prydwen dump: 'Bell-Borne Geochelone' was listed
+    // as the main echo pick, but the source explicitly ranks Fallacy of No Return ahead of it ("nowadays
+    // a worse option... remains a good choice if you don't have a good Fallacy to use") — Bell-Borne
+    // Geochelone is the fallback, not the top pick.
+    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
     weaponAlts: { alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
     teams: ['Yangyang + Jiyan + Baizhi', 'Lingyang + Sanhua + Baizhi', 'Encore + Sanhua + Baizhi'] },
   'Chixia': { rarity: 4, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
@@ -1509,7 +1513,7 @@ const CHARACTER_DATA = {
   ['Jingran',       15375, 313, 0,    125],
   // 4★
   ['Aalto',         9850,  262, 1075, 150],
-  ['Baizhi',        12812, 212, 1002, 175],
+  ['Baizhi',        12813, 213, 1002, 175],
   ['Chixia',        9087,  300, 953,  150],
   // corrected 2026-08-18: HP/ATK/DEF were slightly off (9437/262/1148) vs Prydwen's exact Lv.90 stat
   // screen (9438/263/1149) — Energy already matched.
@@ -1823,7 +1827,7 @@ const CHARACTER_DATA = {
   // section (Hybrid role) clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List shows T3/T3.
   ['Changli',       'T2',   'T3'],
   ['Zhezhi',        'T3',   'T4'],
-  ['Baizhi',        'T2',   'T3'],
+  ['Baizhi',        'T3',   'T4'],
   // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T3','T2'] — a ToA/WW swap. The dump's
   // own Ratings section clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List is the one that
   // shows T3(ToA)/T2(WW) — this column pair matches the standard Ratings section (per convention used
