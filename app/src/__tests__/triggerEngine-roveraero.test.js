@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { ROVER_AERO_BLOCKS } from '../engine/characterBlocks/roveraero.blocks.js';
@@ -78,5 +78,15 @@ describe('triggerEngine parity — Rover: Aero', () => {
     expect(fired.has('roveraero.forte.cloudburst-dance')).toBe(true);
     expect(fired.has('roveraero.liberation.omega-storm')).toBe(true);
     expect(fired.has('roveraero.forte.unbound-flow')).toBe(true);
+  });
+
+  // Found 2026-09-03 via a Phase A full-dimension audit (REMAINING_WORK.md 1c).
+  it("dmgFocus includes 'Liberation' (18.9% of her real damage profile), not just Skill", () => {
+    expect(CHARACTER_DATA['Rover: Aero'].dmgFocus).toEqual(expect.arrayContaining(['Skill', 'Liberation']));
+  });
+
+  it('weaponAlts.alt5 no longer duplicates bestWeapon as its own alternative', () => {
+    const d = CHARACTER_DATA['Rover: Aero'];
+    expect(d.weaponAlts.alt5).not.toContain(d.bestWeapon);
   });
 });

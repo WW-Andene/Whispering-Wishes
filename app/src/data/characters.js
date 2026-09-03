@@ -67,13 +67,18 @@ const CHARACTER_DATA = {
   // team). weaponAlts left as-is (unconfirmed, not contradicted) — the source's Best Weapons section
   // genuinely shows no alternative weapons at all for this character, so there's nothing here to
   // confirm OR contradict the existing alt5/alt4/alt3 entries against.
+  // Fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): weaponAlts.alt5 duplicated bestWeapon
+  // itself (Bloodpact's Pledge listed as its own "alternative") — an internal-consistency bug, not a
+  // sourcing question (no other character in this file lists its own bestWeapon inside weaponAlts).
+  // Removed the duplicate; 'Laser Shearer' stays per the standing "unconfirmed, not contradicted"
+  // decision above.
   'Rover: Aero': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Healer',
     desc: "A wanderer who awoke with no memory on the shores of Solaris. Aero attunement: a healer/support whose Skyfall Severance strips Spectro Frazzle, Havoc Bane, Fusion Burst, Glacio Chafe, and Electro Flare stacks off a target and converts each into a stack of Aero Erosion, while Forte and Liberation both heal the team.",
     skills: ['Wind Cutter', 'Illusion Breaker', 'Cycle of Wind', 'Omega Storm'],
     ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: "Bloodpact's Pledge",
-    weaponAlts: { alt5: ["Bloodpact's Pledge", 'Laser Shearer'], alt4: ['Overture', 'Lunar Cutter'], alt3: ['Sword of Voyager'] },
+    weaponAlts: { alt5: ['Laser Shearer'], alt4: ['Overture', 'Lunar Cutter'], alt3: ['Sword of Voyager'] },
     teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Iuno + Ciaccona + Rover: Aero'] },
   'Rover: Electro': { rarity: 5, element: 'Electro', weapon: 'Sword', role: 'Sub DPS',
     desc: 'A wanderer who awoke with no memory on the shores of Solaris. Electro attunement: a Parry Stance hybrid — hold Basic ATK for interrupt immunity and 60% DMG reduction, then spend Electric Surge on a team ATK buff or Apex Resonance, unlocking the multi-element Thrum of All Sounds Forte combo. Currently the weakest attunement, lacking a strong DPS partner.',
@@ -1391,7 +1396,11 @@ const CHARACTER_DATA = {
   // CHARACTER_ROTATIONS variant deliberately skips Basic Attacks (per the dump's own Review section) —
   // dmgFocus describes her real kit capability, not this one rotation choice.
   ['Rover: Havoc',   ['Heavy ATK', 'Basic ATK', 'Liberation', 'Skill'], ['Crit Rate Buff'],   ['Havoc RES Shred']],
-  ['Rover: Aero',    ['Skill'],                      ['Heal', 'Erosion Cap Buff'],            []],
+  // dmgFocus gained 'Liberation' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her own
+  // dump's Damage Profile: Liberation is a genuine 18.9% (21,860) share — her 2nd-largest damage
+  // bucket, already correctly libDmg-categorized in roveraero.blocks.js — was silently rejecting a
+  // real teammate Liberation DMG Bonus.
+  ['Rover: Aero',    ['Skill', 'Liberation'],         ['Heal', 'Erosion Cap Buff'],            []],
   ['Rover: Electro', ['Skill', 'Liberation'],        ['ATK Buff', 'All DMG Amp'],             ['Electro Flare']],
   ['Yinlin',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
   ['Changli',       ['Skill'],                       ['Fusion DMG Amp'],                      []],
@@ -1860,7 +1869,11 @@ const CHARACTER_DATA = {
   // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T0.5','T1.5'] — the dump's own
   // Ratings section clearly lists T1.5 (ToA) / T2 (WW), Value Tier List separately shows T1.5/T3.
   ['Rover: Spectro', 'T1.5', 'T2'],
-  ['Rover: Aero',    'T1.5', 'T2'],
+  // tier corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Review
+  // section: "DPS Tier (as Support): T1 (Tower of Adversity), T1.5 (Whimpering Wastes)" — was
+  // ['T1.5','T2'], one full tier low on both axes (this table tracks DPS Tier, not the dump's separate
+  // "Value Tier" rating, per the same convention already established/fixed for Rover: Spectro).
+  ['Rover: Aero',    'T1',   'T1.5'],
   ['Rover: Electro', 'T4',   'T4'],
   ['Jiyan',         'T1.5', 'T1.5'],
   ['Phoebe',        'T1.5', 'T2'],

@@ -168,17 +168,17 @@ attempted again on a hunch.
 The plan's own methodology for reaching "fully merged": an 8-dimension
 solo audit per character (SKILL_MULTIPLIERS / CHARACTER_ROTATIONS /
 RESONANCE_CHAIN_DATA / CHAR_BUFF_TABLE / dmgFocus / weapon data / echo data /
-engine-block parity, all cross-checked against a fresh source). 6 characters
-(Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, **Rover: Havoc — added
-2026-09-03**) have gone through this as a *complete* 8-dimension pass. Many
-more have had *partial*, targeted fixes from later sessions' dump-
-verification passes (see the `Characters data dump/` audit trail and this
-session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 8
-dimensions: rotation-step/chain/buff-table coverage, not the full 8). The
-remaining ~51 characters have not had a full Phase A pass. Not urgent — the
-coverage-audit sweep already closed the highest-risk gaps (unmatched
-rotation steps = silent 0-DMG bugs) roster-wide — but the full 8-dimension
-methodology itself is not complete.
+engine-block parity, all cross-checked against a fresh source). 7 characters
+(Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc, **Rover:
+Aero — added 2026-09-03**) have gone through this as a *complete*
+8-dimension pass. Many more have had *partial*, targeted fixes from later
+sessions' dump-verification passes (see the `Characters data dump/` audit
+trail and this session's `auditBlockCoverage.mjs` sweep — that sweep covers
+3 of the 8 dimensions: rotation-step/chain/buff-table coverage, not the
+full 8). The remaining ~50 characters have not had a full Phase A pass. Not
+urgent — the coverage-audit sweep already closed the highest-risk gaps
+(unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
+8-dimension methodology itself is not complete.
 
 **Rover: Spectro pass (2026-09-03)**: her `Characters data dump/` already
 had 6 of 8 dimensions verified clean from an earlier pass (SKILL_MULTIPLIERS,
@@ -213,6 +213,22 @@ a Basic ATK step — deliberate, it's the "Short Burst Combo" variant which
 the dump's own Review section says explicitly "ignores Basic Attacks
 entirely"; Basic ATK stays in `dmgFocus` regardless since it's still real
 kit capability. 2 new tests, full suite green: 1371/1371.
+
+**Rover: Aero pass (2026-09-03)**: her dump already had 7 real bugs found
+and fixed in an earlier pass (wrong `bestWeapon`/`bestEchoes`/`teams`,
+fabricated `totalMult` in CHAR_BUFF_TABLE, 3 dead-buff/mis-scoped chain
+nodes). This pass closed the remaining 2 dimensions (dmgFocus, engine-block
+parity — the latter was already clean) and found 2 more real bugs neither
+earlier pass had caught: `dmgFocus` was `['Skill']` only — Liberation is a
+genuine 18.9% (21,860) share, her 2nd-largest damage bucket, already
+correctly `libDmg`-categorized — was silently rejecting a real teammate
+Liberation DMG Bonus. Separately, her stored tier (`T1.5`/`T2`) didn't
+match the dump's own DPS Tier rating (`T1`/`T1.5`, per the same "DPS Tier
+not Value Tier" convention already established for Rover: Spectro) — a full
+tier low on both axes, missed by both earlier passes. Also fixed a smaller
+internal-consistency bug found in passing: `weaponAlts.alt5` duplicated
+`bestWeapon` itself as its own "alternative" — no other character in this
+file does that. 2 new tests, full suite green: 1373/1373.
 
 ---
 
