@@ -191,9 +191,9 @@ audit per character, all cross-checked against a fresh source dump:
 
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
-version of this pass; **Calcharo, Encore, Jianxin, Lingyang — added
-2026-09-03, first four characters audited under the updated 9-dimension
-methodology** (see below). Many more
+version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina —
+added 2026-09-03, first five characters audited under the updated
+9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -381,6 +381,27 @@ correctly categorized in the engine. Fixed to `['Basic ATK', 'Skill',
 Echo damage), and Intro (~4.25%) all stay excluded per the established
 ambiguous-zone/generic-damage precedent. Icons (dimension 9) checked and
 confirmed already fully wired. 5 new tests, full suite green: 1390/1390.
+
+**Verina pass (2026-09-03)**: her `Characters data dump/` file already
+existed (an earlier, differently-formatted dump — no "App Data Comparison"
+bug-list section, and no Damage Profile percentages since she's a pure
+Support with no calc site DPS breakdown published for her), but
+`verina.blocks.js`'s own history shows it had already been through several
+real-bug correction passes (Outro's `deepen` vs `allDmg` fix, a dead-buff-
+shape S5→S6 rebuild, S6's entirely-missing Coordinated Attack proc).
+Redoing dimensions 5/8/9 with this session's rigor found one more:
+`dmgFocus` was `['Liberation']` only, despite 2 real `basicDmg`-categorized
+blocks already existing — her actual Basic ATK combo (Cultivation Stage
+3-5) AND Forte's Mid-air Starflower Blooms (override-categorized
+"considered Basic Attack damage" per its own kit text, firing 3x in her
+real rotation) — both silently rejecting real teammate Basic Attack DMG
+Bonus. Fixed to `['Liberation', 'Basic ATK']`. Coordinated ATK (from her
+S6-gated proc) stays excluded — dupe-conditional, not part of her S0
+baseline kit. Confirmed Intro (Verdant Growth) correctly has no block at
+all, matching `CHARACTER_ROTATIONS` never including it — the dump's own
+Review section calls it "functionally unusable," and her real rotation
+swaps in cold. Icons (dimension 9) checked and confirmed already fully
+wired. 1 new test, full suite green: 1391/1391.
 
 ---
 

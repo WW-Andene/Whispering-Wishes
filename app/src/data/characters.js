@@ -1505,7 +1505,15 @@ const CHARACTER_DATA = {
   ['Lumi',          ['Basic ATK'],                    ['Skill DMG Amp'],                       []],
   ['Yangyang',      ['Skill'],                       ['Energy Regen'],                        []],
   // 5★ Support / Healer
-  ['Verina',        ['Liberation'],                  ['ATK Buff', 'DMG Deepen', 'Heal'],      []],
+  // dmgFocus gained 'Basic ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): her dump has no
+  // Damage Profile percentages (a Support, unlike DPS characters' dumps), but 2 real basicDmg-
+  // categorized blocks already exist in verina.blocks.js — her actual Basic ATK combo (Cultivation
+  // Stage 3-5) AND Forte's Mid-air Starflower Blooms (override-categorized "considered Basic Attack
+  // damage" per its own kit text, firing 3x in her real rotation) — both were silently rejecting real
+  // teammate Basic Attack DMG Bonus. Coordinated ATK (from her S6-gated Coordinated Attack proc) stays
+  // excluded — dupe-conditional, not part of her S0 baseline kit, consistent with how the dump's own
+  // Damage Profile convention (S0-only) is applied elsewhere.
+  ['Verina',        ['Liberation', 'Basic ATK'],     ['ATK Buff', 'DMG Deepen', 'Heal'],      []],
   ['Shorekeeper',   ['Liberation'],                  ['Crit Buff', 'Heal'],                   []],
   // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
   // Profile: was ['Skill'] only (8%) — Liberation is her single BIGGEST damage bucket (36.1%/56,486),

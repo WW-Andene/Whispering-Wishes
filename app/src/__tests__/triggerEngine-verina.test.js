@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { VERINA_BLOCKS } from '../engine/characterBlocks/verina.blocks.js';
@@ -68,5 +68,9 @@ describe('triggerEngine parity — Verina', () => {
     expect(fired.has('verina.basic.cultivation-stage3-5')).toBe(true);
     expect(fired.has('verina.liberation.arboreal-flourish')).toBe(true);
     expect(fired.has('verina.forte.starflower-blooms-midair')).toBe(true);
+  });
+
+  it("dmgFocus gains 'Basic ATK' — 2 real basicDmg-categorized blocks already exist (her actual Basic ATK combo, and Forte's Mid-air Starflower Blooms, override-categorized \"considered Basic Attack damage\") — Coordinated ATK (S6-gated) stays excluded, not part of her S0 baseline", () => {
+    expect(CHARACTER_DATA['Verina'].dmgFocus).toEqual(['Liberation', 'Basic ATK']);
   });
 });
