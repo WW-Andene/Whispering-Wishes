@@ -38,6 +38,15 @@ describe('triggerEngine parity — Sanhua', () => {
     expect(outro.timing.duration).toBe(legacy.outroBuffs[0].duration);
   });
 
+  it('both Inherent Skill selfBuffs (Condensation, Avalanche) match CHAR_BUFF_TABLE', () => {
+    const legacy = CHAR_BUFF_TABLE['Sanhua'];
+    const condensation = SANHUA_BLOCKS.find(b => b.id === 'sanhua.selfbuff.condensation');
+    const avalanche = SANHUA_BLOCKS.find(b => b.id === 'sanhua.selfbuff.avalanche');
+    expect(condensation.effects[0].value).toBe(legacy.selfBuffs[0].value);
+    expect(condensation.timing.duration).toBe(legacy.selfBuffs[0].duration);
+    expect(avalanche.effects[0].value).toBe(legacy.selfBuffs[1].value);
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Sanhua'], SANHUA_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(SANHUA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 2000, 'glacio', 'Sub DPS');

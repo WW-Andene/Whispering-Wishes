@@ -1066,14 +1066,20 @@ const CHARACTER_DATA = {
   // bestEchoes reordered to match Prydwen's stated primary set (Moonlit Clouds 5pc first, Impermanence
   // Heron as the paired Main Echo, not a second full set). teams reordered/expanded per Prydwen's own
   // "Example Teams" (Encore Team ranked as her single best pairing, ahead of the Camellya team).
+  // Fixed 2026-09-03 against a real prydwen.gg .mht snapshot. bestEchoes was ordered
+  // [set, main] ('Moonlit Clouds 5pc' first) — backwards from the [main, set] convention
+  // getSonataLoadouts() actually parses; that reversed order silently split into two disconnected
+  // display rows instead of one combined main+set row. teams named 'Sanhua + Lingyang + Shorekeeper'
+  // — Lingyang is never mentioned anywhere in this source; replaced with the trio the source's own
+  // Review text explicitly names as "the best casual Phoebe trio" (Sanhua + Phoebe + Spectro Rover).
   'Sanhua': { rarity: 4, element: 'Glacio', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Jinhsi\'s stoic personal guard, cold as the frost she commands. Quick-swap Glacio sub-DPS who deals burst Glacio DMG and amplifies the next character\'s Basic ATK DMG via Outro.',
     skills: ['Frigid Light', 'Eternal Frost', 'Glacial Gaze', 'Clarity of Mind'],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
-    bestEchoes: ['Moonlit Clouds 5pc', 'Impermanence Heron'], bestWeapon: 'Blazing Brilliance',
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Blazing Brilliance',
     weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Commando of Conviction', 'Endless Collapse', 'Lunar Cutter', 'Lumingloss', 'Somnoire Anchor'], alt3: ['Sword of Night'] },
-    teams: ['Sanhua + Encore + Verina', 'Sanhua + Camellya + Verina', 'Sanhua + Lingyang + Shorekeeper'] },
+    teams: ['Sanhua + Encore + Verina', 'Sanhua + Camellya + Verina', 'Sanhua + Phoebe + Rover: Spectro'] },
   // corrected 2026-08-18 via fandom's Taoqi/Combat page + Prydwen's Kit/Build/Gameplay tabs (previously
   // had no weaponAlts at all, and only a partial CHARACTER_DATA entry). desc: her Outro Iron Will is a
   // "Resonance Skill DMG Amplified by 38%" per fandom's own Forte Details text (matches her infobox
@@ -1762,7 +1768,9 @@ const CHARACTER_DATA = {
   ['Phoebe',        'T1.5', 'T2'],
   ['Cantarella',    'T1.5', 'T0.5'],
   ['Mortefi',       'T1.5', 'T1.5'],
-  ['Sanhua',        'T1.5', 'T2'],
+  // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T1.5','T2'] — the dump's own Ratings
+  // section (Hybrid role) clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List shows T1.5/T3.
+  ['Sanhua',        'T2',   'T3'],
   ['Buling',        'T1.5', 'T2'],
   ['Encore',        'T2',   'T4'],
   ['Rover: Havoc',  'T2',   'T2.5'],
@@ -2772,12 +2780,17 @@ const CHAR_BUFF_TABLE = {
     note: 'Converts Frazzle→Heliacal Embers. Outro grants allies hitting the marked target +20% Spectro DMG Amp (20s). Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption.',
   },
   // ── 4★ ──
+  // selfBuffs added 2026-09-03 against a real prydwen.gg .mht snapshot: both Inherent Skills
+  // (Condensation, Avalanche) were entirely missing from this table and from sanhua.blocks.js.
   'Sanhua': {
     outroBuffs: [{ stat: 'basicDmg', value: 38, target: 'next', duration: 14 }],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [
+      { stat: 'skillDmg', value: 20, target: 'self', duration: 8, condition: 'Inherent Skill Condensation: Resonance Skill DMG +20% for 8s after casting Intro Skill Freezing Thorns.' },
+      { stat: 'heavyDmg', value: 20, target: 'self', duration: 8, condition: 'Inherent Skill Avalanche: Forte Circuit Ice Burst DMG +20% for 8s after casting Basic Attack V — no plain Basic ATK step exists in her real (Heavy ATK Concerto) rotation to anchor a cast trigger, same limitation already flagged on chain.s1.' },
+    ],
     debuffs: [],
-    note: 'Outro: 38% Basic ATK DMG Amp (14s). Quick swap.',
+    note: 'Outro: 38% Basic ATK DMG Amp (14s). Quick swap. Condensation (+20% Skill DMG/8s after Intro) and Avalanche (+20% Ice Burst DMG/8s after Basic V) are her 2 Inherent Skills.',
   },
   'Mortefi': {
     outroBuffs: [{ stat: 'heavyDmg', value: 38, target: 'next', duration: 14 }],

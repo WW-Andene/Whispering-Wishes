@@ -50,6 +50,24 @@ export const SANHUA_BLOCKS = [
     damage: { hits: [...parseSkillMultiplierHits('186.29%×2'), ...parseSkillMultiplierHits('59.65% + 79.53% + 139.17%')], category: 'heavyDmg' },
     note: 'Timed Heavy ATK release inside the Frostbite area, simultaneously bursting all active Ice Thorns/Prisms/Glaciers. Fires twice in the real rotation.',
   },
+  // ── Self-buffs (from CHAR_BUFF_TABLE — Inherent Skills, added 2026-09-03 against a real prydwen.gg
+  //    .mht snapshot; both were entirely missing before this pass) ──
+  {
+    id: 'sanhua.selfbuff.condensation',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Intro:Freezing Thorns' },
+    timing: { duration: 8 }, target: { scope: 'self' },
+    effects: [{ stat: 'skillDmg', value: 20 }],
+    note: 'Inherent Skill Condensation: Resonance Skill DMG +20% for 8s after casting Intro Skill.',
+  },
+  {
+    id: 'sanhua.selfbuff.avalanche',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'heavyDmg', value: 20 }],
+    note: 'Inherent Skill Avalanche: Forte Circuit Ice Burst DMG +20% for 8s after casting Basic Attack V — no plain Basic ATK step exists in her real rotation to anchor a real cast trigger (same limitation as chain.s1 below), kept passive. Scope caveat: sanhua.forte.clarity-of-mind-detonate combines the Detonate hit AND the Ice Burst hit into one heavyDmg-categorized block, so this buff (meant only for the Ice Burst portion) also credits the Detonate portion — a category-level approximation, not a new number invented.',
+  },
   {
     id: 'sanhua.outro.silversnow',
     source: SOURCE, kind: 'buff',
