@@ -1146,8 +1146,17 @@ const CHARACTER_DATA = {
     skills: ['Concealed Edge', 'Fortified Defense', 'Unmovable', 'Power Shift'],
     ascension: { boss: 'Gold-Dissolving Feather', common: 'Howler Core', specialty: 'Iris' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Waveworn Residue' },
-    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc', 'Moonlit Clouds 5pc'], bestWeapon: 'Dauntless Evernight',
-    weaponAlts: { alt5: ['Discord'] },
+    // bestWeapon/weaponAlts/bestEchoes corrected 2026-09-03 against a fresh Prydwen dump: bestWeapon was
+    // 'Dauntless Evernight' (107.54%, the higher raw %), but this source explicitly lists Discord FIRST
+    // at only 100.00% with QOL text calling it "close-to necessary... by far and ahead the biggest
+    // contribution to your team DPS" via cutting her notoriously long rotation — the deliberate
+    // QOL-over-raw-% pick this page's own disclaimer describes. Also both weapons are 4★ (R5
+    // refinement) per this source, not 5★ — weaponAlts.alt5 miscategorized Discord as a 5★ alt.
+    // bestEchoes had 3 elements (malformed [main,set] pairing) including Moonlit Clouds — that pairing
+    // is filed under this source's "Special Echo Sets", not her actual best pick (Rejuvenating Glow),
+    // trimmed per the same convention already applied to Lumi/Baizhi this session.
+    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Discord',
+    weaponAlts: { alt4: ['Dauntless Evernight'] },
     teams: ['Taoqi + Carlotta + Shorekeeper', 'Taoqi + Jinhsi + Verina'] },
   // corrected 2026-08-18 via fandom's Yuanwu/Combat page (Forte Details, rendered) + Prydwen's
   // Kit/Build/Review/Gameplay tabs (previously only had a partial CHARACTER_DATA entry, no
