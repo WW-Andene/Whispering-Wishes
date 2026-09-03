@@ -191,9 +191,9 @@ audit per character, all cross-checked against a fresh source dump:
 
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
-version of this pass; **Calcharo, Encore, Jianxin — added 2026-09-03, first
-three characters audited under the updated 9-dimension methodology** (see
-below). Many more
+version of this pass; **Calcharo, Encore, Jianxin, Lingyang — added
+2026-09-03, first four characters audited under the updated 9-dimension
+methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -357,6 +357,30 @@ fixed to `['Skill', 'Liberation', 'Basic ATK', 'Heavy ATK']`; Echo (7.9%,
 generic equipped-Echo damage) stays excluded. Icons (dimension 9) checked
 and confirmed already fully wired. 3 new tests, full suite green:
 1385/1385.
+
+**Lingyang pass (2026-09-03)**: his `Characters data dump/` file already
+existed from an earlier pass, which had already fixed 3 real bugs
+(`bestEchoes` set-name mismatch, a wrong ToA/WW tier swap, and his
+Inherent Skill Diligent Practice being entirely missing) — but predated
+this session's dimensions 5/8/9 rigor. Redoing those found the biggest
+kit-segmentation gap yet: his OTHER Inherent Skill, **Lion's Pride** (+50%
+DMG on Intro Skill Lion Awakens), was ALSO entirely missing from both
+`CHAR_BUFF_TABLE` and `lingyang.blocks.js` — a whole kit component with no
+block at all, not caught by the earlier pass's narrower check. Added as a
+self-buff scoped only to the Intro hit via `scopedToBlockId`. Dimension 8's
+full pass also found `lingyang.intro.lion-awakens`, `lingyang.forte.
+glorious-plunge` (Glorious Plunge), and `lingyang.outro.frosty-marks` all
+entirely uncategorized — Intro ~4.25% (13,631, fixed to `skillDmg`), Forte
+5.8% (10,209, fixed to `heavyDmg` — entered by holding Heavy Attack per the
+dump's own kit text, same convention as Jianxin's Forte), and Outro 13.9%
+(44,664, his 3rd-largest bucket, fixed to `outroDmg`). `dmgFocus` was
+`['Basic ATK']` only (33.8%) while Skill was a near-tied 2nd-biggest bucket
+(31.7%, entirely missing) and Liberation a real 7.3% — both already
+correctly categorized in the engine. Fixed to `['Basic ATK', 'Skill',
+'Outro', 'Liberation']`; Heavy ATK (5.8%), Echo (5.77%, generic equipped-
+Echo damage), and Intro (~4.25%) all stay excluded per the established
+ambiguous-zone/generic-damage precedent. Icons (dimension 9) checked and
+confirmed already fully wired. 5 new tests, full suite green: 1390/1390.
 
 ---
 

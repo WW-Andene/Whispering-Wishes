@@ -1348,7 +1348,15 @@ const CHARACTER_DATA = {
   // its missing skillDmg category fixed this pass but stays out of dmgFocus — low single digits, same
   // exclusion precedent as Lucy's dropped Liberation focus.
   ['Encore',        ['Basic ATK', 'Skill', 'Liberation', 'Outro'], [],                        []],
-  ['Lingyang',      ['Basic ATK'],                   [],                                      []],
+  // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against his own dump's Damage
+  // Profile: was ['Basic ATK'] only (33.8%) — Skill is a near-tied 2nd-biggest bucket (31.7%/101,511,
+  // entirely missing), Outro a real 13.9% (44,664, 3rd-largest, now outroDmg-categorized), and
+  // Liberation a real 7.3% (23,550) — all 3 already correctly skillDmg/outroDmg/libDmg-categorized in
+  // lingyang.blocks.js, were silently rejecting real teammate DMG Bonus buffs. Heavy ATK (5.8%/10,209,
+  // now heavyDmg-categorized) and Intro (~4.25%/13,631, now skillDmg-categorized) both stay out of
+  // dmgFocus — same ambiguous-zone exclusion as Calcharo's/Jianxin's Intro. Echo (5.77%) stays excluded
+  // too — generic equipped-Echo damage, not his own kit's Echo Skill button.
+  ['Lingyang',      ['Basic ATK', 'Skill', 'Outro', 'Liberation'], [],                        []],
   ['Jinhsi',        ['Skill', 'Liberation'],         [],                                      []],
   ['Xiangli Yao',   ['Skill', 'Liberation'],         [],                                      []],
   ['Camellya',      ['Basic ATK', 'Skill'],          [],                                      []],
@@ -3220,9 +3228,12 @@ const CHAR_BUFF_TABLE = {
     selfBuffs: [
       { stat: 'elemDmg', value: 50, target: 'self', duration: 14, condition: "Liberation Strive: Lion's Vigor grants self Glacio DMG Bonus +50% for 14s." },
       { stat: 'totalMult', value: 150, target: 'self', duration: 3, condition: "Inherent Skill Diligent Practice: in Striding Lion state, within 3s after each Basic Attack, the next Resonance Skill Mountain Roamer deals an additional 150% of Mountain Roamer's own damage (considered Resonance Skill DMG)." },
+      // Added 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): Inherent Skill Lion's Pride was entirely
+      // missing from both this table and lingyang.blocks.js despite being a real, sourced kit component.
+      { stat: 'totalMult', value: 50, target: 'self', duration: 0, condition: "Inherent Skill Lion's Pride: DMG of Intro Skill Lion Awakens +50% (scoped only to that hit)." },
     ],
     debuffs: [],
-    note: "On-field Glacio main DPS. Forte Circuit's Striding Lion state (entered via Heavy ATK Glorious Plunge at full Lion's Spirit) unlocks airborne enhanced attacks. Outro Frosty Marks is a pure-DMG AoE proc, not a team buff, though S4 Resonance Chain grants team Glacio DMG +20%/30s on it. Diligent Practice (+150% Mountain Roamer DMG within 3s of a Basic Attack) is the core mechanic his real rotation alternates Basic/Skill to keep active.",
+    note: "On-field Glacio main DPS. Forte Circuit's Striding Lion state (entered via Heavy ATK Glorious Plunge at full Lion's Spirit) unlocks airborne enhanced attacks. Outro Frosty Marks is a pure-DMG AoE proc, not a team buff, though S4 Resonance Chain grants team Glacio DMG +20%/30s on it. Diligent Practice (+150% Mountain Roamer DMG within 3s of a Basic Attack) is the core mechanic his real rotation alternates Basic/Skill to keep active. Lion's Pride grants Intro Skill Lion Awakens +50% DMG.",
   },
   'Cartethyia': {
     outroBuffs: [{ stat: 'elemDmg', value: 17.5, target: 'next', duration: 20, condition: 'Aero DMG vs Negative Status targets' }],
