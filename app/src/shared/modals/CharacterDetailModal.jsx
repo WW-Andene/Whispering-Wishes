@@ -86,19 +86,42 @@ const elementCornerFade = (hex) =>
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
 // Long-form kit/note prose in the data files is written as one dense run-on paragraph (audit-trail
-// style, not reader-facing). A handful of sentences reads fine as a single block, but the longer
-// entries (5-15+ sentences, common on complex kits) become an unreadable wall of text. Split on
-// sentence boundaries (". "/"; " before a capital letter or digit, i.e. the start of a new clause —
-// avoids breaking on "e.g." "vs." decimals, etc.) and group a few sentences per paragraph so the text
-// reads as short paragraphs instead of one block, without having to hand-rewrite every character's
-// prose with real newlines in the data files.
-function splitIntoParagraphs(text, sentencesPerParagraph = 2) {
+// style, not reader-facing) — often just a handful of very long compound sentences packed with
+// parentheticals, colons, and em-dashes. Grouping by a fixed sentence COUNT (the prior approach) still
+// produced a wall of text whenever those sentences were individually long, so this splits by an actual
+// length budget instead: walk sentence-by-sentence (". "/"; " before a capital letter or digit — avoids
+// breaking on "e.g." "vs." decimals, etc.) and start a new paragraph once the running paragraph would
+// exceed maxChars. A single sentence that alone exceeds the budget is further broken on its own
+// secondary clause boundaries (" — "/"; ") so no one paragraph is still an unreadable block.
+function splitIntoParagraphs(text, maxChars = 200) {
   if (!text) return [];
   const sentences = text.match(/[^.!?]+[.!?]+(?:['"’»]?\s+|$)/g) || [text];
   const paragraphs = [];
-  for (let i = 0; i < sentences.length; i += sentencesPerParagraph) {
-    paragraphs.push(sentences.slice(i, i + sentencesPerParagraph).join('').trim());
+  let current = '';
+  const pushCurrent = () => { if (current.trim()) paragraphs.push(current.trim()); current = ''; };
+  for (const raw of sentences) {
+    const sentence = raw.trim();
+    if (!sentence) continue;
+    if (sentence.length > maxChars) {
+      pushCurrent();
+      // Oversized single sentence: break on its own em-dash/semicolon clause boundaries instead.
+      const clauses = sentence.split(/(?<=[;])\s+|\s+—\s+/);
+      let clausePara = '';
+      for (const clause of clauses) {
+        if (clausePara && (clausePara.length + clause.length + 3) > maxChars) {
+          paragraphs.push(clausePara.trim());
+          clausePara = clause;
+        } else {
+          clausePara = clausePara ? `${clausePara} — ${clause}` : clause;
+        }
+      }
+      if (clausePara.trim()) paragraphs.push(clausePara.trim());
+      continue;
+    }
+    if (current && (current.length + sentence.length + 1) > maxChars) pushCurrent();
+    current = current ? `${current} ${sentence}` : sentence;
   }
+  pushCurrent();
   return paragraphs.filter(Boolean);
 }
 
@@ -336,9 +359,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             const lore = dot > 0 ? localizedDesc.slice(0, dot + 1) : null;
             const gameplay = dot > 0 ? localizedDesc.slice(dot + 2) : localizedDesc;
             return (
-              <div className="text-md space-y-1.5">
+              <div className="text-md space-y-2">
                 {lore && <p className="text-gray-400 italic leading-relaxed">{lore}</p>}
-                {splitIntoParagraphs(gameplay, 3).map((para, i) => (
+                {splitIntoParagraphs(gameplay).map((para, i) => (
                   <p key={i} className="text-gray-300 leading-relaxed">{para}</p>
                 ))}
               </div>
@@ -482,7 +505,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                         <span className="text-sm text-gray-200 font-medium break-words">{(getLocale() === 'fr' && SKILL_NAME_FR[name]?.[skillName]) || skillName}</span>
                       </div>
                       <div className="text-sm text-gray-400 break-words mt-0.5">{mult}</div>
-                      {desc && <div className="text-xs text-gray-500 break-words mt-1 italic">{desc}</div>}
+                      {desc && (
+                        <div className="space-y-1 mt-1">
+                          {splitIntoParagraphs(desc, 140).map((para, pi) => (
+                            <div key={pi} className="text-xs text-gray-500 break-words italic leading-relaxed">{para}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -555,7 +584,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 </div>
               )}
               {localizedBuffNote && (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {splitIntoParagraphs(localizedBuffNote).map((para, i) => (
                     <p key={i} className="text-sm text-gray-300 leading-relaxed">{para}</p>
                   ))}
@@ -607,7 +636,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                             <span className="kuro-badge kuro-badge-neutral text-2xs shrink-0">{step.duration}s</span>
                           )}
                         </div>
-                        {step.note && <div className="text-xs text-gray-500 break-words mt-0.5 italic">{step.note}</div>}
+                        {step.note && (
+                          <div className="space-y-1 mt-0.5">
+                            {splitIntoParagraphs(step.note, 140).map((para, pi) => (
+                              <div key={pi} className="text-xs text-gray-500 break-words italic leading-relaxed">{para}</div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
