@@ -13,7 +13,8 @@ describe('triggerEngine parity — Changli', () => {
     expect(CHANGLI_BLOCKS.find(b => b.id === 'changli.chain.s2').effects[0].value).toBe(rc.s2.critRate);
     expect(CHANGLI_BLOCKS.find(b => b.id === 'changli.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
     expect(CHANGLI_BLOCKS.find(b => b.id === 'changli.chain.s4').effects[0].value).toBe(rc.s4.atkPct);
-    expect(CHANGLI_BLOCKS.find(b => b.id === 'changli.chain.s5').effects[0].value).toBe(rc.s5.heavyDmg);
+    expect(CHANGLI_BLOCKS.find(b => b.id === 'changli.chain.s5-heavydmg').effects[0].value).toBe(rc.s5.heavyDmg);
+    expect(CHANGLI_BLOCKS.find(b => b.id === 'changli.chain.s5-totalmult').effects[0].value).toBe(rc.s5.totalMult);
     expect(CHANGLI_BLOCKS.find(b => b.id === 'changli.chain.s6').effects[0].value).toBe(rc.s6.defIgnore);
   });
 

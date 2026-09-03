@@ -1768,7 +1768,9 @@ const CHARACTER_DATA = {
   ['Rover: Havoc',  'T2',   'T2.5'],
   ['Jinhsi',        'T2',   'T4'],
   ['Xiangli Yao',   'T2',   'T3'],
-  ['Changli',       'T2',   'T1.5'],
+  // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T2','T1.5'] — the dump's own Ratings
+  // section (Hybrid role) clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List shows T3/T3.
+  ['Changli',       'T2',   'T3'],
   ['Zhezhi',        'T2',   'T3'],
   ['Baizhi',        'T2',   'T3'],
   // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T3','T2'] — a ToA/WW swap. The dump's
@@ -6613,7 +6615,14 @@ const RESONANCE_CHAIN_DATA = {
   // S6 Realized Plans: Tripartite Flames, Flaming Sacrifice, and Radiance of Fealty ignore an additional
   //   40% of target DEF — was deepen:40 (wrong category, deepen != DEF ignore); value happened to already
   //   be numerically correct.
-  'Changli':      { s1: { skillDmg: 10, heavyDmg: 10 }, s2: { critRate: 25 }, s3: { libDmg: 80 }, s4: { atkPct: 20 }, s5: { heavyDmg: 50 }, s6: { defIgnore: 40 } },
+  // s5 corrected 2026-09-03 against a fresh Prydwen dump: was s5:{heavyDmg:50}, dropping half the node's
+  // real effect. Source text: "Heavy Attack Flaming Sacrifice's Multiplier is increased by 50% AND its
+  // DMG dealt is increased by 50%" — two SEPARATE, compounding +50% bonuses (a raw DMG Multiplier
+  // increase, same shape/stat as Camellya's own s5 totalMult nodes, PLUS a DMG-dealt/category bonus),
+  // not one. Added totalMult:50 alongside the existing heavyDmg:50 — changli.blocks.js's own s5 note
+  // already flagged this exact gap ("RESONANCE_CHAIN_DATA's single heavyDmg:50 field is the only value
+  // sourced for this node") before this pass sourced the 2nd value for real.
+  'Changli':      { s1: { skillDmg: 10, heavyDmg: 10 }, s2: { critRate: 25 }, s3: { libDmg: 80 }, s4: { atkPct: 20 }, s5: { heavyDmg: 50, totalMult: 50 }, s6: { defIgnore: 40 } },
   // Corrected against ww.nanoka.cc character/1105 — prior values (coordDmg/elemDmg on S1/S3/S4) didn't
   // match her real chain effects (Crit Rate, ATK stacking, team ATK — no Glacio DMG anywhere in her chain).
   // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Zhezhi/Combat, cross-checked against

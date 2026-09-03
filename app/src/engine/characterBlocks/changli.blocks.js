@@ -122,12 +122,26 @@ export const CHANGLI_BLOCKS = [
     note: 'Real mechanic: after Intro Skill, team ATK +20% for 30s — gated behind an Intro-Skill cast, not a flat always-on buff.',
   },
   {
-    id: 'changli.chain.s5',
+    // Corrected 2026-09-03 against a fresh Prydwen dump: this node has TWO separate, compounding +50%
+    // effects — "Multiplier is increased by 50%" (a raw DMG Multiplier bonus, modeled via totalMult,
+    // same stat/shape as Camellya's own S2/S5 totalMult nodes) AND "DMG dealt is increased by 50%" (a
+    // heavyDmg-category bonus). Previously only the latter was modeled — this note used to say the flat
+    // table "is the only value sourced for this node," which this pass fixes by sourcing the 2nd value
+    // for real, rather than leaving it dropped.
+    id: 'changli.chain.s5-heavydmg',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Flaming Sacrifice' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'heavyDmg', value: 50 }],
-    note: "Real mechanic: Flaming Sacrifice DMG Multiplier +50% AND DMG dealt +50% (RESONANCE_CHAIN_DATA's single heavyDmg:50 field is the only value sourced for this node) — cast-scoped (instant, no persistent duration).",
+    note: "Flaming Sacrifice's DMG dealt +50% (the 2nd, separate half of this node — see changli.chain.s5-totalmult for the DMG Multiplier half) — cast-scoped (instant, no persistent duration).",
+  },
+  {
+    id: 'changli.chain.s5-totalmult',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Forte:Heavy ATK: Flaming Sacrifice' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'totalMult', value: 50 }],
+    note: "Flaming Sacrifice's DMG Multiplier +50% (the 1st, separate half of this node — see changli.chain.s5-heavydmg for the DMG-dealt half) — cast-scoped (instant, no persistent duration).",
   },
   {
     id: 'changli.chain.s6',
