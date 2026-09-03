@@ -27,6 +27,14 @@ describe('triggerEngine parity — Calcharo', () => {
     expect(CALCHARO_BLOCKS.find(b => b.id === 'calcharo.chain.s5').effects[0].value).toBe(rc.s5.totalMult);
   });
 
+  it("S4 is whole-team scoped and cast-triggered on Outro, with a real 30s duration — fixed 2026-09-03 from a passive self-scoped duration-less buff", () => {
+    const s4 = CALCHARO_BLOCKS.find(b => b.id === 'calcharo.chain.s4');
+    expect(s4.target.scope).toBe('whole-team');
+    expect(s4.trigger.type).toBe('cast');
+    expect(s4.trigger.on).toBe('Outro:Shadowy Raid');
+    expect(s4.timing.duration).toBe(30);
+  });
+
   it('S6 is modeled as a real 2x100% ATK proc-damage block, not the flat totalMult:200 fallback', () => {
     const rc = RESONANCE_CHAIN_DATA['Calcharo'];
     expect(rc.s6).toEqual({ totalMult: 200 });

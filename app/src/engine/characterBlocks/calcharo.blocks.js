@@ -82,7 +82,20 @@ export const CALCHARO_BLOCKS = [
     note: 'Real mechanic: only active 15s after casting Intro Skill Wanted Outlaw/Necessary Means, not a flat passive buff — modeled as cast-scoped on Wanted Outlaw (her only modeled Intro path).',
   },
   { id: 'calcharo.chain.s3', source: SOURCE, kind: 'buff', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'elemDmg', value: 25 }] },
-  { id: 'calcharo.chain.s4', source: SOURCE, kind: 'buff', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'elemDmg', value: 20 }] },
+  {
+    // Fixed 2026-09-03 against a real prydwen.gg .mht snapshot: was modeled as a passive, self-scoped,
+    // duration-less buff — but the real mechanic is "After casting Outro Skill Shadowy Raid, Electro
+    // DMG Bonus of all team members +20% for 30s": whole-team scoped, cast-triggered on Outro, with a
+    // real 30s duration. The flat RESONANCE_CHAIN_DATA['Calcharo'].s4 (elemDmg: 20) has no scope/timing
+    // concept so it wasn't wrong there, but this schema does track scope/timing and had all three wrong.
+    id: 'calcharo.chain.s4',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Outro:Shadowy Raid' },
+    timing: { duration: 30 },
+    target: { scope: 'whole-team' },
+    effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh' }],
+    note: 'S4 Dark Alliance: after casting Outro Skill Shadowy Raid, Electro DMG Bonus of all team members +20% for 30s.',
+  },
   {
     id: 'calcharo.chain.s5',
     source: SOURCE, kind: 'buff',
