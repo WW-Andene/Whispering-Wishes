@@ -23,7 +23,10 @@ export const JIANXIN_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Essence of Tao' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('33.80%×3+67.60%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus on a real ~5% (7,749) damage share. The dump's own multiplier
+    // table labels this row generically "Skill Damage", same convention as Augusta/Calcharo/Encore.
+    damage: { hits: parseSkillMultiplierHits('33.80%×3+67.60%'), category: 'skillDmg' },
     note: 'Pulls enemies in, builds Chi toward the Forte gauge.',
   },
   {
@@ -53,7 +56,13 @@ export const JIANXIN_BLOCKS = [
     // Minor-Major Shock variants / Yielding Pull) — only Pushing Punch (the channel's own opening
     // hit) is used as the representative value; the continuous-tick DoT and Shock/Pull variants are
     // not separately modeled (no per-tick timing data or trigger condition sourced for them).
-    damage: { hits: parseSkillMultiplierHits('248.52%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Heavy ATK DMG Bonus on a real 12.1% (18,878) damage share — her 3rd-largest bucket. The
+    // dump's own kit text is explicit "hold Heavy Attack to cast Primordial Chi Spiral" (was
+    // mistranscribed as "Basic ATK" in both this row's own note and the CHARACTER_ROTATIONS step note,
+    // both corrected this pass) — Forte states that auto-replace the Heavy Attack input are Heavy ATK
+    // DMG by convention, same as Yinlin's Forte:Chameleon Cipher.
+    damage: { hits: parseSkillMultiplierHits('248.52%'), category: 'heavyDmg' },
     note: 'At max Chi, a channeled shield-and-DMG state with 50% DMG reduction and interrupt resistance. Only the Pushing Punch opening hit is modeled; Zhoutian Progress continuous tick (24.86%/tick) and the Shock/Yielding Pull variants are not.',
   },
   {

@@ -191,8 +191,9 @@ audit per character, all cross-checked against a fresh source dump:
 
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
-version of this pass; **Calcharo, Encore — added 2026-09-03, first two
-characters audited under the updated 9-dimension methodology** (see below). Many more
+version of this pass; **Calcharo, Encore, Jianxin — added 2026-09-03, first
+three characters audited under the updated 9-dimension methodology** (see
+below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -331,6 +332,31 @@ own kit's Echo Skill button) and Intro (2.85%, low single digits) both stay
 excluded per established precedent. Icons (dimension 9) checked and
 confirmed already fully wired for every rotation move and all 6 Resonance
 Chain nodes — no gap found. 4 new tests, full suite green: 1382/1382.
+
+**Jianxin pass (2026-09-03)**: her `Characters data dump/` file already
+existed from an earlier pass with no bugs found there (SKILL_MULTIPLIERS/
+CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/weapon/echo/tier/
+teams/base stats all confirmed clean) — but that pass predated this
+session's dimensions 5/8/9 rigor. Redoing those found the largest
+discrepancy of any character audited so far: `dmgFocus` was `['Skill']`
+only (8%) — Liberation is her single BIGGEST damage bucket (36.1%/56,486)
+and Basic ATK her 2nd-biggest (30.9%/48,268) per the dump's own Damage
+Profile, both already correctly `libDmg`/`basicDmg`-categorized in
+`jianxin.blocks.js`, silently rejecting real teammate DMG Bonus buffs on
+the majority of her damage. Dimension 8's full-kit-component pass also
+found `jianxin.intro.essence-of-tao` and `jianxin.forte.primordial-chi-
+spiral` (Pushing Punch) both entirely uncategorized — Intro ~5% (7,749,
+fixed to `skillDmg`, generic "Skill Damage" row label) and Forte 12.1%
+(18,878, fixed to `heavyDmg`). The Forte fix also surfaced and corrected a
+real transcription error propagated into both `SKILL_MULTIPLIERS`' own row
+note and the `CHARACTER_ROTATIONS` step note: both said Primordial Chi
+Spiral is entered by "hold Basic ATK," but the dump's kit text is explicit
+it's "hold Heavy Attack" — the same input-slot convention already used for
+Yinlin's Forte:Chameleon Cipher confirms `heavyDmg` is correct. `dmgFocus`
+fixed to `['Skill', 'Liberation', 'Basic ATK', 'Heavy ATK']`; Echo (7.9%,
+generic equipped-Echo damage) stays excluded. Icons (dimension 9) checked
+and confirmed already fully wired. 3 new tests, full suite green:
+1385/1385.
 
 ---
 

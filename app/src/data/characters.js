@@ -1499,7 +1499,16 @@ const CHARACTER_DATA = {
   // 5★ Support / Healer
   ['Verina',        ['Liberation'],                  ['ATK Buff', 'DMG Deepen', 'Heal'],      []],
   ['Shorekeeper',   ['Liberation'],                  ['Crit Buff', 'Heal'],                   []],
-  ['Jianxin',       ['Skill'],                       ['Shield', 'Grouping', 'Aero Buff'],     []],
+  // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: was ['Skill'] only (8%) — Liberation is her single BIGGEST damage bucket (36.1%/56,486),
+  // Basic ATK her 2nd-biggest (30.9%/48,268), and Heavy ATK a real 12.1% (18,878, now heavyDmg-
+  // categorized on jianxin.forte.primordial-chi-spiral above) — all 3 already correctly
+  // libDmg/basicDmg/heavyDmg-categorized in jianxin.blocks.js, were silently rejecting real teammate
+  // DMG Bonus buffs on the majority of her damage. Echo (7.9%) stays excluded — generic equipped-Echo
+  // damage, not her own kit's Echo Skill button. Intro (~5%/7,749) also got its missing skillDmg
+  // category fixed this pass but stays out of dmgFocus — same ambiguous-zone exclusion as Calcharo's
+  // Intro.
+  ['Jianxin',       ['Skill', 'Liberation', 'Basic ATK', 'Heavy ATK'], ['Shield', 'Grouping', 'Aero Buff'], []],
   ['Mornye',        ['Liberation'],                  ['Heal'],                                ['Off-Tune']],
   // dmgFocus corrected 2026-09-02 against a fresh the source dump's own damage-profile breakdown: was
   // ['Basic ATK', 'Heavy ATK'], but her literal 'Heavy ATK' category is 0 — her real Rat-tat-tat!/
@@ -4138,7 +4147,11 @@ const SKILL_MULTIPLIERS = {
     ['Mid-air', 'Plunging Kick', '123.27%'],
     ['Dodge Counter', 'Standard', '40.83%×2+163.29%'],
     ['Skill', 'Calming Air: Chi Counter / Chi Parry', '334.60% / 258.73%', 'Hold Skill for Parry Stance — Chi Counter on being attacked, Chi Parry on early release. 12s cooldown.'],
-    ['Forte', 'Primordial Chi Spiral (Zhoutian Progress)', '248.52% (Pushing Punch) · 24.86% per tick (Zhoutian Progress Continuous DMG) · 139.17%/377.74%/516.91% (Minor/Major-Inner/Major-Outer Shock) · 218.70% (Yielding Pull)', 'At max Chi, hold Basic ATK for a channeled shield-and-DMG state with 50% DMG reduction and +interrupt resistance.'],
+    // note corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was "hold Basic ATK" — the dump's
+    // own kit text is explicit "hold Heavy Attack to cast Primordial Chi Spiral". Also informed
+    // jianxin.blocks.js's forte.primordial-chi-spiral category fix (heavyDmg, matching the "auto-replaces
+    // Heavy Attack" convention already used for Yinlin's Forte:Chameleon Cipher).
+    ['Forte', 'Primordial Chi Spiral (Zhoutian Progress)', '248.52% (Pushing Punch) · 24.86% per tick (Zhoutian Progress Continuous DMG) · 139.17%/377.74%/516.91% (Minor/Major-Inner/Major-Outer Shock) · 218.70% (Yielding Pull)', 'At max Chi, hold Heavy Attack for a channeled shield-and-DMG state with 50% DMG reduction and +interrupt resistance.'],
     ['Liberation', 'Purification Force Field', '29.83% (continuous) + 636.20% (explosion)', 'Pulls targets into the field, then explodes on expiry. 20s cooldown.'],
     ['Intro', 'Essence of Tao', '33.80%×3+67.60%'],
     ['Outro', 'Transcendence', 'Resonance Liberation DMG Amp +38% (14s)', 'Grants the incoming Resonator this buff — no direct DMG.'],
@@ -4963,7 +4976,7 @@ const CHARACTER_ROTATIONS = {
     { type: 'Intro', skill: 'Essence of Tao', note: 'Swap into her — fires automatically, pulling enemies in and building Chi toward the Forte gauge.' },
     { type: 'Basic ATK', skill: 'Fengyiquan Stage 1-4', note: 'Tap Basic Attack repeatedly for the 4-stage combo — builds Chi toward the 120 max.' },
     { type: 'Skill', skill: 'Calming Air', note: 'HOLD Skill to enter Parry Stance — successfully Chi Parrying/Chi Countering an attack builds Chi faster than the Basic Attack combo alone; 12s cooldown.' },
-    { type: 'Forte', skill: 'Primordial Chi Spiral', duration: 3, note: 'Once Chi is maxed, HOLD Basic Attack to unleash Zhoutian Progress — a channeled 3s state that reduces DMG taken by 50% and heals the active Resonator every 6s afterward.' },
+    { type: 'Forte', skill: 'Primordial Chi Spiral', duration: 3, note: 'Once Chi is maxed, HOLD Heavy Attack to unleash Zhoutian Progress — a channeled 3s state that reduces DMG taken by 50% and heals the active Resonator every 6s afterward.' },
     { type: 'Liberation', skill: 'Purification Force Field', note: 'Press Liberation to group enemies together — the field explodes for damage when it expires; 20s cooldown.' },
     { type: 'Outro', skill: 'Transcendence', note: 'Swap out to trigger this automatically — grants the incoming Resonator +38% Resonance Liberation DMG for 14s.' },
   ],
