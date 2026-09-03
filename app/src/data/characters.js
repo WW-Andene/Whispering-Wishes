@@ -1231,8 +1231,14 @@ const CHARACTER_DATA = {
     skills: ['Frosty Punches', 'Scroll Divination', 'Fortune\'s Favor', 'Poetic Essence'],
     ascension: { boss: 'Topological Confinement', common: 'Ring', specialty: 'Violet Coral' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Cadence' },
-    bestEchoes: ['Fallacy of No Return', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc', 'Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
-    weaponAlts: { alt4: ['Marcato', 'Gauntlets#21D', 'Celestial Spiral'] },
+    // bestWeapon/weaponAlts/bestEchoes corrected 2026-09-03 against a fresh Prydwen dump: bestWeapon was
+    // 'Abyss Surges' (only #3 by this source's own ranking), but this source explicitly ranks Marcato
+    // #1, calling it "Best weapon for Youhu by far thanks to its massive Energy Generation... A top
+    // option at S1 or S5" — swapped, with Abyss Surges (a 5★, unlike the other three 4★ options) moved
+    // to weaponAlts.alt5. bestEchoes had 5 malformed elements — trimmed to the real #1
+    // ([main, set] pair) per the same convention already applied to Lumi/Baizhi/Taoqi this session.
+    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Marcato',
+    weaponAlts: { alt5: ['Abyss Surges'], alt4: ['Gauntlets#21D', 'Celestial Spiral'] },
     teams: ['Youhu + Yinlin + Calcharo', 'Youhu + Zhezhi + Lingyang'] },
   // corrected/added 2026-08-18: desc rewritten to a real bio + gameplay-role summary (Prydwen calls her
   // "primarily utilized as a Hybrid buffer character" whose Outro amplifies Resonance SKILL DMG — a
@@ -1570,7 +1576,7 @@ const CHARACTER_DATA = {
   // DEF corrected 2026-08-18: was 1136 vs fandom's exact Lv.90 Ascensions and Stats table (10,025.00 /
   // 250.00 / 1,136.65, rounds to 1137) and Prydwen's own Lv.90 stat screen (DEF 1137).
   ['Mortefi',       10025, 250, 1137, 125],
-  ['Youhu',         9975,  262, 1051, 125],
+  ['Youhu',         9975,  263, 1051, 125],
   // ATK/DEF corrected 2026-08-18: were 337/879, truncated instead of rounded from fandom's exact Lv.90
   // Ascensions and Stats table (8,500.00 / 337.50 / 879.98, rounds to 338/880), matching Prydwen's own
   // Lv.90 stat screen (ATK 338, DEF 880).
