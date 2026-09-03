@@ -1339,7 +1339,15 @@ const CHARACTER_DATA = {
   // own "Optimized Burst Combo" skips straight from Intro to Liberation) — no engine block needed for it,
   // same "deliberately unmodeled, not a bug" precedent as Rover: Havoc's skipped Basic ATK step.
   ['Calcharo',      ['Liberation', 'Basic ATK', 'Outro'], [],                                  []],
-  ['Encore',        ['Basic ATK', 'Skill'],          [],                                      []],
+  // dmgFocus gained 'Liberation'/'Outro' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her
+  // own dump's Damage Profile: Liberation (Cosmos Rupture) is a genuine 14.6% (44,546) share and Outro
+  // (Thermal Field) a real 12.9% (39,258) — her 2nd- and 3rd-largest damage buckets — now fixed to
+  // libDmg/outroDmg categories in encore.blocks.js (both were uncategorized, silently rejecting
+  // teammate DMG Bonus buffs). Echo (7.1%) stays excluded — generic equipped-Echo damage, not her own
+  // kit's Echo Skill button, same distinction drawn for Rover: Spectro/Calcharo. Intro (2.85%) also got
+  // its missing skillDmg category fixed this pass but stays out of dmgFocus — low single digits, same
+  // exclusion precedent as Lucy's dropped Liberation focus.
+  ['Encore',        ['Basic ATK', 'Skill', 'Liberation', 'Outro'], [],                        []],
   ['Lingyang',      ['Basic ATK'],                   [],                                      []],
   ['Jinhsi',        ['Skill', 'Liberation'],         [],                                      []],
   ['Xiangli Yao',   ['Skill', 'Liberation'],         [],                                      []],

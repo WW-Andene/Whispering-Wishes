@@ -191,8 +191,8 @@ audit per character, all cross-checked against a fresh source dump:
 
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
-version of this pass; **Calcharo — added 2026-09-03, first character
-audited under the updated 9-dimension methodology** (see below). Many more
+version of this pass; **Calcharo, Encore — added 2026-09-03, first two
+characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -308,6 +308,29 @@ Chain nodes have a real icon, including 2 correctly-reused shared/generic
 icons (Basic ATK weapon icon, also covering Heavy ATK/Mid-air/Dodge
 Counter/Hounds Roar) — no gap found. 3 new tests, full suite green:
 1379/1379.
+
+**Encore pass (2026-09-03)**: her `Characters data dump/` file already
+existed from an earlier pass, with SKILL_MULTIPLIERS/CHARACTER_ROTATIONS/
+CHAR_BUFF_TABLE/base stats/tier/`bestWeapon`/`bestEchoes` all already
+confirmed clean, and 2 real bugs already fixed then (`weaponAlts.alt4`
+missing Radiant Dawn; `chain.s3`'s dead/no-op `heavyDmg` buff — both her
+Liberation-DMG-categorized finishers are `libDmg`, not `heavyDmg`, fixed to
+match). Closing dimensions 8-9 this pass found 2 more real bugs, the same
+shape as Calcharo's: `encore.intro.woolies-helpers` and
+`encore.outro.thermal-field` were both entirely uncategorized despite being
+real, sourced damage — Intro 2.85% (10,587) and Outro 12.9% (39,258, her
+2nd-largest bucket after Basic ATK) of her total per the dump's Damage
+Profile — silently rejecting Resonance Skill DMG Bonus and Outro DMG Bonus
+respectively. Fixed to `skillDmg` (Intro — no override text names a
+different category, default convention) and `outroDmg` (Outro — a
+free-to-quickswap DoT proc, explicitly not a team buff, same shape as
+Calcharo's Shadowy Raid). `dmgFocus` gained `'Liberation'` (14.6%, already
+correctly `libDmg`-categorized on `encore.forte.cosmos-rupture`) and
+`'Outro'` accordingly; Echo (7.1%, generic equipped-Echo damage, not her
+own kit's Echo Skill button) and Intro (2.85%, low single digits) both stay
+excluded per established precedent. Icons (dimension 9) checked and
+confirmed already fully wired for every rotation move and all 6 Resonance
+Chain nodes — no gap found. 4 new tests, full suite green: 1382/1382.
 
 ---
 

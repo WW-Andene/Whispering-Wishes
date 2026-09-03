@@ -20,7 +20,11 @@ export const ENCORE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Woolies Helpers' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('198.81%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus on a real 2.85% (10,587) damage share. No override text names
+    // a different category, same default-to-skillDmg convention as Calcharo's Intro/Augusta's Stride of
+    // Goldenflare.
+    damage: { hits: parseSkillMultiplierHits('198.81%'), category: 'skillDmg' },
     note: 'Restores some Mayhem.',
   },
   {
@@ -52,7 +56,11 @@ export const ENCORE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('176.76%×4') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Outro DMG Bonus on a real 12.9% (39,258) damage share — her 2nd-largest bucket after
+    // Basic ATK. Her own kit text is explicit this is a free-to-quickswap DoT proc, not a team buff —
+    // same outroDmg shape already fixed for Rover: Havoc's Soundweaver/Calcharo's Shadowy Raid.
+    damage: { hits: parseSkillMultiplierHits('176.76%×4'), category: 'outroDmg' },
     note: 'AoE burn field around the Skill target, every 1.5s for 6s (4 ticks) — no team buff, pure DoT proc.',
   },
 
