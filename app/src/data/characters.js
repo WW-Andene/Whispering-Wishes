@@ -17,13 +17,23 @@ const CHARACTER_DATA = {
   // materials, and weapon type (Sword) are identical across all four since it's the same resonator.
   // Source: ww.nanoka.cc character pages 1502 (Spectro), 1604 (Havoc), 1406 (Aero), 1309 (Electro), v3.6,
   // 2026-08-16. Tier source: prydwen.gg tier list, last updated 01/Aug/2026.
+  // Fixed 2026-09-03 against a real prydwen.gg .mht snapshot (confirmed genuine via its own
+  // Snapshot-Content-Location header). SKILL_MULTIPLIERS/RESONANCE_CHAIN_DATA/CHARACTER_ROTATIONS/base
+  // stats all already matched exactly. 3 real bugs found and fixed: bestEchoes named 'Mourning Aix'
+  // (Celestial Light set — a different echo than intended) + 'Eternal Radiance 5pc' (only a situational
+  // "Special Echo Set" in the source, not its top-listed Best Echo Set) — the source's actual #1 Best
+  // Echo Set, also the exact set used in its own damage-profile calc, is Moonlit Clouds with main echo
+  // Impermanence Heron. weaponAlts.alt5 named 'Laser Shearer' and "Bloodpact's Pledge" — neither
+  // appears anywhere in this source (they're Rover: Electro's and Rover: Aero's own signature/alt
+  // weapons respectively); the source's only other 5★ alternative to bestWeapon is Blazing Brilliance
+  // (Changli's signature, explicitly usable by Resonance-Skill-focused Sword users).
   'Rover: Spectro': { rarity: 5, element: 'Spectro', weapon: 'Sword', role: 'Sub DPS',
     desc: "A wanderer who awoke with no memory on the shores of Solaris. Spectro attunement: a quick-swap Frazzle debuffer — Forte Circuit's Resonating Spin applies Spectro Frazzle (with Shimmer to stop decay) and Liberation Echoing Orchestra piles on more, then swaps out for the main DPS.",
     skills: ['Vibration Manifestation', 'Resonating Slashes', 'World in a Grain of Sand', 'Echoing Orchestra'],
     ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
-    bestEchoes: ['Mourning Aix', 'Eternal Radiance 5pc'], bestWeapon: 'Emerald of Genesis',
-    weaponAlts: { alt5: ['Laser Shearer', "Bloodpact's Pledge"], alt4: ['Lunar Cutter', 'Endless Collapse'], alt3: ['Sword of Night'] },
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Emerald of Genesis',
+    weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Lunar Cutter', 'Endless Collapse'], alt3: ['Sword of Night'] },
     teams: ['Phoebe + Rover: Spectro + Verina', 'Zani + Rover: Spectro + Verina', 'Rover: Spectro + Shorekeeper + Camellya'] },
   'Rover: Havoc': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
     desc: 'A wanderer who awoke with no memory on the shores of Solaris. Havoc attunement: an on-field main DPS — hold Heavy ATK at full Umbra to cast Devastation and enter Dark Surge, an enhanced-state combo that ends in the 1520%-ATK Liberation nuke Deadening Abyss.',
@@ -1740,7 +1750,9 @@ const CHARACTER_DATA = {
   ['Carlotta',      'T1',   'T3'],
   ['Zani',          'T1',   'T1.5'],
   ['Brant',         'T1',   'T1'],
-  ['Rover: Spectro', 'T0.5', 'T1.5'],
+  // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T0.5','T1.5'] — the dump's own
+  // Ratings section clearly lists T1.5 (ToA) / T2 (WW), Value Tier List separately shows T1.5/T3.
+  ['Rover: Spectro', 'T1.5', 'T2'],
   ['Rover: Aero',    'T1.5', 'T2'],
   ['Rover: Electro', 'T4',   'T4'],
   ['Jiyan',         'T1.5', 'T1.5'],
