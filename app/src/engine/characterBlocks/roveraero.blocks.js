@@ -70,7 +70,13 @@ export const ROVER_AERO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Mid-air:Plunging Attack' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('140.76%') },
+    // Fixed 2026-09-03: had no damage.category — missed during the 2026-09-02 pass on this character.
+    // Per the established Mid-air Attack convention (a Mid-air/Plunging Attack has no dedicated damage
+    // type of its own; it inherits Basic or Heavy ATK DMG per the character's own kit structure — her
+    // Mid-air Attack sits under the same "Basic Attack — Wind Cutter" family header as her other Basic
+    // ATK-slot moves, with no separate Heavy Attack override), resolves to basicDmg — closes the
+    // cross-character Mid-air sweep noted in ENGINE_MERGE_PLAN.md as still open for this character.
+    damage: { hits: parseSkillMultiplierHits('140.76%'), category: 'basicDmg' },
     note: 'Plunges back down to the ground.',
   },
   {

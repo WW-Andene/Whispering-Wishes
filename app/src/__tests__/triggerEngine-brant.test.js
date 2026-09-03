@@ -19,6 +19,49 @@ describe('triggerEngine parity — Brant', () => {
     expect(BRANT_BLOCKS.find(b => b.id === 'brant.chain.s6').effects[0].value).toBe(rc.s6.totalMult);
   });
 
+  // Fixed 2026-09-02 (Augusta S3 over-crediting pattern): S3 and S6 were both single UNSCOPED
+  // totalMult effects — totalMult applies unconditionally to every hit regardless of category, so
+  // both were silently boosting his whole kit (Intro/Liberation/Mid-air) instead of only their real
+  // named target (S3: Returned from Ashes only; S6: Mid-air Attack only).
+  it("S3's +42% only applies to Returned from Ashes (+ its S6 secondary blast), not his whole kit", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Brant'], BRANT_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS3 = resolveHitComposedDps(BRANT_BLOCKS, steps, ctx, 3500, 'fusion', 'Main DPS', null, 3);
+    const withoutS3Blocks = BRANT_BLOCKS.filter(b => b.id !== 'brant.chain.s3');
+    const withoutS3 = resolveHitComposedDps(withoutS3Blocks, steps, ctx, 3500, 'fusion', 'Main DPS', null, 3);
+    const returnedHit = withS3.hitLog.find(h => h.blockId === 'brant.forte.returned-from-ashes');
+    const returnedHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'brant.forte.returned-from-ashes');
+    expect(returnedHit.damage).toBeGreaterThan(returnedHitNoS3.damage);
+    const introHit = withS3.hitLog.find(h => h.blockId === 'brant.intro.applaud-for-me');
+    const introHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'brant.intro.applaud-for-me');
+    expect(introHit.damage).toBeCloseTo(introHitNoS3.damage, 5);
+    const midairHit = withS3.hitLog.find(h => h.blockId === 'brant.midair.stage-2-3-charged-flip');
+    const midairHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'brant.midair.stage-2-3-charged-flip');
+    expect(midairHit.damage).toBeCloseTo(midairHitNoS3.damage, 5);
+  });
+
+  it("S6's +30% only applies to Mid-air Attack, not his whole kit", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Brant'], BRANT_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS6 = resolveHitComposedDps(BRANT_BLOCKS, steps, ctx, 3500, 'fusion', 'Main DPS', null, 6);
+    const withoutS6Blocks = BRANT_BLOCKS.filter(b => b.id !== 'brant.chain.s6');
+    const withoutS6 = resolveHitComposedDps(withoutS6Blocks, steps, ctx, 3500, 'fusion', 'Main DPS', null, 6);
+    const midairHit = withS6.hitLog.find(h => h.blockId === 'brant.midair.stage-2-3-charged-flip');
+    const midairHitNoS6 = withoutS6.hitLog.find(h => h.blockId === 'brant.midair.stage-2-3-charged-flip');
+    expect(midairHit.damage).toBeGreaterThan(midairHitNoS6.damage);
+    const returnedHit = withS6.hitLog.find(h => h.blockId === 'brant.forte.returned-from-ashes');
+    const returnedHitNoS6 = withoutS6.hitLog.find(h => h.blockId === 'brant.forte.returned-from-ashes');
+    expect(returnedHit.damage).toBeCloseTo(returnedHitNoS6.damage, 5);
+  });
+
+  // Fixed 2026-09-02: had no damage.category at all — per the established Mid-air Attack convention
+  // (inherits Basic or Heavy ATK DMG per the character's own kit, never its own type), and Brant's kit
+  // never gives Mid-air Attack a "considered X DMG" override, so it resolves to basicDmg.
+  it('Mid-air Attack combo is basicDmg-categorized', () => {
+    const midair = BRANT_BLOCKS.find(b => b.id === 'brant.midair.stage-2-3-charged-flip');
+    expect(midair.damage.category).toBe('basicDmg');
+  });
+
   it('S4 stays correctly unmodeled (no block) — pure utility per RESONANCE_CHAIN_DATA', () => {
     expect(RESONANCE_CHAIN_DATA['Brant'].s4).toEqual({});
     expect(BRANT_BLOCKS.find(b => b.id === 'brant.chain.s4')).toBeUndefined();

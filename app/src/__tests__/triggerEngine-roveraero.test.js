@@ -13,6 +13,13 @@ describe('triggerEngine parity — Rover: Aero', () => {
     expect(ROVER_AERO_BLOCKS.find(b => b.id === 'roveraero.chain.s2')).toBeUndefined();
   });
 
+  // Fixed 2026-09-03 (missed in the 2026-09-02 pass): had no damage.category — per the established
+  // Mid-air Attack convention (inherits Basic or Heavy ATK DMG, never its own type), fixed to basicDmg.
+  it('Mid-air Plunging Attack is basicDmg-categorized', () => {
+    const midair = ROVER_AERO_BLOCKS.find(b => b.id === 'roveraero.midair.plunging-attack');
+    expect(midair.damage.category).toBe('basicDmg');
+  });
+
   it('S3-S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Rover: Aero'];
     expect(ROVER_AERO_BLOCKS.find(b => b.id === 'roveraero.chain.s3').effects[0].value).toBe(rc.s3.elemDmg);

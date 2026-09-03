@@ -34,7 +34,12 @@ export const BRANT_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row 'Mid-air, Charged Combo' has 5 arrow-separated stages; this step starts from stage 2 (per
     // its own label) through the end — stages 2-5.
-    damage: { hits: parseSkillMultiplierHits('332.5% → 93.0% → 169.0% → 253.9%') },
+    // Fixed 2026-09-02: had no damage.category at all — his kit text never gives Mid-air Attack a
+    // "considered X DMG" override, so per the established Mid-air Attack convention (a Mid-air/Plunging
+    // Attack inherits Basic or Heavy ATK DMG per the character's own kit, never its own type — already
+    // applied to Ciaccona/Lupa/Cartethyia/Luuk Herssen/Qingxiao), and Brant is a Basic-ATK-focused sword
+    // character with no Heavy Attack replacement tied to Mid-air, this resolves to basicDmg.
+    damage: { hits: parseSkillMultiplierHits('332.5% → 93.0% → 169.0% → 253.9%'), category: 'basicDmg' },
     note: 'Stages 2-5 of the 5-stage Mid-air Charged Combo (starts from stage 2 per the step\'s own "Stage 2-3" label).',
   },
   {
@@ -111,7 +116,17 @@ export const BRANT_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 42 }],
+    // Fixed 2026-09-02 (Augusta S3 over-crediting pattern): was a single UNSCOPED `totalMult:42`
+    // effect — totalMult applies unconditionally to EVERY hit regardless of category, so this was
+    // silently boosting his whole kit (Intro, Liberation, Mid-air combo) by +42%, when the kit text
+    // is explicit this is scoped to just Returned from Ashes ("The DMG Multiplier of Returned from
+    // Ashes is increased by 42%"). Scoped via scopedToBlockId to both Returned from Ashes AND its S6
+    // secondary blast (a direct 30%-of-Returned-from-Ashes proportional hit, so it compounds the same
+    // way at Sequence 6+, where both nodes are simultaneously unlocked).
+    effects: [
+      { stat: 'totalMult', value: 42, scopedToBlockId: 'brant.forte.returned-from-ashes' },
+      { stat: 'totalMult', value: 42, scopedToBlockId: 'brant.chain.s6-secondary-blast' },
+    ],
     note: "Returned from Ashes' own DMG Multiplier +42%.",
   },
   // S4 correctly has NO block — per RESONANCE_CHAIN_DATA's own audit comment, its real effect
@@ -130,7 +145,10 @@ export const BRANT_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 30 }],
+    // Fixed 2026-09-02 (same Augusta S3 over-crediting pattern as S3 above): was a single UNSCOPED
+    // `totalMult:30` effect, silently boosting his whole kit instead of just Mid-air Attack ("Mid-air
+    // Attack's DMG Multiplier is increased by 30%" — Mid-air Attack only). Scoped via scopedToBlockId.
+    effects: [{ stat: 'totalMult', value: 30, scopedToBlockId: 'brant.midair.stage-2-3-charged-flip' }],
     note: "Mid-air Attack's own DMG Multiplier +30%. Real node ALSO grants a secondary blast on Returned from Ashes worth 30% of its own DMG — now modeled separately as brant.chain.s6-secondary-blast (Phase 0.5 gap #6, fixed 2026-09-02), a real damage block rather than a stat modifier.",
   },
 ];

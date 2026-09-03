@@ -506,7 +506,14 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Metallic Drip' },
     bestEchoes: ['Dragon of Dirge', 'Tidebreaking Courage 5pc'], bestWeapon: 'Unflickering Valor',
-    weaponAlts: { alt5: ['Laser Shearer', "Bloodpact's Pledge"], alt4: ['Overture', 'Commando of Conviction'], alt3: ['Sword of Night'] },
+    // weaponAlts fixed 2026-09-02 against a real prydwen.gg .mht snapshot: alt4 named 'Overture' and
+    // 'Commando of Conviction', neither of which appears anywhere in the source's Best Weapons list —
+    // that list is exhaustive (5 weapons total: signature + 4 alts, ending right where the Echo section
+    // starts) and contains no 4-star weapon at all. The 2 real alts missing from alt5 (Red Spring
+    // 73.1%, Camellya's 5★ signature; Emerald of Genesis 71.3%, a standard 5★, both confirmed 5★ via
+    // this file's own convention elsewhere) are moved there instead; alt4 cleared rather than filled
+    // with unsourced weapons.
+    weaponAlts: { alt5: ['Laser Shearer', "Bloodpact's Pledge", 'Red Spring', 'Emerald of Genesis'], alt4: [], alt3: ['Sword of Night'] },
     teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper'] },
   // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
   // and ww.nanoka.cc's character #1607 sheet. desc: title "Sea of Dreams" (nanoka) prepended and blurb
@@ -3497,6 +3504,13 @@ const SKILL_MULTIPLIERS = {
   'Brant': [
     ['Basic ATK', 'Stage 1-4', '50.5% → 101.4% → 132.3% → 140.1%'],
     ['Mid-air', 'Charged Combo', '122.9% → 332.5% → 93.0% → 169.0% → 253.9%'],
+    // Added 2026-09-02, sourced from a real prydwen.gg .mht snapshot's own Basic Attack Multipliers
+    // table — previously missing entirely. Confirmed unused in his real CHARACTER_ROTATIONS (which
+    // goes straight from Intro/Liberation into Mid-air combat, never a grounded Heavy Attack/Plunging
+    // Attack/Dodge Counter), so no engine block wired — reference data only.
+    ['Heavy ATK', 'Standard', '197.55%', 'Confirmed unused in his real rotation (goes straight to Mid-air combat).'],
+    ['Heavy ATK', 'Plunging Attack', '104.78%', 'Considered Basic Attack DMG per its own kit text. Only used optionally, immediately Ultimate-cancelled — no separate DPS contribution in the modeled rotation.'],
+    ['Dodge Counter', 'Standard', '38.03%×3 + 57.04%×2', 'Confirmed unused in his real rotation.'],
     ['Heavy ATK', 'Rhapsodic Riff', '169.0%'],
     ['Skill', 'Anchors Aweigh', '200.4% + 133.6%'],
     ['Liberation', 'To the Horizon', '85.1%×4 + 340.2%'],
