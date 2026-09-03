@@ -1020,11 +1020,13 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
     bestEchoes: ['Nightmare: Feilian Beringal', 'Sierra Gale 5pc'], bestWeapon: 'The Last Dance',
     weaponAlts: { alt5: ['Woodland Aria', 'Static Mist'], alt4: ['Relativistic Jet', 'Undying Flame'], alt3: ['Pistols of Night'] },
-    // teams corrected 2026-08-18: 'Aalto + Ciaccona + Shorekeeper' paired him with a Spectro Main DPS —
-    // Aalto's Outro (Dissolving Mist) grants the incoming Resonator Aero DMG Deepen, which only benefits
-    // an Aero Main DPS (sources name Jiyan/Iuno/Cartethyia as his actual synergy partners). Replaced with
-    // Cartethyia, matching the Aero-Erosion pairing already established elsewhere in this file.
-    teams: ['Aalto + Cartethyia + Shorekeeper', 'Aalto + Jiyan + Verina'] },
+    // teams corrected 2026-09-03 against a fresh Prydwen dump: 'Cartethyia' is never mentioned anywhere
+    // in this source's Synergies section for Aalto (which explicitly names Ciaccona, Jiyan, Iuno, and
+    // Rover: Aero) — Ciaccona is explicitly called "the best partner for Main DPS Aalto" and "a core
+    // component of all mono Aero teams", the real Aero-Erosion pairing this table intended. The prior
+    // 2026-08-18 note's premise (an Aero Main DPS benefiting from his Outro's Aero DMG Deepen) still
+    // holds — it just named the wrong character.
+    teams: ['Aalto + Ciaccona + Shorekeeper', 'Aalto + Jiyan + Verina'] },
   'Baizhi': { rarity: 4, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
     desc: "Devoted Huaxu Academy researcher accompanied by her companion You'an. Glacio healer who restores HP via Resonance Skill and Liberation, providing consistent team sustain with low field time.",
     skills: ['Destined Promise', 'Emergency Plan', 'Momentary Union', 'Cycle of Life'],
@@ -1518,7 +1520,7 @@ const CHARACTER_DATA = {
   // matching it only because it's never read.
   ['Jingran',       15375, 313, 0,    125],
   // 4★
-  ['Aalto',         9850,  262, 1075, 150],
+  ['Aalto',         9850,  263, 1076, 150],
   ['Baizhi',        12813, 213, 1002, 175],
   ['Chixia',        9088,  300, 953,  150],
   // corrected 2026-08-18: HP/ATK/DEF were slightly off (9437/262/1148) vs Prydwen's exact Lv.90 stat
