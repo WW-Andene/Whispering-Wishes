@@ -1400,7 +1400,16 @@ const CHARACTER_DATA = {
   // explicitly "(considered Echo Skill DMG)". She has no real heavyDmg-categorized damage at all (the
   // engine blocks' own heavyDmg category on those two hits was itself a bug, fixed alongside this).
   ['Sigrika',       ['Echo'],                        [],                                      []],
-  ['Chixia',        ['Skill', 'Basic ATK'],          [],                                      []],
+  // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: 'Basic ATK' was WRONG — she deals a genuine 0% Basic ATK share (no basicDmg-categorized
+  // damage block exists anywhere in chixia.blocks.js at all; the one kit path that WOULD deal Basic
+  // Attack DMG, exiting DAKA DAKA! below 30 Thermobaric Bullets, never fires in her real modeled
+  // rotation, matching the dump's explicit "Basic 0%"). Liberation (32.5%, 2nd-largest bucket) and
+  // Outro (9.6%) were both entirely missing, despite Liberation already correctly libDmg-categorized
+  // and Outro now outroDmg-categorized above. Echo (7.3%) stays excluded — generic equipped-Echo
+  // damage. Intro (~3.35%) also got its missing skillDmg category fixed this pass but folds into the
+  // already-included Skill category rather than needing its own tag.
+  ['Chixia',        ['Skill', 'Liberation', 'Outro'], [],                                      []],
   // dmgFocus gained 'Basic ATK' 2026-09-02 against a fresh the source dump: her damage-output simulation
   // shows Basic at a genuine 22.8% share (Basic Attack - Stringblade + Ephemeral Transcendence's own
   // Basic Attack, both correctly categorized basicDmg in the engine blocks) — comparable in size to

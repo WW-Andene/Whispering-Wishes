@@ -20,7 +20,10 @@ export const CHIXIA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Grand Entrance' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('49.21%×2 + 24.61%×4') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. The dump's own
+    // multiplier table labels this row generically "Skill Damage", same convention as Calcharo/Encore/
+    // Jianxin/Lingyang/Aalto/Baizhi.
+    damage: { hits: parseSkillMultiplierHits('49.21%×2 + 24.61%×4'), category: 'skillDmg' },
     note: 'Builds Thermobaric Bullets.',
   },
   {
@@ -39,7 +42,11 @@ export const CHIXIA_BLOCKS = [
     // Row is '19.89% per Thermobaric Bullet' — CHARACTER_ROTATIONS' own note says this step spends
     // all 30 Thermobaric Bullets in one go before auto-triggering Boom Boom, so 30 hits are used
     // (same "use the max-stack/full-consumption value" convention as this table's own selfBuff entry).
-    damage: { hits: Array.from({ length: 30 }, () => ({ atkPct: 19.89 })) },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus on her single BIGGEST damage source (30 hits at 19.89% each,
+    // the majority of her real 47.8% Skill share). The kit text is explicit: "continuously consumes
+    // Thermobaric Bullets to attack (Resonance Skill DMG)."
+    damage: { hits: Array.from({ length: 30 }, () => ({ atkPct: 19.89 })), category: 'skillDmg' },
     note: 'Continuous-fire state; spending all 30 Thermobaric Bullets in one DAKA DAKA! auto-triggers Boom Boom.',
   },
   {
@@ -47,7 +54,13 @@ export const CHIXIA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Heroic Bullets: Boom Boom' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('437.39%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus on her single hardest-hitting move (437.39%). The kit text is
+    // explicit: "casts Boom Boom (Resonance Skill DMG) instead" — NOT Basic Attack DMG, despite being
+    // triggered by pressing the Basic Attack button; the OTHER exit path (below 30 bullets) is the one
+    // explicitly labeled "Basic Attack IV (Basic Attack DMG)", but that path never fires in her real
+    // modeled rotation (matches the dump's own Damage Profile: Basic 0%).
+    damage: { hits: parseSkillMultiplierHits('437.39%'), category: 'skillDmg' },
     note: 'Auto-triggered when 30 Thermobaric Bullets are spent in one DAKA DAKA!, exits DAKA DAKA!. Always Crits (S1), not modeled (no guaranteed-crit flag wired for this proc source).',
   },
   {
@@ -62,7 +75,11 @@ export const CHIXIA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('530%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Outro DMG Bonus on a real 9.6% (29,494) damage share. Her own kit text is pure
+    // damage — "a shock wave... hitting enemies in range," no team buff — same outroDmg shape already
+    // fixed for Rover: Havoc's Soundweaver/Calcharo's Shadowy Raid/Encore's Thermal Field.
+    damage: { hits: parseSkillMultiplierHits('530%'), category: 'outroDmg' },
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──

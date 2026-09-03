@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CHIXIA_BLOCKS } from '../engine/characterBlocks/chixia.blocks.js';
@@ -42,5 +42,20 @@ describe('triggerEngine parity — Chixia', () => {
     expect(fired.has('chixia.forte.daka-daka')).toBe(true);
     expect(fired.has('chixia.forte.boom-boom')).toBe(true);
     expect(fired.has('chixia.liberation.blazing-flames')).toBe(true);
+  });
+
+  it("Intro/DAKA DAKA!/Boom Boom are all skillDmg-categorized (were uncategorized) — the kit text explicitly labels DAKA DAKA! and Boom Boom \"(Resonance Skill DMG)\", not Basic Attack DMG despite Boom Boom being triggered via the Basic Attack button", () => {
+    expect(CHIXIA_BLOCKS.find(b => b.id === 'chixia.intro.grand-entrance').damage.category).toBe('skillDmg');
+    expect(CHIXIA_BLOCKS.find(b => b.id === 'chixia.forte.daka-daka').damage.category).toBe('skillDmg');
+    expect(CHIXIA_BLOCKS.find(b => b.id === 'chixia.forte.boom-boom').damage.category).toBe('skillDmg');
+  });
+
+  it("Outro (Leaping Flames) is outroDmg-categorized (was uncategorized) — pure damage, no team buff", () => {
+    const outro = CHIXIA_BLOCKS.find(b => b.id === 'chixia.outro.leaping-flames');
+    expect(outro.damage.category).toBe('outroDmg');
+  });
+
+  it("dmgFocus is ['Skill', 'Liberation', 'Outro'] — 'Basic ATK' was wrong (she deals a genuine 0% Basic ATK share per her dump's Damage Profile, no basicDmg block exists at all), Liberation (32.5%) and Outro (9.6%) were both missing", () => {
+    expect(CHARACTER_DATA['Chixia'].dmgFocus).toEqual(['Skill', 'Liberation', 'Outro']);
   });
 });

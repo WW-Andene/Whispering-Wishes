@@ -192,8 +192,8 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto, Baizhi — added 2026-09-03, first seven characters audited under
-the updated 9-dimension methodology** (see below). Many more
+Aalto, Baizhi, Chixia — added 2026-09-03, first eight characters audited
+under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -443,6 +443,29 @@ already being real, correctly `libDmg`/`heavyDmg`-categorized blocks
 `CHARACTER_ROTATIONS` — fixed to `['Skill', 'Liberation', 'Heavy ATK']`.
 Icons (dimension 9) checked and confirmed already fully wired. 2 new
 tests, full suite green: 1395/1395.
+
+**Chixia pass (2026-09-03)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 3 real bugs (base stats off-
+by-1, a wrong `bestWeapon`, a wrong `teams` partner). Redoing dimensions
+5/8 found the largest miscategorization impact of any character audited
+so far: `chixia.forte.daka-daka` (her single BIGGEST damage source — 30
+hits at 19.89% each) and `chixia.forte.boom-boom` (her single
+hardest-hitting individual move, 437.39%) were BOTH uncategorized, despite
+the kit text explicitly labeling both "(Resonance Skill DMG)" — not
+ambiguous at all, unlike most other characters' default-convention fixes.
+Boom Boom specifically is triggered by pressing the Basic Attack button
+but is NOT Basic Attack DMG per its own kit text; the actual "(Basic
+Attack DMG)" exit path only fires below 30 Thermobaric Bullets, a branch
+that never occurs in her real modeled rotation (confirmed by the dump's
+own Damage Profile: Basic 0%). This also exposed `dmgFocus` was actively
+WRONG, not just incomplete: it included `'Basic ATK'` despite her genuine
+0% Basic ATK share (no `basicDmg` block exists anywhere in
+`chixia.blocks.js`), while Liberation (32.5%, her 2nd-largest bucket) and
+Outro (9.6%, also fixed to `outroDmg`, was uncategorized) were both
+missing. Fixed to `['Skill', 'Liberation', 'Outro']`. Intro (~3.35%) also
+got its missing `skillDmg` category fixed but folds into the already-
+included Skill category. Icons (dimension 9) checked and confirmed already
+fully wired. 3 new tests, full suite green: 1398/1398.
 
 ---
 
