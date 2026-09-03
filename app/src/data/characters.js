@@ -6549,15 +6549,19 @@ const RESONANCE_CHAIN_DATA = {
   // schema (a per-cast stacking buff gated to an alternate, unmodeled rotation branch).
   'Lynae':        { s1: { basicDmg: 120 }, s2: { allDmg: 25 }, s3: { basicDmg: 90 }, s4: { atkPct: 20 }, s5: { libDmg: 70 }, s6: {} },
   // Mornye (confirmed via Nanoka/Prydwen 2026-08-16 cross-check). S1: interrupt immunity + Interfered Marker duration/
-  // condition changes, no flat % (was allDmg:15, no basis). S2: team Crit DMG+32% max vs Interfered Marker targets (was
-  // deepen:10, wrong stat+value). S3 corrected 2026-09-02 (fresh Prydwen dump cross-check, missed by the above audit
-  // pass — same gap class as Chisa's own missed S3): was totalMult:10, an unexplained placeholder — real effect is
-  // "casting Distributed Array additionally restores 25 Concerto Energy and 100 Relative Momentum, once every 25s",
-  // pure resource restoration with zero DPS component, zeroed to {} (same "no real DPS component" pattern already
-  // used on Lynae's S6/Shorekeeper's S1/S3/S4/S5). S4: High Syntony Field healing+30%, not a DPS stat (was atkPct:10,
-  // no basis). S5: Critical Protocol Liberation DMG Mult+40% (was totalMult:10, no basis). S6: Critical Protocol DMG
-  // Mult+400% (was deepen:15, no basis)
-  'Mornye':       { s1: { totalMult: 15 }, s2: { critDmg: 32 }, s3: {}, s4: { totalMult: 10 }, s5: { libDmg: 40 }, s6: { libDmg: 400 } },
+  // condition changes, no flat % (was allDmg:15, no basis) — like S4 below, this was left at a stale
+  // totalMult:15 placeholder despite this comment already describing it as having no flat DPS %; zeroed
+  // 2026-09-03 (found via a systematic block-coverage audit). S2: team Crit DMG+32% max vs Interfered
+  // Marker targets (was deepen:10, wrong stat+value). S3 corrected 2026-09-02 (fresh Prydwen dump cross-check,
+  // missed by the above audit pass — same gap class as Chisa's own missed S3): was totalMult:10, an
+  // unexplained placeholder — real effect is "casting Distributed Array additionally restores 25 Concerto
+  // Energy and 100 Relative Momentum, once every 25s", pure resource restoration with zero DPS component,
+  // zeroed to {} (same "no real DPS component" pattern already used on Lynae's S6/Shorekeeper's S1/S3/S4/S5).
+  // S4: High Syntony Field healing+30%, not a DPS stat (was atkPct:10, no basis) — same stale-placeholder
+  // bug as S1: still had totalMult:10 despite this comment already saying it's not a DPS stat; zeroed
+  // 2026-09-03. S5: Critical Protocol Liberation DMG Mult+40% (was totalMult:10, no basis). S6: Critical
+  // Protocol DMG Mult+400% (was deepen:15, no basis)
+  'Mornye':       { s1: {}, s2: { critDmg: 32 }, s3: {}, s4: {}, s5: { libDmg: 40 }, s6: { libDmg: 400 } },
   // Roccia R-chain re-verified verbatim 2026-08-31 against wutheringwaves.fandom.com/wiki/Roccia/Combat's
   // Resonance Chain section (Chrome/Windows UA + google.com referer + jsRender). Every prior value was
   // fabricated (no basis in any node's real effect):
@@ -6675,10 +6679,13 @@ const RESONANCE_CHAIN_DATA = {
   // Resonance Liberation DMG" per her own kit text (confirmed by Prydwen's own damage-type breakdown: Liberation
   // is 84.5% of her real rotation damage), modeled as libDmg — the smaller secondary effect (a further +120% to
   // just the Ring-of-Chainsaw consumption bonus specifically) is left unmodeled, same "larger effect only"
-  // precedent already used for S2 above. S4: improves Havoc Bane trigger rate (utility). S5: Moment of Nihility
-  // Liberation DMG Mult+100% (was totalMult:10, no basis). S6: Unseen Snare-Finality: targets take 30% more
-  // Negative Status DMG (was deepen:15, wrong value)
-  'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { libDmg: 120 }, s4: { totalMult: 10 }, s5: { libDmg: 100 }, s6: { deepen: 30 } },
+  // precedent already used for S2 above. S4: improves Havoc Bane trigger rate (utility) — was left at a
+  // stale totalMult:10 placeholder despite this comment already describing it as pure utility; zeroed
+  // 2026-09-03 (found via a systematic block-coverage audit) to actually match this comment's own
+  // description, same "no real DPS component" pattern as Lynae's S6/Shorekeeper's S1/S3/S4/S5. S5:
+  // Moment of Nihility Liberation DMG Mult+100% (was totalMult:10, no basis). S6: Unseen Snare-Finality:
+  // targets take 30% more Negative Status DMG (was deepen:15, wrong value)
+  'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { libDmg: 120 }, s4: {}, s5: { libDmg: 100 }, s6: { deepen: 30 } },
   // Ciaccona S1: ATK+35% after Basic ATK (conditional)
   // Full re-audit 2026-09-01 against wutheringwaves.fandom.com/wiki/Ciaccona/Combat, cross-checked
   // against ww.nanoka.cc/character/1407 (both agree on every node's exact wording):

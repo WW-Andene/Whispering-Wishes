@@ -85,4 +85,17 @@ describe('triggerEngine parity — Zani', () => {
     expect(fired.has('zani.forte.heavy-slash-nightfall')).toBe(true);
     expect(fired.has('zani.liberation.the-last-stand')).toBe(true);
   });
+
+  // Found 2026-09-03 via a systematic block-coverage audit: the note on zani.basic.stage3 claimed
+  // Skill:Standard Defense Protocol had "no matching SKILL_MULTIPLIERS row at all" — stale, a real row
+  // (63.94%) exists and it's a real CHARACTER_ROTATIONS step ('Press Skill').
+  it('Skill:Standard Defense Protocol is a real damage block and fires in her rotation', () => {
+    const block = ZANI_BLOCKS.find(b => b.id === 'zani.skill.standard-defense-protocol');
+    expect(block.damage.hits.length).toBeGreaterThan(0);
+    expect(block.damage.category).toBe('skillDmg');
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Zani'], ZANI_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(ZANI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'spectro', 'Main DPS');
+    expect(hitLog.some(h => h.blockId === 'zani.skill.standard-defense-protocol')).toBe(true);
+  });
 });

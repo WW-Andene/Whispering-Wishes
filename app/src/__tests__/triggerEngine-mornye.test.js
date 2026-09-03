@@ -5,10 +5,10 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { MORNYE_BLOCKS } from '../engine/characterBlocks/mornye.blocks.js';
 
 describe('triggerEngine parity — Mornye', () => {
-  it('S1/S4 stay correctly unmodeled (no block) despite RESONANCE_CHAIN_DATA still storing stale nonzero values', () => {
+  it('S1/S4 stay correctly unmodeled (no block) — RESONANCE_CHAIN_DATA fixed 2026-09-03 to match, was stale nonzero placeholders', () => {
     const rc = RESONANCE_CHAIN_DATA['Mornye'];
-    expect(rc.s1.totalMult).toBeGreaterThan(0); // the flat table's own stale, never-actually-applied value
-    expect(rc.s4.totalMult).toBeGreaterThan(0);
+    expect(rc.s1).toEqual({});
+    expect(rc.s4).toEqual({});
     expect(MORNYE_BLOCKS.find(b => b.id === 'mornye.chain.s1')).toBeUndefined();
     expect(MORNYE_BLOCKS.find(b => b.id === 'mornye.chain.s4')).toBeUndefined();
   });

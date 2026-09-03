@@ -93,4 +93,17 @@ describe('triggerEngine parity — Cartethyia', () => {
     expect(block.condition.element).toBe('aero');
     expect(block.effects[0]).toEqual({ stat: 'deepen', value: 50 });
   });
+
+  // Found 2026-09-03 via a systematic block-coverage audit: her kit text applies real Erosion stacks
+  // on Intro/Skill/Basic4, but none of those blocks carried a dotApplier — a complete absence of
+  // Erosion-application tracking for this character (dotReactionsFromBlocks.js reads dotApplier, not
+  // effects, for shared team-wide DOT reactions).
+  it('Intro, Skill, and Basic4 all tag the same flat Erosion dotApplier value (MAX-not-sum aggregation, no double-count risk)', () => {
+    const intro = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.intro.sword-to-mark-tides-trace');
+    const skill = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.skill.base-form');
+    const basic4 = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.basic.base-form-1-4');
+    for (const b of [intro, skill, basic4]) {
+      expect(b.dotApplier).toEqual({ mechanic: 'erosion', value: 3 });
+    }
+  });
 });

@@ -3,8 +3,7 @@
 // Zani converted to TriggerBlocks. Sourced from characters.js's already-audited
 // CHAR_BUFF_TABLE['Zani'], RESONANCE_CHAIN_DATA['Zani'] (+ its own audit comment,
 // read directly for each node's real mechanic), SKILL_MULTIPLIERS['Zani'], and
-// CHARACTER_ROTATIONS['Zani']. No new numbers invented. Skill:Standard Defense
-// Protocol has NO matching SKILL_MULTIPLIERS row at all, not modeled.
+// CHARACTER_ROTATIONS['Zani']. No new numbers invented.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -23,12 +22,24 @@ export const ZANI_BLOCKS = [
     note: 'Builds Redundant Energy. Inherent Skill Quick Response grants +12% Spectro DMG Bonus for 14s (see zani.selfbuff.quick-response below).',
   },
   {
+    // Added 2026-09-03 (found via a systematic block-coverage audit): a real SKILL_MULTIPLIERS row
+    // (63.94%, "Base Resonance Skill hit before the block-stance follow-up") now exists for this — the
+    // old note claiming "no matching row at all" was stale, left over from before that row was added.
+    // Real CHARACTER_ROTATIONS step too ('Press Skill — a small hit that enters a block stance').
+    id: 'zani.skill.standard-defense-protocol',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Standard Defense Protocol' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('63.94%'), category: 'skillDmg' },
+    note: 'Base Resonance Skill hit before the block-stance follow-up — enters a block stance for up to 2s, ended early if swapped off before it resolves.',
+  },
+  {
     id: 'zani.basic.stage3',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Basic ATK:Stage 3' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('127.3%'), category: 'basicDmg' },
-    note: 'Exits the block stance manually — Stagnates the target, restores 10 Redundant Energy. Skill:Standard Defense Protocol, the block-stance cast preceding this, has no matching SKILL_MULTIPLIERS row at all, not modeled.',
+    note: 'Exits the block stance manually — Stagnates the target, restores 10 Redundant Energy.',
   },
   {
     id: 'zani.skill.targeted-action',

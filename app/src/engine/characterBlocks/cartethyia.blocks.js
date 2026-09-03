@@ -35,6 +35,12 @@ export const CARTETHYIA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('2.08%×3 + 6.24%'), basis: 'HP' },
     note: "Inflicts 2 Aero Erosion stacks, summons Sword of Discord's Shadow (max 1, 20s).",
+    // Added 2026-09-03: this character had NO dotApplier anywhere despite being a real Erosion
+    // applier — value:3 matches her own CHAR_BUFF_TABLE.debuffs.erosion base value ("3 base", 6 with
+    // Rover: Aero present), same pattern as Ciaccona's own 4 Erosion-applying blocks (the MAX-not-
+    // summed aggregation means tagging all 3 of her real applying moves with the same value is
+    // correct, not double-counting).
+    dotApplier: { mechanic: 'erosion', value: 3 },
   },
   {
     id: 'cartethyia.basic.base-form-1-4',
@@ -43,6 +49,7 @@ export const CARTETHYIA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('4.78% → 13.13% → 17.12% → 15.1%'), category: 'basicDmg', basis: 'HP' },
     note: "Stage 4 inflicts 1 Aero Erosion stack, grants Sword of Divinity's Shadow (max 1, 20s).",
+    dotApplier: { mechanic: 'erosion', value: 3 },
   },
   {
     id: 'cartethyia.skill.base-form',
@@ -51,6 +58,7 @@ export const CARTETHYIA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('6.89%×3 + 8.86%'), category: 'skillDmg', basis: 'HP' },
     note: "Applies 2 stacks of Aero Erosion, summons Sword of Virtue's Shadow (max 1, 20s).",
+    dotApplier: { mechanic: 'erosion', value: 3 },
   },
   {
     id: 'cartethyia.skill.fleurdelys-1',

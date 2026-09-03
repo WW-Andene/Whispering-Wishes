@@ -55,6 +55,51 @@ export const YINLIN_BLOCKS = [
     note: "28.81% → 33.82%×2 → 13.99%×7 → 75.16% at Lv.10 across the 4-stage combo; also restores Judgment Points and can carry Furious Thunder procs while yinlin.chain.s6-pursuit-of-justice's window is open (see below).",
   },
   {
+    // Added 2026-09-03 (found via a systematic block-coverage audit): CHARACTER_ROTATIONS['Yinlin']
+    // has a SECOND, later Basic ATK step — 'Zapstring's Dance Stage 1' (tapped once more to restore
+    // Judgment Points toward the 100 cap) — distinct from the first full Stage 1-4 combo above and
+    // with no block of its own, a real silent 0-DMG gap for that step. Only the Stage 1 portion lands
+    // (interrupted before later stages), so this uses just that first term (28.81%) of the same
+    // already-sourced SKILL_MULTIPLIERS row, not a new number.
+    id: 'yinlin.basic.zapstrings-dance-stage1',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: "Basic ATK:Zapstring's Dance Stage 1" },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('28.81%'), category: 'basicDmg' },
+    note: 'A single Basic Attack tap restores Judgment Points toward the 100 cap — only Stage 1 of the combo lands (28.81%), the same row as yinlin.basic.zapstrings-dance above, not a new multiplier.',
+  },
+  {
+    // Added 2026-09-03 (same audit): Heavy ATK Standard has a real SKILL_MULTIPLIERS row (29.83%×2)
+    // and a real CHARACTER_ROTATIONS step ('HOLD Heavy Attack — consumes Stamina for a puppet
+    // strike'), but had no block at all — a real silent 0-DMG gap.
+    id: 'yinlin.heavy.standard',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Heavy ATK:Standard' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('29.83%×2'), category: 'heavyDmg' },
+    note: 'HOLD Heavy Attack — consumes Stamina for a puppet strike, cast right before Lightning Execution in the real rotation.',
+  },
+  {
+    // Added 2026-09-03 (same audit): Intro Raging Storm has a real SKILL_MULTIPLIERS row (14.32%×10)
+    // and is the very first step of her real rotation ('Swap into her — fires automatically'), but had
+    // no block at all — a real silent 0-DMG gap on her opener.
+    id: 'yinlin.intro.raging-storm',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Intro:Raging Storm' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('14.32%×10') },
+    note: 'Swap into her — fires automatically, hits a large area and applies Sinner\'s Mark.',
+  },
+  {
     id: 'yinlin.skill.magnetic-roar',
     source: SOURCE,
     kind: 'damage',

@@ -10,7 +10,9 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createStats, applyResonanceChain } from '../features/teams/calcEngine.js';
-import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 
@@ -83,5 +85,24 @@ describe('triggerEngine parity — Yinlin', () => {
     expect(s6.trigger.opensOnProc).toEqual(['cast:Liberation:Thundering Wrath']);
     expect(s6.trigger.windowSeconds).toBe(30);
     expect(s6.trigger.maxProcs).toBe(4);
+  });
+
+  // Found 2026-09-03 via a systematic block-coverage audit: her literal opener (Intro:Raging Storm),
+  // Heavy ATK:Standard, and the standalone Zapstring's Dance Stage 1 tap were all real
+  // CHARACTER_ROTATIONS steps with zero block coverage — a silent 0-DMG gap on her opening move.
+  it('Intro:Raging Storm, Heavy ATK:Standard, and Zapstring\'s Dance Stage 1 are real damage blocks and all fire in her rotation', () => {
+    const intro = YINLIN_BLOCKS.find(b => b.id === 'yinlin.intro.raging-storm');
+    const heavy = YINLIN_BLOCKS.find(b => b.id === 'yinlin.heavy.standard');
+    const stage1 = YINLIN_BLOCKS.find(b => b.id === 'yinlin.basic.zapstrings-dance-stage1');
+    expect(intro.damage.hits.length).toBeGreaterThan(0);
+    expect(heavy.damage.hits.length).toBeGreaterThan(0);
+    expect(stage1.damage.hits.length).toBeGreaterThan(0);
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yinlin'], YINLIN_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(YINLIN_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'electro', 'Sub DPS');
+    const fired = new Set(hitLog.map(h => h.blockId));
+    expect(fired.has('yinlin.intro.raging-storm')).toBe(true);
+    expect(fired.has('yinlin.heavy.standard')).toBe(true);
+    expect(fired.has('yinlin.basic.zapstrings-dance-stage1')).toBe(true);
   });
 });
