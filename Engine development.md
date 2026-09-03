@@ -656,6 +656,20 @@ rule above rather than via a coincidental test failure. Fixed the same way — `
 had at least one instance — this shape is clearly not rare, and checking for it is now a standard part
 of this project's per-character pass, not an occasional lucky find.
 
+**9th/10th confirmed instances, 2026-09-03 — IMPORTANT scope correction**: Jiyan's `chain.s5-outro-mult`
+(Outro Discipline DMG Mult +120%) turned out to be `trigger:{type:'swap-out'}`, not `'cast'` — every
+prior instance this session happened to use a `'cast'` trigger, which had (wrongly) narrowed how this
+bug was described and searched for. Re-reading `resolveHitComposedDps.js`'s actual filter — `buffBlocks`
+requires `b.timing?.duration != null && b.trigger.type !== 'passive'` — makes clear the real condition
+is **ANY non-passive trigger type with no duration**, not specifically `trigger.type === 'cast'`. Fixed
+via the same passive+scopedToBlockId pattern. Also fixed Jiyan's `chain.s6` (a familiar `'cast'`-shaped
+instance) for correctness, though it currently has zero live impact — no `jiyan.forte.emerald-storm-
+finale` damage block exists to scope to (Finale is never cast in the modeled `CHARACTER_ROTATIONS`).
+**Updated standing rule**: when auditing a `RESONANCE_CHAIN_DATA` node's engine block, check
+`trigger.type !== 'passive'` AND `timing.duration == null` together — regardless of which specific
+non-passive trigger type is used (`'cast'`, `'swap-out'`, or any other) — not just blocks that happen to
+read `trigger:{type:'cast',...}`.
+
 **Fix shape, not yet done**: (1) a real architecture fix — either make `statsAtInstant()` also check a
 3rd bucket of "cast-scoped, same-instant-only" buffs (blocks matching this shape, applied only to hits at
 their own exact trigger instant, not before/after), or add a cheap default `timing.duration` (e.g. 0.1s)

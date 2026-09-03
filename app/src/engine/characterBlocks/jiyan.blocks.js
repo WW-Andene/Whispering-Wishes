@@ -49,7 +49,10 @@ export const JIYAN_BLOCKS = [
     // Coordinated ATK triggered when the incoming Resonator lands a Heavy ATK (8s window, once per
     // second, up to 2 procs) — the real per-ally-hit trigger isn't modeled, the max 2-proc case is
     // used as a representative value.
-    damage: { hits: [{ atkPct: 313.40 }, { atkPct: 313.40 }] },
+    // Fixed 2026-09-03: had no damage.category — the kit text explicitly calls this a "Coordinated
+    // Attack", which maps directly to this schema's own `coordDmg` category (already a supported
+    // EXTERNAL_STAT_KEYS entry), not a bare uncategorized hit.
+    damage: { hits: [{ atkPct: 313.40 }, { atkPct: 313.40 }], category: 'coordDmg' },
     note: 'Coordinated ATK triggered when the incoming Resonator lands a Heavy ATK (8s window, once per second, up to 2 procs) — modeled at the max 2-proc case, not the real per-ally-hit trigger condition.',
   },
 
@@ -91,10 +94,17 @@ export const JIYAN_BLOCKS = [
   {
     id: 'jiyan.chain.s5-outro-mult',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'swap-out' },
+    // Fixed 2026-09-03: was `trigger:{type:'swap-out'}` with no `timing.duration` — a new variant of
+    // the item-12 dead-buff architecture bug (Engine development.md): resolveHitComposedDps.js's
+    // statsAtInstant() only reads `passiveBlocks` (trigger.type==='passive') and `buffWindows`
+    // (duration != null) — ANY non-passive trigger type with no duration is invisible, not just
+    // 'cast' specifically (the shape found on every prior instance this session). Converted to
+    // `trigger:{type:'passive'}` + `scopedToBlockId` so it fires and stays scoped to only Discipline's
+    // own hit.
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 120 }],
-    note: "Resolution: Outro Skill Discipline gains an ADDITIONAL +120% DMG Multiplier — cast-scoped to the Outro (instant, no persistent duration).",
+    effects: [{ stat: 'totalMult', value: 120, scopedToBlockId: 'jiyan.outro.discipline' }],
+    note: "Resolution: Outro Skill Discipline gains an ADDITIONAL +120% DMG Multiplier.",
   },
   {
     id: 'jiyan.chain.s5-atk-stack',
@@ -108,7 +118,13 @@ export const JIYAN_BLOCKS = [
   {
     id: 'jiyan.chain.s6',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Forte:Emerald Storm: Finale' },
+    // Fixed 2026-09-03 (correctness fix, no live DPS impact today): was `trigger:{type:'cast',...}`
+    // with no `timing.duration` — the same dead cast-scoped/no-duration no-op shape found repeatedly
+    // this session (Engine development.md item 12). Doesn't currently matter for the modeled rotation
+    // since no `jiyan.forte.emerald-storm-finale` damage block exists to scope to (Finale is never
+    // cast in the real CHARACTER_ROTATIONS), but fixed anyway for correctness and in case a Finale
+    // block is ever added.
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 240 }],
     note: "Fortitude: Momentum stacks (gained on Heavy ATK, Tactical Strike, or Windqueller use, cap 2) that Emerald Storm: Finale consumes entirely on cast, each stack giving Finale's OWN DMG Multiplier +120% (up to +240% at 2 stacks) — modeled at the 2-stack max case per the audit comment's own convention. The real per-stack/conditional mechanic (0/120/240 depending on Momentum at cast time) isn't modeled. Finale isn't used in her real CHARACTER_ROTATIONS (which stays under the 30-Resolve Lance of Qingloong branch), so this block is present but does not fire in the standard rotation.",

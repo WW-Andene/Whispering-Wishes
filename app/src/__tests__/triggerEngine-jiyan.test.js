@@ -35,6 +35,32 @@ describe('triggerEngine parity — Jiyan', () => {
     expect(s4.timing.duration).toBe(30);
   });
 
+  // Fixed 2026-09-03: had no damage.category — the kit text explicitly calls this a "Coordinated
+  // Attack", mapping directly to this schema's own coordDmg category.
+  it('Outro Discipline is coordDmg-categorized', () => {
+    const outro = JIYAN_BLOCKS.find(b => b.id === 'jiyan.outro.discipline');
+    expect(outro.damage.category).toBe('coordDmg');
+  });
+
+  // Fixed 2026-09-03: S5's outro-mult block was trigger:{type:'swap-out'} with no timing.duration —
+  // a new variant of the item-12 dead-buff architecture bug (any non-passive trigger with no duration
+  // is invisible to statsAtInstant(), not just 'cast' specifically). Converted to passive +
+  // scopedToBlockId so it actually fires.
+  it("S5's Outro DMG Multiplier actually boosts Discipline's damage (was a dead no-op)", () => {
+    const mult = JIYAN_BLOCKS.find(b => b.id === 'jiyan.chain.s5-outro-mult');
+    expect(mult.trigger.type).toBe('passive');
+    expect(mult.effects[0].scopedToBlockId).toBe('jiyan.outro.discipline');
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jiyan'], JIYAN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS5 = resolveHitComposedDps(JIYAN_BLOCKS, steps, ctx, 3000, 'aero', 'Main DPS', null, 5);
+    const withoutS5Blocks = JIYAN_BLOCKS.filter(b => b.id !== 'jiyan.chain.s5-outro-mult');
+    const withoutS5 = resolveHitComposedDps(withoutS5Blocks, steps, ctx, 3000, 'aero', 'Main DPS', null, 5);
+    const outroHit = withS5.hitLog.find(h => h.blockId === 'jiyan.outro.discipline');
+    const outroHitNoS5 = withoutS5.hitLog.find(h => h.blockId === 'jiyan.outro.discipline');
+    expect(outroHit.damage).toBeGreaterThan(outroHitNoS5.damage);
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jiyan'], JIYAN_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(JIYAN_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'aero', 'Main DPS');
