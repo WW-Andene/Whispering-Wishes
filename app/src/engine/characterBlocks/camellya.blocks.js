@@ -125,6 +125,21 @@ export const CAMELLYA_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('198.81%') },
   },
   {
+    // Added 2026-09-03: SKILL_MULTIPLIERS['Camellya'] was missing a 'Skill, Floral Ravage' row entirely
+    // even though CHARACTER_ROTATIONS['Camellya'] already casts 'Skill:Floral Ravage' as its
+    // Blossom-Mode-ending step — that step was silently resolving to 0 DMG. Row added (52.61%×5,
+    // confirmed against a fresh Prydwen dump), block added here to match.
+    id: 'camellya.skill.floral-ravage',
+    source: SOURCE,
+    kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Floral Ravage' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    damage: { hits: parseSkillMultiplierHits('52.61%×5'), category: 'skillDmg' },
+    note: 'Ends Blossom Mode. Considered Basic Attack DMG per kit text; categorized skillDmg here matching the Vining Waltz combo blocks above.',
+  },
+  {
     id: 'camellya.outro.twining-base',
     source: SOURCE,
     kind: 'damage',

@@ -1768,7 +1768,11 @@ const CHARACTER_DATA = {
   ['Changli',       'T2',   'T1.5'],
   ['Zhezhi',        'T2',   'T3'],
   ['Baizhi',        'T2',   'T3'],
-  ['Camellya',      'T3',   'T2'],
+  // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T3','T2'] — a ToA/WW swap. The dump's
+  // own Ratings section clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List is the one that
+  // shows T3(ToA)/T2(WW) — this column pair matches the standard Ratings section (per convention used
+  // throughout this table), not the Value list.
+  ['Camellya',      'T2',   'T3'],
   ['Danjin',        'T3',   'T3'],
   ['Roccia',        'T3',   'T2'],
   ['Yinlin',        'T3',   'T4'],
@@ -3579,12 +3583,22 @@ const SKILL_MULTIPLIERS = {
   // row except Outro was roughly half its real value (e.g. Ephemeral was '635%' vs the real 1262.45%,
   // Fervor Efflorescent '605%' vs the real 1202.81%) — a consistent ~2x understatement suggesting a
   // stale/mis-scaled data source. Outro (329.2% + 459%) was already correct and is unchanged.
+  // Missing-row gap closed 2026-09-03 against a fresh Prydwen dump: 5 rows present in the source were
+  // absent here — Mid-air Attack, Dodge Counter, Floral Ravage, Vining Ronde, Atonement. Floral Ravage
+  // is the most consequential: CHARACTER_ROTATIONS['Camellya'] already casts 'Skill:Floral Ravage' as
+  // its Blossom-Mode-ending step, so its absence here was silently resolving that rotation step to 0
+  // DMG (the same zero-damage-rotation-step bug class found on ~10 other characters this project).
   'Camellya': [
     ['Basic ATK', 'Thorns 1-5', '62.53% → 46.48%×2 → 50.70%×3 → 24.70%×20 → 48.17%×4'],
     ['Heavy ATK', 'Standard', '88.14%×3'],
+    ['Mid-air', 'Plunging Attack', '65.61%×2'],
+    ['Dodge Counter', 'Standard', '99.40%×3'],
     ['Skill', 'Crimson Blossom', '113.62%×2'],
     ['Skill', 'Vining Waltz 1-4', '96.33% → 45.63%×2 → 21.95%×6 → 67.59%×3'],
     ['Skill', 'Blazing Waltz', '21.95%×19'],
+    ['Skill', 'Floral Ravage', '52.61%×5', 'Blossom Mode\'s Resonance Skill replacement; considered Basic Attack DMG per its own kit text. Ends Blossom Mode on cast.'],
+    ['Basic ATK', 'Vining Ronde', '52.95%×3', 'Blossom Mode\'s Jump replacement (Jump: Vining Ronde in the White Hair rotation); considered Basic Attack DMG. Ends Blossom Mode on cast.'],
+    ['Basic ATK', 'Atonement', '113.33%×2', 'Blossom Mode\'s Dodge Counter replacement (Dodge Counter Atonement); considered Basic Attack DMG.'],
     ['Forte', 'Ephemeral (Budding)', '1262.45%'],
     ['Liberation', 'Fervor Efflorescent', '1202.81%'],
     ['Intro', 'Everblooming', '198.81%'],

@@ -4,8 +4,9 @@
  * case resolved by splitting one Resonance Chain node into two blocks).
  */
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS } from '../data/characters.js';
 import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
+import { parseSkillMultiplierHits } from '../engine/skillMultiplierParser.js';
 
 describe('triggerEngine parity — Camellya', () => {
   it('Seedbed/Epiphyte self-buffs match CHAR_BUFF_TABLE.selfBuffs', () => {
@@ -41,5 +42,17 @@ describe('triggerEngine parity — Camellya', () => {
     const block = CAMELLYA_BLOCKS.find(b => b.id === 'camellya.outro.twining-ephemeral-bonus');
     expect(block.trigger.type).toBe('requires-prior-cast');
     expect(block.trigger.requiresPriorCast).toBe('cast:Forte:Ephemeral');
+  });
+
+  it('Floral Ravage damage block exists and matches its now-added SKILL_MULTIPLIERS row (was a 0-DMG rotation step)', () => {
+    const row = SKILL_MULTIPLIERS['Camellya'].find(r => r[1] === 'Floral Ravage');
+    expect(row).toBeTruthy();
+    const block = CAMELLYA_BLOCKS.find(b => b.id === 'camellya.skill.floral-ravage');
+    expect(block).toBeTruthy();
+    expect(block.trigger).toEqual({ type: 'cast', on: 'Skill:Floral Ravage' });
+    expect(block.damage.hits).toEqual(parseSkillMultiplierHits(row[2]));
+    // The rotation actually casts this step — confirms it's not a dead/unused row.
+    const usesIt = CHARACTER_ROTATIONS['Camellya'].some(step => step.type === 'Skill' && step.skill === 'Floral Ravage');
+    expect(usesIt).toBe(true);
   });
 });
