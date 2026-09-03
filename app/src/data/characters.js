@@ -1103,8 +1103,15 @@ const CHARACTER_DATA = {
     skills: ['Feather as Blade', 'Zephyr Domain', 'Wind Spirals', 'Echoing Feathers'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Ring', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
-    bestEchoes: ['Moonlit Clouds 5pc', 'Sierra Gale 5pc'], bestWeapon: 'Emerald of Genesis',
-    weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Lumingloss', 'Endless Collapse'], alt3: ['Sword of Night'] },
+    // bestWeapon/weaponAlts/bestEchoes corrected 2026-09-03 against a fresh Prydwen dump: bestEchoes had
+    // two bare set names with no main echo — the source's actual #1 Best Echo Set is Moonlit Clouds
+    // paired with main echo Impermanence Heron; Sierra Gale (paired with Nightmare: Feilian Beringal) is
+    // filed under "Special Echo Sets" as a DPS-focused situational pick, not the real best. bestWeapon
+    // was 'Emerald of Genesis' (100.00%, actually #2), while this source ranks Blazing Brilliance ahead
+    // of it at 102.39% with no caveat favoring Emerald of Genesis for Yangyang specifically — swapped,
+    // demoting Emerald of Genesis into weaponAlts.alt5.
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Blazing Brilliance',
+    weaponAlts: { alt5: ['Emerald of Genesis'], alt4: ['Lumingloss', 'Endless Collapse'], alt3: ['Sword of Night'] },
     teams: ['Yangyang + Xiangli Yao + Shorekeeper', 'Yangyang + Changli + Verina', 'Yangyang + Carlotta + Verina'] },
   // Sanhua corrected 2026-08-18 via Prydwen's Kit/Build/Gameplay tabs: desc lore confirmed via fandom's
   // Official Introduction ("the loyal and reliable guard of Jinzhou Magistrate Jinhsi") — was already
@@ -4694,7 +4701,7 @@ const SKILL_MULTIPLIERS = {
   // ww.nanoka.cc/character/1402 (both agree exactly) — every damage value was already correct. Added the
   // two entirely missing rows (Mid-air Attack, Dodge Counter).
   'Yangyang': [
-    ['Basic ATK', 'Feather as Blade Stage 1-4', '44.73% → 59.64% → 46.81%×2 → 59.36%×2+79.14%', 'Up to 4 consecutive Aero strikes.'],
+    ['Basic ATK', 'Feather as Blade Stage 1-4', '44.73% → 59.64% → 46.81%×2 → 59.36%×2+79.15%', 'Up to 4 consecutive Aero strikes.'],
     ['Mid-air', 'Attack', '92.44%'],
     ['Dodge Counter', 'Standard', '87.07%×2'],
     ['Heavy ATK', 'Feather as Blade (hold)', '19.88%×3', 'Lunge forward, consumes Stamina.'],
