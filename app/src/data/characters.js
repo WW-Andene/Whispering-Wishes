@@ -575,9 +575,14 @@ const CHARACTER_DATA = {
     skills: ['Illusion Collapse', 'Dance with Shadows', 'Beneath the Sea', 'Between Illusion and Reality'],
     ascension: { boss: 'Cleansing Conch', common: 'Polygon Core', specialty: 'Seaside Cendrelis' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Helix' },
+    // teams corrected 2026-09-03 against a fresh Prydwen dump: 'Cantarella + Camellya + Shorekeeper' —
+    // this source explicitly says Camellya deals most of her damage via Basic ATKs (which Cantarella's
+    // Outro doesn't amplify) and names Danjin/Sanhua/Roccia as all clearly better Camellya buffers than
+    // Cantarella. Replaced with Jinhsi, one of only two Skill-DMG-focused DPS this source names as an
+    // actual (if outclassed-by-Zhezhi/Yinlin) niche partner for her.
     bestEchoes: ['Lorelei', 'Midnight Veil 5pc'], bestWeapon: 'Whispers of Sirens',
     weaponAlts: { alt5: ['Rime-Draped Sprouts', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
-    teams: ['Cantarella + Phrolova + Qiuyuan', 'Cantarella + Camellya + Shorekeeper'] },
+    teams: ['Cantarella + Phrolova + Qiuyuan', 'Cantarella + Jinhsi + Shorekeeper'] },
   // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
   // and ww.nanoka.cc's character #1507 sheet. desc: title "Scorched Radiance" (nanoka) prepended and
   // blurb rewritten — the previous desc said she "builds Frazzle stacks via Resonance Skill counters and
@@ -1790,7 +1795,9 @@ const CHARACTER_DATA = {
   ['Rover: Electro', 'T4',   'T4'],
   ['Jiyan',         'T1.5', 'T1.5'],
   ['Phoebe',        'T1.5', 'T2'],
-  ['Cantarella',    'T1.5', 'T0.5'],
+  // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T1.5','T0.5'] — the dump's Ratings
+  // section (Hybrid role) clearly lists T3 (ToA) / T1.5 (WW), matched exactly by its Value Tier List.
+  ['Cantarella',    'T3',   'T1.5'],
   ['Mortefi',       'T1.5', 'T1.5'],
   // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T1.5','T2'] — the dump's own Ratings
   // section (Hybrid role) clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List shows T1.5/T3.
@@ -3683,14 +3690,21 @@ const SKILL_MULTIPLIERS = {
   // with no multiplier row to match against at all, meaning that rotation step previously had ZERO damage
   // multiplier resolving for it. Added a 'Skill'/'Jolt' row too: Jolt is a real Havoc DMG instance (198.81%,
   // counted as Basic ATK DMG) auto-triggered when a Hazy Dream'd target takes damage, previously undocumented.
+  // 4 rows added 2026-09-03 against a fresh Prydwen dump (Mid-air, Dodge Counter, Abysmal Vortex,
+  // Shadowy Sweep) — real kit moves present in the source but missing entirely; none of the 4 are used
+  // in CHARACTER_ROTATIONS, so this is a Kit-tab completeness fix, not a zero-damage rotation bug.
   'Cantarella': [
     ['Basic ATK', 'Stage 1-3', '79.53% → 36.44%×4 → 72.57%×2'], // was '79.5% → 145.8% → 145.1%' (summed, not per-hit)
     ['Heavy ATK', 'Standard', '57.18%×2'], // was '57.2%×2' — kept for reference, NOT the move the rotation actually uses
     ['Heavy ATK', 'Delusive Dive', '53.05%×2'], // NEW — the Trance-consuming enhanced Heavy ATK that enters Mirage; the rotation step referenced this name but no row existed to match it
+    ['Mid-air', 'Plunging Attack', '41.99%+62.99%'],
+    ['Dodge Counter', 'Standard', '53.01%×4'],
     ['Skill', 'Graceful Step', '73.60%×2'], // was '73.6%×2', rounding only
     ['Skill', 'Flickering Reverie', '196.23%'], // was '196.2%', rounding only
     ['Skill', 'Jolt', '198.81%'], // NEW — auto-trigger off Hazy Dream on-hit, considered Basic ATK DMG
     ['Forte', 'Phantom Sting 1-3', '35.33%×3 → 62.93%×2 → 64.62%×4'], // was '106.0% → 125.9% → 258.5%' (summed, not per-hit)
+    ['Forte', 'Abysmal Vortex', '41.99%+62.99%', 'Mirage-state Mid-air Attack replacement.'],
+    ['Forte', 'Shadowy Sweep', '75.09%×3', 'Mirage-state Dodge Counter replacement; Basic Attack right after casts Phantom Sting Stage 2.'],
     ['Forte', 'Perception Drain', '667.99%×2'], // was '668.0%×2', rounding only
     ['Liberation', 'Flowing Suffocation', '376.00% + 14.54%×21'], // was '376.0% + 14.5%×21', rounding only
     ['Intro', 'Ripple', '42.25%×4'], // was '42.3%×4', rounding only
