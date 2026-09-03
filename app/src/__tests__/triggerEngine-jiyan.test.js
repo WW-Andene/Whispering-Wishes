@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { JIYAN_BLOCKS } from '../engine/characterBlocks/jiyan.blocks.js';
@@ -70,5 +70,19 @@ describe('triggerEngine parity — Jiyan', () => {
     expect(fired.has('jiyan.heavy.lance-of-qingloong')).toBe(true);
     expect(fired.has('jiyan.skill.windqueller')).toBe(true);
     expect(fired.has('jiyan.outro.discipline')).toBe(true);
+  });
+
+  // Found 2026-09-03 via a Phase A full-dimension audit (REMAINING_WORK.md 1c): dmgFocus wrongly
+  // included 'Liberation' — his own dump's Damage Profile shows a genuine 0% Liberation share (both
+  // Liberation-slot casts are "considered Heavy Attack DMG" per his own kit text, the same
+  // no-true-libDmg pattern already found on Augusta), and no jiyan.blocks.js block is libDmg-
+  // categorized at all. 'Skill' (8.9%, real, already correctly skillDmg-categorized) was missing.
+  it("dmgFocus is ['Heavy ATK', 'Skill'] — not 'Liberation' (his real Liberation-slot damage is 0%, all counted as Heavy ATK)", () => {
+    expect(CHARACTER_DATA['Jiyan'].dmgFocus).toEqual(expect.arrayContaining(['Heavy ATK', 'Skill']));
+    expect(CHARACTER_DATA['Jiyan'].dmgFocus).not.toContain('Liberation');
+  });
+
+  it('no block in his kit is libDmg-categorized (confirms the dmgFocus fix)', () => {
+    expect(JIYAN_BLOCKS.some(b => b.damage?.category === 'libDmg')).toBe(false);
   });
 });

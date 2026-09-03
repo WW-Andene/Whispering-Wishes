@@ -168,14 +168,14 @@ attempted again on a hunch.
 The plan's own methodology for reaching "fully merged": an 8-dimension
 solo audit per character (SKILL_MULTIPLIERS / CHARACTER_ROTATIONS /
 RESONANCE_CHAIN_DATA / CHAR_BUFF_TABLE / dmgFocus / weapon data / echo data /
-engine-block parity, all cross-checked against a fresh source). 7 characters
-(Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc, **Rover:
-Aero — added 2026-09-03**) have gone through this as a *complete*
+engine-block parity, all cross-checked against a fresh source). 8 characters
+(Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc, Rover: Aero,
+**Jiyan — added 2026-09-03**) have gone through this as a *complete*
 8-dimension pass. Many more have had *partial*, targeted fixes from later
 sessions' dump-verification passes (see the `Characters data dump/` audit
 trail and this session's `auditBlockCoverage.mjs` sweep — that sweep covers
 3 of the 8 dimensions: rotation-step/chain/buff-table coverage, not the
-full 8). The remaining ~50 characters have not had a full Phase A pass. Not
+full 8). The remaining ~49 characters have not had a full Phase A pass. Not
 urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
@@ -229,6 +229,22 @@ tier low on both axes, missed by both earlier passes. Also fixed a smaller
 internal-consistency bug found in passing: `weaponAlts.alt5` duplicated
 `bestWeapon` itself as its own "alternative" — no other character in this
 file does that. 2 new tests, full suite green: 1373/1373.
+
+**Jiyan pass (2026-09-03)**: his dump already had 3 real bugs found and
+fixed in an earlier pass (missing `coordDmg` category on his Outro, 2
+dead-buff-architecture chain nodes), with SKILL_MULTIPLIERS/RESONANCE_CHAIN_
+DATA/weapon/echo data all already confirmed clean. This pass closed the
+remaining dimensions and found a genuine dmgFocus bug the same shape as
+Augusta's earlier fix: `dmgFocus` included `'Liberation'`, but his own
+dump's Damage Profile shows a genuine **0% Liberation share** — his kit
+text is explicit both Liberation-slot casts (Prelude, which enters Qingloong
+Mode with no direct damage of its own, and Finale) are "considered Heavy
+Attack DMG," and confirmed no block in `jiyan.blocks.js` is `libDmg`-
+categorized at all. `'Skill'` (8.9%, real, already correctly `skillDmg`-
+categorized, fires twice in his real rotation) was missing and added
+instead. CHARACTER_ROTATIONS, CHAR_BUFF_TABLE, tier, and teams were all
+independently re-checked and confirmed already correct. 2 new tests, full
+suite green: 1375/1375.
 
 ---
 

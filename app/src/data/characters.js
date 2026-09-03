@@ -1319,7 +1319,13 @@ const CHARACTER_DATA = {
 // Every character must have complete dmgFocus
 [
   // 5★ Main DPS
-  ['Jiyan',         ['Heavy ATK', 'Liberation'],     [],                                      []],
+  // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against his own dump's Damage
+  // Profile: Liberation is a genuine 0% share — his kit text is explicit both Liberation-slot casts
+  // (Prelude entering Qingloong Mode, and Finale) are "considered Heavy Attack DMG", the same "no true
+  // libDmg damage at all" pattern already found/fixed for Augusta. No jiyan.blocks.js block is
+  // libDmg-categorized at all, confirming it. Skill (8.9%, real, already correctly skillDmg-categorized
+  // as jiyan.skill.windqueller, fires twice in his real rotation) was missing and is added instead.
+  ['Jiyan',         ['Heavy ATK', 'Skill'],           [],                                      []],
   ['Calcharo',      ['Liberation', 'Basic ATK'],     [],                                      []],
   ['Encore',        ['Basic ATK', 'Skill'],          [],                                      []],
   ['Lingyang',      ['Basic ATK'],                   [],                                      []],
