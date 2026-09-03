@@ -6655,8 +6655,15 @@ const RESONANCE_CHAIN_DATA = {
   // stated directly in the node text and no buff-of-a-buff category in this schema. Zeroed to {}. S4
   // (totalMult: 3) was undocumented — real effect is a 20% chance for Scroll Divination to skip its
   // cooldown, a proc-based effective-cooldown-reduction with no flat DMG% equivalent. Zeroed to {}.
-  // TODO: needs Phase 2 schema for S1's defensive proc, S2's buff-of-a-buff, and S4's proc-based cooldown
-  // reduction.
+  // S1/S4 still need Phase 2 schema (defensive proc, proc-based cooldown reduction respectively).
+  // S2 re-investigated 2026-09-03: `Characters data dump/Youhu/Youhu.md` now exists and sources all
+  // 3 base values it doubles (Antithesis +70%, Triplet +175%, Perfect Rhyme all three at once) — the
+  // "missing data" blocker is gone. But CHARACTER_ROTATIONS['Youhu'] (below) never actually casts
+  // Poetic Essence at all: her real modeled loop spends each drawn Antique immediately via Ruyi
+  // (Antique Appraisal) rather than banking all 4 Auspices to hold Basic ATK for Poetic Essence. So
+  // S2 correctly stays zeroed — not for lack of a schema/data anymore, but because the move it doubles
+  // never fires in this character's real modeled rotation, the same zero-DPS-in-this-context boundary
+  // already established for Chisa's S4/Mornye's S1/S4.
   'Youhu':        { s1: {}, s2: {}, s3: { atkPct: 20 }, s4: {}, s5: { critRate: 15 }, s6: { critDmg: 60 } },
   // Danjin re-verified 2026-08-18 against fandom's Chain Node pages (Crimson Heart of Justice/Dusted
   // Mirror/Fleeting Blossom/Solitary Carnation/Reigning Blade/Bloodied Jade wikitext, cross-checked with

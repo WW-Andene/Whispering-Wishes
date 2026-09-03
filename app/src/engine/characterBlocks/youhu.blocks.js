@@ -71,8 +71,12 @@ export const YOUHU_BLOCKS = [
   //    audit's own zeroing) ──
   // S1 correctly has NO block — 10% chance of 5s damage/interruption immunity on Lucky Draw, pure
   // defensive utility, zero DPS component.
-  // S2 correctly has NO block — the DMG bonus of Antithesis/Triplet/Perfect Rhyme on Poetic Essence is
-  // doubled (a multiplier-of-a-multiplier), no buff-of-a-buff category in this schema.
+  // S2 correctly has NO block — re-investigated 2026-09-03 now that a dump file exists (see
+  // characters.js's own RESONANCE_CHAIN_DATA audit comment for the full reasoning): S2 doubles
+  // Antithesis/Triplet/Perfect Rhyme's DMG bonus on Poetic Essence, but her real modeled
+  // CHARACTER_ROTATIONS below never casts Poetic Essence at all — she always spends each drawn Antique
+  // immediately via Ruyi rather than banking to 4 Auspices. Zero-DPS-in-context, not a missing-schema
+  // gap anymore.
   {
     id: 'youhu.chain.s3',
     source: SOURCE, kind: 'buff',

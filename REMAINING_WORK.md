@@ -36,12 +36,15 @@ infrastructure. None need HP/live-state tracking except where noted.
   blocked only on a missing action tag, not new code: Luuk Herssen S4,
   Cartethyia S4, Mornye (×2), Galbrena's Afterflame. Lowest-risk, highest-value
   remaining item in this whole file.
-- **Youhu S2** (buff-of-a-buff — doubles Antithesis/Triplet/Perfect Rhyme's DMG
-  bonus on Poetic Essence). Originally deferred for "no dump file" — **that's
-  now stale**, `Characters data dump/Youhu/Youhu.md` exists and sources all
-  three base values (Antithesis +70%, Triplet +175%, Perfect Rhyme all three
-  at once). Buildable via the same flat-pre-computed-doubled-value trick
-  already used for Brant/Denia/Chisa. No new schema needed.
+- ~~Youhu S2~~ — **closed 2026-09-03, correctly still no block, for a different
+  reason than originally stated.** The "no dump file" blocker is gone
+  (`Characters data dump/Youhu/Youhu.md` now exists and sources all 3 base
+  values it doubles). But her real modeled `CHARACTER_ROTATIONS` never casts
+  Poetic Essence at all — she always spends each drawn Antique immediately via
+  Ruyi rather than banking to 4 Auspices. Same zero-DPS-in-context boundary as
+  Chisa's S4/Mornye's S1/S4, not a schema or data gap. Comments in
+  `youhu.blocks.js` and `characters.js`'s own audit note updated to reflect
+  this; no engine change needed.
 - **Early-forfeit-on-swap** (Carlotta, Changli, Yinlin — a buff on another
   character ends early if THAT character swaps out before its full duration).
   Needs threading the recipient's own swap-out timestamps into
