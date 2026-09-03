@@ -127,11 +127,41 @@ same tier as HP tracking):**
 
 4 of 5 mechanics migrated and verified (Electro Flare/Buling, Fusion
 Burst/Denia+Aemeath, Erosion/Ciaccona, Frazzle/Rover: Spectro). **Tune Break
-deliberately left for last, still untouched** — the most structurally
-involved of the five (per-character rupture/strain mode-locking already
-built for the legacy path via `tuneBreak.modeExclusive`/
-`competesWithFusionBurstReaction`/combinatorial mode resolution in
-`calcTeamStats.js`, but not yet expressed as TriggerBlocks).
+deliberately left for last, still untouched.**
+
+**Investigated 2026-09-03, confirmed genuinely not buildable without either
+fabricating data or faking a migration.** The other 4 mechanics all migrated
+cleanly because each has a real `dotApplier`-tagged block — a specific move
+in `CHARACTER_ROTATIONS` that applies it. Tune Break's base damage tick
+(`calcTuneBreakDmg()` in `calcEngine.js`) has no such anchor: `dmg =
+TUNE_BREAK_BASE_DMG * (1 + totalBoost*0.01) * breaksPerRot * defMult`, where
+`breaksPerRot`/`uptimeFactor` are derived purely from `rotTime` (the whole
+rotation's length) and the team's aggregate `tuneBreak.boostToTeam` — not
+from any specific character's hit. There is nothing here to attach a
+TriggerBlock's `trigger` to; it's an aggregate "roughly how many times does
+this happen across the whole rotation" heuristic, not an event.
+
+The 7 real Tune Break characters' own "Response" abilities (Lynae's Spectral
+Analysis, Lucy's Data Crash, Rebecca's Meltdown, Aemeath's Starburst, plus
+Denia/Mornye/Luuk Herssen) ARE individually well-sourced, exact values with
+a stated cadence — genuinely promising at first glance, the same shape as
+Yinlin's Furious Thunder windowed-proc. But each one is gated on "the team's
+own Tune Break trigger occurring," which traces back to the same
+rotTime-based aggregate above, not a real modeled step.
+
+Building this now would mean one of: (a) fabricating a fake per-move trigger
+for a mechanic that doesn't have one, or (b) porting the exact same
+rotTime-based heuristic into a TriggerBlock with a hollow/always-true
+trigger — not a real migration, just relabeling the same legacy math under
+a different file. Neither was done. Confirmed: this belongs in the same
+"structurally novel, needs a new simulation dimension" tier as the already-
+deferred HP-threshold (#13) and sustained-channel (#9) gaps, not a
+data-sourcing problem alone — the per-character rupture/strain
+mode-locking already built for the legacy path (`tuneBreak.modeExclusive`/
+`competesWithFusionBurstReaction`/combinatorial resolution in
+`calcTeamStats.js`) stays legacy-only. Revisit only if/when a real
+per-hit-anchored formulation of Tune Break's base tick is found — not
+attempted again on a hunch.
 
 ### 1c. Phase A — per-character full audit, mostly not done
 
