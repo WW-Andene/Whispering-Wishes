@@ -16,6 +16,7 @@ import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
 import { calcTeamStats } from '../../features/teams/calcTeamStats.js';
 import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getCombatRoleIcon } from '../utils/elementVisuals.js';
 import { hideOnError } from '../utils/imageHelpers.js';
+import { splitIntoParagraphs } from '../utils/textFormat.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
 import { FullSpineViewerButton } from '../components/FullSpineViewerButton.jsx';
@@ -85,50 +86,15 @@ const elementCornerFade = (hex) =>
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
-// Long-form kit/note prose in the data files is written as one dense run-on paragraph (audit-trail
-// style, not reader-facing) — often just a handful of very long compound sentences packed with
-// parentheticals, colons, and em-dashes. Grouping by a fixed sentence COUNT (the prior approach) still
-// produced a wall of text whenever those sentences were individually long, so this splits by an actual
-// length budget instead: walk sentence-by-sentence (". "/"; " before a capital letter or digit — avoids
-// breaking on "e.g." "vs." decimals, etc.) and start a new paragraph once the running paragraph would
-// exceed maxChars. A single sentence that alone exceeds the budget is further broken on its own
-// secondary clause boundaries (" — "/"; ") so no one paragraph is still an unreadable block.
-function splitIntoParagraphs(text, maxChars = 200) {
-  if (!text) return [];
-  const sentences = text.match(/[^.!?]+[.!?]+(?:['"’»]?\s+|$)/g) || [text];
-  const paragraphs = [];
-  let current = '';
-  const pushCurrent = () => { if (current.trim()) paragraphs.push(current.trim()); current = ''; };
-  for (const raw of sentences) {
-    const sentence = raw.trim();
-    if (!sentence) continue;
-    if (sentence.length > maxChars) {
-      pushCurrent();
-      // Oversized single sentence: break on its own em-dash/semicolon clause boundaries instead.
-      const clauses = sentence.split(/(?<=[;])\s+|\s+—\s+/);
-      let clausePara = '';
-      for (const clause of clauses) {
-        if (clausePara && (clausePara.length + clause.length + 3) > maxChars) {
-          paragraphs.push(clausePara.trim());
-          clausePara = clause;
-        } else {
-          clausePara = clausePara ? `${clausePara} — ${clause}` : clause;
-        }
-      }
-      if (clausePara.trim()) paragraphs.push(clausePara.trim());
-      continue;
-    }
-    if (current && (current.length + sentence.length + 1) > maxChars) pushCurrent();
-    current = current ? `${current} ${sentence}` : sentence;
-  }
-  pushCurrent();
-  return paragraphs.filter(Boolean);
-}
+// splitIntoParagraphs() moved to shared/utils/textFormat.js — also used by RotationGuideCard.jsx.
 
 const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData, visualSettings }) => {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
   const [assetBannerVideoPlaying, setAssetBannerVideoPlaying] = useState(false);
+  // Simple View — hides descriptive prose (step notes, Own Kit/Hands Off badges) in the Standard
+  // Rotation section, leaving just each step's type/skill/damage/duration. Off by default (full detail).
+  const [simpleRotationView, setSimpleRotationView] = useState(false);
   const data = CHARACTER_DATA[name];
   if (!data) return null;
   const conveneVideoUrl = getConveneAnimation(name);
@@ -596,9 +562,18 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* Standard Rotation — team-context rotation steps, reusable base for the Team tab */}
           {localizedRotation && (
             <div>
-              <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-                <RotateCw size={14} className={colors.text} /> {t('modals.characterDetail.standardRotation')}
-              </h3>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <h3 className="text-white font-semibold text-xl flex items-center gap-2">
+                  <RotateCw size={14} className={colors.text} /> {t('modals.characterDetail.standardRotation')}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setSimpleRotationView(v => !v)}
+                  className={`kuro-badge text-2xs shrink-0 ${simpleRotationView ? 'kuro-badge-amber' : 'kuro-badge-neutral'}`}
+                >
+                  {t('modals.characterDetail.simpleView')}
+                </button>
+              </div>
               <div className="space-y-0.5">
                 {localizedRotation.map((step, i) => {
                   // Same full-word, color-coded badge as the Team tab's Rotation Guide (RotationGuideCard's
@@ -636,7 +611,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                             <span className="kuro-badge kuro-badge-neutral text-2xs shrink-0">{step.duration}s</span>
                           )}
                         </div>
-                        {step.note && (
+                        {!simpleRotationView && step.note && (
                           <div className="space-y-1 mt-0.5">
                             {splitIntoParagraphs(step.note, 140).map((para, pi) => (
                               <div key={pi} className="text-xs text-gray-500 break-words italic leading-relaxed">{para}</div>
@@ -654,6 +629,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   solo team, inherits is always empty and reason's copy ("comes on-field last to
                   receive every buff stacked up before it") assumes a team that isn't there. */}
               {(() => {
+                if (simpleRotationView) return null;
                 const solo = soloRotationTimeline?.steps?.[0];
                 if (!solo || (solo.selfActive.length === 0 && solo.handsOff.length === 0)) return null;
                 return (

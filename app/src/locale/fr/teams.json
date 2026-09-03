@@ -156,6 +156,7 @@
   },
   "rotationGuide": {
     "title": "Guide de rotation",
+    "simpleView": "Vue simple",
     "onField": "sur le terrain {{duration}}s",
     "mainDps": "DPS principal",
     "skillSequence": "Séquence de compétences — à exécuter dans cet ordre",

@@ -156,6 +156,7 @@
   },
   "rotationGuide": {
     "title": "Rotation Guide",
+    "simpleView": "Simple View",
     "onField": "on-field {{duration}}s",
     "mainDps": "Main DPS",
     "skillSequence": "Skill sequence — perform in this order",
