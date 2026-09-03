@@ -168,14 +168,14 @@ attempted again on a hunch.
 The plan's own methodology for reaching "fully merged": an 8-dimension
 solo audit per character (SKILL_MULTIPLIERS / CHARACTER_ROTATIONS /
 RESONANCE_CHAIN_DATA / CHAR_BUFF_TABLE / dmgFocus / weapon data / echo data /
-engine-block parity, all cross-checked against a fresh source). 8 characters
+engine-block parity, all cross-checked against a fresh source). 9 characters
 (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc, Rover: Aero,
-**Jiyan — added 2026-09-03**) have gone through this as a *complete*
+Jiyan, **Yinlin — added 2026-09-03**) have gone through this as a *complete*
 8-dimension pass. Many more have had *partial*, targeted fixes from later
 sessions' dump-verification passes (see the `Characters data dump/` audit
 trail and this session's `auditBlockCoverage.mjs` sweep — that sweep covers
 3 of the 8 dimensions: rotation-step/chain/buff-table coverage, not the
-full 8). The remaining ~49 characters have not had a full Phase A pass. Not
+full 8). The remaining ~48 characters have not had a full Phase A pass. Not
 urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
@@ -245,6 +245,18 @@ categorized, fires twice in his real rotation) was missing and added
 instead. CHARACTER_ROTATIONS, CHAR_BUFF_TABLE, tier, and teams were all
 independently re-checked and confirmed already correct. 2 new tests, full
 suite green: 1375/1375.
+
+**Yinlin pass (2026-09-03)**: her dump already had 3 real bugs found and
+fixed in an earlier pass (Judgment Strike's real `coordDmg` category —
+which also surfaced and fixed a missing `coordDmg` branch in the legacy
+engine's `applyResonanceChain()` — and an entirely-missing Inherent Skill,
+Deadly Focus), with SKILL_MULTIPLIERS/CHARACTER_ROTATIONS/CHAR_BUFF_TABLE/
+RESONANCE_CHAIN_DATA/weapon/echo/tier/teams all already confirmed clean.
+Closing the last dimension found `dmgFocus` was `['Coordinated ATK',
+'Skill']` only — Liberation (14.3%/51,751) and Heavy ATK (6.8%/24,590) are
+both real, already correctly `libDmg`/`heavyDmg`-categorized damage per her
+own dump's Damage Profile, silently rejecting real teammate buffs. 1 new
+test, full suite green: 1376/1376.
 
 ---
 

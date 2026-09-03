@@ -10,7 +10,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createStats, applyResonanceChain } from '../features/teams/calcEngine.js';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
@@ -108,5 +108,13 @@ describe('triggerEngine parity — Yinlin', () => {
     expect(fired.has('yinlin.intro.raging-storm')).toBe(true);
     expect(fired.has('yinlin.heavy.standard')).toBe(true);
     expect(fired.has('yinlin.basic.zapstrings-dance-stage1')).toBe(true);
+  });
+
+  // Found 2026-09-03 via a Phase A full-dimension audit (REMAINING_WORK.md 1c): dmgFocus was
+  // ['Coordinated ATK', 'Skill'] only — Liberation (14.3%) and Heavy ATK (6.8%) are both real,
+  // correctly-categorized damage per her own dump's Damage Profile, silently rejecting a real
+  // teammate Liberation/Heavy ATK DMG Bonus.
+  it("dmgFocus includes 'Liberation' and 'Heavy ATK' (14.3%/6.8% of her real damage profile)", () => {
+    expect(CHARACTER_DATA['Yinlin'].dmgFocus).toEqual(expect.arrayContaining(['Coordinated ATK', 'Skill', 'Liberation', 'Heavy ATK']));
   });
 });

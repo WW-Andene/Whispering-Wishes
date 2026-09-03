@@ -1408,7 +1408,12 @@ const CHARACTER_DATA = {
   // real teammate Liberation DMG Bonus.
   ['Rover: Aero',    ['Skill', 'Liberation'],         ['Heal', 'Erosion Cap Buff'],            []],
   ['Rover: Electro', ['Skill', 'Liberation'],        ['ATK Buff', 'All DMG Amp'],             ['Electro Flare']],
-  ['Yinlin',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
+  // dmgFocus gained 'Liberation'/'Heavy ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against
+  // her own dump's Damage Profile: Liberation is a genuine 14.3% (51,751) share and Heavy ATK a real
+  // 6.8% (24,590), both already correctly libDmg/heavyDmg-categorized in yinlin.blocks.js
+  // (yinlin.liberation.thundering-wrath, yinlin.heavy.standard) — were silently rejecting real
+  // teammate Liberation/Heavy ATK DMG Bonus buffs.
+  ['Yinlin',        ['Coordinated ATK', 'Skill', 'Liberation', 'Heavy ATK'], ['Coordinated ATK'], []],
   ['Changli',       ['Skill'],                       ['Fusion DMG Amp'],                      []],
   ['Zhezhi',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
