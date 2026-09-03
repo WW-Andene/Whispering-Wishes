@@ -1232,8 +1232,17 @@ const CHARACTER_DATA = {
     skills: ['Navigation Support', 'Searchlight Service', 'Squeakie Express', 'Signal Light'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Howler Core', specialty: 'Terraspawn Fungus' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
-    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc', 'Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Lustrous Razor',
-    weaponAlts: { alt5: ['Ages of Harvest', 'Verdant Summit'], alt4: ['Autumntrace', 'Waning Redshift'] },
+    // bestWeapon/bestEchoes corrected 2026-09-03 against a fresh Prydwen dump: bestWeapon was
+    // 'Lustrous Razor' (100.00%), but the source explicitly ranks Ages of Harvest ahead of it at
+    // 108.33% — "currently also the best broadblade option for Lumi's damage" — Lustrous Razor demoted
+    // to weaponAlts.alt5 alongside Verdant Summit (101.11%). bestEchoes also baked in
+    // 'Nightmare: Thundering Mephis'/'Void Thunder 5pc' — that pairing is filed under this source's
+    // "Special Echo Sets" as an explicitly suboptimal Main-DPS-only option ("if you want to play Lumi
+    // as Main DPS, which isn't really that optimal"), not her actual best pick; trimmed to just the
+    // real #1 (Impermanence Heron / Moonlit Clouds 5pc), matching every other character's convention of
+    // excluding situational Special Echo Sets from bestEchoes.
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Ages of Harvest',
+    weaponAlts: { alt5: ['Verdant Summit', 'Lustrous Razor'], alt4: ['Autumntrace', 'Waning Redshift'] },
     teams: ['Lumi + Jinhsi', 'Lumi + Carlotta'] },
   // corrected/added 2026-08-18: desc rewritten — a real bio (Black Shores Consultant/"Spiritchaser
   // Taoist" who wanders investigating the strange and mysterious, selling talismans and divination as
