@@ -140,7 +140,13 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
       continue;
     }
 
-    const { windows, stackingMode, maxStacks } = buildBlockWindows(block, ownResults, targetElementLower, targetRole);
+    // recipientSwapOutAt (REMAINING_WORK.md 1a): targetSegment is already targetName's OWN on-field
+    // segment, computed above — for a 'next-on-field' block (the only real shape this applies to,
+    // since relevantToTarget already required blockOwner !== targetName to reach it via
+    // isImmediateNext), targetSegment.end IS the recipient's own swap-out instant. Passed
+    // unconditionally; buildBlockWindows() itself no-ops unless the block actually declares
+    // timing.forfeitOnRecipientSwapOut.
+    const { windows, stackingMode, maxStacks } = buildBlockWindows(block, ownResults, targetElementLower, targetRole, targetSegment.end);
     if (!windows.length) continue;
 
     // Denominator is always the TARGET's own on-field segment — for a self-scoped block this is the

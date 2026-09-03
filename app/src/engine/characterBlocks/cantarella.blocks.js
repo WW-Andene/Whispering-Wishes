@@ -112,14 +112,16 @@ export const CANTARELLA_BLOCKS = [
     id: 'cantarella.outro.gentle-tentacles',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'swap-out' },
-    timing: { duration: 14 },
+    timing: { duration: 14, forfeitOnRecipientSwapOut: true },
     target: { scope: 'next-on-field' },
     condition: { element: 'havoc' },
     effects: [
       { stat: 'elemDmg', value: 20, stacking: 'refresh' },
       { stat: 'skillDmg', value: 25, stacking: 'refresh' },
     ],
-    note: 'Forfeited early if the buffed Resonator is swapped out before 14s expires — early-forfeit not modeled (schema has no early-consumption trigger for outro buffs), same simplification already used for Brant/Buling\'s equivalent outros.',
+    // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): forfeitOnRecipientSwapOut now actually clamps
+    // this to the buffed Resonator's own swap-out instant when it's shorter than the full 14s.
+    note: 'Forfeited early if the buffed Resonator is swapped out before 14s expires.',
   },
   {
     id: 'cantarella.selfbuff.inherent-skill-poison',

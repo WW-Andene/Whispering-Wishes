@@ -415,6 +415,25 @@
  * @property {number} [delay]      Seconds between trigger firing and effect starting (e.g. a
  *                                   swap-cancel window)
  * @property {number} [tickInterval] For DOT-style repeating effects
+ * @property {boolean} [forfeitOnRecipientSwapOut] Added 2026-09-03 (REMAINING_WORK.md 1a — the
+ *                                   early-forfeit-on-swap gap): for a `target.scope:'next-on-field'`
+ *                                   buff whose real kit text says it ends EARLY if the RECIPIENT (not
+ *                                   the block's own owner) swaps out before `duration` fully elapses
+ *                                   (Cantarella/Changli/Yinlin's outros: "ends early if the buffed
+ *                                   Resonator is swapped out"). Read by blockWindows.js's
+ *                                   `buildBlockWindows()` via its own `recipientSwapOutAt` param —
+ *                                   clamps each window's `end` to the recipient's own on-field segment
+ *                                   end, when provided. Simplifying assumption, stated plainly: this
+ *                                   treats the recipient's segment as ONE contiguous on-field window
+ *                                   (true for every currently-modeled single-pass rotation in this
+ *                                   app), not a general multi-visit swap history — a recipient who
+ *                                   swaps on/off multiple times isn't modeled more precisely than
+ *                                   that. Omit (or false) for the ~6 other duration blocks with a
+ *                                   similar-sounding but DIFFERENT mechanic (a self-scoped internal
+ *                                   state window like Carlotta's Twilight Tango or Jinhsi's Incarnation
+ *                                   entry window, not "the recipient swaps out") — those stay
+ *                                   unmodeled, this flag only fits the "another character's own
+ *                                   swap-out cuts MY buff on THEM short" shape specifically.
  */
 
 /**

@@ -63,14 +63,16 @@ export const CHANGLI_BLOCKS = [
     id: 'changli.outro.strategy-of-duality',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'swap-out' },
-    timing: { duration: 10 },
+    timing: { duration: 10, forfeitOnRecipientSwapOut: true },
     target: { scope: 'next-on-field' },
     condition: { element: 'fusion' },
     effects: [
       { stat: 'elemDmg', value: 20, stacking: 'refresh' },
       { stat: 'libDmg', value: 25, stacking: 'refresh' },
     ],
-    note: 'Ends early if the incoming Resonator is swapped out before 10s — not modeled (no early-forfeit trigger in this schema).',
+    // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): forfeitOnRecipientSwapOut now actually clamps
+    // this to the incoming Resonator's own swap-out instant when it's shorter than the full 10s.
+    note: 'Ends early if the incoming Resonator is swapped out before 10s.',
   },
   {
     id: 'changli.selfbuff.fiery-feather',

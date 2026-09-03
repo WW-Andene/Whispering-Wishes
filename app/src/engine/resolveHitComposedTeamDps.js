@@ -106,9 +106,14 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       || (scope === 'next-on-field' && isImmediateNext(order, b.source, targetName));
   });
   const passiveRelevant = relevantBuffBlocks.filter(b => b.trigger.type === 'passive');
+  // recipientSwapOutAt (REMAINING_WORK.md 1a): targetSegment is targetName's OWN on-field segment
+  // (already computed above) — for the one real shape this applies to ('next-on-field' blocks, whose
+  // relevantToTarget check above already required blockOwner !== targetName), its `end` IS the
+  // recipient's own swap-out instant. Passed unconditionally; buildBlockWindows() no-ops for any block
+  // that doesn't declare timing.forfeitOnRecipientSwapOut.
   const windowedRelevant = relevantBuffBlocks
     .filter(b => b.trigger.type !== 'passive' && b.timing?.duration != null)
-    .map(b => ({ block: b, ...buildBlockWindows(b, resultsForBlock(b, targetName, results), targetElementLower, targetRole) }));
+    .map(b => ({ block: b, ...buildBlockWindows(b, resultsForBlock(b, targetName, results), targetElementLower, targetRole, targetSegment.end) }));
 
   const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'outroDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
   // `hitBlockId` (Phase 0.5 gap #3, added 2026-09-02) — see resolveHitComposedDps.js's own identical

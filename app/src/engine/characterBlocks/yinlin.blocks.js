@@ -168,14 +168,16 @@ export const YINLIN_BLOCKS = [
     source: SOURCE,
     kind: 'buff',
     trigger: { type: 'swap-out' },
-    timing: { duration: 14 },
+    timing: { duration: 14, forfeitOnRecipientSwapOut: true },
     target: { scope: 'next-on-field' },
     condition: { element: 'electro' },
     effects: [
       { stat: 'elemDmg', value: 20, stacking: 'refresh' },
       { stat: 'libDmg', value: 25, stacking: 'refresh' },
     ],
-    note: 'Outro Strategist: the incoming Resonator gets +20% Electro DMG Amp and +25% Resonance Liberation DMG Amp for 14s — ends early if that Resonator is switched out (forfeit condition not modeled here, same as every other duration block in this schema so far).',
+    // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): forfeitOnRecipientSwapOut now actually clamps
+    // this to the incoming Resonator's own swap-out instant when it's shorter than the full 14s.
+    note: 'Outro Strategist: the incoming Resonator gets +20% Electro DMG Amp and +25% Resonance Liberation DMG Amp for 14s — ends early if that Resonator is switched out.',
   },
   {
     id: 'yinlin.selfbuff.pain-immersion',

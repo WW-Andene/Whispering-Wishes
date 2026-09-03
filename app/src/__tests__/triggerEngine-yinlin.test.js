@@ -59,6 +59,10 @@ describe('triggerEngine parity — Yinlin', () => {
     expect(block.effects.find(e => e.stat === 'libDmg').value).toBe(legacyLib.value);
     expect(block.timing.duration).toBe(legacyElem.duration);
     expect(block.timing.duration).toBe(legacyLib.duration);
+    // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): now actually clamps to the incoming Resonator's
+    // own swap-out instant when shorter than the nominal 14s — see forfeitOnRecipientSwapOut.test.js
+    // for the mechanism's own proof.
+    expect(block.timing.forfeitOnRecipientSwapOut).toBe(true);
   });
 
   it('Pain Immersion self Crit Rate buff matches CHAR_BUFF_TABLE.selfBuffs', () => {

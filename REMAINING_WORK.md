@@ -23,7 +23,7 @@ The modern engine is the **primary path** for all 56 converted characters;
 legacy only still executes for Jingran (unreleased, unconverted). The end
 goal — one fused engine, legacy retired — is not reached.
 
-### 1a. Schema gaps — 10 of 17 originally-inventoried, still open
+### 1a. Schema gaps — 7 of 17 originally-inventoried, still open (down from 10 — early-forfeit-on-swap, Youhu's buff-of-a-buff, and Cantarella's summon-chain closed 2026-09-03)
 
 Every gap below was individually investigated (not guessed at) and has a
 documented reason it's still open — either missing source data or missing
@@ -62,12 +62,30 @@ infrastructure. None need HP/live-state tracking except where noted.
   Chisa's S4/Mornye's S1/S4, not a schema or data gap. Comments in
   `youhu.blocks.js` and `characters.js`'s own audit note updated to reflect
   this; no engine change needed.
-- **Early-forfeit-on-swap** (Carlotta, Changli, Yinlin — a buff on another
-  character ends early if THAT character swaps out before its full duration).
-  Needs threading the recipient's own swap-out timestamps into
-  `blockWindows.js` and the two team resolvers that already see both
-  characters' step timelines — real multi-file plumbing, not a new
-  simulation dimension.
+- ~~Early-forfeit-on-swap~~ — **closed 2026-09-03.** Correction while
+  investigating: the real 3 characters with this exact mechanic (a buff on
+  ANOTHER character ends early if THAT character swaps out before its full
+  duration) are **Cantarella, Changli, Yinlin** — Carlotta's flagged case
+  turned out to be a different mechanic entirely (a self-scoped buff tied to
+  her own internal "Twilight Tango" state, not a recipient-swap forfeit;
+  left untouched). Added `timing.forfeitOnRecipientSwapOut` (schema doc in
+  `triggerBlocks.schema.js`): `blockWindows.js`'s `buildBlockWindows()`
+  gained an optional `recipientSwapOutAt` param that clamps a window's end
+  to it when the flag is set; both `resolveSimulatedTeamRotation.js` and
+  `resolveHitComposedTeamDps.js` already compute the recipient's own
+  on-field segment for other reasons, so both just pass `targetSegment.end`
+  through — no new cross-character data collection needed. Stated
+  simplifying assumption: treats the recipient's segment as one contiguous
+  on-field window, not a general multi-visit swap history (true for every
+  currently-modeled single-pass rotation in this app). Flipped on for
+  Cantarella's/Changli's/Yinlin's real outro blocks. New test file
+  `forfeitOnRecipientSwapOut.test.js` (4 tests, synthetic mechanism proof)
+  plus 1 new assertion in each of the 3 characters' own test files. A ~6
+  other similar-sounding blocks (Carlotta, Cartethyia, Iuno, Jinhsi,
+  Phrolova, Shorekeeper) were checked and confirmed to be different
+  mechanics (self-scoped internal state windows, or Iuno's dynamic
+  "whichever Resonator received the shield" case) — correctly left alone,
+  not silently missed.
 - ~~Cantarella's off-field summon-chain~~ — **closed 2026-09-03.** Added
   `windowed-proc`'s cross-character variant: `trigger.crossCharacterHit`
   (ANY team member's landed step can advance a window opened by someone

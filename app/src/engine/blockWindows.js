@@ -31,9 +31,15 @@ import { triggerFired, conditionHolds } from './triggerEngine.js';
  *   trigger can fire off ANY team member's step, not just this block's own owner's.
  * @param {string} [targetElementLower]
  * @param {string} [targetRole]
+ * @param {number|null} [recipientSwapOutAt]  REMAINING_WORK.md 1a — early-forfeit-on-swap: when
+ *   `block.timing.forfeitOnRecipientSwapOut` is true and this is a real number (the RECIPIENT's own
+ *   on-field segment end, i.e. their swap-out time), every window this function builds is clamped to
+ *   end no later than this instant, even if `duration` would otherwise carry it further. Ignored for
+ *   any block without the flag, and ignored when null (every existing caller's behavior is unchanged
+ *   by adding this param — it defaults to not clamping anything).
  * @returns {{windows: {start:number, end:number}[], stackingMode: string, maxStacks: number}}
  */
-export function buildBlockWindows(block, ownResults, targetElementLower = null, targetRole = null) {
+export function buildBlockWindows(block, ownResults, targetElementLower = null, targetRole = null, recipientSwapOutAt = null) {
   const stackingMode = block.effects[0]?.stacking || 'unique';
   const maxStacks = block.effects[0]?.maxStacks ?? Infinity;
   const windows = [];
@@ -71,6 +77,22 @@ export function buildBlockWindows(block, ownResults, targetElementLower = null, 
         lastWindow = w;
       }
     }
+  }
+
+  // Early-forfeit-on-swap (REMAINING_WORK.md 1a): clamp every window's end to the recipient's own
+  // swap-out instant, when this block declares it and a real clamp instant was supplied — see this
+  // function's own recipientSwapOutAt doc above for the full rationale/simplifying-assumption note.
+  // Math.max(w.start, ...) guards against a degenerate negative-length window (shouldn't happen in
+  // practice — these buffs always open at/after the recipient's own swap-in — but stays safe either
+  // way); zero-length windows are filtered out entirely rather than passed through as a no-op entry.
+  if (block.timing?.forfeitOnRecipientSwapOut && recipientSwapOutAt != null) {
+    return {
+      windows: windows
+        .map(w => ({ start: w.start, end: Math.max(w.start, Math.min(w.end, recipientSwapOutAt)) }))
+        .filter(w => w.end > w.start),
+      stackingMode,
+      maxStacks,
+    };
   }
 
   return { windows, stackingMode, maxStacks };

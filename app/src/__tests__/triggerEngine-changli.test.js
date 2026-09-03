@@ -38,6 +38,10 @@ describe('triggerEngine parity — Changli', () => {
     const self = CHANGLI_BLOCKS.find(b => b.id === 'changli.selfbuff.fiery-feather');
     expect(self.effects[0].value).toBe(legacy.selfBuffs[0].value);
     expect(self.timing.duration).toBe(legacy.selfBuffs[0].duration);
+    // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): now actually clamps to the incoming Resonator's
+    // own swap-out instant when shorter than the nominal 10s — see forfeitOnRecipientSwapOut.test.js
+    // for the mechanism's own proof.
+    expect(outro.timing.forfeitOnRecipientSwapOut).toBe(true);
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
