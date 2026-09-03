@@ -80,8 +80,16 @@ const CHARACTER_DATA = {
     skills: ['Deterrence', 'Thunderclap', "Myriad Omens' Mandate", 'Ultimate Tactics'],
     ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
-    bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Emerald of Genesis',
-    weaponAlts: { alt5: ['Blazing Brilliance', 'Laser Shearer'], alt4: ['Lunar Cutter', 'Endless Collapse'], alt3: ['Sword of Night'] },
+    // bestWeapon/weaponAlts/bestEchoes corrected 2026-09-03 against a fresh Prydwen dump: bestEchoes
+    // named 'Nightmare: Thundering Mephis'/'Void Thunder 5pc' — this source's ONLY Best Echo Set is
+    // Moonlit Clouds (100%, main echo Impermanence Heron); neither Void Thunder nor Nightmare:
+    // Thundering Mephis appear anywhere on this page. bestWeapon was 'Emerald of Genesis' (90.00%,
+    // actually only #5 by this source's own calc %) with weaponAlts.alt5 naming 'Laser Shearer' and
+    // alt4 naming 'Lunar Cutter'/'Endless Collapse' — none of these three weapons appear anywhere in
+    // this source either. Realigned bestWeapon to the source's actual #1 (Blazing Brilliance, 100%,
+    // Changli's signature) and weaponAlts to its real next-ranked options.
+    bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Blazing Brilliance',
+    weaponAlts: { alt5: ['Red Spring', 'Azure Oath'], alt4: ['Feather Edge', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
     teams: ['Rover: Electro + Yinlin + Verina', 'Rover: Electro + Calcharo + Shorekeeper'] },
   'Jiyan': { rarity: 5, element: 'Aero', weapon: 'Broadblade', role: 'Main DPS',
     // desc rewritten 2026-08-31 against wutheringwaves.fandom.com/wiki/Jiyan/Combat (Chrome/Windows UA +
@@ -4324,7 +4332,8 @@ const SKILL_MULTIPLIERS = {
     // Forte/Overshock step, which never matched the old combined row and was silently resolving to 0 DMG.
     ['Forte', 'Overshock', '80.72%×7+423.77%+423.77%', 'Once Electric Surge is fully capped, Skill becomes this instead — counted as Resonance Skill DMG replacement via the Forte Circuit; TAP to unleash (HOLD enters Apex Resonance instead).'],
     ['Forte', 'Apex Resonance: Thrum of All Sounds', 'TODO: verify — per-stage multipliers not yet sourced', 'Up to 7-stage ground + 6-stage aerial combo (Spectro/Havoc/Aero hits + Thunder Bane Electro pulses); consumes Thunder Rage each second while active.'],
-    ['Liberation', 'Ultimate Tactics', '1192.86%', '25s cooldown.'],
+    // Fixed 2026-09-03 against a fresh Prydwen dump: was 1192.86%, real value is 1109.22%.
+    ['Liberation', 'Ultimate Tactics', '1109.22%', '25s cooldown.'],
     ['Intro', 'Thunderous Fury', '33.41%×2+100.21%'],
     ['Outro', 'Rumbling Thunders', 'Grants Electro Core → next Negative Status hit: All DMG Amp +25% (14s)'],
   ],
