@@ -1213,12 +1213,19 @@ const CHARACTER_DATA = {
   // Zhezhi' / 'Buling + Carlotta + Shorekeeper' pairings don't match Prydwen's Synergies tab, which
   // names only Carlotta and Phrolova as her best DPS partners (both Main Skill DMG-oriented DPS); the
   // 3rd/4th members aren't named there so none are invented, matching the Lumi audit's precedent.
+  // Fixed 2026-09-03 against a real prydwen.gg .mht snapshot: bestEchoes was
+  // ['Fallacy of No Return', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'] — both are alternative
+  // Main Echoes under the SAME single set (Rejuvenating Glow), but getSonataLoadouts() pairs entries
+  // sequentially as [main, set] — with only one set string trailing two main-echo strings, the parser
+  // paired the 2nd main echo (Bell-Borne Geochelone) with the set and left the 1st (Fallacy of No
+  // Return, the source's actually-preferred pick) as an orphaned row with no set at all. Fixed by
+  // repeating the set name for each alt main echo, the same fix pattern as Sanhua's reversed-order bug.
   'Buling': { rarity: 4, element: 'Electro', weapon: 'Rectifier', role: 'Healer',
     desc: 'Black Shores Consultant and Taoist "Spiritchaser Taoist" fortune-teller who wanders investigating the strange and mysterious, selling talismans and divination to fund her travels. Electro healer who generates Trigrams off her Basic ATK/Skill/Mid-air Attack to unlock an enhanced Liberation that deploys Electro Flare and ramps team Resonance Skill DMG Bonus on ally Intro casts, while her Outro heals the active character and Amplifies nearby team DMG by 15% for 30s.',
     skills: ['Hexagram Calls, Lightning Falls', 'In Shadow Thunder Stirs', 'Flashing Thunder Spell', 'Thunder Begets Life'],
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Helix' },
-    bestEchoes: ['Fallacy of No Return', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stringmaster',
+    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stringmaster',
     weaponAlts: { alt5: ['Lethean Elegy', 'Rime-Draped Sprouts', 'Luminous Hymn', 'Cosmic Ripples'], alt4: ['Waltz in Masquerade'] },
     teams: ['Buling + Carlotta', 'Buling + Phrolova'] },
 };
@@ -1771,7 +1778,9 @@ const CHARACTER_DATA = {
   // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T1.5','T2'] — the dump's own Ratings
   // section (Hybrid role) clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List shows T1.5/T3.
   ['Sanhua',        'T2',   'T3'],
-  ['Buling',        'T1.5', 'T2'],
+  // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T1.5','T2'] — the dump's Ratings
+  // section AND its Value Tier List both agree on T2 (ToA) / T3 (WW).
+  ['Buling',        'T2',   'T3'],
   ['Encore',        'T2',   'T4'],
   ['Rover: Havoc',  'T2',   'T2.5'],
   ['Jinhsi',        'T2',   'T4'],

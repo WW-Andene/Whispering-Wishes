@@ -70,14 +70,15 @@ export const BULING_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('178.93%'), category: 'basicDmg' },
   },
-  {
-    id: 'buling.heavy.twin-thunders',
-    source: SOURCE, kind: 'damage',
-    trigger: { type: 'cast', on: 'Basic ATK:Heavy Attack - Twin Thunders' },
-    timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('18.30%', 169), category: 'basicDmg' },
-    note: 'Real value is "169 flat + 18.30% ATK" — retrofitted 2026-09-02 (ENGINE_MERGE_PLAN.md Phase 0.5 gap #8, new hit.flat field) to capture both components; previously only the %ATK portion was modeled. Primarily a team-heal move (once/s for 8s), not modeled.',
-  },
+  // Heavy Attack - Twin Thunders correctly has NO damage block — removed 2026-09-03 against a fresh
+  // Prydwen dump: SKILL_MULTIPLIERS['Buling']'s own row for this move ("169 flat + 18.30% ATK") is
+  // explicitly labeled "Healing" by the source's Multipliers table (same as Twin Mountains, which
+  // already correctly has no damage block) — Twin Thunders deals ZERO direct damage, it's a pure
+  // team-heal (once/s for 8s). The previous block wrongly modeled this healing formula as a real
+  // 'basicDmg'-category damage hit, over-crediting the character's DPS with a number that was never a
+  // damage multiplier at all. CHARACTER_ROTATIONS['Buling'] still casts this step — it now correctly
+  // resolves to 0 direct damage, same as her Outro (a real, intentional zero-DMG utility step, not the
+  // "silent lookup mismatch" bug class).
   {
     id: 'buling.liberation.flashing-thunder-spell-harmony',
     source: SOURCE, kind: 'damage',
