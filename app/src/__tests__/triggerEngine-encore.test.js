@@ -19,7 +19,7 @@ describe('triggerEngine parity — Encore', () => {
 
   it('S3/S4/S5 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Encore'];
-    expect(ENCORE_BLOCKS.find(b => b.id === 'encore.chain.s3').effects[0].value).toBe(rc.s3.heavyDmg);
+    expect(ENCORE_BLOCKS.find(b => b.id === 'encore.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
     expect(ENCORE_BLOCKS.find(b => b.id === 'encore.chain.s4').effects[0].value).toBe(rc.s4.elemDmg);
     expect(ENCORE_BLOCKS.find(b => b.id === 'encore.chain.s5').effects[0].value).toBe(rc.s5.skillDmg);
   });
@@ -53,5 +53,13 @@ describe('triggerEngine parity — Encore', () => {
     expect(fired.has('encore.forte.cosmos-rupture')).toBe(true);
     expect(fired.has('encore.skill.cosmos-rampage')).toBe(true);
     expect(fired.has('encore.basic.cosmos-frolicking')).toBe(true);
+  });
+
+  it('S3\'s buff category matches a real damage block category (was heavyDmg — a dead/no-op buff, since no Encore damage block uses that category)', () => {
+    const s3 = ENCORE_BLOCKS.find(b => b.id === 'encore.chain.s3');
+    expect(s3.effects[0].stat).toBe('libDmg');
+    const usedCategories = new Set(ENCORE_BLOCKS.filter(b => b.kind === 'damage' && b.damage?.category).map(b => b.damage.category));
+    expect(usedCategories.has(s3.effects[0].stat)).toBe(true);
+    expect(usedCategories.has('heavyDmg')).toBe(false);
   });
 });

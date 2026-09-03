@@ -97,8 +97,13 @@ export const ENCORE_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Cosmos Rupture' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 40 }],
-    note: "DMG multiplier of Heavy Attack Cloudy Frenzy and Heavy Attack Cosmos Rupture +40% (both explicitly named 'Heavy Attack' by source despite being Forte-triggered, confirming the heavyDmg category) — cast-scoped to the Cosmos Rupture cast used in her real rotation.",
+    effects: [{ stat: 'libDmg', value: 40 }],
+    // Corrected 2026-09-03 against a fresh Prydwen dump: was stat:'heavyDmg', a dead/no-op buff — both
+    // Cloudy Frenzy and Cosmos Rupture are explicitly named "Resonance Liberation" by the source (not
+    // "Heavy Attack"), matching their own kit text and SKILL_MULTIPLIERS['Encore']'s "counted as
+    // Resonance Liberation DMG" note for both rows; encore.forte.cosmos-rupture above already uses
+    // category:'libDmg', so a heavyDmg buff had no matching damage block to apply to.
+    note: "DMG multiplier of Resonance Liberation Cloudy: Frenzy and Resonance Liberation Cosmos: Rupture +40% — cast-scoped to the Cosmos Rupture cast used in her real rotation.",
   },
   {
     id: 'encore.chain.s4',

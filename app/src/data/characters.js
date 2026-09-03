@@ -145,8 +145,11 @@ const CHARACTER_DATA = {
     // — 'Boson Astrolabe' wasn't in Prydwen's recommendations for her at all. Lupa is now explicitly her
     // "new best teammate over Sanhua in most situations" and pairs with Brant in Prydwen's own "Best
     // Team" example — added ahead of the Changli/Shorekeeper pairing.
+    // weaponAlts.alt4 corrected 2026-09-03 against a fresh Prydwen dump: was ['Augment', 'Fusion
+    // Accretion'] — Radiant Dawn ties Augment for the actual top 4★ spot (both 94.40%, adjacent in the
+    // source's own list, ahead of Fusion Accretion's 87.70%) and was missing entirely.
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Cosmic Ripples',
-    weaponAlts: { alt5: ['Stringmaster', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Fusion Accretion'], alt3: ['Rectifier of Night'] },
+    weaponAlts: { alt5: ['Stringmaster', 'Rime-Draped Sprouts'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa'] },
   // desc corrected against wutheringwaves.fandom.com's Jianxin infobox (2026-08-17 audit): the wiki's
   // current secondary_title is "Guiding Starlance", not "Cleansing Reflections" (a stale title still
@@ -5909,8 +5912,16 @@ const RESONANCE_CHAIN_DATA = {
   // 6 time(s)" for this same node — an outlier vs. two independent sources agreeing on 5; kept at 25% (5 stacks)
   // per the two-source majority and this project's designated primary source, discrepancy flagged here rather
   // than silently resolved either way.
+  // s3 corrected 2026-09-03 against a fresh Prydwen dump: was heavyDmg:40. The dump's own S3 text reads
+  // "The DMG multiplier of Resonance Liberation Cloudy: Frenzy and Resonance Liberation Cosmos: Rupture
+  // is increased by 40%" — both moves are explicitly named "Resonance Liberation" (not "Heavy Attack")
+  // by the source, matching their own kit text ("considered as Resonance Liberation damage") and
+  // SKILL_MULTIPLIERS['Encore']'s own note ("counted as Resonance Liberation DMG") for both rows. The
+  // old heavyDmg value was a dead/no-op buff — Encore has no heavyDmg-categorized damage block for
+  // either move (encore.forte.cosmos-rupture already correctly uses category:'libDmg'), so this S3
+  // bonus was silently applying to nothing.
   'Encore':       { s1: { elemDmg: 12 }, s2: { totalMult: 0 }, /* TODO: needs Phase 2 schema — Sheep-counting Lullaby's Resonance Energy recovery (10 Energy, once per 10s) is pure utility with no DPS component */
-    s3: { heavyDmg: 40 }, s4: { elemDmg: 20 }, s5: { skillDmg: 35 }, s6: { atkPct: 25 } },
+    s3: { libDmg: 40 }, s4: { elemDmg: 20 }, s5: { skillDmg: 35 }, s6: { atkPct: 25 } },
   // Xiangli Yao — full audit 2026-09-01 against wuwa.build's character #1305 Resonance Chain panel,
   // cross-checked against wutheringlab.com/arabwuwa.com (all three agree on wording/values below).
   // S1 "Prodigy of Protégés": Law of Reigns additionally launches 6 Convolution Matrices, each dealing
