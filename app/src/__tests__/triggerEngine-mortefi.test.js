@@ -33,6 +33,14 @@ describe('triggerEngine parity — Mortefi', () => {
     expect(MORTEFI_BLOCKS.find(b => b.id === 'mortefi.chain.s6').effects[0].value).toBe(rc.s6.atkPct);
   });
 
+  // Fixed 2026-09-03: S3's critDmg wasn't scoped — critDmg isn't category-gated (unlike skillDmg/
+  // basicDmg/etc.), so it would have over-credited any of Mortefi's own hits landing within the 10s
+  // Burning Rhapsody window, when the kit text is explicit this is Marcato-only.
+  it("S3's +30% Crit DMG only applies to Marcato procs, not Mortefi's own attacks", () => {
+    const s3 = MORTEFI_BLOCKS.find(b => b.id === 'mortefi.chain.s3');
+    expect(s3.effects.every(e => ['mortefi.chain.s1-bonus-marcato', 'mortefi.chain.s5-bonus-marcato'].includes(e.scopedToBlockId))).toBe(true);
+  });
+
   it('outro matches CHAR_BUFF_TABLE', () => {
     const legacy = CHAR_BUFF_TABLE['Mortefi'];
     const outro = MORTEFI_BLOCKS.find(b => b.id === 'mortefi.outro.rage-transposition');

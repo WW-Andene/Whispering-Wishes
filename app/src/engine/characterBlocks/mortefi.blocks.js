@@ -90,8 +90,17 @@ export const MORTEFI_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Violent Finale' },
     timing: { duration: 10 }, // matches Burning Rhapsody's own 10s window, since this is conditional on it being active
     target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 30 }],
-    note: 'During Burning Rhapsody, Marcato Crit DMG +30% (confirmed exact) — modeled scoped to Burning Rhapsody\'s own 10s window, applied by the Violent Finale cast that starts it.',
+    // Fixed 2026-09-03: was a single unscoped `critDmg` effect — `critDmg` isn't category-gated (unlike
+    // skillDmg/basicDmg/heavyDmg/libDmg/echoDmg/coordDmg), so without scoping it would over-credit ANY
+    // of Mortefi's own hits landing within the 10s Burning Rhapsody window (Basic ATK, Skill, Fury
+    // Fugue), when the kit text is explicit this is Marcato-only ("the Crit. DMG of Resonance
+    // Liberation's Marcato is increased by 30%"). Scoped to both real Marcato proc blocks
+    // (S1's/S5's bonus-hit blocks) via 2 separate scopedToBlockId effects.
+    effects: [
+      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s1-bonus-marcato' },
+      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s5-bonus-marcato' },
+    ],
+    note: "During Burning Rhapsody, Marcato Crit DMG +30% (confirmed exact) — scoped to Burning Rhapsody's own 10s window, applied by the Violent Finale cast that starts it.",
   },
   // S4 correctly has NO block — Burning Rhapsody duration +7s, a pure duration-extension utility with
   // no flat DMG% derivation, zero DPS component.

@@ -1125,7 +1125,9 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc', 'Empyrean Anthem 5pc'], bestWeapon: 'Static Mist',
-    weaponAlts: { alt5: ['The Last Dance'], alt4: ['Relativistic Jet', 'Novaburst', 'Thunderbolt', 'Undying Flame', 'Pistols#26'] },
+    // alt4 order corrected 2026-09-03 against a real prydwen.gg .mht snapshot: source ranks Pistols#26
+    // (81.87%) ahead of Undying Flame in the listed order — was previously swapped.
+    weaponAlts: { alt5: ['The Last Dance'], alt4: ['Relativistic Jet', 'Novaburst', 'Thunderbolt', 'Pistols#26', 'Undying Flame'] },
     teams: ['Mortefi + Galbrena + Lupa', 'Mortefi + Jiyan + Verina'] },
   // audited 2026-08-18: sourced from wutheringwaves.fandom.com's Youhu/Combat page (rendered via the
   // MediaWiki API, section-by-section, since the raw wikitext only transcludes {{Forte Table}}/
