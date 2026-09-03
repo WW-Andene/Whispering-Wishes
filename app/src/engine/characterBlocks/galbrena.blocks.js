@@ -178,13 +178,19 @@ export const GALBRENA_BLOCKS = [
     // team-wide: "When Resonators in the team cast Echo Skill, all Resonators in the team gain 20%
     // all-Attribute DMG Bonus for 20s." CHAR_BUFF_TABLE's "no team support kit" note describes her
     // base-kit selfBuffs, not this Resonance Chain node — S1-S6 aren't in CHAR_BUFF_TABLE at all, so
-    // that note never actually covered S4. Fixed scope to whole-team. The real trigger (ANY
-    // teammate's Echo Skill cast) has no clean anchor in this schema (same cross-character-trigger
-    // gap as her own Afterflame mechanic below) — kept passive/unconditional as an approximation
-    // rather than force-fitting a fake trigger, same documented tradeoff used elsewhere in this file.
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'whole-team' },
-    effects: [{ stat: 'allDmg', value: 20 }],
+    // that note never actually covered S4. Fixed scope to whole-team.
+    // Retrofitted 2026-09-03 (ally-action backlog, REMAINING_WORK.md 1a): the real trigger (ANY
+    // teammate's Echo Skill cast) previously had no clean anchor and was left passive/unconditional —
+    // but this is exactly the same "any teammate casts Echo Skill" shape Sigrika's chain.s4 already
+    // uses the universal 'echo-skill-cast' action tag for (fires directly off any step's own
+    // {type:'Echo'} shape, not a per-character kit fact). No new tag needed, just wiring this node to
+    // the same existing mechanism. Distinct from her own Afterflame mechanic below, which stays
+    // deferred — Afterflame's real cap is per-Echo-NAME (not per-cast), a dedup shape this tag can't
+    // express without fabricating which specific Echo names a team runs.
+    trigger: { type: 'ally-action', action: 'echo-skill-cast' },
+    timing: { duration: 20 },
+    target: { scope: 'whole-team' },
+    effects: [{ stat: 'allDmg', value: 20, stacking: 'refresh' }],
     note: 'Real mechanic: any teammate casting Echo Skill grants the WHOLE TEAM +20% all-Attribute DMG Bonus for 20s.',
   },
   {

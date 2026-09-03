@@ -30,12 +30,29 @@ documented reason it's still open — either missing source data or missing
 infrastructure. None need HP/live-state tracking except where noted.
 
 **Buildable now, no new simulation dimension needed:**
-- **Ally-action retrofit backlog** (partial — Qingxiao S4 and Sigrika S4
-  already fixed). Mechanism (`trigger.type:'ally-action'` + `target.scope:
-  'trigger-actor'`) already exists and is tested. Remaining cases, each
-  blocked only on a missing action tag, not new code: Luuk Herssen S4,
-  Cartethyia S4, Mornye (×2), Galbrena's Afterflame. Lowest-risk, highest-value
-  remaining item in this whole file.
+- **Ally-action retrofit backlog** (partial — Qingxiao S4, Sigrika S4, and now
+  Galbrena's chain.s4 fixed). Mechanism (`trigger.type:'ally-action'` +
+  `target.scope:'trigger-actor'`/`'whole-team'`) already exists and is tested.
+  **Galbrena's chain.s4 closed 2026-09-03**: its real trigger ("any teammate
+  casts Echo Skill") is exactly the same shape Sigrika's S4 already uses the
+  universal `'echo-skill-cast'` action tag for — no new tag needed, just
+  wired to the existing mechanism (was previously an unconditional passive
+  approximation). Her own Afterflame mechanic (the debuff + chain.s1) stays
+  deferred on purpose — its real cap is per-Echo-**name** (not per-cast), a
+  dedup shape `appliesTags` can't express without fabricating which specific
+  Echo names a given team runs.
+  **Remaining, each genuinely bigger than "missing action tag" turned out to
+  be on inspection**: Luuk Herssen S4 and Mornye's chain.s2 both need a
+  `'tune-break-cast'` tag, which isn't a simple tag addition — Tune Break
+  application isn't tracked per-move anywhere yet (only a per-character
+  aggregate rate exists in `characters.js`), so building the tag means
+  sourcing which specific moves apply Tune Break across ~9 characters, not
+  just adding one string. Cartethyia S4 needs 6 separate status tags
+  (Havoc Bane/Fusion Burst/Spectro Frazzle/Electro Flare/Glacio Chafe/Aero
+  Erosion) built the same way, roster-wide. Mornye's OTHER case (her Outro)
+  isn't an ally-action candidate at all — it's a status transition (upgrades
+  a marker type), not a stat grant, explicitly out of scope for this
+  mechanism.
 - ~~Youhu S2~~ — **closed 2026-09-03, correctly still no block, for a different
   reason than originally stated.** The "no dump file" blocker is gone
   (`Characters data dump/Youhu/Youhu.md` now exists and sources all 3 base
