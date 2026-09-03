@@ -403,8 +403,13 @@ const CHARACTER_DATA = {
     skills: ['Probe', 'Deduction', 'Forever Seeking', 'Cogitation Model'],
     ascension: { boss: 'Hidden Thunder Tacet Core', common: 'Whisperin Core', specialty: 'Violet Coral' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: "Verity's Handle",
-    weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Stonard'], alt3: ['Gauntlets of Night'] },
+    // bestWeapon corrected 2026-09-03 against a fresh Prydwen dump: this source explicitly states
+    // "Iuno's Signature is Xiangli Yao's NEW BEST weapon" (100.0%, ahead of his own signature Verity's
+    // Handle at 98.7%, "his second best choice") — a real meta shift, not a permanently-available-vs-
+    // signature distinction (same pattern already applied to his overall #1 pick for Camellya/Jinhsi/
+    // Changli/Sanhua). Swapped bestWeapon to Moongazer's Sigil, moving Verity's Handle into alt5.
+    bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: "Moongazer's Sigil",
+    weaponAlts: { alt5: ["Verity's Handle", 'Blazing Justice'], alt4: ['Aether Strike', 'Stonard'], alt3: ['Gauntlets of Night'] },
     teams: ['Xiangli Yao + Lynae + Mornye', 'Xiangli Yao + Yinlin + Verina'] },
   // Full audit 2026-08-17 against Prydwen's live build page (URL is /the-shorekeeper, Chrome UA +
   // google.com referer + jsRender) and ww.nanoka.cc's character #1505 sheet. desc: title "Euphonic
@@ -1799,7 +1804,9 @@ const CHARACTER_DATA = {
   // clearly lists T3 (ToA) / T4 (WW), matched exactly by its Value Tier List too.
   ['Rover: Havoc',  'T3',   'T4'],
   ['Jinhsi',        'T2',   'T4'],
-  ['Xiangli Yao',   'T2',   'T3'],
+  // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T2','T3'] — the dump's Ratings
+  // section clearly lists T3 (ToA) / T4 (WW), matched exactly by its Value Tier List too.
+  ['Xiangli Yao',   'T3',   'T4'],
   // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T2','T1.5'] — the dump's own Ratings
   // section (Hybrid role) clearly lists T2 (ToA) / T3 (WW); its separate Value Tier List shows T3/T3.
   ['Changli',       'T2',   'T3'],
@@ -6023,6 +6030,14 @@ const RESONANCE_CHAIN_DATA = {
   // table, not column 10 — colspan padding made it look like the table's only entry). Reverted back to
   // the correct 99.41%×2 after cross-checking ww.nanoka.cc/character/1305, which explicitly labels its
   // Skill Attributes table "(Lv.10)" and lists 99.41%×2 — no change needed, original value was correct.
+  // s1 re-confirmed 2026-09-03 against a fresh Prydwen dump: source text is "Law of Reigns additionally
+  // launches 6 Convolution Matrices, each dealing Resonance Liberation DMG equal to 8% of THE SKILL'S
+  // OWN DMG Multiplier" — i.e. 6x8%=48% of Law of Reigns' own multiplier specifically, not a flat 48%
+  // bonus. A flat libDmg value here would incorrectly also inflate Cogitation Model's and Revamp's own
+  // libDmg-categorized hits (over-crediting) since this codebase's libDmg stat applies broadly, not
+  // scoped to one move — matching xianglyao.blocks.js's own already-correct s1 reasoning (kept
+  // deliberately unmodeled; needs a scopedToBlockId-style mechanism this flat table doesn't have).
+  // Left as {} — not a bug, a documented, correct limitation, reconfirmed rather than changed.
   'Xiangli Yao':  { s1: {}, s2: { critDmg: 30 }, s3: { skillDmg: 63 }, s4: { libDmg: 25 }, s5: { libDmg: 100 }, s6: { libDmg: 76 } },
   // Aemeath S1: +300% Crit DMG for Heavy ATK in Instant Response (confirmed exact). S3: Between the Stars enhanced to
   // CD+60% (confirmed exact) + Heavenfall Edict: Finale DMG Mult+100% (was defIgnore:20, no basis at all — real S3 has
