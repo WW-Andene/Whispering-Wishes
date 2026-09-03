@@ -89,10 +89,9 @@ Deepen+20% and Resonance Liberation DMG Deepen+25% for 14s or until switched.
 | S5 | Thundering Wrath deals 100% extra damage to targets with Sinner's Mark or Punishment Mark. |
 | S6 | In the first 30s after Thundering Wrath, Basic Attack hits trigger "Furious Thunder" — 419.59% ATK Electro DMG, considered Resonance Skill DMG, up to 4 times per Liberation cast. |
 
-### Stats (source-listed at Lv.79 — NOT Lv.90; see App Data Comparison for why these aren't used
-for a fair comparison)
-HP 9598, ATK 354, DEF 1120, Max Energy 125, Crit Rate 5%, Crit DMG 150%. Minor Fortes: Crit Rate+8%,
-ATK%+12%.
+### Stats (Lv.90)
+HP 11000, ATK 400, DEF 1283, Max Energy 125, Crit Rate 5%, Crit DMG 150%, Healing Bonus 0%, Electro DMG
+0%. Minor Fortes: Crit Rate+8%, ATK%+12%.
 
 ## Review
 
@@ -168,11 +167,11 @@ already matched this source exactly (S6 was already correctly zeroed in the flat
 419.59%/4-cap/30s-window figures modeled separately in `yinlin.blocks.js` via a `windowed-proc`
 trigger — an already well-audited piece of this file from a prior pass).
 
-**Base stats note**: the source's Stats section in this snapshot is explicitly labeled `Lv. 79`, not
-the usual `Lv. 90` endgame stats used everywhere else in this app (HP 9598/ATK 354/DEF 1120 at Lv.79
-vs. the app's existing HP 11000/ATK 400/DEF 1283, presumably at Lv.90) — this looks like Prydwen's
-level-selector defaulting to a non-max level at capture time rather than a real discrepancy, so it
-provides no fair basis for comparison and was left untouched.
+**Base stats**: confirmed exact match at Lv.90 (HP 11000, ATK 400, DEF 1283, Max Energy 125) — an
+earlier pass of this dump misread the extracted text's "Lv." and "90" as separate lines and
+mis-transcribed them as "Lv. 79" with correspondingly wrong HP/ATK/DEF figures; this was an extraction
+error on this dump's part, not a real source discrepancy (the user caught and corrected it 2026-09-03).
+No app data was ever changed based on the bad read.
 
 **Real bugs found and fixed (2026-09-03)**:
 1. `RESONANCE_CHAIN_DATA['Yinlin'].s3` and `yinlin.blocks.js`'s `yinlin.chain.s3-unyielding-verdict`
