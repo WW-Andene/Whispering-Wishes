@@ -1383,7 +1383,14 @@ const CHARACTER_DATA = {
   // Echo's own damage (5.5%, not her own kit's Echo Skill button — a different character shape
   // entirely, e.g. Sigrika/Galbrena) both stay excluded, consistent with that same precedent.
   ['Rover: Spectro', ['Skill', 'Liberation', 'Heavy ATK'], [],                                 ['Frazzle']],
-  ['Rover: Havoc',   ['Heavy ATK', 'Basic ATK'],     ['Crit Rate Buff'],                      ['Havoc RES Shred']],
+  // dmgFocus gained 'Liberation'/'Skill' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her
+  // own dump's Damage Profile: Liberation is a genuine 26.2% (113,642) share — her 2nd-LARGEST damage
+  // bucket, entirely missing — and Skill is a real 10.9% (80,530), both correctly libDmg/skillDmg-
+  // categorized in roverhavoc.blocks.js already. Was silently rejecting real teammate Liberation/Skill
+  // DMG Bonus buffs. Basic ATK stays included even though the app's chosen "Short Burst Combo"
+  // CHARACTER_ROTATIONS variant deliberately skips Basic Attacks (per the dump's own Review section) —
+  // dmgFocus describes her real kit capability, not this one rotation choice.
+  ['Rover: Havoc',   ['Heavy ATK', 'Basic ATK', 'Liberation', 'Skill'], ['Crit Rate Buff'],   ['Havoc RES Shred']],
   ['Rover: Aero',    ['Skill'],                      ['Heal', 'Erosion Cap Buff'],            []],
   ['Rover: Electro', ['Skill', 'Liberation'],        ['ATK Buff', 'All DMG Amp'],             ['Electro Flare']],
   ['Yinlin',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { ROVER_HAVOC_BLOCKS } from '../engine/characterBlocks/roverhavoc.blocks.js';
@@ -46,5 +46,18 @@ describe('triggerEngine parity — Rover: Havoc', () => {
     expect(fired.has('roverhavoc.intro.instant-of-annihilation')).toBe(true);
     expect(fired.has('roverhavoc.heavy.devastation')).toBe(true);
     expect(fired.has('roverhavoc.liberation.deadening-abyss')).toBe(true);
+  });
+
+  // Found 2026-09-03 via a Phase A full-dimension audit (REMAINING_WORK.md 1c): dmgFocus was
+  // ['Heavy ATK', 'Basic ATK'] only — Liberation (26.2%, his 2nd-largest bucket) and Skill (10.9%)
+  // were both real, correctly-categorized damage he deals but weren't gated as focus, silently
+  // rejecting a teammate's real Liberation/Skill DMG Bonus.
+  it("dmgFocus includes 'Liberation' and 'Skill' (26.2%/10.9% of his real damage profile)", () => {
+    expect(CHARACTER_DATA['Rover: Havoc'].dmgFocus).toEqual(expect.arrayContaining(['Heavy ATK', 'Basic ATK', 'Liberation', 'Skill']));
+  });
+
+  it('Outro Soundweaver is outroDmg-categorized (was uncategorized) — his own kit text: "own direct damage, not a team buff"', () => {
+    const b = ROVER_HAVOC_BLOCKS.find(bl => bl.id === 'roverhavoc.outro.soundweaver');
+    expect(b.damage.category).toBe('outroDmg');
   });
 });

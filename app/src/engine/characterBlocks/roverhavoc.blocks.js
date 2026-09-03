@@ -63,7 +63,11 @@ export const ROVER_HAVOC_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: [{ atkPct: 143.3 }, { atkPct: 143.3 }, { atkPct: 143.3 }] },
+    // Fixed 2026-09-03 (Phase A audit — REMAINING_WORK.md 1c): had no damage.category — his own kit
+    // text is explicit this is "own direct damage, not a team buff" (7.2% of his total per the dump's
+    // Damage Profile), the same shape 'outroDmg' was built for (Xiangli Yao's precedent). Silently
+    // zeroed any outroDmg-type bonus reaching this hit.
+    damage: { hits: [{ atkPct: 143.3 }, { atkPct: 143.3 }, { atkPct: 143.3 }], category: 'outroDmg' },
     note: 'Havoc Field: AoE DoT for the incoming Resonator, 3 ticks over 6s. The optional 1-3 Dark Surge Basic Attack strings (P1-P5) mentioned in the rotation note before this finisher are not sourced as a distinct step, not modeled. The Echo (Dreamless, +50% DMG within 5s of Liberation landing) has no matching SKILL_MULTIPLIERS row, not modeled.',
   },
 

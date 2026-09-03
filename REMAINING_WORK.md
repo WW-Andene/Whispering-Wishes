@@ -168,17 +168,17 @@ attempted again on a hunch.
 The plan's own methodology for reaching "fully merged": an 8-dimension
 solo audit per character (SKILL_MULTIPLIERS / CHARACTER_ROTATIONS /
 RESONANCE_CHAIN_DATA / CHAR_BUFF_TABLE / dmgFocus / weapon data / echo data /
-engine-block parity, all cross-checked against a fresh source). 5 characters
-(Aemeath, Denia, Lynae, Qingxiao, **Rover: Spectro — added 2026-09-03**) have
-gone through this as a *complete* 8-dimension pass. Many more have had
-*partial*, targeted fixes from later sessions' dump-verification passes (see
-the `Characters data dump/` audit trail and this session's
-`auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 8 dimensions:
-rotation-step/chain/buff-table coverage, not the full 8). The remaining ~52
-characters have not had a full Phase A pass. Not urgent — the coverage-audit
-sweep already closed the highest-risk gaps (unmatched rotation steps =
-silent 0-DMG bugs) roster-wide — but the full 8-dimension methodology itself
-is not complete.
+engine-block parity, all cross-checked against a fresh source). 6 characters
+(Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, **Rover: Havoc — added
+2026-09-03**) have gone through this as a *complete* 8-dimension pass. Many
+more have had *partial*, targeted fixes from later sessions' dump-
+verification passes (see the `Characters data dump/` audit trail and this
+session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 8
+dimensions: rotation-step/chain/buff-table coverage, not the full 8). The
+remaining ~51 characters have not had a full Phase A pass. Not urgent — the
+coverage-audit sweep already closed the highest-risk gaps (unmatched
+rotation steps = silent 0-DMG bugs) roster-wide — but the full 8-dimension
+methodology itself is not complete.
 
 **Rover: Spectro pass (2026-09-03)**: her `Characters data dump/` already
 had 6 of 8 dimensions verified clean from an earlier pass (SKILL_MULTIPLIERS,
@@ -194,6 +194,25 @@ repeatedly elsewhere this session). Also added `'Heavy ATK'` to `dmgFocus`
 (9.2% share, above the "low single digits" exclusion precedent already
 established for Lucy's dropped Liberation focus). 3 new tests, full suite
 green: 1369/1369.
+
+**Rover: Havoc pass (2026-09-03)**: his dump already had 6 real bugs found
+and fixed in an earlier pass (wrong `bestEchoes`/`weaponAlts`/tier/teams
+entry, and a completely missing base-kit selfBuff, Metamorph). This pass
+closed the remaining 2 dimensions and found 2 more real, bigger bugs:
+`dmgFocus` was `['Heavy ATK', 'Basic ATK']` only — **Liberation was missing
+entirely despite being his 2nd-LARGEST damage bucket** (26.2%/113,642 of his
+total per the dump's own Damage Profile), and Skill (10.9%) was also
+missing, both already correctly `libDmg`/`skillDmg`-categorized in
+`roverhavoc.blocks.js` — silently rejecting real teammate Liberation/Skill
+DMG Bonus buffs. Also `roverhavoc.outro.soundweaver` (his Outro's own real
+direct damage, 7.2% of total, explicitly "not a team buff" per the kit
+text) had no `damage.category` at all — fixed to `outroDmg` (the category
+built for exactly this shape, Xiangli Yao's precedent). Checked and
+confirmed NOT a bug: his real modeled `CHARACTER_ROTATIONS` never includes
+a Basic ATK step — deliberate, it's the "Short Burst Combo" variant which
+the dump's own Review section says explicitly "ignores Basic Attacks
+entirely"; Basic ATK stays in `dmgFocus` regardless since it's still real
+kit capability. 2 new tests, full suite green: 1371/1371.
 
 ---
 
