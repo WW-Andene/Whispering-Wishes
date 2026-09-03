@@ -35,16 +35,24 @@ const CHARACTER_DATA = {
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Emerald of Genesis',
     weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Lunar Cutter', 'Endless Collapse'], alt3: ['Sword of Night'] },
     teams: ['Phoebe + Rover: Spectro + Verina', 'Zani + Rover: Spectro + Verina', 'Rover: Spectro + Shorekeeper + Camellya'] },
+  // Fixed 2026-09-03 against a real prydwen.gg .mht snapshot, superseding the 2026-08-18 note below
+  // where they conflict. bestEchoes named 'Impermanence Heron' — never mentioned anywhere in this
+  // source (that's Rover: Aero's/Rover: Spectro's echo); the source's only Main Echo option for Havoc
+  // Eclipse is Dreamless. weaponAlts.alt5 named 'Azure Oath' — also never mentioned in this source; the
+  // real top-2 signature-locked alternatives are Red Spring and Blazing Brilliance. weaponAlts.alt4 was
+  // missing Somnoire Anchor entirely (91.24%, the actual top 4★, "amazing, completely free") while
+  // including Endless Collapse (83.09%, ranked 4th of 5). teams named 'Rover: Havoc + Yinlin +
+  // Shorekeeper' — Yinlin is never named as a teammate in this source (only mentioned once, as an
+  // unrelated damage comparison for the Dreamless Echo); replaced with the F2P-pair teammate this
+  // source explicitly names as his 2nd-best buffer.
   'Rover: Havoc': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
     desc: 'A wanderer who awoke with no memory on the shores of Solaris. Havoc attunement: an on-field main DPS — hold Heavy ATK at full Umbra to cast Devastation and enter Dark Surge, an enhanced-state combo that ends in the 1520%-ATK Liberation nuke Deadening Abyss.',
     skills: ['Tuneslayer', 'Wingblade', 'Umbra Eclipse', 'Deadening Abyss'],
     ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
-    bestEchoes: ['Impermanence Heron', 'Havoc Eclipse 5pc'], bestWeapon: 'Emerald of Genesis',
-    weaponAlts: { alt5: ['Red Spring', 'Azure Oath'], alt4: ['Commando of Conviction', 'Endless Collapse'], alt3: ['Sword of Night'] },
-    // teams corrected 2026-08-18: Sanhua was Havoc Rover's original 1.0-era buffer pairing; current
-    // sources consistently name Roccia as his best current buffer instead (her Havoc/Basic ATK Outro).
-    teams: ['Rover: Havoc + Roccia + Verina', 'Rover: Havoc + Yinlin + Shorekeeper'] },
+    bestEchoes: ['Dreamless', 'Havoc Eclipse 5pc'], bestWeapon: 'Emerald of Genesis',
+    weaponAlts: { alt5: ['Red Spring', 'Blazing Brilliance'], alt4: ['Somnoire Anchor', 'Commando of Conviction'], alt3: ['Sword of Night'] },
+    teams: ['Rover: Havoc + Roccia + Verina', 'Rover: Havoc + Danjin + Shorekeeper'] },
   // Fixed 2026-09-02 against a real prydwen.gg .mht snapshot (confirmed genuine via its own
   // Snapshot-Content-Location header). Prior data had 3 real, confidently-sourced bugs: bestWeapon
   // was 'Emerald of Genesis' — not even mentioned anywhere in the source's Best Weapons section,
@@ -1786,7 +1794,10 @@ const CHARACTER_DATA = {
   // section AND its Value Tier List both agree on T2 (ToA) / T3 (WW).
   ['Buling',        'T2',   'T3'],
   ['Encore',        'T2',   'T4'],
-  ['Rover: Havoc',  'T2',   'T2.5'],
+  // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T2','T2.5'] — 'T2.5' doesn't even
+  // appear anywhere else in this table, suggesting stale/miscopied data. The dump's Ratings section
+  // clearly lists T3 (ToA) / T4 (WW), matched exactly by its Value Tier List too.
+  ['Rover: Havoc',  'T3',   'T4'],
   ['Jinhsi',        'T2',   'T4'],
   ['Xiangli Yao',   'T2',   'T3'],
   // tier corrected 2026-09-03 against a fresh Prydwen dump: was ['T2','T1.5'] — the dump's own Ratings
@@ -3199,12 +3210,17 @@ const CHAR_BUFF_TABLE = {
     debuffs: [{ stat: 'frazzle', value: 8, duration: 9, condition: 'Forte Circuit Resonating Spin→Echoes applies 2 stacks (+Shimmer); Liberation Echoing Orchestra applies 6 stacks. Shimmer (9s) prevents stacks decaying.' }],
     note: 'Spectro Frazzle applier/quick-swap support. Forte: Resonance Skill at 50+ Diminutive Sound casts Resonating Spin (2 Frazzle stacks + Shimmer, which stops decay), followed by Basic ATK Resonating Echoes. Liberation Echoing Orchestra applies 6 more Frazzle stacks. S6 (5 copies): Skill hits Spectro RES Shred -10%/20s.',
   },
+  // selfBuffs: added Metamorph 2026-09-03 against a real prydwen.gg .mht snapshot — this Inherent
+  // Skill (base-kit, NOT chain-gated) was entirely missing here and from roverhavoc.blocks.js.
   'Rover: Havoc': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critRate', value: 25, target: 'self', duration: 99, condition: 'S6 (5 copies): Crit Rate +25% while in Dark Surge.' }],
+    selfBuffs: [
+      { stat: 'elemDmg', value: 20, target: 'self', duration: 99, condition: 'Inherent Skill Metamorph: Havoc DMG Bonus +20% while in Dark Surge state.' },
+      { stat: 'critRate', value: 25, target: 'self', duration: 99, condition: 'S6 (5 copies): Crit Rate +25% while in Dark Surge.' },
+    ],
     debuffs: [{ stat: 'resShred', value: 10, duration: 20, condition: 'S4 (3 copies): Devastation/Liberation hit → Havoc RES Shred -10% (20s). Chain-gated, not innate.' }],
-    note: 'On-field Havoc main DPS. Hold Heavy ATK at full Umbra to cast Devastation and enter Dark Surge — an enhanced Basic/Heavy/Skill state ending in Liberation Deadening Abyss, a 1520% ATK single-target nuke.',
+    note: 'On-field Havoc main DPS. Hold Heavy ATK at full Umbra to cast Devastation and enter Dark Surge — an enhanced Basic/Heavy/Skill state ending in Liberation Deadening Abyss, a 1520% ATK single-target nuke. Metamorph (+20% Havoc DMG in Dark Surge) is base kit, not chain-gated.',
   },
   // Fixed 2026-09-02 against a real prydwen.gg .mht snapshot: outroBuffs and libBuffs both stored a
   // real, non-DPS mechanic under a fabricated 'totalMult' key — neither Outro's Aero Erosion stack-cap

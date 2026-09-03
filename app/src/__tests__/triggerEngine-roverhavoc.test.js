@@ -27,8 +27,15 @@ describe('triggerEngine parity — Rover: Havoc', () => {
     const s6 = ROVER_HAVOC_BLOCKS.find(b => b.id === 'roverhavoc.chain.s6');
     expect(s4.effects[0].value).toBe(legacy.debuffs[0].value);
     expect(s4.timing.duration).toBe(legacy.debuffs[0].duration);
-    expect(s6.effects[0].value).toBe(legacy.selfBuffs[0].value);
+    expect(s6.effects[0].value).toBe(legacy.selfBuffs[1].value);
     expect(s4.kind).toBe('debuff');
+  });
+
+  it('Metamorph (base-kit, not chain-gated) matches CHAR_BUFF_TABLE', () => {
+    const legacy = CHAR_BUFF_TABLE['Rover: Havoc'];
+    const metamorph = ROVER_HAVOC_BLOCKS.find(b => b.id === 'roverhavoc.selfbuff.metamorph');
+    expect(metamorph.effects[0].value).toBe(legacy.selfBuffs[0].value);
+    expect(legacy.selfBuffs[0].condition).toMatch(/Metamorph/);
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
