@@ -123,8 +123,11 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Camellya[4] "Basic ATK: Vining Waltz 1"',
     'Camellya[6] "Skill: Vining Waltz 1-4 / Blazing Waltz"',
     'Camellya[7] "Skill: Floral Ravage"',
-    'Jinhsi[3] "Forte: Incarnation - Basic Attack Stage 1-4"',
-    'Jinhsi[4] "Skill: Illuminous Epiphany"',
+    // Jinhsi[3]/[4] now both resolve — fixed 2026-09-03 against a real prydwen.gg .mht snapshot:
+    // SKILL_MULTIPLIERS['Jinhsi']'s combined 'Incarnation → Illuminous Epiphany' Forte row (a stale
+    // "source table failed to render" TODO) was split into individually-named rows exactly matching
+    // both rotation steps' own skill strings, and 2 previously-missing moves (Incarnation - Heavy
+    // Attack, Incarnation - Dodge Counter) were added for kit completeness.
     'Calcharo[4] "Basic ATK: Hounds Roar"',
     'Calcharo[6] "Basic ATK: Hounds Roar"',
     'Lucilla[5] "Echo: Use Echo"',

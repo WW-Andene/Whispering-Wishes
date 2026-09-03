@@ -3900,13 +3900,25 @@ const SKILL_MULTIPLIERS = {
   // independently re-confirmed this pass — the site's own Forte Circuit scaling table failed to render
   // ("Lua error in Module:Skill_Scaling at line 76") — TODO: verify against Prydwen or nanoka.cc directly
   // next audit; left unchanged as no contradicting source was found.
+  // Forte row rebuilt 2026-09-03 against a real prydwen.gg .mht snapshot, resolving the stale "source
+  // table failed to render this pass" TODO. Was one combined row ('Incarnation → Illuminous Epiphany')
+  // whose name didn't substring-match EITHER of the two rotation steps that need it (Jinhsi[3] "Forte:
+  // Incarnation - Basic Attack Stage 1-4" and Jinhsi[4] "Skill: Illuminous Epiphany" — both listed in
+  // data-integrity.test.js's KNOWN_UNRESOLVED_BASELINE as a result). Split into individually-named rows
+  // exactly matching the rotation steps' own skill strings (now exact-matches, not fuzzy), and added 2
+  // moves entirely missing before (Incarnation - Heavy Attack, Incarnation - Dodge Counter) — real kit
+  // moves per this source, just not used in the modeled rotation.
   'Jinhsi': [
     ['Basic ATK', 'Slash of Breaking Dawn Stage 1-4', '66.47% → 38.99%+19.50%×3 → 10.65%×7+31.94% → 63.09%+94.63%'],
     ['Heavy ATK', 'Standard', '23.86%×5+35.79%+83.51%'],
     ['Mid-air', 'Plunging Attack', '12.33%+24.66%+86.29%'],
     ['Dodge Counter', 'Standard', '14.68%×7+44.02%'],
     ['Skill', 'Trailing Lights of Eons → Overflowing Radiance', '19.46%×4+77.84% → 9.87%×4+29.59%×4+39.45%', 'After Basic ATK 4 or Intro, Skill becomes Overflowing Radiance, entering Incarnation (10s).'],
-    ['Forte', 'Incarnation → Illuminous Epiphany', '88.62%→77.97%+25.99%×2→99.44%+66.30%→18.67%×6+74.67% (Basic) · 100.76%+75.57%×2+251.90% (Crescent Divinity) · 19.89%×6+347.92% (Solar Flare/Stella Glamor)', 'Stella Glamor gains +44.54% per Incandescence spent (up to 50). // TODO: verify — source table failed to render this pass.' ],
+    ['Forte', 'Incarnation - Basic Attack Stage 1-4', '88.62% → 77.97%+25.99%×2 → 99.44%+66.30% → 18.67%×6+74.67%', 'While in Incarnation, replaces Basic ATK; counted as Resonance Skill DMG. Landing Stage 4 ends Incarnation and opens the 5s Ordination Glow window.'],
+    ['Forte', 'Incarnation - Heavy Attack', '47.72%+111.34%', 'Replaces Heavy Attack during Incarnation; also replaces Basic ATK during Ordination Glow (after Incarnation-Basic-ATK Stage 4).'],
+    ['Skill', 'Crescent Divinity', '100.76%+75.57%×2+251.90%', "Replaces Resonance Skill during Incarnation (Jinhsi's alternate direct-cast Skill hit while incarnated); castable mid-air."],
+    ['Dodge Counter', 'Incarnation - Dodge Counter', '43.89%+32.92%×2+109.71%', 'Replaces Dodge Counter during Incarnation; castable mid-air.'],
+    ['Skill', 'Illuminous Epiphany', '19.89%×6+347.92%', 'Replaces Resonance Skill during Ordination Glow. Solar Flare (19.89%×6) detonates as Stella Glamor (347.92%) after a short delay; Stella Glamor gains +44.54% DMG Multiplier per Incandescence consumed (up to 50).'],
     ['Liberation', 'Purge of Light', '499.81%+1166.22%', '24s cooldown; huge AoE nuke.'],
     ['Intro', "Loong's Halo", '159.05%'],
     ['Outro', 'Temporal Bender', 'Incandescence gain rate +1/s for 20s', 'Utility only — no direct DMG or team buff.'],
