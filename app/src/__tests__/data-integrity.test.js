@@ -171,13 +171,11 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Chisa[1] "Basic ATK: Stage 2, Rending Lunge, Death Snip"',
     'Chisa[4] "Forte: Sawring - Blitz 2-3"',
     'Cartethyia[7] "Skill: Fleurdelys 2"',
-    'Zani[1] "Skill: Standard Defense Protocol"',
-    'Zani[2] "Basic ATK: Stage 3"',
-    'Zani[3] "Skill: Targeted Action / Forcible Riposte"',
-    'Zani[5] "Forte: Heavy Slash: Daybreak"',
-    'Zani[6] "Forte: Heavy Slash: Dawning"',
-    'Zani[7] "Forte: Heavy Slash: Nightfall"',
-    'Zani[8] "Forte: Heavy Slash: Daybreak → Dawning → Nightfall"',
+    // Zani[1]/[2]/[3]/[5]/[6]/[7]/[8] now all resolve — fixed 2026-09-03 against a real prydwen.gg
+    // .mht snapshot: SKILL_MULTIPLIERS['Zani'] added the missing Standard Defense Protocol row and a
+    // dedicated Stage 3 row, and renamed 'Targeted Action'/'Heavy Slash <Name>' to match the rotation
+    // steps' own longer/colon-bearing skill strings exactly (findSkillMultiplierRow's fuzzy match
+    // requires the row name to CONTAIN the step string, which none of the old names did).
     'Augusta[1] "Heavy ATK: Thunderoar: Backstep"',
     'Augusta[2] "Heavy ATK: Thunderoar: Spinslash"',
     'Augusta[4] "Heavy ATK: Thunderoar: Backstep → Spinslash"',

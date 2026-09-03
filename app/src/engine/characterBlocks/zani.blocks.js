@@ -35,7 +35,12 @@ export const ZANI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Targeted Action / Forcible Riposte' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('86.2% + 28.7% + 172.4%') },
+    // Fixed 2026-09-03: had no damage.category — a real Resonance Skill cast (Crisis Response
+    // Protocol's enhanced Skill) with no "considered X DMG" override in the kit text, so it resolves
+    // to skillDmg. This also fixes a hidden 2nd bug: chain.s2's skillDmg:80 effect (below) could never
+    // have matched this block even after its own dead-trigger fix, since category-gated stats only
+    // apply to matching-category hits.
+    damage: { hits: parseSkillMultiplierHits('86.2% + 28.7% + 172.4%'), category: 'skillDmg' },
     note: 'Once Redundant Energy hits 100/100 — applies 1 Heliacal Ember stack, grants 10 Blaze, starts Sunburst (+20% Spectro Frazzle DMG for 14s, not modeled).',
   },
   {
@@ -128,24 +133,29 @@ export const ZANI_BLOCKS = [
     effects: [{ stat: 'elemDmg', value: 50 }],
     note: '+50% Spectro DMG (confirmed exact) — no further scope detail sourced beyond the flat value, kept passive.',
   },
+  // Fixed 2026-09-03: S2 and S3 were both `kind:'buff'` with `trigger:{type:'cast',...}` and no
+  // `timing.duration` — the item-12 dead-buff architecture bug (Engine development.md), silent no-ops.
   {
     id: 'zani.chain.s2',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Skill:Targeted Action / Forcible Riposte' },
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
       { stat: 'critRate', value: 20 },
-      { stat: 'skillDmg', value: 80 },
+      { stat: 'skillDmg', value: 80, scopedToBlockId: 'zani.skill.targeted-action' },
     ],
-    note: 'Crit Rate +20% + a multiplier boost to Targeted Action/Forcible Riposte (confirmed exact per the audit comment) — modeled together, cast-scoped to the Skill cast.',
+    note: 'Crit Rate +20% + a multiplier boost to Targeted Action/Forcible Riposte specifically (confirmed exact per the audit comment) — skillDmg scoped via scopedToBlockId since Targeted Action is not her only skillDmg-tagged block.',
   },
   {
     id: 'zani.chain.s3',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Liberation:Rekindle' },
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 200 }],
-    note: "Rekindle's own DMG Multiplier +200% — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
+    // Scoped via scopedToBlockId: libDmg is category-gated, but `zani.liberation.the-last-stand` is
+    // ALSO libDmg-categorized — without scoping, this would incorrectly also boost The Last Stand,
+    // when the kit text is explicit this is Rekindle's own multiplier only.
+    effects: [{ stat: 'libDmg', value: 200, scopedToBlockId: 'zani.liberation.rekindle' }],
+    note: "Rekindle's own DMG Multiplier +200%.",
   },
   {
     id: 'zani.chain.s4',
@@ -158,10 +168,12 @@ export const ZANI_BLOCKS = [
   {
     id: 'zani.chain.s5',
     source: SOURCE, kind: 'buff',
-    trigger: { type: 'cast', on: 'Liberation:The Last Stand' },
+    // Fixed 2026-09-03: same dead cast-scoped/no-duration no-op shape as S2/S3 above.
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 120 }],
-    note: "The Last Stand's own DMG Multiplier +120% — cast-scoped (instant, no persistent duration).",
+    // Scoped for the same reason as S3: libDmg is category-gated but shared with Rekindle.
+    effects: [{ stat: 'libDmg', value: 120, scopedToBlockId: 'zani.liberation.the-last-stand' }],
+    note: "The Last Stand's own DMG Multiplier +120%.",
   },
   {
     id: 'zani.chain.s6',

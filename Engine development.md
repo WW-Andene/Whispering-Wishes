@@ -686,6 +686,21 @@ this session, and reinforces that the fix-shape decisions below (a real architec
 continued one-off patching) are worth prioritizing — at this rate, most of the roster likely has at
 least one instance, and probably several characters have Phoebe-scale concentrations still undiscovered.
 
+**17th-19th confirmed instances, 2026-09-03**: Zani's `chain.s2`/`chain.s3`/`chain.s5` — same
+`kind:'buff', trigger:{type:'cast',...}, timing:{}` shape, found immediately on sight per the standing
+rule. `chain.s3` (Rekindle DMG Mult +200%) and `chain.s5` (The Last Stand DMG Mult +120%) both needed
+`scopedToBlockId` on top of the trigger fix: both are `libDmg`-categorized, and Zani has TWO real
+`libDmg` blocks (`zani.liberation.rekindle` and `zani.liberation.the-last-stand`) — without scoping,
+fixing either one's trigger alone would have made it cross-bleed onto the WRONG Liberation cast (S3's
++200% belongs to Rekindle only; S5's +120% belongs to The Last Stand only). This is a new wrinkle worth
+flagging: whenever two or more damage blocks on the same character share a category, a
+`scopedToBlockId`-less fix for either one's dead-buff bug is itself a NEW bug, not a fix — always check
+for sibling same-category blocks before deciding scoping is unnecessary (contrast Phoebe's `chain.s3`
+and Brant's `chain.s6`, where the stat's category legitimately had only one real target).
+`zani.chain.s2` also uncovered a related category bug on the block it's meant to boost: its `skillDmg`
+effect could never have matched `zani.skill.targeted-action` even after the trigger fix, because that
+damage block had no `damage.category` set at all — fixed alongside it.
+
 **Fix shape, not yet done**: (1) a real architecture fix — either make `statsAtInstant()` also check a
 3rd bucket of "cast-scoped, same-instant-only" buffs (blocks matching this shape, applied only to hits at
 their own exact trigger instant, not before/after), or add a cheap default `timing.duration` (e.g. 0.1s)

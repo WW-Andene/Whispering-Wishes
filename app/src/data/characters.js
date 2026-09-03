@@ -588,7 +588,11 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Blazing Justice',
     weaponAlts: { alt5: ['Tragicomedy', "Verity's Handle"], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
-    teams: ['Zani + Phoebe + Shorekeeper', 'Zani + Rover: Spectro + Verina'] },
+    // teams corrected 2026-09-03 against a real prydwen.gg .mht snapshot: the source's own Synergies
+    // text is explicit that "Phoebe + Spectro Rover is the best Zani team when fully optimized" (with
+    // Shorekeeper named separately as "the best option for Zani teams WITHOUT quickswap") — swapped
+    // the 2nd slot's ordering to lead with the source's own "best" framing.
+    teams: ['Zani + Phoebe + Rover: Spectro', 'Zani + Phoebe + Shorekeeper'] },
   // Full audit 2026-08-17 against Prydwen's live build page (Chrome UA + google.com referer + jsRender)
   // and ww.nanoka.cc's character #1407 sheet. desc: title "Woven Melodies" (nanoka) prepended and blurb
   // rewritten — the previous desc said she "applies Erosion via Coordinated Attacks", but Ciaccona has
@@ -4278,17 +4282,36 @@ const SKILL_MULTIPLIERS = {
   // both sources list as its own Forte multiplier and that Resonance Chain S6 explicitly buffs alongside
   // Daybreak/Dawning/Nightfall — added below, sharing Dawning's exact DMG value per source (both rows are
   // numerically identical at every level, including Lv.10's 424.07%).
+  // Fixed 2026-09-03 against a real prydwen.gg .mht snapshot. 3 real, sourced lookup bugs (all
+  // already flagged in data-integrity.test.js's KNOWN_UNRESOLVED_BASELINE as known gaps — now
+  // resolved with real data, not guessed): (1) 'Skill: Standard Defense Protocol' had NO row at all —
+  // added (63.94%). (2) 'Skill: Targeted Action / Forcible Riposte' never substring-matched the old
+  // 'Targeted Action' row name (findSkillMultiplierRow's fuzzy match requires the ROW name to CONTAIN
+  // the step's skill string, and 'Targeted Action' does not contain the longer combined step string)
+  // — renamed to match, using Forcible Riposte's own real value (identical to Targeted Action's, per
+  // the source's own two separate Multipliers rows). (3) The 3 'Heavy Slash <Name>' rows (no colon)
+  // never matched the real rotation steps 'Heavy Slash: <Name>' (with colon) — added colons, plus a
+  // new combined row for the "repeat the whole string" 2nd-pass step. Also resolves a long-standing
+  // TODO: the exact Daybreak/Dawning Blaze costs (10/20) were previously "commonly-cited, not
+  // independently confirmed" — the source's own Review text now states them explicitly ("Daybreak
+  // consumes 10 Blaze, Dawning consumes 20 Blaze").
   'Zani': [
     ['Basic ATK', 'Stage 1-4', '58.9% → 79.5% → 127.3% → 270.4%', 'Standard combo string.'],
+    // Added 2026-09-03: the rotation's own 'Basic ATK: Stage 3' step (exiting Standard Defense
+    // Protocol's block stance) never substring-matched the combined 'Stage 1-4' row above (the row
+    // name doesn't CONTAIN the shorter step string) — a 4th real lookup gap, added as its own row.
+    ['Basic ATK', 'Stage 3', '127.3%', "Exits Standard Defense Protocol's block stance manually."],
     ['Heavy ATK', 'Standard', '41.1%×4', 'Charged combo hit.'],
-    ['Skill', 'Pinpoint Strike', '61.0% + 122.0%', 'Base Skill counter-style strike.'],
-    ['Skill', 'Targeted Action', '86.2% + 28.7% + 172.4%', 'Counter follow-up, empowered by her Resonance Chain.'],
-    ['Forte', 'Heavy Slash Daybreak', '198.8%', 'First stage of her Forte-empowered Heavy ATK.'],
-    ['Forte', 'Heavy Slash Dawning', '424.1%', 'Second, stronger stage of the Forte Heavy ATK.'],
-    ['Forte', 'Heavy Slash Nightfall', '135.2% + 262.4% (+9.95% per Blaze)', 'Forte finisher, scales with consumed Blaze.'],
+    ['Skill', 'Standard Defense Protocol', '63.94%', 'Base Resonance Skill hit before the block-stance follow-up.'],
+    ['Skill', 'Pinpoint Strike', '61.0% + 122.0%', 'Parry payoff of Standard Defense Protocol.'],
+    ['Skill', 'Targeted Action / Forcible Riposte', '86.2% + 28.7% + 172.4%', 'Both are the same value: Targeted Action (unhit release) and Forcible Riposte (parry variant) of Crisis Response Protocol.'],
+    ['Forte', 'Heavy Slash: Daybreak', '198.8%', 'First stage of her Forte-empowered Heavy ATK; consumes 10 Blaze.'],
+    ['Forte', 'Heavy Slash: Dawning', '424.1%', 'Second, stronger stage of the Forte Heavy ATK; consumes 20 Blaze.'],
+    ['Forte', 'Heavy Slash: Nightfall', '135.2% + 262.4% (+9.95% per Blaze)', 'Forte finisher, consumes up to 40 Blaze; scales with consumed Blaze.'],
+    ['Forte', 'Heavy Slash: Daybreak → Dawning → Nightfall', '198.8% + 424.1% + 135.2%+262.4%(+9.95%/Blaze)', "2nd full pass of the 3-hit string, same per-hit values as the 1st pass — the rotation's own step collapses the 3 stages into one combined entry."],
     // added 2026-08-31 via wutheringwaves.fandom.com/wiki/Zani/Combat + prydwen.gg cross-check — was missing
     // entirely; parry payoff of the pre-Daybreak Ready Stance, same DMG as Dawning at every level.
-    ['Forte', 'Heavy Slash Lightsmash', '424.1%', 'Parry counter cast automatically if Zani is hit during Scorching Light\'s Ready Stance, before releasing into Daybreak.'],
+    ['Forte', 'Heavy Slash: Lightsmash', '424.1%', 'Parry counter cast automatically if Zani is hit during Scorching Light\'s Ready Stance, before releasing into Daybreak.'],
     ['Liberation', 'Rekindle', '318.5%', 'Ultimate that raises max Blaze and enters Inferno state.'],
     ['Liberation', 'The Last Stand', '191.1% + 1083.0%', 'Second Ultimate cast inside Inferno, scales with Blaze consumed.'],
     ['Intro', 'Immediate Execution', '24.2%×5 + 80.8%', 'Swap-in opener strike.'],
@@ -5175,10 +5198,12 @@ const CHARACTER_ROTATIONS = {
     { type: 'Basic ATK', skill: 'Stage 3', note: 'Press Basic Attack to exit the block stance manually — Stagnates the target and restores 10 Redundant Energy.' },
     { type: 'Skill', skill: 'Targeted Action / Forcible Riposte', note: 'Once Redundant Energy hits 100/100 (gained from Basic ATK hits, Intro Skill, Standard Defense Protocol, and Pinpoint Strike — none while in Inferno Mode), HOLD Skill (Crisis Response Protocol) to enter interruption-immune Ready Stance — if unhit, releasing consumes all Redundant Energy for Targeted Action; if an enemy attacks during the hold, it instead auto-triggers Forcible Riposte (a parry) for the same cost. Either way: applies 1 Heliacal Ember stack, grants 10 Blaze, and starts Sunburst — +20% Spectro Frazzle DMG on Zani for 14s.' },
     { type: 'Liberation', skill: 'Rekindle', note: 'Press Liberation — deals a hit and enters Inferno Mode (up to 20s), raising max Blaze from 100 to 150, granting 50 Blaze immediately, and giving Basic ATK a flat +25% DMG Multiplier for the duration.' },
-    // TODO: verify — neither fandom.com/wiki/Zani/Combat nor prydwen.gg states an exact Blaze cost for
-    // Daybreak or Dawning individually (only Nightfall's "up to 40 Blaze" is explicit primary-source text);
-    // 10/20 here is the commonly-cited community rotation breakdown, not independently confirmed.
-    { type: 'Forte', skill: 'Heavy Slash: Daybreak', note: 'Now in Inferno Mode with ≥30 Blaze, press Basic Attack (auto-replaced) — counted as Heavy ATK + Spectro Frazzle DMG. If Zani is instead hit during this pre-release Ready Stance, it auto-parries into Heavy Slash: Lightsmash (same DMG as Dawning) rather than continuing the Daybreak→Dawning→Nightfall string.' },
+    // TODO resolved 2026-09-03: a real prydwen.gg .mht snapshot's Review text now explicitly confirms
+    // the exact Blaze costs — "Daybreak consumes 10 Blaze, Dawning consumes 20 Blaze and Nightfall
+    // consumes up to 40 Blaze" — matching the 10/20 previously marked as an unconfirmed community
+    // breakdown. Total per full pass: 10+20+40 = 70 Blaze (matches the source's own "her standard
+    // combo consumes 140 Blaze" for 2 full passes).
+    { type: 'Forte', skill: 'Heavy Slash: Daybreak', note: 'Now in Inferno Mode with ≥30 Blaze, press Basic Attack (auto-replaced) — counted as Heavy ATK + Spectro Frazzle DMG, consumes 10 Blaze. If Zani is instead hit during this pre-release Ready Stance, it auto-parries into Heavy Slash: Lightsmash (same DMG as Dawning) rather than continuing the Daybreak→Dawning→Nightfall string.' },
     { type: 'Forte', skill: 'Heavy Slash: Dawning', note: 'Press Basic Attack again — auto-chains at >30 remaining Blaze.' },
     { type: 'Forte', skill: 'Heavy Slash: Nightfall', note: 'Press Basic Attack once more — consumes up to 40 Blaze, each point adding +9.95% DMG Multiplier (max level); this is her hardest-hitting single attack. If Nightfall Stage 1 gets interrupted, pressing Basic Attack again casts Nightfall Stage 2 instead of restarting the string.' },
     { type: 'Forte', skill: 'Heavy Slash: Daybreak → Dawning → Nightfall', note: 'Repeat the full 3-hit string a 2nd time — with allies feeding enough Spectro Frazzle, Blaze should refill for another full pass.' },
