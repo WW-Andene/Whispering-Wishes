@@ -1,4 +1,4 @@
-// Cross-check of Yangyang: Xuanling against a fresh Prydwen.gg source dump (following the same
+// Cross-check of Yangyang: Xuanling against a fresh the source.gg source dump (following the same
 // treatment already applied to Augusta/Aemeath/Hiyuki/Luuk Herssen/Qingxiao/Sigrika). dmgFocus,
 // base stats bracket, tier, statScaling, CHAR_BUFF_TABLE, and S2/S4/S6 chain nodes already matched.
 // Real gaps found:
@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { YANGYANG_XUANLING_BLOCKS } from '../engine/characterBlocks/yangyangxuanling.blocks.js';
 
-describe('Yangyang: Xuanling — audit fixes against a fresh Prydwen dump', () => {
+describe('Yangyang: Xuanling — audit fixes against a fresh the source dump', () => {
   it("S3's cast-scoped chain buff uses heavyDmg (matching the heavyDmg-categorized Liberation hit it scopes to), not the wrong libDmg", () => {
     expect(RESONANCE_CHAIN_DATA['Yangyang: Xuanling'].s3).toEqual({ heavyDmg: 175 });
     const s3 = YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s3');

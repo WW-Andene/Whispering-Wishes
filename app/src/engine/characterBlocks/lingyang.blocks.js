@@ -22,8 +22,23 @@ export const LINGYANG_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Lion Awakens' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('99.41%×2') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus on a real ~4.25% (13,631) damage share. No override text
+    // names a different category, same default-to-skillDmg convention as Calcharo/Encore/Jianxin.
+    damage: { hits: parseSkillMultiplierHits('99.41%×2'), category: 'skillDmg' },
     note: 'One of three casts (with Furious Punches and Strive: Lion\'s Vigor) that restore Lion\'s Spirit; exact restore amount per trigger not published, not modeled.',
+  },
+  {
+    // Added 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): Inherent Skill Lion's Pride was entirely
+    // missing — a whole kit component with no block at all, not just a categorization gap. Scoped only
+    // to the Intro hit above via scopedToBlockId, cast-scoped to the same trigger (instant, no
+    // persistent duration), same "single-hit-scoped" pattern as Calcharo's S5.
+    id: 'lingyang.selfbuff.lions-pride',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: 'Intro:Lion Awakens' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'totalMult', value: 50, scopedToBlockId: 'lingyang.intro.lion-awakens' }],
+    note: "Inherent Skill Lion's Pride: DMG of Intro Skill Lion Awakens +50%.",
   },
   {
     id: 'lingyang.liberation.strive-lions-vigor',
@@ -41,7 +56,11 @@ export const LINGYANG_BLOCKS = [
     // Row 'Unification of Spirits (Striding Lion)' has 5 named components — only Glorious Plunge (the
     // Forte's own entry hit) is used here; Feral Gyrate/Mountain Roamer/Stormy Kicks/Tail Strike are
     // separately modeled below as the Basic ATK/Skill blocks the real rotation actually casts.
-    damage: { hits: parseSkillMultiplierHits('172.37%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Heavy ATK DMG Bonus on a real 5.8% (10,209) damage share. Entered by holding Heavy
+    // Attack per the dump's own kit text ("HOLD Heavy Attack for Glorious Plunge"), same input-slot
+    // convention as Jianxin's Forte:Primordial Chi Spiral/Yinlin's Forte:Chameleon Cipher.
+    damage: { hits: parseSkillMultiplierHits('172.37%'), category: 'heavyDmg' },
     note: "At full Lion's Spirit, HOLD Heavy Attack for Glorious Plunge and enter the airborne Striding Lion state.",
   },
   {
@@ -69,13 +88,17 @@ export const LINGYANG_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('587.94%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Outro DMG Bonus on a real 13.9% (44,664) damage share — his 3rd-largest bucket. His own
+    // kit text is explicit this is pure damage, not a team buff — same outroDmg shape already fixed for
+    // Rover: Havoc's Soundweaver/Calcharo's Shadowy Raid/Encore's Thermal Field.
+    damage: { hits: parseSkillMultiplierHits('587.94%'), category: 'outroDmg' },
     note: "Pure-damage AoE finisher — no baseline team buff (S4 Resonance Chain grants team Glacio DMG +20%/30s on this Outro, see lingyang.chain.s4 below).",
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
-    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: this Inherent Skill (Diligent
+    // Added 2026-09-03 against a real browser snapshot: this Inherent Skill (Diligent
     // Practice) was entirely missing before this pass, despite CHARACTER_ROTATIONS['Lingyang']
     // already alternating Basic ATK and Skill (Mountain Roamer) specifically to exploit it, per the
     // source's own Rotation section. Scoped to lingyang.skill.ancient-arts (Mountain Roamer) only via

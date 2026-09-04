@@ -12,7 +12,7 @@
 // per her declared base stat, documented as an approximation rather than split
 // across two bases (which this schema's single-basis-per-block shape can't do).
 // Mid-air:Cartethyia Plunging Attack's real DMG is now sourced and modeled (2026-09-02, against a
-// fresh Prydwen dump — Characters data dump/Cartethyia/Cartethyia.md — which the prior source page
+// fresh the source dump — Characters data dump/Cartethyia/Cartethyia.md — which the prior source page
 // this file was built from was simply missing). The "which Sword Shadow grants which buff" question
 // (2026-09-03) turns out to be moot: her real modeled rotation always holds all 3 shadow types by the
 // time she recalls them, so all 3 buffs always apply together — Mandate of Divinity's real +50% Aero
@@ -90,7 +90,7 @@ export const CARTETHYIA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Mid-air:Cartethyia Plunging Attack' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // Fixed 2026-09-02 against a fresh Prydwen dump: previously had NO SKILL_MULTIPLIERS row at all,
+    // Fixed 2026-09-02 against a fresh the source dump: previously had NO SKILL_MULTIPLIERS row at all,
     // a silent zero-DMG gap despite being a real, always-cast step in her modeled rotation. Real value
     // has 4 variants depending on how many Sword Shadows are recalled (0/1/2/3): 5.65% / 5.65% /
     // 3.30%×3 / 11.29%×3 HP. By the point this step fires in the real modeled rotation, all 3 shadow
@@ -100,7 +100,7 @@ export const CARTETHYIA_BLOCKS = [
     note: "Recalls all 3 currently-held Sword Shadows (Discord/Divinity/Virtue) at once, granting Fleurdelys the corresponding Heart of Virtue/Mandate of Divinity/Power of Discord buffs for the whole Manifest window. Only this move's own real DMG is captured here — Mandate of Divinity's real DMG Amp is modeled separately below (cartethyia.manifest.mandate-of-divinity). category fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus this dump's own kit structure — listed under \"Basic Attack — Sword to Carve My Forms\", not Heavy Attack — confirms basicDmg.",
   },
   {
-    // Added 2026-09-03 against a fresh Prydwen dump: the previously-undetermined "which shadow grants
+    // Added 2026-09-03 against a fresh the source dump: the previously-undetermined "which shadow grants
     // which buff" question turns out to be moot for her real modeled rotation — CHARACTER_ROTATIONS
     // always has all 3 Sword Shadow types up by the time this recall fires (see the note above), so
     // all 3 buffs (Heart of Virtue/Mandate of Divinity/Power of Discord) always apply together, not

@@ -71,7 +71,7 @@ export const ROVER_HAVOC_BLOCKS = [
     note: 'Havoc Field: AoE DoT for the incoming Resonator, 3 ticks over 6s. The optional 1-3 Dark Surge Basic Attack strings (P1-P5) mentioned in the rotation note before this finisher are not sourced as a distinct step, not modeled. The Echo (Dreamless, +50% DMG within 5s of Liberation landing) has no matching SKILL_MULTIPLIERS row, not modeled.',
   },
 
-  // ── Self-buff (from CHAR_BUFF_TABLE — added 2026-09-03 against a real prydwen.gg .mht snapshot; this
+  // ── Self-buff (from CHAR_BUFF_TABLE — added 2026-09-03 against a real browser snapshot; this
   //    Inherent Skill was entirely missing before this pass, despite being base-kit, not chain-gated) ──
   {
     id: 'roverhavoc.selfbuff.metamorph',

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createStats, applyResonanceChain } from '../features/teams/calcEngine.js';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
@@ -46,5 +46,14 @@ describe('triggerEngine parity — Baizhi', () => {
     expect(fired.has('baizhi.liberation.momentary-union')).toBe(true);
     expect(fired.has('baizhi.skill.emergency-plan')).toBe(true);
     expect(fired.has('baizhi.heavy.destined-promise-channel')).toBe(true);
+  });
+
+  it("Intro (Overflowing Frost) is skillDmg-categorized (was uncategorized) — dump's own multiplier row is labeled generically \"Skill Damage\"", () => {
+    const intro = BAIZHI_BLOCKS.find(b => b.id === 'baizhi.intro.overflowing-frost');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("dmgFocus gains 'Liberation'/'Heavy ATK' — both already correctly libDmg/heavyDmg-categorized real blocks firing in her real rotation", () => {
+    expect(CHARACTER_DATA['Baizhi'].dmgFocus).toEqual(['Skill', 'Liberation', 'Heavy ATK']);
   });
 });

@@ -5,7 +5,7 @@
 // SKILL_MULTIPLIERS['Rover: Aero'], and CHARACTER_ROTATIONS['Rover: Aero']. No new
 // numbers invented. S1/S2 are correctly empty (no DPS component — pure
 // resource/healing mechanics). S3-S6 confirmed exact 2026-09-02 against a real
-// prydwen.gg .mht snapshot (resolving the previous "no adjacent audit comment,
+// the source .mht snapshot (resolving the previous "no adjacent audit comment,
 // flagged as unverified" gap) — 3 real bugs found and fixed that pass: S4 was
 // modeled as an unconditional passive when the kit text is explicit it's a 5s
 // window on Cloudburst Dance cast; S5 was a dead cast-scoped/no-duration
@@ -102,7 +102,7 @@ export const ROVER_AERO_BLOCKS = [
   {
     id: 'roveraero.chain.s4',
     source: SOURCE, kind: 'buff',
-    // Fixed 2026-09-02 against a real prydwen.gg .mht snapshot (confirms S3-S6 exactly, resolving the
+    // Fixed 2026-09-02 against a real browser snapshot (confirms S3-S6 exactly, resolving the
     // "no adjacent audit comment" gap this file previously flagged): was `trigger:{type:'passive'}`,
     // modeled as unconditional — the real kit text is explicit this is conditional: "Casting Mid-air
     // Attack Cloudburst Dance increases Resonance Skill DMG Bonus by 15% for 5s." Converted to a real

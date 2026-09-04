@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { JIANXIN_BLOCKS } from '../engine/characterBlocks/jianxin.blocks.js';
@@ -44,5 +44,19 @@ describe('triggerEngine parity — Jianxin', () => {
     expect(fired.has('jianxin.liberation.purification-force-field')).toBe(true);
     expect(fired.has('jianxin.forte.primordial-chi-spiral')).toBe(true);
     expect(fired.has('jianxin.chain.s6-chi-counter')).toBe(true);
+  });
+
+  it("Intro (Essence of Tao) is skillDmg-categorized (was uncategorized) — dump's own multiplier row is labeled generically \"Skill Damage\"", () => {
+    const intro = JIANXIN_BLOCKS.find(b => b.id === 'jianxin.intro.essence-of-tao');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("Forte (Primordial Chi Spiral / Pushing Punch) is heavyDmg-categorized (was uncategorized) — entered by holding Heavy Attack per the dump's kit text, not Basic ATK as the row/rotation notes previously mistranscribed", () => {
+    const forte = JIANXIN_BLOCKS.find(b => b.id === 'jianxin.forte.primordial-chi-spiral');
+    expect(forte.damage.category).toBe('heavyDmg');
+  });
+
+  it("dmgFocus gains 'Liberation'/'Basic ATK'/'Heavy ATK' (her real 36.1%/30.9%/12.1% shares, now correctly categorized) — Echo (7.9%, generic equipped-Echo damage) and Intro (~5%) both stay excluded per this project's own precedent", () => {
+    expect(CHARACTER_DATA['Jianxin'].dmgFocus).toEqual(['Skill', 'Liberation', 'Basic ATK', 'Heavy ATK']);
   });
 });

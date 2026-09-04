@@ -71,7 +71,7 @@ const loadSpineRuntimes = () => {
   addScript(`${BASE}vendor/spine-player-4.2.109/spine-player.js`)
     .then(() => {
       // Secondary spine-player runtime @4.1.55 for Spine 4.1-exported
-      // assets (e.g. sprite-spine portraits from nanoka) — not
+      // assets (e.g. sprite-spine portraits from the source) — not
       // backward-compatible with the 4.2 runtime above, so we stash 4.2's
       // global, let 4.1 install onto window.spine, then capture that as
       // window.spine41 and restore 4.2.

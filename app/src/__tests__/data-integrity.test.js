@@ -33,7 +33,7 @@ describe('CHARACTER_DATA integrity', () => {
 
   it('every character has base stats', () => {
     // Jingran (v3.6) is a genuine exception: his kit passive "Nether to Light" fixes his combat DEF
-    // to 0 outright (confirmed via ww.nanoka.cc/wutheringwaves.fandom.com) — 0 is his real value, not
+    // to 0 outright (confirmed via the source/the wiki) — 0 is his real value, not
     // a missing-data placeholder, so he's excluded from the baseDef > 0 assertion below.
     const ZERO_DEF_BY_KIT = new Set(['Jingran']);
     chars.forEach(([name, data]) => {
@@ -123,7 +123,7 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Camellya[4] "Basic ATK: Vining Waltz 1"',
     'Camellya[6] "Skill: Vining Waltz 1-4 / Blazing Waltz"',
     'Camellya[7] "Skill: Floral Ravage"',
-    // Jinhsi[3]/[4] now both resolve — fixed 2026-09-03 against a real prydwen.gg .mht snapshot:
+    // Jinhsi[3]/[4] now both resolve — fixed 2026-09-03 against a real browser snapshot:
     // SKILL_MULTIPLIERS['Jinhsi']'s combined 'Incarnation → Illuminous Epiphany' Forte row (a stale
     // "source table failed to render" TODO) was split into individually-named rows exactly matching
     // both rotation steps' own skill strings, and 2 previously-missing moves (Incarnation - Heavy
@@ -134,7 +134,7 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     // Rebecca[3] "Forte: Rat-tat-tat!: Huntress" now resolves — fixed 2026-09-02, its SKILL_MULTIPLIERS
     // row's type was 'Heavy ATK' instead of 'Forte' (a silent lookup mismatch, previously missing this
     // baseline entirely; unrelated to the category fix on the same row).
-    // Lucy[3]/[5]/[6]/[8] now all resolve — fixed 2026-09-02 against a real prydwen.gg .mht snapshot:
+    // Lucy[3]/[5]/[6]/[8] now all resolve — fixed 2026-09-02 against a real browser snapshot:
     // SKILL_MULTIPLIERS['Lucy'] was rebuilt with real per-move rows (previously a truncated/collapsed
     // table missing Thread Shredding Stage 1-4 and Dual Threading entirely, and naming 'Locked Thread
     // Stage 1-4'/'Netrunner: Override' instead of the rotation's own 'Locked Thread Stage 2-4'/
@@ -174,8 +174,8 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Chisa[1] "Basic ATK: Stage 2, Rending Lunge, Death Snip"',
     'Chisa[4] "Forte: Sawring - Blitz 2-3"',
     'Cartethyia[7] "Skill: Fleurdelys 2"',
-    // Zani[1]/[2]/[3]/[5]/[6]/[7]/[8] now all resolve — fixed 2026-09-03 against a real prydwen.gg
-    // .mht snapshot: SKILL_MULTIPLIERS['Zani'] added the missing Standard Defense Protocol row and a
+    // Zani[1]/[2]/[3]/[5]/[6]/[7]/[8] now all resolve — fixed 2026-09-03 against a real browser
+    // snapshot: SKILL_MULTIPLIERS['Zani'] added the missing Standard Defense Protocol row and a
     // dedicated Stage 3 row, and renamed 'Targeted Action'/'Heavy Slash <Name>' to match the rotation
     // steps' own longer/colon-bearing skill strings exactly (findSkillMultiplierRow's fuzzy match
     // requires the row name to CONTAIN the step string, which none of the old names did).
@@ -202,7 +202,7 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Qiuyuan[1] "Basic ATK: Inkwash Stage 3-4"',
     'Rover: Electro[1] "Basic ATK: Deterrence 1-4"',
     // Added 2026-09-02 alongside the new 'Mid-air'/'Attack' SKILL_MULTIPLIERS row (sourced from the
-    // pasted Prydwen text, previously missing entirely): the rotation step's own skill string is
+    // pasted the source text, previously missing entirely): the rotation step's own skill string is
     // "Plunging Attack" (repositioning-only per its note, no damage focus), which doesn't
     // substring-match the row name "Attack" or "Customary Greetings" — correctly stays unresolved,
     // matching the step's own intentionally-no-damage framing.
@@ -420,10 +420,10 @@ describe('Cross-reference consistency', () => {
   });
 });
 
-// wutheringwaves.fandom.com/wiki/Damage (official, fetched 2026-08-19): "For most enemies in the
+// the wiki/Damage (official, fetched 2026-08-19): "For most enemies in the
 // game, the base resistance is equal to 0.1 (10%). Bosses with element-specific resistances have an
 // additional 0.3 (30%) resistance, for a total of 0.4 (40%)." — every tracked enemy's RES map
-// (built in echoes.js from static.nanoka.cc's real per-boss data) should honor that exact rule: every
+// (built in echoes.js from the source's real per-boss data) should honor that exact rule: every
 // element sits at the 10% baseline except the boosted one(s), which sit at exactly 40%. If this ever
 // fails, either the enemy-stats pipeline drifted from its source or the wiki's own stated rule
 // changed for a patch — either way it's the actual game's data disagreeing with what this app models.
@@ -437,7 +437,7 @@ describe('Enemy RES data matches the wiki\'s documented baseline rule', () => {
   it('every RES value is the 10% baseline, 40% boss-signature, or 100% elemental immunity', () => {
     // 100% is real, not a data bug: WW's "Prism" enemies (Fusion Prism, Glacio Prism, etc.) are a
     // documented gimmick — fully immune to their own element by design, meant to be hit with a
-    // different one. Confirmed directly in nanoka.cc's raw base_stats (damage_resistance_element = 10000
+    // different one. Confirmed directly in the source's raw base_stats (damage_resistance_element = 10000
     // exactly, i.e. 100.00%) for exactly the 5 Prism enemies, nothing else.
     const offenders = [];
     for (const [name, d] of enemiesWithRes) {

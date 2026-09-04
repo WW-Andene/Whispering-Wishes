@@ -155,7 +155,7 @@ export const CHISA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'libDmg', value: 120 }],
-    note: "Corrected 2026-09-02 against a fresh Prydwen dump (RESONANCE_CHAIN_DATA.Chisa.s3 fixed the same way): real effect is Sawring-Blitz/Chainsaw Mode Dodge Counter/Sawring-Eradication DMG Multiplier +120% (a 2nd copy of Woven Myriad-Convergence's own +120%). Those 3 moves are explicitly 'considered Resonance Liberation DMG' per her own kit text, so modeled as libDmg. The smaller secondary effect (a further +120% to just the Ring-of-Chainsaw consumption bonus) is left unmodeled, same as S2's own resShred/allDmg split above.",
+    note: "Corrected 2026-09-02 against a fresh the source dump (RESONANCE_CHAIN_DATA.Chisa.s3 fixed the same way): real effect is Sawring-Blitz/Chainsaw Mode Dodge Counter/Sawring-Eradication DMG Multiplier +120% (a 2nd copy of Woven Myriad-Convergence's own +120%). Those 3 moves are explicitly 'considered Resonance Liberation DMG' per her own kit text, so modeled as libDmg. The smaller secondary effect (a further +120% to just the Ring-of-Chainsaw consumption bonus) is left unmodeled, same as S2's own resShred/allDmg split above.",
   },
   // S4 correctly has NO block — per its own audit comment ('improves Havoc Bane trigger rate
   // (utility)'), S4's real effect is a proc-rate utility bonus with zero DPS component, despite

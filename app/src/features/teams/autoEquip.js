@@ -124,7 +124,7 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
   const scalingStat = scaling === 'HP' ? 'HP%' : scaling === 'DEF' ? 'DEF%' : 'ATK%';
   const elDmgKey = d.element ? d.element.charAt(0).toUpperCase() + d.element.slice(1).toLowerCase() + ' DMG' : '';
   // Energy Regen is a 3-cost-ONLY main stat — 4-cost (Overlord/Calamity) echoes never roll it
-  // (wutheringwaves.fandom.com/wiki/Echo/Stats § "Mainstats"), so the 4-cost branches below fall
+  // (the wiki/Echo/Stats § "Mainstats"), so the 4-cost branches below fall
   // back to Crit Rate / Healing Bonus instead of an ER roll that can't actually exist.
   const getMainStat = (cost) => {
     if (preset === 'er') {
@@ -148,7 +148,7 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
   // flatSubToPct rather than colliding with scalingStat (which is always the '%' form).
   //
   // Ordering for the 'default' (Crit DPS) preset follows the real substat value weights
-  // (wutheringwaves.fandom.com/wiki/Echo/Stats, fetched 2026-08-25): Crit Rate 2.0 > Crit DMG
+  // (the wiki/Echo/Stats, fetched 2026-08-25): Crit Rate 2.0 > Crit DMG
   // 1.0 > ATK%/scalingStat 0.75 > a DMG-bonus substat matching the character's own dmgFocus 0.5
   // > flat ATK 0.1 > Energy Regen 0. Energy Regen is explicitly the worst substat for a pure
   // Crit DPS (weight 0) so it's dropped from this preset entirely in favor of the character's

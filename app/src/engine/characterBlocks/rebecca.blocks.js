@@ -46,10 +46,10 @@ export const REBECCA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Rat-tat-tat!: Huntress' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // Value corrected 2026-09-02: was 19.89%×3+318.10%+19.89% (a nanoka.cc .mht snapshot's own raw
-    // Lv.10 table) — the user's own directly-pasted Prydwen text gives 10.00%×3+160.00%+10.00%
+    // Value corrected 2026-09-02: was 19.89%×3+318.10%+19.89% (the source .mht snapshot's own raw
+    // Lv.10 table) — the user's own directly-pasted the source text gives 10.00%×3+160.00%+10.00%
     // instead, re-confirmed correct by the user directly. Per standing instruction, user-pasted
-    // Prydwen text takes priority over other sources on a real conflict.
+    // the source text takes priority over other sources on a real conflict.
     damage: { hits: parseSkillMultiplierHits('10.00%×3+160.00%+10.00%'), category: 'basicDmg' },
     note: 'Once Fervor hits 120/120, replaces Heavy Attack — but its own kit text explicitly says "considered Basic Attack DMG" (fixed 2026-09-02 from a wrong heavyDmg category — same "considered X DMG despite the input slot" pattern as Phrolova\'s Scarlet Coda/Ciaccona\'s Quadruple Downbeat, just the reverse miscategorization). See rebecca.chain.s6-bonus-hit below for the S6-granted bonus proc on this cast.',
   },
@@ -69,7 +69,7 @@ export const REBECCA_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:BOOM! Fireworks!' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('63.62%+572.58%'), category: 'basicDmg' },
-    note: "Auto-casts when the channel ends or Overload maxes. Swap-cancelling this banks 10 Concerto Energy for the next loop. category fixed 2026-09-02: was libDmg — the dump's own damage-profile breakdown shows a literal 0 in the 'Liberation' bucket despite the Ultimate obviously dealing real damage, meaning Prydwen counts the WHOLE Liberation sequence (both the HMG auto-fire, which party-til-dawn's own text explicitly calls Basic ATK DMG, and this finisher) as Basic Attack DMG.",
+    note: "Auto-casts when the channel ends or Overload maxes. Swap-cancelling this banks 10 Concerto Energy for the next loop. category fixed 2026-09-02: was libDmg — the dump's own damage-profile breakdown shows a literal 0 in the 'Liberation' bucket despite the Ultimate obviously dealing real damage, meaning the source counts the WHOLE Liberation sequence (both the HMG auto-fire, which party-til-dawn's own text explicitly calls Basic ATK DMG, and this finisher) as Basic Attack DMG.",
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──

@@ -59,7 +59,7 @@ export const DANJIN_BLOCKS = [
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
-    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: this Inherent Skill (Overflow) was
+    // Added 2026-09-03 against a real browser snapshot: this Inherent Skill (Overflow) was
     // entirely missing before this pass. Sanguine Pulse always precedes Chaoscleave (her only real
     // heavyDmg-categorized damage block) in the modeled rotation, so no scopedToBlockId is needed —
     // no other heavyDmg block exists here to over-credit.

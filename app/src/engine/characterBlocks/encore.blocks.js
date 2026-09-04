@@ -20,7 +20,11 @@ export const ENCORE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Woolies Helpers' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('198.81%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus on a real 2.85% (10,587) damage share. No override text names
+    // a different category, same default-to-skillDmg convention as Calcharo's Intro/Augusta's Stride of
+    // Goldenflare.
+    damage: { hits: parseSkillMultiplierHits('198.81%'), category: 'skillDmg' },
     note: 'Restores some Mayhem.',
   },
   {
@@ -52,7 +56,11 @@ export const ENCORE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('176.76%×4') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Outro DMG Bonus on a real 12.9% (39,258) damage share — her 2nd-largest bucket after
+    // Basic ATK. Her own kit text is explicit this is a free-to-quickswap DoT proc, not a team buff —
+    // same outroDmg shape already fixed for Rover: Havoc's Soundweaver/Calcharo's Shadowy Raid.
+    damage: { hits: parseSkillMultiplierHits('176.76%×4'), category: 'outroDmg' },
     note: 'AoE burn field around the Skill target, every 1.5s for 6s (4 ticks) — no team buff, pure DoT proc.',
   },
 
@@ -98,7 +106,7 @@ export const ENCORE_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Cosmos Rupture' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'libDmg', value: 40 }],
-    // Corrected 2026-09-03 against a fresh Prydwen dump: was stat:'heavyDmg', a dead/no-op buff — both
+    // Corrected 2026-09-03 against a fresh the source dump: was stat:'heavyDmg', a dead/no-op buff — both
     // Cloudy Frenzy and Cosmos Rupture are explicitly named "Resonance Liberation" by the source (not
     // "Heavy Attack"), matching their own kit text and SKILL_MULTIPLIERS['Encore']'s "counted as
     // Resonance Liberation DMG" note for both rows; encore.forte.cosmos-rupture above already uses
@@ -130,6 +138,6 @@ export const ENCORE_BLOCKS = [
     timing: { duration: 10 },
     target: { scope: 'self' },
     effects: [{ stat: 'atkPct', value: 5, stacking: 'stacking', maxStacks: 5 }],
-    note: 'Gains 1 stack of Lost Lamb per damage instance during Cosmos Rave, each +5% ATK for 10s, stacking up to 5 times (25% max) — per the two-source majority (fandom + wuthering.gg both say 5 stacks/25%, vs. Prydwen\'s outlier "6 stacks", flagged in the source audit rather than silently resolved). Modeled as per-stack 5% x5 cap, anchored to the Cosmos: Rampage cast as a representative damage-instance trigger.',
+    note: 'Gains 1 stack of Lost Lamb per damage instance during Cosmos Rave, each +5% ATK for 10s, stacking up to 5 times (25% max) — per the two-source majority (two independent sources both say 5 stacks/25%, vs. a third source\'s outlier "6 stacks", flagged in the source audit rather than silently resolved). Modeled as per-stack 5% x5 cap, anchored to the Cosmos: Rampage cast as a representative damage-instance trigger.',
   },
 ];

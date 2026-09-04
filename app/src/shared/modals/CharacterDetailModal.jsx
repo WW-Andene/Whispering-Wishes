@@ -16,6 +16,7 @@ import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
 import { calcTeamStats } from '../../features/teams/calcTeamStats.js';
 import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getCombatRoleIcon } from '../utils/elementVisuals.js';
 import { hideOnError } from '../utils/imageHelpers.js';
+import { splitIntoParagraphs } from '../utils/textFormat.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { SpinePlayer, getSpineId, SPINE_SPRITES_ENABLED_OUTSIDE_PANEL } from '../components/SpinePlayer.jsx';
 import { FullSpineViewerButton } from '../components/FullSpineViewerButton.jsx';
@@ -85,27 +86,15 @@ const elementCornerFade = (hex) =>
 // Hoisted team parsing helper
 const parseTeamMembers = (teamStr) => teamStr.split('+').map(s => s.trim()).filter(Boolean);
 
-// Long-form kit/note prose in the data files is written as one dense run-on paragraph (audit-trail
-// style, not reader-facing). A handful of sentences reads fine as a single block, but the longer
-// entries (5-15+ sentences, common on complex kits) become an unreadable wall of text. Split on
-// sentence boundaries (". "/"; " before a capital letter or digit, i.e. the start of a new clause —
-// avoids breaking on "e.g." "vs." decimals, etc.) and group a few sentences per paragraph so the text
-// reads as short paragraphs instead of one block, without having to hand-rewrite every character's
-// prose with real newlines in the data files.
-function splitIntoParagraphs(text, sentencesPerParagraph = 2) {
-  if (!text) return [];
-  const sentences = text.match(/[^.!?]+[.!?]+(?:['"’»]?\s+|$)/g) || [text];
-  const paragraphs = [];
-  for (let i = 0; i < sentences.length; i += sentencesPerParagraph) {
-    paragraphs.push(sentences.slice(i, i + sentencesPerParagraph).join('').trim());
-  }
-  return paragraphs.filter(Boolean);
-}
+// splitIntoParagraphs() moved to shared/utils/textFormat.js — also used by RotationGuideCard.jsx.
 
 const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, onViewInTeams, collectionData, visualSettings }) => {
   const { getImageFraming, framingMode, editingImage, setEditingImage } = useImageFramingContext();
   const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
   const [assetBannerVideoPlaying, setAssetBannerVideoPlaying] = useState(false);
+  // Simple View — hides descriptive prose (step notes, Own Kit/Hands Off badges) in the Standard
+  // Rotation section, leaving just each step's type/skill/damage/duration. Off by default (full detail).
+  const [simpleRotationView, setSimpleRotationView] = useState(false);
   const data = CHARACTER_DATA[name];
   if (!data) return null;
   const conveneVideoUrl = getConveneAnimation(name);
@@ -336,9 +325,9 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             const lore = dot > 0 ? localizedDesc.slice(0, dot + 1) : null;
             const gameplay = dot > 0 ? localizedDesc.slice(dot + 2) : localizedDesc;
             return (
-              <div className="text-md space-y-1.5">
+              <div className="text-md space-y-2">
                 {lore && <p className="text-gray-400 italic leading-relaxed">{lore}</p>}
-                {splitIntoParagraphs(gameplay, 3).map((para, i) => (
+                {splitIntoParagraphs(gameplay).map((para, i) => (
                   <p key={i} className="text-gray-300 leading-relaxed">{para}</p>
                 ))}
               </div>
@@ -482,7 +471,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                         <span className="text-sm text-gray-200 font-medium break-words">{(getLocale() === 'fr' && SKILL_NAME_FR[name]?.[skillName]) || skillName}</span>
                       </div>
                       <div className="text-sm text-gray-400 break-words mt-0.5">{mult}</div>
-                      {desc && <div className="text-xs text-gray-500 break-words mt-1 italic">{desc}</div>}
+                      {desc && (
+                        <div className="space-y-1 mt-1">
+                          {splitIntoParagraphs(desc, 140).map((para, pi) => (
+                            <div key={pi} className="text-xs text-gray-500 break-words italic leading-relaxed">{para}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -555,7 +550,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 </div>
               )}
               {localizedBuffNote && (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   {splitIntoParagraphs(localizedBuffNote).map((para, i) => (
                     <p key={i} className="text-sm text-gray-300 leading-relaxed">{para}</p>
                   ))}
@@ -567,9 +562,18 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
           {/* Standard Rotation — team-context rotation steps, reusable base for the Team tab */}
           {localizedRotation && (
             <div>
-              <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
-                <RotateCw size={14} className={colors.text} /> {t('modals.characterDetail.standardRotation')}
-              </h3>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <h3 className="text-white font-semibold text-xl flex items-center gap-2">
+                  <RotateCw size={14} className={colors.text} /> {t('modals.characterDetail.standardRotation')}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setSimpleRotationView(v => !v)}
+                  className={`kuro-badge text-2xs shrink-0 ${simpleRotationView ? 'kuro-badge-amber' : 'kuro-badge-neutral'}`}
+                >
+                  {t('modals.characterDetail.simpleView')}
+                </button>
+              </div>
               <div className="space-y-0.5">
                 {localizedRotation.map((step, i) => {
                   // Same full-word, color-coded badge as the Team tab's Rotation Guide (RotationGuideCard's
@@ -607,7 +611,13 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                             <span className="kuro-badge kuro-badge-neutral text-2xs shrink-0">{step.duration}s</span>
                           )}
                         </div>
-                        {step.note && <div className="text-xs text-gray-500 break-words mt-0.5 italic">{step.note}</div>}
+                        {!simpleRotationView && step.note && (
+                          <div className="space-y-1 mt-0.5">
+                            {splitIntoParagraphs(step.note, 140).map((para, pi) => (
+                              <div key={pi} className="text-xs text-gray-500 break-words italic leading-relaxed">{para}</div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -619,6 +629,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   solo team, inherits is always empty and reason's copy ("comes on-field last to
                   receive every buff stacked up before it") assumes a team that isn't there. */}
               {(() => {
+                if (simpleRotationView) return null;
                 const solo = soloRotationTimeline?.steps?.[0];
                 if (!solo || (solo.selfActive.length === 0 && solo.handsOff.length === 0)) return null;
                 return (

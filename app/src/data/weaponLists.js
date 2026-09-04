@@ -88,7 +88,7 @@ const WEAPON_RELEASE_ORDER = [
   'Everbright Polestar', "Daybreaker's Spine",
   // 3.2
   'Solsworn Ciphers',
-  // 3.3 (Hiyuki/Denia signatures — verified against game8.co character order 2026-08-14)
+  // 3.3 (Hiyuki/Denia signatures — verified against the source character order 2026-08-14)
   'Frostburn', 'Forged Dwarf Star',
   // 3.4
   'Spectral Trigger', 'Skull Thrasher', 'Freeze Frame',

@@ -165,17 +165,40 @@ attempted again on a hunch.
 
 ### 1c. Phase A — per-character full audit, mostly not done
 
-The plan's own methodology for reaching "fully merged": an 8-dimension
-solo audit per character (SKILL_MULTIPLIERS / CHARACTER_ROTATIONS /
-RESONANCE_CHAIN_DATA / CHAR_BUFF_TABLE / dmgFocus / weapon data / echo data /
-engine-block parity, all cross-checked against a fresh source). 9 characters
-(Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc, Rover: Aero,
-Jiyan, **Yinlin — added 2026-09-03**) have gone through this as a *complete*
-8-dimension pass. Many more have had *partial*, targeted fixes from later
-sessions' dump-verification passes (see the `Characters data dump/` audit
-trail and this session's `auditBlockCoverage.mjs` sweep — that sweep covers
-3 of the 8 dimensions: rotation-step/chain/buff-table coverage, not the
-full 8). The remaining ~48 characters have not had a full Phase A pass. Not
+The plan's own methodology for reaching "fully merged": a 9-dimension solo
+audit per character, all cross-checked against a fresh source dump:
+1. SKILL_MULTIPLIERS
+2. CHARACTER_ROTATIONS
+3. RESONANCE_CHAIN_DATA
+4. CHAR_BUFF_TABLE
+5. dmgFocus
+6. weapon data (bestWeapon/weaponAlts)
+7. echo data (bestEchoes)
+8. engine-block parity — **updated 2026-09-03**: every component, element,
+   and mechanic of the character's kit (every named move/state/proc the kit
+   text describes, not just the moves already present in
+   `<name>.blocks.js`) must actually be segmented, categorized (a real
+   `damage.category`, matching kit-text override language where present —
+   e.g. "considered Resonance Skill DMG" on a move cast from a different
+   slot), and wired into the engine — not just "does every existing block
+   have a category," but "does every real kit component that should have a
+   block, have one."
+9. icons — **added 2026-09-03**: every skill/rotation-step icon
+   (`SKILL_ICONS`) and Resonance Chain node icon (`CHAIN_NODE_ICONS`) is
+   actually wired, including reusing an existing generic/shared icon
+   (Basic ATK, Liberation, etc.) where the character has no unique art
+   sourced yet rather than leaving the slot unpopulated.
+
+9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
+Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
+version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
+Aalto, Baizhi, Chixia — added 2026-09-03, first eight characters audited
+under the updated 9-dimension methodology** (see below). Many more
+have had *partial*, targeted fixes from later sessions' dump-verification
+passes (see the `Characters data dump/` audit trail and an earlier
+session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
+dimensions: rotation-step/chain/buff-table coverage, not the full set).
+The remaining ~47 characters have not had a full Phase A pass. Not
 urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
@@ -258,6 +281,192 @@ both real, already correctly `libDmg`/`heavyDmg`-categorized damage per her
 own dump's Damage Profile, silently rejecting real teammate buffs. 1 new
 test, full suite green: 1376/1376.
 
+**Calcharo pass (2026-09-03) — first character audited under the updated
+9-dimension methodology (dimension 8 broadened to real kit-component
+coverage, dimension 9 icons added)**: his `Characters data dump/` file
+already existed from an earlier pass, with SKILL_MULTIPLIERS/
+CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/weapon/echo/tier
+all already confirmed clean, and one real bug already fixed then
+(`chain.s4`'s scope/trigger/duration). Closing dimensions 8-9 this pass
+found 2 more real bugs, both the same shape: `calcharo.intro.wanted-outlaw`
+and `calcharo.outro.shadowy-raid` were both entirely uncategorized
+(`damage.category` missing) despite being real, sourced damage — Intro
+5.1% (20,081) and Outro 7.6% (29,693) of his total per the dump's Damage
+Profile — silently rejecting Resonance Skill DMG Bonus and Outro DMG Bonus
+respectively on that damage. Fixed to `skillDmg` (Intro — the dump's own
+multiplier row is labeled generically "Skill Damage", same convention as
+Augusta's Stride of Goldenflare) and `outroDmg` (Outro — his own direct
+damage on swap-out, not a team buff, same shape as Rover: Havoc's
+Soundweaver). `dmgFocus` gained `'Outro'` accordingly; `'Skill'` (Intro's
+5.1%) stays excluded — it sits in the ambiguous gap between this project's
+own established exclude precedent (4.6%/5.5%, Rover: Spectro) and include
+precedent (6.8%+, Yinlin/Denia/Iuno), nearer the exclude side. Resonance
+Skill (Extermination Order, 2.3%) stays unmodeled — real but never fires in
+the app's own CHARACTER_ROTATIONS, same "deliberately unmodeled" precedent
+as Rover: Havoc's skipped Basic ATK step. Icons (dimension 9) checked and
+confirmed already fully wired — every rotation move and all 6 Resonance
+Chain nodes have a real icon, including 2 correctly-reused shared/generic
+icons (Basic ATK weapon icon, also covering Heavy ATK/Mid-air/Dodge
+Counter/Hounds Roar) — no gap found. 3 new tests, full suite green:
+1379/1379.
+
+**Encore pass (2026-09-03)**: her `Characters data dump/` file already
+existed from an earlier pass, with SKILL_MULTIPLIERS/CHARACTER_ROTATIONS/
+CHAR_BUFF_TABLE/base stats/tier/`bestWeapon`/`bestEchoes` all already
+confirmed clean, and 2 real bugs already fixed then (`weaponAlts.alt4`
+missing Radiant Dawn; `chain.s3`'s dead/no-op `heavyDmg` buff — both her
+Liberation-DMG-categorized finishers are `libDmg`, not `heavyDmg`, fixed to
+match). Closing dimensions 8-9 this pass found 2 more real bugs, the same
+shape as Calcharo's: `encore.intro.woolies-helpers` and
+`encore.outro.thermal-field` were both entirely uncategorized despite being
+real, sourced damage — Intro 2.85% (10,587) and Outro 12.9% (39,258, her
+2nd-largest bucket after Basic ATK) of her total per the dump's Damage
+Profile — silently rejecting Resonance Skill DMG Bonus and Outro DMG Bonus
+respectively. Fixed to `skillDmg` (Intro — no override text names a
+different category, default convention) and `outroDmg` (Outro — a
+free-to-quickswap DoT proc, explicitly not a team buff, same shape as
+Calcharo's Shadowy Raid). `dmgFocus` gained `'Liberation'` (14.6%, already
+correctly `libDmg`-categorized on `encore.forte.cosmos-rupture`) and
+`'Outro'` accordingly; Echo (7.1%, generic equipped-Echo damage, not her
+own kit's Echo Skill button) and Intro (2.85%, low single digits) both stay
+excluded per established precedent. Icons (dimension 9) checked and
+confirmed already fully wired for every rotation move and all 6 Resonance
+Chain nodes — no gap found. 4 new tests, full suite green: 1382/1382.
+
+**Jianxin pass (2026-09-03)**: her `Characters data dump/` file already
+existed from an earlier pass with no bugs found there (SKILL_MULTIPLIERS/
+CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/weapon/echo/tier/
+teams/base stats all confirmed clean) — but that pass predated this
+session's dimensions 5/8/9 rigor. Redoing those found the largest
+discrepancy of any character audited so far: `dmgFocus` was `['Skill']`
+only (8%) — Liberation is her single BIGGEST damage bucket (36.1%/56,486)
+and Basic ATK her 2nd-biggest (30.9%/48,268) per the dump's own Damage
+Profile, both already correctly `libDmg`/`basicDmg`-categorized in
+`jianxin.blocks.js`, silently rejecting real teammate DMG Bonus buffs on
+the majority of her damage. Dimension 8's full-kit-component pass also
+found `jianxin.intro.essence-of-tao` and `jianxin.forte.primordial-chi-
+spiral` (Pushing Punch) both entirely uncategorized — Intro ~5% (7,749,
+fixed to `skillDmg`, generic "Skill Damage" row label) and Forte 12.1%
+(18,878, fixed to `heavyDmg`). The Forte fix also surfaced and corrected a
+real transcription error propagated into both `SKILL_MULTIPLIERS`' own row
+note and the `CHARACTER_ROTATIONS` step note: both said Primordial Chi
+Spiral is entered by "hold Basic ATK," but the dump's kit text is explicit
+it's "hold Heavy Attack" — the same input-slot convention already used for
+Yinlin's Forte:Chameleon Cipher confirms `heavyDmg` is correct. `dmgFocus`
+fixed to `['Skill', 'Liberation', 'Basic ATK', 'Heavy ATK']`; Echo (7.9%,
+generic equipped-Echo damage) stays excluded. Icons (dimension 9) checked
+and confirmed already fully wired. 3 new tests, full suite green:
+1385/1385.
+
+**Lingyang pass (2026-09-03)**: his `Characters data dump/` file already
+existed from an earlier pass, which had already fixed 3 real bugs
+(`bestEchoes` set-name mismatch, a wrong ToA/WW tier swap, and his
+Inherent Skill Diligent Practice being entirely missing) — but predated
+this session's dimensions 5/8/9 rigor. Redoing those found the biggest
+kit-segmentation gap yet: his OTHER Inherent Skill, **Lion's Pride** (+50%
+DMG on Intro Skill Lion Awakens), was ALSO entirely missing from both
+`CHAR_BUFF_TABLE` and `lingyang.blocks.js` — a whole kit component with no
+block at all, not caught by the earlier pass's narrower check. Added as a
+self-buff scoped only to the Intro hit via `scopedToBlockId`. Dimension 8's
+full pass also found `lingyang.intro.lion-awakens`, `lingyang.forte.
+glorious-plunge` (Glorious Plunge), and `lingyang.outro.frosty-marks` all
+entirely uncategorized — Intro ~4.25% (13,631, fixed to `skillDmg`), Forte
+5.8% (10,209, fixed to `heavyDmg` — entered by holding Heavy Attack per the
+dump's own kit text, same convention as Jianxin's Forte), and Outro 13.9%
+(44,664, his 3rd-largest bucket, fixed to `outroDmg`). `dmgFocus` was
+`['Basic ATK']` only (33.8%) while Skill was a near-tied 2nd-biggest bucket
+(31.7%, entirely missing) and Liberation a real 7.3% — both already
+correctly categorized in the engine. Fixed to `['Basic ATK', 'Skill',
+'Outro', 'Liberation']`; Heavy ATK (5.8%), Echo (5.77%, generic equipped-
+Echo damage), and Intro (~4.25%) all stay excluded per the established
+ambiguous-zone/generic-damage precedent. Icons (dimension 9) checked and
+confirmed already fully wired. 5 new tests, full suite green: 1390/1390.
+
+**Verina pass (2026-09-03)**: her `Characters data dump/` file already
+existed (an earlier, differently-formatted dump — no "App Data Comparison"
+bug-list section, and no Damage Profile percentages since she's a pure
+Support with no calc site DPS breakdown published for her), but
+`verina.blocks.js`'s own history shows it had already been through several
+real-bug correction passes (Outro's `deepen` vs `allDmg` fix, a dead-buff-
+shape S5→S6 rebuild, S6's entirely-missing Coordinated Attack proc).
+Redoing dimensions 5/8/9 with this session's rigor found one more:
+`dmgFocus` was `['Liberation']` only, despite 2 real `basicDmg`-categorized
+blocks already existing — her actual Basic ATK combo (Cultivation Stage
+3-5) AND Forte's Mid-air Starflower Blooms (override-categorized
+"considered Basic Attack damage" per its own kit text, firing 3x in her
+real rotation) — both silently rejecting real teammate Basic Attack DMG
+Bonus. Fixed to `['Liberation', 'Basic ATK']`. Coordinated ATK (from her
+S6-gated proc) stays excluded — dupe-conditional, not part of her S0
+baseline kit. Confirmed Intro (Verdant Growth) correctly has no block at
+all, matching `CHARACTER_ROTATIONS` never including it — the dump's own
+Review section calls it "functionally unusable," and her real rotation
+swaps in cold. Icons (dimension 9) checked and confirmed already fully
+wired. 1 new test, full suite green: 1391/1391.
+
+**Aalto pass (2026-09-03)**: his `Characters data dump/` file already
+existed, with an earlier pass having fixed 2 real bugs (base stats off-by-
+1, a wrong `teams` partner). Redoing dimensions 5/8/9 found the clearest
+bug of any character audited so far: `dmgFocus` was `['Coordinated ATK']`
+— entirely **fabricated**, since Aalto has no Coordinated Attack mechanic
+anywhere in his kit (no mention in the dump, no `coordDmg` block in
+`aalto.blocks.js` at all), while his real dump's Damage Profile (Basic ATK
+35.7% dominant, Skill 31%, Liberation 14.8%, Intro ~10%) was entirely
+absent. Fixed to `['Basic ATK', 'Skill', 'Liberation']` — Echo (11.9%)
+stays excluded as generic equipped-Echo damage. Dimension 8 also found
+`aalto.intro.feint-shot` and `aalto.forte.misty-cover` both uncategorized
+— fixed to `skillDmg` (Intro: dump's generic "Skill Damage" row label;
+Forte: same-named "Mist Missile" at the identical 59.65% multiplier as
+Shift Trick's explicitly-Skill-DMG-labeled version, a strong enough
+inference to categorize rather than leave with no basis at all). Also
+found and corrected a false claim: `aalto.chain.s3`'s own comment said "no
+DPS component sourced yet," but the dump is explicit S3 has a real
+mechanic (Basic/Mid-air Attack through the Gate of Quandary generates 2
+bonus bullets at 50% of that attack's own DMG) — comment fixed to state
+this accurately. **Left unmodeled on purpose, not fabricated**: genuinely
+ambiguous whether "that attack" means the whole multi-stage Basic ATK
+combo this schema treats as one block, or each individual sub-hit within
+it — a real, sourced, structurally-ambiguous S3 gap for a future pass to
+resolve once that ambiguity can be settled, not silently dropped. Icons
+(dimension 9) checked and confirmed already fully wired. 3 new tests, full
+suite green: 1393/1393.
+
+**Baizhi pass (2026-09-03)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 3 real bugs (base stats off-by-
+1, a wrong ToA/WW tier, a wrong `bestEchoes` main-echo pick) and correctly
+noting no Damage Profile percentages exist for her (source: "Baizhi
+calculations aren't available yet," a genuine gap in the source itself,
+not extraction). Redoing dimensions 5/8/9 found `baizhi.intro.overflowing-
+frost` uncategorized (fixed to `skillDmg`, generic "Skill Damage" row
+label) and `dmgFocus` missing `'Liberation'`/`'Heavy ATK'` despite both
+already being real, correctly `libDmg`/`heavyDmg`-categorized blocks
+(Momentary Union, Destined Promise channel) firing in her real
+`CHARACTER_ROTATIONS` — fixed to `['Skill', 'Liberation', 'Heavy ATK']`.
+Icons (dimension 9) checked and confirmed already fully wired. 2 new
+tests, full suite green: 1395/1395.
+
+**Chixia pass (2026-09-03)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 3 real bugs (base stats off-
+by-1, a wrong `bestWeapon`, a wrong `teams` partner). Redoing dimensions
+5/8 found the largest miscategorization impact of any character audited
+so far: `chixia.forte.daka-daka` (her single BIGGEST damage source — 30
+hits at 19.89% each) and `chixia.forte.boom-boom` (her single
+hardest-hitting individual move, 437.39%) were BOTH uncategorized, despite
+the kit text explicitly labeling both "(Resonance Skill DMG)" — not
+ambiguous at all, unlike most other characters' default-convention fixes.
+Boom Boom specifically is triggered by pressing the Basic Attack button
+but is NOT Basic Attack DMG per its own kit text; the actual "(Basic
+Attack DMG)" exit path only fires below 30 Thermobaric Bullets, a branch
+that never occurs in her real modeled rotation (confirmed by the dump's
+own Damage Profile: Basic 0%). This also exposed `dmgFocus` was actively
+WRONG, not just incomplete: it included `'Basic ATK'` despite her genuine
+0% Basic ATK share (no `basicDmg` block exists anywhere in
+`chixia.blocks.js`), while Liberation (32.5%, her 2nd-largest bucket) and
+Outro (9.6%, also fixed to `outroDmg`, was uncategorized) were both
+missing. Fixed to `['Skill', 'Liberation', 'Outro']`. Intro (~3.35%) also
+got its missing `skillDmg` category fixed but folds into the already-
+included Skill category. Icons (dimension 9) checked and confirmed already
+fully wired. 3 new tests, full suite green: 1398/1398.
+
 ---
 
 ## 2. Legacy-calculator correctness — real, unresolved finding
@@ -276,64 +485,6 @@ simplified model doesn't capture (e.g. AoE/quickswap value, same caveat
 already flagged for Aemeath's Fusion Burst resolution). Needs its own
 diagnostic-first pass, same rigor as the two fixes that already came out of
 this same audit thread.
-
----
-
-## 3. Content-refresh gaps — 2 items still open
-
-Everything else in the original 10-step content-refresh plan (Version,
-Characters, Weapons, Echoes, Team, History, Event, Material, Meta/Tier) is
-done and re-verified. Two real items remain:
-
-- **Region/Map data for Somnoire: Night City (3.4) and Land of Xuanfang
-  (3.5–3.6)** — `MAP_ZONES` is still `[]` (confirmed empty as of this audit).
-  Genuine infrastructure blocker, not a research gap: zone polygons are
-  authored in pixel coordinates on this app's own map-tile images via a
-  click-to-log dev flow, and the tile images for both regions don't exist in
-  `public/map-tiles/` yet (confirmed — only pre-3.4 regions present). Needs
-  either the real tile images sourced and dropped in first, or someone
-  hand-authoring the polygons directly. User-confirmed out of scope for now,
-  not forgotten.
-- **`TACTICAL_HOLOGRAM_HISTORY` has no v3.6 "Simulation" row** — confirmed
-  still missing in `banners.js` as of this audit (`3.5` is still the newest
-  entry). Deliberately left unadded pending a confirmable boss roster for
-  that arena, same "don't guess" convention used throughout this project.
-  Revisit once a source confirms the v3.6 arena's actual bosses.
-
-Character/weapon/material art (portraits, icons, event banners) — the other
-recurring "remaining gap" in the old files — is now fully resolved; every
-placeholder flagged across those files' history has since been sourced and
-wired to real art (verified directly against `banners.js`/`materialData.js`'s
-current state while writing this audit, not assumed from the old files'
-claims).
-
----
-
-## 4. Native app (Android/iOS via Capacitor) — pre-publish steps not done
-
-Build pipeline itself works end-to-end (filtered `dist-native/` build, jsDelivr
-CDN offload for the 5 large asset folders, service-worker patching, APK
-generation all verified in-session). Not done, genuinely requiring a real
-device or a Mac:
-- **Real device/emulator install test** — no hardware virtualization was
-  available in the environment that built this; the generated APK's install
-  and runtime behavior (map tiles loading from the hosted deployment,
-  animations/audio streaming from jsDelivr) has only been checked via `curl`
-  against the CDN, never by actually running the app on a device.
-- **iOS build** — not scaffolded at all; needs a Mac with Xcode, unavailable
-  in this environment. Instructions for a future Mac session are documented
-  inline in the Capacitor config comments and `package.json` scripts
-  (`cap:*`), not repeated here.
-- **Signed release build + Google Play Developer account** ($25 one-time) —
-  not started; current APK is an unsigned debug build only.
-- **Push notifications** — client-side is fully wired (permission, FCM
-  registration, listeners), but requires server-side setup never done in this
-  environment: a Firebase project + `google-services.json` placed in
-  `app/android/app/` (gitignored, never committed), plus 3 server-only env
-  vars on the hosting deployment (`FIREBASE_SERVICE_ACCOUNT_JSON`,
-  `FIREBASE_DB_URL`, `PUSH_ADMIN_SECRET`). Until both exist, no push
-  notification can actually be delivered even though the client code path is
-  complete.
 
 ---
 

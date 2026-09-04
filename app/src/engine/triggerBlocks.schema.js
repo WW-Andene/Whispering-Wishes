@@ -215,7 +215,7 @@
  *                                    (the buffed partner's Outro cast), not just this character's own
  *                                    trigger history — Augusta's Majesty stack only grants if the
  *                                    exact resonator she buffed Outros back before a third swap
- *                                    (wutheringwaves.fandom.com/wiki/Augusta/Combat). Whether the
+ *                                    (the wiki/Augusta/Combat). Whether the
  *                                    referenced block is still active is a rotation-history/state-
  *                                    machine question this schema does not itself answer (see
  *                                    PHASE2_PLAN.md design question 2, still open) — this field only
@@ -266,7 +266,7 @@
  *                                    — no time limit, unlike 'windowed-cast', just ordering within
  *                                    one continuous on-field window. Camellya's Outro Twining deals
  *                                    additional DMG only if her Forte Ephemeral was cast earlier that
- *                                    same on-field rotation (wutheringwaves.fandom.com/wiki/
+ *                                    same on-field rotation (the wiki/
  *                                    Camellya/Combat / CHARACTER_ROTATIONS['Camellya']'s own Outro
  *                                    note) — distinct from both other conditional trigger types:
  *                                    not cross-character (partner-outro-return) and not time-bounded

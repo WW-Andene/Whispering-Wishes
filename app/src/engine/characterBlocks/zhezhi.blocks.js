@@ -7,7 +7,7 @@
 // correctly has NO block — a resource-cap-increase mechanic with no home in this
 // flat schema, per the audit's own zeroing. S5/S6's bonus-hit-at-X%-of-move-Y's-
 // multiplier mechanics ARE precisely computable and audit-confirmed (140%/120% of
-// a sourced move's own multiplier, cross-checked against nanoka's raw damage data),
+// a sourced move's own multiplier, cross-checked against the source's raw damage data),
 // so both are modeled as real proc-style damage blocks instead of left zeroed.
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -101,7 +101,7 @@ export const ZHEZHI_BLOCKS = [
     note: "Creation's Zenith (base kit, not Resonance Chain): needs 2 stacks of Painter's Delight and also grants +18% Basic ATK DMG Bonus for 27s — sourced directly from SKILL_MULTIPLIERS' own row text.",
   },
   {
-    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: Inherent Skill Calligrapher's Touch was
+    // Added 2026-09-03 against a real browser snapshot: Inherent Skill Calligrapher's Touch was
     // entirely missing from both this file and CHAR_BUFF_TABLE. Modeled with real per-stack stacking
     // (unlike the flat CHAR_BUFF_TABLE entry, which stores only the flat 18% max-stack value) — anchored
     // to the Stroke of Genius cast, matching zhezhi.chain.s6-bonus-hit's own anchor precedent for the
@@ -150,7 +150,7 @@ export const ZHEZHI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Living Canvas' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // 140% x 65.21% = 91.29%, matching nanoka's raw Living Canvas damage-data row 2 of 91.3% exactly
+    // 140% x 65.21% = 91.29%, matching the source's raw Living Canvas damage-data row 2 of 91.3% exactly
     // per the audit comment's own cross-check — a real, precisely computable figure, not a guess.
     damage: { hits: [{ atkPct: 91.29 }], category: 'coordDmg' },
     note: "Every 3 Inklit Spirits summoned by Living Canvas, 1 extra Inklit Apparition procs a Coordinated ATK at 140% of Inklit Spirit's own DMG Multiplier — modeled as a real proc-style damage block using the audit's own computed figure, instead of the flat {} RESONANCE_CHAIN_DATA carries for this node (same \"discrete proc, not a modifier\" treatment as Yinlin's S6/Calcharo's S6).",
@@ -160,7 +160,7 @@ export const ZHEZHI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Stroke of Genius' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // 120% x 298.22% = 357.86%, matching nanoka's raw Ink and Wash damage-data row 4 of 357.86%
+    // 120% x 298.22% = 357.86%, matching the source's raw Ink and Wash damage-data row 4 of 357.86%
     // exactly per the audit comment's own cross-check.
     damage: { hits: [{ atkPct: 357.86 }], category: 'basicDmg' },
     note: "On Stroke of Genius/Creation's Zenith cast, an extra Ivory Herald procs at 120% of Stroke of Genius's own DMG Multiplier — modeled as a real proc-style damage block using the audit's own computed figure, same \"discrete proc, not a modifier\" treatment as S5 above. Anchored to the Stroke of Genius cast.",

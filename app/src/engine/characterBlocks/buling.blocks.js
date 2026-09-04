@@ -71,7 +71,7 @@ export const BULING_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('178.93%'), category: 'basicDmg' },
   },
   // Heavy Attack - Twin Thunders correctly has NO damage block — removed 2026-09-03 against a fresh
-  // Prydwen dump: SKILL_MULTIPLIERS['Buling']'s own row for this move ("169 flat + 18.30% ATK") is
+  // the source dump: SKILL_MULTIPLIERS['Buling']'s own row for this move ("169 flat + 18.30% ATK") is
   // explicitly labeled "Healing" by the source's Multipliers table (same as Twin Mountains, which
   // already correctly has no damage block) — Twin Thunders deals ZERO direct damage, it's a pure
   // team-heal (once/s for 8s). The previous block wrongly modeled this healing formula as a real

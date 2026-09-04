@@ -190,7 +190,7 @@ export const YINLIN_BLOCKS = [
     note: "Inherent Skill Pain Immersion: Crit Rate +15% for 5s after casting Magnetic Roar.",
   },
   {
-    // Added 2026-09-03 against a real prydwen.gg .mht snapshot: Inherent Skill Deadly Focus was entirely
+    // Added 2026-09-03 against a real browser snapshot: Inherent Skill Deadly Focus was entirely
     // missing from this file. Two components, both real: (1) Lightning Execution DMG+10% vs Sinner's-
     // Marked targets — since the modeled rotation always has Sinner's Mark up by the time Lightning
     // Execution casts (applied by Intro, re-applied by Thundering Wrath), scoped here directly to

@@ -12,8 +12,8 @@ const PLACEHOLDER_IMAGE = './banners/_shared/cK3h3qFh-Abby-Card2.webp';
 
 // [SECTION:BANNERS]
 // v3.6 Phase 1 — Qingxiao debut + Denia rerun, August 20 - September 10, 2026. CONFIRMED LIVE
-// 2026-08-20 (today) — nanoka.cc shows "Version 3.6 (365) (latest) (live) (current)" and
-// wutheringwaves.fandom.com's own Qingxiao infobox lists "Release Date: August 20, 2026" plus the
+// 2026-08-20 (today) — the source shows "Version 3.6 (365) (latest) (live) (current)" and
+// the wiki's own Qingxiao infobox lists "Release Date: August 20, 2026" plus the
 // exact convene: "Wind of Transcendence" (2026-08-20 – 2026-09-10, 3.6), featured resonators
 // Qingxiao + Baizhi/Yangyang/Sanhua as 4★s — used to fix featured4Stars below (previously an
 // unconfirmed carry-over guess of Baizhi/Mortefi/Lumi). title/element/weaponType pulled from
@@ -89,23 +89,23 @@ const getWeaponBannerArt = (name) => {
 // [SECTION:HISTORY]
 
 const BANNER_HISTORY = [
-  // Version 3.6 (upcoming — dates are Game8's own estimate: "based on the Version Update's confirmed
+  // Version 3.6 (upcoming — dates are the source's own estimate: "based on the Version Update's confirmed
   // release date, and the usual 21-day cycle for Version halves." Characters/weapons confirmed via
-  // game8.co archive 453303 (Aug 10 2026 update), kit data not final until release.)
+  // the source archive 453303 (Aug 10 2026 update), kit data not final until release.)
   // bannerArt updated 2026-08-18: replaced the self-cropped Card.jpg placeholder with the real
   // official "Where Santu Beckons" Featured Resonator Convene banner (user-supplied).
   // weaponBannerArt added 2026-08-18: real official Featured Weapon Convene banner for Thousandfold
   // Deliverance (Jingran's signature Broadblade), user-supplied.
   { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: './banners/history/v3-6-p2/mCc8yv6J-show-76.png', weaponBannerArt: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg', predicted: true },
   // bannerArt fixed 2026-08-18: was reusing Denia's own v3.3-p2 banner art (wrong — Denia is the
-  // rerun here, Qingxiao is this banner's new headliner). 2nd attempt used fandom's
+  // rerun here, Qingxiao is this banner's new headliner). 2nd attempt used the wiki's
   // File:Qingxiao_Splash_Art.png (transparent cutout, not a banner image); 3rd attempt was a
   // self-cropped band of File:Qingxiao_Card.jpg (a tall portrait, imprecisely centered). Replaced with
   // the real official wide banner art (user-supplied, already hosted on ibb.co).
   // weaponBannerArt added 2026-08-18: real official Featured Weapon Convene banner for Glint of Clouds
   // (Qingxiao's signature Sword), user-supplied.
-  // predicted flag removed 2026-08-20: confirmed live via fandom's own infobox ("Wind of
-  // Transcendence" convene, 2026-08-20 – 2026-09-10, 3.6) — no longer a Game8 estimate.
+  // predicted flag removed 2026-08-20: confirmed live via the wiki's own infobox ("Wind of
+  // Transcendence" convene, 2026-08-20 – 2026-09-10, 3.6) — no longer the source estimate.
   { id: 'v3.6-p1', version: '3.6', phase: 1, characters: ['Qingxiao', 'Denia'], weapons: ['Glint of Clouds', 'Forged Dwarf Star'], startDate: '2026-08-20', endDate: '2026-09-10', bannerArt: './banners/_shared/8nvgqZKC-e7478-17840855867105-1920.jpg', weaponBannerArt: './banners/_shared/C3Gz8y18-Glint-Of-Cloud-Banner.jpg' },
   // Version 3.5 — confirmed live via wuwatracker.com/fr/timeline (user-clarified 2026-08-14). p2 is
   // the current banner (Suisui + Aemeath rerun). p1 was Yangyang: Xuanling + Luuk Herssen + Lynae
@@ -114,14 +114,14 @@ const BANNER_HISTORY = [
   // history entry since it isn't a standard per-phase character/weapon banner.
   { id: 'v3.5-p2', version: '3.5', phase: 2, characters: ['Suisui', 'Aemeath'], weapons: ["Firstlight's Herald", 'Everbright Polestar'], startDate: '2026-07-30', endDate: '2026-08-19', bannerArt: './banners/_shared/wFwmhvLP-Suisui-banner.jpg' },
   { id: 'v3.5-p1', version: '3.5', phase: 1, characters: ['Yangyang: Xuanling', 'Luuk Herssen', 'Lynae'], weapons: ['Azure Oath', "Daybreaker's Spine", 'Spectrum Blaster'], startDate: '2026-07-10', endDate: '2026-07-30', bannerArt: './banners/_shared/QFHC5Y4h-Yangyang-Xuanling-banner.jpg' },
-  // Version 3.4 (Somnoire: Night City region) — corrected via game8.co archive 494979 (official Banner
+  // Version 3.4 (Somnoire: Night City region) — corrected via the source archive 494979 (official Banner
   // History, fetched 2026-08-16): Phase 1 was "Dreaming Upon the Moon"/"Rekindled Embers of Rage"
   // (Lucy + Rebecca dual-debut, Jun 8 - Jul 9). Phase 2 ran two concurrent character banners: "Tomorrow
   // in the Frame" (Lucilla debut, Jun 13 - Jul 9) and "Dance in The Storm's Wake" (Cartethyia rerun,
   // Jun 18 - Jul 9) — merged into one entry below since both share the v3.4/phase-2 slot.
   { id: 'v3.4-p2', version: '3.4', phase: 2, characters: ['Lucilla', 'Cartethyia'], weapons: ['Freeze Frame', "Defier's Thorn"], startDate: '2026-06-13', endDate: '2026-07-09', bannerArt: './banners/_shared/zT91s0wt-Lucilla-banner.jpg' },
   { id: 'v3.4-p1', version: '3.4', phase: 1, characters: ['Lucy', 'Rebecca'], weapons: ['Spectral Trigger', 'Skull Thrasher'], startDate: '2026-06-08', endDate: '2026-07-09', bannerArt: './banners/_shared/mC4xmBYY-Lucy-Banner.jpg' },
-  // Version 3.3 — corrected via game8.co archive 494979 (official Banner History, fetched 2026-08-16):
+  // Version 3.3 — corrected via the source archive 494979 (official Banner History, fetched 2026-08-16):
   // Phase 1 debuted Hiyuki alongside Mornye + Iuno reruns; Phase 2 debuted Denia alongside Chisa +
   // Phrolova reruns. Previously modeled as solo-character phases with no weapons, which was inaccurate.
   { id: 'v3.3-p2', version: '3.3', phase: 2, characters: ['Denia', 'Chisa', 'Phrolova'], weapons: ['Forged Dwarf Star', 'Kumokiri', 'Lethean Elegy'], startDate: '2026-05-21', endDate: '2026-06-07', bannerArt: './banners/_shared/DPnPVGVF-denia-banner.jpg' },
@@ -391,7 +391,7 @@ const EVENTS = {
     currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
-    imageUrl: './banners/_shared/HTN1ZNWj-wuwa-gifts-of-drifting-mist.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
+    imageUrl: './banners/_shared/HTN1ZNWj-wuwa-gifts-of-drifting-mist.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (the wiki has no article for this event yet), uploaded to imgbb 2026-08-21
   },
   bountifulCrescendo: {
     name: 'Bountiful Crescendo',
@@ -405,7 +405,7 @@ const EVENTS = {
     currentEnd: '2026-09-10T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
-    imageUrl: './banners/_shared/TqLqWVsv-bountiful-crescendo.webp', // real event art, sourced 2026-08-20 from fandom's File:Bountiful_Crescendo.jpg (recurring material double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
+    imageUrl: './banners/_shared/TqLqWVsv-bountiful-crescendo.webp', // real event art, sourced 2026-08-20 from the wiki's File:Bountiful_Crescendo.jpg (recurring material double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
   },
   resonanceSimRealm: {
     name: 'Resonance Sim Realm',
@@ -419,7 +419,7 @@ const EVENTS = {
     currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
     accentColor: 'red',
-    imageUrl: './banners/_shared/zHQTnWXp-wuwa-resonance-sim-realm.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
+    imageUrl: './banners/_shared/zHQTnWXp-wuwa-resonance-sim-realm.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (the wiki has no article for this event yet), uploaded to imgbb 2026-08-21
   },
   secondComingOfSolaris: {
     name: 'Second Coming of Solaris: Coded Deception',
@@ -432,7 +432,7 @@ const EVENTS = {
     currentEnd: '2026-09-14T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
-    // real art, sourced 2026-08-20 from fandom's File:Second_Coming_of_Solaris_(Ultra).jpg — the
+    // real art, sourced 2026-08-20 from the wiki's File:Second_Coming_of_Solaris_(Ultra).jpg — the
     // wiki page is for an earlier "Second Coming of Solaris" iteration, not the confirmed
     // "Coded Deception" v3.6 sub-title art; kept as the best real-asset match found, not a
     // guaranteed exact match for this specific event run.
@@ -449,7 +449,7 @@ const EVENTS = {
     currentEnd: '2026-09-21T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
-    imageUrl: './banners/_shared/XxJtGLpQ-wuwa-the-strings-remember.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
+    imageUrl: './banners/_shared/XxJtGLpQ-wuwa-the-strings-remember.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (the wiki has no article for this event yet), uploaded to imgbb 2026-08-21
   },
   ifDreamsStillReverberate: {
     name: 'If Dreams Still Reverberate',
@@ -463,7 +463,7 @@ const EVENTS = {
     currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
-    imageUrl: './banners/_shared/WpcMcR5t-wuwa-if-dreams-still-reverberate.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (fandom has no article for this event yet), uploaded to imgbb 2026-08-21
+    imageUrl: './banners/_shared/WpcMcR5t-wuwa-if-dreams-still-reverberate.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (the wiki has no article for this event yet), uploaded to imgbb 2026-08-21
   },
   fogveilPagoda: {
     name: 'Featured Exploration Event: Fogveil Pagoda',
@@ -476,7 +476,7 @@ const EVENTS = {
     currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
-    imageUrl: './banners/_shared/WNv772NQ-fogveil-pagoda.webp', // real event art, sourced 2026-08-20 from fandom's File:Fogveil_Pagoda.png, uploaded to imgbb 2026-08-20
+    imageUrl: './banners/_shared/WNv772NQ-fogveil-pagoda.webp', // real event art, sourced 2026-08-20 from the wiki's File:Fogveil_Pagoda.png, uploaded to imgbb 2026-08-20
   },
   chordCleansing: {
     name: 'Chord Cleansing',
@@ -490,7 +490,7 @@ const EVENTS = {
     currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
-    imageUrl: './banners/_shared/99Pk72ZX-chord-cleansing.webp', // real event art, sourced 2026-08-20 from fandom's File:Chord_Cleansing.jpg (recurring echo double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
+    imageUrl: './banners/_shared/99Pk72ZX-chord-cleansing.webp', // real event art, sourced 2026-08-20 from the wiki's File:Chord_Cleansing.jpg (recurring echo double-drop event, generic art reused across versions), uploaded to imgbb 2026-08-20
   },
 };
 
@@ -542,11 +542,11 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Denia': './banners/characters/denia/B59KDGHZ-Denia-Full-Sprite.webp',
   'Hiyuki': './banners/characters/hiyuki/Q5s9CMF-Hiyuki-Full-Sprite.webp',
   'Suisui': './banners/characters/suisui/Q7z2ZLGV-Suisui-Full-Sprite.webp',
-  // Qingxiao sourced 2026-08-18 from fandom's own File:Qingxiao_Full_Sprite.png (uploaded 2026-08-17,
+  // Qingxiao sourced 2026-08-18 from the wiki's own File:Qingxiao_Full_Sprite.png (uploaded 2026-08-17,
   // ahead of her 2026-08-20 release, via the MediaWiki API — bypasses the site's Cloudflare challenge).
   'Qingxiao': './banners/characters/qingxiao/27tS4Zw1-qingxiao-sprite.webp',
   // v3.6 — no real art asset sourced yet, using shared placeholder until real portraits are available
-  // Jingran sourced 2026-08-18 from fandom's own File:Jingran_Full_Sprite.png (uploaded 2026-08-17,
+  // Jingran sourced 2026-08-18 from the wiki's own File:Jingran_Full_Sprite.png (uploaded 2026-08-17,
   // ahead of his 3.6-p2 release, via the MediaWiki API — bypasses the site's Cloudflare challenge).
   'Jingran': './banners/characters/jingran/yB024Z5G-jingran-sprite.webp',
   // 4★ Resonators
@@ -604,7 +604,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Frostburn': './banners/characters/frostburn/29mMcRy-Frostburn-sprite.webp',
   'Forged Dwarf Star': './banners/characters/forged-dwarf-star/FLf2rmCB-Forged-Dwarf-Start.webp',
   "Firstlight's Herald": './banners/_shared/PvkzS83F-First-s-Light-Herald-sprite.webp',
-  // v3.6 weapons — real icons sourced 2026-08-20 from fandom's own File:Weapon_Glint_of_Clouds.png
+  // v3.6 weapons — real icons sourced 2026-08-20 from the wiki's own File:Weapon_Glint_of_Clouds.png
   // / File:Weapon_Thousandfold_Deliverance.png via the MediaWiki API (bypasses Cloudflare),
   // uploaded to imgbb 2026-08-20.
   'Glint of Clouds': './banners/characters/glint-of-clouds/Q3CfgYv8-glint-of-clouds.webp',
@@ -695,7 +695,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Broadblade of Voyager': './banners/characters/broadblade-of-voyager/bMYZxLtK-Weapon-Broadblade-of-Voyager.webp',
   'Helios Cleaver': './banners/characters/helios-cleaver/Kj719h8m-Weapon-Helios-Cleaver.webp',
   'Dauntless Evernight': './banners/characters/dauntless-evernight/PvhJ1Cw2-Dauntless-Evernight.webp',
-  'Autumntrace': './banners/characters/autumntrace/static.nanoka.cc-T_IconWeapon21010074_UI.webp',
+  'Autumntrace': './banners/characters/autumntrace/the source-T_IconWeapon21010074_UI.webp',
   // 1-Cost Echo images
   'Whiff Whaff': './banners/characters/whiff-whaff/DDyTMyQR-Whiff-Whaff-Icon.webp',
   'Snip Snap': './banners/characters/snip-snap/LDv0brpC-Snip-Snap-Icon.webp',
@@ -858,7 +858,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Chop Chop': './banners/characters/chop-chop/8LRFvBW4-Chop-Chop-Icon.webp',
   'Lightcrusher': './banners/characters/lightcrusher/RpYdQddL-Lightcrusher-Icon.webp',
   'Rocksteady Guardian': './banners/characters/rocksteady-guardian/8LG9k4bn-Rocksteady-Guardian-Icon.webp',
-  // Land of Xuanfang echoes (v3.5) — icons sourced from wutheringwaves.fandom.com, matching echoes.js's iconUrl
+  // Land of Xuanfang echoes (v3.5) — icons sourced from the wiki, matching echoes.js's iconUrl
   'Thousand-Puppet Pavilion': './banners/characters/thousand-puppet-pavilion/23cVrFbk-Thousand-Puppet-Pavilion.webp',
   'Myriad Snare: Rustfire Chassis': './banners/characters/myriad-snare-rustfire-chassis/KzxLH0wS-Myriad-Snare-Rustfire-Chassis.webp',
   'Reminiscence: Denia': './banners/characters/reminiscence-denia/qYy1Y7Ck-Reminiscence-Denia.webp',
@@ -870,7 +870,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   "Pilgrim's Shell": './banners/_shared/4ZHwcHT6-Pilgrims-Shell.webp',
   "Devotee's Flesh": './banners/_shared/DHRkbQg2-Devotees-Flesh.webp',
   // v3.5 — added 2026-08-18 (echo audit): 13 echoes missing from the roster entirely, icons re-hosted
-  // from wutheringwaves.fandom.com, matching echoes.js's iconUrl for each.
+  // from the wiki, matching echoes.js's iconUrl for each.
   'Smiter': './banners/characters/smiter/JWvmx2xC-Smiter.webp',
   'Porcelain Picket': './banners/characters/porcelain-picket/jP0xbjv8-Porcelain-Picket.webp',
   'Stone Picket': './banners/characters/stone-picket/WvnyB258-Stone-Picket.webp',
@@ -1346,12 +1346,12 @@ const getConveneAnimation = (name) => CONVENE_ANIMATIONS[name] || null;
 
 // ══════════════════════════════════════════════════════════════════════════════
 // EVENT HISTORY — Recurring event periods with verified dates
-// Sources: Fandom wiki (Pioneer Podcast/YYYY-MM-DD pages), game8.co, web research
+// Sources: the wiki wiki (Pioneer Podcast/YYYY-MM-DD pages), the source, web research
 // Dates derived from BANNER_HISTORY version boundaries + web cross-check
 // ══════════════════════════════════════════════════════════════════════════════
 
 // Pioneer Podcast runs every version. Dates = version P1 start → last phase end (from BANNER_HISTORY)
-// Cross-checked against Fandom wiki page URLs: Pioneer_Podcast/2024-05-23, /2024-06-28, etc.
+// Cross-checked against the wiki wiki page URLs: Pioneer_Podcast/2024-05-23, /2024-06-28, etc.
 const PIONEER_PODCAST_HISTORY = [
   { version: '3.6', startDate: '2026-08-20', endDate: '2026-09-30', rewards: 400 },
   { version: '3.5', startDate: '2026-07-10', endDate: '2026-08-19', rewards: 400 },
@@ -1377,17 +1377,17 @@ const PIONEER_PODCAST_HISTORY = [
 ];
 
 // Doubled Pawns Matrix: Pilot — recurring boss rush introduced in v3.0, replaced by Endstate Matrix in v3.2
-// Source: Fandom wiki (Doubled_Pawns_Matrix:_Pilot), rewards reset each version
+// Source: the wiki wiki (Doubled_Pawns_Matrix:_Pilot), rewards reset each version
 const DOUBLED_PAWNS_MATRIX_HISTORY = [
   { version: '3.1', startDate: '2026-02-05', endDate: '2026-03-18', rewards: 400 },
   { version: '3.0', startDate: '2025-12-25', endDate: '2026-02-04', rewards: 400 },
 ];
 
 // Tactical Hologram — permanent combat challenges, new arenas added with new regions
-// Source: Fandom wiki (Change History per page: Calamity=1.0, Phantom Pain=2.0, Synchronization=3.0, Sparring=3.5)
+// Source: the wiki wiki (Change History per page: Calamity=1.0, Phantom Pain=2.0, Synchronization=3.0, Sparring=3.5)
 // One entry per version where a new Tactical Hologram arena was introduced
 const TACTICAL_HOLOGRAM_HISTORY = [
-  // Confirmed via wutheringwaves.fandom.com/wiki/Tactical_Hologram:_Sparring — "Released in Version 3.5",
+  // Confirmed via the wiki/Tactical_Hologram:_Sparring — "Released in Version 3.5",
   // bosses Denia and Myriad Snare: Rustfire Chassis (both Land of Xuanfang additions).
   { version: '3.5', name: 'Sparring — Denia / Myriad Snare: Rustfire Chassis', startDate: '2026-07-10', endDate: '2026-08-19' },
   { version: '3.2', name: 'Synchronization — Hyvatia',   startDate: '2026-03-19', endDate: '2026-04-29' },
@@ -1399,9 +1399,9 @@ const TACTICAL_HOLOGRAM_HISTORY = [
 
 // Version start dates (P1 start from BANNER_HISTORY) — used to derive event boundaries
 const VERSION_DATES = [
-  // 3.6 end date is Game8's own estimate (21-day-cycle-per-phase pattern); confirm once 3.7's start date is announced.
+  // 3.6 end date is the source's own estimate (21-day-cycle-per-phase pattern); confirm once 3.7's start date is announced.
   { version: '3.6', start: '2026-08-20', end: '2026-09-30' },
-  // Confirmed via game8.co WuWa hub: "Version 3.5 Schedule | July 10, 2026 - August 19, 2026"
+  // Confirmed via the source WuWa hub: "Version 3.5 Schedule | July 10, 2026 - August 19, 2026"
   { version: '3.5', start: '2026-07-10', end: '2026-08-19' },
   // Estimated — see BANNER_HISTORY v3.4 comment for reasoning (3.3 end -> 3.5 start boundary)
   { version: '3.4', start: '2026-06-10', end: '2026-07-10' },

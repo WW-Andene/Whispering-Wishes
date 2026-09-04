@@ -28,7 +28,12 @@ export const CALCHARO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Wanted Outlaw' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('39.77%×2+59.65%×2') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus on a real 5.1% (20,081) damage share. The dump's own
+    // multiplier table labels this row generically "Skill Damage" (not a named-move-specific label),
+    // the same convention already confirmed on Augusta's Stride of Goldenflare/Lupa's Try Focusing, Eh?
+    // — a generic "Skill Damage" label means plain Resonance Skill DMG.
+    damage: { hits: parseSkillMultiplierHits('39.77%×2+59.65%×2'), category: 'skillDmg' },
   },
   {
     id: 'calcharo.liberation.phantom-etching',
@@ -67,7 +72,11 @@ export const CALCHARO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('195.98%+391.96%') },
+    // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Outro DMG Bonus on a real 7.6% (29,693) damage share. His own kit text is explicit
+    // this is his own direct damage ("Summons a Phantom that slashes targets"), not a team buff —
+    // same outroDmg shape already fixed for Rover: Havoc's Soundweaver/Xiangli Yao's precedent.
+    damage: { hits: parseSkillMultiplierHits('195.98%+391.96%'), category: 'outroDmg' },
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each
@@ -83,7 +92,7 @@ export const CALCHARO_BLOCKS = [
   },
   { id: 'calcharo.chain.s3', source: SOURCE, kind: 'buff', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'elemDmg', value: 25 }] },
   {
-    // Fixed 2026-09-03 against a real prydwen.gg .mht snapshot: was modeled as a passive, self-scoped,
+    // Fixed 2026-09-03 against a real browser snapshot: was modeled as a passive, self-scoped,
     // duration-less buff — but the real mechanic is "After casting Outro Skill Shadowy Raid, Electro
     // DMG Bonus of all team members +20% for 30s": whole-team scoped, cast-triggered on Outro, with a
     // real 30s duration. The flat RESONANCE_CHAIN_DATA['Calcharo'].s4 (elemDmg: 20) has no scope/timing

@@ -10,7 +10,7 @@
 // Resolving Chord, enters Maestro) — treated as the same move, sourced from Curtain
 // Call's value.
 //
-// Corrected 2026-09-02 against a fresh Prydwen dump (`Characters data dump/Phrolova/
+// Corrected 2026-09-02 against a fresh the source dump (`Characters data dump/Phrolova/
 // Phrolova.md`): her two Forte follow-ups (Movement of Fate and Finality / Murmurs
 // in a Haunting Dream — 3 real CHARACTER_ROTATIONS steps) previously had no matching
 // SKILL_MULTIPLIERS row at all, leaving S1's own +80% totalMult bonus permanently
@@ -68,7 +68,7 @@ export const PHROLOVA_BLOCKS = [
     // single-target vs. group) — same shape, same limitation, as Camellya's own
     // 'Skill:Vining Waltz 1-4 / Blazing Waltz' block: this fires identically for all 3 real occurrences
     // and cannot distinguish which of the two was actually chosen each time. Uses Movement of Fate and
-    // Finality's own values (the single-target move), matching Prydwen's own "1 Target scenario" calc
+    // Finality's own values (the single-target move), matching the source's own "1 Target scenario" calc
     // benchmark this file's other values are already sourced from.
     trigger: { type: 'cast', on: 'Forte:Movement of Fate and Finality / Murmurs in a Haunting Dream' },
     timing: {}, target: { scope: 'self' }, effects: [],
@@ -154,7 +154,7 @@ export const PHROLOVA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 80 }],
-    note: "DMG Multiplier of Movement of Fate and Finality / Murmurs in a Haunting Dream both +80% — now live against phrolova.forte.movement-of-fate-and-finality / phrolova.forte.murmurs-in-a-haunting-dream (fixed 2026-09-02, real values sourced from a fresh Prydwen dump). Also grants Volatile Note - Cadenza every 4s out-of-combat under certain conditions, not modeled.",
+    note: "DMG Multiplier of Movement of Fate and Finality / Murmurs in a Haunting Dream both +80% — now live against phrolova.forte.movement-of-fate-and-finality / phrolova.forte.murmurs-in-a-haunting-dream (fixed 2026-09-02, real values sourced from a fresh the source dump). Also grants Volatile Note - Cadenza every 4s out-of-combat under certain conditions, not modeled.",
   },
   {
     id: 'phrolova.chain.s2',
@@ -200,7 +200,7 @@ export const PHROLOVA_BLOCKS = [
     ],
     note: 'On-field-during-Maestro case: Phrolova gains +60% Havoc DMG Bonus (the larger of two conditional branches — off-field instead grants a +40% DMG-taken debuff on enemies, not modeled here). Modeled anchored to the Liberation cast that enters Maestro, scoped to its 24s window. The separate +24% Enhanced Attack-Hecate DMG Multiplier is now modeled too (fixed 2026-09-02), scoped via scopedToBlockId to phrolova.liberation.hecate-attack specifically so it doesn\'t also inflate her own echoDmg-categorized hits.',
   },
-  // Added 2026-09-02 (fresh Prydwen dump): S6 ALSO commands Hecate to cast a real damage instance,
+  // Added 2026-09-02 (fresh the source dump): S6 ALSO commands Hecate to cast a real damage instance,
   // Apparition of Beyond-Hecate (216.42% ATK, considered Echo Skill DMG, grants 8 Aftersound on hit —
   // the Aftersound grant itself not modeled, same class as every other stack-grant already left out of
   // this file), during EITHER Forte follow-up. Gated to sequence 6 via the `.chain.s6-<suffix>` id

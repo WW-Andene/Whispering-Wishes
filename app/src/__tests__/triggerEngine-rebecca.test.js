@@ -5,11 +5,11 @@ import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { REBECCA_BLOCKS } from '../engine/characterBlocks/rebecca.blocks.js';
 
 describe('triggerEngine parity — Rebecca', () => {
-  // Fixed 2026-09-02 against a fresh Prydwen dump: 3 blocks were miscategorized (the reverse of the
+  // Fixed 2026-09-02 against a fresh the source dump: 3 blocks were miscategorized (the reverse of the
   // usual pattern — wrongly tagged heavyDmg/libDmg when the kit text explicitly overrides them to
   // Basic Attack DMG). Rat-tat-tat!/Bang-bang-bang! and the Mk. 31 HMG channel both say "considered
   // Basic Attack DMG" outright; BOOM! Fireworks! has no explicit override text but the dump's own
-  // damage-profile shows a literal 0 in the Liberation bucket, confirming Prydwen counts the whole
+  // damage-profile shows a literal 0 in the Liberation bucket, confirming the source counts the whole
   // Liberation sequence as Basic Attack DMG too.
   it('Rat-tat-tat!, Party \'til Dawn!, and BOOM! Fireworks! are all basicDmg, not heavyDmg/libDmg', () => {
     expect(REBECCA_BLOCKS.find(b => b.id === 'rebecca.forte.rat-tat-tat-huntress').damage.category).toBe('basicDmg');
@@ -17,11 +17,11 @@ describe('triggerEngine parity — Rebecca', () => {
     expect(REBECCA_BLOCKS.find(b => b.id === 'rebecca.liberation.boom-fireworks').damage.category).toBe('basicDmg');
   });
 
-  // Value locked in 2026-09-02: a nanoka.cc .mht snapshot's raw Lv.10 table showed
-  // 19.89%×3+318.10%+19.89%, conflicting with the user's own directly-pasted Prydwen text
-  // (10.00%×3+160.00%+10.00%). Per standing instruction, user-pasted Prydwen text wins a real
-  // conflict — the user also independently re-checked and confirmed the Prydwen number.
-  it("Rat-tat-tat! uses the Prydwen-sourced value (10/10/10/160/10), not the nanoka.cc one", () => {
+  // Value locked in 2026-09-02: the source .mht snapshot's raw Lv.10 table showed
+  // 19.89%×3+318.10%+19.89%, conflicting with the user's own directly-pasted the source text
+  // (10.00%×3+160.00%+10.00%). Per standing instruction, user-pasted the source text wins a real
+  // conflict — the user also independently re-checked and confirmed the source number.
+  it("Rat-tat-tat! uses the source-sourced value (10/10/10/160/10), not the source one", () => {
     const block = REBECCA_BLOCKS.find(b => b.id === 'rebecca.forte.rat-tat-tat-huntress');
     const total = block.damage.hits.reduce((sum, h) => sum + h.atkPct, 0);
     expect(total).toBeCloseTo(200, 1); // 10+10+10+160+10

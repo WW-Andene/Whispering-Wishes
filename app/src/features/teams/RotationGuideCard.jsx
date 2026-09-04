@@ -1,23 +1,36 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — features/teams/RotationGuideCard.jsx (extracted from DamageCalculator.jsx)
-// Rotation Guide — Prydwen-style: one self-contained block per character (readable on its
+// Rotation Guide — source-style: one self-contained block per character (readable on its
 // own — what THEY do on field) chained to its neighbors via explicit inherited/handed-off
 // buffs, instead of one flat list mixing everyone's numbers together. Pure UI, driven
 // entirely by the already-computed rotationTimeline data.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronDown, ListOrdered } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { stepStyle } from './RotationTimeline.jsx';
+import { splitIntoParagraphs } from '../../shared/utils/textFormat.js';
 import { t, getLocale } from '../../utils/i18n.js';
 
 export function RotationGuideCard({ rotationTimeline }) {
+  // Simple View — hides descriptive prose (step reason, per-skill notes, inherits/Own Kit/Hands Off
+  // badges) leaving just each step's name, on-field time, and skill sequence type/name/damage. Off by
+  // default (full detail).
+  const [simpleView, setSimpleView] = useState(false);
   if (!(rotationTimeline?.steps?.length > 0)) return null;
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader action={
+        <button
+          type="button"
+          onClick={() => setSimpleView(v => !v)}
+          className={`kuro-badge text-2xs shrink-0 ${simpleView ? 'kuro-badge-amber' : 'kuro-badge-neutral'}`}
+        >
+          {t('teams.rotationGuide.simpleView')}
+        </button>
+      }>
         <span className="flex items-center gap-1.5"><ListOrdered size={14} /> {t('teams.rotationGuide.title')}</span>
       </CardHeader>
       <CardBody>
@@ -31,9 +44,15 @@ export function RotationGuideCard({ rotationTimeline }) {
                   <span className="text-gray-500 text-sm">{t('teams.rotationGuide.onField', { duration: step.duration })}</span>
                   {step.isDps && <span className="kuro-badge kuro-badge-yellow ml-auto">{t('teams.rotationGuide.mainDps')}</span>}
                 </div>
-                <div className="text-sm text-gray-500 mt-1 pl-7">{step.reason}</div>
+                {!simpleView && step.reason && (
+                  <div className="space-y-1 mt-1 pl-7">
+                    {splitIntoParagraphs(step.reason, 160).map((para, pi) => (
+                      <div key={pi} className="text-sm text-gray-500 leading-relaxed">{para}</div>
+                    ))}
+                  </div>
+                )}
 
-                {/* Verified skill-by-skill sequence (Prydwen.gg "Standard Rotation") — real combat
+                {/* Verified skill-by-skill sequence (the source "Standard Rotation") — real combat
                     data, shown first since it's the most concrete/actionable part of the block.
                     Every abbreviation was replaced with the full action-type word plus a plain-
                     English explanation of what that TYPE of action generally does (a new player
@@ -53,11 +72,15 @@ export function RotationGuideCard({ rotationTimeline }) {
                                 <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border ${sty.cls}`}>{sty.label}</span>
                                 <span className="text-sm text-gray-200 font-medium">{s.skill}</span>
                               </div>
-                              {s.note ? (
-                                <div className="text-2xs text-gray-400 mt-0.5">{s.note}</div>
+                              {!simpleView && (s.note ? (
+                                <div className="space-y-0.5 mt-0.5">
+                                  {splitIntoParagraphs(s.note, 140).map((para, pi) => (
+                                    <div key={pi} className="text-2xs text-gray-400 leading-relaxed">{para}</div>
+                                  ))}
+                                </div>
                               ) : (
                                 <div className="text-2xs text-yellow-600/60 italic mt-0.5">{t('teams.rotationGuide.noInstructions')}</div>
-                              )}
+                              ))}
                             </div>
                           </div>
                         );
@@ -66,32 +89,36 @@ export function RotationGuideCard({ rotationTimeline }) {
                   </div>
                 )}
 
-                {/* Inbound — what earlier blocks handed this one, i.e. how it adapts to the team */}
-                {step.inherits.length > 0 && (
-                  <div className="mt-2 pl-7">
-                    <div className="text-2xs text-cyan-400/70 uppercase tracking-wide mb-1 flex items-center gap-1">↓ {t('teams.rotationGuide.inheritsFromTeam')}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {step.inherits.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-cyan">{b}</span>)}
-                    </div>
-                  </div>
-                )}
-                {/* Self-contained — this character's own kit, readable with zero team context */}
-                {step.selfActive.length > 0 && (
-                  <div className="mt-2 pl-7">
-                    <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">{t('teams.rotationGuide.ownKit')}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {step.selfActive.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-violet">{b}</span>)}
-                    </div>
-                  </div>
-                )}
-                {/* Outbound — what this block hands off to whoever comes next */}
-                {step.handsOff.length > 0 && (
-                  <div className="mt-2 pl-7">
-                    <div className="text-2xs text-emerald-400/70 uppercase tracking-wide mb-1">↑ {t('teams.rotationGuide.handsOffToNext')}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {step.handsOff.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>)}
-                    </div>
-                  </div>
+                {!simpleView && (
+                  <>
+                    {/* Inbound — what earlier blocks handed this one, i.e. how it adapts to the team */}
+                    {step.inherits.length > 0 && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-cyan-400/70 uppercase tracking-wide mb-1 flex items-center gap-1">↓ {t('teams.rotationGuide.inheritsFromTeam')}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {step.inherits.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-cyan">{b}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {/* Self-contained — this character's own kit, readable with zero team context */}
+                    {step.selfActive.length > 0 && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-gray-500 uppercase tracking-wide mb-1">{t('teams.rotationGuide.ownKit')}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {step.selfActive.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-violet">{b}</span>)}
+                        </div>
+                      </div>
+                    )}
+                    {/* Outbound — what this block hands off to whoever comes next */}
+                    {step.handsOff.length > 0 && (
+                      <div className="mt-2 pl-7">
+                        <div className="text-2xs text-emerald-400/70 uppercase tracking-wide mb-1">↑ {t('teams.rotationGuide.handsOffToNext')}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {step.handsOff.map((b, bi) => <span key={bi} className="kuro-badge kuro-badge-emerald">{b}</span>)}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
               {i < rotationTimeline.steps.length - 1 && (

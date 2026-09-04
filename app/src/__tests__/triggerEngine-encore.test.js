@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { ENCORE_BLOCKS } from '../engine/characterBlocks/encore.blocks.js';
@@ -61,5 +61,19 @@ describe('triggerEngine parity — Encore', () => {
     const usedCategories = new Set(ENCORE_BLOCKS.filter(b => b.kind === 'damage' && b.damage?.category).map(b => b.damage.category));
     expect(usedCategories.has(s3.effects[0].stat)).toBe(true);
     expect(usedCategories.has('heavyDmg')).toBe(false);
+  });
+
+  it("Intro (Woolies Helpers) is skillDmg-categorized (was uncategorized) — no override text names a different category", () => {
+    const intro = ENCORE_BLOCKS.find(b => b.id === 'encore.intro.woolies-helpers');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("Outro (Thermal Field) is outroDmg-categorized (was uncategorized) — a free-to-quickswap DoT proc, not a team buff", () => {
+    const outro = ENCORE_BLOCKS.find(b => b.id === 'encore.outro.thermal-field');
+    expect(outro.damage.category).toBe('outroDmg');
+  });
+
+  it("dmgFocus gains 'Liberation'/'Outro' (real 14.6%/12.9% shares, now libDmg/outroDmg-categorized) — Echo (7.1%, generic equipped-Echo damage) and Intro (2.85%) both stay excluded per this project's own precedent", () => {
+    expect(CHARACTER_DATA['Encore'].dmgFocus).toEqual(['Basic ATK', 'Skill', 'Liberation', 'Outro']);
   });
 });

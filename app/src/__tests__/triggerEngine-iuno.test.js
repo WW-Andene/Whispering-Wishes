@@ -20,7 +20,7 @@ describe('triggerEngine parity — Iuno', () => {
     expect(IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s6').effects[0].value).toBe(rc.s6.libDmg);
   });
 
-  // Found 2026-09-02 against a fresh Prydwen dump: Absolute Fullness (both its own damage block and its
+  // Found 2026-09-02 against a fresh the source dump: Absolute Fullness (both its own damage block and its
   // S6 chain bonus) was wrongly categorized heavyDmg — its own kit text explicitly says "considered as
   // Resonance Liberation DMG" despite the Heavy ATK slot, the same pattern already correctly applied to
   // Flux: Moonbow/Moonring elsewhere in this file. Confirmed independently by the calc page's own

@@ -6,7 +6,7 @@
 // (Compétence de Résonance, Libération de Résonance, Attaque Basique/Lourde,
 // Outro/Intro, DGT, ATQ, Taux Critique, Dégâts Critiques, Bouclier...).
 // "Rover" is officially "Nomade" in French (confirmed via the French
-// Fandom wiki) -- used here in all flavor text. NOTE: the character's
+// the wiki wiki) -- used here in all flavor text. NOTE: the character's
 // in-app *name* (used as the CHARACTER_DATA key, card titles, ownership
 // tracking, etc.) is NOT renamed here -- that would require restructuring
 // how the app keys/display characters and is out of scope for this pass;

@@ -80,8 +80,8 @@ const MATERIAL_IMAGES = {
   'Unfading Glory': './materials/ascension-boss-drops/ZzS375yW-Item-Unfading-Glory.webp',
   'Truth in Lies': './materials/ascension-boss-drops/H93NgjR-Item-Truth-in-Lies.webp',
   // Qingxiao & Jingran's shared v3.6 boss-drop ascension material, confirmed via
-  // wutheringwaves.fandom.com (both characters' Ascension Materials tables list "46 Forged
-  // Empyrean's Sigh"). Real icon sourced 2026-08-20 from fandom's own
+  // the wiki (both characters' Ascension Materials tables list "46 Forged
+  // Empyrean's Sigh"). Real icon sourced 2026-08-20 from the wiki's own
   // File:Item_Forged_Empyrean's_Sigh.png via the MediaWiki API (bypasses Cloudflare), uploaded
   // to imgbb 2026-08-20.
   "Forged Empyrean's Sigh": './materials/ascension-boss-drops/9mZJHrQ4-forged-empyreans-sigh.webp',
@@ -148,7 +148,7 @@ const MATERIAL_IMAGES = {
   'HF-Waveworn Shard': './materials/forgery/KpS51SLv-Item-HF-Waveworn-Shard.webp',
   'FF-Waveworn Shard': './materials/forgery/TxB4P0Cp-Item-FF-Waveworn-Shard.webp',
   // String family — real tier names: Broken String (T1) → Spliced String (T2) → Solidified String
-  // (T3) → Melodic String (T4), per fandom's own item pages.
+  // (T3) → Melodic String (T4), per the wiki's own item pages.
   'Broken String': './materials/forgery/XxQdg8mq-Broken-String.webp',
   'Spliced String': './materials/forgery/hFLktLwq-Item-Spliced-String.webp',
   'Solidified String': './materials/forgery/8D4cwT2p-Item-Solidified-String.webp',
@@ -245,10 +245,10 @@ const FORGERY_MAT_TIERS = {
 // Fixed 2026-08-21 (Planner audit): every cost below previously tracked only 2 of the game's real 4
 // material tiers per family (T3/T4, the two most expensive), silently omitting T1/T2 entirely — a
 // 30-50% undercount on every material total the app has ever shown. Re-derived from
-// wutheringwaves.fandom.com's own live Lua rendering code (Module:Character Ascensions and Stats,
+// the wiki's own live Lua rendering code (Module:Character Ascensions and Stats,
 // Module:Weapon Ascensions and Stats — the exact formulas used to generate every character/weapon
 // page's "Total Cost" figures) plus cross-verification against Lucilla's real rendered total on
-// nanoka.cc (170,000 / 4 / 12 / 12 / 4 / 46 / 60 matches exactly). commonT1/commonT2 and
+// the source (170,000 / 4 / 12 / 12 / 4 / 46 / 60 matches exactly). commonT1/commonT2 and
 // forgeryT1/forgeryT2 are the newly-added tiers.
 
 // Resonator Lv 1→90 ascension costs (all 6 phases). Per-phase (wiki Module:Character Ascensions and
@@ -271,7 +271,7 @@ const RESONATOR_EXP_COSTS = {
 };
 
 // All Forte nodes maxed (5 skills + inherent skills + stat bonuses). Verified against Lucilla's real
-// rendered "Skill Materials" total on nanoka.cc: 2,030,000 shell / 25 / 28 / 40 / 57 / 26 / 25 / 28 /
+// rendered "Skill Materials" total on the source: 2,030,000 shell / 25 / 28 / 40 / 57 / 26 / 25 / 28 /
 // 55 / 67 — the commonT1(25)/commonT2(28)/forgeryT1(25)/forgeryT2(28) entries below were the ones
 // previously missing.
 const SKILL_UPGRADE_COSTS = {

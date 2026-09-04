@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { LINGYANG_BLOCKS } from '../engine/characterBlocks/lingyang.blocks.js';
@@ -61,5 +61,31 @@ describe('triggerEngine parity — Lingyang', () => {
     expect(fired.has("lingyang.liberation.strive-lions-vigor")).toBe(true);
     expect(fired.has('lingyang.forte.glorious-plunge')).toBe(true);
     expect(fired.has('lingyang.chain.s5-bonus-hit')).toBe(true);
+  });
+
+  it("Inherent Skill Lion's Pride was entirely missing — now modeled as a self-buff scoped only to the Intro hit", () => {
+    const pride = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.selfbuff.lions-pride');
+    expect(pride).toBeDefined();
+    expect(pride.effects[0]).toEqual({ stat: 'totalMult', value: 50, scopedToBlockId: 'lingyang.intro.lion-awakens' });
+    expect(pride.trigger.on).toBe('Intro:Lion Awakens');
+  });
+
+  it("Intro (Lion Awakens) is skillDmg-categorized (was uncategorized)", () => {
+    const intro = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.intro.lion-awakens');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("Forte (Glorious Plunge) is heavyDmg-categorized (was uncategorized) — entered by holding Heavy Attack per the dump's kit text", () => {
+    const forte = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.forte.glorious-plunge');
+    expect(forte.damage.category).toBe('heavyDmg');
+  });
+
+  it("Outro (Frosty Marks) is outroDmg-categorized (was uncategorized) — pure damage, no baseline team buff", () => {
+    const outro = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.outro.frosty-marks');
+    expect(outro.damage.category).toBe('outroDmg');
+  });
+
+  it("dmgFocus gains 'Skill'/'Outro'/'Liberation' (real 31.7%/13.9%/7.3% shares, now correctly categorized) — Heavy ATK (5.8%), Echo (5.77%, generic equipped-Echo damage), and Intro (~4.25%) all stay excluded per this project's own precedent", () => {
+    expect(CHARACTER_DATA['Lingyang'].dmgFocus).toEqual(['Basic ATK', 'Skill', 'Outro', 'Liberation']);
   });
 });

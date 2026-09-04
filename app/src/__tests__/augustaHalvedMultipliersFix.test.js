@@ -1,4 +1,4 @@
-// Regression test found while re-auditing Augusta's kit against a fresh Prydwen.gg source dump
+// Regression test found while re-auditing Augusta's kit against a fresh the source.gg source dump
 // (requested by the user directly: "correct Augusta data" following the S5 fabricated-value fix).
 // Every single one of her 22 Lv.10 damage multipliers in SKILL_MULTIPLIERS['Augusta'] — and the 11
 // matching damage blocks in the live TriggerBlock engine (augusta.blocks.js), which feed the actual

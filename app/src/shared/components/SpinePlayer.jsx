@@ -5,12 +5,12 @@
 //   BANNER_SPINE_CHARACTERS — Spine 4.2 JSON, in-repo at /spine/role_<id>/,
 //     rendered by BannerCard on the tracker. Runtime: window.spine (4.2).
 //
-//   SPRITE_SPINE_CHARACTERS — Spine 4.1 binary .skel from static.nanoka.cc,
+//   SPRITE_SPINE_CHARACTERS — Spine 4.1 binary .skel from the source,
 //     placed under /portraits/<id>/, rendered in CollectionGridCard and the
 //     detail modals. Runtime: window.spine41 (4.1).
 //
 // The two systems share this file but NOT their keyspace: sprite keys derive
-// from nanoka's portrait codename (lowercased) and may collide with banner
+// from the source's portrait codename (lowercased) and may collide with banner
 // codenames for unrelated characters (e.g. banner luokeke=Lumi, sprite
 // luokeke=Roccia). To keep the lookup unambiguous we expose a merged flat
 // map `SPINE_CHARACTERS` keyed by surface-prefixed ids (`banner:xigelika`,
@@ -194,7 +194,7 @@ export const SPRITE_SPINE_CHARACTERS = {
                       { scale: 4.85, tx: -16,  ty: 13.5,
                         detail: { scale: 2.75, tx: -3.5, ty: 29.5 } }),
   rover_electro:   spriteEntry('Rover: Electro',   'Electro', 'Female', { dir: 'rover_female' }),
-  // Daniya's webp is stored on nanoka's CDN as Portraits_DaNiYa.webp (mixed
+  // Daniya's webp is stored on the source's CDN as Portraits_DaNiYa.webp (mixed
   // case); the atlas references it verbatim and Spine resolves it relative to
   // atlasUrl, so we preserve the exact casing on disk.
   daniya:          spriteEntry('Denia',            'Electro', 'Daniya'),

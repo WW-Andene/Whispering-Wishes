@@ -9,7 +9,7 @@
 // category in this ATK-DPS-focused schema, per the audit's own zeroing (only S5
 // carries a real representable value).
 //
-// Fixed 2026-09-02 (found while re-auditing against a fresh Prydwen dump): added
+// Fixed 2026-09-02 (found while re-auditing against a fresh the source dump): added
 // `basis: 'DEF'` to every damage block below — resolveHitComposedDps.js's own doc
 // says every hit is ATK-scaling BY DEFAULT unless the block says otherwise, and
 // none of these did, despite every one of Yuanwu's real multipliers being

@@ -50,8 +50,8 @@ export const SANHUA_BLOCKS = [
     damage: { hits: [...parseSkillMultiplierHits('186.29%×2'), ...parseSkillMultiplierHits('59.65% + 79.53% + 139.17%')], category: 'heavyDmg' },
     note: 'Timed Heavy ATK release inside the Frostbite area, simultaneously bursting all active Ice Thorns/Prisms/Glaciers. Fires twice in the real rotation.',
   },
-  // ── Self-buffs (from CHAR_BUFF_TABLE — Inherent Skills, added 2026-09-03 against a real prydwen.gg
-  //    .mht snapshot; both were entirely missing before this pass) ──
+  // ── Self-buffs (from CHAR_BUFF_TABLE — Inherent Skills, added 2026-09-03 against a real browser
+  //    snapshot; both were entirely missing before this pass) ──
   {
     id: 'sanhua.selfbuff.condensation',
     source: SOURCE, kind: 'buff',

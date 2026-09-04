@@ -1,4 +1,4 @@
-// Cross-check of Qingxiao against a fresh Prydwen.gg source dump (following the same treatment
+// Cross-check of Qingxiao against a fresh the source.gg source dump (following the same treatment
 // already applied to Augusta/Yuanwu/Aemeath/Hiyuki/Luuk Herssen). Her SKILL_MULTIPLIERS,
 // RESONANCE_CHAIN_DATA, statScaling, rotation and CHAR_BUFF_TABLE's other entries were already
 // audited and matched the fresh dump exactly. Three real gaps found:
@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE } from '../data/characters.js';
 import { QINGXIAO_BLOCKS } from '../engine/characterBlocks/qingxiao.blocks.js';
 
-describe('Qingxiao — audit fixes against a fresh Prydwen dump', () => {
+describe('Qingxiao — audit fixes against a fresh the source dump', () => {
   it("dmgFocus gains 'Basic ATK' — her real damage-output simulation shows a genuine 22.8% Basic share, not a trivial slice", () => {
     expect(CHARACTER_DATA['Qingxiao'].dmgFocus).toEqual(expect.arrayContaining(['Heavy ATK', 'Liberation', 'Basic ATK']));
     expect(CHARACTER_DATA['Qingxiao'].dmgFocus).toHaveLength(3);
