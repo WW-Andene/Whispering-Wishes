@@ -921,6 +921,83 @@ truth:
 fires — with 2 hits each — on both the first AND repeat Spinslash casts, at
 two genuinely different simulated times). Full suite green: 1446/1446.
 
+**Brant redo (2026-09-04) — genuine from-scratch re-audit (not a check-if-
+already-done pass), found 2 real bugs the earlier same-day Brant pass missed
+(that pass trusted the dump/blocks' own in-code comments and only added a
+missing write-up entry, finding no new bugs).** All 9 dimensions were
+independently re-verified from scratch against `Characters data dump/
+Brant/Brant.md`, specifically re-checking every damage block and chain node
+for the 3 bug classes found on Camellya/Augusta (miscategorization against
+kit-text override language, unscoped `totalMult` chain buffs, and
+repeat-step trigger-label mismatches):
+1. **SKILL_MULTIPLIERS** — every Lv.10 row (Basic ATK Stage 1-4, Mid-air's
+   5-stage Charged Combo, Heavy ATK/Rhapsodic Riff, Dodge Counter, Skill,
+   Liberation, Forte, Intro, Outro) re-checked digit-for-digit against the
+   dump's own Multipliers tables. Confirmed exact (aggregated sums match:
+   e.g. Stage 3 = 22.06%×3+33.08%×2 = 132.34% ≈ the stored 132.3%). The
+   Mid-air combo's known Stage-1-vs-Stage-2-Charged-Attack branch ambiguity
+   (flagged since 2026-08-31: which grapple-swing stage a real Charged
+   Attack chains off is a player-input branch the flat schema can't
+   express) remains an explicitly-documented TODO, not a silent bug.
+2. **CHARACTER_ROTATIONS** — all 5 steps re-checked against the dump's own
+   Standard Rotation text. Confirmed an exact match. No step repeats a
+   combo (unlike Augusta's Spinslash), so the repeat-trigger-label bug class
+   does not apply here — checked and confirmed not applicable.
+3. **RESONANCE_CHAIN_DATA** — every node (S1-S6) re-read against the dump's
+   own kit text, specifically re-checking S3/S6's `scopedToBlockId` scoping
+   (already fixed in the prior pass) for correctness rather than trusting
+   it: S3's +42% Returned from Ashes multiplier and S6's +30% Mid-air
+   Attack multiplier are both still correctly scoped to only their named
+   move (+ S6's own secondary-blast block for S3), not unscoped `totalMult`
+   over-crediting the whole kit. Confirmed correct, no repeat of Brant's own
+   earlier-fixed bug or Camellya's.
+4. **CHAR_BUFF_TABLE** — Outro (`elemDmg`+`skillDmg`, condition-gated to
+   Fusion incoming Resonators, matching Roccia's established
+   elemDmg-buff-to-incoming-Resonator convention exactly) and the Trial by
+   Fire and Tide self-buff (`elemDmg`) both re-verified against the dump's
+   kit text. Confirmed correct.
+5. **dmgFocus — 1 real bug found.** `['Basic ATK', 'Skill']` was wrong:
+   'Skill' has a genuine 0% real share per the dump's own Damage Profile —
+   his Skill button (Anchors Aweigh!) is never cast for damage in the real
+   rotation (only Plunging Attack, optionally and immediately
+   Ultimate-cancelled, itself "considered Basic Attack DMG"), and no block
+   in `brant.blocks.js` is `skillDmg`-categorized for any real rotation
+   damage. 'Liberation' (18.1%/44,052, his 2nd-largest bucket, already
+   correctly `libDmg`-categorized on `brant.liberation.to-the-horizon`) was
+   entirely missing — the exact same shape as this same session's Camellya
+   fix. Fixed to `['Basic ATK', 'Liberation']`.
+6. **Weapon data** — `bestWeapon` (Unflickering Valor) and `weaponAlts`
+   (alt5: Laser Shearer/Bloodpact's Pledge/Red Spring/Emerald of Genesis,
+   the prior pass's own fix; alt3: Sword of Night, the universal Sword
+   starter-weapon convention used by 12 other Sword characters) re-checked
+   against the dump's exhaustive 5-weapon Best Weapons list. Confirmed
+   correct.
+7. **Echo data** — `bestEchoes` (`['Dragon of Dirge', 'Tidebreaking Courage
+   5pc']`) re-checked against the dump's Best Echo Set section. Confirmed
+   correct.
+8. **Engine-block parity — 1 real bug found.** Re-decomposed the dump's kit
+   text move-by-move against `brant.blocks.js`: `brant.intro.applaud-for-me`
+   had no `damage.category` at all, silently rejecting Resonance Skill DMG
+   Bonus on a real 1.63% (10,359) damage share. His Intro carries no
+   "considered X DMG" override in the kit text ("Attack target, Fusion DMG,
+   grants Interlude Applause"), so per the established default convention
+   for an un-overridden Intro Skill hit (Calcharo's Wanted Outlaw/Encore's
+   Woolies' Helpers, both fixed the same way this session) it resolves to
+   `skillDmg`. Fixed. Every other real named move/state (Mid-air combo,
+   Liberation, Forte, S6 secondary blast) already has a correctly-scoped
+   block and category; Skill (Anchors Aweigh!)/Heavy ATK/Dodge Counter
+   confirmed deliberately unmodeled (never cast for damage in the real
+   rotation, per the dump's own Standard Rotation and reference-data-only
+   SKILL_MULTIPLIERS comment).
+9. **Icons** — `SKILL_ICONS['Brant']`/`CHAIN_NODE_ICONS['Brant']`
+   re-checked against every real rotation-step skill name and all 6 chain
+   nodes. Confirmed fully wired (including 3 correctly-reused shared/generic
+   Sword icon slots), no gap.
+
+2 new tests added to `triggerEngine-brant.test.js` (Intro's `skillDmg`
+category; `dmgFocus` equals `['Basic ATK', 'Liberation']`). Full suite
+green: 1448/1448.
+
 ---
 
 ## 2. Legacy-calculator correctness — real, unresolved finding

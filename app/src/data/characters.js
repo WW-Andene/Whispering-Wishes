@@ -1381,7 +1381,14 @@ const CHARACTER_DATA = {
   // camellya.liberation.fervor-efflorescent) was entirely missing.
   ['Camellya',      ['Basic ATK', 'Liberation'],     [],                                      []],
   ['Carlotta',      ['Skill', 'Liberation'],         [],                                      []],
-  ['Brant',         ['Basic ATK', 'Skill'],          ['Self-heal'],                           []],
+  // dmgFocus corrected 2026-09-04 (Phase A REDO, REMAINING_WORK.md 1c): 'Skill' was WRONG — a genuine
+  // 0% real share per his own dump's Damage Profile. His Skill button (Anchors Aweigh!) is never cast
+  // for damage in the real rotation (only Plunging Attack optionally, immediately Ultimate-cancelled,
+  // and itself "considered Basic Attack DMG" per kit text — no block is skillDmg-categorized in
+  // brant.blocks.js at all). 'Liberation' (18.1%/44,052, his 2nd-largest bucket, already correctly
+  // libDmg-categorized on brant.liberation.to-the-horizon) was entirely missing — same shape as
+  // Camellya's fix just above.
+  ['Brant',         ['Basic ATK', 'Liberation'],     ['Self-heal'],                           []],
   // dmgFocus corrected 2026-08-18: 'Skill' had no basis as a primary focus — Zani's Forte/Resonance Skill
   // is mainly used to build Redundant Energy/convert Frazzle stacks into Heliacal Ember, while her actual
   // rotation damage comes from Heavy Slash combos (Heavy ATK, scaled further by her Inferno Mode +40%

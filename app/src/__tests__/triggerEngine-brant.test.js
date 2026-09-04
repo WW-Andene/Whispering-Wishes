@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, CHARACTER_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { BRANT_BLOCKS } from '../engine/characterBlocks/brant.blocks.js';
@@ -74,6 +74,23 @@ describe('triggerEngine parity — Brant', () => {
     expect(outro.effects.find(e => e.stat === 'skillDmg').value).toBe(legacy.outroBuffs[1].value);
     const self = BRANT_BLOCKS.find(b => b.id === 'brant.selfbuff.trial-by-fire-and-tide');
     expect(self.effects[0].value).toBe(legacy.selfBuffs[0].value);
+  });
+
+  // Fixed 2026-09-04 (Phase A REDO, REMAINING_WORK.md 1c): had no damage.category at all, silently
+  // rejecting Resonance Skill DMG Bonus on a real 1.63% (10,359) damage share per his own dump's Damage
+  // Profile. His Intro carries no "considered X DMG" override, so per the established default
+  // convention (Calcharo's Wanted Outlaw/Encore's Woolies' Helpers) it resolves to skillDmg.
+  it('Intro is skillDmg-categorized', () => {
+    const intro = BRANT_BLOCKS.find(b => b.id === 'brant.intro.applaud-for-me');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  // Fixed 2026-09-04 (Phase A REDO, REMAINING_WORK.md 1c): dmgFocus was ['Basic ATK', 'Skill'] — 'Skill'
+  // had a genuine 0% real share (no block in brant.blocks.js is skillDmg-categorized for any real
+  // rotation damage; Anchors Aweigh! is never cast for damage in the real rotation), while 'Liberation'
+  // (18.1%/44,052, his 2nd-largest bucket, already correctly libDmg-categorized) was entirely missing.
+  it('dmgFocus is Basic ATK + Liberation, not Skill (0% real share)', () => {
+    expect(CHARACTER_DATA['Brant'].dmgFocus).toEqual(['Basic ATK', 'Liberation']);
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
