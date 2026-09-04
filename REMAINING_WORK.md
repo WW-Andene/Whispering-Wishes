@@ -1399,6 +1399,82 @@ already flagged for Aemeath's Fusion Burst resolution). Needs its own
 diagnostic-first pass, same rigor as the two fixes that already came out of
 this same audit thread.
 
+**Changli redo (2026-09-04) — genuine from-scratch re-audit, confirmed clean.**
+Changli's earlier 2026-09-04 write-up already documented an unusually deep
+same-day chain of passes (initial 8-dim pass, a full 9-dim pass, an engine-
+level resolver bug found via her own S3, and a full kit re-segmentation pass
+that added 4 True Sight blocks + Secret Strategist + split/rescoped S1/S5/S6/
+Sweeping Force). Per this redo's own instruction not to take that at face
+value, all 9 dimensions were independently re-verified from scratch against
+`Characters data dump/Changli/Changli.md`, specifically re-checking for the
+bug classes this session's later redos (Augusta, Brant, Buling) and
+first-time audits (Cantarella, Carlotta, Cartethyia, Chisa) kept finding on
+already-"audited" characters: category-vs-override-text mismatches,
+unscoped `totalMult`/passive effects on chain nodes, repeat-step trigger-
+label mismatches, uncategorized real damage, dmgFocus omissions/fabrications,
+missing rotation-step-linked blocks, dead/no-op buffs, stale build data, and
+wrong-move triggers.
+1. **SKILL_MULTIPLIERS** — every Lv.10 row (Basic ATK/Mid-air/Heavy ATK/
+   Dodge Counter/Skill/Forte/Liberation/Intro/Outro) re-checked digit-for-
+   digit against the dump's own Multipliers tables. Confirmed exact.
+2. **CHARACTER_ROTATIONS** — all 6 Standard Rotation steps re-checked
+   against the dump's own step-by-step prose. Confirmed an exact match; no
+   step repeats a combo under a differently-worded combined label (unlike
+   Augusta's Spinslash), so the repeat-trigger-label bug class does not
+   architecturally apply here — the file's own technique of riding 2 blocks
+   on 1 shared `Skill:True Sight: Capture`/`Forte:Heavy ATK: Flaming
+   Sacrifice` trigger (rather than adding new steps) was re-verified against
+   `rotationSimulator.js`'s exact-label matching and confirmed to work as
+   intended (both blocks fire on every real occurrence of that trigger).
+3. **RESONANCE_CHAIN_DATA** — every node (S1-S6) re-read against the dump's
+   own kit text. S1/S6's `scopedToBlockId` groups (`TRIPARTITE_FLAMES_
+   BLOCK_IDS`/`FLAMING_SACRIFICE_BLOCK_IDS`) re-verified to cover exactly
+   the real blocks their kit text names (Tripartite Flames + True Sight
+   follow-ups; Flaming Sacrifice) and no more/less. S5's split totalMult/
+   heavyDmg halves re-verified against the dump's own "Multiplier... AND
+   DMG dealt" two-effect text. Confirmed no unscoped chain-node buff leaking
+   kit-wide (the exact bug class found on Camellya/Augusta) and no wrong-
+   move trigger (the Chisa bug class) — every `trigger.on` label matches a
+   real, actually-cast move.
+4. **CHAR_BUFF_TABLE** — Outro (`elemDmg`+`libDmg`, Fusion-gated, matching
+   the dump's exact "20% Fusion DMG Amp + 25% Liberation DMG Amp, 10s or
+   until swapped out" text) and Fiery Feather self-buff re-verified.
+   Confirmed correct; no dead/no-op block found (Fiery Feather's
+   `scopedToBlockId` still correctly points at the real 2nd Forte cast).
+5. **dmgFocus** — re-checked against the dump's own Damage Profile (Skill
+   61.4%, Liberation 23.8%, Heavy 6.1%, Basic 4.4%, Intro ~2.25%, Outro 0%,
+   Echo generic-gear). `['Skill', 'Liberation', 'Heavy ATK']` confirmed
+   correct — no omitted non-trivial bucket, no fabricated zero bucket.
+6. **Weapon data** — `bestWeapon` (Blazing Brilliance) and `weaponAlts`
+   (alt5: Emerald of Genesis/Emerald Sentence, alt4: Somnoire Anchor/
+   Commando of Conviction, alt3: Sword of Night) re-checked against the
+   dump's full Best Weapons list and its exact %-ranked ordering. Confirmed
+   correct.
+7. **Echo data** — `bestEchoes` (`['Nightmare: Inferno Rider', 'Molten Rift
+   5pc']`) re-checked against the dump's Best Echo Sets section. Confirmed
+   correct. Tier (`T2`/`T3`, ToA/WW) also re-checked against the dump's own
+   Ratings line. Confirmed correct.
+8. **Engine-block parity** — re-decomposed the dump's kit text move-by-move
+   against `changli.blocks.js`. Every real, sourced kit component (Basic ATK
+   Stage 1-4 combo confirmed deliberately unmodeled — never cast in the
+   Standard Rotation text; Mid-air Attack Stage 1-4, both True Sight:
+   Capture casts, both Flaming Sacrifice casts, all 4 real True Sight:
+   Conquest/Charge follow-ups, Liberation, Intro, Heavy ATK, both Inherent
+   Skills) already has a correctly-categorized block matching the dump's own
+   override language exactly ("considered Resonance Skill DMG" → `skillDmg`
+   on the True Sight follow-ups and Flaming Sacrifice). Dodge Counter and
+   the standalone ground Basic ATK combo re-confirmed absent from the real
+   Standard Rotation text — correctly left unmodeled, not a gap. No
+   uncategorized real-damage block found (the Calcharo/Encore/Brant/Buling
+   Intro-miscategorization bug class does not recur here — Intro already
+   carries `skillDmg`).
+9. **Icons** — `SKILL_ICONS['Changli']` (8 keys, including the shared
+   generic Sword icon for Basic/Heavy ATK) and `CHAIN_NODE_ICONS['Changli']`
+   (all 6 nodes) re-checked against every real rotation-step/chain-node
+   name. Confirmed fully wired, no gap.
+
+**No new bugs found.** Full suite green: 1459/1459 (no test changes needed).
+
 ---
 
 ## How to add to this file
