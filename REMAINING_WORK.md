@@ -262,8 +262,8 @@ audit per character, all cross-checked against a fresh source dump:
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
-Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi — added
-2026-09-03/04, first twenty-one characters audited under the updated
+Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta —
+added 2026-09-03/04, first twenty-two characters audited under the updated
 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
@@ -687,6 +687,36 @@ chosen "Standard Rotation/Opener" variant doesn't use it (the dump's
 separate "Loop Rotation" does, a real alternate not selected). Icons
 (dimension 9) checked and confirmed already fully wired. No code changes,
 no new tests needed — logged here as verification, not a no-op skip.
+
+**Augusta pass (2026-09-04) — near-clean, 1 real completeness gap found and
+fixed.** Her `Characters data dump/` file and `augusta.blocks.js` already
+carried an unusually deep prior audit trail (2026-09-02 "final Augusta
+audit pass"): the halving-pattern bug across all 22 Lv.10 hit values
+already retightened, Everbright Protector's missing `damage.category`
+already fixed to `heavyDmg`, S3's unscoped `totalMult` already rescoped to
+its 6 real named moves via `scopedToBlockId`, S5's fabricated `totalMult:15`
+already zeroed, S6's Thunder Rage already modeled as a real 2×100%-ATK proc
+block (not the flat `heavyDmg:200` legacy-table approximation), the Outro's
+`allDmg` stat and `dmgFocus` (`['Heavy ATK', 'Skill']`, correctly excluding
+Liberation since every Liberation-slot cast is explicitly "considered Heavy
+Attack DMG" per her own kit text) both already matching the dump exactly,
+and her tier/weapon/echo/icon/chain-node data all already verified clean.
+Redoing all 9 dimensions against the fresh dump found everything above
+still correct, plus one real gap dimension 1/8 flagged: `SKILL_MULTIPLIERS`
+was missing reference rows for 6 real named kit moves the dump's own Basic
+Attack/Forte multiplier lists document — Mid-air Attack (59.65%×2), Dodge
+Counter (67.00%×2), Mid-air Dodge Counter (59.65%×2), and the "at full
+Prowess/Ascendancy" Dodge Counter replacement variants (Dodge Counter -
+Heavy Attack: Steelclash 46.39%×3, Dodge Counter - Thunderoar: Backstep
+53.68%, Dodge Counter - Undying Sunlight: Strike 139.17%×2, considered
+Resonance Skill DMG). None of these fire in her real modeled
+`CHARACTER_ROTATIONS` (the rotation's real combo path is Backstep→
+Spinslash, never Dodge Counter), so — matching the existing Lucy
+Dodge-Counter-row precedent — added as documented reference rows only, no
+new engine blocks. Full suite green: 1442/1442 — no new tests needed, since
+the fix was reference-data-only (no new/changed engine behavior) and the
+prior 2026-09-02 pass already added `triggerEngine-augusta.test.js` and
+`augustaHalvedMultipliersFix.test.js` covering every real engine-block fix.
 
 ---
 

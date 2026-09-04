@@ -3814,15 +3814,28 @@ const SKILL_MULTIPLIERS = {
   // Roccia/Phoebe/Brant (see the comment on Brant's own row just below), just missed for Augusta until
   // now. Confirmed systematic, not rounding noise: computed the new/old ratio for all 22 values, every
   // one landed at 1.986-1.991. Retightened every value to the source's exact Lv.10 figures.
+  // Phase A audit (2026-09-04): added the previously entirely-missing Mid-air Attack, Dodge Counter, and
+  // Mid-air Dodge Counter rows plus the "at full Prowess/Ascendancy" Dodge Counter replacement variants
+  // (Dodge Counter-Heavy Attack: Steelclash, Dodge Counter-Thunderoar: Backstep, Dodge Counter/Mid-air
+  // Dodge Counter-Undying Sunlight: Strike) as reference data straight from the dump's own Basic
+  // Attack/Forte multiplier lists — none of these fire in her real modeled CHARACTER_ROTATIONS (the
+  // rotation's real combo path is Backstep→Spinslash, not Dodge Counter), so no new engine blocks wired
+  // for them, matching the Lucy Dodge-Counter-row precedent above.
   'Augusta': [
     ['Basic ATK', "Hunter's Path", '57.46% → 67.00%×2 → 65.61%×3 → 64.63%×3', 'Standard combo string, builds toward her Majesty/Crown resources.'],
+    ['Basic ATK', 'Mid-air Attack', '59.65%×2', 'Plunging Attack; confirmed unused in her real rotation.'],
+    ['Basic ATK', 'Dodge Counter', '67.00%×2', 'Post-Dodge Normal Attack; confirmed unused in her real rotation.'],
+    ['Basic ATK', 'Mid-air Dodge Counter', '59.65%×2', 'Post-mid-air-Dodge Plunging Attack; confirmed unused in her real rotation.'],
     ['Heavy ATK', 'Steelclash', '46.39%×3', 'Base charged combo.'],
+    ['Heavy ATK', 'Dodge Counter - Steelclash', '46.39%×3', 'Replaces Dodge Counter at full Prowess; confirmed unused in her real rotation.'],
     ['Heavy ATK', 'Thunderoar', 'Backstep 53.68% / Spinslash 141.72%×3 / Uppercut 178.93%×2', 'Empowered Heavy ATK combo, unlocked at full Ascendancy.'],
+    ['Heavy ATK', 'Dodge Counter - Thunderoar: Backstep', '53.68%', 'Replaces Dodge Counter and its Steelclash variant at full Ascendancy; confirmed unused in her real rotation.'],
     ['Skill', "Warrior's Blade", '218.70%×3', 'Multi-hit Skill strike with a brief time-stop on cast.'],
     ['Liberation', 'Sword of Eternal Oath', '32.99%×2 + 131.94%×3 + 32.99%×2 + 571.7%', 'Standard Ultimate combo nuke.'],
     ['Liberation', 'Sunborne', '119.29% ×9 slashes', 'Alt Ultimate opener when holding the input at 2 Majesty stacks.'],
     ['Liberation', 'Everbright Protector', '238.58% + 894.65% + 5.97%×10', 'Finisher following Sunborne, deploys Ruler\'s Realm.'],
     ['Forte', 'Undying Sunlight', 'Strike 139.17%×2 / Leap 222.67%+27.84%×2 / Plunge 86.59%+779.24%', 'Forte-empowered combo, Plunge consumes all Ascendancy for a big finisher.'],
+    ['Forte', 'Dodge Counter - Undying Sunlight: Strike', '139.17%×2', 'Grounded/mid-air Dodge Counter variant at full Ascendancy, considered Resonance Skill DMG; confirmed unused in her real rotation.'],
     ['Intro', 'Stride of Goldenflare', '99.41%×2', 'Swap-in opener strike.'],
     ['Outro', 'Battlesong of the Unyielding', '+15% All DMG Amp (14s)', 'Grants the next Resonator +15% All-Attribute DMG Amp for 14s, which ends immediately if they are swapped out. Conditional payoff: Augusta gains +1 Majesty stack AND +1 Crown of Wills stack ONLY if that SAME Resonator casts their own Outro Skill back to Augusta while this buff is still up — swap to a third character first and the buff (and the stack chance) is forfeited. Verified verbatim the wiki/Augusta/Combat, 2026-08-31.'],
   ],
