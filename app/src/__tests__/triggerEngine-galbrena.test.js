@@ -101,4 +101,28 @@ describe('triggerEngine parity — Galbrena', () => {
     expect(block.condition.element).toBe('fusion');
     expect(block.effects[0]).toEqual({ stat: 'elemDmg', value: 35 });
   });
+
+  // Fixed 2026-09-04 (Phase A audit): the rotation previously modeled only a single Basic Attack
+  // P2->P3 pass before Ascent of Malice and only a single Seraphic Execution P2->P3->P4->P5 pass in
+  // Demon Hypostasis, silently dropping the source's own "Standard Rotation" repeat of both segments
+  // ("Basic P2 -> Basic P3 -> Basic P4 -> Basic P2 -> Basic P3 -> Skill..." and "...Forte: Basic P2 ->
+  // P3 -> P4 -> P5 -> P3 -> P4 -> P5 (Swap) -> Outro") — a bug class (f)/(c) silent-gap where a real,
+  // explicitly-listed rotation segment contributed zero DPS.
+  it('CHARACTER_ROTATIONS repeats both the pre-Skill Basic combo and the post-Liberation Forte pass, matching the source Standard Rotation exactly', () => {
+    const rotation = CHARACTER_ROTATIONS['Galbrena'];
+    const names = rotation.map(s => s.skill);
+    expect(names.filter(n => n === 'Basic Attack Stage 2')).toHaveLength(2);
+    expect(names.filter(n => n === 'Basic Attack Stage 3')).toHaveLength(2);
+    expect(names.filter(n => n === 'Seraphic Execution Stage 3')).toHaveLength(2);
+    expect(names.filter(n => n === 'Seraphic Execution Stage 4')).toHaveLength(2);
+    expect(names.filter(n => n === 'Seraphic Execution Stage 5')).toHaveLength(2);
+    // Every repeated step still resolves to real damage via the engine blocks' name-match trigger,
+    // not just the first occurrence.
+    const steps = deriveStepsFromRotation(rotation, GALBRENA_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(GALBRENA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'fusion', 'Main DPS');
+    // Seraphic Execution Stage 5 is a 2-sub-hit move (67.28%+156.99%), so 2 casts produce 4 hitLog rows.
+    const seraphic5Hits = hitLog.filter(h => h.blockId === 'galbrena.echo.seraphic-execution-stage5');
+    expect(seraphic5Hits).toHaveLength(4);
+    for (const hit of seraphic5Hits) expect(hit.damage).toBeGreaterThan(0);
+  });
 });

@@ -1778,7 +1778,7 @@ const CHARACTER_DATA = {
   ['Phrolova',      10775, 438, 1137, 125],
   ['Augusta',       10300, 463, 1112, 125],
   ['Iuno',          10525, 450, 1124, 125],
-  ['Galbrena',      10300, 462, 1112, 125],
+  ['Galbrena',      10300, 463, 1112, 125],  // ATK corrected 2026-09-04 (Phase A audit): was 462, dump's Stats section says 463
   ['Qiuyuan',       12238, 375, 1198, 125],
   ['Chisa',         10775, 438, 1137, 125],
   ['Lynae',         12238, 375, 1198, 125],
@@ -2078,7 +2078,10 @@ const CHARACTER_DATA = {
   // and "Value" tier lists, all four saying T1 — no T0.5 anywhere in that source.
   ['Augusta',       'T1',   'T1'],
   ['Cartethyia',    'T0.5', 'T1.5'],
-  ['Galbrena',      'T0.5', 'T1'],
+  // Corrected 2026-09-04 (Phase A audit): was ['T0.5','T1'] — the fresh dump's Review section states
+  // "DPS Tier: T1 (Tower of Adversity), T1.5 (Whimpering Wastes)" explicitly, matching neither prior
+  // value.
+  ['Galbrena',      'T1',   'T1.5'],
   // Corrected 2026-09-02 against a fresh the source dump: was ['T0.5','T3'], which matches NEITHER of her
   // two real rated roles (DPS: T0.5 ToA / T4 WW; Hybrid: T1 ToA / T1.5 WW — stale value, source
   // unclear). Since CHARACTER_DATA['Iuno'].role is 'Sub DPS' (this app models her as support/hybrid,
@@ -5591,17 +5594,31 @@ const CHARACTER_ROTATIONS = {
   // as (Heavy ATK / Echo respectively) — under the old types+names, both steps had nothing to match and
   // were silently resolving to 0 DMG, and the whole Basic Attack/Seraphic Execution combo strings never
   // matched anything either. Split into per-stage steps that substring-match the new per-stage rows.
+  // Rebuilt 2026-09-04 (Phase A audit) against the dump's own "Standard Rotation" text verbatim:
+  // "Intro → Basic P2 → Basic P3 → Basic P4 → Basic P2 → Basic P3 → Skill: Ascent of Malice (interrupt
+  // animation on hit) → Ultimate (Hellfire Absolution) → Forte: Basic P2 → P3 → P4 → P5 → P3 → P4 → P5
+  // (Swap) → Outro." The prior entry silently dropped the pre-Skill P2→P3 REPEAT (kit text: "Basic
+  // Attack Stage 4 → Normal Attack loops back to Stage 2", builds the remaining Sinflame to cap before
+  // Ascent of Malice is reachable) and the post-Liberation P3→P4→P5 REPEAT inside Demon Hypostasis
+  // (only a single P2→P3→P4→P5 pass was modeled) — both real, explicitly-listed rotation steps, a bug
+  // class (f)/(c) silent-gap: the whole 2nd Seraphic Execution P3/P4/P5 pass and the extra Basic P2/P3
+  // pass were contributing zero DPS in the calc despite being cast in the source's own rotation.
   'Galbrena': [
     { type: 'Intro', skill: 'Hellflare Overload' },
     { type: 'Heavy ATK', skill: 'Basic Attack Stage 2', note: 'Threshold State combo, builds Sinflame (skips the weak Stage 1)' },
     { type: 'Heavy ATK', skill: 'Basic Attack Stage 3' },
     { type: 'Echo', skill: 'Basic Attack Stage 4' },
-    { type: 'Heavy ATK', skill: 'Ascent of Malice', note: 'at max Sinflame — enters Demon Hypostasis, endlag cancelled on hit by the Liberation' },
-    { type: 'Echo', skill: 'Hellfire Absolution', duration: 14, note: 'cast right after entering Demon Hypostasis so its +85% DMG Mult buffs the whole combo that follows' },
+    { type: 'Heavy ATK', skill: 'Basic Attack Stage 2', note: 'Basic Attack Stage 4 loops back to Stage 2 per kit text — 2nd P2→P3 pass to finish capping Sinflame before Ascent of Malice is reachable' },
+    { type: 'Heavy ATK', skill: 'Basic Attack Stage 3' },
+    { type: 'Heavy ATK', skill: 'Ascent of Malice', note: 'at max Sinflame — interrupt the animation early on the Liberation hit landing (never before), enters Demon Hypostasis' },
+    { type: 'Echo', skill: 'Hellfire Absolution', duration: 14, note: 'cast right after entering Demon Hypostasis so its +85% DMG Mult buffs the whole combo that follows — stack the 20% Inherent Skill DMG Amplify with one Basic Attack first' },
     { type: 'Heavy ATK', skill: 'Seraphic Execution Stage 2' },
     { type: 'Heavy ATK', skill: 'Seraphic Execution Stage 3', note: 'Dodge Counter (Purgatory Scourge) can substitute here for higher DMG and Forte if the enemy attacks' },
     { type: 'Echo', skill: 'Seraphic Execution Stage 4' },
-    { type: 'Echo', skill: 'Seraphic Execution Stage 5', note: 'Demon Hypostasis combo finisher' },
+    { type: 'Echo', skill: 'Seraphic Execution Stage 5' },
+    { type: 'Heavy ATK', skill: 'Seraphic Execution Stage 3', note: '2nd Forte pass — the source\'s own "Standard Rotation" repeats P3→P4→P5 a second time before swapping out' },
+    { type: 'Echo', skill: 'Seraphic Execution Stage 4' },
+    { type: 'Echo', skill: 'Seraphic Execution Stage 5', note: 'swap-cancelled — the window is earlier than expected per the source\'s own Tips' },
     { type: 'Outro', skill: 'Ashen Pursuit', note: 'pure-damage swap-out, no team buff, quickswap freely' },
   ],
   // Corrected 2026-08-17 against the source's live "Gameplay and teams" rotation: the previous entry put

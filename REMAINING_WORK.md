@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona — added 2026-09-03/04, first
-twenty-nine characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena — added 2026-09-03/04, first
+thirty characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -1522,6 +1522,40 @@ wrong-move triggers.
    name. Confirmed fully wired, no gap.
 
 **No new bugs found.** Full suite green: 1459/1459 (no test changes needed).
+
+---
+
+**Galbrena pass (2026-09-04) — genuine from-scratch re-audit: 3 real bugs found and fixed.**
+The `Characters data dump/Galbrena/Galbrena.md` file's own "App Data Comparison"
+section claimed a prior 2026-09-01/09-02/09-03 pass had already fixed
+`SKILL_MULTIPLIERS`/`RESONANCE_CHAIN_DATA`/`CHAR_BUFF_TABLE`/`dmgFocus`/weapon/echo/
+`galbrena.blocks.js` to be fully correct — per this task's standing instruction, that
+claim was NOT trusted and every dimension was independently re-verified line-by-line
+against the dump text. `SKILL_MULTIPLIERS`, `RESONANCE_CHAIN_DATA`, `CHAR_BUFF_TABLE`,
+`dmgFocus`, weapon/echo data, `galbrena.blocks.js`'s damage-category/`scopedToBlockId`
+wiring, and `SKILL_ICONS`/`CHAIN_NODE_ICONS` were all independently confirmed to
+genuinely match the dump exactly — no re-fix needed there. Real bugs found:
+1. **CHARACTER_ROTATIONS (dimension 2) / engine-block parity (dimension 8)** — the
+   rotation modeled only a single Basic Attack Stage 2→3 pass before Ascent of Malice
+   and only a single Seraphic Execution Stage 2→3→4→5 pass in Demon Hypostasis, but the
+   dump's own "Standard Rotation" text explicitly repeats both segments: `Basic P2 →
+   Basic P3 → Basic P4 → Basic P2 → Basic P3 → Skill...` and `...Forte: Basic P2 → P3 →
+   P4 → P5 → P3 → P4 → P5 (Swap) → Outro`. This is bug class (f)/(c): a real,
+   explicitly-listed rotation segment (a 2nd full Seraphic Execution P3/P4/P5 pass, plus
+   a 2nd Basic P2/P3 pass) was contributing zero DPS in the calc. Fixed by adding both
+   repeated segments as explicit steps; existing engine blocks already trigger correctly
+   on repeat occurrences since the step labels are identical strings (no combined-label
+   folding issue here). Added a test verifying the repeat count and that each repeated
+   occurrence resolves to real, non-zero damage.
+2. **Character stat table (ATK)** — `CHARACTER_DATA`'s Lv.90 stat row had ATK 462; the
+   dump's Stats section states ATK 463. Off-by-one stale value, fixed.
+3. **Tier table** — `['Galbrena', 'T0.5', 'T1']` (ToA, WW) did not match the dump's
+   Review section, which explicitly states "DPS Tier: T1 (Tower of Adversity), T1.5
+   (Whimpering Wastes)". Fixed to `['Galbrena', 'T1', 'T1.5']`.
+
+3 new/expanded tests in `triggerEngine-galbrena.test.js`. Full suite green: 1463/1463.
+
+Added to the completed-characters list above: **Galbrena**.
 
 ---
 
