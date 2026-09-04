@@ -192,8 +192,9 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto, Baizhi, Chixia, Danjin — added 2026-09-03/04, first nine characters
-audited under the updated 9-dimension methodology** (see below). Many more
+Aalto, Baizhi, Chixia, Danjin, Yangyang — added 2026-09-03/04, first ten
+characters audited under the updated 9-dimension methodology** (see
+below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -482,6 +483,27 @@ single BIGGEST damage bucket (29.7%/56,602) — was entirely missing despite
 already being correctly `libDmg`-categorized. Fixed to `['Heavy ATK',
 'Skill', 'Liberation']`. Icons (dimension 9) checked and confirmed already
 fully wired. 2 new tests, full suite green: 1400/1400.
+
+**Yangyang pass (2026-09-04)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 3 real bugs (a `bestEchoes`
+entry with no main echo named, a wrong `bestWeapon`, a stale multiplier
+digit). Redoing dimensions 5/8 found `yangyang.intro.cerulean-song`
+uncategorized (fixed to `skillDmg`, default convention) and a genuine
+miscategorization: `yangyang.heavy.zephyr-song` was `heavyDmg`, but the
+kit text is explicit "Zephyr Song is a Basic ATK follow-up after Heavy
+Attack or Dodge Counter" — the "Heavy ATK" rotation-step type is just the
+input leading into it (same shape as Chixia's Boom Boom), confirmed by the
+dump's own Damage Profile showing an explicit 0% Heavy share. Fixed to
+`basicDmg`. `dmgFocus` was `['Skill']` only, missing Liberation (42.1%,
+her single biggest bucket, already correctly `libDmg`-categorized); Basic
+ATK gained a real source once Zephyr Song's category was corrected, added
+alongside it. Fixed to `['Skill', 'Liberation', 'Basic ATK']`. Left
+Feather Release deliberately uncategorized/unincluded: the dump's "counted
+as Basic Attack DMG" text is genuinely ambiguous whether it covers the
+whole multi-hit row or only its landing sub-hit — a real documented gap
+from an earlier pass, not silently dropped, not re-guessed at here. Icons
+(dimension 9) checked and confirmed already fully wired. 3 new tests, full
+suite green: 1403/1403.
 
 ---
 
