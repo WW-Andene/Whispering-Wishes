@@ -71,6 +71,10 @@ Game
 ├── Echo
 │   └── <Name>
 │       ├── Rank
+│       │   ├── Common
+│       │   ├── Elite
+│       │   ├── Calamity
+│       │   └── Overlord
 │       ├── Sonata
 │       ├── Cost
 │       ├── Stats
