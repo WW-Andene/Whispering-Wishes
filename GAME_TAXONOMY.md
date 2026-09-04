@@ -266,82 +266,27 @@ a teammate-ally-action buff — whose action triggered it?).
 
 ## Engine (parallel tree, not nested under Game)
 
+Status: not designed yet. Everything previously here (file names, Kind/Trigger/
+Target/Stacking enum values) was pulled from the CURRENT app/src/engine/
+implementation — the old engine this rewrite is meant to replace, not a fresh
+design. Stripped out rather than left as a false starting point. To be built
+from scratch, based on what the Game tree (and the real character dumps) say
+the engine actually needs to compute — not on how the old code happens to be
+organized today.
+
 ```
 Engine
 ├── Block
-│   ├── Kind
-│   │   ├── Damage
-│   │   ├── Buff
-│   │   ├── Debuff
-│   │   ├── Heal
-│   │   └── Utility
-│   ├── Trigger
-│   │   ├── Cast
-│   │   ├── Swap-in
-│   │   ├── Swap-out
-│   │   ├── Passive
-│   │   ├── On-hit
-│   │   ├── Resource-threshold
-│   │   ├── Negative-status-hit
-│   │   ├── Field-time
-│   │   ├── Partner-outro-return
-│   │   ├── Windowed-cast
-│   │   ├── Requires-prior-cast
-│   │   ├── Windowed-proc
-│   │   └── Ally-action
-│   ├── Condition
-│   ├── Timing
-│   ├── Target
-│   │   ├── Self
-│   │   ├── On-field
-│   │   ├── Next-on-field
-│   │   ├── Whole-team
-│   │   ├── Marked-enemy
-│   │   ├── All-enemies
-│   │   └── Trigger-actor
-│   ├── Effects
-│   │   └── Stacking Mode
-│   │       ├── Unique
-│   │       ├── Stacking
-│   │       └── Refresh
-│   ├── Damage
-│   └── Note
 ├── Orchestration
-│   └── rotationOrderSearch.js
 ├── Composition
-│   ├── resolveHitComposedDps.js
-│   ├── resolveHitComposedTeamDps.js
-│   ├── resolveSimulatedRotation.js
-│   ├── resolveSimulatedTeamRotation.js
-│   └── rotationSimulator.js
 ├── Triggers
-│   ├── triggerEngine.js
-│   ├── blockWindows.js
-│   ├── coordinatedAtk.js
-│   ├── energyCycleGating.js
-│   ├── sequenceGating.js
-│   └── tieredStacking.js
 ├── DoT
-│   ├── dotFormulas.js
-│   ├── dotReactions.js
-│   └── dotReactionsFromBlocks.js
 ├── Schema
-│   ├── buffSource.js
-│   ├── knownCategories.js
-│   ├── triggerBlocks.schema.js
-│   └── validateBlock.js
 ├── Shared
-│   ├── buffAccumulation.js
-│   ├── combatMath.js
-│   ├── roleHelpers.js
-│   └── skillMultiplierParser.js
 └── Projection
-    ├── registry.js
-    └── statPanelProjection.js
 ```
 
-Reconciled against the real folder contents of `app/src/engine/` as of this pass
-(7 folders, not 5 — `dot/` and `projection/` were missing from an earlier draft).
+(Placeholder category names only — content pending.)
 
 ---
 
