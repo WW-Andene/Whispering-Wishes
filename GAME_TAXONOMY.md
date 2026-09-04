@@ -100,6 +100,11 @@ Game
 │           │   └── <Name>
 │           │       ├── Stats
 │           │       │   ├── Main
+│           │       │   │   ├── ATK %
+│           │       │   │   ├── HP %
+│           │       │   │   ├── DEF %
+│           │       │   │   ├── Energy Regen
+│           │       │   │   └── Element DMG % → (ref: Element list)
 │           │       │   ├── Secondary
 │           │       │   │   └── ATK (flat)
 │           │       │   └── Substats
@@ -112,6 +117,12 @@ Game
 │               └── <Name>
 │                   ├── Stats
 │                   │   ├── Main
+│                   │   │   ├── Crit Rate %
+│                   │   │   ├── Crit DMG %
+│                   │   │   ├── ATK %
+│                   │   │   ├── HP %
+│                   │   │   ├── DEF %
+│                   │   │   └── Healing Bonus %
 │                   │   ├── Secondary
 │                   │   │   └── ATK (flat)
 │                   │   └── Substats
