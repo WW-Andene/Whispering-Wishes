@@ -274,14 +274,6 @@ urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
 
-**Open item needing a human decision (2026-09-04):** Shorekeeper's
-`weaponAlts.alt5` lists `["Firstlight's Herald", 'Cosmic Ripples']`, but
-her own dump's Best Weapons table only names 4 total options (signature
-+ 3 4★s, no other 5★) — neither alt5 weapon appears anywhere in it. Not
-changed since the dump extraction may simply not be an exhaustive weapon
-list (unlike its Resonance Chain/SKILL_MULTIPLIERS tables); flagged
-rather than guessed at.
-
 **Rover: Spectro pass (2026-09-03)**: her `Characters data dump/` already
 had 6 of 8 dimensions verified clean from an earlier pass (SKILL_MULTIPLIERS,
 CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, weapon data, echo data, tier —

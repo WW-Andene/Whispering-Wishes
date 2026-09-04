@@ -445,7 +445,16 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
-    weaponAlts: { alt5: ["Firstlight's Herald", 'Cosmic Ripples'], alt4: ['Variation', 'Rectifier#25'], alt3: ['Rectifier of Night'] },
+    // weaponAlts.alt5 corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was ["Firstlight's
+    // Herald", 'Cosmic Ripples'] — confirmed against the full raw Best Weapons table text (user-provided,
+    // matching this character's own dump exactly) that neither weapon appears anywhere in her real
+    // ranked options; the source explicitly lists only 4 total (her signature + 3 4★s), no other 5★ at
+    // all. Removed the alt5 key entirely rather than leaving stale/unsourced data — same "omit when no
+    // real 5★ alt exists" convention already used for Aalto/other characters. alt4 (Variation,
+    // Rectifier#25) already matched the source's own top-2 4★ ranking exactly — Call of the Abyss
+    // (85.10%, #4 overall, "not a necessity") narrowly misses the 2-slot cutoff, same trimming
+    // convention used elsewhere.
+    weaponAlts: { alt4: ['Variation', 'Rectifier#25'], alt3: ['Rectifier of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1603 sheet. desc: title "Sanguine Blossom" (the source) prepended and

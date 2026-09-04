@@ -241,13 +241,12 @@ this source exactly.
    `'Illation'` — the icon was silently never resolving. Shortened the key to `'Illation'`, exact same
    bug class already fixed for Xiangli Yao's `'Revamp'` key.
 
-**Flagged, not changed — needs a human decision**: `weaponAlts.alt5` currently lists `["Firstlight's
-Herald", 'Cosmic Ripples']`, but this source's own Best Weapons table lists only 4 total options for
-her (Variation 4★, her signature Stellar Symphony, Rectifier#25 4★, Call of the Abyss 4★) — no other 5★
-weapon at all. Neither Firstlight's Herald nor Cosmic Ripples appears anywhere in this dump. Left
-unchanged since this "cleaned" dump extraction may not be an exhaustive weapon list (unlike the
-Resonance Chain/SKILL_MULTIPLIERS tables, which are), so removing real alt5 data on an assumption of
-completeness risked being the wrong call — flagged here rather than guessed at.
+3. `weaponAlts.alt5` listed `["Firstlight's Herald", 'Cosmic Ripples']`, neither of which appears
+   anywhere in this source. Initially left unchanged (flagged instead) pending confirmation the dump
+   extraction was exhaustive — the user then confirmed the full raw Best Weapons table text matches
+   this dump exactly, only 4 total options (signature + 3 4★s, no other 5★). Removed the alt5 key
+   entirely (same "omit when no real 5★ alt exists" convention already used elsewhere), rather than an
+   empty array.
 
 6 new/updated tests (Flare Star Butterfly ×2, icon lookup), full suite green (1438/1438). rawDps moved
 from ~1254 to include the new Butterfly damage (engine/legacy ratio now 1.015, previously exact parity
