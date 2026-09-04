@@ -31,7 +31,9 @@ Game
 │       │   ├── DEF
 │       │   ├── Max Energy
 │       │   ├── Crit Rate
-│       │   └── Crit DMG
+│       │   ├── Crit DMG
+│       │   ├── Healing Bonus
+│       │   └── Element DMG
 │       ├── Kit → (each move: ref Block)
 │       │   ├── Basic ATK
 │       │   │   ├── Basic ATK
@@ -43,6 +45,8 @@ Game
 │       │   ├── Forte
 │       │   ├── Intro
 │       │   └── Outro
+│       ├── Inherent Skills → (each: ref Block)
+│       ├── Minor Fortes
 │       ├── Resonance Chain → (each node: ref Block)
 │       │   ├── S1
 │       │   ├── S2
