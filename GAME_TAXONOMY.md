@@ -22,16 +22,13 @@ Status: draft, under active discussion — not yet built into code.
 ```
 Game
 ├── Character
-│   └── <Name>                    (e.g. Aalto, Jinhsi, Rover: Electro — 58 total, Jingran unreleased/no blocks yet)
+│   └── <Name>
 │       ├── Rarity
 │       ├── Element
 │       ├── Stats
-│       │   ├── Base          (HP / ATK / DEF at Lv.90 — the character's own innate values)
-│       │   └── Growth Curve  (per-level scaling, if modeled distinctly from Base)
-│       ├── Kit               (corrected: Echo Skill and Coordinated ATK removed — those are
-│       │                      DAMAGE CATEGORIES a kit move can be tagged with for buff-matching,
-│       │                      not real move slots the character has. A character's Kit is only
-│       │                      the moves below.)
+│       │   ├── Base
+│       │   └── Growth Curve
+│       ├── Kit
 │       │   ├── Basic ATK
 │       │   ├── Heavy ATK
 │       │   ├── Skill
@@ -46,62 +43,70 @@ Game
 │       │   ├── S4
 │       │   ├── S5
 │       │   └── S6
-│       ├── Rotation          (the realistic-optimal play order derived from Kit + Resonance
-│       │                      Chain — NOT a Build sub-item, since it depends on Kit/Chain
-│       │                      directly and doesn't reference the Weapon/Echo/Team catalogs
-│       │                      the way Build's children do)
+│       ├── Rotation
 │       └── Build
-│           ├── Weapon        → (ref: Weapon catalog)
-│           │   └── Signature  (the one Weapon entry designed for this specific Character —
-│           │                   a flag/ref on a Weapon.<Name> node, not a separate catalog)
-│           ├── Echoes        → (ref: Echo catalog)
+│           ├── Weapon
+│           │   └── Signature
+│           ├── Echoes
 │           └── Team
-│               ├── Members    → (refs: 2 other Characters, 3-member team)
-│               └── Rotation   (the TEAM-level play order — distinct from a single Character's
-│                                own solo Rotation above; who's on-field when, swap timing)
+│               ├── Members
+│               └── Rotation
 │
 ├── Weapon
 │   └── <Name>
 │       ├── Rarity
-│       ├── Type            (Sword / Broadblade / Pistols / Gauntlets / Rectifier)
-│       ├── Signature Of    → (ref: Character, or null — most weapons aren't anyone's signature)
+│       ├── Type
+│       ├── Signature Of
 │       ├── Stats
-│       │   ├── Main        (baseAtk)
-│       │   └── Sub         (fixed passive-scaling substat, e.g. Crit Rate/Crit DMG/Energy Regen)
-│       └── Buff             (passive effect)
+│       │   ├── Main
+│       │   └── Sub
+│       └── Buff
 │
 ├── Echo
 │   └── <Name>
-│       ├── Sonata           (set — `sets` in echoes.js, an echo can belong to 2)
-│       ├── Cost              (1 / 3 / 4)
+│       ├── Sonata
+│       ├── Cost
 │       ├── Stats
-│       │   ├── Main         (fixed per cost tier)
-│       │   └── Substats      (5 random rolls — NOT a 3-tier Main/Secondary/Sub split, that's not
-│       │                      how the game actually works; corrected from an earlier draft of this doc)
-│       └── Echo Skill        (4-cost echoes only — the active skill/buff)
+│       │   ├── Main
+│       │   └── Substats
+│       └── Echo Skill
 │
 ├── Enemy
 │   └── <Name>
-│       ├── Rank              (Common / Elite / Calamity / Overlord — the real field name is `rank`,
-│       │                      not "Danger level"; corrected from an earlier draft of this doc)
+│       ├── Rank
 │       ├── Type
-│       └── Stats             (level-scaled HP/ATK/DEF curve, per enemyLevelStats.json;
-│                               + stagger data, per enemyStaggerStats.json)
+│       └── Stats
 │
 ├── Element
 │   └── Glacio / Fusion / Electro / Aero / Spectro / Havoc / Physical
 │
 ├── Damage
 │   └── Basic / Heavy / Skill / Liberation / Echo / Coordinated / Intro / Outro
-│       (+ per-Element variants, e.g. Glacio Damage, Fusion Damage, ...)
 │
 ├── Buff
-│   └── ATK (flat/%) / DEF (flat/%) / HP (flat/%) / Crit Rate / Crit DMG /
-│       Energy Regen / Heal Bonus / (Element) DMG Bonus / (move-type) DMG Bonus
+│   └── ATK / DEF / HP / Crit Rate / Crit DMG / Energy Regen / Heal Bonus /
+│       Element DMG / Move-type DMG
 │
 └── Debuff
     └── DEF Ignore / DEF Shred / RES Shred / Deepen
 ```
+
+### Notes on the tree above
+
+- **Character > Name**: e.g. Aalto, Jinhsi, Rover: Electro — 58 total, Jingran unreleased/no blocks yet.
+- **Stats > Base**: HP/ATK/DEF at Lv.90, the character's own innate values. **Growth Curve**: per-level scaling, if modeled distinctly from Base.
+- **Kit**: Echo Skill and Coordinated ATK were deliberately removed from this list — those are damage categories a kit move can be tagged with for buff-matching, not real move slots a character has.
+- **Rotation**: the realistic-optimal play order derived from Kit + Resonance Chain. Not a Build sub-item — it depends on Kit/Chain directly and doesn't reference the Weapon/Echo/Team catalogs the way Build's children do.
+- **Build > Weapon > Signature**: the one Weapon entry designed for this specific Character — a flag/ref on a `Weapon.<Name>` node, not a separate catalog.
+- **Build > Team > Members**: refs to 2 other Characters (3-member team). **Team > Rotation**: the team-level play order — who's on-field when, swap timing — distinct from a single Character's own solo Rotation above.
+- **Weapon > Type**: Sword / Broadblade / Pistols / Gauntlets / Rectifier. **Signature Of**: ref to Character, or null — most weapons aren't anyone's signature.
+- **Weapon > Stats > Sub**: the fixed passive-scaling substat, e.g. Crit Rate/Crit DMG/Energy Regen.
+- **Echo > Sonata**: the set (`sets` in echoes.js — an echo can belong to 2). **Cost**: 1 / 3 / 4.
+- **Echo > Stats > Substats**: 5 random rolls. Not a 3-tier Main/Secondary/Sub split — that's not how the game actually works; corrected from an earlier draft of this doc.
+- **Echo > Echo Skill**: 4-cost echoes only, the active skill/buff.
+- **Enemy > Rank**: Common / Elite / Calamity / Overlord — the real field name is `rank`, not "Danger level"; corrected from an earlier draft of this doc.
+- **Enemy > Stats**: level-scaled HP/ATK/DEF curve per `enemyLevelStats.json`, plus stagger data per `enemyStaggerStats.json`.
+- **Damage**: also has per-Element variants (Glacio Damage, Fusion Damage, etc.) not spelled out above to keep the tree short.
 
 **Resolved: Buff/Debuff stay siblings of Damage, not a subset.** Damage is a
 description of a HIT (what category a move's own output falls into); Buff/Debuff
@@ -132,24 +137,24 @@ a teammate-ally-action buff — whose action triggered it?).
 
 ```
 Engine
-├── Orchestration    (rotationOrderSearch.js — team-level rotation-order search)
-├── Composition      (resolveHitComposedDps.js, resolveHitComposedTeamDps.js,
-│                     resolveSimulatedRotation.js, resolveSimulatedTeamRotation.js,
-│                     rotationSimulator.js — turns a rotation + kit into a DPS number)
-├── Triggers         (triggerEngine.js, blockWindows.js, coordinatedAtk.js,
-│                     energyCycleGating.js, sequenceGating.js, tieredStacking.js —
-│                     WHEN a block fires)
-├── DoT              (dotFormulas.js, dotReactions.js, dotReactionsFromBlocks.js —
-│                     Tune Break/Hack Response aggregate-rate damage, still the one
-│                     genuinely unported mechanic per ENGINE_MERGE_INVESTIGATION.md)
-├── Schema           (buffSource.js, knownCategories.js, triggerBlocks.schema.js,
-│                     validateBlock.js — the registries/validators this whole
-│                     taxonomy is meant to feed)
-├── Shared           (buffAccumulation.js, combatMath.js, roleHelpers.js,
-│                     skillMultiplierParser.js — pure functions with no character data)
-└── Projection       (registry.js, statPanelProjection.js — turns composed engine
-                      output into a specific UI's shape, e.g. the stat panel)
+├── Orchestration
+├── Composition
+├── Triggers
+├── DoT
+├── Schema
+├── Shared
+└── Projection
 ```
+
+### Notes on the tree above
+
+- **Orchestration**: `rotationOrderSearch.js` — team-level rotation-order search.
+- **Composition**: `resolveHitComposedDps.js`, `resolveHitComposedTeamDps.js`, `resolveSimulatedRotation.js`, `resolveSimulatedTeamRotation.js`, `rotationSimulator.js` — turns a rotation + kit into a DPS number.
+- **Triggers**: `triggerEngine.js`, `blockWindows.js`, `coordinatedAtk.js`, `energyCycleGating.js`, `sequenceGating.js`, `tieredStacking.js` — WHEN a block fires.
+- **DoT**: `dotFormulas.js`, `dotReactions.js`, `dotReactionsFromBlocks.js` — Tune Break/Hack Response aggregate-rate damage, still the one genuinely unported mechanic per `ENGINE_MERGE_INVESTIGATION.md`.
+- **Schema**: `buffSource.js`, `knownCategories.js`, `triggerBlocks.schema.js`, `validateBlock.js` — the registries/validators this whole taxonomy is meant to feed.
+- **Shared**: `buffAccumulation.js`, `combatMath.js`, `roleHelpers.js`, `skillMultiplierParser.js` — pure functions with no character data.
+- **Projection**: `registry.js`, `statPanelProjection.js` — turns composed engine output into a specific UI's shape, e.g. the stat panel.
 
 Reconciled against the real folder contents of `app/src/engine/` as of this pass
 (7 folders, not 5 — `dot/` and `projection/` were missing from the previous draft).
