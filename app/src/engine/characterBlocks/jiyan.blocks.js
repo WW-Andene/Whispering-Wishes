@@ -118,15 +118,23 @@ export const JIYAN_BLOCKS = [
   {
     id: 'jiyan.chain.s6',
     source: SOURCE, kind: 'buff',
-    // Fixed 2026-09-03 (correctness fix, no live DPS impact today): was `trigger:{type:'cast',...}`
-    // with no `timing.duration` — the same dead cast-scoped/no-duration no-op shape found repeatedly
-    // this session (the engine-architecture history (git log) item 12). Doesn't currently matter for the modeled rotation
-    // since no `jiyan.forte.emerald-storm-finale` damage block exists to scope to (Finale is never
-    // cast in the real CHARACTER_ROTATIONS), but fixed anyway for correctness and in case a Finale
-    // block is ever added.
+    // Fixed 2026-09-04 (Phase A audit — this was a REAL, live bug, not the "no live DPS impact today"
+    // claimed by the prior 2026-09-03 comment): `trigger:{type:'passive'}` with NO `scopedToBlockId`
+    // means resolveHitComposedDps.js's statsAtInstant()/passiveBlocks loop applies this effect to
+    // EVERY hit block in the kit unconditionally (it only skips a hit when
+    // `effect.scopedToBlockId && effect.scopedToBlockId !== hitBlockId` — an effect with NO
+    // scopedToBlockId never gets skipped). So whenever S6 is selected, this was inflating
+    // jiyan.intro.tactical-strike, jiyan.heavy.lance-of-qingloong, jiyan.skill.windqueller AND
+    // jiyan.outro.discipline all by +240% totalMult — not just Finale's own multiplier as the kit
+    // text requires ("each stack consumed granting Finale's own DMG Multiplier +120%"). This is the
+    // same class of bug as the Jinhsi element-scoping bug: an effect meant to hit one named move
+    // leaking to the whole kit for want of a scope. Fixed by scoping to the (currently nonexistent)
+    // Finale damage block id, matching this file's own `jiyan.<slot>.<name>` id convention — this
+    // correctly makes the effect inert (Finale is never cast in the real CHARACTER_ROTATIONS, which
+    // stays under the 30-Resolve Lance of Qingloong branch) instead of leaking into the rest of the kit.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 240 }],
-    note: "Fortitude: Momentum stacks (gained on Heavy ATK, Tactical Strike, or Windqueller use, cap 2) that Emerald Storm: Finale consumes entirely on cast, each stack giving Finale's OWN DMG Multiplier +120% (up to +240% at 2 stacks) — modeled at the 2-stack max case per the audit comment's own convention. The real per-stack/conditional mechanic (0/120/240 depending on Momentum at cast time) isn't modeled. Finale isn't used in her real CHARACTER_ROTATIONS (which stays under the 30-Resolve Lance of Qingloong branch), so this block is present but does not fire in the standard rotation.",
+    effects: [{ stat: 'totalMult', value: 240, scopedToBlockId: 'jiyan.forte.emerald-storm-finale' }],
+    note: "Fortitude: Momentum stacks (gained on Heavy ATK, Tactical Strike, or Windqueller use, cap 2) that Emerald Storm: Finale consumes entirely on cast, each stack giving Finale's OWN DMG Multiplier +120% (up to +240% at 2 stacks) — modeled at the 2-stack max case per the audit comment's own convention, scoped to a Finale damage block (jiyan.forte.emerald-storm-finale) that does not currently exist since Finale isn't used in the real CHARACTER_ROTATIONS. The real per-stack/conditional mechanic (0/120/240 depending on Momentum at cast time) isn't modeled.",
   },
 ];

@@ -1719,6 +1719,71 @@ Added to the completed-characters list above: **Hiyuki**.
 
 ---
 
+**2026-09-04 — Jiyan full 9-dimension re-audit (independent re-derivation, not trusting prior "already audited" claims).**
+
+Per explicit instruction, re-derived Jiyan's kit from scratch directly off `Characters data dump/Jiyan/Jiyan.md`
+(a fresh Prydwen dump) — segmented every move/buff/stack mechanic independently before comparing to
+`app/src/data/characters.js` or `jiyan.blocks.js`, rather than trusting the dump file's own embedded
+"App Data Comparison" section (which itself is prior-session output living inside the dump, not a
+neutral primary source — treated as untrusted, not as ground truth).
+
+Independent re-derivation of all 9 dimensions:
+1. **SKILL_MULTIPLIERS** — matched the dump exactly for every move, with one real discrepancy: Dodge
+   Counter was `'125.84%×2'` in code vs `'125.85%×2'` in the dump's own Lv.10 multiplier table. Fixed
+   (cosmetic/no live DPS impact — Dodge Counter isn't in any rotation step or engine block — but a
+   real data-accuracy bug per the "fix every real bug" rule).
+2. **CHARACTER_ROTATIONS** — matched the dump's Burst Combo sequence (Echo → Intro → Liberation:
+   Prelude → Heavy: Lance P1 (interrupt w/ Skill) → Skill → Heavy: Lance ×2 (full 3-part) → Skill →
+   Outro) exactly. No changes.
+3. **RESONANCE_CHAIN_DATA** — S1-S6 all matched the dump's node text and numbers exactly (S1 zeroed
+   utility, S2 atkPct 28, S3 critRate/critDmg 16/32, S4 heavyDmg 25 team-wide, S5 split totalMult
+   120 + atkPct 45 stack, S6 totalMult 240 2-stack-max). No changes.
+4. **CHAR_BUFF_TABLE** — correctly empty (`outroBuffs/libBuffs/selfBuffs/debuffs: []`); all real
+   buff/proc mechanics are modeled in `jiyan.blocks.js` instead, consistent with this file's
+   established convention. No changes.
+5. **dmgFocus** — `['Heavy ATK', 'Skill']` matches the dump's own Damage Profile (Heavy 81.7%
+   dominant, Skill 8.9% real second contributor, Liberation a genuine 0% since both Liberation-slot
+   casts are "considered Heavy Attack DMG" per kit text). No changes.
+6. **weapon data** — `bestWeapon: 'Verdant Summit'`, `weaponAlts` (Thunderflare Dominion, Ages of
+   Harvest / Aureate Zenith, Autumntrace / Broadblade of Night) match the dump's Build section
+   ranking exactly. No changes.
+7. **echo data** — `bestEchoes: ['Nightmare: Kelpie', 'Windward Pilgrimage 5pc']` matches the dump's
+   Best Echo Set section (Windward Pilgrimage as primary, Nightmare: Kelpie as best main-slot echo).
+   No changes.
+8. **engine-block parity** — segmenting the dump's kit independently (Intro, Lance of Qingloong ×3,
+   Windqueller ×2, Outro Discipline as the real damage-producing blocks; S2-S6 chain nodes; S1 and
+   Emerald Storm: Finale correctly absent since Finale never fires in the real rotation) against
+   `jiyan.blocks.js` found **one real, live bug**: `jiyan.chain.s6` (Fortitude, "each stack consumed
+   granting Finale's OWN DMG Multiplier +120%, up to +240% at 2 stacks") was `trigger:{type:'passive'}`
+   with a `totalMult: 240` effect and **no `scopedToBlockId`**. `resolveHitComposedDps.js`'s passive-
+   block loop applies an effect to every hit block unless `effect.scopedToBlockId` names one — with
+   none set, this was inflating ALL of Jiyan's damage (Intro, every Lance of Qingloong rep, both
+   Windqueller casts, Outro Discipline) by +240% totalMult whenever S6 is selected, not just Finale's
+   own multiplier as the kit text requires. A prior 2026-09-03 comment on this exact block claimed
+   "no live DPS impact today" — that claim was **wrong**; passive effects are always active regardless
+   of whether the scoped-to move is ever cast, only an *unscoped* passive with no target block is
+   inert. Same bug class as the Jinhsi element-scoping bug: an effect meant for one named move leaking
+   to the whole kit for want of a scope. Fixed by adding
+   `scopedToBlockId: 'jiyan.forte.emerald-storm-finale'` (matching this file's own id convention) —
+   this correctly makes S6 inert today (Finale has no damage block since it's never cast in the real
+   rotation) instead of leaking into the rest of the kit, and will correctly engage if a Finale block
+   is ever added.
+9. **icons** — `SKILL_ICONS.Jiyan` and `CHAIN_NODE_ICONS.Jiyan` cover every move name referenced by
+   SKILL_MULTIPLIERS/CHARACTER_ROTATIONS and all 6 chain nodes, reusing the shared generic Broadblade
+   icon where no unique art exists (Lone Lance/Standard/Lance of Qingloong) per established
+   convention. No changes.
+
+2 real bugs found and fixed (1 cosmetic data-accuracy typo, 1 live unscoped-totalMult-leak bug
+confirmed via a before/after test — reverting the fix reproduces a failing test where S6's damage
+total changes even though no Finale block exists to legitimately consume it). 2 new tests added to
+`triggerEngine-jiyan.test.js`. Full suite green: 1468/1468.
+
+Jiyan stays on the completed-characters list above (already listed from the original 2026-08-31/09-03
+pass); this entry documents the independent 2026-09-04 re-derivation per explicit no-trust-prior-audit
+instruction.
+
+---
+
 ## How to add to this file
 
 Same convention as the file it replaces: when an audit turns up a real,

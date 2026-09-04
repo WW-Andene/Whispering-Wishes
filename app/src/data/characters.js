@@ -4319,7 +4319,7 @@ const SKILL_MULTIPLIERS = {
     ['Heavy ATK', 'Lance of Qingloong 1-3', '65.52%×8 → 61.55%×8 → 66.76%×8', 'Qingloong Mode Heavy ATK replacement (10s duration, 16s CD, 125 Energy cost); 3-part combo, each part hits 8×; counted as Heavy ATK DMG.'],
     ['Mid-air', 'Plunging Attack + Follow-up', '123.26%+155.66%'],
     ['Mid-air', 'Banner of Triumph', '79.52%', 'Extra mid-air follow-up, only usable right after Windborne Strike or an airborne Windqueller.'],
-    ['Dodge Counter', 'Standard', '125.84%×2'],
+    ['Dodge Counter', 'Standard', '125.85%×2'], // fixed 2026-09-04 (Phase A audit): was 125.84%, source (Jiyan dump, Lv.10 multiplier table) reads 125.85%.
     ['Skill', 'Windqueller', '106.36%×4', '7s cooldown; at 30+ Resolve consumes 30 Resolve for +20% DMG outside Qingloong Mode; free +20% DMG (no Resolve cost) while in Qingloong Mode.'],
     ['Forte', 'Emerald Storm: Finale', '142.91%×2+428.73%', 'At 30+ Resolve, Liberation consumes 30 Resolve to cast Finale instead of Prelude (counted as Heavy ATK DMG; castable mid-air at low altitude).'],
     ['Liberation', 'Emerald Storm: Prelude', 'No direct DMG', 'Deals no direct DMG below 30 Resolve — only triggers Qingloong Mode (10s, 16s CD, 125 Energy cost). See "Lance of Qingloong 1-3" (Heavy ATK) for the actual damage dealt during Qingloong Mode, and "Emerald Storm: Finale" (Forte) for the 30+ Resolve branch.'],
