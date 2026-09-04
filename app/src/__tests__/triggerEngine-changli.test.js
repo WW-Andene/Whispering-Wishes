@@ -55,10 +55,15 @@ describe('triggerEngine parity — Changli', () => {
     expect(fired.has('changli.heavy.standard')).toBe(true);
   });
 
-  it("Sweeping Force (Inherent Skill, added 2026-09-04, dimension 8: was entirely unmodeled) grants Fusion DMG +20% and DEF Ignore +15%", () => {
-    const sf = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.sweeping-force');
-    expect(sf.effects.find(e => e.stat === 'elemDmg').value).toBe(20);
-    expect(sf.effects.find(e => e.stat === 'defIgnore').value).toBe(15);
+  it("Sweeping Force (Inherent Skill, added 2026-09-04, dimension 8: was entirely unmodeled) grants Fusion DMG +20% and DEF Ignore +15%, scoped to only Forte Heavy/Liberation (fixed same day — was unscoped, over-crediting 100% of her damage since elemDmg/defIgnore aren't category-gated)", () => {
+    const forte = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.sweeping-force-forte');
+    expect(forte.effects.every(e => e.scopedToBlockId === 'changli.forte.flaming-sacrifice')).toBe(true);
+    expect(forte.effects.find(e => e.stat === 'elemDmg').value).toBe(20);
+    expect(forte.effects.find(e => e.stat === 'defIgnore').value).toBe(15);
+    const lib = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.sweeping-force-liberation');
+    expect(lib.effects.every(e => e.scopedToBlockId === 'changli.liberation.radiance-of-fealty')).toBe(true);
+    expect(lib.effects.find(e => e.stat === 'elemDmg').value).toBe(20);
+    expect(lib.effects.find(e => e.stat === 'defIgnore').value).toBe(15);
   });
 
   it('True Sight: Conquest/Charge (added 2026-09-04, dimension 8: previously had no block at all) fire all 4 real casts, each with its own scoped Secret Strategist bonus matching the stacks held at cast', () => {

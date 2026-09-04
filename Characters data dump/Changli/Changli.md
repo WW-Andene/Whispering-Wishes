@@ -282,7 +282,12 @@ top-2-by-% ordering; `CHARACTER_ROTATIONS['Changli']`'s 6 steps all resolve clea
 4. Dimension 8 (kit-component wiring): both Inherent Skills were entirely unmodeled — no block, no
    mention anywhere in `changli.blocks.js`. **Sweeping Force** (+20% Fusion DMG Bonus, +15% DEF Ignore
    on Forte Heavy/Liberation casts) added as `changli.inherent.sweeping-force`, same conditional-passive
-   pattern as her own S1/S6 chain nodes (both trigger casts are real rotation steps). **Secret
+   pattern as her own S1/S6 chain nodes (both trigger casts are real rotation steps) — **then caught and
+   fixed same-day**, doing a rotation walkthrough sanity check: unlike s1's skillDmg/heavyDmg (category-
+   gated), elemDmg/defIgnore aren't category-gated at all, so the original unscoped-passive version was
+   boosting 100% of her Fusion damage instead of just those 2 casts. Split into
+   `changli.inherent.sweeping-force-forte`/`-liberation`, each `scopedToBlockId`-scoped to its own real
+   cast. **Secret
    Strategist** (+5% Fusion DMG per Enflamement stack held on True Sight: Conquest/Charge cast) was also
    fully modeled this same pass, once its real blocker was actually engineering effort rather than
    missing data: traced her own detailed Standard Rotation text move-by-move to get the exact stack count

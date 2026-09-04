@@ -157,15 +157,31 @@ export const CHANGLI_BLOCKS = [
   // ── Inherent Skill (added 2026-09-04, Phase A audit, REMAINING_WORK.md 1c — dimension 8: was entirely
   //    unmodeled, no block existed for either of Changli's 2 Inherent Skills) ──
   {
-    id: 'changli.inherent.sweeping-force',
+    // Fixed 2026-09-04 (same day, same pass): was unscoped passive `elemDmg`/`defIgnore` — unlike s1's
+    // skillDmg/heavyDmg (category-gated, so an unscoped passive only reaches skillDmg/heavyDmg-category
+    // hits), elemDmg/defIgnore have NO category gate at all, so the original version was boosting
+    // ALL of her Fusion damage (100% of her kit) instead of only Forte Heavy/Liberation as the kit text
+    // requires. Split into 2 scopedToBlockId effects, same fix class as Mortefi's S3 critDmg bug.
+    id: 'changli.inherent.sweeping-force-forte',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'elemDmg', value: 20 },
-      { stat: 'defIgnore', value: 15 },
+      { stat: 'elemDmg', value: 20, scopedToBlockId: 'changli.forte.flaming-sacrifice' },
+      { stat: 'defIgnore', value: 15, scopedToBlockId: 'changli.forte.flaming-sacrifice' },
     ],
-    note: 'Sweeping Force: casting Heavy ATK Flaming Sacrifice or Resonance Liberation Radiance of Fealty → Fusion DMG Bonus +20% and 15% target DEF Ignore — conditional to those 2 specific casts (both real rotation steps), kept passive rather than fabricating 2 separate per-skill timers, same pattern as her own s1/s6 chain nodes above.',
+    note: 'Sweeping Force (Forte Heavy half): Flaming Sacrifice → Fusion DMG Bonus +20% and 15% target DEF Ignore, scoped to only this cast — see changli.inherent.sweeping-force-liberation for the Liberation half.',
+  },
+  {
+    id: 'changli.inherent.sweeping-force-liberation',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'elemDmg', value: 20, scopedToBlockId: 'changli.liberation.radiance-of-fealty' },
+      { stat: 'defIgnore', value: 15, scopedToBlockId: 'changli.liberation.radiance-of-fealty' },
+    ],
+    note: 'Sweeping Force (Liberation half): Radiance of Fealty → Fusion DMG Bonus +20% and 15% target DEF Ignore, scoped to only this cast.',
   },
 
   // ── True Sight: Conquest/Charge (added 2026-09-04, dimension 8: previously had NO block at all —
