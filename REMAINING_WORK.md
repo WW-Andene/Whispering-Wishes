@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki — added 2026-09-03/04, first
-thirty-one characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno — added 2026-09-03/04, first
+thirty-two characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -281,6 +281,46 @@ Energized Pounce/Rebound are explicitly "counted as Basic Attack DMG"
 per kit text, not Skill. Neither the dump's "Rotation" tips text nor its
 Standard Rotation mentions casting base (non-Energized) Pounce/Rebound.
 Not added to `dmgFocus` — flagged as unattributed rather than guessed.
+
+**Iuno pass (2026-09-04)**: independently re-verified all 9 dimensions
+against `Characters data dump/Iuno/Iuno.md` (a genuine fresh re-read, not
+trusting the file's own extensive prior-audit comments). Most of the file
+was already accurate (SKILL_MULTIPLIERS values, CHAR_BUFF_TABLE, dmgFocus,
+weapon/echo data, icons all checked out). 3 real bugs found and fixed:
+1. **CHARACTER_ROTATIONS (dimension 2, bug class f)** — the modeled
+   rotation cast Arc Beyond the Edge only once, but the dump's own
+   "Standard Sub DPS Rotation" explicitly casts it twice ("Arc Beyond the
+   Edge ×2", 2 charges) and her own Sentience math only balances with both
+   charges spent (100-point bar: 1 full Basic chain @ 50 + 2 Skill charges
+   @ 25 each). Added a 2nd consecutive Arc Beyond the Edge rotation step —
+   silently dropped roughly half of a real, non-trivial rotation
+   component's damage before this fix.
+2. **Engine block S3 chain node (dimension 8, bug class b/c — category
+   leak)** — `iuno.chain.s3` used a bare, unscoped `libDmg: 65` effect.
+   S3's own kit text names exactly 3 moves (Moonbow Basic ATK / Arc Beyond
+   the Edge / Moonbow Dodge Counter), but `libDmg` is a damage-CATEGORY
+   stat that several OTHER real blocks also carry (`iuno.liberation.beneath-lunar-tides`
+   the Ultimate, `iuno.heavy.flux-moonbow`, `iuno.heavy.absolute-fullness`)
+   despite none of them being named by S3's text — the unscoped effect was
+   silently amplifying the Ultimate/Flux/Absolute Fullness damage by +65%
+   too. Split into 2 `scopedToBlockId`-scoped effects covering only the 2
+   blocks that actually exist for S3's named moves (Moonbow Dodge Counter
+   has no block since it's unused in the modeled rotation).
+3. **SKILL_MULTIPLIERS Outro row note (dimension 1, stale text)** — the
+   row's own note still said "for 10s" while CHAR_BUFF_TABLE,
+   CHARACTER_ROTATIONS, the character `desc`, and the dump itself all
+   correctly say 14s (a prior pass fixed the real 3 but missed this 4th
+   copy of the same fact) — corrected.
+S6's `libDmg: 1600` was checked against the same category-leak concern but
+confirmed correct as-is: it's a `cast`-triggered, no-duration ("instant")
+buff, which `resolveHitComposedDps.js`'s `instantCastBuffBlocks` machinery
+only applies to hits fired within the SAME rotation step as the triggering
+cast — since casting Absolute Fullness is its own isolated rotation step
+(no other damage block fires in that same step), it does not leak onto any
+other block despite being an unscoped category stat. 5 new tests added to
+`triggerEngine-iuno.test.js` (Arc Beyond the Edge cast-count, S3 scoping
+verified via a with/without-block damage diff, SKILL_MULTIPLIERS note
+text). Full suite: 1467 tests passing.
 
 **Rover: Spectro pass (2026-09-03)**: her `Characters data dump/` already
 had 6 of 8 dimensions verified clean from an earlier pass (SKILL_MULTIPLIERS,

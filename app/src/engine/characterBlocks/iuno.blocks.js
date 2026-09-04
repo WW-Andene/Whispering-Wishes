@@ -128,8 +128,21 @@ export const IUNO_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 65 }],
-    note: 'While in Lunar Cycle, DMG dealt by Moonbow Basic ATK/Arc Beyond the Edge/Moonbow Dodge Counter Amplified by 65% (confirmed exact, all three are the game\'s own Resonance Liberation DMG-tagged moves) — kept passive, applies to the corresponding blocks above.',
+    // Bug fixed 2026-09-04 (Phase A audit): was a bare category-wide `libDmg: 65` effect. S3's own kit
+    // text names exactly 3 moves (Moonbow Basic ATK / Arc Beyond the Edge / Moonbow Dodge Counter) — but
+    // 'libDmg' is a damage-CATEGORY stat (see resolveHitComposedDps.js's `categoryStat`), and several
+    // OTHER real blocks also carry `category: 'libDmg'` despite not being named by S3's text at all:
+    // iuno.liberation.beneath-lunar-tides (the Ultimate), iuno.heavy.flux-moonbow, and
+    // iuno.heavy.absolute-fullness. An unscoped libDmg:65 here silently amplified all of those too —
+    // the exact category-leak shape described for bare totalMult, just via the category-stat pool
+    // instead. Split into per-block `scopedToBlockId` effects covering only the 2 blocks that actually
+    // exist for the named moves (iuno.basic.moonbow, iuno.skill.arc-beyond-the-edge); Moonbow Dodge
+    // Counter has no engine block since it's unused in the modeled rotation, so no 3rd effect to add.
+    effects: [
+      { stat: 'libDmg', value: 65, scopedToBlockId: 'iuno.basic.moonbow' },
+      { stat: 'libDmg', value: 65, scopedToBlockId: 'iuno.skill.arc-beyond-the-edge' },
+    ],
+    note: 'While in Lunar Cycle, DMG dealt by Moonbow Basic ATK/Arc Beyond the Edge/Moonbow Dodge Counter Amplified by 65% (confirmed exact, all three are the game\'s own Resonance Liberation DMG-tagged moves) — scoped to only the 2 corresponding blocks that exist (Moonbow Dodge Counter is real but unused in the modeled rotation, so has no block to scope to).',
   },
   // S4 correctly has NO block — Absolute Fullness grants a Shield = 160% of Iuno's ATK to the WHOLE
   // TEAM for 30s (not passed to the incoming Resonator on swap) — purely defensive, ZERO DPS component.
