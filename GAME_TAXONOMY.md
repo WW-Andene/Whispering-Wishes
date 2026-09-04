@@ -78,9 +78,12 @@ Game
 │       │   └── Substats
 │       ├── Skill Label
 │       ├── Skill Description
-│       └── Echo Skill
-│           ├── Damage
-│           └── Buff
+│       ├── Echo Skill
+│       │   ├── Damage
+│       │   └── Buff
+│       └── Assets
+│           ├── Icon
+│           └── Monster Icon
 │
 ├── Enemy
 │   └── <Name>
