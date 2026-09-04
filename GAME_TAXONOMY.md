@@ -26,16 +26,19 @@ Game
 │       ├── Rarity
 │       ├── Element
 │       ├── Stats
-│       ├── Kit
+│       │   ├── Base          (HP / ATK / DEF at Lv.90 — the character's own innate values)
+│       │   └── Growth Curve  (per-level scaling, if modeled distinctly from Base)
+│       ├── Kit               (corrected: Echo Skill and Coordinated ATK removed — those are
+│       │                      DAMAGE CATEGORIES a kit move can be tagged with for buff-matching,
+│       │                      not real move slots the character has. A character's Kit is only
+│       │                      the moves below.)
 │       │   ├── Basic ATK
 │       │   ├── Heavy ATK
 │       │   ├── Skill
 │       │   ├── Liberation
 │       │   ├── Forte
 │       │   ├── Intro
-│       │   ├── Outro
-│       │   ├── Coordinated ATK
-│       │   └── Echo Skill
+│       │   └── Outro
 │       ├── Resonance Chain
 │       │   ├── S1
 │       │   ├── S2
@@ -43,15 +46,25 @@ Game
 │       │   ├── S4
 │       │   ├── S5
 │       │   └── S6
+│       ├── Rotation          (the realistic-optimal play order derived from Kit + Resonance
+│       │                      Chain — NOT a Build sub-item, since it depends on Kit/Chain
+│       │                      directly and doesn't reference the Weapon/Echo/Team catalogs
+│       │                      the way Build's children do)
 │       └── Build
-│           ├── Weapon    → (ref: Weapon catalog)
-│           ├── Echoes    → (ref: Echo catalog)
+│           ├── Weapon        → (ref: Weapon catalog)
+│           │   └── Signature  (the one Weapon entry designed for this specific Character —
+│           │                   a flag/ref on a Weapon.<Name> node, not a separate catalog)
+│           ├── Echoes        → (ref: Echo catalog)
 │           └── Team
+│               ├── Members    → (refs: 2 other Characters, 3-member team)
+│               └── Rotation   (the TEAM-level play order — distinct from a single Character's
+│                                own solo Rotation above; who's on-field when, swap timing)
 │
 ├── Weapon
 │   └── <Name>
 │       ├── Rarity
 │       ├── Type            (Sword / Broadblade / Pistols / Gauntlets / Rectifier)
+│       ├── Signature Of    → (ref: Character, or null — most weapons aren't anyone's signature)
 │       ├── Stats
 │       │   ├── Main        (baseAtk)
 │       │   └── Sub         (fixed passive-scaling substat, e.g. Crit Rate/Crit DMG/Energy Regen)
@@ -90,8 +103,13 @@ Game
     └── DEF Ignore / DEF Shred / RES Shred / Deepen
 ```
 
-Open question (not yet resolved): whether Buff/Debuff should be siblings of Damage,
-or a subset of it.
+**Resolved: Buff/Debuff stay siblings of Damage, not a subset.** Damage is a
+description of a HIT (what category a move's own output falls into); Buff/Debuff
+describe a STAT MODIFIER (something that changes a future hit's numbers). A single
+Kit move commonly does both at once — e.g. a Liberation cast that deals `skillDmg`
+AND grants a team `atkPct` buff — so nesting one inside the other would force an
+artificial parent/child relationship between two things that just co-occur, not
+things where one contains the other.
 
 ### Character block references, not duplication
 A move under `Kit` doesn't hardcode a stat string — it references entries under
@@ -114,17 +132,27 @@ a teammate-ally-action buff — whose action triggered it?).
 
 ```
 Engine
-├── Orchestration
-├── Composition
-├── Triggers
-├── Schema
-└── Shared
+├── Orchestration    (rotationOrderSearch.js — team-level rotation-order search)
+├── Composition      (resolveHitComposedDps.js, resolveHitComposedTeamDps.js,
+│                     resolveSimulatedRotation.js, resolveSimulatedTeamRotation.js,
+│                     rotationSimulator.js — turns a rotation + kit into a DPS number)
+├── Triggers         (triggerEngine.js, blockWindows.js, coordinatedAtk.js,
+│                     energyCycleGating.js, sequenceGating.js, tieredStacking.js —
+│                     WHEN a block fires)
+├── DoT              (dotFormulas.js, dotReactions.js, dotReactionsFromBlocks.js —
+│                     Tune Break/Hack Response aggregate-rate damage, still the one
+│                     genuinely unported mechanic per ENGINE_MERGE_INVESTIGATION.md)
+├── Schema           (buffSource.js, knownCategories.js, triggerBlocks.schema.js,
+│                     validateBlock.js — the registries/validators this whole
+│                     taxonomy is meant to feed)
+├── Shared           (buffAccumulation.js, combatMath.js, roleHelpers.js,
+│                     skillMultiplierParser.js — pure functions with no character data)
+└── Projection       (registry.js, statPanelProjection.js — turns composed engine
+                      output into a specific UI's shape, e.g. the stat panel)
 ```
 
-Already partially built in code as of this pass — see `app/src/engine/`
-(`orchestration/`, `composition/`, `triggers/`, `dot/`, `shared/`, `schema/`,
-`projection/`). Real folder contents, not yet reconciled with this diagram's
-5-item list (`dot/` and `projection/` exist in code but aren't listed above yet).
+Reconciled against the real folder contents of `app/src/engine/` as of this pass
+(7 folders, not 5 — `dot/` and `projection/` were missing from the previous draft).
 
 ---
 
