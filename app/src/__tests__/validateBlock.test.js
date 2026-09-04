@@ -1,8 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { validateBlock, expectValidBlockFile } from '../engine/schema/validateBlock.js';
-import { checkCategory, KNOWN_CATEGORIES } from '../engine/schema/knownCategories.js';
+import { validateBlock, expectValidBlockFile } from '../engine/schema/validate.js';
+import { checkCategory, KNOWN_CATEGORIES } from '../engine/schema/categories.js';
 import { checkBuffSource, BUFF_SOURCES } from '../engine/schema/buffSource.js';
-import { BLOCKS_BY_CHARACTER } from '../engine/characterBlocks/index.js';
 
 describe('buffSource.checkBuffSource', () => {
   it('accepts every declared source', () => {
@@ -17,13 +16,13 @@ describe('buffSource.checkBuffSource', () => {
   });
 });
 
-describe('knownCategories.checkCategory', () => {
+describe('categories.checkCategory', () => {
   it('accepts every category already in real use across characterBlocks/', () => {
     Object.keys(KNOWN_CATEGORIES).forEach(cat => {
       expect(checkCategory(cat).valid).toBe(true);
     });
   });
-  it('rejects a typo\'d category (wrong casing/suffix)', () => {
+  it("rejects a typo'd category (wrong casing/suffix)", () => {
     expect(checkCategory('skilDmg').valid).toBe(false);
     expect(checkCategory('Skilldmg').valid).toBe(false);
   });
@@ -34,91 +33,69 @@ describe('knownCategories.checkCategory', () => {
   });
 });
 
-describe('validateBlock — schemaVersion 1 (today\'s shape, absent/undefined version)', () => {
-  it('accepts a minimal today-shaped block with no errors', () => {
-    const block = { id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', trigger: { type: 'cast', on: 'Intro:Feint Shot' } };
-    const { errors } = validateBlock(block, 'Aalto');
-    expect(errors).toEqual([]);
-  });
-  it('does not require section/damage.basis on a v1 block', () => {
-    const block = { id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', trigger: { type: 'cast' }, damage: { hits: [], category: 'skillDmg' } };
-    const { errors } = validateBlock(block, 'Aalto');
-    expect(errors).toEqual([]);
-  });
-  it('errors on a missing id/kind/trigger regardless of version', () => {
-    const { errors } = validateBlock({ source: 'Aalto' }, 'Aalto');
-    expect(errors.length).toBeGreaterThan(0);
-  });
-  it('errors when source does not match the file\'s declared SOURCE', () => {
-    const block = { id: 'aalto.intro.feint-shot', source: 'Wrong Name', kind: 'damage', trigger: { type: 'cast' } };
-    const { errors } = validateBlock(block, 'Aalto');
-    expect(errors.some(e => e.includes('does not match'))).toBe(true);
-  });
-});
-
-describe('validateBlock — schemaVersion 2 (new shape, CI-blocking per §8)', () => {
-  it('requires section on a v2 block', () => {
-    const block = { schemaVersion: 2, id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'buff', trigger: { type: 'cast' } };
+describe('validateBlock — the one schema shape', () => {
+  it('requires section on every block', () => {
+    const block = { id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'buff', trigger: { type: 'cast' } };
     const { errors } = validateBlock(block, 'Aalto');
     expect(errors.some(e => e.includes('section'))).toBe(true);
   });
-  it('requires damage.category (registered) and damage.basis on a v2 damage block', () => {
+  it('requires damage.category (registered) and damage.basis on a damage block', () => {
     const block = {
-      schemaVersion: 2, id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', section: 'Intro',
+      id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', section: 'Intro',
       trigger: { type: 'cast' }, damage: { hits: [], category: 'skilDmg' },
     };
     const { errors } = validateBlock(block, 'Aalto');
     expect(errors.some(e => e.includes('category'))).toBe(true);
     expect(errors.some(e => e.includes('basis'))).toBe(true);
   });
-  it('accepts a fully-compliant v2 damage block', () => {
+  it('accepts a fully-compliant damage block', () => {
     const block = {
-      schemaVersion: 2, id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', section: 'Intro',
+      id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', section: 'Intro',
       trigger: { type: 'cast' }, damage: { hits: [], category: 'skillDmg', basis: 'ATK' },
     };
     const { errors } = validateBlock(block, 'Aalto');
     expect(errors).toEqual([]);
   });
-  it('requires a valid source on every effect of a v2 buff block', () => {
+  it('requires a valid source on every effect of a buff block', () => {
     const block = {
-      schemaVersion: 2, id: 'aalto.chain.s1', source: 'Aalto', kind: 'buff', section: 'Chain',
-      trigger: { type: 'passive' }, effects: [{ statId: 'aeroDmg', value: 30, target: 'team' }],
+      id: 'aalto.chain.s1', source: 'Aalto', kind: 'buff', section: 'Chain',
+      trigger: { type: 'passive' }, effects: [{ stat: 'elemDmg', value: 30 }],
     };
     const { errors } = validateBlock(block, 'Aalto');
     expect(errors.some(e => e.includes('effects[0].source invalid'))).toBe(true);
   });
-  it('accepts a fully-compliant v2 buff block with a valid source', () => {
+  it('accepts a fully-compliant buff block with a valid source', () => {
     const block = {
-      schemaVersion: 2, id: 'aalto.chain.s1', source: 'Aalto', kind: 'buff', section: 'Chain',
-      trigger: { type: 'passive' }, effects: [{ statId: 'aeroDmg', value: 30, target: 'team', source: 'echo' }],
+      id: 'aalto.chain.s1', source: 'Aalto', kind: 'buff', section: 'Chain',
+      trigger: { type: 'passive' }, effects: [{ stat: 'elemDmg', value: 30, source: 'echo' }],
     };
     const { errors } = validateBlock(block, 'Aalto');
     expect(errors).toEqual([]);
   });
+  it('errors on a missing id/kind/trigger', () => {
+    const { errors } = validateBlock({ source: 'Aalto' }, 'Aalto');
+    expect(errors.length).toBeGreaterThan(0);
+  });
+  it("errors when source does not match the file's declared SOURCE", () => {
+    const block = { id: 'aalto.intro.feint-shot', source: 'Wrong Name', kind: 'damage', section: 'Intro', trigger: { type: 'cast' }, damage: { hits: [], category: 'skillDmg', basis: 'ATK' } };
+    const { errors } = validateBlock(block, 'Aalto');
+    expect(errors.some(e => e.includes('does not match'))).toBe(true);
+  });
 });
 
-describe('expectValidBlockFile — the shared test-utility helper (§8 item 3)', () => {
+describe('expectValidBlockFile — the shared test-utility helper', () => {
   it('throws for an invalid block array', () => {
     expect(() => expectValidBlockFile([{ source: 'X' }], 'X')).toThrow();
   });
-  it('does not throw for a valid v1 block array', () => {
-    const blocks = [{ id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', trigger: { type: 'cast' } }];
+  it('does not throw for a fully-compliant block array', () => {
+    const blocks = [{
+      id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', section: 'Intro',
+      trigger: { type: 'cast' }, damage: { hits: [], category: 'skillDmg', basis: 'ATK' },
+    }];
     expect(() => expectValidBlockFile(blocks, 'Aalto')).not.toThrow();
   });
-  // Real-data smoke test, read-only: confirms the validator's v1 (warn-only) path doesn't choke on
-  // every already-existing character's real block file — does NOT assert every real block is
-  // v2-compliant (they're not migrated in this pass) or that the validator/registry cover every
-  // real id/category shape perfectly; a v1 block failing an id/section check only ever produces a
-  // *warning*, so this loop intentionally only asserts on `errors`, matching validateBlock's own
-  // documented v1 contract above.
-  it('produces zero hard errors for every currently-loaded character block file (id/kind/trigger present, source matches)', () => {
-    const allErrors = [];
-    Object.entries(BLOCKS_BY_CHARACTER).forEach(([name, blocks]) => {
-      (blocks || []).forEach((block, i) => {
-        const { errors } = validateBlock(block, block?.source);
-        errors.forEach(e => allErrors.push(`${name}[${i}]: ${e}`));
-      });
-    });
-    expect(allErrors).toEqual([]);
-  });
+  // NOTE: no smoke test against the real characterBlocks/*.blocks.js files here — none of the 57
+  // character files are migrated onto this schema yet (that migration is Layer 4 of the engine
+  // rewrite; see CLAUDE.md / task tracker). Once a character file is migrated it should get its
+  // own expectValidBlockFile() assertion in that character's own test, not a blanket loop here.
 });
