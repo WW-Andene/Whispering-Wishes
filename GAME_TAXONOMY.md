@@ -131,8 +131,8 @@ Game
 │   │   ├── Liberation DMG
 │   │   ├── Echo Skill DMG
 │   │   ├── Coordinated ATK DMG
-│   │   ├── Intro Skill DMG    (not yet real — see note)
-│   │   └── Outro Skill DMG    (not yet real — see note)
+│   │   ├── Intro Skill DMG    (not yet real — no character or Echo Set grants this)
+│   │   └── Outro Skill DMG    (real — granted by Echo Sets Lingering Tunes/Midnight Veil, not any character kit)
 │   ├── DMG Bonus — Element
 │   │   └── (ref: Element list — Glacio/Fusion/Electro/Aero/Spectro/Havoc/Physical)
 │   ├── DMG Bonus — Reaction
