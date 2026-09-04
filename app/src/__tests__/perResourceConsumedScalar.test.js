@@ -5,7 +5,7 @@
 // exact proportion through the shared multiplier chain, at the documented resource cap.
 import { describe, it, expect } from 'vitest';
 import { sumHitsAtkPct } from '../engine/math/hitParser.js';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { DENIA_BLOCKS } from '../engine/characterBlocks/denia.blocks.js';
 import { CHISA_BLOCKS } from '../engine/characterBlocks/chisa.blocks.js';
 

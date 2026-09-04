@@ -5,7 +5,7 @@
 // universal 'echo-skill-cast' action tag for — no new tag needed, just wiring this node to the same
 // existing mechanism (fires directly off any step's own {type:'Echo'} shape).
 import { describe, it, expect } from 'vitest';
-import { resolveSimulatedTeamRotation } from '../engine/composition/resolveSimulatedTeamRotation.js';
+import { resolveSimulatedTeamRotation } from '../engine/resolver/dps/resolveSimulatedTeamRotation.js';
 import { GALBRENA_BLOCKS } from '../engine/characterBlocks/galbrena.blocks.js';
 
 describe('Galbrena chain.s4 — ally-action retrofit', () => {

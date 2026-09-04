@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/triggers/triggerEngine.js
+// WHISPERING WISHES — engine/resolver/gating/triggerEngine.js
+// [RESOLVER · GATING] The core trigger/condition resolver every other module here builds on.
 // Resolves a set of TriggerBlocks (see triggerBlocks.schema.js) for a given team/
 // rotation context into stat contributions, using the SAME applyBuff() stat switch
 // calcEngine.js already uses — so a converted character's blocks feed the existing
@@ -11,7 +12,7 @@
 // the parity test in __tests__/triggerEngine-rover-electro.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { applyBuff } from '../../features/teams/calcEngine.js';
+import { applyBuff } from '../../../features/teams/calcEngine.js';
 
 /**
  * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks

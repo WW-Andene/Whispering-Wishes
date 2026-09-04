@@ -11,8 +11,8 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createStats } from '../features/teams/calcEngine.js';
-import { resolveTriggerBlocks } from '../engine/triggers/triggerEngine.js';
-import { RotationSimulator, simulateTeamRotation, buildTeamSteps } from '../engine/composition/rotationSimulator.js';
+import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
+import { RotationSimulator, simulateTeamRotation, buildTeamSteps } from '../engine/resolver/dps/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';

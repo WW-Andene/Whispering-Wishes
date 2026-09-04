@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/projection/registry.js
+// WHISPERING WISHES — engine/resolver/projection/registry.js
+// [RESOLVER · PROJECTION] Registrable-projection mechanism.
 // A small registrable-projection mechanism (ENGINE_ARCHITECTURE_PROPOSAL.md v2 §6):
 // each projection turns composed engine output into one specific UI surface's shape.
 // `projectMainDpsStatPanel` registers itself under 'mainDpsStatPanel' below; a future

@@ -11,8 +11,8 @@
  * real character block sets for the passive/per-hit-scoped/real-rotation end-to-end cases.
  */
 import { describe, it, expect } from 'vitest';
-import { resolveSimulatedRotation } from '../engine/composition/resolveSimulatedRotation.js';
-import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveSimulatedRotation } from '../engine/resolver/dps/resolveSimulatedRotation.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blocks.js';
 import { SHOREKEEPER_BLOCKS } from '../engine/characterBlocks/shorekeeper.blocks.js';

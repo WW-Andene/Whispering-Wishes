@@ -1,5 +1,5 @@
 // PHASE3_PLAN.md Stage 4, step 3/6: calcTeamStats.js's DOT computation now composes via
-// engine/dot/dotReactions.js's resolveDotReactionDps instead of calling calcFrazzleDmg/calcErosionDmg/
+// engine/resolver/dot/dotReactions.js's resolveDotReactionDps instead of calling calcFrazzleDmg/calcErosionDmg/
 // calcFusionBurstDmg/calcElectroFlareDmg/calcTuneBreakDmg individually — a pure plumbing swap (same
 // underlying calcEngine.js functions, same inputs), so this proves the swap is behavior-preserving:
 // hasFrazzle/hasErosion/hasFusionBurst/hasElectroFlare/dotDps/dmgSources all still come out sane.

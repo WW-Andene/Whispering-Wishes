@@ -12,8 +12,8 @@
 // allMembersConverted branch now reads and applies totalMultBonus into its score.
 import { describe, it, expect } from 'vitest';
 import { createStats, applyBuff } from '../features/teams/calcEngine.js';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
-import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { resolveHitComposedTeamDps } from '../engine/resolver/dps/resolveHitComposedTeamDps.js';
 
 describe('totalMult architecture-bug fix (the engine-merge history (git log))', () => {
   it('createStats() initializes totalMult to 0 and applyBuff() routes it correctly', () => {

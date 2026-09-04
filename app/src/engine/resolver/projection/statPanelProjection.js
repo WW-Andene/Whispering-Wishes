@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/projection/statPanelProjection.js
+// WHISPERING WISHES — engine/resolver/projection/statPanelProjection.js
+// [RESOLVER · PROJECTION] Main-DPS stat-panel projection.
 // The main-DPS stat-panel projection: turns a fully-converted team's real, per-block
 // time-averaged received stats (resolveSimulatedTeamRotation's output, gear-adjusted)
 // into the decomposed display numbers the Team tab's stat panel shows —
@@ -19,8 +20,8 @@
 // extraction, not an intentional improvement.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult } from '../math/damageFormula.js';
-import { collapseDmgTypeBuckets } from '../math/moveTypeRouting.js';
+import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult } from '../../math/damageFormula.js';
+import { collapseDmgTypeBuckets } from '../../math/moveTypeRouting.js';
 
 /**
  * @param {object} finalStats - resolveSimulatedTeamRotation's real received-stats output for the

@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/orchestration/rotationOrderSearch.js
+// WHISPERING WISHES — engine/resolver/rotationOrder/rotationOrderSearch.js
+// [RESOLVER · ROTATION-ORDER] Best on-field ordering search.
 // PHASE3_PLAN.md Stage 3, item 5/5 (the final gap from Stage 0's coverage table): the engine currently
 // assumes a GIVEN on-field order (buildTeamSteps() just concatenates whatever `members` array it's
 // handed) — it never CHOOSES one. calcTeamStats.js does, via its own rotationTimeline IIFE
@@ -23,8 +24,8 @@
 // Phase 2/3 already built.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { buildTeamSteps, simulateTeamRotation, DEFAULT_STEP_SECONDS } from '../composition/rotationSimulator.js';
-import { buildBlockWindows, activeCountAt } from '../triggers/blockWindows.js';
+import { buildTeamSteps, simulateTeamRotation, DEFAULT_STEP_SECONDS } from '../dps/rotationSimulator.js';
+import { buildBlockWindows, activeCountAt } from '../gating/blockWindows.js';
 
 /**
  * All orderings of `arr`, first-index-preserved as element 0 — same recursive shape

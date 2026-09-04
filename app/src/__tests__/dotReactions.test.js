@@ -1,4 +1,4 @@
-// PHASE3_PLAN.md Stage 3, item 2/5: engine/dot/dotReactions.js composes calcEngine.js's already-correct
+// PHASE3_PLAN.md Stage 3, item 2/5: engine/resolver/dot/dotReactions.js composes calcEngine.js's already-correct
 // DOT-reaction functions around engine-derived inputs. These tests prove the composition is exact
 // (byte-identical to calling the five calcEngine.js functions directly the way calcTeamStats.js does)
 // and that rotTimeFromSteps() matches the sum-of-stepSeconds convention every other engine file uses.
@@ -7,7 +7,7 @@ import {
   calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
   calcResMult, calcDefMult,
 } from '../features/teams/calcEngine.js';
-import { resolveDotReactionDps, rotTimeFromSteps } from '../engine/dot/dotReactions.js';
+import { resolveDotReactionDps, rotTimeFromSteps } from '../engine/resolver/dot/dotReactions.js';
 
 const getEnemyRes = (element) => ({ Spectro: 10, Havoc: 12, Fusion: 8, Electro: 15 }[element] ?? 10);
 

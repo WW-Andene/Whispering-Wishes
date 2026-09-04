@@ -8,7 +8,7 @@ import { calcTeamStats } from '../features/teams/calcTeamStats.js';
 
 describe('calcTeamStats — rotationTimeline order reconciliation (Stage 4 step 4)', () => {
   it('a fully-converted team\'s rotationTimeline order matches a fresh chooseOnFieldOrder call for the same team', async () => {
-    const { chooseOnFieldOrder } = await import('../engine/orchestration/rotationOrderSearch.js');
+    const { chooseOnFieldOrder } = await import('../engine/resolver/rotationOrder/rotationOrderSearch.js');
     const { BLOCKS_BY_CHARACTER } = await import('../engine/characterBlocks/index.js');
     const { CHARACTER_ROTATIONS } = await import('../data/characters.js');
 

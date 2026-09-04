@@ -3,8 +3,8 @@
 // in this schema (the 6 existing categories don't cover "Outro DMG") and was entirely unrepresented.
 import { describe, it, expect } from 'vitest';
 import { createStats, applyBuff } from '../features/teams/calcEngine.js';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { XIANGLI_YAO_BLOCKS } from '../engine/characterBlocks/xianglyao.blocks.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 

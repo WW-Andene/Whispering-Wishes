@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/dot/dotReactions.js
+// WHISPERING WISHES — engine/resolver/dot/dotReactions.js
+// [RESOLVER · DOT] Applies dotFormulas.js's math against a live team/rotation context.
 // PHASE3_PLAN.md Stage 3, item 2/5: closes the "DOT reactions have no engine model at all" gap from
 // Stage 0's coverage table. Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break are ICD-aware,
 // hand-verified-against-the-wiki mechanics that already live correctly in calcEngine.js
@@ -13,13 +14,13 @@
 // from it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { calcResMult } from '../../features/teams/calcEngine.js';
+import { calcResMult } from '../../../features/teams/calcEngine.js';
 import {
   calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
 } from './dotFormulas.js';
-import { CHAR_BUFF_TABLE } from '../../data/characters.js';
+import { CHAR_BUFF_TABLE } from '../../../data/characters.js';
 import { resolveElectroFlareFromBlocks, resolveFusionBurstFromBlocks, resolveErosionFromBlocks, resolveFrazzleFromBlocks } from './dotReactionsFromBlocks.js';
-import { DEFAULT_STEP_SECONDS } from '../composition/rotationSimulator.js';
+import { DEFAULT_STEP_SECONDS } from '../dps/rotationSimulator.js';
 
 /**
  * Derives the whole rotation's total simulated time from a team step list — the same

@@ -29,8 +29,8 @@ import { CHARACTER_DATA, CHARACTER_ROTATIONS } from '../data/characters.js';
 import { WEAPON_DATA } from '../data/weapons.js';
 import { ECHO_SETS } from '../data/echoes.js';
 import { applyFullEchoSet, getWeaponPv } from '../features/teams/calcEngine.js';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { PARITY_CHARACTERS } from './phase3-parityCharacterList.js';
 import GOLDEN from './__fixtures__/phase3-parity-golden.json';
 import STATPANEL_GOLDEN from './__fixtures__/phase3-statpanel-golden.json';
@@ -168,11 +168,11 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 });
 
 // ENGINE_ARCHITECTURE_PROPOSAL.md v2 §5's explicit verification requirement: the main-DPS
-// stat-panel projection (routeTypeBonuses -> engine/projection/statPanelProjection.js's
+// stat-panel projection (routeTypeBonuses -> engine/resolver/projection/statPanelProjection.js's
 // projectMainDpsStatPanel) is a pure relocation, not a redesign — these fields must be
 // byte-identical to their pre-extraction values (captured 2026-09-04, right after the
 // extraction commit, by diffing calcTeamStats() output before/after via `git stash` on
-// calcTeamStats.js + engine/projection/ and confirming an exact JSON diff). Any drift here is a
+// calcTeamStats.js + engine/resolver/projection/ and confirming an exact JSON diff). Any drift here is a
 // bug in the extraction, full stop, not an intentional improvement — unlike
 // EXPECTED_DIVERGENCES above, there is no "documented divergence" escape hatch for this test.
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {

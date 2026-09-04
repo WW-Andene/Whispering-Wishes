@@ -5,9 +5,9 @@
 // (omitting it changes nothing), it only touches libDmg-category hits (a non-Liberation hit at the
 // same instant is untouched), and libUptimeOf()'s own lookup/no-gating-by-default behavior.
 import { describe, it, expect } from 'vitest';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
-import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
-import { libUptimeOf } from '../engine/triggers/energyCycleGating.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { resolveHitComposedTeamDps } from '../engine/resolver/dps/resolveHitComposedTeamDps.js';
+import { libUptimeOf } from '../engine/resolver/gating/energyCycleGating.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 
 const NEUTRAL_ENEMY = { enemyDef: 0, enemyRes: 0 };

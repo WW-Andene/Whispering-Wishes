@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/composition/resolveHitComposedDps.js
+// WHISPERING WISHES — engine/resolver/dps/resolveHitComposedDps.js
+// [RESOLVER · DPS] Per-hit, single-character damage resolver.
 // Stage 1 prototype for the "totalMult → hit-composed DPS" design doc (PHASE2_PLAN.md). Proves the
 // architecture end-to-end for ONE character's own rotation, standalone — NOT wired into
 // calcTeamStats.js, NOT yet extended to team-level cross-character buffs landing on the target
@@ -31,12 +32,12 @@
 // exact equality with the legacy number is explicitly the WRONG verification bar.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../../features/teams/calcEngine.js';
+import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../../../features/teams/calcEngine.js';
 import { simulateRotation } from './rotationSimulator.js';
-import { triggerFired, conditionHolds } from '../triggers/triggerEngine.js';
-import { buildBlockWindows, activeCountAt } from '../triggers/blockWindows.js';
-import { cumulativeTieredValue } from '../triggers/tieredStacking.js';
-import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../triggers/sequenceGating.js';
+import { triggerFired, conditionHolds } from '../gating/triggerEngine.js';
+import { buildBlockWindows, activeCountAt } from '../gating/blockWindows.js';
+import { cumulativeTieredValue } from '../gating/tieredStacking.js';
+import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../gating/sequenceGating.js';
 
 /**
  * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks  One character's own block set.

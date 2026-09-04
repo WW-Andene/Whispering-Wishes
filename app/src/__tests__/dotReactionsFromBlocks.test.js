@@ -8,13 +8,13 @@ import { describe, it, expect } from 'vitest';
 import { calcDefMult, calcResMult, calcElectroFlareDmg, calcFusionBurstDmg, calcErosionDmg, calcFrazzleDmg } from '../features/teams/calcEngine.js';
 import {
   resolveFrazzleFromBlocks, resolveErosionFromBlocks, resolveFusionBurstFromBlocks, resolveElectroFlareFromBlocks,
-} from '../engine/dot/dotReactionsFromBlocks.js';
-import { resolveDotReactionDps } from '../engine/dot/dotReactions.js';
+} from '../engine/resolver/dot/dotReactionsFromBlocks.js';
+import { resolveDotReactionDps } from '../engine/resolver/dot/dotReactions.js';
 import { BULING_BLOCKS } from '../engine/characterBlocks/buling.blocks.js';
 import { DENIA_BLOCKS } from '../engine/characterBlocks/denia.blocks.js';
 import { CIACCONA_BLOCKS } from '../engine/characterBlocks/ciaccona.blocks.js';
 import { ROVER_SPECTRO_BLOCKS } from '../engine/characterBlocks/roverspectro.blocks.js';
-import { filterExclusiveModeBlocks, gateBlocksBySequence } from '../engine/triggers/sequenceGating.js';
+import { filterExclusiveModeBlocks, gateBlocksBySequence } from '../engine/resolver/gating/sequenceGating.js';
 
 const defMult = calcDefMult(800, 0, 0);
 const resMult = calcResMult(10, 0);

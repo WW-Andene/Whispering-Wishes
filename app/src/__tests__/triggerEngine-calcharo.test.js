@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CALCHARO_BLOCKS } from '../engine/characterBlocks/calcharo.blocks.js';
 
 describe('triggerEngine parity — Calcharo', () => {

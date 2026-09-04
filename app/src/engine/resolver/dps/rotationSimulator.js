@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/composition/rotationSimulator.js
+// WHISPERING WISHES — engine/resolver/dps/rotationSimulator.js
+// [RESOLVER · DPS] Rotation-history state machine driving every DPS resolver above.
 // The rotation-history state machine PHASE2_PLAN.md's design question 2 asks for.
 // Everything converted so far (Shorekeeper's cast-scoped S6, Augusta's
 // 'partner-outro-return', Jinhsi's 'windowed-cast') proved its trigger SHAPE is
@@ -21,7 +22,7 @@
 // always has been.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { winningStanceForOwner } from '../triggers/sequenceGating.js';
+import { winningStanceForOwner } from '../gating/sequenceGating.js';
 
 // Not a sourced animation-timing value — a placeholder pace for spacing simulated
 // rotation steps when the caller doesn't supply a real one via `stepSeconds`.

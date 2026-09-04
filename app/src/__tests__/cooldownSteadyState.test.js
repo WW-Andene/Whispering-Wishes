@@ -7,8 +7,8 @@
 // appears once in a much shorter pass (routinely 9-20s). cooldownSteadyState scales such a block's
 // damage down to the sustainable min(1, totalTime/cooldown) fraction.
 import { describe, it, expect } from 'vitest';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
-import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { resolveHitComposedTeamDps } from '../engine/resolver/dps/resolveHitComposedTeamDps.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 
 const NEUTRAL_ENEMY = { enemyDef: 0, enemyRes: 0 };

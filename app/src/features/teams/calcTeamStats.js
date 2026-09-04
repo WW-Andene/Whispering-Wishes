@@ -29,15 +29,15 @@ import {
   applyBuff,
 } from './calcEngine.js';
 import { BLOCKS_BY_CHARACTER } from '../../engine/characterBlocks/index.js';
-import { deriveStepsFromRotation } from '../../engine/composition/rotationSimulator.js';
-import { resolveHitComposedDps } from '../../engine/composition/resolveHitComposedDps.js';
-import { resolveHitComposedTeamDps } from '../../engine/composition/resolveHitComposedTeamDps.js';
-import { resolveSimulatedTeamRotation } from '../../engine/composition/resolveSimulatedTeamRotation.js';
-import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/dot/dotReactions.js';
-import { chooseOnFieldOrder } from '../../engine/orchestration/rotationOrderSearch.js';
-import { coordinatedMultShare } from '../../engine/triggers/coordinatedAtk.js';
-import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/triggers/sequenceGating.js';
-import { projectMainDpsStatPanel } from '../../engine/projection/statPanelProjection.js';
+import { deriveStepsFromRotation } from '../../engine/resolver/dps/rotationSimulator.js';
+import { resolveHitComposedDps } from '../../engine/resolver/dps/resolveHitComposedDps.js';
+import { resolveHitComposedTeamDps } from '../../engine/resolver/dps/resolveHitComposedTeamDps.js';
+import { resolveSimulatedTeamRotation } from '../../engine/resolver/dps/resolveSimulatedTeamRotation.js';
+import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/resolver/dot/dotReactions.js';
+import { chooseOnFieldOrder } from '../../engine/resolver/rotationOrder/rotationOrderSearch.js';
+import { coordinatedMultShare } from '../../engine/resolver/gating/coordinatedAtk.js';
+import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/resolver/gating/sequenceGating.js';
+import { projectMainDpsStatPanel } from '../../engine/resolver/projection/statPanelProjection.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
 // Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
@@ -167,7 +167,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // mixed team, unchanged.
     const allMembersConverted = mems.every(m => BLOCKS_BY_CHARACTER[m.name] && CHARACTER_ROTATIONS[m.name]);
     // Blocks are gated by each member's own owned Resonance Chain sequence (gateBlocksBySequence,
-    // engine/triggers/sequenceGating.js) BEFORE reaching chooseOnFieldOrder/buildTeamSteps — fixed 2026-09-01:
+    // engine/resolver/gating/sequenceGating.js) BEFORE reaching chooseOnFieldOrder/buildTeamSteps — fixed 2026-09-01:
     // this was passing every member's raw, ungated blocks (as if everyone were R6), so an unbuilt
     // member's chain buffs/damage fired unconditionally in both the order search's own scoring AND
     // every downstream consumer of engineChosenOrder.blocksByOwner (the FULL-tier teamDps/memberDps
@@ -1090,7 +1090,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       // `stat:'totalMult'` TriggerBlock's contribution to the FULL-tier stat-panel score for every
       // fully-converted team. Applied the same way legacy's own `seqTotalMultBonus` is applied to
       // `mult` in the `!allMembersConverted` branch above: a separate multiplicative factor.
-      // projectMainDpsStatPanel (engine/projection/statPanelProjection.js) is this whole block's
+      // projectMainDpsStatPanel (engine/resolver/projection/statPanelProjection.js) is this whole block's
       // former inline body, relocated per ENGINE_ARCHITECTURE_PROPOSAL.md v2 §5 — byte-identical
       // computation, verified against phase3-parityGolden.test.js's stat-panel snapshot.
       const panel = projectMainDpsStatPanel(finalStats, mainDps, { enemyDef90, baseRes: mainBaseRes }, mainDps.d.dmgFocus || [], mainTotalMultBonus);
@@ -1107,7 +1107,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       score = panel.score;
     }
 
-    // ── DOT damage (ICD-aware, composed via engine/dot/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /
+    // ── DOT damage (ICD-aware, composed via engine/resolver/dot/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /
     // Stage 4 step 3) ──
     // Each of these reactions has a fixed damage element regardless of which character on the team
     // triggers it (Frazzle is always Spectro, Erosion always Havoc, etc.) — so its RES must come from

@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/triggers/coordinatedAtk.js
+// WHISPERING WISHES — engine/resolver/gating/coordinatedAtk.js
+// [RESOLVER · GATING] Coordinated ATK off-field snapshot gating.
 // PHASE3_PLAN.md Stage 3, item 4/5 (final item): closes the "Coordinated ATK off-field snapshot
 // semantics" gap from Stage 0's coverage table. calcTeamStats.js models two SEPARATE mechanics under
 // this name, duplicated verbatim between its RAW tier (calcTeamStats.js:531-540) and FULL tier

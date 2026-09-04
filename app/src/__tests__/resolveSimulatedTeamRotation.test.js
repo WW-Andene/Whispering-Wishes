@@ -7,8 +7,8 @@
  * resolveSimulatedRotation.js's exported timeWeightedAverageConcurrency().
  */
 import { describe, it, expect } from 'vitest';
-import { resolveSimulatedTeamRotation } from '../engine/composition/resolveSimulatedTeamRotation.js';
-import { buildTeamSteps } from '../engine/composition/rotationSimulator.js';
+import { resolveSimulatedTeamRotation } from '../engine/resolver/dps/resolveSimulatedTeamRotation.js';
+import { buildTeamSteps } from '../engine/resolver/dps/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';

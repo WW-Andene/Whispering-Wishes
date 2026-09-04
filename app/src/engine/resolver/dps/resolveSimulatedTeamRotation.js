@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/composition/resolveSimulatedTeamRotation.js
+// WHISPERING WISHES — engine/resolver/dps/resolveSimulatedTeamRotation.js
+// [RESOLVER · DPS] Time-averaged, whole-team stat resolver.
 // The team-level generalization of resolveSimulatedRotation.js — resolves what ONE team member
 // (`targetName`) actually RECEIVES from a full multi-character rotation, not just their own kit in
 // isolation. This is the piece PHASE2_PLAN.md's multi-character-interleaving pass deliberately left
@@ -32,13 +33,13 @@
 //     modeled here any more than resolveSimulatedRotation.js models them for one character).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { createStats, applyBuff } from '../../features/teams/calcEngine.js';
+import { createStats, applyBuff } from '../../../features/teams/calcEngine.js';
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
-import { triggerFired, conditionHolds } from '../triggers/triggerEngine.js';
-import { buildBlockWindows, timeWeightedAverageConcurrency } from '../triggers/blockWindows.js';
-import { cumulativeTieredValue } from '../triggers/tieredStacking.js';
-import { sequenceAllows } from '../triggers/sequenceGating.js';
-import { COORD_SNAPSHOT_DISCOUNT } from '../triggers/coordinatedAtk.js';
+import { triggerFired, conditionHolds } from '../gating/triggerEngine.js';
+import { buildBlockWindows, timeWeightedAverageConcurrency } from '../gating/blockWindows.js';
+import { cumulativeTieredValue } from '../gating/tieredStacking.js';
+import { sequenceAllows } from '../gating/sequenceGating.js';
+import { COORD_SNAPSHOT_DISCOUNT } from '../gating/coordinatedAtk.js';
 
 /**
  * @param {Object[]} ownedSteps  Same shape buildTeamSteps()/simulateTeamRotation() take — each step

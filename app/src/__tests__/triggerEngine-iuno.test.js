@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS } from '../data/characters.js';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { IUNO_BLOCKS } from '../engine/characterBlocks/iuno.blocks.js';
 
 describe('triggerEngine parity — Iuno', () => {

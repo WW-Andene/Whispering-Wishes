@@ -3,7 +3,7 @@
 // a general critDmg buff, over-crediting every OTHER hit sharing critDmg's pool too. `scopedToBlockId`
 // restricts an effect's contribution to exactly one damage block's own hits.
 import { describe, it, expect } from 'vitest';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { AEMEATH_BLOCKS } from '../engine/characterBlocks/aemeath.blocks.js';
 
 describe('scopedToBlockId (the engine-merge history (git log) Phase 0.5 gap #3)', () => {

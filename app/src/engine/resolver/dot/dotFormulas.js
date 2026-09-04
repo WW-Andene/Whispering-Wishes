@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/dot/dotFormulas.js
+// WHISPERING WISHES — engine/resolver/dot/dotFormulas.js
+// [RESOLVER · DOT] Pure DOT-reaction formulas (Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break).
 //
 // Engine-merge Stage 1 (2026-09-04, see ENGINE_MERGE_INVESTIGATION.md §2a/§5#1/§6 Stage 2):
 // relocates the rotation-aggregate DOT/Tune-Break primitives OUT of the legacy
@@ -20,7 +21,7 @@
 // five rotation-aggregate DOT mechanics have one shared home rather than being split arbitrarily.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { CHAR_BUFF_TABLE } from '../../data/characters.js';
+import { CHAR_BUFF_TABLE } from '../../../data/characters.js';
 
 // ── Constants (named, not magic) ──
 export const DOT_LEVEL_MULT = 3674;   // Level 90 character level multiplier

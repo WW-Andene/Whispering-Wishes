@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/dot/dotReactionsFromBlocks.js
+// WHISPERING WISHES — engine/resolver/dot/dotReactionsFromBlocks.js
+// [RESOLVER · DOT] The TriggerBlock-native replacement for dotReactions.js's per-character-table lookups.
 // the engine-merge history (git log) Phase 2: the TriggerBlock-native replacement for engine/dot/dotReactions.js's
 // composition of calcEngine.js's five DOT-reaction functions. Reads each character's real
 // `dotApplier`-tagged blocks (triggerBlocks.schema.js's own doc has the full rationale) instead of
@@ -23,7 +24,7 @@ import {
   FUSION_BURST_THRESHOLD, FUSION_TRAIL_MULT,
   FLARE_TICK_INTERVAL, FLARE_STACK_MULT,
 } from './dotFormulas.js';
-import { winningStanceForOwner } from '../triggers/sequenceGating.js';
+import { winningStanceForOwner } from '../gating/sequenceGating.js';
 
 function lookupStackMult(table, stacks) {
   const idx = Math.max(0, Math.min(table.length - 1, Math.round(stacks)));

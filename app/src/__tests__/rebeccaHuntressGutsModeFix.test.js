@@ -7,8 +7,8 @@
 // bug, same class as this session's Lynae/Aemeath/Denia Tune Break fixes, just within one
 // character's own combo instead of a team-composition choice.
 import { describe, it, expect } from 'vitest';
-import { resolveSimulatedRotation } from '../engine/composition/resolveSimulatedRotation.js';
-import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveSimulatedRotation } from '../engine/resolver/dps/resolveSimulatedRotation.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { REBECCA_BLOCKS } from '../engine/characterBlocks/rebecca.blocks.js';
 

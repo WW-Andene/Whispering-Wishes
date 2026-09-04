@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/triggers/blockWindows.js
+// WHISPERING WISHES — engine/resolver/gating/blockWindows.js
+// [RESOLVER · GATING] Block activation-window builder.
 // The shared "build one block's activation-window history from a set of simulateRotation()/
 // simulateTeamRotation() results" logic — extracted 2026-09-01 (previously duplicated near-verbatim
 // inside resolveSimulatedRotation.js and resolveSimulatedTeamRotation.js) so there's exactly ONE

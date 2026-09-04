@@ -5,8 +5,8 @@
  * numbers so the formula itself is independently verifiable, not just "whatever the code produces."
  */
 import { describe, it, expect } from 'vitest';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blocks.js';

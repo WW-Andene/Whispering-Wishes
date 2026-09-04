@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest';
 import { createStats } from '../features/teams/calcEngine.js';
 import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../data/characters.js';
-import { resolveTriggerBlocks } from '../engine/triggers/triggerEngine.js';
+import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
 import { JINHSI_BLOCKS } from '../engine/characterBlocks/jinhsi.blocks.js';
 
 describe('triggerEngine parity — Jinhsi', () => {

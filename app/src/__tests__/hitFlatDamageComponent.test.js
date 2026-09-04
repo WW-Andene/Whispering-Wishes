@@ -5,7 +5,7 @@
 // defMult/resMult), not a separate standalone hit.
 import { describe, it, expect } from 'vitest';
 import { parseSkillMultiplierHits } from '../engine/math/hitParser.js';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 
 describe('DamageHits.flat — non-%ATK additive component (the engine-merge history (git log) Phase 0.5 gap #8)', () => {
   it('parseSkillMultiplierHits attaches a flat value to the first parsed hit only', () => {

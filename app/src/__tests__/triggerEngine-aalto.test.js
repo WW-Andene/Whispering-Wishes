@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { createStats, applyResonanceChain } from '../features/teams/calcEngine.js';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS } from '../data/characters.js';
-import { resolveTriggerBlocks } from '../engine/triggers/triggerEngine.js';
-import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { AALTO_BLOCKS } from '../engine/characterBlocks/aalto.blocks.js';
 
 describe('triggerEngine parity — Aalto', () => {

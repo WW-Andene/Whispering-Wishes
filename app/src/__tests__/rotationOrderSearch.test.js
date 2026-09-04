@@ -1,11 +1,11 @@
 // PHASE3_PLAN.md Stage 3, item 5/5 (final Stage 3 item): the rotation on-field order-search.
-// engine/orchestration/rotationOrderSearch.js's chooseOnFieldOrder() is the engine-native equivalent of
+// engine/resolver/rotationOrder/rotationOrderSearch.js's chooseOnFieldOrder() is the engine-native equivalent of
 // calcTeamStats.js's own rotationTimeline IIFE — brute-force every permutation of supports (Main DPS
 // always last), score each by how much cross-character buff value survives to the instant the Main
 // DPS's own on-field window opens, keep the highest (ties keep the input order).
 import { describe, it, expect } from 'vitest';
-import { chooseOnFieldOrder } from '../engine/orchestration/rotationOrderSearch.js';
-import { buildTeamSteps } from '../engine/composition/rotationSimulator.js';
+import { chooseOnFieldOrder } from '../engine/resolver/rotationOrder/rotationOrderSearch.js';
+import { buildTeamSteps } from '../engine/resolver/dps/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';

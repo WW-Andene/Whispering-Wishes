@@ -11,7 +11,7 @@
 // the already-audited CHAR_BUFF_TABLE condition text for the same buff, e.g. Yinlin's 'Electro DMG
 // Amp', Lupa's 'Fusion DMG Amp').
 import { describe, it, expect } from 'vitest';
-import { resolveTriggerBlocks } from '../engine/triggers/triggerEngine.js';
+import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
 import { createStats } from '../features/teams/calcEngine.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 import { LUPA_BLOCKS } from '../engine/characterBlocks/lupa.blocks.js';
