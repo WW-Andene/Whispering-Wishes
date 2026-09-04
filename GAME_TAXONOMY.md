@@ -52,7 +52,6 @@ Game
 │       ├── Rotation
 │       └── Build
 │           ├── Weapon
-│           │   └── Signature
 │           ├── Echoes
 │           └── Team
 │               ├── Members
