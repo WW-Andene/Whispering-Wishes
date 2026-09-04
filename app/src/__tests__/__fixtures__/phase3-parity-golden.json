@@ -1,0 +1,230 @@
+{
+  "Aalto": {
+    "engineDps": 871.5344533543777,
+    "legacyRawDps": 872
+  },
+  "Aemeath": {
+    "engineDps": 2572.664259419184,
+    "legacyRawDps": 2573
+  },
+  "Augusta": {
+    "engineDps": 3613.480790636854,
+    "legacyRawDps": 3613
+  },
+  "Baizhi": {
+    "engineDps": 78.60964279353561,
+    "legacyRawDps": 79
+  },
+  "Brant": {
+    "engineDps": 3467.603713009773,
+    "legacyRawDps": 3468
+  },
+  "Buling": {
+    "engineDps": 431.0686977113667,
+    "legacyRawDps": 431
+  },
+  "Calcharo": {
+    "engineDps": 4802.695471430737,
+    "legacyRawDps": 4803
+  },
+  "Camellya": {
+    "engineDps": 4569.4566435518955,
+    "legacyRawDps": 3975
+  },
+  "Cantarella": {
+    "engineDps": 1608.9041060175705,
+    "legacyRawDps": 1609
+  },
+  "Carlotta": {
+    "engineDps": 4877.345409869276,
+    "legacyRawDps": 4877
+  },
+  "Cartethyia": {
+    "engineDps": 4675.485133245382,
+    "legacyRawDps": 4675
+  },
+  "Changli": {
+    "engineDps": 5999.483009650881,
+    "legacyRawDps": 5999
+  },
+  "Chisa": {
+    "engineDps": 3313.733497772394,
+    "legacyRawDps": 3314
+  },
+  "Chixia": {
+    "engineDps": 2939.8578828728237,
+    "legacyRawDps": 2940
+  },
+  "Ciaccona": {
+    "engineDps": 1997.0221960084416,
+    "legacyRawDps": 1997
+  },
+  "Danjin": {
+    "engineDps": 1353.5727452339293,
+    "legacyRawDps": 1354
+  },
+  "Denia": {
+    "engineDps": 1527.118808330041,
+    "legacyRawDps": 1527
+  },
+  "Encore": {
+    "engineDps": 3726.081183596436,
+    "legacyRawDps": 3726
+  },
+  "Galbrena": {
+    "engineDps": 2986.854010086816,
+    "legacyRawDps": 2987
+  },
+  "Hiyuki": {
+    "engineDps": 3585.6009551064813,
+    "legacyRawDps": 3586
+  },
+  "Iuno": {
+    "engineDps": 2821.273736760748,
+    "legacyRawDps": 2821
+  },
+  "Jianxin": {
+    "engineDps": 1296.560093543667,
+    "legacyRawDps": 1297
+  },
+  "Jinhsi": {
+    "engineDps": 3824.0152572955144,
+    "legacyRawDps": 2735
+  },
+  "Jiyan": {
+    "engineDps": 4660.6504955310775,
+    "legacyRawDps": 4661
+  },
+  "Lingyang": {
+    "engineDps": 2435.926574123549,
+    "legacyRawDps": 2436
+  },
+  "Lucilla": {
+    "engineDps": 3494.7503363729165,
+    "legacyRawDps": 3495
+  },
+  "Lucy": {
+    "engineDps": 2328.8094840823464,
+    "legacyRawDps": 2329
+  },
+  "Lumi": {
+    "engineDps": 1379.283522373263,
+    "legacyRawDps": 1379
+  },
+  "Lupa": {
+    "engineDps": 2021.8573997648737,
+    "legacyRawDps": 2022
+  },
+  "Luuk Herssen": {
+    "engineDps": 2673.6650031722015,
+    "legacyRawDps": 2674
+  },
+  "Lynae": {
+    "engineDps": 3551.790633044717,
+    "legacyRawDps": 3552
+  },
+  "Mornye": {
+    "engineDps": 839.8410392838296,
+    "legacyRawDps": 840
+  },
+  "Mortefi": {
+    "engineDps": 1146.5524393023957,
+    "legacyRawDps": 1147
+  },
+  "Phoebe": {
+    "engineDps": 4354.710629361693,
+    "legacyRawDps": 4355
+  },
+  "Phrolova": {
+    "engineDps": 2378.2715860079456,
+    "legacyRawDps": 2378
+  },
+  "Qingxiao": {
+    "engineDps": 5894.66583268818,
+    "legacyRawDps": 5895
+  },
+  "Qiuyuan": {
+    "engineDps": 2471.959186005241,
+    "legacyRawDps": 2472
+  },
+  "Rebecca": {
+    "engineDps": 1037.2585457603902,
+    "legacyRawDps": 1037
+  },
+  "Roccia": {
+    "engineDps": 2642.478540333078,
+    "legacyRawDps": 2642
+  },
+  "Rover: Aero": {
+    "engineDps": 1087.0085410839927,
+    "legacyRawDps": 1087
+  },
+  "Rover: Electro": {
+    "engineDps": 2047.4277720054108,
+    "legacyRawDps": 1786
+  },
+  "Rover: Havoc": {
+    "engineDps": 3238.0923762870716,
+    "legacyRawDps": 3238
+  },
+  "Rover: Spectro": {
+    "engineDps": 1074.0733466499735,
+    "legacyRawDps": 1074
+  },
+  "Sanhua": {
+    "engineDps": 1789.7034238102628,
+    "legacyRawDps": 1790
+  },
+  "Shorekeeper": {
+    "engineDps": 1272.8891786505847,
+    "legacyRawDps": 1254
+  },
+  "Sigrika": {
+    "engineDps": 5572.343447917973,
+    "legacyRawDps": 5572
+  },
+  "Suisui": {
+    "engineDps": 1913.1722251503954,
+    "legacyRawDps": 1913
+  },
+  "Taoqi": {
+    "engineDps": 720.3585243271767,
+    "legacyRawDps": 720
+  },
+  "Verina": {
+    "engineDps": 586.7707352803756,
+    "legacyRawDps": 587
+  },
+  "Xiangli Yao": {
+    "engineDps": 3047.277902006779,
+    "legacyRawDps": 3047
+  },
+  "Yangyang": {
+    "engineDps": 1078.6264350646875,
+    "legacyRawDps": 1079
+  },
+  "Yangyang: Xuanling": {
+    "engineDps": 4550.7628866989535,
+    "legacyRawDps": 4551
+  },
+  "Yinlin": {
+    "engineDps": 1105.089707049625,
+    "legacyRawDps": 1079
+  },
+  "Youhu": {
+    "engineDps": 514.6321419854881,
+    "legacyRawDps": 515
+  },
+  "Yuanwu": {
+    "engineDps": 608.5570013430078,
+    "legacyRawDps": 609
+  },
+  "Zani": {
+    "engineDps": 2397.713997780077,
+    "legacyRawDps": 2398
+  },
+  "Zhezhi": {
+    "engineDps": 2137.696557372744,
+    "legacyRawDps": 2138
+  }
+}
