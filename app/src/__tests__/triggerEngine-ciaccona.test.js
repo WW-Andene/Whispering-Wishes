@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { CIACCONA_BLOCKS } from '../engine/characterBlocks/ciaccona.blocks.js';
@@ -95,5 +95,30 @@ describe('triggerEngine parity — Ciaccona', () => {
     expect(CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.intro.roaming-with-the-wind').damage.category).toBe('skillDmg');
     expect(fired.has('ciaccona.forte.quadruple-downbeat')).toBe(true);
     expect(fired.has("ciaccona.liberation.singers-triple-cadenza")).toBe(true);
+  });
+
+  // Phase A audit 2026-09-04: bestEchoes main-slot echo was 'Reminiscence: Fleurdelys' — the dump's own
+  // Best Echo Sets section explicitly names Nightmare: Kelpie as the best main-slot pick (small margin
+  // over Fleurdelys, which is only better when running Lux & Umbra — not her stored bestWeapon).
+  it('bestEchoes main slot is Nightmare: Kelpie, matching the dump\'s explicit best-pick call', () => {
+    const d = CHARACTER_DATA['Ciaccona'];
+    expect(d.bestEchoes[0]).toBe('Nightmare: Kelpie');
+  });
+
+  // Phase A audit 2026-09-04: weaponAlts.alt4 included 'Solar Flame', a real 4★ Pistols weapon not named
+  // anywhere in Ciaccona's own dump (the dump names exactly one 4★, Romance in Farewell) — stale/
+  // fabricated entry, removed.
+  it('weaponAlts.alt4 does not include the unsourced Solar Flame entry', () => {
+    const d = CHARACTER_DATA['Ciaccona'];
+    expect(d.weaponAlts.alt4).not.toContain('Solar Flame');
+    expect(d.weaponAlts.alt4).toEqual(['Romance in Farewell']);
+  });
+
+  // Phase A audit 2026-09-04: stored tier was {toa:'T0', ww:'T1'} — the dump's own Review section lists
+  // "T0.5 (ToA, standard) / T1 (WW, standard)", not T0/T1 (that pairing belongs to the dump's Value Tier
+  // List instead, T1.5/T1.5, not the standard list this table otherwise follows).
+  it('tier matches the dump\'s standard (non-Value-list) Review rating: T0.5 ToA / T1 WW', () => {
+    const d = CHARACTER_DATA['Ciaccona'];
+    expect(d.tier).toEqual({ toa: 'T0.5', ww: 'T1' });
   });
 });

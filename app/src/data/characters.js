@@ -660,13 +660,24 @@ const CHARACTER_DATA = {
   // and Lux & Umbra (83.0%), the source's #2/#3 non-signature 5-stars; alt4 uses Romance in Farewell (69.9%,
   // the source's named best 4★/F2P no-gacha pick) and Solar Flame; alt3 uses the standard starter Pistols
   // of Night.
+  // Phase A audit 2026-09-04 against a fresh source dump (`Characters data dump/Ciaccona/Ciaccona.md`):
+  // 2 bugs fixed here. (1) bestEchoes main-slot echo was 'Reminiscence: Fleurdelys' — the dump's own
+  // Best Echo Sets section explicitly names Nightmare: Kelpie as "best main-slot pick by a small margin
+  // over Reminiscence: Fleurdelys (use Fleurdelys instead if running Lux & Umbra)"; her stored
+  // `bestWeapon` is Woodland Aria, not Lux & Umbra, so the default main-slot pick should be Nightmare:
+  // Kelpie. Corrected. (2) weaponAlts.alt4 included 'Solar Flame' — a real 4★ Pistols weapon in
+  // weapons.js, but NOT named anywhere in this character's own dump; the dump names exactly one 4★
+  // ('Romance in Farewell', its explicit F2P/no-gacha pick) and 3 additional 5★s (Spectrum Blaster, The
+  // Last Dance, Static Mist) beyond the alt5 top-2 already listed, none of which is Solar Flame. Stale/
+  // fabricated entry with no basis in the source — removed, matching the single-entry alt4 pattern
+  // already used elsewhere (e.g. Cartethyia's alt4: ['Feather Edge']) when the dump names only one 4★.
   'Ciaccona': { rarity: 5, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Woven Melodies, a wandering bard from Rinascita — she sings not only for the Divinity, but also for the common folk, recording stories along her journeys and turning them into songs that evoke laughter, emotion, and tears in both the storytellers and the audience. Aero Hybrid who chains quick Basic ATK/Mid-air cancels to summon near-permanent Ensemble Sylph clones (Solo Concert: team Aero DMG Amp), fires the Forte Heavy Quadruple Downbeat, then enters an extended Recital state via her Liberation to apply repeating waves of Aero Erosion or Spectro Frazzle even off-field — buffs the incoming Resonator\'s Aero Erosion DMG through her Outro.',
     skills: ['Quadruple Time Steps', 'Harmonic Allegro', 'Singer\'s Triple Cadenza', 'Symphony of Wind and Verse'],
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Phlogiston' },
-    bestEchoes: ['Reminiscence: Fleurdelys', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
-    weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell', 'Solar Flame'], alt3: ['Pistols of Night'] },
+    bestEchoes: ['Nightmare: Kelpie', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell'], alt3: ['Pistols of Night'] },
     teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1409 sheet. desc: title "Feathered Tempest" (the source) prepended and
@@ -2039,7 +2050,10 @@ const CHARACTER_DATA = {
 [
   ['Aemeath',       'T0',   'T0.5'],
   ['Sigrika',       'T0',   'T0'],
-  ['Ciaccona',      'T0',   'T1'],
+  // tier corrected 2026-09-04 against a fresh source dump (Phase A audit): ToA was 'T0' — the dump's own
+  // Review section lists "T0.5 (ToA, standard) / T1 (WW, standard)", not T0/T1 (that pairing matches the
+  // dump's Value Tier List instead, T1.5/T1.5, not the standard list this table otherwise follows).
+  ['Ciaccona',      'T0.5', 'T1'],
   ['Lupa',          'T0',   'T0.5'],
   // tier corrected 2026-09-02 against a fresh the source dump: Whimpering Wastes was 'T0.5' — the dump's
   // own Ratings section clearly lists T0 (ToA) / T1 (WW), matched exactly by its Value Tier List too.

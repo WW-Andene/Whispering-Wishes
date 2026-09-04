@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa — added 2026-09-03/04, first
-twenty-eight characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona — added 2026-09-03/04, first
+twenty-nine characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -1378,6 +1378,54 @@ Lunge's own already-present icon key).
 
 12 tests in `triggerEngine-chisa.test.js` (was 8; added category-coverage,
 libDmg-categorization, Rending-Lunge-hit-sum, and trigger-retarget checks).
+
+**Ciaccona pass (2026-09-04) — genuine from-scratch re-audit**: all 9
+dimensions independently re-checked against a fresh dump read start-to-end,
+not trusted from `ciaccona.blocks.js`'s own extensive prior-audit comments
+(the file's own header even flags a specific claim — its Intro "Roaming with
+the Wind" labeling supposedly setting a precedent later used for Augusta/
+Lupa — as something to re-verify circularly-independent, per this session's
+own instructions; re-checked against the dump directly and confirmed
+correct, not a bug). Unlike several recent characters, engine-block parity
+(dimension 8) was already clean — every damage.category matches the dump's
+literal override language exactly (Quadruple Downbeat → heavyDmg via the
+dump's own damage-profile bucket match, Roaming with the Wind → skillDmg via
+its generic "Skill Damage" row label, Mid-air Attack → basicDmg via kit-text
+structure, S6 modeled as its own gated damage block rather than force-fit
+into RESONANCE_CHAIN_DATA) — no bug classes a/b/c/d/g/i found anywhere in
+`ciaccona.blocks.js`, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_
+CHAIN_DATA, or CHAR_BUFF_TABLE; all 4 of those dimensions plus `dmgFocus`
+(`['Basic ATK', 'Heavy ATK', 'Liberation', 'Skill']`, Echo correctly excluded
+per the established generic-equipped-echo precedent) and icons (dimension 9,
+SKILL_ICONS/CHAIN_NODE_ICONS fully wired including 2 correctly-reused shared
+icons) were independently re-verified byte-for-byte against the dump and
+found already correct.
+
+2 real bugs found in the remaining dimensions (build/tier data, bug class h
+— stale data vs. the dump), both in `characters.js`:
+
+1. **`bestEchoes` main-slot echo was stale**: stored as `'Reminiscence:
+   Fleurdelys'`, but the dump's own Best Echo Sets section explicitly calls
+   Nightmare: Kelpie "best main-slot pick by a small margin over
+   Reminiscence: Fleurdelys (use Fleurdelys instead if running Lux &
+   Umbra)" — her stored `bestWeapon` is Woodland Aria, not Lux & Umbra, so
+   the correct default main-slot pick is Nightmare: Kelpie. Fixed.
+2. **`weaponAlts.alt4` contained a fabricated entry**: `'Solar Flame'` is a
+   real 4★ Pistols weapon in `weapons.js`, but is not named anywhere in
+   Ciaccona's own dump — the dump names exactly one 4★ (Romance in
+   Farewell, its explicit F2P/no-gacha pick). Removed, leaving the
+   single-entry `alt4: ['Romance in Farewell']` matching the pattern already
+   used elsewhere (e.g. Cartethyia's `alt4: ['Feather Edge']`) when a dump
+   names only one 4★ alternative.
+3. **Tier data was off by half a tier on ToA**: stored `{toa: 'T0', ww:
+   'T1'}`, but the dump's own Review section states "T0.5 (ToA, standard) /
+   T1 (WW, standard)" — the T0/T1 pairing belongs to the dump's separate
+   Value Tier List (T1.5/T1.5, not T0/T1 either — closer to but not
+   matching that list), not its standard Ratings section this table
+   otherwise follows project-wide. Fixed to `T0.5`/`T1`.
+
+3 new tests added to `triggerEngine-ciaccona.test.js` (was 8, now 11)
+covering all 3 fixes. Full suite green: 1462/1462.
 Full suite green: 1459/1459.
 
 ---
