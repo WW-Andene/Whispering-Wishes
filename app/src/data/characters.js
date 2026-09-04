@@ -660,13 +660,24 @@ const CHARACTER_DATA = {
   // and Lux & Umbra (83.0%), the source's #2/#3 non-signature 5-stars; alt4 uses Romance in Farewell (69.9%,
   // the source's named best 4★/F2P no-gacha pick) and Solar Flame; alt3 uses the standard starter Pistols
   // of Night.
+  // Phase A audit 2026-09-04 against a fresh source dump (`Characters data dump/Ciaccona/Ciaccona.md`):
+  // 2 bugs fixed here. (1) bestEchoes main-slot echo was 'Reminiscence: Fleurdelys' — the dump's own
+  // Best Echo Sets section explicitly names Nightmare: Kelpie as "best main-slot pick by a small margin
+  // over Reminiscence: Fleurdelys (use Fleurdelys instead if running Lux & Umbra)"; her stored
+  // `bestWeapon` is Woodland Aria, not Lux & Umbra, so the default main-slot pick should be Nightmare:
+  // Kelpie. Corrected. (2) weaponAlts.alt4 included 'Solar Flame' — a real 4★ Pistols weapon in
+  // weapons.js, but NOT named anywhere in this character's own dump; the dump names exactly one 4★
+  // ('Romance in Farewell', its explicit F2P/no-gacha pick) and 3 additional 5★s (Spectrum Blaster, The
+  // Last Dance, Static Mist) beyond the alt5 top-2 already listed, none of which is Solar Flame. Stale/
+  // fabricated entry with no basis in the source — removed, matching the single-entry alt4 pattern
+  // already used elsewhere (e.g. Cartethyia's alt4: ['Feather Edge']) when the dump names only one 4★.
   'Ciaccona': { rarity: 5, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Woven Melodies, a wandering bard from Rinascita — she sings not only for the Divinity, but also for the common folk, recording stories along her journeys and turning them into songs that evoke laughter, emotion, and tears in both the storytellers and the audience. Aero Hybrid who chains quick Basic ATK/Mid-air cancels to summon near-permanent Ensemble Sylph clones (Solo Concert: team Aero DMG Amp), fires the Forte Heavy Quadruple Downbeat, then enters an extended Recital state via her Liberation to apply repeating waves of Aero Erosion or Spectro Frazzle even off-field — buffs the incoming Resonator\'s Aero Erosion DMG through her Outro.',
     skills: ['Quadruple Time Steps', 'Harmonic Allegro', 'Singer\'s Triple Cadenza', 'Symphony of Wind and Verse'],
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Phlogiston' },
-    bestEchoes: ['Reminiscence: Fleurdelys', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
-    weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell', 'Solar Flame'], alt3: ['Pistols of Night'] },
+    bestEchoes: ['Nightmare: Kelpie', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
+    weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell'], alt3: ['Pistols of Night'] },
     teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1409 sheet. desc: title "Feathered Tempest" (the source) prepended and
@@ -1373,9 +1384,33 @@ const CHARACTER_DATA = {
   // stays excluded — sits in the established ambiguous-exclude zone (4.6-5.5%), same precedent as
   // Calcharo's Intro at 5.1%. Echo (5%) stays excluded — generic equipped-Echo damage.
   ['Xiangli Yao',   ['Skill', 'Liberation', 'Basic ATK'], [],                                  []],
-  ['Camellya',      ['Basic ATK', 'Skill'],          [],                                      []],
-  ['Carlotta',      ['Skill', 'Liberation'],         [],                                      []],
-  ['Brant',         ['Basic ATK', 'Skill'],          ['Self-heal'],                           []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Skill' was WRONG — a genuine
+  // 0% real share per her own dump's Damage Profile (every Skill-button move — Crimson Blossom, the
+  // Vining Waltz/Blazing Waltz combo, Floral Ravage, Ephemeral — is explicitly "considered Basic Attack
+  // DMG" per kit text, confirmed and fixed to basicDmg category in camellya.blocks.js this same pass).
+  // 'Liberation' (16.5%/78,645, her 2nd-largest bucket, already correctly libDmg-categorized on
+  // camellya.liberation.fervor-efflorescent) was entirely missing.
+  ['Camellya',      ['Basic ATK', 'Liberation'],     [],                                      []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Liberation' was a genuine
+  // FABRICATED-zero bug — the dump's own Damage Profile shows a literal 0% Liberation share (all 3
+  // Twilight Tango moves are explicitly "considered Resonance Skill DMG" per kit text, already
+  // correctly `skillDmg`-categorized in carlotta.blocks.js, none `libDmg`), and the dump's own
+  // Substats priority list names only "Resonance Skill DMG" (no Liberation DMG substat at all) — same
+  // shape as Jiyan's earlier dmgFocus fix. 'Skill' (83.5%, dominant, real) stays. Basic ATK (8.3%,
+  // real per Damage Profile) has no wired basicDmg block in carlotta.blocks.js at all (no
+  // CHARACTER_ROTATIONS step casts plain Basic Attack — her rotation's Necessary Measures/Basic ATK
+  // contribution is unattributed to any specific modeled step, same "flagged not guessed" precedent as
+  // Lumi's unmodeled Skill bucket) and isn't named in the dump's own Substats priority either, so left
+  // out rather than added on an unsourced guess.
+  ['Carlotta',      ['Skill'],                       [],                                      []],
+  // dmgFocus corrected 2026-09-04 (Phase A REDO, REMAINING_WORK.md 1c): 'Skill' was WRONG — a genuine
+  // 0% real share per his own dump's Damage Profile. His Skill button (Anchors Aweigh!) is never cast
+  // for damage in the real rotation (only Plunging Attack optionally, immediately Ultimate-cancelled,
+  // and itself "considered Basic Attack DMG" per kit text — no block is skillDmg-categorized in
+  // brant.blocks.js at all). 'Liberation' (18.1%/44,052, his 2nd-largest bucket, already correctly
+  // libDmg-categorized on brant.liberation.to-the-horizon) was entirely missing — same shape as
+  // Camellya's fix just above.
+  ['Brant',         ['Basic ATK', 'Liberation'],     ['Self-heal'],                           []],
   // dmgFocus corrected 2026-08-18: 'Skill' had no basis as a primary focus — Zani's Forte/Resonance Skill
   // is mainly used to build Redundant Energy/convert Frazzle stacks into Heliacal Ember, while her actual
   // rotation damage comes from Heavy Slash combos (Heavy ATK, scaled further by her Inferno Mode +40%
@@ -1431,7 +1466,12 @@ const CHARACTER_DATA = {
   ['Qingxiao',      ['Heavy ATK', 'Liberation', 'Basic ATK'], [],                                ['Tune Strain - Interfered']],
   ['Jingran',       ['Heavy ATK', 'Liberation'],     [],                                      []],
   ['Yangyang: Xuanling', ['Heavy ATK', 'Basic ATK'], [],                                      ['Havoc Bane']],
-  ['Hiyuki',        ['Liberation', 'Basic ATK'],     [],                                      ['Glacio Chafe']],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against the fresh dump's own
+  // Damage-Type Breakdown table: Basic ATK is a genuine 0% share (every nominal Basic/Heavy/Intro cast
+  // in the real rotation happens while in Foreclaimed Self, where it's explicitly reclassified to
+  // Resonance Liberation DMG per kit text) — dropped. Skill (6.1%, real, Frostblight/Jade Cleave/
+  // Petalfall) was missing and is added — Liberation (60.8%) remains the dominant focus.
+  ['Hiyuki',        ['Liberation', 'Skill'],          [],                                      ['Glacio Chafe']],
   // dmgFocus corrected 2026-08-18: 'Liberation' had no basis as a second focus — a tested personal-damage
   // breakdown (the source) shows Lucy's rotation is 77.70% Heavy ATK DMG with Tune Break at 17.10% and her
   // Resonance Liberation (Netrunner) in "low single digits"; Liberation replaced with a second 'Heavy ATK'-
@@ -1484,7 +1524,18 @@ const CHARACTER_DATA = {
   ['Zhezhi',        ['Basic ATK'],                    ['Basic ATK'],                           []],
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   ['Phoebe',        ['Skill'],                       [],                                      ['Frazzle']],
-  ['Cantarella',    ['Coordinated ATK'],             ['Coordinated ATK', 'Heal'],             []],
+  // dmgFocus/buffs corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) — same bug shape as
+  // Zhezhi's fix just above: 'Coordinated ATK' was wrong in BOTH columns. Kit text is explicit both
+  // Flowing Suffocation and its Diffusion summon-chain are "considered Basic Attack DMG" (fixed in
+  // cantarella.blocks.js this same pass, was wrongly libDmg/coordDmg) — she has ZERO real coordDmg-
+  // category damage of her own, confirmed by the dump's own Damage Profile (Liberation 0%, Basic ATK
+  // 69.1% — her dominant bucket). dmgFocus gained 'Basic ATK' (69.1%), 'Skill' (9.8%, Graceful Step +
+  // Flickering Reverie, already skillDmg) and 'Heavy ATK' (7.2%, Delusive Dive, already heavyDmg) — all
+  // real, already-categorized, non-negligible shares that were previously silently rejecting teammate
+  // DMG Bonus buffs of those types. buffs column fixed to what she actually grants via her Outro
+  // (Havoc DMG Amp + Skill DMG Amp, CHAR_BUFF_TABLE's own outroBuffs) plus Heal (Trance/Shiver
+  // consumption + Perception Drain).
+  ['Cantarella',    ['Basic ATK', 'Skill', 'Heavy ATK'], ['Havoc DMG Amp', 'Skill DMG Amp', 'Heal'], []],
   // 'Coordinated ATK' tag corrected 2026-08-17: Ciaccona has no Coordinated Attack mechanic at all —
   // the source's own review explicitly notes she's "similar to Coordinated Attackers (even though she
   // isn't one)". Her off-field damage instead comes from Ensemble Sylph clones (Basic ATK) and her
@@ -1683,7 +1734,17 @@ const CHARACTER_DATA = {
   // 58.40% at Lv.10) is one of her weakest hits; her biggest single damage source is her Resonance
   // Liberation (Flashing Thunder Spell / enhanced Harmony variant, up to 536.79% at Lv.10 plus the Five
   // Thunders Spell Array's continuous DMG) per the wiki's Buling/Combat Forte Details table.
-  ['Buling',        ['Liberation'],                  ['Skill DMG Buff', 'Heal'],              []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was ['Liberation'] only. This
+  // source's own Calculations tab has no Damage Profile % breakdown for her (explicitly stated as
+  // unavailable), so magnitude can't be judged precisely — same "no % data" case as Youhu/Yuanwu above,
+  // same resolution: 'Basic ATK' (Stage 1/2/4, Mid-air Attack, Heavy Attack - Mountain Over Thunder — 5
+  // real basicDmg-categorized blocks, all firing every real CHARACTER_ROTATIONS loop) and 'Skill'
+  // (Thunder Talisman, 58.40%, real skillDmg-categorized block also firing every loop — kept despite the
+  // note above calling it her weakest hit, since it's still real and always-fired, matching the Baizhi/
+  // Taoqi precedent of including a real smallest-bucket rather than dropping it) were both silently
+  // rejecting real teammate Basic Attack/Resonance Skill DMG Bonus buffs on the majority of her real
+  // personal damage.
+  ['Buling',        ['Basic ATK', 'Skill', 'Liberation'], ['Skill DMG Buff', 'Heal'],              []],
 ].forEach(([name, dmgFocus, buffs, debuffs]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { dmgFocus, buffs, debuffs });
 });
@@ -1722,7 +1783,7 @@ const CHARACTER_DATA = {
   ['Phrolova',      10775, 438, 1137, 125],
   ['Augusta',       10300, 463, 1112, 125],
   ['Iuno',          10525, 450, 1124, 125],
-  ['Galbrena',      10300, 462, 1112, 125],
+  ['Galbrena',      10300, 463, 1112, 125],  // ATK corrected 2026-09-04 (Phase A audit): was 462, dump's Stats section says 463
   ['Qiuyuan',       12238, 375, 1198, 125],
   ['Chisa',         10775, 438, 1137, 125],
   ['Lynae',         12238, 375, 1198, 125],
@@ -1994,7 +2055,10 @@ const CHARACTER_DATA = {
 [
   ['Aemeath',       'T0',   'T0.5'],
   ['Sigrika',       'T0',   'T0'],
-  ['Ciaccona',      'T0',   'T1'],
+  // tier corrected 2026-09-04 against a fresh source dump (Phase A audit): ToA was 'T0' — the dump's own
+  // Review section lists "T0.5 (ToA, standard) / T1 (WW, standard)", not T0/T1 (that pairing matches the
+  // dump's Value Tier List instead, T1.5/T1.5, not the standard list this table otherwise follows).
+  ['Ciaccona',      'T0.5', 'T1'],
   ['Lupa',          'T0',   'T0.5'],
   // tier corrected 2026-09-02 against a fresh the source dump: Whimpering Wastes was 'T0.5' — the dump's
   // own Ratings section clearly lists T0 (ToA) / T1 (WW), matched exactly by its Value Tier List too.
@@ -2019,7 +2083,10 @@ const CHARACTER_DATA = {
   // and "Value" tier lists, all four saying T1 — no T0.5 anywhere in that source.
   ['Augusta',       'T1',   'T1'],
   ['Cartethyia',    'T0.5', 'T1.5'],
-  ['Galbrena',      'T0.5', 'T1'],
+  // Corrected 2026-09-04 (Phase A audit): was ['T0.5','T1'] — the fresh dump's Review section states
+  // "DPS Tier: T1 (Tower of Adversity), T1.5 (Whimpering Wastes)" explicitly, matching neither prior
+  // value.
+  ['Galbrena',      'T1',   'T1.5'],
   // Corrected 2026-09-02 against a fresh the source dump: was ['T0.5','T3'], which matches NEITHER of her
   // two real rated roles (DPS: T0.5 ToA / T4 WW; Hybrid: T1 ToA / T1.5 WW — stale value, source
   // unclear). Since CHARACTER_DATA['Iuno'].role is 'Sub DPS' (this app models her as support/hybrid,
@@ -2032,7 +2099,10 @@ const CHARACTER_DATA = {
   // T0 for BOTH ToA and WW (its own Value Tier List separately shows T0/T0.5) — matched consistently.
   ['Chisa',         'T0',   'T0'],
   ['Verina',        'T0.5', 'T0.5'],
-  ['Carlotta',      'T1',   'T3'],
+  // WW corrected 2026-09-04 (Phase A audit): was 'T3' — the fresh dump's own Review section states
+  // DPS Tier T1 (ToA) / T4 (WW) explicitly (Value Tier is a separate T1.5/T3, not stored in this
+  // column per the established "DPS Tier not Value Tier" convention, e.g. Rover: Aero/Iuno's fixes).
+  ['Carlotta',      'T1',   'T4'],
   ['Zani',          'T1',   'T1.5'],
   ['Brant',         'T1',   'T1'],
   // tier corrected 2026-09-03 against a fresh the source dump: was ['T0.5','T1.5'] — the dump's own
@@ -3814,15 +3884,28 @@ const SKILL_MULTIPLIERS = {
   // Roccia/Phoebe/Brant (see the comment on Brant's own row just below), just missed for Augusta until
   // now. Confirmed systematic, not rounding noise: computed the new/old ratio for all 22 values, every
   // one landed at 1.986-1.991. Retightened every value to the source's exact Lv.10 figures.
+  // Phase A audit (2026-09-04): added the previously entirely-missing Mid-air Attack, Dodge Counter, and
+  // Mid-air Dodge Counter rows plus the "at full Prowess/Ascendancy" Dodge Counter replacement variants
+  // (Dodge Counter-Heavy Attack: Steelclash, Dodge Counter-Thunderoar: Backstep, Dodge Counter/Mid-air
+  // Dodge Counter-Undying Sunlight: Strike) as reference data straight from the dump's own Basic
+  // Attack/Forte multiplier lists — none of these fire in her real modeled CHARACTER_ROTATIONS (the
+  // rotation's real combo path is Backstep→Spinslash, not Dodge Counter), so no new engine blocks wired
+  // for them, matching the Lucy Dodge-Counter-row precedent above.
   'Augusta': [
     ['Basic ATK', "Hunter's Path", '57.46% → 67.00%×2 → 65.61%×3 → 64.63%×3', 'Standard combo string, builds toward her Majesty/Crown resources.'],
+    ['Basic ATK', 'Mid-air Attack', '59.65%×2', 'Plunging Attack; confirmed unused in her real rotation.'],
+    ['Basic ATK', 'Dodge Counter', '67.00%×2', 'Post-Dodge Normal Attack; confirmed unused in her real rotation.'],
+    ['Basic ATK', 'Mid-air Dodge Counter', '59.65%×2', 'Post-mid-air-Dodge Plunging Attack; confirmed unused in her real rotation.'],
     ['Heavy ATK', 'Steelclash', '46.39%×3', 'Base charged combo.'],
+    ['Heavy ATK', 'Dodge Counter - Steelclash', '46.39%×3', 'Replaces Dodge Counter at full Prowess; confirmed unused in her real rotation.'],
     ['Heavy ATK', 'Thunderoar', 'Backstep 53.68% / Spinslash 141.72%×3 / Uppercut 178.93%×2', 'Empowered Heavy ATK combo, unlocked at full Ascendancy.'],
+    ['Heavy ATK', 'Dodge Counter - Thunderoar: Backstep', '53.68%', 'Replaces Dodge Counter and its Steelclash variant at full Ascendancy; confirmed unused in her real rotation.'],
     ['Skill', "Warrior's Blade", '218.70%×3', 'Multi-hit Skill strike with a brief time-stop on cast.'],
     ['Liberation', 'Sword of Eternal Oath', '32.99%×2 + 131.94%×3 + 32.99%×2 + 571.7%', 'Standard Ultimate combo nuke.'],
     ['Liberation', 'Sunborne', '119.29% ×9 slashes', 'Alt Ultimate opener when holding the input at 2 Majesty stacks.'],
     ['Liberation', 'Everbright Protector', '238.58% + 894.65% + 5.97%×10', 'Finisher following Sunborne, deploys Ruler\'s Realm.'],
     ['Forte', 'Undying Sunlight', 'Strike 139.17%×2 / Leap 222.67%+27.84%×2 / Plunge 86.59%+779.24%', 'Forte-empowered combo, Plunge consumes all Ascendancy for a big finisher.'],
+    ['Forte', 'Dodge Counter - Undying Sunlight: Strike', '139.17%×2', 'Grounded/mid-air Dodge Counter variant at full Ascendancy, considered Resonance Skill DMG; confirmed unused in her real rotation.'],
     ['Intro', 'Stride of Goldenflare', '99.41%×2', 'Swap-in opener strike.'],
     ['Outro', 'Battlesong of the Unyielding', '+15% All DMG Amp (14s)', 'Grants the next Resonator +15% All-Attribute DMG Amp for 14s, which ends immediately if they are swapped out. Conditional payoff: Augusta gains +1 Majesty stack AND +1 Crown of Wills stack ONLY if that SAME Resonator casts their own Outro Skill back to Augusta while this buff is still up — swap to a third character first and the buff (and the stack chance) is forfeited. Verified verbatim the wiki/Augusta/Combat, 2026-08-31.'],
   ],
@@ -3977,6 +4060,7 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'Perception Drain', '667.99%×2'], // was '668.0%×2', rounding only
     ['Liberation', 'Flowing Suffocation', '376.00% + 14.54%×21'], // was '376.0% + 14.5%×21', rounding only
     ['Intro', 'Ripple', '42.25%×4'], // was '42.3%×4', rounding only
+    ['Intro', 'Tidal Surge', '16.90%×3+118.30%'], // NEW 2026-09-04 (Phase A audit) — the Mirage-state Intro replacement, same 3-Coordinated-ATK+direct-hit shape; per this source's own Review "essentially never realistically used" (no benefit over the normal Ripple cast) so not used in CHARACTER_ROTATIONS, same Kit-tab-completeness treatment already given to Mid-air/Dodge Counter/Abysmal Vortex/Shadowy Sweep above.
     ['Outro', 'Gentle Tentacles', '+20% Havoc DMG + 25% Resonance Skill DMG Amp (14s, ends early on swap)'],
   ],
   // Corrected 2026-08-17 against the source's character #1107 sheet (Lv.10 skill attributes): every
@@ -4028,6 +4112,10 @@ const SKILL_MULTIPLIERS = {
     ['Skill', 'Base Form', '6.89%×3 + 8.86%HP', 'Skill strike that applies 2 stacks of Aero Erosion and summons Sword of Virtue\'s Shadow (max 1, 20s).'],
     ['Skill', 'Fleurdelys 1-2', '24.8%HP / 24.8%HP', "Fleurdelys-form Skill variants (Sword to Answer Waves' Call / May Tempest Break the Tides) — see CHARACTER_ROTATIONS for the cast-order window between them."],
     ['Mid-air', 'Cartethyia Plunging Attack (3 Shadows Recalled)', '11.29%×3', 'Real modeled-rotation value — fixed 2026-09-02 against a fresh the source dump (previously had no row at all, a silent zero-DMG gap). By the point this step fires in her real rotation, all 3 Sword Shadow types (Discord/Divinity/Virtue) are already up, so the 3-Shadows-Recalled variant is the one that actually applies; the 0/1/2-Shadow variants (5.65% / 5.65% / 3.30%×3) are real too but not used by the modeled rotation.'],
+    // Added 2026-09-04 (Phase A audit): Mid-air Attack Stage 3 (Fleurdelys form) had NO row at all,
+    // despite being a real, always-cast step in the dump's own "Full rotation" listing ("Mid-air Attack
+    // Stage 3 (Fleurdelys, hold Basic during Skill)", immediately after Skill 1) — a silent zero-DMG gap.
+    ['Mid-air', 'Fleurdelys Stage 3', '2.20%', 'Holding Normal Attack airborne casts this directly (skipping Stages 1-2); Aero DMG, restores Conviction. Real modeled-rotation step, fires right after Sword to Answer Waves\' Call.'],
     ['Liberation', "A Knight's Heartfelt Prayers", 'Costs 50% Max HP (25% at Resonance Chain S5; free below 50% HP)', 'Ultimate that transforms her into Fleurdelys form for 12s and clears all Conviction; no direct damage.'],
     ['Liberation', 'Blade of Howling Squall', '13.12%×7 HP', 'Fleurdelys-form Ultimate finisher, cast at 120 Conviction; restores 50% Max HP, removes ALL Aero Erosion stacks from the target (each stack removed Amplifies DMG taken by 20%, up to 5 stacks = +100%), and ends Manifest.'],
     ['Intro', "Sword to Mark Tide's Trace", '2.08%×3 + 6.24%HP', "Base-form swap-in opener; inflicts 2 Aero Erosion stacks and summons Sword of Discord's Shadow (max 1, 20s)."],
@@ -4049,9 +4137,16 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Obedience of Rules', '44.50%+25.96%×4', 'Also enters True Sight.'],
     ['Outro', 'Strategy of Duality', 'Fusion DMG Amp +20% + Liberation DMG Amp +25% (10s)', 'Grants the incoming Resonator these buffs — no direct DMG; buff ends early if that Resonator is swapped out before 10s.'],
   ],
+  // Rending Lunge row added — Phase A audit (REMAINING_WORK.md 1c): the fresh dump's own Basic ATK
+  // multiplier table lists it ('15.11%×4+90.66%'), it's a real always-cast step in both the dump's
+  // Opener and Loop rotations ("Basic: Rending Lunge"), and CHARACTER_ROTATIONS['Chisa']'s own combined
+  // step label already names it ('Basic ATK:Stage 2, Rending Lunge, Death Snip') — but no
+  // SKILL_MULTIPLIERS row and no engine-block hits existed for it at all (bug class f), silently
+  // dropping a real, sourced ~151% multiplier hit from every rotation pass.
   'Chisa': [
     ['Basic ATK', 'Stage 1-2', '16.71%×2 → 9.55%+19.09%+66.81%', 'Standard combo string ending in a heavier chainsaw finisher.'],
-    ['Basic ATK', 'Death Snip', '29.81% + 14.91% + 104.34%', 'Alternate finisher available at a certain combo point.'],
+    ['Basic ATK', 'Rending Lunge', '15.11%×4+90.66%', 'Follow-up combo hit after Basic ATK Stage 2, chains into Death Snip.'],
+    ['Basic ATK', 'Death Snip', '29.81% + 14.91% + 104.34%', 'Alternate finisher available at a certain combo point; counted as Resonance Liberation DMG.'],
     ['Skill', 'Eye of Unraveling', '35.79%', 'Quick dash strike that marks the target for Negative Status.'],
     ['Skill', 'Serrated Loop', '17.45%×8 (hold: 7.46%×16)', 'Multi-hit spin attack; holding the input adds even more hits.'],
     ['Forte', 'Sawring - Blitz 1-3', '11.49%×6 → 10.64%×8 → 15.98%×8', '3-stage Forte combo that builds up Ring of Chainsaw stacks.'],
@@ -4199,7 +4294,7 @@ const SKILL_MULTIPLIERS = {
     ['Heavy ATK', 'Absolute Fullness', '159.05%', 'Forte-empowered Heavy ATK at full Concerto Energy (once per 25s); ends Lunar Cycle. Counted as Resonance Liberation DMG despite the Heavy ATK slot (corrected 2026-09-02 against a fresh dump — same pattern as Flux: Moonbow/Moonring above, previously not noted here). Lv.10 (was the Lv.1 value 80%).'],
     ['Liberation', 'Beneath Lunar Tides', '1093.46%', 'Ultimate strike that activates the Lunar Cycle; no team buff, purely personal damage. Lv.10 (was the Lv.1 value 550%).'],
     ['Intro', 'Illuminated Manifestation', '15.91%×7 + 47.72%', 'Swap-in opener that also restores 40 Sentience. Lv.10.'],
-    ['Outro', 'From Gloom to Gleam', '100%', 'Swap-out strike that grants the next Resonator +50% Heavy ATK DMG Amp for 10s.'],
+    ['Outro', 'From Gloom to Gleam', '100%', 'Swap-out strike that grants the next Resonator +50% Heavy ATK DMG Amp for 14s (corrected 2026-09-04, Phase A audit — this row\'s note was a stale 10s left over from before CHAR_BUFF_TABLE.Iuno/CHARACTER_ROTATIONS.Iuno were both corrected back to the real 14s).'],
   ],
   // Re-verified 2026-08-31 against the wiki/Jiyan/Combat's Lv.10 Attribute Scaling
   // tables (Chrome/Windows UA + google.com referer + jsRender, load+9s wait; 2nd attempt cleared Cloudflare).
@@ -5504,17 +5599,31 @@ const CHARACTER_ROTATIONS = {
   // as (Heavy ATK / Echo respectively) — under the old types+names, both steps had nothing to match and
   // were silently resolving to 0 DMG, and the whole Basic Attack/Seraphic Execution combo strings never
   // matched anything either. Split into per-stage steps that substring-match the new per-stage rows.
+  // Rebuilt 2026-09-04 (Phase A audit) against the dump's own "Standard Rotation" text verbatim:
+  // "Intro → Basic P2 → Basic P3 → Basic P4 → Basic P2 → Basic P3 → Skill: Ascent of Malice (interrupt
+  // animation on hit) → Ultimate (Hellfire Absolution) → Forte: Basic P2 → P3 → P4 → P5 → P3 → P4 → P5
+  // (Swap) → Outro." The prior entry silently dropped the pre-Skill P2→P3 REPEAT (kit text: "Basic
+  // Attack Stage 4 → Normal Attack loops back to Stage 2", builds the remaining Sinflame to cap before
+  // Ascent of Malice is reachable) and the post-Liberation P3→P4→P5 REPEAT inside Demon Hypostasis
+  // (only a single P2→P3→P4→P5 pass was modeled) — both real, explicitly-listed rotation steps, a bug
+  // class (f)/(c) silent-gap: the whole 2nd Seraphic Execution P3/P4/P5 pass and the extra Basic P2/P3
+  // pass were contributing zero DPS in the calc despite being cast in the source's own rotation.
   'Galbrena': [
     { type: 'Intro', skill: 'Hellflare Overload' },
     { type: 'Heavy ATK', skill: 'Basic Attack Stage 2', note: 'Threshold State combo, builds Sinflame (skips the weak Stage 1)' },
     { type: 'Heavy ATK', skill: 'Basic Attack Stage 3' },
     { type: 'Echo', skill: 'Basic Attack Stage 4' },
-    { type: 'Heavy ATK', skill: 'Ascent of Malice', note: 'at max Sinflame — enters Demon Hypostasis, endlag cancelled on hit by the Liberation' },
-    { type: 'Echo', skill: 'Hellfire Absolution', duration: 14, note: 'cast right after entering Demon Hypostasis so its +85% DMG Mult buffs the whole combo that follows' },
+    { type: 'Heavy ATK', skill: 'Basic Attack Stage 2', note: 'Basic Attack Stage 4 loops back to Stage 2 per kit text — 2nd P2→P3 pass to finish capping Sinflame before Ascent of Malice is reachable' },
+    { type: 'Heavy ATK', skill: 'Basic Attack Stage 3' },
+    { type: 'Heavy ATK', skill: 'Ascent of Malice', note: 'at max Sinflame — interrupt the animation early on the Liberation hit landing (never before), enters Demon Hypostasis' },
+    { type: 'Echo', skill: 'Hellfire Absolution', duration: 14, note: 'cast right after entering Demon Hypostasis so its +85% DMG Mult buffs the whole combo that follows — stack the 20% Inherent Skill DMG Amplify with one Basic Attack first' },
     { type: 'Heavy ATK', skill: 'Seraphic Execution Stage 2' },
     { type: 'Heavy ATK', skill: 'Seraphic Execution Stage 3', note: 'Dodge Counter (Purgatory Scourge) can substitute here for higher DMG and Forte if the enemy attacks' },
     { type: 'Echo', skill: 'Seraphic Execution Stage 4' },
-    { type: 'Echo', skill: 'Seraphic Execution Stage 5', note: 'Demon Hypostasis combo finisher' },
+    { type: 'Echo', skill: 'Seraphic Execution Stage 5' },
+    { type: 'Heavy ATK', skill: 'Seraphic Execution Stage 3', note: '2nd Forte pass — the source\'s own "Standard Rotation" repeats P3→P4→P5 a second time before swapping out' },
+    { type: 'Echo', skill: 'Seraphic Execution Stage 4' },
+    { type: 'Echo', skill: 'Seraphic Execution Stage 5', note: 'swap-cancelled — the window is earlier than expected per the source\'s own Tips' },
     { type: 'Outro', skill: 'Ashen Pursuit', note: 'pure-damage swap-out, no team buff, quickswap freely' },
   ],
   // Corrected 2026-08-17 against the source's live "Gameplay and teams" rotation: the previous entry put
@@ -5535,8 +5644,9 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Beneath Lunar Tides', duration: 15, note: 'Press Liberation — activates Lunar Cycle (15s) starting in Half Moon, and restores 60 Sentience.' },
     { type: 'Heavy ATK', skill: 'Flux: Moonbow', note: 'HOLD Heavy Attack (25 STA) — switches Half Moon → New Moon; this hit itself counts as Resonance Liberation DMG.' },
     { type: 'Basic ATK', skill: 'Moonbow 1-3', note: 'Tap Basic Attack for the Moonbow combo (counted as Resonance Liberation DMG) — while in New Moon this consumes Sentience per hit to boost its own DMG Multiplier and heal the team on hit; base values used here (see SKILL_MULTIPLIERS TODO on the unmodeled Sentience-enhanced variant).' },
-    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'Press Skill for the New Moon follow-up (counted as Resonance Liberation DMG) — 2 charges, consumes Sentience per cast to boost its own DMG Multiplier; can recover Iuno from hitstun/launch.' },
-    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'HOLD Heavy Attack for the Forte finisher (usable once per 25s, requires full Concerto Energy) — ends Lunar Cycle, heals nearby allies, and drops a 30s Full Moon Domain; counted as Resonance Liberation DMG despite the Heavy ATK slot (corrected 2026-09-02, same fact as Flux: Moonbow above). Optional but worth casting for the team heal/Blessing of the Wan Light uptime, especially with Augusta on the team.' },
+    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'Press Skill for the New Moon follow-up (counted as Resonance Liberation DMG) — 2 charges, consumes Sentience per cast to boost its own DMG Multiplier; can recover Iuno from hitstun/launch. Cast 1 of 2 charges (the dump\'s "Standard Sub DPS Rotation" spends both before swapping — see the 2nd cast below).' },
+    { type: 'Skill', skill: 'Arc Beyond the Edge', note: 'Cast the 2nd of 2 charges back-to-back with the 1st — added 2026-09-04 (Phase A audit): the dump\'s "Standard Sub DPS Rotation" explicitly lists "Arc Beyond the Edge ×2" and her own Sentience math ("one full Basic chain + both Skill charges exactly drains a full 100-point bar... which IS her core rotation loop") only balances with both charges spent — the prior single-cast step silently dropped half of this move\'s real rotation damage.' },
+    { type: 'Heavy ATK', skill: 'Absolute Fullness', note: 'HOLD Heavy Attack for the Forte finisher (usable once per 25s, requires full Concerto Energy) — ends Lunar Cycle, heals nearby allies, and drops a 30s Full Moon Domain; counted as Resonance Liberation DMG despite the Heavy ATK slot (corrected 2026-09-02, same fact as Flux: Moonbow above). Swap out on this cast per the dump\'s "Standard Sub DPS Rotation" (best with Augusta on the team — Full Moon Domain buffs her the most).' },
     { type: 'Outro', skill: 'From Gloom to Gleam', duration: 14, note: 'Swap out to trigger this automatically — grants the incoming Resonator +50% Heavy Attack DMG Amp for 14s (corrected 2026-09-02 — this row still said 10s, a leftover from before the CHAR_BUFF_TABLE entry above was corrected BACK to 14s), ending early if they are swapped off-field. Does not interrupt an in-progress Absolute Fullness.' },
   ],
   // Corrected 2026-08-17 against the source's live "Gameplay and teams" rotation: the previous entry
@@ -5553,6 +5663,11 @@ const CHARACTER_ROTATIONS = {
     { type: 'Mid-air', skill: 'Cartethyia Plunging Attack', note: 'Jump then tap Basic Attack to plunge down — recalls ALL Sword Shadows currently up (max 3, one of each type). Real DMG sourced and modeled (2026-09-02, 11.29%×3 HP at the 3-Shadows-Recalled value this rotation step reaches). Since this rotation always has all 3 shadow types up by this point, all 3 buffs (Heart of Virtue / Mandate of Divinity / Power of Discord) always apply together for the Manifest window — Mandate of Divinity\'s real +50% Aero Erosion DMG Amp is modeled in cartethyia.blocks.js (2026-09-03); Heart of Virtue/Power of Discord are non-DPS CC/utility with no stat to hold.' },
     { type: 'Liberation', skill: "A Knight's Heartfelt Prayers", duration: 12, note: 'Press Liberation — costs 50% Max HP (25% at S5, free if HP already below 50%); transforms her into Fleurdelys (Manifest) for 12s and clears all Conviction to 0. Ending Manifest does NOT clear Resonance Energy.' },
     { type: 'Skill', skill: "Fleurdelys 1", note: "Press Skill for Sword to Answer Waves' Call — restores Conviction on hit." },
+    // Added 2026-09-04 (Phase A audit): the dump's own "Full rotation" listing explicitly includes
+    // "Mid-air Attack Stage 3 (Fleurdelys, hold Basic during Skill)" right here, between Skill 1 and the
+    // Basic P3-P5 string — this step was previously missing entirely (no SKILL_MULTIPLIERS row, no
+    // rotation step, no engine block), a silent zero-DMG gap on a real, always-cast rotation step.
+    { type: 'Mid-air', skill: 'Fleurdelys Stage 3', note: 'Hold Basic Attack airborne during the Skill 1 cast window to cast Stage 3 directly — Aero DMG, restores Conviction.' },
     { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Tap Basic Attack — chains Mid-air Plunge Stage 3 into Basic Attack Stage 3-5, restoring Conviction on hit.' },
     { type: 'Skill', skill: 'Fleurdelys 2', note: "Press Skill again for May Tempest Break the Tides — must follow Skill 1 within the game's un-numbered follow-up window (only described as \"a certain period,\" no exact seconds given) or the Skill goes on its normal 14s cooldown instead, forfeiting the Skill-2 cast for that Manifest window." },
     { type: 'Basic ATK', skill: 'Fleurdelys 1-5', note: 'Tap Basic Attack for Stage 3-5 again — builds Conviction toward the 120-point threshold that unlocks Liberation2 (exact Conviction-per-hit amount not published by source; TODO: verify).' },
@@ -6945,7 +7060,12 @@ const RESONANCE_CHAIN_DATA = {
   //   (Phantom Sting is the Mirage-state Basic ATK combo, so basicDmg fits, confirmed exact); + DEF Ignore 30%
   //   for 10s after casting Flowing Suffocation (confirmed exact -> defIgnore). Was deepen:15, wrong category
   //   and wrong magnitude on both counts — corrected to basicDmg:80, defIgnore:30.
-  'Cantarella':   { s1: { totalMult: 50 }, s2: { totalMult: 245 }, s3: { libDmg: 370 }, s4: {}, s5: {}, s6: { basicDmg: 80, defIgnore: 30 } },
+  // s3 stat fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was libDmg:370, matching the
+  // pre-fix (wrong) libDmg category on cantarella.blocks.js's Flowing Suffocation damage block. Kit
+  // text is explicit ("Havoc DMG, considered Basic Attack DMG") and the dump's own Damage Profile
+  // confirms 0% real Liberation share — S3's real +370% Flowing Suffocation multiplier follows that
+  // same override to basicDmg, now scoped via scopedToBlockId in the engine block.
+  'Cantarella':   { s1: { totalMult: 50 }, s2: { totalMult: 245 }, s3: { basicDmg: 370 }, s4: {}, s5: {}, s6: { basicDmg: 80, defIgnore: 30 } },
   // Re-verified verbatim 2026-08-31 against the wiki/Yinlin/Combat's Resonance Chain
   // section (cross-checked against the source/wuthering-waves/characters/yinlin, both matched exactly):
   // S1 "Morality's Crossroad": Resonance Skill Magnetic Roar and Lightning Execution deal 70% more damage

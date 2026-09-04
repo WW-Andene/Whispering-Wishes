@@ -54,8 +54,8 @@ export const CAMELLYA_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('96.33%'), category: 'skillDmg' },
-    note: "Fills the last Concerto Energy needed to unlock Ephemeral. Stage 1 of the Vining Waltz combo (96.33% at Lv.10) — counted as Skill DMG per Blossom Mode's own kit text (Basic/Heavy/Dodge-Counter/Skill all replaced by this combo while active).",
+    damage: { hits: parseSkillMultiplierHits('96.33%'), category: 'basicDmg' },
+    note: "Fills the last Concerto Energy needed to unlock Ephemeral. Stage 1 of the Vining Waltz combo (96.33% at Lv.10) — fixed 2026-09-04 (Phase A audit): the kit text is explicit Vining Waltz is \"considered Basic Attack DMG\" (not Skill), confirmed by the fresh dump's own Damage Profile showing a genuine 0% Skill share against 67.1% Basic — was previously miscategorized skillDmg, silently rejecting real teammate Basic Attack DMG Bonus buffs on this hit.",
   },
   {
     id: 'camellya.skill.crimson-blossom',
@@ -65,8 +65,8 @@ export const CAMELLYA_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('113.62%×2'), category: 'skillDmg' },
-    note: 'Basic-ATK-type Havoc DMG; enters Blossom Mode (mid-air castable), replacing Basic/Heavy/Dodge-Counter/Skill.',
+    damage: { hits: parseSkillMultiplierHits('113.62%×2'), category: 'basicDmg' },
+    note: 'Basic-ATK-type Havoc DMG (considered Basic Attack DMG per its own kit text); enters Blossom Mode (mid-air castable), replacing Basic/Heavy/Dodge-Counter/Skill. Fixed 2026-09-04 (Phase A audit): was previously miscategorized skillDmg, matching the dump\'s 0% Skill / 67.1% Basic Damage Profile split.',
   },
   {
     id: 'camellya.skill.vining-waltz-combo',
@@ -88,8 +88,8 @@ export const CAMELLYA_BLOCKS = [
     // CHARACTER_ROTATIONS itself to distinguish the two steps with different skill strings (the same
     // fix category as the "zero-damage rotation-step" class PHASE2_PLAN.md already tracks), not
     // something this schema alone can solve.
-    damage: { hits: parseSkillMultiplierHits('96.33% → 45.63%×2 → 21.95%×6 → 67.59%×3'), category: 'skillDmg' },
-    note: 'Blossom Mode combo — every hit consumes Crimson Pistils at +150% Energy Regen.',
+    damage: { hits: parseSkillMultiplierHits('96.33% → 45.63%×2 → 21.95%×6 → 67.59%×3'), category: 'basicDmg' },
+    note: 'Blossom Mode combo — every hit consumes Crimson Pistils at +150% Energy Regen. Fixed 2026-09-04 (Phase A audit): kit text is explicit the whole Vining Waltz/Blazing Waltz combo is "considered Basic Attack DMG" — was previously miscategorized skillDmg, matching the dump\'s 0% Skill / 67.1% Basic Damage Profile split.',
   },
   {
     id: 'camellya.forte.ephemeral',
@@ -99,8 +99,8 @@ export const CAMELLYA_BLOCKS = [
     timing: { cooldown: 25 },
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('1262.45%'), category: 'skillDmg' },
-    note: 'Once Concerto Energy is full and off its own 25s cooldown, replaces Skill. Costs 70 Concerto Energy, consumes all Crimson Buds, enters 15s Budding Mode.',
+    damage: { hits: parseSkillMultiplierHits('1262.45%'), category: 'basicDmg' },
+    note: 'Once Concerto Energy is full and off its own 25s cooldown, replaces Skill. Costs 70 Concerto Energy, consumes all Crimson Buds, enters 15s Budding Mode. Fixed 2026-09-04 (Phase A audit): kit text is explicit Ephemeral deals Havoc DMG "considered Basic Attack DMG" — was previously miscategorized skillDmg, matching the dump\'s 0% Skill / 67.1% Basic Damage Profile split.',
   },
   {
     // Added 2026-09-03: S6 unlocks Forte Circuit: Perennial, a whole new skill dealing Havoc DMG
@@ -154,8 +154,8 @@ export const CAMELLYA_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('52.61%×5'), category: 'skillDmg' },
-    note: 'Ends Blossom Mode. Considered Basic Attack DMG per kit text; categorized skillDmg here matching the Vining Waltz combo blocks above.',
+    damage: { hits: parseSkillMultiplierHits('52.61%×5'), category: 'basicDmg' },
+    note: 'Ends Blossom Mode. Considered Basic Attack DMG per kit text — fixed 2026-09-04 (Phase A audit): was previously miscategorized skillDmg (the original 2026-09-03 note that introduced this block mistakenly matched it to the Vining Waltz combo blocks\' then-also-wrong skillDmg category instead of the kit text\'s own override); confirmed against the dump\'s 0% Skill / 67.1% Basic Damage Profile split.',
   },
   {
     id: 'camellya.outro.twining-base',
@@ -233,8 +233,29 @@ export const CAMELLYA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 120 }],
-    note: "Ephemeral's DMG Multiplier +120%.",
+    // Fixed 2026-09-04 (Phase A audit): was unscoped totalMult, over-crediting Camellya's ENTIRE kit
+    // instead of just Ephemeral's own DMG Multiplier — the same Augusta-S3/Brant-S3/S6-shape
+    // over-crediting bug. Scoped via scopedToBlockId.
+    effects: [{ stat: 'totalMult', value: 120, scopedToBlockId: 'camellya.forte.ephemeral' }],
+    note: "Ephemeral's DMG Multiplier +120% — scoped to camellya.forte.ephemeral only.",
+  },
+  {
+    // Fixed 2026-09-04 (Phase A audit): the S3 node carries TWO independent effects with different
+    // real conditions per the kit text — "Fervor Efflorescent's DMG Multiplier +50%" (unconditional,
+    // no Budding Mode gate at all) and "While in Budding Mode, ATK +58%" (genuinely conditional). The
+    // previous single-block version wrapped BOTH under `condition: { requiresStance: 'Budding Mode' }`,
+    // so the Fervor Efflorescent totalMult+50% incorrectly never applied at all in the real modeled
+    // rotation (Liberation is cast BEFORE Ephemeral/Budding Mode there) — split into 2 blocks, and the
+    // totalMult half is also now scoped via scopedToBlockId (it was unscoped before, which would have
+    // over-credited her whole kit whenever it did apply).
+    id: 'camellya.chain.s3-fervor-mult',
+    source: SOURCE,
+    kind: 'buff',
+    trigger: { type: 'passive' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [{ stat: 'totalMult', value: 50, scopedToBlockId: 'camellya.liberation.fervor-efflorescent' }],
+    note: "Fervor Efflorescent's DMG Multiplier +50%, unconditional (not gated on Budding Mode) — scoped to camellya.liberation.fervor-efflorescent only.",
   },
   {
     id: 'camellya.chain.s3-a-bud-adorned-by-thorns',
@@ -244,11 +265,8 @@ export const CAMELLYA_BLOCKS = [
     condition: { requiresStance: 'Budding Mode' },
     timing: {},
     target: { scope: 'self' },
-    effects: [
-      { stat: 'totalMult', value: 50 },
-      { stat: 'atkPct', value: 58 },
-    ],
-    note: "Fervor Efflorescent's DMG Multiplier +50%; ATK+58% while in Budding Mode only (conditional/stateful — the atkPct portion is kept flat here same as the source table, TODO: verify calc engine gates this on Budding Mode state rather than applying it unconditionally, same caveat the flat table already carries).",
+    effects: [{ stat: 'atkPct', value: 58 }],
+    note: 'ATK +58% while in Budding Mode only (atkPct is not category- or move-gated, so this correctly stays a general stat boost rather than needing scopedToBlockId).',
   },
   {
     id: 'camellya.chain.s4-roots-set-deep-in-eternity',
@@ -269,8 +287,10 @@ export const CAMELLYA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 303 }],
-    note: "S5 Infinity Held in Your Palm, Everblooming half: Everblooming's DMG Multiplier +303%.",
+    // Fixed 2026-09-04 (Phase A audit): was unscoped totalMult, over-crediting her whole kit instead
+    // of only Everblooming — same over-crediting bug class as chain.s2 above.
+    effects: [{ stat: 'totalMult', value: 303, scopedToBlockId: 'camellya.intro.everblooming' }],
+    note: "S5 Infinity Held in Your Palm, Everblooming half: Everblooming's DMG Multiplier +303% — scoped to camellya.intro.everblooming only.",
   },
   {
     id: 'camellya.chain.s5-twining',
@@ -279,8 +299,16 @@ export const CAMELLYA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 68 }],
-    note: "S5 Infinity Held in Your Palm, Twining half: Twining's DMG Multiplier +68%. Previously unrepresentable — RESONANCE_CHAIN_DATA['Camellya'].s5 only had room for one totalMult value (303, the Everblooming half) and dropped this one entirely. The block model fixes this for free: same node, second block, no schema change needed.",
+    // Fixed 2026-09-04 (Phase A audit): was unscoped totalMult (same bug class as chain.s2/
+    // s5-everblooming). Twining has TWO real damage blocks (the unconditional base hit and the
+    // Ephemeral-conditional bonus hit) — both are "Twining's DMG Multiplier", so both get their own
+    // scopedToBlockId entry, same multi-block-scoping pattern already used elsewhere (e.g. Mortefi's
+    // chain.s1/s5 Marcato crit-dmg scoping).
+    effects: [
+      { stat: 'totalMult', value: 68, scopedToBlockId: 'camellya.outro.twining-base' },
+      { stat: 'totalMult', value: 68, scopedToBlockId: 'camellya.outro.twining-ephemeral-bonus' },
+    ],
+    note: "S5 Infinity Held in Your Palm, Twining half: Twining's DMG Multiplier +68%, scoped to both of Twining's own damage blocks. Previously unrepresentable in the flat table — RESONANCE_CHAIN_DATA['Camellya'].s5 only had room for one totalMult value (303, the Everblooming half) and dropped this one entirely. The block model fixes this for free: same node, second block, no schema change needed.",
   },
   {
     id: 'camellya.chain.s6-bloom-for-you-thousand-times-over',
@@ -290,7 +318,16 @@ export const CAMELLYA_BLOCKS = [
     condition: { requiresStance: 'Budding Mode' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 150 }],
-    note: "Sweet Dream's (Budding Mode's) DMG Multiplier +150% additional. Also unlocks Forte Circuit: Perennial — modeled as a separate real damage block, camellya.chain.s6-perennial above.",
+    // Fixed 2026-09-04 (Phase A audit): was unscoped totalMult — even gated by the Budding Mode
+    // condition, an unscoped totalMult would still over-credit ANY block that happens to fire while
+    // that condition holds (e.g. camellya.chain.s6-perennial's basicDmg hit, which is not part of
+    // Sweet Dream), not just the real Sweet-Dream-affected moves. Scoped to the 2 real damage blocks
+    // that actually fire during Budding Mode in the modeled rotation (Vining Waltz/Blazing Waltz combo,
+    // Floral Ravage) via scopedToBlockId, same multi-block-scoping pattern as chain.s5-twining above.
+    effects: [
+      { stat: 'totalMult', value: 150, scopedToBlockId: 'camellya.skill.vining-waltz-combo' },
+      { stat: 'totalMult', value: 150, scopedToBlockId: 'camellya.skill.floral-ravage' },
+    ],
+    note: "Sweet Dream's (Budding Mode's) DMG Multiplier +150% additional, scoped to Budding Mode's real affected moves. Also unlocks Forte Circuit: Perennial — modeled as a separate real damage block, camellya.chain.s6-perennial above.",
   },
 ];

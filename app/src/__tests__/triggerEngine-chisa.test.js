@@ -64,5 +64,46 @@ describe('triggerEngine parity — Chisa', () => {
     expect(fired.has('chisa.intro.reverberance-return')).toBe(true);
     expect(fired.has('chisa.liberation.moment-of-nihility')).toBe(true);
     expect(fired.has('chisa.forte.sawring-eradication')).toBe(true);
+    // Phase A audit 2026-09-04: Rending Lunge (bug class f) and Death Snip (split off, bug class a)
+    // both fire from the same combined Basic ATK rotation step.
+    expect(fired.has('chisa.basic.stage2-rending-lunge')).toBe(true);
+    expect(fired.has('chisa.basic.death-snip')).toBe(true);
+  });
+
+  it('the 3 Unseen-Snare-application blocks (S1/thread-of-bane/S6) fire off Serrated Loop\'s cast, the move actually used in the modeled rotation (bug class c fix)', () => {
+    // hitLog only records 'damage'-kind blocks, so these buff/debuff blocks are checked via the
+    // trigger engine's own firedTriggers set directly rather than hitLog.
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Chisa'], CHISA_BLOCKS);
+    const castLabels = new Set(steps.map(s => s.type && s.skill ? `cast:${s.type}:${s.skill}` : null));
+    expect(castLabels.has('cast:Skill:Serrated Loop')).toBe(true);
+    expect(castLabels.has('cast:Skill:Eye of Unraveling')).toBe(false);
+    for (const id of ['chisa.chain.s1', 'chisa.debuff.thread-of-bane', 'chisa.chain.s6']) {
+      const b = CHISA_BLOCKS.find(x => x.id === id);
+      expect(castLabels.has(`cast:${b.trigger.on}`)).toBe(true);
+    }
+  });
+
+  it('Phase A audit 2026-09-04: every real sourced damage block carries a damage.category', () => {
+    // bug class d — Sawring Blitz/Eradication/Serrated Loop/Intro were all uncategorized before this
+    // pass despite being real, sourced damage.
+    const damageBlocks = CHISA_BLOCKS.filter(b => b.kind === 'damage');
+    for (const b of damageBlocks) {
+      expect(b.damage.category, `${b.id} missing damage.category`).toBeTruthy();
+    }
+  });
+
+  it('Death Snip and Sawring Blitz/Eradication are libDmg (kit text: "counted as Resonance Liberation DMG")', () => {
+    // bug class a/d
+    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.basic.death-snip').damage.category).toBe('libDmg');
+    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.forte.sawring-blitz-2-3').damage.category).toBe('libDmg');
+    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.forte.sawring-eradication').damage.category).toBe('libDmg');
+    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.forte.sawring-eradication-ring-scalar').damage.category).toBe('libDmg');
+  });
+
+  it('Rending Lunge is real, sourced damage (was silently dropped — bug class f)', () => {
+    const b = CHISA_BLOCKS.find(b => b.id === 'chisa.basic.stage2-rending-lunge');
+    // Stage 2 (9.55+19.09+66.81=95.45) + Rending Lunge (15.11×4+90.66=151.10)
+    const sum = b.damage.hits.reduce((s, h) => s + (h.atkPct || 0), 0);
+    expect(sum).toBeCloseTo(95.45 + 151.10, 1);
   });
 });

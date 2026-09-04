@@ -241,6 +241,26 @@ export const AUGUSTA_BLOCKS = [
     trigger: { type: 'cast', on: 'Heavy ATK:Thunderoar: Spinslash' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: [{ atkPct: 100 }, { atkPct: 100 }], category: 'heavyDmg' },
-    note: 'Casting Thunderoar: Spinslash or Uppercut grants 2 Crown of Wills stacks (capped at 2 stacks/sec, not modeled) AND triggers Thunder Rage — 2 separate Electro Heavy-ATK hits at 100% ATK each (200% ATK total, on top of the move\'s own damage) — modeled as a real proc-style damage block using the audit\'s own sourced figures, instead of the flat heavyDmg:200 approximation RESONANCE_CHAIN_DATA itself carries (same "discrete proc, not a modifier" treatment as Yinlin\'s S6/Calcharo\'s S6). Also raises Crown of Wills max stacks 2->4 and the CR-over-150%->CD conversion (unmodeled, same caveat as S2), not represented here.',
+    note: 'Casting Thunderoar: Spinslash or Uppercut grants 2 Crown of Wills stacks (capped at 2 stacks/sec, not modeled) AND triggers Thunder Rage — 2 separate Electro Heavy-ATK hits at 100% ATK each (200% ATK total, on top of the move\'s own damage) — modeled as a real proc-style damage block using the audit\'s own sourced figures, instead of the flat heavyDmg:200 approximation RESONANCE_CHAIN_DATA itself carries (same "discrete proc, not a modifier" treatment as Yinlin\'s S6/Calcharo\'s S6). Also raises Crown of Wills max stacks 2->4 and the CR-over-150%->CD conversion (unmodeled, same caveat as S2), not represented here. See augusta.chain.s6-thunder-rage-repeat below for the SECOND Spinslash cast in her real modeled rotation — this block\'s own `trigger.on` only matches the FIRST cast\'s distinct rotation-step label.',
+  },
+  {
+    // Added during a from-scratch Phase A redo (2026-09-04): CHARACTER_ROTATIONS['Augusta'] casts
+    // Thunderoar: Spinslash TWICE per full rotation — once as its own step ('Heavy ATK:Thunderoar:
+    // Spinslash', covered by augusta.chain.s6-thunder-rage above) and once as part of the combined
+    // repeat step 'Heavy ATK:Thunderoar: Backstep → Spinslash' (see augusta.heavy.
+    // thunderoar-backstep-spinslash-repeat). Trigger keys are matched by EXACT rotation-step label
+    // (rotationSimulator.js's castKey = `cast:${type}:${skill}`), so the first block's trigger.on
+    // never matches the second step's differently-worded label — Thunder Rage silently fired only
+    // once per rotation in the live engine instead of twice, per the kit's own unconditional "Casting
+    // Thunderoar: Spinslash or Thunderoar: Uppercut ALSO triggers Thunder Rage" text (no once-per-
+    // rotation cap stated, only the separate 1s Crown-of-Wills-stack ICD, which doesn't gate this).
+    // Same duplicate-trigger pattern as the S3 totalMult scoping already covering both Spinslash casts
+    // via separate scopedToBlockId entries.
+    id: 'augusta.chain.s6-thunder-rage-repeat',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Heavy ATK:Thunderoar: Backstep → Spinslash' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: [{ atkPct: 100 }, { atkPct: 100 }], category: 'heavyDmg' },
+    note: 'Same Thunder Rage proc as augusta.chain.s6-thunder-rage, firing for the SECOND (repeat combo) Spinslash cast in her real modeled rotation instead of being silently dropped.',
   },
 ];

@@ -262,9 +262,9 @@ audit per character, all cross-checked against a fresh source dump:
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
-Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi — added
-2026-09-03/04, first twenty-one characters audited under the updated
-9-dimension methodology** (see below). Many more
+Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno — added 2026-09-03/04, first
+thirty-two characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -281,6 +281,46 @@ Energized Pounce/Rebound are explicitly "counted as Basic Attack DMG"
 per kit text, not Skill. Neither the dump's "Rotation" tips text nor its
 Standard Rotation mentions casting base (non-Energized) Pounce/Rebound.
 Not added to `dmgFocus` — flagged as unattributed rather than guessed.
+
+**Iuno pass (2026-09-04)**: independently re-verified all 9 dimensions
+against `Characters data dump/Iuno/Iuno.md` (a genuine fresh re-read, not
+trusting the file's own extensive prior-audit comments). Most of the file
+was already accurate (SKILL_MULTIPLIERS values, CHAR_BUFF_TABLE, dmgFocus,
+weapon/echo data, icons all checked out). 3 real bugs found and fixed:
+1. **CHARACTER_ROTATIONS (dimension 2, bug class f)** — the modeled
+   rotation cast Arc Beyond the Edge only once, but the dump's own
+   "Standard Sub DPS Rotation" explicitly casts it twice ("Arc Beyond the
+   Edge ×2", 2 charges) and her own Sentience math only balances with both
+   charges spent (100-point bar: 1 full Basic chain @ 50 + 2 Skill charges
+   @ 25 each). Added a 2nd consecutive Arc Beyond the Edge rotation step —
+   silently dropped roughly half of a real, non-trivial rotation
+   component's damage before this fix.
+2. **Engine block S3 chain node (dimension 8, bug class b/c — category
+   leak)** — `iuno.chain.s3` used a bare, unscoped `libDmg: 65` effect.
+   S3's own kit text names exactly 3 moves (Moonbow Basic ATK / Arc Beyond
+   the Edge / Moonbow Dodge Counter), but `libDmg` is a damage-CATEGORY
+   stat that several OTHER real blocks also carry (`iuno.liberation.beneath-lunar-tides`
+   the Ultimate, `iuno.heavy.flux-moonbow`, `iuno.heavy.absolute-fullness`)
+   despite none of them being named by S3's text — the unscoped effect was
+   silently amplifying the Ultimate/Flux/Absolute Fullness damage by +65%
+   too. Split into 2 `scopedToBlockId`-scoped effects covering only the 2
+   blocks that actually exist for S3's named moves (Moonbow Dodge Counter
+   has no block since it's unused in the modeled rotation).
+3. **SKILL_MULTIPLIERS Outro row note (dimension 1, stale text)** — the
+   row's own note still said "for 10s" while CHAR_BUFF_TABLE,
+   CHARACTER_ROTATIONS, the character `desc`, and the dump itself all
+   correctly say 14s (a prior pass fixed the real 3 but missed this 4th
+   copy of the same fact) — corrected.
+S6's `libDmg: 1600` was checked against the same category-leak concern but
+confirmed correct as-is: it's a `cast`-triggered, no-duration ("instant")
+buff, which `resolveHitComposedDps.js`'s `instantCastBuffBlocks` machinery
+only applies to hits fired within the SAME rotation step as the triggering
+cast — since casting Absolute Fullness is its own isolated rotation step
+(no other damage block fires in that same step), it does not leak onto any
+other block despite being an unscoped category stat. 5 new tests added to
+`triggerEngine-iuno.test.js` (Arc Beyond the Edge cast-count, S3 scoping
+verified via a with/without-block damage diff, SKILL_MULTIPLIERS note
+text). Full suite: 1467 tests passing.
 
 **Rover: Spectro pass (2026-09-03)**: her `Characters data dump/` already
 had 6 of 8 dimensions verified clean from an earlier pass (SKILL_MULTIPLIERS,
@@ -688,6 +728,746 @@ separate "Loop Rotation" does, a real alternate not selected). Icons
 (dimension 9) checked and confirmed already fully wired. No code changes,
 no new tests needed — logged here as verification, not a no-op skip.
 
+**Augusta pass (2026-09-04) — near-clean, 1 real completeness gap found and
+fixed.** Her `Characters data dump/` file and `augusta.blocks.js` already
+carried an unusually deep prior audit trail (2026-09-02 "final Augusta
+audit pass"): the halving-pattern bug across all 22 Lv.10 hit values
+already retightened, Everbright Protector's missing `damage.category`
+already fixed to `heavyDmg`, S3's unscoped `totalMult` already rescoped to
+its 6 real named moves via `scopedToBlockId`, S5's fabricated `totalMult:15`
+already zeroed, S6's Thunder Rage already modeled as a real 2×100%-ATK proc
+block (not the flat `heavyDmg:200` legacy-table approximation), the Outro's
+`allDmg` stat and `dmgFocus` (`['Heavy ATK', 'Skill']`, correctly excluding
+Liberation since every Liberation-slot cast is explicitly "considered Heavy
+Attack DMG" per her own kit text) both already matching the dump exactly,
+and her tier/weapon/echo/icon/chain-node data all already verified clean.
+Redoing all 9 dimensions against the fresh dump found everything above
+still correct, plus one real gap dimension 1/8 flagged: `SKILL_MULTIPLIERS`
+was missing reference rows for 6 real named kit moves the dump's own Basic
+Attack/Forte multiplier lists document — Mid-air Attack (59.65%×2), Dodge
+Counter (67.00%×2), Mid-air Dodge Counter (59.65%×2), and the "at full
+Prowess/Ascendancy" Dodge Counter replacement variants (Dodge Counter -
+Heavy Attack: Steelclash 46.39%×3, Dodge Counter - Thunderoar: Backstep
+53.68%, Dodge Counter - Undying Sunlight: Strike 139.17%×2, considered
+Resonance Skill DMG). None of these fire in her real modeled
+`CHARACTER_ROTATIONS` (the rotation's real combo path is Backstep→
+Spinslash, never Dodge Counter), so — matching the existing Lucy
+Dodge-Counter-row precedent — added as documented reference rows only, no
+new engine blocks. Full suite green: 1442/1442 — no new tests needed, since
+the fix was reference-data-only (no new/changed engine behavior) and the
+prior 2026-09-02 pass already added `triggerEngine-augusta.test.js` and
+`augustaHalvedMultipliersFix.test.js` covering every real engine-block fix.
+
+**Brant pass (2026-09-04) — verification only, all real fixes already
+landed in a prior same-day pass.** His `Characters data dump/` file (a real
+prydwen.gg snapshot dated 20/Aug/2026, created earlier the same day since
+none existed before) and `brant.blocks.js` already carried a full 9-dimension
+audit: SKILL_MULTIPLIERS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE all confirmed
+matching the dump exactly (including the already-logged S2 Outro-proc gap —
+440% ATK, Basic Attack DMG type, max 1/sec, max 2 explosions total);
+`weaponAlts.alt4` had held 2 unsourced weapons (`'Overture'`,
+`'Commando of Conviction'`) not present anywhere in the dump's exhaustive
+5-weapon Best Weapons list — fixed by moving the 2 real missing alts (Red
+Spring 73.1%, Emerald of Genesis 71.3%) into `alt5` and clearing `alt4`
+rather than backfilling it with unsourced data; `brant.midair.
+stage-2-3-charged-flip` had no `damage.category` — fixed to `basicDmg` per
+the established Mid-air Attack convention (inherits Basic/Heavy ATK DMG,
+never its own type); `chain.s3` (Returned from Ashes DMG Multiplier +42%)
+and `chain.s6` (Mid-air Attack DMG Multiplier +30%) were both the same
+Augusta-S3-shape unscoped `totalMult` over-crediting bug — silently
+boosting his entire kit instead of only their real named target — both
+fixed via `scopedToBlockId`. SKILL_MULTIPLIERS also gained reference-only
+rows for base Heavy Attack (197.55%), Plunging Attack (104.78%), and Dodge
+Counter (38.03%×3+57.04%×2), confirmed unused in his real modeled
+`CHARACTER_ROTATIONS` (goes straight from Intro/Liberation into Mid-air
+combat, matching the Lucy/Augusta Dodge-Counter-row precedent). dmgFocus,
+tier, echo data, and icons (dimension 9) were all independently re-checked
+against the fresh dump this pass and confirmed already correct — no
+remaining gaps found. Re-running the full 9-dimension audit today
+surfaced nothing new. Full suite green: 1442/1442 (no new tests needed —
+the prior pass's 8 tests in `triggerEngine-brant.test.js` already cover
+every real engine-block fix, including the cross-character
+`roveraero.midair.plunging-attack` category fix caught in passing during
+that same pass).
+
+**Buling pass (2026-09-04) — 1 real bug found and fixed (dmgFocus).** A
+full prior fix pass had already landed same-day (commit `7a283919`, no
+write-up entry existed yet): her `Characters data dump/` file (a real
+prydwen.gg snapshot dated 20/Aug/2026, created that pass since none existed
+before — her Calculations tab explicitly states damage-profile percentages
+aren't published for her at all, unlike every DPS-focused dump) already had
+SKILL_MULTIPLIERS/CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/
+base stats/`bestWeapon`/`weaponAlts` all independently re-verified exactly
+matching this pass, plus 3 real fixes already landed then: `bestEchoes` had
+the same Sanhua-shape orphaned-main-echo bug (`getSonataLoadouts()`'s
+sequential `[main, set]` pairing left 1 of 2 same-set alt Main Echoes
+without a paired set string) — fixed by repeating the set name per alt;
+`buling.heavy.twin-thunders` wrongly modeled a value the source's own
+Multipliers table explicitly labels "Healing" as real `basicDmg` damage —
+removed (Twin Thunders is a pure team-heal, same as Twin Mountains, which
+already correctly has no block); the DPS tier row was `['T1.5','T2']`
+against the source's own `T2`/`T3`. Redoing all 9 dimensions against the
+fresh dump this pass confirmed all of the above still correct, plus found
+one more real gap dimension 5 flagged: `dmgFocus` was `['Liberation']`
+only — 'Basic ATK' (5 real, already `basicDmg`-categorized blocks: Stage
+1/2/4, Mid-air Attack, Heavy Attack - Mountain Over Thunder, all firing
+every real `CHARACTER_ROTATIONS` loop) and 'Skill' (Thunder Talisman,
+already `skillDmg`-categorized, also firing every loop) were both entirely
+missing, silently rejecting real teammate DMG Bonus buffs on the majority
+of her real personal damage — fixed to `['Basic ATK', 'Skill',
+'Liberation']`, same "no Damage Profile % data, include all real
+always-fired blocks" resolution as Youhu/Yuanwu. Dimension 8 (engine-block
+parity) confirmed clean: Heavy Attack - Thunder Over Mountain (89.47%,
+real but strictly worse/slower-to-reach than Mountain Over Thunder per the
+dump's own Review text) and Basic Attack Stage 3/Dodge Counter (skipped by
+the dump's own real Loop Rotation via a Jump-cancel straight from Stage 2
+into Mid-air Attack) both correctly stay reference-only in
+SKILL_MULTIPLIERS with no engine block, same Lucy/Augusta/Brant
+Dodge-Counter-row precedent — neither fires in the real modeled rotation.
+Icons (dimension 9) checked and confirmed already fully wired for every
+rotation move and all 6 Resonance Chain nodes. 1 new test, full suite
+green: 1443/1443.
+
+**Camellya pass (2026-09-04) — 3 real bug classes found and fixed, the biggest
+categorization miscall found in this audit series so far.** Her
+`Characters data dump/` file and an "App Data Comparison" section already
+existed from a same-day-earlier pass claiming SKILL_MULTIPLIERS/
+CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/base stats/
+`bestWeapon`/`weaponAlts`/`bestEchoes`/tier were all clean, plus 2 real fixes
+already landed then (5 missing SKILL_MULTIPLIERS rows including the
+consequential Floral Ravage 0-DMG-rotation-step gap, and a straight ToA/WW
+tier swap). Per this pass's own instructions, all 9 dimensions were
+independently re-verified from scratch against the fresh dump rather than
+trusting that write-up, and it found real bugs the prior pass's narrower
+check missed:
+1. **Miscategorization, dimension 8 — the largest found in this audit series.**
+   Camellya's kit text is explicit that Crimson Blossom, the Vining
+   Waltz/Blazing Waltz combo, Ephemeral, and Floral Ravage are ALL
+   "considered Basic Attack DMG" (Blossom/Budding Mode replaces her whole
+   Basic/Heavy/Dodge-Counter/Skill kit with this combo) — yet all 5 of her
+   `camellya.*` damage blocks covering those moves (`basic.vining-waltz-1`,
+   `skill.crimson-blossom`, `skill.vining-waltz-combo`, `forte.ephemeral`,
+   `skill.floral-ravage`) were categorized `skillDmg`. Confirmed by the
+   dump's own Damage Profile showing a genuine **0% Skill share** against
+   **67.1% Basic** (her dominant bucket) — none of her real modeled damage
+   is actually Skill-type. Fixed all 5 to `basicDmg`.
+2. **`dmgFocus` was wrong as a direct consequence of (1) and also missing a
+   real bucket**: `['Basic ATK', 'Skill']` — 'Skill' had a genuine 0% share
+   (now 0 skillDmg blocks exist in the file at all), while 'Liberation'
+   (16.5%/78,645, her 2nd-largest bucket, already correctly
+   `libDmg`-categorized on `camellya.liberation.fervor-efflorescent`) was
+   entirely missing. Fixed to `['Basic ATK', 'Liberation']`.
+3. **Unscoped `totalMult` over-crediting, dimension 8 — same bug class as
+   Augusta's S3/S5 and Brant's S3/S6**: `chain.s2` (Ephemeral's own DMG
+   Multiplier +120%), `chain.s5-everblooming` (Everblooming's own +303%),
+   `chain.s5-twining` (Twining's own +68%), and `chain.s6-bloom-...` (Sweet
+   Dream's own +150%, Budding-Mode-conditioned) were all unscoped
+   `totalMult` buffs — per `resolveHitComposedDps.js`'s real application
+   (`stats.totalMult` multiplies EVERY hit, not just the named move), each
+   was silently over-crediting Camellya's entire kit instead of only the one
+   real move its own kit text names. All 4 fixed via `scopedToBlockId`
+   (`s5-twining`/`s6-bloom` each needed 2 scoped effect entries since Twining
+   has 2 damage blocks and Budding Mode's real affected moves in the modeled
+   rotation are the Vining Waltz combo + Floral Ravage). Fixing this also
+   surfaced a **5th real bug in the same node**: `chain.s3`'s single block
+   wrapped BOTH of its node's real effects — Fervor Efflorescent's
+   unconditional totalMult +50% AND a genuinely Budding-Mode-conditional ATK
+   +58% — under one `condition: { requiresStance: 'Budding Mode' }`, so the
+   totalMult half never applied at all in the real modeled rotation
+   (Liberation casts BEFORE Ephemeral/Budding Mode there). Split into 2
+   blocks: `chain.s3-fervor-mult` (unconditional, scoped to
+   `camellya.liberation.fervor-efflorescent`) and the original
+   `chain.s3-a-bud-adorned-by-thorns` (kept conditional, atkPct only — not
+   move-scoped since ATK isn't category-gated).
+   RESONANCE_CHAIN_DATA's own flat-table s2/s3/s5/s6 rows were re-checked and
+   left unchanged — they still match the dump's raw values exactly; only the
+   TriggerBlocks' application scope was wrong.
+Icons (dimension 9), weapon data, echo data, and CHAR_BUFF_TABLE were all
+independently re-verified against the fresh dump and confirmed already
+correct. 2 new tests added to `triggerEngine-camellya.test.js`
+(categorization + scoping assertions) plus 1 existing test updated for the
+S3 split; full suite green: 1445/1445.
+
+**Augusta redo (2026-09-04) — genuine from-scratch re-audit (not a check-if-
+already-done pass), found 1 real engine-block-parity bug the earlier same-day
+Augusta pass missed.** Per this pass's own explicit instruction not to trust
+any prior write-up's "already audited"/"final pass" claims, all 9 dimensions
+were independently re-verified from scratch against `Characters data dump/
+Augusta/Augusta.md` as if auditing her for the first time, rather than
+treating the earlier 2026-09-04 "near-clean, 1 gap" entry above as ground
+truth:
+1. **SKILL_MULTIPLIERS** — every Lv.10 value (Basic/Heavy/Skill/Liberation/
+   Forte/Intro/Outro, including the 6 reference-only rows the earlier pass
+   added) re-checked digit-for-digit against the dump's own Multipliers
+   lists. Confirmed exact, no drift.
+2. **CHARACTER_ROTATIONS** — all 14 steps re-checked against the dump's own
+   "Core Rotation" text and step-by-step Notes. Confirmed an exact match,
+   including the Backstep→Spinslash repeat step and the Echo/Outro tail.
+3. **RESONANCE_CHAIN_DATA** — every node (S1-S6) re-read against the dump's
+   own R1-R6 kit text, including re-checking S3's scoping (does its +25% DMG
+   Multiplier apply kit-wide, or only to its 6 real named moves?) and S5
+   (still correctly zeroed — a purely defensive Glory's Favor shield bonus,
+   no DPS component). Confirmed all already correct.
+4. **CHAR_BUFF_TABLE** — Outro (`allDmg`, not `elemDmg`) and the Crown of
+   Wills self-buff (`elemDmg`) both re-verified against the dump's own "+15%
+   DMG Amplification for ALL Attributes" / "each stack grants +15% Electro
+   DMG Bonus" text. Confirmed correct.
+5. **dmgFocus** — re-checked against the dump's own Damage Profile (Heavy
+   ~74.6%, Skill ~16.7%, Liberation 0% since every Liberation-slot cast is
+   explicitly "considered Heavy Attack DMG", Intro/Echo minor slices).
+   `['Heavy ATK', 'Skill']` confirmed correct; Echo's real 6.46% share
+   confirmed correctly excluded — it's gear-Echo damage (The False
+   Sovereign's own Transform hit), not a kit move explicitly categorized as
+   Echo Skill DMG the way Phrolova/Galbrena/Sigrika's OWN kit abilities are,
+   so it doesn't belong in this kit-damage-type gate.
+6. **Weapon data** — `bestWeapon` (Thunderflare Dominion) and `weaponAlts`
+   (alt5: Verdant Summit/Ages of Harvest; alt4: Aureate Zenith/Autumntrace;
+   alt3: Guardian Broadblade) re-checked against the dump's full 12-weapon
+   Best Weapons list. Confirmed correct, matching the established "alt4
+   reserved for the best 4-star options, not every ranked 5-star" convention
+   used elsewhere.
+7. **Echo data** — `bestEchoes` (`['The False Sovereign', 'Crown of Valor
+   3pc + Void Thunder 2pc']`) re-checked against the dump's Best Echo Set
+   section. Confirmed correct.
+8. **Engine-block parity — 1 real bug found.** Re-decomposed the dump's real
+   rotation move-by-move against `augusta.blocks.js` looking specifically
+   for the patterns flagged going into this pass (miscategorization against
+   kit-text override language, unscoped chain-node buffs, wrongly-nested
+   conditions). Categorization and S3's `scopedToBlockId` scoping were both
+   confirmed already correct (no repeat of Camellya's miscategorization bug
+   or an unscoped-totalMult bug here). Found instead: `augusta.chain.
+   s6-thunder-rage` (Thunder Rage, the S6-granted 2×100%-ATK proc on casting
+   Thunderoar: Spinslash) only fired on the FIRST of the two real Spinslash
+   casts in her modeled rotation. The engine's trigger-key matching is
+   exact-label (`cast:${type}:${skill}`, rotationSimulator.js), and the
+   SECOND Spinslash cast is folded into the combined repeat step `'Heavy
+   ATK:Thunderoar: Backstep → Spinslash'` (a different label than the first
+   step's bare `'Heavy ATK:Thunderoar: Spinslash'`) — so the single S6 block
+   only ever matched the first cast, silently dropping one of the two real
+   Thunder Rage procs per rotation. The kit's own text ("Casting Thunderoar:
+   Spinslash or Thunderoar: Uppercut ALSO triggers Thunder Rage") states no
+   once-per-rotation cap — only a separate 1s Crown-of-Wills-stack ICD that
+   doesn't gate the Thunder Rage hits themselves. Fixed by adding
+   `augusta.chain.s6-thunder-rage-repeat`, an identical damage block
+   triggered on the repeat step's own label — same "one block per real
+   rotation-step label" pattern already used for `augusta.heavy.
+   thunderoar-backstep-spinslash-repeat`.
+9. **Icons** — `SKILL_ICONS['Augusta']`/`CHAIN_NODE_ICONS['Augusta']`
+   re-checked against every real rotation-step skill name (via
+   `getSkillIcon`'s `skillName.includes(key)` matching) and all 6 chain
+   nodes. Confirmed fully wired, no gap.
+
+1 new test added to `triggerEngine-augusta.test.js` (asserts Thunder Rage
+fires — with 2 hits each — on both the first AND repeat Spinslash casts, at
+two genuinely different simulated times). Full suite green: 1446/1446.
+
+**Brant redo (2026-09-04) — genuine from-scratch re-audit (not a check-if-
+already-done pass), found 2 real bugs the earlier same-day Brant pass missed
+(that pass trusted the dump/blocks' own in-code comments and only added a
+missing write-up entry, finding no new bugs).** All 9 dimensions were
+independently re-verified from scratch against `Characters data dump/
+Brant/Brant.md`, specifically re-checking every damage block and chain node
+for the 3 bug classes found on Camellya/Augusta (miscategorization against
+kit-text override language, unscoped `totalMult` chain buffs, and
+repeat-step trigger-label mismatches):
+1. **SKILL_MULTIPLIERS** — every Lv.10 row (Basic ATK Stage 1-4, Mid-air's
+   5-stage Charged Combo, Heavy ATK/Rhapsodic Riff, Dodge Counter, Skill,
+   Liberation, Forte, Intro, Outro) re-checked digit-for-digit against the
+   dump's own Multipliers tables. Confirmed exact (aggregated sums match:
+   e.g. Stage 3 = 22.06%×3+33.08%×2 = 132.34% ≈ the stored 132.3%). The
+   Mid-air combo's known Stage-1-vs-Stage-2-Charged-Attack branch ambiguity
+   (flagged since 2026-08-31: which grapple-swing stage a real Charged
+   Attack chains off is a player-input branch the flat schema can't
+   express) remains an explicitly-documented TODO, not a silent bug.
+2. **CHARACTER_ROTATIONS** — all 5 steps re-checked against the dump's own
+   Standard Rotation text. Confirmed an exact match. No step repeats a
+   combo (unlike Augusta's Spinslash), so the repeat-trigger-label bug class
+   does not apply here — checked and confirmed not applicable.
+3. **RESONANCE_CHAIN_DATA** — every node (S1-S6) re-read against the dump's
+   own kit text, specifically re-checking S3/S6's `scopedToBlockId` scoping
+   (already fixed in the prior pass) for correctness rather than trusting
+   it: S3's +42% Returned from Ashes multiplier and S6's +30% Mid-air
+   Attack multiplier are both still correctly scoped to only their named
+   move (+ S6's own secondary-blast block for S3), not unscoped `totalMult`
+   over-crediting the whole kit. Confirmed correct, no repeat of Brant's own
+   earlier-fixed bug or Camellya's.
+4. **CHAR_BUFF_TABLE** — Outro (`elemDmg`+`skillDmg`, condition-gated to
+   Fusion incoming Resonators, matching Roccia's established
+   elemDmg-buff-to-incoming-Resonator convention exactly) and the Trial by
+   Fire and Tide self-buff (`elemDmg`) both re-verified against the dump's
+   kit text. Confirmed correct.
+5. **dmgFocus — 1 real bug found.** `['Basic ATK', 'Skill']` was wrong:
+   'Skill' has a genuine 0% real share per the dump's own Damage Profile —
+   his Skill button (Anchors Aweigh!) is never cast for damage in the real
+   rotation (only Plunging Attack, optionally and immediately
+   Ultimate-cancelled, itself "considered Basic Attack DMG"), and no block
+   in `brant.blocks.js` is `skillDmg`-categorized for any real rotation
+   damage. 'Liberation' (18.1%/44,052, his 2nd-largest bucket, already
+   correctly `libDmg`-categorized on `brant.liberation.to-the-horizon`) was
+   entirely missing — the exact same shape as this same session's Camellya
+   fix. Fixed to `['Basic ATK', 'Liberation']`.
+6. **Weapon data** — `bestWeapon` (Unflickering Valor) and `weaponAlts`
+   (alt5: Laser Shearer/Bloodpact's Pledge/Red Spring/Emerald of Genesis,
+   the prior pass's own fix; alt3: Sword of Night, the universal Sword
+   starter-weapon convention used by 12 other Sword characters) re-checked
+   against the dump's exhaustive 5-weapon Best Weapons list. Confirmed
+   correct.
+7. **Echo data** — `bestEchoes` (`['Dragon of Dirge', 'Tidebreaking Courage
+   5pc']`) re-checked against the dump's Best Echo Set section. Confirmed
+   correct.
+8. **Engine-block parity — 1 real bug found.** Re-decomposed the dump's kit
+   text move-by-move against `brant.blocks.js`: `brant.intro.applaud-for-me`
+   had no `damage.category` at all, silently rejecting Resonance Skill DMG
+   Bonus on a real 1.63% (10,359) damage share. His Intro carries no
+   "considered X DMG" override in the kit text ("Attack target, Fusion DMG,
+   grants Interlude Applause"), so per the established default convention
+   for an un-overridden Intro Skill hit (Calcharo's Wanted Outlaw/Encore's
+   Woolies' Helpers, both fixed the same way this session) it resolves to
+   `skillDmg`. Fixed. Every other real named move/state (Mid-air combo,
+   Liberation, Forte, S6 secondary blast) already has a correctly-scoped
+   block and category; Skill (Anchors Aweigh!)/Heavy ATK/Dodge Counter
+   confirmed deliberately unmodeled (never cast for damage in the real
+   rotation, per the dump's own Standard Rotation and reference-data-only
+   SKILL_MULTIPLIERS comment).
+9. **Icons** — `SKILL_ICONS['Brant']`/`CHAIN_NODE_ICONS['Brant']`
+   re-checked against every real rotation-step skill name and all 6 chain
+   nodes. Confirmed fully wired (including 3 correctly-reused shared/generic
+   Sword icon slots), no gap.
+
+2 new tests added to `triggerEngine-brant.test.js` (Intro's `skillDmg`
+category; `dmgFocus` equals `['Basic ATK', 'Liberation']`). Full suite
+green: 1448/1448.
+
+**Buling redo (2026-09-04) — genuine from-scratch re-audit (not a check-if-
+already-done pass), found 2 real bugs the earlier same-day Buling passes
+missed (the first pass mostly trusted a prior commit and found 1 bug, a
+follow-up pass closed dimensions 8/9 and found 1 more — this pass
+independently re-verified all 9 dimensions from scratch against
+`Characters data dump/Buling/Buling.md` rather than trusting either prior
+write-up, specifically re-checking every damage block and chain node for
+the 3 bug classes found on Camellya/Augusta/Brant** (miscategorization
+against kit-text override language, unscoped chain-node buffs stacking
+kit-wide instead of scoped to one move, and repeat-step trigger-label
+mismatches):
+1. **SKILL_MULTIPLIERS** — every Lv.10 row (Basic ATK Stage 1-4, Mid-air
+   Attack, Dodge Counter, both Heavy Attack combos, Skill/Pull-in Effect,
+   both Liberation forms, Five Thunders Spell Array, Intro, Outro)
+   re-checked digit-for-digit against the dump's own Multipliers tables.
+   Confirmed exact, no drift.
+2. **CHARACTER_ROTATIONS** — all 10 Loop Rotation steps re-checked against
+   the dump's own "Loop Rotation" text. Confirmed an exact match. No step
+   repeats a combo under a differently-worded combined label, so the
+   repeat-trigger-label bug class (Augusta's) does not apply here — checked
+   and confirmed not applicable.
+3. **RESONANCE_CHAIN_DATA** — every node (S1-S6) re-read against the dump's
+   own Resonance Chain text, specifically re-checking S1's Crit Rate scoping
+   (is it scoped to just Flashing Thunder Spell: Harmony, or unscoped over
+   Buling's whole kit like Camellya's bug?) and S6's stacking behavior
+   against `buling.libbuff.five-thunders-skill-ramp` (both fire on the same
+   Liberation cast). S1: confirmed the existing unscoped `self`-scope
+   modeling is the documented, accepted class of imprecision — the schema's
+   own `scopedToBlockId` caveat only enforces scoping on `trigger.type:
+   'passive'` blocks, and S1 is a real `cast`+`duration` buff-window block
+   (not passive), so `scopedToBlockId` would be a structural no-op here;
+   left as-is, matching precedent elsewhere for this exact engine
+   limitation. S6: **1 real bug found** — `buling.chain.s6` stored the flat
+   absolute ceiling value (50), which stacks ADDITIVELY on top of the base
+   ramp buff's own 25% (both fire on the same Liberation cast, no
+   replace-instead-of-add mechanism in this engine), giving a wrong 75%
+   total instead of the real 50% the dump's own kit text describes ("now
+   grants 50% ... up from the base 25%"). The block's own prior comment
+   explicitly flagged this as a "known imprecision ... not fixed in this
+   conversion" — not taken at face value. Fixed by modeling `chain.s6` as
+   the +25-point DELTA over the base ramp buff instead of the flat 50, so
+   the two blocks now sum to the correct 50% ceiling (the
+   RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE legacy flat-table path keeps its own
+   separate, still-undocumented-as-fixed additive-double-count limitation —
+   a cross-cutting `calcEngine.js` architecture gap out of scope for a
+   single-character engine-block audit, not modified this pass).
+4. **CHAR_BUFF_TABLE** — `outroBuffs` (`allDmg`, 15%, 30s) and `libBuffs`
+   (`skillDmg`, 25%, 24s) both re-verified against the dump's own Outro and
+   Forte Circuit kit text. Confirmed correct.
+5. **dmgFocus** — re-verified `['Basic ATK', 'Skill', 'Liberation']` (this
+   source has no Damage Profile % breakdown at all) against which blocks
+   actually fire every real Loop Rotation loop: 5 real `basicDmg` blocks
+   (Stage 1/2/4, Mid-air Attack, Heavy Attack - Mountain Over Thunder), 1
+   real `skillDmg` block (Thunder Talisman) plus the Intro fix below, and
+   Liberation (Flashing Thunder Spell: Harmony). Confirmed correct, no
+   fabricated or omitted entries.
+6. **Weapon data** — `bestWeapon` (Stringmaster) and `weaponAlts` (alt5:
+   Lethean Elegy/Rime-Draped Sprouts/Luminous Hymn/Cosmic Ripples; alt4:
+   Waltz in Masquerade) re-checked against the dump's full 6-weapon Best
+   Weapons list. Confirmed correct.
+7. **Echo data** — `bestEchoes` (`['Fallacy of No Return', 'Rejuvenating
+   Glow 5pc', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc']`) re-checked
+   against the dump's Best Echo Set section (one set, two alternative Main
+   Echoes). Confirmed correct, including the earlier pass's own
+   repeated-set-name fix for `getSonataLoadouts()`'s sequential pairing.
+8. **Engine-block parity — 1 real bug found (plus the S6 fix under
+   dimension 3 above).** Re-decomposed the dump's kit text move-by-move
+   against `buling.blocks.js`: `buling.intro.summon-and-smite` had no
+   `damage.category` at all, silently rejecting Resonance Skill DMG Bonus on
+   her Intro's real, always-fires-every-loop hit. The dump's own Intro Skill
+   multiplier table literally labels this row "Skill Damage" (not "Intro
+   DMG") — the same generic-labeling-defaults-to-skillDmg convention already
+   fixed for Aalto/Calcharo/Encore/Jianxin/Brant's own Intro rows. Fixed to
+   `category: 'skillDmg'`. Every other real named move (Basic ATK Stages
+   1/2/4, Mid-air Attack, Thunder Talisman, Mountain Over Thunder,
+   Liberation both forms) already has a correctly-categorized block; Stage
+   3/Dodge Counter/Heavy Attack - Thunder Over Mountain/Twin Mountains
+   confirmed deliberately unmodeled (never cast in the real Loop Rotation,
+   matching the established "SKILL_MULTIPLIERS row present but no block
+   needed when never cast in the modeled rotation" convention, e.g. Aalto's
+   own un-blocked Dodge Counter).
+9. **Icons** — `SKILL_ICONS['Buling']`/`CHAIN_NODE_ICONS['Buling']`
+   re-checked against every real rotation-step skill name (via
+   `getSkillIcon`'s `skillName.includes(key)` matching, including the Outro
+   step's own `'Exorcism Spell'` key) and all 6 chain nodes. Confirmed
+   already fully wired, no gap.
+
+2 new tests added to `triggerEngine-buling.test.js` (Intro's `skillDmg`
+category; S6 + base-ramp-buff sum to the real 50% ceiling instead of
+double-counting to 75%), 1 existing test updated (S6's own value changed
+from the flat 50 to the 25-point delta). Full suite green: 1450/1450.
+
+**Cantarella pass (2026-09-04) — genuine from-scratch re-audit (not a
+check-if-already-done pass), found 5 real bugs a prior same-day pass (which
+only found 3 Kit-tab/teams/tier issues and explicitly signed off dimensions
+3/4/5/8 as clean) missed. Independently re-verified all 9 dimensions against
+`Characters data dump/Cantarella/Cantarella.md`, specifically re-checking
+every damage block and chain node for the 3 bug classes found on Camellya/
+Augusta/Brant/Buling (miscategorization against kit-text override language,
+unscoped chain-node buffs stacking kit-wide instead of scoped to one move,
+and repeat-step trigger-label mismatches):**
+1. **Damage-category override bug, the same shape as Rover: Spectro's/
+   Jiyan's, found twice**: `cantarella.liberation.flowing-suffocation`
+   (Flowing Suffocation, cast from the Liberation slot) was `libDmg`, but
+   its own kit text is explicit — "Havoc DMG (**considered Basic Attack
+   DMG**)". `cantarella.liberation.diffusion-summons` (the off-field
+   Dreamweaver Coordinated ATK summon chain) was `coordDmg`, but its own kit
+   text is equally explicit — "Coordinated Attacks (Havoc DMG, **considered
+   Basic Attack DMG**)". Both silently accepted the wrong teammate DMG Bonus
+   type (Liberation/Coordinated ATK) and rejected the real one (Basic ATK).
+   Independently confirmed by the dump's own Damage Profile: Liberation is a
+   genuine **0%** share, Basic ATK the dominant **69.1%** one — exactly what
+   this fix produces. Both fixed to `basicDmg`.
+2. **Unscoped chain-node buff, S1** (bug class (b)): `cantarella.chain.s1`
+   was a single unscoped `totalMult: 50` self-passive — the real kit text
+   scopes this to 3 specific moves only (Graceful Step, Flickering Reverie,
+   Perception Drain's own DMG Multiplier), not her entire kit. Was silently
+   boosting every damage block she has. Rescoped to 3 `scopedToBlockId`
+   entries, one per real move, same multi-block-scoping pattern already used
+   for Camellya's chain.s5-twining/chain.s6-vining and Changli's tag-mapped
+   entries.
+3. **Cascading category fix, S3**: `cantarella.chain.s3` (Flowing
+   Suffocation's own +370% DMG Multiplier) was keyed to `libDmg`, matching
+   the pre-fix (wrong) category on the damage block above — once that block
+   became `basicDmg`, this buff would have silently stopped applying to
+   anything at all. Rescoped to `basicDmg` + a new `scopedToBlockId` (basicDmg
+   is now shared with 3 other blocks that must NOT receive this +370%).
+   `RESONANCE_CHAIN_DATA['Cantarella'].s3` updated to match (`libDmg: 370` →
+   `basicDmg: 370`).
+4. **Newly-created leak, S6**: `cantarella.chain.s6-basic-mult` (Phantom
+   Sting's own +80% DMG Multiplier) was already `basicDmg`-categorized and
+   correct in isolation, but unscoped — once fix #1 made `basicDmg` a
+   4-block-wide category (was 3), this node would have started silently
+   over-crediting Flowing Suffocation too, a move S6's own kit text never
+   mentions. Added `scopedToBlockId: 'cantarella.forte.phantom-sting'`.
+5. **dmgFocus/buffs, the same shape as Zhezhi's fix in the same table**:
+   `dmgFocus` was `['Coordinated ATK']` only — with fix #1 applied she has
+   **zero** real `coordDmg`-category damage at all. Real, already-correctly-
+   categorized, non-negligible shares missing entirely: Basic ATK (69.1%,
+   dominant), Skill (9.8%, Graceful Step + Flickering Reverie), Heavy ATK
+   (7.2%, Delusive Dive). Fixed to `['Basic ATK', 'Skill', 'Heavy ATK']`.
+   The `buffs` display column had the same wrong `'Coordinated ATK'` tag;
+   fixed to what she actually grants (`['Havoc DMG Amp', 'Skill DMG Amp',
+   'Heal']`, matching `CHAR_BUFF_TABLE['Cantarella'].outroBuffs`/`selfBuffs`
+   exactly). Liberation stays excluded from `dmgFocus` — confirmed genuinely
+   0% by the dump's own Damage Profile, consistent with fix #1.
+
+Also found and fixed a smaller **SKILL_MULTIPLIERS completeness gap**: the
+Intro Skill's Mirage-state replacement, Tidal Surge (16.90%×3+118.30%), was
+entirely missing despite being a real row in the dump's own Multipliers
+table — added, same Kit-tab-completeness treatment (never cast in
+`CHARACTER_ROTATIONS`, per the dump's own Review: "essentially never
+realistically used") already given to Mid-air Attack/Dodge Counter/Abysmal
+Vortex/Shadowy Sweep in the earlier same-day pass.
+
+**Carlotta pass (2026-09-04) — genuine from-scratch re-audit** (an earlier
+2026-08-31/09-02 pass had already fixed 3 real bugs — 2 dead cast-scoped/
+no-duration chain nodes, S1/S2, and 3 missing SKILL_MULTIPLIERS rows — and
+had explicitly signed off dimensions 1-7 as clean; independently
+re-verified all 9 dimensions from scratch against `Characters data dump/
+Carlotta/Carlotta.md` rather than trusting that sign-off, per this
+session's own "genuine first-time audit" instruction). SKILL_MULTIPLIERS,
+CHARACTER_ROTATIONS (including the repeat `'Skill:Art of Violence →
+Chromatic Splendor'` combined-step label — confirmed it matches its
+block's `trigger.on` exactly, no bug class (c) instance here), weapon
+data, and echo data all re-confirmed clean. Found and fixed 6 more real
+bugs, all missed by the earlier pass:
+1. **A 3rd unscoped-passive-`totalMult` whole-kit leak, on top of the 2
+   already found** (bug class (b)): `carlotta.chain.s5` (Imminent
+   Oblivion's own +47% DMG Multiplier) was `trigger:{type:'cast',
+   on:'Forte:Imminent Oblivion'}` with no `timing.duration` — the exact
+   dead no-op shape already found and fixed on this file's own S1/S2 (the
+   engine-architecture history item 12) — a 6th confirmed instance
+   project-wide, missed by the pass that fixed S1/S2 in the same file.
+   Fixed to passive + `scopedToBlockId:'carlotta.forte.imminent-oblivion'`.
+2. **Two unscoped-`totalMult`-on-passive-node whole-kit leaks** (bug class
+   (b), a different shape from #1 — these already had `trigger:
+   {type:'passive'}`, so they DID fire, but `resolveHitComposedDps.js`
+   applies `stats.totalMult` unconditionally to every hit the character
+   lands, not gated by `damage.category` the way `elemDmg`/`skillDmg`/etc.
+   are): `carlotta.chain.s3` (+93%, real scope: Art of Violence +
+   Chromatic Splendor only) and `carlotta.chain.s6` (+186.6%, real scope:
+   Death Knell only) were both unscoped, silently boosting Carlotta's
+   WHOLE kit — Intro, Outro, Imminent Oblivion, Era of New Wave/Fatal
+   Finale, everything — not just their real named moves. Rescoped: S3 to
+   3 `scopedToBlockId` effects (Art of Violence, Chromatic Splendor, AND
+   the repeat-pass combined block `...-chromatic-splendor-2`, so the 2nd
+   occurrence isn't silently dropped); S6 to Death Knell only.
+3. **Fabricated-zero `dmgFocus` entry** (bug class (e), the same shape as
+   Jiyan's/Cantarella's fixes): `dmgFocus` was `['Skill', 'Liberation']` —
+   but the dump's own Damage Profile shows a literal **0%** Liberation
+   share (all 3 Twilight Tango moves are explicitly "considered Resonance
+   Skill DMG" per kit text, already correctly `skillDmg`-categorized, none
+   `libDmg`), and the dump's own Substats priority list names only
+   "Resonance Skill DMG" — no Liberation DMG substat at all. Fixed to
+   `['Skill']`. Basic ATK (8.3%, real) has no wired `basicDmg` block at
+   all — her real rotation never casts plain Basic Attack — and isn't
+   named in the Substats priority either, left out rather than guessed
+   (Lumi's "flagged not guessed" precedent).
+4. **Cascading dead-buff target, `selfbuff.final-bow`**: was an unscoped
+   `{stat:'libDmg', value:80}` self-passive — but with fix #3 confirming
+   NO block in `carlotta.blocks.js` is `libDmg`-categorized at all, this
+   buff was a complete silent no-op, a `libDmg` stat pool nothing in her
+   kit ever reads (Final Bow's own kit text is a flat "+80% DMG
+   Multiplier" on Era of New Wave/Death Knell/Fatal Finale specifically,
+   not a general Liberation-category bonus anyway). Fixed to 3
+   `totalMult` effects, each `scopedToBlockId`'d to one of those 3 blocks
+   (Aemeath S3's multi-scoped-effects-on-one-block pattern).
+5. **Missing `damage.category`, bug class (d)**: `carlotta.outro.closing-
+   remark` (794.2% ATK, 3.77%/43,872 of her total per the Damage Profile)
+   and `carlotta.chain.s3-kaleidoscope-sparks` (the S3 extra Outro strike)
+   both had NO `damage.category` at all — her own real swap-out damage,
+   explicitly not a team buff, same shape already fixed to `outroDmg` on
+   Calcharo/Encore/Lingyang/Rover: Havoc's Outros. Fixed both to
+   `outroDmg`. Not added to `dmgFocus` — 3.77% sits below the established
+   ambiguous-exclude zone (4.6-5.5%, e.g. Xiangli Yao's Outro).
+6. **Wrong Whimpering Wastes tier**: stored as `T3`, but the dump's Review
+   section states DPS Tier explicitly as `T1` (ToA) / `T4` (WW) — Value
+   Tier is a separate `T1.5`/`T3`, not what this column stores, per the
+   established "DPS Tier not Value Tier" convention (Rover: Aero/Iuno).
+   Fixed WW to `T4`.
+
+Checked and confirmed correct, not bugs: chain.s1's unconditional Crit
+Rate (sourced, unchanged from the earlier pass); chain.s4's whole-team
+`skillDmg` buff (correctly team-scoped per its own real mechanic, no
+narrowing needed); Intro Wintertime Aria staying uncategorized (only
+1.25% share, no kit-text override and no generic "Skill Damage" row label
+to base a guess on, unlike Calcharo/Encore/Jianxin/Aalto/Baizhi/
+Lingyang's Intro fixes which all had that specific basis). Icons
+(dimension 9) re-confirmed fully wired, including the already-present
+generic-Pistols-icon reuse for Basic ATK/Necessary Measures/Plunging
+Attack. 9 new tests
+(`src/__tests__/triggerEngine-carlotta.test.js`), full suite green:
+1453/1453.
+
+Checked and confirmed NOT a bug: Jolt (198.81% Havoc DMG, "considered Basic
+Attack DMG", auto-triggered when a Hazy-Dream'd target next takes damage) —
+a real, deterministic hit in the realistic rotation (her own next Phantom
+Sting connects immediately after Flickering Reverie) but with no existing
+trigger mechanism that actually fires it: `'negative-status-hit'` is
+declared in `TRIGGER_TYPES` (`triggerBlocks.schema.js`) but has zero
+resolver support anywhere in the engine (`resolveHitComposedDps.js`/
+`resolveHitComposedTeamDps.js`/the legacy resolvers all have no case for
+it) — adding a block with this trigger would be silently inert, the exact
+"don't fabricate a value that doesn't actually apply" class this schema
+already warns against elsewhere. Building real `negative-status-hit` support
+is an engine-capability gap, out of scope for a per-character data pass —
+left correctly documented as unmodeled, same conclusion the prior pass
+reached but now for a verified reason (checked the resolvers directly)
+rather than trusted secondhand. CHAR_BUFF_TABLE, remaining RESONANCE_CHAIN_DATA
+nodes (S2, S4/S5's correct empty `{}`), CHARACTER_ROTATIONS steps, weapon
+data, echo data, tier, and icons were all independently re-verified against
+the dump and confirmed already correct.
+
+6 new tests added/updated in `triggerEngine-cantarella.test.js` (S1's 3-way
+scoping, S3's basicDmg rescope + scoping, S6-basic-mult's scoping, Diffusion's
+basicDmg category, Flowing Suffocation's basicDmg category). Full suite
+green: 1452/1452.
+
+**Cartethyia pass (2026-09-04) — genuine from-scratch re-audit**: all 9
+dimensions independently re-checked against a fresh dump read start-to-
+finish, not trusted from the file's own extensive prior-audit comments.
+2 real bugs found, both matching bug classes flagged elsewhere this session:
+
+1. **Missing rotation step, silent zero-DMG gap (dimension 8/engine-block
+   parity + dimension 2/CHARACTER_ROTATIONS + dimension 1/SKILL_MULTIPLIERS)**:
+   the dump's own "Full rotation" listing explicitly includes "Mid-air Attack
+   Stage 3 (Fleurdelys, hold Basic during Skill)" immediately after Skill 1
+   (Sword to Answer Waves' Call) — a real, always-cast step. It had NO
+   SKILL_MULTIPLIERS row, NO CHARACTER_ROTATIONS step, and NO engine block
+   anywhere. Added all 3: SKILL_MULTIPLIERS row `['Mid-air', 'Fleurdelys
+   Stage 3', '2.20%', ...]` (the dump's own Forte Circuit multiplier table),
+   a CHARACTER_ROTATIONS step between Skill 1 and the Basic P3-P5 string, and
+   engine block `cartethyia.midair.fleurdelys-stage-3` (`basicDmg`, `HP`
+   basis — no kit-text override names a different category, same
+   mid-air-inherits-Basic-ATK-DMG convention already used for her other
+   Mid-air block).
+2. **Unscoped `totalMult` leaking onto her whole kit (bug class b)**:
+   `cartethyia.chain.s2`'s real effect ("DMG Multiplier of Mid-air Attack
+   +200% specifically") was modeled as a bare `{ stat: 'totalMult', value:
+   200 }` with no `scopedToBlockId` — since `totalMult` is not category-gated,
+   `resolveHitComposedDps.js` was applying it unconditionally to EVERY hit in
+   her kit (Basic/Skill/Liberation included), not just Mid-air Attack.
+   Rescoped via 2 `scopedToBlockId` entries (Camellya/Cantarella/Carlotta's
+   own multi-block-scoping pattern) to both of her real Mid-air Attack blocks
+   — including the newly-added Stage 3 block above (checked for the
+   cascading-widening pattern explicitly: since bug #1 added a 2nd real
+   Mid-air Attack block, the S2 fix has to scope to both, not just the
+   pre-existing one, or it would silently under-credit the new block).
+
+All other dimensions independently re-verified clean against the fresh dump:
+SKILL_MULTIPLIERS' other 10 rows (verbatim match), RESONANCE_CHAIN_DATA (all
+6 nodes, including S5's correct empty defensive-only omission), CHAR_BUFF_TABLE
+(outro/debuff values), `dmgFocus` (`['Basic ATK', 'Liberation']`, correctly
+excluding Skill's borderline 6.6% per established precedent), weapon data
+(`bestWeapon`/`weaponAlts`/tier bucketing by rarity all match the dump's
+ranked list), echo data (`bestEchoes` matches Windward Pilgrimage 5pc +
+Reminiscence: Fleurdelys), tier (`T0.5`/`T1.5` matches exactly), base stats
+(HP/ATK/DEF/Energy all matches exactly), and icons (SKILL_ICONS/
+CHAIN_NODE_ICONS fully wired, including the new Stage 3 step resolving via
+the existing `'Fleurdelys'` generic-icon substring match with no changes
+needed). Heavy Attack/Enhanced Heavy Attack/Dodge Counter/Upward Cut stay
+deliberately unmodeled — the dump's own Damage Profile shows a genuine 0%
+Heavy Attack bucket for this exact benchmark rotation, confirming they're
+correctly swap-cancelled out rather than a coverage gap.
+
+3 new tests added to `triggerEngine-cartethyia.test.js` (Stage 3's damage/
+category/firing, S2's totalMult scoping), plus a 1-line index-shift fix in
+`data-integrity.test.js`'s `KNOWN_UNRESOLVED_BASELINE` (`Cartethyia[7]` →
+`Cartethyia[8]`, since the new rotation step pushed a later known-baseline
+step's index up by 1 — not a new bug, that step's legacy-calculator lookup
+mismatch pre-dates this pass). Full suite green: 1455/1455.
+
+**Chisa pass (2026-09-04) — genuine from-scratch re-audit**: all 9 dimensions
+independently re-checked against a fresh dump read start-to-finish, not
+trusted from `chisa.blocks.js`'s own extensive prior-audit comments (several
+of which turned out to be stale or simply wrong on re-check). 4 real bugs
+found, all matching bug classes flagged elsewhere this session:
+
+1. **Death Snip miscategorized against its own kit-text override (bug class
+   a)**: `chisa.basic.stage2-death-snip` folded Basic ATK Stage 2 + Rending
+   Lunge + Death Snip into one `basicDmg` block, but the dump's own kit text
+   is explicit for Death Snip specifically: "**Counted as Resonance
+   Liberation DMG.**" Split into 2 blocks — `chisa.basic.stage2-rending-
+   lunge` (`basicDmg`) and a new `chisa.basic.death-snip` (`libDmg`) — both
+   still firing off the same combined rotation step.
+2. **4 real damage blocks with no `damage.category` at all (bug class d)**:
+   `chisa.forte.sawring-blitz-2-3`, `chisa.forte.sawring-eradication` (+ its
+   ring-scalar twin), `chisa.skill.serrated-loop`, and
+   `chisa.intro.reverberance-return` were all uncategorized. Sawring - Blitz
+   and Sawring - Eradication are both explicitly "counted as Resonance
+   Liberation DMG" per kit text (fixed to `libDmg`); Serrated Loop is an
+   un-overridden base Skill move (fixed to `skillDmg`, the default); the
+   Intro's own multiplier row is literally labeled "Skill DMG" in the dump
+   (fixed to `skillDmg`, same convention already used for Aalto/Calcharo/
+   Buling's own Intro rows). Fixing the Liberation-categorized pair also
+   un-broke a cascading gap: S3's/S5's own `libDmg`-gated chain buffs
+   (+120%/+100%) had been silently applying to the Liberation ultimate's
+   single hit ONLY, not to Blitz/Eradication/Death Snip despite the kit text
+   naming all of them as Liberation-categorized too — checked for over-
+   crediting risk (none of Chisa's own blocks use `scopedToBlockId`, so
+   widening `libDmg` coverage here is a pure fix, not a leak).
+3. **3 chain/buff blocks dead against the actual modeled rotation (bug class
+   c)**: `chisa.chain.s1`, `chisa.debuff.thread-of-bane`, and
+   `chisa.chain.s6` all triggered on `cast:Skill:Eye of Unraveling` — but
+   `CHARACTER_ROTATIONS['Chisa']` (the Loop Rotation, Intro available) never
+   casts base Skill at all, only Serrated Loop, so these 3 real, sourced
+   Unseen-Snare-application effects (S1's +30% ATK, Thread of Bane's 18%
+   DEF Ignore, S6's Unseen Snare-Finality +30% deepen) never fired in the
+   modeled rotation. The dump's own kit text confirms Unseen Snare is
+   applied "via Skill hit, hitting shortly after **Serrated Loop**, [...] or
+   simply locking onto a target" — retargeted all 3 to `Skill:Serrated
+   Loop`, the move actually cast.
+4. **Missing rotation step, silently dropped real damage (bug class f)**:
+   Rending Lunge is a real, always-cast step named in both the dump's
+   Opener and Loop "Full rotation" text, and its own multiplier row
+   (`15.11%×4+90.66%`) is right there in the dump's Basic ATK table — but it
+   had no `SKILL_MULTIPLIERS` row at all, despite this file's own prior note
+   incorrectly asserting it was "not sourced anywhere." Added the row
+   (`characters.js`) and its hits (folded into the Stage-2 block above,
+   since both cast together as one combined rotation step).
+
+All other dimensions independently re-verified clean against the fresh dump:
+SKILL_MULTIPLIERS' other rows (verbatim match once Rending Lunge was added),
+CHARACTER_ROTATIONS (matches the dump's own Loop Rotation step-for-step),
+RESONANCE_CHAIN_DATA (all 6 nodes' stored values, including S4's correctly-
+unmodeled proc-rate-only effect), CHAR_BUFF_TABLE (selfBuffs/debuffs values
+and durations), `dmgFocus` (`['Basic ATK', 'Liberation']` — Skill's real
+share is a "trivial slice" by the dump's own Damage Profile, ~4%, same
+exclusion precedent as Cartethyia's dropped 6.6% Skill), weapon data
+(`bestWeapon`/`weaponAlts`/tier all match the dump's ranked list and rarity
+buckets), echo data (`bestEchoes` matches both the Rejuvenating Glow and
+Thread of Severed Fate builds and their correct main-echo pairings), tier
+(`T0`/`T0` matches the dump's own standard ToA/WW Ratings section exactly,
+not its separate Value Tier List), base stats (HP/ATK/DEF/Energy all match),
+and icons (SKILL_ICONS/CHAIN_NODE_ICONS fully wired, including Rending
+Lunge's own already-present icon key).
+
+12 tests in `triggerEngine-chisa.test.js` (was 8; added category-coverage,
+libDmg-categorization, Rending-Lunge-hit-sum, and trigger-retarget checks).
+
+**Ciaccona pass (2026-09-04) — genuine from-scratch re-audit**: all 9
+dimensions independently re-checked against a fresh dump read start-to-end,
+not trusted from `ciaccona.blocks.js`'s own extensive prior-audit comments
+(the file's own header even flags a specific claim — its Intro "Roaming with
+the Wind" labeling supposedly setting a precedent later used for Augusta/
+Lupa — as something to re-verify circularly-independent, per this session's
+own instructions; re-checked against the dump directly and confirmed
+correct, not a bug). Unlike several recent characters, engine-block parity
+(dimension 8) was already clean — every damage.category matches the dump's
+literal override language exactly (Quadruple Downbeat → heavyDmg via the
+dump's own damage-profile bucket match, Roaming with the Wind → skillDmg via
+its generic "Skill Damage" row label, Mid-air Attack → basicDmg via kit-text
+structure, S6 modeled as its own gated damage block rather than force-fit
+into RESONANCE_CHAIN_DATA) — no bug classes a/b/c/d/g/i found anywhere in
+`ciaccona.blocks.js`, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_
+CHAIN_DATA, or CHAR_BUFF_TABLE; all 4 of those dimensions plus `dmgFocus`
+(`['Basic ATK', 'Heavy ATK', 'Liberation', 'Skill']`, Echo correctly excluded
+per the established generic-equipped-echo precedent) and icons (dimension 9,
+SKILL_ICONS/CHAIN_NODE_ICONS fully wired including 2 correctly-reused shared
+icons) were independently re-verified byte-for-byte against the dump and
+found already correct.
+
+2 real bugs found in the remaining dimensions (build/tier data, bug class h
+— stale data vs. the dump), both in `characters.js`:
+
+1. **`bestEchoes` main-slot echo was stale**: stored as `'Reminiscence:
+   Fleurdelys'`, but the dump's own Best Echo Sets section explicitly calls
+   Nightmare: Kelpie "best main-slot pick by a small margin over
+   Reminiscence: Fleurdelys (use Fleurdelys instead if running Lux &
+   Umbra)" — her stored `bestWeapon` is Woodland Aria, not Lux & Umbra, so
+   the correct default main-slot pick is Nightmare: Kelpie. Fixed.
+2. **`weaponAlts.alt4` contained a fabricated entry**: `'Solar Flame'` is a
+   real 4★ Pistols weapon in `weapons.js`, but is not named anywhere in
+   Ciaccona's own dump — the dump names exactly one 4★ (Romance in
+   Farewell, its explicit F2P/no-gacha pick). Removed, leaving the
+   single-entry `alt4: ['Romance in Farewell']` matching the pattern already
+   used elsewhere (e.g. Cartethyia's `alt4: ['Feather Edge']`) when a dump
+   names only one 4★ alternative.
+3. **Tier data was off by half a tier on ToA**: stored `{toa: 'T0', ww:
+   'T1'}`, but the dump's own Review section states "T0.5 (ToA, standard) /
+   T1 (WW, standard)" — the T0/T1 pairing belongs to the dump's separate
+   Value Tier List (T1.5/T1.5, not T0/T1 either — closer to but not
+   matching that list), not its standard Ratings section this table
+   otherwise follows project-wide. Fixed to `T0.5`/`T1`.
+
+3 new tests added to `triggerEngine-ciaccona.test.js` (was 8, now 11)
+covering all 3 fixes. Full suite green: 1462/1462.
+Full suite green: 1459/1459.
+
 ---
 
 ## 2. Legacy-calculator correctness — real, unresolved finding
@@ -706,6 +1486,142 @@ simplified model doesn't capture (e.g. AoE/quickswap value, same caveat
 already flagged for Aemeath's Fusion Burst resolution). Needs its own
 diagnostic-first pass, same rigor as the two fixes that already came out of
 this same audit thread.
+
+**Changli redo (2026-09-04) — genuine from-scratch re-audit, confirmed clean.**
+Changli's earlier 2026-09-04 write-up already documented an unusually deep
+same-day chain of passes (initial 8-dim pass, a full 9-dim pass, an engine-
+level resolver bug found via her own S3, and a full kit re-segmentation pass
+that added 4 True Sight blocks + Secret Strategist + split/rescoped S1/S5/S6/
+Sweeping Force). Per this redo's own instruction not to take that at face
+value, all 9 dimensions were independently re-verified from scratch against
+`Characters data dump/Changli/Changli.md`, specifically re-checking for the
+bug classes this session's later redos (Augusta, Brant, Buling) and
+first-time audits (Cantarella, Carlotta, Cartethyia, Chisa) kept finding on
+already-"audited" characters: category-vs-override-text mismatches,
+unscoped `totalMult`/passive effects on chain nodes, repeat-step trigger-
+label mismatches, uncategorized real damage, dmgFocus omissions/fabrications,
+missing rotation-step-linked blocks, dead/no-op buffs, stale build data, and
+wrong-move triggers.
+1. **SKILL_MULTIPLIERS** — every Lv.10 row (Basic ATK/Mid-air/Heavy ATK/
+   Dodge Counter/Skill/Forte/Liberation/Intro/Outro) re-checked digit-for-
+   digit against the dump's own Multipliers tables. Confirmed exact.
+2. **CHARACTER_ROTATIONS** — all 6 Standard Rotation steps re-checked
+   against the dump's own step-by-step prose. Confirmed an exact match; no
+   step repeats a combo under a differently-worded combined label (unlike
+   Augusta's Spinslash), so the repeat-trigger-label bug class does not
+   architecturally apply here — the file's own technique of riding 2 blocks
+   on 1 shared `Skill:True Sight: Capture`/`Forte:Heavy ATK: Flaming
+   Sacrifice` trigger (rather than adding new steps) was re-verified against
+   `rotationSimulator.js`'s exact-label matching and confirmed to work as
+   intended (both blocks fire on every real occurrence of that trigger).
+3. **RESONANCE_CHAIN_DATA** — every node (S1-S6) re-read against the dump's
+   own kit text. S1/S6's `scopedToBlockId` groups (`TRIPARTITE_FLAMES_
+   BLOCK_IDS`/`FLAMING_SACRIFICE_BLOCK_IDS`) re-verified to cover exactly
+   the real blocks their kit text names (Tripartite Flames + True Sight
+   follow-ups; Flaming Sacrifice) and no more/less. S5's split totalMult/
+   heavyDmg halves re-verified against the dump's own "Multiplier... AND
+   DMG dealt" two-effect text. Confirmed no unscoped chain-node buff leaking
+   kit-wide (the exact bug class found on Camellya/Augusta) and no wrong-
+   move trigger (the Chisa bug class) — every `trigger.on` label matches a
+   real, actually-cast move.
+4. **CHAR_BUFF_TABLE** — Outro (`elemDmg`+`libDmg`, Fusion-gated, matching
+   the dump's exact "20% Fusion DMG Amp + 25% Liberation DMG Amp, 10s or
+   until swapped out" text) and Fiery Feather self-buff re-verified.
+   Confirmed correct; no dead/no-op block found (Fiery Feather's
+   `scopedToBlockId` still correctly points at the real 2nd Forte cast).
+5. **dmgFocus** — re-checked against the dump's own Damage Profile (Skill
+   61.4%, Liberation 23.8%, Heavy 6.1%, Basic 4.4%, Intro ~2.25%, Outro 0%,
+   Echo generic-gear). `['Skill', 'Liberation', 'Heavy ATK']` confirmed
+   correct — no omitted non-trivial bucket, no fabricated zero bucket.
+6. **Weapon data** — `bestWeapon` (Blazing Brilliance) and `weaponAlts`
+   (alt5: Emerald of Genesis/Emerald Sentence, alt4: Somnoire Anchor/
+   Commando of Conviction, alt3: Sword of Night) re-checked against the
+   dump's full Best Weapons list and its exact %-ranked ordering. Confirmed
+   correct.
+7. **Echo data** — `bestEchoes` (`['Nightmare: Inferno Rider', 'Molten Rift
+   5pc']`) re-checked against the dump's Best Echo Sets section. Confirmed
+   correct. Tier (`T2`/`T3`, ToA/WW) also re-checked against the dump's own
+   Ratings line. Confirmed correct.
+8. **Engine-block parity** — re-decomposed the dump's kit text move-by-move
+   against `changli.blocks.js`. Every real, sourced kit component (Basic ATK
+   Stage 1-4 combo confirmed deliberately unmodeled — never cast in the
+   Standard Rotation text; Mid-air Attack Stage 1-4, both True Sight:
+   Capture casts, both Flaming Sacrifice casts, all 4 real True Sight:
+   Conquest/Charge follow-ups, Liberation, Intro, Heavy ATK, both Inherent
+   Skills) already has a correctly-categorized block matching the dump's own
+   override language exactly ("considered Resonance Skill DMG" → `skillDmg`
+   on the True Sight follow-ups and Flaming Sacrifice). Dodge Counter and
+   the standalone ground Basic ATK combo re-confirmed absent from the real
+   Standard Rotation text — correctly left unmodeled, not a gap. No
+   uncategorized real-damage block found (the Calcharo/Encore/Brant/Buling
+   Intro-miscategorization bug class does not recur here — Intro already
+   carries `skillDmg`).
+9. **Icons** — `SKILL_ICONS['Changli']` (8 keys, including the shared
+   generic Sword icon for Basic/Heavy ATK) and `CHAIN_NODE_ICONS['Changli']`
+   (all 6 nodes) re-checked against every real rotation-step/chain-node
+   name. Confirmed fully wired, no gap.
+
+**No new bugs found.** Full suite green: 1459/1459 (no test changes needed).
+
+---
+
+**Galbrena pass (2026-09-04) — genuine from-scratch re-audit: 3 real bugs found and fixed.**
+The `Characters data dump/Galbrena/Galbrena.md` file's own "App Data Comparison"
+section claimed a prior 2026-09-01/09-02/09-03 pass had already fixed
+`SKILL_MULTIPLIERS`/`RESONANCE_CHAIN_DATA`/`CHAR_BUFF_TABLE`/`dmgFocus`/weapon/echo/
+`galbrena.blocks.js` to be fully correct — per this task's standing instruction, that
+claim was NOT trusted and every dimension was independently re-verified line-by-line
+against the dump text. `SKILL_MULTIPLIERS`, `RESONANCE_CHAIN_DATA`, `CHAR_BUFF_TABLE`,
+`dmgFocus`, weapon/echo data, `galbrena.blocks.js`'s damage-category/`scopedToBlockId`
+wiring, and `SKILL_ICONS`/`CHAIN_NODE_ICONS` were all independently confirmed to
+genuinely match the dump exactly — no re-fix needed there. Real bugs found:
+1. **CHARACTER_ROTATIONS (dimension 2) / engine-block parity (dimension 8)** — the
+   rotation modeled only a single Basic Attack Stage 2→3 pass before Ascent of Malice
+   and only a single Seraphic Execution Stage 2→3→4→5 pass in Demon Hypostasis, but the
+   dump's own "Standard Rotation" text explicitly repeats both segments: `Basic P2 →
+   Basic P3 → Basic P4 → Basic P2 → Basic P3 → Skill...` and `...Forte: Basic P2 → P3 →
+   P4 → P5 → P3 → P4 → P5 (Swap) → Outro`. This is bug class (f)/(c): a real,
+   explicitly-listed rotation segment (a 2nd full Seraphic Execution P3/P4/P5 pass, plus
+   a 2nd Basic P2/P3 pass) was contributing zero DPS in the calc. Fixed by adding both
+   repeated segments as explicit steps; existing engine blocks already trigger correctly
+   on repeat occurrences since the step labels are identical strings (no combined-label
+   folding issue here). Added a test verifying the repeat count and that each repeated
+   occurrence resolves to real, non-zero damage.
+2. **Character stat table (ATK)** — `CHARACTER_DATA`'s Lv.90 stat row had ATK 462; the
+   dump's Stats section states ATK 463. Off-by-one stale value, fixed.
+3. **Tier table** — `['Galbrena', 'T0.5', 'T1']` (ToA, WW) did not match the dump's
+   Review section, which explicitly states "DPS Tier: T1 (Tower of Adversity), T1.5
+   (Whimpering Wastes)". Fixed to `['Galbrena', 'T1', 'T1.5']`.
+
+3 new/expanded tests in `triggerEngine-galbrena.test.js`. Full suite green: 1463/1463.
+
+Added to the completed-characters list above: **Galbrena**.
+
+---
+
+**2026-09-04 — Hiyuki full 9-dimension audit.**
+
+Independently re-verified all 9 dimensions against `Characters data dump/Hiyuki/Hiyuki.md`
+(a fresh Prydwen dump, Patch 3.5 calcs). SKILL_MULTIPLIERS, CHARACTER_ROTATIONS,
+RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE, weapon data, echo data, `hiyuki.blocks.js`
+engine-block parity, and SKILL_ICONS/CHAIN_NODE_ICONS were all already correct from an
+earlier pass this session (2026-09-01/02/03) — cross-checked line-by-line against the dump's
+Multipliers tables, Resonance Chain node text, Damage-Type Breakdown, and Build section, no
+further bugs found in those 8 dimensions.
+
+One real bug found and fixed:
+
+1. **dmgFocus** — stored as `['Liberation', 'Basic ATK']`. The dump's own "Real Damage-Type
+   Breakdown" table (Prydwen's simulated rotation) shows Basic ATK is a genuine **0%** share —
+   every nominal Basic/Heavy/Intro cast in the real rotation happens while she's in Foreclaimed
+   Self, where kit text explicitly reclassifies it to Resonance Liberation DMG — while **Skill**
+   (Frostblight: Jade Cleave/Petalfall) is a real, non-trivial **6.1%** share that was missing
+   entirely. Fixed to `['Liberation', 'Skill']` (Liberation 60.8% remains dominant).
+
+1 new test added in `triggerEngine-hiyuki.test.js` asserting dmgFocus contains Liberation and
+Skill and excludes Basic ATK. Full suite green: 1464/1464.
+
+Added to the completed-characters list above: **Hiyuki**.
 
 ---
 

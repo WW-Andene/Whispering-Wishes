@@ -18,7 +18,12 @@ export const BRANT_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Applaud for Me!' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('202.8% + 50.7%') },
+    // Fixed 2026-09-04 (Phase A REDO, REMAINING_WORK.md 1c): had no damage.category at all, silently
+    // rejecting Resonance Skill DMG Bonus on a real 1.63% (10,359) damage share. Brant's kit text gives
+    // this Intro no "considered X DMG" override at all ("Attack target, Fusion DMG, grants Interlude
+    // Applause") — per the established default-convention (Calcharo's Wanted Outlaw/Encore's Woolies'
+    // Helpers: an un-overridden Intro Skill hit defaults to skillDmg), fixed to skillDmg.
+    damage: { hits: parseSkillMultiplierHits('202.8% + 50.7%'), category: 'skillDmg' },
   },
   {
     id: 'brant.liberation.to-the-horizon',

@@ -14,18 +14,33 @@ describe('triggerEngine parity — Cantarella', () => {
     expect(CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s5')).toBeUndefined();
   });
 
-  it('S1/S2/S3 match RESONANCE_CHAIN_DATA exactly', () => {
+  it('S1 is scoped to its 3 real moves via scopedToBlockId, matching RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Cantarella'];
-    expect(CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s1').effects[0].value).toBe(rc.s1.totalMult);
-    expect(CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s2').effects[0].value).toBe(rc.s2.totalMult);
-    expect(CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
+    const s1 = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s1');
+    expect(s1.effects).toHaveLength(3);
+    for (const e of s1.effects) expect(e.value).toBe(rc.s1.totalMult);
+    expect(s1.effects.map(e => e.scopedToBlockId).sort()).toEqual([
+      'cantarella.forte.perception-drain',
+      'cantarella.skill.flickering-reverie',
+      'cantarella.skill.graceful-step',
+    ]);
   });
 
-  it('S6 is split into its two real, differently-timed effects, both matching RESONANCE_CHAIN_DATA', () => {
+  it('S2/S3 match RESONANCE_CHAIN_DATA exactly (S3 rescoped to basicDmg — Flowing Suffocation is "considered Basic Attack DMG")', () => {
+    const rc = RESONANCE_CHAIN_DATA['Cantarella'];
+    expect(CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s2').effects[0].value).toBe(rc.s2.totalMult);
+    const s3 = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s3');
+    expect(s3.effects[0].stat).toBe('basicDmg');
+    expect(s3.effects[0].value).toBe(rc.s3.basicDmg);
+    expect(s3.effects[0].scopedToBlockId).toBe('cantarella.liberation.flowing-suffocation');
+  });
+
+  it('S6 is split into its two real, differently-timed effects, both matching RESONANCE_CHAIN_DATA — basic-mult scoped to Phantom Sting only', () => {
     const rc = RESONANCE_CHAIN_DATA['Cantarella'];
     const basicMult = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s6-basic-mult');
     const defIgnore = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s6-defignore');
     expect(basicMult.effects[0].value).toBe(rc.s6.basicDmg);
+    expect(basicMult.effects[0].scopedToBlockId).toBe('cantarella.forte.phantom-sting');
     expect(defIgnore.effects[0].value).toBe(rc.s6.defIgnore);
     expect(defIgnore.timing.duration).toBe(10);
     expect(CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s6')).toBeUndefined();
@@ -71,7 +86,15 @@ describe('triggerEngine parity — Cantarella', () => {
       minProcInterval: 1,
     });
     expect(b.damage.hits.reduce((s, h) => s + h.atkPct, 0)).toBeCloseTo(14.54, 2);
-    expect(b.damage.category).toBe('coordDmg');
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): kit text is explicit —
+    // "summons Dreamweavers for Coordinated Attacks (Havoc DMG, considered Basic Attack DMG)" —
+    // was wrongly coordDmg despite the override.
+    expect(b.damage.category).toBe('basicDmg');
+  });
+
+  it('Flowing Suffocation is basicDmg, not libDmg — "considered Basic Attack DMG" per kit text (Phase A audit, 2026-09-04)', () => {
+    const b = CANTARELLA_BLOCKS.find(x => x.id === 'cantarella.liberation.flowing-suffocation');
+    expect(b.damage.category).toBe('basicDmg');
   });
 
   it('fires from her own solo rotation (own hits qualify too, no move-type filter)', () => {

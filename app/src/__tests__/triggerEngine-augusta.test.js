@@ -97,4 +97,25 @@ describe('triggerEngine parity — Augusta', () => {
     expect(fired.has('augusta.liberation.everbright-protector')).toBe(true);
     expect(fired.has('augusta.chain.s6-thunder-rage')).toBe(true);
   });
+
+  // Found during a from-scratch Phase A redo (2026-09-04): CHARACTER_ROTATIONS['Augusta'] casts
+  // Thunderoar: Spinslash TWICE per real rotation (once as its own step, once inside the combined
+  // 'Thunderoar: Backstep → Spinslash' repeat step) — the kit's own S6 text ("Casting Thunderoar:
+  // Spinslash or Thunderoar: Uppercut ALSO triggers Thunder Rage") has no once-per-rotation cap, only
+  // a separate 1s Crown-of-Wills-stack ICD that doesn't gate the Thunder Rage hits themselves. The
+  // engine's trigger-key matching is exact-label, so a single `augusta.chain.s6-thunder-rage` block
+  // (trigger.on: 'Heavy ATK:Thunderoar: Spinslash') only ever matched the FIRST cast, silently
+  // dropping the second Thunder Rage proc — fixed by adding augusta.chain.s6-thunder-rage-repeat,
+  // triggered on the repeat step's own distinct label.
+  it('Thunder Rage (S6) fires on BOTH real Spinslash casts in the rotation, not just the first', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Augusta'], AUGUSTA_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(AUGUSTA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3500, 'electro', 'Main DPS', null, 6);
+    const firstProc = hitLog.filter(h => h.blockId === 'augusta.chain.s6-thunder-rage');
+    const secondProc = hitLog.filter(h => h.blockId === 'augusta.chain.s6-thunder-rage-repeat');
+    // Each block carries 2 hits of its own (the 2 separate 100%-ATK Thunder Rage instances).
+    expect(firstProc.length).toBe(2);
+    expect(secondProc.length).toBe(2);
+    // The two procs land at different simulated times — genuinely two separate casts, not a duplicate.
+    expect(firstProc[0].time).not.toBe(secondProc[0].time);
+  });
 });

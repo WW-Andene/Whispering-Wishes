@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, CHARACTER_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { HIYUKI_BLOCKS } from '../engine/characterBlocks/hiyuki.blocks.js';
@@ -54,5 +54,13 @@ describe('triggerEngine parity — Hiyuki', () => {
       { stat: 'critDmg', value: 500 },
       { stat: 'critDmg', value: 40 },
     ]);
+  });
+
+  it('dmgFocus matches the dump Damage-Type Breakdown: Liberation (60.8%) and Skill (6.1%) are the ' +
+     'real non-trivial buckets — Basic ATK is a genuine 0% (all reclassified to Liberation)', () => {
+    const focus = CHARACTER_DATA['Hiyuki'].dmgFocus;
+    expect(focus).toContain('Liberation');
+    expect(focus).toContain('Skill');
+    expect(focus).not.toContain('Basic ATK');
   });
 });

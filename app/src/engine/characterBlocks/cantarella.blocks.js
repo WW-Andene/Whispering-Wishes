@@ -43,12 +43,17 @@ export const CANTARELLA_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('73.60%×2'), category: 'skillDmg' },
   },
   {
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): kit text is explicit — "Flowing
+    // Suffocation: Havoc DMG (considered Basic Attack DMG)" — this was wrongly `libDmg` despite the
+    // override, silently rejecting real teammate Basic ATK DMG Bonus buffs and wrongly accepting
+    // Liberation DMG Bonus ones instead. Confirmed independently by the dump's own Damage Profile
+    // (Liberation 0%, Basic ATK 69.1% — the dominant bucket).
     id: 'cantarella.liberation.flowing-suffocation',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Beneath the Sea' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('376.00%'), category: 'libDmg' },
-    note: 'Also applies Diffusion — see cantarella.liberation.diffusion-summons below for the modeled Coordinated ATK summon chain.',
+    damage: { hits: parseSkillMultiplierHits('376.00%'), category: 'basicDmg' },
+    note: 'Considered Basic Attack DMG per its own kit text despite being cast from the Liberation slot. Also applies Diffusion — see cantarella.liberation.diffusion-summons below for the modeled Coordinated ATK summon chain.',
   },
   {
     // Added 2026-09-03 (REMAINING_WORK.md 1a — the off-field summon-chain gap, closed): the numbers
@@ -71,8 +76,12 @@ export const CANTARELLA_BLOCKS = [
       minProcInterval: 1,
     },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('14.54%'), category: 'coordDmg' },
-    note: 'Diffusion: for 30s after Flowing Suffocation (or until 21 Dreamweavers are summoned, whichever first), every hit landed by her or the team can summon a Coordinated ATK, up to 1/second, 14.54% ATK Havoc DMG each, 21 max (S5 raises this cap to 26 — not modeled here, see the Resonance Chain section\'s own "S4/S5 correctly have NO block" comment below).',
+    damage: { hits: parseSkillMultiplierHits('14.54%'), category: 'basicDmg' },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): kit text is explicit — "summons
+    // Dreamweavers for Coordinated Attacks (Havoc DMG, considered Basic Attack DMG)" — this was wrongly
+    // `coordDmg` despite the override, silently rejecting real teammate Basic ATK DMG Bonus and wrongly
+    // accepting Coordinated ATK DMG Bonus instead. Same bug shape/fix as the Liberation block above.
+    note: 'Diffusion: for 30s after Flowing Suffocation (or until 21 Dreamweavers are summoned, whichever first), every hit landed by her or the team can summon a Coordinated ATK (considered Basic Attack DMG per kit text), up to 1/second, 14.54% ATK Havoc DMG each, 21 max (S5 raises this cap to 26 — not modeled here, see the Resonance Chain section\'s own "S4/S5 correctly have NO block" comment below).',
   },
   {
     id: 'cantarella.heavy.delusive-dive',
@@ -137,12 +146,20 @@ export const CANTARELLA_BLOCKS = [
   //    each node's real mechanic; S4/S5 correctly have NO block — heal-only / hit-count-cap-only,
   //    no DPS component per that audit) ──
   {
+    // Fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was a single unscoped totalMult:50
+    // effect, silently boosting her ENTIRE kit's damage 50% instead of only the 3 named moves the kit
+    // text actually specifies. Rescoped to 3 scopedToBlockId entries, same multi-block-scoping pattern
+    // already used elsewhere (Camellya's chain.s5-twining, Changli's TRIPARTITE_FLAMES_BLOCK_IDS.map).
     id: 'cantarella.chain.s1',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 50 }],
-    note: "Real scope: Graceful Step / Flickering Reverie / Perception Drain's own DMG Multiplier +50% (mixed Skill+Forte-that-counts-as-Basic-ATK scope, doesn't cleanly map to one existing stat category — kept as totalMult per the audit comment's own reasoning). Also grants 1 Resonance Skill cast Trance recovery and Perception Drain interrupt immunity, both utility, not modeled.",
+    effects: [
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'cantarella.skill.graceful-step' },
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'cantarella.skill.flickering-reverie' },
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'cantarella.forte.perception-drain' },
+    ],
+    note: "Real scope: Graceful Step / Flickering Reverie / Perception Drain's own DMG Multiplier +50% ONLY (mixed Skill+Forte-that-counts-as-Basic-ATK scope, doesn't cleanly map to one existing stat category — kept as totalMult per the audit comment's own reasoning, now correctly scoped to just those 3 blocks). Also grants 1 Resonance Skill cast Trance recovery and Perception Drain interrupt immunity, both utility, not modeled.",
   },
   {
     id: 'cantarella.chain.s2',
@@ -153,20 +170,31 @@ export const CANTARELLA_BLOCKS = [
     note: "Jolt's own DMG Multiplier +245%. Jolt itself is a proc-only auto-trigger not anchored to a CHARACTER_ROTATIONS step (see cantarella.skill.flickering-reverie note), so this buff has no block to apply to in the current rotation simulation — recorded faithfully anyway per the audit's real value, same documented-but-currently-inert pattern as Buling's S6/libBuff overlap.",
   },
   {
+    // stat fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was `libDmg`, matching the
+    // pre-fix (wrong) `libDmg` category on cantarella.liberation.flowing-suffocation above. Now that
+    // block is correctly `basicDmg` (kit text override — "considered Basic Attack DMG"), so this must
+    // follow it to `basicDmg` too, else the bonus silently stops applying to anything at all. basicDmg
+    // is shared with 3 other blocks (basic.stage3, forte.phantom-sting, forte.perception-drain), so
+    // this now needs scopedToBlockId to stay scoped to only Flowing Suffocation, matching RESONANCE_
+    // CHAIN_DATA's own updated s3.basicDmg row.
     id: 'cantarella.chain.s3',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'cast', on: 'Liberation:Beneath the Sea' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 370 }],
+    effects: [{ stat: 'basicDmg', value: 370, scopedToBlockId: 'cantarella.liberation.flowing-suffocation' }],
     note: "Real mechanic: scoped to Flowing Suffocation's own DMG Multiplier +370%, cast-scoped (instant, no persistent duration) — same single-hit-scoped pattern as Calcharo's S5. Also causes Flowing Suffocation to enter Mirage on cast, utility, not modeled.",
   },
   {
+    // Scoped 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was unscoped basicDmg:80, which after
+    // the Flowing Suffocation/Diffusion category fixes above now silently over-applies to 3 OTHER
+    // basicDmg blocks (basic.stage3, forte.perception-drain, liberation.flowing-suffocation) that S6's
+    // real kit text does NOT buff — only Phantom Sting specifically.
     id: 'cantarella.chain.s6-basic-mult',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'basicDmg', value: 80 }],
-    note: "Phantom Sting's own DMG Multiplier +80% (Mirage-state Basic ATK combo, basicDmg category confirmed exact per the audit comment).",
+    effects: [{ stat: 'basicDmg', value: 80, scopedToBlockId: 'cantarella.forte.phantom-sting' }],
+    note: "Phantom Sting's own DMG Multiplier +80% (Mirage-state Basic ATK combo, basicDmg category confirmed exact per the audit comment) — scoped to only that block.",
   },
   {
     id: 'cantarella.chain.s6-defignore',
