@@ -139,8 +139,14 @@ Game
 └── Debuff
     ├── DEF Ignore
     ├── DEF Shred
-    ├── RES Shred
-    └── Deepen
+    ├── Deepen
+    ├── Glacio RES Shred
+    ├── Fusion RES Shred
+    ├── Electro RES Shred
+    ├── Aero RES Shred
+    ├── Spectro RES Shred
+    ├── Havoc RES Shred
+    └── Physical RES Shred
 ```
 
 ### Notes on the tree above
