@@ -1504,6 +1504,64 @@ icon tables. No discrepancy found anywhere; this is a genuine from-scratch
 re-verification, not a rubber stamp of the prior pass's log entry — no
 code changes made. Full suite green: 1467/1467.
 
+**Jinhsi pass (2026-09-04) — 1 real bug found and fixed, independently re-derived
+from scratch (the dump file's own pre-existing "App Data Comparison" narrative was
+NOT trusted; every dimension re-checked against `Characters data dump/Jinhsi/
+Jinhsi.md` directly).** Built an independent kit model first: Basic/Heavy/Mid-air/
+Dodge Counter (4-stage combo), the two-window cast-order chain (Overflowing
+Radiance off Basic-4/Intro → Incarnation → Incarnation-Basic 1-4 → Illuminous
+Epiphany off Ordination Glow), Crescent Divinity/Incarnation-Heavy/Incarnation-
+Dodge-Counter as real but rotation-unused Forte moves, Incandescence (cap 50) fed
+by Eras in Unity (independent Attribute-DMG and Coordinated-Attack triggers, both
+3s/Attribute cooldown, halved to 1s by Outro), and Unison's free-Outro-every-25s
+mechanic — then cross-checked against code. (1) `SKILL_MULTIPLIERS['Jinhsi']` —
+every row (Basic/Heavy/Mid-air/Dodge Counter/Skill/Liberation/Intro/the 5-row
+split Forte section) matches the dump's Lv.10 table verbatim, including the two
+previously-missing Incarnation-Heavy-ATK/Incarnation-Dodge-Counter rows — already
+correct. (2) `CHARACTER_ROTATIONS['Jinhsi']` — matches the dump's Standard
+Rotation exactly (Basic 1-4 → Overflowing Radiance → Liberation → Incarnation-
+Basic 1-4 → Illuminous Epiphany → Outro); Liberation correctly placed as castable
+"at any point" rather than pinned to one literal opener slot — already correct.
+(3) `RESONANCE_CHAIN_DATA['Jinhsi']` S1-S3/S5/S6 all confirmed against the dump's
+node text — already correct. **S4 (Benevolent Grace) was a real bug**: stored as
+`{ elemDmg: 20 }` and `jinhsi.blocks.js`'s matching block carried `stat: 'elemDmg'`
++ `condition: { element: 'spectro' }`, silently restricting "+20% Attribute DMG
+Bonus" (the dump's own wording, team-wide, NOT Spectro-specific — it buffs each
+teammate on THEIR OWN element) to Spectro-element teammates only. Every other
+character in the codebase with this exact "all-Attribute DMG Bonus" wording
+(Galbrena S4, Phrolova S6, Lucy S4) models it as `allDmg` with no element
+condition — Jinhsi's node was the outlier, silently zeroing this buff for any
+non-Spectro teammate (i.e. almost every real teammate she runs, per her own
+Synergies list: Zhezhi/Yinlin/Verina/Shorekeeper/Brant/Changli/Mortefi/Yuanwu —
+none Spectro). Fixed `RESONANCE_CHAIN_DATA['Jinhsi'].s4` to `{ allDmg: 20 }` and
+`jinhsi.blocks.js`'s `jinhsi.chain.s4-benevolent-grace` block to `stat: 'allDmg'`
+with the `condition` removed entirely. (4) `CHAR_BUFF_TABLE['Jinhsi']` — Radiant
+Surge self-buff (elemDmg+20, Inherent Skill) matches, outro/lib buffs correctly
+empty (Outro Temporal Bender is pure Incandescence-gain utility, no team DMG
+stat) — already correct. (5) `dmgFocus` — `['Main Damage Dealer', 'Resonance
+Skill Damage']` matches the dump's Damage Profile (Skill 84.3% + Liberation
+11.3%, both funneled through her Forte's `skillDmg`-categorized blocks; Intro/
+Basic/Heavy correctly excluded at 0% share) — already correct. (6) weapon data —
+`bestWeapon` Ages of Harvest and `weaponAlts` (Kumokiri/Wildfire Mark/Verdant
+Summit/Radiance Cleaver/Thunderflare Dominion/Lustrous Razor) match the dump's
+Best Weapons list and ordering — already correct. (7) echo data — `bestEchoes`
+(Celestial Light 5pc, main Echo Jué) matches the dump's Best Echo Sets exactly —
+already correct. (8) engine-block parity — `jinhsi.blocks.js`'s 5 damage blocks
+all correctly `skillDmg`/`libDmg`/`basicDmg`-categorized per the rotation's own
+"counted as Resonance Skill DMG" note, both `windowed-cast` blocks correctly
+model the two 5s forfeit windows, and S6's dual-scoped `skillDmg` effects
+(unscoped +45% plus a 2nd +45% scoped to `jinhsi.skill.illuminous-epiphany`)
+correctly reproduce the compounding +90%-to-that-move-only mechanic — the S4
+`elemDmg`+Spectro-condition bug above was the only real issue found here. (9)
+icons — all 10 named moves (Basic/Skill×3 aliases/Forte/Liberation/Intro/Outro)
+confirmed wired in `CHARACTER_SKILL_ICONS['Jinhsi']`. Updated
+`triggerEngine-jinhsi.test.js`'s S4 test to assert the fixed `allDmg` value and
+added a regression case proving the buff now applies to a non-Spectro
+(`targetElementLower: 'fusion'`) target too — this is the real functional check
+for the fix, since a Spectro-only-scoped bug would not have been caught by the
+old test (which only ever resolved against Jinhsi's own Spectro element). Full
+suite green: 1467/1467.
+
 ---
 
 ## 2. Legacy-calculator correctness — real, unresolved finding

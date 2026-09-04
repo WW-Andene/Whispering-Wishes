@@ -6328,9 +6328,13 @@ const RESONANCE_CHAIN_DATA = {
   //   (+25% ATK/stack, max 2 stacks, 20s duration) = up to +50% ATK at 2 stacks. Confirmed correct,
   //   unchanged (atkPct:50 already matched source exactly).
   // S4 Benevolent Grace: casting Resonance Liberation Purge of Light OR Resonance Skill Illuminous
-  //   Epiphany grants the WHOLE NEARBY TEAM +20% Attribute DMG Bonus for 20s (team-wide, not Jinhsi-only —
-  //   same caveat as Camellya's S4/Augusta's S4 above). Confirmed correct value, unchanged (elemDmg:20) —
-  //   TODO: verify calc engine applies this to teammates, not just Jinhsi.
+  //   Epiphany grants the WHOLE NEARBY TEAM +20% Attribute DMG Bonus for 20s (team-wide, not Jinhsi-only).
+  //   "Attribute DMG Bonus" here is the generic universal-DMG-Amp shape (each teammate buffed on THEIR
+  //   OWN element, not restricted to Spectro) — same shape as Galbrena/Phrolova/Lucy's identically-worded
+  //   S4 nodes, which all model it as allDmg with no element condition. WAS wrongly stored as
+  //   { elemDmg: 20 } (paired with a Spectro-only `condition: { element: 'spectro' }` in
+  //   jinhsi.blocks.js), which would silently zero this buff out for every non-Spectro teammate — a real
+  //   bug, not a documented modeling limitation. Corrected 2026-09-04 to { allDmg: 20 }.
   // S5 Frostfire Illumination: DMG Multiplier of Resonance Liberation Purge of Light is increased by 120%
   //   — WAS wrongly modeled as totalMult:15 (no basis in source, wrong stat AND wrong skill entirely).
   //   Corrected to libDmg:120.
@@ -6341,7 +6345,7 @@ const RESONANCE_CHAIN_DATA = {
   //   wrongly totalMult:30 (no basis). Corrected to skillDmg:45 for the flat Illuminous Epiphany DMG Mult
   //   bonus; the per-Incandescence conversion-rate increase is NOT representable as a flat stat here —
   //   TODO: needs Phase 2 schema to hold both the flat skill-mult bonus and the scaling-rate bonus.
-  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { totalMult: 5 }, s3: { atkPct: 50 }, s4: { elemDmg: 20 }, s5: { libDmg: 120 }, s6: { skillDmg: 45 } },
+  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { totalMult: 5 }, s3: { atkPct: 50 }, s4: { allDmg: 20 }, s5: { libDmg: 120 }, s6: { skillDmg: 45 } },
   // Calcharo S1-S6 re-verified verbatim 2026-08-31 against the wiki/Calcharo/Combat's
   // "Resonance Chain" section (Chrome/Windows UA + google.com referer + jsRender, load+9s wait; 2nd attempt
   // cleared Cloudflare), cross-checked against the source/wuthering-waves/characters/calcharo (identical
