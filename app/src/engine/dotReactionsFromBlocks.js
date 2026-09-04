@@ -22,7 +22,7 @@ import {
   EROSION_TICK_INTERVAL, EROSION_DURATION, EROSION_STACK_TABLE,
   FUSION_BURST_THRESHOLD, FUSION_TRAIL_MULT,
   FLARE_TICK_INTERVAL, FLARE_STACK_MULT,
-} from '../features/teams/calcEngine.js';
+} from './dotFormulas.js';
 import { winningStanceForOwner } from './sequenceGating.js';
 
 function lookupStackMult(table, stacks) {

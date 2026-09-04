@@ -13,10 +13,10 @@
 // from it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+import { calcResMult } from '../features/teams/calcEngine.js';
 import {
   calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
-  calcResMult,
-} from '../features/teams/calcEngine.js';
+} from './dotFormulas.js';
 import { CHAR_BUFF_TABLE } from '../data/characters.js';
 import { resolveElectroFlareFromBlocks, resolveFusionBurstFromBlocks, resolveErosionFromBlocks, resolveFrazzleFromBlocks } from './dotReactionsFromBlocks.js';
 import { DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
