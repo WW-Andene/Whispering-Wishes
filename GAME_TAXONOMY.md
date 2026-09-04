@@ -148,27 +148,6 @@ Game
     └── Physical RES Shred
 ```
 
-### Notes on the tree above
-
-- **Character > Name**: e.g. Aalto, Jinhsi, Rover: Electro — 58 total, Jingran unreleased/no blocks yet.
-- **Stats > Base**: HP/ATK/DEF/Max Energy at Lv.90 — the character's own innate values (`SECTION:BASE_STATS` in characters.js), real per-character data. Crit Rate (5%) and Crit DMG (150%) are also real base stats every character has, but are currently modeled as universal constants (`BASE_CRIT_RATE`/`BASE_CRIT_DMG` in `engine/shared/combatMath.js`) rather than per-character fields — no character overriding them has been found yet, but that hasn't been exhaustively checked across all 58. **Growth Curve**: per-level scaling, if modeled distinctly from Base.
-- **Kit**: Echo Skill and Coordinated ATK were deliberately removed from this list — those are damage categories a kit move can be tagged with for buff-matching, not real move slots a character has.
-- **Rotation**: the realistic-optimal play order. NOT something the engine can derive on its own from Kit/Chain data — it's sourced from the character's data dump (`Characters data dump/<Name>/`), which captures real community/theorycrafted play order, not something mechanically computable from multiplier tables alone. Not a Build sub-item — it depends on Kit/Chain directly and doesn't reference the Weapon/Echo/Team catalogs the way Build's children do.
-- **Build > Weapon > Signature**: the one Weapon entry designed for this specific Character — a flag/ref on a `Weapon.<Name>` node, not a separate catalog.
-- **Build > Team > Members**: refs to 2 other Characters (3-member team). **Team > Rotation**: the team-level play order — who's on-field when, swap timing — distinct from a single Character's own solo Rotation above.
-- **Weapon > Type**: Sword / Broadblade / Pistols / Gauntlets / Rectifier. **Signature Of**: ref to Character, or null — most weapons aren't anyone's signature.
-- **Weapon > Stats > Sub**: the fixed passive-scaling substat, e.g. Crit Rate/Crit DMG/Energy Regen.
-- **Echo > Sonata**: the set (`sets` in echoes.js — an echo can belong to 2). **Cost**: 1 / 3 / 4.
-- **Echo > Stats > Substats**: 5 random rolls. Not a 3-tier Main/Secondary/Sub split — that's not how the game actually works; corrected from an earlier draft of this doc.
-- **Echo > Echo Skill**: real on EVERY cost tier, not just 4-cost — corrected after an earlier draft of this doc wrongly claimed "4-cost only" without checking. Verified: 1-cost echoes (Whiff Whaff, Chirpuff, Zig Zag) and the 3-cost Chasm Guardian all have real active damage-dealing skills. The actual, narrower distinction: only 4-cost Echo Skill activations grant an additional TIMED STAT BUFF on top of the damage (per `SECTION:ECHO_SKILL_BUFFS`'s own comment: "4-cost echo active skill timed buffs") — 1-cost/3-cost skills are damage-only procs, no buff attached.
-- **Enemy > Rank**: Common / Elite / Calamity / Overlord — the real field name is `rank`, not "Danger level"; corrected from an earlier draft of this doc.
-- **Enemy > Stats**: level-scaled HP/ATK/DEF curve per `enemyLevelStats.json`, plus stagger data per `enemyStaggerStats.json`.
-- **Damage**: every entry is spelled out explicitly, not grouped/shortened — a block's `damage.category` must match one of these exact names, not a loose free-text description. Verified against real `damage.category` usage in `characterBlocks/`.
-- **Buff**: grouped under Category headers (Base Stat / DMG Bonus — Universal / Move Type / Element / Reaction / Multiplier), verified against every real `stat:` key actually grepped from `characters.js` — not assumed. Real keys found: `atkPct`, `critRate`, `critDmg`, `allDmg`, `basicDmg`, `heavyDmg`, `skillDmg`, `libDmg`, `echoDmg`, `coordDmg`, `erosion`, `flare`, `frazzle`, `fusionBurst`, `totalMult`, `defIgnore`, `defShred`, `resShred`, `deepen`, `elemDmg`. Dropped from an earlier draft for not being verified as real buff keys: `hpFlat`/`hpPct`/`atkFlat`/`defFlat`/`defPct` (never used as a `stat:` value — flat/DEF/HP-pct buffs don't currently exist as a granted mechanic in this game's kits), `energyRegen` (only exists as a display-label map, never a real buff `stat:` key), `healBonus` (doesn't appear anywhere). Kept but flagged not-yet-real: **Intro Skill DMG** / **Outro Skill DMG** as buff entries — `introDmg`/`outroDmg` are real `damage.category` values but have never been used as a `stat:` buff key; no character currently grants an Intro/Outro-DMG-Bonus-type buff.
-- **DMG Bonus — Element**: references the `Element` list rather than re-listing all 7 — today's real data still uses one generic `elemDmg` key (see the earlier "why is every element `elemDmg`" discussion in this design pass); the per-element split (`glacioDmg`/`fusionDmg`/etc., already built as a real schema file at `engine/schema/`) is the target state this taxonomy is designing toward, not yet what the raw `characters.js` data uses.
-- **DMG Bonus — Reaction**: `erosion`/`flare`/`frazzle`/`fusionBurst` are real, distinct from plain Element DMG — this is the "element + reaction qualifier" case flagged earlier (Phoebe's "Spectro Frazzle DMG Amp" ≠ general Spectro DMG).
-- **Multiplier > Total Mult**: `totalMult` is a different KIND of thing than a %-stat buff — a direct multiplier on a hit's damage output, not something that accumulates like a stat. It's also the single largest source of real bugs found this audit cycle (Jiyan, Phrolova, Qingxiao, Qiuyuan, Roccia) when left unscoped, so it gets its own category rather than being folded into DMG Bonus.
-
 **Resolved: Buff/Debuff stay siblings of Damage, not a subset.** Damage is a
 description of a HIT (what category a move's own output falls into); Buff/Debuff
 describe a STAT MODIFIER (something that changes a future hit's numbers). A single
@@ -206,16 +185,6 @@ Engine
 ├── Shared
 └── Projection
 ```
-
-### Notes on the tree above
-
-- **Orchestration**: `rotationOrderSearch.js` — team-level rotation-order search.
-- **Composition**: `resolveHitComposedDps.js`, `resolveHitComposedTeamDps.js`, `resolveSimulatedRotation.js`, `resolveSimulatedTeamRotation.js`, `rotationSimulator.js` — turns a rotation + kit into a DPS number.
-- **Triggers**: `triggerEngine.js`, `blockWindows.js`, `coordinatedAtk.js`, `energyCycleGating.js`, `sequenceGating.js`, `tieredStacking.js` — WHEN a block fires.
-- **DoT**: `dotFormulas.js`, `dotReactions.js`, `dotReactionsFromBlocks.js` — Tune Break/Hack Response aggregate-rate damage, still the one genuinely unported mechanic per `ENGINE_MERGE_INVESTIGATION.md`.
-- **Schema**: `buffSource.js`, `knownCategories.js`, `triggerBlocks.schema.js`, `validateBlock.js` — the registries/validators this whole taxonomy is meant to feed.
-- **Shared**: `buffAccumulation.js`, `combatMath.js`, `roleHelpers.js`, `skillMultiplierParser.js` — pure functions with no character data.
-- **Projection**: `registry.js`, `statPanelProjection.js` — turns composed engine output into a specific UI's shape, e.g. the stat panel.
 
 Reconciled against the real folder contents of `app/src/engine/` as of this pass
 (7 folders, not 5 — `dot/` and `projection/` were missing from the previous draft).
