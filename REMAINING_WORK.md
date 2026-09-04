@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno — added 2026-09-03/04, first
-thirty-two characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla — added 2026-09-03/04, first
+thirty-three characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -564,6 +564,54 @@ right before Outro, and new engine blocks `lingyang.basic.stormy-kicks` /
 Basic ATK bucket per this project's convention, matching the dump's own
 Damage Profile section having no separate Mid-air bucket). 4 new/updated
 tests (2 new), full suite green: 1473/1473.
+
+**Lucilla pass (2026-09-04)**: fully independent re-derivation from
+`Characters data dump/Lucilla/Lucilla.md`, not trusting the file's own
+prior "Full audit 2026-09-01"/"Re-audited verbatim 2026-09-02" claims on
+SKILL_MULTIPLIERS/CHARACTER_ROTATIONS. Rebuilt her whole dual-mode
+(Glacio Chafe / Echo) kit from scratch — Basic Attack Snapshot,
+Mid-air/Dodge Counter (both stances), Phantom Frame/Compensate/Spotlight,
+Clear As Day + Reminiscence (Tracing Forms 1-3, Oblivion, Letting It Go,
+Reminiscence Mid-air/Dodge Counter), Clip It/Clip It: Hard Cut, Montage,
+Forte (Déjà Vu/Film Roll/Zoom/Oblivion/Trace/Photos), both Inherent Skills,
+all 6 Resonance Chain nodes — and cross-checked all 9 dimensions.
+Dimensions 1/2/3/5/6/7/9 (SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, dmgFocus,
+weapon data, echo data, icons) all matched the dump exactly, including
+every value from the prior 2026-09-01/09-02 passes. Found two real bugs in
+dimensions 4/8:
+- **Unscoped category buffs (same bug class as Jiyan's S6 `totalMult`
+  leak)**: `lucilla.chain.s3`/`s5`/`s6` in `lucilla.blocks.js` modeled
+  their `basicDmg`/`echoDmg` effects with NO `scopedToBlockId`, despite
+  each node's own kit text naming exactly one move — S3 "**Letting It
+  Go's** DMG Multiplier +100%", S5 "**Oblivion's** DMG Multiplier +50%",
+  S6 "increases **Letting It Go's** DMG to the target by ... up to 600%".
+  Since `basicDmg`/`echoDmg` are category-wide stats in this engine (per
+  `resolveHitComposedTeamDps.js`'s `EXTERNAL_STAT_KEYS`/`pushHit`), leaving
+  them unscoped meant each was silently inflating every OTHER
+  `basicDmg`-category block too — `lucilla.basic.tracing-forms`,
+  `lucilla.liberation.clear-as-day`, and (for S3/S6) `lucilla.basic.
+  oblivion` — not just the one named move. S6 alone (+600%) made this the
+  largest-magnitude overcount found in this audit cycle. Fixed by adding
+  `scopedToBlockId: 'lucilla.basic.letting-it-go'` (S3, S6) and
+  `scopedToBlockId: 'lucilla.basic.oblivion'` (S5) to every effect on all
+  three blocks.
+- **Missing team buff**: CHAR_BUFF_TABLE['Lucilla'] only modeled the
+  Glacio-Chafe-mode half of Inherent Skill Slow Motion (casting Spotlight
+  → -8% Glacio RES near the active Resonator, 30s). The dump's own kit
+  text gives this a genuine Echo-mode branch on the SAME trigger — "Echo
+  mode: team +25% Echo Skill DMG Bonus for 30s" — that was dropped
+  entirely (not left as an unmodeled-with-a-note branch, the pattern used
+  elsewhere in this file for the mutually-exclusive-mode case; just
+  absent). Added as a new `selfBuffs` entry (`target: 'team'`) plus a new
+  engine block `lucilla.buff.inherent-skill-echo-teamdmg`
+  (`scope: 'whole-team'`, `condition.requiresStance: 'Echo mode'`),
+  mutually exclusive with the existing resShred debuff block.
+Both fixes are corrections to already-existing modeled mechanics, not new
+moves needing a rotation decision — no CHARACTER_ROTATIONS change. 2 new
+tests added to `triggerEngine-lucilla.test.js` (one asserting the
+`scopedToBlockId` fix on all 3 chain nodes, one asserting the new Echo
+team buff in both the legacy table and the engine block), full suite
+green: 1475/1475.
 
 **Verina pass (2026-09-03)**: her `Characters data dump/` file already
 existed (an earlier, differently-formatted dump — no "App Data Comparison"

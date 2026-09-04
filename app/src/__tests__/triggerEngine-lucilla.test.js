@@ -54,4 +54,36 @@ describe('triggerEngine parity — Lucilla', () => {
     expect(fired.has('lucilla.basic.letting-it-go')).toBe(true);
     expect(fired.has('lucilla.basic.oblivion')).toBe(true);
   });
+
+  it('Phase A audit (2026-09-04): S3/S5/S6 are scoped to their own single named move, not a whole damage category', () => {
+    // Real bug found: S3 ("Letting It Go's DMG Multiplier +100%"), S5 ("Oblivion's DMG Multiplier
+    // +50%"), and S6 (Letting It Go +600%) were all modeled as unscoped basicDmg/echoDmg category
+    // buffs — the same bug class already fixed for Jiyan's S6 (see jiyan.blocks.js's own audit
+    // comment). Without scopedToBlockId, each would inflate EVERY basicDmg/echoDmg-category block
+    // in the kit (Tracing Forms, the other of the S3/S5/S6 pair's own moves, Clear As Day itself),
+    // not just the one move its own kit text names.
+    const s3 = LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s3');
+    for (const e of s3.effects) expect(e.scopedToBlockId).toBe('lucilla.basic.letting-it-go');
+    const s5 = LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s5');
+    for (const e of s5.effects) expect(e.scopedToBlockId).toBe('lucilla.basic.oblivion');
+    const s6 = LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s6');
+    for (const e of s6.effects) expect(e.scopedToBlockId).toBe('lucilla.basic.letting-it-go');
+  });
+
+  it('Phase A audit (2026-09-04): Inherent Skill Slow Motion Echo-mode team Echo Skill DMG buff is modeled', () => {
+    // Real gap found: CHAR_BUFF_TABLE['Lucilla'] only modeled the Chafe-mode half of Slow Motion
+    // (the -8% Glacio RES Shred debuff on casting Spotlight) — the Echo-mode half (team +25% Echo
+    // Skill DMG Bonus for 30s, same trigger) was entirely missing from both the legacy table and
+    // the engine blocks.
+    const legacy = CHAR_BUFF_TABLE['Lucilla'];
+    const echoBuff = legacy.selfBuffs.find(b => b.stat === 'echoDmg' && b.target === 'team');
+    expect(echoBuff).toBeTruthy();
+    expect(echoBuff.value).toBe(25);
+    expect(echoBuff.duration).toBe(30);
+    const block = LUCILLA_BLOCKS.find(b => b.id === 'lucilla.buff.inherent-skill-echo-teamdmg');
+    expect(block).toBeTruthy();
+    expect(block.effects[0].value).toBe(25);
+    expect(block.target.scope).toBe('whole-team');
+    expect(block.timing.duration).toBe(30);
+  });
 });

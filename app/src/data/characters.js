@@ -2848,12 +2848,21 @@ const CHAR_BUFF_TABLE = {
     },
     note: 'Dual Resonance Mode: Fusion Burst mode Outro amplifies team Fusion Burst DMG by 60% (30s) and inflicts Fusion Burst (calcFusionBurstDmg reaction, added 2026-09-02 — previously missing entirely); Tune Strain mode Outro grants the next Resonator 15-40% All DMG Amp (16s) and her Tune Strain response (0.12% DMG/stack/Boost, +1 max Strain stack, +10 Tune Break Boost team via Etched Colors). Now resolved mode-exclusively (2026-09-02) instead of the Strain kit firing unconditionally with no Fusion Burst credit at all.',
   },
+  // Phase A audit (2026-09-04): selfBuffs was missing the Inherent Skill "Slow Motion"'s Echo-mode
+  // branch entirely — its own kit text reads "Casting Spotlight — Chafe mode: Glacio RES of targets
+  // near the active Resonator -8% for 30s... Echo mode: team +25% Echo Skill DMG Bonus for 30s. Ends
+  // on mode switch." Only the Chafe-mode debuff half (resShred) was modeled; the Echo-mode team
+  // echoDmg buff half was dropped entirely, not just left unmodeled-with-a-note like other dual-mode
+  // branches elsewhere in this file. Added.
   'Lucilla': {
     outroBuffs: [{ stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Glacio Chafe mode' }, { stat: 'echoDmg', value: 50, target: 'next', duration: 14, condition: 'Echo mode' }],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critRate', value: 20, target: 'self', duration: 10, condition: 'Resonance Chain 1' }],
-    debuffs: [{ stat: 'resShred', value: 8, duration: 30, condition: 'Glacio mode, Inherent Skill' }],
-    note: 'Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s).',
+    selfBuffs: [
+      { stat: 'critRate', value: 20, target: 'self', duration: 10, condition: 'Resonance Chain 1' },
+      { stat: 'echoDmg', value: 25, target: 'team', duration: 30, condition: 'Echo mode, Inherent Skill: Slow Motion, on casting Spotlight' },
+    ],
+    debuffs: [{ stat: 'resShred', value: 8, duration: 30, condition: 'Glacio Chafe mode, Inherent Skill: Slow Motion, on casting Spotlight' }],
+    note: 'Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s). Inherent Skill Slow Motion (on casting Spotlight): Chafe mode -8% Glacio RES near the active Resonator (30s); Echo mode team +25% Echo Skill DMG Bonus (30s) — ends early on mode switch either way.',
   },
   'Mornye': {
     outroBuffs: [{ stat: 'allDmg', value: 25, target: 'team', duration: 30 }],
