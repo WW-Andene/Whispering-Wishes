@@ -262,17 +262,25 @@ audit per character, all cross-checked against a fresh source dump:
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
-Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper — added
-2026-09-03/04, first twenty characters audited under the updated
+Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi — added
+2026-09-03/04, first twenty-one characters audited under the updated
 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
 dimensions: rotation-step/chain/buff-table coverage, not the full set).
-The remaining ~46 characters have not had a full Phase A pass. Not
+The remaining ~45 characters have not had a full Phase A pass. Not
 urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
+
+**Open question (2026-09-04):** Lumi's own dump Damage Profile shows a
+real 26.3% "Skill" damage bucket, but no block in `lumi.blocks.js` is
+skillDmg-categorized for anywhere near that share (only Intro, ~4.1%).
+Energized Pounce/Rebound are explicitly "counted as Basic Attack DMG"
+per kit text, not Skill. Neither the dump's "Rotation" tips text nor its
+Standard Rotation mentions casting base (non-Energized) Pounce/Rebound.
+Not added to `dmgFocus` — flagged as unattributed rather than guessed.
 
 **Rover: Spectro pass (2026-09-03)**: her `Characters data dump/` already
 had 6 of 8 dimensions verified clean from an earlier pass (SKILL_MULTIPLIERS,

@@ -23,7 +23,10 @@ export const LUMI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Special Delivery' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('56.33%×3') },
+    // category added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting teammate skillDmg buffs. No override text names a different category, same default-to-
+    // skillDmg convention applied project-wide.
+    damage: { hits: parseSkillMultiplierHits('56.33%×3'), category: 'skillDmg' },
     note: 'Enters Yellow Light Mode.',
   },
   {
@@ -71,8 +74,12 @@ export const LUMI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Glare' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('81.52%'), category: 'basicDmg' },
-    note: "Yellow Spotlight Mode: replaces Glitter with a higher DMG Multiplier after Energized Rebound; ends after 6 Glares (channelled dash).",
+    // Fixed 2026-09-04 (full re-segmentation pass, decomposing the dump's real rotation text): was a
+    // single 81.52% hit — but the CHARACTER_ROTATIONS step's own note ("Channelled Dash: 6 Glares")
+    // and the kit text ("ends after 6 Glares") both confirm 6 real hits land per cast, undercounting by
+    // 6x. Fixed to 6 real hits, same value each (no per-hit variation sourced).
+    damage: { hits: Array.from({ length: 6 }, () => ({ atkPct: 81.52 })), category: 'basicDmg' },
+    note: "Yellow Spotlight Mode: replaces Glitter with a higher DMG Multiplier after Energized Rebound; the real 6-Glare Channelled Dash (channelled dash), not a single hit.",
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
@@ -114,14 +121,19 @@ export const LUMI_BLOCKS = [
     effects: [{ stat: 'basicDmg', value: 30 }],
     note: 'Basic ATK DMG Bonus +30% (confirmed exact, unconditional) — kept passive.',
   },
-  {
-    id: 'lumi.chain.s5',
-    source: SOURCE, kind: 'buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 100 }],
-    note: "When Spark is fully recovered, Laser DMG Multiplier +100% (confirmed exact; Laser is 'counted as Basic Attack DMG' per its own Forte text, but this is a conditional per-move multiplier rather than an unconditional Basic ATK bonus like S4, so kept separate as totalMult to avoid double-counting S4's basicDmg). Laser has no own CHARACTER_ROTATIONS step, so this block is present but does not fire in the standard rotation.",
-  },
+  // Fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): S5's block used to sit here as an
+  // unscoped, unconditioned trigger.type:'passive' with totalMult:100 — since totalMult has NO
+  // category gate (applies to every hit resolved at that instant, not just Laser's), this was
+  // silently DOUBLING her entire kit's damage for the whole rotation, confirmed directly (removing
+  // the block dropped her simulated total from 94,044 to 47,022 — exactly 2x). Laser itself is real
+  // (it CAN fire off her Outro cast, a real modeled step, if 25+ of her 100-cap Spark were consumed)
+  // but is deliberately left unmodeled rather than assumed-at-max: the rotation's own final steps are
+  // "...Skill: Energized Pounce -> Echo -> Outro" — Energized Pounce drains that exact Spark pool to
+  // 0 the instant it's cast, with only a non-Spark-generating Echo cast before Outro, so a max-Spark
+  // assumption would be directly contradicted by the rotation's own real cast order, not a defensible
+  // steady-state approximation. Removed entirely (same "real but not fireable without live state we
+  // don't track" treatment as S1), rather than left as the broken unscoped version.
+  // S5 correctly has NO block — see this comment.
   {
     id: 'lumi.chain.s6',
     source: SOURCE, kind: 'buff',

@@ -1575,7 +1575,15 @@ const CHARACTER_DATA = {
   // as Basic Attack DMG" explicitly; only her Liberation (Squeakie Express) and Resonance Skill
   // (Pounce/Rebound, which the source's own Review calls "minimal damage") aren't Basic ATK, so 'Skill' had
   // no basis as her focus. buffs 'Skill DMG Amp' unchanged (matches her real Outro Escorting effect).
-  ['Lumi',          ['Basic ATK'],                    ['Skill DMG Amp'],                       []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: Liberation (29.6%, 2nd-biggest bucket, libDmg-categorized) was entirely missing despite
+  // being far above this project's 6.8% include threshold. Echo (4.6%) stays excluded — generic
+  // equipped-Echo damage. Intro (~4.1%) stays excluded — below threshold and not a valid dmgFocus
+  // vocabulary term regardless. The profile's 3rd bucket, Skill (26.3%), is NOT added — no block in
+  // lumi.blocks.js is skillDmg-categorized for anywhere near that share (only Intro, ~4.1%); Energized
+  // Pounce/Rebound are explicitly "counted as Basic Attack DMG" per kit text, not Skill. Flagged as an
+  // open question rather than guessed — see REMAINING_WORK.md.
+  ['Lumi',          ['Basic ATK', 'Liberation'],      ['Skill DMG Amp'],                       []],
   // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
   // Profile: Liberation is her single BIGGEST damage bucket (42.1%/53,643), already correctly libDmg-
   // categorized, entirely missing. Basic ATK gained 2 real basicDmg sources this pass: Zephyr Song
