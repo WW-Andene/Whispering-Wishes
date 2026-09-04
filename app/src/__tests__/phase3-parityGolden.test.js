@@ -33,6 +33,7 @@ import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedD
 import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
 import { PARITY_CHARACTERS } from './phase3-parityCharacterList.js';
 import GOLDEN from './__fixtures__/phase3-parity-golden.json';
+import STATPANEL_GOLDEN from './__fixtures__/phase3-statpanel-golden.json';
 
 // Characters where modern (engine) and legacy (calcTeamStats RAW) are EXPECTED to disagree by more
 // than the 1% parity tolerance, each with why — cited against ENGINE_MERGE_INVESTIGATION.md and this
@@ -162,6 +163,30 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
         expect(Math.abs(ratio - 1), `${name}: legacy/modern parity broke (ratio=${ratio.toFixed(4)}) with no documented divergence — either add one with a cited reason, or this is a real regression`)
           .toBeLessThan(PARITY_TOLERANCE);
       }
+    });
+  });
+});
+
+// ENGINE_ARCHITECTURE_PROPOSAL.md v2 §5's explicit verification requirement: the main-DPS
+// stat-panel projection (routeTypeBonuses -> engine/projection/statPanelProjection.js's
+// projectMainDpsStatPanel) is a pure relocation, not a redesign — these fields must be
+// byte-identical to their pre-extraction values (captured 2026-09-04, right after the
+// extraction commit, by diffing calcTeamStats() output before/after via `git stash` on
+// calcTeamStats.js + engine/projection/ and confirming an exact JSON diff). Any drift here is a
+// bug in the extraction, full stop, not an intentional improvement — unlike
+// EXPECTED_DIVERGENCES above, there is no "documented divergence" escape hatch for this test.
+describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
+  PARITY_CHARACTERS.forEach(({ name }) => {
+    it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {
+      const golden = STATPANEL_GOLDEN[name];
+      if (!golden) return; // no solo calcTeamStats() result for this character (e.g. missing rotation) — nothing to compare
+      const legacy = calcTeamStats([name], 0, name, {}, '', 90);
+      expect(legacy, `calcTeamStats() returned null for solo ${name}`).toBeTruthy();
+      expect(legacy.effAtk).toBe(golden.effAtk);
+      expect(legacy.avgCrit).toBe(golden.avgCrit);
+      expect(legacy.defMult).toBe(golden.defMult);
+      expect(legacy.resMult).toBe(golden.resMult);
+      expect(legacy.score).toBe(golden.score);
     });
   });
 });

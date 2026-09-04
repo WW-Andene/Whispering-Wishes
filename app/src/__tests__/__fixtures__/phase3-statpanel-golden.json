@@ -1,0 +1,401 @@
+{
+  "Aalto": {
+    "effAtk": 855,
+    "avgCrit": 1.061,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 810
+  },
+  "Aemeath": {
+    "effAtk": 1012,
+    "avgCrit": 1.5423,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1250
+  },
+  "Augusta": {
+    "effAtk": 1616,
+    "avgCrit": 1.1204,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1185
+  },
+  "Baizhi": {
+    "effAtk": 16273,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 7526
+  },
+  "Brant": {
+    "effAtk": 905,
+    "avgCrit": 1.065,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 735
+  },
+  "Buling": {
+    "effAtk": 899,
+    "avgCrit": 1.205,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 560
+  },
+  "Calcharo": {
+    "effAtk": 1398,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1106
+  },
+  "Camellya": {
+    "effAtk": 1161,
+    "avgCrit": 1.1465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1381
+  },
+  "Cantarella": {
+    "effAtk": 1008,
+    "avgCrit": 1.061,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 825
+  },
+  "Carlotta": {
+    "effAtk": 1079,
+    "avgCrit": 1.061,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 3837
+  },
+  "Cartethyia": {
+    "effAtk": 27262,
+    "avgCrit": 1.075,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 24683
+  },
+  "Changli": {
+    "effAtk": 1264,
+    "avgCrit": 1.0493,
+    "defMult": 0.6463684300051029,
+    "resMult": 0.9,
+    "score": 2284
+  },
+  "Chisa": {
+    "effAtk": 1051,
+    "avgCrit": 1.205,
+    "defMult": 0.5213764337851929,
+    "resMult": 0.9,
+    "score": 1279
+  },
+  "Chixia": {
+    "effAtk": 900,
+    "avgCrit": 1.061,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 853
+  },
+  "Ciaccona": {
+    "effAtk": 980,
+    "avgCrit": 1.205,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 963
+  },
+  "Danjin": {
+    "effAtk": 952,
+    "avgCrit": 1.0493,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 771
+  },
+  "Denia": {
+    "effAtk": 1036,
+    "avgCrit": 1.205,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1019
+  },
+  "Encore": {
+    "effAtk": 1425,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1177
+  },
+  "Galbrena": {
+    "effAtk": 1386,
+    "avgCrit": 1.2465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1688
+  },
+  "Hiyuki": {
+    "effAtk": 1176,
+    "avgCrit": 1.4887,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1643
+  },
+  "Iuno": {
+    "effAtk": 1349,
+    "avgCrit": 1.287,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1042
+  },
+  "Jianxin": {
+    "effAtk": 1262,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 700
+  },
+  "Jinhsi": {
+    "effAtk": 1000,
+    "avgCrit": 1.1465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1190
+  },
+  "Jiyan": {
+    "effAtk": 1025,
+    "avgCrit": 1.1479,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1062
+  },
+  "Lingyang": {
+    "effAtk": 1398,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1400
+  },
+  "Lucilla": {
+    "effAtk": 1077,
+    "avgCrit": 1.2715,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1187
+  },
+  "Lucy": {
+    "effAtk": 1133,
+    "avgCrit": 1.0493,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1019
+  },
+  "Lumi": {
+    "effAtk": 925,
+    "avgCrit": 1.1465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 536
+  },
+  "Lupa": {
+    "effAtk": 1214,
+    "avgCrit": 1.0493,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 971
+  },
+  "Luuk Herssen": {
+    "effAtk": 1176,
+    "avgCrit": 1.1465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1338
+  },
+  "Lynae": {
+    "effAtk": 1366,
+    "avgCrit": 1.1465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1153
+  },
+  "Mornye": {
+    "effAtk": 1574,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 728
+  },
+  "Mortefi": {
+    "effAtk": 921,
+    "avgCrit": 1.1465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 476
+  },
+  "Phoebe": {
+    "effAtk": 1023,
+    "avgCrit": 1.305,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 10902
+  },
+  "Phrolova": {
+    "effAtk": 1148,
+    "avgCrit": 1.2588249999999999,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1363
+  },
+  "Qingxiao": {
+    "effAtk": 1079,
+    "avgCrit": 1.287,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1228
+  },
+  "Qiuyuan": {
+    "effAtk": 1077,
+    "avgCrit": 1.1758,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1348
+  },
+  "Rebecca": {
+    "effAtk": 1008,
+    "avgCrit": 1.0695714285714286,
+    "defMult": 0.5085653104925053,
+    "resMult": 0.9,
+    "score": 612
+  },
+  "Roccia": {
+    "effAtk": 1187,
+    "avgCrit": 1.1465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 768
+  },
+  "Rover: Electro": {
+    "effAtk": 1174,
+    "avgCrit": 1.0493,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 867
+  },
+  "Rover: Aero": {
+    "effAtk": 1025,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 569
+  },
+  "Rover: Havoc": {
+    "effAtk": 1120,
+    "avgCrit": 1.1465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 935
+  },
+  "Rover: Spectro": {
+    "effAtk": 1077,
+    "avgCrit": 1.1465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 557
+  },
+  "Sanhua": {
+    "effAtk": 965,
+    "avgCrit": 1.0493,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 880
+  },
+  "Shorekeeper": {
+    "effAtk": 18719,
+    "avgCrit": 1.0363520408163265,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 8753
+  },
+  "Sigrika": {
+    "effAtk": 1148,
+    "avgCrit": 1.2465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1956
+  },
+  "Suisui": {
+    "effAtk": 16713,
+    "avgCrit": 1.445,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 10896
+  },
+  "Taoqi": {
+    "effAtk": 1564,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 723
+  },
+  "Verina": {
+    "effAtk": 1358,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 729
+  },
+  "Xiangli Yao": {
+    "effAtk": 1036,
+    "avgCrit": 1.205,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 978
+  },
+  "Yangyang": {
+    "effAtk": 937,
+    "avgCrit": 1.0493,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 692
+  },
+  "Yangyang: Xuanling": {
+    "effAtk": 1265,
+    "avgCrit": 1.513168181818182,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 1788
+  },
+  "Yinlin": {
+    "effAtk": 1140,
+    "avgCrit": 1.23,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 772
+  },
+  "Youhu": {
+    "effAtk": 9975,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 5219
+  },
+  "Yuanwu": {
+    "effAtk": 1638,
+    "avgCrit": 1.025,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 833
+  },
+  "Zani": {
+    "effAtk": 1148,
+    "avgCrit": 1.2465,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 873
+  },
+  "Zhezhi": {
+    "effAtk": 1202,
+    "avgCrit": 1.061,
+    "defMult": 0.5013192612137203,
+    "resMult": 0.9,
+    "score": 886
+  }
+}

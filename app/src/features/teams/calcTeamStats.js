@@ -37,6 +37,7 @@ import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/dot
 import { chooseOnFieldOrder } from '../../engine/orchestration/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/triggers/coordinatedAtk.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/triggers/sequenceGating.js';
+import { projectMainDpsStatPanel } from '../../engine/projection/statPanelProjection.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
 // Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
@@ -1082,24 +1083,28 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
       const finalStats = { ...mainReceived };
       for (const k of EXTERNAL_STAT_KEYS) { if (mainGearDelta[k]) finalStats[k] = (finalStats[k] || 0) + mainGearDelta[k]; }
-      routeTypeBonuses(finalStats, mainDps.d.dmgFocus || []);
 
-      atkPct = finalStats.atkPct; cr = finalStats.cr; cd = finalStats.cd; elemDmg = finalStats.elemDmg;
-      skillDmg = finalStats.skillDmg; amplify = finalStats.amplify; deepen = finalStats.deepen;
-      defShred = finalStats.defShred; resShred = finalStats.resShred; defIgnore = finalStats.defIgnore;
-
-      effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
-      avgCrit = calcAvgCrit(cr, cd);
-      dmgBonus = calcDmgBonus(elemDmg, skillDmg, amplify, deepen);
-      defMult = calcDefMult(enemyDef90, defShred, defIgnore);
-      resMult = calcResMult(mainBaseRes, resShred);
       // `mainTotalMultBonus` (fixed 2026-09-02, the engine-merge history (git log) totalMult architecture-bug fix):
       // resolveSimulatedTeamRotation() already computed this real accumulator, but this caller
       // previously discarded it entirely (only ever destructured `stats`) — silently dropping every
       // `stat:'totalMult'` TriggerBlock's contribution to the FULL-tier stat-panel score for every
       // fully-converted team. Applied the same way legacy's own `seqTotalMultBonus` is applied to
       // `mult` in the `!allMembersConverted` branch above: a separate multiplicative factor.
-      score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult * (1 + mainTotalMultBonus / 100));
+      // projectMainDpsStatPanel (engine/projection/statPanelProjection.js) is this whole block's
+      // former inline body, relocated per ENGINE_ARCHITECTURE_PROPOSAL.md v2 §5 — byte-identical
+      // computation, verified against phase3-parityGolden.test.js's stat-panel snapshot.
+      const panel = projectMainDpsStatPanel(finalStats, mainDps, { enemyDef90, baseRes: mainBaseRes }, mainDps.d.dmgFocus || [], mainTotalMultBonus);
+
+      atkPct = finalStats.atkPct; cr = finalStats.cr; cd = finalStats.cd; elemDmg = finalStats.elemDmg;
+      skillDmg = finalStats.skillDmg; amplify = finalStats.amplify; deepen = finalStats.deepen;
+      defShred = finalStats.defShred; resShred = finalStats.resShred; defIgnore = finalStats.defIgnore;
+
+      effAtk = panel.effAtk;
+      avgCrit = panel.avgCrit;
+      dmgBonus = panel.dmgBonus;
+      defMult = panel.defMult;
+      resMult = panel.resMult;
+      score = panel.score;
     }
 
     // ── DOT damage (ICD-aware, composed via engine/dot/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /
