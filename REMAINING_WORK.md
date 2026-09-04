@@ -2993,6 +2993,36 @@ per-node category/scope field for s5's `critDmg: 100`, so no equivalent desync r
 test added to `triggerEngine-sanhua.test.js` asserting the legacy-table stat matches the trigger-engine
 block's stat (would have caught this). Full suite green: 1508/1508.
 
+**Taoqi — full 9-dimension audit (2026-09-04), first full Phase A pass on this session's own terms.**
+Independently re-derived her kit from `Characters data dump/Taoqi/Taoqi.md` (full read) before looking at
+any existing code or prior audit-comment trail, per this pass's own instructions to defer to nothing.
+`characters.js` already carried an extensive, dated (mostly 2026-08-18 through 2026-09-04) comment trail
+claiming prior fixes across all 9 dimensions — SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA
+(S1/S3/S4 correctly zeroed as shield/utility/DEF%-scaling with no DPS-schema home, S2 both Crit Rate+20%
+and Crit DMG+20%, S5 Power Shift+50%, S6 basicDmg+40%/heavyDmg+40%), CHAR_BUFF_TABLE (Outro Iron Will
+38% skillDmg to next, 14s), dmgFocus, weapon (`bestWeapon: 'Discord'`, correctly 4★ not 5★, matching the
+dump's own QOL-over-raw-% framing), echoes (`Fallacy of No Return` / `Rejuvenating Glow 5pc`), and icons —
+all independently re-verified against the fresh dump and found accurate on re-derivation, so no changes
+were needed to any of those.
+
+One real bug found and fixed in dimension 8 (engine-block parity / CHARACTER_ROTATIONS): the dump's own
+Sample Rotation text is explicit that real Concealed Edge Basic Attack (Stages 1-4, its own
+SKILL_MULTIPLIERS row: 90.15%/84.84%/111.34%/270.39%) is used TWICE in her documented optimal loop —
+"Basic P1-3 (pre-rotation) → Intro → Timed Counter 1-3 → Liberation → Basic P1-4 → Skill → Outro" — and
+the Damage Profile confirms Basic ATK is her single LARGEST damage bucket (43.1%, 31,265 dmg, ahead of
+Liberation's 37.3%). Despite this, `taoqi.blocks.js` had no damage block for the real Concealed Edge move
+at all, and `CHARACTER_ROTATIONS['Taoqi']` had no Basic ATK step — only Power Shift's Timed Counters
+(a distinct Forte move, separately "counted as Basic Attack DMG" per its own kit text) was ever modeled
+as `basicDmg`, silently undercounting the actual normal-attack combo the dump's own rotation calls for.
+Fixed: added `taoqi.basic.concealed-edge` (trigger `Basic ATK:Concealed Edge`, `category: 'basicDmg'`,
+the real 4-stage multiplier row) to `taoqi.blocks.js`, and added one `{ type: 'Basic ATK', skill:
+'Concealed Edge' }` step to `CHARACTER_ROTATIONS['Taoqi']` (placed after Liberation, matching the dump's
+"Basic P1-4" placement in the core repeating loop; the "Basic P1-3" pre-rotation Concerto-building hits
+are explicitly noted by the dump as skippable with a Concerto-generating weapon like Discord — her own
+best-weapon pick — so they aren't separately double-modeled). 2 tests added to
+`triggerEngine-taoqi.test.js` covering the new block's existence, category, trigger, hit count, and
+rotation step, plus that it actually fires in a real rotation run. Full suite green: 1514/1514.
+
 ---
 
 ## How to add to this file

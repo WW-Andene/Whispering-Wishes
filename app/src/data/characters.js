@@ -6047,9 +6047,10 @@ const CHARACTER_ROTATIONS = {
   // Skill DMG Amp is timed onto the incoming Resonator's own Skill DPS window.
   'Taoqi': [
     { type: 'Intro', skill: 'Defense Formation', note: 'Havoc DMG opener; Basic ATK afterward casts Timed Counters (Power Shift) directly' },
-    { type: 'Skill', skill: 'Fortified Defense', note: 'Havoc DMG to surrounding targets, generates 3 Rocksteady Shield stacks and heals self' },
-    { type: 'Liberation', skill: 'Unmovable', note: 'DEF-scaling Havoc nuke — benefits from her naturally high base DEF' },
     { type: 'Forte', skill: 'Power Shift: Timed Counters', note: 'Basic ATK after Heavy ATK Strategic Parry/Intro consumes "Resolving Caliber" for extra hits and a shield, counted as Basic ATK DMG' },
+    { type: 'Liberation', skill: 'Unmovable', note: 'DEF-scaling Havoc nuke — benefits from her naturally high base DEF' },
+    { type: 'Basic ATK', skill: 'Concealed Edge', note: 'full 4-hit real Basic Attack combo, per the dump\'s own Sample Rotation ("Basic P1-4") before Skill/Outro — pre-rotation "Basic P1-3" Concerto-building hits are skippable with a Concerto-generating weapon like Discord and aren\'t separately modeled' },
+    { type: 'Skill', skill: 'Fortified Defense', note: 'Havoc DMG to surrounding targets, generates 3 Rocksteady Shield stacks and heals self' },
     { type: 'Outro', skill: 'Iron Will', duration: 14, note: 'grants the incoming Resonator 38% Resonance Skill DMG Amp for 14s — time this to land on the intended DPS\'s Skill window' },
   ],
   // Added 2026-08-18 (previously entirely missing) — sourced from the source's Gameplay and teams "Ability

@@ -50,6 +50,17 @@ describe('triggerEngine parity — Taoqi', () => {
     expect(fired.has('taoqi.intro.defense-formation')).toBe(true);
     expect(fired.has('taoqi.liberation.unmovable')).toBe(true);
     expect(fired.has('taoqi.forte.power-shift-timed-counters')).toBe(true);
+    expect(fired.has('taoqi.basic.concealed-edge')).toBe(true);
+  });
+
+  it("real Concealed Edge Basic Attack (Stage 1-4) has its own damage block, not just Power Shift's Timed Counters — added 2026-09-04: the dump's own Sample Rotation lists real Basic Attack usage ('Basic P1-4') distinct from Timed Counters, and SKILL_MULTIPLIERS already carried this move's own 4-stage row, but no engine block or rotation step ever referenced it", () => {
+    const basic = TAOQI_BLOCKS.find(b => b.id === 'taoqi.basic.concealed-edge');
+    expect(basic).toBeTruthy();
+    expect(basic.damage.category).toBe('basicDmg');
+    expect(basic.trigger).toEqual({ type: 'cast', on: 'Basic ATK:Concealed Edge' });
+    expect(basic.damage.hits.length).toBe(4);
+    const rotationStep = CHARACTER_ROTATIONS['Taoqi'].find(s => s.type === 'Basic ATK' && s.skill === 'Concealed Edge');
+    expect(rotationStep).toBeTruthy();
   });
 
   it("Intro (Defense Formation) is skillDmg-categorized (was uncategorized)", () => {

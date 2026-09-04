@@ -44,6 +44,21 @@ export const TAOQI_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('449.71%'), category: 'libDmg', basis: 'DEF' },
     note: "DEF-scaling Havoc nuke — benefits from her naturally high base DEF, not ATK.",
   },
+  // Concealed Edge (real Basic Attack, Stages 1-4) — added 2026-09-04 (Phase A audit,
+  // REMAINING_WORK.md 1c). The dump's own Sample Rotation text lists real Basic Attack usage
+  // TWICE, distinct from Power Shift's Timed Counters: "Basic P1-3 (pre-rotation) → Intro → Timed
+  // Counter 1-3 → Liberation → Basic P1-4 → Skill → Outro." SKILL_MULTIPLIERS already carries this
+  // move's own 4-stage row (90.15% / 84.84% / 111.34% / 270.39%), but no engine block or
+  // CHARACTER_ROTATIONS step ever referenced it — only Timed Counters was modeled as basicDmg,
+  // silently undercounting the actual normal-attack combo the dump's own rotation calls for.
+  {
+    id: 'taoqi.basic.concealed-edge',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Basic ATK:Concealed Edge' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('90.15% → 84.84% → 111.34% → 270.39%'), category: 'basicDmg' },
+    note: 'Up to 4 Havoc strikes — real normal-attack combo, distinct from Power Shift\'s Timed Counters.',
+  },
   {
     id: 'taoqi.forte.power-shift-timed-counters',
     source: SOURCE, kind: 'damage',
