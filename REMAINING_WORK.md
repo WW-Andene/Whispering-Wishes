@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye, Phoebe, Phrolova, Qiuyuan — added 2026-09-03/04, first
-thirty-nine characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye, Phoebe, Phrolova, Qiuyuan, Rebecca — added 2026-09-03/04, first
+forty characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -2701,6 +2701,54 @@ bugs the prior passes missed:
 8 new/updated tests added to `triggerEngine-qiuyuan.test.js` covering: the S3 node's two scoped effects,
 the corrected `self`-scoped libBuff, the new Bamboo's Shade buff, every damage block having a real
 category, the Heavy-vs-Echo category split, the new S3/S6 damage blocks. Full suite green: 1502/1502.
+
+**Rebecca — full 9-dimension audit (2026-09-04), first full Phase A pass.** Independently
+segmented/blockified her whole kit from `Characters data dump/Rebecca/Rebecca.md` before looking at any
+existing code, then cross-checked against `characters.js` and `rebecca.blocks.js`. Her `characters.js`
+entries already carried extensive honest audit-comment trails (2026-08-16/17/18, 2026-09-01/02) claiming
+prior fixes — re-derived from scratch anyway per this pass's explicit no-trust-prior-audit instruction.
+Dimensions 1-4 (SKILL_MULTIPLIERS' base-kit values, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA's S1/S2/S3/
+S5/S6 buff values and S4's correct zeroing) and 8 (engine-block category correctness — every damage block
+carries a real `damage.category`, every totalMult/scoped effect correctly targeted, the 3 Basic-ATK-
+override recategorizations, the S6 900%-ATK bonus-hit proc) were all already correct against the fresh
+dump — prior 2026-09-01/02 passes had already found and fixed the real bugs there. Found and fixed 3 real,
+previously-unfixed bugs in the remaining dimensions:
+1. **SKILL_MULTIPLIERS/CHAR_BUFF_TABLE two-path desync (dimension 1 vs. 4):** `CHAR_BUFF_TABLE['Rebecca']
+   .tuneBreak.ruptureDmgMult` for Hack Response - Meltdown was corrected 2026-09-02 to 1186.5 (matching
+   the user-pasted source text, which this fresh dump confirms exactly: "Hack Response-Meltdown: 1186.50%
+   Tune AMP"), but the parallel, purely-informational `SKILL_MULTIPLIERS['Rebecca']` display row for the
+   same move was never updated and still showed the old, stale 2358.89% .mht-snapshot value — the same
+   "two raw tables must both reflect a correction, not just the one the fixer happened to touch" bug class
+   as Lumi's raw-table-vs-trigger-engine desync. Corrected the SKILL_MULTIPLIERS row to 1186.50%.
+2. **bestEchoes pointed at the dump's "Special Echo Set option," not her actual Best Echo Set (dimension
+   7):** was `['Reminiscence - Nightmare: Adam Smasher', 'Shadow of Shattered Dreams 1pc + Void Thunder
+   2pc']` — that combination is the dump's own explicitly-labeled "Special Echo Set option," a
+   personal-damage-focused alternative that "sacrifices team buffing," not her top-scored build. The
+   dump's own scored ranking gives **Moonlit Clouds 100.00%** as the real Best Echo Set (Bell-Borne
+   Geochelone as its primary Main Echo, matching this file's own `[Main Echo, 'Set 5pc']` convention used
+   by every other character). Corrected to `['Bell-Borne Geochelone', 'Moonlit Clouds 5pc']`.
+3. **Missing icon keys, real no-icon gap (dimension 9):** `SKILL_ICONS['Rebecca']` had a key for `'Guts
+   Stage 1-3'` but none for `SKILL_MULTIPLIERS`' own `'Huntress Stage 1-3'` Basic ATK row name, nor for
+   either `'Standard - Huntress'`/`'Standard - Guts'` Heavy ATK row name — `getSkillIcon`'s
+   `skillName.includes(key)` lookup silently returned `null` for all three in the SKILL_MULTIPLIERS-listing
+   view (CharacterDetailModal.jsx). Added `'Huntress Stage 1-3'` and a `'Standard'` key (same generic
+   Pistols icon, matching the `'Standard'` convention already used for Danjin/Yangyang/Sanhua's Heavy ATK
+   rows), verified no substring-order regressions against her other rotation-step/skill names.
+
+Dimensions 5 (dmgFocus/combatRoles already correctly includes 'Hack Response', consistent with Lucy's) and
+6 (weapon data — Skull Thrasher's stats/passive/`pv` all match the dump exactly) verified clean, no change.
+Confirmed genuine, pre-existing, repo-wide schema gap (not a new finding, already well-documented in this
+file's own RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE comments and in §1b above): Hack Response - Meltdown's
+damage (the dump's own Damage Profile shows it at ~38% of her total DMG, larger than her whole non-Basic
+kit combined) is computed entirely through the **legacy** Tune Break aggregate path
+(`calcTuneBreakDmg()`/`applyResonanceChain()` in `calcEngine.js`, driven by `CHAR_BUFF_TABLE.tuneBreak`),
+not a TriggerBlock — no `hackDmg` `damage.category` exists anywhere in the modern engine's schema for any
+character, and §1b's own 2026-09-03 investigation already concluded Tune Break's per-hit anchor doesn't
+exist to migrate onto. Left as-is, not force-fit into an existing category.
+
+4 new tests added to `triggerEngine-rebecca.test.js` covering: the SKILL_MULTIPLIERS/CHAR_BUFF_TABLE
+Meltdown-value parity fix, the corrected bestEchoes, and that every SKILL_MULTIPLIERS row now resolves a
+real icon. Full suite green: 1505/1505.
 
 ---
 

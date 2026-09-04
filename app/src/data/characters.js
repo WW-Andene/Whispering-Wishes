@@ -891,7 +891,15 @@ const CHARACTER_DATA = {
     skills: ["Mix-'n'-Match", "Tactical Tweaks", "Party 'til Dawn!", "My Turn!"],
     ascension: { boss: 'Nightmare Flashdrive', common: 'Mech Core', specialty: 'Past Reveries' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Combustor' },
-    bestEchoes: ['Reminiscence - Nightmare: Adam Smasher', 'Shadow of Shattered Dreams 1pc + Void Thunder 2pc'], bestWeapon: 'Skull Thrasher',
+    // bestEchoes corrected 2026-09-04 (fresh Phase A audit): was ['Reminiscence - Nightmare: Adam
+    // Smasher', 'Shadow of Shattered Dreams 1pc + Void Thunder 2pc'] — the dump's own "Special Echo Set
+    // option" (a personal-damage-focused alternative that explicitly "sacrifices team buffing"), not
+    // her actual **Best Echo Set**. The dump's own scored ranking gives Moonlit Clouds 100.00% (the
+    // top score, matching this field's [Main Echo, 'Set 5pc'] convention used by every other character
+    // in this file — e.g. line 35's ['Impermanence Heron', 'Moonlit Clouds 5pc']), with Bell-Borne
+    // Geochelone as its primary Main Echo recommendation ("ideal cast timing... best in non-Quickswap
+    // play"; Impermanence Heron listed as the Quickswap-specific alternative).
+    bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 5pc'], bestWeapon: 'Skull Thrasher',
     // weaponAlts added 2026-08-17 from the source's live build calcs (Lucy+Mornye team average): Spectrum
     // Blaster (96.3%) and Static Mist (93.3%) are the top non-signature 5★ Pistols (ahead of Phasic
     // Homogenizer, Woodland Aria, The Last Dance, Spectral Trigger, Lux & Umbra); Solar Flame (79.1%)
@@ -3874,7 +3882,11 @@ const SKILL_MULTIPLIERS = {
     ['Skill', "It's Big Boomin' Time! / Come 'n' Get Me!", '23.66%×4+35.49%×4 / 23.66%+4.74%+23.66%×2+137.22%+11.83%×2', 'Closes distance and swaps stance.'],
     ['Liberation', "Party 'til Dawn!", '24.30% / 48.60% (1st enhancement) / 72.90% (2nd enhancement), auto-fires repeatedly for 9.5s', 'Mk. 31 HMG channel; pressing/holding Basic ATK or Liberation during it ramps to the next firepower tier and builds Overload faster.'],
     ['Liberation', 'BOOM! Fireworks!', '63.62%+572.58%', 'Auto-casts when the channel ends or Overload maxes.'],
-    ['Forte', 'Hack Response - Meltdown', '2358.89% (Hack DMG)', 'Bonus DMG when allies inflict Hack-Interfered.'],
+    // Value corrected 2026-09-04 (fresh Phase A audit): this row was left at the stale 2358.89% .mht
+    // snapshot value while CHAR_BUFF_TABLE['Rebecca'].tuneBreak.ruptureDmgMult was already corrected to
+    // 1186.5 on 2026-09-02 per the user-pasted source text taking priority — a two-path desync (this
+    // display-only informational row never got the same fix). Corrected to match.
+    ['Forte', 'Hack Response - Meltdown', '1186.50% (Hack DMG)', 'Bonus DMG when allies inflict Hack-Interfered.'],
     ['Intro', "Yo, It's Big Boomin' Time!", '27.04%×6+40.56%+67.60%', 'Huntress-mode opener that also swaps her to Guts.'],
     ['Intro', "Hey, Leadhead, Come 'n' Get Me!", '10.14%+30.42%+40.56%×4', 'Guts-mode opener that also swaps her to Huntress.'],
     ['Outro', 'Preem Choom', 'Turret (2.5% Electro DMG/hit, 14s) + Edgerunner Bonds (15% All DMG Amp, 14s) + Overlimit (0.5%/0.2s Heavy ATK DMG Amp, up to 35%)', "Leaves a turret; buffs next ally's All DMG and Heavy ATK DMG."],
@@ -8115,6 +8127,15 @@ const SKILL_ICONS = {
   'Rebecca': {
     "Mix-'n'-Match": './characters/_shared/NG3jXXG-skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
     'Guts Stage 1-3': './characters/_shared/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    // Added 2026-09-04 (fresh Phase A audit): SKILL_MULTIPLIERS['Rebecca']'s own row names 'Huntress
+    // Stage 1-3' and 'Standard - Huntress'/'Standard - Guts' matched NO key at all in this table
+    // (getSkillIcon does skillName.includes(key) — 'Huntress Stage 1-3' doesn't contain "Mix-'n'-Match"
+    // or 'Guts Stage 1-3', and neither Heavy ATK row contains any existing key), a real silent
+    // no-icon gap for the SKILL_MULTIPLIERS-listing view in CharacterDetailModal.jsx, same class of bug
+    // as Shorekeeper's/Lumi's fixed 'includes(key)' length mismatches. Same generic Pistols icon reused,
+    // matching the 'Standard' convention already used for Danjin/Yangyang/Sanhua's Heavy ATK rows.
+    'Huntress Stage 1-3': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Standard': './characters/_shared/NG3jXXG-skill-pistols.webp', // Heavy ATK — 'Standard - Huntress' / 'Standard - Guts'
     "Yo, It's Big Boomin' Time!": './characters/rebecca/4RZv4Pks-rebecca-intro.webp', // Intro Skill — My Turn! (must precede the shorter Skill-row key below)
     "Hey, Leadhead": './characters/rebecca/4RZv4Pks-rebecca-intro.webp', // Guts-mode Intro alternative, same wiki icon
     "It's Big Boomin' Time!": './characters/rebecca/8n7M3D1K-rebecca-res-Skill.webp', // Resonance Skill — Tactical Tweaks

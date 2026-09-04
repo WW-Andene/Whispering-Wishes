@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_DATA, getSkillIcon } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { REBECCA_BLOCKS } from '../engine/characterBlocks/rebecca.blocks.js';
@@ -73,5 +73,37 @@ describe('triggerEngine parity — Rebecca', () => {
     expect(fired.has('rebecca.forte.rat-tat-tat-huntress')).toBe(true);
     expect(fired.has('rebecca.liberation.boom-fireworks')).toBe(true);
     expect(fired.has('rebecca.chain.s6-bonus-hit')).toBe(true);
+  });
+
+  // Fixed 2026-09-04 (fresh Phase A 9-dimension audit): SKILL_MULTIPLIERS['Rebecca']'s Hack Response -
+  // Meltdown row was stuck at the stale 2358.89% .mht-snapshot value, while CHAR_BUFF_TABLE['Rebecca']
+  // .tuneBreak.ruptureDmgMult had already been corrected to 1186.5 on 2026-09-02 per the user-pasted
+  // source text (matching this fresh dump's own "Hack Response-Meltdown: 1186.50% Tune AMP" exactly) —
+  // a two-path desync (same bug class as Lumi's raw-table-vs-trigger-engine desync) that left the
+  // informational SKILL_MULTIPLIERS display row showing a number roughly double the real one actually
+  // used by the legacy Tune Break aggregate calc.
+  it('Hack Response - Meltdown SKILL_MULTIPLIERS row matches CHAR_BUFF_TABLE.tuneBreak.ruptureDmgMult (no two-path desync)', () => {
+    const row = SKILL_MULTIPLIERS['Rebecca'].find(r => r[1] === 'Hack Response - Meltdown');
+    expect(row[2]).toContain('1186.50%');
+    expect(CHAR_BUFF_TABLE['Rebecca'].tuneBreak.ruptureDmgMult).toBe(1186.5);
+  });
+
+  // Fixed 2026-09-04: CHARACTER_DATA['Rebecca'].bestEchoes held the dump's "Special Echo Set option"
+  // (Shadow of Shattered Dreams + Adam Smasher, a personal-damage alternative that explicitly
+  // "sacrifices team buffing") instead of her actual dump-scored **Best Echo Set** — Moonlit Clouds at
+  // 100.00%, this file's own convention being [Main Echo, 'Set 5pc'] (see e.g. Encore's
+  // ['Impermanence Heron', 'Moonlit Clouds 5pc']).
+  it('bestEchoes reflects the dump-scored Best Echo Set (Moonlit Clouds), not the special alternative', () => {
+    expect(CHARACTER_DATA['Rebecca'].bestEchoes).toEqual(['Bell-Borne Geochelone', 'Moonlit Clouds 5pc']);
+  });
+
+  // Fixed 2026-09-04: SKILL_ICONS['Rebecca'] had no key matching SKILL_MULTIPLIERS' own 'Huntress Stage
+  // 1-3' Basic ATK row name, or either 'Standard - Huntress'/'Standard - Guts' Heavy ATK row name —
+  // getSkillIcon's skillName.includes(key) lookup silently returned null for all three, a real no-icon
+  // gap in the SKILL_MULTIPLIERS-listing view.
+  it('getSkillIcon resolves every SKILL_MULTIPLIERS row name to a real icon (no silent no-icon gap)', () => {
+    for (const [, skillName] of SKILL_MULTIPLIERS['Rebecca']) {
+      expect(getSkillIcon('Rebecca', skillName)).toBeTruthy();
+    }
   });
 });
