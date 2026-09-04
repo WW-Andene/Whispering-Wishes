@@ -7009,7 +7009,14 @@ const RESONANCE_CHAIN_DATA = {
   //     Recreation" (100% of Real Fantasy Stage 3 DMG, counted as Heavy Attack DMG, interrupt-immune,
   //     itself re-triggering the loop on landing) — stateful extra-cast mechanic with no flat-schema
   //     equivalent; TODO: needs Phase 2 schema.
-  'Roccia':       { s1: { totalMult: 0 }, s2: { elemDmg: 40 }, s3: { critRate: 10, critDmg: 30 }, s4: { totalMult: 60 }, s5: { libDmg: 20, heavyDmg: 80 }, s6: { defIgnore: 60 } },
+  // s5 raw value fixed 2026-09-04 (two-path desync): was { libDmg: 20, heavyDmg: 80 } — but Commedia
+  // Improvviso!'s damage is categorized heavyDmg (per its own kit text), and Roccia's dpsFocus is
+  // ['Concerto Efficiency', 'Heavy Attack Damage', ...] with no 'Liberation' entry, so the legacy
+  // applyResonanceChain()'s libDmg:20 contribution was silently dropped (never routed into skillDmg —
+  // see calcEngine.js line ~451's dpsFocus.includes('Liberation') gate). Merged into heavyDmg so the
+  // legacy aggregate path actually credits the full +100% (matches the corrected trigger-engine model's
+  // scoped +20% on Commedia + broad +80% on all Heavy ATK, which nets to +100% on Commedia specifically).
+  'Roccia':       { s1: { totalMult: 0 }, s2: { elemDmg: 40 }, s3: { critRate: 10, critDmg: 30 }, s4: { totalMult: 60 }, s5: { heavyDmg: 100 }, s6: { defIgnore: 60 } },
   // Sanhua corrected 2026-08-18 per the source's own Resonance Chain text (previous values were unsourced
   // guesses): S1 Basic ATK V grants Crit Rate+15% for 10s (was atkPct:10, wrong stat -> critRate). S2 is
   // pure utility (Heavy ATK Detonate Stamina cost -10, Anti-interruption on Eternal Frost cast) with no
@@ -7759,6 +7766,11 @@ const SKILL_ICONS = {
   'Roccia': {
     'Pero, Easy': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    // 'Stage 1-4' added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): getSkillIcon() does
+    // skillName.includes(key), and CHARACTER_ROTATIONS.Roccia's own Basic ATK step uses the exact
+    // skill string 'Stage 1-4' — which contains neither 'Pero, Easy' nor 'Standard' as a substring, so
+    // that rotation step silently resolved to no icon. Same generic weapon icon as the move's other keys.
+    'Stage 1-4': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Real Fantasy': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Forte's Basic ATK replacement, same generic weapon icon
     'Acrobatic Trick': './characters/roccia/SDY1939h-skill-acrobatictrick.webp',
     'A Prop Master Prepares': './characters/roccia/fzp1K5tw-skill-apropmaster.webp',

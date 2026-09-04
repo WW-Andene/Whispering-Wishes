@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye, Phoebe, Phrolova, Qiuyuan, Rebecca — added 2026-09-03/04, first
-forty characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye, Phoebe, Phrolova, Qiuyuan, Rebecca, Roccia — added 2026-09-03/04, first
+forty-one characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -2624,6 +2624,83 @@ kit Marcato proc, dmgFocus, Intro category). Full suite green: 1487/1487.
 
 Mortefi stays on the completed-characters list above (already listed from the 2026-09-03/04 pass); this
 entry documents the independent 2026-09-04 re-derivation per explicit no-trust-prior-audit instruction.
+
+**2026-09-04 — Roccia full 9-dimension audit, treated as a first pass (independent re-derivation, not
+trusting the dump file's own prior claim of "already audited clean").**
+
+Read `Characters data dump/Roccia/Roccia.md` in full and built an independent kit model from scratch
+(Basic ATK 4-stage combo, Heavy/Mid-air/Dodge Counter, Skill Acrobatic Trick, Liberation Commedia
+Improvviso! (Heavy-ATK-categorized despite the Liberation slot), Forte Circuit Beyond Imagination/Real
+Fantasy 3-stage combo, Inherent Skills, Intro Pero Help, Outro Applause Please!, all 6 Resonance Chain
+nodes, weapon/echo build data, Damage Profile %) before re-reading `characters.js` or `roccia.blocks.js`
+line by line, per this pass's explicit no-trust-prior-audit instruction — the dump file itself already
+claimed a 2026-09-03 pass fixed 3 bugs; re-verified all 3 of those fixes independently (still valid) and
+found 3 further real bugs the prior pass missed:
+
+1. **SKILL_MULTIPLIERS** — every row (Basic ATK Stage 1-4, Heavy/Mid-air/Dodge Counter, Skill, Liberation,
+   Forte Real Fantasy 1-3, Intro) matches the dump's Lv.10 multiplier table exactly. No changes.
+2. **CHARACTER_ROTATIONS** — Intro → Basic ATK Stage 4 → Skill → Forte Real Fantasy 1-3 → Liberation →
+   Echo (Swap Cancel) → Outro matches the dump's own Standard Rotation text and rationale (skip-to-Stage-4
+   combo entry, cast Liberation the instant the 3rd bounce lands to cancel its landing recovery). No
+   changes.
+3. **RESONANCE_CHAIN_DATA** — re-verified all 6 nodes' flat-schema values against the dump's own S1-S6
+   text word-for-word (S1 correctly `{totalMult:0}` — pure Imagination/Concerto/interrupt-immunity
+   utility; S2 `elemDmg:40`; S3 `critRate:10, critDmg:30`; S4 `totalMult:60`; S6 `defIgnore:60`). **Real
+   bug found**: S5's raw value was `{libDmg:20, heavyDmg:80}` — a stale two-path desync left over from the
+   prior pass's blocks.js-only fix (see item 8 below). Roccia's `dmgFocus` is
+   `['Concerto Efficiency', 'Heavy Attack Damage', 'Traction', 'Havoc DMG Amplification', 'Basic Attack
+   DMG Amplification']` — no `'Liberation'` entry — so the legacy `applyResonanceChain()` path's
+   `stats.libDmg += 20` was silently dropped (never routed into `skillDmg`; see `calcEngine.js`'s
+   `dpsFocus.includes('Liberation')` gate around line 451), while the trigger-engine path had already been
+   corrected to treat this +20% as Heavy-ATK-categorized (Commedia's own damage block is `heavyDmg`, not
+   `libDmg`). Fixed by merging into `{heavyDmg: 100}` so the legacy aggregate path actually credits the
+   full total instead of silently discarding a fifth of it.
+4. **CHAR_BUFF_TABLE** — `outroBuffs` (elemDmg 20/basicDmg 25, 14s) and `selfBuffs` (Immersive Performance
+   atkPct 20, 12s) match the dump's Outro/Inherent Skill text exactly. No changes.
+5. **dmgFocus** — `['Concerto Efficiency', 'Heavy Attack Damage', 'Traction', 'Havoc DMG Amplification',
+   'Basic Attack DMG Amplification']` is consistent with the dump's own Damage Profile (Heavy 69.8%
+   dominant share). No changes.
+6. **weapon data** — `bestWeapon: 'Tragicomedy'`, `weaponAlts.alt5: ['Solsworn Ciphers', 'Blazing
+   Justice']`, `alt4: ['Aether Strike', 'Celestial Spiral']` matches the dump's Best Weapons ranking order
+   exactly. No changes.
+7. **echo data** — `bestEchoes: ['Nightmare: Impermanence Heron', 'Midnight Veil 5pc']` matches the dump's
+   Best Echo Sets section (#1 pick) exactly. No changes.
+8. **engine-block parity** — segmented the dump's kit independently against `roccia.blocks.js`. **Two real
+   bugs found**:
+   - `roccia.intro.pero-help`'s damage block had no `damage.category` at all — silently rejecting Intro DMG
+     Bonus buffs on a real ~9,350 damage share per the dump's own Damage Profile. No override text names a
+     different category for Intro damage, so fixed to `skillDmg` (same default-to-skillDmg convention used
+     for every other character's uncategorized-Intro fix this sweep, e.g. Aalto/Calcharo/Encore/Jianxin).
+   - `roccia.chain.s4`'s `{stat:'totalMult', value:60}` effect was completely unscoped — the dump's own S4
+     text says "Casting Acrobatic Trick increases **Real Fantasy's own** DMG Multiplier by +60%," but an
+     unscoped `totalMult` effect amplifies every damage block matching its trigger/target, so this was
+     silently inflating ALL of Roccia's self-scoped damage blocks cast within the 12s window (Basic ATK,
+     Liberation Commedia Improvviso!) on top of the intended Real Fantasy buff — the exact recurring
+     unscoped-totalMult bug class already found on Jiyan/Phrolova/Qingxiao/Qiuyuan. Fixed by adding
+     `scopedToBlockId: 'roccia.forte.real-fantasy'`.
+   Re-verified the prior 2026-09-03 pass's S5 `scopedToBlockId` fix (Commedia-specific +20% correctly
+   scoped to `roccia.liberation.commedia-improvviso`, broad +80% unscoped across all `heavyDmg`) — still
+   correct, but exposed the raw-table desync fixed in item 3 above. Every damage block
+   (`roccia.intro.pero-help`, `roccia.basic.stage1-4`, `roccia.skill.acrobatic-trick`,
+   `roccia.forte.real-fantasy`, `roccia.liberation.commedia-improvviso`) now has a real `damage.category`
+   — checked exhaustively, not sampled. No missing damage blocks for any move referenced by a buff or
+   chain node; S6's "Reality Recreation" self-perpetuating move-loop remains a genuine schema-level gap
+   (a stateful re-cast mechanic with no flat-schema equivalent), documented honestly rather than hacked
+   around, matching the Mornye S5/Rebecca Hack Response precedent.
+9. **icons** — **real bug found**: `SKILL_ICONS.Roccia` had no key that is a substring of
+   `getSkillIcon`'s lookup target for the real rotation step `'Stage 1-4'` (the table only had `'Pero,
+   Easy'`, `'Standard'`, and other move names — none a substring of `'Stage 1-4'`), so the Basic ATK
+   rotation step silently resolved to no icon. Fixed by adding a `'Stage 1-4'` key pointing at the same
+   generic Gauntlets icon used for Roccia's other Basic-ATK-related keys. Verified every other real
+   rotation-step skill string (`'Pero, Help'`, `'Acrobatic Trick'`, `'Real Fantasy 1-3'`, `'Commedia
+   Improvviso!'`, `'Applause, Please!'`) still resolves correctly via `getSkillIcon`.
+
+3 real bugs found and fixed (raw-table two-path desync on S5, missing `damage.category` on Intro, unscoped
+`totalMult` on S4) plus 1 icon-lookup gap fixed, on top of re-verifying the prior pass's 3 fixes still
+hold. `triggerEngine-roccia.test.js` updated: S4's `scopedToBlockId` now asserted, S5's raw-table merge
+asserted (`rc.s5.libDmg` is `undefined`, `rc.s5.heavyDmg` equals the sum of both trigger-engine effects), a
+new exhaustive `damage.category` presence check across all 5 damage blocks, and a new test asserting every
+real rotation-step skill string resolves via `getSkillIcon`. Full suite green: 1507/1507.
 
 **Qiuyuan — full 9-dimension audit (2026-09-04), first full Phase A pass — multiple real bugs found
 and fixed.** Independently segmented/blockified his whole kit from `Characters data dump/Qiuyuan/Qiuyuan.md`
