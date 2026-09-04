@@ -89,7 +89,7 @@ Game
 │           │       │   │   ├── ATK %
 │           │       │   │   ├── HP %
 │           │       │   │   └── DEF %
-│           │       │   └── Sub
+│           │       │   └── Secondary
 │           │       │       └── HP (flat)
 │           │       ├── Skill Label
 │           │       ├── Skill Description
@@ -100,6 +100,8 @@ Game
 │           │   └── <Name>
 │           │       ├── Stats
 │           │       │   ├── Main
+│           │       │   ├── Secondary
+│           │       │   │   └── ATK (flat)
 │           │       │   └── Substats
 │           │       ├── Skill Label
 │           │       ├── Skill Description
@@ -110,6 +112,8 @@ Game
 │               └── <Name>
 │                   ├── Stats
 │                   │   ├── Main
+│                   │   ├── Secondary
+│                   │   │   └── ATK (flat)
 │                   │   └── Substats
 │                   ├── Skill Label
 │                   ├── Skill Description
