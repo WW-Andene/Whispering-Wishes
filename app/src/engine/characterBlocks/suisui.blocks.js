@@ -21,7 +21,7 @@ export const SUISUI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Tinkling Jade' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('28.63%'), basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('28.63%'), category: 'introDmg', basis: 'HP' },
     note: 'Max HP-scaling opener. Inflicts 1 stack of Glacio Chafe, consumes all Cloud Breath to pull in nearby targets, enters Drizzle Stance.',
   },
   {

@@ -29,6 +29,16 @@ describe('triggerEngine parity — Suisui', () => {
     expect(intro.damage.basis).toBe('HP');
   });
 
+  it('every damage block has a damage.category set (2026-09-04 fix: Intro was missing it)', () => {
+    const damageBlocks = SUISUI_BLOCKS.filter(b => b.kind === 'damage');
+    expect(damageBlocks.length).toBeGreaterThan(0);
+    damageBlocks.forEach(b => {
+      expect(b.damage.category, `block ${b.id} missing damage.category`).toBeTruthy();
+    });
+    const intro = SUISUI_BLOCKS.find(b => b.id === 'suisui.intro.tinkling-jade');
+    expect(intro.damage.category).toBe('introDmg');
+  });
+
   it('outro and selfBuffs match CHAR_BUFF_TABLE', () => {
     const legacy = CHAR_BUFF_TABLE['Suisui'];
     const outro = SUISUI_BLOCKS.find(b => b.id === 'suisui.outro.rippling-waters');

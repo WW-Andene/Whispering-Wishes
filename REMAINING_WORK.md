@@ -342,6 +342,84 @@ exactly, Solsworn Ciphers/Sound of True Name 5pc).
   Chain Whip multiplier, and an exhaustive per-block `damage.category`
   check. Full suite green (125 files / 1512 tests).
 
+**Suisui — full independent 9-dimension re-audit (2026-09-04):** rebuilt her
+kit model from scratch directly off `Characters data dump/Suisui/Suisui.md`
+with zero deference to the prior "already audited" claims in code comments
+(this file's own header comments on `RESONANCE_CHAIN_DATA['Suisui']` and
+`suisui.blocks.js` both already claimed a 2026-09-01 audit; re-derived
+everything independently anyway per this pass's own instructions).
+- **Missing `damage.category` (dimension 8, the recurring 10+ bug class)**:
+  exhaustively checked every damage block by ID (`suisui.intro.tinkling-jade`,
+  `suisui.skill.drizzle-stance-thrust`, `suisui.basic.drizzle-stance-stage1-4`,
+  `suisui.heavy.drizzle-stance`) — the Intro block (`suisui.intro.tinkling-jade`,
+  Tinkling Jade, `basis: 'HP'`) had no `damage.category` at all, unlike every
+  other HP-basis damage block in the codebase (e.g. every Cartethyia block
+  pairs `basis: 'HP'` with a real category). Added `category: 'introDmg'`,
+  matching the pattern used for every other character's Intro block
+  (e.g. `sigrika.intro.solsworn-etymology`). Added a test asserting every
+  `SUISUI_BLOCKS` damage block has a truthy `damage.category`.
+- **SKILL_MULTIPLIERS (dimension 1)**: independently transcribed every row
+  from the dump's 4 multiplier tables (Basic Attack, Resonance Skill, Forte
+  Circuit, Intro/Outro) — all values match `characters.js` exactly, including
+  the multi-stage Basic/Drizzle combos and the Skill-Drizzle
+  `11.93%×6+71.58%` value. Clean, no changes.
+- **CHARACTER_ROTATIONS (dimension 2)**: the dump's "Loop Rotation (Intro
+  available)" (Intro → Skill:Drizzle → Dash → Basic:Drizzle 1-4 → Liberation
+  → Outro) matches the existing rotation step-for-step, including the
+  documented optional Dash cancel and the Liberation-cancels-Stage-4-endlag
+  detail. The dump's separate no-Intro "Opener Rotation" (Zephyr Basics 1-3
+  → Awakening Spring → Swallow's Cut → Drizzle combo → Liberation → Outro)
+  is a distinct fallback path, not the modeled default — correctly not
+  conflated with the main rotation, matching how other characters with two
+  documented rotations (Intro-available vs not) are handled elsewhere in this
+  file. Clean.
+- **RESONANCE_CHAIN_DATA / engine-block chain parity (dimensions 3, 8)**: all
+  6 nodes independently re-checked against the dump's own S1-S6 text. S1
+  (Undulating Mist condition change, Reflecting Shadows duration, interrupt
+  immunity), S3 (Basic-Drizzle-4 shortcut, Kingfisher/Concerto-Energy/Floral-
+  Epistle restore) and S4 (Enrichment/Spring's Birth healing +50%) are
+  correctly zero-DPS utility/healing-only nodes with no block (this schema
+  has no heal-bonus category). S2 (team Crit DMG +50%/30s, gated to
+  inflicting/consuming Negative Status *inside* Ceaseless Landscape), S5
+  (Basic/Heavy-Drizzle Multipliers +100%, both moves, not totalMult — so no
+  scoping bug of the Jiyan/Phrolova/Qiuyuan class is possible here) and S6
+  (Crit DMG +500% on Intro/Awakening Spring only) all match the raw table
+  exactly and are wired to the correct blocks. No two-path desync: raw
+  `RESONANCE_CHAIN_DATA` values and the `suisui.blocks.js` node effects agree
+  on every field. Clean.
+- **CHAR_BUFF_TABLE parity (dimension 4)**: `outroBuffs` (25%/30s unconditional
+  + 12%/6s at 400+ Floral Epistle under Ceaseless Landscape) and `selfBuffs`
+  (Sky Over Water: +80% Crit Rate / +240% Glacio DMG on Intro/Awakening Spring,
+  gated once per 25s) both match the dump's kit text and the engine blocks'
+  values exactly. `libBuffs: []` correctly reflects that Song of Thoroughfare
+  grants no flat DMG buff, only Negative-Status stack-cap extension (not
+  representable in this schema, documented as such). Clean.
+- **dmgFocus (dimension 5)**: `['Skill', 'Outro']` + `['Heal', 'All DMG Amp']`
+  buff types — the dump has no Damage Profile percentages (a Support kit, not
+  a DPS one), consistent with the dump's own review text ("even optimized,
+  her personal damage is very low... fully skippable") and her `T0`/`T0.5`
+  Support-tier listing. Skill (Drizzle thrust, `11.93%×6+71.58%`) and Outro
+  (the buff payoff) are her two real focuses; Intro (single HP-scaling hit)
+  and Basic-Drizzle (small per-hit %) are correctly secondary. Clean.
+- **Weapon data (dimension 6)**: `bestWeapon: "Firstlight's Herald"` +
+  `weaponAlts: {alt5: ['Stellar Symphony'], alt4: ['Variation', 'Call of the
+  Abyss'], alt3: [...]}` matches the dump's exact 1st/2nd/3rd/4th ranking.
+  Clean.
+- **Echo data (dimension 7)**: `bestEchoes: ['Forbidden Bastion', 'Song of
+  Feathered Trace 5pc']` matches the dump's #1 set (Song of Feathered Trace,
+  main echo Forbidden Bastion) exactly; the dump's #2 alternative (Rejuvenating
+  Glow) is correctly not listed as the primary pick. Clean.
+- **Icons (dimension 9)**: `SKILL_ICONS.Suisui` and `CHAIN_NODE_ICONS.Suisui`
+  cover all 10 real rotation/kit move names with correctly-ordered
+  substring keys (longer `'Zephyr Stance thrust'`/`'Drizzle Stance thrust'`/
+  `'... Stage 1-4'` keys precede their shorter `'Zephyr Stance'`/`'Drizzle
+  Stance'` prefixes, so lookup doesn't collapse onto the wrong generic icon)
+  and all 6 sequence-node icons are populated. Clean.
+- Test added to `triggerEngine-suisui.test.js`: exhaustive per-block
+  `damage.category` presence check (would have caught the Intro bug), plus
+  an explicit assertion that Intro now resolves to `introDmg`. Full suite
+  green (125 files / 1513 tests).
+
 **Jiyan — Emerald Storm: Finale modeled (2026-09-04):** the prior Jiyan
 audit (see the `jiyan.chain.s6` fix above) found S6 ("Fortitude",
 `totalMult: 240`) scoped to `jiyan.forte.emerald-storm-finale`, a damage
