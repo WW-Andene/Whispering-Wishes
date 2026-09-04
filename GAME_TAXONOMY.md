@@ -104,7 +104,13 @@ Game
 │           │       │   │   ├── HP %
 │           │       │   │   ├── DEF %
 │           │       │   │   ├── Energy Regen
-│           │       │   │   └── Element DMG % → (ref: Element list)
+│           │       │   │   ├── Glacio DMG %
+│           │       │   │   ├── Fusion DMG %
+│           │       │   │   ├── Electro DMG %
+│           │       │   │   ├── Aero DMG %
+│           │       │   │   ├── Spectro DMG %
+│           │       │   │   ├── Havoc DMG %
+│           │       │   │   └── Physical DMG %
 │           │       │   ├── Secondary
 │           │       │   │   └── ATK (flat)
 │           │       │   └── Substats
@@ -144,7 +150,13 @@ Game
 │           ├── ATK
 │           ├── DEF
 │           ├── RES
-│           │   └── (ref: Element list — Glacio/Fusion/Electro/Aero/Spectro/Havoc/Physical)
+│           │   ├── Glacio RES
+│           │   ├── Fusion RES
+│           │   ├── Electro RES
+│           │   ├── Aero RES
+│           │   ├── Spectro RES
+│           │   ├── Havoc RES
+│           │   └── Physical RES
 │           └── Stagger
 │               ├── Interruption RES
 │               ├── Interruption RES Recovery
@@ -196,7 +208,13 @@ Game
 │   │   ├── Echo Skill DMG
 │   │   └── Coordinated ATK DMG
 │   ├── DMG Bonus — Element
-│   │   └── (ref: Element list — Glacio/Fusion/Electro/Aero/Spectro/Havoc/Physical)
+│   │   ├── Glacio DMG
+│   │   ├── Fusion DMG
+│   │   ├── Electro DMG
+│   │   ├── Aero DMG
+│   │   ├── Spectro DMG
+│   │   ├── Havoc DMG
+│   │   └── Physical DMG
 │   └── Multiplier
 │       └── Total Mult
 │
