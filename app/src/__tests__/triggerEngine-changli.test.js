@@ -60,4 +60,21 @@ describe('triggerEngine parity — Changli', () => {
     expect(sf.effects.find(e => e.stat === 'elemDmg').value).toBe(20);
     expect(sf.effects.find(e => e.stat === 'defIgnore').value).toBe(15);
   });
+
+  it('True Sight: Conquest/Charge (added 2026-09-04, dimension 8: previously had no block at all) fire all 4 real casts, each with its own scoped Secret Strategist bonus matching the stacks held at cast', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Changli'], CHANGLI_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(CHANGLI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'fusion', 'Main DPS');
+    const fired = new Set(hitLog.map(h => h.blockId));
+    ['changli.skill.true-sight-charge-1', 'changli.skill.true-sight-charge-2', 'changli.skill.true-sight-charge-3', 'changli.skill.true-sight-conquest-1'].forEach(id => {
+      expect(fired.has(id)).toBe(true);
+    });
+    const bonus2 = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.secret-strategist-charge-2');
+    expect(bonus2.effects[0]).toEqual({ stat: 'elemDmg', value: 5, scopedToBlockId: 'changli.skill.true-sight-charge-2' });
+    const bonus3 = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.secret-strategist-charge-3');
+    expect(bonus3.effects[0]).toEqual({ stat: 'elemDmg', value: 10, scopedToBlockId: 'changli.skill.true-sight-charge-3' });
+    const bonusConquest = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.secret-strategist-conquest-1');
+    expect(bonusConquest.effects[0]).toEqual({ stat: 'elemDmg', value: 15, scopedToBlockId: 'changli.skill.true-sight-conquest-1' });
+    // charge-1 (0 stacks held) has NO scoped bonus block at all — 0×5% contributes nothing, correctly omitted
+    expect(CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.secret-strategist-charge-1')).toBeUndefined();
+  });
 });

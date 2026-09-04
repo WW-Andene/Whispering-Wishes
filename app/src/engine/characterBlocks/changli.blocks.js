@@ -165,6 +165,76 @@ export const CHANGLI_BLOCKS = [
       { stat: 'elemDmg', value: 20 },
       { stat: 'defIgnore', value: 15 },
     ],
-    note: 'Sweeping Force: casting Heavy ATK Flaming Sacrifice or Resonance Liberation Radiance of Fealty → Fusion DMG Bonus +20% and 15% target DEF Ignore — conditional to those 2 specific casts (both real rotation steps), kept passive rather than fabricating 2 separate per-skill timers, same pattern as her own s1/s6 chain nodes above. Secret Strategist (her other Inherent Skill, +5% Fusion DMG per Enflamement stack held on True Sight: Conquest/Charge cast) is NOT modeled — logged separately in REMAINING_WORK.md: it needs a stack count at cast time the app has no tracker for, and Conquest/Charge aren\'t even modeled as their own blocks yet (see changli.skill.true-sight-capture\'s own note).',
+    note: 'Sweeping Force: casting Heavy ATK Flaming Sacrifice or Resonance Liberation Radiance of Fealty → Fusion DMG Bonus +20% and 15% target DEF Ignore — conditional to those 2 specific casts (both real rotation steps), kept passive rather than fabricating 2 separate per-skill timers, same pattern as her own s1/s6 chain nodes above.',
+  },
+
+  // ── True Sight: Conquest/Charge (added 2026-09-04, dimension 8: previously had NO block at all —
+  //    changli.skill.true-sight-capture only ever modeled the initial Skill press). The Standard
+  //    Rotation's own detailed step-by-step text (not the abbreviated 6-step CHARACTER_ROTATIONS array)
+  //    names the real order: Charge → [Skill] → Charge → [Mid-air combo] → Charge → [Skill] → Conquest,
+  //    i.e. exactly 3 real Charge casts + 1 real Conquest cast per rotation, each granting +1 Enflamement
+  //    on hit (0/1/2/3 stacks respectively HELD AT CAST — the stat Secret Strategist scales off). All 4
+  //    are triggered off the same existing 'Skill:True Sight: Capture' step rather than adding new
+  //    CHARACTER_ROTATIONS steps (which would corrupt her real ~9.78s rotation timing with no sourced
+  //    per-move duration data to fix it — see REMAINING_WORK.md's prior note on this) — the engine
+  //    already fires every block matching a trigger, not just one, so this doesn't need its own step,
+  //    same technique already used for Mortefi's chain S1/S5 bonus-Marcato blocks riding his Liberation
+  //    cast. Both moves' kit text is explicit "Fusion DMG (considered Resonance Skill DMG)" → skillDmg,
+  //    same "counted as X" convention used throughout this project.
+  {
+    id: 'changli.skill.true-sight-charge-1',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' },
+    note: '1st of 3 real True Sight: Charge casts per rotation — cast while holding 0 Enflamement, so Secret Strategist contributes nothing here.',
+  },
+  {
+    id: 'changli.skill.true-sight-charge-2',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' },
+    note: '2nd of 3 real True Sight: Charge casts per rotation — cast while holding 1 Enflamement stack; see changli.inherent.secret-strategist-charge-2 for its scoped +5% Fusion DMG bonus.',
+  },
+  {
+    id: 'changli.skill.true-sight-charge-3',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' },
+    note: '3rd of 3 real True Sight: Charge casts per rotation — cast while holding 2 Enflamement stacks; see changli.inherent.secret-strategist-charge-3 for its scoped +10% Fusion DMG bonus.',
+  },
+  {
+    id: 'changli.skill.true-sight-conquest-1',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('58.95%×2+82.52%+94.31%'), category: 'skillDmg' },
+    note: 'The 1 real True Sight: Conquest cast per rotation (the 4th and final Enflamement-granting follow-up, landing right before the 1st Forte Heavy) — cast while holding 3 Enflamement stacks (the cap); see changli.inherent.secret-strategist-conquest-1 for its scoped +15% Fusion DMG bonus.',
+  },
+  {
+    id: 'changli.inherent.secret-strategist-charge-2',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'elemDmg', value: 5, scopedToBlockId: 'changli.skill.true-sight-charge-2' }],
+    note: 'Secret Strategist: +5% Fusion DMG Bonus per Enflamement stack held when casting True Sight: Conquest/Charge — this cast is held at 1 stack, so +5% (1×5%), scoped to only this specific hit via scopedToBlockId (elemDmg isn\'t category-gated, so an unscoped version would over-credit her other skillDmg hits too).',
+  },
+  {
+    id: 'changli.inherent.secret-strategist-charge-3',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'elemDmg', value: 10, scopedToBlockId: 'changli.skill.true-sight-charge-3' }],
+    note: 'Secret Strategist: this cast is held at 2 Enflamement stacks, so +10% (2×5%) Fusion DMG Bonus, scoped to only this specific hit.',
+  },
+  {
+    id: 'changli.inherent.secret-strategist-conquest-1',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'elemDmg', value: 15, scopedToBlockId: 'changli.skill.true-sight-conquest-1' }],
+    note: 'Secret Strategist: this cast is held at 3 Enflamement stacks (the cap), so +15% (3×5%) Fusion DMG Bonus, scoped to only this specific hit.',
   },
 ];

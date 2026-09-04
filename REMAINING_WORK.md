@@ -163,22 +163,6 @@ same tier as HP tracking):**
   build this, and whether the other 8 characters' Loop variants differ from
   their Openers in a similarly damage-relevant way, is unaudited — flagged
   here rather than guessed at.
-- **Changli's Secret Strategist (Inherent Skill) — found 2026-09-04.**
-  "Casting True Sight: Conquest or Charge → +5% Fusion DMG Bonus PER stack
-  of Enflamement held" (0-3 stacks, real cap 4). Two compounding blockers,
-  not one: (1) the app has no Enflamement-stack tracker, so the bonus has
-  no fixed value — it genuinely varies per cast across her own rotation;
-  (2) True Sight: Conquest/Charge aren't even modeled as their own blocks
-  yet — `changli.blocks.js` only has `changli.skill.true-sight-capture`
-  (the initial Skill press), per that block's own note, since
-  `CHARACTER_ROTATIONS['Changli']` has no separate Conquest/Charge step.
-  Fixing this needs both a Conquest/Charge block split AND stack tracking
-  — same "new simulation dimension" tier as the items above, not a
-  one-line addition. Her other Inherent Skill, Sweeping Force, was also
-  unmodeled and IS a simple flat conditional bonus — added as
-  `changli.inherent.sweeping-force` in this same pass, unaffected by this
-  gap.
-
 ### 1b. Phase 2 — DOT-mechanic migration to the modern engine
 
 4 of 5 mechanics migrated and verified (Electro Flare/Buling, Fusion
