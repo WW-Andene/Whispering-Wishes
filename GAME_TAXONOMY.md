@@ -42,7 +42,7 @@ Game
 │       │   │   └── Dodge Counter ATK
 │       │   ├── Skill
 │       │   ├── Liberation
-│       │   ├── Forte
+│       │   ├── Forte Circuit
 │       │   ├── Intro
 │       │   └── Outro
 │       ├── Inherent Skills → (each: ref Block)
