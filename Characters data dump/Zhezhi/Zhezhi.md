@@ -186,3 +186,31 @@ already matched this source exactly.
    the Stroke of Genius cast (same anchor as the existing S6 bonus-hit block).
 
 1 test added, full suite green (1338/1338).
+
+**Full 9-dimension Phase A pass (2026-09-04)**:
+3. `zhezhi.liberation.living-canvas` and `zhezhi.chain.s5-bonus-hit` were both categorized `coordDmg`,
+   but their kit text is explicit — Living Canvas: "Coordinated Attack (Glacio DMG, **considered Basic
+   Attack DMG**)"; S5: "1 extra Inklit Apparition procs at 140% of Inklit Spirit's DMG (**Basic Attack
+   DMG**)". Fixed both to `basicDmg`, same "counted as X" convention already applied to Rebecca/
+   Camellya/Lucilla's own coordinated-attack-shaped-but-considered-Basic-ATK moves. This is exactly
+   what this source's own Damage Profile shows too: Basic 78.4% (dominant — her spirits bucket as
+   Basic) vs Liberation 0% (she has no direct Liberation-press nuke; everything routes through spirit
+   procs).
+4. `dmgFocus`/its buffs column were both `['Coordinated ATK', ...]` — with the fix above, she has ZERO
+   real `coordDmg` blocks left, so this had no basis at all. Fixed to `['Basic ATK']` (78.4%, her real
+   dominant bucket) in both columns. Skill (5.4% real share) stays excluded — this project's
+   established ambiguous-exclude zone (4.6-5.5%).
+5. `zhezhi.intro.radiant-ruin` had no `damage.category` — fixed to skillDmg (default convention).
+6. Dimension 8: S6 (extra Ivory Herald proc) and Inherent Skill Calligrapher's Touch both say "on
+   Stroke of Genius **or Creation's Zenith** cast" in their kit text, but both were only wired to the
+   Stroke of Genius trigger — Creation's Zenith (1 real cast per rotation) never triggered either.
+   Added a 2nd block for each, riding the Creation's Zenith trigger with the same real value.
+7. Genuine mechanic ambiguity flagged and resolved with the user: S3 (ATK+15% per stack, up to 3,
+   stacking off 3 DIFFERENT casts sharing one pool — a shape the schema can't express without risking
+   a double-count) was previously just a flat, ungated +15%. Decided: modeled as a flat +45% (the real
+   max-stack value), same "assume max/steady-state" treatment already used in this exact file for
+   Living Canvas's own spirit count.
+
+Icons (dimension 9) already confirmed present in a prior pass. `rawDps` moved from 1808 → 2138
+reflecting the real previously-mis-modeled/missing damage. 7 new/updated tests, full suite green
+(1433/1433).

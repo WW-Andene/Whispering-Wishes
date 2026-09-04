@@ -23,7 +23,10 @@ export const ZHEZHI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Radiant Ruin' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('86.16%×3') },
+    // category added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting teammate skillDmg buffs. No override text names a different category, same default-to-
+    // skillDmg convention applied project-wide.
+    damage: { hits: parseSkillMultiplierHits('86.16%×3'), category: 'skillDmg' },
     note: 'Fills roughly 1.5 of her 3 Afflatus segments.',
   },
   {
@@ -65,8 +68,14 @@ export const ZHEZHI_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Living Canvas' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // 'up to 21 over 30s' — the max-consumption case is used as a representative value.
-    damage: { hits: Array.from({ length: 21 }, () => ({ atkPct: 65.21 })), category: 'coordDmg' },
-    note: 'Summons Coordinated-ATK spirits (Basic ATK DMG-typed, modeled as coordDmg) whenever the active Resonator deals damage — modeled at the max 21-Spirit case. 25s cooldown.',
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was coordDmg — kit text is
+    // explicit "Coordinated Attack (Glacio DMG, considered Basic Attack DMG)", same "counted as X"
+    // convention already applied to Rebecca/Camellya/Lucilla's own coordinated-attack-shaped-but-
+    // considered-Basic-ATK moves. Confirmed by this source's own Damage Profile: Basic 78.4% (dominant,
+    // matching her spirits being bucketed as Basic ATK) vs Liberation 0% (she has no direct Liberation-
+    // press nuke at all — everything routes through these spirit procs).
+    damage: { hits: Array.from({ length: 21 }, () => ({ atkPct: 65.21 })), category: 'basicDmg' },
+    note: 'Summons Coordinated-ATK-shaped spirits, considered Basic Attack DMG for buff-pool purposes — whenever the active Resonator deals damage. Modeled at the max 21-Spirit case. 25s cooldown.',
   },
   {
     id: 'zhezhi.forte.creations-zenith',
@@ -112,7 +121,25 @@ export const ZHEZHI_BLOCKS = [
     timing: { duration: 27 },
     target: { scope: 'self' },
     effects: [{ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3 }],
-    note: "Inherent Skill Calligrapher's Touch: self ATK +6% per stack (up to 3, 27s) on Stroke of Genius/Creation's Zenith cast.",
+    note: "Inherent Skill Calligrapher's Touch: self ATK +6% per stack (up to 3, 27s) on Stroke of Genius/Creation's Zenith cast. Fires from BOTH of the real rotation's 2 Stroke of Genius casts (CHARACTER_ROTATIONS has 2 separate 'Forte:Stroke of Genius' steps) — see zhezhi.selfbuff.calligraphers-touch-creations-zenith below for the 3rd real trigger this node was missing.",
+  },
+  {
+    // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): Calligrapher's Touch's kit text is
+    // explicit "casting Stroke of Genius OR Creation's Zenith" — the real rotation's 1 Creation's
+    // Zenith cast never triggered a stack before this, undercounting her real max-stack uptime. A
+    // separate block (not a 2nd trigger on the same block, since the schema's trigger field is
+    // single-valued) sharing the same stat/duration/stacking as the block above — see this file's own
+    // convention note for why 2 blocks contributing to what's really one shared stack pool is safe
+    // here specifically: Stroke of Genius already fires twice and Creation's Zenith once within the
+    // same rotation pass, so 2 real casts (not concurrent double-firing of the SAME event) drive the
+    // 3rd stack, matching the real 3-cast/3-stack cap exactly rather than risking an over-count.
+    id: 'zhezhi.selfbuff.calligraphers-touch-creations-zenith',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'cast', on: "Forte:Creation's Zenith" },
+    timing: { duration: 27 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3 }],
+    note: "Inherent Skill Calligrapher's Touch: the 3rd real trigger (Creation's Zenith cast) — see zhezhi.selfbuff.calligraphers-touch above for the Stroke of Genius half.",
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own detailed audit comment for each
@@ -129,12 +156,21 @@ export const ZHEZHI_BLOCKS = [
   // S2 correctly has NO block — "Max Inklit Spirits summoned by Living Canvas +6" (21 -> 27 cap), not
   // a percentage stat at all, no home in the flat {stat: value} schema.
   {
+    // Fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): real mechanic stacks ATK+15% up to 3
+    // times off 3 DIFFERENT casts (Manifestation ×1, Stroke of Genius ×2, Creation's Zenith ×1 — 4
+    // real casts feeding ONE shared stack pool). The schema's trigger field can't express "one shared
+    // counter fed by multiple different casts" without risking a double-count (unlike Calligrapher's
+    // Touch above, where the real cast counts per trigger happen to sum exactly to the cap). Per
+    // explicit user decision: modeled as a flat, unconditional passive at the real MAX value (15×3=45),
+    // same "assume max/steady-state" approximation already used in this exact file for Living Canvas's
+    // spirit count (modeled at the max 21-spirit case). Previously flat at 15 (the un-multiplied base
+    // per-stack value) — under-counted her real ceiling.
     id: 'zhezhi.chain.s3',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 15 }],
-    note: 'ATK +15% per stack, stacks up to 3, on Manifestation/Stroke of Genius/Creation\'s Zenith cast — the stored RESONANCE_CHAIN_DATA value (15) is used as-is per this file\'s own confirmed-correct note; the real per-stack/max-stack breakdown isn\'t further disambiguated in the source comment, so no stacking mechanic is fabricated here. Kept passive.',
+    effects: [{ stat: 'atkPct', value: 45 }],
+    note: "ATK +15% per stack (up to 3, 27s) on Manifestation/Stroke of Genius/Creation's Zenith cast — modeled as a flat +45% (max stacks) passive; see this block's own comment above for why.",
   },
   {
     id: 'zhezhi.chain.s4',
@@ -152,7 +188,10 @@ export const ZHEZHI_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     // 140% x 65.21% = 91.29%, matching the source's raw Living Canvas damage-data row 2 of 91.3% exactly
     // per the audit comment's own cross-check — a real, precisely computable figure, not a guess.
-    damage: { hits: [{ atkPct: 91.29 }], category: 'coordDmg' },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was coordDmg — kit text is
+    // explicit "1 extra Inklit Apparition procs at 140% of Inklit Spirit's DMG (Basic Attack DMG)",
+    // same fix/convention as zhezhi.liberation.living-canvas above.
+    damage: { hits: [{ atkPct: 91.29 }], category: 'basicDmg' },
     note: "Every 3 Inklit Spirits summoned by Living Canvas, 1 extra Inklit Apparition procs a Coordinated ATK at 140% of Inklit Spirit's own DMG Multiplier — modeled as a real proc-style damage block using the audit's own computed figure, instead of the flat {} RESONANCE_CHAIN_DATA carries for this node (same \"discrete proc, not a modifier\" treatment as Yinlin's S6/Calcharo's S6).",
   },
   {
@@ -163,6 +202,19 @@ export const ZHEZHI_BLOCKS = [
     // 120% x 298.22% = 357.86%, matching the source's raw Ink and Wash damage-data row 4 of 357.86%
     // exactly per the audit comment's own cross-check.
     damage: { hits: [{ atkPct: 357.86 }], category: 'basicDmg' },
-    note: "On Stroke of Genius/Creation's Zenith cast, an extra Ivory Herald procs at 120% of Stroke of Genius's own DMG Multiplier — modeled as a real proc-style damage block using the audit's own computed figure, same \"discrete proc, not a modifier\" treatment as S5 above. Anchored to the Stroke of Genius cast.",
+    note: "On Stroke of Genius/Creation's Zenith cast, an extra Ivory Herald procs at 120% of Stroke of Genius's own DMG Multiplier — modeled as a real proc-style damage block using the audit's own computed figure, same \"discrete proc, not a modifier\" treatment as S5 above. Fires from BOTH of the real rotation's 2 Stroke of Genius casts — see zhezhi.chain.s6-bonus-hit-creations-zenith below for the 3rd real trigger this node was missing.",
+  },
+  {
+    // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): S6's kit text is explicit "On Stroke of
+    // Genius/Creation's Zenith cast" — the real rotation's 1 Creation's Zenith cast never triggered
+    // this bonus proc before, silently dropping a 3rd real 357.86%-ATK hit every rotation.
+    id: 'zhezhi.chain.s6-bonus-hit-creations-zenith',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: "Forte:Creation's Zenith" },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // Same 120%-of-Stroke-of-Genius figure as the block above — the % is always anchored to Stroke of
+    // Genius's OWN multiplier regardless of which of the 2 named casts triggers it.
+    damage: { hits: [{ atkPct: 357.86 }], category: 'basicDmg' },
+    note: "S6's 3rd real trigger (Creation's Zenith cast) — see zhezhi.chain.s6-bonus-hit above for the Stroke of Genius half.",
   },
 ];

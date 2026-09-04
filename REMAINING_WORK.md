@@ -262,8 +262,9 @@ audit per character, all cross-checked against a fresh source dump:
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
-Jinhsi, Changli, Youhu — added 2026-09-03/04, first seventeen characters
-audited under the updated 9-dimension methodology** (see below). Many more
+Jinhsi, Changli, Youhu, Zhezhi — added 2026-09-03/04, first eighteen
+characters audited under the updated 9-dimension methodology** (see
+below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9

@@ -1460,7 +1460,14 @@ const CHARACTER_DATA = {
   // the established ambiguous-exclude zone. Echo (22122) stays excluded — generic equipped-Echo damage,
   // not her own kit's Echo Skill button.
   ['Changli',       ['Skill', 'Liberation', 'Heavy ATK'], ['Fusion DMG Amp'],                  []],
-  ['Zhezhi',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
+  // dmgFocus/buffs corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): both columns said
+  // 'Coordinated ATK' — but her Living Canvas spirits and S5's bonus proc are both explicitly
+  // "considered Basic Attack DMG" in the kit text (fixed in zhezhi.blocks.js this same pass, was
+  // wrongly coordDmg), so she has ZERO real coordDmg-category damage of her own. 'Skill' (5.4% real
+  // share per this source's own Damage Profile) sits in this project's established ambiguous-exclude
+  // zone (4.6-5.5%). 'Basic ATK' (78.4%, her dominant real bucket, matching the profile's own numbers)
+  // was entirely missing from both columns.
+  ['Zhezhi',        ['Basic ATK'],                    ['Basic ATK'],                           []],
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   ['Phoebe',        ['Skill'],                       [],                                      ['Frazzle']],
   ['Cantarella',    ['Coordinated ATK'],             ['Coordinated ATK', 'Heal'],             []],
