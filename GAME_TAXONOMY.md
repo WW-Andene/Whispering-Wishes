@@ -270,11 +270,40 @@ a teammate-ally-action buff — whose action triggered it?).
 Engine
 ├── Block
 │   ├── Kind
+│   │   ├── Damage
+│   │   ├── Buff
+│   │   ├── Debuff
+│   │   ├── Heal
+│   │   └── Utility
 │   ├── Trigger
+│   │   ├── Cast
+│   │   ├── Swap-in
+│   │   ├── Swap-out
+│   │   ├── Passive
+│   │   ├── On-hit
+│   │   ├── Resource-threshold
+│   │   ├── Negative-status-hit
+│   │   ├── Field-time
+│   │   ├── Partner-outro-return
+│   │   ├── Windowed-cast
+│   │   ├── Requires-prior-cast
+│   │   ├── Windowed-proc
+│   │   └── Ally-action
 │   ├── Condition
 │   ├── Timing
 │   ├── Target
+│   │   ├── Self
+│   │   ├── On-field
+│   │   ├── Next-on-field
+│   │   ├── Whole-team
+│   │   ├── Marked-enemy
+│   │   ├── All-enemies
+│   │   └── Trigger-actor
 │   ├── Effects
+│   │   └── Stacking Mode
+│   │       ├── Unique
+│   │       ├── Stacking
+│   │       └── Refresh
 │   ├── Damage
 │   └── Note
 ├── Orchestration
@@ -325,3 +354,10 @@ Reconciled against the real folder contents of `app/src/engine/` as of this pass
 - No single canonical `characterId` exists today — three different identity
   strings float around per character (Display Name, file slug, `SOURCE` const
   inside the file) and nothing enforces they agree.
+- `SKILL_MULTIPLIERS` rows use the same move type spelled inconsistently across
+  the roster: `'Heavy ATK'` and `'Heavy Attack'` both appear as distinct strings,
+  and Mid-air appears as three different strings (`'Mid-air'`, `'Mid-air ATK'`,
+  `'Mid-air Attack'`) — confirmed by exhaustive grep of the real
+  `SECTION:SKILL_MULTIPLIERS` block (`characters.js:3715-5182`). Kit's canonical
+  names (`Heavy ATK`, `Mid-air ATK`) collapse these to one spelling each; the raw
+  data itself still needs normalizing to match.
