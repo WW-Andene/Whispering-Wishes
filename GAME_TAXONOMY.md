@@ -139,31 +139,91 @@ Game
 │                       └── Buff
 │
 ├── Enemy
-│   └── <Name>
-│       ├── Rank
-│       │   ├── Common
-│       │   ├── Elite
-│       │   ├── Calamity
-│       │   └── Overlord
-│       └── Stats
-│           ├── HP
-│           ├── ATK
-│           ├── DEF
-│           ├── RES
-│           │   ├── Glacio RES
-│           │   ├── Fusion RES
-│           │   ├── Electro RES
-│           │   ├── Aero RES
-│           │   ├── Spectro RES
-│           │   ├── Havoc RES
-│           │   └── Physical RES
-│           └── Stagger
-│               ├── Interruption RES
-│               ├── Interruption RES Recovery
-│               ├── Vibration
-│               ├── Vibration Recovery
-│               ├── Rage
-│               └── Rage Recovery
+│   └── Rank
+│       ├── Common
+│       │   └── <Name>
+│       │       └── Stats
+│       │           ├── HP
+│       │           ├── ATK
+│       │           ├── DEF
+│       │           ├── RES
+│       │           │   ├── Glacio RES
+│       │           │   ├── Fusion RES
+│       │           │   ├── Electro RES
+│       │           │   ├── Aero RES
+│       │           │   ├── Spectro RES
+│       │           │   ├── Havoc RES
+│       │           │   └── Physical RES
+│       │           └── Stagger
+│       │               ├── Interruption RES
+│       │               ├── Interruption RES Recovery
+│       │               ├── Vibration
+│       │               ├── Vibration Recovery
+│       │               ├── Rage
+│       │               └── Rage Recovery
+│       ├── Elite
+│       │   └── <Name>
+│       │       └── Stats
+│       │           ├── HP
+│       │           ├── ATK
+│       │           ├── DEF
+│       │           ├── RES
+│       │           │   ├── Glacio RES
+│       │           │   ├── Fusion RES
+│       │           │   ├── Electro RES
+│       │           │   ├── Aero RES
+│       │           │   ├── Spectro RES
+│       │           │   ├── Havoc RES
+│       │           │   └── Physical RES
+│       │           └── Stagger
+│       │               ├── Interruption RES
+│       │               ├── Interruption RES Recovery
+│       │               ├── Vibration
+│       │               ├── Vibration Recovery
+│       │               ├── Rage
+│       │               └── Rage Recovery
+│       ├── Calamity
+│       │   └── <Name>
+│       │       └── Stats
+│       │           ├── HP
+│       │           ├── ATK
+│       │           ├── DEF
+│       │           ├── RES
+│       │           │   ├── Glacio RES
+│       │           │   ├── Fusion RES
+│       │           │   ├── Electro RES
+│       │           │   ├── Aero RES
+│       │           │   ├── Spectro RES
+│       │           │   ├── Havoc RES
+│       │           │   └── Physical RES
+│       │           └── Stagger
+│       │               ├── Interruption RES
+│       │               ├── Interruption RES Recovery
+│       │               ├── Vibration
+│       │               ├── Vibration Recovery
+│       │               ├── Rage
+│       │               └── Rage Recovery
+│       └── Overlord
+│           └── <Name>
+│               └── Stats
+│                   ├── HP
+│                   ├── ATK
+│                   ├── DEF
+│                   ├── RES
+│                   │   ├── Glacio RES
+│                   │   ├── Fusion RES
+│                   │   ├── Electro RES
+│                   │   ├── Aero RES
+│                   │   ├── Spectro RES
+│                   │   ├── Havoc RES
+│                   │   └── Physical RES
+│                   └── Stagger
+│                       ├── Interruption RES
+│                       ├── Interruption RES Recovery
+│                       ├── Vibration
+│                       ├── Vibration Recovery
+│                       ├── Rage
+│                       └── Rage Recovery
 │
 ├── Element
 │   ├── Glacio
