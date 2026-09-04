@@ -2269,6 +2269,75 @@ Lynae stays on the completed-characters list above (already listed from the orig
 pass); this entry documents the independent 2026-09-04 re-derivation per explicit no-trust-prior-audit
 instruction.
 
+**2026-09-04 — Mortefi full 9-dimension re-audit (independent re-derivation, not trusting prior "already audited" claims).**
+
+Read `Characters data dump/Mortefi/Mortefi.md` in full and built an independent kit model from scratch
+(Basic ATK 4-part combo, Heavy/Mid-air/Dodge Counter, Skill Passionate Variation, Forte Circuit Fury
+Fugue + Annoyance mechanic, Liberation Violent Finale + Burning Rhapsody/Marcato Coordinated Attack
+proc, Inherent Skills Harmonic Control/Rhythmic Vibrato, Intro Dissonance, Outro Rage Transposition,
+all 6 Resonance Chain nodes, weapon/echo build data, Damage Profile %) before opening `characters.js` or
+`mortefi.blocks.js`, per this pass's explicit no-trust-prior-audit instruction.
+
+1. **SKILL_MULTIPLIERS** — every row (Basic ATK 4-part combo, both Heavy ATK variants, Mid-air, Dodge
+   Counter, Skill, Liberation + Marcato, Forte Fury Fugue, Intro, Outro) matches the dump's Lv.10
+   multiplier table exactly. No changes.
+2. **CHARACTER_ROTATIONS** — Intro → Skill (Passionate Variation) → Forte (Fury Fugue) → Basic ATK combo
+   → Forte (Fury Fugue) → Liberation → Outro matches the dump's own stated rotation and rationale
+   (Annoyance-window Basic ATK refill, Liberation cast right before swap to land Burning Rhapsody/Outro
+   on the incoming Heavy Attacker). No changes.
+3. **RESONANCE_CHAIN_DATA** — all 6 nodes' flat-schema values (`s3.critDmg: 30`, `s6.atkPct: 20`,
+   s1/s2/s4/s5 correctly zeroed to `{}` for mechanics with no flat-DMG%/pure-utility equivalent) verified
+   against the dump's own S1-S6 text word-for-word. No changes.
+4. **CHAR_BUFF_TABLE** — `outroBuffs: [{ stat: 'heavyDmg', value: 38, target: 'next', duration: 14 }]`
+   matches the dump's Outro text exactly. No changes.
+5. **dmgFocus** — `['Liberation', 'Skill', 'Basic ATK', 'Coordinated ATK']` matches the dump's own Damage
+   Profile (Liberation 67%, Skill 17.8%, Basic 8.2%, Echo excluded as generic equipped-Echo damage,
+   Heavy ATK correctly excluded at a genuine 0% share). No changes.
+6. **weapon data** — `bestWeapon: 'Static Mist'`, `weaponAlts.alt5: ['The Last Dance']`,
+   `alt4: ['Relativistic Jet', 'Novaburst', 'Thunderbolt', 'Pistols#26', 'Undying Flame']` matches the
+   dump's Build section ranking order exactly (including Static Mist ranked first despite a lower raw
+   calc % than The Last Dance, per the dump's own stated QOL-over-raw-% methodology note). No changes.
+7. **echo data** — `bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc', 'Empyrean Anthem 5pc']`
+   matches the dump's Best Echo Set section (Moonlit Clouds as the purpose-built 5pc set with
+   Impermanence Heron as the named Main Echo pick, Empyrean Anthem as the endgame-investment
+   alternative). No changes.
+8. **engine-block parity** — segmented the dump's kit independently against `mortefi.blocks.js`. Every
+   damage block has a real `damage.category` set (`skillDmg` for Intro/Skill/Forte, `basicDmg` for Basic
+   ATK, `libDmg` for Violent Finale, `coordDmg` for all Marcato procs — base-kit Burning Rhapsody proc
+   and both S1/S5 chain bonus-procs). The base-kit Burning Rhapsody Coordinated Attack (ally hits →
+   off-field Marcato, real S0 kit text, not a chain node) is modeled via a documented rate-cap saturation
+   assumption (28 hits = floor(10s / 0.35s cap)) rather than left unmodeled or guessed — a reasonable,
+   clearly-flagged simplification given the engine has no ally-hit-rate tracking. S1/S5 chain nodes are
+   modeled as real proc-style damage blocks (2× and 4×0.5 Marcato hits) instead of the flat `{}` the raw
+   RESONANCE_CHAIN_DATA table zeroes them to — verified this is not a two-path desync (the raw table
+   values are correctly `{}` because the legacy schema has no bonus-hit representation, matching the
+   Yinlin S6/Calcharo S6 precedent). S3's `critDmg` +30% is correctly `scopedToBlockId`'d to all three
+   real Marcato proc blocks (base-kit + S1 + S5) rather than left unscoped — verified this matters because
+   `critDmg` is not category-gated (unlike `skillDmg`/`basicDmg`/etc.), so an unscoped version would
+   over-credit Mortefi's own Basic ATK/Skill/Fury Fugue hits landing within the 10s Burning Rhapsody
+   window, contradicting the dump's explicit "Marcato Crit DMG +30%" (Marcato-only) wording. S2/S4
+   correctly have no damage block (pure Resonance-Energy-restore and duration-extension utility, zero DPS
+   component). No missing damage blocks for any move referenced by a buff or chain node. No changes.
+9. **icons** — `SKILL_ICONS.Mortefi` covers every move name referenced by the real rotation
+   (`Dissonance`, `Passionate Variation`, `Fury Fugue`, `Impromptu Show`, `Violent Finale`, plus `Marcato`
+   and `Rage Transposition` for chain/outro display) via `getSkillIcon`'s `skillName.includes(key)`
+   substring lookup — verified no key is a substring of another key in a way that could cause a
+   case-sensitive mismatch (e.g. `'Fury Fugue'` vs `'Violent Finale'` vs `'Marcato'` are all mutually
+   non-overlapping). No changes.
+
+No real bugs found on this independent re-derivation — every one of the 9 dimensions matched the
+dump exactly. This is a genuine "verified clean" result, not an unexamined restatement of the prior
+2026-09-01/09-03 audit comments already in the file: each dimension was re-derived from the dump's raw
+text first, then diffed against `characters.js`/`mortefi.blocks.js` independently, including re-checking
+the S3 `scopedToBlockId` fix's correctness (still valid: `critDmg` is genuinely uncategorized in the
+buff-application code, and the dump's kit text is genuinely Marcato-only) rather than trusting the
+existing comment's claim at face value. No test changes needed — `triggerEngine-mortefi.test.js`'s
+existing 8 tests already cover every fixed/modeled mechanic (S1/S5 bonus-proc modeling, S3 scoping, base-
+kit Marcato proc, dmgFocus, Intro category). Full suite green: 1487/1487.
+
+Mortefi stays on the completed-characters list above (already listed from the 2026-09-03/04 pass); this
+entry documents the independent 2026-09-04 re-derivation per explicit no-trust-prior-audit instruction.
+
 ---
 
 ## How to add to this file
