@@ -86,7 +86,11 @@ Game
 │           │   └── <Name>
 │           │       ├── Stats
 │           │       │   ├── Main
-│           │       │   └── Substats
+│           │       │   │   ├── ATK %
+│           │       │   │   ├── HP %
+│           │       │   │   └── DEF %
+│           │       │   └── Sub
+│           │       │       └── HP (flat)
 │           │       ├── Skill Label
 │           │       ├── Skill Description
 │           │       └── Echo Skill
