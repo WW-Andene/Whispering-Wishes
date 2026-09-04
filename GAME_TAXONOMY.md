@@ -81,16 +81,37 @@ Game
 │
 ├── Echo
 │   └── Sonata
-│       └── Cost → (each tier: 1 / 3 / 4)
-│           └── <Name>
-│               ├── Stats
-│               │   ├── Main
-│               │   └── Substats
-│               ├── Skill Label
-│               ├── Skill Description
-│               └── Echo Skill
-│                   ├── Damage
-│                   └── Buff
+│       └── Cost
+│           ├── 1
+│           │   └── <Name>
+│           │       ├── Stats
+│           │       │   ├── Main
+│           │       │   └── Substats
+│           │       ├── Skill Label
+│           │       ├── Skill Description
+│           │       └── Echo Skill
+│           │           ├── Damage
+│           │           └── Buff
+│           ├── 3
+│           │   └── <Name>
+│           │       ├── Stats
+│           │       │   ├── Main
+│           │       │   └── Substats
+│           │       ├── Skill Label
+│           │       ├── Skill Description
+│           │       └── Echo Skill
+│           │           ├── Damage
+│           │           └── Buff
+│           └── 4
+│               └── <Name>
+│                   ├── Stats
+│                   │   ├── Main
+│                   │   └── Substats
+│                   ├── Skill Label
+│                   ├── Skill Description
+│                   └── Echo Skill
+│                       ├── Damage
+│                       └── Buff
 │
 ├── Enemy
 │   └── <Name>
