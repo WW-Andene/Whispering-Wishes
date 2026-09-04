@@ -307,3 +307,15 @@ section for this character (not one of the 9 characters affected by that gap).
 
 2 new tests added (Sweeping Force, Secret Strategist's 4 True Sight blocks), full suite green
 (1416/1416).
+
+**Engine bug found and fixed (2026-09-04), not specific to Changli**: doing a rotation walkthrough
+sanity check on her own S3 (Radiance of Fealty DMG +80%), found it was never actually being applied
+in `resolveHitComposedDps` — an instant, no-duration `cast`-triggered buff (the exact shape used by
+S3/S5 nodes across ~30 characters, 52 blocks total) was silently dropped by the resolver, which only
+read duration-based or always-on-passive buffs. Fixed at the resolver level — see REMAINING_WORK.md's
+top-of-file entry for the full affected-character list and the fix's own regression tests.
+Sweeping Force was also fixed same pass — was unscoped passive `elemDmg`/`defIgnore`, over-crediting
+100% of her Fusion damage instead of only Forte Heavy/Liberation; split into 2 `scopedToBlockId`-scoped
+blocks. Also found (not fixed, logged in REMAINING_WORK.md): her abstracted 6-step
+`CHARACTER_ROTATIONS` only fires Skill and Forte Heavy once each per loop, but her real cycle casts
+both twice.

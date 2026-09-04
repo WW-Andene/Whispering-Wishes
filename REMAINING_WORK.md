@@ -23,6 +23,35 @@ The modern engine is the **primary path** for all 56 converted characters;
 legacy only still executes for Jingran (unreleased, unconverted). The end
 goal — one fused engine, legacy retired — is not reached.
 
+**Resolver bug fixed 2026-09-04 (found auditing Changli's S3, dimension 8):**
+`resolveHitComposedDps.js`'s `statsAtInstant()` only read 2 buckets of buff
+blocks — duration-based (`timing.duration` set) and always-on
+(`trigger.type: 'passive'`). A `cast`-triggered buff with NO duration (an
+instant, one-shot "this cast's own DMG is boosted by X%" node — the most
+common shape for a flat Resonance Chain stat bonus) fell into neither
+bucket and was **silently never applied at all**, confirmed by removing
+Changli's `chain.s3` block and getting byte-identical damage output.
+Scope check found **52 such blocks across ~30 characters** sharing the
+exact shape (Calcharo, Carlotta, Cartethyia, Changli ×2, Chisa, Chixia,
+Ciaccona, Danjin, Denia ×3, Encore, Galbrena ×2, Hiyuki, Iuno, Lingyang,
+Lumi, Lupa, Luukherssen, Lynae ×3, Mornye ×2, Phrolova, Qingxiao ×3,
+Qiuyuan, Rebecca ×2, Rover: Spectro, Sanhua, Shorekeeper, Sigrika ×2,
+Suisui ×2, Taoqi ×2, Xiangli Yao ×3, Yangyang ×3, Yangyang: Xuanling,
+Yuanwu) — all were silently dead in `resolveHitComposedDps`/
+`calcTeamStats.js`'s "converted character" real-damage path (production
+numbers, not just this test suite) for any player at the relevant
+Resonance Chain sequence. Fixed at the resolver level (one function, not
+52 individual block edits): each step's own `firedTriggers` set (built
+fresh per step, not cumulative) is now also checked against a new
+`instantCastBuffBlocks` bucket, so a no-duration `cast` buff applies
+exactly once, scoped to hits landing in that same step. Regression-tested
+directly in `resolveHitComposedDps.test.js` with a minimal hand-built
+repro; full suite green afterward (1418/1418), no ratio regressions in
+`phase3-parityHarness.test.js`. Not yet spot-checked per-character beyond
+Changli's own S3 — a broader before/after DPS diff across all 52 affected
+blocks would confirm nothing else relied on the old (wrong) silent-drop
+behavior, but nothing in the current suite suggests it did.
+
 ### 1a. Schema gaps — 7 of 17 originally-inventoried, still open (down from 10 — early-forfeit-on-swap, Youhu's buff-of-a-buff, and Cantarella's summon-chain closed 2026-09-03)
 
 Every gap below was individually investigated (not guessed at) and has a

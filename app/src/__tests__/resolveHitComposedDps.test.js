@@ -375,3 +375,59 @@ describe('resolveHitComposedDps — externalStats param (PHASE3_PLAN.md Stage 1:
     expect(hitLog).toHaveLength(11);
   });
 });
+
+describe('resolveHitComposedDps — instant cast-triggered buff with no duration (fixed 2026-09-04)', () => {
+  it('a buff block with trigger.type "cast" and no timing.duration actually applies to the hit landing in that same step, instead of being silently dropped', () => {
+    // Minimal hand-built reproduction of the bug found auditing Changli's S3 (Radiance of Fealty
+    // DMG +80%, an instant cast-scoped Resonance Chain node with no duration field): before this fix,
+    // such a block fell into neither of statsAtInstant's two buckets (buffWindows needs a real
+    // timing.duration, passiveBlocks needs trigger.type 'passive'), so it silently never fired at all.
+    const damageBlock = {
+      id: 'test.damage', kind: 'damage',
+      trigger: { type: 'cast', on: 'Skill:Test Move' },
+      timing: {}, target: { scope: 'self' }, effects: [],
+      damage: { hits: [{ atkPct: 100 }], category: 'skillDmg' },
+    };
+    const instantBuff = {
+      id: 'test.instant-buff', kind: 'buff',
+      trigger: { type: 'cast', on: 'Skill:Test Move' },
+      timing: {}, // no duration — this is the exact shape that was being dropped
+      target: { scope: 'self' },
+      effects: [{ stat: 'skillDmg', value: 80 }],
+    };
+    const steps = [{ type: 'Skill', skill: 'Test Move', stepSeconds: 1 }];
+    const baseAtk = 1000;
+
+    const withBuff = resolveHitComposedDps([damageBlock, instantBuff], steps, NEUTRAL_ENEMY, baseAtk);
+    const withoutBuff = resolveHitComposedDps([damageBlock], steps, NEUTRAL_ENEMY, baseAtk);
+
+    expect(withBuff.totalDamage).toBeCloseTo(withoutBuff.totalDamage * 1.8, 6); // +80% skillDmg on a skillDmg hit
+    expect(withBuff.totalDamage).toBeGreaterThan(withoutBuff.totalDamage);
+  });
+
+  it('an instant cast-buff scoped to a DIFFERENT trigger does not leak into an unrelated hit landing at another step', () => {
+    const moveA = {
+      id: 'test.move-a', kind: 'damage',
+      trigger: { type: 'cast', on: 'Skill:Move A' },
+      timing: {}, target: { scope: 'self' }, effects: [],
+      damage: { hits: [{ atkPct: 100 }], category: 'skillDmg' },
+    };
+    const moveB = {
+      id: 'test.move-b', kind: 'damage',
+      trigger: { type: 'cast', on: 'Skill:Move B' },
+      timing: {}, target: { scope: 'self' }, effects: [],
+      damage: { hits: [{ atkPct: 100 }], category: 'skillDmg' },
+    };
+    const buffOnA = {
+      id: 'test.buff-on-a', kind: 'buff',
+      trigger: { type: 'cast', on: 'Skill:Move A' },
+      timing: {}, target: { scope: 'self' },
+      effects: [{ stat: 'skillDmg', value: 80 }],
+    };
+    const steps = [{ type: 'Skill', skill: 'Move A', stepSeconds: 1 }, { type: 'Skill', skill: 'Move B', stepSeconds: 1 }];
+    const { hitLog } = resolveHitComposedDps([moveA, moveB, buffOnA], steps, NEUTRAL_ENEMY, 1000);
+    const hitA = hitLog.find(h => h.blockId === 'test.move-a');
+    const hitB = hitLog.find(h => h.blockId === 'test.move-b');
+    expect(hitA.damage).toBeGreaterThan(hitB.damage); // only A's own step should carry the +80% bonus
+  });
+});
