@@ -192,9 +192,9 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua — added 2026-09-03/04,
-first eleven characters audited under the updated 9-dimension
-methodology** (see below). Many more
+Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi — added
+2026-09-03/04, first twelve characters audited under the updated
+9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -532,6 +532,19 @@ anywhere — while all 3 of her real categories (Heavy/Liberation/Skill)
 were entirely missing. Fixed to `['Heavy ATK', 'Liberation', 'Skill']`.
 Icons (dimension 9) checked and confirmed already fully wired. 5 new
 tests, full suite green: 1407/1407.
+
+**Taoqi pass (2026-09-04)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 2 real bugs (a `bestWeapon`
+QOL-vs-raw-% mismatch, a malformed `bestEchoes` pairing). Redoing
+dimensions 5/8 found `taoqi.intro.defense-formation` uncategorized (fixed
+to `skillDmg`, default convention) and a striking `dmgFocus` inversion:
+`'Skill'` alone (5.8%) was actually her SMALLEST modeled bucket, while
+Basic ATK (43.1%, dominant, via Power Shift's Timed Counters) and
+Liberation (37.3%, Unmovable) — her two biggest — were both entirely
+missing despite already being correctly `basicDmg`/`libDmg`-categorized.
+Fixed to `['Skill', 'Basic ATK', 'Liberation']`. Icons (dimension 9)
+checked and confirmed already fully wired. 2 new tests, full suite green:
+1409/1409.
 
 ---
 

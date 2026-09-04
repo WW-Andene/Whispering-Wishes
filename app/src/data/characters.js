@@ -1600,7 +1600,12 @@ const CHARACTER_DATA = {
   // Skill DMG Amplified by 38%" — matches the 'Skill DMG Amp' convention used for Lumi/Baizhi/Buling's
   // identical Amp-type buffs below, not the "Deepen" wording (which belongs to a different, unsourced
   // stat this character never actually carries).
-  ['Taoqi',         ['Skill'],                       ['Shield', 'Skill DMG Amp'],              []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: 'Skill' alone (5.8%) was actually her SMALLEST modeled bucket — Basic ATK (43.1%,
+  // dominant, via Power Shift's Timed Counters) and Liberation (37.3%, Unmovable) were both entirely
+  // missing despite already being correctly basicDmg/libDmg-categorized. Echo (9.7%) stays excluded —
+  // generic equipped-Echo damage, not her own kit's Echo Skill button.
+  ['Taoqi',         ['Skill', 'Basic ATK', 'Liberation'], ['Shield', 'Skill DMG Amp'],         []],
   // buff tag corrected 2026-08-18: the wiki's Yuanwu/Combat Forte Details table for Resonance Liberation
   // Blazing Might has no shield effect at all — the 'Shield' tag had no basis in his base (S0) kit,
   // only appearing on Resonance Chain S4 "Retributive Knuckles" (200% DEF shield, see

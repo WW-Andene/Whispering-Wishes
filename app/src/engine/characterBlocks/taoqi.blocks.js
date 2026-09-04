@@ -22,7 +22,10 @@ export const TAOQI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Defense Formation' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('208.76%') },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. The dump's own
+    // multiplier table labels this row generically "Skill Damage", same default convention used
+    // throughout this Phase A sweep.
+    damage: { hits: parseSkillMultiplierHits('208.76%'), category: 'skillDmg' },
     note: 'Havoc DMG opener; Basic Attack afterward casts Timed Counters (Power Shift) directly.',
   },
   {
