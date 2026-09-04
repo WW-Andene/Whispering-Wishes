@@ -35,6 +35,8 @@ Game
 │       ├── Kit → (each move: ref Block)
 │       │   ├── Basic ATK
 │       │   ├── Heavy ATK
+│       │   ├── Mid-air
+│       │   ├── Charged ATK
 │       │   ├── Skill
 │       │   ├── Liberation
 │       │   ├── Forte
@@ -135,7 +137,9 @@ Game
 │
 ├── Buff
 │   ├── Base Stat
+│   │   ├── HP %
 │   │   ├── ATK %
+│   │   ├── DEF %
 │   │   ├── Crit Rate
 │   │   └── Crit DMG
 │   ├── DMG Bonus — Universal
