@@ -89,6 +89,10 @@ Game
 ├── Enemy
 │   └── <Name>
 │       ├── Rank
+│       │   ├── Common
+│       │   ├── Elite
+│       │   ├── Calamity
+│       │   └── Overlord
 │       ├── Type
 │       └── Stats
 │
