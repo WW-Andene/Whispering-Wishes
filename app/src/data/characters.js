@@ -1451,7 +1451,15 @@ const CHARACTER_DATA = {
   // (yinlin.liberation.thundering-wrath, yinlin.heavy.standard) — were silently rejecting real
   // teammate Liberation/Heavy ATK DMG Bonus buffs.
   ['Yinlin',        ['Coordinated ATK', 'Skill', 'Liberation', 'Heavy ATK'], ['Coordinated ATK'], []],
-  ['Changli',       ['Skill'],                       ['Fusion DMG Amp'],                      []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: was just ['Skill'] (61.4%) — Liberation (23.8%, her 2nd-biggest bucket, already libDmg-
+  // categorized in changli.blocks.js) was entirely missing, and Heavy ATK (6.1%, already heavyDmg-
+  // categorized) sits just above this project's own 6.8%-include/5.5%-exclude ambiguous-zone boundary's
+  // midpoint — included per the same "genuine, already-categorized, not negligible" standard as Yinlin's
+  // Heavy ATK. Basic ATK (4.4%) and Intro (~2.25%, 8103/359942) stay excluded — both land inside or below
+  // the established ambiguous-exclude zone. Echo (22122) stays excluded — generic equipped-Echo damage,
+  // not her own kit's Echo Skill button.
+  ['Changli',       ['Skill', 'Liberation', 'Heavy ATK'], ['Fusion DMG Amp'],                  []],
   ['Zhezhi',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   ['Phoebe',        ['Skill'],                       [],                                      ['Frazzle']],

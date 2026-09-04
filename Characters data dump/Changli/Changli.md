@@ -273,3 +273,23 @@ top-2-by-% ordering; `CHARACTER_ROTATIONS['Changli']`'s 6 steps all resolve clea
 `SKILL_MULTIPLIERS` (no zero-damage/zero-display lookup gap, unlike Jinhsi's prior fix).
 
 1 test updated (S5 split), full suite green (1332/1332).
+
+**Full 9-dimension Phase A pass (2026-09-04)**:
+3. `dmgFocus` was `['Skill']` only — Liberation (23.8%, her 2nd-biggest bucket, already libDmg-
+   categorized) and Heavy ATK (6.1%, already heavyDmg-categorized) were both real, uncounted damage.
+   Fixed to `['Skill', 'Liberation', 'Heavy ATK']`. Basic ATK (4.4%) and Intro (~2.25%) stay excluded —
+   ambiguous zone. Echo stays excluded — generic equipped-Echo damage.
+4. Dimension 8 (kit-component wiring): both Inherent Skills were entirely unmodeled — no block, no
+   mention anywhere in `changli.blocks.js`. **Sweeping Force** (+20% Fusion DMG Bonus, +15% DEF Ignore
+   on Forte Heavy/Liberation casts) added as `changli.inherent.sweeping-force`, same conditional-passive
+   pattern as her own S1/S6 chain nodes (both trigger casts are real rotation steps). **Secret
+   Strategist** (+5% Fusion DMG per Enflamement stack held on True Sight: Conquest/Charge cast) is
+   NOT modeled — it's a per-stack rate with no fixed total, and Conquest/Charge aren't even modeled as
+   their own blocks yet (`changli.skill.true-sight-capture` only covers the initial Skill press) — logged
+   as an open architectural gap in REMAINING_WORK.md rather than guessed.
+
+Icons (dimension 9) checked: all 8 SKILL_ICONS keys and all 6 CHAIN_NODE_ICONS keys present and
+correctly wired, including the shared generic Sword icon for Basic/Heavy ATK. No Opener-vs-Loop dump
+section for this character (not one of the 9 characters affected by that gap).
+
+1 new test added (Sweeping Force), full suite green (1414/1414).

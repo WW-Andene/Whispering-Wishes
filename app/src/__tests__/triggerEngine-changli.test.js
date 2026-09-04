@@ -54,4 +54,10 @@ describe('triggerEngine parity — Changli', () => {
     expect(fired.has('changli.forte.flaming-sacrifice')).toBe(true);
     expect(fired.has('changli.heavy.standard')).toBe(true);
   });
+
+  it("Sweeping Force (Inherent Skill, added 2026-09-04, dimension 8: was entirely unmodeled) grants Fusion DMG +20% and DEF Ignore +15%", () => {
+    const sf = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.sweeping-force');
+    expect(sf.effects.find(e => e.stat === 'elemDmg').value).toBe(20);
+    expect(sf.effects.find(e => e.stat === 'defIgnore').value).toBe(15);
+  });
 });

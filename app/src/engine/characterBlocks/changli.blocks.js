@@ -153,4 +153,18 @@ export const CHANGLI_BLOCKS = [
     effects: [{ stat: 'defIgnore', value: 40 }],
     note: 'Tripartite Flames, Flaming Sacrifice, and Radiance of Fealty ignore an additional 40% of target DEF — conditional to those 3 specific casts, kept passive rather than fabricating 3 separate per-skill timers.',
   },
+
+  // ── Inherent Skill (added 2026-09-04, Phase A audit, REMAINING_WORK.md 1c — dimension 8: was entirely
+  //    unmodeled, no block existed for either of Changli's 2 Inherent Skills) ──
+  {
+    id: 'changli.inherent.sweeping-force',
+    source: SOURCE, kind: 'buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'elemDmg', value: 20 },
+      { stat: 'defIgnore', value: 15 },
+    ],
+    note: 'Sweeping Force: casting Heavy ATK Flaming Sacrifice or Resonance Liberation Radiance of Fealty → Fusion DMG Bonus +20% and 15% target DEF Ignore — conditional to those 2 specific casts (both real rotation steps), kept passive rather than fabricating 2 separate per-skill timers, same pattern as her own s1/s6 chain nodes above. Secret Strategist (her other Inherent Skill, +5% Fusion DMG per Enflamement stack held on True Sight: Conquest/Charge cast) is NOT modeled — logged separately in REMAINING_WORK.md: it needs a stack count at cast time the app has no tracker for, and Conquest/Charge aren\'t even modeled as their own blocks yet (see changli.skill.true-sight-capture\'s own note).',
+  },
 ];
