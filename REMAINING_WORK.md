@@ -139,6 +139,30 @@ same tier as HP tracking):**
   enemy-attack timeline; no such data exists anywhere.
 - Denia's Erosion Field tick-rate (4s→3s) — blocked on the same
   sustained-tick-simulation prerequisite as Baizhi's gap.
+- **Opener-vs-Loop rotation modeling — found 2026-09-04, auditing Jinhsi.**
+  At least 9 characters' source dumps explicitly split their real rotation
+  guidance into a one-time "Opener" (cold swap-in, no incoming buffs) and a
+  separate, differently-sequenced "Loop Rotation" (what actually repeats on
+  every subsequent cycle in a real team rotation) — confirmed via
+  `grep -rl "Loop Rotation\|(Opener" "Characters data dump/"`: Jinhsi,
+  Chisa, Rebecca, Lupa, Mornye, Lucy, Buling, Phrolova, Suisui.
+  `CHARACTER_ROTATIONS` currently models only ONE fixed sequence per
+  character, used both for the solo view and chained into Team tab
+  calculations — for Jinhsi specifically this is the Opener (which never
+  casts her own Intro Skill), while every real Loop Rotation variant in her
+  dump (Standard/Advanced/Expert) casts Intro on every single cycle,
+  meaningfully feeding her S3 ATK stack and dealing real damage (3.12% of
+  her S0 total per the dump's own Damage Profile) — a real team-context
+  inaccuracy, not the harmless "alternate unused variant" case most other
+  deliberately-unmodeled moves fall under. Properly fixing this needs the
+  rotation simulator to track which cycle a character is on (first-ever
+  swap-in vs. a repeat within a longer team loop) and model two distinct
+  sequences per affected character — a real engine feature, not a
+  per-character data edit; same "needs a new simulation dimension" tier as
+  the items above, not attempted piecemeal on Jinhsi alone. Whether/when to
+  build this, and whether the other 8 characters' Loop variants differ from
+  their Openers in a similarly damage-relevant way, is unaudited — flagged
+  here rather than guessed at.
 
 ### 1b. Phase 2 — DOT-mechanic migration to the modern engine
 
