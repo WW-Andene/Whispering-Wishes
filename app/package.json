@@ -18,7 +18,8 @@
     "build:native": "node capacitor-build/build.mjs",
     "cap:sync": "npx cap sync android",
     "cap:open": "npx cap open android",
-    "icons": "npx --yes @capacitor/assets generate --android"
+    "icons": "npx --yes @capacitor/assets generate --android",
+    "check:blockNaming": "node scripts/checkCharacterBlockNaming.js"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.0",
