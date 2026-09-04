@@ -262,9 +262,9 @@ audit per character, all cross-checked against a fresh source dump:
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
-Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta —
-added 2026-09-03/04, first twenty-two characters audited under the updated
-9-dimension methodology** (see below). Many more
+Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
+Brant — added 2026-09-03/04, first twenty-three characters audited under
+the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -717,6 +717,38 @@ new engine blocks. Full suite green: 1442/1442 — no new tests needed, since
 the fix was reference-data-only (no new/changed engine behavior) and the
 prior 2026-09-02 pass already added `triggerEngine-augusta.test.js` and
 `augustaHalvedMultipliersFix.test.js` covering every real engine-block fix.
+
+**Brant pass (2026-09-04) — verification only, all real fixes already
+landed in a prior same-day pass.** His `Characters data dump/` file (a real
+prydwen.gg snapshot dated 20/Aug/2026, created earlier the same day since
+none existed before) and `brant.blocks.js` already carried a full 9-dimension
+audit: SKILL_MULTIPLIERS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE all confirmed
+matching the dump exactly (including the already-logged S2 Outro-proc gap —
+440% ATK, Basic Attack DMG type, max 1/sec, max 2 explosions total);
+`weaponAlts.alt4` had held 2 unsourced weapons (`'Overture'`,
+`'Commando of Conviction'`) not present anywhere in the dump's exhaustive
+5-weapon Best Weapons list — fixed by moving the 2 real missing alts (Red
+Spring 73.1%, Emerald of Genesis 71.3%) into `alt5` and clearing `alt4`
+rather than backfilling it with unsourced data; `brant.midair.
+stage-2-3-charged-flip` had no `damage.category` — fixed to `basicDmg` per
+the established Mid-air Attack convention (inherits Basic/Heavy ATK DMG,
+never its own type); `chain.s3` (Returned from Ashes DMG Multiplier +42%)
+and `chain.s6` (Mid-air Attack DMG Multiplier +30%) were both the same
+Augusta-S3-shape unscoped `totalMult` over-crediting bug — silently
+boosting his entire kit instead of only their real named target — both
+fixed via `scopedToBlockId`. SKILL_MULTIPLIERS also gained reference-only
+rows for base Heavy Attack (197.55%), Plunging Attack (104.78%), and Dodge
+Counter (38.03%×3+57.04%×2), confirmed unused in his real modeled
+`CHARACTER_ROTATIONS` (goes straight from Intro/Liberation into Mid-air
+combat, matching the Lucy/Augusta Dodge-Counter-row precedent). dmgFocus,
+tier, echo data, and icons (dimension 9) were all independently re-checked
+against the fresh dump this pass and confirmed already correct — no
+remaining gaps found. Re-running the full 9-dimension audit today
+surfaced nothing new. Full suite green: 1442/1442 (no new tests needed —
+the prior pass's 8 tests in `triggerEngine-brant.test.js` already cover
+every real engine-block fix, including the cross-character
+`roveraero.midair.plunging-attack` category fix caught in passing during
+that same pass).
 
 ---
 
