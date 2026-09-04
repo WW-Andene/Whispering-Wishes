@@ -31,7 +31,9 @@ export const YUANWU_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Thunder Bombardment' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('63.62%'), basis: 'DEF' },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. No override
+    // text names a different category, same default-to-skillDmg convention used throughout this sweep.
+    damage: { hits: parseSkillMultiplierHits('63.62%'), category: 'skillDmg', basis: 'DEF' },
   },
   {
     id: 'yuanwu.skill.thunder-wedge',
@@ -42,14 +44,26 @@ export const YUANWU_BLOCKS = [
     note: 'Summons Thunder Wedge (lasts 12s), forms a Thunder Field around it — the on-field character\'s hits inside trigger a Coordinated ATK (7.96%, 1x/1.2s, not modeled). Fires twice in the real rotation.',
   },
   {
+    // Split 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) from a single combined block that wrongly
+    // lumped Thunder Wedge Detonation into libDmg alongside Blazing Might's own hit — the previous
+    // block's own comment already said the detonation is "counted as Resonance Skill DMG" but the code
+    // didn't apply it. SKILL_MULTIPLIERS['Yuanwu'] even carries this as its own dedicated "Thunder Wedge
+    // Detonation" row with that exact label, confirming the split. Blazing Might's own hit stays libDmg
+    // below; the detonation is now its own skillDmg block.
     id: 'yuanwu.liberation.blazing-might',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Liberation:Blazing Might' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // Combines Thunder Wedge Detonation (59.65%) with Blazing Might's own hit (174.96%x2) — the
-    // rotation's own note says this cast detonates the active Thunder Wedge AND deals its own blow.
-    damage: { hits: [...parseSkillMultiplierHits('59.65%'), ...parseSkillMultiplierHits('174.96%×2')], category: 'libDmg', basis: 'DEF' },
-    note: 'Detonates the active Thunder Wedge (counted as Resonance Skill DMG) and grants Forte Circuit Lightning Infused (Interruption Resistance) to the nearby team for 10s (not modeled), then a powerful blow.',
+    damage: { hits: parseSkillMultiplierHits('174.96%×2'), category: 'libDmg', basis: 'DEF' },
+    note: 'Grants Forte Circuit Lightning Infused (Interruption Resistance) to the nearby team for 10s (not modeled), then a powerful blow.',
+  },
+  {
+    id: 'yuanwu.forte.thunder-wedge-detonation-liberation',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Blazing Might' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('59.65%'), category: 'skillDmg', basis: 'DEF' },
+    note: 'Detonates the active Thunder Wedge, counted as Resonance Skill DMG per its own dedicated SKILL_MULTIPLIERS row.',
   },
   {
     id: 'yuanwu.forte.rumbling-spark',

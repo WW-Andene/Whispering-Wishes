@@ -190,3 +190,38 @@ despite this source showing all blanks — the source gap doesn't contradict the
 No test changes needed (none of the fixes touched RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/
 SKILL_MULTIPLIERS/CHARACTER_ROTATIONS, which the existing test file covers), full suite green
 (1339/1339).
+
+**Full 9-dimension Phase A pass (2026-09-04)**:
+4. `youhu.intro.scroll-of-wonders` had no `damage.category` — fixed to skillDmg (default convention).
+5. `dmgFocus` was `['Coordinated ATK']` — zero basis; that's the buff she GRANTS teammates via Outro
+   (already correctly listed separately in the buffs column), not something she deals herself. Fixed
+   to `['Skill', 'Liberation', 'Basic ATK']` — her real, already-categorized damage that fires every
+   real rotation loop. No Damage Profile % breakdown exists in this source (explicitly stated
+   unavailable), so this is based on real-block presence, not a magnitude judgment. Intro (also real,
+   also fires every loop per this source's own "loops indefinitely" rotation) stays excluded — 'Intro'
+   isn't a valid dmgFocus vocabulary term anywhere in the table.
+6. **Rare Find** (Inherent Skill, +15% Glacio DMG Bonus for 14s on Intro cast) was entirely
+   unmodeled — added as `youhu.inherent.rare-find`. Treasured Piece (the other Inherent Skill, pure
+   healing) stays unmodeled — this engine has no 'heal'-kind block anywhere in the roster.
+7. **S6 (Slumber Evermore) was silently broken**: `trigger.type` was `'passive'` while the block also
+   carried a real `timing.duration`/`stacking`/`maxStacks` config — `resolveHitComposedDps`'s passive
+   path always applies effects at a fixed multiplier of 1, ignoring stacking/duration entirely (those
+   are only read on the `cast`-triggered buffWindow path). So instead of ramping toward the real +60%
+   Crit DMG cap via real Antique Appraisal casts, it was silently contributing a flat +15% forever.
+   Retargeted the trigger to `Skill:Ruyi` (the real Antique Appraisal cast this app's rotation uses,
+   firing 3x), which now correctly builds a real stacking window.
+8. Genuine mechanic ambiguity flagged and resolved with the user: Antique Appraisal's (Ruyi/Chime/
+   Ding/Mask) damage category — kit prose calls it "the next Basic Attack" empowered, but no variant
+   carries an explicit "considered X DMG" override anywhere in this source (unlike Poetic Essence,
+   which does). Decided: kept `skillDmg`, matching SKILL_MULTIPLIERS' own `'Skill'` type column for
+   this row, not switched to `basicDmg` on the mechanic-based read alone.
+
+Icons (dimension 9) checked: all 8 SKILL_ICONS keys and all 6 CHAIN_NODE_ICONS keys present and
+correctly wired, including the shared Chime/Ruyi/Ding/Mask icon (all 4 sub-effects of the same
+Resonance Skill row, no separate per-variant art). Dimension 8 otherwise clean: Heavy Attack
+(Frostfall), Mid-air Attack, Dodge Counter, and Poetic Essence are all real, sourced, dedicated
+SKILL_MULTIPLIERS rows but genuinely never appear in either of this source's own 2 named rotations —
+confirmed, not an oversight.
+
+6 new/updated tests, `rawDps` moved from 448 → 515 (Rare Find + S6's real stacking + Intro's category
+fix all contributing real damage that was previously dropped), full suite green (1427/1427).

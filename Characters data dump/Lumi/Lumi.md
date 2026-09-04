@@ -190,3 +190,39 @@ already thoroughly audited from a prior pass, correctly team-scoping S6.
 No test changes needed (none of the fixes touched RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/
 SKILL_MULTIPLIERS/CHARACTER_ROTATIONS, which the existing test file covers), full suite green
 (1339/1339).
+
+**Full 9-dimension Phase A pass (2026-09-04)**:
+3. **S5 was silently DOUBLING her entire kit's damage** — a live, active bug, not hypothetical: it was
+   `trigger.type: 'passive'` with `totalMult: 100` and no scoping/condition at all. `totalMult` isn't
+   category-gated (it multiplies every hit resolved at that instant), so an unconditioned passive
+   version applied +100% to literally everything, all the time. Confirmed directly: removing the block
+   dropped her simulated total from 94,044 to 47,022 — exactly 2x. The real kit text ("When Spark is
+   fully recovered, Laser's DMG Multiplier+100%") is conditional and scoped to Laser specifically.
+   Investigated whether Laser could be properly added instead (it legitimately CAN fire off her Outro
+   cast, a real modeled step, if 25+ of her 100-cap Spark were consumed) — but the rotation's own final
+   steps are "...Energized Pounce → Echo → Outro," and Energized Pounce drains that exact Spark pool to
+   0 the instant it's cast, with no Spark-generating step before Outro — so assuming max Spark banked
+   would be directly contradicted by the rotation's own real cast order, not a defensible steady-state
+   case. Removed S5 entirely (same "real but not fireable without live state" treatment as S1).
+4. `lumi.intro.special-delivery` had no `damage.category` — fixed to skillDmg (default convention).
+5. `dmgFocus` was `['Basic ATK']` only — Liberation (29.6%, 2nd-biggest real bucket, already libDmg-
+   categorized) was missing despite being far above this project's 6.8% include threshold. Fixed to
+   `['Basic ATK', 'Liberation']`. The profile's 3rd bucket, Skill (26.3%), was investigated but NOT
+   added — no block in `lumi.blocks.js` is skillDmg-categorized for anywhere near that share (only
+   Intro, ~4.1%); Energized Pounce/Rebound are explicitly "counted as Basic Attack DMG" per kit text,
+   not Skill, and neither this dump's Rotation text nor its Standard Rotation mentions casting base
+   (non-Energized) Pounce/Rebound anywhere. Left as an open, unattributed question rather than guessed.
+6. **Full re-segmentation pass** (decomposing the dump's real rotation text move-by-move, not just the
+   abstracted CHARACTER_ROTATIONS): found `lumi.forte.glare` fired only 1 hit (81.52%) despite both the
+   CHARACTER_ROTATIONS step's own note ("Channelled Dash: 6 Glares") and the kit text ("ends after 6
+   Glares") confirming 6 real hits per cast — a 6x undercount. Fixed to 6 real hits. No other real
+   undercounts found; every other move either fires its full real hit count already, or is confirmed
+   genuinely absent from both the Standard Rotation and the detailed Gameplay rotation text (base
+   Pounce/Rebound, Glitter, Plunging Attacks, Heavy Attack, Dodge Counter — all real, sourced,
+   deliberately unmodeled since none appear in either rotation).
+
+Icons (dimension 9) already confirmed present in a prior pass.
+
+6 new/updated tests, full suite green (1442/1442). Total simulated damage roughly halved from the S5
+fix (removing the 2x overcount) while the Glare fix partially offsets it — net real, more accurate
+number either way.

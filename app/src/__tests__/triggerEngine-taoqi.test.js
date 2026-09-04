@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { TAOQI_BLOCKS } from '../engine/characterBlocks/taoqi.blocks.js';
@@ -50,5 +50,14 @@ describe('triggerEngine parity — Taoqi', () => {
     expect(fired.has('taoqi.intro.defense-formation')).toBe(true);
     expect(fired.has('taoqi.liberation.unmovable')).toBe(true);
     expect(fired.has('taoqi.forte.power-shift-timed-counters')).toBe(true);
+  });
+
+  it("Intro (Defense Formation) is skillDmg-categorized (was uncategorized)", () => {
+    const intro = TAOQI_BLOCKS.find(b => b.id === 'taoqi.intro.defense-formation');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("dmgFocus is ['Skill', 'Basic ATK', 'Liberation'] — Basic ATK (43.1%, dominant) and Liberation (37.3%) were both missing despite being her 2 biggest, already-categorized buckets", () => {
+    expect(CHARACTER_DATA['Taoqi'].dmgFocus).toEqual(['Skill', 'Basic ATK', 'Liberation']);
   });
 });

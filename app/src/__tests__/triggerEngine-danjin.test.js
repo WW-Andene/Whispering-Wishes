@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { DANJIN_BLOCKS } from '../engine/characterBlocks/danjin.blocks.js';
@@ -52,5 +52,14 @@ describe('triggerEngine parity — Danjin', () => {
     expect(overflow.timing.duration).toBe(legacy.selfBuffs[0].duration);
     const heavyDmgBlocks = DANJIN_BLOCKS.filter(b => b.kind === 'damage' && b.damage?.category === 'heavyDmg');
     expect(heavyDmgBlocks.map(b => b.id)).toEqual(['danjin.forte.chaoscleave']);
+  });
+
+  it("Intro (Vindication) is skillDmg-categorized (was uncategorized)", () => {
+    const intro = DANJIN_BLOCKS.find(b => b.id === 'danjin.intro.vindication');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("dmgFocus is ['Heavy ATK', 'Skill', 'Liberation'] — 'Basic ATK' was wrong (no basicDmg block exists, and Basic ATK never appears as its own CHARACTER_ROTATIONS step), Liberation (29.7%, her single biggest bucket) was missing", () => {
+    expect(CHARACTER_DATA['Danjin'].dmgFocus).toEqual(['Heavy ATK', 'Skill', 'Liberation']);
   });
 });

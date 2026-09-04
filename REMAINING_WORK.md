@@ -23,6 +23,35 @@ The modern engine is the **primary path** for all 56 converted characters;
 legacy only still executes for Jingran (unreleased, unconverted). The end
 goal — one fused engine, legacy retired — is not reached.
 
+**Resolver bug fixed 2026-09-04 (found auditing Changli's S3, dimension 8):**
+`resolveHitComposedDps.js`'s `statsAtInstant()` only read 2 buckets of buff
+blocks — duration-based (`timing.duration` set) and always-on
+(`trigger.type: 'passive'`). A `cast`-triggered buff with NO duration (an
+instant, one-shot "this cast's own DMG is boosted by X%" node — the most
+common shape for a flat Resonance Chain stat bonus) fell into neither
+bucket and was **silently never applied at all**, confirmed by removing
+Changli's `chain.s3` block and getting byte-identical damage output.
+Scope check found **52 such blocks across ~30 characters** sharing the
+exact shape (Calcharo, Carlotta, Cartethyia, Changli ×2, Chisa, Chixia,
+Ciaccona, Danjin, Denia ×3, Encore, Galbrena ×2, Hiyuki, Iuno, Lingyang,
+Lumi, Lupa, Luukherssen, Lynae ×3, Mornye ×2, Phrolova, Qingxiao ×3,
+Qiuyuan, Rebecca ×2, Rover: Spectro, Sanhua, Shorekeeper, Sigrika ×2,
+Suisui ×2, Taoqi ×2, Xiangli Yao ×3, Yangyang ×3, Yangyang: Xuanling,
+Yuanwu) — all were silently dead in `resolveHitComposedDps`/
+`calcTeamStats.js`'s "converted character" real-damage path (production
+numbers, not just this test suite) for any player at the relevant
+Resonance Chain sequence. Fixed at the resolver level (one function, not
+52 individual block edits): each step's own `firedTriggers` set (built
+fresh per step, not cumulative) is now also checked against a new
+`instantCastBuffBlocks` bucket, so a no-duration `cast` buff applies
+exactly once, scoped to hits landing in that same step. Regression-tested
+directly in `resolveHitComposedDps.test.js` with a minimal hand-built
+repro; full suite green afterward (1418/1418), no ratio regressions in
+`phase3-parityHarness.test.js`. Not yet spot-checked per-character beyond
+Changli's own S3 — a broader before/after DPS diff across all 52 affected
+blocks would confirm nothing else relied on the old (wrong) silent-drop
+behavior, but nothing in the current suite suggests it did.
+
 ### 1a. Schema gaps — 7 of 17 originally-inventoried, still open (down from 10 — early-forfeit-on-swap, Youhu's buff-of-a-buff, and Cantarella's summon-chain closed 2026-09-03)
 
 Every gap below was individually investigated (not guessed at) and has a
@@ -53,6 +82,23 @@ infrastructure. None need HP/live-state tracking except where noted.
   isn't an ally-action candidate at all — it's a status transition (upgrades
   a marker type), not a stat grant, explicitly out of scope for this
   mechanism.
+- ~~Mortefi's base-kit Burning Rhapsody Coordinated Attack~~ — **found and
+  closed 2026-09-04.** Distinct from the chain-node backlog above — this is
+  base S0 kit, not a Resonance Chain node. Liberation Violent Finale's own
+  kit text ("on-field character's Basic Attack hit → 1 Marcato; Heavy Attack
+  hit → 2 Marcato") is a real, sourced, always-on proc for 10s after cast,
+  folded into his real 67% Liberation damage share per the dump's own calc
+  methodology note, but no block modeled it — only the S1/S5 CHAIN-bonus
+  procs existed. No ally-hit-rate infrastructure exists to know how often a
+  real teammate actually lands hits, so per explicit user instruction it's
+  modeled as a flat rate-cap saturation instead: the kit's own "max 1 proc
+  per 0.35s" cap over the 10s window = `floor(10/0.35) = 28` procs, at the
+  base (non-doubled) Marcato value since the ally's real Basic-vs-Heavy mix
+  isn't known — a documented simplifying assumption (the 31.81% Marcato
+  value and 0.35s/10s figures are all directly sourced), not a guess. Added
+  `mortefi.liberation.burning-rhapsody-marcato` (`coordDmg`); `chain.s3`'s
+  Marcato Crit DMG scoping extended to cover it too. 2 new tests, full
+  suite green: 1414/1414.
 - ~~Youhu S2~~ — **closed 2026-09-03, correctly still no block, for a different
   reason than originally stated.** The "no dump file" blocker is gone
   (`Characters data dump/Youhu/Youhu.md` now exists and sources all 3 base
@@ -122,7 +168,30 @@ same tier as HP tracking):**
   enemy-attack timeline; no such data exists anywhere.
 - Denia's Erosion Field tick-rate (4s→3s) — blocked on the same
   sustained-tick-simulation prerequisite as Baizhi's gap.
-
+- **Opener-vs-Loop rotation modeling — found 2026-09-04, auditing Jinhsi.**
+  At least 9 characters' source dumps explicitly split their real rotation
+  guidance into a one-time "Opener" (cold swap-in, no incoming buffs) and a
+  separate, differently-sequenced "Loop Rotation" (what actually repeats on
+  every subsequent cycle in a real team rotation) — confirmed via
+  `grep -rl "Loop Rotation\|(Opener" "Characters data dump/"`: Jinhsi,
+  Chisa, Rebecca, Lupa, Mornye, Lucy, Buling, Phrolova, Suisui.
+  `CHARACTER_ROTATIONS` currently models only ONE fixed sequence per
+  character, used both for the solo view and chained into Team tab
+  calculations — for Jinhsi specifically this is the Opener (which never
+  casts her own Intro Skill), while every real Loop Rotation variant in her
+  dump (Standard/Advanced/Expert) casts Intro on every single cycle,
+  meaningfully feeding her S3 ATK stack and dealing real damage (3.12% of
+  her S0 total per the dump's own Damage Profile) — a real team-context
+  inaccuracy, not the harmless "alternate unused variant" case most other
+  deliberately-unmodeled moves fall under. Properly fixing this needs the
+  rotation simulator to track which cycle a character is on (first-ever
+  swap-in vs. a repeat within a longer team loop) and model two distinct
+  sequences per affected character — a real engine feature, not a
+  per-character data edit; same "needs a new simulation dimension" tier as
+  the items above, not attempted piecemeal on Jinhsi alone. Whether/when to
+  build this, and whether the other 8 characters' Loop variants differ from
+  their Openers in a similarly damage-relevant way, is unaudited — flagged
+  here rather than guessed at.
 ### 1b. Phase 2 — DOT-mechanic migration to the modern engine
 
 4 of 5 mechanics migrated and verified (Electro Flare/Buling, Fusion
@@ -192,16 +261,26 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto, Baizhi, Chixia — added 2026-09-03, first eight characters audited
-under the updated 9-dimension methodology** (see below). Many more
+Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
+Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi — added
+2026-09-03/04, first twenty-one characters audited under the updated
+9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
 dimensions: rotation-step/chain/buff-table coverage, not the full set).
-The remaining ~47 characters have not had a full Phase A pass. Not
+The remaining ~45 characters have not had a full Phase A pass. Not
 urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
+
+**Open question (2026-09-04):** Lumi's own dump Damage Profile shows a
+real 26.3% "Skill" damage bucket, but no block in `lumi.blocks.js` is
+skillDmg-categorized for anywhere near that share (only Intro, ~4.1%).
+Energized Pounce/Rebound are explicitly "counted as Basic Attack DMG"
+per kit text, not Skill. Neither the dump's "Rotation" tips text nor its
+Standard Rotation mentions casting base (non-Energized) Pounce/Rebound.
+Not added to `dmgFocus` — flagged as unattributed rather than guessed.
 
 **Rover: Spectro pass (2026-09-03)**: her `Characters data dump/` already
 had 6 of 8 dimensions verified clean from an earlier pass (SKILL_MULTIPLIERS,
@@ -466,6 +545,148 @@ missing. Fixed to `['Skill', 'Liberation', 'Outro']`. Intro (~3.35%) also
 got its missing `skillDmg` category fixed but folds into the already-
 included Skill category. Icons (dimension 9) checked and confirmed already
 fully wired. 3 new tests, full suite green: 1398/1398.
+
+**Danjin pass (2026-09-04)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 4 real bugs (a wrong
+`bestEchoes` set, a missing `weaponAlts.alt5` entry, a stale Scatterbloom
+multiplier plus 2 missing higher-tier Forte rows, and an entirely-missing
+Inherent Skill Overflow). Redoing dimensions 5/8 found `danjin.intro.
+vindication` uncategorized (fixed to `skillDmg`, default convention) and
+`dmgFocus` actively wrong the same way as Chixia's: it included `'Basic
+ATK'` despite no `basicDmg`-categorized block existing anywhere in
+`danjin.blocks.js`, and her real `CHARACTER_ROTATIONS` never casting a
+standalone Basic Attack step (Basic ATK 2/3 are only referenced as
+prerequisites unlocking her Skill combos). Meanwhile Liberation — her
+single BIGGEST damage bucket (29.7%/56,602) — was entirely missing despite
+already being correctly `libDmg`-categorized. Fixed to `['Heavy ATK',
+'Skill', 'Liberation']`. Icons (dimension 9) checked and confirmed already
+fully wired. 2 new tests, full suite green: 1400/1400.
+
+**Yangyang pass (2026-09-04)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 3 real bugs (a `bestEchoes`
+entry with no main echo named, a wrong `bestWeapon`, a stale multiplier
+digit). Redoing dimensions 5/8 found `yangyang.intro.cerulean-song`
+uncategorized (fixed to `skillDmg`, default convention) and a genuine
+miscategorization: `yangyang.heavy.zephyr-song` was `heavyDmg`, but the
+kit text is explicit "Zephyr Song is a Basic ATK follow-up after Heavy
+Attack or Dodge Counter" — the "Heavy ATK" rotation-step type is just the
+input leading into it (same shape as Chixia's Boom Boom), confirmed by the
+dump's own Damage Profile showing an explicit 0% Heavy share. Fixed to
+`basicDmg`. Also found `yangyang.forte.feather-release` uncategorized
+despite its own kit text saying "counted as Basic Attack DMG" — initially
+left unmodeled pending clarification on whether that label covers the
+whole multi-hit row (`21.73%×5 + 126.81%×2`) or only its landing sub-hit;
+user confirmed this project's own "counted as X" convention applies the
+label to the whole named move, not just the nearest sub-clause, so fixed
+to `basicDmg` in full. `dmgFocus` was `['Skill']` only, missing Liberation
+(42.1%, her single biggest bucket, already correctly `libDmg`-categorized);
+Basic ATK gained 2 real sources once Zephyr Song and Feather Release were
+correctly categorized. Fixed to `['Skill', 'Liberation', 'Basic ATK']`.
+Icons (dimension 9) checked and confirmed already fully wired. 4 new
+tests, full suite green: 1404/1404.
+
+**Sanhua pass (2026-09-04)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 4 real bugs (a backwards
+`bestEchoes` main+set pairing, a fabricated `teams` partner, a stale
+ToA/WW tier mix, and 2 entirely-missing Inherent Skills). Redoing
+dimensions 5/8 found the same class of gap as the earlier pass but one
+level deeper: `sanhua.forte.clarity-of-mind-detonate` combined Detonate
+and Ice Burst into ONE `heavyDmg`-categorized hit-list, despite the kit
+text separately labeling each — "Detonate... (considered Heavy Attack
+DMG)" vs. "Ice Burst... (considered Resonance Skill DMG)" — a real,
+confirmed miscategorization (not just missing), matching the dump's own
+Damage Profile showing Heavy (34.7%) and Skill (26.9%) as two distinct
+substantial buckets. Split into 2 blocks (`sanhua.forte.detonate` =
+`heavyDmg`, `sanhua.forte.ice-burst` = `skillDmg`); this also let 2 other
+blocks that were riding on the old combined shape finally be modeled
+correctly instead of approximated: Avalanche (previously blanket
+`heavyDmg`, now `skillDmg` scoped to `sanhua.forte.ice-burst` only) and
+S5 (previously unscoped `critDmg` — which would have boosted crit damage
+on her WHOLE kit, not just Ice Burst as the kit text specifies — now
+scoped correctly). Also found `sanhua.intro.freezing-thorns`
+uncategorized (fixed to `skillDmg`, default convention). `dmgFocus` was
+`['Basic ATK']` — WRONG, a genuine 0% real share with no `basicDmg` block
+anywhere — while all 3 of her real categories (Heavy/Liberation/Skill)
+were entirely missing. Fixed to `['Heavy ATK', 'Liberation', 'Skill']`.
+Icons (dimension 9) checked and confirmed already fully wired. 5 new
+tests, full suite green: 1407/1407.
+
+**Taoqi pass (2026-09-04)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 2 real bugs (a `bestWeapon`
+QOL-vs-raw-% mismatch, a malformed `bestEchoes` pairing). Redoing
+dimensions 5/8 found `taoqi.intro.defense-formation` uncategorized (fixed
+to `skillDmg`, default convention) and a striking `dmgFocus` inversion:
+`'Skill'` alone (5.8%) was actually her SMALLEST modeled bucket, while
+Basic ATK (43.1%, dominant, via Power Shift's Timed Counters) and
+Liberation (37.3%, Unmovable) — her two biggest — were both entirely
+missing despite already being correctly `basicDmg`/`libDmg`-categorized.
+Fixed to `['Skill', 'Basic ATK', 'Liberation']`. Icons (dimension 9)
+checked and confirmed already fully wired. 2 new tests, full suite green:
+1409/1409.
+
+**Yuanwu pass (2026-09-04)**: his `Characters data dump/` file already
+existed (an earlier, differently-formatted dump — no "App Data
+Comparison" bug-list section), with `yuanwu.blocks.js`'s own history
+showing a real prior fix (every block defaulted to ATK-scaling when he's
+actually a DEF-scaler, corrected 2026-09-02). Redoing dimensions 5/8 found
+a self-contradicting bug: `yuanwu.liberation.blazing-might` combined
+Thunder Wedge Detonation with Blazing Might's own hit into one `libDmg`
+block — the block's OWN comment already said the detonation is "counted
+as Resonance Skill DMG," but the code never applied it. Confirmed by
+`SKILL_MULTIPLIERS['Yuanwu']` carrying "Thunder Wedge Detonation" as its
+own dedicated row with that exact label. Split into 2 blocks: Blazing
+Might's own hit stays `libDmg`; the detonation is now its own `skillDmg`
+block (`yuanwu.forte.thunder-wedge-detonation-liberation`). Also fixed
+`yuanwu.intro.thunder-bombardment`, uncategorized (default convention).
+`dmgFocus` was `['Coordinated ATK']` only — unlike Aalto's fabricated
+case, this one has real textual basis (his Thunder Field's Coordinated
+Attack is genuine base kit), just no engine-representable block for it
+(an any-ally-can-trigger-it repeated proc with no home in this schema,
+same class as his own already-zeroed S1-S4/S6 chain nodes) — kept as-is,
+but `'Skill'`/`'Liberation'` were both missing despite real, now-correctly
+-categorized damage. Fixed to `['Skill', 'Liberation', 'Coordinated
+ATK']`. Icons (dimension 9) checked and confirmed already fully wired. 4
+new tests, full suite green: 1411/1411.
+
+**Mortefi pass (2026-09-04)**: his `Characters data dump/` file already
+existed and had already been carefully re-audited (2026-09-01), including
+a real `chain.s3` over-crediting fix. Redoing dimensions 5/8 found
+`mortefi.intro.dissonance` uncategorized (fixed to `skillDmg`, default
+convention) and `dmgFocus` was `['Heavy ATK', 'Coordinated ATK']` — 'Heavy
+ATK' WRONG, a genuine 0% real share (his Outro grants a Heavy ATK buff to
+an ally, it's not his own damage), while Liberation (67%, his dominant
+bucket), Skill (17.8%), and Basic ATK (8.2%) were all entirely missing
+despite already being correctly categorized. Fixed to `['Liberation',
+'Skill', 'Basic ATK', 'Coordinated ATK']`. Dimension 8's full pass also
+surfaced a genuinely bigger gap, logged in §1a above rather than
+force-fit here: his base-kit Burning Rhapsody Coordinated Attack (ally
+Basic/Heavy ATK hits triggering off-field Marcato procs) is real, sourced
+S0 kit — not a Resonance Chain node — and per the dump's own calc
+methodology is folded into his 67% Liberation share, but no block models
+it; only the S1/S5 chain-BONUS procs are modeled. `'Coordinated ATK'`
+stays in `dmgFocus` regardless — real per his kit, same "no engine block
+yet" treatment as Yuanwu's Thunder Field. Icons (dimension 9) checked and
+confirmed already fully wired. 2 new tests, full suite green: 1413/1413.
+(Follow-up same day: the flagged base-kit Marcato gap above was itself
+closed via a rate-cap saturation model — see §1a, full suite 1414/1414.)
+
+**Jinhsi pass (2026-09-04) — clean, no bugs found.** Her `Characters data
+dump/` file already existed, with an earlier pass having fixed 1 real bug
+(a stale/combined `SKILL_MULTIPLIERS` Forte row) and already carefully
+scoping every Resonance Chain node's real mechanic, including 2
+sophisticated existing fixes (S4's team-wide dual-trigger note, S6's
+`scopedToBlockId`-doubled Illuminous-Epiphany-specific rate bonus).
+Redoing dimensions 5/8/9 found nothing further: `dmgFocus`
+(`['Skill', 'Liberation']`) already matched her dump's dominant 84.3%/
+11.3% split exactly; every damage block's category already matches its
+kit text's own "counted as X DMG" language; Intro (Loong's Halo, 3.12%)
+correctly has no block since her canonical modeled rotation genuinely
+never casts it (a real, dump-confirmed no-Intro quickswap variant, not an
+oversight); Crescent Divinity correctly stays unmodeled since the app's
+chosen "Standard Rotation/Opener" variant doesn't use it (the dump's
+separate "Loop Rotation" does, a real alternate not selected). Icons
+(dimension 9) checked and confirmed already fully wired. No code changes,
+no new tests needed — logged here as verification, not a no-op skip.
 
 ---
 

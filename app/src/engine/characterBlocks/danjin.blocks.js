@@ -21,7 +21,10 @@ export const DANJIN_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Vindication' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('49.71%×4') },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus. No override text names a different category, same default-
+    // to-skillDmg convention as Calcharo/Encore/Jianxin/Lingyang/Aalto/Baizhi/Chixia.
+    damage: { hits: parseSkillMultiplierHits('49.71%×4'), category: 'skillDmg' },
     note: 'Builds Concerto Energy, can chain into Crimson Erosion.',
   },
   {

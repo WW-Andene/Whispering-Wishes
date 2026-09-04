@@ -269,3 +269,27 @@ as correct, not a bug.
 
 No test changes needed — existing `triggerEngine-xianglyao.test.js` and `outroDmgCategory.test.js`
 already cover the unaffected areas. Full suite green (1335/1335).
+
+**Full 9-dimension Phase A pass (2026-09-04)**:
+3. `xianglyao.intro.principle` had no `damage.category` — fixed to skillDmg (default convention).
+4. `dmgFocus` was `['Skill', 'Liberation']` — Basic ATK (8% real share per this source's own Damage
+   Profile, already basicDmg-categorized via `xianglyao.basic.intuition-pivot-impale`) was missing
+   despite being above this project's 6.8%-include threshold. Fixed to `['Skill', 'Liberation',
+   'Basic ATK']`. Outro (5.1%) stays excluded — sits in the established ambiguous-exclude zone
+   (4.6-5.5%), same precedent as Calcharo's Intro at 5.1%.
+
+**Genuine mechanic ambiguity investigated and resolved with the user, no change made**: S3's dump text
+("Casting Cogitation Model → ... +63% for 24s, triggerable up to 5 times") doesn't match the block's
+trigger (Divergence, not Cogitation Model) and never explains what the 5 individual triggering events
+are. Considered modeling it as a real ×5 stack (63%×5=315%) — but that would be wildly out of line with
+every other Resonance Chain node in this dataset (all cap around 45-70% total at max stacks), so almost
+certainly not the correct reading. User's own interpretation — "triggerable 5x" means the 24s buff can
+be RE-TRIGGERED/refreshed up to 5 times, not stacked 5x — matches the engine's own default behavior
+for a block with no `stacking: 'stacking'` field (cap 1, refresh-only). Confirmed correct as currently
+modeled (flat 63%, no stacking), no change needed.
+
+Icons (dimension 9) checked: all SKILL_ICONS keys (including the 5 shared-icon reuses for Standard/
+Revamp/Decipher/Divergence/Law of Reigns/Pivot-Impale) and all 6 CHAIN_NODE_ICONS keys present and
+correctly wired.
+
+2 new tests added, full suite green (1435/1435).

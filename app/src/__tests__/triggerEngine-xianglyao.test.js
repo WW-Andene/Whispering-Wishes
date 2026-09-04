@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { XIANGLI_YAO_BLOCKS } from '../engine/characterBlocks/xianglyao.blocks.js';
@@ -57,5 +57,14 @@ describe('triggerEngine parity — Xiangli Yao', () => {
       { stat: 'skillDmg', value: 63 },
       { stat: 'libDmg', value: 63 },
     ]);
+  });
+
+  it('Intro is skillDmg-categorized (was uncategorized)', () => {
+    const intro = XIANGLI_YAO_BLOCKS.find(b => b.id === 'xianglyao.intro.principle');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("dmgFocus is ['Skill', 'Liberation', 'Basic ATK'] — Basic ATK (8% real share, already basicDmg-categorized via xianglyao.basic.intuition-pivot-impale) was missing despite being above this project's 6.8% include threshold", () => {
+    expect(CHARACTER_DATA['Xiangli Yao'].dmgFocus).toEqual(['Skill', 'Liberation', 'Basic ATK']);
   });
 });

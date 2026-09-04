@@ -445,7 +445,16 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
-    weaponAlts: { alt5: ["Firstlight's Herald", 'Cosmic Ripples'], alt4: ['Variation', 'Rectifier#25'], alt3: ['Rectifier of Night'] },
+    // weaponAlts.alt5 corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was ["Firstlight's
+    // Herald", 'Cosmic Ripples'] — confirmed against the full raw Best Weapons table text (user-provided,
+    // matching this character's own dump exactly) that neither weapon appears anywhere in her real
+    // ranked options; the source explicitly lists only 4 total (her signature + 3 4★s), no other 5★ at
+    // all. Removed the alt5 key entirely rather than leaving stale/unsourced data — same "omit when no
+    // real 5★ alt exists" convention already used for Aalto/other characters. alt4 (Variation,
+    // Rectifier#25) already matched the source's own top-2 4★ ranking exactly — Call of the Abyss
+    // (85.10%, #4 overall, "not a necessity") narrowly misses the 2-slot cutoff, same trimming
+    // convention used elsewhere.
+    weaponAlts: { alt4: ['Variation', 'Rectifier#25'], alt3: ['Rectifier of Night'] },
     teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1603 sheet. desc: title "Sanguine Blossom" (the source) prepended and
@@ -1358,7 +1367,12 @@ const CHARACTER_DATA = {
   // too — generic equipped-Echo damage, not his own kit's Echo Skill button.
   ['Lingyang',      ['Basic ATK', 'Skill', 'Outro', 'Liberation'], [],                        []],
   ['Jinhsi',        ['Skill', 'Liberation'],         [],                                      []],
-  ['Xiangli Yao',   ['Skill', 'Liberation'],         [],                                      []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against his own dump's Damage
+  // Profile: Basic ATK (8%, already basicDmg-categorized via xianglyao.basic.intuition-pivot-impale)
+  // was missing despite being above this project's established 6.8% include threshold. Outro (5.1%)
+  // stays excluded — sits in the established ambiguous-exclude zone (4.6-5.5%), same precedent as
+  // Calcharo's Intro at 5.1%. Echo (5%) stays excluded — generic equipped-Echo damage.
+  ['Xiangli Yao',   ['Skill', 'Liberation', 'Basic ATK'], [],                                  []],
   ['Camellya',      ['Basic ATK', 'Skill'],          [],                                      []],
   ['Carlotta',      ['Skill', 'Liberation'],         [],                                      []],
   ['Brant',         ['Basic ATK', 'Skill'],          ['Self-heal'],                           []],
@@ -1451,8 +1465,23 @@ const CHARACTER_DATA = {
   // (yinlin.liberation.thundering-wrath, yinlin.heavy.standard) — were silently rejecting real
   // teammate Liberation/Heavy ATK DMG Bonus buffs.
   ['Yinlin',        ['Coordinated ATK', 'Skill', 'Liberation', 'Heavy ATK'], ['Coordinated ATK'], []],
-  ['Changli',       ['Skill'],                       ['Fusion DMG Amp'],                      []],
-  ['Zhezhi',        ['Coordinated ATK', 'Skill'],    ['Coordinated ATK'],                     []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: was just ['Skill'] (61.4%) — Liberation (23.8%, her 2nd-biggest bucket, already libDmg-
+  // categorized in changli.blocks.js) was entirely missing, and Heavy ATK (6.1%, already heavyDmg-
+  // categorized) sits just above this project's own 6.8%-include/5.5%-exclude ambiguous-zone boundary's
+  // midpoint — included per the same "genuine, already-categorized, not negligible" standard as Yinlin's
+  // Heavy ATK. Basic ATK (4.4%) and Intro (~2.25%, 8103/359942) stay excluded — both land inside or below
+  // the established ambiguous-exclude zone. Echo (22122) stays excluded — generic equipped-Echo damage,
+  // not her own kit's Echo Skill button.
+  ['Changli',       ['Skill', 'Liberation', 'Heavy ATK'], ['Fusion DMG Amp'],                  []],
+  // dmgFocus/buffs corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): both columns said
+  // 'Coordinated ATK' — but her Living Canvas spirits and S5's bonus proc are both explicitly
+  // "considered Basic Attack DMG" in the kit text (fixed in zhezhi.blocks.js this same pass, was
+  // wrongly coordDmg), so she has ZERO real coordDmg-category damage of her own. 'Skill' (5.4% real
+  // share per this source's own Damage Profile) sits in this project's established ambiguous-exclude
+  // zone (4.6-5.5%). 'Basic ATK' (78.4%, her dominant real bucket, matching the profile's own numbers)
+  // was entirely missing from both columns.
+  ['Zhezhi',        ['Basic ATK'],                    ['Basic ATK'],                           []],
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   ['Phoebe',        ['Skill'],                       [],                                      ['Frazzle']],
   ['Cantarella',    ['Coordinated ATK'],             ['Coordinated ATK', 'Heal'],             []],
@@ -1502,9 +1531,37 @@ const CHARACTER_DATA = {
   // Sanguine Pulse) — 'Skill' was missing entirely. buff tag corrected: her Outro is worded "23% Havoc
   // DMG Deepen" (not "Bonus") per the source's own rotation writeup, matching the `deepen` stat key used
   // in CHAR_BUFF_TABLE below.
-  ['Danjin',        ['Basic ATK', 'Heavy ATK', 'Skill'], ['Havoc DMG Deepen'],                 []],
-  ['Mortefi',       ['Heavy ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
-  ['Sanhua',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: 'Basic ATK' was WRONG — no basicDmg-categorized damage block exists anywhere in
+  // danjin.blocks.js at all, and her real CHARACTER_ROTATIONS never casts a standalone Basic Attack
+  // step (Basic ATK 2/3 are only referenced as prerequisites unlocking her Skill combos, never their
+  // own modeled step). Liberation — her single BIGGEST damage bucket (29.7%/56,602), already correctly
+  // libDmg-categorized — was entirely missing. Echo stays excluded — generic equipped-Echo damage, not
+  // her own kit's Echo Skill button.
+  ['Danjin',        ['Heavy ATK', 'Skill', 'Liberation'], ['Havoc DMG Deepen'],                []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against his own dump's Damage
+  // Profile: 'Heavy ATK' was WRONG — a genuine 0% real share, no heavyDmg-categorized damage block
+  // exists anywhere in mortefi.blocks.js (he has no plain Heavy ATK/Mid-air/Dodge Counter step at all in
+  // his real CHARACTER_ROTATIONS — his Outro instead GRANTS a Heavy ATK DMG buff to an ally, a team buff
+  // not his own damage). Liberation (67%, his single dominant bucket), Skill (17.8%), and Basic ATK
+  // (8.2%) were all entirely missing despite already being correctly libDmg/skillDmg/basicDmg-
+  // categorized. 'Coordinated ATK' is kept — his base-kit Burning Rhapsody Marcato procs (ally Basic/
+  // Heavy ATK hits triggering off-field Coordinated Attacks) are real, sourced, S0 kit per the dump's
+  // own calc methodology note, just not yet engine-modeled (only the S1/S5 chain-BONUS procs are — see
+  // REMAINING_WORK.md 1a, a genuinely bigger gap than a data fix, flagged not attempted here). Echo
+  // (7.27%) stays excluded — generic equipped-Echo damage. Intro (4.1%) also got its missing skillDmg
+  // category fixed but folds into the already-included Skill category.
+  ['Mortefi',       ['Liberation', 'Skill', 'Basic ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Basic ATK' was WRONG — her
+  // dump's own Damage Profile shows a genuine 0% Basic ATK share, and no basicDmg-categorized damage
+  // block exists anywhere in sanhua.blocks.js at all. Her 3 real damage buckets — Heavy 34.7% (Detonate,
+  // 42,821), Liberation 27.6% (33,188), Skill 26.9% (Eternal Frost + Ice Burst, 33,188) — were entirely
+  // missing, despite Liberation already being correctly libDmg-categorized and Heavy/Skill now correctly
+  // split apart (see sanhua.blocks.js — Detonate/Ice Burst were previously combined into one wrongly-
+  // heavyDmg block despite the kit text separately labeling Ice Burst "considered Resonance Skill DMG").
+  // Echo (8.44%) and Intro (6.4%, folds into the already-included Skill category) stay out per
+  // established precedent.
+  ['Sanhua',        ['Heavy ATK', 'Liberation', 'Skill'], ['Basic ATK Amp'],                  []],
   // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was ['Coordinated ATK'] — a
   // fabricated/wrong entry, since Aalto has NO Coordinated Attack mechanic anywhere in his kit (no
   // mention in the dump, no coordDmg block in aalto.blocks.js). His real dump's Damage Profile shows
@@ -1518,8 +1575,21 @@ const CHARACTER_DATA = {
   // as Basic Attack DMG" explicitly; only her Liberation (Squeakie Express) and Resonance Skill
   // (Pounce/Rebound, which the source's own Review calls "minimal damage") aren't Basic ATK, so 'Skill' had
   // no basis as her focus. buffs 'Skill DMG Amp' unchanged (matches her real Outro Escorting effect).
-  ['Lumi',          ['Basic ATK'],                    ['Skill DMG Amp'],                       []],
-  ['Yangyang',      ['Skill'],                       ['Energy Regen'],                        []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: Liberation (29.6%, 2nd-biggest bucket, libDmg-categorized) was entirely missing despite
+  // being far above this project's 6.8% include threshold. Echo (4.6%) stays excluded — generic
+  // equipped-Echo damage. Intro (~4.1%) stays excluded — below threshold and not a valid dmgFocus
+  // vocabulary term regardless. The profile's 3rd bucket, Skill (26.3%), is NOT added — no block in
+  // lumi.blocks.js is skillDmg-categorized for anywhere near that share (only Intro, ~4.1%); Energized
+  // Pounce/Rebound are explicitly "counted as Basic Attack DMG" per kit text, not Skill. Flagged as an
+  // open question rather than guessed — see REMAINING_WORK.md.
+  ['Lumi',          ['Basic ATK', 'Liberation'],      ['Skill DMG Amp'],                       []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: Liberation is her single BIGGEST damage bucket (42.1%/53,643), already correctly libDmg-
+  // categorized, entirely missing. Basic ATK gained 2 real basicDmg sources this pass: Zephyr Song
+  // (fired 2x in her real rotation) was miscategorized heavyDmg, and Feather Release was uncategorized —
+  // both fixed, see yangyang.blocks.js. Echo (9.5%) stays excluded — generic equipped-Echo damage.
+  ['Yangyang',      ['Skill', 'Liberation', 'Basic ATK'], ['Energy Regen'],                    []],
   // 5★ Support / Healer
   // dmgFocus gained 'Basic ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): her dump has no
   // Damage Profile percentages (a Support, unlike DPS characters' dumps), but 2 real basicDmg-
@@ -1579,13 +1649,36 @@ const CHARACTER_DATA = {
   // Skill DMG Amplified by 38%" — matches the 'Skill DMG Amp' convention used for Lumi/Baizhi/Buling's
   // identical Amp-type buffs below, not the "Deepen" wording (which belongs to a different, unsourced
   // stat this character never actually carries).
-  ['Taoqi',         ['Skill'],                       ['Shield', 'Skill DMG Amp'],              []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: 'Skill' alone (5.8%) was actually her SMALLEST modeled bucket — Basic ATK (43.1%,
+  // dominant, via Power Shift's Timed Counters) and Liberation (37.3%, Unmovable) were both entirely
+  // missing despite already being correctly basicDmg/libDmg-categorized. Echo (9.7%) stays excluded —
+  // generic equipped-Echo damage, not her own kit's Echo Skill button.
+  ['Taoqi',         ['Skill', 'Basic ATK', 'Liberation'], ['Shield', 'Skill DMG Amp'],         []],
   // buff tag corrected 2026-08-18: the wiki's Yuanwu/Combat Forte Details table for Resonance Liberation
   // Blazing Might has no shield effect at all — the 'Shield' tag had no basis in his base (S0) kit,
   // only appearing on Resonance Chain S4 "Retributive Knuckles" (200% DEF shield, see
   // RESONANCE_CHAIN_DATA below), so it's removed from this always-on buff list.
-  ['Yuanwu',        ['Coordinated ATK'],             ['Coordinated ATK'],                     []],
-  ['Youhu',         ['Coordinated ATK'],             ['Heal', 'Coordinated ATK Amp'],         []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Skill' and 'Liberation' were
+  // both entirely missing despite real, already-categorized damage blocks (Thunder Wedge/Rumbling
+  // Spark/Thunder Wedge Detonation = skillDmg; Blazing Might's own hit = libDmg). 'Coordinated ATK' is
+  // kept — his Thunder Field's Coordinated Attack (7.96% DEF, base kit, always active) is genuinely
+  // real per the dump, just structurally unmodeled as its own block (no home in this schema for an
+  // any-ally-can-trigger-it repeated proc, same "real but no matching category" class as his own
+  // RESONANCE_CHAIN_DATA S1/S2/S3/S4/S6 omissions) — unlike Aalto's fabricated case, this one has real
+  // textual basis, just no engine-representable damage yet.
+  ['Yuanwu',        ['Skill', 'Liberation', 'Coordinated ATK'], ['Coordinated ATK'],           []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was ['Coordinated ATK'] — she
+  // has ZERO coordDmg-category blocks of her own; Coordinated ATK is the buff she GRANTS teammates via
+  // Outro, already correctly listed in the buffs column ('Coordinated ATK Amp'), not something she deals
+  // herself. Her real, modeled, every-loop damage composition (Skill: Ruyi ×3 + Scroll Divination ×1,
+  // Liberation: Fortune's Favor, Basic ATK: Frosty Punches full combo) was entirely missing. No Damage
+  // Profile % breakdown exists in this source (explicitly stated as unavailable), so magnitude can't be
+  // judged precisely — all 3 are real, sourced, non-trivial, already-categorized blocks that fire every
+  // single real rotation loop, included on that basis rather than guessed at. Intro (Scroll of Wonders,
+  // also real and firing every loop per the source's own "loops indefinitely" rotation) stays excluded —
+  // 'Intro' isn't a valid dmgFocus vocabulary term anywhere in this table (Outro is; Intro never is).
+  ['Youhu',         ['Skill', 'Liberation', 'Basic ATK'], ['Heal', 'Coordinated ATK Amp'],    []],
   // dmgFocus corrected 2026-08-18: 'Skill' had no basis — her Resonance Skill (In Shadow Thunder Stirs,
   // 58.40% at Lv.10) is one of her weakest hits; her biggest single damage source is her Resonance
   // Liberation (Flashing Thunder Spell / enhanced Harmony variant, up to 536.79% at Lv.10 plus the Five
@@ -7369,7 +7462,12 @@ const SKILL_ICONS = {
   'Shorekeeper': {
     'Origin Calculus': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
     'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
-    'Heavy Attack: Illation': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Forte-gauge-gated Heavy Attack, no dedicated wiki icon — generic weapon icon
+    // Key shortened 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) from 'Heavy Attack: Illation' —
+    // getSkillIcon() does skillName.includes(key), and the CHARACTER_ROTATIONS step's own skill field
+    // is the short 'Illation' (see CHARACTER_ROTATIONS['Shorekeeper']), which does NOT contain the
+    // longer 'Heavy Attack: Illation' string — the lookup was silently failing for that step, exact
+    // same bug class already fixed for Xiangli Yao's Revamp key.
+    'Illation': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Forte-gauge-gated Heavy Attack, no dedicated wiki icon — generic weapon icon
     'Chaos Theory': './characters/shorekeeper/zTGgrNMM-skill-chaos-theory.webp',
     'Astral Chord': './characters/shorekeeper/pkXPr5P-skill-astral-chord.webp',
     'End Loop': './characters/shorekeeper/MD3NpydF-skill-end-loop.webp',

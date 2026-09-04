@@ -115,6 +115,17 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
   const buffBlocks = blocks.filter(b => (b.kind === 'buff' || b.kind === 'debuff') && b.timing?.duration != null && b.trigger.type !== 'passive');
   const buffWindows = buffBlocks.map(b => ({ block: b, ...buildBlockWindows(b, results, targetElementLower, targetRole) }));
   const passiveBlocks = blocks.filter(b => (b.kind === 'buff' || b.kind === 'debuff') && b.trigger.type === 'passive');
+  // Fixed 2026-09-04: a `cast`-triggered buff/debuff with NO `timing.duration` (an instant, one-shot
+  // "this cast's own DMG is boosted by X%" node — the most common shape for a flat Resonance Chain
+  // stat bonus, e.g. Changli's S3 "Radiance of Fealty DMG +80%") fell into neither bucket above
+  // (buffBlocks requires a real duration; passiveBlocks requires trigger.type 'passive') and was
+  // silently never applied at all — found auditing Changli's S3, confirmed by removing the block
+  // from her set and getting byte-identical damage. Scope check found 52 blocks across ~30 characters
+  // sharing this exact shape (REMAINING_WORK.md has the full list). Each step's own `firedTriggers`
+  // set is built fresh per step (not cumulative — see rotationSimulator.js's `simulateRotation`), so
+  // "did THIS instant's own cast trigger this buff" is answered correctly by the same
+  // triggerFired()/triggerKey() machinery every other trigger type already uses.
+  const instantCastBuffBlocks = blocks.filter(b => (b.kind === 'buff' || b.kind === 'debuff') && b.trigger.type === 'cast' && b.timing?.duration == null);
 
   // externalStats is a pure DELTA (gear's own contribution only, cr/cd NOT pre-seeded with
   // BASE_CRIT_RATE/BASE_CRIT_DMG — createStats() below already supplies that baseline once per
@@ -125,7 +136,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
   // ATK specifically") only contributes when it's actually THIS hit's own block, not every hit sharing
   // the same broader category. Omit (undefined) for a non-per-hit caller (none currently) — a scoped
   // effect simply never fires without a real hitBlockId to compare against.
-  function statsAtInstant(instant, hitBlockId) {
+  function statsAtInstant(instant, hitBlockId, firedTriggers) {
     const stats = createStats();
     if (externalStats) {
       for (const k of EXTERNAL_STAT_KEYS) { if (externalStats[k]) stats[k] += externalStats[k]; }
@@ -138,6 +149,13 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
       const cap = stackingMode === 'stacking' ? maxStacks : 1;
       const count = activeCountAt(windows, instant, cap);
       if (count > 0) applyEffects(block, count, stats, hitBlockId);
+    }
+    if (firedTriggers) {
+      for (const icb of instantCastBuffBlocks) {
+        if (!triggerFired(icb.trigger, firedTriggers)) continue;
+        if (!conditionHolds(icb.condition, targetElementLower, targetRole)) continue;
+        applyEffects(icb, 1, stats, hitBlockId);
+      }
     }
     return stats;
   }
@@ -164,7 +182,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
       if (!triggerFired(db.trigger, r.firedTriggers)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
 
-      const stats = statsAtInstant(r.time, db.id);
+      const stats = statsAtInstant(r.time, db.id, r.firedTriggers);
       const categoryStat = category ? stats[category] || 0 : 0; // which stat pool this cast's DMG Bonus draws from
       const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify, stats.deepen);
       // A guaranteed-Crit hit (Shorekeeper's Discernment, per its own kit text) always lands at full

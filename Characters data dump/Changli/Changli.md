@@ -273,3 +273,82 @@ top-2-by-% ordering; `CHARACTER_ROTATIONS['Changli']`'s 6 steps all resolve clea
 `SKILL_MULTIPLIERS` (no zero-damage/zero-display lookup gap, unlike Jinhsi's prior fix).
 
 1 test updated (S5 split), full suite green (1332/1332).
+
+**Full 9-dimension Phase A pass (2026-09-04)**:
+3. `dmgFocus` was `['Skill']` only — Liberation (23.8%, her 2nd-biggest bucket, already libDmg-
+   categorized) and Heavy ATK (6.1%, already heavyDmg-categorized) were both real, uncounted damage.
+   Fixed to `['Skill', 'Liberation', 'Heavy ATK']`. Basic ATK (4.4%) and Intro (~2.25%) stay excluded —
+   ambiguous zone. Echo stays excluded — generic equipped-Echo damage.
+4. Dimension 8 (kit-component wiring): both Inherent Skills were entirely unmodeled — no block, no
+   mention anywhere in `changli.blocks.js`. **Sweeping Force** (+20% Fusion DMG Bonus, +15% DEF Ignore
+   on Forte Heavy/Liberation casts) added as `changli.inherent.sweeping-force`, same conditional-passive
+   pattern as her own S1/S6 chain nodes (both trigger casts are real rotation steps) — **then caught and
+   fixed same-day**, doing a rotation walkthrough sanity check: unlike s1's skillDmg/heavyDmg (category-
+   gated), elemDmg/defIgnore aren't category-gated at all, so the original unscoped-passive version was
+   boosting 100% of her Fusion damage instead of just those 2 casts. Split into
+   `changli.inherent.sweeping-force-forte`/`-liberation`, each `scopedToBlockId`-scoped to its own real
+   cast. **Secret
+   Strategist** (+5% Fusion DMG per Enflamement stack held on True Sight: Conquest/Charge cast) was also
+   fully modeled this same pass, once its real blocker was actually engineering effort rather than
+   missing data: traced her own detailed Standard Rotation text move-by-move to get the exact stack count
+   HELD at each of her 4 real True Sight follow-up casts (3 Charge + 1 Conquest, at 0/1/2/3 Enflamement
+   respectively — all derived directly from the dump's own cast order and Enflamement-gain rules, nothing
+   guessed), added each as its own new damage block (`changli.skill.true-sight-charge-1/2/3`,
+   `changli.skill.true-sight-conquest-1`), and scoped each cast's real Secret Strategist bonus
+   (0%/5%/10%/15%) to it via `scopedToBlockId`. All 4 new blocks ride the SAME existing
+   `Skill:True Sight: Capture` trigger rather than needing new `CHARACTER_ROTATIONS` steps — adding
+   steps would have inflated her simulated rotation time well past the real sourced ~9.78s (no per-move
+   duration data exists to correct that), so this reuses the same "extra block on an existing trigger"
+   technique already used for Mortefi's chain S1/S5 bonus-Marcato blocks.
+
+Icons (dimension 9) checked: all 8 SKILL_ICONS keys and all 6 CHAIN_NODE_ICONS keys present and
+correctly wired, including the shared generic Sword icon for Basic/Heavy ATK. No Opener-vs-Loop dump
+section for this character (not one of the 9 characters affected by that gap).
+
+2 new tests added (Sweeping Force, Secret Strategist's 4 True Sight blocks), full suite green
+(1416/1416).
+
+**Engine bug found and fixed (2026-09-04), not specific to Changli**: doing a rotation walkthrough
+sanity check on her own S3 (Radiance of Fealty DMG +80%), found it was never actually being applied
+in `resolveHitComposedDps` — an instant, no-duration `cast`-triggered buff (the exact shape used by
+S3/S5 nodes across ~30 characters, 52 blocks total) was silently dropped by the resolver, which only
+read duration-based or always-on-passive buffs. Fixed at the resolver level — see REMAINING_WORK.md's
+top-of-file entry for the full affected-character list and the fix's own regression tests.
+Sweeping Force was also fixed same pass — was unscoped passive `elemDmg`/`defIgnore`, over-crediting
+100% of her Fusion damage instead of only Forte Heavy/Liberation; split into 2 `scopedToBlockId`-scoped
+blocks. Also found (not fixed, logged in REMAINING_WORK.md): her abstracted 6-step
+`CHARACTER_ROTATIONS` only fires Skill and Forte Heavy once each per loop, but her real cycle casts
+both twice.
+
+**Full re-segmentation pass (2026-09-04)**: went through every named kit component in this dump
+move-by-move against `changli.blocks.js`, not just the previously-audited pieces. Real bugs and gaps
+found and fixed:
+1. `changli.intro.obedience-of-rules` and `changli.heavy.standard` had NO `damage.category` at all —
+   silently rejecting every teammate skillDmg/heavyDmg buff. Fixed to skillDmg (default convention)
+   and heavyDmg respectively.
+2. **Mid-air Attack Stage 1-4** (61.35%+50.87%×2+44.00%×3+38.03%+22.18%×4) was completely absent —
+   a real, sourced, dedicated SKILL_MULTIPLIERS row the Standard Rotation text explicitly casts
+   ("Basic: Mid-air Attack (Instant Dash Cancel) ... Basic: Mid-air Attack 4") to open her 3rd True
+   Sight window. Added as `changli.basic.mid-air-attack` (basicDmg), riding the Heavy ATK trigger.
+3. **Skill (True Sight: Capture) and Forte Heavy (Flaming Sacrifice) each only fired ONCE** despite
+   the real Standard Rotation casting both TWICE per cycle (2 Skill charges both used; the Forte
+   step's own note says "landing 2 casts per rotation is the goal"). Added a 2nd instance of each
+   (`changli.skill.true-sight-capture-2`, `changli.forte.flaming-sacrifice-2`), riding the same
+   existing triggers rather than new `CHARACTER_ROTATIONS` steps.
+4. Adding the 2nd real Forte cast exposed that **Fiery Feather was unscoped** (atkPct isn't
+   category-gated) — now correctly `scopedToBlockId`'d to specifically `changli.forte.flaming-
+   sacrifice-2`, the real post-Ultimate cast it buffs (the 1st Forte cast, before Liberation, was
+   never meant to get it).
+5. Adding Intro's own skillDmg category exposed that **S1 and S6 were unscoped passives** (skillDmg/
+   heavyDmg/defIgnore — defIgnore isn't category-gated at all) whose kit text only covers Tripartite
+   Flames/Flaming Sacrifice/Radiance of Fealty specifically. Rescoped both to the exact real block-id
+   groups via `scopedToBlockId` (S1: 6 skillDmg + 2 heavyDmg entries; S6: 9 defIgnore entries).
+6. **Sweeping Force's Forte-half extended** to scope to both real Flaming Sacrifice casts, not just
+   the 1st.
+7. **Dodge Counter and the standalone GROUND Basic ATK Stage 1-4 combo** (82.64%×3 and
+   29.49%×2→35.49%×2→36.45%×3→50.70%+29.58%×4) are real, sourced, dedicated SKILL_MULTIPLIERS rows —
+   confirmed they appear NOWHERE in the Standard Rotation text, so deliberately left unmodeled, same
+   "no mention in the modeled rotation" standard applied project-wide (not an oversight).
+
+7 new/updated tests, full suite green (1423/1423). `rawDps` (calc build, Blazing Brilliance) moved
+from 4981 → 5999 reflecting the real damage these fixes add.

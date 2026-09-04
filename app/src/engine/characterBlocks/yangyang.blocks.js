@@ -21,7 +21,10 @@ export const YANGYANG_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Cerulean Song' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('79.52%×2') },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. The dump's own
+    // multiplier table labels this row generically "Skill Damage", same convention as
+    // Calcharo/Encore/Jianxin/Lingyang/Aalto/Baizhi/Chixia/Danjin.
+    damage: { hits: parseSkillMultiplierHits('79.52%×2'), category: 'skillDmg' },
     note: 'Launches target airborne, grants 1 Melody stack.',
   },
   {
@@ -37,7 +40,12 @@ export const YANGYANG_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Heavy ATK:Zephyr Song' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('106.61%'), category: 'heavyDmg' },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was wrongly 'heavyDmg' — the
+    // kit text is explicit "Zephyr Song is a Basic ATK follow-up after Heavy Attack or Dodge Counter"
+    // (the "Heavy ATK" rotation-step type is just the INPUT that leads into it, same shape as Chixia's
+    // Boom Boom triggered via the Basic Attack button but categorized skillDmg). Confirmed by the dump's
+    // own Damage Profile showing an explicit 0% Heavy share.
+    damage: { hits: parseSkillMultiplierHits('106.61%'), category: 'basicDmg' },
     note: 'Basic ATK follow-up after Heavy ATK or Dodge Counter, grants the 3rd Melody stack.',
   },
   {
@@ -45,8 +53,13 @@ export const YANGYANG_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Echoing Feathers: Feather Release' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('21.73%×5 + 126.81%×2') },
-    note: 'Mid-air Basic ATK consuming all 3 Melodies; only the landing hit is separately "considered Basic ATK DMG", not the whole row, so no forced category is applied.',
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. Per this
+    // project's own "counted as X" convention, a kit-text category label applies to the whole named
+    // move/row it's attached to, not just the sub-clause it happens to sit nearest — the dump's kit text
+    // ("landing with a sword-sheathe attack, counted as Basic Attack DMG") describes the Feather Release
+    // move as a whole, so the full combined row (diving strikes + landing hit) is basicDmg.
+    damage: { hits: parseSkillMultiplierHits('21.73%×5 + 126.81%×2'), category: 'basicDmg' },
+    note: 'Mid-air Basic ATK consuming all 3 Melodies, counted as Basic Attack DMG.',
   },
   {
     id: 'yangyang.liberation.wind-spirals',
