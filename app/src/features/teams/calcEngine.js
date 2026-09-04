@@ -16,12 +16,17 @@ import {
   calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
 } from '../../engine/shared/combatMath.js';
 import { isHealerRole, isSupportRole } from '../../engine/shared/roleHelpers.js';
+import { collapseDmgTypeBuckets } from '../../engine/shared/buffAccumulation.js';
 
 export {
   ATTACKER_LEVEL, ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
   calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
   isHealerRole, isSupportRole,
+  collapseDmgTypeBuckets,
 };
+// Legacy name, kept as an alias so calcTeamStats.js's existing call sites need no change in this
+// pass — see engine/shared/buffAccumulation.js's header for why the function was renamed.
+export const routeTypeBonuses = collapseDmgTypeBuckets;
 // Engine-merge Stage 1 (2026-09-04): the DOT/Tune-Break rotation-aggregate primitives
 // (calcFrazzleDmg/calcErosionDmg/calcFusionBurstDmg/calcElectroFlareDmg/calcTuneBreakDmg and their
 // constants) moved to ../../engine/dot/dotFormulas.js — they were never legacy-only math (see
@@ -422,32 +427,8 @@ export function countTeamElements(members) {
   return counts;
 }
 
-// ── Route type-specific DMG bonuses into skillDmg based on damage focus ──
-// Every character has a complete, non-empty dmgFocus (see characters.js's own contract comment), so
-// the `!dpsFocus.length` branches below are a defensive fallback for the (currently theoretical)
-// case of a character missing that data — not a live path in practice. What WAS live: libDmg had no
-// such guard at all, so any main DPS whose dmgFocus is defined and simply doesn't include
-// 'Liberation' (e.g. a Basic-ATK-focused character with a Liberation DMG buff active from gear/team)
-// still got 30% of that buff bled into skillDmg unconditionally — every other type (Basic/Heavy) is
-// correctly zeroed out in that same "defined focus, not this type" case.
-export function routeTypeBonuses(stats, dpsFocus) {
-  // stats.skillDmg arrives holding whatever literal "Resonance Skill DMG%" contributions were
-  // accumulated before this call (weapon passive, echo set, self-buffs, resonance chain — the same
-  // "raw pool, gated on the way in" pattern basicDmg/heavyDmg/libDmg/echoDmg/coordDmg already use
-  // below). Unlike those siblings it was never actually gated by dpsFocus — a character with no
-  // 'Skill' in their focus (e.g. a pure Heavy ATK/Liberation DPS) still got full credit for a
-  // Resonance-Skill-specific bonus as if it applied to their whole rotation. Zero it here first, same
-  // "defined focus, not this type" rule as every other type.
-  if (!dpsFocus.includes('Skill')) stats.skillDmg = 0;
-  if (dpsFocus.includes('Basic ATK')) stats.skillDmg += stats.basicDmg;
-  else if (stats.basicDmg > 0 && !dpsFocus.length) stats.skillDmg += stats.basicDmg * 0.5;
-  if (dpsFocus.includes('Heavy ATK')) stats.skillDmg += stats.heavyDmg;
-  else if (stats.heavyDmg > 0 && !dpsFocus.length) stats.skillDmg += stats.heavyDmg * 0.5;
-  if (dpsFocus.includes('Liberation')) stats.skillDmg += stats.libDmg;
-  else if (stats.libDmg > 0 && !dpsFocus.length) stats.skillDmg += stats.libDmg * 0.3;
-  if (dpsFocus.includes('Echo')) stats.skillDmg += stats.echoDmg;
-  if (dpsFocus.includes('Coordinated ATK')) stats.skillDmg += stats.coordDmg;
-}
+// (routeTypeBonuses now lives as collapseDmgTypeBuckets in engine/shared/buffAccumulation.js —
+// imported and re-exported under both names above.)
 
 // ── Role matching: some characters carry a compound role string ('Support/Healer' — Chisa, Suisui)
 // rather than a single 'Healer'/'Support' tag. Every exact `role === 'Healer'`/`role === 'Support'`
