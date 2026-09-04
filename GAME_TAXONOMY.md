@@ -70,11 +70,7 @@ Game
 │
 ├── Echo
 │   └── <Name>
-│       ├── Rank
-│       │   ├── Common
-│       │   ├── Elite
-│       │   ├── Calamity
-│       │   └── Overlord
+│       ├── Rank → (ref: Enemy Rank)
 │       ├── Sonata
 │       ├── Cost
 │       ├── Stats
