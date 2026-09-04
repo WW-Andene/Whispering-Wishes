@@ -209,9 +209,9 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi —
-added 2026-09-03/04, first fourteen characters audited under the updated
-9-dimension methodology** (see below). Many more
+Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
+Jinhsi — added 2026-09-03/04, first fifteen characters audited under the
+updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -606,6 +606,26 @@ it; only the S1/S5 chain-BONUS procs are modeled. `'Coordinated ATK'`
 stays in `dmgFocus` regardless — real per his kit, same "no engine block
 yet" treatment as Yuanwu's Thunder Field. Icons (dimension 9) checked and
 confirmed already fully wired. 2 new tests, full suite green: 1413/1413.
+(Follow-up same day: the flagged base-kit Marcato gap above was itself
+closed via a rate-cap saturation model — see §1a, full suite 1414/1414.)
+
+**Jinhsi pass (2026-09-04) — clean, no bugs found.** Her `Characters data
+dump/` file already existed, with an earlier pass having fixed 1 real bug
+(a stale/combined `SKILL_MULTIPLIERS` Forte row) and already carefully
+scoping every Resonance Chain node's real mechanic, including 2
+sophisticated existing fixes (S4's team-wide dual-trigger note, S6's
+`scopedToBlockId`-doubled Illuminous-Epiphany-specific rate bonus).
+Redoing dimensions 5/8/9 found nothing further: `dmgFocus`
+(`['Skill', 'Liberation']`) already matched her dump's dominant 84.3%/
+11.3% split exactly; every damage block's category already matches its
+kit text's own "counted as X DMG" language; Intro (Loong's Halo, 3.12%)
+correctly has no block since her canonical modeled rotation genuinely
+never casts it (a real, dump-confirmed no-Intro quickswap variant, not an
+oversight); Crescent Divinity correctly stays unmodeled since the app's
+chosen "Standard Rotation/Opener" variant doesn't use it (the dump's
+separate "Loop Rotation" does, a real alternate not selected). Icons
+(dimension 9) checked and confirmed already fully wired. No code changes,
+no new tests needed — logged here as verification, not a no-op skip.
 
 ---
 
