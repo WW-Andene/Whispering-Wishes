@@ -67,6 +67,13 @@ describe('triggerEngine parity — Sanhua', () => {
     expect(avalanche.effects[0].value).toBe(legacy.selfBuffs[1].value);
   });
 
+  it("two-path desync fix: CHAR_BUFF_TABLE Avalanche stat matches sanhua.blocks.js (skillDmg, not the stale heavyDmg left over from before Detonate/Ice Burst were split)", () => {
+    const legacy = CHAR_BUFF_TABLE['Sanhua'];
+    const avalanche = SANHUA_BLOCKS.find(b => b.id === 'sanhua.selfbuff.avalanche');
+    expect(legacy.selfBuffs[1].stat).toBe('skillDmg');
+    expect(legacy.selfBuffs[1].stat).toBe(avalanche.effects[0].stat);
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Sanhua'], SANHUA_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(SANHUA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 2000, 'glacio', 'Sub DPS');

@@ -3225,7 +3225,12 @@ const CHAR_BUFF_TABLE = {
     libBuffs: [],
     selfBuffs: [
       { stat: 'skillDmg', value: 20, target: 'self', duration: 8, condition: 'Inherent Skill Condensation: Resonance Skill DMG +20% for 8s after casting Intro Skill Freezing Thorns.' },
-      { stat: 'heavyDmg', value: 20, target: 'self', duration: 8, condition: 'Inherent Skill Avalanche: Forte Circuit Ice Burst DMG +20% for 8s after casting Basic Attack V — no plain Basic ATK step exists in her real (Heavy ATK Concerto) rotation to anchor a cast trigger, same limitation already flagged on chain.s1.' },
+      // stat corrected 2026-09-04 (Phase A re-audit): was 'heavyDmg' — a two-path desync left over from
+      // when sanhua.blocks.js still combined Detonate+Ice Burst into one heavyDmg block. Once that block
+      // was split (Ice Burst -> its own skillDmg block), the trigger-engine copy of this buff was fixed
+      // to skillDmg but this raw legacy-path (calcEngine.js) copy was never updated to match. Ice Burst
+      // is skillDmg per its own kit text ("considered Resonance Skill DMG"), so this buff must be too.
+      { stat: 'skillDmg', value: 20, target: 'self', duration: 8, condition: 'Inherent Skill Avalanche: Forte Circuit Ice Burst DMG +20% for 8s after casting Basic Attack V — no plain Basic ATK step exists in her real (Heavy ATK Concerto) rotation to anchor a cast trigger, same limitation already flagged on chain.s1.' },
     ],
     debuffs: [],
     note: 'Outro: 38% Basic ATK DMG Amp (14s). Quick swap. Condensation (+20% Skill DMG/8s after Intro) and Avalanche (+20% Ice Burst DMG/8s after Basic V) are her 2 Inherent Skills.',

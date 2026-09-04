@@ -2827,6 +2827,26 @@ exist to migrate onto. Left as-is, not force-fit into an existing category.
 Meltdown-value parity fix, the corrected bestEchoes, and that every SKILL_MULTIPLIERS row now resolves a
 real icon. Full suite green: 1505/1505.
 
+**Sanhua pass #3 (2026-09-04)**: full independent 9-dimension re-derivation from
+`Characters data dump/Sanhua/Sanhua.md`, with zero deference to the two prior passes already logged
+above or to their own dump-comparison section. Rebuilt her kit model from scratch (all multipliers,
+resonance chain nodes, Forte mechanics, Inherent Skills, weapon/echo build, rotations) and cross-checked
+against `characters.js` + `sanhua.blocks.js`. Dimensions 1-3, 5-7, 9 (SKILL_MULTIPLIERS,
+CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, dmgFocus, weapon data, echo data, icons) all matched the dump
+exactly — no changes needed. Dimension 8 (engine-block parity) found one real **two-path desync** bug
+(the exact class already seen on Lumi/Rebecca/Roccia): when the prior 2026-09-04 pass split
+`sanhua.forte.clarity-of-mind-detonate` into separate `sanhua.forte.detonate` (heavyDmg) and
+`sanhua.forte.ice-burst` (skillDmg) blocks and correspondingly re-scoped the Avalanche Inherent Skill
+buff in `sanhua.blocks.js` from `heavyDmg` to `skillDmg` (scoped to `sanhua.forte.ice-burst`), the raw
+`CHAR_BUFF_TABLE['Sanhua'].selfBuffs[1]` entry — read directly by the **legacy** `calcEngine.js` path
+used for team-composition scoring — was never updated and was left at the stale `stat: 'heavyDmg'`,
+silently diverging from both the trigger-engine block and the kit text itself ("Forte Circuit Ice Burst
+DMG +20%... considered Resonance Skill DMG"). Fixed to `stat: 'skillDmg'` to match. Dimension 4
+(CHAR_BUFF_TABLE) is otherwise clean; the RESONANCE_CHAIN_DATA raw table (dimension 3) carries no
+per-node category/scope field for s5's `critDmg: 100`, so no equivalent desync risk exists there. 1 new
+test added to `triggerEngine-sanhua.test.js` asserting the legacy-table stat matches the trigger-engine
+block's stat (would have caught this). Full suite green: 1508/1508.
+
 ---
 
 ## How to add to this file
