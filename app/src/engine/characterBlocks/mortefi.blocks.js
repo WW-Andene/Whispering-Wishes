@@ -9,6 +9,12 @@
 // itself zeroed them to (same "discrete proc, not a modifier" treatment as
 // Yinlin's S6/Calcharo's S6). S2/S4 correctly have NO block — pure utility with
 // zero DPS component, per the audit's own zeroing.
+//
+// Added 2026-09-04: base-kit Burning Rhapsody's own Coordinated Attack (ally hits
+// triggering off-field Marcato, per Liberation's own kit text — not a chain node)
+// was previously entirely unmodeled. No ally-hit-rate tracking exists in this app,
+// so per user instruction it's modeled as a flat rate-cap saturation assumption —
+// see mortefi.liberation.burning-rhapsody-marcato's own comment for the exact math.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -59,7 +65,23 @@ export const MORTEFI_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Violent Finale' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('159.05%'), category: 'libDmg' },
-    note: 'Applies Burning Rhapsody to the whole team (10s, 20s cooldown) — see mortefi.chain.s3/s6 below for the chain effects scoped to this cast.',
+    note: 'Applies Burning Rhapsody to the whole team (10s, 20s cooldown) — see mortefi.chain.s3/s6 below for the chain effects scoped to this cast, mortefi.liberation.burning-rhapsody-marcato below for the base-kit proc.',
+  },
+  {
+    // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1a/1c): Burning Rhapsody's base-kit Coordinated
+    // Attack (ally Basic/Heavy ATK hits → off-field Marcato) was previously entirely unmodeled — this
+    // app has no ally-hit-rate tracking to know how often a real teammate actually lands hits. Per the
+    // user's own instruction, modeled as a flat rate-cap saturation instead: the kit's own "max 1 proc
+    // per 0.35s" cap over the 10s Burning Rhapsody window = floor(10/0.35) = 28 procs, at the base
+    // (non-doubled) Marcato value since the ally's real Basic-vs-Heavy attack mix isn't known — a
+    // documented simplifying assumption, not a guessed number (the 31.81% Marcato value and the 0.35s/
+    // 10s figures are both directly sourced).
+    id: 'mortefi.liberation.burning-rhapsody-marcato',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Liberation:Violent Finale' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: Array.from({ length: 28 }, () => ({ atkPct: MARCATO_ATK_PCT })), category: 'coordDmg' },
+    note: 'Base-kit Burning Rhapsody proc: teammates\' Basic/Heavy ATK hits trigger off-field Marcato, capped 1/0.35s for the 10s window — modeled as 28 hits assuming the cap is fully saturated.',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
@@ -96,9 +118,10 @@ export const MORTEFI_BLOCKS = [
     // skillDmg/basicDmg/heavyDmg/libDmg/echoDmg/coordDmg), so without scoping it would over-credit ANY
     // of Mortefi's own hits landing within the 10s Burning Rhapsody window (Basic ATK, Skill, Fury
     // Fugue), when the kit text is explicit this is Marcato-only ("the Crit. DMG of Resonance
-    // Liberation's Marcato is increased by 30%"). Scoped to both real Marcato proc blocks
-    // (S1's/S5's bonus-hit blocks) via 2 separate scopedToBlockId effects.
+    // Liberation's Marcato is increased by 30%"). Scoped to all 3 real Marcato proc blocks (the base-kit
+    // proc added 2026-09-04, plus S1's/S5's bonus-hit blocks) via 3 separate scopedToBlockId effects.
     effects: [
+      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.liberation.burning-rhapsody-marcato' },
       { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s1-bonus-marcato' },
       { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s5-bonus-marcato' },
     ],

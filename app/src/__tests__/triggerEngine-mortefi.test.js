@@ -38,7 +38,14 @@ describe('triggerEngine parity — Mortefi', () => {
   // Burning Rhapsody window, when the kit text is explicit this is Marcato-only.
   it("S3's +30% Crit DMG only applies to Marcato procs, not Mortefi's own attacks", () => {
     const s3 = MORTEFI_BLOCKS.find(b => b.id === 'mortefi.chain.s3');
-    expect(s3.effects.every(e => ['mortefi.chain.s1-bonus-marcato', 'mortefi.chain.s5-bonus-marcato'].includes(e.scopedToBlockId))).toBe(true);
+    expect(s3.effects.every(e => ['mortefi.liberation.burning-rhapsody-marcato', 'mortefi.chain.s1-bonus-marcato', 'mortefi.chain.s5-bonus-marcato'].includes(e.scopedToBlockId))).toBe(true);
+  });
+
+  it("base-kit Burning Rhapsody Marcato (2026-09-04, previously entirely unmodeled) fires 28 hits — the kit's own \"1 proc/0.35s\" cap fully saturated over the 10s window — categorized coordDmg", () => {
+    const marcato = MORTEFI_BLOCKS.find(b => b.id === 'mortefi.liberation.burning-rhapsody-marcato');
+    expect(marcato.damage.hits.length).toBe(28);
+    expect(marcato.damage.category).toBe('coordDmg');
+    expect(marcato.damage.hits.every(h => h.atkPct === 31.81)).toBe(true);
   });
 
   it('outro matches CHAR_BUFF_TABLE', () => {
@@ -56,6 +63,7 @@ describe('triggerEngine parity — Mortefi', () => {
     expect(fired.has('mortefi.intro.dissonance')).toBe(true);
     expect(fired.has('mortefi.forte.fury-fugue')).toBe(true);
     expect(fired.has('mortefi.liberation.violent-finale')).toBe(true);
+    expect(fired.has('mortefi.liberation.burning-rhapsody-marcato')).toBe(true);
     expect(fired.has('mortefi.chain.s5-bonus-marcato')).toBe(true);
   });
 

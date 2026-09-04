@@ -53,19 +53,23 @@ infrastructure. None need HP/live-state tracking except where noted.
   isn't an ally-action candidate at all — it's a status transition (upgrades
   a marker type), not a stat grant, explicitly out of scope for this
   mechanism.
-- **Mortefi's base-kit Burning Rhapsody Coordinated Attack — found 2026-09-04
-  (Phase A audit)**: distinct from the chain-node backlog above — this is
+- ~~Mortefi's base-kit Burning Rhapsody Coordinated Attack~~ — **found and
+  closed 2026-09-04.** Distinct from the chain-node backlog above — this is
   base S0 kit, not a Resonance Chain node. Liberation Violent Finale's own
   kit text ("on-field character's Basic Attack hit → 1 Marcato; Heavy Attack
   hit → 2 Marcato") is a real, sourced, always-on proc for 10s after cast,
-  and per the dump's own calc methodology note ("the calc uses 35 [procs],
-  realistic with Jiyan") is folded into his real 67% Liberation damage
-  share — but no block models it at all; only the S1/S5 CHAIN-bonus procs
-  are modeled (`mortefi.chain.s1-bonus-marcato`/`s5-bonus-marcato`).
-  Building it needs an assumed ally-hit-rate model (which teammate, how
-  often they land Basic/Heavy hits) this app has no existing infrastructure
-  for — genuinely bigger than a data fix, flagged here rather than
-  estimated or guessed at in `mortefi.blocks.js` itself.
+  folded into his real 67% Liberation damage share per the dump's own calc
+  methodology note, but no block modeled it — only the S1/S5 CHAIN-bonus
+  procs existed. No ally-hit-rate infrastructure exists to know how often a
+  real teammate actually lands hits, so per explicit user instruction it's
+  modeled as a flat rate-cap saturation instead: the kit's own "max 1 proc
+  per 0.35s" cap over the 10s window = `floor(10/0.35) = 28` procs, at the
+  base (non-doubled) Marcato value since the ally's real Basic-vs-Heavy mix
+  isn't known — a documented simplifying assumption (the 31.81% Marcato
+  value and 0.35s/10s figures are all directly sourced), not a guess. Added
+  `mortefi.liberation.burning-rhapsody-marcato` (`coordDmg`); `chain.s3`'s
+  Marcato Crit DMG scoping extended to cover it too. 2 new tests, full
+  suite green: 1414/1414.
 - ~~Youhu S2~~ — **closed 2026-09-03, correctly still no block, for a different
   reason than originally stated.** The "no dump file" blocker is gone
   (`Characters data dump/Youhu/Youhu.md` now exists and sources all 3 base
