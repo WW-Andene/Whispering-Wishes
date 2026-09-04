@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya — added 2026-09-03/04, first twenty-five characters
-audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella — added 2026-09-03/04, first twenty-six
+characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -1089,6 +1089,93 @@ mismatches):
 category; S6 + base-ramp-buff sum to the real 50% ceiling instead of
 double-counting to 75%), 1 existing test updated (S6's own value changed
 from the flat 50 to the 25-point delta). Full suite green: 1450/1450.
+
+**Cantarella pass (2026-09-04) — genuine from-scratch re-audit (not a
+check-if-already-done pass), found 5 real bugs a prior same-day pass (which
+only found 3 Kit-tab/teams/tier issues and explicitly signed off dimensions
+3/4/5/8 as clean) missed. Independently re-verified all 9 dimensions against
+`Characters data dump/Cantarella/Cantarella.md`, specifically re-checking
+every damage block and chain node for the 3 bug classes found on Camellya/
+Augusta/Brant/Buling (miscategorization against kit-text override language,
+unscoped chain-node buffs stacking kit-wide instead of scoped to one move,
+and repeat-step trigger-label mismatches):**
+1. **Damage-category override bug, the same shape as Rover: Spectro's/
+   Jiyan's, found twice**: `cantarella.liberation.flowing-suffocation`
+   (Flowing Suffocation, cast from the Liberation slot) was `libDmg`, but
+   its own kit text is explicit — "Havoc DMG (**considered Basic Attack
+   DMG**)". `cantarella.liberation.diffusion-summons` (the off-field
+   Dreamweaver Coordinated ATK summon chain) was `coordDmg`, but its own kit
+   text is equally explicit — "Coordinated Attacks (Havoc DMG, **considered
+   Basic Attack DMG**)". Both silently accepted the wrong teammate DMG Bonus
+   type (Liberation/Coordinated ATK) and rejected the real one (Basic ATK).
+   Independently confirmed by the dump's own Damage Profile: Liberation is a
+   genuine **0%** share, Basic ATK the dominant **69.1%** one — exactly what
+   this fix produces. Both fixed to `basicDmg`.
+2. **Unscoped chain-node buff, S1** (bug class (b)): `cantarella.chain.s1`
+   was a single unscoped `totalMult: 50` self-passive — the real kit text
+   scopes this to 3 specific moves only (Graceful Step, Flickering Reverie,
+   Perception Drain's own DMG Multiplier), not her entire kit. Was silently
+   boosting every damage block she has. Rescoped to 3 `scopedToBlockId`
+   entries, one per real move, same multi-block-scoping pattern already used
+   for Camellya's chain.s5-twining/chain.s6-vining and Changli's tag-mapped
+   entries.
+3. **Cascading category fix, S3**: `cantarella.chain.s3` (Flowing
+   Suffocation's own +370% DMG Multiplier) was keyed to `libDmg`, matching
+   the pre-fix (wrong) category on the damage block above — once that block
+   became `basicDmg`, this buff would have silently stopped applying to
+   anything at all. Rescoped to `basicDmg` + a new `scopedToBlockId` (basicDmg
+   is now shared with 3 other blocks that must NOT receive this +370%).
+   `RESONANCE_CHAIN_DATA['Cantarella'].s3` updated to match (`libDmg: 370` →
+   `basicDmg: 370`).
+4. **Newly-created leak, S6**: `cantarella.chain.s6-basic-mult` (Phantom
+   Sting's own +80% DMG Multiplier) was already `basicDmg`-categorized and
+   correct in isolation, but unscoped — once fix #1 made `basicDmg` a
+   4-block-wide category (was 3), this node would have started silently
+   over-crediting Flowing Suffocation too, a move S6's own kit text never
+   mentions. Added `scopedToBlockId: 'cantarella.forte.phantom-sting'`.
+5. **dmgFocus/buffs, the same shape as Zhezhi's fix in the same table**:
+   `dmgFocus` was `['Coordinated ATK']` only — with fix #1 applied she has
+   **zero** real `coordDmg`-category damage at all. Real, already-correctly-
+   categorized, non-negligible shares missing entirely: Basic ATK (69.1%,
+   dominant), Skill (9.8%, Graceful Step + Flickering Reverie), Heavy ATK
+   (7.2%, Delusive Dive). Fixed to `['Basic ATK', 'Skill', 'Heavy ATK']`.
+   The `buffs` display column had the same wrong `'Coordinated ATK'` tag;
+   fixed to what she actually grants (`['Havoc DMG Amp', 'Skill DMG Amp',
+   'Heal']`, matching `CHAR_BUFF_TABLE['Cantarella'].outroBuffs`/`selfBuffs`
+   exactly). Liberation stays excluded from `dmgFocus` — confirmed genuinely
+   0% by the dump's own Damage Profile, consistent with fix #1.
+
+Also found and fixed a smaller **SKILL_MULTIPLIERS completeness gap**: the
+Intro Skill's Mirage-state replacement, Tidal Surge (16.90%×3+118.30%), was
+entirely missing despite being a real row in the dump's own Multipliers
+table — added, same Kit-tab-completeness treatment (never cast in
+`CHARACTER_ROTATIONS`, per the dump's own Review: "essentially never
+realistically used") already given to Mid-air Attack/Dodge Counter/Abysmal
+Vortex/Shadowy Sweep in the earlier same-day pass.
+
+Checked and confirmed NOT a bug: Jolt (198.81% Havoc DMG, "considered Basic
+Attack DMG", auto-triggered when a Hazy-Dream'd target next takes damage) —
+a real, deterministic hit in the realistic rotation (her own next Phantom
+Sting connects immediately after Flickering Reverie) but with no existing
+trigger mechanism that actually fires it: `'negative-status-hit'` is
+declared in `TRIGGER_TYPES` (`triggerBlocks.schema.js`) but has zero
+resolver support anywhere in the engine (`resolveHitComposedDps.js`/
+`resolveHitComposedTeamDps.js`/the legacy resolvers all have no case for
+it) — adding a block with this trigger would be silently inert, the exact
+"don't fabricate a value that doesn't actually apply" class this schema
+already warns against elsewhere. Building real `negative-status-hit` support
+is an engine-capability gap, out of scope for a per-character data pass —
+left correctly documented as unmodeled, same conclusion the prior pass
+reached but now for a verified reason (checked the resolvers directly)
+rather than trusted secondhand. CHAR_BUFF_TABLE, remaining RESONANCE_CHAIN_DATA
+nodes (S2, S4/S5's correct empty `{}`), CHARACTER_ROTATIONS steps, weapon
+data, echo data, tier, and icons were all independently re-verified against
+the dump and confirmed already correct.
+
+6 new tests added/updated in `triggerEngine-cantarella.test.js` (S1's 3-way
+scoping, S3's basicDmg rescope + scoping, S6-basic-mult's scoping, Diffusion's
+basicDmg category, Flowing Suffocation's basicDmg category). Full suite
+green: 1452/1452.
 
 ---
 

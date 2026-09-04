@@ -1497,7 +1497,18 @@ const CHARACTER_DATA = {
   ['Zhezhi',        ['Basic ATK'],                    ['Basic ATK'],                           []],
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   ['Phoebe',        ['Skill'],                       [],                                      ['Frazzle']],
-  ['Cantarella',    ['Coordinated ATK'],             ['Coordinated ATK', 'Heal'],             []],
+  // dmgFocus/buffs corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) — same bug shape as
+  // Zhezhi's fix just above: 'Coordinated ATK' was wrong in BOTH columns. Kit text is explicit both
+  // Flowing Suffocation and its Diffusion summon-chain are "considered Basic Attack DMG" (fixed in
+  // cantarella.blocks.js this same pass, was wrongly libDmg/coordDmg) — she has ZERO real coordDmg-
+  // category damage of her own, confirmed by the dump's own Damage Profile (Liberation 0%, Basic ATK
+  // 69.1% — her dominant bucket). dmgFocus gained 'Basic ATK' (69.1%), 'Skill' (9.8%, Graceful Step +
+  // Flickering Reverie, already skillDmg) and 'Heavy ATK' (7.2%, Delusive Dive, already heavyDmg) — all
+  // real, already-categorized, non-negligible shares that were previously silently rejecting teammate
+  // DMG Bonus buffs of those types. buffs column fixed to what she actually grants via her Outro
+  // (Havoc DMG Amp + Skill DMG Amp, CHAR_BUFF_TABLE's own outroBuffs) plus Heal (Trance/Shiver
+  // consumption + Perception Drain).
+  ['Cantarella',    ['Basic ATK', 'Skill', 'Heavy ATK'], ['Havoc DMG Amp', 'Skill DMG Amp', 'Heal'], []],
   // 'Coordinated ATK' tag corrected 2026-08-17: Ciaccona has no Coordinated Attack mechanic at all —
   // the source's own review explicitly notes she's "similar to Coordinated Attackers (even though she
   // isn't one)". Her off-field damage instead comes from Ensemble Sylph clones (Basic ATK) and her
@@ -4013,6 +4024,7 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'Perception Drain', '667.99%×2'], // was '668.0%×2', rounding only
     ['Liberation', 'Flowing Suffocation', '376.00% + 14.54%×21'], // was '376.0% + 14.5%×21', rounding only
     ['Intro', 'Ripple', '42.25%×4'], // was '42.3%×4', rounding only
+    ['Intro', 'Tidal Surge', '16.90%×3+118.30%'], // NEW 2026-09-04 (Phase A audit) — the Mirage-state Intro replacement, same 3-Coordinated-ATK+direct-hit shape; per this source's own Review "essentially never realistically used" (no benefit over the normal Ripple cast) so not used in CHARACTER_ROTATIONS, same Kit-tab-completeness treatment already given to Mid-air/Dodge Counter/Abysmal Vortex/Shadowy Sweep above.
     ['Outro', 'Gentle Tentacles', '+20% Havoc DMG + 25% Resonance Skill DMG Amp (14s, ends early on swap)'],
   ],
   // Corrected 2026-08-17 against the source's character #1107 sheet (Lv.10 skill attributes): every
@@ -6981,7 +6993,12 @@ const RESONANCE_CHAIN_DATA = {
   //   (Phantom Sting is the Mirage-state Basic ATK combo, so basicDmg fits, confirmed exact); + DEF Ignore 30%
   //   for 10s after casting Flowing Suffocation (confirmed exact -> defIgnore). Was deepen:15, wrong category
   //   and wrong magnitude on both counts — corrected to basicDmg:80, defIgnore:30.
-  'Cantarella':   { s1: { totalMult: 50 }, s2: { totalMult: 245 }, s3: { libDmg: 370 }, s4: {}, s5: {}, s6: { basicDmg: 80, defIgnore: 30 } },
+  // s3 stat fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was libDmg:370, matching the
+  // pre-fix (wrong) libDmg category on cantarella.blocks.js's Flowing Suffocation damage block. Kit
+  // text is explicit ("Havoc DMG, considered Basic Attack DMG") and the dump's own Damage Profile
+  // confirms 0% real Liberation share — S3's real +370% Flowing Suffocation multiplier follows that
+  // same override to basicDmg, now scoped via scopedToBlockId in the engine block.
+  'Cantarella':   { s1: { totalMult: 50 }, s2: { totalMult: 245 }, s3: { basicDmg: 370 }, s4: {}, s5: {}, s6: { basicDmg: 80, defIgnore: 30 } },
   // Re-verified verbatim 2026-08-31 against the wiki/Yinlin/Combat's Resonance Chain
   // section (cross-checked against the source/wuthering-waves/characters/yinlin, both matched exactly):
   // S1 "Morality's Crossroad": Resonance Skill Magnetic Roar and Lightning Execution deal 70% more damage
