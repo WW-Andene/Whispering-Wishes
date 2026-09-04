@@ -84,6 +84,31 @@ export const LINGYANG_BLOCKS = [
     note: 'Mountain Roamer (Striding Lion Skill replacement, airborne).',
   },
   {
+    // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): Stormy Kicks (the low-Lion's-Spirit
+    // Basic ATK replacement within Striding Lion) had a real, published multiplier
+    // (36.03%×8+192.15%) but no damage block at all — CHARACTER_ROTATIONS' own sample rotation ends
+    // its Striding Lion loop with this exact move before Tail Strike/Outro.
+    id: 'lingyang.basic.stormy-kicks',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Basic ATK:Stormy Kicks' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('36.03%×8+192.15%'), category: 'basicDmg' },
+    note: "Stormy Kicks (Striding Lion Basic ATK replacement once Lion's Spirit drops below 10, replacing Feral Gyrate). Unlocks the Tail Strike Mid-air Attack.",
+  },
+  {
+    // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): same gap as Stormy Kicks above — Tail
+    // Strike (174.96%×2) is a real Mid-air Attack the source's own sample rotation casts as the final
+    // hit of the Striding Lion window, with no engine block modeling it. Categorized basicDmg per this
+    // project's convention of folding Mid-air Attack into the Basic ATK bucket (no separate profile
+    // bucket exists for it in the source's own Damage Profile section).
+    id: 'lingyang.midair.tail-strike',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Mid-air:Tail Strike' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('174.96%×2'), category: 'basicDmg' },
+    note: 'Tail Strike (Mid-air Attack unlocked by Stormy Kicks) — the final real hit of the Striding Lion window per the source\'s own sample rotation.',
+  },
+  {
     id: 'lingyang.outro.frosty-marks',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },

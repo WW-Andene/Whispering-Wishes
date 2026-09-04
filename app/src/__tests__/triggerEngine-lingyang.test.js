@@ -88,4 +88,28 @@ describe('triggerEngine parity — Lingyang', () => {
   it("dmgFocus gains 'Skill'/'Outro'/'Liberation' (real 31.7%/13.9%/7.3% shares, now correctly categorized) — Heavy ATK (5.8%), Echo (5.77%, generic equipped-Echo damage), and Intro (~4.25%) all stay excluded per this project's own precedent", () => {
     expect(CHARACTER_DATA['Lingyang'].dmgFocus).toEqual(['Basic ATK', 'Skill', 'Outro', 'Liberation']);
   });
+
+  it("Stormy Kicks and Tail Strike were entirely missing damage blocks — now modeled and present in CHARACTER_ROTATIONS per the source's own sample rotation", () => {
+    const stormyKicks = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.basic.stormy-kicks');
+    expect(stormyKicks).toBeDefined();
+    expect(stormyKicks.damage.category).toBe('basicDmg');
+    expect(stormyKicks.trigger.on).toBe('Basic ATK:Stormy Kicks');
+
+    const tailStrike = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.midair.tail-strike');
+    expect(tailStrike).toBeDefined();
+    expect(tailStrike.damage.category).toBe('basicDmg');
+    expect(tailStrike.trigger.on).toBe('Mid-air:Tail Strike');
+
+    const rotation = CHARACTER_ROTATIONS['Lingyang'];
+    expect(rotation.some(s => s.type === 'Basic ATK' && s.skill === 'Stormy Kicks')).toBe(true);
+    expect(rotation.some(s => s.type === 'Mid-air' && s.skill === 'Tail Strike')).toBe(true);
+  });
+
+  it('Stormy Kicks and Tail Strike both actually fire in the real simulated rotation', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lingyang'], LINGYANG_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(LINGYANG_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'glacio', 'Main DPS');
+    const fired = new Set(hitLog.map(h => h.blockId));
+    expect(fired.has('lingyang.basic.stormy-kicks')).toBe(true);
+    expect(fired.has('lingyang.midair.tail-strike')).toBe(true);
+  });
 });

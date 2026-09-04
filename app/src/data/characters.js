@@ -4390,8 +4390,13 @@ const SKILL_MULTIPLIERS = {
   // here, unlike most other characters in this pass.
   'Lingyang': [
     ['Basic ATK', 'Majestic Fists Stage 1-5', '59.65% → 79.53% → 72.87%×2 → 20.41%×5+43.72% → 152.49%', 'Stage 5 can be replaced by Feral Roars (79.53%×2) after casting Furious Punches.'],
+    // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): Stormy Kicks/Tail Strike had real,
+    // published Lv.10 multipliers embedded in the Forte row's combined string but no own SKILL_MULTIPLIERS
+    // row, leaving CHARACTER_ROTATIONS' new steps for them unresolvable. Split out as their own rows.
+    ['Basic ATK', 'Stormy Kicks', '36.03%×8+192.15%', "Striding Lion Basic ATK replacement once Lion's Spirit drops below 10; unlocks the Tail Strike Mid-air Attack."],
     ['Heavy ATK', 'Standard', '145.73%'],
     ['Mid-air', 'Plunging Attack', '123.27%'],
+    ['Mid-air', 'Tail Strike', '174.96%×2', 'Unlocked by Stormy Kicks.'],
     ['Dodge Counter', 'Standard', '126.05%×2'],
     ['Skill', 'Ancient Arts → Furious Punches', '132.61% → 76.25%×2', 'Basic ATK 3-5 or Feral Roars swaps Skill to Furious Punches; no cooldown, doesn\'t reset the Basic ATK cycle.'],
     ['Forte', 'Unification of Spirits (Striding Lion)', '172.37% (Glorious Plunge) · 87.08%×2+116.11%→31.77%×6 (Feral Gyrate) · 82.88%×2 (Mountain Roamer) · 36.03%×8+192.15% (Stormy Kicks) · 174.96%×2 (Tail Strike)', 'At full Lion\'s Spirit, Heavy ATK casts Glorious Plunge and enters Striding Lion — an airborne enhanced-attack state.'],
@@ -5223,6 +5228,14 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Unification of Spirits', note: "At 100/100 Lion's Spirit, HOLD Heavy Attack for Glorious Plunge and enter the airborne Striding Lion state (also enterable via Basic ATK right after Lion Awakens or Strive: Lion's Vigor if Lion's Spirit is already full)." },
     { type: 'Basic ATK', skill: 'Majestic Fists', note: "While in Striding Lion, tap Basic Attack for the 2-hit Feral Gyrate — alternate with the Skill step below (never repeat the same input twice in a row). Once Lion's Spirit drops below 10, Basic Attack becomes the 8-hit+finisher Stormy Kicks instead, which unlocks the Tail Strike Mid-air Attack." },
     { type: 'Skill', skill: 'Ancient Arts', note: "Press Skill for Mountain Roamer while airborne in Striding Lion — alternating Basic Attack/Skill taps like this maximizes hits landed before Lion's Spirit runs out (drains to 0 within 5s, or 10s under Strive: Lion's Vigor)." },
+    // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the source's own sample rotation
+    // explicitly ends the Striding Lion loop with these two named hits ("Basic: Feral Gyrate P1 →
+    // Basic: Stormy Kicks → Mid-Air Attack: Tail Strike → Outro") once Lion's Spirit drops below 10 —
+    // real, multiplier-published moves (36.03%×8+192.15% / 174.96%×2) that were entirely missing their
+    // own damage blocks, unlike Feral Roars/Swift Punches (Furious Punches branch) which the source's
+    // own review explicitly says the optimal burst skips by filling Forte via Intro+Liberation alone.
+    { type: 'Basic ATK', skill: 'Stormy Kicks', note: "Once Lion's Spirit drops below 10 (near the end of the Striding Lion window), Basic Attack becomes the 8-hit+finisher Stormy Kicks instead of Feral Gyrate — this also unlocks the Tail Strike Mid-air Attack below." },
+    { type: 'Mid-air', skill: 'Tail Strike', note: "Unlocked by Stormy Kicks — the source's own sample rotation casts this as the last hit of the Striding Lion window before swapping out." },
     { type: 'Outro', skill: 'Frosty Marks', note: 'Swap out to trigger this automatically — a pure-damage AoE finisher (587.94% ATK) with no baseline team buff (S4 Resonance Chain grants the team +20% Glacio DMG for 30s on this Outro).' },
   ],
   // Standard Rotation (S0) — re-verified 2026-08-31 against the source/wuthering-waves/characters/verina's

@@ -539,6 +539,32 @@ Echo damage), and Intro (~4.25%) all stay excluded per the established
 ambiguous-zone/generic-damage precedent. Icons (dimension 9) checked and
 confirmed already fully wired. 5 new tests, full suite green: 1390/1390.
 
+**Lingyang pass #3 (2026-09-04)**: fully independent re-derivation from the
+dump, not trusting either of the two prior passes' claims. Re-segmented the
+whole kit from scratch and re-checked all 9 dimensions; 8 of them
+(SKILL_MULTIPLIERS base rows, CHARACTER_ROTATIONS' pre-existing steps,
+RESONANCE_CHAIN_DATA S1-S6, CHAR_BUFF_TABLE, weapon data, echo data, icons)
+matched exactly, including the prior passes' own fixes (bestEchoes,
+tier swap, Diligent Practice, Lion's Pride). Found one real bug in
+dimension 8 (engine-block parity), the same "missing move" class as Jiyan's
+Emerald Storm: Finale: the dump's own sample rotation explicitly ends the
+Striding Lion loop with **Stormy Kicks** (36.03%×8+192.15%, the low-Lion's-
+Spirit Basic ATK replacement) and **Tail Strike** (174.96%×2, the Mid-air
+Attack it unlocks) immediately before Outro — both real, multiplier-
+published moves with zero SKILL_MULTIPLIERS rows and zero engine damage
+blocks, so `CHARACTER_ROTATIONS['Lingyang']` silently skipped straight from
+the Basic/Skill loop to Outro. Unlike Furious Punches/Swift Punches (which
+the source's own review says the optimal burst deliberately skips by
+filling Forte via Intro+Liberation alone — correctly still unmodeled),
+Stormy Kicks/Tail Strike genuinely belong in the documented optimal
+rotation, so both were modeled and added: new SKILL_MULTIPLIERS rows, new
+CHARACTER_ROTATIONS steps (`Basic ATK:Stormy Kicks`, `Mid-air:Tail Strike`)
+right before Outro, and new engine blocks `lingyang.basic.stormy-kicks` /
+`lingyang.midair.tail-strike` (both `basicDmg` — Mid-air folds into the
+Basic ATK bucket per this project's convention, matching the dump's own
+Damage Profile section having no separate Mid-air bucket). 4 new/updated
+tests (2 new), full suite green: 1473/1473.
+
 **Verina pass (2026-09-03)**: her `Characters data dump/` file already
 existed (an earlier, differently-formatted dump — no "App Data Comparison"
 bug-list section, and no Damage Profile percentages since she's a pure
