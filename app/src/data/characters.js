@@ -3118,12 +3118,23 @@ const CHAR_BUFF_TABLE = {
   },
   'Qiuyuan': {
     outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
-    libBuffs: [{ stat: 'critDmg', value: 30, target: 'team', duration: 30, condition: 'Requires 65%+ Crit Rate for full value; +2% Crit DMG per 1% Crit Rate over 50%' }],
-    selfBuffs: [],
+    // libBuffs target corrected 2026-09-04 from 'team' to 'self' — the dump's own Review text
+    // explicitly disambiguates the kit's "grants all nearby active team members" wording: "this ... [the
+    // Liberation Crit DMG buff] ... apply[ies] only to the active resonator, not Coordinated/off-field
+    // characters." Was silently granting team-wide Crit DMG instead of active-resonator-only.
+    libBuffs: [{ stat: 'critDmg', value: 30, target: 'self', duration: 30, condition: 'Requires 65%+ Crit Rate for full value; +2% Crit DMG per 1% Crit Rate over 50%. Applies only to the active on-field Resonator, not team-wide.' }],
+    // selfBuffs added 2026-09-04 (fresh dump re-audit, first full Phase A pass on Qiuyuan): Bamboo's Shade
+    // was entirely unmodeled — real BASE-KIT Forte Circuit effect (not sequence-gated; distinct from the
+    // S2 node above which adds an ADDITIONAL +30% on top of this base one), "at 400 Soliloquy, grants all
+    // nearby active team members +30% Echo Skill DMG Bonus for 30s". Per the source's own Review text this
+    // applies only to whichever Resonator is actively on-field at cast time, not a free-for-all team buff
+    // to off-field members — modeled as target:'self' since Qiuyuan himself is on-field when his own Forte
+    // gauge crosses 400.
+    selfBuffs: [{ stat: 'echoDmg', value: 30, target: 'self', duration: 30, condition: "Bamboo's Shade: base kit, on Forte Circuit reaching 400 Soliloquy — applies only to whoever is the active on-field Resonator" }],
     weaponBuffs: [{ stat: 'echoDmg', value: 20, target: 'team', duration: 30, condition: 'Signature weapon (Emerald Sentence): triggers on Intro Skill cast' }],
     debuffs: [],
     // Corrected 2026-08-16: Liberation buff was mislabeled as echoDmg — real effect is Crit DMG.
-    note: 'Outro: 50% Echo Skill DMG Amp (14s). Lib: conditional Crit DMG buff (up to +30% at 65%+ Crit Rate), not a flat Echo DMG buff. Sig weapon: 20% team Echo DMG on Intro cast.',
+    note: 'Outro: 50% Echo Skill DMG Amp (14s). Lib: conditional Crit DMG buff (up to +30% at 65%+ Crit Rate), not a flat Echo DMG buff. Sig weapon: 20% team Echo DMG on Intro cast. Self: Bamboo\'s Shade base-kit +30% Echo Skill DMG Bonus at 400 Forte (active resonator only).',
   },
   'Chisa': {
     outroBuffs: [],
@@ -4611,6 +4622,11 @@ const SKILL_MULTIPLIERS = {
   // was '21%' vs the real 41.76%; Liberation was '400%' vs the real 795.24%). Also added the missing
   // Mid-air Attack and Dodge Counter rows, and split Forte's 3 Heavy ATK finishers into per-hit values
   // instead of a single summed number each.
+  // Further additions 2026-09-04 (fresh dump re-audit, first full Phase A pass): the S3+ Skill replacement
+  // "Straw Cape in Drizzly Rain" (500% ATK) and its S3+ Outro replacement "Sheath Fallen, New Shoots
+  // Revealed" (500% ATK) were real named moves with exact sourced multipliers, entirely missing from this
+  // table before now — added per the standing rule that real moves get a multiplier row even when
+  // situational/sequence-gated (Qingxiao's Dodge Counters precedent), not force-fit into the base rotation.
   'Qiuyuan': [
     ['Basic ATK', 'Stage 1-3', '41.76% → 34.80%×2 → 24.64%×4+65.69%', 'Standard combo before entering Inkwash form.'],
     ['Heavy ATK', 'Standard', '165.61%', 'Charged strike, a solid single hit.'],
@@ -4622,7 +4638,9 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'To Teach / To Save / To Sacrifice', '91.44%×5 / 38.44%×3+31.45%×3 / 217.70%', 'Heavy ATK finishers in Inkwash form, each with a different follow-up effect.'],
     ['Liberation', 'Sundering Strike', '795.24%', 'Ultimate nuke.'],
     ['Intro', 'Attack the Must-Defend', '9.55%×5 + 47.72% + 143.15%', 'Swap-in opener, counted as Heavy ATK DMG.'],
+    ['Skill', 'Straw Cape in Drizzly Rain', '500%', 'S3+ only: replaces Skill once Concerto Energy is full outside Inksplash of Mind (once per 20s); counted as Echo Skill DMG, also grants To Teach/To Save/To Sacrifice +600% DMG Mult and +100% Crit DMG for 6s.'],
     ['Outro', 'Strike Before Ready', '100% ATK + 50% Echo Skill DMG Amp (14s)', 'Swap-out buff granting the next Resonator Echo Skill DMG Amp.'],
+    ['Outro', 'Sheath Fallen, New Shoots Revealed', '500% ATK', 'S3+ only: outside Co-op, casting Straw Cape in Drizzly Rain replaces the next Outro with this move; counted as Echo Skill DMG.'],
   ],
   // Corrected 2026-08-17 against the source's character #1606 sheet (Lv.10 skill attributes): every
   // damage row was roughly half its real value (e.g. Real Fantasy's 3 hits were '162% → 171% → 180%'
@@ -7220,10 +7238,18 @@ const RESONANCE_CHAIN_DATA = {
   // TODO: needs Phase 2 schema — S5/S6's bonus-hit-at-X%-of-move-Y's-own-multiplier effects have no home
   // in a single-category flat node (same class of gap as Xiangli Yao's S1, documented above).
   'Zhezhi':       { s1: { critRate: 10 }, s2: {}, s3: { atkPct: 15 }, s4: { atkPct: 20 }, s5: {}, s6: {} },
-  'Qiuyuan':      { s1: { critRate: 20 }, s2: { echoDmg: 30 }, s3: { libDmg: 500 }, s4: { atkPct: 20 }, s5: { defIgnore: 15 }, s6: { critDmg: 100 } },
+  'Qiuyuan':      { s1: { critRate: 20 }, s2: { echoDmg: 30 }, s3: { libDmg: 500, heavyDmg: 600 }, s4: { atkPct: 20 }, s5: { defIgnore: 15 }, s6: { critDmg: 100 } },
   // Qiuyuan R-chain corrected 2026-08-16 via the source: s1 +20% Crit Rate + uninterruptible Heavy ATKs (was echoDmg:10, wrong stat);
   // s2 Bamboo's Shade +30% additional team Echo Skill DMG (was totalMult:15); s3 Liberation DMG Mult +500% (was echoDmg:10, no basis);
   // s4 +20% ATK (was atkPct:10, half real value); s5 ignores 15% target DEF (was totalMult:10); s6 Straw Cape grants +100% Crit DMG for 6s (was echoDmg:40).
+  // s3.heavyDmg:600 added 2026-09-04 (fresh dump re-audit, first full Phase A pass on Qiuyuan): the node's
+  // own text has a SECOND component entirely missing from this table before now — "Casting [Straw Cape in
+  // Drizzly Rain] also: ... gives To Teach/To Save/To Sacrifice +600% DMG Multiplier and +30 Concerto
+  // Energy restore on hit". Only the Liberation half (libDmg:500) was ever recorded here; the Forte-Heavy
+  // half was silently dropped from both this raw table AND qiuyuan.blocks.js (a genuine missing-effect
+  // bug, not a two-path desync — neither path had it). Field named heavyDmg matching Galbrena's s5/s6
+  // convention for a category-scoped chain node value (real engine effect is totalMult scoped to the
+  // qiuyuan.forte.to-teach block, see qiuyuan.blocks.js).
   // 4★ + missing characters
   // Jianxin S1-S6 re-verified verbatim 2026-08-31 against the wiki/Jianxin/Combat's
   // Resonance Chain section — every node re-read directly, replacing the prior 2026-08-17 pass's generic

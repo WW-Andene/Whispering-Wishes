@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye, Phoebe, Phrolova — added 2026-09-03/04, first
-thirty-eight characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye, Phoebe, Phrolova, Qiuyuan — added 2026-09-03/04, first
+thirty-nine characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -2624,6 +2624,83 @@ kit Marcato proc, dmgFocus, Intro category). Full suite green: 1487/1487.
 
 Mortefi stays on the completed-characters list above (already listed from the 2026-09-03/04 pass); this
 entry documents the independent 2026-09-04 re-derivation per explicit no-trust-prior-audit instruction.
+
+**Qiuyuan — full 9-dimension audit (2026-09-04), first full Phase A pass — multiple real bugs found
+and fixed.** Independently segmented/blockified his whole kit from `Characters data dump/Qiuyuan/Qiuyuan.md`
+before looking at any existing code, then cross-checked against `characters.js` and `qiuyuan.blocks.js`.
+His `characters.js` entries already carried several honest audit-comment trails (2026-08-16/17, 2026-09-02)
+claiming prior fixes — re-derived from scratch anyway per this pass's explicit instruction, and found real
+bugs the prior passes missed:
+1. **SKILL_MULTIPLIERS** — already correct Lv.10 values for every base-kit move (Basic/Heavy/Mid-air/Dodge
+   Counter/Skill/Forte/Liberation/Intro/Outro). Added 2 real, exactly-multipliered, sequence-gated moves
+   that were entirely missing rows: **Straw Cape in Drizzly Rain** (S3+ Skill replacement, 500% ATK) and
+   **Sheath Fallen, New Shoots Revealed** (S3+ Outro replacement, 500% ATK) — both real named moves per
+   the standing "real moves get a row even when situational" rule (Qingxiao's Dodge Counters precedent).
+2. **CHARACTER_ROTATIONS** — the modeled Standard Hybrid Rotation (S0-S2) already matches the dump's own
+   "Standard Hybrid Rotation" text exactly (Intro skips straight to Inkwash Stage 3-4, optional Skill,
+   Liberation, Forte finisher, Outro). The separate S3+ DPS Rotation (which repeats a second Basic/Forte
+   pass around a Straw Cape cast) is NOT modeled as a rotation variant — this engine has no per-sequence
+   rotation-swapping mechanism, so Straw Cape and its follow-on buffs are instead modeled standalone (see
+   dimension 8) rather than force-fit into the single always-active rotation. No change to the modeled
+   rotation itself.
+3. **RESONANCE_CHAIN_DATA** — S1/S4/S5/S6 raw values already correct. **S3 was missing half its own node's
+   text**: only `libDmg:500` (Sundering Strike's own DMG Mult) was recorded; the node's second sentence —
+   "Casting [Straw Cape] also: ... gives To Teach/To Save/To Sacrifice +600% DMG Multiplier" — was silently
+   dropped from the raw table entirely (a genuine missing-effect bug, not a two-path desync: neither the
+   raw table nor `qiuyuan.blocks.js` had it). Added `heavyDmg:600` to the raw entry (Galbrena's s5/s6
+   field-naming convention for a category-scoped chain-node value).
+4. **CHAR_BUFF_TABLE** — `outroBuffs` correct. **`libBuffs.target` was wrong** (`'team'`): the dump's kit
+   text ("grants all nearby active team members +2% Crit DMG...") reads team-wide in isolation, but the
+   dump's own Review section explicitly disambiguates it — "this [the Liberation Crit DMG buff] ... appl[ies]
+   only to the active resonator, not Coordinated/off-field characters" — so this was silently granting
+   Crit DMG to the whole bench instead of just whoever is on-field. Fixed to `target:'self'`. **`selfBuffs`
+   was an empty array** — Bamboo's Shade, a real BASE-KIT (not sequence-gated) Forte Circuit effect ("at
+   400 Soliloquy, grants ... +30% Echo Skill DMG Bonus for 30s", also active-resonator-only per the same
+   Review disambiguation) was entirely unmodeled. Added.
+5. **dmgFocus** — already correctly `['Heavy ATK', 'Echo']`, matching the dump's own Damage-Type Breakdown
+   (60.8%/39.2%, all other categories a genuine 0%). Verified clean, no change.
+6. **weapon data** — `bestWeapon`/`weaponAlts`/`bestEchoes` all already match the dump's Best
+   Weapons/Best Echo Sets sections exactly. Verified clean, no change.
+7. **echo data** — same verification as above (Law of Harmony 3pc + Sierra Gale 2pc with Reminiscence:
+   Fenrico main echo). Verified clean, no change.
+8. **Engine-block parity (dimension 8) — the largest gap: 5 of 6 damage blocks had a wrong or entirely
+   missing `damage.category`**, the single most recurrent bug class in this whole audit cycle, here worse
+   than usual:
+   - `qiuyuan.basic.inkwash-stage3-4`: was `basicDmg`, kit text is explicit ("replaces Basic Attack ...
+     counted as Heavy Attack DMG") and the dump's own Damage-Type Breakdown shows a flat 0% Basic ATK
+     share — fixed to `heavyDmg`.
+   - `qiuyuan.skill.through-the-groves`: was `skillDmg`, kit text says "counted as Echo Skill DMG" — fixed
+     to `echoDmg` (same recategorization precedent already established on Sigrika's/Galbrena's/Phrolova's
+     own Liberation/Heavy-slot moves).
+   - `qiuyuan.liberation.sundering-strike`: was `libDmg`, kit text says "counted as Echo Skill DMG" — fixed
+     to `echoDmg`.
+   - `qiuyuan.forte.to-teach`: had **no category at all** — fixed to `heavyDmg` (kit text/Damage-Type
+     Breakdown both confirm To Teach/To Save/To Sacrifice are Heavy ATK DMG despite also "counting as
+     casting Echo Skill" for other effects' cast-gating, which is a trigger-flag, not a redeclared
+     damage category).
+   - `qiuyuan.outro.strike-before-ready`: had **no category at all** — fixed to `echoDmg` (kit text:
+     "counted as Echo Skill DMG").
+   Fixing the Liberation block's category to `echoDmg` broke `qiuyuan.chain.s3`'s existing
+   `{stat:'libDmg', value:500}` effect (a real category-gating dead-effect bug, same class as Galbrena's S3
+   fix) — converted to `totalMult` + `scopedToBlockId:'qiuyuan.liberation.sundering-strike'`, and added the
+   node's missing second effect (`totalMult:600` scoped to `qiuyuan.forte.to-teach`, item 3 above). Also
+   added: **`qiuyuan.chain.s3-straw-cape`**, a real S3+ damage block (500% ATK, `echoDmg`) for a move that
+   was entirely missing from the engine despite two Resonance Chain effects (S3's totalMult, S6's Crit DMG
+   buff) both actually anchoring to its cast; **`qiuyuan.chain.s6-exit-inksplash`**, S6's own missing "exiting
+   Inksplash of Mind deals 600% ATK Aero DMG, counted as Echo Skill DMG" damage effect; **`qiuyuan.buff.bamboos-shade`**,
+   modeling item 4's newly-added base-kit selfBuff via a `resource-threshold` trigger (Calcharo/Camellya/
+   Rover:Electro/Yinlin precedent); and re-anchored `qiuyuan.chain.s6`'s existing Crit DMG buff from the
+   Forte-finisher-cast approximation it used before Straw Cape was modeled, to Straw Cape's own cast (the
+   move the kit text actually names). Also fixed `qiuyuan.libbuff.crit-dmg`'s `target` from `whole-team` to
+   `self` to match the CHAR_BUFF_TABLE fix in item 4.
+9. **icons** — `SKILL_ICONS['Qiuyuan']` already covers every move name including Straw Cape in Drizzly
+   Rain (reuses the Skill icon, same-icon convention already used for Undaunted Wayfarer) and all 3 Forte
+   Heavy finishers. Verified clean, no change needed for the newly-modeled blocks (Straw Cape and the S6
+   exit-damage effect reuse existing icon keys).
+
+8 new/updated tests added to `triggerEngine-qiuyuan.test.js` covering: the S3 node's two scoped effects,
+the corrected `self`-scoped libBuff, the new Bamboo's Shade buff, every damage block having a real
+category, the Heavy-vs-Echo category split, the new S3/S6 damage blocks. Full suite green: 1502/1502.
 
 ---
 
