@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { SANHUA_BLOCKS } from '../engine/characterBlocks/sanhua.blocks.js';
@@ -26,9 +26,29 @@ describe('triggerEngine parity — Sanhua', () => {
     expect(s6.target.scope).toBe('whole-team');
   });
 
-  it('the Detonate block combines both Detonate and Ice Burst hits', () => {
-    const b = SANHUA_BLOCKS.find(bl => bl.id === 'sanhua.forte.clarity-of-mind-detonate');
-    expect(b.damage.hits.length).toBe(5); // 186.29%x2 + 3 separate Ice Burst hits
+  it("Detonate and Ice Burst are 2 separate blocks with different categories (heavyDmg vs skillDmg) — the kit text labels each differently (\"considered Heavy Attack DMG\" vs \"considered Resonance Skill DMG\"), previously wrongly combined into one heavyDmg block", () => {
+    const detonate = SANHUA_BLOCKS.find(bl => bl.id === 'sanhua.forte.detonate');
+    const iceBurst = SANHUA_BLOCKS.find(bl => bl.id === 'sanhua.forte.ice-burst');
+    expect(detonate.damage.hits.length).toBe(2);
+    expect(detonate.damage.category).toBe('heavyDmg');
+    expect(iceBurst.damage.hits.length).toBe(3);
+    expect(iceBurst.damage.category).toBe('skillDmg');
+  });
+
+  it("Avalanche and S5 are now correctly scoped to sanhua.forte.ice-burst only, no longer over-crediting Detonate", () => {
+    const avalanche = SANHUA_BLOCKS.find(b => b.id === 'sanhua.selfbuff.avalanche');
+    const s5 = SANHUA_BLOCKS.find(b => b.id === 'sanhua.chain.s5');
+    expect(avalanche.effects[0]).toEqual({ stat: 'skillDmg', value: 20, scopedToBlockId: 'sanhua.forte.ice-burst' });
+    expect(s5.effects[0]).toEqual({ stat: 'critDmg', value: 100, scopedToBlockId: 'sanhua.forte.ice-burst' });
+  });
+
+  it("Intro (Freezing Thorns) is skillDmg-categorized (was uncategorized)", () => {
+    const intro = SANHUA_BLOCKS.find(b => b.id === 'sanhua.intro.freezing-thorns');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("dmgFocus is ['Heavy ATK', 'Liberation', 'Skill'] — 'Basic ATK' was wrong (0% real share, no basicDmg block exists), all 3 real categories were missing", () => {
+    expect(CHARACTER_DATA['Sanhua'].dmgFocus).toEqual(['Heavy ATK', 'Liberation', 'Skill']);
   });
 
   it('outro matches CHAR_BUFF_TABLE', () => {
@@ -54,6 +74,7 @@ describe('triggerEngine parity — Sanhua', () => {
     const fired = new Set(hitLog.map(h => h.blockId));
     expect(fired.has('sanhua.intro.freezing-thorns')).toBe(true);
     expect(fired.has('sanhua.liberation.glacial-gaze')).toBe(true);
-    expect(fired.has('sanhua.forte.clarity-of-mind-detonate')).toBe(true);
+    expect(fired.has('sanhua.forte.detonate')).toBe(true);
+    expect(fired.has('sanhua.forte.ice-burst')).toBe(true);
   });
 });

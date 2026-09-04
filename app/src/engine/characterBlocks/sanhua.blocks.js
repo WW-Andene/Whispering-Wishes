@@ -20,7 +20,10 @@ export const SANHUA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Freezing Thorns' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('139.17%') },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. No override
+    // text names a different category, same default-to-skillDmg convention as every other character's
+    // similarly generic Intro row.
+    damage: { hits: parseSkillMultiplierHits('139.17%'), category: 'skillDmg' },
     note: 'Creates 1 Ice Thorn.',
   },
   {
@@ -40,15 +43,26 @@ export const SANHUA_BLOCKS = [
     note: 'Creates 1 Ice Prism, detonable by Heavy ATK: Detonate. Grants 1 stack of Clarity.',
   },
   {
-    id: 'sanhua.forte.clarity-of-mind-detonate',
+    // Split 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) from a single combined block that lumped
+    // both rows into one heavyDmg-categorized hit-list. The kit text separately labels each: "Detonate...
+    // (considered Heavy Attack DMG)" vs. "Ice Burst... (considered Resonance Skill DMG)" — a real,
+    // confirmed miscategorization, not just a missing one, matching the dump's own Damage Profile
+    // showing Heavy (34.7%) and Skill (26.9%) as two separate substantial buckets. Detonate's own hit
+    // stays heavyDmg below; Ice Burst is now its own skillDmg block (sanhua.forte.ice-burst).
+    id: 'sanhua.forte.detonate',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Clarity of Mind: Detonate' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // CHARACTER_ROTATIONS' own note says this single cast "detonates all 3 Ice constructs (Thorn/Prism/
-    // Glacier) at once" — the real gameplay outcome combines Detonate's own hit with the separate 'Ice
-    // Burst' row's simultaneous multi-construct burst, so both rows' hits are combined here.
-    damage: { hits: [...parseSkillMultiplierHits('186.29%×2'), ...parseSkillMultiplierHits('59.65% + 79.53% + 139.17%')], category: 'heavyDmg' },
-    note: 'Timed Heavy ATK release inside the Frostbite area, simultaneously bursting all active Ice Thorns/Prisms/Glaciers. Fires twice in the real rotation.',
+    damage: { hits: parseSkillMultiplierHits('186.29%×2'), category: 'heavyDmg' },
+    note: 'Timed Heavy ATK release inside the Frostbite area, counted as Heavy Attack DMG. Fires twice in the real rotation.',
+  },
+  {
+    id: 'sanhua.forte.ice-burst',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Forte:Clarity of Mind: Detonate' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('59.65% + 79.53% + 139.17%'), category: 'skillDmg' },
+    note: 'Simultaneously bursts all active Ice Thorns/Prisms/Glaciers, counted as Resonance Skill DMG per its own kit text. Fires alongside Detonate, twice in the real rotation.',
   },
   // ── Self-buffs (from CHAR_BUFF_TABLE — Inherent Skills, added 2026-09-03 against a real browser
   //    snapshot; both were entirely missing before this pass) ──
@@ -65,8 +79,12 @@ export const SANHUA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 20 }],
-    note: 'Inherent Skill Avalanche: Forte Circuit Ice Burst DMG +20% for 8s after casting Basic Attack V — no plain Basic ATK step exists in her real rotation to anchor a real cast trigger (same limitation as chain.s1 below), kept passive. Scope caveat: sanhua.forte.clarity-of-mind-detonate combines the Detonate hit AND the Ice Burst hit into one heavyDmg-categorized block, so this buff (meant only for the Ice Burst portion) also credits the Detonate portion — a category-level approximation, not a new number invented.',
+    // stat/scope fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was 'heavyDmg' with no
+    // scopedToBlockId, documented at the time as over-crediting the Detonate portion since both hits
+    // shared one combined heavyDmg block. Now that Ice Burst is its own skillDmg block
+    // (sanhua.forte.ice-burst), this buff can finally be modeled correctly — the approximation is gone.
+    effects: [{ stat: 'skillDmg', value: 20, scopedToBlockId: 'sanhua.forte.ice-burst' }],
+    note: 'Inherent Skill Avalanche: Forte Circuit Ice Burst DMG +20% for 8s after casting Basic Attack V — no plain Basic ATK step exists in her real rotation to anchor a real cast trigger (same limitation as chain.s1 below), kept passive.',
   },
   {
     id: 'sanhua.outro.silversnow',
@@ -114,7 +132,11 @@ export const SANHUA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'cast', on: 'Forte:Clarity of Mind: Detonate' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 100 }],
+    // scopedToBlockId added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): critDmg is a flat modifier
+    // that applies to every crit regardless of damage category, so without scoping this would have
+    // boosted crit damage on her WHOLE kit, not just Ice Burst as the kit text specifies — now that Ice
+    // Burst is its own block, it can be scoped correctly.
+    effects: [{ stat: 'critDmg', value: 100, scopedToBlockId: 'sanhua.forte.ice-burst' }],
     note: "Forte Circuit Ice Burst Crit DMG +100% (confirmed exact, conditional to that one hit) — cast-scoped (instant, no persistent duration).",
   },
   {

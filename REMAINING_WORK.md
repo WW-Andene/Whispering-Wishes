@@ -192,9 +192,9 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto, Baizhi, Chixia, Danjin, Yangyang — added 2026-09-03/04, first ten
-characters audited under the updated 9-dimension methodology** (see
-below). Many more
+Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua — added 2026-09-03/04,
+first eleven characters audited under the updated 9-dimension
+methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -506,6 +506,32 @@ Basic ATK gained 2 real sources once Zephyr Song and Feather Release were
 correctly categorized. Fixed to `['Skill', 'Liberation', 'Basic ATK']`.
 Icons (dimension 9) checked and confirmed already fully wired. 4 new
 tests, full suite green: 1404/1404.
+
+**Sanhua pass (2026-09-04)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 4 real bugs (a backwards
+`bestEchoes` main+set pairing, a fabricated `teams` partner, a stale
+ToA/WW tier mix, and 2 entirely-missing Inherent Skills). Redoing
+dimensions 5/8 found the same class of gap as the earlier pass but one
+level deeper: `sanhua.forte.clarity-of-mind-detonate` combined Detonate
+and Ice Burst into ONE `heavyDmg`-categorized hit-list, despite the kit
+text separately labeling each — "Detonate... (considered Heavy Attack
+DMG)" vs. "Ice Burst... (considered Resonance Skill DMG)" — a real,
+confirmed miscategorization (not just missing), matching the dump's own
+Damage Profile showing Heavy (34.7%) and Skill (26.9%) as two distinct
+substantial buckets. Split into 2 blocks (`sanhua.forte.detonate` =
+`heavyDmg`, `sanhua.forte.ice-burst` = `skillDmg`); this also let 2 other
+blocks that were riding on the old combined shape finally be modeled
+correctly instead of approximated: Avalanche (previously blanket
+`heavyDmg`, now `skillDmg` scoped to `sanhua.forte.ice-burst` only) and
+S5 (previously unscoped `critDmg` — which would have boosted crit damage
+on her WHOLE kit, not just Ice Burst as the kit text specifies — now
+scoped correctly). Also found `sanhua.intro.freezing-thorns`
+uncategorized (fixed to `skillDmg`, default convention). `dmgFocus` was
+`['Basic ATK']` — WRONG, a genuine 0% real share with no `basicDmg` block
+anywhere — while all 3 of her real categories (Heavy/Liberation/Skill)
+were entirely missing. Fixed to `['Heavy ATK', 'Liberation', 'Skill']`.
+Icons (dimension 9) checked and confirmed already fully wired. 5 new
+tests, full suite green: 1407/1407.
 
 ---
 

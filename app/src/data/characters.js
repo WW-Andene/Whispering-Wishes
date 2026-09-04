@@ -1511,7 +1511,16 @@ const CHARACTER_DATA = {
   // her own kit's Echo Skill button.
   ['Danjin',        ['Heavy ATK', 'Skill', 'Liberation'], ['Havoc DMG Deepen'],                []],
   ['Mortefi',       ['Heavy ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
-  ['Sanhua',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Basic ATK' was WRONG — her
+  // dump's own Damage Profile shows a genuine 0% Basic ATK share, and no basicDmg-categorized damage
+  // block exists anywhere in sanhua.blocks.js at all. Her 3 real damage buckets — Heavy 34.7% (Detonate,
+  // 42,821), Liberation 27.6% (33,188), Skill 26.9% (Eternal Frost + Ice Burst, 33,188) — were entirely
+  // missing, despite Liberation already being correctly libDmg-categorized and Heavy/Skill now correctly
+  // split apart (see sanhua.blocks.js — Detonate/Ice Burst were previously combined into one wrongly-
+  // heavyDmg block despite the kit text separately labeling Ice Burst "considered Resonance Skill DMG").
+  // Echo (8.44%) and Intro (6.4%, folds into the already-included Skill category) stay out per
+  // established precedent.
+  ['Sanhua',        ['Heavy ATK', 'Liberation', 'Skill'], ['Basic ATK Amp'],                  []],
   // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was ['Coordinated ATK'] — a
   // fabricated/wrong entry, since Aalto has NO Coordinated Attack mechanic anywhere in his kit (no
   // mention in the dump, no coordDmg block in aalto.blocks.js). His real dump's Damage Profile shows
