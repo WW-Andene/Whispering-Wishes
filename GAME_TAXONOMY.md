@@ -62,11 +62,17 @@ Game
 │   └── <Name>
 │       ├── Rarity
 │       ├── Type
-│       ├── Signature Of
 │       ├── Stats
 │       │   ├── Main
 │       │   └── Sub
-│       └── Buff
+│       ├── Passive
+│       │   ├── Description
+│       │   ├── Effect Text
+│       │   └── Values
+│       ├── Best For
+│       └── Ascension Materials
+│           ├── Forgery
+│           └── Common
 │
 ├── Echo
 │   └── <Name>
