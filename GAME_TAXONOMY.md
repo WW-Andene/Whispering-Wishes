@@ -34,9 +34,10 @@ Game
 │       │   └── Crit DMG
 │       ├── Kit → (each move: ref Block)
 │       │   ├── Basic ATK
-│       │   ├── Heavy ATK
-│       │   ├── Mid-air
-│       │   ├── Charged ATK
+│       │   │   ├── Basic ATK
+│       │   │   ├── Heavy ATK
+│       │   │   ├── Mid-air ATK
+│       │   │   └── Dodge Counter ATK
 │       │   ├── Skill
 │       │   ├── Liberation
 │       │   ├── Forte
@@ -55,8 +56,11 @@ Game
 │           ├── Echoes
 │           └── Team
 │               ├── Members
-│               ├── Main DPS
-│               ├── Enemy Target → (ref: Enemy)
+│               │   └── Role
+│               │       ├── Main DPS
+│               │       ├── Sub DPS
+│               │       ├── Support
+│               │       └── Healer
 │               └── Rotation
 │
 ├── Weapon
@@ -76,17 +80,17 @@ Game
 │           └── Common
 │
 ├── Echo
-│   └── <Name>
-│       ├── Sonata
-│       ├── Cost
-│       ├── Stats
-│       │   ├── Main
-│       │   └── Substats
-│       ├── Skill Label
-│       ├── Skill Description
-│       └── Echo Skill
-│           ├── Damage
-│           └── Buff
+│   └── Sonata
+│       └── Cost → (each tier: 1 / 3 / 4)
+│           └── <Name>
+│               ├── Stats
+│               │   ├── Main
+│               │   └── Substats
+│               ├── Skill Label
+│               ├── Skill Description
+│               └── Echo Skill
+│                   ├── Damage
+│                   └── Buff
 │
 ├── Enemy
 │   └── <Name>
@@ -153,11 +157,6 @@ Game
 │   │   └── Coordinated ATK DMG
 │   ├── DMG Bonus — Element
 │   │   └── (ref: Element list — Glacio/Fusion/Electro/Aero/Spectro/Havoc/Physical)
-│   ├── DMG Bonus — Reaction
-│   │   ├── Erosion
-│   │   ├── Flare
-│   │   ├── Frazzle
-│   │   └── Fusion Burst
 │   └── Multiplier
 │       └── Total Mult
 │
@@ -171,7 +170,12 @@ Game
     ├── Aero RES Shred
     ├── Spectro RES Shred
     ├── Havoc RES Shred
-    └── Physical RES Shred
+    ├── Physical RES Shred
+    └── Negative Status
+        ├── Erosion
+        ├── Flare
+        ├── Frazzle
+        └── Fusion Burst
 ```
 
 **Resolved: Buff/Debuff stay siblings of Damage, not a subset.** Damage is a
