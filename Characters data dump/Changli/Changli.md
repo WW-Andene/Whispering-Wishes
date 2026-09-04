@@ -319,3 +319,36 @@ Sweeping Force was also fixed same pass — was unscoped passive `elemDmg`/`defI
 blocks. Also found (not fixed, logged in REMAINING_WORK.md): her abstracted 6-step
 `CHARACTER_ROTATIONS` only fires Skill and Forte Heavy once each per loop, but her real cycle casts
 both twice.
+
+**Full re-segmentation pass (2026-09-04)**: went through every named kit component in this dump
+move-by-move against `changli.blocks.js`, not just the previously-audited pieces. Real bugs and gaps
+found and fixed:
+1. `changli.intro.obedience-of-rules` and `changli.heavy.standard` had NO `damage.category` at all —
+   silently rejecting every teammate skillDmg/heavyDmg buff. Fixed to skillDmg (default convention)
+   and heavyDmg respectively.
+2. **Mid-air Attack Stage 1-4** (61.35%+50.87%×2+44.00%×3+38.03%+22.18%×4) was completely absent —
+   a real, sourced, dedicated SKILL_MULTIPLIERS row the Standard Rotation text explicitly casts
+   ("Basic: Mid-air Attack (Instant Dash Cancel) ... Basic: Mid-air Attack 4") to open her 3rd True
+   Sight window. Added as `changli.basic.mid-air-attack` (basicDmg), riding the Heavy ATK trigger.
+3. **Skill (True Sight: Capture) and Forte Heavy (Flaming Sacrifice) each only fired ONCE** despite
+   the real Standard Rotation casting both TWICE per cycle (2 Skill charges both used; the Forte
+   step's own note says "landing 2 casts per rotation is the goal"). Added a 2nd instance of each
+   (`changli.skill.true-sight-capture-2`, `changli.forte.flaming-sacrifice-2`), riding the same
+   existing triggers rather than new `CHARACTER_ROTATIONS` steps.
+4. Adding the 2nd real Forte cast exposed that **Fiery Feather was unscoped** (atkPct isn't
+   category-gated) — now correctly `scopedToBlockId`'d to specifically `changli.forte.flaming-
+   sacrifice-2`, the real post-Ultimate cast it buffs (the 1st Forte cast, before Liberation, was
+   never meant to get it).
+5. Adding Intro's own skillDmg category exposed that **S1 and S6 were unscoped passives** (skillDmg/
+   heavyDmg/defIgnore — defIgnore isn't category-gated at all) whose kit text only covers Tripartite
+   Flames/Flaming Sacrifice/Radiance of Fealty specifically. Rescoped both to the exact real block-id
+   groups via `scopedToBlockId` (S1: 6 skillDmg + 2 heavyDmg entries; S6: 9 defIgnore entries).
+6. **Sweeping Force's Forte-half extended** to scope to both real Flaming Sacrifice casts, not just
+   the 1st.
+7. **Dodge Counter and the standalone GROUND Basic ATK Stage 1-4 combo** (82.64%×3 and
+   29.49%×2→35.49%×2→36.45%×3→50.70%+29.58%×4) are real, sourced, dedicated SKILL_MULTIPLIERS rows —
+   confirmed they appear NOWHERE in the Standard Rotation text, so deliberately left unmodeled, same
+   "no mention in the modeled rotation" standard applied project-wide (not an oversight).
+
+7 new/updated tests, full suite green (1423/1423). `rawDps` (calc build, Blazing Brilliance) moved
+from 4981 → 5999 reflecting the real damage these fixes add.

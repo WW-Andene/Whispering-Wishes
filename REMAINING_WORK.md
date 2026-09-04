@@ -192,20 +192,6 @@ same tier as HP tracking):**
   build this, and whether the other 8 characters' Loop variants differ from
   their Openers in a similarly damage-relevant way, is unaudited — flagged
   here rather than guessed at.
-- **Changli's abstracted 6-step CHARACTER_ROTATIONS undercounts 2 real
-  casts per cycle — found 2026-09-04, doing a rotation walkthrough sanity
-  check.** Her own detailed Standard Rotation text casts Skill (True
-  Sight: Capture) TWICE (2 charges) and Forte Heavy (Flaming Sacrifice)
-  TWICE per real cycle — the Forte step's own note even says so
-  ("landing 2 casts per rotation is the goal") — but the abstracted model
-  has only one `Skill` step and one `Forte` step, so only 1 of each real
-  cast is credited per simulated loop. Same root cause as the
-  Opener-vs-Loop item above: the engine has no way to fire the same named
-  step twice within one modeled cycle without adding a 2nd step (which,
-  per that same item's lesson, risks corrupting simulated rotation timing
-  without real per-move duration data). Not fixed this pass — flagged for
-  a deliberate decision rather than guessed at.
-
 ### 1b. Phase 2 — DOT-mechanic migration to the modern engine
 
 4 of 5 mechanics migrated and verified (Electro Flare/Buling, Fusion
