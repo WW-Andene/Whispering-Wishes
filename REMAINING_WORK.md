@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia — added 2026-09-03/04, first
-twenty-seven characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa — added 2026-09-03/04, first
+twenty-eight characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -1310,6 +1310,75 @@ category/firing, S2's totalMult scoping), plus a 1-line index-shift fix in
 `Cartethyia[8]`, since the new rotation step pushed a later known-baseline
 step's index up by 1 — not a new bug, that step's legacy-calculator lookup
 mismatch pre-dates this pass). Full suite green: 1455/1455.
+
+**Chisa pass (2026-09-04) — genuine from-scratch re-audit**: all 9 dimensions
+independently re-checked against a fresh dump read start-to-finish, not
+trusted from `chisa.blocks.js`'s own extensive prior-audit comments (several
+of which turned out to be stale or simply wrong on re-check). 4 real bugs
+found, all matching bug classes flagged elsewhere this session:
+
+1. **Death Snip miscategorized against its own kit-text override (bug class
+   a)**: `chisa.basic.stage2-death-snip` folded Basic ATK Stage 2 + Rending
+   Lunge + Death Snip into one `basicDmg` block, but the dump's own kit text
+   is explicit for Death Snip specifically: "**Counted as Resonance
+   Liberation DMG.**" Split into 2 blocks — `chisa.basic.stage2-rending-
+   lunge` (`basicDmg`) and a new `chisa.basic.death-snip` (`libDmg`) — both
+   still firing off the same combined rotation step.
+2. **4 real damage blocks with no `damage.category` at all (bug class d)**:
+   `chisa.forte.sawring-blitz-2-3`, `chisa.forte.sawring-eradication` (+ its
+   ring-scalar twin), `chisa.skill.serrated-loop`, and
+   `chisa.intro.reverberance-return` were all uncategorized. Sawring - Blitz
+   and Sawring - Eradication are both explicitly "counted as Resonance
+   Liberation DMG" per kit text (fixed to `libDmg`); Serrated Loop is an
+   un-overridden base Skill move (fixed to `skillDmg`, the default); the
+   Intro's own multiplier row is literally labeled "Skill DMG" in the dump
+   (fixed to `skillDmg`, same convention already used for Aalto/Calcharo/
+   Buling's own Intro rows). Fixing the Liberation-categorized pair also
+   un-broke a cascading gap: S3's/S5's own `libDmg`-gated chain buffs
+   (+120%/+100%) had been silently applying to the Liberation ultimate's
+   single hit ONLY, not to Blitz/Eradication/Death Snip despite the kit text
+   naming all of them as Liberation-categorized too — checked for over-
+   crediting risk (none of Chisa's own blocks use `scopedToBlockId`, so
+   widening `libDmg` coverage here is a pure fix, not a leak).
+3. **3 chain/buff blocks dead against the actual modeled rotation (bug class
+   c)**: `chisa.chain.s1`, `chisa.debuff.thread-of-bane`, and
+   `chisa.chain.s6` all triggered on `cast:Skill:Eye of Unraveling` — but
+   `CHARACTER_ROTATIONS['Chisa']` (the Loop Rotation, Intro available) never
+   casts base Skill at all, only Serrated Loop, so these 3 real, sourced
+   Unseen-Snare-application effects (S1's +30% ATK, Thread of Bane's 18%
+   DEF Ignore, S6's Unseen Snare-Finality +30% deepen) never fired in the
+   modeled rotation. The dump's own kit text confirms Unseen Snare is
+   applied "via Skill hit, hitting shortly after **Serrated Loop**, [...] or
+   simply locking onto a target" — retargeted all 3 to `Skill:Serrated
+   Loop`, the move actually cast.
+4. **Missing rotation step, silently dropped real damage (bug class f)**:
+   Rending Lunge is a real, always-cast step named in both the dump's
+   Opener and Loop "Full rotation" text, and its own multiplier row
+   (`15.11%×4+90.66%`) is right there in the dump's Basic ATK table — but it
+   had no `SKILL_MULTIPLIERS` row at all, despite this file's own prior note
+   incorrectly asserting it was "not sourced anywhere." Added the row
+   (`characters.js`) and its hits (folded into the Stage-2 block above,
+   since both cast together as one combined rotation step).
+
+All other dimensions independently re-verified clean against the fresh dump:
+SKILL_MULTIPLIERS' other rows (verbatim match once Rending Lunge was added),
+CHARACTER_ROTATIONS (matches the dump's own Loop Rotation step-for-step),
+RESONANCE_CHAIN_DATA (all 6 nodes' stored values, including S4's correctly-
+unmodeled proc-rate-only effect), CHAR_BUFF_TABLE (selfBuffs/debuffs values
+and durations), `dmgFocus` (`['Basic ATK', 'Liberation']` — Skill's real
+share is a "trivial slice" by the dump's own Damage Profile, ~4%, same
+exclusion precedent as Cartethyia's dropped 6.6% Skill), weapon data
+(`bestWeapon`/`weaponAlts`/tier all match the dump's ranked list and rarity
+buckets), echo data (`bestEchoes` matches both the Rejuvenating Glow and
+Thread of Severed Fate builds and their correct main-echo pairings), tier
+(`T0`/`T0` matches the dump's own standard ToA/WW Ratings section exactly,
+not its separate Value Tier List), base stats (HP/ATK/DEF/Energy all match),
+and icons (SKILL_ICONS/CHAIN_NODE_ICONS fully wired, including Rending
+Lunge's own already-present icon key).
+
+12 tests in `triggerEngine-chisa.test.js` (was 8; added category-coverage,
+libDmg-categorization, Rending-Lunge-hit-sum, and trigger-retarget checks).
+Full suite green: 1459/1459.
 
 ---
 

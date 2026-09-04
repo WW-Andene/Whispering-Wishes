@@ -4115,9 +4115,16 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Obedience of Rules', '44.50%+25.96%×4', 'Also enters True Sight.'],
     ['Outro', 'Strategy of Duality', 'Fusion DMG Amp +20% + Liberation DMG Amp +25% (10s)', 'Grants the incoming Resonator these buffs — no direct DMG; buff ends early if that Resonator is swapped out before 10s.'],
   ],
+  // Rending Lunge row added — Phase A audit (REMAINING_WORK.md 1c): the fresh dump's own Basic ATK
+  // multiplier table lists it ('15.11%×4+90.66%'), it's a real always-cast step in both the dump's
+  // Opener and Loop rotations ("Basic: Rending Lunge"), and CHARACTER_ROTATIONS['Chisa']'s own combined
+  // step label already names it ('Basic ATK:Stage 2, Rending Lunge, Death Snip') — but no
+  // SKILL_MULTIPLIERS row and no engine-block hits existed for it at all (bug class f), silently
+  // dropping a real, sourced ~151% multiplier hit from every rotation pass.
   'Chisa': [
     ['Basic ATK', 'Stage 1-2', '16.71%×2 → 9.55%+19.09%+66.81%', 'Standard combo string ending in a heavier chainsaw finisher.'],
-    ['Basic ATK', 'Death Snip', '29.81% + 14.91% + 104.34%', 'Alternate finisher available at a certain combo point.'],
+    ['Basic ATK', 'Rending Lunge', '15.11%×4+90.66%', 'Follow-up combo hit after Basic ATK Stage 2, chains into Death Snip.'],
+    ['Basic ATK', 'Death Snip', '29.81% + 14.91% + 104.34%', 'Alternate finisher available at a certain combo point; counted as Resonance Liberation DMG.'],
     ['Skill', 'Eye of Unraveling', '35.79%', 'Quick dash strike that marks the target for Negative Status.'],
     ['Skill', 'Serrated Loop', '17.45%×8 (hold: 7.46%×16)', 'Multi-hit spin attack; holding the input adds even more hits.'],
     ['Forte', 'Sawring - Blitz 1-3', '11.49%×6 → 10.64%×8 → 15.98%×8', '3-stage Forte combo that builds up Ring of Chainsaw stacks.'],
