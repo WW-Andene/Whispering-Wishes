@@ -7339,7 +7339,17 @@ const RESONANCE_CHAIN_DATA = {
   // the source/character/1504 (both agree exactly). S1 (totalMult: 5) was undocumented — real effect is
   // purely +60 STA restore within 3s after Energized Rebound, zero DPS component. Zeroed to {}. S2/S3/S4/
   // S5/S6 confirmed correct, unchanged.
-  'Lumi':         { s1: {}, s2: { defIgnore: 20 }, s3: { libDmg: 30 }, s4: { basicDmg: 30 }, s5: { totalMult: 100 }, s6: { atkPct: 20 } },
+  // s5 zeroed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was `{ totalMult: 100 }`, unscoped and
+  // unconditioned — the real kit text ("When Spark is fully recovered, Laser's DMG Multiplier+100%") is
+  // conditional and scoped to Laser specifically, but this table has no per-move scoping field, and
+  // applyResonanceChain() (calcEngine.js) adds any lvl.totalMult straight into totalMultBonus for ANY
+  // Main DPS Lumi pick at S5+, unconditionally doubling her whole kit's damage in that legacy calc path
+  // (same live bug already fixed in lumi.blocks.js's trigger-engine path — this was the matching source-
+  // table copy still feeding the OTHER, non-block calc path). Laser is real (fires off Outro if 25+
+  // Spark was consumed) but not modeled here for the same reason blocks.js gives: the rotation's own
+  // final steps drain Spark to 0 via Energized Pounce right before Outro, so assuming max Spark banked
+  // would contradict the rotation's own real cast order. Zeroed to `{}`, matching S1's precedent.
+  'Lumi':         { s1: {}, s2: { defIgnore: 20 }, s3: { libDmg: 30 }, s4: { basicDmg: 30 }, s5: {}, s6: { atkPct: 20 } },
   // corrected 2026-08-18: prior values (defShred/deepen on every node) had no basis in Taoqi's real
   // chain kit (the wiki Combat page, Resonance Chain table) — she has no DEF Shred or DMG Deepen node at
   // all. Real effects: S1 Essense of Tranquility — Forte Circuit Power Shift's Shield +40% (utility,

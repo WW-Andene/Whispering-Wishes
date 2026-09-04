@@ -1711,6 +1711,65 @@ for the fix, since a Spectro-only-scoped bug would not have been caught by the
 old test (which only ever resolved against Jinhsi's own Spectro element). Full
 suite green: 1467/1467.
 
+**Lumi — full 9-dimension re-audit (2026-09-04):** independently re-derived
+her kit from `Characters data dump/Lumi/Lumi.md` (dual Yellow Light/Red
+Light Basic ATK stances, Signal Light dual Forte gauge with Energized
+Pounce/Rebound/Glare/Red Spotlight/Laser, Squeakie Express Liberation,
+Special Delivery Intro, Escorting Outro, S1-S6 chain) from scratch, then
+cross-checked against `characters.js`/`lumi.blocks.js` — deliberately not
+trusting the dump's own "App Data Comparison" narrative section (which
+describes several fixes as already applied) at face value. (1)
+SKILL_MULTIPLIERS — all 18 rows match the dump's Multipliers tables exactly,
+including the previously-missing Heavy Attack/Plunging Attack/Dodge
+Counter/Glitter/Laser rows — already correct. (2) CHARACTER_ROTATIONS —
+matches the dump's Gameplay "Rotation" text move-for-move (Intro →
+Liberation → Energized Pounce → Red Spotlight Basic 1-3 → Energized Rebound
+→ Yellow Light Basic ATK → Glare×6 → Energized Pounce → Outro) — already
+correct. (3) RESONANCE_CHAIN_DATA — S1-S4/S6 values (STA-restore utility
+zeroed, 20% defIgnore, 30% libDmg, 30% basicDmg, 20% team atkPct) all match
+the dump exactly; **S5 was a real, live bug**: `{ totalMult: 100 }`, unscoped
+and unconditioned. The real kit text ("When Spark is fully recovered,
+Laser's DMG Multiplier+100%") is conditional and scoped to Laser
+specifically, but `totalMult` has no category gate in either calc path —
+`lumi.blocks.js` had *already* been fixed to omit the S5 block entirely (a
+prior, uncommitted pass), but the underlying `RESONANCE_CHAIN_DATA['Lumi'].s5`
+source value in `characters.js` still carried `totalMult: 100` — which
+`calcEngine.js`'s `applyResonanceChain()` (the *legacy*, non-block Main-DPS
+calc path) reads directly and unconditionally adds to `totalMultBonus`,
+meaning any Main-DPS Lumi pick at Sequence 5+ still had her entire kit's
+damage doubled through that path even though the trigger-engine path was
+already fixed. Zeroed `RESONANCE_CHAIN_DATA['Lumi'].s5` to `{}` (matching
+S1's precedent) to close the gap in both calc paths; Laser stays
+deliberately unmodeled for the same reason S1 does — the rotation's own
+final steps drain her Spark pool to 0 via Energized Pounce immediately
+before Outro, so assuming max Spark banked at Outro would contradict the
+rotation's own real cast order, not a defensible steady-state case. (4)
+CHAR_BUFF_TABLE — Outro (Escorting) 38% skillDmg to next for 10s matches
+exactly — already correct. (5) dmgFocus — `['Basic ATK', 'Liberation']`
+matches the dump's Damage Profile (Basic 36%, Liberation 29.6%, both above
+the 6.8% threshold; Skill 26.3% deliberately NOT added — no block is
+skillDmg-categorized anywhere near that share, Energized Pounce/Rebound are
+explicitly "counted as Basic Attack DMG" per kit text) — already correct.
+(6) weapon data — `bestWeapon` Ages of Harvest (108.33%, ahead of Lustrous
+Razor 100.00%) with `weaponAlts` (Verdant Summit/Lustrous Razor,
+Autumntrace/Waning Redshift) matches the dump's Best Weapons list — already
+correct. (7) echo data — `bestEchoes` (Impermanence Heron / Moonlit Clouds
+5pc) matches the dump's real #1 pick, correctly excluding the dump's own
+"Special/situational" Nightmare: Thundering Mephis / Void Thunder pairing
+(explicitly filed as a suboptimal Main-DPS-only option) — already correct.
+(8) engine-block parity — all 7 `lumi.blocks.js` damage blocks correctly
+categorized (`skillDmg` for Intro, `libDmg` for Liberation, `basicDmg` for
+everything else per "counted as Basic Attack DMG" kit text), Glare
+correctly fires 6 real hits (matching "Channelled Dash: 6 Glares"), S2/S3/
+S4/S6 chain blocks correctly scoped; only the S5 RESONANCE_CHAIN_DATA gap
+above was live. (9) icons — all named moves wired in
+`CHARACTER_SKILL_ICONS['Lumi']` and all 6 nodes wired in
+`CHAIN_NODE_ICONS['Lumi']` — already correct. Added a regression test
+(`triggerEngine-lumi.test.js`) directly asserting `RESONANCE_CHAIN_DATA['Lumi'].s5`
+equals `{}`, since the existing S5 test only checked `LUMI_BLOCKS` (the
+already-fixed path) and would not have caught the legacy-path source-data
+bug. Full suite green: 1477/1477.
+
 ---
 
 ## 2. Legacy-calculator correctness — real, unresolved finding

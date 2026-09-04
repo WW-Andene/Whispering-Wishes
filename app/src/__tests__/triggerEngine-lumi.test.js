@@ -23,6 +23,11 @@ describe('triggerEngine parity — Lumi', () => {
     expect(LUMI_BLOCKS.find(b => b.id === 'lumi.chain.s5')).toBeUndefined();
   });
 
+  it("S5 is zeroed in RESONANCE_CHAIN_DATA itself, not just absent from LUMI_BLOCKS — the legacy applyResonanceChain() (calcEngine.js) Main-DPS totalMult path reads RESONANCE_CHAIN_DATA directly and would still double her damage there if s5.totalMult were left in place", () => {
+    const rc = RESONANCE_CHAIN_DATA['Lumi'];
+    expect(rc.s5).toEqual({});
+  });
+
   it('S6 is team-wide with a real 20s window', () => {
     const s6 = LUMI_BLOCKS.find(b => b.id === 'lumi.chain.s6');
     expect(s6.target.scope).toBe('whole-team');
