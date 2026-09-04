@@ -8,7 +8,7 @@
 // resource/utility effects with zero DPS component per the audit's own re-zeroing.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Chixia';
 

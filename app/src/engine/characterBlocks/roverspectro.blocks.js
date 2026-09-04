@@ -11,7 +11,7 @@
 // matching stat key in this schema (same class as Chisa's), not modeled.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Rover: Spectro';
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSkillMultiplierHits, sumHitsAtkPct } from '../engine/shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits, sumHitsAtkPct } from '../engine/math/hitParser.js';
 
 describe('parseSkillMultiplierHits — real SKILL_MULTIPLIERS strings', () => {
   it("parses Yinlin's 4-stage Basic ATK combo (SKILL_MULTIPLIERS['Yinlin'][0])", () => {

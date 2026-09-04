@@ -23,7 +23,7 @@
 // to the rotation would fabricate play the source doesn't document.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Sigrika';
 

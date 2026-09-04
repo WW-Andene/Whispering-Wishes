@@ -36,7 +36,7 @@
 // phrolova.forte.movement-of-fate-and-finality (the only one of the two moves with its own block here).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Phrolova';
 

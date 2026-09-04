@@ -5,7 +5,7 @@
 // active buffs as the base hit, a plain proportional %ATK hit scales identically through the shared
 // crit/dmgBonus/defMult/resMult chain.
 import { describe, it, expect } from 'vitest';
-import { sumHitsAtkPct } from '../engine/shared/skillMultiplierParser.js';
+import { sumHitsAtkPct } from '../engine/math/hitParser.js';
 import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
 import { BRANT_BLOCKS } from '../engine/characterBlocks/brant.blocks.js';
 

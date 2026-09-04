@@ -20,7 +20,7 @@
 // genuine ambiguity and explicitly decided: kept skillDmg, matching SKILL_MULTIPLIERS' own row type.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Youhu';
 

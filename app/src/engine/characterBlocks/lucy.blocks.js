@@ -12,7 +12,7 @@
 // previously had no matching SKILL_MULTIPLIERS row at all (silently 0 DMG).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Lucy';
 

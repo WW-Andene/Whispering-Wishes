@@ -19,8 +19,8 @@
 // extraction, not an intentional improvement.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult } from '../shared/combatMath.js';
-import { collapseDmgTypeBuckets } from '../shared/buffAccumulation.js';
+import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult } from '../math/damageFormula.js';
+import { collapseDmgTypeBuckets } from '../math/moveTypeRouting.js';
 
 /**
  * @param {object} finalStats - resolveSimulatedTeamRotation's real received-stats output for the

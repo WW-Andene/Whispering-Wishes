@@ -8,7 +8,7 @@
 // audit; Forte Cycle of Life is pure healing, no block).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Baizhi';
 

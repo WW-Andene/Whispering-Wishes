@@ -10,7 +10,7 @@
 // alongside (not instead of) the flat basicDmg:40 multiplier the table stores.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Rebecca';
 

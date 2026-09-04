@@ -7,16 +7,16 @@
 import { ECHO_SKILL_BUFFS } from '../../data/echoes.js';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, CHARACTER_ROTATIONS } from '../../data/characters.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
-// Phase 0 structural cleanup (2026-09-04, ENGINE_ARCHITECTURE_PROPOSAL.md v2 §2.1): the
-// character-agnostic combat-math constants/formulas and role-substring helpers moved to their
-// permanent home under engine/shared/ — byte-identical logic, re-exported here so every existing
-// importer of these names from calcEngine.js keeps working unchanged.
+// Engine rewrite Layer 2 (shared math primitives): the character-agnostic combat-math
+// constants/formulas, role-substring helpers, and move-type-bucket routing live in
+// engine/math/ — re-exported here so every existing importer of these names from
+// calcEngine.js keeps working unchanged until Layer 5 (team-layer rebuild) repoints them.
 import {
   ATTACKER_LEVEL, ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
   calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
-} from '../../engine/shared/combatMath.js';
-import { isHealerRole, isSupportRole } from '../../engine/shared/roleHelpers.js';
-import { collapseDmgTypeBuckets } from '../../engine/shared/buffAccumulation.js';
+  isHealerRole, isSupportRole,
+  collapseDmgTypeBuckets,
+} from '../../engine/math/index.js';
 
 export {
   ATTACKER_LEVEL, ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
@@ -25,7 +25,7 @@ export {
   collapseDmgTypeBuckets,
 };
 // Legacy name, kept as an alias so calcTeamStats.js's existing call sites need no change in this
-// pass — see engine/shared/buffAccumulation.js's header for why the function was renamed.
+// pass — see engine/math/moveTypeRouting.js's header for why the function was renamed.
 export const routeTypeBonuses = collapseDmgTypeBuckets;
 // Engine-merge Stage 1 (2026-09-04): the DOT/Tune-Break rotation-aggregate primitives
 // (calcFrazzleDmg/calcErosionDmg/calcFusionBurstDmg/calcElectroFlareDmg/calcTuneBreakDmg and their
@@ -427,7 +427,7 @@ export function countTeamElements(members) {
   return counts;
 }
 
-// (routeTypeBonuses now lives as collapseDmgTypeBuckets in engine/shared/buffAccumulation.js —
+// (routeTypeBonuses now lives as collapseDmgTypeBuckets in engine/math/moveTypeRouting.js —
 // imported and re-exported under both names above.)
 
 // ── Role matching: some characters carry a compound role string ('Support/Healer' — Chisa, Suisui)
@@ -437,7 +437,7 @@ export function countTeamElements(members) {
 // candidate pool when building team suggestions) — use these substring checks everywhere a role
 // CATEGORY is being tested instead, so a compound role matches every category it actually belongs to.
 // (isHealerRole/isSupportRole/calcDefMult/calcResMult/calcAvgCrit/calcDmgBonus now live in
-// engine/shared/roleHelpers.js and engine/shared/combatMath.js — imported and re-exported above.)
+// engine/math/roleMatch.js and engine/math/damageFormula.js — imported and re-exported above.)
 
 // ── Energy cycle tracking ──
 export function calcEnergyCycles(members, teamEquipment, teamIdx) {

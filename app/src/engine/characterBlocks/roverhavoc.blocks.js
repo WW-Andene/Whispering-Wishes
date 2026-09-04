@@ -11,7 +11,7 @@
 // below, not duplicated as separate base-kit blocks.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Rover: Havoc';
 

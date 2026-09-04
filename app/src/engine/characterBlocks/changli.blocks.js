@@ -37,7 +37,7 @@
 // same one already used for Mortefi's chain S1/S5 bonus-Marcato blocks riding his Liberation cast.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Changli';
 

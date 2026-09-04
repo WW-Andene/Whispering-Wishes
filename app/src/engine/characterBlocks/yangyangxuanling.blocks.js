@@ -11,7 +11,7 @@
 // against a fresh the source dump, both now modeled with real numbers (heavyDmg).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Yangyang: Xuanling';
 

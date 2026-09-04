@@ -28,7 +28,7 @@
 // __tests__/triggerEngine-jinhsi.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Jinhsi';
 

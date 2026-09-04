@@ -4,7 +4,7 @@
 // resolvers' damage formula treat it as part of the base-damage term (added before crit/dmgBonus/
 // defMult/resMult), not a separate standalone hit.
 import { describe, it, expect } from 'vitest';
-import { parseSkillMultiplierHits } from '../engine/shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../engine/math/hitParser.js';
 import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
 
 describe('DamageHits.flat — non-%ATK additive component (the engine-merge history (git log) Phase 0.5 gap #8)', () => {

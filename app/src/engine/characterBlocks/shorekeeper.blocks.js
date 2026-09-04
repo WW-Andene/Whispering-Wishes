@@ -26,7 +26,7 @@
 // already fixed for Xiangli Yao's Revamp key).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Shorekeeper';
 

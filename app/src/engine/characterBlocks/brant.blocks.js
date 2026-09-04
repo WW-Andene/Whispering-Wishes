@@ -6,7 +6,7 @@
 // SKILL_MULTIPLIERS['Brant'], and CHARACTER_ROTATIONS['Brant']. No new numbers invented.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Brant';
 

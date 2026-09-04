@@ -6,7 +6,7 @@
 // trigger is 'cast' or 'passive', no conditional/cast-order mechanics found.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Aalto';
 
