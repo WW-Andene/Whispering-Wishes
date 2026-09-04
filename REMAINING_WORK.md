@@ -274,6 +274,74 @@ urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
 
+**Sigrika — full independent 9-dimension re-audit (2026-09-04):** rebuilt her
+kit model from scratch directly off `Characters data dump/Sigrika/Sigrika.md`
+with zero deference to the prior "already audited" claims in code comments.
+Found and fixed real bugs across dimensions 3, 4, 8, and 9; dimensions 1, 2,
+5, 6, 7 were independently re-derived and verified clean (rotation matches
+the dump's own Standard Rotation exactly; SKILL_MULTIPLIERS values matched
+Lv.10 except the gaps below; dmgFocus `['Echo']` correctly matches the
+dump's Damage Profile — Echo 89.9% clears the ~6-7% threshold, Outro 4.8%
+and Basic 4.6% correctly don't; weapon/echo picks match the dump's #1s
+exactly, Solsworn Ciphers/Sound of True Name 5pc).
+- **Real move gaps (dimension 8, dimension 1)**: `chain.s1`'s own text
+  names 4 moves getting +70% DMG Multiplier — "Basic - Elucidated / Dodge
+  Counter - Decipher / BIG BOOMY BOOM! / Soliskin to the Aid" — but only
+  Basic - Elucidated had a `SKILL_MULTIPLIERS` row and damage block. The
+  other 3 were entirely missing (2 had no row at all — Soliskin to the Aid,
+  Dodge Counter - Decipher; BIG BOOMY BOOM! had a row but no block).
+  Modeled all 3 from the dump's own published multipliers (`27.83%×3+194.77%`,
+  `61.56%×3+123.11%` [same as Elucidated], `28.81%×4+172.85%`), all
+  `echoDmg`-categorized per kit text. Deliberately **not** added to
+  `CHARACTER_ROTATIONS` — the dump's Standard Rotation never routes into
+  them (Divergent/Convergent send her generated Runes into the
+  Basic-Elucidated/Forte-Heavy path instead); modeled purely so the S1 node
+  has real targets to scope to.
+- **Unscoped totalMult (dimension 3/8, the recurring Jiyan/Phrolova/
+  Qingxiao/Qiuyuan/Roccia bug class)**: `chain.s1` was a *rotation-averaged*
+  `totalMult: 15` applied **unscoped** — inflating ALL of Sigrika's own
+  damage (Basic combo, Intro, Outro, every Forte hit) instead of only the
+  4 named moves. Corrected `RESONANCE_CHAIN_DATA.Sigrika.s1` to the real,
+  un-averaged `totalMult: 70` and scoped the engine block's effect via 4
+  separate `scopedToBlockId` entries (one per now-modeled move) — same fix
+  pattern as Augusta/Camellya/Carlotta's multi-block totalMult scoping.
+  Documented as a known schema gap (not hacked around): S1 also grants
+  interruption immunity on those 3 Echo-type moves and raises her
+  Encapsulated cap 2->3 — neither is representable as a DPS%-effect, and
+  Encapsulated isn't modeled anywhere in this file at all.
+- **Wrong multiplier reuse (dimension 1/8)**: `Runic Chain Whip` was
+  wrongly sourced from the `Runic Outburst` `SKILL_MULTIPLIERS` row under a
+  false "no per-variant breakdown published" claim — the dump *does*
+  publish a distinct Chain Whip multiplier (`49.70%×4+66.26%×3` vs.
+  Outburst's `117.67%+205.92%+264.75%`). Split into its own row/block.
+  (Also added a `Runic Soliskin` row, `39.76%+59.63%×4+119.26%`, for
+  completeness — genuinely unused in the standard rotation since only
+  Trust+Trust and Trust+Answer Rune combos occur there.)
+- **Missing `damage.category` (dimension 8, the 8+ recurring bug class)**:
+  exhaustively checked every damage block by ID — the Intro
+  (`sigrika.intro.solsworn-etymology`) and Outro
+  (`sigrika.outro.in-this-very-moment`) blocks had no `damage.category` at
+  all. Added `introDmg`/`outroDmg` respectively, matching the dump's own
+  Damage Profile (Intro 0.8%, Outro 4.8% — both real, distinct, non-Echo
+  shares).
+- **Icon substring-lookup ordering bug (dimension 9)**: `getSkillIcon()`
+  resolves `skillName.includes(key)` against the FIRST matching key in
+  object-insertion order. `SKILL_ICONS.Sigrika`'s generic
+  `'Heavy ATK: Schemata of Runes'` fallback sat *before* `'Runic Outburst'`
+  — since both real rotation-step names ("...(Chain Whip)"/
+  "...(Runic Outburst)") contain that generic substring, BOTH Forte Heavy
+  steps silently resolved to the borrowed Luuk-Herssen basic-attack icon
+  instead of Sigrika's own dedicated Forte icon. Reordered so all specific
+  keys precede the generic fallback, and added a `'Chain Whip'` key (the
+  generic fallback had been the *only* thing ever matching that step).
+- Every other dimension (2/5/6/7, and the `s2`/`s4`/`s5`/`s6` chain nodes,
+  `CHAR_BUFF_TABLE` self/lib buffs) re-verified clean against the fresh
+  dump — no changes needed there.
+- Tests added/extended in `triggerEngine-sigrika.test.js` covering the
+  scoped S1 effects, the 3 newly-modeled damage blocks, the corrected
+  Chain Whip multiplier, and an exhaustive per-block `damage.category`
+  check. Full suite green (125 files / 1512 tests).
+
 **Jiyan — Emerald Storm: Finale modeled (2026-09-04):** the prior Jiyan
 audit (see the `jiyan.chain.s6` fix above) found S6 ("Fortitude",
 `totalMult: 240`) scoped to `jiyan.forte.emerald-storm-finale`, a damage

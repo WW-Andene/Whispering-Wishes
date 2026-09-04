@@ -4756,9 +4756,27 @@ const SKILL_MULTIPLIERS = {
   'Sigrika': [
     ['Basic ATK', 'Stage 1-4', '52.97% → 50.34%×2 → 33.41%×2+44.54% → 41.36%+51.70%×2+62.03%', 'Standard combo; ends in Decipher state for Echo-type follow-ups.'],
     ['Basic ATK', 'Elucidated', '61.56%×3+123.11%', 'Echo-type finisher from Decipher state; builds Runes.'],
+    // 'Dodge Counter - Decipher' row added 2026-09-04 (Phase A audit, fresh dump, zero deference to
+    // prior claims): the dump's own Basic Attack section lists "Dodge Counter - Decipher" (in Decipher,
+    // post-Dodge ground Normal Attack, Aero DMG, ends Decipher) with the SAME 61.56%×3+123.11% multiplier
+    // string as Elucidated — was entirely missing a row/block despite being one of the 4 moves S1's own
+    // +70% DMG Multiplier node explicitly names ("Basic - Elucidated / Dodge Counter - Decipher / BIG
+    // BOOMY BOOM! / Soliskin to the Aid").
+    ['Dodge Counter', 'Decipher', '61.56%×3+123.11%', 'Post-Dodge Echo-type finisher from Decipher state, same multipliers as Elucidated; builds Runes.'],
     ['Skill', 'BOOMY BOOM!', '28.63%×3+57.26%', 'Builds Runes; empowered version deals Echo Skill DMG.'],
     ['Skill', 'BIG BOOMY BOOM!', '28.81%×4+172.85%', 'Decipher-state Skill upgrade, counted as Echo Skill DMG.'],
-    ['Forte', 'Runic Outburst', '117.67%+205.92%+264.75%', 'Rune-consuming Heavy ATK with 3 possible effects.'],
+    // 'Soliskin to the Aid' row added 2026-09-04: the dump lists it as its own Resonance Skill move
+    // (in Decipher at >=50 Full Stop, ground Skill press — Echo Skill DMG, ends Decipher) with its own
+    // published multiplier 27.83%×3+194.77%, distinct from BIG BOOMY BOOM! — was entirely missing despite
+    // being one of the 4 moves S1's node explicitly names.
+    ['Skill', 'Soliskin to the Aid', '27.83%×3+194.77%', 'Decipher-state Skill upgrade at >=50 Full Stop, counted as Echo Skill DMG, ends Decipher.'],
+    ['Forte', 'Runic Outburst', '117.67%+205.92%+264.75%', 'Rune-consuming Heavy ATK (Trust+Answer): pure bonus DMG, no extra effect.'],
+    // 'Runic Chain Whip' split into its own row 2026-09-04: the dump publishes a DISTINCT multiplier
+    // string for it (49.70%×4+66.26%×3) from Runic Outburst's — the engine block's prior "no per-variant
+    // breakdown published" note was factually wrong, the dump's own Forte Circuit section lists Runic
+    // Outburst/Chain Whip/Soliskin as 3 separately-multiplied variants.
+    ['Forte', 'Runic Chain Whip', '49.70%×4+66.26%×3', 'Rune-consuming Heavy ATK (2× Trust): Stagnates nearby targets, Aero DMG.'],
+    ['Forte', 'Runic Soliskin', '39.76%+59.63%×4+119.26%', 'Rune-consuming Heavy ATK (2× Answer): pulls in nearby targets, Aero DMG. Not used in the standard rotation (only Trust+Trust and Trust+Answer combos occur there).'],
     ['Forte', 'Learn My True Name', '302.87%+908.61%', 'Big Echo-type nuke once Full Stop is maxed.'],
     ['Liberation', 'Where Trust Leads Me!', '861.43%', 'Echo-type Ultimate nuke; also seeds her next Rune.'],
     ['Intro', 'Solsworn Etymology', '163.42%', 'Standard combo-starting opener hit.'],
@@ -6846,7 +6864,15 @@ const RESONANCE_CHAIN_DATA = {
   // swap-out, only clears after 30s continuously out of combat") has zero DMG% component at all to
   // approximate from, unlike S1. Same "no real DPS component" pattern already fixed on Chisa's/
   // Mornye's own missed-S3 nodes. Zeroed to {}.
-  'Sigrika':      { s1: { totalMult: 15 }, s2: { echoDmg: 120 }, s3: {}, s4: { atkPct: 20 }, s5: { echoDmg: 30 }, s6: { deepen: 30 } },
+  // S1 corrected 2026-09-04 (Phase A audit, fresh dump, zero deference to prior claims): was
+  // totalMult:15, a "rotation-averaged" approximation of the real +70% DMG Multiplier — but the engine
+  // block applied that 15 UNSCOPED to ALL of Sigrika's own damage (Basic combo, Intro, Outro, every
+  // Forte hit, etc.), not just the 4 moves the node actually names ("Basic - Elucidated / Dodge
+  // Counter - Decipher / BIG BOOMY BOOM! / Soliskin to the Aid") — the same unscoped-totalMult bug
+  // class recurring across Jiyan/Phrolova/Qingxiao/Qiuyuan/Roccia. Now that all 4 named moves have
+  // their own damage blocks (2 were previously missing entirely, see sigrika.blocks.js), the node is
+  // correctly scoped via scopedToBlockId to just those 4 blocks at its real, un-averaged 70% value.
+  'Sigrika':      { s1: { totalMult: 70 }, s2: { echoDmg: 120 }, s3: {}, s4: { atkPct: 20 }, s5: { echoDmg: 30 }, s6: { deepen: 30 } },
   // Luuk Herssen (confirmed via the source 2026-08-16 cross-check). S1: +150% Mid-air ATK DMG, simplified as basicDmg
   // ~15 DPS impact (documented approximation, kept). S2: Rewritten in Winter's Margins DMG Mult+60% — was totalMult:40, no basis.
   // S3: Aureole of Execution forms +136% in Aureate Judge (conditional, no flat unconditional %) — was critDmg:25 with no
@@ -8084,15 +8110,27 @@ const SKILL_ICONS = {
   },
   // Source: the wiki Skill_*.png assets for Sigrika, pulled via the MediaWiki API
   // (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
+  // Key order fixed 2026-09-04 (Phase A audit, fresh dump): getSkillIcon() does
+  // skillName.includes(key), returning the FIRST matching key in insertion order. The generic
+  // 'Heavy ATK: Schemata of Runes' fallback used to sit BEFORE 'Runic Outburst' — since both rotation
+  // steps' skill strings ("Heavy ATK: Schemata of Runes (Chain Whip)" / "...(Runic Outburst)") contain
+  // the generic substring, both silently resolved to the generic Luuk-borrowed basic-attack icon
+  // instead of Sigrika's own dedicated Forte icon (1Ydcf5Gb). Also added a 'Chain Whip' key — the
+  // generic fallback was the ONLY thing that ever matched that rotation step, so removing/deprioritizing
+  // it without adding a specific key would have left it with no icon at all. Specific keys now all
+  // precede the generic weapon-icon fallback.
   'Sigrika': {
     'Stage 1-4': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // Basic ATK — generic Gauntlets icon (same asset already used for Luuk Herssen)
     'Stage 2-4': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // rotation-step phrasing for the Basic ATK combo, same icon
     'Elucidated': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // Decipher-state Basic ATK finisher, still generic weapon icon
-    'Heavy ATK: Schemata of Runes': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // Heavy Attack, no dedicated wiki icon — generic weapon icon
-    'BOOMY BOOM!': './characters/sigrika/k6M2mPzF-Sigrika-skill-res-Skill.webp', // Resonance Skill — Royan Close Quarters Combat
     'BIG BOOMY BOOM!': './characters/sigrika/k6M2mPzF-Sigrika-skill-res-Skill.webp',
+    'BOOMY BOOM!': './characters/sigrika/k6M2mPzF-Sigrika-skill-res-Skill.webp', // Resonance Skill — Royan Close Quarters Combat
+    'Soliskin to the Aid': './characters/sigrika/k6M2mPzF-Sigrika-skill-res-Skill.webp', // Decipher-state Resonance Skill upgrade, same asset
     'Runic Outburst': './characters/sigrika/1Ydcf5Gb-Sigrika-skill-forte.webp', // Forte Circuit — Within Infinity's Embrace
+    'Chain Whip': './characters/sigrika/1Ydcf5Gb-Sigrika-skill-forte.webp', // Runic Chain Whip Forte Heavy ATK variant, same Forte icon
+    'Runic Soliskin': './characters/sigrika/1Ydcf5Gb-Sigrika-skill-forte.webp',
     'Learn My True Name': './characters/sigrika/1Ydcf5Gb-Sigrika-skill-forte.webp',
+    'Heavy ATK: Schemata of Runes': './characters/_shared/rR5XytVJ-Luuk-skill-basic.webp', // Heavy Attack fallback, no dedicated wiki icon — generic weapon icon; kept LAST so specific Runic-variant keys above match first
     "Where Trust Leads Me!": './characters/sigrika/tTFS1w8x-Sigrika-skill-liberation.webp', // Resonance Liberation
     'Solsworn Etymology': './characters/sigrika/Qj6rsbGF-Sigrika-skill-intro.webp', // Intro Skill
     'In This Very Moment': './characters/sigrika/q3yGzhyX-Sigrika-skill-outro.webp', // Outro Skill

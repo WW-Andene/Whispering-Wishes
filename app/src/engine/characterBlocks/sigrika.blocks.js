@@ -6,10 +6,21 @@
 // ['Sigrika'], and CHARACTER_ROTATIONS['Sigrika']. No new numbers invented. Her
 // selfBuffs' real ER-scaling formula (erScale in CHAR_BUFF_TABLE, +2% Echo Skill
 // DMG per 1% ER above 125%, capped at 50%) is modeled at its documented cap
-// rather than the real formula, which this schema can't express. The two Forte
-// Heavy ATK: Schemata of Runes rotation steps (Chain Whip / Runic Outburst) both
-// source their damage from the single 'Runic Outburst' SKILL_MULTIPLIERS row,
-// since no per-variant breakdown is published.
+// rather than the real formula, which this schema can't express.
+//
+// Full re-audit 2026-09-04 (Phase A, fresh dump, zero deference to prior claims) found and fixed two
+// real bugs: (1) Runic Chain Whip was wrongly sourced from the 'Runic Outburst' SKILL_MULTIPLIERS row
+// — the dump DOES publish a distinct multiplier for it (49.70%×4+66.26%×3), now its own row/block.
+// (2) chain.s1's totalMult:15 was applied UNSCOPED to ALL of Sigrika's own damage, when the node's
+// real effect ("+70% DMG Multiplier") only applies to 4 specific named moves — 2 of which
+// (BIG BOOMY BOOM!, Soliskin to the Aid) had no damage block at all despite being in the dump's own
+// multiplier tables, and a 3rd (Dodge Counter - Decipher) shares Elucidated's exact multipliers but
+// was also entirely missing. All 4 now have their own blocks and chain.s1 is scopedToBlockId'd to
+// exactly those 4 at the real, un-averaged 70% value. BIG BOOMY BOOM! / Soliskin to the Aid / Dodge
+// Counter - Decipher are modeled here (real multipliers exist) but deliberately NOT added to
+// CHARACTER_ROTATIONS — the dump's own Standard Rotation text never calls them (Divergent/Convergent
+// routes her generated Runes into the Basic - Elucidated / Forte Heavy path instead), so adding them
+// to the rotation would fabricate play the source doesn't document.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -24,8 +35,8 @@ export const SIGRIKA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Solsworn Etymology' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('163.42%') },
-    note: 'Primes the next Basic ATK combo to start from Stage 2.',
+    damage: { hits: parseSkillMultiplierHits('163.42%'), category: 'introDmg' },
+    note: 'Primes the next Basic ATK combo to start from Stage 2. category:introDmg added 2026-09-04 (fresh dump re-audit) — was missing entirely; the dump\'s own Damage Profile shows a real, distinct 0.8% Intro share.',
   },
   {
     id: 'sigrika.basic.stage2-4',
@@ -49,8 +60,32 @@ export const SIGRIKA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Schemata of Runes (Chain Whip)' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('117.67%+205.92%+264.75%'), category: 'echoDmg' },
-    note: 'Consumes 2 Runes of the same type for Runic Chain Whip (Stagnates nearby targets, not modeled). Sourced from the single "Runic Outburst" row (no per-variant breakdown published). Category corrected 2026-09-02 from heavyDmg to echoDmg — the kit text explicitly says "Heavy Attack - Schemata of Runes deals Echo Skill DMG" and Runic Chain Whip itself is "(considered Echo Skill DMG)"; a fresh the source dump\'s damage-output simulation shows Heavy at a genuine 0% share.',
+    damage: { hits: parseSkillMultiplierHits('49.70%×4+66.26%×3'), category: 'echoDmg' },
+    note: 'Consumes 2 Runes of the same type for Runic Chain Whip (Stagnates nearby targets, not modeled). Multiplier corrected 2026-09-04 (fresh dump re-audit) from the borrowed "Runic Outburst" row to its own real, distinct "Runic Chain Whip" SKILL_MULTIPLIERS row — the dump does publish a per-variant breakdown after all. Category: echoDmg — the kit text explicitly says "Heavy Attack - Schemata of Runes deals Echo Skill DMG" and Runic Chain Whip itself is "(considered Echo Skill DMG)"; a fresh the source dump\'s damage-output simulation shows Heavy at a genuine 0% share.',
+  },
+  {
+    id: 'sigrika.skill.big-boomy-boom',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:BIG BOOMY BOOM!' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('28.81%×4+172.85%'), category: 'echoDmg' },
+    note: 'Added 2026-09-04 (fresh dump re-audit) — Decipher-state ground Skill-press upgrade, "(Echo Skill DMG)" per kit text, ends Decipher, grants Rune: Answer. Real multiplier already existed in SKILL_MULTIPLIERS but had no damage block. Not in CHARACTER_ROTATIONS — the dump\'s own Standard Rotation never routes into this move (Divergent/Convergent send generated Runes into the Basic - Elucidated/Forte Heavy path instead); modeled here solely because chain.s1 explicitly names it.',
+  },
+  {
+    id: 'sigrika.skill.soliskin-to-the-aid',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Soliskin to the Aid' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('27.83%×3+194.77%'), category: 'echoDmg' },
+    note: 'Added 2026-09-04 (fresh dump re-audit) — Decipher-state ground Skill-press upgrade at >=50 Full Stop, "(Echo Skill DMG)" per kit text, ends Decipher, grants Rune: Answer. Was entirely missing both a SKILL_MULTIPLIERS row and a damage block despite chain.s1 explicitly naming it. Not in CHARACTER_ROTATIONS for the same reason as BIG BOOMY BOOM! above.',
+  },
+  {
+    id: 'sigrika.basic.dodge-counter-decipher',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Dodge Counter:Decipher' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('61.56%×3+123.11%'), category: 'echoDmg' },
+    note: 'Added 2026-09-04 (fresh dump re-audit) — post-Dodge ground Normal Attack in Decipher state, same multipliers as Basic - Elucidated, "(Echo Skill DMG)" per kit text, ends Decipher, grants Rune: Trust. Was entirely missing both a SKILL_MULTIPLIERS row and a damage block despite chain.s1 explicitly naming it. Not in CHARACTER_ROTATIONS — the dump\'s Standard Rotation never calls for a Dodge mid-combo; modeled here solely because chain.s1 explicitly names it.',
   },
   {
     id: 'sigrika.liberation.where-trust-leads-me',
@@ -81,8 +116,8 @@ export const SIGRIKA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: [{ atkPct: 795 }] },
-    note: 'Also grants Sigrika (if she re-enters) 2 stacks of Encapsulated for 30s, Stagnating targets whenever a nearby teammate casts their own Echo Skill — not modeled.',
+    damage: { hits: [{ atkPct: 795 }], category: 'outroDmg' },
+    note: 'Also grants Sigrika (if she re-enters) 2 stacks of Encapsulated for 30s, Stagnating targets whenever a nearby teammate casts their own Echo Skill — not modeled. category:outroDmg added 2026-09-04 (fresh dump re-audit) — was missing entirely; the dump\'s own Damage Profile shows a real, distinct 4.8% Outro share.',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
@@ -122,8 +157,13 @@ export const SIGRIKA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 15 }],
-    note: '+70% DMG Multiplier to specific skills, rotation-averaged to a flat totalMult:15 per the source\'s own documented approximation — kept as-is, passive.',
+    effects: [
+      { stat: 'totalMult', value: 70, scopedToBlockId: 'sigrika.basic.elucidated' },
+      { stat: 'totalMult', value: 70, scopedToBlockId: 'sigrika.basic.dodge-counter-decipher' },
+      { stat: 'totalMult', value: 70, scopedToBlockId: 'sigrika.skill.big-boomy-boom' },
+      { stat: 'totalMult', value: 70, scopedToBlockId: 'sigrika.skill.soliskin-to-the-aid' },
+    ],
+    note: 'Corrected 2026-09-04 (fresh dump re-audit) — was an UNSCOPED totalMult:15, a "rotation-averaged" approximation that inflated ALL of Sigrika\'s own damage (Basic combo, Intro, Outro, every Forte hit) instead of only the 4 moves the node actually names: "Basic - Elucidated / Dodge Counter - Decipher / BIG BOOMY BOOM! / Soliskin to the Aid DMG Multipliers +70%". Now that all 4 have their own damage blocks, scoped via scopedToBlockId to exactly those 4 at the real, un-averaged 70% value — same unscoped-totalMult bug class already found and fixed on Jiyan/Phrolova/Qingxiao/Qiuyuan/Roccia. Known schema gap, documented honestly rather than hacked around: S1\'s node also grants (a) Interruption immunity while casting those same 3 Echo-type moves and (b) Encapsulated cap raised 2->3 with Outro granting 1 extra stack — neither is a DPS%-shaped effect this schema can express, and Encapsulated itself is not modeled anywhere in this file (see sigrika.outro.in-this-very-moment\'s own note), so both are left unmodeled rather than approximated.',
   },
   {
     id: 'sigrika.chain.s2',
