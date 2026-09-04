@@ -2112,6 +2112,70 @@ Jiyan stays on the completed-characters list above (already listed from the orig
 pass); this entry documents the independent 2026-09-04 re-derivation per explicit no-trust-prior-audit
 instruction.
 
+**2026-09-04 — Lynae full 9-dimension re-audit (independent re-derivation, not trusting prior "already audited" claims).**
+
+Re-derived Lynae's kit from scratch directly off `Characters data dump/Lynae/Lynae.md` — segmented every
+Basic ATK/Skill/Liberation/Intro/Outro/Forte move, buff, Resonance Chain node, and Tune Break mechanic
+independently before comparing to `app/src/data/characters.js` or `lynae.blocks.js`, rather than trusting
+either file's own extensive prior-session audit comments (dated 2026-09-02).
+
+Independent re-derivation of all 9 dimensions:
+1. **SKILL_MULTIPLIERS** — the 7 real rotation-step moves (Intro, Liberation, Skill, Spark Collision
+   Lv.3, Polychrome Leap ×3, Visual Impact, Outro) all match the dump's Lv.10 multiplier table exactly.
+   Several non-rotation moves (Dodge Counter, Mid-air Attack, Spark Collision Lv.1/2, Kaleidoscopic
+   Dodge Counter/Ground Heavy/Graffiti Blast/Mid-air Attack/Mid-air Heavy, Tune Rupture Response, "To a
+   Vivid Tomorrow!") have no row — all genuinely absent from the modeled Standard Rotation and its
+   engine blocks alike (consistent, not a silent gap). No changes.
+2. **CHARACTER_ROTATIONS** — the 7-step Standard Rotation matches the dump's own "Standard Rotation"
+   text exactly (the dump's S6-only alternate rotation is explicitly and correctly not modeled, per
+   this table's own header comment — S6's chain node is correspondingly zeroed, see below). No changes.
+3. **RESONANCE_CHAIN_DATA** — S1 basicDmg 120, S2 allDmg 25, S3 basicDmg 90, S4 atkPct 20, S5 libDmg 70,
+   S6 `{}` (zeroed — its Color of Soul mechanic is exclusive to the unmodeled S6-only rotation) all match
+   the dump's node text and numbers exactly. Cross-checked against `lynae.blocks.js`'s chain blocks for
+   the two-path desync bug class (Lumi precedent) — no desync, both paths agree on every node. No changes.
+4. **CHAR_BUFF_TABLE** — `outroBuffs` (15% allDmg + 25% libDmg, 14s), `libBuffs` (24% allDmg, 30s), and
+   `tuneBreak` (ruptureDmgMult 1880.75, strainDmgPerStack 0.12, maxStrainStacks 3, `modeExclusive: true`)
+   all match the dump's kit text and Forte Circuit multiplier table exactly, including the mode-exclusivity
+   fix from the prior pass (verified still correctly wired into `calcTuneBreakDmg()`). No changes.
+5. **dmgFocus** — `['Concerto Efficiency', 'Basic Attack Damage', 'DMG Amplification', 'Resonance
+   Liberation DMG Amplification', 'Tune Rupture Response', 'Tune Strain Response', 'Tune Break Boost']`
+   matches her kit's real DPS/support levers (Visual Impact/Iridescent Splash are real Basic ATK DMG per
+   kit text; Outro/Liberation/S2/S5 grant allDmg/libDmg amplification; Tune Break is a core kit pillar).
+   No changes.
+6. **weapon data** — `bestWeapon: 'Spectrum Blaster'`, `weaponAlts` (alt5: Phasic Homogenizer, The Last
+   Dance; alt4: Solar Flame, Relativistic Jet) match the dump's Best Weapons ranking order exactly
+   (85.00% / 83.80% ahead of Lux & Umbra 82.60%/Static Mist 81.50%/Woodland Aria 70.30%, then the two
+   best 4★s at 68.80%/68.50%). No changes.
+7. **echo data** — `bestEchoes: ['Hyvatia', 'Pact of Neonlight Leap 5pc']` matches the dump's Best Echo
+   Sets section (Pact of Neonlight Leap as the purpose-built 5pc set, Hyvatia as the named Main Echo).
+   No changes.
+8. **engine-block parity** — segmenting the dump's kit independently against `lynae.blocks.js` found
+   **one real, live bug**: `lynae.outro.lets-hit-the-road` (her Outro Skill's own 100% ATK-scaling
+   Spectro DMG hit) had **no `damage.category` set at all**, while every other character's Outro damage
+   block in this codebase (Calcharo, Carlotta, Chixia, Encore, Lingyang, Rover: Havoc, Xiangli Yao) uses
+   the dedicated `'outroDmg'` category added specifically so weapon/echo Outro-DMG-scoped bonuses can
+   apply to it. Same bug class as Luuk Herssen's whole-kit `damage.category` miscategorization: a real
+   damage instance silently excluded from a real buff category it should be eligible for. Fixed by
+   adding `category: 'outroDmg'`. Everything else — Intro/Liberation/Skill/Spark Collision/Polychrome
+   Leap/Visual Impact damage blocks, the outro/lib buff blocks, and all 6 chain blocks (including the
+   S2 dual-effect split via `chain.s2-outro-bonus` and the S6 zeroing) — correctly modeled, matching the
+   dump exactly; the stance-vote marker block's `confirmedWinningStance: true` (Tune Rupture) resolution
+   is still correctly sourced and wired. No missing damage blocks for any move referenced by a buff or
+   chain node.
+9. **icons** — `SKILL_ICONS.Lynae` covers every move name referenced by the real rotation via
+   `getSkillIcon`'s `skillName.includes(key)` substring lookup, verified key-by-key against each of the 7
+   real rotation-step skill strings (including the `'Visual Impact'` key correctly resolving before the
+   longer `'Iridescent Splash'` key for `'Mid-air Attack: Visual Impact'`, and `'Spark Collision'` /
+   `'Polychrome Leap'` correctly matching their parenthesized/suffixed rotation-step names). No changes.
+
+1 real bug found and fixed (missing `outroDmg` category on the Outro damage block — a real damage
+instance silently excluded from a real, already-existing buff category). 1 new test added to
+`triggerEngine-lynae.test.js` asserting the category. Full suite green: 1485/1485.
+
+Lynae stays on the completed-characters list above (already listed from the original 2026-08-31/09-02
+pass); this entry documents the independent 2026-09-04 re-derivation per explicit no-trust-prior-audit
+instruction.
+
 ---
 
 ## How to add to this file

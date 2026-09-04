@@ -115,7 +115,11 @@ export const LYNAE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: [{ atkPct: 100 }] },
+    // category added (this audit pass): this is her Outro Skill's own damage hit — the same 'outroDmg'
+    // category already used on every other character's Outro damage block (Calcharo, Carlotta, Chixia,
+    // Encore, Lingyang, Rover: Havoc, Xiangli Yao) — was previously uncategorized entirely, silently
+    // missing any real outroDmg-scoped buff (e.g. weapon/echo Outro DMG bonuses) on this hit.
+    damage: { hits: [{ atkPct: 100 }], category: 'outroDmg' },
     note: 'Also ends Kaleidoscopic Parade and grants the incoming Resonator buffs (see lynae.outro.lets-hit-the-road-buff below).',
   },
 
