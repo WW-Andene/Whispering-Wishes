@@ -80,150 +80,92 @@ Game
 │           └── Common
 │
 ├── Echo
-│   └── Sonata
-│       └── Cost
-│           ├── 1
-│           │   └── <Name>
-│           │       ├── Stats
-│           │       │   ├── Main
-│           │       │   │   ├── ATK %
-│           │       │   │   ├── HP %
-│           │       │   │   └── DEF %
-│           │       │   └── Secondary
-│           │       │       └── HP (flat)
-│           │       ├── Skill Label
-│           │       ├── Skill Description
-│           │       └── Echo Skill
-│           │           ├── Damage
-│           │           └── Buff
-│           ├── 3
-│           │   └── <Name>
-│           │       ├── Stats
-│           │       │   ├── Main
-│           │       │   │   ├── ATK %
-│           │       │   │   ├── HP %
-│           │       │   │   ├── DEF %
-│           │       │   │   ├── Energy Regen
-│           │       │   │   ├── Glacio DMG %
-│           │       │   │   ├── Fusion DMG %
-│           │       │   │   ├── Electro DMG %
-│           │       │   │   ├── Aero DMG %
-│           │       │   │   ├── Spectro DMG %
-│           │       │   │   ├── Havoc DMG %
-│           │       │   │   └── Physical DMG %
-│           │       │   ├── Secondary
-│           │       │   │   └── ATK (flat)
-│           │       │   └── Substats
-│           │       ├── Skill Label
-│           │       ├── Skill Description
-│           │       └── Echo Skill
-│           │           ├── Damage
-│           │           └── Buff
-│           └── 4
-│               └── <Name>
-│                   ├── Stats
-│                   │   ├── Main
-│                   │   │   ├── Crit Rate %
-│                   │   │   ├── Crit DMG %
-│                   │   │   ├── ATK %
-│                   │   │   ├── HP %
-│                   │   │   ├── DEF %
-│                   │   │   └── Healing Bonus %
-│                   │   ├── Secondary
-│                   │   │   └── ATK (flat)
-│                   │   └── Substats
-│                   ├── Skill Label
-│                   ├── Skill Description
-│                   └── Echo Skill
-│                       ├── Damage
-│                       └── Buff
+│   └── Cost
+│       ├── 1
+│       │   └── <Name>
+│       │       ├── Sonata
+│       │       ├── Stats
+│       │       │   ├── Main
+│       │       │   │   ├── ATK %
+│       │       │   │   ├── HP %
+│       │       │   │   └── DEF %
+│       │       │   └── Secondary
+│       │       │       └── HP (flat)
+│       │       ├── Skill Label
+│       │       ├── Skill Description
+│       │       └── Echo Skill
+│       │           ├── Damage
+│       │           └── Buff
+│       ├── 3
+│       │   └── <Name>
+│       │       ├── Sonata
+│       │       ├── Stats
+│       │       │   ├── Main
+│       │       │   │   ├── ATK %
+│       │       │   │   ├── HP %
+│       │       │   │   ├── DEF %
+│       │       │   │   ├── Energy Regen
+│       │       │   │   ├── Glacio DMG %
+│       │       │   │   ├── Fusion DMG %
+│       │       │   │   ├── Electro DMG %
+│       │       │   │   ├── Aero DMG %
+│       │       │   │   ├── Spectro DMG %
+│       │       │   │   ├── Havoc DMG %
+│       │       │   │   └── Physical DMG %
+│       │       │   ├── Secondary
+│       │       │   │   └── ATK (flat)
+│       │       │   └── Substats
+│       │       ├── Skill Label
+│       │       ├── Skill Description
+│       │       └── Echo Skill
+│       │           ├── Damage
+│       │           └── Buff
+│       └── 4
+│           └── <Name>
+│               ├── Sonata
+│               ├── Stats
+│               │   ├── Main
+│               │   │   ├── Crit Rate %
+│               │   │   ├── Crit DMG %
+│               │   │   ├── ATK %
+│               │   │   ├── HP %
+│               │   │   ├── DEF %
+│               │   │   └── Healing Bonus %
+│               │   ├── Secondary
+│               │   │   └── ATK (flat)
+│               │   └── Substats
+│               ├── Skill Label
+│               ├── Skill Description
+│               └── Echo Skill
+│                   ├── Damage
+│                   └── Buff
 │
 ├── Enemy
-│   └── Rank
-│       ├── Common
-│       │   └── <Name>
-│       │       └── Stats
-│       │           ├── HP
-│       │           ├── ATK
-│       │           ├── DEF
-│       │           ├── RES
-│       │           │   ├── Glacio RES
-│       │           │   ├── Fusion RES
-│       │           │   ├── Electro RES
-│       │           │   ├── Aero RES
-│       │           │   ├── Spectro RES
-│       │           │   ├── Havoc RES
-│       │           │   └── Physical RES
-│       │           └── Stagger
-│       │               ├── Interruption RES
-│       │               ├── Interruption RES Recovery
-│       │               ├── Vibration
-│       │               ├── Vibration Recovery
-│       │               ├── Rage
-│       │               └── Rage Recovery
-│       ├── Elite
-│       │   └── <Name>
-│       │       └── Stats
-│       │           ├── HP
-│       │           ├── ATK
-│       │           ├── DEF
-│       │           ├── RES
-│       │           │   ├── Glacio RES
-│       │           │   ├── Fusion RES
-│       │           │   ├── Electro RES
-│       │           │   ├── Aero RES
-│       │           │   ├── Spectro RES
-│       │           │   ├── Havoc RES
-│       │           │   └── Physical RES
-│       │           └── Stagger
-│       │               ├── Interruption RES
-│       │               ├── Interruption RES Recovery
-│       │               ├── Vibration
-│       │               ├── Vibration Recovery
-│       │               ├── Rage
-│       │               └── Rage Recovery
-│       ├── Calamity
-│       │   └── <Name>
-│       │       └── Stats
-│       │           ├── HP
-│       │           ├── ATK
-│       │           ├── DEF
-│       │           ├── RES
-│       │           │   ├── Glacio RES
-│       │           │   ├── Fusion RES
-│       │           │   ├── Electro RES
-│       │           │   ├── Aero RES
-│       │           │   ├── Spectro RES
-│       │           │   ├── Havoc RES
-│       │           │   └── Physical RES
-│       │           └── Stagger
-│       │               ├── Interruption RES
-│       │               ├── Interruption RES Recovery
-│       │               ├── Vibration
-│       │               ├── Vibration Recovery
-│       │               ├── Rage
-│       │               └── Rage Recovery
-│       └── Overlord
-│           └── <Name>
-│               └── Stats
-│                   ├── HP
-│                   ├── ATK
-│                   ├── DEF
-│                   ├── RES
-│                   │   ├── Glacio RES
-│                   │   ├── Fusion RES
-│                   │   ├── Electro RES
-│                   │   ├── Aero RES
-│                   │   ├── Spectro RES
-│                   │   ├── Havoc RES
-│                   │   └── Physical RES
-│                   └── Stagger
-│                       ├── Interruption RES
-│                       ├── Interruption RES Recovery
-│                       ├── Vibration
-│                       ├── Vibration Recovery
-│                       ├── Rage
-│                       └── Rage Recovery
+│   └── <Name>
+│       ├── Rank
+│       │   ├── Common
+│       │   ├── Elite
+│       │   ├── Calamity
+│       │   └── Overlord
+│       └── Stats
+│           ├── HP
+│           ├── ATK
+│           ├── DEF
+│           ├── RES
+│           │   ├── Glacio RES
+│           │   ├── Fusion RES
+│           │   ├── Electro RES
+│           │   ├── Aero RES
+│           │   ├── Spectro RES
+│           │   ├── Havoc RES
+│           │   └── Physical RES
+│           └── Stagger
+│               ├── Interruption RES
+│               ├── Interruption RES Recovery
+│               ├── Vibration
+│               ├── Vibration Recovery
+│               ├── Rage
+│               └── Rage Recovery
 │
 ├── Element
 │   ├── Glacio
@@ -336,16 +278,41 @@ Engine
 │   ├── Damage
 │   └── Note
 ├── Orchestration
+│   └── rotationOrderSearch.js
 ├── Composition
+│   ├── resolveHitComposedDps.js
+│   ├── resolveHitComposedTeamDps.js
+│   ├── resolveSimulatedRotation.js
+│   ├── resolveSimulatedTeamRotation.js
+│   └── rotationSimulator.js
 ├── Triggers
+│   ├── triggerEngine.js
+│   ├── blockWindows.js
+│   ├── coordinatedAtk.js
+│   ├── energyCycleGating.js
+│   ├── sequenceGating.js
+│   └── tieredStacking.js
 ├── DoT
+│   ├── dotFormulas.js
+│   ├── dotReactions.js
+│   └── dotReactionsFromBlocks.js
 ├── Schema
+│   ├── buffSource.js
+│   ├── knownCategories.js
+│   ├── triggerBlocks.schema.js
+│   └── validateBlock.js
 ├── Shared
+│   ├── buffAccumulation.js
+│   ├── combatMath.js
+│   ├── roleHelpers.js
+│   └── skillMultiplierParser.js
 └── Projection
+    ├── registry.js
+    └── statPanelProjection.js
 ```
 
 Reconciled against the real folder contents of `app/src/engine/` as of this pass
-(7 folders, not 5 — `dot/` and `projection/` were missing from the previous draft).
+(7 folders, not 5 — `dot/` and `projection/` were missing from an earlier draft).
 
 ---
 
