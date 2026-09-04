@@ -1,7 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { validateBlock, expectValidBlockFile } from '../engine/schema/validateBlock.js';
 import { checkCategory, KNOWN_CATEGORIES } from '../engine/schema/knownCategories.js';
+import { checkBuffSource, BUFF_SOURCES } from '../engine/schema/buffSource.js';
 import { BLOCKS_BY_CHARACTER } from '../engine/characterBlocks/index.js';
+
+describe('buffSource.checkBuffSource', () => {
+  it('accepts every declared source', () => {
+    Object.keys(BUFF_SOURCES).forEach(src => {
+      expect(checkBuffSource(src).valid).toBe(true);
+    });
+  });
+  it('rejects an unrecognized source', () => {
+    const result = checkBuffSource('made-up-source');
+    expect(result.valid).toBe(false);
+    expect(result.reason).toMatch(/not a recognized buff source/);
+  });
+});
 
 describe('knownCategories.checkCategory', () => {
   it('accepts every category already in real use across characterBlocks/', () => {
@@ -61,6 +75,22 @@ describe('validateBlock — schemaVersion 2 (new shape, CI-blocking per §8)', (
     const block = {
       schemaVersion: 2, id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', section: 'Intro',
       trigger: { type: 'cast' }, damage: { hits: [], category: 'skillDmg', basis: 'ATK' },
+    };
+    const { errors } = validateBlock(block, 'Aalto');
+    expect(errors).toEqual([]);
+  });
+  it('requires a valid source on every effect of a v2 buff block', () => {
+    const block = {
+      schemaVersion: 2, id: 'aalto.chain.s1', source: 'Aalto', kind: 'buff', section: 'Chain',
+      trigger: { type: 'passive' }, effects: [{ statId: 'aeroDmg', value: 30, target: 'team' }],
+    };
+    const { errors } = validateBlock(block, 'Aalto');
+    expect(errors.some(e => e.includes('effects[0].source invalid'))).toBe(true);
+  });
+  it('accepts a fully-compliant v2 buff block with a valid source', () => {
+    const block = {
+      schemaVersion: 2, id: 'aalto.chain.s1', source: 'Aalto', kind: 'buff', section: 'Chain',
+      trigger: { type: 'passive' }, effects: [{ statId: 'aeroDmg', value: 30, target: 'team', source: 'echo' }],
     };
     const { errors } = validateBlock(block, 'Aalto');
     expect(errors).toEqual([]);

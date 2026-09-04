@@ -18,9 +18,14 @@
 //     `kind:'damage'` block, `damage.category` must pass knownCategories.js's
 //     checkCategory() and `damage.basis` must be present — both real errors, not warnings,
 //     per §8's "CI-blocking mode from day one for any block declaring schemaVersion: 2."
+//   - For a `kind:'buff'` block on a v2 block: every entry in `effects` must carry a
+//     `source` passing buffSource.js's checkBuffSource() — WHERE the buff comes from
+//     (self-kit/teammate-ally-action/echo/weapon), a distinct question from `target`
+//     (WHO receives it). v1 blocks: warn-only, same rationale as everything else v1.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { checkCategory } from './knownCategories.js';
+import { checkBuffSource } from './buffSource.js';
 
 const ID_PATTERN = /^[a-z][a-z0-9]*(-[a-z0-9]+)*\.[a-zA-Z]+\.[a-z0-9]+(-[a-z0-9]+)*$/;
 const SECTIONS = ['BasicATK', 'HeavyATK', 'Skill', 'Liberation', 'Forte', 'Intro', 'Outro', 'Chain', 'Echo', 'Buff'];
@@ -77,6 +82,13 @@ export function validateBlock(block, expectedSource) {
       if (!catCheck.valid) errors.push(`damage.category invalid: ${catCheck.reason} (block id: ${block.id})`);
       if (!block.damage.basis) errors.push(`schemaVersion:2 damage block missing damage.basis (block id: ${block.id})`);
     }
+  }
+
+  if (block.kind === 'buff' && Array.isArray(block.effects)) {
+    block.effects.forEach((effect, i) => {
+      const srcCheck = checkBuffSource(effect?.source);
+      if (!srcCheck.valid) errors.push(`effects[${i}].source invalid: ${srcCheck.reason} (block id: ${block.id})`);
+    });
   }
 
   return { errors, warnings };
