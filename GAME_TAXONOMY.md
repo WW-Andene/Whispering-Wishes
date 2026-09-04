@@ -84,17 +84,63 @@ Game
 │       └── Stats
 │
 ├── Element
-│   └── Glacio / Fusion / Electro / Aero / Spectro / Havoc / Physical
+│   ├── Glacio
+│   ├── Fusion
+│   ├── Electro
+│   ├── Aero
+│   ├── Spectro
+│   ├── Havoc
+│   └── Physical
 │
 ├── Damage
-│   └── Basic / Heavy / Skill / Liberation / Echo / Coordinated / Intro / Outro
+│   ├── Basic ATK DMG
+│   ├── Heavy ATK DMG
+│   ├── Skill DMG
+│   ├── Liberation DMG
+│   ├── Echo Skill DMG
+│   ├── Coordinated ATK DMG
+│   ├── Intro Skill DMG
+│   ├── Outro Skill DMG
+│   ├── Glacio DMG
+│   ├── Fusion DMG
+│   ├── Electro DMG
+│   ├── Aero DMG
+│   ├── Spectro DMG
+│   ├── Havoc DMG
+│   └── Physical DMG
 │
 ├── Buff
-│   └── ATK / DEF / HP / Crit Rate / Crit DMG / Energy Regen / Heal Bonus /
-│       Element DMG / Move-type DMG
+│   ├── HP (flat)
+│   ├── HP %
+│   ├── ATK (flat)
+│   ├── ATK %
+│   ├── DEF (flat)
+│   ├── DEF %
+│   ├── Crit Rate %
+│   ├── Crit DMG %
+│   ├── Energy Regen %
+│   ├── Healing Bonus %
+│   ├── Basic ATK DMG Bonus
+│   ├── Heavy ATK DMG Bonus
+│   ├── Skill DMG Bonus
+│   ├── Liberation DMG Bonus
+│   ├── Echo Skill DMG Bonus
+│   ├── Coordinated ATK DMG Bonus
+│   ├── Intro Skill DMG Bonus
+│   ├── Outro Skill DMG Bonus
+│   ├── Glacio DMG Bonus
+│   ├── Fusion DMG Bonus
+│   ├── Electro DMG Bonus
+│   ├── Aero DMG Bonus
+│   ├── Spectro DMG Bonus
+│   ├── Havoc DMG Bonus
+│   └── Physical DMG Bonus
 │
 └── Debuff
-    └── DEF Ignore / DEF Shred / RES Shred / Deepen
+    ├── DEF Ignore
+    ├── DEF Shred
+    ├── RES Shred
+    └── Deepen
 ```
 
 ### Notes on the tree above
@@ -112,7 +158,7 @@ Game
 - **Echo > Echo Skill**: 4-cost echoes only, the active skill/buff.
 - **Enemy > Rank**: Common / Elite / Calamity / Overlord — the real field name is `rank`, not "Danger level"; corrected from an earlier draft of this doc.
 - **Enemy > Stats**: level-scaled HP/ATK/DEF curve per `enemyLevelStats.json`, plus stagger data per `enemyStaggerStats.json`.
-- **Damage**: also has per-Element variants (Glacio Damage, Fusion Damage, etc.) not spelled out above to keep the tree short.
+- **Damage / Buff**: every entry is spelled out explicitly, not grouped/shortened — a block's `damage.category` or a buff's `statId` must match one of these exact names/ids, not a loose free-text description. This directly closes the ambiguity found earlier ("elemDmg" alone didn't say which element, "self-kit" alone didn't say whose kit) — one exact name per real thing, no folded-together shorthand.
 
 **Resolved: Buff/Debuff stay siblings of Damage, not a subset.** Damage is a
 description of a HIT (what category a move's own output falls into); Buff/Debuff
