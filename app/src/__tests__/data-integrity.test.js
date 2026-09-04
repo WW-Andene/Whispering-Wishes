@@ -173,7 +173,9 @@ describe('CHARACTER_ROTATIONS / SKILL_MULTIPLIERS lookup integrity', () => {
     'Mornye[3] "Forte: Heavy Attack: Inversion"',
     'Chisa[1] "Basic ATK: Stage 2, Rending Lunge, Death Snip"',
     'Chisa[4] "Forte: Sawring - Blitz 2-3"',
-    'Cartethyia[7] "Skill: Fleurdelys 2"',
+    // Index shifted 7 -> 8 (2026-09-04, Phase A audit): a new 'Mid-air: Fleurdelys Stage 3' step was
+    // inserted at index 5, pushing every later step's index up by 1.
+    'Cartethyia[8] "Skill: Fleurdelys 2"',
     // Zani[1]/[2]/[3]/[5]/[6]/[7]/[8] now all resolve — fixed 2026-09-03 against a real browser
     // snapshot: SKILL_MULTIPLIERS['Zani'] added the missing Standard Defense Protocol row and a
     // dedicated Stage 3 row, and renamed 'Targeted Action'/'Heavy Slash <Name>' to match the rotation

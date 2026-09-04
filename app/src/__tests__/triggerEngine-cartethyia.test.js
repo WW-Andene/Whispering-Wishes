@@ -106,4 +106,39 @@ describe('triggerEngine parity — Cartethyia', () => {
       expect(b.dotApplier).toEqual({ mechanic: 'erosion', value: 3 });
     }
   });
+
+  // Found 2026-09-04 (Phase A audit) against a fresh dump: the dump's own "Full rotation" listing
+  // explicitly includes "Mid-air Attack Stage 3 (Fleurdelys, hold Basic during Skill)" right after
+  // Skill 1 — this real, always-cast step had NO SKILL_MULTIPLIERS row, NO CHARACTER_ROTATIONS step,
+  // and NO engine block, a silent zero-DMG gap.
+  it('Mid-air Attack Stage 3 (Fleurdelys) is a real, non-zero damage block and fires in her rotation', () => {
+    const block = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.midair.fleurdelys-stage-3');
+    expect(block).toBeDefined();
+    expect(block.damage.hits.reduce((s, h) => s + h.atkPct, 0)).toBeCloseTo(2.20, 2);
+    expect(block.damage.category).toBe('basicDmg');
+    expect(block.damage.basis).toBe('HP');
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Cartethyia'], CARTETHYIA_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(CARTETHYIA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, { hp: 40000 }, 'aero', 'Main DPS');
+    expect(hitLog.some(h => h.blockId === 'cartethyia.midair.fleurdelys-stage-3')).toBe(true);
+  });
+
+  // Found 2026-09-04 (Phase A audit): S2's real "+200% Mid-air Attack DMG Multiplier" was previously
+  // modeled as a bare unscoped `totalMult`, which resolveHitComposedDps.js applies unconditionally to
+  // EVERY hit (totalMult is not category-gated) — silently boosting her whole kit, not just Mid-air
+  // Attack. Now scoped via scopedToBlockId to both of her real Mid-air Attack blocks.
+  it('S2\'s Mid-air Attack totalMult is scoped to only her 2 real Mid-air Attack blocks, not her whole kit', () => {
+    const s2 = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.chain.s2');
+    const totalMultEffects = s2.effects.filter(e => e.stat === 'totalMult');
+    expect(totalMultEffects.length).toBe(2);
+    for (const e of totalMultEffects) {
+      expect(e.value).toBe(200);
+      expect(e.scopedToBlockId).toBeDefined();
+    }
+    const scopedIds = totalMultEffects.map(e => e.scopedToBlockId).sort();
+    expect(scopedIds).toEqual([
+      'cartethyia.midair.cartethyia-plunging-attack',
+      'cartethyia.midair.fleurdelys-stage-3',
+    ]);
+  });
 });

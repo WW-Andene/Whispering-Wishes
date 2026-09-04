@@ -100,6 +100,20 @@ export const CARTETHYIA_BLOCKS = [
     note: "Recalls all 3 currently-held Sword Shadows (Discord/Divinity/Virtue) at once, granting Fleurdelys the corresponding Heart of Virtue/Mandate of Divinity/Power of Discord buffs for the whole Manifest window. Only this move's own real DMG is captured here — Mandate of Divinity's real DMG Amp is modeled separately below (cartethyia.manifest.mandate-of-divinity). category fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus this dump's own kit structure — listed under \"Basic Attack — Sword to Carve My Forms\", not Heavy Attack — confirms basicDmg.",
   },
   {
+    // Added 2026-09-04 (Phase A audit): Mid-air Attack Stage 3 (Fleurdelys form) had NO block at all —
+    // a real, always-cast step in the dump's own "Full rotation" listing ("Mid-air Attack Stage 3
+    // (Fleurdelys, hold Basic during Skill)", immediately after Skill 1), previously a silent zero-DMG
+    // gap. category basicDmg: no kit-text override names a different category, and mid-air/plunging
+    // attacks default to Basic ATK DMG in this engine's convention (same reasoning already used for
+    // cartethyia.midair.cartethyia-plunging-attack above).
+    id: 'cartethyia.midair.fleurdelys-stage-3',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Mid-air:Fleurdelys Stage 3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('2.20%'), basis: 'HP', category: 'basicDmg' },
+    note: "Holding Normal Attack airborne during the Skill 1 cast window casts this directly; restores Conviction on hit.",
+  },
+  {
     // Added 2026-09-03 against a fresh the source dump: the previously-undetermined "which shadow grants
     // which buff" question turns out to be moot for her real modeled rotation — CHARACTER_ROTATIONS
     // always has all 3 Sword Shadow types up by the time this recall fires (see the note above), so
@@ -166,9 +180,17 @@ export const CARTETHYIA_BLOCKS = [
     timing: {}, target: { scope: 'self' },
     effects: [
       { stat: 'basicDmg', value: 50 },
-      { stat: 'totalMult', value: 200 },
+      // Fixed 2026-09-04 (Phase A audit): was a bare unscoped `totalMult: 200`, which
+      // resolveHitComposedDps.js applies unconditionally to EVERY hit in her kit (totalMult is not
+      // category-gated) — silently boosting her whole rotation +200%, not just "Mid-air Attack" as the
+      // kit text actually specifies. Rescoped via scopedToBlockId to her 2 real Mid-air Attack blocks
+      // (same multi-block-scoping pattern as Camellya/Cantarella/Carlotta's own totalMult fixes). Also
+      // widened by this same pass's addition of cartethyia.midair.fleurdelys-stage-3 — that new block
+      // gets the scope too, since it's a real Mid-air Attack the +200% genuinely applies to.
+      { stat: 'totalMult', value: 200, scopedToBlockId: 'cartethyia.midair.cartethyia-plunging-attack' },
+      { stat: 'totalMult', value: 200, scopedToBlockId: 'cartethyia.midair.fleurdelys-stage-3' },
     ],
-    note: "DMG Multiplier of Basic ATK/Heavy ATK/Dodge Counter/Intro Skill +50% (basicDmg) AND DMG Multiplier of Mid-air Attack +200% specifically (totalMult fallback, since there's no dedicated mid-air-only stat) — kept passive, applies broadly. Also raises Erosion's max-stack cap +3 within range on Liberation1 cast, and reduces Skill cooldown per Sword Shadow type recalled via Mid-air Attack (up to -3s at 3 distinct types) — neither modeled. A third real effect (confirmed 2026-09-02 against a fresh dump, previously not captured in this note at all): the NEXT direct-damage hit after Liberation1 cast inflicts 3 Erosion stacks on all nearby targets AND immediately triggers their Erosion DMG once without consuming stacks — a real proc-shaped mechanic, not modeled (no home in this schema for a one-shot conditional proc tied to a resource-cap-raise cast).",
+    note: "DMG Multiplier of Basic ATK/Heavy ATK/Dodge Counter/Intro Skill +50% (basicDmg) AND DMG Multiplier of Mid-air Attack +200% specifically (totalMult, scoped via scopedToBlockId to her 2 real Mid-air Attack blocks — fixed 2026-09-04, was unscoped). Also raises Erosion's max-stack cap +3 within range on Liberation1 cast, and reduces Skill cooldown per Sword Shadow type recalled via Mid-air Attack (up to -3s at 3 distinct types) — neither modeled. A third real effect (confirmed 2026-09-02 against a fresh dump, previously not captured in this note at all): the NEXT direct-damage hit after Liberation1 cast inflicts 3 Erosion stacks on all nearby targets AND immediately triggers their Erosion DMG once without consuming stacks — a real proc-shaped mechanic, not modeled (no home in this schema for a one-shot conditional proc tied to a resource-cap-raise cast).",
   },
   {
     id: 'cartethyia.chain.s3',

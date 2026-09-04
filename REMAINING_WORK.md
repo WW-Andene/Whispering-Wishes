@@ -263,7 +263,7 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta — added 2026-09-03/04, first
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia — added 2026-09-03/04, first
 twenty-seven characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
@@ -1256,6 +1256,60 @@ the dump and confirmed already correct.
 scoping, S3's basicDmg rescope + scoping, S6-basic-mult's scoping, Diffusion's
 basicDmg category, Flowing Suffocation's basicDmg category). Full suite
 green: 1452/1452.
+
+**Cartethyia pass (2026-09-04) — genuine from-scratch re-audit**: all 9
+dimensions independently re-checked against a fresh dump read start-to-
+finish, not trusted from the file's own extensive prior-audit comments.
+2 real bugs found, both matching bug classes flagged elsewhere this session:
+
+1. **Missing rotation step, silent zero-DMG gap (dimension 8/engine-block
+   parity + dimension 2/CHARACTER_ROTATIONS + dimension 1/SKILL_MULTIPLIERS)**:
+   the dump's own "Full rotation" listing explicitly includes "Mid-air Attack
+   Stage 3 (Fleurdelys, hold Basic during Skill)" immediately after Skill 1
+   (Sword to Answer Waves' Call) — a real, always-cast step. It had NO
+   SKILL_MULTIPLIERS row, NO CHARACTER_ROTATIONS step, and NO engine block
+   anywhere. Added all 3: SKILL_MULTIPLIERS row `['Mid-air', 'Fleurdelys
+   Stage 3', '2.20%', ...]` (the dump's own Forte Circuit multiplier table),
+   a CHARACTER_ROTATIONS step between Skill 1 and the Basic P3-P5 string, and
+   engine block `cartethyia.midair.fleurdelys-stage-3` (`basicDmg`, `HP`
+   basis — no kit-text override names a different category, same
+   mid-air-inherits-Basic-ATK-DMG convention already used for her other
+   Mid-air block).
+2. **Unscoped `totalMult` leaking onto her whole kit (bug class b)**:
+   `cartethyia.chain.s2`'s real effect ("DMG Multiplier of Mid-air Attack
+   +200% specifically") was modeled as a bare `{ stat: 'totalMult', value:
+   200 }` with no `scopedToBlockId` — since `totalMult` is not category-gated,
+   `resolveHitComposedDps.js` was applying it unconditionally to EVERY hit in
+   her kit (Basic/Skill/Liberation included), not just Mid-air Attack.
+   Rescoped via 2 `scopedToBlockId` entries (Camellya/Cantarella/Carlotta's
+   own multi-block-scoping pattern) to both of her real Mid-air Attack blocks
+   — including the newly-added Stage 3 block above (checked for the
+   cascading-widening pattern explicitly: since bug #1 added a 2nd real
+   Mid-air Attack block, the S2 fix has to scope to both, not just the
+   pre-existing one, or it would silently under-credit the new block).
+
+All other dimensions independently re-verified clean against the fresh dump:
+SKILL_MULTIPLIERS' other 10 rows (verbatim match), RESONANCE_CHAIN_DATA (all
+6 nodes, including S5's correct empty defensive-only omission), CHAR_BUFF_TABLE
+(outro/debuff values), `dmgFocus` (`['Basic ATK', 'Liberation']`, correctly
+excluding Skill's borderline 6.6% per established precedent), weapon data
+(`bestWeapon`/`weaponAlts`/tier bucketing by rarity all match the dump's
+ranked list), echo data (`bestEchoes` matches Windward Pilgrimage 5pc +
+Reminiscence: Fleurdelys), tier (`T0.5`/`T1.5` matches exactly), base stats
+(HP/ATK/DEF/Energy all matches exactly), and icons (SKILL_ICONS/
+CHAIN_NODE_ICONS fully wired, including the new Stage 3 step resolving via
+the existing `'Fleurdelys'` generic-icon substring match with no changes
+needed). Heavy Attack/Enhanced Heavy Attack/Dodge Counter/Upward Cut stay
+deliberately unmodeled — the dump's own Damage Profile shows a genuine 0%
+Heavy Attack bucket for this exact benchmark rotation, confirming they're
+correctly swap-cancelled out rather than a coverage gap.
+
+3 new tests added to `triggerEngine-cartethyia.test.js` (Stage 3's damage/
+category/firing, S2's totalMult scoping), plus a 1-line index-shift fix in
+`data-integrity.test.js`'s `KNOWN_UNRESOLVED_BASELINE` (`Cartethyia[7]` →
+`Cartethyia[8]`, since the new rotation step pushed a later known-baseline
+step's index up by 1 — not a new bug, that step's legacy-calculator lookup
+mismatch pre-dates this pass). Full suite green: 1455/1455.
 
 ---
 
