@@ -1,10 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { BULING_BLOCKS } from '../engine/characterBlocks/buling.blocks.js';
 
 describe('triggerEngine parity — Buling', () => {
+  it("dmgFocus is ['Basic ATK', 'Skill', 'Liberation'] — was ['Liberation'] only despite 5 real basicDmg blocks and 1 real skillDmg block firing every real rotation loop", () => {
+    expect(CHARACTER_DATA['Buling'].dmgFocus).toEqual(['Basic ATK', 'Skill', 'Liberation']);
+  });
+
   it('S2-S5 stay correctly unmodeled (no block) — pure utility per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Buling'];
     ['s2', 's3', 's4', 's5'].forEach(s => expect(rc[s]).toEqual({}));

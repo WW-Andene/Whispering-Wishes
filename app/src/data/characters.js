@@ -1683,7 +1683,17 @@ const CHARACTER_DATA = {
   // 58.40% at Lv.10) is one of her weakest hits; her biggest single damage source is her Resonance
   // Liberation (Flashing Thunder Spell / enhanced Harmony variant, up to 536.79% at Lv.10 plus the Five
   // Thunders Spell Array's continuous DMG) per the wiki's Buling/Combat Forte Details table.
-  ['Buling',        ['Liberation'],                  ['Skill DMG Buff', 'Heal'],              []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was ['Liberation'] only. This
+  // source's own Calculations tab has no Damage Profile % breakdown for her (explicitly stated as
+  // unavailable), so magnitude can't be judged precisely — same "no % data" case as Youhu/Yuanwu above,
+  // same resolution: 'Basic ATK' (Stage 1/2/4, Mid-air Attack, Heavy Attack - Mountain Over Thunder — 5
+  // real basicDmg-categorized blocks, all firing every real CHARACTER_ROTATIONS loop) and 'Skill'
+  // (Thunder Talisman, 58.40%, real skillDmg-categorized block also firing every loop — kept despite the
+  // note above calling it her weakest hit, since it's still real and always-fired, matching the Baizhi/
+  // Taoqi precedent of including a real smallest-bucket rather than dropping it) were both silently
+  // rejecting real teammate Basic Attack/Resonance Skill DMG Bonus buffs on the majority of her real
+  // personal damage.
+  ['Buling',        ['Basic ATK', 'Skill', 'Liberation'], ['Skill DMG Buff', 'Heal'],              []],
 ].forEach(([name, dmgFocus, buffs, debuffs]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { dmgFocus, buffs, debuffs });
 });

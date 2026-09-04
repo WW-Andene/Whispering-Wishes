@@ -256,3 +256,12 @@ exactly.
 
 Full suite green (1333/1333); no new tests needed (existing `triggerEngine-buling.test.js` doesn't
 reference the removed Twin Thunders block by id, so no update was required there).
+
+**Follow-up full 9-dimension Phase A pass (2026-09-04)**: re-verified all of the above still correct,
+plus closed dimensions 8/9 and found one more real bug: `dmgFocus` was `['Liberation']` only —
+'Basic ATK' (5 real basicDmg blocks, all firing every real rotation loop) and 'Skill' (Thunder Talisman,
+real skillDmg block, also firing every loop) were both missing despite this source having no Damage
+Profile % breakdown at all — resolved the same way as Youhu/Yuanwu's identical no-%-data gaps: include
+every real, already-categorized, always-fired block. Fixed to `['Basic ATK', 'Skill', 'Liberation']`.
+Engine-block parity (dimension 8) and icons (dimension 9) both confirmed already fully clean — see
+REMAINING_WORK.md §1c for the full write-up. 1 new test, full suite green: 1443/1443.

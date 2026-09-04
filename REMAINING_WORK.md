@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant — added 2026-09-03/04, first twenty-three characters audited under
-the updated 9-dimension methodology** (see below). Many more
+Brant, Buling — added 2026-09-03/04, first twenty-four characters audited
+under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -749,6 +749,44 @@ the prior pass's 8 tests in `triggerEngine-brant.test.js` already cover
 every real engine-block fix, including the cross-character
 `roveraero.midair.plunging-attack` category fix caught in passing during
 that same pass).
+
+**Buling pass (2026-09-04) — 1 real bug found and fixed (dmgFocus).** A
+full prior fix pass had already landed same-day (commit `7a283919`, no
+write-up entry existed yet): her `Characters data dump/` file (a real
+prydwen.gg snapshot dated 20/Aug/2026, created that pass since none existed
+before — her Calculations tab explicitly states damage-profile percentages
+aren't published for her at all, unlike every DPS-focused dump) already had
+SKILL_MULTIPLIERS/CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/
+base stats/`bestWeapon`/`weaponAlts` all independently re-verified exactly
+matching this pass, plus 3 real fixes already landed then: `bestEchoes` had
+the same Sanhua-shape orphaned-main-echo bug (`getSonataLoadouts()`'s
+sequential `[main, set]` pairing left 1 of 2 same-set alt Main Echoes
+without a paired set string) — fixed by repeating the set name per alt;
+`buling.heavy.twin-thunders` wrongly modeled a value the source's own
+Multipliers table explicitly labels "Healing" as real `basicDmg` damage —
+removed (Twin Thunders is a pure team-heal, same as Twin Mountains, which
+already correctly has no block); the DPS tier row was `['T1.5','T2']`
+against the source's own `T2`/`T3`. Redoing all 9 dimensions against the
+fresh dump this pass confirmed all of the above still correct, plus found
+one more real gap dimension 5 flagged: `dmgFocus` was `['Liberation']`
+only — 'Basic ATK' (5 real, already `basicDmg`-categorized blocks: Stage
+1/2/4, Mid-air Attack, Heavy Attack - Mountain Over Thunder, all firing
+every real `CHARACTER_ROTATIONS` loop) and 'Skill' (Thunder Talisman,
+already `skillDmg`-categorized, also firing every loop) were both entirely
+missing, silently rejecting real teammate DMG Bonus buffs on the majority
+of her real personal damage — fixed to `['Basic ATK', 'Skill',
+'Liberation']`, same "no Damage Profile % data, include all real
+always-fired blocks" resolution as Youhu/Yuanwu. Dimension 8 (engine-block
+parity) confirmed clean: Heavy Attack - Thunder Over Mountain (89.47%,
+real but strictly worse/slower-to-reach than Mountain Over Thunder per the
+dump's own Review text) and Basic Attack Stage 3/Dodge Counter (skipped by
+the dump's own real Loop Rotation via a Jump-cancel straight from Stage 2
+into Mid-air Attack) both correctly stay reference-only in
+SKILL_MULTIPLIERS with no engine block, same Lucy/Augusta/Brant
+Dodge-Counter-row precedent — neither fires in the real modeled rotation.
+Icons (dimension 9) checked and confirmed already fully wired for every
+rotation move and all 6 Resonance Chain nodes. 1 new test, full suite
+green: 1443/1443.
 
 ---
 
