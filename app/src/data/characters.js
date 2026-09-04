@@ -2902,7 +2902,12 @@ const CHAR_BUFF_TABLE = {
     tuneBreak: {
       boostToTeam: 0,
       baseTuneBreakBoost: 10,
-      ruptureDmgMult: 300, // Tune Rupture Response — Particle Jet
+      // ruptureDmgMult corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against a fresh the
+      // source dump: was 300, an unsourced rounded approximation — the dump's own Forte Circuit
+      // Multipliers (Lv.10) table gives the real exact value directly: "Tune Rupture Response -
+      // Particle Jet: 298.22% Tune AMP", same "use the real sourced value, not a rounded estimate"
+      // fix class as Lynae's ruptureDmgMult (1880.75, not ~350).
+      ruptureDmgMult: 298.22, // Tune Rupture Response — Particle Jet (Lv.10, exact)
       strainDmgPerStack: 0.12,
       maxStrainStacks: 3, // base 2 + 1 from Mornye
       interferedDmgAmp: 40, // targets with Interfered Marker take up to 40% more DMG (0.25% per 1% ER over 100%)
@@ -6917,6 +6922,15 @@ const RESONANCE_CHAIN_DATA = {
   // bug as S1: still had totalMult:10 despite this comment already saying it's not a DPS stat; zeroed
   // 2026-09-03. S5: Critical Protocol Liberation DMG Mult+40% (was totalMult:10, no basis). S6: Critical
   // Protocol DMG Mult+400% (was deepen:15, no basis)
+  // S5 re-audited 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the dump's S5 node text is actually
+  // TWO separate DMG multipliers — "Critical Protocol DMG Multiplier +40%. Tune Rupture Response -
+  // Particle Jet DMG Multiplier +160%." — libDmg:40 only captures the first half; the +160% Particle
+  // Jet buff has no representable home in this table (Particle Jet isn't a hit-composed SKILL_MULTIPLIERS
+  // row/engine block at all — it's modeled entirely through the separate legacy
+  // CHAR_BUFF_TABLE['Mornye'].tuneBreak.ruptureDmgMult flat-DOT path in calcEngine.js's
+  // calcTuneBreakDmg(), which has no per-sequence-level scaling input at all for any character).
+  // Flagged as a known, schema-level modeling gap rather than silently dropped or force-fit — see
+  // REMAINING_WORK.md.
   'Mornye':       { s1: {}, s2: { critDmg: 32 }, s3: {}, s4: {}, s5: { libDmg: 40 }, s6: { libDmg: 400 } },
   // Roccia R-chain re-verified verbatim 2026-08-31 against the wiki/Roccia/Combat's
   // Resonance Chain section (Chrome/Windows UA + google.com referer + jsRender). Every prior value was

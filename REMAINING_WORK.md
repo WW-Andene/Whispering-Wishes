@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen — added 2026-09-03/04, first
-thirty-five characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye — added 2026-09-03/04, first
+thirty-six characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -433,6 +433,99 @@ bugs in the remaining dimensions:
   categorization on all 5 fixed blocks, base Golden Reflux correctly staying
   skillDmg, S2/S6 re-scoping, the new Uncaused Diagnosis buff's shape). Full
   suite green (1484/1484).
+
+**Mornye — full 9-dimension re-audit (2026-09-04):** independently
+segmented/blockified her whole kit (both Rest Mass Energy/Wide Field
+Observation Mode Forte states, all buffs, Resonance Chain nodes) from
+`Characters data dump/Mornye/Mornye.md` before looking at any existing
+code, then cross-checked against `characters.js` and `mornye.blocks.js`.
+1. **SKILL_MULTIPLIERS (dimension 1):** every row's numbers match the dump
+   exactly (Basic ATK 1-4, Wide Field Stages 1-3, Heavy/Mid-air/Dodge
+   Counter, Skill Optimal Solution/Distributed Array, Forte Geopotential
+   Shift/Inversion, Liberation Critical Protocol, Intro Convergence, Outro
+   Recursion). Verified clean.
+2. **CHARACTER_ROTATIONS (dimension 2):** the modeled Loop Rotation (Intro
+   → Wide Field Basic 1-3 → Skill: Distributed Array → Heavy: Inversion →
+   Liberation → Echo → Outro) matches the dump's own documented Loop
+   Rotation exactly, including the note that Intro skips Rest Mass Energy
+   entirely on loop (Geopotential Shift is correctly Opener-only and
+   correctly absent from the modeled loop — not a gap). Verified clean.
+3. **RESONANCE_CHAIN_DATA (dimension 3):** re-derived each node from the
+   dump text independently. S1 (interrupt immunity/marker duration+
+   condition changes), S3 (pure Concerto/Relative Momentum resource
+   restoration), S4 (High Syntony Field healing +30%) all have zero real
+   DPS component and are already correctly `{}` — a prior pass had already
+   fixed these; this pass found the fix itself was right but
+   `mornye.blocks.js`'s own comments still described them as "still storing
+   a stale nonzero value" (no longer true) — comments refreshed to match
+   reality (hygiene fix, no functional change). S2 (`critDmg: 32`, the
+   documented Interfered-Marker-conditional Crit DMG cap) and S6
+   (`libDmg: 400`, Critical Protocol DMG Mult) both verified exact. **S5
+   found genuinely incomplete:** the real node is TWO separate multipliers
+   — "Critical Protocol DMG Multiplier +40%. Tune Rupture Response -
+   Particle Jet DMG Multiplier +160%." — but only the first half
+   (`libDmg: 40`) was ever represented; the +160% Particle Jet buff has no
+   home anywhere (Particle Jet is modeled through the separate legacy
+   `CHAR_BUFF_TABLE['Mornye'].tuneBreak.ruptureDmgMult` flat-DOT path in
+   `calcEngine.js`'s `calcTuneBreakDmg()`, which has no per-sequence-level
+   scaling input for any character in this codebase). Documented as a
+   known, schema-level modeling gap in both `RESONANCE_CHAIN_DATA`'s own
+   comment and the `mornye.chain.s5` block's note rather than silently
+   dropped or force-fit into an unrelated stat — not fixed outright since
+   it needs new plumbing (a per-sequence-level modifier reaching
+   `calcTuneBreakDmg`), out of scope for a data-correctness pass.
+4. **CHAR_BUFF_TABLE (dimension 4) — real bug found and fixed:**
+   `tuneBreak.ruptureDmgMult` (Tune Rupture Response - Particle Jet's base
+   multiplier) was `300`, an unsourced rounded estimate with no comment
+   justifying it — the dump's own Forte Circuit Multipliers (Lv.10) table
+   gives the real exact value directly: `298.22% Tune AMP`. Same fix class
+   as Lynae's own `ruptureDmgMult` correction (1880.75, not an unsourced
+   ~350). Fixed to `298.22`. Everything else in the table (outroBuffs,
+   libBuffs/selfBuffs/weaponBuffs correctly empty, `tuneBreak.
+   interferedDmgAmp`/`strainDmgPerStack`/`maxStrainStacks`/
+   `baseTuneBreakBoost`) re-verified against the dump and already correct.
+5. **dmgFocus (dimension 5):** the dump has no personal-damage Damage
+   Profile table at all ("her value is almost entirely team-dependent"),
+   but its own Skill Priority section explicitly ranks "Liberation >
+   Forte Circuit > Basic Attack > Intro Skill > Resonance Skill (**anything
+   but Liberation skippable at minimal loss**)" — that parenthetical is
+   direct textual confirmation that Liberation alone dominates her real
+   output share, so the existing `['Liberation']` (with `['Heal']`
+   buffs-focus and `['Off-Tune']` excluded) is correct as-is, not a bug.
+   Verified clean, not a guess.
+6. **Weapon/echo data (dimensions 6-7):** `weaponAlts` (Verdant Summit/
+   Discord+Broadblade#41/Broadblade of Night) and `bestEchoes` (Reactor
+   Husk + Halo of Starry Radiance 5pc) both match the dump's Best Weapons/
+   Best Echo Sets sections exactly. Verified clean.
+7. **Engine-block parity (dimension 8) — real bug found and fixed:** the
+   Intro block (`mornye.intro.convergence`) had **no `damage.category` at
+   all**, silently rejecting real Resonance Skill DMG Bonus buffs on a real
+   damage-dealing cast — same bug class as Lynae's Outro (missing category
+   entirely). The dump's Intro kit text gives no "considered X DMG"
+   override, so per the established default-convention (an un-overridden
+   Intro Skill hit defaults to `skillDmg` — same convention already applied
+   to Calcharo/Aalto/Brant/Buling's own Intro blocks), fixed to
+   `category: 'skillDmg'`. Every other damage block (Wide Field Basic 1-3 →
+   `basicDmg`, Distributed Array → `skillDmg`, Inversion → `heavyDmg`
+   per its "counted as Heavy Attack DMG" kit text, Critical Protocol →
+   `libDmg`) already correctly categorized and cross-checked basis: 'DEF'
+   throughout (confirmed DEF-scaling, not ATK). Geopotential Shift
+   correctly has no block (Opener-only, not in the modeled loop — see
+   dimension 2). Particle Jet correctly has no hit-composed block either
+   (modeled via the legacy `tuneBreak.ruptureDmgMult` path — see dimension
+   3/4 above), consistent with how Lynae/Aemeath's own Tune
+   Rupture/Strain-response procs are modeled.
+8. **Icons (dimension 9):** every `SKILL_ICONS['Mornye']` key checked
+   against `getSkillIcon`'s case-sensitive `skillName.includes(key)`
+   substring-match logic and every real rotation-step skill-name string
+   (`Wide Field Observation Mode Stage 1-3`, `Heavy Attack: Inversion`,
+   etc.) — no false-positive substring collisions (`'Stage 1-4'` correctly
+   does not match `'...Stage 1-3'`), no missing keys. `CHAIN_NODE_ICONS`
+   s1-s6 all populated. Verified clean.
+- 2 new tests added to `triggerEngine-mornye.test.js` (every damage block
+  has a real `damage.category`, Intro's is specifically `skillDmg`;
+  `tuneBreak.ruptureDmgMult` is the real sourced 298.22, not the old 300).
+  Full suite green (1487/1487).
 
 **Open question (2026-09-04):** Lumi's own dump Damage Profile shows a
 real 26.3% "Skill" damage bucket, but no block in `lumi.blocks.js` is

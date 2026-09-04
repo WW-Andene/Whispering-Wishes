@@ -32,6 +32,17 @@ describe('triggerEngine parity — Mornye', () => {
     damageBlocks.forEach(b => expect(b.damage.basis).toBe('DEF'));
   });
 
+  it('every damage block has a damage.category set (Phase A audit 2026-09-04 — Intro was missing one entirely, silently rejecting real Resonance Skill DMG Bonus, same bug class as Lynae\'s Outro)', () => {
+    const damageBlocks = MORNYE_BLOCKS.filter(b => b.kind === 'damage');
+    damageBlocks.forEach(b => expect(b.damage.category).toBeTruthy());
+    const intro = MORNYE_BLOCKS.find(b => b.id === 'mornye.intro.convergence');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("tuneBreak.ruptureDmgMult is the real sourced Lv.10 value 298.22, not the unsourced 300 estimate (Phase A audit 2026-09-04, same fix class as Lynae's ruptureDmgMult)", () => {
+    expect(CHAR_BUFF_TABLE['Mornye'].tuneBreak.ruptureDmgMult).toBe(298.22);
+  });
+
   it('outro matches CHAR_BUFF_TABLE', () => {
     const legacy = CHAR_BUFF_TABLE['Mornye'];
     const outro = MORNYE_BLOCKS.find(b => b.id === 'mornye.outro.recursion');
