@@ -130,8 +130,7 @@ Game
 │   │   ├── Skill DMG
 │   │   ├── Liberation DMG
 │   │   ├── Echo Skill DMG
-│   │   ├── Coordinated ATK DMG
-│   │   └── Intro Skill DMG
+│   │   └── Coordinated ATK DMG
 │   ├── DMG Bonus — Element
 │   │   └── (ref: Element list — Glacio/Fusion/Electro/Aero/Spectro/Havoc/Physical)
 │   ├── DMG Bonus — Reaction
