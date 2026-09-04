@@ -33,7 +33,10 @@ export const QINGXIAO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Tonality Shift' },
     timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
-    damage: { hits: parseSkillMultiplierHits('39.79%+46.42%×2') },
+    // category fixed 2026-09-04 (full 9-dimension re-audit, fresh dump): was uncategorized entirely —
+    // no override text names a different category for a generic Intro row, same default-to-skillDmg
+    // convention as every other character's Intro block (e.g. sanhua.blocks.js's identical fix).
+    damage: { hits: parseSkillMultiplierHits('39.79%+46.42%×2'), category: 'skillDmg' },
     note: 'Grants 30 points of Sword Cadence plus Resonant Chime.',
   },
   {
@@ -56,12 +59,51 @@ export const QINGXIAO_BLOCKS = [
     note: 'Ground continuation of the Mid-air Attack combo.',
   },
   {
+    // Added 2026-09-04 (full 9-dimension re-audit, fresh dump): real move, own SKILL_MULTIPLIERS row and
+    // CHARACTER_ROTATIONS row, listed under the dump's own "Basic Attack — Strings to Steel" heading —
+    // no engine block existed. Not added to the modeled rotation: replaces Jump specifically in Sword
+    // Flight state, a movement-triggered situational branch, absent from the dump's own Standard
+    // Rotation/Skill Priority text.
+    id: 'qingxiao.midair.plunging-attack',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Mid-air:Plunging Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
+    damage: { hits: parseSkillMultiplierHits('86.29%'), category: 'basicDmg' },
+    note: 'Replaces Jump in Sword Flight state. Outside Ephemeral Transcendence, chains into Basic Stage 3. Situational, not in the modeled rotation.',
+  },
+  {
+    // Added 2026-09-04 (full 9-dimension re-audit, fresh dump): real move, own SKILL_MULTIPLIERS row —
+    // no engine block existed. Listed under "Basic Attack — Strings to Steel". Not added to the modeled
+    // rotation: a post-Dodge situational branch, absent from the dump's own Standard Rotation text.
+    id: 'qingxiao.dodge-counter.stringblade',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Dodge Counter:Dodge Counter - Stringblade' },
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
+    damage: { hits: parseSkillMultiplierHits('45.23%×4'), category: 'basicDmg' },
+    note: 'Post-Dodge Normal Attack, Drawn Stance; chains into Basic Stage 4. Situational, not in the modeled rotation.',
+  },
+  {
     id: 'qingxiao.skill.severing-note-judgement',
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Skill:Severing Note: Judgement' },
     timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('20.88%×2+97.42%'), category: 'skillDmg' },
     note: 'Grants 45 points of Qin Heart.',
+  },
+  {
+    // Added 2026-09-04 (full 9-dimension re-audit, fresh dump): a real move with its own dump multiplier
+    // row (SKILL_MULTIPLIERS['Qingxiao']) and CHARACTER_ROTATIONS row, but no engine block at all until
+    // now. "Replaces Resonance Skill while casting Basic Stage 2/3 or Dodge Counter" — a conditional
+    // Resonance-Skill-slot swap, listed under the dump's own "Resonance Skill — Severing Note" heading,
+    // so kept skillDmg like Judgement above. Not added to CHARACTER_ROTATIONS: it's a situational combo
+    // branch (requires already being mid-Basic-Stage-2/3 or Dodge Counter when Skill is pressed), not
+    // named anywhere in the dump's own documented Standard Rotation or Skill Priority text.
+    id: 'qingxiao.skill.severing-note-ascendant',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:Severing Note: Ascendant' },
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
+    damage: { hits: parseSkillMultiplierHits('28.40%+33.13%×2'), category: 'skillDmg' },
+    note: 'Replaces Resonance Skill while casting Basic Stage 2/3 or Dodge Counter — Drawn Stance. Situational combo branch, not in the modeled rotation.',
   },
   {
     id: 'qingxiao.heavy.stringblade',
@@ -78,6 +120,23 @@ export const QINGXIAO_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
     damage: { hits: parseSkillMultiplierHits('44.89%+22.45%×2 → 23.11%×5 → 20.88%×3+31.32%×2 → 18.10%×4+108.56%'), category: 'basicDmg' },
     note: 'Enhanced 4-hit combo while in Ephemeral Transcendence, builds Heart Sword Intent toward the finisher.',
+  },
+  {
+    // Added 2026-09-04 (full 9-dimension re-audit, fresh dump): real move, own SKILL_MULTIPLIERS row and
+    // CHARACTER_ROTATIONS row — no engine block existed. Real significance beyond just "another combo
+    // branch": it's explicitly named in the base-kit Mindlock/Inherent To Know, To Banish DMG-taken-amp
+    // move list ("Amplifies DMG taken from ... Ephemeral Transcendence Dodge Counter ...", dump line 41/
+    // 60) — needed as a real scopedToBlockId target for qingxiao.debuff.mindlock below, not just for its
+    // own hit. Categorized basicDmg to match its sibling qingxiao.forte.ephemeral-transcendence-stage1-4
+    // (same Forte-state Basic-Attack-replacement family, same "+100% DMG Multiplier before Heaven's
+    // Reckoning unlocks" kit text as that block). Not added to the modeled rotation: a post-Dodge
+    // situational branch, absent from the dump's own Standard Rotation text.
+    id: 'qingxiao.forte.dodge-counter-transcendence',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Dodge Counter:Dodge Counter - Ephemeral Transcendence' },
+    timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
+    damage: { hits: parseSkillMultiplierHits('26.45%×4+158.66%'), category: 'basicDmg' },
+    note: 'Post-Dodge Normal Attack while in Ephemeral Transcendence, castable mid-air; before Heaven\'s Reckoning unlocks, DMG Multiplier +100% (not modeled — one-time early-game state, negligible at Lv.10 rotation). Situational, not in the modeled rotation, but a real scopedToBlockId target for Mindlock below.',
   },
   {
     id: 'qingxiao.forte.heavens-reckoning',
@@ -100,7 +159,12 @@ export const QINGXIAO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [], appliesTags: ['shifting'],
-    damage: { hits: [{ atkPct: 800 }] },
+    // category fixed 2026-09-04 (full 9-dimension re-audit, fresh dump): was uncategorized entirely —
+    // recurring bug class (Lynae/Mornye/Phoebe). Her Damage Profile confirms Outro is a genuine 10.8%
+    // share (213,574 of 1,983,070) — now outroDmg so it correctly receives outroDmg buffs and is
+    // reachable by qingxiao.chain.s6/mindlock scoping decisions if ever needed. See also the dmgFocus
+    // fix in characters.js adding 'Outro' for the same reason.
+    damage: { hits: [{ atkPct: 800 }], category: 'outroDmg' },
   },
 
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE, base-kit Mindlock mechanic) ──
@@ -118,8 +182,24 @@ export const QINGXIAO_BLOCKS = [
     trigger: { type: 'passive' },
     timing: { duration: 30 },
     target: { scope: 'all-enemies' },
-    effects: [{ stat: 'deepen', value: 65 }],
-    note: 'Base kit Forte (Mindlock) + Inherent Skill To Know, To Banish (same single mechanic, described twice in the dump): targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 base-kit stacks — corrected 2026-09-02 from a wrong 49% to the dump\'s own confirmed "+65% DMG Amplification... 7% for the first 7 stacks, 2% for the next 8" (7×7 + 8×2 = 65, not 49 — the prior value was simply arithmetically wrong). Modeled at the documented flat ceiling value rather than the real nonlinear per-stack curve, which this schema\'s stacking shape can\'t represent losslessly (the engine-merge history (git log) Phase 0.5 gap #1). S2 (not S1 — see that node\'s own corrected note) raises the stack cap to 25 (not modeled — tied to gap #1). S6 chain adds a further flat +40% (see qingxiao.chain.s6).',
+    // scopedToBlockId'd 2026-09-04 (full 9-dimension re-audit, fresh dump): this was a single unscoped
+    // deepen effect on target:'all-enemies', which resolveHitComposedDps.js applies to EVERY damage
+    // block Qingxiao has — but the dump's own exact text (line 41/60) names 5 specific moves only:
+    // "Amplifies DMG taken from Qingxiao's Heavy Attack - Stringblade / Ephemeral Transcendence Basic /
+    // Ephemeral Transcendence Dodge Counter / Heaven's Reckoning / Liberation" — NOT her Basic Attack -
+    // Stringblade (ground combo), Mid-air Attack, Severing Note (either), Intro, or Outro. Unscoped, this
+    // was silently over-crediting all of those excluded blocks too — same unscoped-category-buff bug
+    // class already found/fixed for Jiyan's S6/Phrolova's S1/Lucilla's S3+S5. Split into 5 scopedToBlockId
+    // entries, same multi-block-scoping pattern already used elsewhere (e.g. Camellya's chain.s5-twining,
+    // Cantarella's chain.s2).
+    effects: [
+      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.heavy.stringblade' },
+      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.forte.ephemeral-transcendence-stage1-4' },
+      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.forte.dodge-counter-transcendence' },
+      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.forte.heavens-reckoning' },
+      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.liberation.billows-beneath-heaven' },
+    ],
+    note: 'Base kit Forte (Mindlock) + Inherent Skill To Know, To Banish (same single mechanic, described twice in the dump): targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 base-kit stacks — corrected 2026-09-02 from a wrong 49% to the dump\'s own confirmed "+65% DMG Amplification... 7% for the first 7 stacks, 2% for the next 8" (7×7 + 8×2 = 65, not 49 — the prior value was simply arithmetically wrong). Modeled at the documented flat ceiling value rather than the real nonlinear per-stack curve, which this schema\'s stacking shape can\'t represent losslessly (the engine-merge history (git log) Phase 0.5 gap #1). S2 (not S1 — see that node\'s own corrected note) raises the stack cap to 25 (not modeled — tied to gap #1). S6 chain adds a further flat +40% (see qingxiao.chain.s6). Scoped 2026-09-04 to the 5 real named moves only (Juque Perdition, S1\'s own unmodeled proc, would be a 6th target if built).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 re-audit comment for
@@ -180,7 +260,19 @@ export const QINGXIAO_BLOCKS = [
     source: SOURCE, kind: 'debuff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'all-enemies' },
-    effects: [{ stat: 'deepen', value: 40 }],
-    note: 'DMG Taken +40% flat, scoped narrower than a universal vulnerability in the real text (only applies to Heavy Attack - Stringblade, Heaven\'s Reckoning: Ephemeral Transcendence, Billows Beneath Heaven, and Juque Perdition, not her full kit) — kept as-is since deepen is the closest available category and the value is exact per the re-audit.',
+    // scopedToBlockId'd 2026-09-04 (full 9-dimension re-audit, fresh dump): the note here already
+    // correctly IDENTIFIED the narrow real scope (Heavy Attack - Stringblade / Heaven's Reckoning /
+    // Liberation / Juque Perdition only) but left the effect itself unscoped anyway — an unscoped deepen
+    // on target:'all-enemies' is applied to EVERY damage block Qingxiao has by resolveHitComposedDps.js,
+    // so this was silently over-crediting her Basic/Mid-air/Skill/Intro/Outro hits too, exactly the same
+    // bug class already found/fixed for Jiyan's S6/Phrolova's S1/Lucilla's S3+S5 and for
+    // qingxiao.debuff.mindlock right above. Split into scopedToBlockId entries for the 3 real named
+    // moves that have engine blocks (Juque Perdition, S1's own unmodeled proc, isn't buildable here).
+    effects: [
+      { stat: 'deepen', value: 40, scopedToBlockId: 'qingxiao.heavy.stringblade' },
+      { stat: 'deepen', value: 40, scopedToBlockId: 'qingxiao.forte.heavens-reckoning' },
+      { stat: 'deepen', value: 40, scopedToBlockId: 'qingxiao.liberation.billows-beneath-heaven' },
+    ],
+    note: 'DMG Taken +40% flat, scoped narrower than a universal vulnerability in the real text (only applies to Heavy Attack - Stringblade, Heaven\'s Reckoning: Ephemeral Transcendence, Billows Beneath Heaven, and Juque Perdition, not her full kit) — now actually enforced via scopedToBlockId (2026-09-04) rather than left unscoped despite this note already describing the narrow real scope. Juque Perdition omitted (S1\'s own unmodeled proc, no block to scope onto).',
   },
 ];

@@ -26,7 +26,7 @@ describe('triggerEngine parity — Jinhsi', () => {
     expect(byId('jinhsi.chain.s1-abyssal-ascension').effects[0].value).toBe(rc.s1.skillDmg);
     expect(byId('jinhsi.chain.s2-chronofrost-repose').effects[0].value).toBe(rc.s2.totalMult);
     expect(byId('jinhsi.chain.s3-celestial-incarnate').effects[0].value).toBe(rc.s3.atkPct);
-    expect(byId('jinhsi.chain.s4-benevolent-grace').effects[0].value).toBe(rc.s4.elemDmg);
+    expect(byId('jinhsi.chain.s4-benevolent-grace').effects[0].value).toBe(rc.s4.allDmg);
     expect(byId('jinhsi.chain.s5-frostfire-illumination').effects[0].value).toBe(rc.s5.libDmg);
     expect(byId('jinhsi.chain.s6-thawing-triumph').effects[0].value).toBe(rc.s6.skillDmg);
   });
@@ -58,9 +58,12 @@ describe('triggerEngine parity — Jinhsi', () => {
     }, statsBoth)).not.toThrow();
   });
 
-  it('S4 team elemDmg buff is cast-scoped-but-persistent (20s), same shape as Augusta S4/Shorekeeper S6', () => {
+  it('S4 team allDmg buff is cast-scoped-but-persistent (20s), applies regardless of target element (not Spectro-restricted)', () => {
     // statsNoCast still picks up the always-on Radiant Surge passive (elemDmg 20) — only S4's
     // OWN contribution is gated on the Liberation cast having fired.
+    // Note: allDmg is a universal (non-element-gated) bonus, and calcEngine folds it straight into
+    // stats.elemDmg on resolution (see calcEngine.js's `case 'allDmg': ... stats.elemDmg += value`) —
+    // there's no separate stats.allDmg bucket, so the 20 vs 40 delta below IS the S4 contribution.
     const statsNoCast = createStats();
     resolveTriggerBlocks(JINHSI_BLOCKS, {
       firedTriggers: new Set(['passive']), targetElementLower: 'spectro', targetRole: 'Main DPS',
@@ -72,11 +75,23 @@ describe('triggerEngine parity — Jinhsi', () => {
       firedTriggers: new Set(['passive', 'cast:Liberation:Purge of Light']),
       targetElementLower: 'spectro', targetRole: 'Main DPS',
     }, statsWithCast);
-    // elemDmg accumulates both the always-on Radiant Surge (20) and S4's team buff (20) here since
-    // this test resolves against Jinhsi's own block set as both self and target.
+    // elemDmg accumulates both the always-on Radiant Surge (20) and S4's team allDmg buff (20).
     expect(statsWithCast.elemDmg).toBe(40);
+
+    // Real regression check for the fix (2026-09-04): S4 is a generic "Attribute DMG Bonus" — it must
+    // NOT be gated to Spectro-element targets, since it buffs each teammate on their own element. Before
+    // the fix this was `stat: 'elemDmg'` + `condition: { element: 'spectro' }`, which would have
+    // resolved to 20 (Radiant Surge only) for a non-Spectro target — the S4 contribution silently lost.
+    const statsNonSpectroTarget = createStats();
+    resolveTriggerBlocks(JINHSI_BLOCKS, {
+      firedTriggers: new Set(['passive', 'cast:Liberation:Purge of Light']),
+      targetElementLower: 'fusion', targetRole: 'Main DPS',
+    }, statsNonSpectroTarget);
+    expect(statsNonSpectroTarget.elemDmg).toBe(40);
+
     const s4 = JINHSI_BLOCKS.find(b => b.id === 'jinhsi.chain.s4-benevolent-grace');
     expect(s4.timing.duration).toBe(20);
+    expect(s4.condition).toBeUndefined();
   });
 
   it('S6 carries both the unscoped +45% skillDmg AND a 2nd +45% scoped to Illuminous Epiphany only (the real compounding conversion-rate bonus)', () => {

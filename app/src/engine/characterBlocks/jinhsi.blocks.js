@@ -190,9 +190,12 @@ export const JINHSI_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Purge of Light' },
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
-    condition: { element: 'spectro' },
-    effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh' }],
-    note: 'Casting Resonance Liberation Purge of Light OR Resonance Skill Illuminous Epiphany grants the WHOLE NEARBY TEAM +20% Attribute DMG Bonus for 20s (team-wide, not Jinhsi-only). Modeled here off the Liberation cast; the Illuminous Epiphany cast is the SAME effect and would need a 2nd trigger entry once the windowed-cast state machine can actually distinguish which cast happened.',
+    effects: [{ stat: 'allDmg', value: 20, stacking: 'refresh' }],
+    // Fixed 2026-09-04: was `stat: 'elemDmg'` + `condition: { element: 'spectro' }` — this "Attribute
+    // DMG Bonus" wording is the generic universal-DMG shape (each teammate buffed on THEIR OWN element),
+    // same as Galbrena/Phrolova/Lucy's identically-worded S4 nodes (allDmg, no element condition), not a
+    // Spectro-only buff. The old code would have silently zeroed this out for any non-Spectro teammate.
+    note: 'Casting Resonance Liberation Purge of Light OR Resonance Skill Illuminous Epiphany grants the WHOLE NEARBY TEAM +20% Attribute DMG Bonus for 20s (team-wide, not Jinhsi-only, and not restricted to Spectro teammates). Modeled here off the Liberation cast; the Illuminous Epiphany cast is the SAME effect and would need a 2nd trigger entry once the windowed-cast state machine can actually distinguish which cast happened.',
   },
   {
     id: 'jinhsi.chain.s5-frostfire-illumination',

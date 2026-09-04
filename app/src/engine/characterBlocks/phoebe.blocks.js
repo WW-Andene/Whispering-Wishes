@@ -26,7 +26,10 @@ export const PHOEBE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Golden Grace' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('198.8%') },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Resonance Skill DMG Bonus. No override text names a different category, same default-
+    // to-skillDmg convention as Calcharo/Encore/Jianxin/Lingyang/Aalto/Baizhi/Chixia/Danjin.
+    damage: { hits: parseSkillMultiplierHits('198.8%'), category: 'skillDmg' },
   },
   {
     id: 'phoebe.skill.to-where-light-shines',
@@ -41,7 +44,12 @@ export const PHOEBE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Absolution Litany' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('638.2%') },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. The dump's
+    // own Forte Circuit text explicitly names this cast "Heavy Attack: Absolution Litany" (cast by
+    // holding Basic Attack at full Prayer) — it IS a Heavy Attack for weapon/echo DMG-bonus purposes,
+    // matching the dump's "Heavy 43.8%" being by far her largest Damage Profile bucket (Starflash x4 +
+    // Absolution Litany combined). Miscategorization bug class already found on Luuk Herssen's kit.
+    damage: { hits: parseSkillMultiplierHits('638.2%'), category: 'heavyDmg' },
     note: 'Prayer gauge fills passively (5/s, 120 cap). Enters Absolution mode, applies 1 Spectro Frazzle stack, refills Divine Voice to 60.',
   },
   {
@@ -57,8 +65,13 @@ export const PHOEBE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: "Skill:Chamuel's Star 1-3" },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('59.4% → 39.8%×2 → 28.9%×6'), category: 'skillDmg' },
-    note: "Basic ATK replacement while standing inside the Ring of Mirrors.",
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was skillDmg, contradicting the
+    // dump's own explicit kit text — "Inside the ring, Basic Attack → Chamuel's Star (up to 3 attacks,
+    // considered Basic Attack DMG)" — Chamuel's Star is a Basic ATK replacement, not Resonance Skill
+    // DMG, so it was silently excluded from Basic ATK DMG Bonus buffs and wrongly credited to Skill DMG
+    // Bonus ones instead. Same miscategorization-vs-dump-text bug class already found on Luuk Herssen.
+    damage: { hits: parseSkillMultiplierHits('59.4% → 39.8%×2 → 28.9%×6'), category: 'basicDmg' },
+    note: "Basic ATK replacement while standing inside the Ring of Mirrors; counted as Basic Attack DMG per the dump's own text.",
   },
   {
     id: 'phoebe.forte.starflash',
@@ -73,7 +86,11 @@ export const PHOEBE_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('528.4%') },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // excluded from the outroDmg weapon/echo bonus bucket — same recurring bug class already found on
+    // Lynae's/Mornye's Outro blocks. Same outroDmg convention as Calcharo/Carlotta/Chixia/Encore/
+    // Lingyang/Lynae/Rover: Havoc/Xiangli Yao.
+    damage: { hits: parseSkillMultiplierHits('528.4%'), category: 'outroDmg' },
     note: 'Base (non-Absolution-boosted) value; see phoebe.kit.attentive-heart-absolution-mult below for the +255% Absolution DMG Multiplier bonus this cast gets in her real (Absolution-mode) rotation. In Confession mode this instead grants Silent Prayer (see phoebe.outro.confession-* blocks below), not modeled here since her real rotation stays in Absolution.',
   },
 
@@ -161,8 +178,14 @@ export const PHOEBE_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 91 }],
-    note: "Starflash DMG Multiplier +91% in Absolution (+249% in Confession, not modeled) — heavyDmg is category-gated and Starflash is her only heavyDmg-categorized block, so this stays correctly scoped without needing scopedToBlockId.",
+    effects: [{ stat: 'heavyDmg', value: 91, scopedToBlockId: 'phoebe.forte.starflash' }],
+    // scopedToBlockId added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the note here previously
+    // claimed heavyDmg was category-gated to Starflash alone, but phoebe.forte.absolution-litany was
+    // just recategorized to heavyDmg too (it's the dump's own "Heavy Attack: Absolution Litany") — an
+    // unscoped heavyDmg node here would now silently leak S3's Starflash-only +91% onto Absolution
+    // Litany as well. The dump names only Starflash for this node, so it's pinned explicitly. Same
+    // unscoped-buff-leak bug class already found on Jiyan's totalMult passive.
+    note: "Starflash DMG Multiplier +91% in Absolution (+249% in Confession, not modeled) — scoped to Starflash specifically since heavyDmg now also covers Absolution Litany.",
   },
   {
     id: 'phoebe.chain.s4',

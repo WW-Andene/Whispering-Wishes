@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { LUCY_BLOCKS } from '../engine/characterBlocks/lucy.blocks.js';
@@ -127,5 +127,11 @@ describe('triggerEngine parity — Lucy', () => {
     expect(fired.has('lucy.chain.s2-bonus-hit')).toBe(true);
     expect(fired.has('lucy.basic.thread-shredding-stage1-4')).toBe(true);
     expect(fired.has('lucy.heavy.dual-threading')).toBe(true);
+  });
+
+  // Fixed 2026-09-04 (Phase A audit): baseDef was 1148, an off-by-one vs the dump's stated Lv.90
+  // DEF 1149 (HP 11025 / ATK 425 / DEF 1149 / Max Energy 150 — HP/ATK/maxEnergy were already correct).
+  it('baseDef matches the sourced Lv.90 value (1149, not the previously off-by-one 1148)', () => {
+    expect(CHARACTER_DATA['Lucy'].baseDef).toBe(1149);
   });
 });

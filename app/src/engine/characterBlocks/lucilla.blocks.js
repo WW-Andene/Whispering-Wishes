@@ -118,7 +118,21 @@ export const LUCILLA_BLOCKS = [
     target: { scope: 'all-enemies' },
     condition: { element: 'glacio' },
     effects: [{ stat: 'resShred', value: 8 }],
-    note: 'Inherent Skill: Glacio RES Shred -8% for 30s, Glacio mode.',
+    note: 'Inherent Skill Slow Motion, Glacio Chafe mode, on casting Spotlight: Glacio RES Shred -8% for 30s.',
+  },
+  {
+    id: 'lucilla.buff.inherent-skill-echo-teamdmg',
+    source: SOURCE, kind: 'buff',
+    // Added Phase A audit (2026-09-04): CHAR_BUFF_TABLE['Lucilla'].selfBuffs was missing this
+    // Inherent Skill Slow Motion Echo-mode branch entirely (see that file's own audit comment on
+    // this same read) — team +25% Echo Skill DMG Bonus for 30s on casting Spotlight in Echo mode,
+    // mutually exclusive with the Chafe-mode resShred debuff above.
+    trigger: { type: 'passive' },
+    timing: { duration: 30 },
+    target: { scope: 'whole-team' },
+    condition: { requiresStance: 'Echo mode' },
+    effects: [{ stat: 'echoDmg', value: 25 }],
+    note: 'Inherent Skill Slow Motion, Echo mode, on casting Spotlight: team +25% Echo Skill DMG Bonus for 30s. Ends early on mode switch (not modeled) — mutually exclusive with lucilla.debuff.inherent-skill-resshred.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 audit comment for
@@ -144,13 +158,21 @@ export const LUCILLA_BLOCKS = [
   {
     id: 'lucilla.chain.s3',
     source: SOURCE, kind: 'buff',
+    // scopedToBlockId added Phase A audit (2026-09-04): this was an unscoped basicDmg/echoDmg
+    // category buff, the exact same bug class already fixed for Jiyan's S6 (see that file's own
+    // audit comment) and flagged in the Phase A task brief — a category-wide buff means
+    // resolveHitComposedDps.js's statsAtInstant() applies it to EVERY basicDmg/echoDmg-category hit
+    // in the kit, not just the one move S3's own kit text names ("Letting It Go's DMG Multiplier
+    // +100%"). Without scoping, this was silently inflating lucilla.basic.tracing-forms,
+    // lucilla.basic.oblivion, and lucilla.liberation.clear-as-day (all basicDmg-category) in
+    // addition to its real target. Fixed by scoping to lucilla.basic.letting-it-go only.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'basicDmg', value: 100 },
-      { stat: 'echoDmg', value: 100 },
+      { stat: 'basicDmg', value: 100, scopedToBlockId: 'lucilla.basic.letting-it-go' },
+      { stat: 'echoDmg', value: 100, scopedToBlockId: 'lucilla.basic.letting-it-go' },
     ],
-    note: "Letting It Go's own DMG Multiplier +100% (recategorized from libDmg to {basicDmg, echoDmg} per the re-audit — its own move text makes damage type mode-dependent, never Liberation-type despite being part of the Liberation combo). Both keys carry the same value since only one mode's SKILL_MULTIPLIERS type ever applies in a given build, so they never double-count. Kept passive, applies whenever lucilla.basic.letting-it-go fires.",
+    note: "Letting It Go's own DMG Multiplier +100% (recategorized from libDmg to {basicDmg, echoDmg} per the re-audit — its own move text makes damage type mode-dependent, never Liberation-type despite being part of the Liberation combo). Both keys carry the same value since only one mode's SKILL_MULTIPLIERS type ever applies in a given build, so they never double-count. Scoped to lucilla.basic.letting-it-go only (see scoping fix note above) — kept passive so it applies whenever that block fires, without leaking to the rest of the kit.",
   },
   {
     id: 'lucilla.chain.s4',
@@ -163,23 +185,34 @@ export const LUCILLA_BLOCKS = [
   {
     id: 'lucilla.chain.s5',
     source: SOURCE, kind: 'buff',
+    // scopedToBlockId added Phase A audit (2026-09-04): same unscoped-category-buff bug as S3
+    // above — S5's kit text names Oblivion specifically ("Oblivion's DMG Multiplier +50%"), but an
+    // unscoped basicDmg/echoDmg buff was leaking onto lucilla.basic.tracing-forms,
+    // lucilla.basic.letting-it-go, and lucilla.liberation.clear-as-day too. Scoped to
+    // lucilla.basic.oblivion only.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'basicDmg', value: 50 },
-      { stat: 'echoDmg', value: 50 },
+      { stat: 'basicDmg', value: 50, scopedToBlockId: 'lucilla.basic.oblivion' },
+      { stat: 'echoDmg', value: 50, scopedToBlockId: 'lucilla.basic.oblivion' },
     ],
-    note: "Oblivion's own DMG Multiplier +50% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3) — kept passive, applies whenever lucilla.basic.oblivion fires.",
+    note: "Oblivion's own DMG Multiplier +50% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3) — scoped to lucilla.basic.oblivion only (see scoping fix note above), kept passive so it applies whenever that block fires.",
   },
   {
     id: 'lucilla.chain.s6',
     source: SOURCE, kind: 'buff',
+    // scopedToBlockId added Phase A audit (2026-09-04): same unscoped-category-buff bug as S3/S5
+    // above — S6's kit text names Letting It Go specifically ("increases Letting It Go's DMG to the
+    // target by 200%, up to 600% at max"), but an unscoped basicDmg/echoDmg buff was leaking onto
+    // lucilla.basic.tracing-forms, lucilla.basic.oblivion, and lucilla.liberation.clear-as-day too
+    // (a massive overcount at S6, since 600% is by far the largest bonus in this file). Scoped to
+    // lucilla.basic.letting-it-go only.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'basicDmg', value: 600 },
-      { stat: 'echoDmg', value: 600 },
+      { stat: 'basicDmg', value: 600, scopedToBlockId: 'lucilla.basic.letting-it-go' },
+      { stat: 'echoDmg', value: 600, scopedToBlockId: 'lucilla.basic.letting-it-go' },
     ],
-    note: "Each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence reliably hits max, using the max value +600% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3). Kept passive.",
+    note: "Each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence reliably hits max, using the max value +600% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3). Scoped to lucilla.basic.letting-it-go only (see scoping fix note above), kept passive.",
   },
 ];

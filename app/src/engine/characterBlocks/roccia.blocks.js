@@ -22,7 +22,12 @@ export const ROCCIA_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Pero, Help' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('168.99%') },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting Intro DMG Bonus buffs (a real ~9,350 damage share per the dump's own Damage Profile).
+    // No override text names a different category — Intro damage isn't described as counted under
+    // any other type, same default-to-skillDmg convention used throughout this sweep (Aalto/Calcharo/
+    // Encore/Jianxin's Intro blocks).
+    damage: { hits: parseSkillMultiplierHits('168.99%'), category: 'skillDmg' },
     note: 'Restores a flat +100 Imagination.',
   },
   {
@@ -117,8 +122,8 @@ export const ROCCIA_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Acrobatic Trick' },
     timing: { duration: 12 },
     target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 60 }],
-    note: "Casting Skill Acrobatic Trick increases Real Fantasy's own DMG Multiplier by +60% for 12s (confirmed exact, corrected from an undervalued 10).",
+    effects: [{ stat: 'totalMult', value: 60, scopedToBlockId: 'roccia.forte.real-fantasy' }],
+    note: "Casting Skill Acrobatic Trick increases Real Fantasy's own DMG Multiplier by +60% for 12s (confirmed exact). Fixed 2026-09-04: this totalMult effect was previously unscoped, so it silently amplified ALL of Roccia's self-scoped damage blocks cast within the 12s window (Basic ATK, Liberation) instead of only Real Fantasy as the dump's own node text says — now scopedToBlockId'd to roccia.forte.real-fantasy.",
   },
   {
     id: 'roccia.chain.s5',

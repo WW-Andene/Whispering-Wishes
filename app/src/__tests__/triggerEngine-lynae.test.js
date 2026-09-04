@@ -26,6 +26,11 @@ describe('triggerEngine parity — Lynae', () => {
     expect(lib.target.scope).toBe('whole-team');
   });
 
+  it("lynae.outro.lets-hit-the-road is tagged category:'outroDmg' (Phase A audit 2026-09-04 fix — was uncategorized, silently missing any real outroDmg-scoped buff)", () => {
+    const outroHit = LYNAE_BLOCKS.find(b => b.id === 'lynae.outro.lets-hit-the-road');
+    expect(outroHit.damage.category).toBe('outroDmg');
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lynae'], LYNAE_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(LYNAE_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'spectro', 'Sub DPS');

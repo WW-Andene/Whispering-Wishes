@@ -155,26 +155,35 @@ Nightmare: Impermanence Heron.
 
 ## App Data Comparison (vs. `app/src/data/characters.js` + `roccia.blocks.js`)
 
-No dump file existed before this pass — created. `bestWeapon`, `weaponAlts` (alt5/alt4), `bestEchoes`,
-base stats (HP/ATK/DEF/MaxEnergy), SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA values
-(S1-S6), and CHAR_BUFF_TABLE's outro/selfBuff values all already matched this source exactly.
-
-**Real bugs found and fixed (2026-09-03)**:
+**2026-09-03 pass** (bugs found and fixed, re-verified still valid on the 2026-09-04 independent
+re-derivation below):
 1. `CHARACTER_DATA['Roccia'].teams` had `'Roccia + Cantarella + Verina'` as its second entry — this
-   exact trio never appears in the source. The source's actual named synergy team is the
-   Phrolova-Cantarella trio (Verina is described only as a generic Healing Support that "can slot into
-   any team," not a specific named Roccia team). Fixed to `'Roccia + Phrolova + Cantarella'`.
-2. The DPS tier table had `['Roccia', 'T3', 'T2']` — the source's Ratings section (the convention this
-   table follows throughout) gives Hybrid T3 (ToA) / T3 (Whimpering Wastes), not T2 for the second
-   column. Fixed to `['Roccia', 'T3', 'T3']`.
-3. `roccia.blocks.js`'s S6 chain block (`roccia.chain.s5` in RESONANCE_CHAIN_DATA terms) modeled its
-   Commedia-specific +20% DMG Multiplier as a plain `libDmg`-category effect — but
-   `roccia.liberation.commedia-improvviso`'s damage block is categorized `heavyDmg` (correctly, per its
-   own kit text: "considered Heavy Attack DMG despite the Liberation slot"), so the `libDmg` effect
-   could never match any damage block in her kit and was a dead buff, contributing zero DPS. Fixed by
-   changing it to a `heavyDmg`-category effect scoped via `scopedToBlockId:
-   'roccia.liberation.commedia-improvviso'`, so it now stacks additively with the broad +80%
-   `heavyDmg` effect on that one block specifically, without over-crediting `roccia.forte.real-fantasy`
-   (which only gets the broad +80%). Test updated to assert the scoped effect directly.
+   exact trio never appears in the source. Fixed to `'Roccia + Phrolova + Cantarella'`.
+2. The DPS tier table had `['Roccia', 'T3', 'T2']` — fixed to `['Roccia', 'T3', 'T3']` per the
+   source's Ratings section.
+3. `roccia.blocks.js`'s S5 chain block's Commedia-specific +20% DMG Multiplier was a plain
+   `libDmg`-category effect that could never match `roccia.liberation.commedia-improvviso`'s `heavyDmg`
+   damage block. Fixed to a `heavyDmg`-category effect `scopedToBlockId`'d to that block specifically.
 
-1 test updated, full suite green (1336/1336).
+**2026-09-04 independent re-derivation** (treated as a first pass, zero deference to the above claims —
+full methodology and reasoning logged in `REMAINING_WORK.md` §1c under the matching date). Re-verified
+all 3 fixes above still hold, and found 3 further real bugs the 2026-09-03 pass missed:
+4. **Two-path desync**: `RESONANCE_CHAIN_DATA['Roccia'].s5` still carried the stale raw value
+   `{libDmg: 20, heavyDmg: 80}` even after item 3's blocks.js-only fix — the legacy
+   `applyResonanceChain()` path in `calcEngine.js` reads this raw table directly, and Roccia's `dmgFocus`
+   has no `'Liberation'` entry, so the `libDmg: 20` contribution was silently dropped by the legacy
+   aggregate path (never routed into `skillDmg`). Fixed by merging into `{heavyDmg: 100}`.
+5. **Missing `damage.category`**: `roccia.intro.pero-help`'s damage block had no category at all,
+   silently rejecting Intro DMG Bonus buffs on a real ~9,350 damage share. Fixed to `skillDmg` (the
+   default-to-skillDmg convention used for every other character's uncategorized-Intro fix this sweep).
+6. **Unscoped `totalMult`**: `roccia.chain.s4`'s `{stat:'totalMult', value:60}` effect had no
+   `scopedToBlockId`, so it silently amplified ALL of Roccia's self-scoped damage blocks cast within its
+   12s window (not just Real Fantasy, as the dump's own S4 text specifies) — the same recurring bug class
+   already found on Jiyan/Phrolova/Qingxiao/Qiuyuan. Fixed by scoping to `roccia.forte.real-fantasy`.
+7. **Icon lookup gap**: `SKILL_ICONS.Roccia` had no key that is a substring of the real rotation step's
+   skill string `'Stage 1-4'`, so the Basic ATK rotation step silently resolved to no icon. Fixed by
+   adding a `'Stage 1-4'` key.
+
+4 tests added/updated in `triggerEngine-roccia.test.js` (S4 scoping, S5 raw-table merge, exhaustive
+`damage.category` presence check, `getSkillIcon` coverage of every real rotation step). Full suite green
+(1507/1507).

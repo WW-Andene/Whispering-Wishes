@@ -61,6 +61,28 @@ describe('triggerEngine parity — Jiyan', () => {
     expect(outroHit.damage).toBeGreaterThan(outroHitNoS5.damage);
   });
 
+  // Found 2026-09-04 via a fresh, independent Phase A audit (REMAINING_WORK.md 1c): the prior
+  // 2026-09-03 fix converted S6 to `trigger:{type:'passive'}` (correctly, to stop it being a dead
+  // no-op) but left it WITHOUT `scopedToBlockId` — an unscoped passive totalMult effect applies to
+  // EVERY hit block in the kit (resolveHitComposedDps.js only skips a hit when
+  // `effect.scopedToBlockId && effect.scopedToBlockId !== hitBlockId`), so selecting S6 was silently
+  // inflating Intro/Lance of Qingloong/Windqueller/Outro Discipline all by +240%, not just Finale's
+  // own multiplier as the kit text requires. Same bug class as the Jinhsi element-scoping bug: an
+  // effect meant for one named move leaking to the whole kit.
+  it("S6's totalMult does NOT leak into other damage blocks (was leaking into the whole kit)", () => {
+    const s6 = JIYAN_BLOCKS.find(b => b.id === 'jiyan.chain.s6');
+    expect(s6.effects[0].scopedToBlockId).toBe('jiyan.forte.emerald-storm-finale');
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jiyan'], JIYAN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS6 = resolveHitComposedDps(JIYAN_BLOCKS, steps, ctx, 3000, 'aero', 'Main DPS', null, 6);
+    const withoutS6Blocks = JIYAN_BLOCKS.filter(b => b.id !== 'jiyan.chain.s6');
+    const withoutS6 = resolveHitComposedDps(withoutS6Blocks, steps, ctx, 3000, 'aero', 'Main DPS', null, 6);
+    // Since no jiyan.forte.emerald-storm-finale block exists (Finale is never cast in the real
+    // rotation), the scoped-but-target-missing S6 effect should be fully inert — same total either way.
+    expect(withS6.totalDamage).toBeCloseTo(withoutS6.totalDamage, 5);
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jiyan'], JIYAN_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(JIYAN_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'aero', 'Main DPS');
@@ -84,5 +106,49 @@ describe('triggerEngine parity — Jiyan', () => {
 
   it('no block in his kit is libDmg-categorized (confirms the dmgFocus fix)', () => {
     expect(JIYAN_BLOCKS.some(b => b.damage?.category === 'libDmg')).toBe(false);
+  });
+
+  // Added 2026-09-04 (Finale-modeling pass, REMAINING_WORK.md 1c): Emerald Storm: Finale now has a
+  // real damage block, matching SKILL_MULTIPLIERS.Jiyan's 'Forte' row (142.91%×2+428.73%) and counted
+  // as Heavy ATK DMG per the kit text ("considered Heavy Attack DMG").
+  it('Emerald Storm: Finale is modeled as a real heavyDmg-categorized block matching SKILL_MULTIPLIERS', () => {
+    const finale = JIYAN_BLOCKS.find(b => b.id === 'jiyan.forte.emerald-storm-finale');
+    expect(finale).toBeDefined();
+    expect(finale.damage.category).toBe('heavyDmg');
+    // 142.91%×2 + 428.73% = three hits: two at 142.91 ATK%, one at 428.73 ATK%.
+    expect(finale.damage.hits).toEqual([
+      { atkPct: 142.91 }, { atkPct: 142.91 }, { atkPct: 428.73 },
+    ]);
+    expect(finale.trigger).toEqual({ type: 'cast', on: 'Forte:Emerald Storm: Finale' });
+  });
+
+  it('Finale is correctly NOT part of the real CHARACTER_ROTATIONS (Liberation fires as Prelude before Resolve reaches 30)', () => {
+    const rotation = CHARACTER_ROTATIONS['Jiyan'];
+    expect(rotation.some(s => s.skill === 'Emerald Storm: Finale')).toBe(false);
+    expect(rotation.some(s => s.skill === 'Emerald Storm: Prelude')).toBe(true);
+  });
+
+  // S6's scoped totalMult now has a real target — proves the previously-inert scoping (see the S6 test
+  // above) actually boosts Finale's own damage once Finale is cast, without leaking into the rest of
+  // the kit (Intro/Lance of Qingloong/Windqueller/Outro Discipline totals stay identical with/without S6).
+  it("S6's Momentum totalMult now boosts Finale's own damage (previously inert — no Finale block existed)", () => {
+    const finaleRotation = [
+      { type: 'Intro', skill: 'Tactical Strike' },
+      { type: 'Forte', skill: 'Emerald Storm: Finale' },
+    ];
+    const steps = deriveStepsFromRotation(finaleRotation, JIYAN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+
+    const withS6 = resolveHitComposedDps(JIYAN_BLOCKS, steps, ctx, 3000, 'aero', 'Main DPS', null, 6);
+    const withoutS6Blocks = JIYAN_BLOCKS.filter(b => b.id !== 'jiyan.chain.s6');
+    const withoutS6 = resolveHitComposedDps(withoutS6Blocks, steps, ctx, 3000, 'aero', 'Main DPS', null, 6);
+
+    const finaleHit = withS6.hitLog.find(h => h.blockId === 'jiyan.forte.emerald-storm-finale');
+    const finaleHitNoS6 = withoutS6.hitLog.find(h => h.blockId === 'jiyan.forte.emerald-storm-finale');
+    expect(finaleHit.damage).toBeGreaterThan(finaleHitNoS6.damage);
+
+    const introHit = withS6.hitLog.find(h => h.blockId === 'jiyan.intro.tactical-strike');
+    const introHitNoS6 = withoutS6.hitLog.find(h => h.blockId === 'jiyan.intro.tactical-strike');
+    expect(introHit.damage).toBeCloseTo(introHitNoS6.damage, 5);
   });
 });

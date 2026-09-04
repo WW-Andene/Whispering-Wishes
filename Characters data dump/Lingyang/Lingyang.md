@@ -252,3 +252,38 @@ available option" convention already used for other no-signature 5★s like Enco
    `['Lingyang', 'T3', 'T4']`.
 
 2 tests added/updated, full suite green (1334/1334).
+
+**Third pass (2026-09-04), independent re-derivation from scratch (this pass does not trust either prior
+pass's claims and re-checks all 9 dimensions again):**
+
+Re-segmented the whole kit from this dump directly (every Basic/Heavy/Mid-air/Dodge Counter/Skill/
+Liberation/Forte/Intro/Outro move and every buff/Resonance Chain node), then diffed against
+`characters.js` + `lingyang.blocks.js`. SKILL_MULTIPLIERS, CHARACTER_ROTATIONS (base steps),
+RESONANCE_CHAIN_DATA (S1-S6), CHAR_BUFF_TABLE (Lion's Vigor self-buff, Diligent Practice, Lion's Pride —
+all three from the prior pass), dmgFocus, weapon data, echo data, and icons all independently re-verified
+as matching this source exactly — no new issues found in those 8 dimensions.
+
+**One real bug found (dimension 8, engine-block parity — a "missing move" bug in the same class as
+Jiyan's Emerald Storm: Finale)**: the dump's own "Burst Combo"/"Sample rotation" text explicitly ends the
+Striding Lion loop with two named, multiplier-published moves — **Stormy Kicks** (36.03%×8+192.15%, the
+Basic ATK replacement once Lion's Spirit drops below 10) and **Tail Strike** (174.96%×2, the Mid-air
+Attack Stormy Kicks unlocks) — immediately before Outro: "...Basic: Feral Gyrate P1 → Basic: Stormy
+Kicks → Mid-Air Attack: Tail Strike → Outro." Neither move had any SKILL_MULTIPLIERS row or engine
+damage block; CHARACTER_ROTATIONS['Lingyang'] jumped straight from the Basic/Skill alternation loop to
+Outro, silently dropping these two real hits from every DPS calc. Unlike Furious Punches/Swift Punches
+(the pre-burst Forte-filling branch, which the source's own review explicitly says the optimal burst
+skips entirely by filling Forte via Intro+Liberation alone — correctly still unmodeled), Stormy
+Kicks/Tail Strike ARE part of the source's own documented optimal rotation, so — following the Jiyan
+Finale precedent (model accurately, and add to the rotation only when the source's own logic supports
+it) — both were added:
+- New SKILL_MULTIPLIERS rows: `['Basic ATK', 'Stormy Kicks', '36.03%×8+192.15%', ...]` and
+  `['Mid-air', 'Tail Strike', '174.96%×2', ...]`.
+- New CHARACTER_ROTATIONS steps `{ type: 'Basic ATK', skill: 'Stormy Kicks' }` and
+  `{ type: 'Mid-air', skill: 'Tail Strike' }` inserted right before the existing Outro step, matching the
+  dump's own sample rotation order.
+- New engine blocks `lingyang.basic.stormy-kicks` and `lingyang.midair.tail-strike` in
+  `lingyang.blocks.js`, both `category: 'basicDmg'` (Mid-air Attack folds into the Basic ATK bucket per
+  this project's convention — the source's own Damage Profile section has no separate Mid-air bucket).
+
+4 new/updated tests (2 new: block/rotation presence + real-firing-in-simulated-rotation), full suite
+green (1473/1473).

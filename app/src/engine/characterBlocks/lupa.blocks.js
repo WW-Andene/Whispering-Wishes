@@ -155,9 +155,14 @@ export const LUPA_BLOCKS = [
     id: 'lupa.chain.s2',
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
+    timing: {}, target: { scope: 'whole-team' },
     effects: [{ stat: 'elemDmg', value: 20, stacking: 'stacking', maxStacks: 2 }],
-    note: 'Fusion DMG Bonus +20%/stack, stacking up to 2 stacks (40% max, corrected from allDmg to elemDmg per the re-audit — Fusion DMG Bonus is element-specific, not all-element) — modeled as per-stack stacking rather than a flat 40%.',
+    // Fixed 2026-09-04: target scope was 'self' but the dump's own text is explicit — "grants the WHOLE
+    // TEAM +20% Fusion DMG Bonus" — matching this file's own lupa.libbuff.pack-hunt (Pack Hunt is
+    // likewise dump-confirmed whole-team and already correctly scoped that way). A self-only scope
+    // silently dropped this buff for every teammate in any team-wide calc while Lupa herself saw no
+    // functional difference (self is already inside whole-team), which is exactly how this stayed hidden.
+    note: 'Fusion DMG Bonus +20%/stack, stacking up to 2 stacks (40% max, corrected from allDmg to elemDmg per the re-audit — Fusion DMG Bonus is element-specific, not all-element) — modeled as per-stack stacking rather than a flat 40%. Applies to the whole team per the dump\'s own wording.',
   },
   {
     id: 'lupa.chain.s3',

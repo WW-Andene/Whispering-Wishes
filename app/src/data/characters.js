@@ -846,12 +846,16 @@ const CHARACTER_DATA = {
     ascension: { boss: "Suncoveter's Reach", common: 'Exoswarm Pendant', specialty: 'Edelschnee' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Twin Nova - Nebulous Cannon', 'Rite of Gilded Revelation 5pc'], bestWeapon: "Daybreaker's Spine",
-    // weaponAlts added 2026-08-17 from the source's live build calcs: Blazing Justice (83.4%) and
-    // Moongazer's Sigil (80.7%) are the top non-signature 5★ Gauntlets (ahead of Verity's Handle 80.2%,
-    // Tragicomedy 74.5%, Abyss Surges 66.5%); Pulsation Bracer (85.7%, the permanent-banner F2P pick,
-    // the source's explicit second-best overall) and Celestial Spiral (65.9%) are the best 4★s; Gauntlets of
-    // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
-    weaponAlts: { alt5: ['Blazing Justice', "Moongazer's Sigil"], alt4: ['Pulsation Bracer', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
+    // weaponAlts fixed 2026-09-04 (Phase A audit) against a fresh the source dump's own weapon-ranking
+    // list and cross-checked against weapons.js's own rarity fields: Pulsation Bracer is a real 5★
+    // weapon (weapons.js: rarity 5) — the prior version wrongly filed it under alt4 (its own comment
+    // even mis-asserted "the best 4★s"), which both misfiled the source's explicit #2-overall pick
+    // (85.70%, ahead of Blazing Justice's 80.70% and Moongazer's Sigil's 80.40%) as a 4★ and bumped
+    // Moongazer's Sigil into the alt5 slot Pulsation Bracer should have held. Now alt5 = top 2
+    // non-signature 5★s by the source's own % ranking (Pulsation Bracer, Blazing Justice); alt4 = top 2
+    // real 4★s (Celestial Spiral 65.9%, Aether Strike 63.9%, both weapons.js rarity 4); alt3 unchanged
+    // (Gauntlets of Night, the "<Weapon Type> of Night" 3★ fallback convention used elsewhere).
+    weaponAlts: { alt5: ['Pulsation Bracer', 'Blazing Justice'], alt4: ['Celestial Spiral', 'Aether Strike'], alt3: ['Gauntlets of Night'] },
     teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who switches between Tune Rupture and Fusion Burst Resonance Modes, dealing massive Resonance Liberation DMG through Seraphic Duet and Heavenfall Edict.',
@@ -887,7 +891,15 @@ const CHARACTER_DATA = {
     skills: ["Mix-'n'-Match", "Tactical Tweaks", "Party 'til Dawn!", "My Turn!"],
     ascension: { boss: 'Nightmare Flashdrive', common: 'Mech Core', specialty: 'Past Reveries' },
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Combustor' },
-    bestEchoes: ['Reminiscence - Nightmare: Adam Smasher', 'Shadow of Shattered Dreams 1pc + Void Thunder 2pc'], bestWeapon: 'Skull Thrasher',
+    // bestEchoes corrected 2026-09-04 (fresh Phase A audit): was ['Reminiscence - Nightmare: Adam
+    // Smasher', 'Shadow of Shattered Dreams 1pc + Void Thunder 2pc'] — the dump's own "Special Echo Set
+    // option" (a personal-damage-focused alternative that explicitly "sacrifices team buffing"), not
+    // her actual **Best Echo Set**. The dump's own scored ranking gives Moonlit Clouds 100.00% (the
+    // top score, matching this field's [Main Echo, 'Set 5pc'] convention used by every other character
+    // in this file — e.g. line 35's ['Impermanence Heron', 'Moonlit Clouds 5pc']), with Bell-Borne
+    // Geochelone as its primary Main Echo recommendation ("ideal cast timing... best in non-Quickswap
+    // play"; Impermanence Heron listed as the Quickswap-specific alternative).
+    bestEchoes: ['Bell-Borne Geochelone', 'Moonlit Clouds 5pc'], bestWeapon: 'Skull Thrasher',
     // weaponAlts added 2026-08-17 from the source's live build calcs (Lucy+Mornye team average): Spectrum
     // Blaster (96.3%) and Static Mist (93.3%) are the top non-signature 5★ Pistols (ahead of Phasic
     // Homogenizer, Woodland Aria, The Last Dance, Spectral Trigger, Lux & Umbra); Solar Flame (79.1%)
@@ -1000,12 +1012,18 @@ const CHARACTER_DATA = {
     // Wing Polarizer) — both confirmed same source.
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' },
     bestEchoes: ['Heart of Evil\'s Purge 5pc'], bestWeapon: 'Glint of Clouds',
-    // weaponAlts added 2026-08-18 from the source's own pre-release "Recommended Weapons" ranking
-    // (character/1413, datamined ahead of release — the source has no build guide published yet):
-    // Blazing Brilliance is the only ranked non-signature 5★; Endless Collapse the only ranked 4★;
-    // Sword of Night is the 3★ fallback (unranked by the source), matching the "<Weapon Type> of Night"
-    // naming convention used elsewhere.
-    weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Endless Collapse'], alt3: ['Sword of Night'] },
+    // weaponAlts corrected 2026-09-04 (full 9-dimension re-audit, fresh live dump): the prior entry
+    // (Blazing Brilliance/Endless Collapse) was sourced from the source's pre-release datamined ranking
+    // before a real build guide existed — same stale-placeholder pattern already flagged/fixed at this
+    // table's other entries (e.g. Rover: Havoc's/Jinhsi's own comments above naming weapons that "never
+    // appear anywhere in the source's ranked weapon list"). The live dump's own "Best Weapons" ranking
+    // makes Blazing Brilliance explicitly wrong for alt5: it's #8 of 11 (69.51%), with the dump's own
+    // text calling it "Not recommended over any other 5★" (wrong stat priority — Crit DMG over her
+    // favored Crit Rate). Red Spring is the real best non-signature 5★ (#2, 78.73%, "Decent
+    // alternative"). Endless Collapse never appears anywhere in the dump's ranked weapon list at all (it's
+    // merely a banner-featured 4★, not a ranked recommendation); Feather Edge is the dump's own explicit
+    // "Best 4★ option" (65.53%), matching the alt4 convention used everywhere else in this table.
+    weaponAlts: { alt5: ['Red Spring'], alt4: ['Feather Edge'], alt3: ['Sword of Night'] },
     teams: ['Qingxiao + Denia + Mornye', 'Qingxiao + Lynae + Mornye'] },
   'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'A loner treading into illusive depths, of Mengzhou. HP-scaling Fusion Broadblade wielder who channels Yin Vessel and Yang Font stances. On-field Fusion DPS whose Heavy Attacks and ATK/DMG scale off Max HP, entering the Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
@@ -1463,7 +1481,13 @@ const CHARACTER_DATA = {
   // shows Basic at a genuine 22.8% share (Basic Attack - Stringblade + Ephemeral Transcendence's own
   // Basic Attack, both correctly categorized basicDmg in the engine blocks) — comparable in size to
   // Liberation's 28.5%, not a trivial slice that should be gated out of basicDmg-buff relevance.
-  ['Qingxiao',      ['Heavy ATK', 'Liberation', 'Basic ATK'], [],                                ['Tune Strain - Interfered']],
+  // dmgFocus gained 'Outro' 2026-09-04 (full 9-dimension re-audit, fresh dump): Lingering Song is a
+  // genuine 10.8% (213,574 of 1,983,070) damage share per the dump's own Damage Profile — her 4th-
+  // largest bucket, above the established 6.8%+ include threshold (e.g. Calcharo's Outro at 7.6%,
+  // Encore's at 12.9%) and well clear of the exclude zone (Echo 4.1%/Skill 1.4%/Intro 1.3% correctly
+  // stay out). Now outroDmg-categorized in qingxiao.blocks.js (was uncategorized, silently rejecting
+  // Outro DMG Bonus buffs — same fix class as Lynae/Mornye/Phoebe's missing-category bugs).
+  ['Qingxiao',      ['Heavy ATK', 'Liberation', 'Basic ATK', 'Outro'], [],                        ['Tune Strain - Interfered']],
   ['Jingran',       ['Heavy ATK', 'Liberation'],     [],                                      []],
   ['Yangyang: Xuanling', ['Heavy ATK', 'Basic ATK'], [],                                      ['Havoc Bane']],
   // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against the fresh dump's own
@@ -1523,7 +1547,15 @@ const CHARACTER_DATA = {
   // was entirely missing from both columns.
   ['Zhezhi',        ['Basic ATK'],                    ['Basic ATK'],                           []],
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
-  ['Phoebe',        ['Skill'],                       [],                                      ['Frazzle']],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Skill' was wrong as the sole
+  // focus — the dump's own Damage Profile has Skill at only 3.6% (13,133), in this project's established
+  // ambiguous-exclude zone. Her three real dominant buckets are Heavy ATK 43.8% (463,904 — Starflash +
+  // Absolution Litany, the latter explicitly named "Heavy Attack: Absolution Litany" in the dump and
+  // recategorized to heavyDmg this same pass), Liberation 17.2% (181,976), and Basic ATK 14.3%
+  // (151,021 — Chamuel's Star, explicitly "considered Basic Attack DMG" per the dump and recategorized
+  // from skillDmg to basicDmg this same pass). Same category-vs-dump-text miscategorization bug class
+  // already found on Luuk Herssen/Zhezhi/Cantarella.
+  ['Phoebe',        ['Heavy ATK', 'Liberation', 'Basic ATK'], [],                              ['Frazzle']],
   // dmgFocus/buffs corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) — same bug shape as
   // Zhezhi's fix just above: 'Coordinated ATK' was wrong in BOTH columns. Kit text is explicit both
   // Flowing Suffocation and its Diffusion summon-chain are "considered Basic Attack DMG" (fixed in
@@ -1547,7 +1579,14 @@ const CHARACTER_DATA = {
   // teammate's Heavy ATK or Liberation DMG Bonus buff was silently routed to zero for her in
   // calcTeamStats.js's routeTypeBonuses(). Same class of finding as Cartethyia's own dmgFocus fix.
   ['Ciaccona',      ['Basic ATK', 'Heavy ATK', 'Liberation', 'Skill'], ['Aero Buff'],          ['Erosion']],
-  ['Lupa',          ['Liberation', 'Skill'],         ['DMG Buff'],                            ['Fusion RES Shred']],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) — 'Heavy ATK' was missing despite
+  // being a real, non-negligible damage share (~6.5% per the dump's own damage-profile breakdown, via
+  // Wolf's Claw + Firestrike, both real steps in her modeled rotation) — above this file's established
+  // 4.6-5.5% ambiguous-exclude zone (see Zhezhi/Cantarella's own dmgFocus comments), so a teammate's
+  // Heavy ATK DMG Bonus buff was silently routed to zero for her in calcTeamStats.js's routeTypeBonuses().
+  // 'Basic ATK' (~5.1%) and 'Echo' (~5%) both sit inside that ambiguous zone and are left out, consistent
+  // with the same precedent.
+  ['Lupa',          ['Liberation', 'Skill', 'Heavy ATK'], ['DMG Buff'],                        ['Fusion RES Shred']],
   // dmg-type tag corrected 2026-09-02 against a fresh the source dump: 'Heavy ATK' was wrongly kept for
   // Absolute Fullness (the 2026-08-17 correction's own comment claimed it was "true Heavy ATK" — wrong,
   // its kit text explicitly says "considered as Resonance Liberation DMG", same as her other
@@ -1795,7 +1834,8 @@ const CHARACTER_DATA = {
   ['Aemeath',       11025, 425, 1149, 125],
   ['Sigrika',       10775, 438, 1137, 125],
   ['Rebecca',       11600, 400, 1173, 150],
-  ['Lucy',          11025, 425, 1148, 150],
+  // DEF corrected 2026-09-04 (Phase A audit): was 1148, off-by-one vs the dump's stated Lv.90 DEF 1149.
+  ['Lucy',          11025, 425, 1149, 150],
   ['Yangyang: Xuanling', 11025, 425, 1149, 150],
   ['Denia',         11025, 425, 1148, 150],
   ['Lucilla',       12238, 375, 1198, 150],
@@ -2848,12 +2888,21 @@ const CHAR_BUFF_TABLE = {
     },
     note: 'Dual Resonance Mode: Fusion Burst mode Outro amplifies team Fusion Burst DMG by 60% (30s) and inflicts Fusion Burst (calcFusionBurstDmg reaction, added 2026-09-02 — previously missing entirely); Tune Strain mode Outro grants the next Resonator 15-40% All DMG Amp (16s) and her Tune Strain response (0.12% DMG/stack/Boost, +1 max Strain stack, +10 Tune Break Boost team via Etched Colors). Now resolved mode-exclusively (2026-09-02) instead of the Strain kit firing unconditionally with no Fusion Burst credit at all.',
   },
+  // Phase A audit (2026-09-04): selfBuffs was missing the Inherent Skill "Slow Motion"'s Echo-mode
+  // branch entirely — its own kit text reads "Casting Spotlight — Chafe mode: Glacio RES of targets
+  // near the active Resonator -8% for 30s... Echo mode: team +25% Echo Skill DMG Bonus for 30s. Ends
+  // on mode switch." Only the Chafe-mode debuff half (resShred) was modeled; the Echo-mode team
+  // echoDmg buff half was dropped entirely, not just left unmodeled-with-a-note like other dual-mode
+  // branches elsewhere in this file. Added.
   'Lucilla': {
     outroBuffs: [{ stat: 'elemDmg', value: 60, target: 'team', duration: 30, condition: 'Glacio Chafe mode' }, { stat: 'echoDmg', value: 50, target: 'next', duration: 14, condition: 'Echo mode' }],
     libBuffs: [],
-    selfBuffs: [{ stat: 'critRate', value: 20, target: 'self', duration: 10, condition: 'Resonance Chain 1' }],
-    debuffs: [{ stat: 'resShred', value: 8, duration: 30, condition: 'Glacio mode, Inherent Skill' }],
-    note: 'Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s).',
+    selfBuffs: [
+      { stat: 'critRate', value: 20, target: 'self', duration: 10, condition: 'Resonance Chain 1' },
+      { stat: 'echoDmg', value: 25, target: 'team', duration: 30, condition: 'Echo mode, Inherent Skill: Slow Motion, on casting Spotlight' },
+    ],
+    debuffs: [{ stat: 'resShred', value: 8, duration: 30, condition: 'Glacio Chafe mode, Inherent Skill: Slow Motion, on casting Spotlight' }],
+    note: 'Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s). Inherent Skill Slow Motion (on casting Spotlight): Chafe mode -8% Glacio RES near the active Resonator (30s); Echo mode team +25% Echo Skill DMG Bonus (30s) — ends early on mode switch either way.',
   },
   'Mornye': {
     outroBuffs: [{ stat: 'allDmg', value: 25, target: 'team', duration: 30 }],
@@ -2881,7 +2930,12 @@ const CHAR_BUFF_TABLE = {
     tuneBreak: {
       boostToTeam: 0,
       baseTuneBreakBoost: 10,
-      ruptureDmgMult: 300, // Tune Rupture Response — Particle Jet
+      // ruptureDmgMult corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against a fresh the
+      // source dump: was 300, an unsourced rounded approximation — the dump's own Forte Circuit
+      // Multipliers (Lv.10) table gives the real exact value directly: "Tune Rupture Response -
+      // Particle Jet: 298.22% Tune AMP", same "use the real sourced value, not a rounded estimate"
+      // fix class as Lynae's ruptureDmgMult (1880.75, not ~350).
+      ruptureDmgMult: 298.22, // Tune Rupture Response — Particle Jet (Lv.10, exact)
       strainDmgPerStack: 0.12,
       maxStrainStacks: 3, // base 2 + 1 from Mornye
       interferedDmgAmp: 40, // targets with Interfered Marker take up to 40% more DMG (0.25% per 1% ER over 100%)
@@ -3072,12 +3126,23 @@ const CHAR_BUFF_TABLE = {
   },
   'Qiuyuan': {
     outroBuffs: [{ stat: 'echoDmg', value: 50, target: 'next', duration: 14 }],
-    libBuffs: [{ stat: 'critDmg', value: 30, target: 'team', duration: 30, condition: 'Requires 65%+ Crit Rate for full value; +2% Crit DMG per 1% Crit Rate over 50%' }],
-    selfBuffs: [],
+    // libBuffs target corrected 2026-09-04 from 'team' to 'self' — the dump's own Review text
+    // explicitly disambiguates the kit's "grants all nearby active team members" wording: "this ... [the
+    // Liberation Crit DMG buff] ... apply[ies] only to the active resonator, not Coordinated/off-field
+    // characters." Was silently granting team-wide Crit DMG instead of active-resonator-only.
+    libBuffs: [{ stat: 'critDmg', value: 30, target: 'self', duration: 30, condition: 'Requires 65%+ Crit Rate for full value; +2% Crit DMG per 1% Crit Rate over 50%. Applies only to the active on-field Resonator, not team-wide.' }],
+    // selfBuffs added 2026-09-04 (fresh dump re-audit, first full Phase A pass on Qiuyuan): Bamboo's Shade
+    // was entirely unmodeled — real BASE-KIT Forte Circuit effect (not sequence-gated; distinct from the
+    // S2 node above which adds an ADDITIONAL +30% on top of this base one), "at 400 Soliloquy, grants all
+    // nearby active team members +30% Echo Skill DMG Bonus for 30s". Per the source's own Review text this
+    // applies only to whichever Resonator is actively on-field at cast time, not a free-for-all team buff
+    // to off-field members — modeled as target:'self' since Qiuyuan himself is on-field when his own Forte
+    // gauge crosses 400.
+    selfBuffs: [{ stat: 'echoDmg', value: 30, target: 'self', duration: 30, condition: "Bamboo's Shade: base kit, on Forte Circuit reaching 400 Soliloquy — applies only to whoever is the active on-field Resonator" }],
     weaponBuffs: [{ stat: 'echoDmg', value: 20, target: 'team', duration: 30, condition: 'Signature weapon (Emerald Sentence): triggers on Intro Skill cast' }],
     debuffs: [],
     // Corrected 2026-08-16: Liberation buff was mislabeled as echoDmg — real effect is Crit DMG.
-    note: 'Outro: 50% Echo Skill DMG Amp (14s). Lib: conditional Crit DMG buff (up to +30% at 65%+ Crit Rate), not a flat Echo DMG buff. Sig weapon: 20% team Echo DMG on Intro cast.',
+    note: 'Outro: 50% Echo Skill DMG Amp (14s). Lib: conditional Crit DMG buff (up to +30% at 65%+ Crit Rate), not a flat Echo DMG buff. Sig weapon: 20% team Echo DMG on Intro cast. Self: Bamboo\'s Shade base-kit +30% Echo Skill DMG Bonus at 400 Forte (active resonator only).',
   },
   'Chisa': {
     outroBuffs: [],
@@ -3817,7 +3882,11 @@ const SKILL_MULTIPLIERS = {
     ['Skill', "It's Big Boomin' Time! / Come 'n' Get Me!", '23.66%×4+35.49%×4 / 23.66%+4.74%+23.66%×2+137.22%+11.83%×2', 'Closes distance and swaps stance.'],
     ['Liberation', "Party 'til Dawn!", '24.30% / 48.60% (1st enhancement) / 72.90% (2nd enhancement), auto-fires repeatedly for 9.5s', 'Mk. 31 HMG channel; pressing/holding Basic ATK or Liberation during it ramps to the next firepower tier and builds Overload faster.'],
     ['Liberation', 'BOOM! Fireworks!', '63.62%+572.58%', 'Auto-casts when the channel ends or Overload maxes.'],
-    ['Forte', 'Hack Response - Meltdown', '2358.89% (Hack DMG)', 'Bonus DMG when allies inflict Hack-Interfered.'],
+    // Value corrected 2026-09-04 (fresh Phase A audit): this row was left at the stale 2358.89% .mht
+    // snapshot value while CHAR_BUFF_TABLE['Rebecca'].tuneBreak.ruptureDmgMult was already corrected to
+    // 1186.5 on 2026-09-02 per the user-pasted source text taking priority — a two-path desync (this
+    // display-only informational row never got the same fix). Corrected to match.
+    ['Forte', 'Hack Response - Meltdown', '1186.50% (Hack DMG)', 'Bonus DMG when allies inflict Hack-Interfered.'],
     ['Intro', "Yo, It's Big Boomin' Time!", '27.04%×6+40.56%+67.60%', 'Huntress-mode opener that also swaps her to Guts.'],
     ['Intro', "Hey, Leadhead, Come 'n' Get Me!", '10.14%+30.42%+40.56%×4', 'Guts-mode opener that also swaps her to Huntress.'],
     ['Outro', 'Preem Choom', 'Turret (2.5% Electro DMG/hit, 14s) + Edgerunner Bonds (15% All DMG Amp, 14s) + Overlimit (0.5%/0.2s Heavy ATK DMG Amp, up to 35%)', "Leaves a turret; buffs next ally's All DMG and Heavy ATK DMG."],
@@ -4319,7 +4388,7 @@ const SKILL_MULTIPLIERS = {
     ['Heavy ATK', 'Lance of Qingloong 1-3', '65.52%×8 → 61.55%×8 → 66.76%×8', 'Qingloong Mode Heavy ATK replacement (10s duration, 16s CD, 125 Energy cost); 3-part combo, each part hits 8×; counted as Heavy ATK DMG.'],
     ['Mid-air', 'Plunging Attack + Follow-up', '123.26%+155.66%'],
     ['Mid-air', 'Banner of Triumph', '79.52%', 'Extra mid-air follow-up, only usable right after Windborne Strike or an airborne Windqueller.'],
-    ['Dodge Counter', 'Standard', '125.84%×2'],
+    ['Dodge Counter', 'Standard', '125.85%×2'], // fixed 2026-09-04 (Phase A audit): was 125.84%, source (Jiyan dump, Lv.10 multiplier table) reads 125.85%.
     ['Skill', 'Windqueller', '106.36%×4', '7s cooldown; at 30+ Resolve consumes 30 Resolve for +20% DMG outside Qingloong Mode; free +20% DMG (no Resolve cost) while in Qingloong Mode.'],
     ['Forte', 'Emerald Storm: Finale', '142.91%×2+428.73%', 'At 30+ Resolve, Liberation consumes 30 Resolve to cast Finale instead of Prelude (counted as Heavy ATK DMG; castable mid-air at low altitude).'],
     ['Liberation', 'Emerald Storm: Prelude', 'No direct DMG', 'Deals no direct DMG below 30 Resolve — only triggers Qingloong Mode (10s, 16s CD, 125 Energy cost). See "Lance of Qingloong 1-3" (Heavy ATK) for the actual damage dealt during Qingloong Mode, and "Emerald Storm: Finale" (Forte) for the 30+ Resolve branch.'],
@@ -4390,8 +4459,13 @@ const SKILL_MULTIPLIERS = {
   // here, unlike most other characters in this pass.
   'Lingyang': [
     ['Basic ATK', 'Majestic Fists Stage 1-5', '59.65% → 79.53% → 72.87%×2 → 20.41%×5+43.72% → 152.49%', 'Stage 5 can be replaced by Feral Roars (79.53%×2) after casting Furious Punches.'],
+    // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): Stormy Kicks/Tail Strike had real,
+    // published Lv.10 multipliers embedded in the Forte row's combined string but no own SKILL_MULTIPLIERS
+    // row, leaving CHARACTER_ROTATIONS' new steps for them unresolvable. Split out as their own rows.
+    ['Basic ATK', 'Stormy Kicks', '36.03%×8+192.15%', "Striding Lion Basic ATK replacement once Lion's Spirit drops below 10; unlocks the Tail Strike Mid-air Attack."],
     ['Heavy ATK', 'Standard', '145.73%'],
     ['Mid-air', 'Plunging Attack', '123.27%'],
+    ['Mid-air', 'Tail Strike', '174.96%×2', 'Unlocked by Stormy Kicks.'],
     ['Dodge Counter', 'Standard', '126.05%×2'],
     ['Skill', 'Ancient Arts → Furious Punches', '132.61% → 76.25%×2', 'Basic ATK 3-5 or Feral Roars swaps Skill to Furious Punches; no cooldown, doesn\'t reset the Basic ATK cycle.'],
     ['Forte', 'Unification of Spirits (Striding Lion)', '172.37% (Glorious Plunge) · 87.08%×2+116.11%→31.77%×6 (Feral Gyrate) · 82.88%×2 (Mountain Roamer) · 36.03%×8+192.15% (Stormy Kicks) · 174.96%×2 (Tail Strike)', 'At full Lion\'s Spirit, Heavy ATK casts Glorious Plunge and enters Striding Lion — an airborne enhanced-attack state.'],
@@ -4560,6 +4634,11 @@ const SKILL_MULTIPLIERS = {
   // was '21%' vs the real 41.76%; Liberation was '400%' vs the real 795.24%). Also added the missing
   // Mid-air Attack and Dodge Counter rows, and split Forte's 3 Heavy ATK finishers into per-hit values
   // instead of a single summed number each.
+  // Further additions 2026-09-04 (fresh dump re-audit, first full Phase A pass): the S3+ Skill replacement
+  // "Straw Cape in Drizzly Rain" (500% ATK) and its S3+ Outro replacement "Sheath Fallen, New Shoots
+  // Revealed" (500% ATK) were real named moves with exact sourced multipliers, entirely missing from this
+  // table before now — added per the standing rule that real moves get a multiplier row even when
+  // situational/sequence-gated (Qingxiao's Dodge Counters precedent), not force-fit into the base rotation.
   'Qiuyuan': [
     ['Basic ATK', 'Stage 1-3', '41.76% → 34.80%×2 → 24.64%×4+65.69%', 'Standard combo before entering Inkwash form.'],
     ['Heavy ATK', 'Standard', '165.61%', 'Charged strike, a solid single hit.'],
@@ -4571,7 +4650,9 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'To Teach / To Save / To Sacrifice', '91.44%×5 / 38.44%×3+31.45%×3 / 217.70%', 'Heavy ATK finishers in Inkwash form, each with a different follow-up effect.'],
     ['Liberation', 'Sundering Strike', '795.24%', 'Ultimate nuke.'],
     ['Intro', 'Attack the Must-Defend', '9.55%×5 + 47.72% + 143.15%', 'Swap-in opener, counted as Heavy ATK DMG.'],
+    ['Skill', 'Straw Cape in Drizzly Rain', '500%', 'S3+ only: replaces Skill once Concerto Energy is full outside Inksplash of Mind (once per 20s); counted as Echo Skill DMG, also grants To Teach/To Save/To Sacrifice +600% DMG Mult and +100% Crit DMG for 6s.'],
     ['Outro', 'Strike Before Ready', '100% ATK + 50% Echo Skill DMG Amp (14s)', 'Swap-out buff granting the next Resonator Echo Skill DMG Amp.'],
+    ['Outro', 'Sheath Fallen, New Shoots Revealed', '500% ATK', 'S3+ only: outside Co-op, casting Straw Cape in Drizzly Rain replaces the next Outro with this move; counted as Echo Skill DMG.'],
   ],
   // Corrected 2026-08-17 against the source's character #1606 sheet (Lv.10 skill attributes): every
   // damage row was roughly half its real value (e.g. Real Fantasy's 3 hits were '162% → 171% → 180%'
@@ -5223,6 +5304,14 @@ const CHARACTER_ROTATIONS = {
     { type: 'Forte', skill: 'Unification of Spirits', note: "At 100/100 Lion's Spirit, HOLD Heavy Attack for Glorious Plunge and enter the airborne Striding Lion state (also enterable via Basic ATK right after Lion Awakens or Strive: Lion's Vigor if Lion's Spirit is already full)." },
     { type: 'Basic ATK', skill: 'Majestic Fists', note: "While in Striding Lion, tap Basic Attack for the 2-hit Feral Gyrate — alternate with the Skill step below (never repeat the same input twice in a row). Once Lion's Spirit drops below 10, Basic Attack becomes the 8-hit+finisher Stormy Kicks instead, which unlocks the Tail Strike Mid-air Attack." },
     { type: 'Skill', skill: 'Ancient Arts', note: "Press Skill for Mountain Roamer while airborne in Striding Lion — alternating Basic Attack/Skill taps like this maximizes hits landed before Lion's Spirit runs out (drains to 0 within 5s, or 10s under Strive: Lion's Vigor)." },
+    // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the source's own sample rotation
+    // explicitly ends the Striding Lion loop with these two named hits ("Basic: Feral Gyrate P1 →
+    // Basic: Stormy Kicks → Mid-Air Attack: Tail Strike → Outro") once Lion's Spirit drops below 10 —
+    // real, multiplier-published moves (36.03%×8+192.15% / 174.96%×2) that were entirely missing their
+    // own damage blocks, unlike Feral Roars/Swift Punches (Furious Punches branch) which the source's
+    // own review explicitly says the optimal burst skips by filling Forte via Intro+Liberation alone.
+    { type: 'Basic ATK', skill: 'Stormy Kicks', note: "Once Lion's Spirit drops below 10 (near the end of the Striding Lion window), Basic Attack becomes the 8-hit+finisher Stormy Kicks instead of Feral Gyrate — this also unlocks the Tail Strike Mid-air Attack below." },
+    { type: 'Mid-air', skill: 'Tail Strike', note: "Unlocked by Stormy Kicks — the source's own sample rotation casts this as the last hit of the Striding Lion window before swapping out." },
     { type: 'Outro', skill: 'Frosty Marks', note: 'Swap out to trigger this automatically — a pure-damage AoE finisher (587.94% ATK) with no baseline team buff (S4 Resonance Chain grants the team +20% Glacio DMG for 30s on this Outro).' },
   ],
   // Standard Rotation (S0) — re-verified 2026-08-31 against the source/wuthering-waves/characters/verina's
@@ -6328,9 +6417,13 @@ const RESONANCE_CHAIN_DATA = {
   //   (+25% ATK/stack, max 2 stacks, 20s duration) = up to +50% ATK at 2 stacks. Confirmed correct,
   //   unchanged (atkPct:50 already matched source exactly).
   // S4 Benevolent Grace: casting Resonance Liberation Purge of Light OR Resonance Skill Illuminous
-  //   Epiphany grants the WHOLE NEARBY TEAM +20% Attribute DMG Bonus for 20s (team-wide, not Jinhsi-only —
-  //   same caveat as Camellya's S4/Augusta's S4 above). Confirmed correct value, unchanged (elemDmg:20) —
-  //   TODO: verify calc engine applies this to teammates, not just Jinhsi.
+  //   Epiphany grants the WHOLE NEARBY TEAM +20% Attribute DMG Bonus for 20s (team-wide, not Jinhsi-only).
+  //   "Attribute DMG Bonus" here is the generic universal-DMG-Amp shape (each teammate buffed on THEIR
+  //   OWN element, not restricted to Spectro) — same shape as Galbrena/Phrolova/Lucy's identically-worded
+  //   S4 nodes, which all model it as allDmg with no element condition. WAS wrongly stored as
+  //   { elemDmg: 20 } (paired with a Spectro-only `condition: { element: 'spectro' }` in
+  //   jinhsi.blocks.js), which would silently zero this buff out for every non-Spectro teammate — a real
+  //   bug, not a documented modeling limitation. Corrected 2026-09-04 to { allDmg: 20 }.
   // S5 Frostfire Illumination: DMG Multiplier of Resonance Liberation Purge of Light is increased by 120%
   //   — WAS wrongly modeled as totalMult:15 (no basis in source, wrong stat AND wrong skill entirely).
   //   Corrected to libDmg:120.
@@ -6341,7 +6434,7 @@ const RESONANCE_CHAIN_DATA = {
   //   wrongly totalMult:30 (no basis). Corrected to skillDmg:45 for the flat Illuminous Epiphany DMG Mult
   //   bonus; the per-Incandescence conversion-rate increase is NOT representable as a flat stat here —
   //   TODO: needs Phase 2 schema to hold both the flat skill-mult bonus and the scaling-rate bonus.
-  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { totalMult: 5 }, s3: { atkPct: 50 }, s4: { elemDmg: 20 }, s5: { libDmg: 120 }, s6: { skillDmg: 45 } },
+  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { totalMult: 5 }, s3: { atkPct: 50 }, s4: { allDmg: 20 }, s5: { libDmg: 120 }, s6: { skillDmg: 45 } },
   // Calcharo S1-S6 re-verified verbatim 2026-08-31 against the wiki/Calcharo/Combat's
   // "Resonance Chain" section (Chrome/Windows UA + google.com referer + jsRender, load+9s wait; 2nd attempt
   // cleared Cloudflare), cross-checked against the source/wuthering-waves/characters/calcharo (identical
@@ -6879,6 +6972,15 @@ const RESONANCE_CHAIN_DATA = {
   // bug as S1: still had totalMult:10 despite this comment already saying it's not a DPS stat; zeroed
   // 2026-09-03. S5: Critical Protocol Liberation DMG Mult+40% (was totalMult:10, no basis). S6: Critical
   // Protocol DMG Mult+400% (was deepen:15, no basis)
+  // S5 re-audited 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the dump's S5 node text is actually
+  // TWO separate DMG multipliers — "Critical Protocol DMG Multiplier +40%. Tune Rupture Response -
+  // Particle Jet DMG Multiplier +160%." — libDmg:40 only captures the first half; the +160% Particle
+  // Jet buff has no representable home in this table (Particle Jet isn't a hit-composed SKILL_MULTIPLIERS
+  // row/engine block at all — it's modeled entirely through the separate legacy
+  // CHAR_BUFF_TABLE['Mornye'].tuneBreak.ruptureDmgMult flat-DOT path in calcEngine.js's
+  // calcTuneBreakDmg(), which has no per-sequence-level scaling input at all for any character).
+  // Flagged as a known, schema-level modeling gap rather than silently dropped or force-fit — see
+  // REMAINING_WORK.md.
   'Mornye':       { s1: {}, s2: { critDmg: 32 }, s3: {}, s4: {}, s5: { libDmg: 40 }, s6: { libDmg: 400 } },
   // Roccia R-chain re-verified verbatim 2026-08-31 against the wiki/Roccia/Combat's
   // Resonance Chain section (Chrome/Windows UA + google.com referer + jsRender). Every prior value was
@@ -6907,7 +7009,14 @@ const RESONANCE_CHAIN_DATA = {
   //     Recreation" (100% of Real Fantasy Stage 3 DMG, counted as Heavy Attack DMG, interrupt-immune,
   //     itself re-triggering the loop on landing) — stateful extra-cast mechanic with no flat-schema
   //     equivalent; TODO: needs Phase 2 schema.
-  'Roccia':       { s1: { totalMult: 0 }, s2: { elemDmg: 40 }, s3: { critRate: 10, critDmg: 30 }, s4: { totalMult: 60 }, s5: { libDmg: 20, heavyDmg: 80 }, s6: { defIgnore: 60 } },
+  // s5 raw value fixed 2026-09-04 (two-path desync): was { libDmg: 20, heavyDmg: 80 } — but Commedia
+  // Improvviso!'s damage is categorized heavyDmg (per its own kit text), and Roccia's dpsFocus is
+  // ['Concerto Efficiency', 'Heavy Attack Damage', ...] with no 'Liberation' entry, so the legacy
+  // applyResonanceChain()'s libDmg:20 contribution was silently dropped (never routed into skillDmg —
+  // see calcEngine.js line ~451's dpsFocus.includes('Liberation') gate). Merged into heavyDmg so the
+  // legacy aggregate path actually credits the full +100% (matches the corrected trigger-engine model's
+  // scoped +20% on Commedia + broad +80% on all Heavy ATK, which nets to +100% on Commedia specifically).
+  'Roccia':       { s1: { totalMult: 0 }, s2: { elemDmg: 40 }, s3: { critRate: 10, critDmg: 30 }, s4: { totalMult: 60 }, s5: { heavyDmg: 100 }, s6: { defIgnore: 60 } },
   // Sanhua corrected 2026-08-18 per the source's own Resonance Chain text (previous values were unsourced
   // guesses): S1 Basic ATK V grants Crit Rate+15% for 10s (was atkPct:10, wrong stat -> critRate). S2 is
   // pure utility (Heavy ATK Detonate Stamina cost -10, Anti-interruption on Eternal Frost cast) with no
@@ -7148,10 +7257,18 @@ const RESONANCE_CHAIN_DATA = {
   // TODO: needs Phase 2 schema — S5/S6's bonus-hit-at-X%-of-move-Y's-own-multiplier effects have no home
   // in a single-category flat node (same class of gap as Xiangli Yao's S1, documented above).
   'Zhezhi':       { s1: { critRate: 10 }, s2: {}, s3: { atkPct: 15 }, s4: { atkPct: 20 }, s5: {}, s6: {} },
-  'Qiuyuan':      { s1: { critRate: 20 }, s2: { echoDmg: 30 }, s3: { libDmg: 500 }, s4: { atkPct: 20 }, s5: { defIgnore: 15 }, s6: { critDmg: 100 } },
+  'Qiuyuan':      { s1: { critRate: 20 }, s2: { echoDmg: 30 }, s3: { libDmg: 500, heavyDmg: 600 }, s4: { atkPct: 20 }, s5: { defIgnore: 15 }, s6: { critDmg: 100 } },
   // Qiuyuan R-chain corrected 2026-08-16 via the source: s1 +20% Crit Rate + uninterruptible Heavy ATKs (was echoDmg:10, wrong stat);
   // s2 Bamboo's Shade +30% additional team Echo Skill DMG (was totalMult:15); s3 Liberation DMG Mult +500% (was echoDmg:10, no basis);
   // s4 +20% ATK (was atkPct:10, half real value); s5 ignores 15% target DEF (was totalMult:10); s6 Straw Cape grants +100% Crit DMG for 6s (was echoDmg:40).
+  // s3.heavyDmg:600 added 2026-09-04 (fresh dump re-audit, first full Phase A pass on Qiuyuan): the node's
+  // own text has a SECOND component entirely missing from this table before now — "Casting [Straw Cape in
+  // Drizzly Rain] also: ... gives To Teach/To Save/To Sacrifice +600% DMG Multiplier and +30 Concerto
+  // Energy restore on hit". Only the Liberation half (libDmg:500) was ever recorded here; the Forte-Heavy
+  // half was silently dropped from both this raw table AND qiuyuan.blocks.js (a genuine missing-effect
+  // bug, not a two-path desync — neither path had it). Field named heavyDmg matching Galbrena's s5/s6
+  // convention for a category-scoped chain node value (real engine effect is totalMult scoped to the
+  // qiuyuan.forte.to-teach block, see qiuyuan.blocks.js).
   // 4★ + missing characters
   // Jianxin S1-S6 re-verified verbatim 2026-08-31 against the wiki/Jianxin/Combat's
   // Resonance Chain section — every node re-read directly, replacing the prior 2026-08-17 pass's generic
@@ -7312,7 +7429,17 @@ const RESONANCE_CHAIN_DATA = {
   // the source/character/1504 (both agree exactly). S1 (totalMult: 5) was undocumented — real effect is
   // purely +60 STA restore within 3s after Energized Rebound, zero DPS component. Zeroed to {}. S2/S3/S4/
   // S5/S6 confirmed correct, unchanged.
-  'Lumi':         { s1: {}, s2: { defIgnore: 20 }, s3: { libDmg: 30 }, s4: { basicDmg: 30 }, s5: { totalMult: 100 }, s6: { atkPct: 20 } },
+  // s5 zeroed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was `{ totalMult: 100 }`, unscoped and
+  // unconditioned — the real kit text ("When Spark is fully recovered, Laser's DMG Multiplier+100%") is
+  // conditional and scoped to Laser specifically, but this table has no per-move scoping field, and
+  // applyResonanceChain() (calcEngine.js) adds any lvl.totalMult straight into totalMultBonus for ANY
+  // Main DPS Lumi pick at S5+, unconditionally doubling her whole kit's damage in that legacy calc path
+  // (same live bug already fixed in lumi.blocks.js's trigger-engine path — this was the matching source-
+  // table copy still feeding the OTHER, non-block calc path). Laser is real (fires off Outro if 25+
+  // Spark was consumed) but not modeled here for the same reason blocks.js gives: the rotation's own
+  // final steps drain Spark to 0 via Energized Pounce right before Outro, so assuming max Spark banked
+  // would contradict the rotation's own real cast order. Zeroed to `{}`, matching S1's precedent.
+  'Lumi':         { s1: {}, s2: { defIgnore: 20 }, s3: { libDmg: 30 }, s4: { basicDmg: 30 }, s5: {}, s6: { atkPct: 20 } },
   // corrected 2026-08-18: prior values (defShred/deepen on every node) had no basis in Taoqi's real
   // chain kit (the wiki Combat page, Resonance Chain table) — she has no DEF Shred or DMG Deepen node at
   // all. Real effects: S1 Essense of Tranquility — Forte Circuit Power Shift's Shield +40% (utility,
@@ -7639,6 +7766,11 @@ const SKILL_ICONS = {
   'Roccia': {
     'Pero, Easy': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    // 'Stage 1-4' added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): getSkillIcon() does
+    // skillName.includes(key), and CHARACTER_ROTATIONS.Roccia's own Basic ATK step uses the exact
+    // skill string 'Stage 1-4' — which contains neither 'Pero, Easy' nor 'Standard' as a substring, so
+    // that rotation step silently resolved to no icon. Same generic weapon icon as the move's other keys.
+    'Stage 1-4': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Real Fantasy': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Forte's Basic ATK replacement, same generic weapon icon
     'Acrobatic Trick': './characters/roccia/SDY1939h-skill-acrobatictrick.webp',
     'A Prop Master Prepares': './characters/roccia/fzp1K5tw-skill-apropmaster.webp',
@@ -7765,7 +7897,7 @@ const SKILL_ICONS = {
     "Shewolf's Hunt": './characters/lupa/5WbyTxzD-skill-shewolfshunt.webp',
     'Feral Fang': './characters/lupa/5WbyTxzD-skill-shewolfshunt.webp', // same Resonance Skill's follow-up, same wiki icon
     'Ignis Lupa': './characters/lupa/S7W3d25X-skill-ignislupa.webp',
-    'Dance with the Wolf': './characters/lupa/S7W3d25X-skill-ignislupa.webp', // Forte Circuit's own upgraded Skill, same icon
+    'Dance With the Wolf': './characters/lupa/S7W3d25X-skill-ignislupa.webp', // Forte Circuit's own upgraded Skill (and its Climax variant, matched via substring), same icon
     'Fire-Kissed Glory': './characters/lupa/mrPk9FF3-skill-firekissedglory.webp',
     'Foebreaker': './characters/lupa/mrPk9FF3-skill-firekissedglory.webp', // Liberation follow-up, same wiki icon
     'Try Focusing, Eh?': './characters/lupa/jkNfHp2y-skill-tryfocusingeh.webp', // Intro Skill
@@ -8007,6 +8139,15 @@ const SKILL_ICONS = {
   'Rebecca': {
     "Mix-'n'-Match": './characters/_shared/NG3jXXG-skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
     'Guts Stage 1-3': './characters/_shared/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    // Added 2026-09-04 (fresh Phase A audit): SKILL_MULTIPLIERS['Rebecca']'s own row names 'Huntress
+    // Stage 1-3' and 'Standard - Huntress'/'Standard - Guts' matched NO key at all in this table
+    // (getSkillIcon does skillName.includes(key) — 'Huntress Stage 1-3' doesn't contain "Mix-'n'-Match"
+    // or 'Guts Stage 1-3', and neither Heavy ATK row contains any existing key), a real silent
+    // no-icon gap for the SKILL_MULTIPLIERS-listing view in CharacterDetailModal.jsx, same class of bug
+    // as Shorekeeper's/Lumi's fixed 'includes(key)' length mismatches. Same generic Pistols icon reused,
+    // matching the 'Standard' convention already used for Danjin/Yangyang/Sanhua's Heavy ATK rows.
+    'Huntress Stage 1-3': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Standard': './characters/_shared/NG3jXXG-skill-pistols.webp', // Heavy ATK — 'Standard - Huntress' / 'Standard - Guts'
     "Yo, It's Big Boomin' Time!": './characters/rebecca/4RZv4Pks-rebecca-intro.webp', // Intro Skill — My Turn! (must precede the shorter Skill-row key below)
     "Hey, Leadhead": './characters/rebecca/4RZv4Pks-rebecca-intro.webp', // Guts-mode Intro alternative, same wiki icon
     "It's Big Boomin' Time!": './characters/rebecca/8n7M3D1K-rebecca-res-Skill.webp', // Resonance Skill — Tactical Tweaks
@@ -8242,13 +8383,21 @@ const SKILL_ICONS = {
   // re-hosted on ibb.co. Letter/order convention (B=Basic ATK, C=Resonance Skill, D=Forte Circuit
   // [2 icons for her 2 Forte-state moves], QTE=Resonance Liberation, T=Intro, Y=Outro) matches the
   // pattern the source uses site-wide for every other character's SkillIcon atlas, not just Qingxiao's.
+  // Key order fixed 2026-09-04 (full 9-dimension re-audit, fresh dump): getSkillIcon()'s lookup is
+  // `Object.keys(table).find(k => skillName.includes(k))` — first-matching-key-in-insertion-order wins.
+  // Her real Forte finisher's full name, "Heavy Attack - Heaven's Reckoning: Ephemeral Transcendence",
+  // contains BOTH "Ephemeral Transcendence" and "Heaven's Reckoning" as substrings; with 'Ephemeral
+  // Transcendence' inserted first (as it was), every Heaven's Reckoning cast silently resolved to the
+  // base Forte-Circuit icon instead of its own dedicated Forte-Circuit-Alt icon — the same case-
+  // sensitive/order-dependent substring icon-lookup bug class already found for Lupa. Reordered so
+  // "Heaven's Reckoning" (the longer, more specific real match) is checked first.
   'Qingxiao': {
     'Stringblade': './characters/qingxiao/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp', // Basic ATK
     'Plunging Attack': './characters/qingxiao/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp',
     'Sword Glide': './characters/qingxiao/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp',
     'Severing Note': './characters/qingxiao/QFfYPWSS-Skill-Qingxiao-Resonance-Skill.webp', // Resonance Skill
+    "Heaven's Reckoning": './characters/qingxiao/Y7cXCSsL-Skill-Qingxiao-Forte-Circuit-Alt.webp', // Forte Circuit finisher — checked before 'Ephemeral Transcendence' (see comment above)
     'Ephemeral Transcendence': './characters/qingxiao/Lz6TqkmC-Skill-Qingxiao-Forte-Circuit.webp', // Forte Circuit
-    "Heaven's Reckoning": './characters/qingxiao/Y7cXCSsL-Skill-Qingxiao-Forte-Circuit-Alt.webp', // Forte Circuit finisher
     'Billows Beneath Heaven': './characters/qingxiao/jkphKz37-Skill-Qingxiao-Liberation.webp', // Resonance Liberation
     'Tonality Shift': './characters/qingxiao/BHfMMdWL-Skill-Qingxiao-Intro.webp', // Intro Skill
     'Lingering Song': './characters/qingxiao/0jpvcBrL-Skill-Qingxiao-Outro.webp', // Outro Skill
