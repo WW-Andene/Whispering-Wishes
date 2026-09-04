@@ -70,12 +70,17 @@ Game
 │
 ├── Echo
 │   └── <Name>
+│       ├── Rank
 │       ├── Sonata
 │       ├── Cost
 │       ├── Stats
 │       │   ├── Main
 │       │   └── Substats
+│       ├── Skill Label
+│       ├── Skill Description
 │       └── Echo Skill
+│           ├── Damage
+│           └── Buff
 │
 ├── Enemy
 │   └── <Name>
