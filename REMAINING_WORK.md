@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella — added 2026-09-03/04, first twenty-six
-characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta — added 2026-09-03/04, first
+twenty-seven characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -1152,6 +1152,86 @@ table — added, same Kit-tab-completeness treatment (never cast in
 `CHARACTER_ROTATIONS`, per the dump's own Review: "essentially never
 realistically used") already given to Mid-air Attack/Dodge Counter/Abysmal
 Vortex/Shadowy Sweep in the earlier same-day pass.
+
+**Carlotta pass (2026-09-04) — genuine from-scratch re-audit** (an earlier
+2026-08-31/09-02 pass had already fixed 3 real bugs — 2 dead cast-scoped/
+no-duration chain nodes, S1/S2, and 3 missing SKILL_MULTIPLIERS rows — and
+had explicitly signed off dimensions 1-7 as clean; independently
+re-verified all 9 dimensions from scratch against `Characters data dump/
+Carlotta/Carlotta.md` rather than trusting that sign-off, per this
+session's own "genuine first-time audit" instruction). SKILL_MULTIPLIERS,
+CHARACTER_ROTATIONS (including the repeat `'Skill:Art of Violence →
+Chromatic Splendor'` combined-step label — confirmed it matches its
+block's `trigger.on` exactly, no bug class (c) instance here), weapon
+data, and echo data all re-confirmed clean. Found and fixed 6 more real
+bugs, all missed by the earlier pass:
+1. **A 3rd unscoped-passive-`totalMult` whole-kit leak, on top of the 2
+   already found** (bug class (b)): `carlotta.chain.s5` (Imminent
+   Oblivion's own +47% DMG Multiplier) was `trigger:{type:'cast',
+   on:'Forte:Imminent Oblivion'}` with no `timing.duration` — the exact
+   dead no-op shape already found and fixed on this file's own S1/S2 (the
+   engine-architecture history item 12) — a 6th confirmed instance
+   project-wide, missed by the pass that fixed S1/S2 in the same file.
+   Fixed to passive + `scopedToBlockId:'carlotta.forte.imminent-oblivion'`.
+2. **Two unscoped-`totalMult`-on-passive-node whole-kit leaks** (bug class
+   (b), a different shape from #1 — these already had `trigger:
+   {type:'passive'}`, so they DID fire, but `resolveHitComposedDps.js`
+   applies `stats.totalMult` unconditionally to every hit the character
+   lands, not gated by `damage.category` the way `elemDmg`/`skillDmg`/etc.
+   are): `carlotta.chain.s3` (+93%, real scope: Art of Violence +
+   Chromatic Splendor only) and `carlotta.chain.s6` (+186.6%, real scope:
+   Death Knell only) were both unscoped, silently boosting Carlotta's
+   WHOLE kit — Intro, Outro, Imminent Oblivion, Era of New Wave/Fatal
+   Finale, everything — not just their real named moves. Rescoped: S3 to
+   3 `scopedToBlockId` effects (Art of Violence, Chromatic Splendor, AND
+   the repeat-pass combined block `...-chromatic-splendor-2`, so the 2nd
+   occurrence isn't silently dropped); S6 to Death Knell only.
+3. **Fabricated-zero `dmgFocus` entry** (bug class (e), the same shape as
+   Jiyan's/Cantarella's fixes): `dmgFocus` was `['Skill', 'Liberation']` —
+   but the dump's own Damage Profile shows a literal **0%** Liberation
+   share (all 3 Twilight Tango moves are explicitly "considered Resonance
+   Skill DMG" per kit text, already correctly `skillDmg`-categorized, none
+   `libDmg`), and the dump's own Substats priority list names only
+   "Resonance Skill DMG" — no Liberation DMG substat at all. Fixed to
+   `['Skill']`. Basic ATK (8.3%, real) has no wired `basicDmg` block at
+   all — her real rotation never casts plain Basic Attack — and isn't
+   named in the Substats priority either, left out rather than guessed
+   (Lumi's "flagged not guessed" precedent).
+4. **Cascading dead-buff target, `selfbuff.final-bow`**: was an unscoped
+   `{stat:'libDmg', value:80}` self-passive — but with fix #3 confirming
+   NO block in `carlotta.blocks.js` is `libDmg`-categorized at all, this
+   buff was a complete silent no-op, a `libDmg` stat pool nothing in her
+   kit ever reads (Final Bow's own kit text is a flat "+80% DMG
+   Multiplier" on Era of New Wave/Death Knell/Fatal Finale specifically,
+   not a general Liberation-category bonus anyway). Fixed to 3
+   `totalMult` effects, each `scopedToBlockId`'d to one of those 3 blocks
+   (Aemeath S3's multi-scoped-effects-on-one-block pattern).
+5. **Missing `damage.category`, bug class (d)**: `carlotta.outro.closing-
+   remark` (794.2% ATK, 3.77%/43,872 of her total per the Damage Profile)
+   and `carlotta.chain.s3-kaleidoscope-sparks` (the S3 extra Outro strike)
+   both had NO `damage.category` at all — her own real swap-out damage,
+   explicitly not a team buff, same shape already fixed to `outroDmg` on
+   Calcharo/Encore/Lingyang/Rover: Havoc's Outros. Fixed both to
+   `outroDmg`. Not added to `dmgFocus` — 3.77% sits below the established
+   ambiguous-exclude zone (4.6-5.5%, e.g. Xiangli Yao's Outro).
+6. **Wrong Whimpering Wastes tier**: stored as `T3`, but the dump's Review
+   section states DPS Tier explicitly as `T1` (ToA) / `T4` (WW) — Value
+   Tier is a separate `T1.5`/`T3`, not what this column stores, per the
+   established "DPS Tier not Value Tier" convention (Rover: Aero/Iuno).
+   Fixed WW to `T4`.
+
+Checked and confirmed correct, not bugs: chain.s1's unconditional Crit
+Rate (sourced, unchanged from the earlier pass); chain.s4's whole-team
+`skillDmg` buff (correctly team-scoped per its own real mechanic, no
+narrowing needed); Intro Wintertime Aria staying uncategorized (only
+1.25% share, no kit-text override and no generic "Skill Damage" row label
+to base a guess on, unlike Calcharo/Encore/Jianxin/Aalto/Baizhi/
+Lingyang's Intro fixes which all had that specific basis). Icons
+(dimension 9) re-confirmed fully wired, including the already-present
+generic-Pistols-icon reuse for Basic ATK/Necessary Measures/Plunging
+Attack. 9 new tests
+(`src/__tests__/triggerEngine-carlotta.test.js`), full suite green:
+1453/1453.
 
 Checked and confirmed NOT a bug: Jolt (198.81% Havoc DMG, "considered Basic
 Attack DMG", auto-triggered when a Hazy-Dream'd target next takes damage) —

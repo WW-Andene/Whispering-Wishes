@@ -1380,7 +1380,18 @@ const CHARACTER_DATA = {
   // 'Liberation' (16.5%/78,645, her 2nd-largest bucket, already correctly libDmg-categorized on
   // camellya.liberation.fervor-efflorescent) was entirely missing.
   ['Camellya',      ['Basic ATK', 'Liberation'],     [],                                      []],
-  ['Carlotta',      ['Skill', 'Liberation'],         [],                                      []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Liberation' was a genuine
+  // FABRICATED-zero bug — the dump's own Damage Profile shows a literal 0% Liberation share (all 3
+  // Twilight Tango moves are explicitly "considered Resonance Skill DMG" per kit text, already
+  // correctly `skillDmg`-categorized in carlotta.blocks.js, none `libDmg`), and the dump's own
+  // Substats priority list names only "Resonance Skill DMG" (no Liberation DMG substat at all) — same
+  // shape as Jiyan's earlier dmgFocus fix. 'Skill' (83.5%, dominant, real) stays. Basic ATK (8.3%,
+  // real per Damage Profile) has no wired basicDmg block in carlotta.blocks.js at all (no
+  // CHARACTER_ROTATIONS step casts plain Basic Attack — her rotation's Necessary Measures/Basic ATK
+  // contribution is unattributed to any specific modeled step, same "flagged not guessed" precedent as
+  // Lumi's unmodeled Skill bucket) and isn't named in the dump's own Substats priority either, so left
+  // out rather than added on an unsourced guess.
+  ['Carlotta',      ['Skill'],                       [],                                      []],
   // dmgFocus corrected 2026-09-04 (Phase A REDO, REMAINING_WORK.md 1c): 'Skill' was WRONG — a genuine
   // 0% real share per his own dump's Damage Profile. His Skill button (Anchors Aweigh!) is never cast
   // for damage in the real rotation (only Plunging Attack optionally, immediately Ultimate-cancelled,
@@ -2066,7 +2077,10 @@ const CHARACTER_DATA = {
   // T0 for BOTH ToA and WW (its own Value Tier List separately shows T0/T0.5) — matched consistently.
   ['Chisa',         'T0',   'T0'],
   ['Verina',        'T0.5', 'T0.5'],
-  ['Carlotta',      'T1',   'T3'],
+  // WW corrected 2026-09-04 (Phase A audit): was 'T3' — the fresh dump's own Review section states
+  // DPS Tier T1 (ToA) / T4 (WW) explicitly (Value Tier is a separate T1.5/T3, not stored in this
+  // column per the established "DPS Tier not Value Tier" convention, e.g. Rover: Aero/Iuno's fixes).
+  ['Carlotta',      'T1',   'T4'],
   ['Zani',          'T1',   'T1.5'],
   ['Brant',         'T1',   'T1'],
   // tier corrected 2026-09-03 against a fresh the source dump: was ['T0.5','T1.5'] — the dump's own
