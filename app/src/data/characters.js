@@ -846,12 +846,16 @@ const CHARACTER_DATA = {
     ascension: { boss: "Suncoveter's Reach", common: 'Exoswarm Pendant', specialty: 'Edelschnee' },
     skillMaterials: { weeklyDrop: 'Gold in Memory', forgery: 'Waveworn Shard' },
     bestEchoes: ['Twin Nova - Nebulous Cannon', 'Rite of Gilded Revelation 5pc'], bestWeapon: "Daybreaker's Spine",
-    // weaponAlts added 2026-08-17 from the source's live build calcs: Blazing Justice (83.4%) and
-    // Moongazer's Sigil (80.7%) are the top non-signature 5★ Gauntlets (ahead of Verity's Handle 80.2%,
-    // Tragicomedy 74.5%, Abyss Surges 66.5%); Pulsation Bracer (85.7%, the permanent-banner F2P pick,
-    // the source's explicit second-best overall) and Celestial Spiral (65.9%) are the best 4★s; Gauntlets of
-    // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
-    weaponAlts: { alt5: ['Blazing Justice', "Moongazer's Sigil"], alt4: ['Pulsation Bracer', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
+    // weaponAlts fixed 2026-09-04 (Phase A audit) against a fresh the source dump's own weapon-ranking
+    // list and cross-checked against weapons.js's own rarity fields: Pulsation Bracer is a real 5★
+    // weapon (weapons.js: rarity 5) — the prior version wrongly filed it under alt4 (its own comment
+    // even mis-asserted "the best 4★s"), which both misfiled the source's explicit #2-overall pick
+    // (85.70%, ahead of Blazing Justice's 80.70% and Moongazer's Sigil's 80.40%) as a 4★ and bumped
+    // Moongazer's Sigil into the alt5 slot Pulsation Bracer should have held. Now alt5 = top 2
+    // non-signature 5★s by the source's own % ranking (Pulsation Bracer, Blazing Justice); alt4 = top 2
+    // real 4★s (Celestial Spiral 65.9%, Aether Strike 63.9%, both weapons.js rarity 4); alt3 unchanged
+    // (Gauntlets of Night, the "<Weapon Type> of Night" 3★ fallback convention used elsewhere).
+    weaponAlts: { alt5: ['Pulsation Bracer', 'Blazing Justice'], alt4: ['Celestial Spiral', 'Aether Strike'], alt3: ['Gauntlets of Night'] },
     teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who switches between Tune Rupture and Fusion Burst Resonance Modes, dealing massive Resonance Liberation DMG through Seraphic Duet and Heavenfall Edict.',

@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa — added 2026-09-03/04, first
-thirty-four characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen — added 2026-09-03/04, first
+thirty-five characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -359,6 +359,80 @@ in the remaining dimensions:
 - 4 new tests added to `triggerEngine-lupa.test.js` covering all 3 fixes
   (icon resolves for both variants, S2 scope is whole-team, dmgFocus
   contains Heavy ATK/Liberation/Skill). Full suite green (1480/1480).
+
+**Luuk Herssen — full 9-dimension re-audit (2026-09-04):** independently
+segmented/blockified his whole kit from `Characters data dump/Luuk Herssen/Luuk
+Herssen.md` before looking at any existing code, then cross-checked against
+`characters.js` and `luukherssen.blocks.js`. Dimensions 1-2 (SKILL_MULTIPLIERS,
+CHARACTER_ROTATIONS) matched the dump exactly (the Intro multiplier
+`72.67%×3` can't be verified against THIS dump — its own text says "no Intro
+Skill multiplier text was given on this source page" — but it's plausible
+data carried from an earlier source pass and isn't contradicted by anything
+here, so left as-is rather than zeroed on no positive evidence either way).
+dmgFocus (dimension 5) was already correct (`['Basic ATK']` only — confirmed
+by the dump's own Damage Profile: Basic 88.9%, everything else folded into
+Basic or genuinely 0%). Echo data (dimension 7) matched. Found and fixed real
+bugs in the remaining dimensions:
+1. **5 damage blocks miscategorized (dimension 8, engine-block parity) — the
+   headline finding:** the dump's kit text is explicit that Aureole of
+   Execution (all 3 forms — Ring/Breach/Glare), Gavel of Earthshaker, and the
+   Liberation itself are ALL **"considered Basic Attack DMG"**, confirmed by
+   the dump's own Damage Profile (Basic 88.9%, Liberation/Skill/Heavy all
+   genuinely 0%). `luukherssen.blocks.js` had Ring/Breach/Glare as
+   `skillDmg`, the Liberation as `libDmg`, and Gavel of Earthshaker entirely
+   uncategorized. Since `dmgFocus` is `['Basic ATK']` only, this silently
+   rejected his ENTIRE weapon/echo-set kit's DMG Bonus buffs (Daybreaker's
+   Spine's own Basic ATK DMG Amp, Pulsation Bracer's Basic ATK DMG Bonus,
+   Rite of Gilded Revelation's 5pc Liberation-cast Basic ATK DMG Bonus) on 5
+   of his core damage-dealing casts — same bug class already fixed on
+   Camellya/Cantarella/Zhezhi/Rebecca/Lynae's own "considered Basic Attack
+   DMG" moves, and on Lucy's own non-libDmg-categorized Liberation
+   specifically. Fixed all 5 to `category: 'basicDmg'`.
+2. **Resulting chain.s2/chain.s6 dead-buff desync (dimension 3/8):** both
+   nodes grant a "Rewritten in Winter's Margins DMG Multiplier" bonus via
+   `stat: 'libDmg'`, which became a silent no-op the instant the Liberation
+   block's own category changed to `basicDmg` (category-gated stats only
+   apply to matching-category hits) — the exact same 2-bug shape already
+   found and fixed on Lucy's own `chain.s3`. Fixed both to
+   `stat: 'basicDmg'` + `scopedToBlockId` (matching Lucy's fix pattern) so
+   they land on that one named move only, not every basicDmg hit broadly.
+3. **Uncaused Diagnosis's ATK+25% buff entirely unmodeled (dimension 4,
+   CHAR_BUFF_TABLE/engine-block parity):** his base S0 Inherent Skill has two
+   real components — an Amplify-on-Interfered-target-damage piece (already
+   represented by the shared, engine-wide `tuneBreak` sub-object formula, no
+   change needed) and a separate "After any nearby teammate inflicts
+   Shifting or deals Tune Break DMG, Luuk's ATK +25% for 20s" piece that had
+   no block at all. Added a new block using the existing
+   `ally-action`/`action:'shifting'` mechanism (same infra Qingxiao's
+   `chain.s4` already uses) for the "inflicts Shifting" half; the "OR deals
+   Tune Break DMG" half is NOT modeled — same `'tune-break-cast'`-tag infra
+   gap already open in §1a (Tune Break isn't tracked per-move anywhere yet),
+   so this is a documented conservative undercount, not a half-fix.
+4. **weaponAlts rarity-tier bug (dimension 6, weapon data):** Pulsation
+   Bracer is a real 5★ weapon (`weapons.js`: `rarity: 5`, and the dump's own
+   explicit #2-overall pick at 85.70%) but was filed under `alt4` — the old
+   comment even wrongly asserted "the best 4★s" — which both mis-tiered the
+   source's #2 pick as a 4★ and bumped Moongazer's Sigil into the `alt5` slot
+   Pulsation Bracer should have held. Fixed: `alt5` = `['Pulsation Bracer',
+   'Blazing Justice']` (top 2 non-signature 5★s by the dump's own ranking),
+   `alt4` = `['Celestial Spiral', 'Aether Strike']` (the two real 4★s,
+   `weapons.js` confirmed), `alt3` unchanged.
+- **Verified independently true, not fixed (dimension 8):** REMAINING_WORK's
+  own §1a claim that S4 ("After any team member deals Tune Break DMG, the
+  whole team deals +20% DMG for 20s") needs a `'tune-break-cast'` tag that
+  doesn't exist as infrastructure was re-checked from scratch rather than
+  trusted — still genuinely true. Tune Break application isn't tracked
+  per-move anywhere in the codebase yet (only a per-character aggregate rate
+  exists), so this stays the documented approximation (unconditional
+  passive team-wide `allDmg`) it already was; not attempted as a half-fix.
+- Icons (dimension 9) checked against every real rotation-step skill-name
+  string (including the two non-colon rotation-step phrasings — `'Scythe
+  Resection Stage'`/`'Jump: Resection'`) and found clean, no case-sensitive
+  substring mismatches.
+- 6 new tests added to `triggerEngine-luukherssen.test.js` (basicDmg
+  categorization on all 5 fixed blocks, base Golden Reflux correctly staying
+  skillDmg, S2/S6 re-scoping, the new Uncaused Diagnosis buff's shape). Full
+  suite green (1484/1484).
 
 **Open question (2026-09-04):** Lumi's own dump Damage Profile shows a
 real 26.3% "Skill" damage bucket, but no block in `lumi.blocks.js` is

@@ -13,6 +13,55 @@ describe('triggerEngine parity — Luuk Herssen', () => {
     expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.midair.basic1-jump-resection2-3').damage.category).toBe('basicDmg');
   });
 
+  // Fixed 2026-09-04 (Phase A audit): the dump's own kit text is explicit that Aureole of Execution
+  // (all 3 forms), Gavel of Earthshaker, and the Liberation itself are ALL "considered Basic Attack
+  // DMG" — confirmed by the dump's own Damage Profile (Basic 88.9%, Skill/Liberation/Heavy all 0%).
+  // These 5 blocks were previously skillDmg/libDmg/uncategorized, silently rejecting every real Basic
+  // Attack DMG Bonus buff (his entire weapon/echo-set kit is built around Basic ATK DMG) on 5 of his
+  // core damage-dealing casts.
+  it('Aureole of Execution (all 3 forms), Gavel of Earthshaker, and Liberation are basicDmg-categorized', () => {
+    const ids = [
+      'luukherssen.skill.aureole-ring',
+      'luukherssen.skill.aureole-breach',
+      'luukherssen.skill.aureole-glare',
+      'luukherssen.forte.gavel-of-earthshaker',
+      "luukherssen.liberation.rewritten-in-winters-margins",
+    ];
+    for (const id of ids) {
+      expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === id).damage.category).toBe('basicDmg');
+    }
+  });
+
+  // Base Golden Reflux (not Aureole of Execution) has no "considered Basic Attack DMG" kit text —
+  // stays skillDmg, matching the dump's own near-zero Skill damage share.
+  it('base Golden Reflux stays skillDmg (no kit-text override, unlike Aureole of Execution)', () => {
+    expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.skill.golden-reflux').damage.category).toBe('skillDmg');
+  });
+
+  // Fixed 2026-09-04: S2/S6 both grant a "Rewritten in Winter's Margins DMG Multiplier" bonus via
+  // stat:'libDmg', which is a no-op once the Liberation block's own category is basicDmg (category-gated
+  // stats only apply to matching-category hits) — same 2-bug shape as Lucy's chain.s3. Fixed to
+  // stat:'basicDmg' + scopedToBlockId so they still land on that one named move.
+  it('S2 and S6 buffs are re-scoped to basicDmg + the Liberation block, not left as dead libDmg', () => {
+    const s2 = LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s2');
+    const s6 = LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s6');
+    expect(s2.effects[0].stat).toBe('basicDmg');
+    expect(s2.effects[0].scopedToBlockId).toBe("luukherssen.liberation.rewritten-in-winters-margins");
+    expect(s6.effects[0].stat).toBe('basicDmg');
+    expect(s6.effects[0].scopedToBlockId).toBe("luukherssen.liberation.rewritten-in-winters-margins");
+  });
+
+  // Added 2026-09-04: previously entirely missing base-kit Inherent Skill buff (Uncaused Diagnosis's
+  // ATK+25% after a nearby teammate inflicts Shifting).
+  it('Uncaused Diagnosis ATK buff exists, is ally-action/shifting triggered, self-scoped, 20s', () => {
+    const b = LUUK_HERSSEN_BLOCKS.find(x => x.id === 'luukherssen.inherent.uncaused-diagnosis-atk');
+    expect(b).toBeTruthy();
+    expect(b.trigger).toEqual({ type: 'ally-action', action: 'shifting' });
+    expect(b.target.scope).toBe('self');
+    expect(b.timing.duration).toBe(20);
+    expect(b.effects[0]).toMatchObject({ stat: 'atkPct', value: 25, stacking: 'refresh' });
+  });
+
   it('S1-S5 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Luuk Herssen'];
     expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s1').effects[0].value).toBe(rc.s1.basicDmg);
