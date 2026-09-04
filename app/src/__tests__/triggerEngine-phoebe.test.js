@@ -4,8 +4,13 @@ import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposed
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { PHOEBE_BLOCKS } from '../engine/characterBlocks/phoebe.blocks.js';
 import { requiredSequenceOf } from '../engine/resolver/gating/sequenceGating.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Phoebe', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(PHOEBE_BLOCKS, 'Phoebe');
+  });
+
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Phoebe'];
     expect(PHOEBE_BLOCKS.find(b => b.id === 'phoebe.chain.s1').effects[0].value).toBe(rc.s1.libDmg);

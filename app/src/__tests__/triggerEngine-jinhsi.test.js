@@ -12,8 +12,13 @@ import { createStats } from '../features/teams/calcEngine.js';
 import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
 import { JINHSI_BLOCKS } from '../engine/characterBlocks/jinhsi.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Jinhsi', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(JINHSI_BLOCKS, 'Jinhsi');
+  });
+
   it('Radiant Surge self-buff matches CHAR_BUFF_TABLE.selfBuffs', () => {
     const legacy = CHAR_BUFF_TABLE['Jinhsi'].selfBuffs[0];
     const block = JINHSI_BLOCKS.find(b => b.id === 'jinhsi.selfbuff.radiant-surge');

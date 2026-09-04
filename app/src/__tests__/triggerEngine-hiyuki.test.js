@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, CHARACTER_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { HIYUKI_BLOCKS } from '../engine/characterBlocks/hiyuki.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Hiyuki', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(HIYUKI_BLOCKS, 'Hiyuki');
+  });
+
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Hiyuki'];
     expect(HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.chain.s1').effects[0].value).toBe(rc.s1.libDmg);
@@ -51,8 +56,8 @@ describe('triggerEngine parity — Hiyuki', () => {
   it('S6 carries both the base +500% Crit DMG AND the further +40% at 2 Snow Rust stacks', () => {
     const s6 = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.chain.s6');
     expect(s6.effects).toEqual([
-      { stat: 'critDmg', value: 500 },
-      { stat: 'critDmg', value: 40 },
+      { stat: 'critDmg', value: 500, source: 'self-kit' },
+      { stat: 'critDmg', value: 40, source: 'self-kit' },
     ]);
   });
 

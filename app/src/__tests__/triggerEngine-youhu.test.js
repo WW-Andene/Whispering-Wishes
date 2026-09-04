@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { YOUHU_BLOCKS } from '../engine/characterBlocks/youhu.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Youhu', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(YOUHU_BLOCKS, 'Youhu');
+  });
+
   it('S1/S2/S4 stay correctly unmodeled (no block) per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Youhu'];
     ['s1', 's2', 's4'].forEach(s => expect(rc[s]).toEqual({}));
@@ -33,7 +38,7 @@ describe('triggerEngine parity — Youhu', () => {
     const rareFind = YOUHU_BLOCKS.find(b => b.id === 'youhu.inherent.rare-find');
     expect(rareFind.trigger).toEqual({ type: 'cast', on: 'Intro:Scroll of Wonders' });
     expect(rareFind.timing.duration).toBe(14);
-    expect(rareFind.effects[0]).toEqual({ stat: 'elemDmg', value: 15 });
+    expect(rareFind.effects[0]).toEqual({ stat: 'elemDmg', value: 15, source: 'self-kit' });
   });
 
   it('Intro is skillDmg-categorized (was uncategorized)', () => {

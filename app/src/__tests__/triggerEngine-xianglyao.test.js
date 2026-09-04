@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { XIANGLI_YAO_BLOCKS } from '../engine/characterBlocks/xianglyao.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Xiangli Yao', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(XIANGLI_YAO_BLOCKS, 'Xiangli Yao');
+  });
+
   it('S1 stays correctly unmodeled (no block) — no derivable %ATK figure per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Xiangli Yao'];
     expect(rc.s1).toEqual({});
@@ -54,8 +59,8 @@ describe('triggerEngine parity — Xiangli Yao', () => {
   it('S3 covers both the Skill-type portion (skillDmg) AND the Law of Reigns portion (libDmg) of the same buff', () => {
     const s3 = XIANGLI_YAO_BLOCKS.find(b => b.id === 'xianglyao.chain.s3');
     expect(s3.effects).toEqual([
-      { stat: 'skillDmg', value: 63 },
-      { stat: 'libDmg', value: 63 },
+      { stat: 'skillDmg', value: 63, source: 'self-kit' },
+      { stat: 'libDmg', value: 63, source: 'self-kit' },
     ]);
   });
 

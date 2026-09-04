@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { DANJIN_BLOCKS } from '../engine/characterBlocks/danjin.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Danjin', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(DANJIN_BLOCKS, 'Danjin');
+  });
+
   it('S1 models the real per-stack mechanic (5 x6 stacks = 30 max), not just the flat max-stacks total', () => {
     const rc = RESONANCE_CHAIN_DATA['Danjin'];
     const s1 = DANJIN_BLOCKS.find(b => b.id === 'danjin.chain.s1');

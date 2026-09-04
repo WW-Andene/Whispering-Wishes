@@ -57,8 +57,16 @@
  *                                        a source row's `×N` shorthand becomes N separate entries.
  *                                        `flat`: an additive non-%ATK damage component some kit
  *                                        text carries alongside the %ATK term.
- * @property {string} category          REQUIRED. Which damage-type category (see categories.js)
- *                                        this cast's damage counts as.
+ * @property {string} [category]         Which damage-type category (see categories.js) this cast's
+ *                                        damage counts as, for %DMG-bonus routing purposes. Omit
+ *                                        when the real kit text doesn't map this hit onto any of the
+ *                                        game's own DMG-bonus categories (e.g. an Intro/Outro cast —
+ *                                        those are excluded from category-specific bonus routing
+ *                                        entirely per the game's own mechanics) OR when no audit has
+ *                                        yet confirmed which category applies — omission is a real,
+ *                                        deliberate "no category-specific bonus" statement, not a
+ *                                        gap to silently default away. Never invent a category to
+ *                                        satisfy this field; an unconfirmed hit stays uncategorized.
  * @property {string} basis             REQUIRED. Which base stat these hits scale off: 'ATK'
  *                                        (the common case) | 'HP' | 'DEF' — never assumed silently.
  * @property {boolean} [guaranteedCrit] True if this cast is a guaranteed Crit per its own kit text.

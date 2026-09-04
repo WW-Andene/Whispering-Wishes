@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { LUPA_BLOCKS } from '../engine/characterBlocks/lupa.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Lupa', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(LUPA_BLOCKS, 'Lupa');
+  });
+
   // Fixed 2026-09-02: category was previously unset. WuWa's own general mechanic (Mid-air/Plunging
   // Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure
   // (listed under "Basic Attack — Flaming Star", contrasted with Firestrike's explicit Heavy ATK

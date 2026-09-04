@@ -5,8 +5,13 @@ import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { BAIZHI_BLOCKS } from '../engine/characterBlocks/baizhi.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Baizhi', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(BAIZHI_BLOCKS, 'Baizhi');
+  });
+
   it('S1/S3/S4/S5 stay zeroed (no fabricated DPS component) in both the block set and the flat table', () => {
     const rc = RESONANCE_CHAIN_DATA['Baizhi'];
     expect(rc.s1).toEqual({});

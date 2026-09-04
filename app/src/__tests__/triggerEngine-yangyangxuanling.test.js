@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { YANGYANG_XUANLING_BLOCKS } from '../engine/characterBlocks/yangyangxuanling.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Yangyang: Xuanling', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(YANGYANG_XUANLING_BLOCKS, 'Yangyang: Xuanling');
+  });
+
   it('S1 is correctly {} in RESONANCE_CHAIN_DATA (a discrete proc, not a %-stat modifier) and modeled as a real damage block', () => {
     const rc = RESONANCE_CHAIN_DATA['Yangyang: Xuanling'];
     expect(rc.s1).toEqual({});

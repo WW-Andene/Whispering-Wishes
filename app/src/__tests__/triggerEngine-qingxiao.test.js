@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { QINGXIAO_BLOCKS } from '../engine/characterBlocks/qingxiao.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Qingxiao', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(QINGXIAO_BLOCKS, 'Qingxiao');
+  });
+
   // Fixed 2026-09-02: category was previously unset. WuWa's own general mechanic (Mid-air/Plunging
   // Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure
   // (listed under "Basic Attack — Strings to Steel") confirms basicDmg.
@@ -87,7 +92,7 @@ describe('triggerEngine parity — Qingxiao', () => {
   // text), but they must exist and be correctly categorized for scoping/future use.
   it('previously-missing real moves now have engine blocks with correct categories', () => {
     expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.midair.plunging-attack').damage.category).toBe('basicDmg');
-    expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.dodge-counter.stringblade').damage.category).toBe('basicDmg');
+    expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.dodgecounter.stringblade').damage.category).toBe('basicDmg');
     expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.skill.severing-note-ascendant').damage.category).toBe('skillDmg');
     expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.forte.dodge-counter-transcendence').damage.category).toBe('basicDmg');
     // None of these are force-fit into the modeled rotation.

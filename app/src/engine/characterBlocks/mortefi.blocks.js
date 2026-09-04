@@ -22,49 +22,49 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 const SOURCE = 'Mortefi';
 const MARCATO_ATK_PCT = 31.81;
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const MORTEFI_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'mortefi.intro.dissonance',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Dissonance' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. No override
     // text names a different category, same default-to-skillDmg convention used throughout this sweep.
-    damage: { hits: parseSkillMultiplierHits('168.99%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('168.99%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Builds Annoyance.',
   },
   {
     id: 'mortefi.skill.passionate-variation',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Passionate Variation' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('208.76%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('208.76%'), category: 'skillDmg', basis: 'ATK' },
     note: '14s cooldown. Builds Annoyance, opens a 5s window where Basic ATK hits restore extra Annoyance (not modeled).',
   },
   {
     id: 'mortefi.forte.fury-fugue',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Fury Fugue' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('326.05%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('326.05%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Replaces Resonance Skill once Annoyance reaches 100; consumes all Annoyance, counted as Resonance Skill DMG. No cooldown. Fires twice in the real rotation.',
   },
   {
     id: 'mortefi.basic.impromptu-show',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Impromptu Show' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('48.30% → 40.78%×2 → 107.30% → 21.02%×4+126.93%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('48.30% → 40.78%×2 → 107.30% → 21.02%×4+126.93%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Full 4-part combo, cast inside the post-Skill Annoyance window to refill Fury Fugue fast.',
   },
   {
     id: 'mortefi.liberation.violent-finale',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Violent Finale' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('159.05%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('159.05%'), category: 'libDmg', basis: 'ATK' },
     note: 'Applies Burning Rhapsody to the whole team (10s, 20s cooldown) — see mortefi.chain.s3/s6 below for the chain effects scoped to this cast, mortefi.liberation.burning-rhapsody-marcato below for the base-kit proc.',
   },
   {
@@ -77,21 +77,21 @@ export const MORTEFI_BLOCKS = [
     // documented simplifying assumption, not a guessed number (the 31.81% Marcato value and the 0.35s/
     // 10s figures are both directly sourced).
     id: 'mortefi.liberation.burning-rhapsody-marcato',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Violent Finale' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: Array.from({ length: 28 }, () => ({ atkPct: MARCATO_ATK_PCT })), category: 'coordDmg' },
+    damage: { hits: Array.from({ length: 28 }, () => ({ atkPct: MARCATO_ATK_PCT })), category: 'coordDmg', basis: 'ATK' },
     note: 'Base-kit Burning Rhapsody proc: teammates\' Basic/Heavy ATK hits trigger off-field Marcato, capped 1/0.35s for the 10s window — modeled as 28 hits assuming the cap is fully saturated.',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'mortefi.outro.rage-transposition',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
-    effects: [{ stat: 'heavyDmg', value: 38, stacking: 'refresh' }],
+    effects: [{ stat: 'heavyDmg', value: 38, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Ends early if the incoming Resonator is swapped out before 14s, not modeled.',
   },
 
@@ -100,17 +100,17 @@ export const MORTEFI_BLOCKS = [
   //    per the audit's own zeroing) ──
   {
     id: 'mortefi.chain.s1-bonus-marcato',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Skill:Passionate Variation' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: [{ atkPct: MARCATO_ATK_PCT }, { atkPct: MARCATO_ATK_PCT }], category: 'coordDmg' },
+    damage: { hits: [{ atkPct: MARCATO_ATK_PCT }, { atkPct: MARCATO_ATK_PCT }], category: 'coordDmg', basis: 'ATK' },
     note: 'During Burning Rhapsody, Coordinated Attacks also trigger off the on-field character\'s Resonance Skill hits, firing 2 extra Marcato — modeled as a real proc-style damage block using the source\'s own sourced 31.81% Marcato value, instead of the flat {} it was zeroed to (same "discrete proc, not a modifier" treatment as Yinlin\'s S6/Calcharo\'s S6). Anchored to the Passionate Variation cast (a real Resonance Skill hit in the rotation).',
   },
   // S2 correctly has NO block — Echo Skill use restores +10 Resonance Energy (20s cooldown), pure
   // Resonance Energy resource-gain utility, zero DPS component.
   {
     id: 'mortefi.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Violent Finale' },
     timing: { duration: 10 }, // matches Burning Rhapsody's own 10s window, since this is conditional on it being active
     target: { scope: 'self' },
@@ -121,9 +121,9 @@ export const MORTEFI_BLOCKS = [
     // Liberation's Marcato is increased by 30%"). Scoped to all 3 real Marcato proc blocks (the base-kit
     // proc added 2026-09-04, plus S1's/S5's bonus-hit blocks) via 3 separate scopedToBlockId effects.
     effects: [
-      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.liberation.burning-rhapsody-marcato' },
-      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s1-bonus-marcato' },
-      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s5-bonus-marcato' },
+      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.liberation.burning-rhapsody-marcato', source: 'self-kit' },
+      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s1-bonus-marcato', source: 'self-kit' },
+      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s5-bonus-marcato', source: 'self-kit' },
     ],
     note: "During Burning Rhapsody, Marcato Crit DMG +30% (confirmed exact) — scoped to Burning Rhapsody's own 10s window, applied by the Violent Finale cast that starts it.",
   },
@@ -131,19 +131,19 @@ export const MORTEFI_BLOCKS = [
   // no flat DMG% derivation, zero DPS component.
   {
     id: 'mortefi.chain.s5-bonus-marcato',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:Fury Fugue' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: Array.from({ length: 4 }, () => ({ atkPct: MARCATO_ATK_PCT * 0.5 })), category: 'coordDmg' },
+    damage: { hits: Array.from({ length: 4 }, () => ({ atkPct: MARCATO_ATK_PCT * 0.5 })), category: 'coordDmg', basis: 'ATK' },
     note: 'Skill/Fury Fugue hits fire 4 bonus Marcato hits at 50% reduced DMG — modeled as a real proc-style damage block (4 x 15.905% ATK), instead of the flat {} it was zeroed to, same "discrete proc, not a modifier" treatment as S1 above. Anchored to the Fury Fugue cast.',
   },
   {
     id: 'mortefi.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Violent Finale' },
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh' }],
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh', source: 'self-kit' }],
     note: 'On Liberation cast, team ATK +20% for 20s (confirmed exact, team-wide).',
   },
 ];

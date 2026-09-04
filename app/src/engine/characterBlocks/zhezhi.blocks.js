@@ -1,70 +1,72 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — engine/characterBlocks/zhezhi.blocks.js
-// Zhezhi converted to TriggerBlocks. Sourced from characters.js's already-audited
-// CHAR_BUFF_TABLE['Zhezhi'], RESONANCE_CHAIN_DATA['Zhezhi'] (+ its own detailed
-// audit comment, read directly for each node's real mechanic), SKILL_MULTIPLIERS
-// ['Zhezhi'], and CHARACTER_ROTATIONS['Zhezhi']. No new numbers invented. S2
-// correctly has NO block — a resource-cap-increase mechanic with no home in this
-// flat schema, per the audit's own zeroing. S5/S6's bonus-hit-at-X%-of-move-Y's-
-// multiplier mechanics ARE precisely computable and audit-confirmed (140%/120% of
-// a sourced move's own multiplier, cross-checked against the source's raw damage data),
-// so both are modeled as real proc-style damage blocks instead of left zeroed.
+// [CHARACTER · ZHEZHI] Zhezhi's TriggerBlock set — Layer 4 of the engine rewrite,
+// migrated onto the single canonical schema (block.schema.js). Sourced from
+// characters.js's already-audited CHAR_BUFF_TABLE['Zhezhi'], RESONANCE_CHAIN_DATA
+// ['Zhezhi'] (+ its own detailed audit comment, read directly for each node's real
+// mechanic), SKILL_MULTIPLIERS['Zhezhi'], and CHARACTER_ROTATIONS['Zhezhi']. No new
+// numbers invented. S2 correctly has NO block — a resource-cap-increase mechanic
+// with no home in this flat schema, per the audit's own zeroing. S5/S6's
+// bonus-hit-at-X%-of-move-Y's-multiplier mechanics ARE precisely computable and
+// audit-confirmed (140%/120% of a sourced move's own multiplier, cross-checked
+// against the source's raw damage data), so both are modeled as real proc-style
+// damage blocks instead of left zeroed.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Zhezhi';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const ZHEZHI_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'zhezhi.intro.radiant-ruin',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Radiant Ruin' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
     // rejecting teammate skillDmg buffs. No override text names a different category, same default-to-
     // skillDmg convention applied project-wide.
-    damage: { hits: parseSkillMultiplierHits('86.16%×3'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('86.16%×3'), category: 'skillDmg', basis: 'ATK' },
     note: 'Fills roughly 1.5 of her 3 Afflatus segments.',
   },
   {
     id: 'zhezhi.basic.dimming-brush-stage1-3',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Dimming Brush Stage 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('41.76%×2 → 20.55%×5 → 133.61%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('41.76%×2 → 20.55%×5 → 133.61%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Fills the remaining Afflatus.',
   },
   {
     id: 'zhezhi.skill.manifestation',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Manifestation' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('98.42%×3'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('98.42%×3'), category: 'skillDmg', basis: 'ATK' },
     note: 'At 60+ Afflatus, consumes 60 to summon Phantasmic Imprint - Left and Right. 6s cooldown.',
   },
   {
     id: 'zhezhi.forte.conjuration',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Conjuration' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('83.01%×3'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('83.01%×3'), category: 'heavyDmg', basis: 'ATK' },
     note: 'At 30+ Afflatus, consumes 30 to summon Phantasmic Imprint - Middle.',
   },
   {
     id: 'zhezhi.forte.stroke-of-genius',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Stroke of Genius' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row 'Stroke of Genius / Creation's Zenith' — only the Stroke of Genius segment matches this step.
-    damage: { hits: parseSkillMultiplierHits('298.22%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('298.22%'), category: 'basicDmg', basis: 'ATK' },
     note: "Teleports to and consumes a Phantasmic Imprint, counted as Basic ATK DMG. Fires twice in the real rotation, escalating into Creation's Zenith once Painter's Delight hits 2 stacks.",
   },
   {
     id: 'zhezhi.liberation.living-canvas',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Living Canvas' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // 'up to 21 over 30s' — the max-consumption case is used as a representative value.
@@ -74,15 +76,15 @@ export const ZHEZHI_BLOCKS = [
     // considered-Basic-ATK moves. Confirmed by this source's own Damage Profile: Basic 78.4% (dominant,
     // matching her spirits being bucketed as Basic ATK) vs Liberation 0% (she has no direct Liberation-
     // press nuke at all — everything routes through these spirit procs).
-    damage: { hits: Array.from({ length: 21 }, () => ({ atkPct: 65.21 })), category: 'basicDmg' },
+    damage: { hits: Array.from({ length: 21 }, () => ({ atkPct: 65.21 })), category: 'basicDmg', basis: 'ATK' },
     note: 'Summons Coordinated-ATK-shaped spirits, considered Basic Attack DMG for buff-pool purposes — whenever the active Resonator deals damage. Modeled at the max 21-Spirit case. 25s cooldown.',
   },
   {
     id: 'zhezhi.forte.creations-zenith',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: "Forte:Creation's Zenith" },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('119.29%×3'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('119.29%×3'), category: 'basicDmg', basis: 'ATK' },
     note: "Needs 2 stacks of Painter's Delight, counted as Basic ATK DMG. Also grants +18% Basic ATK DMG Bonus for 27s (see zhezhi.kit.creations-zenith-buff below). Finisher — Dash Cancel to skip remaining recovery.",
   },
 
@@ -90,23 +92,23 @@ export const ZHEZHI_BLOCKS = [
   //    SKILL_MULTIPLIERS' own row text, not the Resonance Chain) ──
   {
     id: 'zhezhi.outro.carve-and-draw',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 14 }, target: { scope: 'next-on-field' },
     condition: { element: 'glacio' },
     effects: [
-      { stat: 'elemDmg', value: 20, stacking: 'refresh' },
-      { stat: 'skillDmg', value: 25, stacking: 'refresh' },
+      { stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' },
+      { stat: 'skillDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' },
     ],
     note: 'No direct DMG on the Outro itself. Also grants 15 Resonance Energy via Inherent Skill Flourish, not modeled.',
   },
   {
     id: 'zhezhi.kit.creations-zenith-buff',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Forte',
     trigger: { type: 'cast', on: "Forte:Creation's Zenith" },
     timing: { duration: 27 },
     target: { scope: 'self' },
-    effects: [{ stat: 'basicDmg', value: 18 }],
+    effects: [{ stat: 'basicDmg', value: 18, source: 'self-kit' }],
     note: "Creation's Zenith (base kit, not Resonance Chain): needs 2 stacks of Painter's Delight and also grants +18% Basic ATK DMG Bonus for 27s — sourced directly from SKILL_MULTIPLIERS' own row text.",
   },
   {
@@ -116,11 +118,11 @@ export const ZHEZHI_BLOCKS = [
     // to the Stroke of Genius cast, matching zhezhi.chain.s6-bonus-hit's own anchor precedent for the
     // same trigger set (Stroke of Genius/Creation's Zenith).
     id: 'zhezhi.selfbuff.calligraphers-touch',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Stroke of Genius' },
     timing: { duration: 27 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3 }],
+    effects: [{ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3, source: 'self-kit' }],
     note: "Inherent Skill Calligrapher's Touch: self ATK +6% per stack (up to 3, 27s) on Stroke of Genius/Creation's Zenith cast. Fires from BOTH of the real rotation's 2 Stroke of Genius casts (CHARACTER_ROTATIONS has 2 separate 'Forte:Stroke of Genius' steps) — see zhezhi.selfbuff.calligraphers-touch-creations-zenith below for the 3rd real trigger this node was missing.",
   },
   {
@@ -134,11 +136,11 @@ export const ZHEZHI_BLOCKS = [
     // same rotation pass, so 2 real casts (not concurrent double-firing of the SAME event) drive the
     // 3rd stack, matching the real 3-cast/3-stack cap exactly rather than risking an over-count.
     id: 'zhezhi.selfbuff.calligraphers-touch-creations-zenith',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Forte',
     trigger: { type: 'cast', on: "Forte:Creation's Zenith" },
     timing: { duration: 27 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3 }],
+    effects: [{ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3, source: 'self-kit' }],
     note: "Inherent Skill Calligrapher's Touch: the 3rd real trigger (Creation's Zenith cast) — see zhezhi.selfbuff.calligraphers-touch above for the Stroke of Genius half.",
   },
 
@@ -147,10 +149,10 @@ export const ZHEZHI_BLOCKS = [
   //    X%-of-move-Y's-multiplier mechanics with no home in this flat schema, per the audit's own zeroing) ──
   {
     id: 'zhezhi.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 10 }],
+    effects: [{ stat: 'critRate', value: 10, source: 'self-kit' }],
     note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
   },
   // S2 correctly has NO block — "Max Inklit Spirits summoned by Living Canvas +6" (21 -> 27 cap), not
@@ -166,24 +168,24 @@ export const ZHEZHI_BLOCKS = [
     // spirit count (modeled at the max 21-spirit case). Previously flat at 15 (the un-multiplied base
     // per-stack value) — under-counted her real ceiling.
     id: 'zhezhi.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 45 }],
+    effects: [{ stat: 'atkPct', value: 45, source: 'self-kit' }],
     note: "ATK +15% per stack (up to 3, 27s) on Manifestation/Stroke of Genius/Creation's Zenith cast — modeled as a flat +45% (max stacks) passive; see this block's own comment above for why.",
   },
   {
     id: 'zhezhi.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Living Canvas' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh' }],
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh', source: 'self-kit' }],
     note: 'Team ATK +20% for 30s on Living Canvas cast (confirmed exact, team-wide).',
   },
   {
     id: 'zhezhi.chain.s5-bonus-hit',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Living Canvas' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // 140% x 65.21% = 91.29%, matching the source's raw Living Canvas damage-data row 2 of 91.3% exactly
@@ -191,17 +193,17 @@ export const ZHEZHI_BLOCKS = [
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was coordDmg — kit text is
     // explicit "1 extra Inklit Apparition procs at 140% of Inklit Spirit's DMG (Basic Attack DMG)",
     // same fix/convention as zhezhi.liberation.living-canvas above.
-    damage: { hits: [{ atkPct: 91.29 }], category: 'basicDmg' },
+    damage: { hits: [{ atkPct: 91.29 }], category: 'basicDmg', basis: 'ATK' },
     note: "Every 3 Inklit Spirits summoned by Living Canvas, 1 extra Inklit Apparition procs a Coordinated ATK at 140% of Inklit Spirit's own DMG Multiplier — modeled as a real proc-style damage block using the audit's own computed figure, instead of the flat {} RESONANCE_CHAIN_DATA carries for this node (same \"discrete proc, not a modifier\" treatment as Yinlin's S6/Calcharo's S6).",
   },
   {
     id: 'zhezhi.chain.s6-bonus-hit',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:Stroke of Genius' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // 120% x 298.22% = 357.86%, matching the source's raw Ink and Wash damage-data row 4 of 357.86%
     // exactly per the audit comment's own cross-check.
-    damage: { hits: [{ atkPct: 357.86 }], category: 'basicDmg' },
+    damage: { hits: [{ atkPct: 357.86 }], category: 'basicDmg', basis: 'ATK' },
     note: "On Stroke of Genius/Creation's Zenith cast, an extra Ivory Herald procs at 120% of Stroke of Genius's own DMG Multiplier — modeled as a real proc-style damage block using the audit's own computed figure, same \"discrete proc, not a modifier\" treatment as S5 above. Fires from BOTH of the real rotation's 2 Stroke of Genius casts — see zhezhi.chain.s6-bonus-hit-creations-zenith below for the 3rd real trigger this node was missing.",
   },
   {
@@ -209,12 +211,12 @@ export const ZHEZHI_BLOCKS = [
     // Genius/Creation's Zenith cast" — the real rotation's 1 Creation's Zenith cast never triggered
     // this bonus proc before, silently dropping a 3rd real 357.86%-ATK hit every rotation.
     id: 'zhezhi.chain.s6-bonus-hit-creations-zenith',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: "Forte:Creation's Zenith" },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Same 120%-of-Stroke-of-Genius figure as the block above — the % is always anchored to Stroke of
     // Genius's OWN multiplier regardless of which of the 2 named casts triggers it.
-    damage: { hits: [{ atkPct: 357.86 }], category: 'basicDmg' },
+    damage: { hits: [{ atkPct: 357.86 }], category: 'basicDmg', basis: 'ATK' },
     note: "S6's 3rd real trigger (Creation's Zenith cast) — see zhezhi.chain.s6-bonus-hit above for the Stroke of Genius half.",
   },
 ];

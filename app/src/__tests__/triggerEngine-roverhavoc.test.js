@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { ROVER_HAVOC_BLOCKS } from '../engine/characterBlocks/roverhavoc.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Rover: Havoc', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(ROVER_HAVOC_BLOCKS, 'Rover: Havoc');
+  });
+
   it('S2/S3 stay correctly unmodeled (no block) — zero DPS component per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Rover: Havoc'];
     expect(rc.s2).toEqual({});

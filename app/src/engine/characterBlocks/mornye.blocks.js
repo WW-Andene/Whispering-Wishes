@@ -31,12 +31,12 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Mornye';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const MORNYE_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS — all DEF-scaling) ──
   {
     id: 'mornye.intro.convergence',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Convergence' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
@@ -50,7 +50,7 @@ export const MORNYE_BLOCKS = [
   },
   {
     id: 'mornye.basic.wide-field-stage1-3',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Wide Field Observation Mode Stage 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('13.92%×4 → 25.85%×4 → 9.31%×4+33.09%×2'), category: 'basicDmg', basis: 'DEF' },
@@ -58,7 +58,7 @@ export const MORNYE_BLOCKS = [
   },
   {
     id: 'mornye.skill.distributed-array',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Distributed Array' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('39.77%×4'), category: 'skillDmg', basis: 'DEF' },
@@ -66,7 +66,7 @@ export const MORNYE_BLOCKS = [
   },
   {
     id: 'mornye.forte.inversion',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy Attack: Inversion' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('258.46%'), category: 'heavyDmg', basis: 'DEF' },
@@ -74,7 +74,7 @@ export const MORNYE_BLOCKS = [
   },
   {
     id: 'mornye.liberation.critical-protocol',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Critical Protocol' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('522.33%'), category: 'libDmg', basis: 'DEF' },
@@ -84,11 +84,11 @@ export const MORNYE_BLOCKS = [
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'mornye.outro.recursion',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'allDmg', value: 25, stacking: 'refresh' }],
+    effects: [{ stat: 'allDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: "Also causes any teammate's Tune Break damage on a target Mornye marked with Observation Marker to upgrade it to an Interfered Marker, boosting nearby teammates' DMG on that target up to +40% scaling with her Energy Regen above 100% — not modeled (cross-character trigger, no home in this schema).",
   },
 
@@ -101,11 +101,11 @@ export const MORNYE_BLOCKS = [
   // flat % per the audit comment ("no basis"); RESONANCE_CHAIN_DATA['Mornye'].s1 is {}, matching.
   {
     id: 'mornye.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:Heavy Attack: Inversion' },
     timing: { duration: 30 }, // matches Observation Marker's own 30s duration, since this scales off targets carrying it
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'critDmg', value: 32 }],
+    effects: [{ stat: 'critDmg', value: 32, source: 'self-kit' }],
     note: 'Team Crit DMG +32% max vs Interfered Marker targets (confirmed exact value, corrected from a wrong deepen category) — Interfered Marker itself is upgraded from Observation Marker by an ALLY\'s Tune Break hit (a cross-character trigger this schema has no clean anchor for), modeled anchored to the Inversion cast that applies the base Observation Marker instead.',
   },
   // S3 correctly has NO block — corrected 2026-09-02 against a fresh the source dump: real effect is
@@ -116,10 +116,10 @@ export const MORNYE_BLOCKS = [
   // ("no basis"); RESONANCE_CHAIN_DATA['Mornye'].s4 is {}, matching.
   {
     id: 'mornye.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Critical Protocol' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 40 }],
+    effects: [{ stat: 'libDmg', value: 40, source: 'self-kit' }],
     // Note (2026-09-04, Phase A audit): S5's real dump text is TWO separate multipliers — "Critical
     // Protocol DMG Multiplier +40%. Tune Rupture Response - Particle Jet DMG Multiplier +160%." — this
     // block only covers the first half. Particle Jet has no SKILL_MULTIPLIERS row/hit-composed damage
@@ -131,10 +131,10 @@ export const MORNYE_BLOCKS = [
   },
   {
     id: 'mornye.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Critical Protocol' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 400 }],
+    effects: [{ stat: 'libDmg', value: 400, source: 'self-kit' }],
     note: 'Critical Protocol DMG Multiplier +400% (confirmed exact, corrected from an unsourced deepen:15) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo\'s S5.',
   },
 ];

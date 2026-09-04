@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CARTETHYIA_BLOCKS } from '../engine/characterBlocks/cartethyia.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Cartethyia', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(CARTETHYIA_BLOCKS, 'Cartethyia');
+  });
+
   it('S5 stays correctly unmodeled (no block) — purely defensive per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Cartethyia'];
     expect(rc.s5).toEqual({ totalMult: 0 });
@@ -91,7 +96,7 @@ describe('triggerEngine parity — Cartethyia', () => {
     const block = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.manifest.mandate-of-divinity');
     expect(block.trigger).toEqual({ type: 'cast', on: 'Mid-air:Cartethyia Plunging Attack' });
     expect(block.condition.element).toBe('aero');
-    expect(block.effects[0]).toEqual({ stat: 'deepen', value: 50 });
+    expect(block.effects[0]).toEqual({ stat: 'deepen', value: 50, source: 'self-kit' });
   });
 
   // Found 2026-09-03 via a systematic block-coverage audit: her kit text applies real Erosion stacks

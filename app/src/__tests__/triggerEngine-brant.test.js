@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, CHARACTER_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { BRANT_BLOCKS } from '../engine/characterBlocks/brant.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Brant', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(BRANT_BLOCKS, 'Brant');
+  });
+
   it('S1 models the real per-stack mechanic (20 x3 stacks), not just the flat max-stacks total', () => {
     const rc = RESONANCE_CHAIN_DATA['Brant'];
     const s1 = BRANT_BLOCKS.find(b => b.id === 'brant.chain.s1');

@@ -24,23 +24,23 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Youhu';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const YOUHU_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'youhu.intro.scroll-of-wonders',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Scroll of Wonders' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
     // rejecting teammate skillDmg buffs. No override text names a different category, same default-to-
     // skillDmg convention applied project-wide.
-    damage: { hits: parseSkillMultiplierHits('89.47% + 109.35%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('89.47% + 109.35%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Grants Lucky Draw (random Antique).',
   },
   {
     id: 'youhu.skill.ruyi',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Ruyi' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category reviewed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): kit prose calls Antique
@@ -49,39 +49,39 @@ export const YOUHU_BLOCKS = [
     // anywhere in the source — a genuine ambiguity, flagged and explicitly decided by the user: kept
     // skillDmg, matching SKILL_MULTIPLIERS' own 'Skill' type column for this row rather than switched to
     // basicDmg on the mechanic-based read alone.
-    damage: { hits: parseSkillMultiplierHits('137.00% + 167.45%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('137.00% + 167.45%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Antique Appraisal variant with the highest DMG Multiplier of the four, consumes the drawn Antique. Fires 3x in the real rotation.',
   },
   {
     id: 'youhu.liberation.fortunes-favor',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: "Liberation:Fortune's Favor" },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('327.19%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('327.19%'), category: 'libDmg', basis: 'ATK' },
     note: 'Glacio DMG blast; choose one of four Antiques from the resulting prompt.',
   },
   {
     id: 'youhu.basic.frosty-punches',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Frosty Punches' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('47.38% → 31.91%+59.26% → 38.06%+46.52% → 116.35%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('47.38% → 31.91%+59.26% → 38.06%+46.52% → 116.35%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Full 4-part combo, fills the Forte Gauge (Frost).',
   },
   {
     id: 'youhu.skill.scroll-divination',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Scroll Divination' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('156.46%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('156.46%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Glacio DMG hit + heal to all nearby party members + Lucky Draw (grants a random Antique), not modeled.',
   },
   {
     id: 'youhu.outro.timeless-classics',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 28 }, target: { scope: 'next-on-field' },
-    effects: [{ stat: 'coordDmg', value: 100, stacking: 'refresh' }],
+    effects: [{ stat: 'coordDmg', value: 100, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'No direct DMG on the Outro itself — the incoming Resonator has their Coordinated Attack DMG Amplified by 100% for 28s.',
   },
 
@@ -99,21 +99,21 @@ export const YOUHU_BLOCKS = [
   // gap anymore.
   {
     id: 'youhu.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 20 }],
+    effects: [{ stat: 'atkPct', value: 20, source: 'self-kit' }],
     note: 'Restless Sleep: ATK +20% (confirmed exact) — no specific cast anchor sourced, kept passive.',
   },
   // S4 correctly has NO block — 20% chance for Scroll Divination to skip its cooldown, a proc-based
   // effective-cooldown-reduction with no flat DMG% equivalent.
   {
     id: 'youhu.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Intro:Scroll of Wonders' },
     timing: { duration: 14 },
     target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 15 }],
+    effects: [{ stat: 'critRate', value: 15, source: 'self-kit' }],
     note: 'Dreamland Meander: Crit Rate +15% for 14s after Intro Skill (confirmed exact).',
   },
   {
@@ -126,11 +126,11 @@ export const YOUHU_BLOCKS = [
     // cast" — retargeted to 'Skill:Ruyi' (the only Antique Appraisal variant this app's rotation casts,
     // firing 3x), which now correctly builds a real stacking window via buildBlockWindows/activeCountAt.
     id: 'youhu.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Skill:Ruyi' },
     timing: { duration: 7 },
     target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 15, stacking: 'stacking', maxStacks: 4 }],
+    effects: [{ stat: 'critDmg', value: 15, stacking: 'stacking', maxStacks: 4, source: 'self-kit' }],
     note: 'Slumber Evermore: Sky Blue stacks (max 4, 7s each) each granting Crit DMG +15% (60% max) — modeled as real per-stack stacking off each real Antique Appraisal (Ruyi) cast.',
   },
 
@@ -140,11 +140,11 @@ export const YOUHU_BLOCKS = [
   //    anywhere in the roster to model it into — correctly left out, not an oversight) ──
   {
     id: 'youhu.inherent.rare-find',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'cast', on: 'Intro:Scroll of Wonders' },
     timing: { duration: 14 },
     target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 15 }],
+    effects: [{ stat: 'elemDmg', value: 15, source: 'self-kit' }],
     note: 'Rare Find: Glacio DMG Bonus +15% for 14s upon casting Intro Skill (confirmed exact) — a flat, unconditional Fusion-style DMG buff, no scoping needed (kit text names no specific move it\'s restricted to).',
   },
 ];

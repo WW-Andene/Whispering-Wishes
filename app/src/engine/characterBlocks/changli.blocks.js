@@ -54,26 +54,26 @@ const TRIPARTITE_FLAMES_BLOCK_IDS = [
 const FLAMING_SACRIFICE_BLOCK_IDS = ['changli.forte.flaming-sacrifice', 'changli.forte.flaming-sacrifice-2'];
 const LIBERATION_BLOCK_ID = 'changli.liberation.radiance-of-fealty';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const CHANGLI_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'changli.intro.obedience-of-rules',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Obedience of Rules' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category added 2026-09-04 (full re-segmentation pass): was uncategorized, silently rejecting
     // teammate skillDmg buffs. No override text names a different category, same default-to-skillDmg
     // convention applied project-wide.
-    damage: { hits: parseSkillMultiplierHits('44.50%+25.96%×4'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('44.50%+25.96%×4'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Also opens a 12s True Sight window.',
   },
   {
     id: 'changli.skill.true-sight-capture',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('81.88%×3+163.76%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('81.88%×3+163.76%'), category: 'skillDmg' , basis: 'ATK' },
     note: "1st of 2 real True Sight: Capture casts per rotation (2 charges, both used) — see changli.skill.true-sight-capture-2 for the 2nd. Row 'True Sight: Capture / Conquest / Charge' has 3 arrow-separated segments — only Capture's own segment used here; see changli.skill.true-sight-conquest-1/changli.skill.true-sight-charge-1/2/3 below for the other two.",
   },
   {
@@ -82,22 +82,22 @@ export const CHANGLI_BLOCKS = [
     // CHARACTER_ROTATIONS has only 1 'Skill' step. Rides the same existing trigger rather than a new
     // step (see file header note on this technique).
     id: 'changli.skill.true-sight-capture-2',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('81.88%×3+163.76%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('81.88%×3+163.76%'), category: 'skillDmg' , basis: 'ATK' },
     note: '2nd of 2 real True Sight: Capture casts per rotation.',
   },
   {
     id: 'changli.heavy.standard',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Standard' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row 'Standard / Mid-air Heavy' has 2 arrow-separated segments — the rotation step explicitly
     // does both (ground Heavy ATK, then again in the air), so both are combined here.
     // category added 2026-09-04 (full re-segmentation pass): was uncategorized, silently rejecting
     // teammate heavyDmg buffs despite dmgFocus (fixed same day) now correctly including Heavy ATK.
-    damage: { hits: [...parseSkillMultiplierHits('28.99%×3+37.27%'), ...parseSkillMultiplierHits('123.27%')], category: 'heavyDmg' },
+    damage: { hits: [...parseSkillMultiplierHits('28.99%×3+37.27%'), ...parseSkillMultiplierHits('123.27%')], category: 'heavyDmg' , basis: 'ATK' },
   },
   {
     // Added 2026-09-04 (full re-segmentation pass): Mid-air Attack Stage 1-4 was completely absent —
@@ -107,26 +107,26 @@ export const CHANGLI_BLOCKS = [
     // neighbor) rather than a new step. Plain "Fusion DMG" kit text (no "considered X" override) →
     // basicDmg, the default category for an unqualified Basic/Mid-air ATK move.
     id: 'changli.basic.mid-air-attack',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Standard' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('61.35%+50.87%×2+44.00%×3+38.03%+22.18%×4'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('61.35%+50.87%×2+44.00%×3+38.03%+22.18%×4'), category: 'basicDmg' , basis: 'ATK' },
     note: 'The 1 real Mid-air Attack Stage 1-4 combo per rotation — releasing Stage 4 opens a fresh 12s True Sight window (consumed by changli.skill.true-sight-charge-3).',
   },
   {
     id: 'changli.liberation.radiance-of-fealty',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Radiance of Fealty' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('1212.75%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('1212.75%'), category: 'libDmg' , basis: 'ATK' },
     note: 'Grants 4 Enflamement (caps, does not stack past 4) and Fiery Feather (self +25% ATK on the 2nd, post-Ultimate Forte Heavy ATK within 10s — see changli.selfbuff.fiery-feather).',
   },
   {
     id: 'changli.forte.flaming-sacrifice',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Flaming Sacrifice' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('39.25%×5+457.85%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('39.25%×5+457.85%'), category: 'heavyDmg' , basis: 'ATK' },
     note: "1st of 2 real Flaming Sacrifice casts per rotation (the one BEFORE Ultimate, consuming the 4 Enflamement built via True Sight follow-ups) — see changli.forte.flaming-sacrifice-2 for the 2nd (post-Ultimate) cast. 40% DMG reduction while casting, not modeled (no DPS component).",
   },
   {
@@ -136,24 +136,24 @@ export const CHANGLI_BLOCKS = [
     // (real order: "Ultimate → Heavy: Flaming Sacrifice (Swap)"), which is why Fiery Feather scopes
     // to this id specifically, not the 1st.
     id: 'changli.forte.flaming-sacrifice-2',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Flaming Sacrifice' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('39.25%×5+457.85%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('39.25%×5+457.85%'), category: 'heavyDmg' , basis: 'ATK' },
     note: '2nd of 2 real Flaming Sacrifice casts per rotation — the post-Ultimate cast Fiery Feather (self ATK +25%) actually buffs.',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'changli.outro.strategy-of-duality',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 10, forfeitOnRecipientSwapOut: true },
     target: { scope: 'next-on-field' },
     condition: { element: 'fusion' },
     effects: [
-      { stat: 'elemDmg', value: 20, stacking: 'refresh' },
-      { stat: 'libDmg', value: 25, stacking: 'refresh' },
+      { stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' },
+      { stat: 'libDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' },
     ],
     // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): forfeitOnRecipientSwapOut now actually clamps
     // this to the incoming Resonator's own swap-out instant when it's shorter than the full 10s.
@@ -161,7 +161,7 @@ export const CHANGLI_BLOCKS = [
   },
   {
     id: 'changli.selfbuff.fiery-feather',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Radiance of Fealty' },
     timing: { duration: 10 },
     target: { scope: 'self' },
@@ -170,7 +170,7 @@ export const CHANGLI_BLOCKS = [
     // hit landing within the 10s window would have gotten +25% ATK, not just the real 2nd Forte
     // Heavy cast it's supposed to buff — a latent bug the old 1-Forte-block model happened not to
     // expose, since nothing else landed inside that window).
-    effects: [{ stat: 'atkPct', value: 25, scopedToBlockId: 'changli.forte.flaming-sacrifice-2' }],
+    effects: [{ stat: 'atkPct', value: 25, scopedToBlockId: 'changli.forte.flaming-sacrifice-2', source: 'self-kit' }],
     note: 'Fiery Feather: self ATK +25% on the 2nd, post-Ultimate Forte Heavy ATK (Flaming Sacrifice) within 10s of Liberation — consuming it ends Fiery Feather early, not modeled (irrelevant here since it\'s now scoped to the exact real cast it buffs).',
   },
 
@@ -184,22 +184,22 @@ export const CHANGLI_BLOCKS = [
     // ("conditional to Resonance Skill Tripartite Flames AND Heavy Attack Flaming Sacrifice casts
     // specifically") doesn't cover. Rescoped to the exact real block-id groups.
     id: 'changli.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      ...TRIPARTITE_FLAMES_BLOCK_IDS.map(id => ({ stat: 'skillDmg', value: 10, scopedToBlockId: id })),
-      ...FLAMING_SACRIFICE_BLOCK_IDS.map(id => ({ stat: 'heavyDmg', value: 10, scopedToBlockId: id })),
+      ...TRIPARTITE_FLAMES_BLOCK_IDS.map(id => ({ stat: 'skillDmg', value: 10, scopedToBlockId: id, source: 'self-kit' })),
+      ...FLAMING_SACRIFICE_BLOCK_IDS.map(id => ({ stat: 'heavyDmg', value: 10, scopedToBlockId: id, source: 'self-kit' })),
     ],
     note: 'Real mechanic: conditional to Resonance Skill Tripartite Flames (+ its True Sight follow-ups, "considered Resonance Skill DMG") AND Heavy Attack Flaming Sacrifice casts specifically (+ interruption resistance, no stat field, not modeled) — scoped to the exact real blocks via scopedToBlockId rather than an unscoped category-wide passive.',
   },
   {
     id: 'changli.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Radiance of Fealty' },
     timing: { duration: 8 },
     target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 25 }],
+    effects: [{ stat: 'critRate', value: 25, source: 'self-kit' }],
     // Note corrected 2026-09-04 (full re-segmentation pass): the True Sight follow-ups (Conquest/
     // Charge) now have real blocks and DO also grant Enflamement in reality, per the kit text — this
     // buff's real trigger is broader than just Liberation. Left scoped to only the Liberation cast on
@@ -213,19 +213,19 @@ export const CHANGLI_BLOCKS = [
   },
   {
     id: 'changli.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Radiance of Fealty' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 80 }],
+    effects: [{ stat: 'libDmg', value: 80, source: 'self-kit' }],
     note: "Real scope: Radiance of Fealty's own DMG Multiplier +80% — cast-scoped (instant, no persistent duration; only Liberation is libDmg-category, so this is unambiguous without scopedToBlockId). Confirmed actually applying as of the 2026-09-04 resolveHitComposedDps fix (previously silently dropped — see REMAINING_WORK.md).",
   },
   {
     id: 'changli.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Intro:Obedience of Rules' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'atkPct', value: 20 }],
+    effects: [{ stat: 'atkPct', value: 20, source: 'teammate-ally-action' }],
     note: 'Real mechanic: after Intro Skill, team ATK +20% for 30s — gated behind an Intro-Skill cast, not a flat always-on buff.',
   },
   {
@@ -236,18 +236,18 @@ export const CHANGLI_BLOCKS = [
     // table "is the only value sourced for this node," which this pass fixes by sourcing the 2nd value
     // for real, rather than leaving it dropped.
     id: 'changli.chain.s5-heavydmg',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Flaming Sacrifice' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 50 }],
+    effects: [{ stat: 'heavyDmg', value: 50, source: 'self-kit' }],
     note: "Flaming Sacrifice's DMG dealt +50% (the 2nd, separate half of this node — see changli.chain.s5-totalmult for the DMG Multiplier half) — cast-scoped (instant, no persistent duration). heavyDmg is category-gated and both real Flaming Sacrifice casts share that category, so this correctly reaches both without needing scopedToBlockId.",
   },
   {
     id: 'changli.chain.s5-totalmult',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Flaming Sacrifice' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 50 }],
+    effects: [{ stat: 'totalMult', value: 50, source: 'self-kit' }],
     note: "Flaming Sacrifice's DMG Multiplier +50% (the 1st, separate half of this node — see changli.chain.s5-heavydmg for the DMG-dealt half) — cast-scoped (instant, no persistent duration). totalMult is a flat per-instant multiplier with no category gate at all, but the Forte step's own instant currently has no other damage block riding it besides the 2 real Flaming Sacrifice casts, so this is correct as-is; flagging for re-check if another block is ever added to this same trigger.",
   },
   {
@@ -255,13 +255,13 @@ export const CHANGLI_BLOCKS = [
     // class as the original Sweeping Force (defIgnore isn't category-gated), boosting ALL her hits
     // instead of only Tripartite Flames/Flaming Sacrifice/Radiance of Fealty as the kit text requires.
     id: 'changli.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      ...TRIPARTITE_FLAMES_BLOCK_IDS.map(id => ({ stat: 'defIgnore', value: 40, scopedToBlockId: id })),
-      ...FLAMING_SACRIFICE_BLOCK_IDS.map(id => ({ stat: 'defIgnore', value: 40, scopedToBlockId: id })),
-      { stat: 'defIgnore', value: 40, scopedToBlockId: LIBERATION_BLOCK_ID },
+      ...TRIPARTITE_FLAMES_BLOCK_IDS.map(id => ({ stat: 'defIgnore', value: 40, scopedToBlockId: id, source: 'self-kit' })),
+      ...FLAMING_SACRIFICE_BLOCK_IDS.map(id => ({ stat: 'defIgnore', value: 40, scopedToBlockId: id, source: 'self-kit' })),
+      { stat: 'defIgnore', value: 40, scopedToBlockId: LIBERATION_BLOCK_ID, source: 'self-kit' },
     ],
     note: 'Tripartite Flames (+ its True Sight follow-ups), Flaming Sacrifice, and Radiance of Fealty ignore an additional 40% of target DEF — scoped to the exact real blocks via scopedToBlockId rather than an unscoped passive.',
   },
@@ -276,23 +276,23 @@ export const CHANGLI_BLOCKS = [
     // requires. Split into 2 scopedToBlockId effects, same fix class as Mortefi's S3 critDmg bug.
     // Extended to cover BOTH real Flaming Sacrifice casts once the 2nd was added this same pass.
     id: 'changli.inherent.sweeping-force-forte',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Forte',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: FLAMING_SACRIFICE_BLOCK_IDS.flatMap(id => [
-      { stat: 'elemDmg', value: 20, scopedToBlockId: id },
-      { stat: 'defIgnore', value: 15, scopedToBlockId: id },
+      { stat: 'elemDmg', value: 20, scopedToBlockId: id, source: 'self-kit' },
+      { stat: 'defIgnore', value: 15, scopedToBlockId: id, source: 'self-kit' },
     ]),
     note: 'Sweeping Force (Forte Heavy half): Flaming Sacrifice → Fusion DMG Bonus +20% and 15% target DEF Ignore, scoped to BOTH real Flaming Sacrifice casts — see changli.inherent.sweeping-force-liberation for the Liberation half.',
   },
   {
     id: 'changli.inherent.sweeping-force-liberation',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Liberation',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'elemDmg', value: 20, scopedToBlockId: LIBERATION_BLOCK_ID },
-      { stat: 'defIgnore', value: 15, scopedToBlockId: LIBERATION_BLOCK_ID },
+      { stat: 'elemDmg', value: 20, scopedToBlockId: LIBERATION_BLOCK_ID, source: 'self-kit' },
+      { stat: 'defIgnore', value: 15, scopedToBlockId: LIBERATION_BLOCK_ID, source: 'self-kit' },
     ],
     note: 'Sweeping Force (Liberation half): Radiance of Fealty → Fusion DMG Bonus +20% and 15% target DEF Ignore, scoped to only this cast.',
   },
@@ -309,58 +309,58 @@ export const CHANGLI_BLOCKS = [
   //    used throughout this project.
   {
     id: 'changli.skill.true-sight-charge-1',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' , basis: 'ATK' },
     note: '1st of 3 real True Sight: Charge casts per rotation — cast while holding 0 Enflamement, so Secret Strategist contributes nothing here.',
   },
   {
     id: 'changli.skill.true-sight-charge-2',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' , basis: 'ATK' },
     note: '2nd of 3 real True Sight: Charge casts per rotation — cast while holding 1 Enflamement stack; see changli.inherent.secret-strategist-charge-2 for its scoped +5% Fusion DMG bonus.',
   },
   {
     id: 'changli.skill.true-sight-charge-3',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' , basis: 'ATK' },
     note: '3rd of 3 real True Sight: Charge casts per rotation — cast while holding 2 Enflamement stacks; see changli.inherent.secret-strategist-charge-3 for its scoped +10% Fusion DMG bonus.',
   },
   {
     id: 'changli.skill.true-sight-conquest-1',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('58.95%×2+82.52%+94.31%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('58.95%×2+82.52%+94.31%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'The 1 real True Sight: Conquest cast per rotation (the 4th and final Enflamement-granting follow-up, landing right before the 1st Forte Heavy) — cast while holding 3 Enflamement stacks (the cap); see changli.inherent.secret-strategist-conquest-1 for its scoped +15% Fusion DMG bonus.',
   },
   {
     id: 'changli.inherent.secret-strategist-charge-2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Skill',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 5, scopedToBlockId: 'changli.skill.true-sight-charge-2' }],
+    effects: [{ stat: 'elemDmg', value: 5, scopedToBlockId: 'changli.skill.true-sight-charge-2', source: 'self-kit' }],
     note: 'Secret Strategist: +5% Fusion DMG Bonus per Enflamement stack held when casting True Sight: Conquest/Charge — this cast is held at 1 stack, so +5% (1×5%), scoped to only this specific hit via scopedToBlockId (elemDmg isn\'t category-gated, so an unscoped version would over-credit her other skillDmg hits too).',
   },
   {
     id: 'changli.inherent.secret-strategist-charge-3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Skill',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 10, scopedToBlockId: 'changli.skill.true-sight-charge-3' }],
+    effects: [{ stat: 'elemDmg', value: 10, scopedToBlockId: 'changli.skill.true-sight-charge-3', source: 'self-kit' }],
     note: 'Secret Strategist: this cast is held at 2 Enflamement stacks, so +10% (2×5%) Fusion DMG Bonus, scoped to only this specific hit.',
   },
   {
     id: 'changli.inherent.secret-strategist-conquest-1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Skill',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 15, scopedToBlockId: 'changli.skill.true-sight-conquest-1' }],
+    effects: [{ stat: 'elemDmg', value: 15, scopedToBlockId: 'changli.skill.true-sight-conquest-1', source: 'self-kit' }],
     note: 'Secret Strategist: this cast is held at 3 Enflamement stacks (the cap), so +15% (3×5%) Fusion DMG Bonus, scoped to only this specific hit.',
   },
 ];

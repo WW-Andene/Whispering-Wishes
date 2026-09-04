@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { IUNO_BLOCKS } from '../engine/characterBlocks/iuno.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Iuno', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(IUNO_BLOCKS, 'Iuno');
+  });
+
   it('S4 stays correctly unmodeled (no block) — pure defensive team shield per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Iuno'];
     expect(rc.s4).toEqual({ totalMult: 0 });
@@ -32,7 +37,7 @@ describe('triggerEngine parity — Iuno', () => {
     const absoluteFullness = IUNO_BLOCKS.find(b => b.id === 'iuno.heavy.absolute-fullness');
     expect(absoluteFullness.damage.category).toBe('libDmg');
     const s6 = IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s6');
-    expect(s6.effects[0]).toEqual({ stat: 'libDmg', value: 1600 });
+    expect(s6.effects[0]).toEqual({ stat: 'libDmg', value: 1600, source: 'self-kit' });
   });
 
   it("dmgFocus is ['Liberation'] only — 'Heavy ATK' removed since she has zero real Heavy ATK DMG share", () => {

@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../da
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { YANGYANG_BLOCKS } from '../engine/characterBlocks/yangyang.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Yangyang', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(YANGYANG_BLOCKS, 'Yangyang');
+  });
+
   it('S2 stays correctly unmodeled (no block) — pure Energy utility per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Yangyang'];
     expect(rc.s2).toEqual({});

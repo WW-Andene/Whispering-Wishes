@@ -15,7 +15,7 @@ describe('Galbrena chain.s4 — ally-action retrofit', () => {
     expect(s4.trigger).toEqual({ type: 'ally-action', action: 'echo-skill-cast' });
     expect(s4.target.scope).toBe('whole-team');
     expect(s4.timing.duration).toBe(20);
-    expect(s4.effects[0]).toEqual({ stat: 'allDmg', value: 20, stacking: 'refresh' });
+    expect(s4.effects[0]).toEqual({ stat: 'allDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' });
   });
 
   it('fires from ANY teammate using an equipped Echo (universal echo-skill-cast tag), reaching Galbrena', () => {

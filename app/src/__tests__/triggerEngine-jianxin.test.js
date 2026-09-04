@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { JIANXIN_BLOCKS } from '../engine/characterBlocks/jianxin.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Jianxin', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(JIANXIN_BLOCKS, 'Jianxin');
+  });
+
   it('S1/S2/S3/S5 stay correctly unmodeled (no block) — pure utility/AoE-range per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Jianxin'];
     ['s1', 's2', 's3', 's5'].forEach(s => expect(rc[s]).toEqual({}));

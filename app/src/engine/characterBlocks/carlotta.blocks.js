@@ -13,83 +13,83 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Carlotta';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const CARLOTTA_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'carlotta.intro.wintertime-aria',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Wintertime Aria' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('178.93% + 59.65%×2') },
+    damage: { hits: parseSkillMultiplierHits('178.93% + 59.65%×2'), basis: 'ATK' },
   },
   {
     id: 'carlotta.skill.art-of-violence',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Art of Violence' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('144.11%×2'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('144.11%×2'), category: 'skillDmg' , basis: 'ATK' },
   },
   {
     id: 'carlotta.skill.chromatic-splendor',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Chromatic Splendor' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('112.73%×2 + 338.18%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('112.73%×2 + 338.18%'), category: 'skillDmg' , basis: 'ATK' },
   },
   {
     id: 'carlotta.forte.imminent-oblivion',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Imminent Oblivion' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('66.83%×5 + 501.21%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('66.83%×5 + 501.21%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Counted as Resonance Skill DMG per its own kit text, despite being a Basic ATK-button cast.',
   },
   {
     id: 'carlotta.liberation.era-of-new-wave',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Era of New Wave' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('402.71%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('402.71%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Counted as Resonance Skill DMG per its own kit text, despite being a Liberation-button cast. Activates 10s Twilight Tango, forcing the next 5 Basic ATK/Liberation presses into Death Knell x4 -> Fatal Finale.',
   },
   {
     id: 'carlotta.liberation.death-knell-x4',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Death Knell ×4' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row is '(183.64% + 14.50%×4) per shot' — this step represents all 4 forced presses in
     // Twilight Tango, so the per-shot hit-set is repeated 4x to match the real 4-press mechanic.
-    damage: { hits: [0, 1, 2, 3].flatMap(() => parseSkillMultiplierHits('183.64% + 14.50%×4')), category: 'skillDmg' },
+    damage: { hits: [0, 1, 2, 3].flatMap(() => parseSkillMultiplierHits('183.64% + 14.50%×4')), category: 'skillDmg' , basis: 'ATK' },
     note: 'Counted as Resonance Skill DMG per its own kit text. Builds 1 Meta Vector per hit (cap 4), consumed by Fatal Finale.',
   },
   {
     id: 'carlotta.liberation.fatal-finale',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Fatal Finale' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('644.33%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('644.33%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Counted as Resonance Skill DMG per its own kit text. Ends Twilight Tango and wipes Substance to 0.',
   },
   {
     id: 'carlotta.skill.art-of-violence-chromatic-splendor-2',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Art of Violence → Chromatic Splendor' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Second Skill-combo cast of the rotation (post-Twilight Tango) — both presses combined into
     // one CHARACTER_ROTATIONS step, so both skills' hit-sets are combined here to match.
-    damage: { hits: [...parseSkillMultiplierHits('144.11%×2'), ...parseSkillMultiplierHits('112.73%×2 + 338.18%')], category: 'skillDmg' },
+    damage: { hits: [...parseSkillMultiplierHits('144.11%×2'), ...parseSkillMultiplierHits('112.73%×2 + 338.18%')], category: 'skillDmg' , basis: 'ATK' },
   },
   {
     id: 'carlotta.outro.closing-remark',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Fixed 2026-09-04 (Phase A audit): had no `damage.category` at all despite being real, sourced
     // damage (3.77%/43,872 of her total per the dump's own Damage Profile) — her own direct swap-out
     // hit, explicitly not a team buff, same shape already fixed to `outroDmg` on Calcharo/Encore/
     // Lingyang/Rover: Havoc's Outros.
-    damage: { hits: parseSkillMultiplierHits('794.2%'), category: 'outroDmg' },
+    damage: { hits: parseSkillMultiplierHits('794.2%'), category: 'outroDmg' , basis: 'ATK' },
   },
   {
     // Added 2026-09-03: S3's Kaleidoscope Sparks — a real extra strike on the SAME Outro cast, same
@@ -98,19 +98,19 @@ export const CARLOTTA_BLOCKS = [
     // sN-suffixed id gates this to sequence 3+ via sequenceGating.js's own <char>.chain.sN-<suffix>
     // convention.
     id: 'carlotta.chain.s3-kaleidoscope-sparks',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category fixed 2026-09-04 (Phase A audit) to match the Closing Remark hit it extends — an extra
     // strike on the same Outro cast, same category, same reasoning as above.
-    damage: { hits: parseSkillMultiplierHits('1032.18%'), category: 'outroDmg' },
+    damage: { hits: parseSkillMultiplierHits('1032.18%'), category: 'outroDmg' , basis: 'ATK' },
     note: 'S3 Kaleidoscope Sparks: Closing Remark gains 1 additional 1032.18%-ATK strike on the same Outro cast, gated to sequence 3+.',
   },
 
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'carlotta.selfbuff.final-bow',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'passive' },
     timing: { duration: 99 }, // sentinel: conditional on full Substance, no CHARACTER_ROTATIONS step directly named "Substance full"
     target: { scope: 'self' },
@@ -123,15 +123,15 @@ export const CARLOTTA_BLOCKS = [
     // category bonus, so fixed to 3 `totalMult` effects each `scopedToBlockId`'d to one of those blocks
     // (Aemeath S3's multi-scoped-effects-on-one-block pattern).
     effects: [
-      { stat: 'totalMult', value: 80, scopedToBlockId: 'carlotta.liberation.era-of-new-wave' },
-      { stat: 'totalMult', value: 80, scopedToBlockId: 'carlotta.liberation.death-knell-x4' },
-      { stat: 'totalMult', value: 80, scopedToBlockId: 'carlotta.liberation.fatal-finale' },
+      { stat: 'totalMult', value: 80, scopedToBlockId: 'carlotta.liberation.era-of-new-wave', source: 'self-kit' },
+      { stat: 'totalMult', value: 80, scopedToBlockId: 'carlotta.liberation.death-knell-x4', source: 'self-kit' },
+      { stat: 'totalMult', value: 80, scopedToBlockId: 'carlotta.liberation.fatal-finale', source: 'self-kit' },
     ],
     note: 'Forte Circuit Final Bow: at full (120/120) Substance, DMG Multiplier +80% on Era of New Wave/Death Knell/Fatal Finale specifically — ends early if swapped out during Twilight Tango or when Twilight Tango ends, not modeled (no early-consumption trigger in this schema).',
   },
   {
     id: 'carlotta.debuff.deconstruction',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Era of New Wave' },
     timing: { duration: 4 },
     target: { scope: 'all-enemies' },
@@ -143,7 +143,7 @@ export const CARLOTTA_BLOCKS = [
   //    each node's real mechanic) ──
   {
     id: 'carlotta.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-02 (re-read after being flagged as "found, not fixed" too hastily): was
     // `trigger:{type:'cast', on:'Liberation:Era of New Wave'}` with no `timing.duration` — the same
     // dead cast-scoped/no-duration no-op shape as S2/Lupa's S4/Verina's S6 (the engine-architecture history (git log)
@@ -156,12 +156,12 @@ export const CARLOTTA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 12.5 }],
+    effects: [{ stat: 'critRate', value: 12.5, source: 'self-kit' }],
     note: "+12.5% Crit Rate, sourced as effectively unconditional per the kit text's own \"should always be active\" claim about Deconstruction uptime with Ars Gratia Artis. Chromatic Splendor hitting a Dispersion target also restores 30 Substance, a resource-economy effect with no DPS stat, not modeled.",
   },
   {
     id: 'carlotta.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-02: this was `trigger:{type:'cast',...}` with no `timing.duration` — a
     // `kind:'buff'` block in that exact shape is a silent no-op in resolveHitComposedDps.js's
     // statsAtInstant() (it only reads passiveBlocks [trigger.type==='passive'] and buffWindows
@@ -171,12 +171,12 @@ export const CARLOTTA_BLOCKS = [
     // DMG Multiplier +126%" mechanic, without needing a cast-window that never gets built.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 126, scopedToBlockId: 'carlotta.liberation.fatal-finale' }],
+    effects: [{ stat: 'totalMult', value: 126, scopedToBlockId: 'carlotta.liberation.fatal-finale', source: 'self-kit' }],
     note: "Real scope: Fatal Finale's own DMG Multiplier +126%.",
   },
   {
     id: 'carlotta.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     // Fixed 2026-09-04 (Phase A audit): was an unscoped `totalMult` effect on a `passive` block —
@@ -189,24 +189,24 @@ export const CARLOTTA_BLOCKS = [
     // block (`...-chromatic-splendor-2`, the 2nd Skill:Art of Violence → Chromatic Splendor cast later
     // in the same rotation) so the 2nd occurrence isn't silently dropped either.
     effects: [
-      { stat: 'totalMult', value: 93, scopedToBlockId: 'carlotta.skill.art-of-violence' },
-      { stat: 'totalMult', value: 93, scopedToBlockId: 'carlotta.skill.chromatic-splendor' },
-      { stat: 'totalMult', value: 93, scopedToBlockId: 'carlotta.skill.art-of-violence-chromatic-splendor-2' },
+      { stat: 'totalMult', value: 93, scopedToBlockId: 'carlotta.skill.art-of-violence', source: 'self-kit' },
+      { stat: 'totalMult', value: 93, scopedToBlockId: 'carlotta.skill.chromatic-splendor', source: 'self-kit' },
+      { stat: 'totalMult', value: 93, scopedToBlockId: 'carlotta.skill.art-of-violence-chromatic-splendor-2', source: 'self-kit' },
     ],
     note: "Real scope: Art of Violence's AND Chromatic Splendor's own DMG Multiplier both +93%. ALSO enables Outro Skill Kaleidoscope Sparks — modeled as a separate real damage block, carlotta.chain.s3-kaleidoscope-sparks above.",
   },
   {
     id: 'carlotta.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:Imminent Oblivion' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'skillDmg', value: 25, stacking: 'refresh' }],
+    effects: [{ stat: 'skillDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Real mechanic: casting Heavy ATK, Containment Tactics, OR Imminent Oblivion grants the WHOLE TEAM +25% Resonance Skill DMG Bonus for 30s (confirmed team-wide target per the audit comment). Only the Imminent Oblivion trigger is wired to a real CHARACTER_ROTATIONS step (her rotation never uses plain Heavy ATK/Containment Tactics).',
   },
   {
     id: 'carlotta.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-04 (Phase A audit): was `trigger:{type:'cast', on:'Forte:Imminent Oblivion'}` with
     // no `timing.duration` — the same dead cast-scoped/no-duration no-op shape as this file's own
     // S1/S2 (engine-architecture history item 12; a 6th confirmed instance project-wide). Converted to
@@ -214,18 +214,18 @@ export const CARLOTTA_BLOCKS = [
     // Imminent Oblivion's own hit.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 47, scopedToBlockId: 'carlotta.forte.imminent-oblivion' }],
+    effects: [{ stat: 'totalMult', value: 47, scopedToBlockId: 'carlotta.forte.imminent-oblivion', source: 'self-kit' }],
     note: "Real scope: Imminent Oblivion's own DMG Multiplier +47%.",
   },
   {
     id: 'carlotta.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     // Fixed 2026-09-04 (Phase A audit): was an unscoped `totalMult` effect on a `passive` block — the
     // same unconditional-whole-kit leak as S3 above (`stats.totalMult` is not category-gated). Scoped
     // to Death Knell's own block only.
-    effects: [{ stat: 'totalMult', value: 186.6, scopedToBlockId: 'carlotta.liberation.death-knell-x4' }],
+    effects: [{ stat: 'totalMult', value: 186.6, scopedToBlockId: 'carlotta.liberation.death-knell-x4', source: 'self-kit' }],
     note: "Real scope: Death Knell's own DMG Multiplier +186.6%. Also doubles Death Knell's crystal-shard count and adds a 1.5s Scattering immobilize on hit (CC, not a DPS stat), not modeled.",
   },
 ];

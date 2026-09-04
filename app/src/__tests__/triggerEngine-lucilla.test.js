@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { LUCILLA_BLOCKS } from '../engine/characterBlocks/lucilla.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Lucilla', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(LUCILLA_BLOCKS, 'Lucilla');
+  });
+
   it('S1/S2/S4 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Lucilla'];
     expect(LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s1').effects[0].value).toBe(rc.s1.critRate);

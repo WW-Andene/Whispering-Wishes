@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { VERINA_BLOCKS } from '../engine/characterBlocks/verina.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Verina', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(VERINA_BLOCKS, 'Verina');
+  });
+
   it('S1/S2/S3/S5 stay correctly unmodeled (no block) — pure utility per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Verina'];
     ['s1', 's2', 's3', 's5'].forEach(s => expect(rc[s]).toEqual({}));

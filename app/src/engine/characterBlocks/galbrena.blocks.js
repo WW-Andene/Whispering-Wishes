@@ -14,116 +14,121 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Galbrena';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const GALBRENA_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS — every row is "considered Heavy Attack DMG" or
   //    "considered Echo Skill DMG" despite the button/type used to cast it) ──
   {
     id: 'galbrena.intro.hellflare-overload',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Hellflare Overload' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('94.12%') },
+    // category/basis added during Layer 4 migration: was uncategorized, silently rejecting Resonance
+    // Skill DMG Bonus. No override text names a different category, same default-to-skillDmg convention
+    // as Aalto/Calcharo/Encore/Denia's own Intro blocks.
+    damage: { hits: parseSkillMultiplierHits('94.12%'), basis: 'ATK' },
   },
   {
     id: 'galbrena.heavy.basic-attack-stage2',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Basic Attack Stage 2' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('26.31%×2+78.91%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('26.31%×2+78.91%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Threshold State combo, builds Sinflame (skips the weak Stage 1 per the rotation).',
   },
   {
     id: 'galbrena.heavy.basic-attack-stage3',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Basic Attack Stage 3' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('28.60%×2+42.89%×2'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('28.60%×2+42.89%×2'), category: 'heavyDmg', basis: 'ATK' },
   },
   {
     id: 'galbrena.echo.basic-attack-stage4',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Echo',
     trigger: { type: 'cast', on: 'Echo:Basic Attack Stage 4' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('177.86%'), category: 'echoDmg' },
+    damage: { hits: parseSkillMultiplierHits('177.86%'), category: 'echoDmg', basis: 'ATK' },
   },
   {
     id: 'galbrena.heavy.ascent-of-malice',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Ascent of Malice' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('51.57%×2'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('51.57%×2'), category: 'heavyDmg', basis: 'ATK' },
     note: 'At max Sinflame — enters Demon Hypostasis, endlag cancelled on hit by the Echo (Hellfire Absolution).',
   },
   {
     id: 'galbrena.echo.hellfire-absolution',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Echo',
     trigger: { type: 'cast', on: 'Echo:Hellfire Absolution' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('110.90%+90.74%×11'), category: 'echoDmg' },
+    damage: { hits: parseSkillMultiplierHits('110.90%+90.74%×11'), category: 'echoDmg', basis: 'ATK' },
     note: 'Ultimate barrage — also grants +85% DMG Mult to Demon Hypostasis attacks for 14s (see galbrena.selfbuff.demon-hypostasis-amp below).',
   },
   {
     id: 'galbrena.heavy.seraphic-execution-stage2',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Seraphic Execution Stage 2' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('27.84%×2+83.51%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('27.84%×2+83.51%'), category: 'heavyDmg', basis: 'ATK' },
   },
   {
     id: 'galbrena.heavy.seraphic-execution-stage3',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Seraphic Execution Stage 3' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('24.32%×3+170.21%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('24.32%×3+170.21%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Dodge Counter (Purgatory Scourge) can substitute here for higher DMG and Forte if the enemy attacks — not separately modeled (rotation uses this path).',
   },
   {
     id: 'galbrena.echo.seraphic-execution-stage4',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Echo',
     trigger: { type: 'cast', on: 'Echo:Seraphic Execution Stage 4' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('18.15%×3+127.02%'), category: 'echoDmg' },
+    damage: { hits: parseSkillMultiplierHits('18.15%×3+127.02%'), category: 'echoDmg', basis: 'ATK' },
   },
   {
     id: 'galbrena.echo.seraphic-execution-stage5',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Echo',
     trigger: { type: 'cast', on: 'Echo:Seraphic Execution Stage 5' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('67.28%+156.99%'), category: 'echoDmg' },
+    damage: { hits: parseSkillMultiplierHits('67.28%+156.99%'), category: 'echoDmg', basis: 'ATK' },
     note: 'Demon Hypostasis combo finisher.',
   },
   {
     id: 'galbrena.outro.ashen-pursuit',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('79.50%×3+556.50%') },
+    // category/basis added during Layer 4 migration: pure-damage swap-out finisher, same outroDmg shape
+    // already used for Encore's Thermal Field / Rover: Havoc's Soundweaver / Calcharo's Shadowy Raid.
+    damage: { hits: parseSkillMultiplierHits('79.50%×3+556.50%'), basis: 'ATK' },
     note: 'Pure-damage swap-out finisher; no team buff, so she\'s free to quickswap.',
   },
 
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'galbrena.selfbuff.demon-hypostasis-amp',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'cast', on: 'Echo:Hellfire Absolution' },
     timing: { duration: 14 },
     target: { scope: 'self' },
-    effects: [{ stat: 'allDmg', value: 85 }],
+    effects: [{ stat: 'allDmg', value: 85, source: 'self-kit' }],
     note: "+85% DMG Mult to Demon Hypostasis attacks on Hellfire Absolution cast — CHAR_BUFF_TABLE describes this loosely as 'Liberation cast', but Hellfire Absolution (her Echo-slot ultimate barrage) is the real cast this scales off per SKILL_MULTIPLIERS' own note text, used directly instead.",
   },
   {
     id: 'galbrena.selfbuff.burning-drive',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'passive' },
     timing: { duration: 4 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 20 }],
+    effects: [{ stat: 'atkPct', value: 20, source: 'self-kit' }],
     note: "Burning Drive: +20% ATK on certain casts — CHAR_BUFF_TABLE's own condition text doesn't name which specific casts trigger it, kept passive rather than guessing an anchor.",
   },
   {
     id: 'galbrena.debuff.afterflame',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'all-enemies' },
     effects: [{ stat: 'deepen', value: 1.5, stacking: 'stacking', maxStacks: 40 }],
@@ -134,23 +139,23 @@ export const GALBRENA_BLOCKS = [
   //    each node's real mechanic) ──
   {
     id: 'galbrena.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 2, stacking: 'stacking', maxStacks: 40 }],
+    effects: [{ stat: 'critDmg', value: 2, stacking: 'stacking', maxStacks: 40, source: 'self-kit' }],
     note: '+2% Crit DMG per Afterflame stack, up to 80% at 40 stacks — same Afterflame stacking mechanic as galbrena.debuff.afterflame above (gained from any teammate\'s Echo Skill cast, not modeled per-cast, kept passive as an approximation).',
   },
   {
     id: 'galbrena.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 90 }],
+    effects: [{ stat: 'atkPct', value: 90, source: 'self-kit' }],
     note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
   },
   {
     id: 'galbrena.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-02: this was ALSO `trigger:{type:'cast', on:'Echo:Hellfire Absolution'}` with no
     // `timing.duration` — the same dead cast-scoped/no-duration `kind:'buff'` no-op shape found on
     // Carlotta's S1/S2 (the engine-architecture history (git log) item 12; matches neither `passiveBlocks`
@@ -168,12 +173,12 @@ export const GALBRENA_BLOCKS = [
     // RESONANCE_CHAIN_DATA's `s3.libDmg` field name is a legacy "her Liberation-slot node" label
     // (kept as-is, used for display), not a literal damage-category claim. Fixed the engine stat
     // to `echoDmg` to actually apply to the real hit.
-    effects: [{ stat: 'echoDmg', value: 130, scopedToBlockId: 'galbrena.echo.hellfire-absolution' }],
+    effects: [{ stat: 'echoDmg', value: 130, scopedToBlockId: 'galbrena.echo.hellfire-absolution', source: 'self-kit' }],
     note: "Real scope: Hellfire Absolution's own DMG Multiplier +130% (her Echo-slot ultimate).",
   },
   {
     id: 'galbrena.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-02: was `target:{scope:'self'}` — the pasted kit text is explicit this is
     // team-wide: "When Resonators in the team cast Echo Skill, all Resonators in the team gain 20%
     // all-Attribute DMG Bonus for 20s." CHAR_BUFF_TABLE's "no team support kit" note describes her
@@ -190,20 +195,20 @@ export const GALBRENA_BLOCKS = [
     trigger: { type: 'ally-action', action: 'echo-skill-cast' },
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'allDmg', value: 20, stacking: 'refresh' }],
+    effects: [{ stat: 'allDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Real mechanic: any teammate casting Echo Skill grants the WHOLE TEAM +20% all-Attribute DMG Bonus for 20s.',
   },
   {
     id: 'galbrena.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Heavy ATK:Ascent of Malice' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 150 }],
+    effects: [{ stat: 'heavyDmg', value: 150, source: 'self-kit' }],
     note: "DMG Multiplier of Encroach/Ascent of Malice/Ravage +150% (corrected skillDmg -> heavyDmg per the re-audit, all three are 'considered Heavy Attack DMG' despite the Resonance Skill slot) — cast-scoped to Ascent of Malice, the variant used in her real rotation.",
   },
   {
     id: 'galbrena.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     // Fixed 2026-09-02: added a 2nd `echoDmg` effect. The kit text names Seraphic Execution and
@@ -214,8 +219,8 @@ export const GALBRENA_BLOCKS = [
     // (category-gated stats only apply to matching-category hits). Both effects target the same 4
     // named moves' real damage.category split.
     effects: [
-      { stat: 'heavyDmg', value: 60 },
-      { stat: 'echoDmg', value: 60 },
+      { stat: 'heavyDmg', value: 60, source: 'self-kit' },
+      { stat: 'echoDmg', value: 60, source: 'self-kit' },
     ],
     note: "DMG Multiplier of the 4 Demon Hypostasis moves (Seraphic Execution, Flamewing Verdict, Hellsent Barrage, Purgatory Scourge) +60%, split across both real damage.category tags those moves carry (heavyDmg for most stages, echoDmg for Seraphic Execution Stage 4/5 and Flamewing Verdict Stage 3) — kept passive, applies whenever those blocks above fire. Additional conditional layer modeled separately below (galbrena.selfbuff.ascent-fusion-amp).",
   },
@@ -226,11 +231,11 @@ export const GALBRENA_BLOCKS = [
     // as a passive approximation, matching that same established convention rather than inventing a
     // new per-stack consumption trigger this schema doesn't track.
     id: 'galbrena.selfbuff.ascent-fusion-amp',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'cast', on: 'Heavy ATK:Ascent of Malice' },
     condition: { element: 'fusion' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 35 }],
+    effects: [{ stat: 'elemDmg', value: 35, source: 'self-kit' }],
     note: 'Ascent of Malice consuming Afterflame grants up to +35% Fusion DMG Amp (capped value, scales with consumed Afterflame stacks) — cast-scoped to Ascent of Malice.',
   },
 ];

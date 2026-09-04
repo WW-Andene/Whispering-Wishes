@@ -51,7 +51,7 @@ describe('resolveHitComposedDps — a passive buff correctly boosts only its own
     const basicBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.basic.zapstrings-dance');
     const magneticRoarBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.skill.magnetic-roar');
     const s1 = YINLIN_BLOCKS.find(b => b.id === 'yinlin.chain.s1-moralitys-crossroad');
-    expect(s1.effects[0]).toEqual({ stat: 'skillDmg', value: 70 });
+    expect(s1.effects[0]).toEqual({ stat: 'skillDmg', value: 70, source: 'self-kit' });
 
     const relevantBlocks = [basicBlock, magneticRoarBlock, s1];
     const baseAtk = 1000;

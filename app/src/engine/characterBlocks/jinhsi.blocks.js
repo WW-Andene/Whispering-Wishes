@@ -32,7 +32,7 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Jinhsi';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const JINHSI_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) — added 2026-09-01, this character's FIRST damage
   //    blocks. Several rows combine multiple sub-modes: the Skill row is 'Trailing Lights of Eons →
@@ -49,52 +49,52 @@ export const JINHSI_BLOCKS = [
   {
     id: 'jinhsi.basic.slash-of-breaking-dawn',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Slash of Breaking Dawn Stage 1-4' },
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('66.47% → 38.99%+19.50%×3 → 10.65%×7+31.94% → 63.09%+94.63%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('66.47% → 38.99%+19.50%×3 → 10.65%×7+31.94% → 63.09%+94.63%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Tap Basic Attack 4 times for the full opening combo — Stage 4 opens a 5s window for Overflowing Radiance.',
   },
   {
     id: 'jinhsi.skill.overflowing-radiance',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Overflowing Radiance' },
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('9.87%×4+29.59%×4+39.45%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('9.87%×4+29.59%×4+39.45%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Press Skill within 5s of Basic ATK Stage 4 — sends her into Incarnation for 10s.',
   },
   {
     id: 'jinhsi.liberation.purge-of-light',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Purge of Light' },
     timing: { cooldown: 24 },
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('499.81%+1166.22%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('499.81%+1166.22%'), category: 'libDmg', basis: 'ATK' },
     note: 'Huge AoE nuke, 24s cooldown, can be cast at any point in the rotation.',
   },
   {
     id: 'jinhsi.forte.incarnation-basic-attack',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Incarnation - Basic Attack Stage 1-4' },
     timing: {},
     target: { scope: 'self' },
     effects: [],
     // "counted as Resonance Skill DMG" per this cast's own CHARACTER_ROTATIONS note.
-    damage: { hits: parseSkillMultiplierHits('88.62%→77.97%+25.99%×2→99.44%+66.30%→18.67%×6+74.67%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('88.62%→77.97%+25.99%×2→99.44%+66.30%→18.67%×6+74.67%'), category: 'skillDmg', basis: 'ATK' },
     note: 'While in Incarnation (10s), Basic ATK is replaced by this 4-stage combo — counted as Resonance Skill DMG. Landing Stage 4 ends Incarnation and opens a 5s window for Illuminous Epiphany.',
   },
   {
     id: 'jinhsi.skill.illuminous-epiphany',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Illuminous Epiphany' },
     timing: {},
     target: { scope: 'self' },
@@ -103,7 +103,7 @@ export const JINHSI_BLOCKS = [
     // ("consumes up to 50 Incandescence... for a scaling Stella Glamor nuke"), not the row's other two
     // conditional sub-modes (plain 'Basic' or 'Crescent Divinity'), which don't match her canonical
     // full-Incandescence-spend rotation.
-    damage: { hits: parseSkillMultiplierHits('19.89%×6+347.92%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('19.89%×6+347.92%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Press Skill within 5s of Incarnation-Basic Attack Stage 4 landing — consumes up to 50 Incandescence for a scaling Stella Glamor nuke.',
   },
 
@@ -111,11 +111,11 @@ export const JINHSI_BLOCKS = [
   {
     id: 'jinhsi.selfbuff.radiant-surge',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Buff',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 20 }],
+    effects: [{ stat: 'elemDmg', value: 20, source: 'self-kit' }],
     note: 'Inherent Skill Radiant Surge: Spectro DMG Bonus +20% (always active).',
   },
 
@@ -123,7 +123,7 @@ export const JINHSI_BLOCKS = [
   {
     id: 'jinhsi.window.overflowing-radiance',
     source: SOURCE,
-    kind: 'utility',
+    kind: 'utility', section: 'Skill',
     trigger: {
       type: 'windowed-cast',
       opensOn: ['cast:Basic ATK:Slash of Breaking Dawn Stage 1-4', 'cast:Intro:Loong\'s Halo'],
@@ -139,7 +139,7 @@ export const JINHSI_BLOCKS = [
   {
     id: 'jinhsi.window.illuminous-epiphany',
     source: SOURCE,
-    kind: 'utility',
+    kind: 'utility', section: 'Skill',
     trigger: {
       type: 'windowed-cast',
       opensOn: ['cast:Forte:Incarnation - Basic Attack Stage 1-4'],
@@ -156,17 +156,17 @@ export const JINHSI_BLOCKS = [
   {
     id: 'jinhsi.chain.s1-abyssal-ascension',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 40 }],
+    effects: [{ stat: 'skillDmg', value: 40, source: 'self-kit' }],
     note: 'Each of her 4 Incarnation-Basic Attack stages grants a stack (max 4) — hitting with Illuminous Epiphany consumes them, +20% DMG per stack, up to +80% at 4. Modeled as a flat skillDmg:40 rotation-average since real stack count is execution-dependent.',
   },
   {
     id: 'jinhsi.chain.s2-chronofrost-repose',
     source: SOURCE,
-    kind: 'utility',
+    kind: 'utility', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
@@ -176,21 +176,21 @@ export const JINHSI_BLOCKS = [
   {
     id: 'jinhsi.chain.s3-celestial-incarnate',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Intro:Loong\'s Halo' },
     timing: { duration: 20 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 50, stacking: 'stacking' }],
+    effects: [{ stat: 'atkPct', value: 50, stacking: 'stacking', source: 'self-kit' }],
     note: "Casting Intro Skill Loong's Halo grants 1 stack of Immortal's Descendancy (+25% ATK/stack, max 2 stacks, 20s) = up to +50% ATK at 2 stacks.",
   },
   {
     id: 'jinhsi.chain.s4-benevolent-grace',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Purge of Light' },
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'allDmg', value: 20, stacking: 'refresh' }],
+    effects: [{ stat: 'allDmg', value: 20, stacking: 'refresh', source: 'self-kit' }],
     // Fixed 2026-09-04: was `stat: 'elemDmg'` + `condition: { element: 'spectro' }` — this "Attribute
     // DMG Bonus" wording is the generic universal-DMG shape (each teammate buffed on THEIR OWN element),
     // same as Galbrena/Phrolova/Lucy's identically-worded S4 nodes (allDmg, no element condition), not a
@@ -200,22 +200,22 @@ export const JINHSI_BLOCKS = [
   {
     id: 'jinhsi.chain.s5-frostfire-illumination',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 120 }],
+    effects: [{ stat: 'libDmg', value: 120, source: 'self-kit' }],
     note: 'DMG Multiplier of Resonance Liberation Purge of Light +120%.',
   },
   {
     id: 'jinhsi.chain.s6-thawing-triumph',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
     effects: [
-      { stat: 'skillDmg', value: 45 },
+      { stat: 'skillDmg', value: 45, source: 'self-kit' },
       // Fixed 2026-09-03: the SEPARATE +45% conversion-rate bonus (compounding with S5's
       // Incandescence-spend scaling) has no dedicated "per-resource-consumed rate" stat in this
       // engine, but since jinhsi.skill.illuminous-epiphany is the ONLY skillDmg-categorized block
@@ -224,7 +224,7 @@ export const JINHSI_BLOCKS = [
       // any other skillDmg move) without fabricating a new mechanic — the existing scoping tool
       // already built for exactly this "named-move-specific bonus" shape (see Aemeath's Heavy ATK
       // Crit DMG scoping in triggerBlocks.schema.js's own Effect.scopedToBlockId doc).
-      { stat: 'skillDmg', value: 45, scopedToBlockId: 'jinhsi.skill.illuminous-epiphany' },
+      { stat: 'skillDmg', value: 45, scopedToBlockId: 'jinhsi.skill.illuminous-epiphany', source: 'self-kit' },
     ],
     note: "DMG Multiplier of Resonance Skill Illuminous Epiphany +45%, PLUS a separate +45% conversion-rate bonus that only ever affects that same move — modeled as a second skillDmg effect scoped to jinhsi.skill.illuminous-epiphany, giving it +90% total while every other skillDmg move gets the unscoped +45% alone.",
   },

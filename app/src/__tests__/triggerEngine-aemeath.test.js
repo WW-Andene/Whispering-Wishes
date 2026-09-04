@@ -5,8 +5,13 @@ import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { AEMEATH_BLOCKS } from '../engine/characterBlocks/aemeath.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Aemeath', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(AEMEATH_BLOCKS, 'Aemeath');
+  });
+
   it('S3 (libDmg 100, critDmg 60) matches RESONANCE_CHAIN_DATA exactly', () => {
     const legacy = RESONANCE_CHAIN_DATA['Aemeath'].s3;
     const block = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.chain.s3');
@@ -18,7 +23,7 @@ describe('triggerEngine parity — Aemeath', () => {
     const legacy = RESONANCE_CHAIN_DATA['Aemeath'].s4;
     const block = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.chain.s4');
     expect(block.target.scope).toBe('whole-team');
-    expect(block.effects[0]).toEqual({ stat: 'allDmg', value: legacy.allDmg });
+    expect(block.effects[0]).toEqual({ stat: 'allDmg', value: legacy.allDmg, source: 'self-kit' });
   });
 
   it('S6 is a debuff on enemies (Liberation DMG TAKEN), not a self buff — the correction from the audit comment', () => {
@@ -26,7 +31,7 @@ describe('triggerEngine parity — Aemeath', () => {
     const block = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.chain.s6');
     expect(block.kind).toBe('debuff');
     expect(block.target.scope).toBe('all-enemies');
-    expect(block.effects[0]).toEqual({ stat: 'libDmg', value: legacy.libDmg });
+    expect(block.effects[0]).toEqual({ stat: 'libDmg', value: legacy.libDmg, source: 'self-kit' });
   });
 
   it('S1 is conditional on Instant Response stance, not an unconditional +300% Crit DMG', () => {

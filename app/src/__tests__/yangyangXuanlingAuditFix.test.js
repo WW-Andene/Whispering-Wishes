@@ -10,7 +10,7 @@ describe('Yangyang: Xuanling — audit fixes against a fresh the source dump', (
   it("S3's cast-scoped chain buff uses heavyDmg (matching the heavyDmg-categorized Liberation hit it scopes to), not the wrong libDmg", () => {
     expect(RESONANCE_CHAIN_DATA['Yangyang: Xuanling'].s3).toEqual({ heavyDmg: 175 });
     const s3 = YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.chain.s3');
-    expect(s3.effects[0]).toEqual({ stat: 'heavyDmg', value: 175 });
+    expect(s3.effects[0]).toEqual({ stat: 'heavyDmg', value: 175, source: 'self-kit' });
   });
 
   it('S5 (fatal-blow save) has no DPS component — was a fabricated totalMult:5, zeroed to {}', () => {

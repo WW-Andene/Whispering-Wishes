@@ -15,8 +15,13 @@ import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposed
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Yinlin', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(YINLIN_BLOCKS, 'Yinlin');
+  });
+
   it('S1/S3/S4/S5 Resonance Chain buffs match RESONANCE_CHAIN_DATA (legacy applyResonanceChain)', () => {
     const legacyStats = createStats();
     applyResonanceChain(legacyStats, 'Yinlin', 6, true);

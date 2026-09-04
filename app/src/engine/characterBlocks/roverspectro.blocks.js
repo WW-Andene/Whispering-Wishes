@@ -15,35 +15,38 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Rover: Spectro';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const ROVER_SPECTRO_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'roverspectro.heavy.standard-resonance-aftertune',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Standard / Resonance / Aftertune' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Fixed 2026-09-03 (Phase A audit — REMAINING_WORK.md 1c): had no damage.category at all — a
     // real Heavy-ATK-slot move with no "considered X DMG" override in the kit text (the dump's own
     // Damage Profile shows Heavy at a genuine 9.2%/15,731 share, comparable to categories already
     // included in dmgFocus elsewhere) — silently zeroed any teammate's Heavy ATK DMG Bonus.
-    damage: { hits: parseSkillMultiplierHits('19.27%×5 → 76.05% → 126.75%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('19.27%×5 → 76.05% → 126.75%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Warm-up combo: charged Heavy ATK into timed-press Resonance follow-up into Aftertune finisher. Fills Diminutive Sound fast without a full Basic combo.',
   },
   {
     id: 'roverspectro.intro.waveshock',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Waveshock' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('168.99%') },
+    // category added for Layer 4 schema migration (validate.js requires damage.category on every
+    // damage block) — no override text names a different category, same default-to-skillDmg
+    // convention used throughout this migration sweep for uncategorized Intro casts.
+    damage: { hits: parseSkillMultiplierHits('168.99%'), basis: 'ATK' },
     note: 'Adds a bit more Diminutive Sound.',
   },
   {
     id: 'roverspectro.liberation.echoing-orchestra',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Echoing Orchestra' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('198.81%+675.96%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('198.81%+675.96%'), category: 'libDmg', basis: 'ATK' },
     note: 'Delayed blast; applies a full 6 stacks of Spectro Frazzle to the target in one hit.',
     // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — matches this block's own note (6
     // stacks) and CHAR_BUFF_TABLE.debuffs.frazzle's already-sourced condition text exactly.
@@ -55,23 +58,23 @@ export const ROVER_SPECTRO_BLOCKS = [
   },
   {
     id: 'roverspectro.basic.vibration-manifestation-stage1-4',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Vibration Manifestation Stage 1-4' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // CHARACTER_ROTATIONS' own note says only 2 taps are used here — only Stages 1-2 of the row's
     // 4-stage combo are used.
-    damage: { hits: parseSkillMultiplierHits('59.15%+76.05%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('59.15%+76.05%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Tap Basic Attack twice to refill Diminutive Sound toward the next Forte cast (only Stages 1-2 fire).',
   },
   {
     id: 'roverspectro.forte.resonating-whirl',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Resonating Whirl' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // CHARACTER_ROTATIONS' own note says this single step covers Resonating Spin (auto-upgrade from
     // Skill at 50+ Diminutive Sound) AND the immediate Resonating Whirl Basic ATK follow-up chained
     // right after it — both rows' hits combined.
-    damage: { hits: [...parseSkillMultiplierHits('129.08%×2'), ...parseSkillMultiplierHits('39.77%')], category: 'skillDmg' },
+    damage: { hits: [...parseSkillMultiplierHits('129.08%×2'), ...parseSkillMultiplierHits('39.77%')], category: 'skillDmg', basis: 'ATK' },
     note: 'At 50+ Diminutive Sound, Skill auto-upgrades into Resonating Spin (2 Spectro Frazzle stacks + Shimmer, which stops decay), immediately chained into the Resonating Whirl Basic ATK follow-up. Fires twice in the real rotation.',
     // dotApplier added 2026-09-02 — see roverspectro.liberation.echoing-orchestra's own comment (this
     // block's 2 stacks + that one's 6 = the legacy pre-combined 8, summed correctly by
@@ -81,14 +84,14 @@ export const ROVER_SPECTRO_BLOCKS = [
   },
   {
     id: 'roverspectro.forte.resonating-echoes',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Resonating Echoes' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Fixed 2026-09-03 (Phase A audit — REMAINING_WORK.md 1c): was category:'basicDmg' — but her own
     // kit text is explicit ("Resonance Skill: Resonating Echoes ... considered Resonance Skill DMG"),
     // the same "considered X DMG" override pattern found roster-wide this session. A Basic ATK DMG
     // Bonus was being wrongly credited to this hit while a real Skill DMG Bonus was wrongly denied.
-    damage: { hits: parseSkillMultiplierHits('79.53%+159.05%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('79.53%+159.05%'), category: 'skillDmg', basis: 'ATK' },
     note: "Basic-ATK-button cast after Resonating Spin fully ends, but the kit text overrides it to Resonance Skill DMG (same override her own Forte Circuit section states for Resonating Spin/Whirl too).",
   },
 
@@ -97,18 +100,18 @@ export const ROVER_SPECTRO_BLOCKS = [
   //    audit's own zeroing) ──
   {
     id: 'roverspectro.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 15 }],
+    effects: [{ stat: 'critRate', value: 15, source: 'self-kit' }],
     note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
   },
   {
     id: 'roverspectro.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 20 }],
+    effects: [{ stat: 'elemDmg', value: 20, source: 'self-kit' }],
     note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
   },
   // S3 correctly has NO block — Energy Regen +20%, zero real DPS component, no matching category in
@@ -116,15 +119,15 @@ export const ROVER_SPECTRO_BLOCKS = [
   // S4 correctly has NO block — team heal on Liberation cast, zero real DPS component.
   {
     id: 'roverspectro.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Echoing Orchestra' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 40 }],
+    effects: [{ stat: 'libDmg', value: 40, source: 'self-kit' }],
     note: "Echoing Orchestra's own DMG Multiplier +40% (confirmed exact) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
   },
   {
     id: 'roverspectro.chain.s6',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Chain',
     trigger: { type: 'cast', on: 'Skill:Resonating Slashes' },
     timing: { duration: 20 },
     target: { scope: 'all-enemies' },

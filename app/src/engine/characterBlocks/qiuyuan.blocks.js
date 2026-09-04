@@ -27,20 +27,20 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Qiuyuan';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const QIUYUAN_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'qiuyuan.intro.attack-the-must-defend',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Attack the Must-Defend' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('9.55%×5 + 47.72% + 143.15%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('9.55%×5 + 47.72% + 143.15%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Counted as Heavy ATK DMG per its own kit text. Grants 400 of 600 Forte, skips straight to Inkwash Stage 3.',
   },
   {
     id: 'qiuyuan.basic.inkwash-stage3-4',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Inkwash Stage 3-4' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row 'Inkwash 1-4' has 4 arrow-separated stages; this step uses stages 3-4 (per its own label,
@@ -49,35 +49,35 @@ export const QIUYUAN_BLOCKS = [
     // "Basic Attack — Thus Spoke the Blade: Inkwash: ... replaces Basic Attack ... counted as Heavy
     // Attack DMG" — confirmed by the dump's own Damage-Type Breakdown table showing a flat 0% Basic ATK
     // share and 60.8% Heavy ATK share.
-    damage: { hits: parseSkillMultiplierHits('14.58%×5+72.87% → 172.37%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('14.58%×5+72.87% → 172.37%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Fills Forte to 600. Counted as Heavy ATK DMG per its own kit text, not Basic ATK.',
   },
   {
     id: 'qiuyuan.skill.through-the-groves',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Through the Groves' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Category fixed 2026-09-04 from skillDmg to echoDmg — kit text: "Through the Groves: ... counted
     // as Echo Skill DMG" — same recategorization precedent already established on Sigrika's Liberation/
     // Forte-Heavy blocks (echoDmg despite the Skill/Heavy slot).
-    damage: { hits: parseSkillMultiplierHits('71.84%×3'), category: 'echoDmg' },
+    damage: { hits: parseSkillMultiplierHits('71.84%×3'), category: 'echoDmg', basis: 'ATK' },
     note: 'Optional — best cast before this rotation via quickswap, skipped if not needed for Energy. Counted as Echo Skill DMG per its own kit text.',
   },
   {
     id: 'qiuyuan.liberation.sundering-strike',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Sundering Strike' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Category fixed 2026-09-04 from libDmg to echoDmg — kit text: "Sundering Strike: ... counted as
     // Echo Skill DMG" — the RESONANCE_CHAIN_DATA raw field name `s3.libDmg` is kept as a legacy
     // "Liberation-slot node" label only (same convention already documented on Galbrena's S3), not a
     // literal damage-category claim; the real engine effect below stays scoped to this block by id.
-    damage: { hits: parseSkillMultiplierHits('795.24%'), category: 'echoDmg' },
+    damage: { hits: parseSkillMultiplierHits('795.24%'), category: 'echoDmg', basis: 'ATK' },
     note: "Cancels the Skill's endlag on hit, grants self/team Crit DMG at 65%+ Crit Rate (see qiuyuan.libbuff.crit-dmg below). Counted as Echo Skill DMG per its own kit text, not Liberation DMG.",
   },
   {
     id: 'qiuyuan.forte.to-teach',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:To Teach / To Save / To Sacrifice' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // 3 alternative Heavy ATK finishers (91.44%×5 / 38.44%×3+31.45%×3 / 217.70%) — "To Teach" (the
@@ -89,26 +89,26 @@ export const QIUYUAN_BLOCKS = [
     // Attack DMG" — matches the dump's own 60.8% Heavy ATK damage-share figure (each of To
     // Teach/Save/Sacrifice "also counts as casting Echo Skill", but that's a trigger-flag for other
     // characters'/its own Echo-Skill-cast-gated effects, not a redeclaration of its own damage.category).
-    damage: { hits: parseSkillMultiplierHits('91.44%×5'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('91.44%×5'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Heavy ATK finisher sequence in Inkwash form, empties Forte and restores Concerto Energy. Only "To Teach" is modeled — "To Save"/"To Sacrifice" have different follow-up effects, not separately represented. Also counts as casting Echo Skill for other characters\' Echo-Skill-cast-gated effects (not its own damage category).',
   },
   {
     id: 'qiuyuan.outro.strike-before-ready',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category added 2026-09-04 — this block previously had NO damage.category (silently drew 0% Echo
     // Skill DMG Bonus). Kit text: "Strike Before Ready: Attack, Aero DMG = 100% ATK, counted as Echo
     // Skill DMG."
-    damage: { hits: [{ atkPct: 100 }], category: 'echoDmg' },
+    damage: { hits: [{ atkPct: 100 }], category: 'echoDmg', basis: 'ATK' },
     note: 'Counted as Echo Skill DMG per its own kit text.',
   },
   {
     id: 'qiuyuan.chain.s3-straw-cape',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Skill:Straw Cape in Drizzly Rain' },
     timing: { cooldown: 20 }, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('500%'), category: 'echoDmg' },
+    damage: { hits: parseSkillMultiplierHits('500%'), category: 'echoDmg', basis: 'ATK' },
     // Added 2026-09-04 — real S3+ move entirely missing from the engine before now. Only usable once
     // Concerto Energy is full outside Inksplash of Mind (once per 20s), consuming 60 Concerto Energy;
     // not added to CHARACTER_ROTATIONS (S0-S2's Standard Hybrid Rotation, the one modeled there, never
@@ -120,10 +120,10 @@ export const QIUYUAN_BLOCKS = [
   },
   {
     id: 'qiuyuan.chain.s6-exit-inksplash',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:To Teach / To Save / To Sacrifice' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: [{ atkPct: 600 }], category: 'echoDmg' },
+    damage: { hits: [{ atkPct: 600 }], category: 'echoDmg', basis: 'ATK' },
     // Added 2026-09-04 — real S6 damage effect entirely missing from the engine before now. Kit text:
     // "S6: ... While active on-field, exiting Inksplash of Mind deals Aero DMG = 600% ATK to targets in
     // range, counted as Echo Skill DMG." Anchored to the Forte finisher cast (the point at which
@@ -136,15 +136,15 @@ export const QIUYUAN_BLOCKS = [
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'qiuyuan.outro.strike-before-ready-buff',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
-    effects: [{ stat: 'echoDmg', value: 50, stacking: 'refresh' }],
+    effects: [{ stat: 'echoDmg', value: 50, stacking: 'refresh', source: 'teammate-ally-action' }],
   },
   {
     id: 'qiuyuan.libbuff.crit-dmg',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Sundering Strike' },
     timing: { duration: 30 },
     // target fixed 2026-09-04 from 'whole-team' to 'self' — the kit text's "grants all nearby active
@@ -155,16 +155,16 @@ export const QIUYUAN_BLOCKS = [
     // only bug class as Lupa's under-scoped equivalent (opposite direction) — was silently granting this
     // Crit DMG to the whole bench, not just whoever is actually on-field.
     target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 30, stacking: 'refresh' }],
+    effects: [{ stat: 'critDmg', value: 30, stacking: 'refresh', source: 'self-kit' }],
     note: 'Requires 65%+ Crit Rate for full value; +2% Crit DMG per 1% Crit Rate over 50% — modeled at the flat ceiling value (the real conditional Crit-Rate-scaling formula is not modeled). Applies only to the active on-field Resonator per the dump\'s own Review text, not team-wide.',
   },
   {
     id: 'qiuyuan.buff.bamboos-shade',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Forte',
     trigger: { type: 'resource-threshold', resource: "Swordster's Soliloquy", threshold: 400, resourceStepOn: 'Basic ATK:Inkwash Stage 3-4' },
     timing: { duration: 30 },
     target: { scope: 'self' },
-    effects: [{ stat: 'echoDmg', value: 30, stacking: 'refresh' }],
+    effects: [{ stat: 'echoDmg', value: 30, stacking: 'refresh', source: 'self-kit' }],
     // Added 2026-09-04 — real base-kit Forte Circuit effect ("Bamboo's Shade": at 400/600 Soliloquy,
     // +30% Echo Skill DMG Bonus for 30s) entirely missing from the engine before now (CHAR_BUFF_TABLE's
     // own selfBuffs was an empty array). Per the dump's own Review text this applies only to whoever is
@@ -178,18 +178,18 @@ export const QIUYUAN_BLOCKS = [
   //    real mechanic) ──
   {
     id: 'qiuyuan.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 20 }],
+    effects: [{ stat: 'critRate', value: 20, source: 'self-kit' }],
     note: '+20% Crit Rate (confirmed exact). Also grants uninterruptible Heavy ATKs, not modeled (no DPS component).',
   },
   {
     id: 'qiuyuan.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'whole-team' },
-    effects: [{ stat: 'echoDmg', value: 30 }],
+    effects: [{ stat: 'echoDmg', value: 30, source: 'self-kit' }],
     // Note updated 2026-09-04: value/scope re-confirmed unchanged (a genuine DMG-Bonus-pool echoDmg
     // buff, correctly team-wide and unscoped-by-block per its own kit text "to nearby team members" —
     // NOT the same active-resonator-only restriction as the base Bamboo's Shade effect it extends,
@@ -201,7 +201,7 @@ export const QIUYUAN_BLOCKS = [
   },
   {
     id: 'qiuyuan.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     // Fixed 2026-09-04: was `trigger:{type:'cast', on:'Liberation:Sundering Strike'}` + a single
@@ -217,30 +217,30 @@ export const QIUYUAN_BLOCKS = [
     // simplification already used elsewhere in this file) rather than fabricating precise timing to
     // require an actual prior Straw Cape cast — a documented conservative approximation, not a bug.
     effects: [
-      { stat: 'totalMult', value: 500, scopedToBlockId: 'qiuyuan.liberation.sundering-strike' },
-      { stat: 'totalMult', value: 600, scopedToBlockId: 'qiuyuan.forte.to-teach' },
+      { stat: 'totalMult', value: 500, scopedToBlockId: 'qiuyuan.liberation.sundering-strike', source: 'self-kit' },
+      { stat: 'totalMult', value: 600, scopedToBlockId: 'qiuyuan.forte.to-teach', source: 'self-kit' },
     ],
     note: "Sundering Strike's own DMG Multiplier +500%, and To Teach/To Save/To Sacrifice's own DMG Multiplier +600% after casting Straw Cape in Drizzly Rain (both confirmed exact against the dump).",
   },
   {
     id: 'qiuyuan.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 20 }],
+    effects: [{ stat: 'atkPct', value: 20, source: 'self-kit' }],
     note: '+20% ATK (confirmed exact, corrected from an earlier half-value 10) — no specific cast anchor sourced, kept passive.',
   },
   {
     id: 'qiuyuan.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'defIgnore', value: 15 }],
+    effects: [{ stat: 'defIgnore', value: 15, source: 'self-kit' }],
     note: 'Ignores 15% target DEF (confirmed exact) — no specific cast anchor sourced, kept passive.',
   },
   {
     id: 'qiuyuan.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-04: trigger was `cast` on the Forte finisher (an approximation documented at the
     // time as standing in for Straw Cape, which wasn't yet modeled) — now that
     // qiuyuan.chain.s3-straw-cape exists as its own damage block, anchored correctly to the move the kit
@@ -248,7 +248,7 @@ export const QIUYUAN_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Straw Cape in Drizzly Rain' },
     timing: { duration: 6 },
     target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 100 }],
+    effects: [{ stat: 'critDmg', value: 100, source: 'self-kit' }],
     note: 'Straw Cape grants +100% Crit DMG for 6s (confirmed exact) — now anchored to Straw Cape\'s own cast (qiuyuan.chain.s3-straw-cape) instead of the Forte finisher approximation used before that block existed.',
   },
 ];

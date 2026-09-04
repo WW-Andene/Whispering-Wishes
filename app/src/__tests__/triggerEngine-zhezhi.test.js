@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { ZHEZHI_BLOCKS } from '../engine/characterBlocks/zhezhi.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Zhezhi', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(ZHEZHI_BLOCKS, 'Zhezhi');
+  });
+
   it('S2 stays correctly unmodeled (no block) — resource-cap-increase per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Zhezhi'];
     expect(rc.s2).toEqual({});
@@ -69,7 +74,7 @@ describe('triggerEngine parity — Zhezhi', () => {
   it("Calligrapher's Touch also fires on Creation's Zenith cast (added 2026-09-04 — the real 3rd trigger was previously missing)", () => {
     const cz = ZHEZHI_BLOCKS.find(b => b.id === 'zhezhi.selfbuff.calligraphers-touch-creations-zenith');
     expect(cz.trigger).toEqual({ type: 'cast', on: "Forte:Creation's Zenith" });
-    expect(cz.effects[0]).toEqual({ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3 });
+    expect(cz.effects[0]).toEqual({ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3, source: 'self-kit' });
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {

@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CHIXIA_BLOCKS } from '../engine/characterBlocks/chixia.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Chixia', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(CHIXIA_BLOCKS, 'Chixia');
+  });
+
   it('S1/S2/S4 stay correctly unmodeled (no block) — pure resource/utility per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Chixia'];
     ['s1', 's2', 's4'].forEach(s => expect(rc[s]).toEqual({}));

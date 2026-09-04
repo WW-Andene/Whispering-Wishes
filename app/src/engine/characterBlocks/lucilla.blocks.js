@@ -17,30 +17,33 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Lucilla';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const LUCILLA_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'lucilla.intro.clip-it',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Clip It' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('97.42%') },
+    // category/basis added during Layer 4 migration: was uncategorized, silently rejecting Resonance
+    // Skill DMG Bonus. No override text names a different category, same default-to-skillDmg convention
+    // as Aalto/Calcharo/Encore/Denia/Galbrena/Iuno/Jiyan's own Intro blocks.
+    damage: { hits: parseSkillMultiplierHits('97.42%'), basis: 'ATK' },
     note: 'Restores 100 of 150 Trace, inflicts 1 stack of Glacio Chafe.',
   },
   {
     id: 'lucilla.skill.spotlight',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Spotlight' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row 'Phantom Frame / Compensate / Spotlight' has 3 alternative values — the Spotlight variant
     // (perfect-timed release) matches this step's own label.
-    damage: { hits: parseSkillMultiplierHits('82.35%×2+274.48%+109.80%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('82.35%×2+274.48%+109.80%'), category: 'skillDmg', basis: 'ATK' },
     note: 'A perfect release triggers Spotlight (restores 50 Trace, unlocks Ultimate once all 3 Photos are held).',
   },
   {
     id: 'lucilla.liberation.clear-as-day',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Clear As Day' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category corrected 2026-09-02: her own move text makes this DMG mode-dependent and NEVER
@@ -49,33 +52,33 @@ export const LUCILLA_BLOCKS = [
     // libDmg, which meant real Basic ATK DMG buffs from teammates were silently skipping this hit.
     // Modeled as basicDmg (Glacio Chafe mode, the modeled default elsewhere in this file); Echo mode
     // would be echoDmg instead, not separately fired, same convention as the other dual-mode blocks.
-    damage: { hits: parseSkillMultiplierHits('142.74%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('142.74%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Costs no Resonance Energy, enters Reminiscence for ~10s. Glacio Chafe mode: considered Basic Attack DMG (modeled). Echo mode: considered Echo Skill DMG instead — not separately fired.',
   },
   {
     id: 'lucilla.basic.tracing-forms',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Tracing Forms Stage 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('30.64%+45.95% → 59.77%+89.65% → 52.12%×8'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('30.64%+45.95% → 59.77%+89.65% → 52.12%×8'), category: 'basicDmg', basis: 'ATK' },
     note: 'Reminiscence-state Basic ATK replacement; considered Basic Attack DMG regardless of mode. Consumes her 3 Photos as it goes (see lucilla.basic.oblivion below).',
   },
   {
     id: 'lucilla.basic.oblivion',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Tracing Forms Stage 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // 3 separate Oblivion hits, one per Photo consumed during Tracing Forms (a full 3-Photo
     // Reminiscence reliably hits all 3, same "use the max case" convention as this table's S6).
-    damage: { hits: [{ atkPct: 285.48 }, { atkPct: 285.48 }, { atkPct: 285.48 }], category: 'basicDmg' },
+    damage: { hits: [{ atkPct: 285.48 }, { atkPct: 285.48 }, { atkPct: 285.48 }], category: 'basicDmg', basis: 'ATK' },
     note: 'Glacio Chafe mode: considered Basic Attack DMG, inflicts Glacio Chafe. Echo mode: same 285.48% value but considered Echo Skill DMG instead (each cast a different Echo Skill) — not separately fired, only Glacio Chafe mode is modeled.',
   },
   {
     id: 'lucilla.basic.letting-it-go',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Letting It Go' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('84.81%×3+593.64%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('84.81%×3+593.64%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Interruption-immune AoE finisher, fully restores Concerto Energy, ends Reminiscence. Glacio Chafe mode: considered Basic Attack DMG (modeled). Echo mode: same value, considered Echo Skill DMG instead — not separately fired.',
   },
 
@@ -83,36 +86,36 @@ export const LUCILLA_BLOCKS = [
   //    CHARACTER_ROTATIONS' own note text — entirely missing from CHAR_BUFF_TABLE['Lucilla'].selfBuffs) ──
   {
     id: 'lucilla.outro.montage-chafe',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
     condition: { element: 'glacio', requiresStance: 'Glacio Chafe mode' },
-    effects: [{ stat: 'elemDmg', value: 60, stacking: 'refresh' }],
+    effects: [{ stat: 'elemDmg', value: 60, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Glacio Chafe mode: Amplifies Glacio Chafe DMG near the active Resonator by +60% for 30s (persists through the swap) — modeled team-wide since Chafe DMG isn\'t a separate category.',
   },
   {
     id: 'lucilla.outro.montage-echo',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
     condition: { requiresStance: 'Echo mode' },
-    effects: [{ stat: 'echoDmg', value: 50, stacking: 'refresh' }],
+    effects: [{ stat: 'echoDmg', value: 50, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Echo mode: grants the incoming Resonator +50% Echo Skill DMG Amp for 14s (lost if they swap off, not modeled) — mutually exclusive with the Chafe-mode block above.',
   },
   {
     id: 'lucilla.selfbuff.clear-as-day-bonus',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'cast', on: 'Liberation:Clear As Day' },
     timing: { duration: 10 },
     target: { scope: 'self' },
-    effects: [{ stat: 'basicDmg', value: 30 }],
+    effects: [{ stat: 'basicDmg', value: 30, source: 'self-kit' }],
     note: "Real effect sourced from CHARACTER_ROTATIONS' own Liberation step note: +30% Basic ATK DMG Bonus for 10s in Glacio Chafe mode (modeled; the Echo-mode branch is +30% Echo Skill DMG Bonus instead, same value, not separately fired) — this was entirely absent from CHAR_BUFF_TABLE['Lucilla'].selfBuffs before this read.",
   },
   {
     id: 'lucilla.debuff.inherent-skill-resshred',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Buff',
     trigger: { type: 'passive' },
     timing: { duration: 30 },
     target: { scope: 'all-enemies' },
@@ -122,7 +125,7 @@ export const LUCILLA_BLOCKS = [
   },
   {
     id: 'lucilla.buff.inherent-skill-echo-teamdmg',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     // Added Phase A audit (2026-09-04): CHAR_BUFF_TABLE['Lucilla'].selfBuffs was missing this
     // Inherent Skill Slow Motion Echo-mode branch entirely (see that file's own audit comment on
     // this same read) — team +25% Echo Skill DMG Bonus for 30s on casting Spotlight in Echo mode,
@@ -131,7 +134,7 @@ export const LUCILLA_BLOCKS = [
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
     condition: { requiresStance: 'Echo mode' },
-    effects: [{ stat: 'echoDmg', value: 25 }],
+    effects: [{ stat: 'echoDmg', value: 25, source: 'self-kit' }],
     note: 'Inherent Skill Slow Motion, Echo mode, on casting Spotlight: team +25% Echo Skill DMG Bonus for 30s. Ends early on mode switch (not modeled) — mutually exclusive with lucilla.debuff.inherent-skill-resshred.',
   },
 
@@ -140,24 +143,24 @@ export const LUCILLA_BLOCKS = [
   //    rather than scoped to one specific cast) ──
   {
     id: 'lucilla.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: { duration: 10 }, // sourced from CHAR_BUFF_TABLE's own selfBuffs entry for this same node
     target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 20 }],
+    effects: [{ stat: 'critRate', value: 20, source: 'self-kit' }],
     note: 'Confirmed exact value, 10s duration per CHAR_BUFF_TABLE\'s own selfBuffs entry for this node — no specific cast anchor sourced, kept passive.',
   },
   {
     id: 'lucilla.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'whole-team' },
-    effects: [{ stat: 'echoDmg', value: 40 }],
+    effects: [{ stat: 'echoDmg', value: 40, source: 'self-kit' }],
     note: 'Glacio Chafe DMG Amp +80% in Glacio Chafe mode OR team Echo Skill DMG Bonus +40% in Echo mode — only the Echo-mode branch has a matching schema category (echoDmg), modeled here; the Glacio-Chafe-mode branch (Glacio Chafe DMG Amp, not a plain elemDmg buff) has no matching category, not modeled.',
   },
   {
     id: 'lucilla.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // scopedToBlockId added Phase A audit (2026-09-04): this was an unscoped basicDmg/echoDmg
     // category buff, the exact same bug class already fixed for Jiyan's S6 (see that file's own
     // audit comment) and flagged in the Phase A task brief — a category-wide buff means
@@ -169,22 +172,22 @@ export const LUCILLA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'basicDmg', value: 100, scopedToBlockId: 'lucilla.basic.letting-it-go' },
-      { stat: 'echoDmg', value: 100, scopedToBlockId: 'lucilla.basic.letting-it-go' },
+      { stat: 'basicDmg', value: 100, scopedToBlockId: 'lucilla.basic.letting-it-go', source: 'self-kit' },
+      { stat: 'echoDmg', value: 100, scopedToBlockId: 'lucilla.basic.letting-it-go', source: 'self-kit' },
     ],
     note: "Letting It Go's own DMG Multiplier +100% (recategorized from libDmg to {basicDmg, echoDmg} per the re-audit — its own move text makes damage type mode-dependent, never Liberation-type despite being part of the Liberation combo). Both keys carry the same value since only one mode's SKILL_MULTIPLIERS type ever applies in a given build, so they never double-count. Scoped to lucilla.basic.letting-it-go only (see scoping fix note above) — kept passive so it applies whenever that block fires, without leaking to the rest of the kit.",
   },
   {
     id: 'lucilla.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 10, stacking: 'stacking', maxStacks: 3 }],
+    effects: [{ stat: 'atkPct', value: 10, stacking: 'stacking', maxStacks: 3, source: 'self-kit' }],
     note: 'ATK +10%/stack up to 3 stacks (+30% max, confirmed exact) — modeled as per-stack 10% x3 cap, matching the real stacking mechanic.',
   },
   {
     id: 'lucilla.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // scopedToBlockId added Phase A audit (2026-09-04): same unscoped-category-buff bug as S3
     // above — S5's kit text names Oblivion specifically ("Oblivion's DMG Multiplier +50%"), but an
     // unscoped basicDmg/echoDmg buff was leaking onto lucilla.basic.tracing-forms,
@@ -193,14 +196,14 @@ export const LUCILLA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'basicDmg', value: 50, scopedToBlockId: 'lucilla.basic.oblivion' },
-      { stat: 'echoDmg', value: 50, scopedToBlockId: 'lucilla.basic.oblivion' },
+      { stat: 'basicDmg', value: 50, scopedToBlockId: 'lucilla.basic.oblivion', source: 'self-kit' },
+      { stat: 'echoDmg', value: 50, scopedToBlockId: 'lucilla.basic.oblivion', source: 'self-kit' },
     ],
     note: "Oblivion's own DMG Multiplier +50% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3) — scoped to lucilla.basic.oblivion only (see scoping fix note above), kept passive so it applies whenever that block fires.",
   },
   {
     id: 'lucilla.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // scopedToBlockId added Phase A audit (2026-09-04): same unscoped-category-buff bug as S3/S5
     // above — S6's kit text names Letting It Go specifically ("increases Letting It Go's DMG to the
     // target by 200%, up to 600% at max"), but an unscoped basicDmg/echoDmg buff was leaking onto
@@ -210,8 +213,8 @@ export const LUCILLA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'basicDmg', value: 600, scopedToBlockId: 'lucilla.basic.letting-it-go' },
-      { stat: 'echoDmg', value: 600, scopedToBlockId: 'lucilla.basic.letting-it-go' },
+      { stat: 'basicDmg', value: 600, scopedToBlockId: 'lucilla.basic.letting-it-go', source: 'self-kit' },
+      { stat: 'echoDmg', value: 600, scopedToBlockId: 'lucilla.basic.letting-it-go', source: 'self-kit' },
     ],
     note: "Each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence reliably hits max, using the max value +600% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3). Scoped to lucilla.basic.letting-it-go only (see scoping fix note above), kept passive.",
   },

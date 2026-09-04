@@ -10,15 +10,17 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Zani';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const ZANI_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'zani.intro.immediate-execution',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Immediate Execution' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('24.2%×5 + 80.8%') },
+    // category/basis added for Layer 4 migration — were entirely missing. No override text names a
+    // different category, same default-to-skillDmg convention applied project-wide.
+    damage: { hits: parseSkillMultiplierHits('24.2%×5 + 80.8%'), basis: 'ATK' },
     note: 'Builds Redundant Energy. Inherent Skill Quick Response grants +12% Spectro DMG Bonus for 14s (see zani.selfbuff.quick-response below).',
   },
   {
@@ -27,23 +29,23 @@ export const ZANI_BLOCKS = [
     // old note claiming "no matching row at all" was stale, left over from before that row was added.
     // Real CHARACTER_ROTATIONS step too ('Press Skill — a small hit that enters a block stance').
     id: 'zani.skill.standard-defense-protocol',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Standard Defense Protocol' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('63.94%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('63.94%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Base Resonance Skill hit before the block-stance follow-up — enters a block stance for up to 2s, ended early if swapped off before it resolves.',
   },
   {
     id: 'zani.basic.stage3',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Stage 3' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('127.3%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('127.3%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Exits the block stance manually — Stagnates the target, restores 10 Redundant Energy.',
   },
   {
     id: 'zani.skill.targeted-action',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Targeted Action / Forcible Riposte' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Fixed 2026-09-03: had no damage.category — a real Resonance Skill cast (Crisis Response
@@ -51,86 +53,90 @@ export const ZANI_BLOCKS = [
     // to skillDmg. This also fixes a hidden 2nd bug: chain.s2's skillDmg:80 effect (below) could never
     // have matched this block even after its own dead-trigger fix, since category-gated stats only
     // apply to matching-category hits.
-    damage: { hits: parseSkillMultiplierHits('86.2% + 28.7% + 172.4%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('86.2% + 28.7% + 172.4%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Once Redundant Energy hits 100/100 — applies 1 Heliacal Ember stack, grants 10 Blaze, starts Sunburst (+20% Spectro Frazzle DMG for 14s, not modeled).',
   },
   {
     id: 'zani.liberation.rekindle',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Rekindle' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('318.5%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('318.5%'), category: 'libDmg', basis: 'ATK' },
     note: 'Enters Inferno Mode (up to 20s), raises max Blaze from 100 to 150, grants 50 Blaze immediately, gives Basic ATK a flat +25% DMG Multiplier for the duration (not modeled).',
   },
   {
     id: 'zani.forte.heavy-slash-daybreak',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy Slash: Daybreak' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('198.8%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('198.8%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Counted as Heavy ATK + Spectro Frazzle DMG.',
   },
   {
     id: 'zani.forte.heavy-slash-dawning',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy Slash: Dawning' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('424.1%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('424.1%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Auto-chains at >30 remaining Blaze.',
   },
   {
     id: 'zani.forte.heavy-slash-nightfall',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy Slash: Nightfall' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('135.2% + 262.4%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('135.2% + 262.4%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Consumes up to 40 Blaze, each point adding +9.95% DMG Multiplier — not modeled (base value used), her hardest-hitting single attack.',
   },
   {
     id: 'zani.forte.heavy-slash-string-2nd-pass',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy Slash: Daybreak → Dawning → Nightfall' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // 2nd full pass of the 3-hit string, combining all 3 rows since the rotation collapses them into
     // a single step.
-    damage: { hits: [...parseSkillMultiplierHits('198.8%'), ...parseSkillMultiplierHits('424.1%'), ...parseSkillMultiplierHits('135.2% + 262.4%')], category: 'heavyDmg' },
+    damage: { hits: [...parseSkillMultiplierHits('198.8%'), ...parseSkillMultiplierHits('424.1%'), ...parseSkillMultiplierHits('135.2% + 262.4%')], category: 'heavyDmg', basis: 'ATK' },
     note: 'Repeats the full 3-hit string a 2nd time, with Blaze refilled by allies feeding Spectro Frazzle.',
   },
   {
     id: 'zani.liberation.the-last-stand',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:The Last Stand' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('191.1% + 1083.0%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('191.1% + 1083.0%'), category: 'libDmg', basis: 'ATK' },
     note: '2nd Ultimate, cast once Blaze drops below 30 or 8s pass since entering Inferno Mode; ends Inferno Mode.',
   },
   {
     id: 'zani.outro.beacon-for-the-future',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('150%') },
+    // category/basis added for Layer 4 migration — were entirely missing (note below already explains
+    // the "no matching category, left uncategorized" reasoning at the time this was written; the
+    // schema now requires one, so this uses the same outroDmg convention as the batch's other
+    // Outro-slot damage blocks with no more specific override).
+    damage: { hits: parseSkillMultiplierHits('150%'), basis: 'ATK' },
     note: 'Consumes all Heliacal Ember stacks on the target for a scaling hit (+10% DMG/stack, not modeled, base value used), counted as Spectro Frazzle DMG (no matching category, left uncategorized). Also grants every other teammate hitting that marked target +20% Spectro DMG Amp (see the buff block below).',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'zani.outro.beacon-buff',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
     condition: { element: 'spectro' },
-    effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh' }],
+    effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: "To allies hitting the Heliacal Ember-marked target — the target-marked gating isn't modeled (applied team-wide).",
   },
   {
     id: 'zani.selfbuff.quick-response',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'cast', on: 'Intro:Immediate Execution' },
     timing: { duration: 14 },
     target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 12 }],
+    effects: [{ stat: 'elemDmg', value: 12, source: 'self-kit' }],
     note: 'Quick Response: Intro Skill cast grants +12% Spectro DMG Bonus.',
   },
 
@@ -138,60 +144,60 @@ export const ZANI_BLOCKS = [
   //    real mechanic) ──
   {
     id: 'zani.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 50 }],
+    effects: [{ stat: 'elemDmg', value: 50, source: 'self-kit' }],
     note: '+50% Spectro DMG (confirmed exact) — no further scope detail sourced beyond the flat value, kept passive.',
   },
   // Fixed 2026-09-03: S2 and S3 were both `kind:'buff'` with `trigger:{type:'cast',...}` and no
   // `timing.duration` — the item-12 dead-buff architecture bug (the engine-architecture history (git log)), silent no-ops.
   {
     id: 'zani.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'critRate', value: 20 },
-      { stat: 'skillDmg', value: 80, scopedToBlockId: 'zani.skill.targeted-action' },
+      { stat: 'critRate', value: 20, source: 'self-kit' },
+      { stat: 'skillDmg', value: 80, scopedToBlockId: 'zani.skill.targeted-action', source: 'self-kit' },
     ],
     note: 'Crit Rate +20% + a multiplier boost to Targeted Action/Forcible Riposte specifically (confirmed exact per the audit comment) — skillDmg scoped via scopedToBlockId since Targeted Action is not her only skillDmg-tagged block.',
   },
   {
     id: 'zani.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     // Scoped via scopedToBlockId: libDmg is category-gated, but `zani.liberation.the-last-stand` is
     // ALSO libDmg-categorized — without scoping, this would incorrectly also boost The Last Stand,
     // when the kit text is explicit this is Rekindle's own multiplier only.
-    effects: [{ stat: 'libDmg', value: 200, scopedToBlockId: 'zani.liberation.rekindle' }],
+    effects: [{ stat: 'libDmg', value: 200, scopedToBlockId: 'zani.liberation.rekindle', source: 'self-kit' }],
     note: "Rekindle's own DMG Multiplier +200%.",
   },
   {
     id: 'zani.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'whole-team' },
-    effects: [{ stat: 'atkPct', value: 20 }],
+    effects: [{ stat: 'atkPct', value: 20, source: 'self-kit' }],
     note: 'Team ATK +20% (confirmed exact, team-wide) — no specific cast anchor sourced, kept passive.',
   },
   {
     id: 'zani.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-03: same dead cast-scoped/no-duration no-op shape as S2/S3 above.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     // Scoped for the same reason as S3: libDmg is category-gated but shared with Rekindle.
-    effects: [{ stat: 'libDmg', value: 120, scopedToBlockId: 'zani.liberation.the-last-stand' }],
+    effects: [{ stat: 'libDmg', value: 120, scopedToBlockId: 'zani.liberation.the-last-stand', source: 'self-kit' }],
     note: "The Last Stand's own DMG Multiplier +120%.",
   },
   {
     id: 'zani.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 40 }],
+    effects: [{ stat: 'heavyDmg', value: 40, source: 'self-kit' }],
     note: 'Heavy ATK DMG +40% (confirmed exact) — kept passive, applies broadly to her many Heavy Slash-categorized blocks above.',
   },
 ];

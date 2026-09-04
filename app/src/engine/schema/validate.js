@@ -50,8 +50,13 @@ export function validateBlock(block, expectedSource) {
     if (!block.damage || typeof block.damage !== 'object') {
       errors.push(`damage block missing damage payload (block id: ${id})`);
     } else {
-      const catCheck = checkCategory(block.damage.category);
-      if (!catCheck.valid) errors.push(`damage.category invalid: ${catCheck.reason} (block id: ${id})`);
+      // category is OPTIONAL — omission is a real, deliberate "no category-specific bonus" statement
+      // (Intro/Outro casts, or a hit no audit has yet confirmed a category for), not a gap to force a
+      // guess into. Only validate it when the block's own author chose to state one.
+      if (block.damage.category != null) {
+        const catCheck = checkCategory(block.damage.category);
+        if (!catCheck.valid) errors.push(`damage.category invalid: ${catCheck.reason} (block id: ${id})`);
+      }
       if (!block.damage.basis) errors.push(`damage block missing damage.basis (block id: ${id})`);
     }
   }

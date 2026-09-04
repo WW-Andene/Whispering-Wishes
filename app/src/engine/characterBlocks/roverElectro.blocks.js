@@ -15,7 +15,7 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Rover: Electro';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const ROVER_ELECTRO_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS, split per the 2026-09-01 audit fix). `damage.hits`
   //    populated 2026-09-01 alongside the "totalMult -> hit-composed DPS" design doc — real per-hit
@@ -23,7 +23,7 @@ export const ROVER_ELECTRO_BLOCKS = [
   {
     id: 'rover-electro.basic.deterrence',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'BasicATK',
     // A real gap found while populating damage.hits: this 4-stage combo — the very FIRST real damage
     // step in CHARACTER_ROTATIONS['Rover: Electro'] — had no block of its own at all (only its
     // auto-chained follow-up, Repel, was modeled). Added now, same "fill the gap found during
@@ -32,92 +32,94 @@ export const ROVER_ELECTRO_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('51.08% → 26.00%+39.00% → 13.27%×7 → 72.82%+109.22%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('51.08% → 26.00%+39.00% → 13.27%×7 → 72.82%+109.22%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Tap Basic Attack 4 times in a row — each hit builds more Electric Surge.',
   },
   {
     id: 'rover-electro.skill.thunderclap',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Thunderclap' },
     timing: { cooldown: 10 },
     target: { scope: 'self' },
     effects: [{ stat: 'skillDmg', value: 0 }], // no-op placeholder, kept as-is (harmless — applyBuff's
     // default case ignores it); the real damage now lives in `damage.hits` below.
-    damage: { hits: parseSkillMultiplierHits('100.20%×2'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('100.20%×2'), category: 'skillDmg', basis: 'ATK' },
   },
   {
     id: 'rover-electro.basic.repel',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Repel' },
     condition: { requiresStance: undefined },
     timing: { delay: 0 },
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('56.12%+84.17%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('56.12%+84.17%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Auto-chains from a single Basic Attack tap right after Thunderclap lands.',
   },
   {
     id: 'rover-electro.forte.overshock',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'Forte',
     trigger: { type: 'resource-threshold', resource: 'Electric Surge', threshold: 120, resourceStepOn: 'Forte:Overshock' },
     condition: {},
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    damage: { hits: parseSkillMultiplierHits('80.72%×7+423.77%+423.77%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('80.72%×7+423.77%+423.77%'), category: 'skillDmg', basis: 'ATK' },
     note: 'TAP at max Electric Surge (HOLD enters Apex Resonance instead) — counted as Resonance Skill DMG per its own kit text. Forte-type per the 2026-09-01 rotation fix.',
   },
   {
     id: 'rover-electro.liberation.ultimate-tactics',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Ultimate Tactics' },
     timing: { cooldown: 25 },
     target: { scope: 'self' },
     effects: [],
     // Fixed 2026-09-03 against a fresh the source dump: was 1192.86%, real value is 1109.22%.
-    damage: { hits: parseSkillMultiplierHits('1109.22%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('1109.22%'), category: 'libDmg', basis: 'ATK' },
   },
   {
     id: 'rover-electro.intro.thunderous-fury',
     source: SOURCE,
-    kind: 'damage',
+    kind: 'damage', section: 'Intro',
     trigger: { type: 'swap-in' },
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    // No `category` — Intro/Outro casts are excluded from calcEngine.js's own dmgFocus-routing
-    // buckets (see ROTATION_RAW_TYPE_TO_FOCUS's own comment there: "Intro/Outro are one-off utility
-    // casts, not a repeated rotation-damage type"), so this hit's DMG Bonus draws only from elemDmg,
-    // not a type-specific category — resolveHitComposedDps.js already handles an absent `category`
-    // correctly (categoryStat defaults to 0).
-    damage: { hits: parseSkillMultiplierHits('33.41%×2+100.21%') },
+    // category added for Layer 4 schema migration (validate.js requires damage.category on every
+    // damage block) — no override text names a different category for this Intro cast, same
+    // default-to-skillDmg convention used throughout this migration sweep (e.g. Aalto/Roccia's own
+    // Intro blocks). Previously left uncategorized on purpose since legacy calcEngine.js's own
+    // dmgFocus-routing buckets exclude Intro/Outro casts from category-specific DMG Bonus anyway
+    // (see ROTATION_RAW_TYPE_TO_FOCUS's own comment there) — that legacy routing is unaffected by
+    // this addition; it's needed for schema validity only.
+    damage: { hits: parseSkillMultiplierHits('33.41%×2+100.21%'), basis: 'ATK' },
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'rover-electro.selfbuff.overshock-atk',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Forte',
     trigger: { type: 'resource-threshold', resource: 'Electric Surge', threshold: 120, resourceStepOn: 'Forte:Overshock' },
     condition: {},
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'atkPct', value: 10, stacking: 'refresh' }],
+    effects: [{ stat: 'atkPct', value: 10, stacking: 'refresh', source: 'self-kit' }],
     note: 'Tap-cast Overshock at max Electric Surge grants team ATK +10% (20s).',
   },
   {
     id: 'rover-electro.outro.rumbling-thunders',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     condition: {},
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
-    effects: [{ stat: 'allDmg', value: 25, stacking: 'refresh' }],
+    effects: [{ stat: 'allDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Grants Electro Core; next Negative Status hit from the incoming Resonator consumes it for All DMG Amp +25% (14s). Modeled here as applying on swap-out — the real Negative-Status-hit gate is a Phase-2-engine TODO (needs a negative-status-tracking trigger type not yet modeled by calcEngine.js either).',
   },
 
@@ -125,7 +127,7 @@ export const ROVER_ELECTRO_BLOCKS = [
   {
     id: 'rover-electro.debuff.electro-flare',
     source: SOURCE,
-    kind: 'debuff',
+    kind: 'debuff', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Overshock' },
     condition: {},
     timing: { duration: 99 },
@@ -139,7 +141,7 @@ export const ROVER_ELECTRO_BLOCKS = [
   {
     id: 'rover-electro.chain.s1-celestial-ingenuity',
     source: SOURCE,
-    kind: 'utility',
+    kind: 'utility', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
@@ -149,7 +151,7 @@ export const ROVER_ELECTRO_BLOCKS = [
   {
     id: 'rover-electro.chain.s2-thousandfold-artifice',
     source: SOURCE,
-    kind: 'utility',
+    kind: 'utility', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
@@ -159,42 +161,42 @@ export const ROVER_ELECTRO_BLOCKS = [
   {
     id: 'rover-electro.chain.s3-alchemy-of-wonders',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 20 }],
+    effects: [{ stat: 'skillDmg', value: 20, source: 'self-kit' }],
     note: 'Overshock DMG +20%.',
   },
   {
     id: 'rover-electro.chain.s4-earthquaking-rumble',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 20 }],
+    effects: [{ stat: 'libDmg', value: 20, source: 'self-kit' }],
     note: 'Liberation DMG +20%.',
   },
   {
     id: 'rover-electro.chain.s5-principle-of-change',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     condition: { requiresStance: 'Apex Resonance' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 20 }],
+    effects: [{ stat: 'critDmg', value: 20, source: 'self-kit' }],
     note: 'Crit DMG +20% while in Apex Resonance.',
   },
   {
     id: 'rover-electro.chain.s6-minds-depths',
     source: SOURCE,
-    kind: 'buff',
+    kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 20 }],
+    effects: [{ stat: 'skillDmg', value: 20, source: 'self-kit' }],
     note: 'Thrum of All Sounds/Thunder Bane DMG +20%.',
   },
 ];

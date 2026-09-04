@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Augusta', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(AUGUSTA_BLOCKS, 'Augusta');
+  });
+
   // Fixed 2026-09-02 against a fresh the source dump: S3's totalMult:25 was a single UNSCOPED effect — a
   // prior session's note claimed this was safe since "her only Heavy ATK hits anyway," but totalMult
   // applies unconditionally to every hit regardless of category, so it was over-crediting her skillDmg

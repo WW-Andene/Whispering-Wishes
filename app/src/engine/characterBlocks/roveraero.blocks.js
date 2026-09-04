@@ -22,52 +22,55 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Rover: Aero';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const ROVER_AERO_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'roveraero.intro.relentless-squall',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Relentless Squall' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('79.53%+119.29%') },
+    // category added for Layer 4 schema migration (validate.js requires damage.category on every
+    // damage block) — no override text names a different category, same default-to-skillDmg
+    // convention used throughout this migration sweep for uncategorized Intro casts.
+    damage: { hits: parseSkillMultiplierHits('79.53%+119.29%'), basis: 'ATK' },
     note: 'Launches into the air, grants 20 Windstring.',
   },
   {
     id: 'roveraero.forte.cloudburst-dance',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Cloudburst Dance' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('128.80%+141.47%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('128.80%+141.47%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Mid-air ATK combo, considered Resonance Skill DMG; heals the team on hit (not modeled). Fires twice in the real rotation.',
   },
   {
     id: 'roveraero.liberation.omega-storm',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Omega Storm' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('536.79%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('536.79%'), category: 'libDmg', basis: 'ATK' },
     note: 'Also heals nearby team ~2090 + 77% ATK, not modeled (no DPS component). Instantly grounds her, can be cast mid-air near ground.',
   },
   {
     id: 'roveraero.skill.awakening-gale',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Awakening Gale' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('66.44%+99.66%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('66.44%+99.66%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Ground Skill, 3s cooldown, sends her back into the air.',
   },
   {
     id: 'roveraero.skill.skyfall-severance',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Skyfall Severance' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('23.37%×3+105.15%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('23.37%×3+105.15%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Mid-air Skill (12s cooldown), converts negative-status debuffs on the target into Aero Erosion stacks. Optional — skipped if no teammate applies those debuffs.',
   },
   {
     id: 'roveraero.midair.plunging-attack',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Mid-air:Plunging Attack' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Fixed 2026-09-03: had no damage.category — missed during the 2026-09-02 pass on this character.
@@ -76,15 +79,15 @@ export const ROVER_AERO_BLOCKS = [
     // Mid-air Attack sits under the same "Basic Attack — Wind Cutter" family header as her other Basic
     // ATK-slot moves, with no separate Heavy Attack override), resolves to basicDmg — closes the
     // cross-character Mid-air sweep noted in the engine-merge history (git log) as still open for this character.
-    damage: { hits: parseSkillMultiplierHits('140.76%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('140.76%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Plunges back down to the ground.',
   },
   {
     id: 'roveraero.forte.unbound-flow',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Unbound Flow' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('34.30%×5+723.03%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('34.30%×5+723.03%'), category: 'skillDmg', basis: 'ATK' },
     note: 'At max Windstring, Resonance Skill becomes this instead; considered Resonance Skill DMG. Part 2 resolves automatically off-field.',
   },
 
@@ -93,15 +96,15 @@ export const ROVER_AERO_BLOCKS = [
   //    source data) ──
   {
     id: 'roveraero.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 15 }],
+    effects: [{ stat: 'elemDmg', value: 15, source: 'self-kit' }],
     note: '+15% Aero DMG Bonus, unconditional (confirmed exact against a real .mht snapshot 2026-09-02).',
   },
   {
     id: 'roveraero.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-02 against a real browser snapshot (confirms S3-S6 exactly, resolving the
     // "no adjacent audit comment" gap this file previously flagged): was `trigger:{type:'passive'}`,
     // modeled as unconditional — the real kit text is explicit this is conditional: "Casting Mid-air
@@ -109,12 +112,12 @@ export const ROVER_AERO_BLOCKS = [
     // cast-scoped 5s buffWindow.
     trigger: { type: 'cast', on: 'Forte:Cloudburst Dance' },
     timing: { duration: 5 }, target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 15 }],
+    effects: [{ stat: 'skillDmg', value: 15, source: 'self-kit' }],
     note: 'Casting Cloudburst Dance grants +15% Resonance Skill DMG Bonus for 5s.',
   },
   {
     id: 'roveraero.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-02: was `trigger:{type:'cast',...}` with no `timing.duration` — the same dead
     // cast-scoped/no-duration `kind:'buff'` no-op shape found on Carlotta's S1/S2, Galbrena's S3, and
     // Lucy's S2/S3 (the engine-architecture history (git log) item 12) — never actually applied. Converted to
@@ -122,12 +125,12 @@ export const ROVER_AERO_BLOCKS = [
     // Storm's own hit.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 20, scopedToBlockId: 'roveraero.liberation.omega-storm' }],
+    effects: [{ stat: 'libDmg', value: 20, scopedToBlockId: 'roveraero.liberation.omega-storm', source: 'self-kit' }],
     note: "Omega Storm's own DMG Multiplier +20% (confirmed exact against a real .mht snapshot).",
   },
   {
     id: 'roveraero.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-02: was an unscoped passive `skillDmg:30` — since `skillDmg` applies to EVERY
     // skillDmg-categorized hit unconditionally, this was silently over-crediting Cloudburst
     // Dance/Awakening Gale/Skyfall Severance too, none of which S6's own kit text lists ("The DMG
@@ -136,7 +139,7 @@ export const ROVER_AERO_BLOCKS = [
     // roster-wide.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 30, scopedToBlockId: 'roveraero.forte.unbound-flow' }],
+    effects: [{ stat: 'skillDmg', value: 30, scopedToBlockId: 'roveraero.forte.unbound-flow', source: 'self-kit' }],
     note: "Unbound Flow's own DMG Multiplier +30% (confirmed exact against a real .mht snapshot) — scoped to only that move, not her whole skillDmg-categorized kit.",
   },
 ];

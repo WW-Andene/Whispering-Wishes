@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CALCHARO_BLOCKS } from '../engine/characterBlocks/calcharo.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Calcharo', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(CALCHARO_BLOCKS, 'Calcharo');
+  });
+
   it('CHAR_BUFF_TABLE is empty — no buff blocks modeled', () => {
     const legacy = CHAR_BUFF_TABLE['Calcharo'];
     expect(legacy.outroBuffs).toEqual([]);

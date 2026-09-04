@@ -4,8 +4,13 @@ import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposed
 import { resolveHitComposedTeamDps } from '../engine/resolver/dps/resolveHitComposedTeamDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CANTARELLA_BLOCKS } from '../engine/characterBlocks/cantarella.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Cantarella', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(CANTARELLA_BLOCKS, 'Cantarella');
+  });
+
   it('S4/S5 stay correctly unmodeled (no block) — heal-only / hit-count-cap-only per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Cantarella'];
     expect(rc.s4).toEqual({});

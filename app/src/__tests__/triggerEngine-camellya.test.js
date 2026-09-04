@@ -8,8 +8,13 @@ import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROT
 import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
 import { parseSkillMultiplierHits } from '../engine/math/hitParser.js';
 import { requiredSequenceOf } from '../engine/resolver/gating/sequenceGating.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Camellya', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(CAMELLYA_BLOCKS, 'Camellya');
+  });
+
   it('Seedbed/Epiphyte self-buffs match CHAR_BUFF_TABLE.selfBuffs', () => {
     const [seedbed, epiphyte] = CHAR_BUFF_TABLE['Camellya'].selfBuffs;
     expect(CAMELLYA_BLOCKS.find(b => b.id === 'camellya.selfbuff.seedbed').effects[0].value).toBe(seedbed.value);

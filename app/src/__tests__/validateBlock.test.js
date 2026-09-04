@@ -39,7 +39,7 @@ describe('validateBlock — the one schema shape', () => {
     const { errors } = validateBlock(block, 'Aalto');
     expect(errors.some(e => e.includes('section'))).toBe(true);
   });
-  it('requires damage.category (registered) and damage.basis on a damage block', () => {
+  it('rejects an invalid damage.category when one is given, and always requires damage.basis', () => {
     const block = {
       id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', section: 'Intro',
       trigger: { type: 'cast' }, damage: { hits: [], category: 'skilDmg' },
@@ -47,6 +47,14 @@ describe('validateBlock — the one schema shape', () => {
     const { errors } = validateBlock(block, 'Aalto');
     expect(errors.some(e => e.includes('category'))).toBe(true);
     expect(errors.some(e => e.includes('basis'))).toBe(true);
+  });
+  it('accepts an omitted damage.category — a real "no category-specific bonus" statement, not an error', () => {
+    const block = {
+      id: 'aalto.intro.feint-shot', source: 'Aalto', kind: 'damage', section: 'Intro',
+      trigger: { type: 'cast' }, damage: { hits: [], basis: 'ATK' },
+    };
+    const { errors } = validateBlock(block, 'Aalto');
+    expect(errors).toEqual([]);
   });
   it('accepts a fully-compliant damage block', () => {
     const block = {

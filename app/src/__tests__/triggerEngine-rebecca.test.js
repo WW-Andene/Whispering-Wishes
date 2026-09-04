@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, SKILL_MULTI
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { REBECCA_BLOCKS } from '../engine/characterBlocks/rebecca.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Rebecca', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(REBECCA_BLOCKS, 'Rebecca');
+  });
+
   // Fixed 2026-09-02 against a fresh the source dump: 3 blocks were miscategorized (the reverse of the
   // usual pattern — wrongly tagged heavyDmg/libDmg when the kit text explicitly overrides them to
   // Basic Attack DMG). Rat-tat-tat!/Bang-bang-bang! and the Mk. 31 HMG channel both say "considered

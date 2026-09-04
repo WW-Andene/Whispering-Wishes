@@ -14,31 +14,31 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Taoqi';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const TAOQI_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'taoqi.intro.defense-formation',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Defense Formation' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. The dump's own
     // multiplier table labels this row generically "Skill Damage", same default convention used
     // throughout this Phase A sweep.
-    damage: { hits: parseSkillMultiplierHits('208.76%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('208.76%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Havoc DMG opener; Basic Attack afterward casts Timed Counters (Power Shift) directly.',
   },
   {
     id: 'taoqi.skill.fortified-defense',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Fortified Defense' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('134.92%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('134.92%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Havoc DMG to surrounding targets; generates 3 Rocksteady Shield stacks and heals self (not modeled, no DPS component).',
   },
   {
     id: 'taoqi.liberation.unmovable',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Unmovable' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('449.71%'), category: 'libDmg', basis: 'DEF' },
@@ -53,26 +53,26 @@ export const TAOQI_BLOCKS = [
   // silently undercounting the actual normal-attack combo the dump's own rotation calls for.
   {
     id: 'taoqi.basic.concealed-edge',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Concealed Edge' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('90.15% → 84.84% → 111.34% → 270.39%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('90.15% → 84.84% → 111.34% → 270.39%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Up to 4 Havoc strikes — real normal-attack combo, distinct from Power Shift\'s Timed Counters.',
   },
   {
     id: 'taoqi.forte.power-shift-timed-counters',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Power Shift: Timed Counters' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('86.2% → 110.93% → 145.41%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('86.2% → 110.93% → 145.41%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Basic ATK after Heavy ATK Strategic Parry/Intro consumes "Resolving Caliber" for extra hits and a shield (not modeled); counted as Basic ATK DMG.',
   },
   {
     id: 'taoqi.outro.iron-will',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 14 }, target: { scope: 'next-on-field' },
-    effects: [{ stat: 'skillDmg', value: 38, stacking: 'refresh' }],
+    effects: [{ stat: 'skillDmg', value: 38, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: "Buffs the incoming Resonator's Resonance Skill DMG, no direct DMG.",
   },
 
@@ -82,12 +82,12 @@ export const TAOQI_BLOCKS = [
   // S1 correctly has NO block — Power Shift's Shield +40%, shield/utility with zero DPS component.
   {
     id: 'taoqi.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Unmovable' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'critRate', value: 20 },
-      { stat: 'critDmg', value: 20 },
+      { stat: 'critRate', value: 20, source: 'self-kit' },
+      { stat: 'critDmg', value: 20, source: 'self-kit' },
     ],
     note: 'Liberation Unmovable grants BOTH Crit Rate +20% AND Crit DMG +20% simultaneously (confirmed exact, both effects) — cast-scoped (instant, no persistent duration).',
   },
@@ -98,21 +98,21 @@ export const TAOQI_BLOCKS = [
   // ATK-DPS-focused schema.
   {
     id: 'taoqi.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:Power Shift: Timed Counters' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'basicDmg', value: 50 }],
+    effects: [{ stat: 'basicDmg', value: 50, source: 'self-kit' }],
     note: "Power Shift DMG +50% (confirmed exact; Power Shift is 'considered as Basic Attack DMG' per its own Forte text) — cast-scoped (instant, no persistent duration). Also restores 20 Resonance Energy on hit, not modeled.",
   },
   {
     id: 'taoqi.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     condition: { requiresStance: 'Rocksteady Shield active' },
     effects: [
-      { stat: 'basicDmg', value: 40 },
-      { stat: 'heavyDmg', value: 40 },
+      { stat: 'basicDmg', value: 40, source: 'self-kit' },
+      { stat: 'heavyDmg', value: 40, source: 'self-kit' },
     ],
     note: 'Basic ATK and Heavy ATK DMG +40% while Rocksteady Shield holds (confirmed exact, conditional) — the shield\'s real uptime/duration isn\'t modeled, kept passive.',
   },

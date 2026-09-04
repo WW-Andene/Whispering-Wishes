@@ -1,13 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — engine/characterBlocks/lupa.blocks.js
-// Lupa converted to TriggerBlocks. Sourced from characters.js's already-audited
-// CHAR_BUFF_TABLE['Lupa'], RESONANCE_CHAIN_DATA['Lupa'] (+ its own detailed
-// 2026-09-01 re-audit comment, read directly for each node's real mechanic),
-// SKILL_MULTIPLIERS['Lupa'], and CHARACTER_ROTATIONS['Lupa']. No new numbers
-// invented. S3 (Nowhere to Run!) stays correctly inert: reaching Wild Hunt needs
-// 2 TEAMMATE Intro casts within Pack Hunt's window, which her own solo-modeled
-// CHARACTER_ROTATIONS (only her own steps) has no way to reach — same class as
-// Jiyan's S6/Finale and Lumi's S5/Laser in earlier batches.
+// [CHARACTER · LUPA] Lupa's TriggerBlock set — Layer 4 of the engine rewrite,
+// migrated onto the single canonical schema (block.schema.js). Sourced from
+// characters.js's already-audited CHAR_BUFF_TABLE['Lupa'], RESONANCE_CHAIN_DATA
+// ['Lupa'] (+ its own detailed 2026-09-01 re-audit comment, read directly for each
+// node's real mechanic), SKILL_MULTIPLIERS['Lupa'], and CHARACTER_ROTATIONS['Lupa'].
+// No new numbers invented. S3 (Nowhere to Run!) stays correctly inert: reaching Wild
+// Hunt needs 2 TEAMMATE Intro casts within Pack Hunt's window, which her own
+// solo-modeled CHARACTER_ROTATIONS (only her own steps) has no way to reach — same
+// class as Jiyan's S6/Finale and Lumi's S5/Laser in earlier batches.
 //
 // Corrected 2026-09-02 against a fresh the source dump: S4 (Dance With the Wolf:
 // Climax) was ALSO wrongly treated as inert — but unlike S3, this one only
@@ -23,12 +24,12 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Lupa';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const LUPA_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'lupa.intro.try-focusing-eh',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Try Focusing, Eh?' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Fixed 2026-09-02: the dump's own multiplier row labels this move's damage generically "Skill
@@ -37,46 +38,46 @@ export const LUPA_BLOCKS = [
     // Liberation DMG". the source's own convention: a move-specific row name flags a non-default category
     // (called out in prose); the generic "Skill Damage" label means plain Resonance Skill DMG, no prose
     // override needed. Missed this signal on the first pass — corrected to skillDmg.
-    damage: { hits: parseSkillMultiplierHits('29.76%+42.16%×4'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('29.76%+42.16%×4'), category: 'skillDmg', basis: 'ATK' },
   },
   {
     id: 'lupa.liberation.fire-kissed-glory',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Fire-Kissed Glory' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('820.44%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('820.44%'), category: 'libDmg', basis: 'ATK' },
     note: 'Ultimate nuke that also grants the team Pack Hunt/Glory buffs (see lupa.libbuff.pack-hunt and lupa.debuff.glory below) and enables Wild Hunt.',
   },
   {
     id: 'lupa.skill.foebreaker',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Foebreaker' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('304.46%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('304.46%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Consumes all Wolflame, enters Burning Matchpoint.',
   },
   {
     id: 'lupa.midair.attack-stage1-2',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Mid-air:Attack Stage 1-2' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('76.73% → 77.23%+19.31%×4'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('76.73% → 77.23%+19.31%×4'), category: 'basicDmg', basis: 'ATK' },
     note: "Builds toward Firestrike. Fixed 2026-09-02: WuWa's own general mechanic (Mid-air/Plunging Attacks inherit Basic ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure — listed under \"Basic Attack — Flaming Star\", not Heavy Attack — confirms basicDmg. Note the contrast with Mid-air Attack STAGE 3, which gets explicitly REPLACED by Firestrike (its own block, lupa.heavy.firestrike, correctly heavyDmg) — the base Stage 1-2 combo modeled here stays basicDmg.",
   },
   {
     id: 'lupa.heavy.firestrike',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Firestrike' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('28.48%×2'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('28.48%×2'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Replaces Mid-air Attack Stage 3 at 50+ Wolflame; considered Heavy ATK DMG. Consumes 50 Wolflame, grants 1 Wolfaith.',
   },
   {
     id: 'lupa.heavy.wolfs-claw',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: "Heavy ATK:Wolf's Claw" },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('72.15%+18.04%×4+96.19%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('72.15%+18.04%×4+96.19%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Replaces Heavy ATK at 50+ Wolflame and 1+ Wolfaith; consumes 50 Wolflame, grants 1 more Wolfaith.',
   },
   // Fixed 2026-09-02 against a fresh the source dump: this block was anchored to the BASE 'Dance With the
@@ -91,22 +92,22 @@ export const LUPA_BLOCKS = [
   // nothing to scope onto before now.
   {
     id: 'lupa.liberation.dance-with-the-wolf-climax',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Dance With the Wolf: Climax' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('75.63%+56.72%×4+453.75%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('75.63%+56.72%×4+453.75%'), category: 'libDmg', basis: 'ATK' },
     note: 'Forte finisher at 2 Wolfaith while in Burning Matchpoint, consumes both Wolfaith, removes Burning Matchpoint; considered Resonance Liberation DMG. Always the variant her real rotation uses — the weaker base Dance With the Wolf (no Burning Matchpoint requirement) is never actually cast in her modeled rotation per the source dump\'s own text.',
   },
   {
     id: 'lupa.outro.stand-by-me-warrior',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
     condition: { element: 'fusion' },
     effects: [
-      { stat: 'elemDmg', value: 20, stacking: 'refresh' },
-      { stat: 'basicDmg', value: 25, stacking: 'refresh' },
+      { stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' },
+      { stat: 'basicDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' },
     ],
     note: 'Swap-out buff to the next Resonator; no direct DMG.',
   },
@@ -114,25 +115,25 @@ export const LUPA_BLOCKS = [
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'lupa.libbuff.pack-hunt',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Fire-Kissed Glory' },
     timing: { duration: 35 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3 }],
+    effects: [{ stat: 'atkPct', value: 6, stacking: 'stacking', maxStacks: 3, source: 'self-kit' }],
     note: 'Pack Hunt: 6% base ATK +6%/Intro cast, up to 2 casts (18% max) — modeled as per-stack 6% x3 (base + 2 Intro casts), matching the real stacking mechanic rather than a flat 18%.',
   },
   {
     id: 'lupa.selfbuff.wildfire-banner',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Fire-Kissed Glory' },
     timing: { duration: 8 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 12, stacking: 'refresh' }],
+    effects: [{ stat: 'atkPct', value: 12, stacking: 'refresh', source: 'self-kit' }],
     note: 'Wildfire Banner, from Skill/Forte/Liberation casts — modeled on the Liberation cast used in her real rotation.',
   },
   {
     id: 'lupa.debuff.glory',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Fire-Kissed Glory' },
     timing: { duration: 35 },
     target: { scope: 'all-enemies' },
@@ -144,19 +145,19 @@ export const LUPA_BLOCKS = [
   //    each node's real mechanic) ──
   {
     id: 'lupa.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: { duration: 10 },
     target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 20 }],
+    effects: [{ stat: 'critRate', value: 20, source: 'self-kit' }],
     note: 'Crit Rate +20% for 10s (confirmed exact, corrected from an earlier wrong elemDmg categorization) — no specific cast anchor sourced beyond the flat value/duration, kept passive.',
   },
   {
     id: 'lupa.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'whole-team' },
-    effects: [{ stat: 'elemDmg', value: 20, stacking: 'stacking', maxStacks: 2 }],
+    effects: [{ stat: 'elemDmg', value: 20, stacking: 'stacking', maxStacks: 2, source: 'self-kit' }],
     // Fixed 2026-09-04: target scope was 'self' but the dump's own text is explicit — "grants the WHOLE
     // TEAM +20% Fusion DMG Bonus" — matching this file's own lupa.libbuff.pack-hunt (Pack Hunt is
     // likewise dump-confirmed whole-team and already correctly scoped that way). A self-only scope
@@ -166,10 +167,10 @@ export const LUPA_BLOCKS = [
   },
   {
     id: 'lupa.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Nowhere to Run!' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 100 }],
+    effects: [{ stat: 'libDmg', value: 100, source: 'self-kit' }],
     note: "Nowhere to Run!'s own DMG Multiplier +100% (recategorized from totalMult to libDmg per the re-audit — that move's own text confirms it's 'considered Resonance Liberation DMG') — cast-scoped (instant, no persistent duration). Nowhere to Run! replaces the next Intro Skill only in Wild Hunt state, which her real CHARACTER_ROTATIONS never enters, so this block is present but does not fire in the standard rotation.",
   },
   // Corrected 2026-09-02, 2nd pass: fixing the rotation-name bug above (Climax now really fires) exposed
@@ -189,26 +190,26 @@ export const LUPA_BLOCKS = [
   // id convention (sequenceGating.js).
   {
     id: 'lupa.chain.s4',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Dance With the Wolf: Climax' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('945.325%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('945.325%'), category: 'libDmg', basis: 'ATK' },
     note: "S4: Dance With the Wolf: Climax's own DMG Multiplier +125% (confirmed exact — also fixes a stale prior data bug where an earlier version of this file stored totalMult:25 instead of the sourced 125, a factor-of-5 error). Modeled as a proportional second hit at the same instant as lupa.liberation.dance-with-the-wolf-climax (945.325% = 125% of that block's own 756.26% base total), not a buff effect — see this block's own header comment for why a buff-shaped version can't actually apply here.",
   },
   {
     id: 'lupa.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 15 }],
+    effects: [{ stat: 'libDmg', value: 15, source: 'self-kit' }],
     note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
   },
   {
     id: 'lupa.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'defIgnore', value: 30 }],
+    effects: [{ stat: 'defIgnore', value: 30, source: 'self-kit' }],
     note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
   },
 ];

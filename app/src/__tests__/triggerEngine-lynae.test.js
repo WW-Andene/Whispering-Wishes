@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { LYNAE_BLOCKS } from '../engine/characterBlocks/lynae.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Lynae', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(LYNAE_BLOCKS, 'Lynae');
+  });
+
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Lynae'];
     expect(LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s1').effects[0].value).toBe(rc.s1.basicDmg);

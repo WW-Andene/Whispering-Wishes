@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CARLOTTA_BLOCKS } from '../engine/characterBlocks/carlotta.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Carlotta (Phase A audit, 2026-09-04)', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(CARLOTTA_BLOCKS, 'Carlotta');
+  });
+
   it('chain.s2/s4/s5 all use RESONANCE_CHAIN_DATA\'s own values', () => {
     const rc = RESONANCE_CHAIN_DATA['Carlotta'];
     expect(CARLOTTA_BLOCKS.find(b => b.id === 'carlotta.chain.s2').effects[0].value).toBe(rc.s2.totalMult);

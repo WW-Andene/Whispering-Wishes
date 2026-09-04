@@ -13,8 +13,13 @@ import { createStats, applyResonanceChain } from '../features/teams/calcEngine.j
 import { CHAR_BUFF_TABLE } from '../data/characters.js';
 import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
 import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Rover: Electro', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(ROVER_ELECTRO_BLOCKS, 'Rover: Electro');
+  });
+
   it('Resonance Chain S3-S6 buffs match RESONANCE_CHAIN_DATA (legacy applyResonanceChain)', () => {
     const legacyStats = createStats();
     applyResonanceChain(legacyStats, 'Rover: Electro', 6, true);

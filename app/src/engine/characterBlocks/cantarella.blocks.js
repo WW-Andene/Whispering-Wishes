@@ -17,30 +17,30 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Cantarella';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const CANTARELLA_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'cantarella.intro.ripple',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Cruise' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('42.25%×4') },
+    damage: { hits: parseSkillMultiplierHits('42.25%×4'), basis: 'ATK' },
   },
   {
     id: 'cantarella.basic.stage3',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Illusion Collapse Stage 3' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('72.57%×2'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('72.57%×2'), category: 'basicDmg' , basis: 'ATK' },
     note: 'Intro (Ripple) primes her next Basic ATK to skip straight to Stage 3 — only that primed stage is a real CHARACTER_ROTATIONS step, Stage 1-2 not separately modeled here.',
   },
   {
     id: 'cantarella.skill.graceful-step',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Dance with Shadows' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('73.60%×2'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('73.60%×2'), category: 'skillDmg' , basis: 'ATK' },
   },
   {
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): kit text is explicit — "Flowing
@@ -49,10 +49,10 @@ export const CANTARELLA_BLOCKS = [
     // Liberation DMG Bonus ones instead. Confirmed independently by the dump's own Damage Profile
     // (Liberation 0%, Basic ATK 69.1% — the dominant bucket).
     id: 'cantarella.liberation.flowing-suffocation',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Beneath the Sea' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('376.00%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('376.00%'), category: 'basicDmg' , basis: 'ATK' },
     note: 'Considered Basic Attack DMG per its own kit text despite being cast from the Liberation slot. Also applies Diffusion — see cantarella.liberation.diffusion-summons below for the modeled Coordinated ATK summon chain.',
   },
   {
@@ -66,7 +66,7 @@ export const CANTARELLA_BLOCKS = [
     // since Diffusion procs off literally any hit. `minProcInterval: 1` enforces the real "up to 1 per
     // second" cap even when multiple qualifying hits land in close succession.
     id: 'cantarella.liberation.diffusion-summons',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: {
       type: 'windowed-proc',
       opensOnProc: ['cast:Liberation:Beneath the Sea'],
@@ -76,7 +76,7 @@ export const CANTARELLA_BLOCKS = [
       minProcInterval: 1,
     },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('14.54%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('14.54%'), category: 'basicDmg' , basis: 'ATK' },
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): kit text is explicit — "summons
     // Dreamweavers for Coordinated Attacks (Havoc DMG, considered Basic Attack DMG)" — this was wrongly
     // `coordDmg` despite the override, silently rejecting real teammate Basic ATK DMG Bonus and wrongly
@@ -85,48 +85,48 @@ export const CANTARELLA_BLOCKS = [
   },
   {
     id: 'cantarella.heavy.delusive-dive',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Delusive Dive' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('53.05%×2') },
+    damage: { hits: parseSkillMultiplierHits('53.05%×2'), basis: 'ATK' },
     note: 'Consumes all 5 Trance and enters 8s Mirage state.',
   },
   {
     id: 'cantarella.skill.flickering-reverie',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Flickering Reverie' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('196.23%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('196.23%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Mirage-state Skill replacement, considered an Echo Skill cast. Inflicts Hazy Dream, whose follow-up Jolt hit (198.81%, considered Basic ATK DMG) is a separate auto-triggered proc off the target\'s next hit taken — not anchored to its own CHARACTER_ROTATIONS step, not modeled.',
   },
   {
     id: 'cantarella.forte.phantom-sting',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Phantom Sting 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('35.33%×3+62.93%×2+64.62%×4'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('35.33%×3+62.93%×2+64.62%×4'), category: 'basicDmg' , basis: 'ATK' },
     note: 'Mirage-state Basic ATK replacement (3-tap combo, builds Shiver).',
   },
   {
     id: 'cantarella.forte.perception-drain',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Perception Drain' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('667.99%×2'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('667.99%×2'), category: 'basicDmg' , basis: 'ATK' },
     note: 'Considered Basic ATK DMG per its own kit text and also counted as an Echo Skill cast. Also heals the team and re-applies Hazy Dream — not modeled (no DPS component).',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'cantarella.outro.gentle-tentacles',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 14, forfeitOnRecipientSwapOut: true },
     target: { scope: 'next-on-field' },
     condition: { element: 'havoc' },
     effects: [
-      { stat: 'elemDmg', value: 20, stacking: 'refresh' },
-      { stat: 'skillDmg', value: 25, stacking: 'refresh' },
+      { stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' },
+      { stat: 'skillDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' },
     ],
     // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): forfeitOnRecipientSwapOut now actually clamps
     // this to the buffed Resonator's own swap-out instant when it's shorter than the full 14s.
@@ -134,11 +134,11 @@ export const CANTARELLA_BLOCKS = [
   },
   {
     id: 'cantarella.selfbuff.inherent-skill-poison',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'passive' },
     timing: { duration: 10 },
     target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 6, stacking: 'stacking', maxStacks: 2 }],
+    effects: [{ stat: 'elemDmg', value: 6, stacking: 'stacking', maxStacks: 2, source: 'self-kit' }],
     note: 'Inherent Skill Poison: +6% Havoc DMG Bonus per Echo Skill cast, stacks up to 2x (12% cap) — modeled as per-stack 6% x2, matching the real stacking mechanic rather than a flat 12%. No Echo Skill cast step exists in CHARACTER_ROTATIONS to anchor the trigger precisely, kept passive per the source table\'s own condition text.',
   },
 
@@ -151,22 +151,22 @@ export const CANTARELLA_BLOCKS = [
     // text actually specifies. Rescoped to 3 scopedToBlockId entries, same multi-block-scoping pattern
     // already used elsewhere (Camellya's chain.s5-twining, Changli's TRIPARTITE_FLAMES_BLOCK_IDS.map).
     id: 'cantarella.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'totalMult', value: 50, scopedToBlockId: 'cantarella.skill.graceful-step' },
-      { stat: 'totalMult', value: 50, scopedToBlockId: 'cantarella.skill.flickering-reverie' },
-      { stat: 'totalMult', value: 50, scopedToBlockId: 'cantarella.forte.perception-drain' },
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'cantarella.skill.graceful-step', source: 'self-kit' },
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'cantarella.skill.flickering-reverie', source: 'self-kit' },
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'cantarella.forte.perception-drain', source: 'self-kit' },
     ],
     note: "Real scope: Graceful Step / Flickering Reverie / Perception Drain's own DMG Multiplier +50% ONLY (mixed Skill+Forte-that-counts-as-Basic-ATK scope, doesn't cleanly map to one existing stat category — kept as totalMult per the audit comment's own reasoning, now correctly scoped to just those 3 blocks). Also grants 1 Resonance Skill cast Trance recovery and Perception Drain interrupt immunity, both utility, not modeled.",
   },
   {
     id: 'cantarella.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 245 }],
+    effects: [{ stat: 'totalMult', value: 245, source: 'self-kit' }],
     note: "Jolt's own DMG Multiplier +245%. Jolt itself is a proc-only auto-trigger not anchored to a CHARACTER_ROTATIONS step (see cantarella.skill.flickering-reverie note), so this buff has no block to apply to in the current rotation simulation — recorded faithfully anyway per the audit's real value, same documented-but-currently-inert pattern as Buling's S6/libBuff overlap.",
   },
   {
@@ -178,10 +178,10 @@ export const CANTARELLA_BLOCKS = [
     // this now needs scopedToBlockId to stay scoped to only Flowing Suffocation, matching RESONANCE_
     // CHAIN_DATA's own updated s3.basicDmg row.
     id: 'cantarella.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Beneath the Sea' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'basicDmg', value: 370, scopedToBlockId: 'cantarella.liberation.flowing-suffocation' }],
+    effects: [{ stat: 'basicDmg', value: 370, scopedToBlockId: 'cantarella.liberation.flowing-suffocation', source: 'self-kit' }],
     note: "Real mechanic: scoped to Flowing Suffocation's own DMG Multiplier +370%, cast-scoped (instant, no persistent duration) — same single-hit-scoped pattern as Calcharo's S5. Also causes Flowing Suffocation to enter Mirage on cast, utility, not modeled.",
   },
   {
@@ -190,19 +190,19 @@ export const CANTARELLA_BLOCKS = [
     // basicDmg blocks (basic.stage3, forte.perception-drain, liberation.flowing-suffocation) that S6's
     // real kit text does NOT buff — only Phantom Sting specifically.
     id: 'cantarella.chain.s6-basic-mult',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'basicDmg', value: 80, scopedToBlockId: 'cantarella.forte.phantom-sting' }],
+    effects: [{ stat: 'basicDmg', value: 80, scopedToBlockId: 'cantarella.forte.phantom-sting', source: 'self-kit' }],
     note: "Phantom Sting's own DMG Multiplier +80% (Mirage-state Basic ATK combo, basicDmg category confirmed exact per the audit comment) — scoped to only that block.",
   },
   {
     id: 'cantarella.chain.s6-defignore',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Beneath the Sea' },
     timing: { duration: 10 },
     target: { scope: 'self' },
-    effects: [{ stat: 'defIgnore', value: 30 }],
+    effects: [{ stat: 'defIgnore', value: 30, source: 'self-kit' }],
     note: 'DEF Ignore +30% for 10s after casting Flowing Suffocation (confirmed exact per the audit comment) — split from the basicDmg node above since the two effects have different triggers/durations and the schema only allows one timing per block.',
   },
 ];

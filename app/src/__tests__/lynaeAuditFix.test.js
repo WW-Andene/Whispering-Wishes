@@ -44,15 +44,15 @@ describe('Lynae — audit fixes against a fresh the source dump', () => {
     expect(rc.s3).toEqual({ basicDmg: 90 });
     const s1 = LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s1');
     const s3 = LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s3');
-    expect(s1.effects[0]).toEqual({ stat: 'basicDmg', value: 120 });
-    expect(s3.effects[0]).toEqual({ stat: 'basicDmg', value: 90 });
+    expect(s1.effects[0]).toEqual({ stat: 'basicDmg', value: 120, source: 'self-kit' });
+    expect(s3.effects[0]).toEqual({ stat: 'basicDmg', value: 90, source: 'self-kit' });
   });
 
   it('S2 also grants a separate Outro-scoped +25% All DMG Amp to the incoming Resonator, on top of ' +
     'its unconditional self +25% All DMG Amp', () => {
     const s2outro = LYNAE_BLOCKS.find(b => b.id === 'lynae.chain.s2-outro-bonus');
     expect(s2outro).toBeDefined();
-    expect(s2outro.effects[0]).toEqual({ stat: 'allDmg', value: 25, stacking: 'refresh' });
+    expect(s2outro.effects[0]).toEqual({ stat: 'allDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' });
     expect(s2outro.target.scope).toBe('next-on-field');
   });
 

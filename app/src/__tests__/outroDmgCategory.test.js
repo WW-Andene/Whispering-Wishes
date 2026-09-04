@@ -20,7 +20,7 @@ describe("outroDmg category (the engine-merge history (git log) Phase 0.5 gap #1
     const outro = XIANGLI_YAO_BLOCKS.find(b => b.id === 'xianglyao.outro.chain-rule');
     const s5outro = XIANGLI_YAO_BLOCKS.find(b => b.id === 'xianglyao.chain.s5-outro');
     expect(outro.damage.category).toBe('outroDmg');
-    expect(s5outro.effects).toEqual([{ stat: 'outroDmg', value: 222 }]);
+    expect(s5outro.effects).toEqual([{ stat: 'outroDmg', value: 222, source: 'self-kit' }]);
   });
 
   it('at sequence 5, the real rotation deals more total damage than at sequence 0 (S5 outro bonus applies)', () => {

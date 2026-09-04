@@ -42,62 +42,62 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Chisa';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const CHISA_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'chisa.intro.reverberance-return',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Reverberance - Return' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category added Phase A audit 2026-09-04: was uncategorized, silently rejecting Resonance Skill
     // DMG Bonus — the dump's own Intro multiplier table literally labels this row "Skill DMG", same
     // generic-labeling convention already fixed for Aalto/Calcharo/Buling's own Intro rows.
-    damage: { hits: parseSkillMultiplierHits('95.43%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('95.43%'), category: 'skillDmg' , basis: 'ATK' },
   },
   {
     id: 'chisa.basic.stage2-rending-lunge',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Stage 2, Rending Lunge, Death Snip' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Stage 2 (from the 'Stage 1-2' row's 2nd segment) + Rending Lunge's own row, both real Basic
     // ATK DMG with no override text. Rending Lunge row added Phase A audit 2026-09-04 — was
     // entirely missing from SKILL_MULTIPLIERS despite being dump-sourced and named in this same
     // combined rotation step (bug class f).
-    damage: { hits: [...parseSkillMultiplierHits('9.55%+19.09%+66.81%'), ...parseSkillMultiplierHits('15.11%×4+90.66%')], category: 'basicDmg' },
+    damage: { hits: [...parseSkillMultiplierHits('9.55%+19.09%+66.81%'), ...parseSkillMultiplierHits('15.11%×4+90.66%')], category: 'basicDmg' , basis: 'ATK' },
   },
   {
     id: 'chisa.basic.death-snip',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Stage 2, Rending Lunge, Death Snip' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Split off from the combined Stage2/Rending-Lunge block (Phase A audit 2026-09-04) — the dump's
     // own kit text is explicit: "Counted as Resonance Liberation DMG." Was wrongly folded into the
     // basicDmg block above, silently rejecting real teammate Liberation DMG Bonus (and missing the
     // libDmg-gated chain buffs, S3/S5 below) on a real, sizeable hit.
-    damage: { hits: parseSkillMultiplierHits('29.81% + 14.91% + 104.34%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('29.81% + 14.91% + 104.34%') , category: 'libDmg', basis: 'ATK' },
   },
   {
     id: 'chisa.liberation.moment-of-nihility',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Moment of Nihility' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('954.29%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('954.29%'), category: 'libDmg' , basis: 'ATK' },
     note: 'Also heals the team for 117.60% ATK and enters Woven Myriad - Convergence, neither modeled (no DPS component).',
   },
   {
     id: 'chisa.skill.serrated-loop',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Serrated Loop' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category added Phase A audit 2026-09-04: was uncategorized, silently rejecting Resonance Skill
     // DMG Bonus — base Resonance Skill move with no "counted as X" override text, default skillDmg.
-    damage: { hits: parseSkillMultiplierHits('17.45%×8'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('17.45%×8'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Non-hold variant used (rotation does not specify holding). At full Ring of Chainsaw, entering this enters Chainsaw Mode.',
   },
   {
     id: 'chisa.forte.sawring-blitz-2-3',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Sawring - Blitz 2-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row 'Sawring - Blitz 1-3' has 3 arrow-separated stages; this step starts from stage 2
@@ -106,23 +106,23 @@ export const CHISA_BLOCKS = [
     // being explicit — "Sawring - Blitz [...] counted as Resonance Liberation DMG" — silently
     // rejecting real teammate Liberation DMG Bonus (and the libDmg-gated S3/S5 chain buffs below)
     // on a large chunk of her real Chainsaw-state damage.
-    damage: { hits: [...parseSkillMultiplierHits('10.64%×8'), ...parseSkillMultiplierHits('15.98%×8')], category: 'libDmg' },
+    damage: { hits: [...parseSkillMultiplierHits('10.64%×8'), ...parseSkillMultiplierHits('15.98%×8')], category: 'libDmg' , basis: 'ATK' },
     note: 'Stages 2-3 of the 3-stage Sawring - Blitz combo (Chainsaw Mode).',
   },
   {
     id: 'chisa.forte.sawring-eradication',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Sawring - Eradication' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category added Phase A audit 2026-09-04: was uncategorized despite the dump's own kit text
     // being explicit — "Sawring - Eradication [...] Counted as Resonance Liberation DMG." — silently
     // rejecting real teammate Liberation DMG Bonus on her single biggest Forte hit.
-    damage: { hits: parseSkillMultiplierHits('51.54% + 206.13%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('51.54% + 206.13%'), category: 'libDmg' , basis: 'ATK' },
     note: 'Real DMG also scales +2.59% per Ring of Chainsaw consumed, up to 100 — the per-Ring scalar is now modeled as chisa.forte.sawring-eradication-ring-scalar below (Phase 0.5 gap #7, fixed 2026-09-02), at the documented cap. Also grants the team a Shield, not modeled (no DPS component).',
   },
   {
     id: 'chisa.forte.sawring-eradication-ring-scalar',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Sawring - Eradication' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // the engine-merge history (git log) Phase 0.5 gap #7, fixed 2026-09-02: same proportional-second-hit pattern as
@@ -133,7 +133,7 @@ export const CHISA_BLOCKS = [
     // to 257.67% (51.54+206.13), ×2.59 (i.e. 2.59% per point × 100 points) = 667.365% additional hit.
     // category added Phase A audit 2026-09-04, same-category twin of the base Eradication hit above —
     // was also uncategorized (bug class d).
-    damage: { hits: [{ atkPct: 667.365 }], category: 'libDmg' },
+    damage: { hits: [{ atkPct: 667.365 }], category: 'libDmg', basis: 'ATK' },
     note: '+2.59% DMG Multiplier per Ring of Chainsaw consumed (up to 100), modeled at the documented cap (259% total, i.e. this hit = 2.59× the base hit).',
   },
 
@@ -141,27 +141,27 @@ export const CHISA_BLOCKS = [
   //    own note text — real, but entirely missing from CHAR_BUFF_TABLE['Chisa'].selfBuffs) ──
   {
     id: 'chisa.selfbuff.reverberance-return',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Reverberance - Return' },
     timing: { duration: 12 },
     target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 20 }],
+    effects: [{ stat: 'elemDmg', value: 20, source: 'self-kit' }],
     note: 'Inherent Skill: Intro grants +20% Havoc DMG/Healing Bonus for 12s. Sourced from CHARACTER_ROTATIONS\' own Intro step note (only the Havoc DMG half is modeled — Healing Bonus has no stat key in this schema); was entirely absent from CHAR_BUFF_TABLE[\'Chisa\'].selfBuffs (empty array) before this read.',
   },
   {
     id: 'chisa.outro.unraveling-law-zero',
-    source: SOURCE, kind: 'utility',
+    source: SOURCE, kind: 'utility', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 20 }, target: { scope: 'next-on-field' }, effects: [],
     note: 'Grants the incoming Resonator +3 max Negative Status/Electro Rage stacks for 20s — a resource-cap increase, not a %-stat buff, no DPS component representable in this schema.',
   },
   {
     id: 'chisa.debuff.thread-of-bane',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Serrated Loop' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'defIgnore', value: 18, stacking: 'refresh' }],
+    effects: [{ stat: 'defIgnore', value: 18, stacking: 'refresh', source: 'teammate-ally-action' }],
     // trigger retargeted Phase A audit 2026-09-04 (bug class c): was 'cast:Skill:Eye of Unraveling',
     // but CHARACTER_ROTATIONS['Chisa'] (the Loop Rotation) never casts base Skill — only Serrated
     // Loop — so this never fired in the modeled rotation at all. The dump's own kit text confirms
@@ -172,7 +172,7 @@ export const CHISA_BLOCKS = [
   },
   {
     id: 'chisa.debuff.havoc-bane',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Buff',
     trigger: { type: 'on-hit' },
     timing: { duration: 2 },
     target: { scope: 'all-enemies' },
@@ -184,26 +184,26 @@ export const CHISA_BLOCKS = [
   //    real mechanic where documented) ──
   {
     id: 'chisa.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Skill:Serrated Loop' },
     timing: { duration: 99 }, // sentinel: conditional on the target carrying Unseen Snare, no natural decay sourced
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 30 }],
+    effects: [{ stat: 'atkPct', value: 30, source: 'self-kit' }],
     // trigger retargeted Phase A audit 2026-09-04 (bug class c) — see chisa.debuff.thread-of-bane's
     // note for why 'Skill:Eye of Unraveling' never fired in the modeled Loop Rotation.
     note: 'ATK +30% on Unseen Snare (confirmed exact per the audit comment, NOT defShred as an earlier version of this table had it) — modeled as triggered by the Unseen Snare-applying cast.',
   },
   {
     id: 'chisa.chain.s2-alldmg',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'whole-team' },
-    effects: [{ stat: 'allDmg', value: 50 }],
+    effects: [{ stat: 'allDmg', value: 50, source: 'self-kit' }],
     note: 'Team +50% All-Attribute DMG for allies with Thread of Bane already active (confirmed exact per the audit comment) — the larger of S2\'s two real effects.',
   },
   {
     id: 'chisa.chain.s2-resshred',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'all-enemies' },
     effects: [{ stat: 'resShred', value: 10 }],
@@ -211,10 +211,10 @@ export const CHISA_BLOCKS = [
   },
   {
     id: 'chisa.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 120 }],
+    effects: [{ stat: 'libDmg', value: 120, source: 'self-kit' }],
     note: "Corrected 2026-09-02 against a fresh the source dump (RESONANCE_CHAIN_DATA.Chisa.s3 fixed the same way): real effect is Sawring-Blitz/Chainsaw Mode Dodge Counter/Sawring-Eradication DMG Multiplier +120% (a 2nd copy of Woven Myriad-Convergence's own +120%). Those 3 moves are explicitly 'considered Resonance Liberation DMG' per her own kit text, so modeled as libDmg. The smaller secondary effect (a further +120% to just the Ring-of-Chainsaw consumption bonus) is left unmodeled, same as S2's own resShred/allDmg split above.",
   },
   // S4 correctly has NO block — per its own audit comment ('improves Havoc Bane trigger rate
@@ -223,15 +223,15 @@ export const CHISA_BLOCKS = [
   // same "don't fabricate a DPS number for a non-DPS effect" rule already applied elsewhere in this file).
   {
     id: 'chisa.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Moment of Nihility' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 100 }],
+    effects: [{ stat: 'libDmg', value: 100, source: 'self-kit' }],
     note: "Moment of Nihility's own DMG Multiplier +100% (was totalMult:10 with no basis, corrected) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
   },
   {
     id: 'chisa.chain.s6',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Chain',
     trigger: { type: 'cast', on: 'Skill:Serrated Loop' },
     timing: { duration: 99 }, // sentinel: conditional on Unseen Snare-Finality state, no natural decay sourced
     target: { scope: 'all-enemies' },

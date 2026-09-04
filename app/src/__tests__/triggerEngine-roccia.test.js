@@ -4,8 +4,13 @@ import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposed
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { ROCCIA_BLOCKS } from '../engine/characterBlocks/roccia.blocks.js';
 import { getSkillIcon } from '../data/characters.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Roccia', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(ROCCIA_BLOCKS, 'Roccia');
+  });
+
   it('S1 stays correctly unmodeled (no block) — pure utility per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Roccia'];
     expect(rc.s1).toEqual({ totalMult: 0 });

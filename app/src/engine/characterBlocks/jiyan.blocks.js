@@ -21,47 +21,50 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Jiyan';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const JIYAN_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'jiyan.intro.tactical-strike',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Tactical Strike' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('198.81%') },
+    // category/basis added during Layer 4 migration: was uncategorized, silently rejecting Resonance
+    // Skill DMG Bonus. No override text names a different category, same default-to-skillDmg convention
+    // as Aalto/Calcharo/Encore/Denia/Galbrena/Iuno's own Intro blocks.
+    damage: { hits: parseSkillMultiplierHits('198.81%'), basis: 'ATK' },
     note: 'Builds Resolve toward the 60 cap.',
   },
   {
     id: 'jiyan.heavy.lance-of-qingloong',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Lance of Qingloong' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('65.52%×8 → 61.55%×8 → 66.76%×8'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('65.52%×8 → 61.55%×8 → 66.76%×8'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Qingloong Mode Heavy ATK replacement, 3-part combo, each part hits 8x; counted as Heavy ATK DMG. Fires 3x in the real rotation (real, repeated cast, not a bug — the first is interrupted early per the rotation note, but full-combo values are used for all 3 as a representative approximation).',
   },
   {
     id: 'jiyan.forte.emerald-storm-finale',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Emerald Storm: Finale' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Added 2026-09-04 (Finale-modeling pass, REMAINING_WORK.md 1c): at 30+ Resolve, casting
     // Liberation triggers Finale instead of Prelude — consumes 30 Resolve, counted as Heavy ATK DMG
     // per the kit text ("considered Heavy Attack DMG"), castable mid-air at low altitude.
-    damage: { hits: parseSkillMultiplierHits('142.91%×2+428.73%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('142.91%×2+428.73%'), category: 'heavyDmg', basis: 'ATK' },
     note: "At 30+ Resolve, Liberation cast consumes 30 Resolve for Finale instead of Prelude; counted as Heavy ATK DMG, castable mid-air at low altitude. NOT part of the real CHARACTER_ROTATIONS — the documented burst combo casts Liberation immediately after Intro, before Resolve (built only from Basic ATK/Intro hits) reaches the 30 threshold, so Prelude (free Qingloong Mode entry, feeding the far larger Lance of Qingloong Heavy ATK damage) is what actually fires; the source's own review explicitly recommends saving Resolve for Finale over the Skill's +20% DMG enhancement, but that recommendation only applies once Resolve is already banked outside the immediate post-Intro burst opener, not as a substitute for entering Qingloong Mode. Modeled here for completeness/S6 interaction only.",
   },
   {
     id: 'jiyan.skill.windqueller',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Windqueller' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('106.36%×4'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('106.36%×4'), category: 'skillDmg', basis: 'ATK' },
     note: '7s cooldown. Free +20% DMG (no Resolve cost) while in Qingloong Mode. Fires twice in the real rotation.',
   },
   {
     id: 'jiyan.outro.discipline',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Coordinated ATK triggered when the incoming Resonator lands a Heavy ATK (8s window, once per
@@ -70,7 +73,7 @@ export const JIYAN_BLOCKS = [
     // Fixed 2026-09-03: had no damage.category — the kit text explicitly calls this a "Coordinated
     // Attack", which maps directly to this schema's own `coordDmg` category (already a supported
     // EXTERNAL_STAT_KEYS entry), not a bare uncategorized hit.
-    damage: { hits: [{ atkPct: 313.40 }, { atkPct: 313.40 }], category: 'coordDmg' },
+    damage: { hits: [{ atkPct: 313.40 }, { atkPct: 313.40 }], category: 'coordDmg', basis: 'ATK' },
     note: 'Coordinated ATK triggered when the incoming Resonator lands a Heavy ATK (8s window, once per second, up to 2 procs) — modeled at the max 2-proc case, not the real per-ally-hit trigger condition.',
   },
 
@@ -81,37 +84,37 @@ export const JIYAN_BLOCKS = [
   // Windqueller -15, both pure resource/utility with ZERO DPS component.
   {
     id: 'jiyan.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Intro:Tactical Strike' },
     timing: { duration: 15 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 28 }],
+    effects: [{ stat: 'atkPct', value: 28, source: 'self-kit' }],
     note: 'Versatility: after Intro Skill Tactical Strike, gain 30 Resolve and ATK+28% for 15s, once per 15s (confirmed exact) — 30 Resolve grant not modeled (no DPS component).',
   },
   {
     id: 'jiyan.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Skill:Windqueller' },
     timing: { duration: 8 },
     target: { scope: 'self' },
     effects: [
-      { stat: 'critRate', value: 16 },
-      { stat: 'critDmg', value: 32 },
+      { stat: 'critRate', value: 16, source: 'self-kit' },
+      { stat: 'critDmg', value: 32, source: 'self-kit' },
     ],
     note: 'Spectation: casting Windqueller, Liberation Prelude, Finale, OR Intro Tactical Strike grants Crit Rate+16%/Crit DMG+32% for 8s (confirmed exact) — modeled on the Windqueller cast used in her real rotation.',
   },
   {
     id: 'jiyan.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Emerald Storm: Prelude' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'heavyDmg', value: 25, stacking: 'refresh' }],
+    effects: [{ stat: 'heavyDmg', value: 25, stacking: 'refresh', source: 'self-kit' }],
     note: 'Prudence: casting Liberation Prelude or Finale grants the WHOLE TEAM Heavy ATK DMG Bonus +25% for 30s (confirmed exact, team-wide per the audit comment).',
   },
   {
     id: 'jiyan.chain.s5-outro-mult',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-03: was `trigger:{type:'swap-out'}` with no `timing.duration` — a new variant of
     // the item-12 dead-buff architecture bug (the engine-architecture history (git log)): resolveHitComposedDps.js's
     // statsAtInstant() only reads `passiveBlocks` (trigger.type==='passive') and `buffWindows`
@@ -121,21 +124,21 @@ export const JIYAN_BLOCKS = [
     // own hit.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 120, scopedToBlockId: 'jiyan.outro.discipline' }],
+    effects: [{ stat: 'totalMult', value: 120, scopedToBlockId: 'jiyan.outro.discipline', source: 'self-kit' }],
     note: "Resolution: Outro Skill Discipline gains an ADDITIONAL +120% DMG Multiplier.",
   },
   {
     id: 'jiyan.chain.s5-atk-stack',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Intro:Tactical Strike' },
     timing: { duration: 8 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 3, stacking: 'stacking', maxStacks: 15 }],
+    effects: [{ stat: 'atkPct', value: 3, stacking: 'stacking', maxStacks: 15, source: 'self-kit' }],
     note: 'Resolution: ATK+3% per hit landed, stacking up to 15x (=+45% max) for 8s, instantly maxed after casting Tactical Strike — modeled as per-stack 3% x15 cap (matching the real stacking mechanic) rather than a flat 45%, anchored to the Tactical Strike cast that instant-maxes it. The real per-hit-landed stacking/8s-decay conditionality beyond that instant-max isn\'t modeled.',
   },
   {
     id: 'jiyan.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-04 (Phase A audit — this was a REAL, live bug, not the "no live DPS impact today"
     // claimed by the prior 2026-09-03 comment): `trigger:{type:'passive'}` with NO `scopedToBlockId`
     // means resolveHitComposedDps.js's statsAtInstant()/passiveBlocks loop applies this effect to
@@ -154,7 +157,7 @@ export const JIYAN_BLOCKS = [
     // Qingloong / Prelude branch — Finale isn't part of it, see that block's own note for why).
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 240, scopedToBlockId: 'jiyan.forte.emerald-storm-finale' }],
+    effects: [{ stat: 'totalMult', value: 240, scopedToBlockId: 'jiyan.forte.emerald-storm-finale', source: 'self-kit' }],
     note: "Fortitude: Momentum stacks (gained on Heavy ATK, Tactical Strike, or Windqueller use, cap 2) that Emerald Storm: Finale consumes entirely on cast, each stack giving Finale's OWN DMG Multiplier +120% (up to +240% at 2 stacks) — modeled at the 2-stack max case per the audit comment's own convention, scoped to the jiyan.forte.emerald-storm-finale damage block. The real per-stack/conditional mechanic (0/120/240 depending on Momentum at cast time) isn't modeled. Finale isn't cast in the real CHARACTER_ROTATIONS (see that block's note), so this scoping has no effect on the standard rotation's total.",
   },
 ];

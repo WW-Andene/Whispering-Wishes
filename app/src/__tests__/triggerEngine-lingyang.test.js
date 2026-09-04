@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { LINGYANG_BLOCKS } from '../engine/characterBlocks/lingyang.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Lingyang', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(LINGYANG_BLOCKS, 'Lingyang');
+  });
+
   it('S1/S2 stay correctly unmodeled (no block) — pure poise/resource-gain utility per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Lingyang'];
     expect(rc.s1).toEqual({ totalMult: 0 });
@@ -66,7 +71,7 @@ describe('triggerEngine parity — Lingyang', () => {
   it("Inherent Skill Lion's Pride was entirely missing — now modeled as a self-buff scoped only to the Intro hit", () => {
     const pride = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.selfbuff.lions-pride');
     expect(pride).toBeDefined();
-    expect(pride.effects[0]).toEqual({ stat: 'totalMult', value: 50, scopedToBlockId: 'lingyang.intro.lion-awakens' });
+    expect(pride.effects[0]).toEqual({ stat: 'totalMult', value: 50, scopedToBlockId: 'lingyang.intro.lion-awakens', source: 'self-kit' });
     expect(pride.trigger.on).toBe('Intro:Lion Awakens');
   });
 

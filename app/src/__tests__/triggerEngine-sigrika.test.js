@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { SIGRIKA_BLOCKS } from '../engine/characterBlocks/sigrika.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Sigrika', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(SIGRIKA_BLOCKS, 'Sigrika');
+  });
+
   it('S3 stays correctly unmodeled (no block) — pure resource-cap utility, zero DPS component, fixed 2026-09-02', () => {
     const rc = RESONANCE_CHAIN_DATA['Sigrika'];
     expect(rc.s3).toEqual({});

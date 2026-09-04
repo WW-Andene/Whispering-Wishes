@@ -23,12 +23,12 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Yuanwu';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const YUANWU_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'yuanwu.intro.thunder-bombardment',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Thunder Bombardment' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. No override
@@ -37,7 +37,7 @@ export const YUANWU_BLOCKS = [
   },
   {
     id: 'yuanwu.skill.thunder-wedge',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Thunder Wedge' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('23.86%'), category: 'skillDmg', basis: 'DEF' },
@@ -51,7 +51,7 @@ export const YUANWU_BLOCKS = [
     // Detonation" row with that exact label, confirming the split. Blazing Might's own hit stays libDmg
     // below; the detonation is now its own skillDmg block.
     id: 'yuanwu.liberation.blazing-might',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Blazing Might' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('174.96%×2'), category: 'libDmg', basis: 'DEF' },
@@ -59,7 +59,7 @@ export const YUANWU_BLOCKS = [
   },
   {
     id: 'yuanwu.forte.thunder-wedge-detonation-liberation',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Liberation:Blazing Might' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('59.65%'), category: 'skillDmg', basis: 'DEF' },
@@ -67,7 +67,7 @@ export const YUANWU_BLOCKS = [
   },
   {
     id: 'yuanwu.forte.rumbling-spark',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Rumbling Spark' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Combines Thunder Wedge Detonation (59.65%) with Rumbling Spark's own hit (108.54%) — the
@@ -77,7 +77,7 @@ export const YUANWU_BLOCKS = [
   },
   {
     id: 'yuanwu.outro.lightning-manipulation',
-    source: SOURCE, kind: 'utility',
+    source: SOURCE, kind: 'utility', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
     note: 'Depletes enemy Vibration Strength on swap-out — no DMG, no DPS-representable buff.',
@@ -95,10 +95,10 @@ export const YUANWU_BLOCKS = [
   // for 10s, a shield, not DPS.
   {
     id: 'yuanwu.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Blazing Might' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 50 }],
+    effects: [{ stat: 'libDmg', value: 50, source: 'self-kit' }],
     note: "Blazing Might's own DMG Multiplier +50% — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
   },
   // S6 correctly has NO block — nearby team gains DEF +32% for 3s, a team-wide DEF buff with no

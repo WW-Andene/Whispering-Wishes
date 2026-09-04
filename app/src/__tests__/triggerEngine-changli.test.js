@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CHANGLI_BLOCKS } from '../engine/characterBlocks/changli.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Changli', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(CHANGLI_BLOCKS, 'Changli');
+  });
+
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Changli'];
     const s1 = CHANGLI_BLOCKS.find(b => b.id === 'changli.chain.s1');
@@ -110,11 +115,11 @@ describe('triggerEngine parity — Changli', () => {
       expect(fired.has(id)).toBe(true);
     });
     const bonus2 = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.secret-strategist-charge-2');
-    expect(bonus2.effects[0]).toEqual({ stat: 'elemDmg', value: 5, scopedToBlockId: 'changli.skill.true-sight-charge-2' });
+    expect(bonus2.effects[0]).toEqual({ stat: 'elemDmg', value: 5, scopedToBlockId: 'changli.skill.true-sight-charge-2', source: 'self-kit' });
     const bonus3 = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.secret-strategist-charge-3');
-    expect(bonus3.effects[0]).toEqual({ stat: 'elemDmg', value: 10, scopedToBlockId: 'changli.skill.true-sight-charge-3' });
+    expect(bonus3.effects[0]).toEqual({ stat: 'elemDmg', value: 10, scopedToBlockId: 'changli.skill.true-sight-charge-3', source: 'self-kit' });
     const bonusConquest = CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.secret-strategist-conquest-1');
-    expect(bonusConquest.effects[0]).toEqual({ stat: 'elemDmg', value: 15, scopedToBlockId: 'changli.skill.true-sight-conquest-1' });
+    expect(bonusConquest.effects[0]).toEqual({ stat: 'elemDmg', value: 15, scopedToBlockId: 'changli.skill.true-sight-conquest-1', source: 'self-kit' });
     // charge-1 (0 stacks held) has NO scoped bonus block at all — 0×5% contributes nothing, correctly omitted
     expect(CHANGLI_BLOCKS.find(b => b.id === 'changli.inherent.secret-strategist-charge-1')).toBeUndefined();
   });

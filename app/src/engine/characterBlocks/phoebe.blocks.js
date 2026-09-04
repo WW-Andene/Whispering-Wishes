@@ -18,30 +18,30 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Phoebe';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const PHOEBE_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'phoebe.intro.golden-grace',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Golden Grace' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
     // rejecting Resonance Skill DMG Bonus. No override text names a different category, same default-
     // to-skillDmg convention as Calcharo/Encore/Jianxin/Lingyang/Aalto/Baizhi/Chixia/Danjin.
-    damage: { hits: parseSkillMultiplierHits('198.8%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('198.8%'), category: 'skillDmg', basis: 'ATK' },
   },
   {
     id: 'phoebe.skill.to-where-light-shines',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:To Where Light Shines' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('62.6%×2'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('62.6%×2'), category: 'skillDmg', basis: 'ATK' },
     note: 'Plants a Ring of Mirrors (30s, freezes hit targets 2s). Standing inside it swaps Basic ATK to Chamuel\'s Star for the rest of the rotation.',
   },
   {
     id: 'phoebe.forte.absolution-litany',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Absolution Litany' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. The dump's
@@ -49,20 +49,20 @@ export const PHOEBE_BLOCKS = [
     // holding Basic Attack at full Prayer) — it IS a Heavy Attack for weapon/echo DMG-bonus purposes,
     // matching the dump's "Heavy 43.8%" being by far her largest Damage Profile bucket (Starflash x4 +
     // Absolution Litany combined). Miscategorization bug class already found on Luuk Herssen's kit.
-    damage: { hits: parseSkillMultiplierHits('638.2%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('638.2%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Prayer gauge fills passively (5/s, 120 cap). Enters Absolution mode, applies 1 Spectro Frazzle stack, refills Divine Voice to 60.',
   },
   {
     id: 'phoebe.liberation.dawn-of-enlightenment',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Dawn of Enlightenment' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('401.6%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('401.6%'), category: 'libDmg', basis: 'ATK' },
     note: 'Base (non-Absolution-boosted) value; see phoebe.kit.dawn-of-enlightenment-absolution-mult below for the +255% Absolution DMG Multiplier bonus this cast gets in her real (Absolution-mode) rotation.',
   },
   {
     id: 'phoebe.skill.chamuels-star',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: "Skill:Chamuel's Star 1-3" },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was skillDmg, contradicting the
@@ -70,27 +70,27 @@ export const PHOEBE_BLOCKS = [
     // considered Basic Attack DMG)" — Chamuel's Star is a Basic ATK replacement, not Resonance Skill
     // DMG, so it was silently excluded from Basic ATK DMG Bonus buffs and wrongly credited to Skill DMG
     // Bonus ones instead. Same miscategorization-vs-dump-text bug class already found on Luuk Herssen.
-    damage: { hits: parseSkillMultiplierHits('59.4% → 39.8%×2 → 28.9%×6'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('59.4% → 39.8%×2 → 28.9%×6'), category: 'basicDmg', basis: 'ATK' },
     note: "Basic ATK replacement while standing inside the Ring of Mirrors; counted as Basic Attack DMG per the dump's own text.",
   },
   {
     id: 'phoebe.forte.starflash',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Starflash' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('82.7%×3'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('82.7%×3'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Heavy ATK replacement once Divine Voice > 0. Real rotation repeats "3 Basics into Starflash" 4x per Absolution Litany (60/15 Divine Voice) — only one CHARACTER_ROTATIONS step models this, so it fires once here rather than 4x. See phoebe.kit.starflash-frazzle-amp below for the +256% Frazzle-target DMG Amp bonus.',
   },
   {
     id: 'phoebe.outro.attentive-heart',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
     // excluded from the outroDmg weapon/echo bonus bucket — same recurring bug class already found on
     // Lynae's/Mornye's Outro blocks. Same outroDmg convention as Calcharo/Carlotta/Chixia/Encore/
     // Lingyang/Lynae/Rover: Havoc/Xiangli Yao.
-    damage: { hits: parseSkillMultiplierHits('528.4%'), category: 'outroDmg' },
+    damage: { hits: parseSkillMultiplierHits('528.4%'), category: 'outroDmg', basis: 'ATK' },
     note: 'Base (non-Absolution-boosted) value; see phoebe.kit.attentive-heart-absolution-mult below for the +255% Absolution DMG Multiplier bonus this cast gets in her real (Absolution-mode) rotation. In Confession mode this instead grants Silent Prayer (see phoebe.outro.confession-* blocks below), not modeled here since her real rotation stays in Absolution.',
   },
 
@@ -106,27 +106,27 @@ export const PHOEBE_BLOCKS = [
   // else this bug was found this session.
   {
     id: 'phoebe.kit.dawn-of-enlightenment-absolution-mult',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Liberation',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 255, scopedToBlockId: 'phoebe.liberation.dawn-of-enlightenment' }],
+    effects: [{ stat: 'totalMult', value: 255, scopedToBlockId: 'phoebe.liberation.dawn-of-enlightenment', source: 'self-kit' }],
     note: 'Dawn of Enlightenment deals a single (non-chained) hit with DMG Multiplier +255% while in Absolution mode (base kit, not Resonance Chain).',
   },
   {
     id: 'phoebe.kit.attentive-heart-absolution-mult',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 255, scopedToBlockId: 'phoebe.outro.attentive-heart' }],
+    effects: [{ stat: 'totalMult', value: 255, scopedToBlockId: 'phoebe.outro.attentive-heart', source: 'self-kit' }],
     note: 'Attentive Heart deals a final hit with DMG Multiplier +255% while in Absolution mode (base kit, not Resonance Chain).',
   },
   {
     id: 'phoebe.kit.starflash-frazzle-amp',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Forte',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     condition: { requiresStance: 'target carries Spectro Frazzle' },
-    effects: [{ stat: 'totalMult', value: 256, scopedToBlockId: 'phoebe.forte.starflash' }],
+    effects: [{ stat: 'totalMult', value: 256, scopedToBlockId: 'phoebe.forte.starflash', source: 'self-kit' }],
     note: 'Starflash gains +256% DMG Amp against targets already carrying Spectro Frazzle (base kit, not Resonance Chain).',
   },
 
@@ -134,7 +134,7 @@ export const PHOEBE_BLOCKS = [
   //    convention but inert in her real (Absolution-only) CHARACTER_ROTATIONS ──
   {
     id: 'phoebe.outro.confession-resshred',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 30 },
     target: { scope: 'all-enemies' },
@@ -144,12 +144,12 @@ export const PHOEBE_BLOCKS = [
   },
   {
     id: 'phoebe.outro.confession-frazzle-amp',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 30 },
     target: { scope: 'next-on-field' },
     condition: { requiresStance: 'Confession mode', assumedInactive: true },
-    effects: [{ stat: 'deepen', value: 100, stacking: 'refresh' }],
+    effects: [{ stat: 'deepen', value: 100, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Confession mode only: grants the on-field ally Silent Prayer (+100% Spectro Frazzle DMG Amp, plus -10% target Spectro RES and 50% longer Frazzle interval, neither modeled) — her real rotation stays in Absolution mode, so this block does not fire. The 18-Frazzle-stack debuff (frazzle stat, Level-scaling DOT) has no matching stat key in this schema, not modeled.',
   },
 
@@ -159,26 +159,26 @@ export const PHOEBE_BLOCKS = [
   // as the 3 kit-multiplier blocks above — all 3 were silent no-ops too.
   {
     id: 'phoebe.chain.s1',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 225, scopedToBlockId: 'phoebe.liberation.dawn-of-enlightenment' }],
+    effects: [{ stat: 'libDmg', value: 225, scopedToBlockId: 'phoebe.liberation.dawn-of-enlightenment', source: 'self-kit' }],
     note: "In Absolution, Dawn of Enlightenment's own DMG Multiplier +225% additional (in Confession instead +90% DMG Mult and max-stack Frazzle application, not modeled since her real rotation stays in Absolution).",
   },
   {
     id: 'phoebe.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'deepen', value: 120, scopedToBlockId: 'phoebe.outro.attentive-heart' }],
+    effects: [{ stat: 'deepen', value: 120, scopedToBlockId: 'phoebe.outro.attentive-heart', source: 'self-kit' }],
     note: 'In Absolution, Outro DMG to Frazzle-afflicted targets +120% Amp (in Confession instead increases Silent Prayer\'s own Frazzle DMG Amp by another 120%, not modeled) — scoped to the Outro (not category-gated, so scopedToBlockId is required to avoid over-crediting her whole kit).',
   },
   {
     id: 'phoebe.chain.s3',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 91, scopedToBlockId: 'phoebe.forte.starflash' }],
+    effects: [{ stat: 'heavyDmg', value: 91, scopedToBlockId: 'phoebe.forte.starflash', source: 'self-kit' }],
     // scopedToBlockId added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the note here previously
     // claimed heavyDmg was category-gated to Starflash alone, but phoebe.forte.absolution-litany was
     // just recategorized to heavyDmg too (it's the dump's own "Heavy Attack: Absolution Litany") — an
@@ -189,7 +189,7 @@ export const PHOEBE_BLOCKS = [
   },
   {
     id: 'phoebe.chain.s4',
-    source: SOURCE, kind: 'debuff',
+    source: SOURCE, kind: 'debuff', section: 'Chain',
     trigger: { type: 'cast', on: "Skill:Chamuel's Star 1-3" },
     timing: { duration: 30 },
     target: { scope: 'all-enemies' },
@@ -198,20 +198,20 @@ export const PHOEBE_BLOCKS = [
   },
   {
     id: 'phoebe.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Intro:Golden Grace' },
     timing: { duration: 15 },
     target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 12 }],
+    effects: [{ stat: 'elemDmg', value: 12, source: 'self-kit' }],
     note: 'Casting Intro Skill Golden Grace grants +12% Spectro DMG Bonus for 15s.',
   },
   {
     id: 'phoebe.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Skill:To Where Light Shines' },
     timing: { duration: 20 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 10 }],
+    effects: [{ stat: 'atkPct', value: 10, source: 'self-kit' }],
     note: 'In Absolution/Confession, summoning a Ring of Mirrors (Resonance Skill cast) grants +10% ATK for 20s. Also triggers one free extra Starflash — modeled as a separate real damage block, phoebe.chain.s6-free-starflash below. The +2s stagnation/all-target application is non-DPS CC utility, still not modeled.',
   },
   {
@@ -222,10 +222,10 @@ export const PHOEBE_BLOCKS = [
     // Camellya's chain.s6-perennial. 82.7%×3 = 248.1%. Anchored to the same Ring of Mirrors cast as
     // chain.s6 above; sN-suffix gates this to sequence 6 only.
     id: 'phoebe.chain.s6-free-starflash',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Skill:To Where Light Shines' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: [{ atkPct: 248.1 }], category: 'heavyDmg' },
+    damage: { hits: [{ atkPct: 248.1 }], category: 'heavyDmg', basis: 'ATK' },
     note: 'S6: summoning a Ring of Mirrors triggers one free extra Starflash (no Divine Voice cost, not counted as a Heavy Attack cast) — reuses Starflash\'s own 82.7%×3 multiplier, gated to sequence 6.',
   },
 ];

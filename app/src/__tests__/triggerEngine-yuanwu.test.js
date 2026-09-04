@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../da
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { YUANWU_BLOCKS } from '../engine/characterBlocks/yuanwu.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Yuanwu', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(YUANWU_BLOCKS, 'Yuanwu');
+  });
+
   it('S1-S4/S6 stay correctly unmodeled (no block) — no matching DPS category per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Yuanwu'];
     ['s1', 's2', 's3', 's4', 's6'].forEach(s => expect(rc[s]).toEqual({}));

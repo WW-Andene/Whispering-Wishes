@@ -15,8 +15,13 @@ import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { SHOREKEEPER_BLOCKS } from '../engine/characterBlocks/shorekeeper.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Shorekeeper', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(SHOREKEEPER_BLOCKS, 'Shorekeeper');
+  });
+
   it('outro All DMG Amp matches CHAR_BUFF_TABLE.outroBuffs', () => {
     const legacy = CHAR_BUFF_TABLE['Shorekeeper'].outroBuffs[0];
     const block = SHOREKEEPER_BLOCKS.find(b => b.id === 'shorekeeper.outro.binary-butterfly');

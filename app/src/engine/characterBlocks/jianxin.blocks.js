@@ -15,41 +15,41 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Jianxin';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const JIANXIN_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'jianxin.intro.essence-of-tao',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Essence of Tao' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
     // rejecting Resonance Skill DMG Bonus on a real ~5% (7,749) damage share. The dump's own multiplier
     // table labels this row generically "Skill Damage", same convention as Augusta/Calcharo/Encore.
-    damage: { hits: parseSkillMultiplierHits('33.80%×3+67.60%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('33.80%×3+67.60%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Pulls enemies in, builds Chi toward the Forte gauge.',
   },
   {
     id: 'jianxin.basic.fengyiquan',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Fengyiquan Stage 1-4' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('69.46% → 26.64%×2+79.90% → 41.75%×4 → 113.40%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('69.46% → 26.64%×2+79.90% → 41.75%×4 → 113.40%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Builds Chi toward the 120 max.',
   },
   {
     id: 'jianxin.skill.calming-air',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Calming Air' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row is 'Calming Air: Chi Counter / Chi Parry' with 2 alternative values — the Chi Counter
     // variant (fired "on being attacked") is used as the primary/representative value.
-    damage: { hits: parseSkillMultiplierHits('334.60%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('334.60%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Hold Skill for Parry Stance — Chi Counter on being attacked (used here), Chi Parry on early release (258.73%, not separately modeled). 12s cooldown.',
   },
   {
     id: 'jianxin.forte.primordial-chi-spiral',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Primordial Chi Spiral' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row has 4 separate named components (Pushing Punch / Zhoutian Progress Continuous DMG /
@@ -62,26 +62,26 @@ export const JIANXIN_BLOCKS = [
     // mistranscribed as "Basic ATK" in both this row's own note and the CHARACTER_ROTATIONS step note,
     // both corrected this pass) — Forte states that auto-replace the Heavy Attack input are Heavy ATK
     // DMG by convention, same as Yinlin's Forte:Chameleon Cipher.
-    damage: { hits: parseSkillMultiplierHits('248.52%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('248.52%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'At max Chi, a channeled shield-and-DMG state with 50% DMG reduction and interrupt resistance. Only the Pushing Punch opening hit is modeled; Zhoutian Progress continuous tick (24.86%/tick) and the Shock/Yielding Pull variants are not.',
   },
   {
     id: 'jianxin.liberation.purification-force-field',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Purification Force Field' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('29.83% + 636.20%'), category: 'libDmg' },
+    damage: { hits: parseSkillMultiplierHits('29.83% + 636.20%'), category: 'libDmg', basis: 'ATK' },
     note: 'Pulls targets into the field, then explodes on expiry. 20s cooldown.',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'jianxin.outro.transcendence',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 14 },
     target: { scope: 'next-on-field' },
-    effects: [{ stat: 'libDmg', value: 38, stacking: 'refresh' }],
+    effects: [{ stat: 'libDmg', value: 38, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Grants the incoming Resonator this buff — no direct DMG on the Outro itself.',
   },
 
@@ -95,21 +95,21 @@ export const JIANXIN_BLOCKS = [
   // Parry Stance, pure cooldown/availability utility.
   {
     id: 'jianxin.chain.s4',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:Primordial Chi Spiral' },
     timing: { duration: 14 },
     target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 80 }],
+    effects: [{ stat: 'libDmg', value: 80, source: 'self-kit' }],
     note: 'While performing Forte Circuit Heavy Attack: Primordial Chi Spiral, Resonance Liberation Purification Force Field DMG +80% for 14s (confirmed exact) — the "only while/shortly after the Forte channel" gating is approximated by anchoring the trigger to the channel\'s own cast.',
   },
   // S5 correctly has NO block — the range/AoE of Purification Force Field is increased by 33%, a pure
   // area-of-effect increase with ZERO DPS component (does not change per-hit or explosion multipliers).
   {
     id: 'jianxin.chain.s6-chi-counter',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Forte:Primordial Chi Spiral' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: [{ atkPct: 556.67 }], category: 'heavyDmg' },
+    damage: { hits: [{ atkPct: 556.67 }], category: 'heavyDmg', basis: 'ATK' },
     note: 'Truth from Within: during the Primordial Chi Spiral channel, after performing Pushing Punch, Jianxin can use an enhanced Special Chi Counter once every 5s — a discrete extra proc dealing 556.67% ATK Aero DMG (counted as Heavy Attack DMG), modeled directly with the real sourced figure instead of the flat totalMult approximation the source table itself zeroed out (same "discrete proc, not a modifier" treatment as Yinlin\'s S6 Furious Thunder). Also grants a bonus Zhoutian Progress 4 shield, not modeled.',
   },
 ];

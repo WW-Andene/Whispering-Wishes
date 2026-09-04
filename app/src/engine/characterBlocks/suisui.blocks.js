@@ -13,12 +13,12 @@ import { parseSkillMultiplierHits } from '../math/hitParser.js';
 
 const SOURCE = 'Suisui';
 
-/** @type {import('../triggerBlocks.schema.js').TriggerBlock[]} */
+/** @type {import('../schema/block.schema.js').TriggerBlock[]} */
 export const SUISUI_BLOCKS = [
   // ── Damage blocks (from SKILL_MULTIPLIERS) ──
   {
     id: 'suisui.intro.tinkling-jade',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Tinkling Jade' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('28.63%'), category: 'introDmg', basis: 'HP' },
@@ -26,64 +26,64 @@ export const SUISUI_BLOCKS = [
   },
   {
     id: 'suisui.skill.drizzle-stance-thrust',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Drizzle Stance thrust' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('11.93%×6+71.58%'), category: 'skillDmg' },
+    damage: { hits: parseSkillMultiplierHits('11.93%×6+71.58%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Restores Floral Epistle toward her Outro payoff.',
   },
   {
     id: 'suisui.basic.drizzle-stance-stage1-4',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Drizzle Stance Stage 1-4' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('19.57%×4 → 31.81%×3+15.91%×4 → 13.76%×12 → 159.05%'), category: 'basicDmg' },
+    damage: { hits: parseSkillMultiplierHits('19.57%×4 → 31.81%×3+15.91%×4 → 13.76%×12 → 159.05%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Builds Floral Epistle toward the 600 cap; Stage 4 also inflicts Glacio Chafe.',
   },
   {
     id: 'suisui.heavy.drizzle-stance',
-    source: SOURCE, kind: 'damage',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Drizzle Stance' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('11.93%×10+119.29%'), category: 'heavyDmg' },
+    damage: { hits: parseSkillMultiplierHits('11.93%×10+119.29%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Builds Floral Epistle. Not used in her real (Basic-ATK-focused) CHARACTER_ROTATIONS, so this block is present per S5\'s own kit scope but does not fire in the standard rotation.',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'suisui.outro.rippling-waters',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'allDmg', value: 25, stacking: 'refresh' }],
+    effects: [{ stat: 'allDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Unconditional. Also consumes banked Floral Epistle to enter Roaming Transcendent (Plume Steps, healing, Reflecting Shadows), not modeled.',
   },
   {
     id: 'suisui.outro.rippling-waters-ceaseless-landscape',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 6 },
     target: { scope: 'whole-team' },
     condition: { requiresStance: '400+ Floral Epistle consumed, Ceaseless Landscape active' },
-    effects: [{ stat: 'allDmg', value: 12, stacking: 'refresh' }],
+    effects: [{ stat: 'allDmg', value: 12, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Roaming Transcendent: up to +12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s — modeled at the documented cap, not the real ER-scaling formula.',
   },
   {
     id: 'suisui.selfbuff.sky-over-water-critrate',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'cast', on: 'Intro:Tinkling Jade' },
     timing: { duration: 999 }, // sentinel: gated once every 25s, no natural decay sourced beyond the gate
     target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 80 }],
+    effects: [{ stat: 'critRate', value: 80, source: 'self-kit' }],
     note: 'Inherent Skill Sky Over Water: Awakening Spring/Tinkling Jade hit, once every 25s — the 25s gate is not modeled, kept passive on the Intro cast.',
   },
   {
     id: 'suisui.selfbuff.sky-over-water-elemdmg',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'cast', on: 'Intro:Tinkling Jade' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 240 }],
+    effects: [{ stat: 'elemDmg', value: 240, source: 'self-kit' }],
     note: 'Same Sky Over Water trigger, also grants +240% Glacio DMG on that one hit (sourced from CHAR_BUFF_TABLE\'s own condition text, not represented as a structured selfBuffs entry there) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo\'s S5.',
   },
 
@@ -94,11 +94,11 @@ export const SUISUI_BLOCKS = [
   // +100%, interruption immunity on several Drizzle-stance moves, zero real DPS component.
   {
     id: 'suisui.chain.s2',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Song of Thoroughfare' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'critDmg', value: 50, stacking: 'refresh' }],
+    effects: [{ stat: 'critDmg', value: 50, stacking: 'refresh', source: 'self-kit' }],
     note: 'Team Crit DMG +50% for 30s, conditional on inflicting Negative Status/consuming Havoc Bane (confirmed exact) — modeled anchored to the Liberation cast, which deals with Negative Status stack caps.',
   },
   // S3 correctly has NO block — an extra Basic ATK Stage 4 combo route, Kingfisher stack restoring
@@ -107,21 +107,21 @@ export const SUISUI_BLOCKS = [
   // matching category in this schema.
   {
     id: 'suisui.chain.s5',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'basicDmg', value: 100 },
-      { stat: 'heavyDmg', value: 100 },
+      { stat: 'basicDmg', value: 100, source: 'self-kit' },
+      { stat: 'heavyDmg', value: 100, source: 'self-kit' },
     ],
     note: 'Basic Attack - Drizzle Stance AND Heavy Attack - Drizzle Stance DMG Multipliers both +100% (two moves, confirmed exact) — kept passive, applies to both damage blocks above.',
   },
   {
     id: 'suisui.chain.s6',
-    source: SOURCE, kind: 'buff',
+    source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Intro:Tinkling Jade' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 500 }],
+    effects: [{ stat: 'critDmg', value: 500, source: 'self-kit' }],
     note: "Crit DMG +500% on Intro Skill - Tinkling Jade and Resonance Skill - Awakening Spring (both HP%-scaling openers, confirmed exact) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. Awakening Spring is not used in her real rotation, so only the Tinkling Jade trigger is modeled.",
   },
 ];

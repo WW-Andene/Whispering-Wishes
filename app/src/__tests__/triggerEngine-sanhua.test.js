@@ -3,8 +3,13 @@ import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { SANHUA_BLOCKS } from '../engine/characterBlocks/sanhua.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Sanhua', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(SANHUA_BLOCKS, 'Sanhua');
+  });
+
   it('S2 stays correctly unmodeled (no block) — pure utility per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Sanhua'];
     expect(rc.s2).toEqual({});
@@ -38,8 +43,8 @@ describe('triggerEngine parity — Sanhua', () => {
   it("Avalanche and S5 are now correctly scoped to sanhua.forte.ice-burst only, no longer over-crediting Detonate", () => {
     const avalanche = SANHUA_BLOCKS.find(b => b.id === 'sanhua.selfbuff.avalanche');
     const s5 = SANHUA_BLOCKS.find(b => b.id === 'sanhua.chain.s5');
-    expect(avalanche.effects[0]).toEqual({ stat: 'skillDmg', value: 20, scopedToBlockId: 'sanhua.forte.ice-burst' });
-    expect(s5.effects[0]).toEqual({ stat: 'critDmg', value: 100, scopedToBlockId: 'sanhua.forte.ice-burst' });
+    expect(avalanche.effects[0]).toEqual({ stat: 'skillDmg', value: 20, scopedToBlockId: 'sanhua.forte.ice-burst', source: 'self-kit' });
+    expect(s5.effects[0]).toEqual({ stat: 'critDmg', value: 100, scopedToBlockId: 'sanhua.forte.ice-burst', source: 'self-kit' });
   });
 
   it("Intro (Freezing Thorns) is skillDmg-categorized (was uncategorized)", () => {

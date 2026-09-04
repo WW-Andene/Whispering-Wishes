@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { GALBRENA_BLOCKS } from '../engine/characterBlocks/galbrena.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Galbrena', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(GALBRENA_BLOCKS, 'Galbrena');
+  });
+
   it('S1 models the real per-stack mechanic (2 x40 stacks = 80 max)', () => {
     const rc = RESONANCE_CHAIN_DATA['Galbrena'];
     const s1 = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.chain.s1');
@@ -99,7 +104,7 @@ describe('triggerEngine parity — Galbrena', () => {
     const block = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.selfbuff.ascent-fusion-amp');
     expect(block.trigger).toEqual({ type: 'cast', on: 'Heavy ATK:Ascent of Malice' });
     expect(block.condition.element).toBe('fusion');
-    expect(block.effects[0]).toEqual({ stat: 'elemDmg', value: 35 });
+    expect(block.effects[0]).toEqual({ stat: 'elemDmg', value: 35, source: 'self-kit' });
   });
 
   // Fixed 2026-09-04 (Phase A audit): the rotation previously modeled only a single Basic Attack

@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../d
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { MORNYE_BLOCKS } from '../engine/characterBlocks/mornye.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Mornye', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(MORNYE_BLOCKS, 'Mornye');
+  });
+
   it('S1/S4 stay correctly unmodeled (no block) — RESONANCE_CHAIN_DATA fixed 2026-09-03 to match, was stale nonzero placeholders', () => {
     const rc = RESONANCE_CHAIN_DATA['Mornye'];
     expect(rc.s1).toEqual({});

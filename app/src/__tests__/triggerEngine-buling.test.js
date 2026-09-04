@@ -3,8 +3,13 @@ import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_D
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { BULING_BLOCKS } from '../engine/characterBlocks/buling.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Buling', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(BULING_BLOCKS, 'Buling');
+  });
+
   it("dmgFocus is ['Basic ATK', 'Skill', 'Liberation'] — was ['Liberation'] only despite 5 real basicDmg blocks and 1 real skillDmg block firing every real rotation loop", () => {
     expect(CHARACTER_DATA['Buling'].dmgFocus).toEqual(['Basic ATK', 'Skill', 'Liberation']);
   });
