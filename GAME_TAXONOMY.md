@@ -23,6 +23,8 @@ Status: draft, under active discussion — not yet built into code.
 Game
 ├── Character
 │   └── <Name>                    (e.g. Aalto, Jinhsi, Rover: Electro — 58 total, Jingran unreleased/no blocks yet)
+│       ├── Rarity
+│       ├── Element
 │       ├── Stats
 │       ├── Kit
 │       │   ├── Basic ATK
@@ -48,11 +50,30 @@ Game
 │
 ├── Weapon
 │   └── <Name>
-│       └── Stats
+│       ├── Rarity
+│       ├── Type            (Sword / Broadblade / Pistols / Gauntlets / Rectifier)
+│       ├── Stats
+│       │   ├── Main        (baseAtk)
+│       │   └── Sub         (fixed passive-scaling substat, e.g. Crit Rate/Crit DMG/Energy Regen)
+│       └── Buff             (passive effect)
 │
 ├── Echo
 │   └── <Name>
-│       └── Stats
+│       ├── Sonata           (set — `sets` in echoes.js, an echo can belong to 2)
+│       ├── Cost              (1 / 3 / 4)
+│       ├── Stats
+│       │   ├── Main         (fixed per cost tier)
+│       │   └── Substats      (5 random rolls — NOT a 3-tier Main/Secondary/Sub split, that's not
+│       │                      how the game actually works; corrected from an earlier draft of this doc)
+│       └── Echo Skill        (4-cost echoes only — the active skill/buff)
+│
+├── Enemy
+│   └── <Name>
+│       ├── Rank              (Common / Elite / Calamity / Overlord — the real field name is `rank`,
+│       │                      not "Danger level"; corrected from an earlier draft of this doc)
+│       ├── Type
+│       └── Stats             (level-scaled HP/ATK/DEF curve, per enemyLevelStats.json;
+│                               + stagger data, per enemyStaggerStats.json)
 │
 ├── Element
 │   └── Glacio / Fusion / Electro / Aero / Spectro / Havoc / Physical
