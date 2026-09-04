@@ -274,6 +274,44 @@ urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
 
+**Jiyan — Emerald Storm: Finale modeled (2026-09-04):** the prior Jiyan
+audit (see the `jiyan.chain.s6` fix above) found S6 ("Fortitude",
+`totalMult: 240`) scoped to `jiyan.forte.emerald-storm-finale`, a damage
+block that didn't exist — Emerald Storm: Finale (the Forte-window
+liberation replacement at 30+ Resolve) had no damage modeled anywhere.
+Added it:
+- `SKILL_MULTIPLIERS.Jiyan`'s 'Forte' row already carried the correct
+  Lv.10 value (`142.91%×2+428.73%`, from `Characters data dump/Jiyan/Jiyan.md`'s
+  own Forte Circuit table) — no change needed there.
+- New block `jiyan.forte.emerald-storm-finale` in `jiyan.blocks.js`:
+  `trigger: {type:'cast', on:'Forte:Emerald Storm: Finale'}`,
+  `damage.category: 'heavyDmg'` (kit text: "considered Heavy Attack DMG"),
+  hits parsed from the same multiplier string.
+- `jiyan.chain.s6`'s scoped `totalMult` effect now has a real target —
+  it correctly boosts only Finale's own damage (test added proving this,
+  and proving Intro/other blocks stay untouched).
+- **Deliberately NOT added to `CHARACTER_ROTATIONS.Jiyan`**: the dump's
+  own documented "Burst Combo" and "Double Dragon Combo" both cast
+  Liberation (which fires as Prelude, not Finale) immediately after Intro
+  — at that point Resolve has only been built by the Intro hit itself,
+  nowhere near the 30-Resolve threshold Finale requires (Resolve builds
+  from Basic Attack/Intro hits and decays after 15s without a hit; the
+  documented openers don't loop Basic Attacks first to bank it). The
+  dump's Review section does say to "save Resolve for the empowered
+  Ultimate [Finale] rather than the mediocre Skill enhancement" — but
+  that's guidance for players who already have 30+ Resolve banked when
+  they choose how to spend it (e.g. mid-Qingloong-Mode, between Lance of
+  Qingloong reps), not an instruction to delay or restructure the burst
+  opener to force Finale in place of Prelude, which would forfeit the
+  Qingloong Mode entry that the entire Lance of Qingloong damage (81.7%
+  of the dump's own Damage Profile) depends on. Forcing Finale into the
+  modeled rotation would misrepresent the actual optimal play; the block
+  + S6 interaction are modeled standalone and tested instead.
+- 4 new tests in `triggerEngine-jiyan.test.js`: the block's category/hits/
+  trigger match `SKILL_MULTIPLIERS`, the rotation correctly omits Finale
+  (and still casts Prelude), and S6's totalMult boosts Finale without
+  leaking to Intro. Full suite green (1471/1471).
+
 **Open question (2026-09-04):** Lumi's own dump Damage Profile shows a
 real 26.3% "Skill" damage bucket, but no block in `lumi.blocks.js` is
 skillDmg-categorized for anywhere near that share (only Intro, ~4.1%).

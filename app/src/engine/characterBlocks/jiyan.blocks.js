@@ -8,6 +8,13 @@
 // component, per the audit's own zeroing. S5's per-hit stacking mechanic and S6's
 // per-Momentum-stack conditionality are approximated at their documented ceiling
 // values, matching the source table's own convention.
+//
+// Added 2026-09-04 (Finale-modeling pass, REMAINING_WORK.md 1c): 'jiyan.forte.emerald-storm-finale'
+// now models Emerald Storm: Finale's own damage (142.91%×2+428.73%, heavyDmg — "considered Heavy
+// Attack DMG" per the kit text), giving S6's previously-inert scoped totalMult a real target.
+// Deliberately NOT added to CHARACTER_ROTATIONS: the documented burst combo casts Liberation
+// immediately after Intro, before Resolve (built only from Basic ATK/Intro hits) reaches the 30
+// threshold needed for Finale to replace Prelude — see the block's own note for the full reasoning.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -32,6 +39,17 @@ export const JIYAN_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('65.52%×8 → 61.55%×8 → 66.76%×8'), category: 'heavyDmg' },
     note: 'Qingloong Mode Heavy ATK replacement, 3-part combo, each part hits 8x; counted as Heavy ATK DMG. Fires 3x in the real rotation (real, repeated cast, not a bug — the first is interrupted early per the rotation note, but full-combo values are used for all 3 as a representative approximation).',
+  },
+  {
+    id: 'jiyan.forte.emerald-storm-finale',
+    source: SOURCE, kind: 'damage',
+    trigger: { type: 'cast', on: 'Forte:Emerald Storm: Finale' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // Added 2026-09-04 (Finale-modeling pass, REMAINING_WORK.md 1c): at 30+ Resolve, casting
+    // Liberation triggers Finale instead of Prelude — consumes 30 Resolve, counted as Heavy ATK DMG
+    // per the kit text ("considered Heavy Attack DMG"), castable mid-air at low altitude.
+    damage: { hits: parseSkillMultiplierHits('142.91%×2+428.73%'), category: 'heavyDmg' },
+    note: "At 30+ Resolve, Liberation cast consumes 30 Resolve for Finale instead of Prelude; counted as Heavy ATK DMG, castable mid-air at low altitude. NOT part of the real CHARACTER_ROTATIONS — the documented burst combo casts Liberation immediately after Intro, before Resolve (built only from Basic ATK/Intro hits) reaches the 30 threshold, so Prelude (free Qingloong Mode entry, feeding the far larger Lance of Qingloong Heavy ATK damage) is what actually fires; the source's own review explicitly recommends saving Resolve for Finale over the Skill's +20% DMG enhancement, but that recommendation only applies once Resolve is already banked outside the immediate post-Intro burst opener, not as a substitute for entering Qingloong Mode. Modeled here for completeness/S6 interaction only.",
   },
   {
     id: 'jiyan.skill.windqueller',
@@ -128,13 +146,15 @@ export const JIYAN_BLOCKS = [
     // jiyan.outro.discipline all by +240% totalMult — not just Finale's own multiplier as the kit
     // text requires ("each stack consumed granting Finale's own DMG Multiplier +120%"). This is the
     // same class of bug as the Jinhsi element-scoping bug: an effect meant to hit one named move
-    // leaking to the whole kit for want of a scope. Fixed by scoping to the (currently nonexistent)
-    // Finale damage block id, matching this file's own `jiyan.<slot>.<name>` id convention — this
-    // correctly makes the effect inert (Finale is never cast in the real CHARACTER_ROTATIONS, which
-    // stays under the 30-Resolve Lance of Qingloong branch) instead of leaking into the rest of the kit.
+    // leaking to the whole kit for want of a scope. Fixed by scoping to
+    // jiyan.forte.emerald-storm-finale, matching this file's own `jiyan.<slot>.<name>` id convention.
+    // Updated 2026-09-04 (Finale-modeling pass): that block now exists (see 'jiyan.forte.emerald-storm-
+    // finale' above), so this scoping is live — it correctly boosts ONLY Finale's own damage, still
+    // without touching the real CHARACTER_ROTATIONS (which stays under the 30-Resolve Lance of
+    // Qingloong / Prelude branch — Finale isn't part of it, see that block's own note for why).
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 240, scopedToBlockId: 'jiyan.forte.emerald-storm-finale' }],
-    note: "Fortitude: Momentum stacks (gained on Heavy ATK, Tactical Strike, or Windqueller use, cap 2) that Emerald Storm: Finale consumes entirely on cast, each stack giving Finale's OWN DMG Multiplier +120% (up to +240% at 2 stacks) — modeled at the 2-stack max case per the audit comment's own convention, scoped to a Finale damage block (jiyan.forte.emerald-storm-finale) that does not currently exist since Finale isn't used in the real CHARACTER_ROTATIONS. The real per-stack/conditional mechanic (0/120/240 depending on Momentum at cast time) isn't modeled.",
+    note: "Fortitude: Momentum stacks (gained on Heavy ATK, Tactical Strike, or Windqueller use, cap 2) that Emerald Storm: Finale consumes entirely on cast, each stack giving Finale's OWN DMG Multiplier +120% (up to +240% at 2 stacks) — modeled at the 2-stack max case per the audit comment's own convention, scoped to the jiyan.forte.emerald-storm-finale damage block. The real per-stack/conditional mechanic (0/120/240 depending on Momentum at cast time) isn't modeled. Finale isn't cast in the real CHARACTER_ROTATIONS (see that block's note), so this scoping has no effect on the standard rotation's total.",
   },
 ];
