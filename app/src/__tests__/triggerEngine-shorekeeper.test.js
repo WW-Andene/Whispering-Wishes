@@ -10,8 +10,10 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createStats } from '../features/teams/calcEngine.js';
-import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon } from '../data/characters.js';
 import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
+import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { SHOREKEEPER_BLOCKS } from '../engine/characterBlocks/shorekeeper.blocks.js';
 
 describe('triggerEngine parity — Shorekeeper', () => {
@@ -73,5 +75,26 @@ describe('triggerEngine parity — Shorekeeper', () => {
       const block = SHOREKEEPER_BLOCKS.find(b => b.id === id);
       expect(block.effects).toHaveLength(0);
     });
+  });
+
+  it("Flare Star Butterfly (added 2026-09-04, dimension 8: was entirely unmodeled despite firing as a guaranteed side effect of the modeled rotation) deals 4 real hits at 37.29% each, riding Illation's own cast", () => {
+    const butterfly = SHOREKEEPER_BLOCKS.find(b => b.id === 'shorekeeper.forte.flare-star-butterfly');
+    expect(butterfly.trigger).toEqual({ type: 'cast', on: 'Forte:Illation' });
+    expect(butterfly.damage.hits).toHaveLength(4);
+    expect(butterfly.damage.hits.every(h => h.atkPct === 37.29)).toBe(true);
+    expect(butterfly.damage.category).toBe('skillDmg');
+  });
+
+  it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total including the new Butterfly block', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Shorekeeper'], SHOREKEEPER_BLOCKS);
+    const { totalDamage, hitLog } = resolveHitComposedDps(SHOREKEEPER_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, { atk: 1500, hp: 16713 }, 'spectro', 'Healer');
+    expect(totalDamage).toBeGreaterThan(0);
+    const fired = new Set(hitLog.map(h => h.blockId));
+    expect(fired.has('shorekeeper.forte.illation')).toBe(true);
+    expect(fired.has('shorekeeper.forte.flare-star-butterfly')).toBe(true);
+  });
+
+  it("SKILL_ICONS['Illation'] key resolves against the real rotation-step skill name (fixed 2026-09-04 — was 'Heavy Attack: Illation', too long to ever match getSkillIcon's skillName.includes(key) check)", () => {
+    expect(getSkillIcon('Shorekeeper', 'Illation')).toBeTruthy();
   });
 });

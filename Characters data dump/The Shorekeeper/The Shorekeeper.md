@@ -218,3 +218,39 @@ Very flexible — usable as the 3rd-slot buffer for any current team. No particu
 | Echo | 5,911 | (small, part of 12.4% combined label) |
 
 Note: matches her kit — Discernment (Intro) is explicitly "counted as Resonance Liberation DMG," so essentially all real burst damage funnels into the Liberation category despite the Intro-slot input; Enlightenment (base Intro) is "counted as Resonance Skill DMG." No full Damage Output/Sequence table was provided on this page (no numeric S0→S6 table present), consistent with the Build tab's own note that her personal damage is fully skippable to invest in.
+
+## App Data Comparison (vs. `app/src/data/characters.js` + `shorekeeper.blocks.js`)
+
+First full 9-dimension Phase A pass for this character — no prior App Data Comparison existed.
+SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, base stats, `bestEchoes`,
+and `dmgFocus` (`['Liberation']`, matching this source's own 75.9% Liberation share) all already matched
+this source exactly.
+
+**Real bugs found and fixed (2026-09-04)**:
+1. **Flare Star Butterfly damage was completely unmodeled**, dimension 8 — found via a full kit
+   walkthrough, not caught in this character's original conversion pass. It's not an alternate unused
+   variant: the modeled rotation's 4-stage Basic ATK combo generates exactly 4 Collapsed Cores (kit
+   text: "each hit generates 1 Collapsed Core"), and the very next step, Illation, explicitly "instantly
+   converts all Collapsed Cores into Flare Star Butterflies" — so 4 real 37.29%-ATK hits fire every
+   single rotation, guaranteed, previously contributing zero damage. Added as
+   `shorekeeper.forte.flare-star-butterfly`, riding the existing Illation trigger. Category had no
+   explicit "considered X DMG" override anywhere in the kit text — flagged and decided by the user:
+   skillDmg (Forte Circuit mechanic bucket).
+2. **Icon lookup bug**: `SKILL_ICONS['Shorekeeper']['Heavy Attack: Illation']` was too long to ever
+   match `getSkillIcon()`'s `skillName.includes(key)` check against the real (short) rotation-step name
+   `'Illation'` — the icon was silently never resolving. Shortened the key to `'Illation'`, exact same
+   bug class already fixed for Xiangli Yao's `'Revamp'` key.
+
+**Flagged, not changed — needs a human decision**: `weaponAlts.alt5` currently lists `["Firstlight's
+Herald", 'Cosmic Ripples']`, but this source's own Best Weapons table lists only 4 total options for
+her (Variation 4★, her signature Stellar Symphony, Rectifier#25 4★, Call of the Abyss 4★) — no other 5★
+weapon at all. Neither Firstlight's Herald nor Cosmic Ripples appears anywhere in this dump. Left
+unchanged since this "cleaned" dump extraction may not be an exhaustive weapon list (unlike the
+Resonance Chain/SKILL_MULTIPLIERS tables, which are), so removing real alt5 data on an assumption of
+completeness risked being the wrong call — flagged here rather than guessed at.
+
+6 new/updated tests (Flare Star Butterfly ×2, icon lookup), full suite green (1438/1438). rawDps moved
+from ~1254 to include the new Butterfly damage (engine/legacy ratio now 1.015, previously exact parity
+— the Stage 1 harness doesn't fold this new engine-only damage into the legacy comparison path, a known,
+expected divergence for any character whose engine block set now models MORE than the legacy flat table
+does).

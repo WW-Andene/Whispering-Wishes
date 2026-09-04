@@ -7445,7 +7445,12 @@ const SKILL_ICONS = {
   'Shorekeeper': {
     'Origin Calculus': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
     'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
-    'Heavy Attack: Illation': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Forte-gauge-gated Heavy Attack, no dedicated wiki icon — generic weapon icon
+    // Key shortened 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) from 'Heavy Attack: Illation' —
+    // getSkillIcon() does skillName.includes(key), and the CHARACTER_ROTATIONS step's own skill field
+    // is the short 'Illation' (see CHARACTER_ROTATIONS['Shorekeeper']), which does NOT contain the
+    // longer 'Heavy Attack: Illation' string — the lookup was silently failing for that step, exact
+    // same bug class already fixed for Xiangli Yao's Revamp key.
+    'Illation': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Forte-gauge-gated Heavy Attack, no dedicated wiki icon — generic weapon icon
     'Chaos Theory': './characters/shorekeeper/zTGgrNMM-skill-chaos-theory.webp',
     'Astral Chord': './characters/shorekeeper/pkXPr5P-skill-astral-chord.webp',
     'End Loop': './characters/shorekeeper/MD3NpydF-skill-end-loop.webp',

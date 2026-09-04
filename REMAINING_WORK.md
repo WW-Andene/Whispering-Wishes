@@ -262,17 +262,25 @@ audit per character, all cross-checked against a fresh source dump:
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
-Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao — added 2026-09-03/04, first
-nineteen characters audited under the updated 9-dimension methodology**
-(see below). Many more
+Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper — added
+2026-09-03/04, first twenty characters audited under the updated
+9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
 dimensions: rotation-step/chain/buff-table coverage, not the full set).
-The remaining ~47 characters have not had a full Phase A pass. Not
+The remaining ~46 characters have not had a full Phase A pass. Not
 urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
+
+**Open item needing a human decision (2026-09-04):** Shorekeeper's
+`weaponAlts.alt5` lists `["Firstlight's Herald", 'Cosmic Ripples']`, but
+her own dump's Best Weapons table only names 4 total options (signature
++ 3 4★s, no other 5★) — neither alt5 weapon appears anywhere in it. Not
+changed since the dump extraction may simply not be an exhaustive weapon
+list (unlike its Resonance Chain/SKILL_MULTIPLIERS tables); flagged
+rather than guessed at.
 
 **Rover: Spectro pass (2026-09-03)**: her `Characters data dump/` already
 had 6 of 8 dimensions verified clean from an earlier pass (SKILL_MULTIPLIERS,
