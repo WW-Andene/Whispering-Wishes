@@ -70,6 +70,25 @@ describe('triggerEngine parity — Phrolova', () => {
     expect(withS1.totalDamage).toBeGreaterThan(without.totalDamage);
   });
 
+  // Fixed 2026-09-04: S1's totalMult effect previously had no scopedToBlockId, so
+  // `stats.totalMult` — a flat multiplier resolveHitComposedDps.js applies to EVERY damage block —
+  // silently inflated ALL of Phrolova's damage (Basic/Skill/Heavy/Liberation/Echo), not just the two
+  // named Forte follow-ups the dump's own text scopes it to (same unscoped-totalMult bug class as Jiyan).
+  it('S1 totalMult is scoped to the Forte follow-up block only, not her whole kit', () => {
+    const s1 = PHROLOVA_BLOCKS.find(b => b.id === 'phrolova.chain.s1');
+    expect(s1.effects[0].scopedToBlockId).toBe('phrolova.forte.movement-of-fate-and-finality');
+    const withoutS1 = PHROLOVA_BLOCKS.filter(b => b.id !== 'phrolova.chain.s1');
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phrolova'], PHROLOVA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS1 = resolveHitComposedDps(PHROLOVA_BLOCKS, steps, ctx, 3000, 'havoc', 'Main DPS', null, 6);
+    const without = resolveHitComposedDps(withoutS1, steps, ctx, 3000, 'havoc', 'Main DPS', null, 6);
+    // Every other block's damage (everything except the Forte follow-up and the S6 Apparition hit that
+    // rides along with it) must be UNCHANGED by S1's presence — only the Forte follow-up's own hits differ.
+    const scoped = new Set(['phrolova.forte.movement-of-fate-and-finality']);
+    const sumOther = (res) => res.hitLog.filter(h => !scoped.has(h.blockId)).reduce((s, h) => s + h.damage, 0);
+    expect(sumOther(withS1)).toBeCloseTo(sumOther(without), 6);
+  });
+
   it('S6 Apparition of Beyond-Hecate is real, gated to sequence 6, and echoDmg-categorized', () => {
     const s6 = PHROLOVA_BLOCKS.find(b => b.id === 'phrolova.chain.s6-apparition');
     expect(s6.damage.category).toBe('echoDmg');

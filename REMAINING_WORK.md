@@ -263,13 +263,13 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye, Phoebe — added 2026-09-03/04, first
-thirty-seven characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye, Phoebe, Phrolova — added 2026-09-03/04, first
+thirty-eight characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
 dimensions: rotation-step/chain/buff-table coverage, not the full set).
-The remaining ~45 characters have not had a full Phase A pass. Not
+The remaining ~44 characters have not had a full Phase A pass. Not
 urgent — the coverage-audit sweep already closed the highest-risk gaps
 (unmatched rotation steps = silent 0-DMG bugs) roster-wide — but the full
 8-dimension methodology itself is not complete.
@@ -614,6 +614,74 @@ everything.
   `basicDmg`; S3 stays scoped to Starflash only and does not leak onto
   Absolution Litany now that both share `heavyDmg`; `dmgFocus` matches the
   dump's real dominant buckets). Full suite green (1490/1490).
+
+**Phrolova — full 9-dimension re-audit (2026-09-04):** independently
+segmented/blockified her whole kit (Basic/Heavy/Scarlet Coda/Skill, Forte
+Circuit's Reincarnate/Volatile Note/Aftersound economy, Maestro state and
+Hecate's off-field attacks, Intro/Outro, all 6 Resonance Chain nodes) from
+`Characters data dump/Phrolova/Phrolova.md` before looking at any existing
+code, with zero deference to `phrolova.blocks.js`'s own extensive prior-fix
+comments (2026-09-02 session).
+1. **SKILL_MULTIPLIERS (dimension 1):** every row (Basic ATK 1-3, Heavy
+   ATK, Scarlet Coda, Skill, Forte's two follow-ups, Intro's two variants,
+   Liberation's Hecate/Curtain Call rows, Outro) matches the dump's Lv.10
+   tables. Verified clean.
+2. **CHARACTER_ROTATIONS (dimension 2):** the modeled Loop Rotation
+   (Intro: Suite of Immortality → Basic P3 → Forte → Skill → Forte → Basic
+   1-3 → Forte → Scarlet Coda → Echo → Liberation → Outro) matches the
+   dump's own Loop Rotation text and note (empowered Intro always
+   preferred when available, Forte choice is a real per-encounter pick).
+   Verified clean.
+3. **RESONANCE_CHAIN_DATA (dimension 3):** all 6 nodes' values
+   (`s1.totalMult:80`, `s2.skillDmg:75`, `s3.echoDmg:80`, `s4.allDmg:20`,
+   `s5:{}`, `s6.elemDmg:60`) match the dump's own Resonance Chain section
+   exactly, including S5 correctly having zero DPS component (purely
+   defensive: Stagnate field + 30% DMG taken reduction) and S2's damage
+   correctly categorized as `skillDmg` (dump: "considered Resonance Skill
+   DMG") despite replacing Heavy Attack. Verified clean.
+4. **CHAR_BUFF_TABLE (dimension 4):** Outro (+20% Havoc DMG Amp / +25%
+   Heavy ATK DMG Amp, 14s) and the Aftersound→Crit DMG self-buff both
+   match the dump. Verified clean.
+5. **dmgFocus (dimension 5):** `['Echo', 'Skill']` matches the dump's own
+   Damage Profile (Skill 50%, Echo 43.9%, Basic only 6.1% — correctly
+   excluded as the minor bucket). Verified clean.
+6. **Weapon/echo data (dimensions 6-7):** `bestWeapon` (Lethean Elegy),
+   `weaponAlts` (Stringmaster/Whispers of Sirens/Radiant Dawn/Augment), and
+   `bestEchoes` (Nightmare: Hecate + Dream of the Lost 3pc/Havoc Eclipse
+   2pc) all match the dump's Best Weapons/Best Echo Set sections. Verified
+   clean.
+7. **Icons (dimension 9):** every `SKILL_ICONS['Phrolova']` key checked
+   against every real rotation-step/skill-multiplier name string, including
+   both Intro variants and both Forte follow-ups (sharing icons correctly
+   where the dump itself shows no separate wiki art). `CHAIN_NODE_ICONS`
+   s1-s6 all populated. Verified clean.
+8. **Engine-block parity (dimension 8) — 1 real bug found and fixed:**
+   Every one of the 9 damage blocks in `phrolova.blocks.js` was individually
+   checked and DOES carry a real `damage.category` (no missing-category
+   bug this pass, despite that being the most recurrent bug class in this
+   audit cycle). The real bug was an **unscoped `totalMult` passive**:
+   `phrolova.chain.s1`'s effect (`{stat:'totalMult', value:80}`) had no
+   `scopedToBlockId`. `resolveHitComposedDps.js` applies `stats.totalMult`
+   as a flat multiplicative factor to **every** damage block a character
+   has — so this was silently inflating ALL of Phrolova's damage (Basic,
+   Skill, Heavy/Scarlet Coda, Liberation, both Echo blocks), not just the
+   two moves the dump's own text names ("DMG Multiplier of Movement of
+   Fate and Finality +80%; DMG Multiplier of Murmurs in a Haunting Dream
+   +80%") — the exact unscoped-totalMult bug class already found and fixed
+   on Jiyan. Fixed by adding
+   `scopedToBlockId: 'phrolova.forte.movement-of-fate-and-finality'` (the
+   only one of the two named moves with its own block — the Murmurs
+   variant stays unmodeled per the file's pre-existing, honestly-documented
+   combined-rotation-step limitation). The legacy `calcEngine.js`
+   `applyResonanceChain()` path was also checked (two-path desync check):
+   it treats `totalMult` as an unscoped flat bonus by long-standing design
+   across the whole legacy engine, not a Phrolova-specific desync, so no
+   fix needed there.
+- 1 new test added to `triggerEngine-phrolova.test.js` proving the fix:
+  `phrolova.chain.s1`'s effect carries the `scopedToBlockId`, and every
+  other damage block's total is byte-identical with S1 present vs. absent
+  (only the Forte follow-up's own hits change). Full suite green
+  (1491/1491).
 
 **Open question (2026-09-04):** Lumi's own dump Damage Profile shows a
 real 26.3% "Skill" damage bucket, but no block in `lumi.blocks.js` is

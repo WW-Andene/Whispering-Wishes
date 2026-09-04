@@ -27,6 +27,13 @@
 // representative tick anchored to the Liberation cast (same pattern as Denia's Erosion Field), not the
 // real repeating/conditional off-field mechanic — see that block's own note. This also unblocked S6's
 // separate +24% Enhanced Attack-Hecate multiplier (now scoped onto it via scopedToBlockId).
+//
+// Fixed 2026-09-04 (full 9-dimension re-audit, fresh dump): `phrolova.chain.s1`'s totalMult effect had
+// no scopedToBlockId — `stats.totalMult` is a flat multiplier applied by resolveHitComposedDps.js to
+// EVERY damage block a character has, so this was silently inflating ALL of Phrolova's damage (Basic,
+// Skill, Heavy, Liberation, Echo), not just the two named Forte follow-ups the dump's own text scopes
+// it to — the same unscoped-totalMult bug class already found and fixed on Jiyan. Scoped to
+// phrolova.forte.movement-of-fate-and-finality (the only one of the two moves with its own block here).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
@@ -153,8 +160,16 @@ export const PHROLOVA_BLOCKS = [
     source: SOURCE, kind: 'buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 80 }],
-    note: "DMG Multiplier of Movement of Fate and Finality / Murmurs in a Haunting Dream both +80% — now live against phrolova.forte.movement-of-fate-and-finality / phrolova.forte.murmurs-in-a-haunting-dream (fixed 2026-09-02, real values sourced from a fresh the source dump). Also grants Volatile Note - Cadenza every 4s out-of-combat under certain conditions, not modeled.",
+    // Fixed 2026-09-04: this totalMult effect had NO scopedToBlockId, so `stats.totalMult` applied it
+    // as a flat multiplier on EVERY damage block Phrolova has (Basic/Skill/Heavy/Liberation/Echo, not
+    // just the two named Forte follow-ups) — the same unscoped-totalMult architecture bug already found
+    // and fixed on Jiyan. The dump's own text ("DMG Multiplier of Movement of Fate and Finality +80%;
+    // DMG Multiplier of Murmurs in a Haunting Dream +80%") names two specific moves only. Only
+    // phrolova.forte.movement-of-fate-and-finality is modeled as a real block (the Murmurs variant isn't,
+    // per this file's combined-rotation-step limitation noted elsewhere), so scoped to that one block —
+    // matches the same single-block scoping pattern already used on phrolova.chain.s6's echoDmg effect.
+    effects: [{ stat: 'totalMult', value: 80, scopedToBlockId: 'phrolova.forte.movement-of-fate-and-finality' }],
+    note: "DMG Multiplier of Movement of Fate and Finality +80% (Murmurs in a Haunting Dream also +80% per the dump, but that variant has no separate block here — see the combined-Forte-step note above). Scoped via scopedToBlockId so it no longer inflates her other damage blocks. Also grants Volatile Note - Cadenza every 4s out-of-combat under certain conditions, not modeled.",
   },
   {
     id: 'phrolova.chain.s2',
