@@ -131,8 +131,7 @@ Game
 │   │   ├── Liberation DMG
 │   │   ├── Echo Skill DMG
 │   │   ├── Coordinated ATK DMG
-│   │   ├── Intro Skill DMG    (not yet real — no character or Echo Set grants this)
-│   │   └── Outro Skill DMG    (real — granted by Echo Sets Lingering Tunes/Midnight Veil, not any character kit)
+│   │   └── Intro Skill DMG    (not yet real — no Echo Set grants this; the code path that would treat it as a buff exists and has no exclusion, unlike Outro's)
 │   ├── DMG Bonus — Element
 │   │   └── (ref: Element list — Glacio/Fusion/Electro/Aero/Spectro/Havoc/Physical)
 │   ├── DMG Bonus — Reaction
@@ -163,6 +162,13 @@ Kit move commonly does both at once — e.g. a Liberation cast that deals `skill
 AND grants a team `atkPct` buff — so nesting one inside the other would force an
 artificial parent/child relationship between two things that just co-occur, not
 things where one contains the other.
+
+`outroDmg` is a real example of this split done wrong before it was caught: it
+looked like a Buff (same field name shape as `atkPct`/`havocDmg`), but the actual
+code (`calcTeamStats.js`) explicitly excludes it from buff registration —
+`if (stat === 'outroDmg') return; // raw damage, not a buff`. It's a Damage value
+(the Outro hit's own bonus damage), not a stat modifier, for every Echo Set that
+grants it — corrected to live only under `Damage`, removed from `Buff`.
 
 ### Character block references, not duplication
 A move under `Kit` doesn't hardcode a stat string — it references entries under
