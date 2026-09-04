@@ -848,6 +848,79 @@ correct. 2 new tests added to `triggerEngine-camellya.test.js`
 (categorization + scoping assertions) plus 1 existing test updated for the
 S3 split; full suite green: 1445/1445.
 
+**Augusta redo (2026-09-04) — genuine from-scratch re-audit (not a check-if-
+already-done pass), found 1 real engine-block-parity bug the earlier same-day
+Augusta pass missed.** Per this pass's own explicit instruction not to trust
+any prior write-up's "already audited"/"final pass" claims, all 9 dimensions
+were independently re-verified from scratch against `Characters data dump/
+Augusta/Augusta.md` as if auditing her for the first time, rather than
+treating the earlier 2026-09-04 "near-clean, 1 gap" entry above as ground
+truth:
+1. **SKILL_MULTIPLIERS** — every Lv.10 value (Basic/Heavy/Skill/Liberation/
+   Forte/Intro/Outro, including the 6 reference-only rows the earlier pass
+   added) re-checked digit-for-digit against the dump's own Multipliers
+   lists. Confirmed exact, no drift.
+2. **CHARACTER_ROTATIONS** — all 14 steps re-checked against the dump's own
+   "Core Rotation" text and step-by-step Notes. Confirmed an exact match,
+   including the Backstep→Spinslash repeat step and the Echo/Outro tail.
+3. **RESONANCE_CHAIN_DATA** — every node (S1-S6) re-read against the dump's
+   own R1-R6 kit text, including re-checking S3's scoping (does its +25% DMG
+   Multiplier apply kit-wide, or only to its 6 real named moves?) and S5
+   (still correctly zeroed — a purely defensive Glory's Favor shield bonus,
+   no DPS component). Confirmed all already correct.
+4. **CHAR_BUFF_TABLE** — Outro (`allDmg`, not `elemDmg`) and the Crown of
+   Wills self-buff (`elemDmg`) both re-verified against the dump's own "+15%
+   DMG Amplification for ALL Attributes" / "each stack grants +15% Electro
+   DMG Bonus" text. Confirmed correct.
+5. **dmgFocus** — re-checked against the dump's own Damage Profile (Heavy
+   ~74.6%, Skill ~16.7%, Liberation 0% since every Liberation-slot cast is
+   explicitly "considered Heavy Attack DMG", Intro/Echo minor slices).
+   `['Heavy ATK', 'Skill']` confirmed correct; Echo's real 6.46% share
+   confirmed correctly excluded — it's gear-Echo damage (The False
+   Sovereign's own Transform hit), not a kit move explicitly categorized as
+   Echo Skill DMG the way Phrolova/Galbrena/Sigrika's OWN kit abilities are,
+   so it doesn't belong in this kit-damage-type gate.
+6. **Weapon data** — `bestWeapon` (Thunderflare Dominion) and `weaponAlts`
+   (alt5: Verdant Summit/Ages of Harvest; alt4: Aureate Zenith/Autumntrace;
+   alt3: Guardian Broadblade) re-checked against the dump's full 12-weapon
+   Best Weapons list. Confirmed correct, matching the established "alt4
+   reserved for the best 4-star options, not every ranked 5-star" convention
+   used elsewhere.
+7. **Echo data** — `bestEchoes` (`['The False Sovereign', 'Crown of Valor
+   3pc + Void Thunder 2pc']`) re-checked against the dump's Best Echo Set
+   section. Confirmed correct.
+8. **Engine-block parity — 1 real bug found.** Re-decomposed the dump's real
+   rotation move-by-move against `augusta.blocks.js` looking specifically
+   for the patterns flagged going into this pass (miscategorization against
+   kit-text override language, unscoped chain-node buffs, wrongly-nested
+   conditions). Categorization and S3's `scopedToBlockId` scoping were both
+   confirmed already correct (no repeat of Camellya's miscategorization bug
+   or an unscoped-totalMult bug here). Found instead: `augusta.chain.
+   s6-thunder-rage` (Thunder Rage, the S6-granted 2×100%-ATK proc on casting
+   Thunderoar: Spinslash) only fired on the FIRST of the two real Spinslash
+   casts in her modeled rotation. The engine's trigger-key matching is
+   exact-label (`cast:${type}:${skill}`, rotationSimulator.js), and the
+   SECOND Spinslash cast is folded into the combined repeat step `'Heavy
+   ATK:Thunderoar: Backstep → Spinslash'` (a different label than the first
+   step's bare `'Heavy ATK:Thunderoar: Spinslash'`) — so the single S6 block
+   only ever matched the first cast, silently dropping one of the two real
+   Thunder Rage procs per rotation. The kit's own text ("Casting Thunderoar:
+   Spinslash or Thunderoar: Uppercut ALSO triggers Thunder Rage") states no
+   once-per-rotation cap — only a separate 1s Crown-of-Wills-stack ICD that
+   doesn't gate the Thunder Rage hits themselves. Fixed by adding
+   `augusta.chain.s6-thunder-rage-repeat`, an identical damage block
+   triggered on the repeat step's own label — same "one block per real
+   rotation-step label" pattern already used for `augusta.heavy.
+   thunderoar-backstep-spinslash-repeat`.
+9. **Icons** — `SKILL_ICONS['Augusta']`/`CHAIN_NODE_ICONS['Augusta']`
+   re-checked against every real rotation-step skill name (via
+   `getSkillIcon`'s `skillName.includes(key)` matching) and all 6 chain
+   nodes. Confirmed fully wired, no gap.
+
+1 new test added to `triggerEngine-augusta.test.js` (asserts Thunder Rage
+fires — with 2 hits each — on both the first AND repeat Spinslash casts, at
+two genuinely different simulated times). Full suite green: 1446/1446.
+
 ---
 
 ## 2. Legacy-calculator correctness — real, unresolved finding
