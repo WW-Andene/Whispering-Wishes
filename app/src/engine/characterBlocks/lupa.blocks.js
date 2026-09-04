@@ -19,7 +19,7 @@
 // wolf-climax's own note below.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Lupa';
 

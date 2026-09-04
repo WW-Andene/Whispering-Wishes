@@ -27,7 +27,7 @@
 // against an independently-built kit model — see REMAINING_WORK.md for full reasoning.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Mornye';
 

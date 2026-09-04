@@ -5,9 +5,9 @@
 // value at any stack count (integer or fractional), and every resolver's own `applyEffects()` now uses
 // it instead of `value * count` whenever an effect carries `tiers`.
 import { describe, it, expect } from 'vitest';
-import { cumulativeTieredValue } from '../engine/tieredStacking.js';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
-import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
+import { cumulativeTieredValue } from '../engine/triggers/tieredStacking.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
 
 const MINDLOCK_TIERS = [{ count: 7, value: 7 }, { count: 8, value: 2 }];
 

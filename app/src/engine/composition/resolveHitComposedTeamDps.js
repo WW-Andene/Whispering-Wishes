@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/resolveHitComposedTeamDps.js
+// WHISPERING WISHES — engine/composition/resolveHitComposedTeamDps.js
 // The team-level generalization of resolveHitComposedDps.js — sums ONE team member's
 // (`targetName`) real per-hit damage across a full multi-character rotation, with CROSS-CHARACTER
 // buffs correctly landing on specific hits mid-combo (a whole-team ATK buff opened by a support
@@ -18,12 +18,12 @@
 // is the one actually on field.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../features/teams/calcEngine.js';
+import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../../features/teams/calcEngine.js';
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
-import { triggerFired, conditionHolds } from './triggerEngine.js';
-import { buildBlockWindows, activeCountAt } from './blockWindows.js';
-import { cumulativeTieredValue } from './tieredStacking.js';
-import { COORD_SNAPSHOT_DISCOUNT } from './coordinatedAtk.js';
+import { triggerFired, conditionHolds } from '../triggers/triggerEngine.js';
+import { buildBlockWindows, activeCountAt } from '../triggers/blockWindows.js';
+import { cumulativeTieredValue } from '../triggers/tieredStacking.js';
+import { COORD_SNAPSHOT_DISCOUNT } from '../triggers/coordinatedAtk.js';
 
 /**
  * @param {Object[]} ownedSteps  Same shape buildTeamSteps()/simulateTeamRotation() take.

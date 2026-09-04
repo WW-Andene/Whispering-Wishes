@@ -8,9 +8,9 @@
  * always ran its full nominal duration even past the point the recipient left the field.
  */
 import { describe, it, expect } from 'vitest';
-import { simulateTeamRotation } from '../engine/rotationSimulator.js';
-import { resolveSimulatedTeamRotation } from '../engine/resolveSimulatedTeamRotation.js';
-import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
+import { simulateTeamRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveSimulatedTeamRotation } from '../engine/composition/resolveSimulatedTeamRotation.js';
+import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
 
 function makeOutroBlock(forfeit) {
   return {
@@ -99,7 +99,7 @@ describe('timing.forfeitOnRecipientSwapOut (early-forfeit-on-swap)', () => {
   });
 
   it('buildBlockWindows itself: clamps the window end to recipientSwapOutAt when the flag is set, leaves it alone otherwise', async () => {
-    const { buildBlockWindows } = await import('../engine/blockWindows.js');
+    const { buildBlockWindows } = await import('../engine/triggers/blockWindows.js');
     const ownResults = [{ time: 1, firedTriggers: new Set(['swap-out']), ineligibleBlockIds: new Set(), actionTags: new Set() }];
 
     const clamped = buildBlockWindows(makeOutroBlock(true), ownResults, null, null, 3); // recipient left at t=3

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/resolveSimulatedRotation.js
+// WHISPERING WISHES — engine/composition/resolveSimulatedRotation.js
 // The time-integration driver PHASE2_PLAN.md's stacking-mode gap actually needed.
 //
 // Every prior consumer of the engine (resolveTriggerBlocks(), called directly from a test) only
@@ -43,15 +43,15 @@
 // same SKILL_MULTIPLIERS-per-hit migration PHASE2_PLAN.md already tracks as separate, larger work).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { createStats, applyBuff } from '../features/teams/calcEngine.js';
+import { createStats, applyBuff } from '../../features/teams/calcEngine.js';
 import { simulateRotation } from './rotationSimulator.js';
-import { triggerFired, conditionHolds } from './triggerEngine.js';
+import { triggerFired, conditionHolds } from '../triggers/triggerEngine.js';
 // buildBlockWindows is used for every continuous-uptime buff/debuff below (shared with
 // resolveSimulatedTeamRotation.js, extracted 2026-09-01 so the two drivers can't silently drift
 // apart on how 'unique'/'refresh'/'stacking' turn trigger firings into windows) — conditionHolds is
 // still imported directly here too, for the passive-block branch's own single check.
-import { buildBlockWindows, timeWeightedAverageConcurrency } from './blockWindows.js';
-import { cumulativeTieredValue } from './tieredStacking.js';
+import { buildBlockWindows, timeWeightedAverageConcurrency } from '../triggers/blockWindows.js';
+import { cumulativeTieredValue } from '../triggers/tieredStacking.js';
 
 /**
  * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks

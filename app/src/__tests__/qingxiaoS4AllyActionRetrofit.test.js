@@ -7,8 +7,8 @@
 // Qingxiao; the trigger is a real cross-character event, not passive; the duration is a real 8s
 // window, not indefinite.
 import { describe, it, expect } from 'vitest';
-import { simulateTeamRotation } from '../engine/rotationSimulator.js';
-import { resolveSimulatedTeamRotation } from '../engine/resolveSimulatedTeamRotation.js';
+import { simulateTeamRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveSimulatedTeamRotation } from '../engine/composition/resolveSimulatedTeamRotation.js';
 import { QINGXIAO_BLOCKS } from '../engine/characterBlocks/qingxiao.blocks.js';
 
 describe('Qingxiao chain.s4 — ally-action retrofit (the engine-merge history (git log) Phase 0.5 gap #2)', () => {

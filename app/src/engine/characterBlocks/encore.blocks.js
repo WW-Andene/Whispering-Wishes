@@ -8,7 +8,7 @@
 // component, per the audit's own zeroing.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Encore';
 

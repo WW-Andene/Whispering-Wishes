@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
 import { LUUK_HERSSEN_BLOCKS } from '../engine/characterBlocks/luukherssen.blocks.js';
 
 describe('triggerEngine parity — Luuk Herssen', () => {

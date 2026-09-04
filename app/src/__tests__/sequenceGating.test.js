@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { requiredSequenceOf, sequenceAllows, gateBlocksBySequence } from '../engine/sequenceGating.js';
+import { requiredSequenceOf, sequenceAllows, gateBlocksBySequence } from '../engine/triggers/sequenceGating.js';
 import { LUCILLA_BLOCKS } from '../engine/characterBlocks/lucilla.blocks.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 

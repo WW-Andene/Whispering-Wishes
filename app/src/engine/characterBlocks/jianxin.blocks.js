@@ -11,7 +11,7 @@
 // itself zeroed out (same "discrete proc, not a modifier" treatment as Yinlin's S6).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Jianxin';
 

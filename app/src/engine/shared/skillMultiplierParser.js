@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/skillMultiplierParser.js
+// WHISPERING WISHES — engine/shared/skillMultiplierParser.js
 // Parses SKILL_MULTIPLIERS' existing percent-string format (e.g. '28.81% → 33.82%×2 → 13.99%×7 →
 // 75.16%') into a real hit array — no new numbers invented, purely re-expressing characters.js's
 // already-audited strings as structured data. This is the data prerequisite the

@@ -1,13 +1,13 @@
 // PHASE3_PLAN.md Stage 3, item 4/5 (final Stage 3 item): Coordinated ATK off-field snapshot
-// semantics. engine/coordinatedAtk.js factors out calcTeamStats.js's coord/field-time mult blend
+// semantics. engine/triggers/coordinatedAtk.js factors out calcTeamStats.js's coord/field-time mult blend
 // (coordinatedMultShare), and an opt-in `coordSnapshotDiscount` option threaded through
 // resolveSimulatedTeamRotation.js and resolveHitComposedTeamDps.js replicates legacy's flat 0.6
 // snapshot discount on 'next-on-field'-scoped buffs only — 'whole-team' buffs stay undiscounted,
 // matching legacy's own outroBuffs-vs-libBuffs distinction exactly.
 import { describe, it, expect } from 'vitest';
-import { coordinatedMultShare, COORD_SNAPSHOT_DISCOUNT } from '../engine/coordinatedAtk.js';
-import { resolveSimulatedTeamRotation } from '../engine/resolveSimulatedTeamRotation.js';
-import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
+import { coordinatedMultShare, COORD_SNAPSHOT_DISCOUNT } from '../engine/triggers/coordinatedAtk.js';
+import { resolveSimulatedTeamRotation } from '../engine/composition/resolveSimulatedTeamRotation.js';
+import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 

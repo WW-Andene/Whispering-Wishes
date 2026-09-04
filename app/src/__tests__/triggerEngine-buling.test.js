@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
 import { BULING_BLOCKS } from '../engine/characterBlocks/buling.blocks.js';
 
 describe('triggerEngine parity — Buling', () => {

@@ -15,8 +15,8 @@ export const BASE_CRIT_RATE = 5;
 export const BASE_CRIT_DMG = 150;
 // Engine-merge Stage 1 (2026-09-04): the DOT/Tune-Break rotation-aggregate primitives
 // (calcFrazzleDmg/calcErosionDmg/calcFusionBurstDmg/calcElectroFlareDmg/calcTuneBreakDmg and their
-// constants) moved to ../../engine/dotFormulas.js — they were never legacy-only math (see
-// engine/dotReactions.js, which already applies their output on top of BOTH the legacy RAW total
+// constants) moved to ../../engine/dot/dotFormulas.js — they were never legacy-only math (see
+// engine/dot/dotReactions.js, which already applies their output on top of BOTH the legacy RAW total
 // and the modern resolveHitComposedTeamDps FULL total). Re-exported here, byte-identical, so every
 // existing caller of this file keeps working unchanged; see dotFormulas.js for the real definitions.
 export {
@@ -26,7 +26,7 @@ export {
   FUSION_BURST_THRESHOLD, FUSION_BURST_APP_ICD, FUSION_TRAIL_MULT,
   FLARE_TICK_INTERVAL, FLARE_STACK_MULT, TUNE_BREAK_BASE_DMG,
   calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
-} from '../../engine/dotFormulas.js';
+} from '../../engine/dot/dotFormulas.js';
 // ER breakpoints — how much Energy Regen a character actually needs for full Liberation uptime.
 // Community consensus (endgame ER-breakpoint guides, corroborated across multiple independent
 // sources) differentiates this by ROLE, not just energy cost: an on-field Main DPS builds energy

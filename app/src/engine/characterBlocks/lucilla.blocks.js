@@ -13,7 +13,7 @@
 // CHAR_BUFF_TABLE['Lucilla'].selfBuffs before this read.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Lucilla';
 

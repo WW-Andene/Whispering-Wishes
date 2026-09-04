@@ -31,7 +31,7 @@
 // this same file; corrected here during the Phase A audit, the engine-merge history (git log).)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Lynae';
 

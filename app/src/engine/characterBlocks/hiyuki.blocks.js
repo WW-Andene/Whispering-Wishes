@@ -9,7 +9,7 @@
 // no home in this flat schema and are documented rather than force-fit.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Hiyuki';
 

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/triggerBlocks.schema.js
+// WHISPERING WISHES — engine/schema/triggerBlocks.schema.js
 // Phase 2 combat-logic schema: every skill/Forte/Resonance Chain node/buff/debuff
 // becomes one self-contained TRIGGER_BLOCK instead of a flat stat table + separate
 // imperative gating code. A team's active blocks can then be assembled and resolved
@@ -69,7 +69,7 @@
  *                                   `CHAR_BUFF_TABLE[name].debuffs`/`.electroFlare`/`.tuneBreak`, now
  *                                   sourced from the block that actually casts the applying move
  *                                   instead of a flat per-character table entry disconnected from any
- *                                   trigger. Read by `engine/dotReactionsFromBlocks.js`, NOT by
+ *                                   trigger. Read by `engine/dot/dotReactionsFromBlocks.js`, NOT by
  *                                   `resolveHitComposedTeamDps`/`resolveSimulatedTeamRotation` (a DOT
  *                                   reaction's damage isn't a per-hit or per-target buff in the sense
  *                                   those resolvers model — it's a shared pool every real applier

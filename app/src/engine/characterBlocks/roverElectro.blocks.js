@@ -11,7 +11,7 @@
 // __tests__/triggerEngine-rover-electro.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Rover: Electro';
 

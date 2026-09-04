@@ -17,7 +17,7 @@
 // threshold needed for Finale to replace Prelude — see the block's own note for the full reasoning.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Jiyan';
 

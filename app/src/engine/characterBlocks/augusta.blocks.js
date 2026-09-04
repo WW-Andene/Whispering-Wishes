@@ -23,7 +23,7 @@
 // relevant fix, not cosmetic: this engine file feeds the actual damage calculator.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Augusta';
 

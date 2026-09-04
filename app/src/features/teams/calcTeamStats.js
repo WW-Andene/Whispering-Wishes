@@ -29,14 +29,14 @@ import {
   applyBuff,
 } from './calcEngine.js';
 import { BLOCKS_BY_CHARACTER } from '../../engine/characterBlocks/index.js';
-import { deriveStepsFromRotation } from '../../engine/rotationSimulator.js';
-import { resolveHitComposedDps } from '../../engine/resolveHitComposedDps.js';
-import { resolveHitComposedTeamDps } from '../../engine/resolveHitComposedTeamDps.js';
-import { resolveSimulatedTeamRotation } from '../../engine/resolveSimulatedTeamRotation.js';
-import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/dotReactions.js';
-import { chooseOnFieldOrder } from '../../engine/rotationOrderSearch.js';
-import { coordinatedMultShare } from '../../engine/coordinatedAtk.js';
-import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/sequenceGating.js';
+import { deriveStepsFromRotation } from '../../engine/composition/rotationSimulator.js';
+import { resolveHitComposedDps } from '../../engine/composition/resolveHitComposedDps.js';
+import { resolveHitComposedTeamDps } from '../../engine/composition/resolveHitComposedTeamDps.js';
+import { resolveSimulatedTeamRotation } from '../../engine/composition/resolveSimulatedTeamRotation.js';
+import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/dot/dotReactions.js';
+import { chooseOnFieldOrder } from '../../engine/orchestration/rotationOrderSearch.js';
+import { coordinatedMultShare } from '../../engine/triggers/coordinatedAtk.js';
+import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/triggers/sequenceGating.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
 // Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
@@ -166,7 +166,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // mixed team, unchanged.
     const allMembersConverted = mems.every(m => BLOCKS_BY_CHARACTER[m.name] && CHARACTER_ROTATIONS[m.name]);
     // Blocks are gated by each member's own owned Resonance Chain sequence (gateBlocksBySequence,
-    // engine/sequenceGating.js) BEFORE reaching chooseOnFieldOrder/buildTeamSteps — fixed 2026-09-01:
+    // engine/triggers/sequenceGating.js) BEFORE reaching chooseOnFieldOrder/buildTeamSteps — fixed 2026-09-01:
     // this was passing every member's raw, ungated blocks (as if everyone were R6), so an unbuilt
     // member's chain buffs/damage fired unconditionally in both the order search's own scoring AND
     // every downstream consumer of engineChosenOrder.blocksByOwner (the FULL-tier teamDps/memberDps
@@ -1102,7 +1102,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult * (1 + mainTotalMultBonus / 100));
     }
 
-    // ── DOT damage (ICD-aware, composed via engine/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /
+    // ── DOT damage (ICD-aware, composed via engine/dot/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /
     // Stage 4 step 3) ──
     // Each of these reactions has a fixed damage element regardless of which character on the team
     // triggers it (Frazzle is always Spectro, Erosion always Havoc, etc.) — so its RES must come from

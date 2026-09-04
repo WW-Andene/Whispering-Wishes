@@ -11,9 +11,9 @@
 import { describe, it, expect } from 'vitest';
 import { createStats } from '../features/teams/calcEngine.js';
 import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon } from '../data/characters.js';
-import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
+import { resolveTriggerBlocks } from '../engine/triggers/triggerEngine.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
 import { SHOREKEEPER_BLOCKS } from '../engine/characterBlocks/shorekeeper.blocks.js';
 
 describe('triggerEngine parity — Shorekeeper', () => {

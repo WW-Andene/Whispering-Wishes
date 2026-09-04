@@ -6,8 +6,8 @@
  * specific hit" from "the segment as a whole."
  */
 import { describe, it, expect } from 'vitest';
-import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
-import { buildTeamSteps } from '../engine/rotationSimulator.js';
+import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
+import { buildTeamSteps } from '../engine/composition/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';

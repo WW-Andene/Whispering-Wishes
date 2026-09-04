@@ -11,7 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { createStats, applyResonanceChain } from '../features/teams/calcEngine.js';
 import { CHAR_BUFF_TABLE } from '../data/characters.js';
-import { resolveTriggerBlocks } from '../engine/triggerEngine.js';
+import { resolveTriggerBlocks } from '../engine/triggers/triggerEngine.js';
 import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blocks.js';
 
 describe('triggerEngine parity — Rover: Electro', () => {

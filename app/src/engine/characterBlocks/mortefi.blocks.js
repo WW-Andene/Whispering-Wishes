@@ -17,7 +17,7 @@
 // see mortefi.liberation.burning-rhapsody-marcato's own comment for the exact math.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Mortefi';
 const MARCATO_ATK_PCT = 31.81;

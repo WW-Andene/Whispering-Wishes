@@ -14,7 +14,7 @@
 // fresh source pull confirmed it's the same move, not a uniquely-scaled instance.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Phoebe';
 

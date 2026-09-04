@@ -10,9 +10,9 @@
  *     ('trigger-actor') — needs the new target scope too.
  */
 import { describe, it, expect } from 'vitest';
-import { simulateTeamRotation } from '../engine/rotationSimulator.js';
-import { resolveSimulatedTeamRotation } from '../engine/resolveSimulatedTeamRotation.js';
-import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
+import { simulateTeamRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveSimulatedTeamRotation } from '../engine/composition/resolveSimulatedTeamRotation.js';
+import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
 
 // Applier: casts one tagged move (Skill:Shift) that applies 'shifting'. Reactor: never applies it.
 const APPLIER_BLOCKS = [

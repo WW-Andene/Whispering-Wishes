@@ -5,8 +5,8 @@
  * numbers so the formula itself is independently verifiable, not just "whatever the code produces."
  */
 import { describe, it, expect } from 'vitest';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 import { ROVER_ELECTRO_BLOCKS } from '../engine/characterBlocks/roverElectro.blocks.js';
@@ -14,7 +14,7 @@ import { SHOREKEEPER_BLOCKS } from '../engine/characterBlocks/shorekeeper.blocks
 import { AUGUSTA_BLOCKS } from '../engine/characterBlocks/augusta.blocks.js';
 import { JINHSI_BLOCKS } from '../engine/characterBlocks/jinhsi.blocks.js';
 import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
-import { parseSkillMultiplierHits, sumHitsAtkPct } from '../engine/skillMultiplierParser.js';
+import { parseSkillMultiplierHits, sumHitsAtkPct } from '../engine/shared/skillMultiplierParser.js';
 
 // Zero DEF/RES so defMult/resMult both come out to exactly 1 — isolates the test to just the
 // ATK%/crit/dmgBonus portion of the formula, matching a hand-computable reference number.

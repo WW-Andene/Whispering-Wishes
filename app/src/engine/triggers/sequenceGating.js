@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/sequenceGating.js
+// WHISPERING WISHES — engine/triggers/sequenceGating.js
 // PHASE3_PLAN.md Stage 3, item 1 (the highest-priority gap Stage 2's triage found): every converted
 // character's Resonance Chain blocks (chain.s1..chain.s6) were firing unconditionally in the engine —
 // as if every character were fully R6-awakened — while calcTeamStats.js's legacy applyResonanceChain()

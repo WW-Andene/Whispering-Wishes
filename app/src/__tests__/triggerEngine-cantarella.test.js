@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
-import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
-import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
+import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
 import { CANTARELLA_BLOCKS } from '../engine/characterBlocks/cantarella.blocks.js';
 
 describe('triggerEngine parity — Cantarella', () => {

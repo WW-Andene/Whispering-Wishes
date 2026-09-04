@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, CHARACTER_DATA } from '../data/characters.js';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
 import { PHOEBE_BLOCKS } from '../engine/characterBlocks/phoebe.blocks.js';
-import { requiredSequenceOf } from '../engine/sequenceGating.js';
+import { requiredSequenceOf } from '../engine/triggers/sequenceGating.js';
 
 describe('triggerEngine parity — Phoebe', () => {
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {

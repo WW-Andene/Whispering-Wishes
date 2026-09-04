@@ -10,7 +10,7 @@
 // standard rotation, same as Jiyan's S6/Finale in batch 2.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Lumi';
 

@@ -32,7 +32,7 @@
 // hand-fed) by __tests__/rotationSimulator.test.js.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Camellya';
 

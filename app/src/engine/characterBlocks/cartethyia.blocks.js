@@ -21,7 +21,7 @@
 // Thorn) is intentionally NOT modeled — hardcoding a weapon's own passive here would double-count it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Cartethyia';
 

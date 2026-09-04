@@ -7,7 +7,7 @@
 // (rotationSimulator.js), fired directly off any step's own {type:'Echo'} shape rather than a
 // per-character appliesTags declaration.
 import { describe, it, expect } from 'vitest';
-import { resolveSimulatedTeamRotation } from '../engine/resolveSimulatedTeamRotation.js';
+import { resolveSimulatedTeamRotation } from '../engine/composition/resolveSimulatedTeamRotation.js';
 import { SIGRIKA_BLOCKS } from '../engine/characterBlocks/sigrika.blocks.js';
 
 describe('Sigrika chain.s4 — ally-action retrofit (the engine-merge history (git log) Phase 0.5 gap #2)', () => {

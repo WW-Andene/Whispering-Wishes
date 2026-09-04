@@ -26,7 +26,7 @@
 // Duet casts are "considered Resonance Liberation DMG").
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Aemeath';
 

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/energyCycleGating.js
+// WHISPERING WISHES — engine/triggers/energyCycleGating.js
 // PHASE3_PLAN.md Stage 3, item 3: closes the "energy-cycle-gated Liberation uptime" gap from Stage 0's
 // coverage table. calcEnergyCycles() (calcEngine.js:583-619) is already correct — it derives each
 // character's real total ER from weapon/echo substats/set bonuses and compares it against a

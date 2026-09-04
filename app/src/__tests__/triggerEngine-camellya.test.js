@@ -6,8 +6,8 @@
 import { describe, it, expect } from 'vitest';
 import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS } from '../data/characters.js';
 import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
-import { parseSkillMultiplierHits } from '../engine/skillMultiplierParser.js';
-import { requiredSequenceOf } from '../engine/sequenceGating.js';
+import { parseSkillMultiplierHits } from '../engine/shared/skillMultiplierParser.js';
+import { requiredSequenceOf } from '../engine/triggers/sequenceGating.js';
 
 describe('triggerEngine parity — Camellya', () => {
   it('Seedbed/Epiphyte self-buffs match CHAR_BUFF_TABLE.selfBuffs', () => {

@@ -5,8 +5,8 @@
 // active buffs as the base hit, a plain proportional %ATK hit scales identically through the shared
 // crit/dmgBonus/defMult/resMult chain.
 import { describe, it, expect } from 'vitest';
-import { sumHitsAtkPct } from '../engine/skillMultiplierParser.js';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
+import { sumHitsAtkPct } from '../engine/shared/skillMultiplierParser.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
 import { BRANT_BLOCKS } from '../engine/characterBlocks/brant.blocks.js';
 
 describe("Brant S6 secondary blast (the engine-merge history (git log) Phase 0.5 gap #6)", () => {

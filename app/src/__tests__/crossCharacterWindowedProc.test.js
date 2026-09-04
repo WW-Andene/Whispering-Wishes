@@ -7,8 +7,8 @@
  * where ANY team member's landed hit can advance a window opened by someone else's cast.
  */
 import { describe, it, expect } from 'vitest';
-import { simulateTeamRotation } from '../engine/rotationSimulator.js';
-import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
+import { simulateTeamRotation } from '../engine/composition/rotationSimulator.js';
+import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
 
 // Summoner: opens a 10s/3-max proc window on cast, no move-type filter (crossCharacterHit, on omitted).
 const SUMMONER_BLOCKS = [

@@ -13,7 +13,7 @@
 // windowed-proc variant (triggerBlocks.schema.js).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Cantarella';
 

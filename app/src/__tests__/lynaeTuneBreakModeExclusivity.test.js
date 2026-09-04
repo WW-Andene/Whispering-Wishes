@@ -11,8 +11,8 @@
 import { describe, it, expect } from 'vitest';
 import { calcTeamStats } from '../features/teams/calcTeamStats.js';
 import { calcTuneBreakDmg } from '../features/teams/calcEngine.js';
-import { winningStanceForOwner } from '../engine/sequenceGating.js';
-import { simulateTeamRotation } from '../engine/rotationSimulator.js';
+import { winningStanceForOwner } from '../engine/triggers/sequenceGating.js';
+import { simulateTeamRotation } from '../engine/composition/rotationSimulator.js';
 import { LYNAE_BLOCKS } from '../engine/characterBlocks/lynae.blocks.js';
 
 describe('Lynae Tune Break mode-exclusivity fix', () => {

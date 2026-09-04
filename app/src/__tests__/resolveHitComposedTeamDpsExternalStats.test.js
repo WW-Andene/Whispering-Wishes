@@ -3,7 +3,7 @@
 // had no way to receive gear-side stats (weapon passives, echo sets) at all, same gap Stage 1 found
 // and fixed for the solo version. This proves it's opt-in, additive, and folds in every instant.
 import { describe, it, expect } from 'vitest';
-import { resolveHitComposedTeamDps } from '../engine/resolveHitComposedTeamDps.js';
+import { resolveHitComposedTeamDps } from '../engine/composition/resolveHitComposedTeamDps.js';
 import { YINLIN_BLOCKS } from '../engine/characterBlocks/yinlin.blocks.js';
 
 const NEUTRAL_ENEMY = { enemyDef: 0, enemyRes: 0 };

@@ -16,7 +16,7 @@
 //      sourced, so they're used directly instead of the lossier flat-schema stand-in.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Calcharo';
 

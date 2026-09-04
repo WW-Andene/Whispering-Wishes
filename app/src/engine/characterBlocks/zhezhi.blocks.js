@@ -11,7 +11,7 @@
 // so both are modeled as real proc-style damage blocks instead of left zeroed.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Zhezhi';
 

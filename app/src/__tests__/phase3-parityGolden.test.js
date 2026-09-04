@@ -29,8 +29,8 @@ import { CHARACTER_DATA, CHARACTER_ROTATIONS } from '../data/characters.js';
 import { WEAPON_DATA } from '../data/weapons.js';
 import { ECHO_SETS } from '../data/echoes.js';
 import { applyFullEchoSet, getWeaponPv } from '../features/teams/calcEngine.js';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/composition/rotationSimulator.js';
 import { PARITY_CHARACTERS } from './phase3-parityCharacterList.js';
 import GOLDEN from './__fixtures__/phase3-parity-golden.json';
 

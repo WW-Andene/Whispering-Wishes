@@ -4,8 +4,8 @@
 // pattern gap #6 (Brant's S6 secondary blast) established: a same-instant, same-category hit scales in
 // exact proportion through the shared multiplier chain, at the documented resource cap.
 import { describe, it, expect } from 'vitest';
-import { sumHitsAtkPct } from '../engine/skillMultiplierParser.js';
-import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
+import { sumHitsAtkPct } from '../engine/shared/skillMultiplierParser.js';
+import { resolveHitComposedDps } from '../engine/composition/resolveHitComposedDps.js';
 import { DENIA_BLOCKS } from '../engine/characterBlocks/denia.blocks.js';
 import { CHISA_BLOCKS } from '../engine/characterBlocks/chisa.blocks.js';
 

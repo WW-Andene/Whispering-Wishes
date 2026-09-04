@@ -18,9 +18,9 @@
 //    engine too (wired into both of gateBlocksBySequence's call sites: calcTeamStats.js's FULL-tier
 //    blocksByOwner construction, and resolveHitComposedDps.js's RAW-tier path).
 import { describe, it, expect } from 'vitest';
-import { resolveTriggerBlocks, conditionHolds } from '../engine/triggerEngine.js';
+import { resolveTriggerBlocks, conditionHolds } from '../engine/triggers/triggerEngine.js';
 import { createStats } from '../features/teams/calcEngine.js';
-import { filterExclusiveModeBlocks } from '../engine/sequenceGating.js';
+import { filterExclusiveModeBlocks } from '../engine/triggers/sequenceGating.js';
 import { DENIA_BLOCKS } from '../engine/characterBlocks/denia.blocks.js';
 import { LUCILLA_BLOCKS } from '../engine/characterBlocks/lucilla.blocks.js';
 import { PHOEBE_BLOCKS } from '../engine/characterBlocks/phoebe.blocks.js';

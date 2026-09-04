@@ -6,7 +6,7 @@
 // CHARACTER_ROTATIONS['Zani']. No new numbers invented.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Zani';
 

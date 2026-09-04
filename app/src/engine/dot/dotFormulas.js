@@ -1,16 +1,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — engine/dotFormulas.js
+// WHISPERING WISHES — engine/dot/dotFormulas.js
 //
 // Engine-merge Stage 1 (2026-09-04, see ENGINE_MERGE_INVESTIGATION.md §2a/§5#1/§6 Stage 2):
 // relocates the rotation-aggregate DOT/Tune-Break primitives OUT of the legacy
 // features/teams/calcEngine.js file and into the modern engine tree, since they are NOT
-// legacy-only math — engine/dotReactions.js already applies every one of these functions'
+// legacy-only math — engine/dot/dotReactions.js already applies every one of these functions'
 // output on top of BOTH the legacy RAW-tier total AND the modern resolveHitComposedTeamDps
 // FULL-tier total (calcTeamStats.js calls resolveDotReactionDps() unconditionally, outside
 // the `allMembersConverted` branch — see calcTeamStats.js:1118). So this was already a shared
 // primitive in practice; it just lived in the wrong file. This move is a pure relocation —
 // byte-identical formulas, byte-identical constants, zero numeric change. calcEngine.js keeps
-// re-exporting these names (`export { ... } from '../engine/dotFormulas.js'`) so every existing
+// re-exporting these names (`export { ... } from '../engine/dot/dotFormulas.js'`) so every existing
 // caller (tests included) keeps working unchanged; new modern-engine code should import
 // directly from here instead.
 //
@@ -20,7 +20,7 @@
 // five rotation-aggregate DOT mechanics have one shared home rather than being split arbitrarily.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { CHAR_BUFF_TABLE } from '../data/characters.js';
+import { CHAR_BUFF_TABLE } from '../../data/characters.js';
 
 // ── Constants (named, not magic) ──
 export const DOT_LEVEL_MULT = 3674;   // Level 90 character level multiplier
@@ -144,7 +144,7 @@ export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
 // Herssen, plus base Tune Break application itself — ~9 characters, see ENGINE_MERGE_INVESTIGATION.md
 // §2a). It has no per-hit trigger anchor (unlike Frazzle/Erosion/Fusion Burst/Electro Flare, each of
 // which has a real dotApplier-tagged block a per-hit engine could hang a trigger on) — it's a
-// rotation-average heuristic by design, not an event. engine/dotReactions.js folds its output into
+// rotation-average heuristic by design, not an event. engine/dot/dotReactions.js folds its output into
 // BOTH the legacy RAW total and the modern resolveHitComposedTeamDps FULL total identically (see
 // calcTeamStats.js:1118-1124), so every converted character's Tune Break contribution already comes
 // from the SAME code whether or not their own kit is otherwise legacy- or modern-computed — this

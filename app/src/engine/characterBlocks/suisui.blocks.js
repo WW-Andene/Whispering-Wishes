@@ -9,7 +9,7 @@
 // scale off Max HP (basis: 'HP'), not ATK, per their own row text.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { parseSkillMultiplierHits } from '../skillMultiplierParser.js';
+import { parseSkillMultiplierHits } from '../shared/skillMultiplierParser.js';
 
 const SOURCE = 'Suisui';
 
