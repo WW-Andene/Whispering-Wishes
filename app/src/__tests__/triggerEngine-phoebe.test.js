@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, CHARACTER_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { PHOEBE_BLOCKS } from '../engine/characterBlocks/phoebe.blocks.js';
@@ -102,5 +102,38 @@ describe('triggerEngine parity — Phoebe', () => {
     expect(freeTotal).toBeCloseTo(starflashTotal, 5);
     expect(freeStarflash.damage.category).toBe('heavyDmg');
     expect(requiredSequenceOf(freeStarflash)).toBe(6);
+  });
+
+  // Fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): every damage block below either had no
+  // damage.category at all (Intro/Outro/Absolution Litany) or the wrong one (Chamuel's Star was
+  // skillDmg despite the dump's own text explicitly calling it "considered Basic Attack DMG").
+  it('every damage block has a category set, matching the dump\'s own explicit text', () => {
+    const byId = id => PHOEBE_BLOCKS.find(b => b.id === id);
+    for (const b of PHOEBE_BLOCKS.filter(x => x.kind === 'damage')) {
+      expect(b.damage.category, `${b.id} missing damage.category`).toBeTruthy();
+    }
+    expect(byId('phoebe.intro.golden-grace').damage.category).toBe('skillDmg');
+    expect(byId('phoebe.outro.attentive-heart').damage.category).toBe('outroDmg');
+    // Dump's Forte Circuit text explicitly names this cast "Heavy Attack: Absolution Litany".
+    expect(byId('phoebe.forte.absolution-litany').damage.category).toBe('heavyDmg');
+    // Dump: "Inside the ring, Basic Attack → Chamuel's Star ... considered Basic Attack DMG".
+    expect(byId('phoebe.skill.chamuels-star').damage.category).toBe('basicDmg');
+  });
+
+  // Fixed 2026-09-04: once Absolution Litany was recategorized to heavyDmg (matching the dump), S3's
+  // node ("Starflash DMG Multiplier +91%") would leak onto Absolution Litany too unless pinned via
+  // scopedToBlockId, since heavyDmg is no longer exclusive to Starflash alone.
+  it('S3 stays scoped to Starflash only, not leaking onto Absolution Litany now that both share heavyDmg', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phoebe'], PHOEBE_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS3 = resolveHitComposedDps(PHOEBE_BLOCKS, steps, ctx, 3000, 'spectro', 'Sub DPS', null, 3);
+    const withoutS3 = resolveHitComposedDps(PHOEBE_BLOCKS.filter(b => b.id !== 'phoebe.chain.s3'), steps, ctx, 3000, 'spectro', 'Sub DPS', null, 3);
+    const litanyHit = withS3.hitLog.find(h => h.blockId === 'phoebe.forte.absolution-litany');
+    const litanyHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'phoebe.forte.absolution-litany');
+    expect(litanyHit.damage).toBeCloseTo(litanyHitNoS3.damage, 5);
+  });
+
+  it('dmgFocus reflects the dump\'s real dominant Damage Profile buckets (Heavy ATK/Liberation/Basic ATK, not Skill)', () => {
+    expect(CHARACTER_DATA['Phoebe'].dmgFocus).toEqual(['Heavy ATK', 'Liberation', 'Basic ATK']);
   });
 });

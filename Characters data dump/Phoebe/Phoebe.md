@@ -219,3 +219,17 @@ shown derivation — recomputed directly from the source's own Confession rotati
 8 Liberation + 5×2 Starflash = 19) and corrected.
 
 9 new/rewritten tests, full suite green (1327/1327).
+
+**2026-09-04 independent re-audit (full 9-dimension re-derivation, zero deference to the above):**
+re-confirmed SKILL_MULTIPLIERS/CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/weapon/echo
+data all match this dump exactly (no changes needed there). Found and fixed 3 real engine-block-parity
+bugs the prior pass missed: `phoebe.intro.golden-grace` and `phoebe.outro.attentive-heart` had NO
+`damage.category` at all (fixed to `skillDmg`/`outroDmg`); `phoebe.forte.absolution-litany` had no
+category despite the dump's own text explicitly calling it "Heavy Attack: Absolution Litany" (fixed to
+`heavyDmg`); `phoebe.skill.chamuels-star` was miscategorized `skillDmg` despite the dump's own text
+saying Chamuel's Star is "considered Basic Attack DMG" (fixed to `basicDmg`). Recategorizing Absolution
+Litany to `heavyDmg` required adding `scopedToBlockId` to S3's node so its Starflash-only +91% doesn't
+leak onto Absolution Litany now that both share the category. Also fixed `dmgFocus`, which was
+`['Skill']` (3.6% real share, wrong) — corrected to `['Heavy ATK', 'Liberation', 'Basic ATK']` matching
+this dump's own Damage Profile's three real dominant buckets. 4 new tests, full suite green
+(1490/1490). See REMAINING_WORK.md §1c for the full write-up.

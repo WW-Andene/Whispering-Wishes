@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye — added 2026-09-03/04, first
-thirty-six characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa, Luuk Herssen, Mornye, Phoebe — added 2026-09-03/04, first
+thirty-seven characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -526,6 +526,94 @@ code, then cross-checked against `characters.js` and `mornye.blocks.js`.
   has a real `damage.category`, Intro's is specifically `skillDmg`;
   `tuneBreak.ruptureDmgMult` is the real sourced 298.22, not the old 300).
   Full suite green (1487/1487).
+
+**Phoebe — full 9-dimension audit (2026-09-04):** independently
+segmented/blockified her whole dual-mode kit (Absolution/Confession,
+Forte Circuit's Prayer/Divine Voice economy, all buffs, all 6 Resonance
+Chain nodes) from `Characters data dump/Phoebe/Phoebe.md` before looking
+at any existing code, with zero deference to that dump's own "App Data
+Comparison" section claiming a prior pass had already found/fixed
+everything.
+1. **SKILL_MULTIPLIERS (dimension 1):** every row (Basic ATK 1-3, Heavy
+   ATK, Skill/Chamuel's Star 1-3, Forte Starflash/Absolution Litany/Utter
+   Confession, Liberation, Intro, Outro) matches the dump's Lv.10 tables
+   exactly. Verified clean.
+2. **CHARACTER_ROTATIONS (dimension 2):** the modeled Absolution-mode
+   rotation (Intro → Skill: Mirror Summon → Forte: Absolution Litany →
+   Liberation → Chamuel's Star 1-3 → Forte: Starflash → Outro) matches the
+   dump's own Standard Absolution DPS Rotation exactly — the dump's
+   higher-rated mode (T1.5 DPS vs T2 Hybrid), correctly never modeling
+   Confession. Verified clean.
+3. **RESONANCE_CHAIN_DATA (dimension 3):** all 6 nodes' Absolution-side
+   values (`s1.libDmg:225`, `s2.deepen:120`, `s3.heavyDmg:91`,
+   `s4.resShred:10`, `s5.elemDmg:12`, `s6.atkPct:10`) match the dump
+   exactly, with each Confession-side half correctly left unmodeled per
+   the file's own comment (matches her Absolution-only rotation).
+   Verified clean.
+4. **CHAR_BUFF_TABLE (dimension 4):** Confession-only outro debuff/buff
+   (resShred 10 / deepen 100, both correctly inert in the modeled
+   Absolution rotation) match the dump. Verified clean.
+5. **Engine-block parity (dimension 8) — 3 real bugs found and fixed:**
+   - **Missing/wrong `damage.category` on 3 of 7 damage blocks.**
+     `phoebe.intro.golden-grace` and `phoebe.outro.attentive-heart` had
+     **no `damage.category` at all**, silently excluding both from every
+     weapon/echo DMG-type bonus bucket — same recurring bug class already
+     found on Lynae's/Mornye's Outro blocks. Fixed to `skillDmg` (Intro,
+     no dump override, matching the Calcharo/Encore/Jianxin/Lingyang/
+     Aalto/Baizhi/Chixia/Danjin default-convention) and `outroDmg` (Outro,
+     matching Calcharo/Carlotta/Chixia/Encore/Lingyang/Lynae/Rover:
+     Havoc/Xiangli Yao's own Outro blocks).
+   - **`phoebe.forte.absolution-litany` had no `damage.category` at all**,
+     despite the dump's own Forte Circuit text explicitly naming this cast
+     "**Heavy Attack**: Absolution Litany" (cast by holding Basic Attack at
+     full Prayer) — it IS a Heavy Attack for weapon/echo DMG-bonus
+     purposes, matching the dump's own Damage Profile where "Heavy" is by
+     far her largest bucket (43.8%, Starflash x4 + Absolution Litany
+     combined) despite Liberation (17.2%) being a much bigger single-hit
+     multiplier. Fixed to `heavyDmg`.
+   - **`phoebe.skill.chamuels-star` was miscategorized as `skillDmg`**,
+     directly contradicting the dump's own explicit kit text: "Inside the
+     ring, Basic Attack → Chamuel's Star (up to 3 attacks, **considered
+     Basic Attack DMG**)." Chamuel's Star is a Basic ATK replacement, not
+     Resonance Skill DMG — it was silently excluded from Basic ATK DMG
+     Bonus buffs (e.g. Luminous Hymn's own signature-weapon Basic ATK DMG
+     stacks) and wrongly credited to Skill DMG Bonus ones instead. Same
+     miscategorization-vs-dump-text bug class already found on Luuk
+     Herssen/Zhezhi/Cantarella. Fixed to `basicDmg`.
+   - **Follow-on scoping fix:** recategorizing Absolution Litany to
+     `heavyDmg` meant `phoebe.chain.s3` (S1's "Starflash DMG Multiplier
+     +91%" node, previously unscoped on the theory that `heavyDmg` was
+     Starflash-exclusive) would now silently leak onto Absolution Litany
+     too — the dump names only Starflash for this node. Added
+     `scopedToBlockId: 'phoebe.forte.starflash'`, same unscoped-buff-leak
+     bug class already found on Jiyan's `totalMult` passive.
+6. **dmgFocus (dimension 5) — real bug found and fixed:** was `['Skill']`,
+   but the dump's own Damage Profile puts Skill at only 3.6% (13,133) —
+   in this project's established ambiguous-exclude zone. The three real
+   dominant buckets, confirmed by the category fixes above, are Heavy ATK
+   43.8% (463,904), Liberation 17.2% (181,976), and Basic ATK 14.3%
+   (151,021). Fixed to `['Heavy ATK', 'Liberation', 'Basic ATK']`. Same
+   category-vs-dump-text miscategorization bug class as Luuk
+   Herssen/Zhezhi/Cantarella.
+7. **Weapon/echo data (dimensions 6-7):** `bestWeapon` (Luminous Hymn),
+   `weaponAlts` (Lethean Elegy/Stringmaster/Augment/Ocean's Gift), and
+   `bestEchoes` (Capitaneus + Eternal Radiance 5pc) all match the dump's
+   Best Weapon/Best Echo Set sections exactly; `weapons.js`'s Luminous
+   Hymn passive text and `echoes.js`'s Eternal Radiance set text both also
+   independently verified to match the dump verbatim. Verified clean.
+8. **Icons (dimension 9):** every `SKILL_ICONS['Phoebe']` key checked
+   against `getSkillIcon`'s case-sensitive `skillName.includes(key)`
+   substring-match logic and every real rotation-step skill-name string —
+   `"Chamuel's Star"` is already present as its own key (reusing the
+   generic Rectifier weapon icon, no dedicated art), so `"Chamuel's Star
+   1-3"` resolves correctly; no other missing keys or false-positive
+   collisions. `CHAIN_NODE_ICONS` s1-s6 all populated. Verified clean.
+- 4 new tests added to `triggerEngine-phoebe.test.js` (every damage block
+  has a real `damage.category` matching the dump's explicit wording;
+  Absolution Litany specifically `heavyDmg`, Chamuel's Star specifically
+  `basicDmg`; S3 stays scoped to Starflash only and does not leak onto
+  Absolution Litany now that both share `heavyDmg`; `dmgFocus` matches the
+  dump's real dominant buckets). Full suite green (1490/1490).
 
 **Open question (2026-09-04):** Lumi's own dump Damage Profile shows a
 real 26.3% "Skill" damage bucket, but no block in `lumi.blocks.js` is

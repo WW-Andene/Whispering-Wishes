@@ -1527,7 +1527,15 @@ const CHARACTER_DATA = {
   // was entirely missing from both columns.
   ['Zhezhi',        ['Basic ATK'],                    ['Basic ATK'],                           []],
   ['Roccia',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
-  ['Phoebe',        ['Skill'],                       [],                                      ['Frazzle']],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Skill' was wrong as the sole
+  // focus — the dump's own Damage Profile has Skill at only 3.6% (13,133), in this project's established
+  // ambiguous-exclude zone. Her three real dominant buckets are Heavy ATK 43.8% (463,904 — Starflash +
+  // Absolution Litany, the latter explicitly named "Heavy Attack: Absolution Litany" in the dump and
+  // recategorized to heavyDmg this same pass), Liberation 17.2% (181,976), and Basic ATK 14.3%
+  // (151,021 — Chamuel's Star, explicitly "considered Basic Attack DMG" per the dump and recategorized
+  // from skillDmg to basicDmg this same pass). Same category-vs-dump-text miscategorization bug class
+  // already found on Luuk Herssen/Zhezhi/Cantarella.
+  ['Phoebe',        ['Heavy ATK', 'Liberation', 'Basic ATK'], [],                              ['Frazzle']],
   // dmgFocus/buffs corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) — same bug shape as
   // Zhezhi's fix just above: 'Coordinated ATK' was wrong in BOTH columns. Kit text is explicit both
   // Flowing Suffocation and its Diffusion summon-chain are "considered Basic Attack DMG" (fixed in
