@@ -24,7 +24,9 @@ export const MORTEFI_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Dissonance' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('168.99%') },
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. No override
+    // text names a different category, same default-to-skillDmg convention used throughout this sweep.
+    damage: { hits: parseSkillMultiplierHits('168.99%'), category: 'skillDmg' },
     note: 'Builds Annoyance.',
   },
   {

@@ -1510,7 +1510,19 @@ const CHARACTER_DATA = {
   // libDmg-categorized — was entirely missing. Echo stays excluded — generic equipped-Echo damage, not
   // her own kit's Echo Skill button.
   ['Danjin',        ['Heavy ATK', 'Skill', 'Liberation'], ['Havoc DMG Deepen'],                []],
-  ['Mortefi',       ['Heavy ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against his own dump's Damage
+  // Profile: 'Heavy ATK' was WRONG — a genuine 0% real share, no heavyDmg-categorized damage block
+  // exists anywhere in mortefi.blocks.js (he has no plain Heavy ATK/Mid-air/Dodge Counter step at all in
+  // his real CHARACTER_ROTATIONS — his Outro instead GRANTS a Heavy ATK DMG buff to an ally, a team buff
+  // not his own damage). Liberation (67%, his single dominant bucket), Skill (17.8%), and Basic ATK
+  // (8.2%) were all entirely missing despite already being correctly libDmg/skillDmg/basicDmg-
+  // categorized. 'Coordinated ATK' is kept — his base-kit Burning Rhapsody Marcato procs (ally Basic/
+  // Heavy ATK hits triggering off-field Coordinated Attacks) are real, sourced, S0 kit per the dump's
+  // own calc methodology note, just not yet engine-modeled (only the S1/S5 chain-BONUS procs are — see
+  // REMAINING_WORK.md 1a, a genuinely bigger gap than a data fix, flagged not attempted here). Echo
+  // (7.27%) stays excluded — generic equipped-Echo damage. Intro (4.1%) also got its missing skillDmg
+  // category fixed but folds into the already-included Skill category.
+  ['Mortefi',       ['Liberation', 'Skill', 'Basic ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
   // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Basic ATK' was WRONG — her
   // dump's own Damage Profile shows a genuine 0% Basic ATK share, and no basicDmg-categorized damage
   // block exists anywhere in sanhua.blocks.js at all. Her 3 real damage buckets — Heavy 34.7% (Detonate,

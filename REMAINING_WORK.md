@@ -53,6 +53,19 @@ infrastructure. None need HP/live-state tracking except where noted.
   isn't an ally-action candidate at all — it's a status transition (upgrades
   a marker type), not a stat grant, explicitly out of scope for this
   mechanism.
+- **Mortefi's base-kit Burning Rhapsody Coordinated Attack — found 2026-09-04
+  (Phase A audit)**: distinct from the chain-node backlog above — this is
+  base S0 kit, not a Resonance Chain node. Liberation Violent Finale's own
+  kit text ("on-field character's Basic Attack hit → 1 Marcato; Heavy Attack
+  hit → 2 Marcato") is a real, sourced, always-on proc for 10s after cast,
+  and per the dump's own calc methodology note ("the calc uses 35 [procs],
+  realistic with Jiyan") is folded into his real 67% Liberation damage
+  share — but no block models it at all; only the S1/S5 CHAIN-bonus procs
+  are modeled (`mortefi.chain.s1-bonus-marcato`/`s5-bonus-marcato`).
+  Building it needs an assumed ally-hit-rate model (which teammate, how
+  often they land Basic/Heavy hits) this app has no existing infrastructure
+  for — genuinely bigger than a data fix, flagged here rather than
+  estimated or guessed at in `mortefi.blocks.js` itself.
 - ~~Youhu S2~~ — **closed 2026-09-03, correctly still no block, for a different
   reason than originally stated.** The "no dump file" blocker is gone
   (`Characters data dump/Youhu/Youhu.md` now exists and sources all 3 base
@@ -192,8 +205,8 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu — added
-2026-09-03/04, first thirteen characters audited under the updated
+Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi —
+added 2026-09-03/04, first fourteen characters audited under the updated
 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
@@ -569,6 +582,26 @@ but `'Skill'`/`'Liberation'` were both missing despite real, now-correctly
 -categorized damage. Fixed to `['Skill', 'Liberation', 'Coordinated
 ATK']`. Icons (dimension 9) checked and confirmed already fully wired. 4
 new tests, full suite green: 1411/1411.
+
+**Mortefi pass (2026-09-04)**: his `Characters data dump/` file already
+existed and had already been carefully re-audited (2026-09-01), including
+a real `chain.s3` over-crediting fix. Redoing dimensions 5/8 found
+`mortefi.intro.dissonance` uncategorized (fixed to `skillDmg`, default
+convention) and `dmgFocus` was `['Heavy ATK', 'Coordinated ATK']` — 'Heavy
+ATK' WRONG, a genuine 0% real share (his Outro grants a Heavy ATK buff to
+an ally, it's not his own damage), while Liberation (67%, his dominant
+bucket), Skill (17.8%), and Basic ATK (8.2%) were all entirely missing
+despite already being correctly categorized. Fixed to `['Liberation',
+'Skill', 'Basic ATK', 'Coordinated ATK']`. Dimension 8's full pass also
+surfaced a genuinely bigger gap, logged in §1a above rather than
+force-fit here: his base-kit Burning Rhapsody Coordinated Attack (ally
+Basic/Heavy ATK hits triggering off-field Marcato procs) is real, sourced
+S0 kit — not a Resonance Chain node — and per the dump's own calc
+methodology is folded into his 67% Liberation share, but no block models
+it; only the S1/S5 chain-BONUS procs are modeled. `'Coordinated ATK'`
+stays in `dmgFocus` regardless — real per his kit, same "no engine block
+yet" treatment as Yuanwu's Thunder Field. Icons (dimension 9) checked and
+confirmed already fully wired. 2 new tests, full suite green: 1413/1413.
 
 ---
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { MORTEFI_BLOCKS } from '../engine/characterBlocks/mortefi.blocks.js';
@@ -57,5 +57,14 @@ describe('triggerEngine parity — Mortefi', () => {
     expect(fired.has('mortefi.forte.fury-fugue')).toBe(true);
     expect(fired.has('mortefi.liberation.violent-finale')).toBe(true);
     expect(fired.has('mortefi.chain.s5-bonus-marcato')).toBe(true);
+  });
+
+  it("Intro (Dissonance) is skillDmg-categorized (was uncategorized)", () => {
+    const intro = MORTEFI_BLOCKS.find(b => b.id === 'mortefi.intro.dissonance');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  it("dmgFocus is ['Liberation', 'Skill', 'Basic ATK', 'Coordinated ATK'] — 'Heavy ATK' was wrong (0% real share, no heavyDmg block exists), Liberation/Skill/Basic ATK were all missing despite being real, already-categorized damage", () => {
+    expect(CHARACTER_DATA['Mortefi'].dmgFocus).toEqual(['Liberation', 'Skill', 'Basic ATK', 'Coordinated ATK']);
   });
 });
