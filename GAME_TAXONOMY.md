@@ -70,7 +70,6 @@ Game
 │
 ├── Echo
 │   └── <Name>
-│       ├── Rank → (ref: Enemy Rank)
 │       ├── Sonata
 │       ├── Cost
 │       ├── Stats
