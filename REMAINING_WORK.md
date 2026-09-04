@@ -192,8 +192,8 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto, Baizhi, Chixia — added 2026-09-03, first eight characters audited
-under the updated 9-dimension methodology** (see below). Many more
+Aalto, Baizhi, Chixia, Danjin — added 2026-09-03/04, first nine characters
+audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -466,6 +466,22 @@ missing. Fixed to `['Skill', 'Liberation', 'Outro']`. Intro (~3.35%) also
 got its missing `skillDmg` category fixed but folds into the already-
 included Skill category. Icons (dimension 9) checked and confirmed already
 fully wired. 3 new tests, full suite green: 1398/1398.
+
+**Danjin pass (2026-09-04)**: her `Characters data dump/` file already
+existed, with an earlier pass having fixed 4 real bugs (a wrong
+`bestEchoes` set, a missing `weaponAlts.alt5` entry, a stale Scatterbloom
+multiplier plus 2 missing higher-tier Forte rows, and an entirely-missing
+Inherent Skill Overflow). Redoing dimensions 5/8 found `danjin.intro.
+vindication` uncategorized (fixed to `skillDmg`, default convention) and
+`dmgFocus` actively wrong the same way as Chixia's: it included `'Basic
+ATK'` despite no `basicDmg`-categorized block existing anywhere in
+`danjin.blocks.js`, and her real `CHARACTER_ROTATIONS` never casting a
+standalone Basic Attack step (Basic ATK 2/3 are only referenced as
+prerequisites unlocking her Skill combos). Meanwhile Liberation — her
+single BIGGEST damage bucket (29.7%/56,602) — was entirely missing despite
+already being correctly `libDmg`-categorized. Fixed to `['Heavy ATK',
+'Skill', 'Liberation']`. Icons (dimension 9) checked and confirmed already
+fully wired. 2 new tests, full suite green: 1400/1400.
 
 ---
 

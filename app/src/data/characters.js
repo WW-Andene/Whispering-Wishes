@@ -1502,7 +1502,14 @@ const CHARACTER_DATA = {
   // Sanguine Pulse) — 'Skill' was missing entirely. buff tag corrected: her Outro is worded "23% Havoc
   // DMG Deepen" (not "Bonus") per the source's own rotation writeup, matching the `deepen` stat key used
   // in CHAR_BUFF_TABLE below.
-  ['Danjin',        ['Basic ATK', 'Heavy ATK', 'Skill'], ['Havoc DMG Deepen'],                 []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
+  // Profile: 'Basic ATK' was WRONG — no basicDmg-categorized damage block exists anywhere in
+  // danjin.blocks.js at all, and her real CHARACTER_ROTATIONS never casts a standalone Basic Attack
+  // step (Basic ATK 2/3 are only referenced as prerequisites unlocking her Skill combos, never their
+  // own modeled step). Liberation — her single BIGGEST damage bucket (29.7%/56,602), already correctly
+  // libDmg-categorized — was entirely missing. Echo stays excluded — generic equipped-Echo damage, not
+  // her own kit's Echo Skill button.
+  ['Danjin',        ['Heavy ATK', 'Skill', 'Liberation'], ['Havoc DMG Deepen'],                []],
   ['Mortefi',       ['Heavy ATK', 'Coordinated ATK'], ['Heavy ATK DMG Buff', 'Coordinated ATK'], []],
   ['Sanhua',        ['Basic ATK'],                   ['Basic ATK Amp'],                       []],
   // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was ['Coordinated ATK'] — a
