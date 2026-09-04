@@ -160,7 +160,7 @@ Game
 - **Weapon > Stats > Sub**: the fixed passive-scaling substat, e.g. Crit Rate/Crit DMG/Energy Regen.
 - **Echo > Sonata**: the set (`sets` in echoes.js — an echo can belong to 2). **Cost**: 1 / 3 / 4.
 - **Echo > Stats > Substats**: 5 random rolls. Not a 3-tier Main/Secondary/Sub split — that's not how the game actually works; corrected from an earlier draft of this doc.
-- **Echo > Echo Skill**: 4-cost echoes only, the active skill/buff.
+- **Echo > Echo Skill**: real on EVERY cost tier, not just 4-cost — corrected after an earlier draft of this doc wrongly claimed "4-cost only" without checking. Verified: 1-cost echoes (Whiff Whaff, Chirpuff, Zig Zag) and the 3-cost Chasm Guardian all have real active damage-dealing skills. The actual, narrower distinction: only 4-cost Echo Skill activations grant an additional TIMED STAT BUFF on top of the damage (per `SECTION:ECHO_SKILL_BUFFS`'s own comment: "4-cost echo active skill timed buffs") — 1-cost/3-cost skills are damage-only procs, no buff attached.
 - **Enemy > Rank**: Common / Elite / Calamity / Overlord — the real field name is `rank`, not "Danger level"; corrected from an earlier draft of this doc.
 - **Enemy > Stats**: level-scaled HP/ATK/DEF curve per `enemyLevelStats.json`, plus stagger data per `enemyStaggerStats.json`.
 - **Damage**: every entry is spelled out explicitly, not grouped/shortened — a block's `damage.category` must match one of these exact names, not a loose free-text description. Verified against real `damage.category` usage in `characterBlocks/`.
