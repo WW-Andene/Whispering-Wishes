@@ -494,16 +494,18 @@ kit text is explicit "Zephyr Song is a Basic ATK follow-up after Heavy
 Attack or Dodge Counter" — the "Heavy ATK" rotation-step type is just the
 input leading into it (same shape as Chixia's Boom Boom), confirmed by the
 dump's own Damage Profile showing an explicit 0% Heavy share. Fixed to
-`basicDmg`. `dmgFocus` was `['Skill']` only, missing Liberation (42.1%,
-her single biggest bucket, already correctly `libDmg`-categorized); Basic
-ATK gained a real source once Zephyr Song's category was corrected, added
-alongside it. Fixed to `['Skill', 'Liberation', 'Basic ATK']`. Left
-Feather Release deliberately uncategorized/unincluded: the dump's "counted
-as Basic Attack DMG" text is genuinely ambiguous whether it covers the
-whole multi-hit row or only its landing sub-hit — a real documented gap
-from an earlier pass, not silently dropped, not re-guessed at here. Icons
-(dimension 9) checked and confirmed already fully wired. 3 new tests, full
-suite green: 1403/1403.
+`basicDmg`. Also found `yangyang.forte.feather-release` uncategorized
+despite its own kit text saying "counted as Basic Attack DMG" — initially
+left unmodeled pending clarification on whether that label covers the
+whole multi-hit row (`21.73%×5 + 126.81%×2`) or only its landing sub-hit;
+user confirmed this project's own "counted as X" convention applies the
+label to the whole named move, not just the nearest sub-clause, so fixed
+to `basicDmg` in full. `dmgFocus` was `['Skill']` only, missing Liberation
+(42.1%, her single biggest bucket, already correctly `libDmg`-categorized);
+Basic ATK gained 2 real sources once Zephyr Song and Feather Release were
+correctly categorized. Fixed to `['Skill', 'Liberation', 'Basic ATK']`.
+Icons (dimension 9) checked and confirmed already fully wired. 4 new
+tests, full suite green: 1404/1404.
 
 ---
 

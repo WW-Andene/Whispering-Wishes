@@ -46,7 +46,12 @@ describe('triggerEngine parity — Yangyang', () => {
     expect(zephyr.damage.category).toBe('basicDmg');
   });
 
-  it("dmgFocus is ['Skill', 'Liberation', 'Basic ATK'] — Liberation (42.1%, her single biggest bucket) was missing; Basic ATK gained a real source once Zephyr Song's category was corrected", () => {
+  it("Feather Release is basicDmg-categorized (was uncategorized) — the kit text's \"counted as Basic Attack DMG\" applies to the whole move, not just its landing sub-hit", () => {
+    const feather = YANGYANG_BLOCKS.find(b => b.id === 'yangyang.forte.feather-release');
+    expect(feather.damage.category).toBe('basicDmg');
+  });
+
+  it("dmgFocus is ['Skill', 'Liberation', 'Basic ATK'] — Liberation (42.1%, her single biggest bucket) was missing; Basic ATK gained real sources once Zephyr Song and Feather Release were correctly categorized", () => {
     expect(CHARACTER_DATA['Yangyang'].dmgFocus).toEqual(['Skill', 'Liberation', 'Basic ATK']);
   });
 });

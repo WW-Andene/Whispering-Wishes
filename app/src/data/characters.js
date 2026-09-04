@@ -1528,11 +1528,9 @@ const CHARACTER_DATA = {
   ['Lumi',          ['Basic ATK'],                    ['Skill DMG Amp'],                       []],
   // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
   // Profile: Liberation is her single BIGGEST damage bucket (42.1%/53,643), already correctly libDmg-
-  // categorized, entirely missing. Basic ATK gained a real basicDmg source this pass: Zephyr Song
-  // (fired 2x in her real rotation) was miscategorized heavyDmg, now fixed — see yangyang.blocks.js.
-  // Feather Release stays uncategorized/unincluded: the dump's "counted as Basic Attack DMG" text is
-  // genuinely ambiguous whether it covers the whole multi-hit row or only its landing sub-hit, a real
-  // documented gap, not silently dropped. Echo (9.5%) stays excluded — generic equipped-Echo damage.
+  // categorized, entirely missing. Basic ATK gained 2 real basicDmg sources this pass: Zephyr Song
+  // (fired 2x in her real rotation) was miscategorized heavyDmg, and Feather Release was uncategorized —
+  // both fixed, see yangyang.blocks.js. Echo (9.5%) stays excluded — generic equipped-Echo damage.
   ['Yangyang',      ['Skill', 'Liberation', 'Basic ATK'], ['Energy Regen'],                    []],
   // 5★ Support / Healer
   // dmgFocus gained 'Basic ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): her dump has no

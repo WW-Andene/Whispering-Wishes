@@ -53,8 +53,13 @@ export const YANGYANG_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Forte:Echoing Feathers: Feather Release' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('21.73%×5 + 126.81%×2') },
-    note: 'Mid-air Basic ATK consuming all 3 Melodies; only the landing hit is separately "considered Basic ATK DMG", not the whole row, so no forced category is applied.',
+    // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized. Per this
+    // project's own "counted as X" convention, a kit-text category label applies to the whole named
+    // move/row it's attached to, not just the sub-clause it happens to sit nearest — the dump's kit text
+    // ("landing with a sword-sheathe attack, counted as Basic Attack DMG") describes the Feather Release
+    // move as a whole, so the full combined row (diving strikes + landing hit) is basicDmg.
+    damage: { hits: parseSkillMultiplierHits('21.73%×5 + 126.81%×2'), category: 'basicDmg' },
+    note: 'Mid-air Basic ATK consuming all 3 Melodies, counted as Basic Attack DMG.',
   },
   {
     id: 'yangyang.liberation.wind-spirals',
