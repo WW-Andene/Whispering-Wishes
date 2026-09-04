@@ -22,7 +22,33 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
+ * schemaVersion — ENGINE_ARCHITECTURE_PROPOSAL.md v2 §3.4, added 2026-09-04 as additive Phase 0
+ * infrastructure (validateBlock.js/knownCategories.js in this same folder implement the checks
+ * described here). Every block will eventually carry an explicit `schemaVersion: <integer>`; a
+ * block missing it is treated as version 1 (today's shape, unchanged) by every reader — version 1
+ * semantics are never deleted, only added to. None of the ~57 existing characterBlocks/*.blocks.js
+ * files were retroactively edited to add this field in this pass (deferred to the amortized Phase A
+ * migration per §7 — each character's audit adds `schemaVersion: 2` plus the fields below to that
+ * one file as part of doing the audit, not as a separate blanket rewrite). `section` (one of
+ * BasicATK/HeavyATK/Skill/Liberation/Forte/Intro/Outro/Chain/Echo/Buff, §1.1) and `resource`
+ * (RESERVED — Concerto/energy consumption or requirement, not built yet, §1.2) are the two fields a
+ * `schemaVersion: 2` block adds beyond today's shape; see validateBlock.js for the enforced checks
+ * and knownCategories.js for the `damage.category` registry.
+ *
  * @typedef {Object} TriggerBlock
+ * @property {number} [schemaVersion] Explicit schema version, starting at 2 for blocks migrated
+ *                                   under this proposal. Absent/undefined means version 1 (today's
+ *                                   shape) — never required by the runtime loader until every
+ *                                   character is migrated (§7's "done" checkpoint).
+ * @property {string} [section]      Version-2-only. The game's own move-category this block
+ *                                   belongs to: one of BasicATK/HeavyATK/Skill/Liberation/Forte/
+ *                                   Intro/Outro/Chain/Echo/Buff (§1.1 — a closed enum, unlike
+ *                                   `damage.category`, since Section tracks the game's own UI move
+ *                                   categories, a much slower-growing set).
+ * @property {*} [resource]          RESERVED, not built yet. Concerto/energy consumption or
+ *                                   requirement (§1.2) — present in this typedef from day one so a
+ *                                   future addition here is additive against the current
+ *                                   schemaVersion, not a new top-level field needing its own bump.
  * @property {string} id            Stable unique id, e.g. 'rover-electro.forte.overshock'
  * @property {string} source        Character name this block belongs to (CHARACTERS key)
  * @property {string} kind          One of: 'damage' | 'buff' | 'debuff' | 'heal' | 'utility'
