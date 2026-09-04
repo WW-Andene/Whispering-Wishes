@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena — added 2026-09-03/04, first
-thirty characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki — added 2026-09-03/04, first
+thirty-one characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -1556,6 +1556,32 @@ genuinely match the dump exactly — no re-fix needed there. Real bugs found:
 3 new/expanded tests in `triggerEngine-galbrena.test.js`. Full suite green: 1463/1463.
 
 Added to the completed-characters list above: **Galbrena**.
+
+---
+
+**2026-09-04 — Hiyuki full 9-dimension audit.**
+
+Independently re-verified all 9 dimensions against `Characters data dump/Hiyuki/Hiyuki.md`
+(a fresh Prydwen dump, Patch 3.5 calcs). SKILL_MULTIPLIERS, CHARACTER_ROTATIONS,
+RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE, weapon data, echo data, `hiyuki.blocks.js`
+engine-block parity, and SKILL_ICONS/CHAIN_NODE_ICONS were all already correct from an
+earlier pass this session (2026-09-01/02/03) — cross-checked line-by-line against the dump's
+Multipliers tables, Resonance Chain node text, Damage-Type Breakdown, and Build section, no
+further bugs found in those 8 dimensions.
+
+One real bug found and fixed:
+
+1. **dmgFocus** — stored as `['Liberation', 'Basic ATK']`. The dump's own "Real Damage-Type
+   Breakdown" table (Prydwen's simulated rotation) shows Basic ATK is a genuine **0%** share —
+   every nominal Basic/Heavy/Intro cast in the real rotation happens while she's in Foreclaimed
+   Self, where kit text explicitly reclassifies it to Resonance Liberation DMG — while **Skill**
+   (Frostblight: Jade Cleave/Petalfall) is a real, non-trivial **6.1%** share that was missing
+   entirely. Fixed to `['Liberation', 'Skill']` (Liberation 60.8% remains dominant).
+
+1 new test added in `triggerEngine-hiyuki.test.js` asserting dmgFocus contains Liberation and
+Skill and excludes Basic ATK. Full suite green: 1464/1464.
+
+Added to the completed-characters list above: **Hiyuki**.
 
 ---
 

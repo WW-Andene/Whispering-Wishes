@@ -1466,7 +1466,12 @@ const CHARACTER_DATA = {
   ['Qingxiao',      ['Heavy ATK', 'Liberation', 'Basic ATK'], [],                                ['Tune Strain - Interfered']],
   ['Jingran',       ['Heavy ATK', 'Liberation'],     [],                                      []],
   ['Yangyang: Xuanling', ['Heavy ATK', 'Basic ATK'], [],                                      ['Havoc Bane']],
-  ['Hiyuki',        ['Liberation', 'Basic ATK'],     [],                                      ['Glacio Chafe']],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against the fresh dump's own
+  // Damage-Type Breakdown table: Basic ATK is a genuine 0% share (every nominal Basic/Heavy/Intro cast
+  // in the real rotation happens while in Foreclaimed Self, where it's explicitly reclassified to
+  // Resonance Liberation DMG per kit text) — dropped. Skill (6.1%, real, Frostblight/Jade Cleave/
+  // Petalfall) was missing and is added — Liberation (60.8%) remains the dominant focus.
+  ['Hiyuki',        ['Liberation', 'Skill'],          [],                                      ['Glacio Chafe']],
   // dmgFocus corrected 2026-08-18: 'Liberation' had no basis as a second focus — a tested personal-damage
   // breakdown (the source) shows Lucy's rotation is 77.70% Heavy ATK DMG with Tune Break at 17.10% and her
   // Resonance Liberation (Netrunner) in "low single digits"; Liberation replaced with a second 'Heavy ATK'-
