@@ -24,7 +24,10 @@ export const XIANGLI_YAO_BLOCKS = [
     source: SOURCE, kind: 'damage',
     trigger: { type: 'cast', on: 'Intro:Principle' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('99.41%×2') },
+    // category added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
+    // rejecting teammate skillDmg buffs. No override text names a different category, same default-to-
+    // skillDmg convention applied project-wide.
+    damage: { hits: parseSkillMultiplierHits('99.41%×2'), category: 'skillDmg' },
     note: 'Builds Capacity.',
   },
   {

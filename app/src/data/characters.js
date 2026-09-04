@@ -1358,7 +1358,12 @@ const CHARACTER_DATA = {
   // too — generic equipped-Echo damage, not his own kit's Echo Skill button.
   ['Lingyang',      ['Basic ATK', 'Skill', 'Outro', 'Liberation'], [],                        []],
   ['Jinhsi',        ['Skill', 'Liberation'],         [],                                      []],
-  ['Xiangli Yao',   ['Skill', 'Liberation'],         [],                                      []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against his own dump's Damage
+  // Profile: Basic ATK (8%, already basicDmg-categorized via xianglyao.basic.intuition-pivot-impale)
+  // was missing despite being above this project's established 6.8% include threshold. Outro (5.1%)
+  // stays excluded — sits in the established ambiguous-exclude zone (4.6-5.5%), same precedent as
+  // Calcharo's Intro at 5.1%. Echo (5%) stays excluded — generic equipped-Echo damage.
+  ['Xiangli Yao',   ['Skill', 'Liberation', 'Basic ATK'], [],                                  []],
   ['Camellya',      ['Basic ATK', 'Skill'],          [],                                      []],
   ['Carlotta',      ['Skill', 'Liberation'],         [],                                      []],
   ['Brant',         ['Basic ATK', 'Skill'],          ['Self-heal'],                           []],
