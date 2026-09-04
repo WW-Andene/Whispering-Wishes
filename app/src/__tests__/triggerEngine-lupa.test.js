@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/rotationSimulator.js';
 import { LUPA_BLOCKS } from '../engine/characterBlocks/lupa.blocks.js';
@@ -96,5 +96,33 @@ describe('triggerEngine parity — Lupa', () => {
     // The old base-version block id no longer exists at all — renamed, not left as a dead duplicate.
     expect(LUPA_BLOCKS.find(b => b.id === 'lupa.liberation.dance-with-the-wolf')).toBeUndefined();
     expect(withS4.hitLog.filter(h => h.blockId === 'lupa.liberation.dance-with-the-wolf-climax').length).toBe(6);
+  });
+
+  // Fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the icon lookup key was 'Dance with the Wolf'
+  // (lowercase 'with'), but every real skill name in this file uses 'Dance With the Wolf' (capital 'W').
+  // getSkillIcon does a case-sensitive substring match, so both the base move and the Climax variant
+  // (the one actually cast in her real rotation) resolved to no icon at all.
+  it('Dance With the Wolf: Climax resolves a real skill icon (case-sensitive substring match)', () => {
+    expect(getSkillIcon('Lupa', 'Dance With the Wolf: Climax')).toBeTruthy();
+    expect(getSkillIcon('Lupa', 'Dance With the Wolf')).toBeTruthy();
+  });
+
+  // Fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): S2's dump text is explicit — "grants the
+  // WHOLE TEAM +20% Fusion DMG Bonus" — but the block was scoped 'self', silently dropping the buff for
+  // every teammate in any team-wide calc (Lupa's own single-target DPS was unaffected since self sits
+  // inside whole-team either way, which is how this stayed hidden).
+  it('S2 (Fusion DMG Bonus) is scoped to the whole team, not just self', () => {
+    const s2 = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s2');
+    expect(s2.target.scope).toBe('whole-team');
+  });
+
+  // Fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): dmgFocus was missing 'Heavy ATK' despite it
+  // being a real ~6.5% damage share (Wolf's Claw + Firestrike, both real rotation steps) — above this
+  // file's own established 4.6-5.5% ambiguous-exclude zone — silently routing any teammate's Heavy ATK
+  // DMG Bonus buff to zero for Lupa in calcTeamStats.js's routeTypeBonuses().
+  it('dmgFocus includes Heavy ATK (a real, non-negligible damage share)', () => {
+    expect(CHARACTER_DATA['Lupa'].dmgFocus).toContain('Heavy ATK');
+    expect(CHARACTER_DATA['Lupa'].dmgFocus).toContain('Liberation');
+    expect(CHARACTER_DATA['Lupa'].dmgFocus).toContain('Skill');
   });
 });

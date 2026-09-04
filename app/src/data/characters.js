@@ -1547,7 +1547,14 @@ const CHARACTER_DATA = {
   // teammate's Heavy ATK or Liberation DMG Bonus buff was silently routed to zero for her in
   // calcTeamStats.js's routeTypeBonuses(). Same class of finding as Cartethyia's own dmgFocus fix.
   ['Ciaccona',      ['Basic ATK', 'Heavy ATK', 'Liberation', 'Skill'], ['Aero Buff'],          ['Erosion']],
-  ['Lupa',          ['Liberation', 'Skill'],         ['DMG Buff'],                            ['Fusion RES Shred']],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) — 'Heavy ATK' was missing despite
+  // being a real, non-negligible damage share (~6.5% per the dump's own damage-profile breakdown, via
+  // Wolf's Claw + Firestrike, both real steps in her modeled rotation) — above this file's established
+  // 4.6-5.5% ambiguous-exclude zone (see Zhezhi/Cantarella's own dmgFocus comments), so a teammate's
+  // Heavy ATK DMG Bonus buff was silently routed to zero for her in calcTeamStats.js's routeTypeBonuses().
+  // 'Basic ATK' (~5.1%) and 'Echo' (~5%) both sit inside that ambiguous zone and are left out, consistent
+  // with the same precedent.
+  ['Lupa',          ['Liberation', 'Skill', 'Heavy ATK'], ['DMG Buff'],                        ['Fusion RES Shred']],
   // dmg-type tag corrected 2026-09-02 against a fresh the source dump: 'Heavy ATK' was wrongly kept for
   // Absolute Fullness (the 2026-08-17 correction's own comment claimed it was "true Heavy ATK" — wrong,
   // its kit text explicitly says "considered as Resonance Liberation DMG", same as her other
@@ -7802,7 +7809,7 @@ const SKILL_ICONS = {
     "Shewolf's Hunt": './characters/lupa/5WbyTxzD-skill-shewolfshunt.webp',
     'Feral Fang': './characters/lupa/5WbyTxzD-skill-shewolfshunt.webp', // same Resonance Skill's follow-up, same wiki icon
     'Ignis Lupa': './characters/lupa/S7W3d25X-skill-ignislupa.webp',
-    'Dance with the Wolf': './characters/lupa/S7W3d25X-skill-ignislupa.webp', // Forte Circuit's own upgraded Skill, same icon
+    'Dance With the Wolf': './characters/lupa/S7W3d25X-skill-ignislupa.webp', // Forte Circuit's own upgraded Skill (and its Climax variant, matched via substring), same icon
     'Fire-Kissed Glory': './characters/lupa/mrPk9FF3-skill-firekissedglory.webp',
     'Foebreaker': './characters/lupa/mrPk9FF3-skill-firekissedglory.webp', // Liberation follow-up, same wiki icon
     'Try Focusing, Eh?': './characters/lupa/jkNfHp2y-skill-tryfocusingeh.webp', // Intro Skill

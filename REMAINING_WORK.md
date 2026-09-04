@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla — added 2026-09-03/04, first
-thirty-three characters audited under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya, Cantarella, Carlotta, Cartethyia, Chisa, Ciaccona, Galbrena, Hiyuki, Iuno, Lucilla, Lupa — added 2026-09-03/04, first
+thirty-four characters audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -311,6 +311,54 @@ Added it:
   trigger match `SKILL_MULTIPLIERS`, the rotation correctly omits Finale
   (and still casts Prelude), and S6's totalMult boosts Finale without
   leaking to Intro. Full suite green (1471/1471).
+
+**Lupa — full 9-dimension re-audit (2026-09-04):** independently
+segmented/blockified her whole kit from `Characters data dump/Lupa/Lupa.md`
+before looking at any existing code (per this pass's mandatory
+methodology), then cross-checked against `characters.js` and
+`lupa.blocks.js`. Dimensions 1-4 and 6-7 (SKILL_MULTIPLIERS,
+CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE, weapon data,
+echo data) were already fully correct against the dump — a prior
+2026-09-01/09-02 pass on this same character had already found and fixed
+the real bugs there (multi-hit collapse, type miscategorization,
+Foebreaker's missing row, the Forte-finisher rotation step naming the
+wrong Dance With the Wolf variant, S3/S4's totalMult→libDmg
+recategorization, S4's cast-scoped-buff-is-a-silent-no-op architecture gap
+converted to a real damage block) — independently re-derived and verified
+correct rather than taken on faith. Found 3 real, previously-unfixed bugs
+in the remaining dimensions:
+1. **dmgFocus missing 'Heavy ATK' (dimension 5):** the dump's own damage
+   profile puts Heavy ATK at a real ~6.5% share (Wolf's Claw + Firestrike,
+   both real steps in her modeled rotation) — above this file's own
+   established 4.6-5.5% ambiguous-exclude zone (see Zhezhi/Cantarella's
+   dmgFocus comments) — but `dmgFocus` only listed `['Liberation',
+   'Skill']`. Silently routed any teammate's Heavy ATK DMG Bonus buff to
+   zero for Lupa in `calcTeamStats.js`'s `routeTypeBonuses()`. Fixed:
+   added `'Heavy ATK'`. 'Basic ATK' (~5.1%) and 'Echo' (~5%) both stay
+   excluded, correctly sitting inside the same ambiguous zone.
+2. **S2 Resonance Chain node wrongly scoped 'self' instead of 'whole-team'
+   (dimension 8, engine-block parity):** the dump's text is explicit —
+   "Casting Fire-Kissed Glory, Wolf's Gnawing, Wolf's Claw, OR Firestrike
+   grants the WHOLE TEAM +20% Fusion DMG Bonus" — matching this same
+   file's own `lupa.libbuff.pack-hunt` block (Pack Hunt, correctly
+   `whole-team`). `lupa.chain.s2` was instead `target: { scope: 'self' }`,
+   silently dropping the buff for every teammate in any team-wide calc;
+   Lupa's own single-target DPS number was unaffected (self sits inside
+   whole-team either way), which is exactly how this stayed hidden through
+   the prior pass's own single-character-focused tests. Fixed: scope
+   changed to `'whole-team'`.
+3. **Icon lookup key case mismatch (dimension 9):** `SKILL_ICONS['Lupa']`
+   keyed the Forte-finisher icon as `'Dance with the Wolf'` (lowercase
+   `with`), but every real skill name in `SKILL_MULTIPLIERS`/
+   `CHARACTER_ROTATIONS` uses `'Dance With the Wolf'` (capital `With`).
+   `getSkillIcon()` does a case-sensitive substring match
+   (`skillName.includes(k)`), so both the base move and the Climax variant
+   — the one actually cast in her real modeled rotation — resolved to no
+   icon at all. Fixed: key capitalization corrected to `'Dance With the
+   Wolf'`, which also now matches the Climax variant via substring.
+- 4 new tests added to `triggerEngine-lupa.test.js` covering all 3 fixes
+  (icon resolves for both variants, S2 scope is whole-team, dmgFocus
+  contains Heavy ATK/Liberation/Skill). Full suite green (1480/1480).
 
 **Open question (2026-09-04):** Lumi's own dump Damage Profile shows a
 real 26.3% "Skill" damage bucket, but no block in `lumi.blocks.js` is
