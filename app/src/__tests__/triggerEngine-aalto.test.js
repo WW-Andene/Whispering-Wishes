@@ -5,8 +5,13 @@ import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { AALTO_BLOCKS } from '../engine/characterBlocks/aalto.blocks.js';
+import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Aalto', () => {
+  it('every block matches the canonical schema (Layer 4 migration)', () => {
+    expectValidBlockFile(AALTO_BLOCKS, 'Aalto');
+  });
+
   it('Resonance Chain S2/S4/S5/S6 buffs match RESONANCE_CHAIN_DATA', () => {
     const legacyStats = createStats();
     applyResonanceChain(legacyStats, 'Aalto', 6, true);
