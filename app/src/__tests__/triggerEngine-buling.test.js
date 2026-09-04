@@ -9,6 +9,10 @@ describe('triggerEngine parity — Buling', () => {
     expect(CHARACTER_DATA['Buling'].dmgFocus).toEqual(['Basic ATK', 'Skill', 'Liberation']);
   });
 
+  it("intro.summon-and-smite is categorized 'skillDmg' — fixed 2026-09-04 (Phase A REDO): was uncategorized, silently rejecting Resonance Skill DMG Bonus; the source dump's own Intro Skill multiplier row is literally labeled \"Skill Damage\"", () => {
+    expect(BULING_BLOCKS.find(b => b.id === 'buling.intro.summon-and-smite').damage.category).toBe('skillDmg');
+  });
+
   it('S2-S5 stay correctly unmodeled (no block) — pure utility per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Buling'];
     ['s2', 's3', 's4', 's5'].forEach(s => expect(rc[s]).toEqual({}));
@@ -17,10 +21,17 @@ describe('triggerEngine parity — Buling', () => {
     });
   });
 
-  it('S1/S6 match RESONANCE_CHAIN_DATA exactly', () => {
+  it('S1 matches RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Buling'];
     expect(BULING_BLOCKS.find(b => b.id === 'buling.chain.s1').effects[0].value).toBe(rc.s1.critRate);
-    expect(BULING_BLOCKS.find(b => b.id === 'buling.chain.s6').effects[0].value).toBe(rc.s6.skillDmg);
+  });
+
+  it("S6 chain.s6 + libbuff.five-thunders-skill-ramp sum to RESONANCE_CHAIN_DATA's real 50% ceiling — fixed 2026-09-04 (Phase A REDO): chain.s6 used to store the flat 50 absolute value, which stacked ADDITIVELY on top of the base 25% ramp buff (both fire on the same Liberation cast) for a wrong 75% total; now stores the 25-point DELTA so the two blocks sum to the correct 50%", () => {
+    const rc = RESONANCE_CHAIN_DATA['Buling'];
+    const ramp = BULING_BLOCKS.find(b => b.id === 'buling.libbuff.five-thunders-skill-ramp');
+    const s6 = BULING_BLOCKS.find(b => b.id === 'buling.chain.s6');
+    expect(ramp.effects[0].value + s6.effects[0].value).toBe(rc.s6.skillDmg);
+    expect(s6.effects[0].value).toBe(rc.s6.skillDmg - ramp.effects[0].value);
   });
 
   it('outro and libBuff match CHAR_BUFF_TABLE', () => {

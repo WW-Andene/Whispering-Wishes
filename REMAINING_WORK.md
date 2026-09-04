@@ -998,6 +998,98 @@ repeat-step trigger-label mismatches):
 category; `dmgFocus` equals `['Basic ATK', 'Liberation']`). Full suite
 green: 1448/1448.
 
+**Buling redo (2026-09-04) — genuine from-scratch re-audit (not a check-if-
+already-done pass), found 2 real bugs the earlier same-day Buling passes
+missed (the first pass mostly trusted a prior commit and found 1 bug, a
+follow-up pass closed dimensions 8/9 and found 1 more — this pass
+independently re-verified all 9 dimensions from scratch against
+`Characters data dump/Buling/Buling.md` rather than trusting either prior
+write-up, specifically re-checking every damage block and chain node for
+the 3 bug classes found on Camellya/Augusta/Brant** (miscategorization
+against kit-text override language, unscoped chain-node buffs stacking
+kit-wide instead of scoped to one move, and repeat-step trigger-label
+mismatches):
+1. **SKILL_MULTIPLIERS** — every Lv.10 row (Basic ATK Stage 1-4, Mid-air
+   Attack, Dodge Counter, both Heavy Attack combos, Skill/Pull-in Effect,
+   both Liberation forms, Five Thunders Spell Array, Intro, Outro)
+   re-checked digit-for-digit against the dump's own Multipliers tables.
+   Confirmed exact, no drift.
+2. **CHARACTER_ROTATIONS** — all 10 Loop Rotation steps re-checked against
+   the dump's own "Loop Rotation" text. Confirmed an exact match. No step
+   repeats a combo under a differently-worded combined label, so the
+   repeat-trigger-label bug class (Augusta's) does not apply here — checked
+   and confirmed not applicable.
+3. **RESONANCE_CHAIN_DATA** — every node (S1-S6) re-read against the dump's
+   own Resonance Chain text, specifically re-checking S1's Crit Rate scoping
+   (is it scoped to just Flashing Thunder Spell: Harmony, or unscoped over
+   Buling's whole kit like Camellya's bug?) and S6's stacking behavior
+   against `buling.libbuff.five-thunders-skill-ramp` (both fire on the same
+   Liberation cast). S1: confirmed the existing unscoped `self`-scope
+   modeling is the documented, accepted class of imprecision — the schema's
+   own `scopedToBlockId` caveat only enforces scoping on `trigger.type:
+   'passive'` blocks, and S1 is a real `cast`+`duration` buff-window block
+   (not passive), so `scopedToBlockId` would be a structural no-op here;
+   left as-is, matching precedent elsewhere for this exact engine
+   limitation. S6: **1 real bug found** — `buling.chain.s6` stored the flat
+   absolute ceiling value (50), which stacks ADDITIVELY on top of the base
+   ramp buff's own 25% (both fire on the same Liberation cast, no
+   replace-instead-of-add mechanism in this engine), giving a wrong 75%
+   total instead of the real 50% the dump's own kit text describes ("now
+   grants 50% ... up from the base 25%"). The block's own prior comment
+   explicitly flagged this as a "known imprecision ... not fixed in this
+   conversion" — not taken at face value. Fixed by modeling `chain.s6` as
+   the +25-point DELTA over the base ramp buff instead of the flat 50, so
+   the two blocks now sum to the correct 50% ceiling (the
+   RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE legacy flat-table path keeps its own
+   separate, still-undocumented-as-fixed additive-double-count limitation —
+   a cross-cutting `calcEngine.js` architecture gap out of scope for a
+   single-character engine-block audit, not modified this pass).
+4. **CHAR_BUFF_TABLE** — `outroBuffs` (`allDmg`, 15%, 30s) and `libBuffs`
+   (`skillDmg`, 25%, 24s) both re-verified against the dump's own Outro and
+   Forte Circuit kit text. Confirmed correct.
+5. **dmgFocus** — re-verified `['Basic ATK', 'Skill', 'Liberation']` (this
+   source has no Damage Profile % breakdown at all) against which blocks
+   actually fire every real Loop Rotation loop: 5 real `basicDmg` blocks
+   (Stage 1/2/4, Mid-air Attack, Heavy Attack - Mountain Over Thunder), 1
+   real `skillDmg` block (Thunder Talisman) plus the Intro fix below, and
+   Liberation (Flashing Thunder Spell: Harmony). Confirmed correct, no
+   fabricated or omitted entries.
+6. **Weapon data** — `bestWeapon` (Stringmaster) and `weaponAlts` (alt5:
+   Lethean Elegy/Rime-Draped Sprouts/Luminous Hymn/Cosmic Ripples; alt4:
+   Waltz in Masquerade) re-checked against the dump's full 6-weapon Best
+   Weapons list. Confirmed correct.
+7. **Echo data** — `bestEchoes` (`['Fallacy of No Return', 'Rejuvenating
+   Glow 5pc', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc']`) re-checked
+   against the dump's Best Echo Set section (one set, two alternative Main
+   Echoes). Confirmed correct, including the earlier pass's own
+   repeated-set-name fix for `getSonataLoadouts()`'s sequential pairing.
+8. **Engine-block parity — 1 real bug found (plus the S6 fix under
+   dimension 3 above).** Re-decomposed the dump's kit text move-by-move
+   against `buling.blocks.js`: `buling.intro.summon-and-smite` had no
+   `damage.category` at all, silently rejecting Resonance Skill DMG Bonus on
+   her Intro's real, always-fires-every-loop hit. The dump's own Intro Skill
+   multiplier table literally labels this row "Skill Damage" (not "Intro
+   DMG") — the same generic-labeling-defaults-to-skillDmg convention already
+   fixed for Aalto/Calcharo/Encore/Jianxin/Brant's own Intro rows. Fixed to
+   `category: 'skillDmg'`. Every other real named move (Basic ATK Stages
+   1/2/4, Mid-air Attack, Thunder Talisman, Mountain Over Thunder,
+   Liberation both forms) already has a correctly-categorized block; Stage
+   3/Dodge Counter/Heavy Attack - Thunder Over Mountain/Twin Mountains
+   confirmed deliberately unmodeled (never cast in the real Loop Rotation,
+   matching the established "SKILL_MULTIPLIERS row present but no block
+   needed when never cast in the modeled rotation" convention, e.g. Aalto's
+   own un-blocked Dodge Counter).
+9. **Icons** — `SKILL_ICONS['Buling']`/`CHAIN_NODE_ICONS['Buling']`
+   re-checked against every real rotation-step skill name (via
+   `getSkillIcon`'s `skillName.includes(key)` matching, including the Outro
+   step's own `'Exorcism Spell'` key) and all 6 chain nodes. Confirmed
+   already fully wired, no gap.
+
+2 new tests added to `triggerEngine-buling.test.js` (Intro's `skillDmg`
+category; S6 + base-ramp-buff sum to the real 50% ceiling instead of
+double-counting to 75%), 1 existing test updated (S6's own value changed
+from the flat 50 to the 25-point delta). Full suite green: 1450/1450.
+
 ---
 
 ## 2. Legacy-calculator correctness — real, unresolved finding
