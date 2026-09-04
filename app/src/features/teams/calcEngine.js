@@ -7,12 +7,21 @@
 import { ECHO_SKILL_BUFFS } from '../../data/echoes.js';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, CHARACTER_ROTATIONS } from '../../data/characters.js';
 import { WEAPON_REFINE_SCALE } from '../../data/constants.js';
+// Phase 0 structural cleanup (2026-09-04, ENGINE_ARCHITECTURE_PROPOSAL.md v2 §2.1): the
+// character-agnostic combat-math constants/formulas and role-substring helpers moved to their
+// permanent home under engine/shared/ — byte-identical logic, re-exported here so every existing
+// importer of these names from calcEngine.js keeps working unchanged.
+import {
+  ATTACKER_LEVEL, ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
+  calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
+} from '../../engine/shared/combatMath.js';
+import { isHealerRole, isSupportRole } from '../../engine/shared/roleHelpers.js';
 
-// ── Constants (named, not magic) ──
-export const ATTACKER_LEVEL = 90;
-export const ATTACKER_FACTOR = 800 + 8 * ATTACKER_LEVEL; // 1520
-export const BASE_CRIT_RATE = 5;
-export const BASE_CRIT_DMG = 150;
+export {
+  ATTACKER_LEVEL, ATTACKER_FACTOR, BASE_CRIT_RATE, BASE_CRIT_DMG,
+  calcDefMult, calcResMult, calcAvgCrit, calcDmgBonus,
+  isHealerRole, isSupportRole,
+};
 // Engine-merge Stage 1 (2026-09-04): the DOT/Tune-Break rotation-aggregate primitives
 // (calcFrazzleDmg/calcErosionDmg/calcFusionBurstDmg/calcElectroFlareDmg/calcTuneBreakDmg and their
 // constants) moved to ../../engine/dot/dotFormulas.js — they were never legacy-only math (see
@@ -446,33 +455,8 @@ export function routeTypeBonuses(stats, dpsFocus) {
 // that HAS one, no Healing Bonus main-stat option in Auto Equip, excluded from the healer/support
 // candidate pool when building team suggestions) — use these substring checks everywhere a role
 // CATEGORY is being tested instead, so a compound role matches every category it actually belongs to.
-export function isHealerRole(role) { return (role || '').includes('Healer'); }
-export function isSupportRole(role) { return (role || '').includes('Support'); }
-
-// ── Defense multiplier calculation ──
-export function calcDefMult(enemyDef, defShred, defIgnore) {
-  const reducedDef = enemyDef * Math.max(0, 1 - defShred / 100);
-  const effectiveDef = reducedDef * Math.max(0, 1 - defIgnore / 100);
-  return Math.min(2, ATTACKER_FACTOR / (ATTACKER_FACTOR + effectiveDef));
-}
-
-// ── Resistance multiplier calculation ──
-export function calcResMult(baseRes, shred) {
-  const totalRes = (baseRes - shred) / 100;
-  if (totalRes < 0) return 1 - totalRes / 2;
-  if (totalRes < 0.8) return 1 - totalRes;
-  return 1 / (1 + 5 * totalRes);
-}
-
-// ── Average crit multiplier ──
-export function calcAvgCrit(cr, cd) {
-  return 1 + (Math.min(cr, 100) / 100) * (cd / 100 - 1);
-}
-
-// ── WuWa 3-layer DMG bonus formula ──
-export function calcDmgBonus(elemDmg, skillDmg, amplify, deepen) {
-  return (1 + (elemDmg + skillDmg) / 100) * (1 + amplify / 100) * (1 + deepen / 100);
-}
+// (isHealerRole/isSupportRole/calcDefMult/calcResMult/calcAvgCrit/calcDmgBonus now live in
+// engine/shared/roleHelpers.js and engine/shared/combatMath.js — imported and re-exported above.)
 
 // ── Energy cycle tracking ──
 export function calcEnergyCycles(members, teamEquipment, teamIdx) {
