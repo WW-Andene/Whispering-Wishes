@@ -1639,7 +1639,17 @@ const CHARACTER_DATA = {
   // RESONANCE_CHAIN_DATA S1/S2/S3/S4/S6 omissions) — unlike Aalto's fabricated case, this one has real
   // textual basis, just no engine-representable damage yet.
   ['Yuanwu',        ['Skill', 'Liberation', 'Coordinated ATK'], ['Coordinated ATK'],           []],
-  ['Youhu',         ['Coordinated ATK'],             ['Heal', 'Coordinated ATK Amp'],         []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was ['Coordinated ATK'] — she
+  // has ZERO coordDmg-category blocks of her own; Coordinated ATK is the buff she GRANTS teammates via
+  // Outro, already correctly listed in the buffs column ('Coordinated ATK Amp'), not something she deals
+  // herself. Her real, modeled, every-loop damage composition (Skill: Ruyi ×3 + Scroll Divination ×1,
+  // Liberation: Fortune's Favor, Basic ATK: Frosty Punches full combo) was entirely missing. No Damage
+  // Profile % breakdown exists in this source (explicitly stated as unavailable), so magnitude can't be
+  // judged precisely — all 3 are real, sourced, non-trivial, already-categorized blocks that fire every
+  // single real rotation loop, included on that basis rather than guessed at. Intro (Scroll of Wonders,
+  // also real and firing every loop per the source's own "loops indefinitely" rotation) stays excluded —
+  // 'Intro' isn't a valid dmgFocus vocabulary term anywhere in this table (Outro is; Intro never is).
+  ['Youhu',         ['Skill', 'Liberation', 'Basic ATK'], ['Heal', 'Coordinated ATK Amp'],    []],
   // dmgFocus corrected 2026-08-18: 'Skill' had no basis — her Resonance Skill (In Shadow Thunder Stirs,
   // 58.40% at Lv.10) is one of her weakest hits; her biggest single damage source is her Resonance
   // Liberation (Flashing Thunder Spell / enhanced Harmony variant, up to 536.79% at Lv.10 plus the Five
