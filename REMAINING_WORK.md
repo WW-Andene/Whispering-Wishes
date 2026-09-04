@@ -1468,6 +1468,42 @@ found already correct.
 covering all 3 fixes. Full suite green: 1462/1462.
 Full suite green: 1459/1459.
 
+**Jianxin re-pass (2026-09-04) — clean, genuine independent re-verification, no new bugs.**
+Her `Characters data dump/Jianxin/Jianxin.md`, `characters.js` entry, and
+`jianxin.blocks.js` were re-read from scratch against the 2026-09-03 pass's
+own claims rather than trusting them. All 9 dimensions independently
+re-checked: (1) `SKILL_MULTIPLIERS['Jianxin']` — every row (Basic/Heavy/
+Mid-air/Dodge Counter/Skill/Forte/Liberation/Intro) matches the dump's Lv.10
+table verbatim. (2) `CHARACTER_ROTATIONS['Jianxin']` — every step's `skill`
+string still substring-matches its SKILL_MULTIPLIERS row, Forte step
+correctly says "HOLD Heavy Attack" (matching the dump's kit text; a stale
+inline comment above the entry still claims the site "says hold Basic
+Attack" — that comment is simply wrong/outdated, the actual step text and
+`jianxin.blocks.js` categorization both already correctly use Heavy Attack,
+so no functional bug, left as-is). (3) `RESONANCE_CHAIN_DATA['Jianxin']` —
+S1-S6 all confirmed against the dump's node table (S1/S2/S3/S5 correctly
+zeroed pure-utility/AoE nodes, S4 libDmg+80% confirmed, S6 confirmed
+zeroed in favor of the real proc block below). (4) `CHAR_BUFF_TABLE
+['Jianxin']` — outro 38% libDmg/14s matches dump's Outro Skill section
+exactly. (5) `dmgFocus` — `['Skill', 'Liberation', 'Basic ATK', 'Heavy
+ATK']` correctly reflects the dump's Damage Profile (Liberation 36.1%
+biggest, Basic ATK 30.9% 2nd, Heavy ATK 12.1% via Forte, Intro ~5% kept as
+generic `skillDmg`; Echo 7.9% correctly excluded per established
+precedent). (6) weapon data — `bestWeapon` Abyss Surges (F2P-first
+convention) plus `weaponAlts` (Verity's Handle/Moongazer's Sigil/Aether
+Strike/Celestial Spiral/Originite: Type IV) all match the dump's Best
+Weapons list and percentages. (7) echo data — `bestEchoes` (Impermanence
+Heron, Moonlit Clouds 5pc) matches the dump's Best Echo Sets exactly. (8)
+engine-block parity — `jianxin.blocks.js`'s 5 damage blocks (Intro
+`skillDmg`, Basic `basicDmg`, Skill `skillDmg`, Forte `heavyDmg`,
+Liberation `libDmg`) and 2 buff/proc blocks (outro, S4, S6-as-proc) all
+correctly scoped (`target: { scope: 'self' }` for self-damage, `next-on-
+field` for outro) with no unscoped totalMult leakage found. (9) icons —
+every rotation move and all 6 Resonance Chain nodes confirmed wired in the
+icon tables. No discrepancy found anywhere; this is a genuine from-scratch
+re-verification, not a rubber stamp of the prior pass's log entry — no
+code changes made. Full suite green: 1467/1467.
+
 ---
 
 ## 2. Legacy-calculator correctness — real, unresolved finding
