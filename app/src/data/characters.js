@@ -1373,7 +1373,13 @@ const CHARACTER_DATA = {
   // stays excluded — sits in the established ambiguous-exclude zone (4.6-5.5%), same precedent as
   // Calcharo's Intro at 5.1%. Echo (5%) stays excluded — generic equipped-Echo damage.
   ['Xiangli Yao',   ['Skill', 'Liberation', 'Basic ATK'], [],                                  []],
-  ['Camellya',      ['Basic ATK', 'Skill'],          [],                                      []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Skill' was WRONG — a genuine
+  // 0% real share per her own dump's Damage Profile (every Skill-button move — Crimson Blossom, the
+  // Vining Waltz/Blazing Waltz combo, Floral Ravage, Ephemeral — is explicitly "considered Basic Attack
+  // DMG" per kit text, confirmed and fixed to basicDmg category in camellya.blocks.js this same pass).
+  // 'Liberation' (16.5%/78,645, her 2nd-largest bucket, already correctly libDmg-categorized on
+  // camellya.liberation.fervor-efflorescent) was entirely missing.
+  ['Camellya',      ['Basic ATK', 'Liberation'],     [],                                      []],
   ['Carlotta',      ['Skill', 'Liberation'],         [],                                      []],
   ['Brant',         ['Basic ATK', 'Skill'],          ['Self-heal'],                           []],
   // dmgFocus corrected 2026-08-18: 'Skill' had no basis as a primary focus — Zani's Forte/Resonance Skill

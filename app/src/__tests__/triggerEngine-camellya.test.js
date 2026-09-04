@@ -21,11 +21,40 @@ describe('triggerEngine parity — Camellya', () => {
     const byId = id => CAMELLYA_BLOCKS.find(b => b.id === id);
     expect(byId('camellya.chain.s1-somewhere-no-one-travelled').effects[0].value).toBe(rc.s1.critDmg);
     expect(byId('camellya.chain.s2-calling-upon-the-silent-rose').effects[0].value).toBe(rc.s2.totalMult);
+    // S3's node holds two independently-conditioned real effects (Fervor Efflorescent's unconditional
+    // totalMult +50%, and a Budding-Mode-only ATK +58%) — split across 2 blocks, see chain.s3-fervor-mult.
+    expect(byId('camellya.chain.s3-fervor-mult').effects[0].value).toBe(rc.s3.totalMult);
     const s3 = byId('camellya.chain.s3-a-bud-adorned-by-thorns');
-    expect(s3.effects.find(e => e.stat === 'totalMult').value).toBe(rc.s3.totalMult);
     expect(s3.effects.find(e => e.stat === 'atkPct').value).toBe(rc.s3.atkPct);
+    expect(s3.condition).toEqual({ requiresStance: 'Budding Mode' });
     expect(byId('camellya.chain.s4-roots-set-deep-in-eternity').effects[0].value).toBe(rc.s4.basicDmg);
-    expect(byId('camellya.chain.s6-bloom-for-you-thousand-times-over').effects[0].value).toBe(rc.s6.totalMult);
+    const s6 = byId('camellya.chain.s6-bloom-for-you-thousand-times-over');
+    expect(s6.effects.every(e => e.stat === 'totalMult' && e.value === rc.s6.totalMult)).toBe(true);
+  });
+
+  it('Basic-ATK-type moves (Crimson Blossom, Vining Waltz combo, Ephemeral, Floral Ravage) are basicDmg, not skillDmg, per kit text overrides and the dump\'s 0% Skill / 67.1% Basic Damage Profile', () => {
+    const basicIds = [
+      'camellya.basic.vining-waltz-1',
+      'camellya.skill.crimson-blossom',
+      'camellya.skill.vining-waltz-combo',
+      'camellya.forte.ephemeral',
+      'camellya.skill.floral-ravage',
+    ];
+    for (const id of basicIds) {
+      expect(CAMELLYA_BLOCKS.find(b => b.id === id).damage.category).toBe('basicDmg');
+    }
+    expect(CAMELLYA_BLOCKS.some(b => b.damage?.category === 'skillDmg')).toBe(false);
+  });
+
+  it('Chain totalMult buffs are scoped via scopedToBlockId, not applied unscoped across the whole kit', () => {
+    const byId = id => CAMELLYA_BLOCKS.find(b => b.id === id);
+    expect(byId('camellya.chain.s2-calling-upon-the-silent-rose').effects[0].scopedToBlockId).toBe('camellya.forte.ephemeral');
+    expect(byId('camellya.chain.s3-fervor-mult').effects[0].scopedToBlockId).toBe('camellya.liberation.fervor-efflorescent');
+    expect(byId('camellya.chain.s5-everblooming').effects[0].scopedToBlockId).toBe('camellya.intro.everblooming');
+    const twiningScopes = byId('camellya.chain.s5-twining').effects.map(e => e.scopedToBlockId).sort();
+    expect(twiningScopes).toEqual(['camellya.outro.twining-base', 'camellya.outro.twining-ephemeral-bonus'].sort());
+    const bloomScopes = byId('camellya.chain.s6-bloom-for-you-thousand-times-over').effects.map(e => e.scopedToBlockId).sort();
+    expect(bloomScopes).toEqual(['camellya.skill.floral-ravage', 'camellya.skill.vining-waltz-combo'].sort());
   });
 
   it('S5 multi-skill split: the block model represents BOTH multipliers the flat table could only hold one of', () => {

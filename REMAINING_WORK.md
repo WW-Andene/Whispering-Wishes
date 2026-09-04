@@ -263,8 +263,8 @@ Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
 Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu, Mortefi,
 Jinhsi, Changli, Youhu, Zhezhi, Xiangli Yao, Shorekeeper, Lumi, Augusta,
-Brant, Buling — added 2026-09-03/04, first twenty-four characters audited
-under the updated 9-dimension methodology** (see below). Many more
+Brant, Buling, Camellya — added 2026-09-03/04, first twenty-five characters
+audited under the updated 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
 session's `auditBlockCoverage.mjs` sweep — that sweep covers 3 of the 9
@@ -787,6 +787,66 @@ Dodge-Counter-row precedent — neither fires in the real modeled rotation.
 Icons (dimension 9) checked and confirmed already fully wired for every
 rotation move and all 6 Resonance Chain nodes. 1 new test, full suite
 green: 1443/1443.
+
+**Camellya pass (2026-09-04) — 3 real bug classes found and fixed, the biggest
+categorization miscall found in this audit series so far.** Her
+`Characters data dump/` file and an "App Data Comparison" section already
+existed from a same-day-earlier pass claiming SKILL_MULTIPLIERS/
+CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/base stats/
+`bestWeapon`/`weaponAlts`/`bestEchoes`/tier were all clean, plus 2 real fixes
+already landed then (5 missing SKILL_MULTIPLIERS rows including the
+consequential Floral Ravage 0-DMG-rotation-step gap, and a straight ToA/WW
+tier swap). Per this pass's own instructions, all 9 dimensions were
+independently re-verified from scratch against the fresh dump rather than
+trusting that write-up, and it found real bugs the prior pass's narrower
+check missed:
+1. **Miscategorization, dimension 8 — the largest found in this audit series.**
+   Camellya's kit text is explicit that Crimson Blossom, the Vining
+   Waltz/Blazing Waltz combo, Ephemeral, and Floral Ravage are ALL
+   "considered Basic Attack DMG" (Blossom/Budding Mode replaces her whole
+   Basic/Heavy/Dodge-Counter/Skill kit with this combo) — yet all 5 of her
+   `camellya.*` damage blocks covering those moves (`basic.vining-waltz-1`,
+   `skill.crimson-blossom`, `skill.vining-waltz-combo`, `forte.ephemeral`,
+   `skill.floral-ravage`) were categorized `skillDmg`. Confirmed by the
+   dump's own Damage Profile showing a genuine **0% Skill share** against
+   **67.1% Basic** (her dominant bucket) — none of her real modeled damage
+   is actually Skill-type. Fixed all 5 to `basicDmg`.
+2. **`dmgFocus` was wrong as a direct consequence of (1) and also missing a
+   real bucket**: `['Basic ATK', 'Skill']` — 'Skill' had a genuine 0% share
+   (now 0 skillDmg blocks exist in the file at all), while 'Liberation'
+   (16.5%/78,645, her 2nd-largest bucket, already correctly
+   `libDmg`-categorized on `camellya.liberation.fervor-efflorescent`) was
+   entirely missing. Fixed to `['Basic ATK', 'Liberation']`.
+3. **Unscoped `totalMult` over-crediting, dimension 8 — same bug class as
+   Augusta's S3/S5 and Brant's S3/S6**: `chain.s2` (Ephemeral's own DMG
+   Multiplier +120%), `chain.s5-everblooming` (Everblooming's own +303%),
+   `chain.s5-twining` (Twining's own +68%), and `chain.s6-bloom-...` (Sweet
+   Dream's own +150%, Budding-Mode-conditioned) were all unscoped
+   `totalMult` buffs — per `resolveHitComposedDps.js`'s real application
+   (`stats.totalMult` multiplies EVERY hit, not just the named move), each
+   was silently over-crediting Camellya's entire kit instead of only the one
+   real move its own kit text names. All 4 fixed via `scopedToBlockId`
+   (`s5-twining`/`s6-bloom` each needed 2 scoped effect entries since Twining
+   has 2 damage blocks and Budding Mode's real affected moves in the modeled
+   rotation are the Vining Waltz combo + Floral Ravage). Fixing this also
+   surfaced a **5th real bug in the same node**: `chain.s3`'s single block
+   wrapped BOTH of its node's real effects — Fervor Efflorescent's
+   unconditional totalMult +50% AND a genuinely Budding-Mode-conditional ATK
+   +58% — under one `condition: { requiresStance: 'Budding Mode' }`, so the
+   totalMult half never applied at all in the real modeled rotation
+   (Liberation casts BEFORE Ephemeral/Budding Mode there). Split into 2
+   blocks: `chain.s3-fervor-mult` (unconditional, scoped to
+   `camellya.liberation.fervor-efflorescent`) and the original
+   `chain.s3-a-bud-adorned-by-thorns` (kept conditional, atkPct only — not
+   move-scoped since ATK isn't category-gated).
+   RESONANCE_CHAIN_DATA's own flat-table s2/s3/s5/s6 rows were re-checked and
+   left unchanged — they still match the dump's raw values exactly; only the
+   TriggerBlocks' application scope was wrong.
+Icons (dimension 9), weapon data, echo data, and CHAR_BUFF_TABLE were all
+independently re-verified against the fresh dump and confirmed already
+correct. 2 new tests added to `triggerEngine-camellya.test.js`
+(categorization + scoping assertions) plus 1 existing test updated for the
+S3 split; full suite green: 1445/1445.
 
 ---
 
