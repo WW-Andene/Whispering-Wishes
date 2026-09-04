@@ -613,6 +613,43 @@ tests added to `triggerEngine-lucilla.test.js` (one asserting the
 team buff in both the legacy table and the engine block), full suite
 green: 1475/1475.
 
+**Lucy pass (2026-09-04)**: fully independent re-derivation from
+`Characters data dump/Lucy/Lucy.md`, not trusting that file's own embedded
+"App Data Comparison" section, which already claimed a prior pass had
+fixed `ruptureDmgMult`, a fabricated `×6` on Basic Attack Stage 1, a
+truncated Payload value, 2 missing rotation-step damage rows (Thread
+Shredding Stage 1-4, Dual Threading), and 5 dead/miscategorized Resonance
+Chain nodes (S1/S2/S3/S4/S5). Rebuilt her whole Algorithm-Compaction kit
+from scratch — Locked Thread (Basic/Heavy/Plunging/Dodge Counter, base and
+Thread Shredding/Single/Dual/Multi-threading variants), Payload/Pulse
+Interference/Deadlock, Netrunner/Old Net Deep Dive + all 7 Spoofing
+Programs, Hack Response - Data Crash, Intro/Outro, all 6 Resonance Chain
+nodes, TCP/Root Access mechanics — and cross-checked all 9 dimensions
+against current `characters.js`/`lucy.blocks.js`.
+
+Dimensions 1/2/3/4/5/6/7/9 (SKILL_MULTIPLIERS, CHARACTER_ROTATIONS,
+RESONANCE_CHAIN_DATA, CHAR_BUFF_TABLE incl. `tuneBreak.ruptureDmgMult`,
+dmgFocus, weapon data, echo data, icons) and engine-block parity (dimension
+8: damage categories, `scopedToBlockId` on every chain node's effects,
+Payload's full un-truncated value, both previously-missing rotation-step
+blocks) all matched the dump exactly — every fix the dump's own
+comparison section claimed was independently re-derived and confirmed
+correct, not just trusted. `lucy.chain.s6`'s unscoped `heavyDmg: 40` was
+specifically checked against the Lucilla-bug-class concern (unscoped
+category-wide effect leaking beyond one named move) — but S6's own kit
+text genuinely says "Hack-Shifting/Interfered targets take +40% increased
+Heavy Attack DMG... from Lucy" (no single named move), so category-wide
+scope is the textually-correct model here, not a bug.
+
+One real bug found outside the dump's own coverage — dimension "base
+stats" (HP/ATK/DEF/maxEnergy, feeding into the 9-dimension SKILL_MULTIPLIERS
+pass's own stat context): `characters.js`'s `[SECTION:BASE_STATS]` row had
+`baseDef: 1148`, an off-by-one against the dump's stated Lv.90 stat line
+"HP 11025 / ATK 425 / DEF 1149 / Max Energy 150" (HP/ATK/maxEnergy were
+already correct). Fixed to 1149. 1 new test added to
+`triggerEngine-lucy.test.js` asserting `CHARACTER_DATA['Lucy'].baseDef`,
+full suite green: 1476/1476.
+
 **Verina pass (2026-09-03)**: her `Characters data dump/` file already
 existed (an earlier, differently-formatted dump — no "App Data Comparison"
 bug-list section, and no Damage Profile percentages since she's a pure

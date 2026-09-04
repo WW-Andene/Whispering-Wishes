@@ -1795,7 +1795,8 @@ const CHARACTER_DATA = {
   ['Aemeath',       11025, 425, 1149, 125],
   ['Sigrika',       10775, 438, 1137, 125],
   ['Rebecca',       11600, 400, 1173, 150],
-  ['Lucy',          11025, 425, 1148, 150],
+  // DEF corrected 2026-09-04 (Phase A audit): was 1148, off-by-one vs the dump's stated Lv.90 DEF 1149.
+  ['Lucy',          11025, 425, 1149, 150],
   ['Yangyang: Xuanling', 11025, 425, 1149, 150],
   ['Denia',         11025, 425, 1148, 150],
   ['Lucilla',       12238, 375, 1198, 150],
