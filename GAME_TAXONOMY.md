@@ -110,31 +110,30 @@ Game
 │   └── Physical DMG
 │
 ├── Buff
-│   ├── HP (flat)
-│   ├── HP %
-│   ├── ATK (flat)
-│   ├── ATK %
-│   ├── DEF (flat)
-│   ├── DEF %
-│   ├── Crit Rate %
-│   ├── Crit DMG %
-│   ├── Energy Regen %
-│   ├── Healing Bonus %
-│   ├── Basic ATK DMG Bonus
-│   ├── Heavy ATK DMG Bonus
-│   ├── Skill DMG Bonus
-│   ├── Liberation DMG Bonus
-│   ├── Echo Skill DMG Bonus
-│   ├── Coordinated ATK DMG Bonus
-│   ├── Intro Skill DMG Bonus
-│   ├── Outro Skill DMG Bonus
-│   ├── Glacio DMG Bonus
-│   ├── Fusion DMG Bonus
-│   ├── Electro DMG Bonus
-│   ├── Aero DMG Bonus
-│   ├── Spectro DMG Bonus
-│   ├── Havoc DMG Bonus
-│   └── Physical DMG Bonus
+│   ├── Base Stat
+│   │   ├── ATK %
+│   │   ├── Crit Rate
+│   │   └── Crit DMG
+│   ├── DMG Bonus — Universal
+│   │   └── All DMG
+│   ├── DMG Bonus — Move Type
+│   │   ├── Basic ATK DMG
+│   │   ├── Heavy ATK DMG
+│   │   ├── Skill DMG
+│   │   ├── Liberation DMG
+│   │   ├── Echo Skill DMG
+│   │   ├── Coordinated ATK DMG
+│   │   ├── Intro Skill DMG    (not yet real — see note)
+│   │   └── Outro Skill DMG    (not yet real — see note)
+│   ├── DMG Bonus — Element
+│   │   └── (ref: Element list — Glacio/Fusion/Electro/Aero/Spectro/Havoc/Physical)
+│   ├── DMG Bonus — Reaction
+│   │   ├── Erosion
+│   │   ├── Flare
+│   │   ├── Frazzle
+│   │   └── Fusion Burst
+│   └── Multiplier
+│       └── Total Mult
 │
 └── Debuff
     ├── DEF Ignore
@@ -164,7 +163,11 @@ Game
 - **Echo > Echo Skill**: 4-cost echoes only, the active skill/buff.
 - **Enemy > Rank**: Common / Elite / Calamity / Overlord — the real field name is `rank`, not "Danger level"; corrected from an earlier draft of this doc.
 - **Enemy > Stats**: level-scaled HP/ATK/DEF curve per `enemyLevelStats.json`, plus stagger data per `enemyStaggerStats.json`.
-- **Damage / Buff**: every entry is spelled out explicitly, not grouped/shortened — a block's `damage.category` or a buff's `statId` must match one of these exact names/ids, not a loose free-text description. This directly closes the ambiguity found earlier ("elemDmg" alone didn't say which element, "self-kit" alone didn't say whose kit) — one exact name per real thing, no folded-together shorthand.
+- **Damage**: every entry is spelled out explicitly, not grouped/shortened — a block's `damage.category` must match one of these exact names, not a loose free-text description. Verified against real `damage.category` usage in `characterBlocks/`.
+- **Buff**: grouped under Category headers (Base Stat / DMG Bonus — Universal / Move Type / Element / Reaction / Multiplier), verified against every real `stat:` key actually grepped from `characters.js` — not assumed. Real keys found: `atkPct`, `critRate`, `critDmg`, `allDmg`, `basicDmg`, `heavyDmg`, `skillDmg`, `libDmg`, `echoDmg`, `coordDmg`, `erosion`, `flare`, `frazzle`, `fusionBurst`, `totalMult`, `defIgnore`, `defShred`, `resShred`, `deepen`, `elemDmg`. Dropped from an earlier draft for not being verified as real buff keys: `hpFlat`/`hpPct`/`atkFlat`/`defFlat`/`defPct` (never used as a `stat:` value — flat/DEF/HP-pct buffs don't currently exist as a granted mechanic in this game's kits), `energyRegen` (only exists as a display-label map, never a real buff `stat:` key), `healBonus` (doesn't appear anywhere). Kept but flagged not-yet-real: **Intro Skill DMG** / **Outro Skill DMG** as buff entries — `introDmg`/`outroDmg` are real `damage.category` values but have never been used as a `stat:` buff key; no character currently grants an Intro/Outro-DMG-Bonus-type buff.
+- **DMG Bonus — Element**: references the `Element` list rather than re-listing all 7 — today's real data still uses one generic `elemDmg` key (see the earlier "why is every element `elemDmg`" discussion in this design pass); the per-element split (`glacioDmg`/`fusionDmg`/etc., already built as a real schema file at `engine/schema/`) is the target state this taxonomy is designing toward, not yet what the raw `characters.js` data uses.
+- **DMG Bonus — Reaction**: `erosion`/`flare`/`frazzle`/`fusionBurst` are real, distinct from plain Element DMG — this is the "element + reaction qualifier" case flagged earlier (Phoebe's "Spectro Frazzle DMG Amp" ≠ general Spectro DMG).
+- **Multiplier > Total Mult**: `totalMult` is a different KIND of thing than a %-stat buff — a direct multiplier on a hit's damage output, not something that accumulates like a stat. It's also the single largest source of real bugs found this audit cycle (Jiyan, Phrolova, Qingxiao, Qiuyuan, Roccia) when left unscoped, so it gets its own category rather than being folded into DMG Bonus.
 
 **Resolved: Buff/Debuff stay siblings of Damage, not a subset.** Damage is a
 description of a HIT (what category a move's own output falls into); Buff/Debuff
