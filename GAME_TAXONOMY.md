@@ -21,16 +21,6 @@ Status: draft, under active discussion — not yet built into code.
 
 ```
 Game
-├── Block
-│   ├── Kind
-│   ├── Trigger
-│   ├── Condition
-│   ├── Timing
-│   ├── Target
-│   ├── Effects
-│   ├── Damage
-│   └── Note
-│
 ├── Character
 │   └── <Name>
 │       ├── Rarity
@@ -210,6 +200,15 @@ a teammate-ally-action buff — whose action triggered it?).
 
 ```
 Engine
+├── Block
+│   ├── Kind
+│   ├── Trigger
+│   ├── Condition
+│   ├── Timing
+│   ├── Target
+│   ├── Effects
+│   ├── Damage
+│   └── Note
 ├── Orchestration
 ├── Composition
 ├── Triggers
