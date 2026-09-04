@@ -192,8 +192,8 @@ audit per character, all cross-checked against a fresh source dump:
 9 characters (Aemeath, Denia, Lynae, Qingxiao, Rover: Spectro, Rover: Havoc,
 Rover: Aero, Jiyan, Yinlin) have gone through the original 8-dimension
 version of this pass; **Calcharo, Encore, Jianxin, Lingyang, Verina,
-Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi — added
-2026-09-03/04, first twelve characters audited under the updated
+Aalto, Baizhi, Chixia, Danjin, Yangyang, Sanhua, Taoqi, Yuanwu — added
+2026-09-03/04, first thirteen characters audited under the updated
 9-dimension methodology** (see below). Many more
 have had *partial*, targeted fixes from later sessions' dump-verification
 passes (see the `Characters data dump/` audit trail and an earlier
@@ -545,6 +545,30 @@ missing despite already being correctly `basicDmg`/`libDmg`-categorized.
 Fixed to `['Skill', 'Basic ATK', 'Liberation']`. Icons (dimension 9)
 checked and confirmed already fully wired. 2 new tests, full suite green:
 1409/1409.
+
+**Yuanwu pass (2026-09-04)**: his `Characters data dump/` file already
+existed (an earlier, differently-formatted dump — no "App Data
+Comparison" bug-list section), with `yuanwu.blocks.js`'s own history
+showing a real prior fix (every block defaulted to ATK-scaling when he's
+actually a DEF-scaler, corrected 2026-09-02). Redoing dimensions 5/8 found
+a self-contradicting bug: `yuanwu.liberation.blazing-might` combined
+Thunder Wedge Detonation with Blazing Might's own hit into one `libDmg`
+block — the block's OWN comment already said the detonation is "counted
+as Resonance Skill DMG," but the code never applied it. Confirmed by
+`SKILL_MULTIPLIERS['Yuanwu']` carrying "Thunder Wedge Detonation" as its
+own dedicated row with that exact label. Split into 2 blocks: Blazing
+Might's own hit stays `libDmg`; the detonation is now its own `skillDmg`
+block (`yuanwu.forte.thunder-wedge-detonation-liberation`). Also fixed
+`yuanwu.intro.thunder-bombardment`, uncategorized (default convention).
+`dmgFocus` was `['Coordinated ATK']` only — unlike Aalto's fabricated
+case, this one has real textual basis (his Thunder Field's Coordinated
+Attack is genuine base kit), just no engine-representable block for it
+(an any-ally-can-trigger-it repeated proc with no home in this schema,
+same class as his own already-zeroed S1-S4/S6 chain nodes) — kept as-is,
+but `'Skill'`/`'Liberation'` were both missing despite real, now-correctly
+-categorized damage. Fixed to `['Skill', 'Liberation', 'Coordinated
+ATK']`. Icons (dimension 9) checked and confirmed already fully wired. 4
+new tests, full suite green: 1411/1411.
 
 ---
 

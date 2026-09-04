@@ -1610,7 +1610,15 @@ const CHARACTER_DATA = {
   // Blazing Might has no shield effect at all — the 'Shield' tag had no basis in his base (S0) kit,
   // only appearing on Resonance Chain S4 "Retributive Knuckles" (200% DEF shield, see
   // RESONANCE_CHAIN_DATA below), so it's removed from this always-on buff list.
-  ['Yuanwu',        ['Coordinated ATK'],             ['Coordinated ATK'],                     []],
+  // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): 'Skill' and 'Liberation' were
+  // both entirely missing despite real, already-categorized damage blocks (Thunder Wedge/Rumbling
+  // Spark/Thunder Wedge Detonation = skillDmg; Blazing Might's own hit = libDmg). 'Coordinated ATK' is
+  // kept — his Thunder Field's Coordinated Attack (7.96% DEF, base kit, always active) is genuinely
+  // real per the dump, just structurally unmodeled as its own block (no home in this schema for an
+  // any-ally-can-trigger-it repeated proc, same "real but no matching category" class as his own
+  // RESONANCE_CHAIN_DATA S1/S2/S3/S4/S6 omissions) — unlike Aalto's fabricated case, this one has real
+  // textual basis, just no engine-representable damage yet.
+  ['Yuanwu',        ['Skill', 'Liberation', 'Coordinated ATK'], ['Coordinated ATK'],           []],
   ['Youhu',         ['Coordinated ATK'],             ['Heal', 'Coordinated ATK Amp'],         []],
   // dmgFocus corrected 2026-08-18: 'Skill' had no basis — her Resonance Skill (In Shadow Thunder Stirs,
   // 58.40% at Lv.10) is one of her weakest hits; her biggest single damage source is her Resonance
