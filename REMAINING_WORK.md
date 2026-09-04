@@ -683,6 +683,137 @@ comments (2026-09-02 session).
   (only the Forte follow-up's own hits change). Full suite green
   (1491/1491).
 
+**Qingxiao — full 9-dimension re-audit (2026-09-04):** independently
+segmented/blockified her whole kit (Basic/Mid-air/Heavy/Dodge Counter/
+Plunging Attack, Resonance Skill's Judgement/Ascendant, Forte Circuit's
+Ephemeral Transcendence Basic/Dodge Counter/Heaven's Reckoning, Mindlock/
+Gathered Mind/To Know To Banish, Intro/Outro, all 6 Resonance Chain nodes)
+from `Characters data dump/Qingxiao/Qingxiao.md` before looking at any
+existing code, with zero deference to `qingxiao.blocks.js`'s own extensive
+prior "corrected 2026-09-02" comments. She had already been through an
+earlier 8-dimension pass (2026-09-01/02); this pass re-derived everything
+from scratch anyway per the task's own instruction, and found real,
+previously-missed bugs the earlier pass left behind.
+1. **SKILL_MULTIPLIERS (dimension 1):** every row (Basic ATK 1-4, Mid-air
+   1-3, Plunging Attack, Dodge Counter - Stringblade, Heavy ATK, Judgement,
+   Ascendant, Forte Basic 1-4, Forte Dodge Counter, Heaven's Reckoning,
+   Liberation, Intro, Outro) matches the dump's Lv.10 tables exactly.
+   Verified clean.
+2. **CHARACTER_ROTATIONS (dimension 2):** the modeled rotation (Intro →
+   Mid-air 1-3 → Basic 1-4 → Judgement → Heavy → Forte Basic 1-4 →
+   Heaven's Reckoning → Liberation → Echo → Outro) matches the dump's own
+   Standard Rotation text and its own best-realistic-order reasoning
+   (Dodge Counter/Plunging Attack/Ascendant are real situational combo
+   branches the dump's own rotation text never uses either). Verified
+   clean — no changes.
+3. **RESONANCE_CHAIN_DATA (dimension 3):** all 6 nodes' values
+   (`s1.critRate:16`, `s2.heavyDmg:40`, `s3.critDmg:100`, `s4.atkPct:20`,
+   `s5.skillDmg:100`, `s6.deepen:40`) match the dump's own Resonance Chain
+   section exactly. Verified clean on values — but see dimension 8 below
+   for a real scoping bug on S6's engine block.
+4. **CHAR_BUFF_TABLE (dimension 4):** base-kit Mindlock/To Know To Banish
+   deepen value (65 = 7×7 + 8×2, already correctly fixed from a prior
+   pass's 49 arithmetic error) matches the dump. Verified clean on the
+   value — but see dimension 8 below for a real scoping bug on the
+   corresponding engine block.
+5. **dmgFocus (dimension 5) — 1 real bug found and fixed:** was
+   `['Heavy ATK', 'Liberation', 'Basic ATK']`, missing **Outro**. Her own
+   Damage Profile shows Outro (Lingering Song) at a genuine 10.8%
+   (213,574 of 1,983,070) — her 4th-largest bucket, above this project's
+   own established include threshold (6.8%+, e.g. Calcharo's Outro at
+   7.6%) and nowhere near the exclude zone (Echo 4.1%/Skill 1.4%/Intro
+   1.3% correctly stay out). Fixed to add `'Outro'`.
+6. **Weapon data (dimension 6) — 1 real bug found and fixed:** `weaponAlts`
+   was `{alt5: ['Blazing Brilliance'], alt4: ['Endless Collapse']}`, sourced
+   from a pre-release datamined ranking before a real build guide existed
+   — the same stale-placeholder pattern already flagged at this table's
+   other entries. The live dump's own "Best Weapons" ranking makes this
+   wrong: Blazing Brilliance is #8 of 11 (69.51%), the dump's own text
+   calling it "Not recommended over any other 5★" (wrong stat priority);
+   Endless Collapse never appears anywhere in the dump's ranked weapon list
+   at all. Fixed to `alt5: ['Red Spring']` (the dump's real #2, 78.73%,
+   "Decent alternative") and `alt4: ['Feather Edge']` (the dump's own
+   explicit "Best 4★ option", 65.53%, matching the alt4 convention used
+   everywhere else in this table).
+7. **Echo data (dimension 7):** `bestEchoes` (Heart of Evil's Purge 5pc)
+   and `echoes.js`'s own p2/p5 text (`+10% Aero DMG` / `Shifting → +20%
+   Crit DMG, +30% Aero DMG for 15s`) match the dump's Best Echo Set section
+   verbatim; `Calamity Effigy`'s desc matches the dump's Main Echo option
+   text. Verified clean.
+8. **Engine-block parity (dimension 8) — 3 real bug classes found and
+   fixed:**
+   - **Missing `damage.category`** on 2 of the (then-)9 damage blocks —
+     `qingxiao.intro.tonality-shift` and `qingxiao.outro.lingering-song`
+     were both entirely uncategorized, the same recurring bug class already
+     found on Lynae/Mornye/Phoebe (now 5 characters). Fixed to `skillDmg`
+     (Intro, matching this file's default-to-skillDmg convention for a
+     generic Intro row, e.g. Sanhua's identical fix) and `outroDmg`
+     (Outro) respectively.
+   - **Unscoped `deepen` debuffs silently over-crediting her whole kit** —
+     both `qingxiao.debuff.mindlock` (base-kit Mindlock + Inherent To Know
+     To Banish, value 65) and `qingxiao.chain.s6` (value 40) were single
+     unscoped `deepen` effects on `target:{scope:'all-enemies'}`.
+     `resolveHitComposedDps.js` applies an unscoped effect to **every**
+     damage block a character has — but the dump's own exact wording names
+     a narrow move list for both: Mindlock/To Know To Banish explicitly
+     names only "Heavy Attack - Stringblade / Ephemeral Transcendence Basic
+     / Ephemeral Transcendence Dodge Counter / Heaven's Reckoning /
+     Liberation" (excluding Basic Attack - Stringblade ground combo,
+     Mid-air Attack, Severing Note, Intro, Outro), and S6 names only "Heavy
+     Attack - Stringblade / Heaven's Reckoning: Ephemeral Transcendence /
+     Liberation / Juque Perdition." The S6 block's own pre-existing note
+     already correctly IDENTIFIED this narrow scope in prose but left the
+     effect itself unscoped anyway — a purely cosmetic "documented as a
+     limitation" comment that never actually constrained the computed
+     number. Same unscoped-buff bug class already found and fixed on
+     Jiyan's S6/Phrolova's S1/Lucilla's S3+S5 (now 5 characters). Fixed
+     by splitting both into per-block `scopedToBlockId` effect arrays
+     (the same multi-block-scoping pattern used throughout this codebase,
+     e.g. Camellya's chain.s5-twining, Cantarella's chain.s2), scoped to
+     every real named move that has an engine block.
+   - **A real move referenced by name in the Mindlock/To Know To Banish
+     buff text, with its own SKILL_MULTIPLIERS row and CHARACTER_ROTATIONS
+     row, had no engine block at all**: Dodge Counter - Ephemeral
+     Transcendence (`26.45%×4+158.66%`). Modeled accurately (`basicDmg`,
+     matching its sibling Forte-Basic block's categorization) and wired as
+     a real `scopedToBlockId` target for the Mindlock fix above — but NOT
+     added to `CHARACTER_ROTATIONS`, since it's a post-Dodge situational
+     branch the dump's own Standard Rotation text never uses. 3 further
+     moves with real SKILL_MULTIPLIERS rows but no block (Plunging Attack,
+     Dodge Counter - Stringblade, Severing Note: Ascendant) were modeled
+     the same way for completeness (all real, dump-sourced, correctly
+     categorized `basicDmg`/`basicDmg`/`skillDmg`) — also correctly kept
+     out of the rotation as situational branches, not force-fit in.
+   - The legacy `calcEngine.js` `applyResonanceChain()`/`CHAR_BUFF_TABLE`
+     path was checked (two-path desync check): both raw values (`s6.deepen:
+     40`, `debuffs[0].value:65`) match the trigger-engine blocks' values
+     exactly, and the legacy engine has no per-block scoping mechanism at
+     all for `deepen` (a whole-engine limitation predating Qingxiao, not a
+     Qingxiao-specific desync) — same honestly-documented gap already
+     accepted for Mornye's S5-class findings, left as-is rather than
+     force-hacked.
+9. **Icons (dimension 9) — 1 real bug found and fixed:** her Forte
+   finisher's full name, `"Heavy Attack - Heaven's Reckoning: Ephemeral
+   Transcendence"`, contains BOTH `"Ephemeral Transcendence"` and
+   `"Heaven's Reckoning"` as substrings. `getSkillIcon`'s lookup
+   (`Object.keys(table).find(k => skillName.includes(k))`) is
+   first-match-in-insertion-order, and `'Ephemeral Transcendence'` was
+   inserted before `"Heaven's Reckoning"` — so every real Heaven's
+   Reckoning cast silently resolved to the base Forte-Circuit icon instead
+   of its own dedicated Forte-Circuit-Alt icon. Same case-sensitive/
+   order-dependent substring icon-lookup bug class already found on Lupa.
+   Fixed by reordering the two keys. `CHAIN_NODE_ICONS` — not populated
+   for Qingxiao at all (pre-existing gap, no dedicated S1-S6 node art
+   sourced yet); left as-is, no numbers to fabricate.
+- 6 new tests added to `triggerEngine-qingxiao.test.js` (Intro/Outro
+  category fixes; Mindlock/S6 scoping, including explicit negative
+  assertions that excluded blocks are never in either scope list; the 4
+  newly-modeled moves' categories and their absence from
+  `CHARACTER_ROTATIONS`; the icon-order fix resolving to the correct
+  Forte-Circuit-Alt asset) plus 1 updated test in `qingxiaoAuditFix.test.js`
+  (dmgFocus length 3→4) and 1 new one there (Outro inclusion). Full suite
+  green (1496/1496).
+
 **Open question (2026-09-04):** Lumi's own dump Damage Profile shows a
 real 26.3% "Skill" damage bucket, but no block in `lumi.blocks.js` is
 skillDmg-categorized for anywhere near that share (only Intro, ~4.1%).

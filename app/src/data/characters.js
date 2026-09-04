@@ -1004,12 +1004,18 @@ const CHARACTER_DATA = {
     // Wing Polarizer) — both confirmed same source.
     skillMaterials: { weeklyDrop: 'We Who Question', forgery: 'Polarizer' },
     bestEchoes: ['Heart of Evil\'s Purge 5pc'], bestWeapon: 'Glint of Clouds',
-    // weaponAlts added 2026-08-18 from the source's own pre-release "Recommended Weapons" ranking
-    // (character/1413, datamined ahead of release — the source has no build guide published yet):
-    // Blazing Brilliance is the only ranked non-signature 5★; Endless Collapse the only ranked 4★;
-    // Sword of Night is the 3★ fallback (unranked by the source), matching the "<Weapon Type> of Night"
-    // naming convention used elsewhere.
-    weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Endless Collapse'], alt3: ['Sword of Night'] },
+    // weaponAlts corrected 2026-09-04 (full 9-dimension re-audit, fresh live dump): the prior entry
+    // (Blazing Brilliance/Endless Collapse) was sourced from the source's pre-release datamined ranking
+    // before a real build guide existed — same stale-placeholder pattern already flagged/fixed at this
+    // table's other entries (e.g. Rover: Havoc's/Jinhsi's own comments above naming weapons that "never
+    // appear anywhere in the source's ranked weapon list"). The live dump's own "Best Weapons" ranking
+    // makes Blazing Brilliance explicitly wrong for alt5: it's #8 of 11 (69.51%), with the dump's own
+    // text calling it "Not recommended over any other 5★" (wrong stat priority — Crit DMG over her
+    // favored Crit Rate). Red Spring is the real best non-signature 5★ (#2, 78.73%, "Decent
+    // alternative"). Endless Collapse never appears anywhere in the dump's ranked weapon list at all (it's
+    // merely a banner-featured 4★, not a ranked recommendation); Feather Edge is the dump's own explicit
+    // "Best 4★ option" (65.53%), matching the alt4 convention used everywhere else in this table.
+    weaponAlts: { alt5: ['Red Spring'], alt4: ['Feather Edge'], alt3: ['Sword of Night'] },
     teams: ['Qingxiao + Denia + Mornye', 'Qingxiao + Lynae + Mornye'] },
   'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'A loner treading into illusive depths, of Mengzhou. HP-scaling Fusion Broadblade wielder who channels Yin Vessel and Yang Font stances. On-field Fusion DPS whose Heavy Attacks and ATK/DMG scale off Max HP, entering the Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
@@ -1467,7 +1473,13 @@ const CHARACTER_DATA = {
   // shows Basic at a genuine 22.8% share (Basic Attack - Stringblade + Ephemeral Transcendence's own
   // Basic Attack, both correctly categorized basicDmg in the engine blocks) — comparable in size to
   // Liberation's 28.5%, not a trivial slice that should be gated out of basicDmg-buff relevance.
-  ['Qingxiao',      ['Heavy ATK', 'Liberation', 'Basic ATK'], [],                                ['Tune Strain - Interfered']],
+  // dmgFocus gained 'Outro' 2026-09-04 (full 9-dimension re-audit, fresh dump): Lingering Song is a
+  // genuine 10.8% (213,574 of 1,983,070) damage share per the dump's own Damage Profile — her 4th-
+  // largest bucket, above the established 6.8%+ include threshold (e.g. Calcharo's Outro at 7.6%,
+  // Encore's at 12.9%) and well clear of the exclude zone (Echo 4.1%/Skill 1.4%/Intro 1.3% correctly
+  // stay out). Now outroDmg-categorized in qingxiao.blocks.js (was uncategorized, silently rejecting
+  // Outro DMG Bonus buffs — same fix class as Lynae/Mornye/Phoebe's missing-category bugs).
+  ['Qingxiao',      ['Heavy ATK', 'Liberation', 'Basic ATK', 'Outro'], [],                        ['Tune Strain - Interfered']],
   ['Jingran',       ['Heavy ATK', 'Liberation'],     [],                                      []],
   ['Yangyang: Xuanling', ['Heavy ATK', 'Basic ATK'], [],                                      ['Havoc Bane']],
   // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against the fresh dump's own
@@ -8312,13 +8324,21 @@ const SKILL_ICONS = {
   // re-hosted on ibb.co. Letter/order convention (B=Basic ATK, C=Resonance Skill, D=Forte Circuit
   // [2 icons for her 2 Forte-state moves], QTE=Resonance Liberation, T=Intro, Y=Outro) matches the
   // pattern the source uses site-wide for every other character's SkillIcon atlas, not just Qingxiao's.
+  // Key order fixed 2026-09-04 (full 9-dimension re-audit, fresh dump): getSkillIcon()'s lookup is
+  // `Object.keys(table).find(k => skillName.includes(k))` — first-matching-key-in-insertion-order wins.
+  // Her real Forte finisher's full name, "Heavy Attack - Heaven's Reckoning: Ephemeral Transcendence",
+  // contains BOTH "Ephemeral Transcendence" and "Heaven's Reckoning" as substrings; with 'Ephemeral
+  // Transcendence' inserted first (as it was), every Heaven's Reckoning cast silently resolved to the
+  // base Forte-Circuit icon instead of its own dedicated Forte-Circuit-Alt icon — the same case-
+  // sensitive/order-dependent substring icon-lookup bug class already found for Lupa. Reordered so
+  // "Heaven's Reckoning" (the longer, more specific real match) is checked first.
   'Qingxiao': {
     'Stringblade': './characters/qingxiao/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp', // Basic ATK
     'Plunging Attack': './characters/qingxiao/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp',
     'Sword Glide': './characters/qingxiao/vn7cCMT-Skill-Qingxiao-Basic-ATK.webp',
     'Severing Note': './characters/qingxiao/QFfYPWSS-Skill-Qingxiao-Resonance-Skill.webp', // Resonance Skill
+    "Heaven's Reckoning": './characters/qingxiao/Y7cXCSsL-Skill-Qingxiao-Forte-Circuit-Alt.webp', // Forte Circuit finisher — checked before 'Ephemeral Transcendence' (see comment above)
     'Ephemeral Transcendence': './characters/qingxiao/Lz6TqkmC-Skill-Qingxiao-Forte-Circuit.webp', // Forte Circuit
-    "Heaven's Reckoning": './characters/qingxiao/Y7cXCSsL-Skill-Qingxiao-Forte-Circuit-Alt.webp', // Forte Circuit finisher
     'Billows Beneath Heaven': './characters/qingxiao/jkphKz37-Skill-Qingxiao-Liberation.webp', // Resonance Liberation
     'Tonality Shift': './characters/qingxiao/BHfMMdWL-Skill-Qingxiao-Intro.webp', // Intro Skill
     'Lingering Song': './characters/qingxiao/0jpvcBrL-Skill-Qingxiao-Outro.webp', // Outro Skill

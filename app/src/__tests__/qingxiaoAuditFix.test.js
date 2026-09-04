@@ -9,7 +9,14 @@ import { QINGXIAO_BLOCKS } from '../engine/characterBlocks/qingxiao.blocks.js';
 describe('Qingxiao — audit fixes against a fresh the source dump', () => {
   it("dmgFocus gains 'Basic ATK' — her real damage-output simulation shows a genuine 22.8% Basic share, not a trivial slice", () => {
     expect(CHARACTER_DATA['Qingxiao'].dmgFocus).toEqual(expect.arrayContaining(['Heavy ATK', 'Liberation', 'Basic ATK']));
-    expect(CHARACTER_DATA['Qingxiao'].dmgFocus).toHaveLength(3);
+  });
+
+  // Added 2026-09-04 (full 9-dimension re-audit, fresh dump): Outro (Lingering Song) is a real 10.8%
+  // damage share per the dump's own Damage Profile — above this project's own established dmgFocus
+  // include threshold (6.8%+) and her 4th-largest bucket. See characters.js's own dmgFocus comment.
+  it("dmgFocus gains 'Outro' — Lingering Song is a genuine 10.8% damage share, above the include threshold", () => {
+    expect(CHARACTER_DATA['Qingxiao'].dmgFocus).toEqual(expect.arrayContaining(['Heavy ATK', 'Liberation', 'Basic ATK', 'Outro']));
+    expect(CHARACTER_DATA['Qingxiao'].dmgFocus).toHaveLength(4);
   });
 
   it('was entirely missing from the tier table — now carries her real T0/T1 standard-list tier', () => {
