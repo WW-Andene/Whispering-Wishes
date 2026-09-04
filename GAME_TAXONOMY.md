@@ -21,20 +21,28 @@ Status: draft, under active discussion — not yet built into code.
 
 ```
 Game
+├── Block
+│   ├── Kind
+│   ├── Trigger
+│   ├── Condition
+│   ├── Timing
+│   ├── Target
+│   ├── Effects
+│   ├── Damage
+│   └── Note
+│
 ├── Character
 │   └── <Name>
 │       ├── Rarity
 │       ├── Element
 │       ├── Stats
-│       │   ├── Base
-│       │   │   ├── HP
-│       │   │   ├── ATK
-│       │   │   ├── DEF
-│       │   │   ├── Max Energy
-│       │   │   ├── Crit Rate
-│       │   │   └── Crit DMG
-│       │   └── Growth Curve
-│       ├── Kit
+│       │   ├── HP
+│       │   ├── ATK
+│       │   ├── DEF
+│       │   ├── Max Energy
+│       │   ├── Crit Rate
+│       │   └── Crit DMG
+│       ├── Kit → (each move: ref Block)
 │       │   ├── Basic ATK
 │       │   ├── Heavy ATK
 │       │   ├── Skill
@@ -42,7 +50,7 @@ Game
 │       │   ├── Forte
 │       │   ├── Intro
 │       │   └── Outro
-│       ├── Resonance Chain
+│       ├── Resonance Chain → (each node: ref Block)
 │       │   ├── S1
 │       │   ├── S2
 │       │   ├── S3
@@ -55,6 +63,8 @@ Game
 │           ├── Echoes
 │           └── Team
 │               ├── Members
+│               ├── Main DPS
+│               ├── Enemy Target → (ref: Enemy)
 │               └── Rotation
 │
 ├── Weapon
@@ -93,8 +103,19 @@ Game
 │       │   ├── Elite
 │       │   ├── Calamity
 │       │   └── Overlord
-│       ├── Type
 │       └── Stats
+│           ├── HP
+│           ├── ATK
+│           ├── DEF
+│           ├── RES
+│           │   └── (ref: Element list — Glacio/Fusion/Electro/Aero/Spectro/Havoc/Physical)
+│           └── Stagger
+│               ├── Interruption RES
+│               ├── Interruption RES Recovery
+│               ├── Vibration
+│               ├── Vibration Recovery
+│               ├── Rage
+│               └── Rage Recovery
 │
 ├── Element
 │   ├── Glacio
