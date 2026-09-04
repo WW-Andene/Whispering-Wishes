@@ -30,7 +30,9 @@ Game
 │       │   │   ├── HP
 │       │   │   ├── ATK
 │       │   │   ├── DEF
-│       │   │   └── Max Energy
+│       │   │   ├── Max Energy
+│       │   │   ├── Crit Rate
+│       │   │   └── Crit DMG
 │       │   └── Growth Curve
 │       ├── Kit
 │       │   ├── Basic ATK
@@ -98,7 +100,7 @@ Game
 ### Notes on the tree above
 
 - **Character > Name**: e.g. Aalto, Jinhsi, Rover: Electro — 58 total, Jingran unreleased/no blocks yet.
-- **Stats > Base**: HP/ATK/DEF/Max Energy at Lv.90 — the character's own innate values (`SECTION:BASE_STATS` in characters.js). Max Energy is the Concerto/Liberation energy cost, real per-character data, not a constant. Base Crit Rate (5%) and Crit DMG (150%) are universal game constants, not per-character data, so they're not listed here. **Growth Curve**: per-level scaling, if modeled distinctly from Base.
+- **Stats > Base**: HP/ATK/DEF/Max Energy at Lv.90 — the character's own innate values (`SECTION:BASE_STATS` in characters.js), real per-character data. Crit Rate (5%) and Crit DMG (150%) are also real base stats every character has, but are currently modeled as universal constants (`BASE_CRIT_RATE`/`BASE_CRIT_DMG` in `engine/shared/combatMath.js`) rather than per-character fields — no character overriding them has been found yet, but that hasn't been exhaustively checked across all 58. **Growth Curve**: per-level scaling, if modeled distinctly from Base.
 - **Kit**: Echo Skill and Coordinated ATK were deliberately removed from this list — those are damage categories a kit move can be tagged with for buff-matching, not real move slots a character has.
 - **Rotation**: the realistic-optimal play order. NOT something the engine can derive on its own from Kit/Chain data — it's sourced from the character's data dump (`Characters data dump/<Name>/`), which captures real community/theorycrafted play order, not something mechanically computable from multiplier tables alone. Not a Build sub-item — it depends on Kit/Chain directly and doesn't reference the Weapon/Echo/Team catalogs the way Build's children do.
 - **Build > Weapon > Signature**: the one Weapon entry designed for this specific Character — a flag/ref on a `Weapon.<Name>` node, not a separate catalog.
