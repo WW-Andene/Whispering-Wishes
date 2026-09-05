@@ -61,6 +61,10 @@ export function validateBlock(block, expectedSource) {
     }
   }
 
+  if (block.concertoEnergyGain != null && typeof block.concertoEnergyGain !== 'number') {
+    errors.push(`concertoEnergyGain must be a number when present (block id: ${id})`);
+  }
+
   if (block.kind === 'buff' && Array.isArray(block.effects)) {
     block.effects.forEach((effect, i) => {
       const srcCheck = checkBuffSource(effect?.source);

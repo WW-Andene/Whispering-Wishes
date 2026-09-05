@@ -18,6 +18,15 @@
 // present and real but don't fire in the standard modeled rotation, same "sourced
 // but currently inert" status as chain.s1/s3 below — not a fabrication, a documented
 // gap between "real move that exists" and "used in his optimal play pattern."
+//
+// concertoEnergyGain added same pass, per user direction to treat Aalto as the
+// blueprint other characters follow ("Team tab is a game engine"): his 3 real
+// Concerto Energy values (Intro+10, Skill+15, Liberation+20) are now a real block
+// field, summed by resolveConcertoEnergy.js's resolveConcertoEnergyGenerated() —
+// not gating Outro timing yet (still CHARACTER_ROTATIONS' explicit 'Outro' step;
+// making Outro actually threshold-derived is a larger, cross-character resolver
+// change, out of scope for an Aalto-only pass), but a real computed number instead
+// of documentation-only text with nothing reading it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -36,6 +45,9 @@ export const AALTO_BLOCKS = [
     // rejecting Resonance Skill DMG Bonus on a real ~10% (7,144) damage share. The dump's own multiplier
     // table labels this row generically "Skill Damage", same convention as Calcharo/Encore/Jianxin.
     damage: { hits: parseSkillMultiplierHits('66.27%×3'), category: 'skillDmg', basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-05 (dump completeness pass, "consider energy regen" per
+    // user direction): dump's own "Con. Energy Regen: 10" row for Intro:Feint Shot.
+    concertoEnergyGain: 10,
   },
   {
     id: 'aalto.skill.shift-trick',
@@ -44,6 +56,8 @@ export const AALTO_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('59.65%'), category: 'skillDmg', basis: 'ATK' },
     note: '59.65% per Mist Bullet — real bullet count depends on encounter length, kept as 1 base bullet (no fabricated count).',
+    // concertoEnergyGain added 2026-09-05: dump's own "Con. Energy Regen: 15" row for Shift Trick.
+    concertoEnergyGain: 15,
   },
   {
     id: 'aalto.basic.half-truths',
@@ -94,6 +108,9 @@ export const AALTO_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Flower in the Mist' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('397.62%'), category: 'libDmg', basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-05: dump's own "Con. Energy Regen: 20" row for Flower in
+    // the Mist.
+    concertoEnergyGain: 20,
   },
   {
     id: 'aalto.forte.misty-cover',

@@ -6,6 +6,7 @@ import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposed
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { AALTO_BLOCKS } from '../engine/characterBlocks/aalto.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
+import { resolveConcertoEnergyGenerated } from '../engine/resolver/dps/resolveConcertoEnergy.js';
 
 describe('triggerEngine parity — Aalto', () => {
   it('every block matches the canonical schema (Layer 4 migration)', () => {
@@ -68,5 +69,13 @@ describe('triggerEngine parity — Aalto', () => {
       { stat: 'elemDmg', value: 12, source: 'self-kit' },
       { stat: 'atkPct', value: 12, source: 'self-kit' },
     ]);
+  });
+
+  it("Concerto Energy generated over his real rotation totals 45 (Intro+10, Skill+15, Liberation+20) — added 2026-09-05 per user direction, Aalto as blueprint", () => {
+    const { total, perStep } = resolveConcertoEnergyGenerated(AALTO_BLOCKS, CHARACTER_ROTATIONS['Aalto']);
+    expect(total).toBe(45);
+    expect(perStep.find(s => s.skill === 'Feint Shot')?.gain).toBe(10);
+    expect(perStep.find(s => s.skill === 'Shift Trick')?.gain).toBe(15);
+    expect(perStep.find(s => s.skill === 'Flower in the Mist')?.gain).toBe(20);
   });
 });
