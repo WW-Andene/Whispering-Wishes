@@ -154,12 +154,7 @@ export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
 // relocation just moves that shared code out of the legacy file it used to live in.
 export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycleFactors, blocksByOwner = null) {
   const tbMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
-  if (!tbMembers.length) return { dmg: 0, deepenMult: 1, exclusiveCandidates: [] };
-  let totalBoost = 0;
-  tbMembers.forEach(m => {
-    const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
-    totalBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
-  });
+
   // breaksPerRot (real, 2026-09-06): how many times the enemy's own Off-Tune gauge actually fills
   // within this rotation — direct user instruction: "when it's automatic, trigger when gauge is
   // full, when it's not automatic trigger on the rotation optimal window/character... in the end
@@ -171,30 +166,49 @@ export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycle
   // the sourced fixed total, see offTuneFormula.js) is the correct gauge size unconditionally, no
   // per-target classification needed.
   //
-  // Real total = every team member's own Off-Tune contribution over their own real rotation
-  // (resolveOffTuneGenerated, built earlier this session — previously computed but never wired
-  // into this formula, which still used a flat "assume ~1, or up to 2 if someone has an
-  // acceleration buff" guess). A steady-state RATE (can be fractional, e.g. 1.5), not an integer
-  // count — same "fraction of a cooldown actually sustainable" convention already used elsewhere
-  // in this engine (resolveHitComposedDps.js's own cooldownSteadyState gate) rather than an
-  // artificial floor/cap.
+  // UNIVERSAL GATE FIX (real bug, direct user correction, 2026-09-06): "tune break is universal
+  // (when off tune gauge is full and you break it). what is not universal is Tune Rupture and Tune
+  // Strain." The base Tune Break burst below is NOT restricted to `tuneBreak`-flagged specialist
+  // characters — ANY team's real hits fill the shared Off-Tune gauge and eventually break it, the
+  // exact same way Frazzle/Erosion apply for any team with a real applier, no character-specific
+  // gate. The previous version returned `{dmg:0}` outright whenever `tbMembers` was empty — a real,
+  // roster-wide gap: any team without one of the ~9 Rupture/Strain specialists got ZERO Tune Break
+  // damage, when it should have gotten the universal base burst regardless. Real total is now
+  // summed over EVERY team member (not just tbMembers) — every character's own real hits
+  // contribute to the SAME shared gauge (resolveOffTuneGenerated, built earlier this session). Only
+  // the Rupture/Strain BONUS layer below (ruptureDmgMult/strainDmgPerStack) stays gated on a real
+  // specialist being present — that part genuinely is character-specific.
   //
-  // Falls back to the old flat heuristic only when blocksByOwner isn't supplied (a caller that
-  // genuinely can't provide real blocks — e.g. a mixed/legacy-only team, or this file's own older
-  // tests) — every existing caller without this new param behaves byte-identically to before.
+  // A steady-state RATE (can be fractional, e.g. 1.5), not an integer count — same "fraction of a
+  // cooldown actually sustainable" convention already used elsewhere in this engine
+  // (resolveHitComposedDps.js's own cooldownSteadyState gate) rather than an artificial floor/cap.
+  //
+  // Falls back to the old flat heuristic (still specialist-gated — there's no real data to derive a
+  // universal rate from) only when blocksByOwner isn't supplied at all (a caller that genuinely
+  // can't provide real blocks — e.g. a mixed/legacy-only team, or this file's own older tests).
   let breaksPerRot;
   if (blocksByOwner) {
-    const totalOffTunePerRot = tbMembers.reduce((sum, m) => {
+    const totalOffTunePerRot = members.reduce((sum, m) => {
       const blocks = blocksByOwner[m.name];
       const rotation = CHARACTER_ROTATIONS[m.name];
       if (!blocks || !rotation) return sum;
       return sum + resolveOffTuneGenerated(blocks, rotation).total;
     }, 0);
     breaksPerRot = totalOffTunePerRot / ENEMY_OFF_TUNE_GAUGE.boss.max;
-  } else {
+  } else if (tbMembers.length) {
     const hasAccel = tbMembers.some(m => CHAR_BUFF_TABLE[m.name].tuneBreak.boostToTeam > 20);
     breaksPerRot = hasAccel ? Math.min(2, Math.max(1, Math.floor(rotTime / 12))) : 1;
+  } else {
+    return { dmg: 0, deepenMult: 1, exclusiveCandidates: [] };
   }
+  if (breaksPerRot <= 0) return { dmg: 0, deepenMult: 1, exclusiveCandidates: [] };
+
+  let totalBoost = 0;
+  tbMembers.forEach(m => {
+    const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+    totalBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
+  });
+
   const uptimeFactor = rotTime > 0 ? Math.min(1, (8 * breaksPerRot) / rotTime) : 0;
   let dmg = TUNE_BREAK_BASE_DMG * (1 + totalBoost * 0.01) * breaksPerRot * defMult;
 
