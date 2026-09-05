@@ -109,13 +109,32 @@ damage = (effBase * (hit.atkPct / 100) + hit.flat)
 
 ## 2. Tune Break / Tune Strain / Tune Rupture — what's confirmed vs. open
 
-### 2a. Off-Tune Level gauge fill — `NEEDS SOURCE`
+### 2a. Off-Tune Level gauge fill — formula known, one real number still missing
 
-Real mechanic: each attack has a fixed, invisible Off-Tune accumulation value; Liberations >
-Forte casts > Basic/Skill in raw fill efficiency; Echo Skills/DOT/most Coordinated Attacks
-contribute 0. **No character-by-character per-move fill values are sourced anywhere in this
-project's dump files yet.** Until they are, this cannot be simulated per-hit — only the
-end-of-gauge event (Tune Break itself) is modeled, and only as a team-level aggregate (see 2b).
+The formula itself IS sourced (user-provided, 2026-09-05, citing r/WutheringWaves "Tune Break
+mode explanations"):
+
+```
+Off-Tune Accumulation = Base Value of the action × (1 + Off-Tune Accumulation Rate)
+```
+
+- `Base Value` depends only on WHICH ACTION was used, not on numeric damage dealt. Relative
+  tier, confirmed: Liberations (highest, to force a break fast) > Forte Circuit attacks (their
+  own specific gauge) > Resonance Skills (moderate) > Basic Attacks/perfect Dodges (low but
+  constant). Echo Skills, DOT, and most Coordinated Attacks: 0 (strict exclusions, no fill at
+  all — pre-v3.0-kit-specific exceptions aside).
+- `Off-Tune Accumulation Rate` is a real character stat, shown in-game since v3.0. Two sources:
+  (1) direct team-wide grants from specific Resonators (Mornye's Syntony/High Syntony Field:
+  +50%/+20% more, confirmed in her own dump); (2) synergy-tier thresholds — reaching 140%
+  accumulation rate activates passives (e.g. Denia's) granting an instant +40 to +50 Tune Break
+  Boost, per this same source.
+
+**What's still missing, precisely:** the real numeric `Base Value` for any SPECIFIC move of any
+SPECIFIC character (e.g. "Aemeath's Heavenfall Edict: Overdrive has Base Value X"). Only the
+relative ranking is sourced, not one concrete number for one move anywhere in this project's
+dump files. Until a real base value is sourced, the formula above can't be run per-hit for any
+character — only the end-of-gauge event (Tune Break itself, see 2b) is modeled, and only as a
+team-level aggregate, not derived from real per-action gauge accumulation.
 
 ### 2b. Tune Break damage — confirmed, already implemented
 
