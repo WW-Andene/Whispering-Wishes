@@ -240,12 +240,20 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
 }
 
 function applyEffects(block, multiplier, stats, hitBlockId) {
+  // isAmplify (fixed 2026-09-05): WuWa's own Outro buffs are always "DMG Amplification" — a
+  // separate multiplicative layer from self DMG Bonus — REGARDLESS of stat name or recipient,
+  // exactly as legacyMainDpsStats.js's own pre-existing comment already documents and correctly
+  // implements for the legacy path. The new engine never replicated this (every applyBuff() call
+  // site here passed empty options), silently misrouting every one of the 53 characters' own
+  // Outro-buff blocks into the wrong additive layer. `trigger.type === 'swap-out'` is exactly how
+  // every character's own Outro buff is declared — see block.schema.js's Trigger doc.
+  const isAmplify = block.trigger.type === 'swap-out';
   for (const effect of block.effects) {
     // `scopedToBlockId` (Phase 0.5 gap #3, added 2026-09-02): a buff narrower than a whole damage
     // category — e.g. Aemeath's "+300% Crit DMG for Heavy ATK specifically" — only contributes to the
     // ONE named block's own hits, not every hit sharing that block's broader damage category.
     if (effect.scopedToBlockId && effect.scopedToBlockId !== hitBlockId) continue;
     const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
-    applyBuff(stats, effect.stat, value, {});
+    applyBuff(stats, effect.stat, value, { isAmplify });
   }
 }

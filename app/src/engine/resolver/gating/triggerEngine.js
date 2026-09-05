@@ -44,9 +44,12 @@ export function resolveTriggerBlocks(blocks, ctx, stats) {
     if (ineligibleBlockIds?.has(block.id)) continue;
     if (!triggerFired(block.trigger, firedTriggers)) continue;
     if (!conditionHolds(block.condition, targetElementLower, targetRole)) continue;
+    // isAmplify (fixed 2026-09-05) — see resolveHitComposedDps.js's identical fix/comment: WuWa's
+    // own Outro buffs are always DMG Amplification, regardless of stat name or recipient.
+    const isAmplify = block.trigger.type === 'swap-out';
     for (const effect of block.effects) {
       if (effect.stat === 'totalMult') { totalMultBonus += effect.value; continue; }
-      applyBuff(stats, effect.stat, effect.value, {});
+      applyBuff(stats, effect.stat, effect.value, { isAmplify });
     }
   }
   return totalMultBonus;

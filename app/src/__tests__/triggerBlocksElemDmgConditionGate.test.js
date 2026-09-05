@@ -27,7 +27,10 @@ function resolveFor(blocks, targetElementLower, targetRole = 'Main DPS') {
     targetElementLower,
     targetRole,
   }, stats);
-  return stats.elemDmg || 0;
+  // Fixed 2026-09-05: every block tested here is an Outro buff (trigger.type:'swap-out'), which is
+  // always DMG Amplification regardless of stat name — the real value now correctly lands in
+  // stats.amplify, not stats.elemDmg.
+  return stats.amplify || 0;
 }
 
 describe('TriggerBlock engine — cross-character elemDmg buffs are gated to their own element', () => {

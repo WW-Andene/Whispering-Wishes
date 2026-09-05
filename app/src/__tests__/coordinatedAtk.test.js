@@ -41,12 +41,14 @@ describe('resolveSimulatedTeamRotation — coordSnapshotDiscount', () => {
 
   it('omitting coordSnapshotDiscount (default false) leaves next-on-field buffs at full value', () => {
     const { stats } = resolveSimulatedTeamRotation(ownedSteps, BLOCKS_BY_NAME, 'Yinlin');
-    expect(stats.elemDmg).toBeCloseTo(15, 6); // augusta.outro.battlesong's full elemDmg+15
+    // augusta.outro.battlesong's full elemDmg+15 — fixed 2026-09-05: Outro buffs are always DMG
+    // Amplification (isAmplify), so this now correctly lands in stats.amplify, not stats.elemDmg.
+    expect(stats.amplify).toBeCloseTo(15, 6);
   });
 
   it('coordSnapshotDiscount: true discounts the next-on-field buff by exactly COORD_SNAPSHOT_DISCOUNT', () => {
     const { stats } = resolveSimulatedTeamRotation(ownedSteps, BLOCKS_BY_NAME, 'Yinlin', { coordSnapshotDiscount: true });
-    expect(stats.elemDmg).toBeCloseTo(15 * COORD_SNAPSHOT_DISCOUNT, 6);
+    expect(stats.amplify).toBeCloseTo(15 * COORD_SNAPSHOT_DISCOUNT, 6);
   });
 });
 

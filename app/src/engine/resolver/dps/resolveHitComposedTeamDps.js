@@ -238,10 +238,13 @@ function resultsForBlock(block, targetName, allResults) {
 }
 
 function applyEffects(block, multiplier, stats, hitBlockId) {
+  // isAmplify (fixed 2026-09-05) — see resolveHitComposedDps.js's identical fix/comment: WuWa's
+  // own Outro buffs are always DMG Amplification, regardless of stat name or recipient.
+  const isAmplify = block.trigger.type === 'swap-out';
   for (const effect of block.effects) {
     // `scopedToBlockId` (Phase 0.5 gap #3) — see resolveHitComposedDps.js's identical comment.
     if (effect.scopedToBlockId && effect.scopedToBlockId !== hitBlockId) continue;
     const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
-    applyBuff(stats, effect.stat, value, {});
+    applyBuff(stats, effect.stat, value, { isAmplify });
   }
 }

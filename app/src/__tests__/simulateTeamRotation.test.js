@@ -81,7 +81,9 @@ describe('simulateTeamRotation — hand-built cross-character scenarios (generic
       ineligibleBlockIds: yinlinOutroResult.ineligibleBlockIds,
       targetElementLower: 'electro', targetRole: 'Sub DPS',
     }, stats);
-    expect(stats.elemDmg).toBe(20); // yinlin.outro.strategist, isolated from Augusta's own blocks
+    // Fixed 2026-09-05: an Outro buff is always DMG Amplification, so BOTH of this block's effects
+    // (elemDmg+20, libDmg+25) land in stats.amplify (45), not stats.elemDmg/libDmg.
+    expect(stats.amplify).toBe(20 + 25); // yinlin.outro.strategist, isolated from Augusta's own blocks
   });
 });
 

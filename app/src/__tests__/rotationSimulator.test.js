@@ -284,13 +284,14 @@ describe("simulateRotation — 'swap-out'/'swap-in' trigger keys actually fire",
       targetElementLower: 'electro', targetRole: 'Sub DPS',
     }, stats);
     // yinlin.outro.strategist grants elemDmg +20 / libDmg +25 — now actually reachable through the
-    // simulator's own output, not just a hand-built firedTriggers set. elemDmg has no other
-    // contributor in this call, so it isolates cleanly to the outro's +20. libDmg also gets S5's
+    // simulator's own output, not just a hand-built firedTriggers set. Fixed 2026-09-05: an Outro
+    // buff is always DMG Amplification regardless of stat name, so BOTH of this block's effects
+    // now land in stats.amplify (20+25=45), not stats.elemDmg/libDmg. libDmg still gets S5's
     // passive +100 (Resounding Will, always-fires here since resolveTriggerBlocks doesn't gate
-    // condition.requiresStance) baked in by the same call, so assert the total including it rather
-    // than a wrong isolated +25.
-    expect(stats.elemDmg).toBe(20);
-    expect(stats.libDmg).toBe(100 + 25);
+    // condition.requiresStance) from a DIFFERENT, non-outro block.
+    expect(stats.elemDmg).toBe(0);
+    expect(stats.amplify).toBe(20 + 25);
+    expect(stats.libDmg).toBe(100);
   });
 });
 

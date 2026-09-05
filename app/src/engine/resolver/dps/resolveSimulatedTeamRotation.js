@@ -182,6 +182,9 @@ function resultsForBlock(block, targetName, allResults) {
 }
 
 function applyEffects(block, multiplier, stats, addTotalMult) {
+  // isAmplify (fixed 2026-09-05) — see resolveHitComposedDps.js's identical fix/comment: WuWa's
+  // own Outro buffs are always DMG Amplification, regardless of stat name or recipient.
+  const isAmplify = block.trigger.type === 'swap-out';
   for (const effect of block.effects) {
     // scopedToBlockId (fixed 2026-09-05) — see resolveSimulatedRotation.js's identical fix/comment:
     // this flat time-averaged accumulator has no per-block granularity, so a scoped effect is
@@ -189,6 +192,6 @@ function applyEffects(block, multiplier, stats, addTotalMult) {
     if (effect.scopedToBlockId) continue;
     const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
     if (effect.stat === 'totalMult') { addTotalMult(value); continue; }
-    applyBuff(stats, effect.stat, value, {});
+    applyBuff(stats, effect.stat, value, { isAmplify });
   }
 }
