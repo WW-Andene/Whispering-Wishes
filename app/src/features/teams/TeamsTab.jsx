@@ -179,11 +179,6 @@ function TeamsTab({
     customTeams.sort((a, b) => b.score - a.score);
 
     // ═══ SECTION 2: Curated meta teams (from CHARACTER_DATA.teams) ═══
-    // Isolated from the DPS calc engine (2026-09-05, direct user instruction): this list is built
-    // entirely from plain data — CHARACTER_DATA.teams' hand-curated strings for which members, and
-    // collection ownership for `ownedCount`/`allOwned` — with no call into scoreTeamComposition, so
-    // it keeps working independent of that engine. It is therefore unranked (curated-list order,
-    // newest character first) and carries no score/tags badges.
     const metaTeams = [];
     const metaSeen = new Set();
     const orderedChars = [...RELEASE_ORDER].reverse();
@@ -197,12 +192,15 @@ function TeamsTab({
         metaSeen.add(dedupeKey);
         if (members.length < 2) continue;
         const ownedCount = members.filter(m => ownedNames.has(m)).length;
-        metaTeams.push({ text: t, members, ownedCount, allOwned: ownedCount === members.length });
+        const { score, tags } = scoreTeam(members);
+        metaTeams.push({ text: t, members, score: score + ownedCount * 8 + (ownedCount === members.length ? 12 : 0), tags, ownedCount, allOwned: ownedCount === members.length });
       }
     }
+    metaTeams.sort((a, b) => b.score - a.score);
     const metaDisplayCount = customTeams.length > 0 ? 7 : 15;
-    // Shuffle re-rolls WHICH curated teams are shown from the full (unranked) pool — there is no
-    // "quality" order left to preserve now that this section no longer scores anything.
+    // Shuffle re-rolls WHICH curated teams are shown, not their quality — on the initial render
+    // (seed 0) show the straightforward top-by-score picks; each Shuffle click re-samples a fresh
+    // random N from the full scored pool instead of always the same fixed top-N.
     let metaDisplay = metaTeams.slice(0, metaDisplayCount);
     if (metaShuffleSeed > 0 && metaTeams.length > metaDisplayCount) {
       const pool = [...metaTeams];
