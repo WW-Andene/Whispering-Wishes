@@ -153,6 +153,37 @@ as if it were an exact Lv.10 value the way `damage.hits` numbers are. Until then
 end-of-gauge event (Tune Break itself, see 2b) is modeled, as a team-level aggregate — not yet
 derived from real simulated per-action gauge accumulation.
 
+**Worked example of the formula (user-provided, 2026-09-05, same source), confirms the
+Accumulation Rate term is the same real stat as "Tune Break Boost":** a Liberation with Base
+Value 40, cast by a character with +50% accumulation bonus (from stats or a weapon passive),
+generates `40 × (1 + 0.50) = 60` real points — meaning two well-placed Liberations alone can
+fully saturate a boss-tier (200pt) gauge for a heavily-invested Tune Break Boost build.
+
+**Character-side multiplier overrides — qualitative only, `NEEDS SOURCE` for exact values:**
+"3.x" Resonators (Lynae, Mornye named specifically) have Forte Circuit attacks or dedicated
+skills with native multipliers "almost doubling" these generic base values. Real, but no
+concrete number given — do not assume exactly 2x without a per-character source.
+
+**Enemy-side gauge TOTALS — real, sourced, and this is new: previously this project had ZERO
+enemy-side Tune data anywhere.** Gauge total scales by enemy tier:
+
+| Enemy category | Total gauge | Fill difficulty | Tune Break trigger |
+|---|---|---|---|
+| Common mobs | 30–50 pts | Very fast (1–2 skills) | Automatic — triggers on the hit that fills it |
+| Elite (medium) | 100 pts | Moderate (one standard rotation) | Manual or automatic, varies by elite |
+| Boss / Overlord | 200 pts | Slow (needs Ultimates or real Tune Break Boost investment) | Manual QTE — freezes time, unique Finisher animation |
+
+**Post-break cooldown/immunity (real, sourced):** once the gauge fills and Tune Break
+consumes it, the enemy's gauge resets to 0 and enters a 10–15s immunity window — greyed out,
+no accumulation possible from any attack during that window.
+
+**Special case — mechanic-driven accumulation blocks (real, sourced, boss-specific):** certain
+boss animations/stances block gauge accumulation entirely (e.g. during their own ultimate
+wind-up) until a Perfect Dodge or Parry lands, which then grants a large lump-sum of points
+instantly. Not currently representable in this engine (no boss-animation-state tracking exists
+anywhere), and not needed unless a specific boss fight is being modeled rather than a
+generic enemyDef/enemyRes target the way this engine currently treats every enemy.
+
 ### 2b. Tune Break damage — confirmed, already implemented
 
 `engine/resolver/dot/dotFormulas.js`'s `calcTuneBreakDmg()`:
