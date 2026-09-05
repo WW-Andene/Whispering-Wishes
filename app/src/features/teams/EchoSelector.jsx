@@ -12,6 +12,10 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { EchoImage } from '../../shared/components/EchoImage.jsx';
 
 const LOCALIZED_ECHO_DATA = getLocalizedEchoData(getLocale());
+// ECHO_SETS is declared oldest-first (each block of sets is commented with its game version, e.g.
+// "v3.5 — Land of Xuanfang") — reversed here so the "All Sets" dropdown lists the newest sonata
+// sets first, matching the convention used for the Target picker's own set filter.
+const SET_RELEASE_ORDER_INDEX = new Map([...Object.keys(ECHO_SETS)].reverse().map((name, i) => [name, i]));
 
 export default function EchoSelector({
   echoSelectorOpen,
@@ -60,8 +64,10 @@ export default function EchoSelector({
                 if (ed?.sets?.some(s => recSets.has(s))) recommendedEchoes.add(en);
               });
             }
-            // Available sonata sets for this cost tier
-            const availableSets = [...new Set(echoList.flatMap(n => ECHO_DATA[n]?.sets || []))].sort();
+            // Available sonata sets for this cost tier — newest sets first, not alphabetical.
+            const availableSets = [...new Set(echoList.flatMap(n => ECHO_DATA[n]?.sets || []))].sort((a, b) =>
+              (SET_RELEASE_ORDER_INDEX.get(a) ?? 999) - (SET_RELEASE_ORDER_INDEX.get(b) ?? 999)
+            );
             const availableBuffs = [...new Set(echoList.flatMap(n => { const d = ECHO_DATA[n]; return d ? (Array.isArray(d.buff) ? d.buff : [d.buff]) : []; }))].sort();
             const hasFilters = echoSetFilter !== 'all' || echoBuffFilter !== 'all';
             // Filter
