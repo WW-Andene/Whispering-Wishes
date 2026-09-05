@@ -235,7 +235,81 @@ specific to any one character — building it means adding a new `DOT_MECHANICS`
 wiring the shared reaction system (`dotReactions.js`) to consume it, which touches every
 Tune-affiliated character, not one.
 
-## 3. What this file is for
+## 3. Vibration Strength (Poise/Stagger) — a DISTINCT gauge from Off-Tune, source confidence LOWER
+
+Logged 2026-09-05 from user-provided French text citing wutheringwaves.gg's starter guide, a
+Reddit thread, and the Fandom wiki's own "Vibration Strength" page — **not** the character dump's
+own primary text, and not cross-checked against any in-game screenshot the way the general damage
+formula and the Off-Tune ranges were. Treat everything below as a real, plausible mechanic worth
+having on file, but LOWER confidence than this doc's other sections — the user's own words:
+"not sure about it but might be good." Do not build an engine resolver from this section without
+either a stronger primary source or explicit go-ahead, given the ranges below are guide-site
+approximations, not exact kit-text numbers.
+
+**What it is, and how it differs from Off-Tune**: the white poise/stagger bar under an enemy's HP
+bar — a real, separate, long-standing mechanic (present since launch), NOT the same system as
+Off-Tune Level (introduced later, element-based). The two now interact (see the Tune Break
+transfer note below) but are two distinct gauges with two distinct fill mechanisms.
+
+**Accumulation formula** (structurally identical shape to Off-Tune's, different inputs):
+```
+Vibration reduction = attack's own base Vibration value × (1 + character's own Vibration
+                       Breakdown Amplification stat) × combat modifiers
+```
+- Base value differs by ACTION TYPE, same `section`-keyed shape Off-Tune uses, but the ranking is
+  inverted from Off-Tune's: Heavy Attacks carry the single highest base value (not Liberation);
+  plain Basic Attacks are the lowest; Skill/Liberation are moderate-to-high and scale per
+  character (a "Breaker"-archetype character like Yuanwu has an unusually large multiplier here).
+- Vibration Breakdown Amplification: a character-level stat (passives/weapons/echoes), a direct
+  multiplier on the attacker's own stagger output — structurally like Off-Tune's per-character
+  multiplier overrides (§2a), not yet given as a concrete number for any specific character here.
+- Combat modifiers, the two named ones:
+  - **Parry**: the single strongest modifier — parrying a boss's gold-circle-telegraphed attack
+    removes roughly 15–30% of its CURRENT Vibration bar in one hit (proportional to the bar, not a
+    flat point value).
+  - **Perfect Dodge Counter**: a flat bonus on top of a normal hit's own value (~20 points cited;
+    "-15% Vibration" cited for "certain bosses" specifically, an inconsistent unit — flat points vs
+    %, not reconciled here).
+
+**Enemy-side gauge totals** (mirrors Off-Tune's own §2a table shape):
+| Enemy type | Total Vibration gauge | Resistance to plain hits | Parry impact |
+|---|---|---|---|
+| Common mob | 0 (no gauge) | none — staggers on any hit | n/a |
+| Elite (Mech, Guardian, etc.) | 100–150 | medium (empties in 1-2 heavy combos) | instantly removes ~30–50% |
+| Standard/Overlord boss | 300–400 | high (needs a full rotation) | removes a flat ~60–80 pts |
+| Tactical Hologram (max difficulty) | 500–600 | extreme, very rigid bar | breaking it is the whole fight |
+
+**Base point values per action** (guide-site approximation, NOT per-character exact numbers):
+- Basic ATK (full combo): ~5–10 pts total
+- Heavy Attack: ~15–25 pts (the single most efficient basic-move stagger tool)
+- Perfect Dodge Counter: ~20 pts
+- A "Breaker"-archetype character's Skill/Liberation (Yuanwu, Jiyan cited): ~30–50 pts
+- Tune Break's own QTE (the v3.0+ crossover, see below): ~100–150 pts flat, once
+
+**Tune Break crossover** (the mechanical link between the two systems, v3.0+): while an enemy is
+in Mistune and the player triggers the Tune Break skill, the game applies an instant, large flat
+reduction to the enemy's CLASSIC Vibration gauge on top of Tune Break's own separate damage:
+```
+Tune Break's own Vibration damage = large fixed Rupture value × (1 + Tune Break Boost multiplier)
+```
+This is a genuinely different mechanism from a normal hit's own Vibration contribution (a flat
+finisher-style deduction, not a per-hit accumulation) — matches this doc's own §2b/§2c Tune
+Break/Strain formulas in shape (fixed value × boost multiplier) but is NOT the same reaction; it
+reduces a DIFFERENT gauge (Vibration, not Off-Tune Level).
+
+**On break**: gauge hits 0 → enemy enters Stagger/Immobilized for a fixed window (5–8s cited),
+taking increased damage before the gauge fully refills.
+
+**Engine status**: not modeled anywhere — no schema field, no math file, no resolver. Building it
+would mean a new base-value table (mirroring `offTuneFormula.js`'s shape but inverted-priority and
+keyed to different action types), a new character-level "Vibration Breakdown Amplification" stat
+(not yet known for any character), and separate Parry/Dodge-Counter combat-modifier handling this
+schema has no trigger shape for yet (no character block anywhere models a Parry action). A real,
+buildable-in-principle single-character "how much Vibration does THIS character's own rotation
+generate" resolver (same scope discipline as `resolveOffTune.js`) is possible once/if the source
+confidence here is raised — not done as part of logging this reference.
+
+## 4. What this file is for
 
 Add a verified formula/number here the moment it's sourced, with the same citation discipline
 as a character block file (where it came from, what it changes, what it doesn't). Remove a
