@@ -53,7 +53,9 @@ export const AALTO_BLOCKS = [
     id: 'aalto.skill.shift-trick',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Shift Trick' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-05: dump's own "Cooldown: 10s" row — was missing entirely, independent
+    // of the chain.s1 cooldown-reduction fix below.
+    timing: { cooldown: 10 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('59.65%'), category: 'skillDmg', basis: 'ATK' },
     note: '59.65% per Mist Bullet — real bullet count depends on encounter length, kept as 1 base bullet (no fabricated count).',
     // concertoEnergyGain added 2026-09-05: dump's own "Con. Energy Regen: 15" row for Shift Trick.
@@ -154,7 +156,13 @@ export const AALTO_BLOCKS = [
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA) ──
-  { id: 'aalto.chain.s1', source: SOURCE, kind: 'utility', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [], note: "Trickster's Opening Show — no DPS component sourced yet." },
+  // Comment corrected 2026-09-05 (same class of fix as chain.s3's 2026-09-03 correction): the prior
+  // "no DPS component sourced yet" was wrong — the dump is explicit S1 reduces Shift Trick's own
+  // Cooldown from 10s (now recorded on aalto.skill.shift-trick's timing.cooldown) to 6s. Left
+  // unmodeled on purpose, not unsourced: this engine models one canonical cast-once-per-skill
+  // rotation loop, with no cooldown-reduction stat or repeat-cast-per-cooldown simulation for a CD
+  // value to multiply against — real, sourced, genuinely not representable, not a gap to guess at.
+  { id: 'aalto.chain.s1', source: SOURCE, kind: 'utility', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [], note: "Trickster's Opening Show — Shift Trick Cooldown 10s -> 6s, real mechanic with no representable DPS stat in this schema." },
   { id: 'aalto.chain.s2', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'atkPct', value: 15, source: 'self-kit' }] },
   // Comment corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): the prior "no DPS component
   // sourced yet" note was false — the dump is explicit S3 has a real DPS component ("Basic/Mid-air
