@@ -15,7 +15,6 @@ import { useSessionState } from '../../hooks/useSessionState.js';
 import DPSComparisonCard from './DPSComparisonCard.jsx';
 import { computeAutoEquipEntry, computeAutoEquipEntryOptimized, pickBestTeamForEnemy } from './autoEquip.js';
 import { RELEASE_ORDER } from '../../data/characters.js';
-import { RESONANCE_MODE_OPTIONS } from '../../data/resonanceModes.js';
 import { RotationGuideCard } from './RotationGuideCard.jsx';
 import { EnemyTargetCard, EnemyTargetModal } from './EnemyTargetSection.jsx';
 import { calcTeamStats as calcTeamStatsImpl } from './calcTeamStats.js';
@@ -576,36 +575,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                               })}
                             </div>
                           </div>
-                          {/* Resonance Mode — a real manual in-game toggle for dual-mode characters (Lynae/Denia/
-                              Aemeath), not something the app derives automatically (2026-09-05, direct user
-                              correction). Defaults to that character's own first mode (data/resonanceModes.js)
-                              until the player picks otherwise, exactly mirroring the real build panel. */}
-                          {RESONANCE_MODE_OPTIONS[m.name] && (
-                            <div className="min-w-0 space-y-0.5">
-                              <div className="kuro-micro-label">{t('teams.damageCalc.resonanceMode')}</div>
-                              <div className="flex gap-0.5" role="radiogroup" aria-label={t('teams.damageCalc.resonanceModeAria', { name: m.name })}>
-                                {RESONANCE_MODE_OPTIONS[m.name].map(mode => {
-                                  const isActive = (eq.resonanceMode || RESONANCE_MODE_OPTIONS[m.name][0]) === mode;
-                                  const shortLabel = mode.replace(/\s+mode$/i, '');
-                                  return (
-                                    <button key={mode}
-                                      role="radio"
-                                      aria-checked={isActive}
-                                      className={`kuro-chip flex-1 text-2xs ${isActive ? 'active-gold' : ''}`}
-                                      onClick={() => {
-                                        setTeamEquipment(prev => {
-                                          const n = { ...prev };
-                                          n[eqKey] = { ...(n[eqKey] || { weapon: null, echoes: [null,null,null,null,null] }), resonanceMode: mode };
-                                          return n;
-                                        });
-                                        haptic.light();
-                                      }}
-                                    >{shortLabel}</button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          )}
                           <div className="min-w-0 space-y-0.5">
                             <div className="kuro-micro-label">{t('teams.damageCalc.refinement')}</div>
                             <div className="flex gap-0.5" role="radiogroup" aria-label={t('teams.damageCalc.refinementAria', { name: m.name })}>
