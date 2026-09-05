@@ -9,6 +9,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, ListOrdered } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { useSessionState } from '../../hooks/useSessionState.js';
 import { stepStyle } from './RotationTimeline.jsx';
 import { splitIntoParagraphs } from '../../shared/utils/textFormat.js';
 import { t, getLocale } from '../../utils/i18n.js';
@@ -18,21 +19,30 @@ export function RotationGuideCard({ rotationTimeline }) {
   // badges) leaving just each step's name, on-field time, and skill sequence type/name/damage. Off by
   // default (full detail).
   const [simpleView, setSimpleView] = useState(false);
+  // Collapsed state persists per-tab-session, same convention as the Team Overview card's own
+  // collapse toggle in DamageCalculator.jsx (and the Rotation timeline card above it).
+  const [collapsed, setCollapsed] = useSessionState('ww-rotation-guide-collapsed', false);
   if (!(rotationTimeline?.steps?.length > 0)) return null;
 
   return (
     <Card>
-      <CardHeader action={
-        <button
-          type="button"
-          onClick={() => setSimpleView(v => !v)}
-          className={`kuro-badge text-2xs shrink-0 ${simpleView ? 'kuro-badge-amber' : 'kuro-badge-neutral'}`}
-        >
-          {t('teams.rotationGuide.simpleView')}
-        </button>
-      }>
-        <span className="flex items-center gap-1.5"><ListOrdered size={14} /> {t('teams.rotationGuide.title')}</span>
-      </CardHeader>
+      <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCollapsed(p => !p); } }} aria-expanded={!collapsed}>
+        <CardHeader action={
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setSimpleView(v => !v); }}
+              className={`kuro-badge text-2xs shrink-0 ${simpleView ? 'kuro-badge-amber' : 'kuro-badge-neutral'}`}
+            >
+              {t('teams.rotationGuide.simpleView')}
+            </button>
+            <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`} />
+          </div>
+        }>
+          <span className="flex items-center gap-1.5"><ListOrdered size={14} /> {t('teams.rotationGuide.title')}</span>
+        </CardHeader>
+      </div>
+      {!collapsed && (
       <CardBody>
         <div className="space-y-0">
           {rotationTimeline.steps.map((step, i) => (
@@ -141,6 +151,7 @@ export function RotationGuideCard({ rotationTimeline }) {
           )}
         </div>
       </CardBody>
+      )}
     </Card>
   );
 }

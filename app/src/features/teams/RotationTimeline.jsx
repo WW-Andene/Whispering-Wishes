@@ -3,7 +3,9 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
+import { ChevronDown } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
+import { useSessionState } from '../../hooks/useSessionState.js';
 import { t } from '../../utils/i18n.js';
 
 const ELEMENT_COLORS = {
@@ -77,6 +79,9 @@ export const stepStyle = (type, locale) => {
 };
 
 export default function RotationTimeline({ rotationTimeline }) {
+  // Collapsed state persists per-tab-session, same convention as the Team Overview card's own
+  // collapse toggle in DamageCalculator.jsx.
+  const [collapsed, setCollapsed] = useSessionState('ww-rotation-timeline-collapsed', false);
   if (!rotationTimeline || !rotationTimeline.segments?.length || !rotationTimeline.totalTime) return null;
 
   const { segments, buffs, totalTime } = rotationTimeline;
@@ -124,7 +129,12 @@ export default function RotationTimeline({ rotationTimeline }) {
 
   return (
     <Card>
-      <CardHeader>{t('teams.rotation.header', { time: totalTime })}</CardHeader>
+      <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCollapsed(p => !p); } }} aria-expanded={!collapsed}>
+        <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed ? '' : 'rotate-180'}`} />}>
+          {t('teams.rotation.header', { time: totalTime })}
+        </CardHeader>
+      </div>
+      {!collapsed && (
       <CardBody>
         {/* All percentage-based — no fixed width, no scroll, fits any container */}
         <div style={{ position: 'relative' }}>
@@ -184,6 +194,7 @@ export default function RotationTimeline({ rotationTimeline }) {
           </div>
         )}
       </CardBody>
+      )}
     </Card>
   );
 }
