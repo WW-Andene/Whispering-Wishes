@@ -24,6 +24,9 @@
 
 import { winningStanceForOwner } from '../gating/sequenceGating.js';
 import { triggerFired } from '../gating/triggerEngine.js';
+import { offTuneValueForBlock, ENEMY_OFF_TUNE_GAUGE } from '../../math/offTuneFormula.js';
+import { FUSION_BURST_THRESHOLD } from '../dot/dotFormulas.js';
+import { AEMEATH_EARLY_DETONATION_THRESHOLD, AEMEATH_DUET_BLOCK_IDS } from '../dot/resolveFusionBurstStacks.js';
 
 // Not a sourced animation-timing value — a placeholder pace for spacing simulated
 // rotation steps when the caller doesn't supply a real one via `stepSeconds`.
@@ -55,6 +58,12 @@ export class RotationSimulator {
     // owner-namespaced resource name -> running total — backs gainResource/resourceAtLeast (see
     // their own doc below, and block.schema.js's `resourceGain` field doc).
     this._resources = new Map();
+    // TEAM-WIDE (not owner-namespaced) shared gauge name -> running total — backs
+    // gainSharedGauge/trySharedGaugeDetonation (see their own doc below). Added 2026-09-06 for real
+    // Fusion Burst stack / Off-Tune gauge tracking — unlike `_resources` (one character's own
+    // personal gauge), a shared gauge is fed by ANY team member's own qualifying cast and detonates
+    // once, team-wide, when the total crosses a real threshold.
+    this._sharedGauges = new Map();
   }
 
   // Owner-namespacing: every method below that tracks a SINGLE character's own rotation history
@@ -193,6 +202,26 @@ export class RotationSimulator {
   resourceAtLeast(resource, threshold, owner) {
     return (this._resources.get(this.#ns(resource, owner)) ?? 0) >= threshold;
   }
+
+  /** Real, team-wide gauge gain (e.g. Fusion Burst stacks, Off-Tune Level) — added 2026-09-06, see
+   *  this class's own `_sharedGauges` doc for why this is distinct from gainResource. Any team
+   *  member's own qualifying cast can call this for the SAME named gauge. */
+  gainSharedGauge(name, value) {
+    this._sharedGauges.set(name, (this._sharedGauges.get(name) ?? 0) + value);
+  }
+
+  /** If the named shared gauge's running total has reached `threshold`, consumes exactly
+   *  `threshold` worth (leaving any real overflow intact, same "gauge doesn't fully reset to a
+   *  wasted negative" behavior the real game's own carry-over gauges have) and returns true — the
+   *  caller is responsible for treating a true return as "a real detonation just happened at this
+   *  exact step" (e.g. tagging it into that step's own actionTags so an 'ally-action' trigger can
+   *  react at the same instant). Returns false (no side effect) when still under threshold. */
+  trySharedGaugeDetonation(name, threshold) {
+    const total = this._sharedGauges.get(name) ?? 0;
+    if (total < threshold) return false;
+    this._sharedGauges.set(name, total - threshold);
+    return true;
+  }
 }
 
 /**
@@ -249,6 +278,28 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
     if (!ownerStances.has(owner)) ownerStances.set(owner, winningStanceForOwner(allBlocks, owner, stanceOverrides?.[owner] ?? null));
     return ownerStances.get(owner);
   };
+  // Real Fusion Burst / Off-Tune shared-gauge detonation tagging (2026-09-06) — see
+  // resolveFusionBurstStacks.js's own header for the full sourcing. Aemeath's own kit lowers the
+  // generic 10-stack Fusion Burst detonation threshold to 5 (her dump line 83) — resolved once, up
+  // front, same as every other per-owner mode/threshold decision here.
+  //
+  // `aemeathOwnerKey` resolves the STEP-OWNER key that actually holds her blocks — NOT a hardcoded
+  // 'Aemeath' literal — because solo mode (simulateRotation) keys everything (blocksByOwner AND
+  // stanceOverrides/forcedStance) under '' regardless of which character is being simulated, while
+  // team mode keys both under her real name. `stanceForOwner()` (and `stanceOverrides` upstream)
+  // only resolve correctly when queried under THAT SAME key, so this finds it by scanning for which
+  // key's own blocks carry `b.source === 'Aemeath'` (a block's own static field, always correct
+  // regardless of key scheme) rather than assuming the key IS her name. Caught via a real
+  // verification run before shipping — the naive `stanceForOwner('Aemeath')`/`owner === 'Aemeath'`
+  // version silently produced zero fusion-burst-detonation tags for her own real solo rotation.
+  const aemeathOwnerKey = Object.keys(blocksByOwner).find(k => (blocksByOwner[k] || []).some(b => b.source === 'Aemeath'));
+  const hasAemeathFusionBurst = aemeathOwnerKey != null && stanceForOwner(aemeathOwnerKey) === 'Fusion Burst mode';
+  const fusionBurstThreshold = hasAemeathFusionBurst ? AEMEATH_EARLY_DETONATION_THRESHOLD : FUSION_BURST_THRESHOLD;
+  const aemeathDuetLabels = new Set(
+    allBlocks
+      .filter(b => b.source === 'Aemeath' && AEMEATH_DUET_BLOCK_IDS.includes(b.id))
+      .map(b => b.trigger.on ?? b.trigger.attemptOn)
+  );
   // partnerBlocks is intentionally NOT scoped per-owner: a 'partner-outro-return' block can belong
   // to any team member (in practice, so far, only Augusta-shaped kits have one) and its
   // `requiresActiveBlock` references THAT SAME member's own outro-buff block id — which step's
@@ -367,6 +418,38 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
       // here benefits every current/future character with an "ally casts Echo Skill" reactive mechanic,
       // not just Sigrika.
       if (ev.type === 'Echo') actionTags.add('echo-skill-cast');
+
+      // Real Fusion Burst stack + Off-Tune gauge tracking (2026-09-06) — see
+      // resolveFusionBurstStacks.js's own header for the full sourcing/mechanic. A real detonation
+      // is tagged into THIS SAME step's actionTags (same instant as the causing cast), consumable
+      // by any 'ally-action' trigger (e.g. Aemeath's chain.s2 stacking bonus) the exact same way
+      // appliesTags-driven statuses already are, just sourced from a real running gauge instead of
+      // a static per-block tag.
+      for (const b of blocks) {
+        if (b.trigger.type !== 'cast' || b.trigger.on !== label || ineligibleBlockIds.has(b.id)) continue;
+        if (b.dotApplier?.mechanic === 'fusionBurst' && b.dotApplier.value) {
+          const req = b.dotApplier.requiresStance;
+          if (req == null || stanceForOwner(owner) === req) {
+            sim.gainSharedGauge('fusionBurst', b.dotApplier.value);
+            if (sim.trySharedGaugeDetonation('fusionBurst', fusionBurstThreshold)) actionTags.add('fusion-burst-detonation');
+          }
+        }
+        if (b.kind === 'damage' && b.damage) {
+          sim.gainSharedGauge('offTune', offTuneValueForBlock(b));
+          if (sim.trySharedGaugeDetonation('offTune', ENEMY_OFF_TUNE_GAUGE.boss.max)) actionTags.add('tune-break-detonation');
+        }
+      }
+      // Aemeath's own Duet cast forces an unconditional Fusion Burst detonation (her dump line 87:
+      // "triggers Fusion Burst at max stack limit WITHOUT consuming stacks") — a SEPARATE path from
+      // the passive threshold-crossing above; doesn't touch the shared gauge at all. Checked via
+      // THIS step's own `blocks` list containing a real Aemeath Duet block matching this label, and
+      // `stanceForOwner(owner)` (THIS step's own owner key, not a hardcoded 'Aemeath' literal — see
+      // `aemeathOwnerKey`'s own comment above for why that's the key that actually resolves her
+      // stance correctly in both solo and team mode).
+      if (aemeathDuetLabels.has(label) && stanceForOwner(owner) === 'Fusion Burst mode'
+        && blocks.some(b => AEMEATH_DUET_BLOCK_IDS.includes(b.id) && (b.trigger.on ?? b.trigger.attemptOn) === label)) {
+        actionTags.add('fusion-burst-detonation');
+      }
 
       // Cross-character 'windowed-proc' advancement (Cantarella's Diffusion): checked on EVERY
       // step's own qualifying hit, regardless of whose kit the block belongs to — `on`, when set,

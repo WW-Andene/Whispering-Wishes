@@ -35,8 +35,10 @@
 import { winningStanceForOwner } from '../gating/sequenceGating.js';
 import { FUSION_BURST_THRESHOLD } from './dotFormulas.js';
 
-const AEMEATH_EARLY_DETONATION_THRESHOLD = 5; // her dump line 83, "if it has >5 stacks"
-const AEMEATH_DUET_BLOCK_IDS = ['aemeath.skill.seraphic-duet-encore', 'aemeath.skill.seraphic-duet-overture'];
+// Exported so rotationSimulator.js's own real per-step detonation tagging (see its own comment)
+// uses the SAME sourced number rather than a duplicated magic constant.
+export const AEMEATH_EARLY_DETONATION_THRESHOLD = 5; // her dump line 83, "if it has >5 stacks"
+export const AEMEATH_DUET_BLOCK_IDS = ['aemeath.skill.seraphic-duet-encore', 'aemeath.skill.seraphic-duet-overture'];
 
 /**
  * @param {Object<string, import('../../schema/block.schema.js').TriggerBlock[]>} blocksByOwner
