@@ -7,20 +7,26 @@
 // conditionHolds() never recognizes — meaning that second block was silently dead (never fired) on
 // every existing path.
 //
-// Real mechanic (Data dump/Aemeath/Aemeath.md line 108): in Tune Rupture mode, EVERY teammate
-// (never Aemeath herself) who inflicts Tune Rupture-Shifting or deals Tune Rupture DMG grants her
-// +20% Crit DMG, once per resonator, up to 3 stacks; at 3/3, Heavenfall Edict: Finale DMG is
-// Amplified +25%. In Fusion Burst mode: teammates inflicting Fusion Burst grant +30% Crit DMG, once
-// per resonator, up to 2 stacks; at 2/2, the same +25% Finale Amp. "Once per resonator" — this is a
-// real per-TEAMMATE count (excluding Aemeath), not a per-hit/per-cast one, so it needs the whole
-// team's own blocksByOwner, not anything a single character's own block file can see.
+// Real mechanic (Data dump/Aemeath/Aemeath.md line 108): in Tune Rupture mode, every RESONATOR
+// (including Aemeath herself — corrected 2026-09-06, direct user correction: "it's literally in her
+// kit... up to 3, 1 per teammate" doesn't exclude her, and her own Basic Stage 3/4, Sync Strikes,
+// and both Intro skills already genuinely inflict the mode-matching status per this same file's own
+// dotApplier/appliesTags tags — she counts as one of her own real appliers) who inflicts Tune
+// Rupture-Shifting or deals Tune Rupture DMG grants her +20% Crit DMG, once per resonator, up to 3
+// stacks; at 3/3, Heavenfall Edict: Finale DMG is Amplified +25%. In Fusion Burst mode: whoever
+// inflicts Fusion Burst grants +30% Crit DMG, once per resonator, up to 2 stacks; at 2/2, the same
+// +25% Finale Amp. "Once per resonator" — a real per-CHARACTER count (Aemeath included), not a
+// per-hit/per-cast one, so it needs the whole team's own blocksByOwner, not anything a single
+// character's own block file can see in isolation (a solo Aemeath still gets HER OWN stack this way
+// — 1/3 or 1/2 — never zero, since she always applies her own real trigger).
 //
-// A teammate "counts" if the currently-resolved Resonance Mode DOESN'T stop them: their own block
+// A character "counts" if the currently-resolved Resonance Mode doesn't stop them: their own block
 // set carries the matching real marker — `appliesTags` tag 'tune-rupture-shifting' (Tune mode) or
 // 'fusion-burst'/`dotApplier.mechanic === 'fusionBurst'` (Fusion mode) — and that marker's own
-// `requiresStance` (if any) matches THEIR OWN resolved stance (via winningStanceForOwner, so a
-// dual-mode teammate like Lynae/Denia is checked against whichever mode SHE is actually in, not
-// Aemeath's).
+// `requiresStance` (if any) matches THEIR OWN resolved stance. For every teammate OTHER than
+// Aemeath, that's winningStanceForOwner (so a dual-mode teammate like Lynae/Denia is checked against
+// whichever mode SHE is actually in, not Aemeath's); for Aemeath herself, it's simply her own
+// `aemeathMode` param — no separate resolution needed, since the caller already knows it.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { winningStanceForOwner } from '../gating/sequenceGating.js';
@@ -44,8 +50,7 @@ export function resolveBetweenTheStarsStacks(blocksByOwner, aemeathMode, stanceO
   const allBlocks = Object.values(blocksByOwner).flat();
   const contributors = new Set();
   Object.entries(blocksByOwner).forEach(([owner, blocks]) => {
-    if (owner === 'Aemeath') return;
-    const stance = winningStanceForOwner(allBlocks, owner, stanceOverrides?.[owner] ?? null);
+    const stance = owner === 'Aemeath' ? aemeathMode : winningStanceForOwner(allBlocks, owner, stanceOverrides?.[owner] ?? null);
     const applies = blocks.some(b => {
       const tagHit = (b.appliesTags || []).some(t => {
         const tagName = typeof t === 'string' ? t : t.tag;

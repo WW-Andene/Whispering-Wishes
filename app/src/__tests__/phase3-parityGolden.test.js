@@ -71,18 +71,21 @@ const EXPECTED_DIVERGENCES = {
   // Trick fix — that one stayed inside the 1% band, this one (two 25s-cooldown Liberation casts
   // instead of one 10s-cooldown Skill cast) does not.
   //
-  // Widened again 2026-09-05 (Between the Stars real stack count, item unblocked by the Resonance
-  // Mode toggle): this test's own "legacy" call runs calcTeamStats() on a SOLO ['Aemeath'] team, so
-  // resolveBetweenTheStarsStacks() correctly finds zero other teammates to contribute a stack — the
-  // real mechanic requires them ("team inflicting Tune Rupture-Shifting/Fusion Burst grants Aemeath
-  // +X% Crit DMG, once per resonator"). The old flat "modeled at max value" approximation (+60% Crit
-  // DMG unconditionally) is gone from the legacy-parity path; this test's own separate "engine"
-  // computation calls resolveHitComposedDps() directly with ITS OWN locally-built gearDelta (bypassing
-  // calcTeamStats.js entirely, see this file's own toExternalStatsDelta/rawTierGearStats helpers), so
-  // it never picks up this fix and stays at the old (now legacy-only) flat value — widening the real
-  // divergence between the two numbers for this one comparison. Not a real team's actual DPS
-  // divergence (a real Aemeath team has real teammates contributing real stacks on both paths); a
-  // side effect of this specific test's own "engine" number not being sourced through calcTeamStats().
+  // Widened again 2026-09-05/06 (Between the Stars real stack count, item unblocked by the
+  // Resonance Mode toggle): this test's own "legacy" call runs calcTeamStats() on a SOLO ['Aemeath']
+  // team. resolveBetweenTheStarsStacks() counts Aemeath as one of her own real "resonators" too
+  // (corrected 2026-09-06 — her own Basic Stage 3/4/Sync Strikes/Intro genuinely inflict the mode-
+  // matching status per her own dotApplier/appliesTags tags, so a solo Aemeath gets HER OWN real
+  // stack, 1 of the 3-or-2 cap, never zero) — still less than the old flat "modeled at max value"
+  // approximation (+60% Crit DMG unconditionally, as if every stack were always filled by a full
+  // team). That old flat value is gone from the legacy-parity path; this test's own separate
+  // "engine" computation calls resolveHitComposedDps() directly with ITS OWN locally-built gearDelta
+  // (bypassing calcTeamStats.js entirely, see this file's own toExternalStatsDelta/rawTierGearStats
+  // helpers), so it never picks up this fix and stays at the old (now legacy-only) flat value —
+  // widening the real divergence between the two numbers for this one comparison. Not a real team's
+  // actual DPS divergence (a real Aemeath team has real teammates contributing real additional
+  // stacks on both paths, on top of her own); a side effect of this specific test's own "engine"
+  // number not being sourced through calcTeamStats().
   Aemeath: { min: 1.10, max: 1.50 },
 };
 
