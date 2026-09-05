@@ -6,7 +6,13 @@ import React from 'react';
 import { ChevronDown } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { useSessionState } from '../../hooks/useSessionState.js';
-import { t } from '../../utils/i18n.js';
+import { t, getLocale } from '../../utils/i18n.js';
+
+// PerfectSuite values ([32] primary, [512] primary) — px/second scale and floor width for the
+// horizontally-scrollable chart below, so action sub-bars stay legible instead of being squeezed
+// into a percentage-of-card width.
+const PX_PER_SECOND = 32;
+const MIN_CHART_WIDTH = 512;
 
 const ELEMENT_COLORS = {
   Glacio: '#06b6d4', Fusion: '#f97316', Electro: '#a855f7',
@@ -78,13 +84,27 @@ export const stepStyle = (type, locale) => {
   return base;
 };
 
+// Short (1-word) chip labels for the action sub-bars below — the same widths that already forced
+// STAT_LABELS to abbreviate apply here (a Basic ATK action chip on a 3-member team's field segment
+// can be under 20px wide), so this deliberately trims STEP_TYPE_STYLE's own full labels rather than
+// reusing them. Full name still shows in the chip's title tooltip via stepStyle() below.
+const SHORT_STEP_LABEL = {
+  Intro: 'Intro', Skill: 'Skill', Liberation: 'Lib', Ultimate: 'Lib',
+  'Heavy ATK': 'Heavy', 'Basic ATK': 'Basic', Forte: 'Forte',
+  'Mid-air': 'Air', 'Mid-air ATK': 'Air', Echo: 'Echo', Outro: 'Outro', Step: '•',
+};
+
 export default function RotationTimeline({ rotationTimeline }) {
   // Collapsed state persists per-tab-session, same convention as the Team Overview card's own
   // collapse toggle in DamageCalculator.jsx.
   const [collapsed, setCollapsed] = useSessionState('ww-rotation-timeline-collapsed', false);
   if (!rotationTimeline || !rotationTimeline.segments?.length || !rotationTimeline.totalTime) return null;
 
-  const { segments, buffs, totalTime } = rotationTimeline;
+  const { segments, buffs, totalTime, steps } = rotationTimeline;
+  // Per-character skill sequence (Intro/Skill/Basic/Heavy/Liberation/Forte/Echo/Outro/...) — steps
+  // is index-aligned with segments (both built from the same orderedMems pass in calcTeamStats.js),
+  // but matching by name is just as cheap and doesn't depend on that alignment holding.
+  const stepByName = new Map((steps || []).map(s => [s.name, s]));
 
   // One cycle only — no looping
   const rows = [];
@@ -127,6 +147,8 @@ export default function RotationTimeline({ rotationTimeline }) {
   for (let i = 0; i <= maxEnd; i += tickInterval) ticks.push(i);
   if (ticks[ticks.length - 1] < Math.ceil(maxEnd)) ticks.push(Math.ceil(maxEnd));
 
+  const chartWidth = Math.max(maxEnd * PX_PER_SECOND, MIN_CHART_WIDTH);
+
   return (
     <Card>
       <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCollapsed(p => !p); } }} aria-expanded={!collapsed}>
@@ -136,50 +158,84 @@ export default function RotationTimeline({ rotationTimeline }) {
       </div>
       {!collapsed && (
       <CardBody>
-        {/* All percentage-based — no fixed width, no scroll, fits any container */}
-        <div style={{ position: 'relative' }}>
-          {ordered.map((row, i) => {
-            const leftPct = Math.min((row.start / maxEnd) * 100, 100);
-            // Clamp so a buff outlasting the rotation window is drawn flush to the right edge
-            // instead of overflowing the card and forcing horizontal scroll.
-            const widthPct = Math.min((row.duration / maxEnd) * 100, 100 - leftPct);
-            const isField = row.type === 'field';
-            const isEcho = row.buffKind === 'echo';
-            return (
-              <div key={i} style={{ position: 'relative', height: 24, marginBottom: 2 }}>
-                {/* Grid lines */}
-                {ticks.map(tick => (
-                  <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
-                    style={{ left: `${(tick / maxEnd) * 100}%` }} />
-                ))}
-                {/* Label */}
-                <span className={`absolute text-2xs ${isField ? 'font-bold text-gray-300' : isEcho ? 'text-gray-400' : 'text-gray-500'}`}
-                  style={{ left: 0, top: '50%', transform: 'translateY(-50%)', width: leftPct > 8 ? `${leftPct - 1}%` : undefined, textAlign: 'right', paddingRight: 4, zIndex: 2 }}>
-                  {leftPct > 8 ? (isField ? row.label : isEcho ? '◆' : '↳') : ''}
-                </span>
-                {/* Bar */}
-                <div className={`absolute flex items-center ${isField ? 'rounded rotation-segment' : 'rounded-sm buff-bar'}`}
-                  style={{
-                    left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`,
-                    top: 2, bottom: 2,
-                    background: `${row.color}${isField ? '30' : isEcho ? '14' : '18'}`,
-                    border: `1px solid ${row.color}${isField ? '60' : isEcho ? '30' : '35'}`,
-                    borderStyle: isEcho ? 'dashed' : 'solid',
-                  }}>
-                  <span className={`truncate px-1 ${isField ? 'text-2xs font-bold' : 'text-2xs'}`}
-                    style={{ color: row.color }}>{isField ? `${row.label} ${row.detail}` : row.detail}</span>
+        {/* Scrollable in both directions: the action sub-bars added below each field segment need
+            real pixel width to stay legible (a Basic/Heavy/Skill/Liberation chip strip squeezed into
+            a percentage-of-card width becomes unreadable on anything but a 1-member rotation), and a
+            3-member team with several buff rows can run taller than the card wants to be by default.
+            PX_PER_SECOND/MIN_CHART_WIDTH are both PerfectSuite values (32, 512). */}
+        <div className="overflow-x-auto overflow-y-auto max-h-[384px]">
+          <div style={{ position: 'relative', width: chartWidth, minWidth: '100%' }}>
+            {ordered.map((row, i) => {
+              const leftPct = Math.min((row.start / maxEnd) * 100, 100);
+              // Clamp so a buff outlasting the rotation window is drawn flush to the right edge
+              // instead of overflowing the card and forcing horizontal scroll.
+              const widthPct = Math.min((row.duration / maxEnd) * 100, 100 - leftPct);
+              const isField = row.type === 'field';
+              const isEcho = row.buffKind === 'echo';
+              // Action sub-bars — the verified skill-by-skill sequence (same data the Rotation Guide
+              // card lists) rendered as a second strip under the field bar. There's no real per-action
+              // timing in this data (only an ordered sequence), so each action gets an equal slice of
+              // its character's on-field window — a deliberate approximation, not a claim these actions
+              // are evenly timed in practice.
+              const actions = isField ? (stepByName.get(row.label)?.skillSequence || []) : [];
+              const hasActions = actions.length > 0;
+              const rowHeight = isField && hasActions ? 48 : 24;
+              return (
+                <div key={i} style={{ position: 'relative', height: rowHeight, marginBottom: 2 }}>
+                  {/* Grid lines */}
+                  {ticks.map(tick => (
+                    <div key={tick} className="absolute top-0 bottom-0 border-l border-white/5"
+                      style={{ left: `${(tick / maxEnd) * 100}%` }} />
+                  ))}
+                  {/* Label */}
+                  <span className={`absolute text-2xs ${isField ? 'font-bold text-gray-300' : isEcho ? 'text-gray-400' : 'text-gray-500'}`}
+                    style={hasActions
+                      ? { left: 0, top: 14, width: leftPct > 8 ? `${leftPct - 1}%` : undefined, textAlign: 'right', paddingRight: 4, zIndex: 2 }
+                      : { left: 0, top: '50%', transform: 'translateY(-50%)', width: leftPct > 8 ? `${leftPct - 1}%` : undefined, textAlign: 'right', paddingRight: 4, zIndex: 2 }}>
+                    {leftPct > 8 ? (isField ? row.label : isEcho ? '◆' : '↳') : ''}
+                  </span>
+                  {/* Bar */}
+                  <div className={`absolute flex items-center ${isField ? 'rounded rotation-segment' : 'rounded-sm buff-bar'}`}
+                    style={{
+                      left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`,
+                      top: 2, ...(hasActions ? { height: 24 } : { bottom: 2 }),
+                      background: `${row.color}${isField ? '30' : isEcho ? '14' : '18'}`,
+                      border: `1px solid ${row.color}${isField ? '60' : isEcho ? '30' : '35'}`,
+                      borderStyle: isEcho ? 'dashed' : 'solid',
+                    }}>
+                    <span className={`truncate px-1 ${isField ? 'text-2xs font-bold' : 'text-2xs'}`}
+                      style={{ color: row.color }}>{isField ? `${row.label} ${row.detail}` : row.detail}</span>
+                  </div>
+                  {/* Action sub-bars — Intro/Skill/Basic/Heavy/Liberation/Forte/Echo/Outro sequence */}
+                  {hasActions && (
+                    <div className="absolute" style={{ left: 0, right: 0, top: 32, height: 16 }}>
+                      {actions.map((a, ai) => {
+                        const sty = stepStyle(a.type, getLocale());
+                        const actionWidthPct = widthPct / actions.length;
+                        const actionLeftPct = leftPct + ai * actionWidthPct;
+                        return (
+                          <div key={ai}
+                            title={`${sty.label}: ${a.skill}${a.note ? ' — ' + a.note : ''}`}
+                            className={`absolute rounded-sm border flex items-center justify-center overflow-hidden ${sty.cls}`}
+                            style={{ left: `${actionLeftPct}%`, width: `${Math.max(actionWidthPct, 1)}%`, top: 0, bottom: 0 }}>
+                            <span className="truncate px-0.5 text-2xs font-bold">{SHORT_STEP_LABEL[a.type] || a.type}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
 
-        {/* Time scale at bottom */}
-        <div style={{ position: 'relative', height: 14, marginTop: 4 }}>
-          {ticks.map(tick => (
-            <span key={tick} className="absolute text-2xs text-gray-600 -translate-x-1/2"
-              style={{ left: `${(tick / maxEnd) * 100}%` }}>{tick}s</span>
-          ))}
+          {/* Time scale at bottom */}
+          <div style={{ position: 'relative', width: chartWidth, minWidth: '100%', height: 14, marginTop: 4 }}>
+            {ticks.map(tick => (
+              <span key={tick} className="absolute text-2xs text-gray-600 -translate-x-1/2"
+                style={{ left: `${(tick / maxEnd) * 100}%` }}>{tick}s</span>
+            ))}
+          </div>
         </div>
 
         {/* Legend */}
