@@ -4,7 +4,7 @@
 
 import React, { useCallback } from 'react';
 import { X } from 'lucide-react';
-import { ECHO_DATA, ALL_1COST_ECHOES, ALL_3COST_ECHOES, ALL_4COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
+import { ECHO_DATA, ECHO_SETS, ALL_1COST_ECHOES, ALL_3COST_ECHOES, ALL_4COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES } from '../../data/echoes.js';
 import { haptic } from '../../utils/haptics.js';
 import { getSetIcon, getElementIcon } from '../../shared/utils/elementVisuals.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -19,16 +19,26 @@ import { t } from '../../utils/i18n.js';
 const ALL_TARGETABLE_ECHOES = [...new Set([...ALL_1COST_ECHOES, ...ALL_3COST_ECHOES, ...ALL_4COST_ECHOES])];
 const RANK_ORDER = { Calamity: 0, Overlord: 1, Elite: 2, Common: 3 };
 const RANKS = ['Calamity', 'Overlord', 'Elite', 'Common'];
-// Each ALL_XCOST_ECHOES array is already grouped and commented by game version (newest patch first —
-// see the "v3.6 —"/"v1.0 — Launch" section comments in echoes.js) — real curated release data, just
-// never used for sort order before. Reversed per-tier so the index runs oldest-to-newest, matching
-// this app's existing release-order convention elsewhere (e.g. RELEASE_ORDER for characters lists
-// launch resonators first). Sorting by this instead of alphabetically is what actually reads as
-// "in release order" rather than the arbitrary-looking A-Z ordering within each rank tier.
+// Each ALL_XCOST_ECHOES array is already grouped and commented by game version, newest patch first —
+// see the "v3.6 —"/"v1.0 — Launch" section comments in echoes.js — so the arrays' own index order
+// already runs newest-to-oldest. Default sort is rank first, then newest-within-rank, so no reversal
+// here: index 0 (newest) must sort before a larger index (older) within the same rank tier.
 const RELEASE_ORDER_INDEX = new Map();
 [ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES].forEach(tierList => {
-  [...tierList].reverse().forEach((name, i) => { if (!RELEASE_ORDER_INDEX.has(name)) RELEASE_ORDER_INDEX.set(name, i); });
+  tierList.forEach((name, i) => { if (!RELEASE_ORDER_INDEX.has(name)) RELEASE_ORDER_INDEX.set(name, i); });
 });
+// ECHO_SETS is itself declared oldest-first (each block of sets is commented with its game
+// version, e.g. "v3.5 — Land of Xuanfang"), so its key order is already release order — reversed
+// here so the "All Sets" dropdown lists the newest sonata sets first, matching the newest-first
+// convention used above for the echo list itself.
+const SET_RELEASE_ORDER_INDEX = new Map([...Object.keys(ECHO_SETS)].reverse().map((name, i) => [name, i]));
+const SORTED_ECHO_SONATA_SETS = [...ALL_ECHO_SONATA_SETS].sort((a, b) =>
+  (SET_RELEASE_ORDER_INDEX.get(a) ?? 999) - (SET_RELEASE_ORDER_INDEX.get(b) ?? 999)
+);
+// This target picker only cares about elemental DMG buffs an enemy can carry — Healing, Physical
+// DMG, Shield and Utility describe non-elemental support/defense drops, not something a damage
+// target's element filter should offer.
+const TARGETABLE_BUFF_TYPES = ALL_ECHO_BUFF_TYPES.filter(b => !['Healing', 'Physical DMG', 'Shield', 'Utility'].includes(b));
 
 export default function EnemyEchoSelectorModal({
   isOpen, onClose,
@@ -106,7 +116,7 @@ export default function EnemyEchoSelectorModal({
             <KuroSelect value={setFilter} onChange={v => setSetFilter(v)} small
               options={[
                 { value: 'all', label: t('teams.enemyEcho.allSets') },
-                ...ALL_ECHO_SONATA_SETS.map(s => ({
+                ...SORTED_ECHO_SONATA_SETS.map(s => ({
                   value: s,
                   label: <span className="inline-flex items-center gap-1.5"><img src={getSetIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
                 })),
@@ -115,7 +125,7 @@ export default function EnemyEchoSelectorModal({
             <KuroSelect value={buffFilter} onChange={v => setBuffFilter(v)} small
               options={[
                 { value: 'all', label: t('teams.enemyEcho.allTypes') },
-                ...ALL_ECHO_BUFF_TYPES.map(b => {
+                ...TARGETABLE_BUFF_TYPES.map(b => {
                   const icon = getElementIcon(b.replace(/ DMG$/, ''));
                   return {
                     value: b,
