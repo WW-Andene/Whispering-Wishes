@@ -31,8 +31,8 @@ import {
 import { BLOCKS_BY_CHARACTER } from '../../engine/characterBlocks/index.js';
 import { deriveStepsFromRotation } from '../../engine/resolver/dps/rotationSimulator.js';
 import { resolveHitComposedDps } from '../../engine/resolver/dps/resolveHitComposedDps.js';
-import { resolveHitComposedTeamDps } from '../../engine/resolver/dps/resolveHitComposedTeamDps.js';
 import { resolveSimulatedTeamRotation } from '../../engine/resolver/dps/resolveSimulatedTeamRotation.js';
+import { computeEngineComposedTeamDamage } from './engineTeamDamage.js';
 import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/resolver/dot/dotReactions.js';
 import { chooseOnFieldOrder } from '../../engine/resolver/rotationOrder/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/resolver/gating/coordinatedAtk.js';
@@ -1361,33 +1361,11 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // engine's own real per-member segment (via chooseOnFieldOrder + coordSnapshotDiscount) already
     // replaces that heuristic with something more precise; applying both would double-discount.
     if (allMembersConverted) {
-      const chosenOrder = engineChosenOrder;
-      if (chosenOrder) {
-        const { ownedSteps, blocksByOwner } = chosenOrder;
-        let engineTotalRotDmg = 0;
-        const engineMemberDmgArr = [];
-        mems.forEach(m => {
-          if ((m.d.totalMult || 0) === 0) { engineMemberDmgArr.push({ name: m.name, dmg: 0 }); return; }
-          const focus = m.d.dmgFocus || [];
-          const isOffFieldCoord = m.name !== mainDps.name && focus.includes('Coordinated ATK') && focus.length <= 2;
-          const ecf = energyCycleFactors[m.name];
-          const baseStats = { atk: m.totalBaseAtk, hp: m.d.baseHp || 0, def: m.d.baseDef || 0 };
-          const enemyContext = { enemyDef: enemyDef90, enemyRes: getEnemyRes(m.d.element) };
-          const { dps: memberEngineDps } = resolveHitComposedTeamDps(ownedSteps, blocksByOwner, m.name, enemyContext, baseStats, {
-            targetElementLower: (m.d.element || '').toLowerCase(),
-            targetRole: m.d.role,
-            libUptime: ecf ? ecf.libUptime : null,
-            coordSnapshotDiscount: isOffFieldCoord,
-            cooldownSteadyState: true,
-            externalStats: gearDeltaByName[m.name],
-          });
-          const dmg = memberEngineDps * rotTime;
-          engineTotalRotDmg += dmg;
-          engineMemberDmgArr.push({ name: m.name, dmg });
-        });
-        totalRotDmg = engineTotalRotDmg;
+      const engineResult = computeEngineComposedTeamDamage(engineChosenOrder, mems, mainDps.name, energyCycleFactors, gearDeltaByName, enemyDef90, getEnemyRes, rotTime);
+      if (engineResult) {
+        totalRotDmg = engineResult.totalRotDmg;
         memberDmgArr.length = 0;
-        memberDmgArr.push(...engineMemberDmgArr);
+        memberDmgArr.push(...engineResult.memberDmgArr);
       }
     }
 
