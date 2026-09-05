@@ -31,13 +31,12 @@ import {
 import { BLOCKS_BY_CHARACTER } from '../../engine/characterBlocks/index.js';
 import { deriveStepsFromRotation } from '../../engine/resolver/dps/rotationSimulator.js';
 import { resolveHitComposedDps } from '../../engine/resolver/dps/resolveHitComposedDps.js';
-import { resolveSimulatedTeamRotation } from '../../engine/resolver/dps/resolveSimulatedTeamRotation.js';
 import { computeEngineComposedTeamDamage } from './engineTeamDamage.js';
+import { computeEngineMainDpsStatPanel } from './engineMainDpsStatPanel.js';
 import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/resolver/dot/dotReactions.js';
 import { chooseOnFieldOrder } from '../../engine/resolver/rotationOrder/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/resolver/gating/coordinatedAtk.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/resolver/gating/sequenceGating.js';
-import { projectMainDpsStatPanel } from '../../engine/resolver/projection/statPanelProjection.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
 // Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
@@ -1073,38 +1072,8 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // than the per-hit engine composition steps 1-3 use, appropriate for a stat *summary*, not a
     // per-hit total.
     if (allMembersConverted && engineChosenOrder) {
-      const { ownedSteps, blocksByOwner } = engineChosenOrder;
-      const { stats: mainReceived, totalMultBonus: mainTotalMultBonus } = resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, mainDps.name, {
-        targetElementLower: (mainDps.d.element || '').toLowerCase(),
-        targetRole: mainDps.d.role,
-        sequenceByOwner: Object.fromEntries(mems.map(m => [m.name, m.seqLevel])),
-      });
-      const mainGearDelta = gearDeltaByName[mainDps.name] || {};
-      const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
-      const finalStats = { ...mainReceived };
-      for (const k of EXTERNAL_STAT_KEYS) { if (mainGearDelta[k]) finalStats[k] = (finalStats[k] || 0) + mainGearDelta[k]; }
-
-      // `mainTotalMultBonus` (fixed 2026-09-02, the engine-merge history (git log) totalMult architecture-bug fix):
-      // resolveSimulatedTeamRotation() already computed this real accumulator, but this caller
-      // previously discarded it entirely (only ever destructured `stats`) — silently dropping every
-      // `stat:'totalMult'` TriggerBlock's contribution to the FULL-tier stat-panel score for every
-      // fully-converted team. Applied the same way legacy's own `seqTotalMultBonus` is applied to
-      // `mult` in the `!allMembersConverted` branch above: a separate multiplicative factor.
-      // projectMainDpsStatPanel (engine/resolver/projection/statPanelProjection.js) is this whole block's
-      // former inline body, relocated per ENGINE_ARCHITECTURE_PROPOSAL.md v2 §5 — byte-identical
-      // computation, verified against phase3-parityGolden.test.js's stat-panel snapshot.
-      const panel = projectMainDpsStatPanel(finalStats, mainDps, { enemyDef90, baseRes: mainBaseRes }, mainDps.d.dmgFocus || [], mainTotalMultBonus);
-
-      atkPct = finalStats.atkPct; cr = finalStats.cr; cd = finalStats.cd; elemDmg = finalStats.elemDmg;
-      skillDmg = finalStats.skillDmg; amplify = finalStats.amplify; deepen = finalStats.deepen;
-      defShred = finalStats.defShred; resShred = finalStats.resShred; defIgnore = finalStats.defIgnore;
-
-      effAtk = panel.effAtk;
-      avgCrit = panel.avgCrit;
-      dmgBonus = panel.dmgBonus;
-      defMult = panel.defMult;
-      resMult = panel.resMult;
-      score = panel.score;
+      const panelResult = computeEngineMainDpsStatPanel(engineChosenOrder, mainDps, mems, gearDeltaByName, enemyDef90, mainBaseRes);
+      ({ atkPct, cr, cd, elemDmg, skillDmg, amplify, deepen, defShred, resShred, defIgnore, effAtk, avgCrit, dmgBonus, defMult, resMult, score } = panelResult);
     }
 
     // ── DOT damage (ICD-aware, composed via engine/resolver/dot/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /
