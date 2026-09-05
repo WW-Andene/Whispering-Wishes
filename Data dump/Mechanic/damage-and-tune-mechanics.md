@@ -129,12 +129,29 @@ Off-Tune Accumulation = Base Value of the action × (1 + Off-Tune Accumulation R
   accumulation rate activates passives (e.g. Denia's) granting an instant +40 to +50 Tune Break
   Boost, per this same source.
 
-**What's still missing, precisely:** the real numeric `Base Value` for any SPECIFIC move of any
-SPECIFIC character (e.g. "Aemeath's Heavenfall Edict: Overdrive has Base Value X"). Only the
-relative ranking is sourced, not one concrete number for one move anywhere in this project's
-dump files. Until a real base value is sourced, the formula above can't be run per-hit for any
-character — only the end-of-gauge event (Tune Break itself, see 2b) is modeled, and only as a
-team-level aggregate, not derived from real per-action gauge accumulation.
+**Indicative Base Value ranges, per action TYPE (user-provided, 2026-09-05, same source) —
+gauge total 100 points:**
+
+| Action type | Base Value (points) | Gauge efficiency |
+|---|---|---|
+| Resonance Liberation (Ultimate) | 40–50 | Very high (~half the gauge in one hit) |
+| Intro Skill (entry QTE) | 15–20 | Moderate–high |
+| Forte Circuit attack (nuke / full-gauge move) | 15–25 | High |
+| Resonance Skill | 8–12 | Moderate |
+| Heavy Attack / Perfect Dodge | 4–6 | Low |
+| Basic Attack (per hit in a combo) | 1–3 | Very low |
+| Echo Skill, DOT, most Coordinated Attacks | 0 | None |
+
+**What's still missing, precisely:** these are GENERIC, per-action-TYPE ranges (explicitly
+"indicative" per the source), not exact per-character-per-move values — e.g. this table can say
+a Liberation is "40–50," but not "Aemeath's Heavenfall Edict: Overdrive is exactly 47." Using a
+range to simulate a specific move means picking one value inside it, which is a modeling
+approximation, not a sourced exact number — if this table is ever used to build a real per-hit
+gauge simulation, that has to be documented explicitly as "approximated within the sourced
+range," the same honesty standard as every other approximation in this project, never presented
+as if it were an exact Lv.10 value the way `damage.hits` numbers are. Until then, only the
+end-of-gauge event (Tune Break itself, see 2b) is modeled, as a team-level aggregate — not yet
+derived from real simulated per-action gauge accumulation.
 
 ### 2b. Tune Break damage — confirmed, already implemented
 
