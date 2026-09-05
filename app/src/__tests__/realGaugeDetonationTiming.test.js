@@ -1,11 +1,12 @@
 /**
- * Real per-event Fusion Burst / Tune Break detonation timing (2026-09-06) — the infrastructure
- * chain.s2 needs: instead of only a per-rotation RATE (resolveFusionBurstDetonations.js,
- * dotFormulas.js's own breaksPerRot fix), RotationSimulator now tags a real, timestamped
- * 'fusion-burst-detonation'/'tune-break-detonation' event directly into the SAME step's actionTags
- * the moment it happens — consumable by any 'ally-action' trigger the exact same way a real
- * appliesTags-driven status already is (Denia/Lynae's own Shifting tags), just sourced from a real
- * running gauge instead of a static per-block tag.
+ * Real per-event Fusion Burst detonation timing (2026-09-06) — the infrastructure chain.s2 needs:
+ * instead of only a per-rotation RATE, RotationSimulator tags a real, timestamped
+ * 'fusion-burst-detonation' event directly into the SAME step's actionTags the moment it happens —
+ * consumable by any 'ally-action' trigger the exact same way a real appliesTags-driven status
+ * already is (Denia/Lynae's own Shifting tags), just sourced from a real running gauge instead of
+ * a static per-block tag. (A matching 'tune-break-detonation' tag used to exist alongside this for
+ * Off-Tune — removed entirely 2026-09-05, direct user instruction, along with the rest of that
+ * mechanic; see dotFormulas.js's own note for why.)
  *
  * Real bugs caught and fixed before shipping (both are the SAME root cause: solo mode keys
  * blocksByOwner/stanceOverrides under '' regardless of which character is being simulated, while
@@ -28,14 +29,6 @@ describe('RotationSimulator — real gauge-crossing detonation events tagged int
     const fusionEvents = results.filter(r => r.actionTags.has('fusion-burst-detonation'));
     expect(fusionEvents).toHaveLength(2);
     expect(fusionEvents.map(r => r.step.skill)).toEqual(['Seraphic Duet: Encore', 'Seraphic Duet: Overture']);
-  });
-
-  it('a solo Aemeath also gets a real tune-break-detonation tag once her real Off-Tune generation crosses the enemy gauge, regardless of mode', () => {
-    const blocks = BLOCKS_BY_CHARACTER['Aemeath'];
-    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Aemeath'], blocks);
-    const results = simulateRotation(blocks, steps, 'Fusion Burst mode');
-    const tuneBreakEvents = results.filter(r => r.actionTags.has('tune-break-detonation'));
-    expect(tuneBreakEvents.length).toBeGreaterThan(0);
   });
 
   it("in Tune Rupture mode, her Duet casts do NOT force a fusion-burst-detonation (that's her Fusion-Burst-mode-only kit enhancement)", () => {

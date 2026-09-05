@@ -24,7 +24,6 @@
 
 import { winningStanceForOwner } from '../gating/sequenceGating.js';
 import { triggerFired } from '../gating/triggerEngine.js';
-import { offTuneValueForBlock, ENEMY_OFF_TUNE_GAUGE } from '../../math/offTuneFormula.js';
 import { FUSION_BURST_THRESHOLD } from '../dot/dotFormulas.js';
 import { AEMEATH_EARLY_DETONATION_THRESHOLD, AEMEATH_DUET_BLOCK_IDS } from '../dot/resolveFusionBurstStacks.js';
 
@@ -60,9 +59,10 @@ export class RotationSimulator {
     this._resources = new Map();
     // TEAM-WIDE (not owner-namespaced) shared gauge name -> running total — backs
     // gainSharedGauge/trySharedGaugeDetonation (see their own doc below). Added 2026-09-06 for real
-    // Fusion Burst stack / Off-Tune gauge tracking — unlike `_resources` (one character's own
-    // personal gauge), a shared gauge is fed by ANY team member's own qualifying cast and detonates
-    // once, team-wide, when the total crosses a real threshold.
+    // Fusion Burst stack tracking (Off-Tune gauge tracking used this same infra too, until it was
+    // removed entirely 2026-09-05 — see dotFormulas.js's own note) — unlike `_resources` (one
+    // character's own personal gauge), a shared gauge is fed by ANY team member's own qualifying
+    // cast and detonates once, team-wide, when the total crosses a real threshold.
     this._sharedGauges = new Map();
   }
 
@@ -203,7 +203,7 @@ export class RotationSimulator {
     return (this._resources.get(this.#ns(resource, owner)) ?? 0) >= threshold;
   }
 
-  /** Real, team-wide gauge gain (e.g. Fusion Burst stacks, Off-Tune Level) — added 2026-09-06, see
+  /** Real, team-wide gauge gain (e.g. Fusion Burst stacks) — added 2026-09-06, see
    *  this class's own `_sharedGauges` doc for why this is distinct from gainResource. Any team
    *  member's own qualifying cast can call this for the SAME named gauge. */
   gainSharedGauge(name, value) {
@@ -278,7 +278,7 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
     if (!ownerStances.has(owner)) ownerStances.set(owner, winningStanceForOwner(allBlocks, owner, stanceOverrides?.[owner] ?? null));
     return ownerStances.get(owner);
   };
-  // Real Fusion Burst / Off-Tune shared-gauge detonation tagging (2026-09-06) — see
+  // Real Fusion Burst shared-gauge detonation tagging (2026-09-06) — see
   // resolveFusionBurstStacks.js's own header for the full sourcing. Aemeath's own kit lowers the
   // generic 10-stack Fusion Burst detonation threshold to 5 (her dump line 83) — resolved once, up
   // front, same as every other per-owner mode/threshold decision here.
@@ -422,19 +422,15 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
       // not just Sigrika.
       if (ev.type === 'Echo') actionTags.add('echo-skill-cast');
 
-      // Real Fusion Burst stack + Off-Tune gauge tracking (2026-09-06) — see
-      // resolveFusionBurstStacks.js's own header for the full sourcing/mechanic. A real detonation
-      // is tagged into THIS SAME step's actionTags (same instant as the causing cast), consumable
-      // by any 'ally-action' trigger (e.g. Aemeath's chain.s2 stacking bonus) the exact same way
-      // appliesTags-driven statuses already are, just sourced from a real running gauge instead of
-      // a static per-block tag.
-      // Fixed 2026-09-06 (real bug, caught cross-checking Aemeath's Off-Tune total by hand against
-      // her real Standard Rotation): a `windowed-cast`-triggered block (her own Seraphic Duet
-      // Encore/Overture) has no `trigger.on` — its match label lives in `trigger.attemptOn` instead.
-      // The original `b.trigger.type !== 'cast'` guard silently excluded BOTH her real Duet casts
-      // from Off-Tune generation entirely (10 each, `section: 'Skill'` — 20 real points missing),
-      // shifting exactly when her real Tune Break detonation fires. Matches `b.trigger.on ??
-      // b.trigger.attemptOn` instead of gating on the trigger TYPE at all.
+      // Real Fusion Burst stack tracking (2026-09-06) — see resolveFusionBurstStacks.js's own header
+      // for the full sourcing/mechanic. A real detonation is tagged into THIS SAME step's actionTags
+      // (same instant as the causing cast), consumable by any 'ally-action' trigger (e.g. Aemeath's
+      // chain.s2 stacking bonus) the exact same way appliesTags-driven statuses already are, just
+      // sourced from a real running gauge instead of a static per-block tag.
+      // Off-Tune gauge tracking (Tune Break detonation) was removed entirely (2026-09-05, direct
+      // user instruction) along with the rest of that mechanic — see dotFormulas.js's own note for
+      // why: its gauge-fill rate had no sourced number behind it anywhere, fake even as a rotation
+      // timeline marker.
       for (const b of blocks) {
         if ((b.trigger.on ?? b.trigger.attemptOn) !== label || ineligibleBlockIds.has(b.id)) continue;
         if (b.dotApplier?.mechanic === 'fusionBurst' && b.dotApplier.value) {
@@ -443,10 +439,6 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
             sim.gainSharedGauge('fusionBurst', b.dotApplier.value);
             if (sim.trySharedGaugeDetonation('fusionBurst', fusionBurstThreshold)) actionTags.add('fusion-burst-detonation');
           }
-        }
-        if (b.kind === 'damage' && b.damage) {
-          sim.gainSharedGauge('offTune', offTuneValueForBlock(b));
-          if (sim.trySharedGaugeDetonation('offTune', ENEMY_OFF_TUNE_GAUGE.boss.max)) actionTags.add('tune-break-detonation');
         }
       }
       // Aemeath's own Duet cast forces an unconditional Fusion Burst detonation (her dump line 87:
