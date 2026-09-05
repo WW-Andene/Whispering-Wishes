@@ -21,10 +21,10 @@ const MEMBERS = [
 ];
 
 describe('resolveSimulatedTeamRotation — self-scoped blocks only apply to their own owner', () => {
-  it("Yinlin's own passive Resonance Chain buffs (S1 skillDmg+70) plus Inherent Skill Deadly Focus (skillDmg+10, scoped but not excluded by this non-hit-scoped resolver) apply in full when resolving Yinlin as target; S3 (coordDmg+55, fixed 2026-09-03 from a skillDmg miscategorization matching Judgment Strike's real Coordinated Attack type) lands separately", () => {
+  it("Yinlin's own passive Resonance Chain buff (S1 skillDmg+70) applies in full when resolving Yinlin as target; Inherent Skill Deadly Focus's scopedToBlockId skillDmg+10 (Lightning Execution only) is correctly EXCLUDED by this flat, non-per-block resolver (fixed 2026-09-05 — a scopedToBlockId effect has no home in a one-number-per-stat accumulator, same reasoning as perHitScopedBlockIds above); S3 (coordDmg+55, fixed 2026-09-03 from a skillDmg miscategorization matching Judgment Strike's real Coordinated Attack type) lands separately", () => {
     const { ownedSteps, blocksByOwner } = buildTeamSteps(MEMBERS);
     const { stats } = resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, 'Yinlin', { targetElementLower: 'electro', targetRole: 'Sub DPS' });
-    expect(stats.skillDmg).toBe(80);
+    expect(stats.skillDmg).toBe(70);
     expect(stats.coordDmg).toBe(55);
   });
 

@@ -183,6 +183,10 @@ function resultsForBlock(block, targetName, allResults) {
 
 function applyEffects(block, multiplier, stats, addTotalMult) {
   for (const effect of block.effects) {
+    // scopedToBlockId (fixed 2026-09-05) — see resolveSimulatedRotation.js's identical fix/comment:
+    // this flat time-averaged accumulator has no per-block granularity, so a scoped effect is
+    // excluded here rather than double-counted broadly across the whole stat panel.
+    if (effect.scopedToBlockId) continue;
     const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
     if (effect.stat === 'totalMult') { addTotalMult(value); continue; }
     applyBuff(stats, effect.stat, value, {});

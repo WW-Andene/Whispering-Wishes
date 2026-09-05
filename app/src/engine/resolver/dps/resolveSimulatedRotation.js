@@ -119,6 +119,14 @@ export function resolveSimulatedRotation(blocks, steps, opts = {}) {
 
 function applyEffects(block, multiplier, stats, addTotalMult) {
   for (const effect of block.effects) {
+    // scopedToBlockId (fixed 2026-09-05): this is a flat, one-number-per-stat time-averaged
+    // accumulator — it has no per-block granularity to apply a scoped effect correctly to, the
+    // same reason a duration-less 'cast' block is excluded via perHitScopedBlockIds above rather
+    // than guessed at. Applying it here anyway (the pre-fix behavior) double-counted it broadly —
+    // e.g. Aemeath's/Aalto's own scoped buffs leaking their full value into effAtk/score instead of
+    // only the ONE damage block they're sourced to affect. Excluded, not approximated: only
+    // resolveHitComposedDps/TeamDps (which resolve real per-block hits) can honor this correctly.
+    if (effect.scopedToBlockId) continue;
     const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
     if (effect.stat === 'totalMult') { addTotalMult(value); continue; }
     applyBuff(stats, effect.stat, value, {});

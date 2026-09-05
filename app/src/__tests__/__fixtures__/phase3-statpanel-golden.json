@@ -1,17 +1,17 @@
 {
   "Aalto": {
-    "effAtk": 997,
+    "effAtk": 946,
     "avgCrit": 1.061,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 1002
+    "score": 951
   },
   "Aemeath": {
     "effAtk": 1012,
     "avgCrit": 1.5423,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 1250
+    "score": 1000
   },
   "Augusta": {
     "effAtk": 1616,
@@ -67,7 +67,7 @@
     "avgCrit": 1.061,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 3837
+    "score": 1129
   },
   "Cartethyia": {
     "effAtk": 27262,
@@ -77,11 +77,11 @@
     "score": 24683
   },
   "Changli": {
-    "effAtk": 1264,
+    "effAtk": 1176,
     "avgCrit": 1.0493,
-    "defMult": 0.6463684300051029,
+    "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 2284
+    "score": 1147
   },
   "Chisa": {
     "effAtk": 1051,
@@ -172,7 +172,7 @@
     "avgCrit": 1.025,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 1400
+    "score": 1018
   },
   "Lucilla": {
     "effAtk": 1077,
@@ -235,7 +235,7 @@
     "avgCrit": 1.305,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 10902
+    "score": 1259
   },
   "Phrolova": {
     "effAtk": 1148,
@@ -305,7 +305,7 @@
     "avgCrit": 1.0493,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 880
+    "score": 789
   },
   "Shorekeeper": {
     "effAtk": 18719,
@@ -368,7 +368,7 @@
     "avgCrit": 1.23,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 772
+    "score": 709
   },
   "Youhu": {
     "effAtk": 9975,
