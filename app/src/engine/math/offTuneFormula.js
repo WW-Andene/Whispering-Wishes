@@ -12,18 +12,29 @@
 //
 // OFF_TUNE_VALUE_BY_SECTION picks the RANGE MIDPOINT as the single value used to
 // compute a real number — an explicit, documented approximation (never claim this is
-// as precise as a real damage.hits multiplier). Basic ATK is applied PER HIT (the
-// source's own "par coup" qualifier); every other section is applied once per cast,
-// matching the source's text (no per-hit qualifier given for those).
+// as precise as a real per-move-per-hit value).
+//
+// Fixed 2026-09-06 (direct user correction): applied PER REAL HIT for EVERY section, not
+// just Basic ATK. The original version only multiplied Basic ATK by its real hit count
+// (`damage.hits.length`) and treated every other section as "once per cast regardless of
+// hit count" — an inconsistency, not a real rule: "action does X > fills gauge > gauge
+// full > break" is universal and per-hit, the same way real %ATK damage is already
+// tracked per real hit (`damage.hits`, sourced via parseSkillMultiplierHits), not per
+// cast. A rotation's real hit counts are already fixed, sourced kit facts (same
+// discipline as damage numbers) — not something a caller can inflate by "spamming," so
+// there's no risk of a high-hit-count move artificially dominating Off-Tune generation
+// the way it would if hit count were an unconstrained free variable.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Every range below is a PER-HIT value now (see file header) — the same sourced numbers as
+// before, just applied consistently instead of only for BasicATK.
 export const SECTION_OFF_TUNE_RANGES = {
   Liberation: { min: 40, max: 50 },
   Intro: { min: 15, max: 20 },
   Forte: { min: 15, max: 25 },
   Skill: { min: 8, max: 12 },
   HeavyATK: { min: 4, max: 6 },
-  BasicATK: { min: 1, max: 3 }, // per hit, not per cast — see file header
+  BasicATK: { min: 1, max: 3 },
   Echo: { min: 0, max: 0 },
 };
 
@@ -44,17 +55,18 @@ export const ENEMY_OFF_TUNE_GAUGE = {
 
 /**
  * [FORMULA · OFF-TUNE] Real Off-Tune points a single block contributes when it fires, per the
- * sourced section-range midpoints. `damage.category === 'coordDmg'` (Coordinated Attack) always
- * contributes 0 regardless of section, per the source's own "most Coordinated Attacks: 0" rule.
+ * sourced section-range midpoints — applied PER REAL HIT (`damage.hits.length`), uniformly
+ * across every section (fixed 2026-09-06 — previously only BasicATK was per-hit; every other
+ * section was wrongly treated as "once per cast" regardless of its own real hit count).
+ * `damage.category === 'coordDmg'` (Coordinated Attack) always contributes 0 regardless of
+ * section, per the source's own "most Coordinated Attacks: 0" rule.
  * @param {import('../schema/block.schema.js').TriggerBlock} block
  * @returns {number}
  */
 export function offTuneValueForBlock(block) {
   if (block.damage?.category === 'coordDmg') return 0;
-  const perCastValue = OFF_TUNE_VALUE_BY_SECTION[block.section];
-  if (perCastValue == null) return 0; // Outro/Chain/Buff/utility — not a real in-combat cast
-  if (block.section === 'BasicATK' && block.damage?.hits?.length) {
-    return perCastValue * block.damage.hits.length; // "par coup" — per hit, not per cast
-  }
-  return perCastValue;
+  const perHitValue = OFF_TUNE_VALUE_BY_SECTION[block.section];
+  if (perHitValue == null) return 0; // Outro/Chain/Buff/utility — not a real in-combat cast
+  const hitCount = block.damage?.hits?.length || 1;
+  return perHitValue * hitCount;
 }

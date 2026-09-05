@@ -26,9 +26,13 @@ describe('offTuneFormula — section range midpoints', () => {
     expect(offTuneValueForBlock(block)).toBe(0);
   });
 
-  it('Basic ATK is applied PER HIT, not per cast', () => {
+  it('every section is applied PER HIT, not per cast (fixed 2026-09-06 — direct user correction: previously only Basic ATK was per-hit, every other section was wrongly "once per cast" regardless of its own real hit count)', () => {
     const threeHitCombo = { section: 'BasicATK', damage: { hits: [{ atkPct: 10 }, { atkPct: 10 }, { atkPct: 10 }] } };
     expect(offTuneValueForBlock(threeHitCombo)).toBe(2 * 3);
+    const fourHitLiberation = { section: 'Liberation', damage: { hits: [{ atkPct: 10 }, { atkPct: 10 }, { atkPct: 10 }, { atkPct: 10 }] } };
+    expect(offTuneValueForBlock(fourHitLiberation)).toBe(45 * 4);
+    const singleHitSkill = { section: 'Skill', damage: { hits: [{ atkPct: 10 }] } };
+    expect(offTuneValueForBlock(singleHitSkill)).toBe(10 * 1);
   });
 
   it('a non-real-cast section (Outro/Chain/Buff/utility) contributes 0', () => {
@@ -39,12 +43,13 @@ describe('offTuneFormula — section range midpoints', () => {
 });
 
 describe('resolveOffTuneGenerated — real rotation (Aalto)', () => {
-  it('computes a real, non-zero total from his real rotation, matching hand-computed section midpoints', () => {
+  it('computes a real, non-zero total from his real rotation, every section scaled by its own real hit count (fixed 2026-09-06)', () => {
     const { total, perStep } = resolveOffTuneGenerated(AALTO_BLOCKS, CHARACTER_ROTATIONS['Aalto']);
-    // Intro (17.5) + Skill (10) + Basic ATK Half Truths (7 real hits x 2 = 14) + Liberation (45) +
-    // Forte (20) = 106.5. Outro contributes 0 (not a real in-combat cast section).
-    expect(total).toBeCloseTo(17.5 + 10 + 14 + 45 + 20, 6);
-    expect(perStep.find(s => s.skill === 'Feint Shot')?.gain).toBe(17.5);
+    // Intro Feint Shot (3 real hits x 17.5 = 52.5) + Skill Shift Trick (1 hit x 10 = 10) + Basic ATK
+    // Half Truths (7 real hits x 2 = 14) + Liberation Flower in the Mist (1 hit x 45 = 45) + Forte
+    // Misty Cover (1 hit x 20 = 20) = 141.5. Outro contributes 0 (not a real in-combat cast section).
+    expect(total).toBeCloseTo(52.5 + 10 + 14 + 45 + 20, 6);
+    expect(perStep.find(s => s.skill === 'Feint Shot')?.gain).toBe(52.5);
     expect(perStep.find(s => s.skill === 'Shift Trick')?.gain).toBe(10);
     expect(perStep.find(s => s.skill === 'Half Truths Stage 1-5')?.gain).toBe(14);
     expect(perStep.find(s => s.skill === 'Flower in the Mist')?.gain).toBe(45);

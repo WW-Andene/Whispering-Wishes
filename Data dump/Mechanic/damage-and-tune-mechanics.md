@@ -139,19 +139,28 @@ gauge total 100 points:**
 | Forte Circuit attack (nuke / full-gauge move) | 15–25 | High |
 | Resonance Skill | 8–12 | Moderate |
 | Heavy Attack / Perfect Dodge | 4–6 | Low |
-| Basic Attack (per hit in a combo) | 1–3 | Very low |
+| Basic Attack | 1–3 | Very low |
 | Echo Skill, DOT, most Coordinated Attacks | 0 | None |
 
 **What's still missing, precisely:** these are GENERIC, per-action-TYPE ranges (explicitly
 "indicative" per the source), not exact per-character-per-move values — e.g. this table can say
 a Liberation is "40–50," but not "Aemeath's Heavenfall Edict: Overdrive is exactly 47." Using a
-range to simulate a specific move means picking one value inside it, which is a modeling
-approximation, not a sourced exact number — if this table is ever used to build a real per-hit
-gauge simulation, that has to be documented explicitly as "approximated within the sourced
-range," the same honesty standard as every other approximation in this project, never presented
-as if it were an exact Lv.10 value the way `damage.hits` numbers are. Until then, only the
-end-of-gauge event (Tune Break itself, see 2b) is modeled, as a team-level aggregate — not yet
-derived from real simulated per-action gauge accumulation.
+range to simulate a specific move means picking one value inside it (this engine picks the
+midpoint), which is a modeling approximation, not a sourced exact number — documented explicitly
+as "approximated within the sourced range," never presented as if it were an exact Lv.10 value
+the way `damage.hits` numbers are.
+
+**Applied PER REAL HIT, for every action type (fixed 2026-09-06, direct user correction)**: "there
+is literally a per hit value for each skill, attack, intro/outro or whatever in every character's
+kit" — "action does X, fills gauge, gauge full, break" is universal and per-hit, the same way real
+damage is already tracked per real hit (`damage.hits`), not per cast. The engine previously only
+applied this per real hit for Basic Attacks and treated every other action type as "once per cast
+regardless of real hit count" — an inconsistency, now fixed (`engine/math/offTuneFormula.js`'s
+`offTuneValueForBlock()`): a real hit count is already a sourced kit fact for every move (same
+data `damage.hits.length` already provides for damage), so this isn't a new sourcing burden, just
+consistent application of what was already on file. No risk of an unbalanced "spam a high-hit-
+count move to dominate Off-Tune" exploit — a rotation's real hit counts are fixed, sourced kit
+facts, not a free variable a caller can inflate.
 
 **Worked example of the formula (user-provided, 2026-09-05, same source), confirms the
 Accumulation Rate term is the same real stat as "Tune Break Boost":** a Liberation with Base
