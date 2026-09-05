@@ -23,6 +23,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { winningStanceForOwner } from '../gating/sequenceGating.js';
+import { triggerFired } from '../gating/triggerEngine.js';
 
 // Not a sourced animation-timing value — a placeholder pace for spacing simulated
 // rotation steps when the caller doesn't supply a real one via `stepSeconds`.
@@ -364,32 +365,6 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
       // not just Sigrika.
       if (ev.type === 'Echo') actionTags.add('echo-skill-cast');
 
-      // Real resourceGain accumulation (added 2026-09-05, Aemeath completeness pass — see
-      // block.schema.js's own doc): apply this cast's own sourced gain(s) BEFORE checking any
-      // 'resource-threshold' block's own threshold, so a block whose cast IS the crossing cast
-      // sees the post-gain total. Derives the fired key only on the exact step the running total
-      // first reaches the threshold (compares before/after) — a block resolved via
-      // conditionHolds()/triggerFired() elsewhere still only sees this key on that one step's
-      // firedTriggers, same one-shot convention as every other derived trigger key here; a
-      // DURATION-bearing consumer (buildBlockWindows.js) then carries its effect forward from that
-      // instant, not this derivation.
-      for (const b of blocks) {
-        if (b.trigger.type !== 'cast' || b.trigger.on !== label || !b.resourceGain?.length) continue;
-        if (ineligibleBlockIds.has(b.id)) continue;
-        for (const rg of b.resourceGain) sim.gainResource(rg.resource, rg.value, owner);
-      }
-      // isReady()/useCooldown() reused here purely as a one-shot "already crossed" latch
-      // (Infinity cooldown = never eligible again) — not a real move cooldown.
-      for (const b of blocks) {
-        if (b.trigger.type !== 'resource-threshold' || !b.trigger.resource || b.trigger.threshold == null) continue;
-        const latchId = `resource-crossed:${b.trigger.resource}:${b.trigger.threshold}`;
-        if (!sim.isReady(latchId, owner)) continue; // already fired once, one-shot
-        if (sim.resourceAtLeast(b.trigger.resource, b.trigger.threshold, owner)) {
-          fired.add(`resource-threshold:${b.trigger.resource}:${b.trigger.threshold}`);
-          sim.useCooldown(latchId, Infinity, owner);
-        }
-      }
-
       // Cross-character 'windowed-proc' advancement (Cantarella's Diffusion): checked on EVERY
       // step's own qualifying hit, regardless of whose kit the block belongs to — `on`, when set,
       // still restricts which hit TYPE counts (same label match as the per-owner path); when omitted
@@ -419,6 +394,33 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
         if (sim.tryWindowedCast(windowKey, b.trigger.windowSeconds, owner)) {
           fired.add(`windowed-cast:${windowKey}`);
         }
+      }
+    }
+
+    // Real resourceGain accumulation (added 2026-09-05, Aemeath completeness pass — see
+    // block.schema.js's own doc). Placed AFTER windowed-cast consumption above (not keyed to
+    // `ev.type === 'cast'` the way appliesTags is) so a resourceGain-carrying block whose OWN
+    // trigger is 'windowed-cast' (e.g. Aemeath's Seraphic Duet casts, gated on their real Basic-
+    // Stage-4-then-5s-window dependency) still accumulates once its window-consumption above has
+    // actually landed in `fired` this step — generalized via triggerFired() rather than a hand-
+    // checked trigger.type/on match, so it works for 'cast' or any other trigger shape a future
+    // block might use. Derives the resource-threshold key only on the exact step the running total
+    // first crosses (one-shot latch via isReady/useCooldown, Infinity duration = never re-fires) —
+    // a DURATION-bearing consumer (buildBlockWindows.js) then carries the effect forward from that
+    // instant, not this derivation re-firing.
+    for (const b of blocks) {
+      if (!b.resourceGain?.length) continue;
+      if (ineligibleBlockIds.has(b.id)) continue;
+      if (!triggerFired(b.trigger, fired)) continue;
+      for (const rg of b.resourceGain) sim.gainResource(rg.resource, rg.value, owner);
+    }
+    for (const b of blocks) {
+      if (b.trigger.type !== 'resource-threshold' || !b.trigger.resource || b.trigger.threshold == null) continue;
+      const latchId = `resource-crossed:${b.trigger.resource}:${b.trigger.threshold}`;
+      if (!sim.isReady(latchId, owner)) continue; // already fired once, one-shot
+      if (sim.resourceAtLeast(b.trigger.resource, b.trigger.threshold, owner)) {
+        fired.add(`resource-threshold:${b.trigger.resource}:${b.trigger.threshold}`);
+        sim.useCooldown(latchId, Infinity, owner);
       }
     }
 

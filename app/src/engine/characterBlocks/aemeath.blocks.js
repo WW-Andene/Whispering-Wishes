@@ -138,10 +138,18 @@ export const AEMEATH_BLOCKS = [
   {
     id: 'aemeath.skill.seraphic-duet-encore',
     source: SOURCE, kind: 'damage', section: 'Skill',
-    trigger: { type: 'cast', on: 'Skill:Seraphic Duet: Encore' },
+    // Gating rebuilt 2026-09-05 (engine-logic pass): real dependency is "while in Seraphic Duo"
+    // (dump: "entered for 5s upon casting Basic Stage 4"), NOT an Overture-first cast-order rule —
+    // the prior note's "only castable after Overture" claim doesn't match the real rotation order
+    // (Encore is cast BEFORE Overture here: ...Mech Stage 2-4 -> Duet Encore -> Aemeath Stage 2-4
+    // -> Duet Overture) and no kit text anywhere establishes an Overture-before-Encore rule — that
+    // was an unverified assumption, corrected rather than perpetuated. Real gate: opens off the
+    // immediately-preceding real Basic-Stage-4-ending combo (Mech Stage 2-4), 5s window, matching
+    // the dump's own real number exactly.
+    trigger: { type: 'windowed-cast', opensOn: ['cast:Basic ATK:Mech Stage 2-4'], windowSeconds: 5, attemptOn: 'Skill:Seraphic Duet: Encore' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('17.90%×4+35.79%×3+178.93%'), category: 'libDmg', basis: 'ATK' },
-    note: 'Counted as Liberation DMG per its own kit text. Real cast-order dependency (only castable after Overture, empowered by Stardust Resonance) not modeled as a conditional trigger this pass — kept as an unconditional cast, same simplification already used for Yinlin\'s Lightning Execution.',
+    note: 'Counted as Liberation DMG per its own kit text. Cast while in Mech form (switches back to Aemeath form on resolution).',
     // resourceGain added 2026-09-05: dump's own "Resonance Rate: +1 per Seraphic Duet cast."
     resourceGain: [{ resource: 'Resonance Rate', value: 1 }],
   },
@@ -159,7 +167,9 @@ export const AEMEATH_BLOCKS = [
   {
     id: 'aemeath.skill.seraphic-duet-overture',
     source: SOURCE, kind: 'damage', section: 'Skill',
-    trigger: { type: 'cast', on: 'Skill:Seraphic Duet: Overture' },
+    // Gating rebuilt 2026-09-05 (engine-logic pass) — same real Seraphic Duo dependency as Encore
+    // above, opening off its own immediately-preceding real combo (Aemeath Stage 2-4).
+    trigger: { type: 'windowed-cast', opensOn: ['cast:Basic ATK:Aemeath Stage 2-4'], windowSeconds: 5, attemptOn: 'Skill:Seraphic Duet: Overture' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('17.90%+14.92%×6+23.86%×3+59.65%×3'), category: 'skillDmg', basis: 'ATK' },
     note: 'No "counted as" override in its own kit text (unlike Encore) — kept as skillDmg.',

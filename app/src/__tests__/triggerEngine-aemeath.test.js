@@ -100,6 +100,18 @@ describe('triggerEngine parity — Aemeath', () => {
     expect(crossedSteps[0].time).toBeLessThanOrEqual(heavyAtkStep.time);
   });
 
+  it("Seraphic Duet Encore/Overture are gated on a real Seraphic Duo window (Basic Stage 4 -> 5s), not an unconditional cast — and both real casts in the modeled rotation land inside it", () => {
+    const encore = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.skill.seraphic-duet-encore');
+    const overture = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.skill.seraphic-duet-overture');
+    expect(encore.trigger).toEqual({ type: 'windowed-cast', opensOn: ['cast:Basic ATK:Mech Stage 2-4'], windowSeconds: 5, attemptOn: 'Skill:Seraphic Duet: Encore' });
+    expect(overture.trigger).toEqual({ type: 'windowed-cast', opensOn: ['cast:Basic ATK:Aemeath Stage 2-4'], windowSeconds: 5, attemptOn: 'Skill:Seraphic Duet: Overture' });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Aemeath'], AEMEATH_BLOCKS);
+    const results = simulateRotation(AEMEATH_BLOCKS, steps);
+    expect(results.some(r => r.firedTriggers.has('windowed-cast:cast:Basic ATK:Mech Stage 2-4'))).toBe(true);
+    expect(results.some(r => r.firedTriggers.has('windowed-cast:cast:Basic ATK:Aemeath Stage 2-4'))).toBe(true);
+  });
+
   it('chain.s2 real mechanic (Duet Overture/Encore DMG Mult +100% each) is scoped precisely, not a flat totalMult', () => {
     const block = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.chain.s2');
     expect(block.effects).toEqual([
