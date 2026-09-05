@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { Search, Star, Users, X, Heart, Swords, TrendingUp, Target, Flame, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
+import { Search, Star, Users, X, Heart, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { getElementColor, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon, COMBAT_ROLE_ICONS } from '../../shared/utils/elementVisuals.js';
+import { getElementColor, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon, getStatIcon, COMBAT_ROLE_ICONS } from '../../shared/utils/elementVisuals.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -110,10 +110,14 @@ export default function TeamSelector({
                               onChange={setTeamRoleFilter}
                               options={[
                                 { value: 'all', label: t('teams.selector.allRoles') },
-                                { value: 'Main DPS', label: t('teams.selector.roleMainDps') },
+                                // 'Main Damage Dealer'/'Support and Healer' are real Combat Role icons
+                                // (COMBAT_ROLE_ICONS) that line up exactly with this role field's own
+                                // Main DPS/Support/Healer values — no equivalent exists for Sub DPS, so
+                                // that option is left icon-less rather than guessing one.
+                                { value: 'Main DPS', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Main Damage Dealer')} alt="" width={14} height={14} className="shrink-0" /> {t('teams.selector.roleMainDps')}</span> },
                                 { value: 'Sub DPS', label: t('teams.selector.roleSubDps') },
-                                { value: 'Support', label: t('teams.selector.roleSupport') },
-                                { value: 'Healer', label: t('teams.selector.roleHealer') },
+                                { value: 'Support', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Support and Healer')} alt="" width={14} height={14} className="shrink-0" /> {t('teams.selector.roleSupport')}</span> },
+                                { value: 'Healer', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Support and Healer')} alt="" width={14} height={14} className="shrink-0" /> {t('teams.selector.roleHealer')}</span> },
                               ]}
                               ariaLabel="Filter by role"
                               small
@@ -168,13 +172,16 @@ export default function TeamSelector({
                               onChange={setTeamBuffFilter}
                               options={[
                                 { value: 'all', label: t('teams.selector.allBuffs') },
-                                ...[
-                                  ['Heal', Heart], ['Coordinated ATK', Swords],
-                                  ['ATK Buff', TrendingUp], ['Crit', Target], ['DMG', Flame, 'DMG Buff'],
-                                ].map(([val, Icon, text]) => ({
-                                  value: val,
-                                  label: <span className="inline-flex items-center gap-1.5"><Icon size={14} className="shrink-0" /> {text || val}</span>,
-                                })),
+                                // Use the real official icon wherever one exists (Coordinated ATK ↔
+                                // COMBAT_ROLE_ICONS['Coordinated Attack'], ATK Buff ↔ STAT_ICONS['ATK'],
+                                // Crit ↔ STAT_ICONS['Crit Rate'], DMG ↔ the DMG Amplification role icon)
+                                // instead of an unrelated generic lucide icon. Heal has no dedicated
+                                // official asset in this app, so it keeps its lucide fallback.
+                                { value: 'Heal', label: <span className="inline-flex items-center gap-1.5"><Heart size={14} className="shrink-0" /> Heal</span> },
+                                { value: 'Coordinated ATK', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Coordinated Attack')} alt="" width={14} height={14} className="shrink-0" /> Coordinated ATK</span> },
+                                { value: 'ATK Buff', label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon('ATK')} alt="" width={14} height={14} className="shrink-0" /> ATK Buff</span> },
+                                { value: 'Crit', label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon('Crit Rate')} alt="" width={14} height={14} className="shrink-0" /> Crit</span> },
+                                { value: 'DMG', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('DMG Amplification')} alt="" width={14} height={14} className="shrink-0" /> DMG Buff</span> },
                               ]}
                               ariaLabel="Filter by buff type"
                               small
