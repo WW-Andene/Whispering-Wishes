@@ -295,6 +295,27 @@ export const AEMEATH_BLOCKS = [
   // 54s remaining) — long enough to cover the very next step (Heavy ATK Charged II, step-time
   // 13.5s) with real margin, not a fabricated number. Fragile if step pacing/rotation order ever
   // changes; flagged here rather than silently assumed durable.
+  // Added 2026-09-06 — real gap caught by direct user question ("why you didn't model her tune
+  // break casting forte?"): Forte "Unlanded Melody" (dump line 103) — "once a target's Off-Tune
+  // Level is full, cast Tune Break on it (chains into Basic Stage 3)" — was never modeled anywhere,
+  // despite being a real, named, sourced Forte skill distinct from her Forte Circuit "To Sculpt the
+  // Silence". No separate %ATK/damage value is given for this Forte in the dump — "cast Tune Break
+  // on it" describes TRIGGERING the shared Tune Break/Tune Rupture Response reaction (already
+  // computed via calcTuneBreakDmg's own ruptureDmgMult/Tune Break Boost formula), not a second,
+  // separate hit with its own multiplier — so this is a `kind: 'utility'` marker, not a fabricated
+  // damage block. Modeled as firing off the engine's own real shared Off-Tune gauge crossing
+  // (RotationSimulator's 'tune-break-detonation' ally-action tag, built earlier this session) rather
+  // than a fixed rotation step — the real trigger is the gauge state itself, not a discretionary
+  // player input at a specific point in the combo, so it correctly fires whenever the real
+  // accumulated Off-Tune total (resolveOffTuneGenerated) actually crosses the enemy's real gauge
+  // during simulation, regardless of which move happens to be casting at that instant.
+  {
+    id: 'aemeath.forte.unlanded-melody',
+    source: SOURCE, kind: 'utility', section: 'Forte',
+    trigger: { type: 'ally-action', action: 'tune-break-detonation' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    note: "Forte \"Unlanded Melody\": once a target's Off-Tune Level is full, casts Tune Break on it (chains into Basic Stage 3). No separate damage value sourced — the real damage is the shared Tune Break/Tune Rupture Response burst, already computed elsewhere (calcTuneBreakDmg).",
+  },
   {
     id: 'aemeath.inherent.before-all-sounds',
     source: SOURCE, kind: 'buff', section: 'Buff',
