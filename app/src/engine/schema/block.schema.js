@@ -61,6 +61,19 @@
  *                                   done as part of adding this field).
  * @property {Heal} [heal]          Required for `kind: 'heal'`: the real per-cast heal amount,
  *                                   parsed the same way as `damage.hits` — no new numbers invented.
+ * @property {{resource: string, value: number}[]} [resourceGain]  Real, sourced gain(s) THIS cast
+ *                                   contributes to one or more named character-specific gauges
+ *                                   (e.g. Aemeath's "Synchronization Rate"/"Resonance Rate" —
+ *                                   distinct from Concerto/Resonance Energy, which are team-wide/
+ *                                   ER%-stat-driven respectively). Consumed by the rotation
+ *                                   simulator to derive a real `resource-threshold` trigger firing
+ *                                   the instant the running total for that owner+resource crosses
+ *                                   a `trigger.threshold` a block declares — see rotationSimulator.js's
+ *                                   RotationSimulator#gainResource/#resourceAtLeast. Omit rather
+ *                                   than guess when the kit text gives no per-cast number (e.g.
+ *                                   Aemeath's own Basic/Mid-air/Dodge Counter Synchronization Rate
+ *                                   gain has no sourced value, so those casts carry no
+ *                                   resourceGain — a real, documented data gap, not an engine one).
  * @property {string} [note]        Human-readable sourcing/mechanic note — every non-obvious
  *                                   value must cite where it came from (kit text, wiki page,
  *                                   specific audit). Required in practice for anything not

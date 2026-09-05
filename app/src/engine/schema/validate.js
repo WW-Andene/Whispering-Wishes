@@ -76,6 +76,18 @@ export function validateBlock(block, expectedSource) {
     errors.push(`concertoEnergyGain must be a number when present (block id: ${id})`);
   }
 
+  if (block.resourceGain != null) {
+    if (!Array.isArray(block.resourceGain)) {
+      errors.push(`resourceGain must be an array when present (block id: ${id})`);
+    } else {
+      block.resourceGain.forEach((rg, i) => {
+        if (!rg || typeof rg.resource !== 'string' || typeof rg.value !== 'number') {
+          errors.push(`resourceGain[${i}] must be { resource: string, value: number } (block id: ${id})`);
+        }
+      });
+    }
+  }
+
   if (block.kind === 'buff' && Array.isArray(block.effects)) {
     block.effects.forEach((effect, i) => {
       const srcCheck = checkBuffSource(effect?.source);

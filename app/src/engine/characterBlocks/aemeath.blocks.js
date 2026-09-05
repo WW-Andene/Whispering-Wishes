@@ -37,6 +37,23 @@
 // mechanic ("Seraphic Duet Overture/Encore DMG Multipliers both +100%") is now modeled
 // precisely via scopedToBlockId to each of the two real Duet blocks instead of the
 // previous, admittedly-unjustified totalMult:25.
+//
+// Engine-logic pass, same day (per user direction: individual characters first, and build
+// real mechanic interaction/logic wherever real values support it — "it's an engine, not
+// an Excel sheet"): Instant Response (gating chain.s1's +300% Crit DMG and Before All
+// Sounds' +200% DMG Amp, both on Heavy ATK) was previously a `condition.requiresStance`
+// this engine never actually evaluates — trusted, not derived. Rebuilt as a REAL derived
+// state: her Resonance Rate gauge (cap 4) now accumulates from its 3 fully-sourced numeric
+// contributors (Overdrive+2 [base+Starlume, confirmed active at Overdrive's real cast time
+// in this rotation], Encore+1, Overture+1 — see rotationSimulator.js's new gainResource/
+// resourceAtLeast), genuinely reaching 4/4 at Overture's own cast, matching the rotation's
+// own step note independently. Both gated blocks now trigger off the derived
+// 'resource-threshold:Resonance Rate:4' key with a real timing.duration (54s — the actual
+// remaining time in Heavenfall Edict: Unbound's 60s window at that crossing point), not an
+// unenforced condition. Her Synchronization Rate gauge is deliberately NOT built the same
+// way: Basic/Mid-air/Dodge Counter/Sync Strike's own per-hit Sync Rate gain has no sourced
+// number anywhere in the dump — a real data gap, not an engine gap, left honestly
+// unmodeled rather than guessed at.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -98,6 +115,14 @@ export const AEMEATH_BLOCKS = [
     timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('186.72%+248.96%×3'), category: 'libDmg', basis: 'ATK' },
     concertoEnergyGain: 20,
+    // resourceGain added 2026-09-05 (engine-logic pass, per user direction to build real derived
+    // state rather than trust a "purely descriptive" condition): dump's own "Resonance Rate (cap
+    // 4): +1 from Overdrive; +1 more from Overdrive while in Starlume Acceleration." Starlume
+    // Acceleration (granted by Intro, 15s) is real and confirmed still active at Overdrive's own
+    // cast time in THIS specific rotation (Intro fires 2 steps/~3s before Overdrive, well inside
+    // the 15s window) — so both bonuses apply here; value 2 reflects that real, verified timing
+    // fact for this rotation, not a blanket assumption Starlume is always active.
+    resourceGain: [{ resource: 'Resonance Rate', value: 2 }],
   },
   {
     id: 'aemeath.basic.mech-stage-2-4',
@@ -117,6 +142,8 @@ export const AEMEATH_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('17.90%×4+35.79%×3+178.93%'), category: 'libDmg', basis: 'ATK' },
     note: 'Counted as Liberation DMG per its own kit text. Real cast-order dependency (only castable after Overture, empowered by Stardust Resonance) not modeled as a conditional trigger this pass — kept as an unconditional cast, same simplification already used for Yinlin\'s Lightning Execution.',
+    // resourceGain added 2026-09-05: dump's own "Resonance Rate: +1 per Seraphic Duet cast."
+    resourceGain: [{ resource: 'Resonance Rate', value: 1 }],
   },
   {
     id: 'aemeath.basic.aemeath-stage-2-4',
@@ -136,6 +163,11 @@ export const AEMEATH_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('17.90%+14.92%×6+23.86%×3+59.65%×3'), category: 'skillDmg', basis: 'ATK' },
     note: 'No "counted as" override in its own kit text (unlike Encore) — kept as skillDmg.',
+    // resourceGain added 2026-09-05: dump's own "Resonance Rate: +1 per Seraphic Duet cast." This
+    // is the SECOND Duet cast in the real rotation (after Overdrive's 2 and Encore's 1 = 3), so
+    // this +1 is what brings her to the real 4/4 cap — matching the rotation's own step note at the
+    // very next step ("Resonance Rate is now capped from the 2 Duet casts").
+    resourceGain: [{ resource: 'Resonance Rate', value: 1 }],
   },
   {
     id: 'aemeath.heavy.mech-charged-ii',
@@ -179,17 +211,27 @@ export const AEMEATH_BLOCKS = [
     ],
     note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Characters data dump/Aemeath/Aemeath.md line 140). Unconditional, always active.',
   },
-  // Added 2026-09-05 (completeness pass): Inherent Skill "Before All Sounds" — previously had no
-  // block at all. Scoped via scopedToBlockId to her one real Heavy ATK block, same pattern already
-  // used for chain.s1's Instant-Response Heavy ATK Crit DMG bonus.
+  // Added 2026-09-05 (completeness pass); GATING rebuilt same day (engine-logic pass, per user
+  // direction: "if you have actual value and mechanic interaction and logic, build it" — not just
+  // tag a condition nobody checks). Inherent Skill "Before All Sounds": in Instant Response, Heavy
+  // ATK gains +200% DMG Amplification. Real Instant Response entry condition (dump, S1's own text):
+  // "reaching max Resonance Rate while Unbound." Resonance Rate is now a REAL tracked gauge (see
+  // the 3 resourceGain entries above: Overdrive+2, Encore+1, Overture+1 = 4, matching the cap) —
+  // so this fires off the derived 'resource-threshold:Resonance Rate:4' key the instant that real
+  // total is reached (at Overture's own cast, per this rotation's real order), not an
+  // unenforced condition.requiresStance. timing.duration:54 is the REAL remaining time in
+  // Heavenfall Edict: Unbound's own 60s window at that crossing point (Overdrive grants Unbound at
+  // step-time 6.0s in this engine's own step pacing; the crossing happens at step-time 12.0s; 60-6=
+  // 54s remaining) — long enough to cover the very next step (Heavy ATK Charged II, step-time
+  // 13.5s) with real margin, not a fabricated number. Fragile if step pacing/rotation order ever
+  // changes; flagged here rather than silently assumed durable.
   {
     id: 'aemeath.inherent.before-all-sounds',
     source: SOURCE, kind: 'buff', section: 'Buff',
-    trigger: { type: 'passive' },
-    condition: { requiresStance: 'Instant Response' },
-    timing: {}, target: { scope: 'self' },
+    trigger: { type: 'resource-threshold', resource: 'Resonance Rate', threshold: 4 },
+    timing: { duration: 54 }, target: { scope: 'self' },
     effects: [{ stat: 'deepen', value: 200, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }],
-    note: 'Inherent Skill Before All Sounds: in Instant Response, Heavy ATK (either form) gains +200% DMG Amplification — scoped to her one real Heavy ATK block. Only enforced by the hit-composed resolvers (see scopedToBlockId\'s own schema doc).',
+    note: 'Inherent Skill Before All Sounds: in Instant Response, Heavy ATK (either form) gains +200% DMG Amplification — scoped to her one real Heavy ATK block, gated on a genuinely derived Instant Response window (see block-level comment above), not a trusted condition.',
   },
   {
     id: 'aemeath.selfbuff.between-the-stars-critdmg',
@@ -214,13 +256,16 @@ export const AEMEATH_BLOCKS = [
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each
   //    node's real mechanic, read directly rather than re-derived) ──
   {
+    // Gating rebuilt 2026-09-05 (engine-logic pass) — same real derived Instant Response window as
+    // aemeath.inherent.before-all-sounds above (see that block's own comment for the full
+    // Resonance-Rate-cap/Unbound-remaining-time derivation); this node just adds its own +300%
+    // Crit DMG to the same real window instead of trusting an unenforced condition.requiresStance.
     id: 'aemeath.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    condition: { requiresStance: 'Instant Response' },
-    timing: {}, target: { scope: 'self' },
+    trigger: { type: 'resource-threshold', resource: 'Resonance Rate', threshold: 4 },
+    timing: { duration: 54 }, target: { scope: 'self' },
     effects: [{ stat: 'critDmg', value: 300, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }],
-    note: '+300% Crit DMG for Heavy ATK specifically, while in Instant Response — scoped 2026-09-02 (Phase 0.5 gap #3) to her one real Heavy ATK block (aemeath.heavy.mech-charged-ii), not general critDmg across her whole kit as previously modeled; the STANCE condition (requiresStance) still gates whether it\'s active at all. Only enforced by the hit-composed resolvers, see the field\'s own schema doc.',
+    note: '+300% Crit DMG for Heavy ATK specifically, while in Instant Response — scoped 2026-09-02 (Phase 0.5 gap #3) to her one real Heavy ATK block (aemeath.heavy.mech-charged-ii), not general critDmg across her whole kit as previously modeled; gated on a genuinely derived Instant Response window since 2026-09-05, not a trusted condition. Only enforced by the hit-composed resolvers, see scopedToBlockId\'s own schema doc.',
   },
   // Fixed 2026-09-05 (completeness pass, resolving RESONANCE_CHAIN_DATA's own "needs its own
   // dedicated verification pass" flag on this node): was `totalMult:25`, unjustified — real S2 text

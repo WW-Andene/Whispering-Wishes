@@ -51,6 +51,9 @@ export class RotationSimulator {
     // or repeated-cast simulated rotation (a single canonical one-cast-per-skill loop never hits it
     // in practice), but it's a real correctness gap for anything simulating more than one loop.
     this._cooldowns = new Map();
+    // owner-namespaced resource name -> running total — backs gainResource/resourceAtLeast (see
+    // their own doc below, and block.schema.js's `resourceGain` field doc).
+    this._resources = new Map();
   }
 
   // Owner-namespacing: every method below that tracks a SINGLE character's own rotation history
@@ -174,6 +177,20 @@ export class RotationSimulator {
     const had = this._outroWindows.has(outroBlockId);
     this._outroWindows.delete(outroBlockId);
     return had;
+  }
+
+  /** Real, sourced per-cast gain toward a named character-specific gauge (e.g. Aemeath's
+   *  "Resonance Rate") — see block.schema.js's own `resourceGain` doc for why this is distinct
+   *  from Concerto/Resonance Energy. Owner-namespaced like every other per-character tracker here. */
+  gainResource(resource, value, owner) {
+    const key = this.#ns(resource, owner);
+    this._resources.set(key, (this._resources.get(key) ?? 0) + value);
+  }
+
+  /** Whether `owner`'s running total for `resource` has reached `threshold` — used to derive a
+   *  real 'resource-threshold' trigger firing instead of trusting a caller-set flag. */
+  resourceAtLeast(resource, threshold, owner) {
+    return (this._resources.get(this.#ns(resource, owner)) ?? 0) >= threshold;
   }
 }
 
@@ -346,6 +363,32 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
       // here benefits every current/future character with an "ally casts Echo Skill" reactive mechanic,
       // not just Sigrika.
       if (ev.type === 'Echo') actionTags.add('echo-skill-cast');
+
+      // Real resourceGain accumulation (added 2026-09-05, Aemeath completeness pass — see
+      // block.schema.js's own doc): apply this cast's own sourced gain(s) BEFORE checking any
+      // 'resource-threshold' block's own threshold, so a block whose cast IS the crossing cast
+      // sees the post-gain total. Derives the fired key only on the exact step the running total
+      // first reaches the threshold (compares before/after) — a block resolved via
+      // conditionHolds()/triggerFired() elsewhere still only sees this key on that one step's
+      // firedTriggers, same one-shot convention as every other derived trigger key here; a
+      // DURATION-bearing consumer (buildBlockWindows.js) then carries its effect forward from that
+      // instant, not this derivation.
+      for (const b of blocks) {
+        if (b.trigger.type !== 'cast' || b.trigger.on !== label || !b.resourceGain?.length) continue;
+        if (ineligibleBlockIds.has(b.id)) continue;
+        for (const rg of b.resourceGain) sim.gainResource(rg.resource, rg.value, owner);
+      }
+      // isReady()/useCooldown() reused here purely as a one-shot "already crossed" latch
+      // (Infinity cooldown = never eligible again) — not a real move cooldown.
+      for (const b of blocks) {
+        if (b.trigger.type !== 'resource-threshold' || !b.trigger.resource || b.trigger.threshold == null) continue;
+        const latchId = `resource-crossed:${b.trigger.resource}:${b.trigger.threshold}`;
+        if (!sim.isReady(latchId, owner)) continue; // already fired once, one-shot
+        if (sim.resourceAtLeast(b.trigger.resource, b.trigger.threshold, owner)) {
+          fired.add(`resource-threshold:${b.trigger.resource}:${b.trigger.threshold}`);
+          sim.useCooldown(latchId, Infinity, owner);
+        }
+      }
 
       // Cross-character 'windowed-proc' advancement (Cantarella's Diffusion): checked on EVERY
       // step's own qualifying hit, regardless of whose kit the block belongs to — `on`, when set,

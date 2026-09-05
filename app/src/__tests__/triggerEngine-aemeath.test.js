@@ -3,7 +3,7 @@ import { createStats, applyResonanceChain } from '../features/teams/calcEngine.j
 import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
+import { deriveStepsFromRotation, simulateRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { AEMEATH_BLOCKS } from '../engine/characterBlocks/aemeath.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
 import { resolveConcertoEnergyGenerated } from '../engine/resolver/dps/resolveConcertoEnergy.js';
@@ -35,9 +35,9 @@ describe('triggerEngine parity — Aemeath', () => {
     expect(block.effects[0]).toEqual({ stat: 'libDmg', value: legacy.libDmg, source: 'self-kit' });
   });
 
-  it('S1 is conditional on Instant Response stance, not an unconditional +300% Crit DMG', () => {
+  it('S1 is gated on a real derived Instant Response window (resource-threshold), not an unconditional +300% Crit DMG', () => {
     const block = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.chain.s1');
-    expect(block.condition.requiresStance).toBe('Instant Response');
+    expect(block.trigger).toEqual({ type: 'resource-threshold', resource: 'Resonance Rate', threshold: 4 });
     expect(block.effects[0].value).toBe(RESONANCE_CHAIN_DATA['Aemeath'].s1.critDmg);
   });
 
@@ -81,10 +81,23 @@ describe('triggerEngine parity — Aemeath', () => {
     ]);
   });
 
-  it('Inherent Skill Before All Sounds (Heavy ATK +200% DMG Amp in Instant Response) exists, scoped to her one real Heavy ATK block', () => {
+  it('Inherent Skill Before All Sounds (Heavy ATK +200% DMG Amp in Instant Response) exists, gated on a real derived resource-threshold window, scoped to her one real Heavy ATK block', () => {
     const block = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.inherent.before-all-sounds');
-    expect(block.condition.requiresStance).toBe('Instant Response');
+    expect(block.trigger).toEqual({ type: 'resource-threshold', resource: 'Resonance Rate', threshold: 4 });
+    expect(block.timing.duration).toBe(54);
     expect(block.effects).toEqual([{ stat: 'deepen', value: 200, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }]);
+  });
+
+  it("Resonance Rate genuinely reaches the real 4/4 cap through the real rotation (Overdrive+2, Encore+1, Overture+1), deriving a real 'resource-threshold:Resonance Rate:4' firing — not a trusted condition", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Aemeath'], AEMEATH_BLOCKS);
+    const results = simulateRotation(AEMEATH_BLOCKS, steps);
+    const crossedSteps = results.filter(r => r.firedTriggers.has('resource-threshold:Resonance Rate:4'));
+    expect(crossedSteps.length).toBe(1);
+    // Must cross at (or before) the Heavy ATK Charged II step, and stay within the block's own
+    // 54s window at that instant — proves the derivation lands early enough for the real Heavy ATK
+    // cast to actually receive the buff.
+    const heavyAtkStep = results.find(r => r.step.type === 'Heavy ATK');
+    expect(crossedSteps[0].time).toBeLessThanOrEqual(heavyAtkStep.time);
   });
 
   it('chain.s2 real mechanic (Duet Overture/Encore DMG Mult +100% each) is scoped precisely, not a flat totalMult', () => {
