@@ -206,7 +206,7 @@
 /**
  * @typedef {Object} Effect
  * @property {string} stat     Matches the engine's stat vocabulary (atkPct, hpPct, defPct, elemDmg,
- *                               skillDmg, basicDmg, heavyDmg, libDmg, echoDmg, coordDmg, deepen,
+ *                               skillDmg, basicDmg, heavyDmg, libDmg, echoDmg, coordDmg, amplify,
  *                               critRate, critDmg, defShred, resShred, defIgnore, healBonusPct,
  *                               totalMult).
  * @property {number} value    The numeric contribution (%, unless stat is a flat multiplier).

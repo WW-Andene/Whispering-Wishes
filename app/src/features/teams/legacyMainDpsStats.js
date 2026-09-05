@@ -49,12 +49,12 @@ import {
  * @param {string[]} ctx.dpsFocus  mainDps.d.dmgFocus || [].
  * @param {object} ctx.energyCycleFactors  Per-member { libUptime, totalER } from calcEnergyCycles.
  * @param {(b: object, totalER: number|undefined) => number} ctx.resolveBuffValue
- * @returns {{atkPct:number, cr:number, cd:number, elemDmg:number, skillDmg:number, deepen:number,
+ * @returns {{atkPct:number, cr:number, cd:number, elemDmg:number, skillDmg:number,
  *   defShred:number, resShred:number, defIgnore:number, amplify:number, seqTotalMultBonus:number}}
  */
 export function computeLegacyMainDpsStats(ctx) {
   const { mainDps, mems, teamEquipment, teamIdx, dpsSeg, rotTime, elCounts, gateWeaponDefIgnore, overlapUptime, outroStart, blockStart, dpsFocus, energyCycleFactors, resolveBuffValue } = ctx;
-  let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, deepen = 0, defShred = 0, resShred = 0, defIgnore = 0;
+  let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, defShred = 0, resShred = 0, defIgnore = 0;
   let amplify = 0;
   let seqTotalMultBonus = 0;
 
@@ -182,16 +182,16 @@ export function computeLegacyMainDpsStats(ctx) {
     }
 
     let basicDmg = wpBasicDmg, heavyDmg = wpHeavyDmg, libDmg = wpLibDmg, echoDmg = wpEchoDmg, coordDmg = wpCoordDmg, mainSkillDmg = wpSkillDmg;
-    // Bridges the flat atkPct/cr/cd/elemDmg/deepen/amplify/resShred/defShred/defIgnore/echoDmg
+    // Bridges the flat atkPct/cr/cd/elemDmg/amplify/resShred/defShred/defIgnore/echoDmg
     // accumulators (used throughout this whole FULL TIER section) into a single object applyBuff can
     // mutate directly, then syncs back once after the loop -- addition is commutative so accumulating
     // into the bridge across every member first and reading the flat variables only after the loop
     // (instead of after each individual buff) changes nothing about the final totals. This is what lets
     // every buff/debuff branch below share ONE gated implementation (calcEngine.js's applyBuff) instead
     // of each repeating its own copy of the type-focus/element-match checks -- previously the actual
-    // cause of the deepen/allDmg/elemDmg gating bugs needing ~8 separate hand-patches across this file.
+    // cause of the amplify/allDmg/elemDmg gating bugs needing ~8 separate hand-patches across this file.
     const mainDpsElLower = (mainDps.d.element || '').toLowerCase();
-    const mainStats = { atkPct, cr, cd, elemDmg, deepen, amplify, resShred, defShred, defIgnore, echoDmg };
+    const mainStats = { atkPct, cr, cd, elemDmg, amplify, resShred, defShred, defIgnore, echoDmg };
     mems.forEach(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
       if (!bt) return;
@@ -211,8 +211,8 @@ export function computeLegacyMainDpsStats(ctx) {
               mainStats.atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
             } else if (['allDmg', 'elemDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'skillDmg'].includes(b.stat)) {
               applyBuff(mainStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsFocus, dpsElLower: mainDpsElLower });
-            } else if (b.stat === 'deepen') {
-              applyBuff(mainStats, 'deepen', val, { condition: b.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
+            } else if (b.stat === 'amplify') {
+              applyBuff(mainStats, 'amplify', val, { condition: b.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
             } else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'resShred' || b.stat === 'defShred') {
               applyBuff(mainStats, b.stat, val);
             }
@@ -237,8 +237,8 @@ export function computeLegacyMainDpsStats(ctx) {
             mainStats.atkPct += mainDps.scaling === 'ATK' ? val : val * 0.25;
           } else if (['allDmg', 'elemDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'skillDmg'].includes(b.stat)) {
             applyBuff(mainStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsFocus, dpsElLower: mainDpsElLower });
-          } else if (b.stat === 'deepen') {
-            applyBuff(mainStats, 'deepen', val, { condition: b.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
+          } else if (b.stat === 'amplify') {
+            applyBuff(mainStats, 'amplify', val, { condition: b.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
           } else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'resShred' || b.stat === 'defShred') {
             applyBuff(mainStats, b.stat, val);
           }
@@ -301,31 +301,31 @@ export function computeLegacyMainDpsStats(ctx) {
           const val = resolveBuffValue(b, mainTotalER);
           // Own kit's self-target buffs always apply to their own damage — no target-matching gate
           // needed (that's exactly what a "self" buff means), so no dpsFocus/dpsElLower passed here.
-          if (['atkPct', 'elemDmg', 'critRate', 'critDmg', 'defIgnore', 'deepen', 'echoDmg'].includes(b.stat)) applyBuff(mainStats, b.stat, val);
+          if (['atkPct', 'elemDmg', 'critRate', 'critDmg', 'defIgnore', 'amplify', 'echoDmg'].includes(b.stat)) applyBuff(mainStats, b.stat, val);
         });
       }
 
       (bt.debuffs || []).forEach(db => {
         if (db.stat === 'frazzle' || db.stat === 'erosion') return; // handled separately by the DOT tier
         if (db.stat === 'havocBane') { mainStats.defShred += db.value * 2; return; }
-        // 'deepen'/'offTune' as a debuff stat (e.g. Galbrena's Afterflame — enemy DMG Taken) is the
-        // same multiplier as the buff-side 'deepen', just framed as an enemy debuff instead of an ally
+        // 'amplify'/'offTune' as a debuff stat (e.g. Galbrena's Afterflame — enemy DMG Taken) is the
+        // same multiplier as the buff-side 'amplify', just framed as an enemy debuff instead of an ally
         // buff — was never recognized here before, silently dropping the whole effect from every DPS
         // calc. 'defIgnore' debuffs (e.g. Carlotta's Deconstruction) target the enemy's own DEF, same
         // as the buff-side 'defIgnore' — was falling through to the no-op default too.
         // Same self-state-dependency discount as calcEngine.js's scoreTeamComposition: a non-headline
-        // Main DPS's own deepen/offTune debuff (e.g. Galbrena's Afterflame, gated to "while Galbrena is
+        // Main DPS's own amplify/offTune debuff (e.g. Galbrena's Afterflame, gated to "while Galbrena is
         // in Demon Hypostasis" -- her own sustained active-state) can't be assumed to reliably fire when
         // she isn't the character actually receiving the rotation's on-field time. Verified this was a
         // real gap: with Jiyan as the real headline, Galbrena's Afterflame applied its full raw 60%
         // regardless of her own on-field presence, identical to a teammate with no such debuff at all
         // except for this one uncapped bonus. Discounted, not zeroed, since she still spends SOME
         // on-field time via her own rotation block, just not enough to assume the full value.
-        const selfStateDiscount = (db.stat === 'deepen' || db.stat === 'offTune') && !isMain && CHARACTER_DATA[m.name]?.role === 'Main DPS' ? 0.35 : 1;
+        const selfStateDiscount = (db.stat === 'amplify' || db.stat === 'offTune') && !isMain && CHARACTER_DATA[m.name]?.role === 'Main DPS' ? 0.35 : 1;
         applyBuff(mainStats, db.stat, db.value * selfStateDiscount, { condition: db.condition, dpsElLower: mainDpsElLower, dpsName: mainDps.name });
       });
     });
-    ({ atkPct, cr, cd, elemDmg, deepen, amplify, resShred, defShred, defIgnore, echoDmg } = mainStats);
+    ({ atkPct, cr, cd, elemDmg, amplify, resShred, defShred, defIgnore, echoDmg } = mainStats);
 
     // DMG Bonus layer: weapon + echo self-bonuses (NOT outro amplify)
     basicDmg += echoBasicDmg; heavyDmg += echoHeavyDmg; libDmg += echoLibDmg;
@@ -339,7 +339,7 @@ export function computeLegacyMainDpsStats(ctx) {
     // again afterward, so those contributions were silently discarded for every character whose chain
     // grants one of these 5 stat types (100 such entries across the roster). Moving this block ahead
     // means it now correctly feeds the same pre-routing pools everything else here uses.
-    const seqStats = { atkPct: 0, cr: 0, cd: 0, elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
+    const seqStats = { atkPct: 0, cr: 0, cd: 0, elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0, libDmg: 0, echoDmg: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
     mems.forEach(m => {
       const isMain = m.name === mainDps.name;
       const bonus = applyResonanceChain(seqStats, m.name, m.seqLevel, isMain);
@@ -349,7 +349,7 @@ export function computeLegacyMainDpsStats(ctx) {
     elemDmg += seqStats.elemDmg; mainSkillDmg += seqStats.skillDmg;
     basicDmg += seqStats.basicDmg; heavyDmg += seqStats.heavyDmg;
     libDmg += seqStats.libDmg; echoDmg += seqStats.echoDmg;
-    deepen += seqStats.deepen; defShred += seqStats.defShred;
+    amplify += seqStats.amplify; defShred += seqStats.defShred;
     resShred += seqStats.resShred; defIgnore += seqStats.defIgnore;
 
     // Route type-specific DMG Bonus into skillDmg based on character's damage focus
@@ -429,5 +429,5 @@ export function computeLegacyMainDpsStats(ctx) {
       }
     });
 
-  return { atkPct, cr, cd, elemDmg, skillDmg, deepen, defShred, resShred, defIgnore, amplify, seqTotalMultBonus };
+  return { atkPct, cr, cd, elemDmg, skillDmg, defShred, resShred, defIgnore, amplify, seqTotalMultBonus };
 }

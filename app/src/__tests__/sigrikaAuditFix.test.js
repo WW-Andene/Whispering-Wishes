@@ -29,9 +29,9 @@ describe('Sigrika — audit fixes against a fresh the source dump', () => {
     expect(s5.effects[0].stat).toBe('echoDmg');
   });
 
-  it("S6 uses deepen:30 (targets take +30% more DMG from Sigrika), not the unsourced defIgnore:15", () => {
-    expect(RESONANCE_CHAIN_DATA['Sigrika'].s6).toEqual({ deepen: 30 });
+  it("S6 uses amplify:30 (targets take +30% more DMG from Sigrika), not the unsourced defIgnore:15", () => {
+    expect(RESONANCE_CHAIN_DATA['Sigrika'].s6).toEqual({ amplify: 30 });
     const s6 = SIGRIKA_BLOCKS.find(b => b.id === 'sigrika.chain.s6');
-    expect(s6.effects[0]).toEqual({ stat: 'deepen', value: 30, source: 'self-kit' });
+    expect(s6.effects[0]).toEqual({ stat: 'amplify', value: 30, source: 'self-kit' });
   });
 });

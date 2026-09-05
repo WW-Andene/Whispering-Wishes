@@ -1,5 +1,5 @@
 // PHASE3_PLAN.md Stage 4, step 6/6: closes the gap steps 1-4 left open — effAtk/avgCrit/dmgBonus/
-// defMult/resMult/score (and the underlying critRate/critDmg/elemDmg/skillDmg/amplify/deepen/atkPct/
+// defMult/resMult/score (and the underlying critRate/critDmg/elemDmg/skillDmg/amplify/atkPct/
 // defShred/resShred/defIgnore fields) now also come from the engine (resolveSimulatedTeamRotation's
 // real time-averaged received stats for the main DPS, combined with their own gear delta and
 // routeTypeBonuses' same focus-collapsing legacy already used) for a fully-converted team, instead of
@@ -22,7 +22,7 @@ describe('calcTeamStats — main-DPS stat panel via the engine (Stage 4 step 6)'
     const stats = calcTeamStats(['Camellya', 'Danjin', 'Verina'], 0, 'Camellya', {}, '', 90);
     // dmgBonus isn't directly exposed, but score = effAtk * avgCrit * dmgBonus * defMult * resMult,
     // so score / (effAtk * avgCrit * defMult * resMult) recovers dmgBonus — must be a sane positive
-    // multiplier (elemDmg/skillDmg/amplify/deepen all being additive %, dmgBonus should be >= ~1).
+    // multiplier (elemDmg/skillDmg/amplify all being additive %, dmgBonus should be >= ~1).
     const impliedDmgBonus = stats.score / (stats.effAtk * stats.avgCrit * stats.defMult * stats.resMult);
     expect(impliedDmgBonus).toBeGreaterThan(0.5);
     expect(impliedDmgBonus).toBeLessThan(10);

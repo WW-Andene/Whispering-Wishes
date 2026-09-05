@@ -6,7 +6,7 @@
 // DMG Amp'`): Yinlin, Changli, Aalto, Danjin — all genuinely element-locked per their own `note`
 // field/CHARACTER_DATA desc (e.g. Aalto's own 'teams corrected' comment explicitly says his outro
 // "only benefits an Aero Main DPS") — and Augusta, whose outro is actually 'allDmg' (All-Attribute
-// DMG Amp, confirmed by her own note: "not modeled as deepen... Outro was mislabeled as deepen
+// DMG Amp, confirmed by her own note: "not modeled as amplify... Outro was mislabeled as amplify
 // instead of allDmg" — that 2026-08-16 fix corrected the NOTE text but never touched the `stat` field
 // itself). scoreTeamComposition's elemBuffApplies treats a missing condition as universal, so all 5
 // were crediting full elemDmg uplift for ANY placed carry regardless of element mismatch.

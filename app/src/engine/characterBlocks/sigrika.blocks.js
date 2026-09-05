@@ -207,7 +207,7 @@ export const SIGRIKA_BLOCKS = [
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'deepen', value: 30, source: 'self-kit' }],
-    note: 'Targets take +30% more DMG from Sigrika (a flat DMG-taken debuff) — kept passive. Corrected 2026-09-02 from an unsourced defIgnore:15: the real primary S6 effect is this +30% deepen, not a DEF Ignore figure (a separate, smaller Innate Gift? enhancement grants +7.5%/stack DEF Ignore up to 30%, not modeled here, same documented-approximation limits as elsewhere in this file).',
+    effects: [{ stat: 'amplify', value: 30, source: 'self-kit' }],
+    note: 'Targets take +30% more DMG from Sigrika (a flat DMG-taken debuff) — kept passive. Corrected 2026-09-02 from an unsourced defIgnore:15: the real primary S6 effect is this +30% amplify, not a DEF Ignore figure (a separate, smaller Innate Gift? enhancement grants +7.5%/stack DEF Ignore up to 30%, not modeled here, same documented-approximation limits as elsewhere in this file).',
   },
 ];

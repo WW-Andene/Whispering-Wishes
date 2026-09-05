@@ -228,7 +228,7 @@ export const LYNAE_BLOCKS = [
   // any DPS computation): its only job is to hand sequenceGating.js's winningStanceForOwner() an
   // explicit, SOURCED answer for which mode her appliesTags entries should resolve to, since her real
   // per-mode difference can't be reduced to a comparable effects[] magnitude (Rupture's Spectral
-  // Analysis is a flat DOT-engine proc; Strain's response is a %-deepen multiplier — not the same unit,
+  // Analysis is a flat DOT-engine proc; Strain's response is a %-amplify multiplier — not the same unit,
   // and this function has no ATK/team context to convert between them honestly — see
   // winningStanceForOwner's own comment on confirmedWinningStance).
   //

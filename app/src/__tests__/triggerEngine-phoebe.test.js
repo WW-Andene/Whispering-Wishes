@@ -14,7 +14,7 @@ describe('triggerEngine parity — Phoebe', () => {
   it('S1-S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Phoebe'];
     expect(PHOEBE_BLOCKS.find(b => b.id === 'phoebe.chain.s1').effects[0].value).toBe(rc.s1.libDmg);
-    expect(PHOEBE_BLOCKS.find(b => b.id === 'phoebe.chain.s2').effects[0].value).toBe(rc.s2.deepen);
+    expect(PHOEBE_BLOCKS.find(b => b.id === 'phoebe.chain.s2').effects[0].value).toBe(rc.s2.amplify);
     expect(PHOEBE_BLOCKS.find(b => b.id === 'phoebe.chain.s3').effects[0].value).toBe(rc.s3.heavyDmg);
     expect(PHOEBE_BLOCKS.find(b => b.id === 'phoebe.chain.s4').effects[0].value).toBe(rc.s4.resShred);
     expect(PHOEBE_BLOCKS.find(b => b.id === 'phoebe.chain.s5').effects[0].value).toBe(rc.s5.elemDmg);

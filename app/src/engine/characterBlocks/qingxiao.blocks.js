@@ -5,7 +5,7 @@
 // 2026-09-01 re-audit comment, read directly for each node's real mechanic),
 // SKILL_MULTIPLIERS['Qingxiao'], and CHARACTER_ROTATIONS['Qingxiao']. No new
 // numbers invented. Her base-kit Mindlock mechanic (self skillDmg buff + enemy
-// deepen debuff, both nonlinear: first 7 stacks worth 7% each, remaining stacks
+// amplify debuff, both nonlinear: first 7 stacks worth 7% each, remaining stacks
 // worth 2% each, up to 15 stacks base) is modeled at its documented flat ceiling
 // value rather than the real nonlinear per-stack curve, which this schema's
 // single value+maxStacks stacking shape can't represent losslessly.
@@ -172,7 +172,7 @@ export const QINGXIAO_BLOCKS = [
   // qingxiao.debuff.mindlock below (confirmed against the raw dump — Data dump/Qingxiao/
   // Qingxiao.md lines 41 and 60, both describing ONE enemy-side "DMG taken" amplification, not a
   // separate self-buff) — modeled twice via two different stat channels (self totalMult AND enemy
-  // deepen). This was invisible while `stat:'totalMult'` was a dead no-op everywhere in the engine
+  // amplify). This was invisible while `stat:'totalMult'` was a dead no-op everywhere in the engine
   // (see the engine-merge history (git log)'s totalMult architecture-bug writeup, fixed same day) — once totalMult
   // actually applies, keeping both would double-count Mindlock's real damage contribution. The single
   // correct model is the enemy-side debuff below.
@@ -183,7 +183,7 @@ export const QINGXIAO_BLOCKS = [
     timing: { duration: 30 },
     target: { scope: 'all-enemies' },
     // scopedToBlockId'd 2026-09-04 (full 9-dimension re-audit, fresh dump): this was a single unscoped
-    // deepen effect on target:'all-enemies', which resolveHitComposedDps.js applies to EVERY damage
+    // amplify effect on target:'all-enemies', which resolveHitComposedDps.js applies to EVERY damage
     // block Qingxiao has — but the dump's own exact text (line 41/60) names 5 specific moves only:
     // "Amplifies DMG taken from Qingxiao's Heavy Attack - Stringblade / Ephemeral Transcendence Basic /
     // Ephemeral Transcendence Dodge Counter / Heaven's Reckoning / Liberation" — NOT her Basic Attack -
@@ -193,11 +193,11 @@ export const QINGXIAO_BLOCKS = [
     // entries, same multi-block-scoping pattern already used elsewhere (e.g. Camellya's chain.s5-twining,
     // Cantarella's chain.s2).
     effects: [
-      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.heavy.stringblade' },
-      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.forte.ephemeral-transcendence-stage1-4' },
-      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.forte.dodge-counter-transcendence' },
-      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.forte.heavens-reckoning' },
-      { stat: 'deepen', value: 65, scopedToBlockId: 'qingxiao.liberation.billows-beneath-heaven' },
+      { stat: 'amplify', value: 65, scopedToBlockId: 'qingxiao.heavy.stringblade' },
+      { stat: 'amplify', value: 65, scopedToBlockId: 'qingxiao.forte.ephemeral-transcendence-stage1-4' },
+      { stat: 'amplify', value: 65, scopedToBlockId: 'qingxiao.forte.dodge-counter-transcendence' },
+      { stat: 'amplify', value: 65, scopedToBlockId: 'qingxiao.forte.heavens-reckoning' },
+      { stat: 'amplify', value: 65, scopedToBlockId: 'qingxiao.liberation.billows-beneath-heaven' },
     ],
     note: 'Base kit Forte (Mindlock) + Inherent Skill To Know, To Banish (same single mechanic, described twice in the dump): targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 base-kit stacks — corrected 2026-09-02 from a wrong 49% to the dump\'s own confirmed "+65% DMG Amplification... 7% for the first 7 stacks, 2% for the next 8" (7×7 + 8×2 = 65, not 49 — the prior value was simply arithmetically wrong). Modeled at the documented flat ceiling value rather than the real nonlinear per-stack curve, which this schema\'s stacking shape can\'t represent losslessly (the engine-merge history (git log) Phase 0.5 gap #1). S2 (not S1 — see that node\'s own corrected note) raises the stack cap to 25 (not modeled — tied to gap #1). S6 chain adds a further flat +40% (see qingxiao.chain.s6). Scoped 2026-09-04 to the 5 real named moves only (Juque Perdition, S1\'s own unmodeled proc, would be a 6th target if built).',
   },
@@ -262,16 +262,16 @@ export const QINGXIAO_BLOCKS = [
     timing: {}, target: { scope: 'all-enemies' },
     // scopedToBlockId'd 2026-09-04 (full 9-dimension re-audit, fresh dump): the note here already
     // correctly IDENTIFIED the narrow real scope (Heavy Attack - Stringblade / Heaven's Reckoning /
-    // Liberation / Juque Perdition only) but left the effect itself unscoped anyway — an unscoped deepen
+    // Liberation / Juque Perdition only) but left the effect itself unscoped anyway — an unscoped amplify
     // on target:'all-enemies' is applied to EVERY damage block Qingxiao has by resolveHitComposedDps.js,
     // so this was silently over-crediting her Basic/Mid-air/Skill/Intro/Outro hits too, exactly the same
     // bug class already found/fixed for Jiyan's S6/Phrolova's S1/Lucilla's S3+S5 and for
     // qingxiao.debuff.mindlock right above. Split into scopedToBlockId entries for the 3 real named
     // moves that have engine blocks (Juque Perdition, S1's own unmodeled proc, isn't buildable here).
     effects: [
-      { stat: 'deepen', value: 40, scopedToBlockId: 'qingxiao.heavy.stringblade' },
-      { stat: 'deepen', value: 40, scopedToBlockId: 'qingxiao.forte.heavens-reckoning' },
-      { stat: 'deepen', value: 40, scopedToBlockId: 'qingxiao.liberation.billows-beneath-heaven' },
+      { stat: 'amplify', value: 40, scopedToBlockId: 'qingxiao.heavy.stringblade' },
+      { stat: 'amplify', value: 40, scopedToBlockId: 'qingxiao.forte.heavens-reckoning' },
+      { stat: 'amplify', value: 40, scopedToBlockId: 'qingxiao.liberation.billows-beneath-heaven' },
     ],
     note: 'DMG Taken +40% flat, scoped narrower than a universal vulnerability in the real text (only applies to Heavy Attack - Stringblade, Heaven\'s Reckoning: Ephemeral Transcendence, Billows Beneath Heaven, and Juque Perdition, not her full kit) — now actually enforced via scopedToBlockId (2026-09-04) rather than left unscoped despite this note already describing the narrow real scope. Juque Perdition omitted (S1\'s own unmodeled proc, no block to scope onto).',
   },

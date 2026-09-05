@@ -116,7 +116,7 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
     .filter(b => b.trigger.type !== 'passive' && b.timing?.duration != null)
     .map(b => ({ block: b, ...buildBlockWindows(b, resultsForBlock(b, targetName, results), targetElementLower, targetRole, targetSegment.end) }));
 
-  const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'outroDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
+  const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'outroDmg', 'amplify', 'defShred', 'resShred', 'defIgnore'];
   // `hitBlockId` (Phase 0.5 gap #3, added 2026-09-02) — see resolveHitComposedDps.js's own identical
   // comment for the full rationale: lets an effect's `scopedToBlockId` restrict its contribution to one
   // specific damage block instead of a whole category.
@@ -160,7 +160,7 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
   function pushHit(r, db, hits, category, basis, guaranteedCrit) {
     const stats = statsAtInstant(r.time, db.id);
     const categoryStat = category ? stats[category] || 0 : 0;
-    const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify, stats.deepen);
+    const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify);
     const avgCrit = guaranteedCrit ? 1 + stats.cd / 100 : calcAvgCrit(stats.cr, stats.cd);
     const defMult = calcDefMult(enemyDef, stats.defShred, stats.defIgnore);
     const resMult = calcResMult(enemyRes, stats.resShred);

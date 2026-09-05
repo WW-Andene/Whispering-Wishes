@@ -123,14 +123,14 @@ export const CARTETHYIA_BLOCKS = [
     // (Erosion-stack-equalizing utility) are genuine CC/utility with no DPS stat to hold, same
     // "correctly zeroed" treatment as every other pure-utility mechanic in this schema. Modeled with
     // the same stat/condition convention as Ciaccona's own Aero Erosion DMG Amp
-    // (ciaccona.outro.windcalling-tune): 'deepen' scoped via condition.element to Aero only.
+    // (ciaccona.outro.windcalling-tune): 'amplify' scoped via condition.element to Aero only.
     id: 'cartethyia.manifest.mandate-of-divinity',
     source: SOURCE, kind: 'buff', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Mid-air:Cartethyia Plunging Attack' },
     condition: { element: 'aero' },
     timing: { duration: 99 }, // sentinel: lasts the whole Manifest window, real end-on-transform-back not tracked
     target: { scope: 'self' },
-    effects: [{ stat: 'deepen', value: 50, source: 'self-kit' }],
+    effects: [{ stat: 'amplify', value: 50, source: 'self-kit' }],
     note: 'Mandate of Divinity: Aero Erosion DMG Amp +50% (and tick interval halved, not modeled as a DPS stat since it doesn\'t change total damage, just its timing) for enemies near Fleurdelys, for the whole Manifest window.',
   },
   {

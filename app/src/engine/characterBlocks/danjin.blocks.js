@@ -82,7 +82,7 @@ export const DANJIN_BLOCKS = [
     target: { scope: 'next-on-field' },
     condition: { element: 'havoc' },
     effects: [{ stat: 'elemDmg', value: 23, stacking: 'refresh', source: 'teammate-ally-action' }],
-    note: 'Havoc DMG Amp to the incoming Resonator (elemDmg, not deepen — a buff to the ally\'s own outgoing DMG, not a vulnerability debuff on the enemy, per the 2026-09-01 correction).',
+    note: 'Havoc DMG Amp to the incoming Resonator (elemDmg, not amplify — a buff to the ally\'s own outgoing DMG, not a vulnerability debuff on the enemy, per the 2026-09-01 correction).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-18 audit comment for

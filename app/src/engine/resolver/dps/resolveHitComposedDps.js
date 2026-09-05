@@ -131,7 +131,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
   // externalStats is a pure DELTA (gear's own contribution only, cr/cd NOT pre-seeded with
   // BASE_CRIT_RATE/BASE_CRIT_DMG — createStats() below already supplies that baseline once per
   // instant) — see this function's own jsdoc above for why this exists and what shape it expects.
-  const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'outroDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
+  const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'outroDmg', 'amplify', 'defShred', 'resShred', 'defIgnore'];
   // `hitBlockId` (Phase 0.5 gap #3, added 2026-09-02): the SPECIFIC damage block this stats snapshot is
   // being built for, so an effect carrying `scopedToBlockId` (e.g. Aemeath's "+300% Crit DMG for Heavy
   // ATK specifically") only contributes when it's actually THIS hit's own block, not every hit sharing
@@ -197,7 +197,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
 
       const stats = statsAtInstant(r.time, db.id, r.firedTriggers);
       const categoryStat = category ? stats[category] || 0 : 0; // which stat pool this cast's DMG Bonus draws from
-      const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify, stats.deepen);
+      const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify);
       // A guaranteed-Crit hit (Shorekeeper's Discernment, per its own kit text) always lands at full
       // Crit — calcAvgCrit's expected-value blend would silently undercount it, same category of bug
       // as time-averaging a per-hit-scoped buff instead of applying it fully (see the file header).
@@ -236,7 +236,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
         // `stats.totalMult` (fixed 2026-09-02 — was previously silently skipped/dead in this resolver
         // entirely, see the engine-merge history (git log)'s totalMult architecture-bug writeup): a flat fallback
         // multiplier for real kit bonuses that don't map to a dedicated category stat (e.g. Qingxiao's
-        // Mindlock deepen, kept on the ENEMY side as `deepen` — see her own block file for the
+        // Mindlock amplify, kept on the ENEMY side as `amplify` — see her own block file for the
         // self-buff duplicate this also fixed) — applied as its own multiplicative factor on top of
         // the crit/dmgBonus/defMult/resMult chain, matching legacy calcTeamStats.js's own
         // `mult * (1 + seqTotalMultBonus/100)` pattern (the flat-tier totalMult% is itself always a

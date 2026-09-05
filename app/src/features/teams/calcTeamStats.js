@@ -623,7 +623,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         rCoordDmg += (wp.coordDmg || 0);
       }
       // Apply echo set + echo stats using shared utility (was 50 lines of duplicated logic)
-      const rStats = { atkPct: rStatPct, cr: rCr, cd: rCd, elemDmg: rElem, skillDmg: rSkillDmg, basicDmg: rBasicDmg, heavyDmg: rHeavyDmg, libDmg: rLibDmg, echoDmg: rEchoDmg, coordDmg: rCoordDmg, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
+      const rStats = { atkPct: rStatPct, cr: rCr, cd: rCd, elemDmg: rElem, skillDmg: rSkillDmg, basicDmg: rBasicDmg, heavyDmg: rHeavyDmg, libDmg: rLibDmg, echoDmg: rEchoDmg, coordDmg: rCoordDmg, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
       applyFullEchoSet(rStats, m.echoSet, m.echoSet2, m.d.element, m.scaling);
       const eqKey = teamIdx + ':' + m.name;
       applyEchoStats(rStats, teamEquipment[eqKey]?.echoes, m.d.element, m.scaling, { atk: m.totalBaseAtk, hp: m.d.baseHp, def: m.d.baseDef });
@@ -659,7 +659,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           if (bts.maxStacks) {
             gearDelta.scopedEffects = [
               ...(gearDelta.scopedEffects || []),
-              { stat: 'deepen', value: 25, scopedToBlockId: 'aemeath.liberation.heavenfall-edict-finale' },
+              { stat: 'amplify', value: 25, scopedToBlockId: 'aemeath.liberation.heavenfall-edict-finale' },
             ];
           }
         }
@@ -691,7 +691,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     });
 
     // ── FULL TIER: Base stats with team buffs ──
-    // PHASE3_PLAN.md Stage 4 step 6 cleanup: atkPct/cr/cd/elemDmg/skillDmg/deepen/defShred/resShred/
+    // PHASE3_PLAN.md Stage 4 step 6 cleanup: atkPct/cr/cd/elemDmg/skillDmg/defShred/resShred/
     // defIgnore/amplify (declared here with their legacy baseline defaults) and dpsFocus/
     // seqTotalMultBonus (read outside this block — dpsFocus by the pre-existing, already-dead `syn`
     // scoring section a few hundred lines down that never actually gets returned; seqTotalMultBonus
@@ -699,7 +699,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // `!allMembersConverted` gate below so both legacy blocks (and any code between them) can still
     // see them, while the actual buff-accumulation WORK stays gated — the whole point of this
     // cleanup pass.
-    let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, deepen = 0, defShred = 0, resShred = 0, defIgnore = 0;
+    let atkPct = 0, cr = 5, cd = 150, elemDmg = 0, skillDmg = 0, defShred = 0, resShred = 0, defIgnore = 0;
     let amplify = 0; // WuWa DMG Amplification layer — separate from DMG Bonus, multiplicative
     const dpsFocus = mainDps.d.dmgFocus || [];
     let seqTotalMultBonus = 0;
@@ -707,7 +707,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // PHASE3_PLAN.md Stage 4 step 6 cleanup: this whole legacy main-DPS buff-accumulation
     // computation (weapon/echo/resonance-chain/cross-character outro-lib-debuff routing) is now
     // SKIPPED ENTIRELY for a fully-converted team — every variable it feeds
-    // (atkPct/cr/cd/elemDmg/skillDmg/deepen/defShred/resShred/defIgnore/amplify, and in turn
+    // (atkPct/cr/cd/elemDmg/skillDmg/defShred/resShred/defIgnore/amplify, and in turn
     // effAtk/avgCrit/dmgBonus/defMult/resMult/score) is unconditionally overridden by the
     // engine-composed block below (Stage 4 step 6's own `resolveSimulatedTeamRotation` call)
     // regardless, so computing it first was pure wasted work once that override landed. Kept as the
@@ -718,19 +718,19 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         gateWeaponDefIgnore, overlapUptime, outroStart, blockStart, dpsFocus,
         energyCycleFactors, resolveBuffValue,
       });
-      ({ atkPct, cr, cd, elemDmg, skillDmg, deepen, defShred, resShred, defIgnore, amplify, seqTotalMultBonus } = legacyMainResult);
+      ({ atkPct, cr, cd, elemDmg, skillDmg, defShred, resShred, defIgnore, amplify, seqTotalMultBonus } = legacyMainResult);
     }
 
     let effAtk = Math.round(mainDps.baseStat * (1 + atkPct / 100));
     let avgCrit = calcAvgCrit(cr, cd);
-    let dmgBonus = calcDmgBonus(elemDmg, skillDmg, amplify, deepen);
+    let dmgBonus = calcDmgBonus(elemDmg, skillDmg, amplify);
     let defMult = calcDefMult(enemyDef90, defShred, defIgnore);
     const mainBaseRes = getEnemyRes(mainDps.d.element);
     let resMult = calcResMult(mainBaseRes, resShred);
     let score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
     // PHASE3_PLAN.md Stage 4 step 6: the main-DPS stat-panel fields above (effAtk/avgCrit/dmgBonus/
-    // defMult/resMult/score, plus the underlying cr/cd/elemDmg/skillDmg/amplify/deepen/atkPct/
+    // defMult/resMult/score, plus the underlying cr/cd/elemDmg/skillDmg/amplify/atkPct/
     // defShred/resShred/defIgnore returned at the bottom of this function) still came from the
     // legacy buff-accumulation computation even for a fully-converted team — steps 1-3 only
     // overrode totalRotDmg/memberDmgArr/dotDmgPerRotation, not these. Closing that gap here: for a
@@ -746,7 +746,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // per-hit total.
     if (allMembersConverted && engineChosenOrder) {
       const panelResult = computeEngineMainDpsStatPanel(engineChosenOrder, mainDps, mems, gearDeltaByName, enemyDef90, mainBaseRes);
-      ({ atkPct, cr, cd, elemDmg, skillDmg, amplify, deepen, defShred, resShred, defIgnore, effAtk, avgCrit, dmgBonus, defMult, resMult, score } = panelResult);
+      ({ atkPct, cr, cd, elemDmg, skillDmg, amplify, defShred, resShred, defIgnore, effAtk, avgCrit, dmgBonus, defMult, resMult, score } = panelResult);
     }
 
     // ── DOT damage (ICD-aware, composed via engine/resolver/dot/dotReactions.js — PHASE3_PLAN.md Stage 3 item 2 /
@@ -953,10 +953,10 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const bt = CHAR_BUFF_TABLE[m.name];
       if (!bt) return;
       (bt.outroBuffs || []).forEach(b => {
-        // Not actually universal — an element-restricted deepen (Ciaccona's "Aero Erosion DMG Amp
+        // Not actually universal — an element-restricted amplify (Ciaccona's "Aero Erosion DMG Amp
         // only", Phoebe's "Spectro Frazzle DMG Amp (Confession)") credited full synergy points here
         // even against an unrelated main DPS.
-        if (b.stat === 'deepen') { if (universalStatApplies(b.condition, (mainEl || '').toLowerCase(), mainDps.name)) syn += 5; }
+        if (b.stat === 'amplify') { if (universalStatApplies(b.condition, (mainEl || '').toLowerCase(), mainDps.name)) syn += 5; }
         else if (b.stat === 'basicDmg' && dpsFocus.includes('Basic ATK')) syn += 5;
         else if (b.stat === 'heavyDmg' && dpsFocus.includes('Heavy ATK')) syn += 5;
         else if (b.stat === 'libDmg' && dpsFocus.includes('Liberation')) syn += 3;
@@ -1007,7 +1007,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
     });
 
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, energyCycleFactors, warnings, memberDps, rotationTimeline, rotTime,
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, energyCycleFactors, warnings, memberDps, rotationTimeline, rotTime,
       // Legacy aliases for DPSComparisonCard compatibility
       rawDps: soloDps, realDps: teamDps, perfectDps: teamDps, synergy: Math.min(100, Math.max(0, synergyUplift)) };
 }

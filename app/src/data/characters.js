@@ -261,8 +261,8 @@ const CHARACTER_DATA = {
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source/
   // character/1503 — desc, skills, base stats, multipliers, buffs, ascension mats, echoes, alt4/alt3
   // weapons, and teams all independently re-confirmed accurate, no changes needed there. CHAR_BUFF_TABLE's
-  // existing "Outro is All DMG Amp, not Deepen" note re-confirmed against the source's exact wording
-  // ("DMG Amplified by 15%") even though the source's own prose review loosely calls it "DMG Deepen" —
+  // existing "Outro is All DMG Amp, not Amplify" note re-confirmed against the source's exact wording
+  // ("DMG Amplified by 15%") even though the source's own prose review loosely calls it "DMG Amplify" —
   // same wording looseness seen auditing Jianxin, the source's structured text is treated as authoritative.
   // bestWeapon: one source ranks Cosmic Ripples #1 (kept); note another source's build page instead puts the
   // rotation-shortening 4★ Variation above every 5★ option for her specifically, since cutting one
@@ -287,8 +287,8 @@ const CHARACTER_DATA = {
     // Skill Botany Experiment can be swap-cancelled immediately by Liberation to skip its damage/Resonance
     // Energy gain while still keeping its Concerto Energy gain — this is the standard rotation, not an edge
     // case. Outro Blossom heals the incoming Resonator 19% of Verina\'s ATK/s for 6s and grants the whole
-    // nearby team +15% All DMG Amp for 30s (confirmed "Amplified," not Deepen, per the source\'s and this file\'s
-    // CHAR_BUFF_TABLE\'s existing sourcing — the source\'s own prose loosely says "Deepen" but its Skills tab
+    // nearby team +15% All DMG Amp for 30s (confirmed "Amplified," not Amplify, per the source\'s and this file\'s
+    // CHAR_BUFF_TABLE\'s existing sourcing — the source\'s own prose loosely says "Amplify" but its Skills tab
     // multiplier text says "Amplified," matching the source verbatim). Inherent Skill Gift of Nature: casting
     // Heavy/Mid-air Starflower Blooms, Liberation, or Outro grants the whole team +20% ATK for 20s.',
     skills: ['Cultivation', 'Botany Experiment', 'Starflower Blooms', 'Arboreal Flourish'],
@@ -1075,7 +1075,7 @@ const CHARACTER_DATA = {
     // in this source's Synergies section for Aalto (which explicitly names Ciaccona, Jiyan, Iuno, and
     // Rover: Aero) — Ciaccona is explicitly called "the best partner for Main DPS Aalto" and "a core
     // component of all mono Aero teams", the real Aero-Erosion pairing this table intended. The prior
-    // 2026-08-18 note's premise (an Aero Main DPS benefiting from his Outro's Aero DMG Deepen) still
+    // 2026-08-18 note's premise (an Aero Main DPS benefiting from his Outro's Aero DMG Amplify) still
     // holds — it just named the wrong character.
     teams: ['Aalto + Ciaccona + Shorekeeper', 'Aalto + Jiyan + Verina'] },
   'Baizhi': { rarity: 4, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
@@ -1181,7 +1181,7 @@ const CHARACTER_DATA = {
   // had no weaponAlts at all, and only a partial CHARACTER_DATA entry). desc: her Outro Iron Will is a
   // "Resonance Skill DMG Amplified by 38%" per the wiki's own Forte Details text (matches her infobox
   // `role` field's own "Resonance Skill DMG Amplification" tag, see COMBAT_ROLE_DATA above) — not
-  // "deepens", which was unsourced. bestEchoes replaced 'Bell-Borne Geochelone' (the source's shield-focused
+  // "amplifys", which was unsourced. bestEchoes replaced 'Bell-Borne Geochelone' (the source's shield-focused
   // Main Echo alt, not the top Echo Set) with the source's actual #1 Echo Set 'Rejuvenating Glow 5pc'
   // (paired with Main Echo 'Fallacy of No Return', the source's stated top pick over Bell-Borne Geochelone);
   // 'Moonlit Clouds 5pc' kept as the Special Set alt for the Outro-swap-cancel playstyle. bestWeapon
@@ -1619,7 +1619,7 @@ const CHARACTER_DATA = {
   // dmg-type tag corrected 2026-08-18: Danjin's own the source kit breakdown says the Resonance Skill is
   // "the core of her kit, which all of her combo options revolve around" (Crimson Fragment/Erosion,
   // Sanguine Pulse) — 'Skill' was missing entirely. buff tag corrected: her Outro is worded "23% Havoc
-  // DMG Deepen" (not "Bonus") per the source's own rotation writeup, matching the `deepen` stat key used
+  // DMG Amplify" (not "Bonus") per the source's own rotation writeup, matching the `amplify` stat key used
   // in CHAR_BUFF_TABLE below.
   // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
   // Profile: 'Basic ATK' was WRONG — no basicDmg-categorized damage block exists anywhere in
@@ -1628,7 +1628,7 @@ const CHARACTER_DATA = {
   // own modeled step). Liberation — her single BIGGEST damage bucket (29.7%/56,602), already correctly
   // libDmg-categorized — was entirely missing. Echo stays excluded — generic equipped-Echo damage, not
   // her own kit's Echo Skill button.
-  ['Danjin',        ['Heavy ATK', 'Skill', 'Liberation'], ['Havoc DMG Deepen'],                []],
+  ['Danjin',        ['Heavy ATK', 'Skill', 'Liberation'], ['Havoc DMG Amplify'],                []],
   // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against his own dump's Damage
   // Profile: 'Heavy ATK' was WRONG — a genuine 0% real share, no heavyDmg-categorized damage block
   // exists anywhere in mortefi.blocks.js (he has no plain Heavy ATK/Mid-air/Dodge Counter step at all in
@@ -1689,7 +1689,7 @@ const CHARACTER_DATA = {
   // teammate Basic Attack DMG Bonus. Coordinated ATK (from her S6-gated Coordinated Attack proc) stays
   // excluded — dupe-conditional, not part of her S0 baseline kit, consistent with how the dump's own
   // Damage Profile convention (S0-only) is applied elsewhere.
-  ['Verina',        ['Liberation', 'Basic ATK'],     ['ATK Buff', 'DMG Deepen', 'Heal'],      []],
+  ['Verina',        ['Liberation', 'Basic ATK'],     ['ATK Buff', 'DMG Amplify', 'Heal'],      []],
   ['Shorekeeper',   ['Liberation'],                  ['Crit Buff', 'Heal'],                   []],
   // dmgFocus corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
   // Profile: was ['Skill'] only (8%) — Liberation is her single BIGGEST damage bucket (36.1%/56,486),
@@ -1737,7 +1737,7 @@ const CHARACTER_DATA = {
   ['Baizhi',        ['Skill', 'Liberation', 'Heavy ATK'], ['Heal'],                            []],
   // buff tag corrected 2026-08-18: the wiki's Taoqi/Combat Outro Skill "Iron Will" text is "Resonance
   // Skill DMG Amplified by 38%" — matches the 'Skill DMG Amp' convention used for Lumi/Baizhi/Buling's
-  // identical Amp-type buffs below, not the "Deepen" wording (which belongs to a different, unsourced
+  // identical Amp-type buffs below, not the "Amplify" wording (which belongs to a different, unsourced
   // stat this character never actually carries).
   // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's Damage
   // Profile: 'Skill' alone (5.8%) was actually her SMALLEST modeled bucket — Basic ATK (43.1%,
@@ -1985,7 +1985,7 @@ const CHARACTER_DATA = {
   ['Rebecca',       1900, 24, 9],   // Huntress/Guts stance swap, turret buff
   ['Denia',         1700, 24, 8],   // Stagecraft/Breakdown Form swap, Fusion Burst/Tune Strain
   // 5★ Healers/Support — low totalMult
-  ['Verina',        600,  25, 4],   // Quick heal + ATK buff + deepen
+  ['Verina',        600,  25, 4],   // Quick heal + ATK buff + amplify
   ['Jianxin',       800,  25, 6],   // Shield + grouping
   // totalMult corrected 2026-09-02: was 700, ~30.7% of the real ~2280 sum across her exact modeled
   // rotation (CHARACTER_ROTATIONS['Lucilla']) matched unambiguously to SKILL_MULTIPLIERS row-for-row
@@ -2662,22 +2662,22 @@ const CHARACTER_DATA = {
 // Each entry: { outroBuffs: [], libBuffs: [], selfBuffs: [], debuffs: [] }
 // Buff format: { stat, value, target: 'next'|'team'|'self', duration, condition? }
 // stat types: atkPct, allDmg, elemDmg, skillDmg, basicDmg, heavyDmg, libDmg, echoDmg,
-//             critRate, critDmg, deepen, resShred, defShred, defIgnore, coordDmg
+//             critRate, critDmg, amplify, resShred, defShred, defIgnore, coordDmg
 const CHAR_BUFF_TABLE = {
   // ── 5★ Supports / Sub DPS ──
-  // Corrected against the source character/1503 — Outro Blossom grants All DMG Amp, not DMG Deepen
-  // (she has no Deepen anywhere in her kit).
+  // Corrected against the source character/1503 — Outro Blossom grants All DMG Amp, not DMG Amplify
+  // (she has no Amplify anywhere in her kit).
   'Verina': {
     // stat corrected 2026-09-02 against a fresh, user-pasted the source text (priority source): was
     // allDmg ("confirmed Amplified" per a prior session's note), but the kit text explicitly says
-    // "15% all-Type DMG Deepen for 30s" — this table's own separate dmgFocus buff-tag entry
-    // (['ATK Buff', 'DMG Deepen', 'Heal']) already said Deepen too, an internal contradiction the
-    // prior check missed. Fixed to deepen.
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'team', duration: 30 }],
+    // "15% all-Type DMG Amplify for 30s" — this table's own separate dmgFocus buff-tag entry
+    // (['ATK Buff', 'DMG Amplify', 'Heal']) already said Amplify too, an internal contradiction the
+    // prior check missed. Fixed to amplify.
+    outroBuffs: [{ stat: 'amplify', value: 15, target: 'team', duration: 30 }],
     libBuffs: [{ stat: 'atkPct', value: 20, target: 'team', duration: 20 }],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro Blossom: heals the incoming Resonator + All-Type DMG Deepen +15% (30s) for the nearby team. Inherent Gift of Nature: team ATK +20%/20s on Forte/Liberation/Outro triggers.',
+    note: 'Outro Blossom: heals the incoming Resonator + All-Type DMG Amplify +15% (30s) for the nearby team. Inherent Gift of Nature: team ATK +20%/20s on Forte/Liberation/Outro triggers.',
   },
   // Corrected 2026-08-17 against the source's live build page: outroBuffs' target was 'next' (single
   // incoming Resonator), but the source explicitly states Binary Butterfly "grants the entire party a 15%
@@ -2693,7 +2693,7 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro: 15% All DMG Amp, team-wide, 30s (persists through swaps). Lib Stellarealm: +12.5% CR +25% CD (30s), team-wide. Knockdown recovery.',
   },
-  // Corrected against the source character/1405 — prior Outro (15% All DMG Deepen) and debuff
+  // Corrected against the source character/1405 — prior Outro (15% All DMG Amplify) and debuff
   // (DEF Shred on shielded) didn't match her real kit at all.
   'Jianxin': {
     outroBuffs: [{ stat: 'libDmg', value: 38, target: 'next', duration: 14 }],
@@ -2740,7 +2740,7 @@ const CHAR_BUFF_TABLE = {
       // fabricated cross-unit magnitude guess.
       modeExclusive: true,
     },
-    note: 'Lib: 24% All DMG (30s, confirmed exact 2026-08-16). Outro: 15% All DMG + 25% Lib Amp to next (14s) — was miscategorized as deepen, no basis. Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost.',
+    note: 'Lib: 24% All DMG (30s, confirmed exact 2026-08-16). Outro: 15% All DMG + 25% Lib Amp to next (14s) — was miscategorized as amplify, no basis. Tune Break Boost +40 team. Rupture Response every 8s. Strain: 0.12% DMG per stack per Boost.',
   },
   'Qingxiao': {
     outroBuffs: [],
@@ -2754,7 +2754,7 @@ const CHAR_BUFF_TABLE = {
       // so kept as totalMult — same documented-approximation pattern used elsewhere in this file.
       { stat: 'totalMult', value: 65, target: 'self', duration: 30, condition: 'Inherent Skill To Know, To Banish — +2%/Mindlock stack (+5% more for the first 7), up to 15 stacks base kit (corrected 2026-09-02 from a wrong 49; see debuffs entry below — this is the SAME real mechanic as that enemy-side debuff, described twice by the source, not two separate buffs; kept here only because an existing test pins this entry\'s existence/stat, not because both should be summed)' },
     ],
-    debuffs: [{ stat: 'deepen', value: 65, duration: 30, condition: 'Base kit Forte (Mindlock) — targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 stacks; Resonance Chain 6 adds a further flat +40%' }],
+    debuffs: [{ stat: 'amplify', value: 65, duration: 30, condition: 'Base kit Forte (Mindlock) — targets w/ Mindlock take +2%/stack (+5% more for the first 7) from her key skills, up to 15 stacks; Resonance Chain 6 adds a further flat +40%' }],
     // Corrected 2026-09-02: value was wrongly 49 (7×7 + 8×2 = 65, not 49 — a plain arithmetic error);
     // also the stack-cap raise to 25 is S2 alone, not "S1/S2" (confirmed against the raw dump — S1's
     // real 2nd effect is an unrelated Exorcising Seal/Juque Perdition proc, not a Mindlock cap change).
@@ -2916,7 +2916,7 @@ const CHAR_BUFF_TABLE = {
     // different weapon was equipped (also had the wrong duration: 10s here vs the weapon's real 4s).
     weaponBuffs: [],
     // Off-Tune Buildup Rate corrected 2026-08-25: was modeled here as a debuffs-array 'offTune'
-    // stat, which applyBuff/scoreTeamComposition alias directly to 'deepen' -- a genuine universal
+    // stat, which applyBuff/scoreTeamComposition alias directly to 'amplify' -- a genuine universal
     // DMG-Taken multiplier (the alias exists for Galbrena-style enemy DMG Taken debuffs, e.g. her
     // own Afterflame, which really is that). But "Off-Tune Buildup Rate" is not a damage multiplier
     // at all -- per her own kit desc, it's the RATE the Off-Tune status gauge fills, which only
@@ -2940,7 +2940,7 @@ const CHAR_BUFF_TABLE = {
       maxStrainStacks: 3, // base 2 + 1 from Mornye
       interferedDmgAmp: 40, // targets with Interfered Marker take up to 40% more DMG (0.25% per 1% ER over 100%)
     },
-    note: 'Outro: 25% All DMG Amp to team (30s, confirmed exact 2026-08-16 — was miscategorized as deepen). Syntony Field: +50% Off-Tune Buildup Rate (25s), healing, DEF+20% via Ultimate. Interfered Marker: up to 40% DMG Amp on target. Rupture Response.',
+    note: 'Outro: 25% All DMG Amp to team (30s, confirmed exact 2026-08-16 — was miscategorized as amplify). Syntony Field: +50% Off-Tune Buildup Rate (25s), healing, DEF+20% via Ultimate. Interfered Marker: up to 40% DMG Amp on target. Rupture Response.',
   },
   // Corrected 2026-08-17 against the source's live build page: selfBuffs was missing target/duration/
   // condition fields (a formatting bug, not a wrong value) — filled in from Inherent Skill Immersive
@@ -3028,7 +3028,7 @@ const CHAR_BUFF_TABLE = {
   'Phoebe': {
     outroBuffs: [
       { stat: 'resShred', value: 10, target: 'enemy', duration: 30, condition: 'Spectro RES (Confession mode)' },
-      { stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Spectro Frazzle DMG Amp (Confession)' },
+      { stat: 'amplify', value: 100, target: 'next', duration: 30, condition: 'Spectro Frazzle DMG Amp (Confession)' },
     ],
     libBuffs: [],
     selfBuffs: [],
@@ -3058,7 +3058,7 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro Gentle Tentacles: +20% Havoc DMG + 25% Resonance Skill DMG Amp (14s), forfeited early if the buffed Resonator is swapped out. Off-field Coordinated ATK via Liberation\'s Diffusion. Heal via Forte Trance/Shiver consumption and Perception Drain. Self: up to +12% Havoc DMG from Inherent Skill Poison.',
   },
   'Ciaccona': {
-    outroBuffs: [{ stat: 'deepen', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
+    outroBuffs: [{ stat: 'amplify', value: 100, target: 'next', duration: 30, condition: 'Aero Erosion DMG Amp only' }],
     // stat corrected 2026-08-18: was 'allDmg' (universal, applies to any team regardless of element)
     // but this character's own note text (below) and kit identity both say this is an AERO-only DMG
     // bonus ("+24% Aero DMG team"), not a true All-Attribute Amp — was granting a phantom +24% damage
@@ -3243,15 +3243,15 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: 38% Heavy ATK DMG Amp. Off-field Coordinated ATK on Heavy ATK.',
   },
   'Danjin': {
-    // Corrected back 2026-09-01: the 2026-08-18 change to 'deepen' was based on the source paraphrase.
+    // Corrected back 2026-09-01: the 2026-08-18 change to 'amplify' was based on the source paraphrase.
     // Re-verified directly against the wiki/Danjin/Combat and the source/
     // character/1602 (both agree word-for-word): "The incoming Resonator has their Havoc DMG Amplified
-    // by 23%" — this is a buff to the ally's own outgoing Havoc DMG (elemDmg), not a Deepen-type
-    // vulnerability debuff on the enemy (a different mechanic — Deepen means the target takes more
-    // damage from all attackers, not that one ally hits harder). Reverted deepen -> elemDmg.
+    // by 23%" — this is a buff to the ally's own outgoing Havoc DMG (elemDmg), not a Amplify-type
+    // vulnerability debuff on the enemy (a different mechanic — Amplify means the target takes more
+    // damage from all attackers, not that one ally hits harder). Reverted amplify -> elemDmg.
     // condition added 2026-09-01 (found via a recommendation-scoring audit): this buff's own note
     // below already says "Havoc DMG Amp" — genuinely element-locked, per the 2026-09-01 correction
-    // comment above re-verifying it's elemDmg not deepen — but the missing condition text let
+    // comment above re-verifying it's elemDmg not amplify — but the missing condition text let
     // scoreTeamComposition's elemBuffApplies (which treats an empty condition as universal) credit it
     // for ANY off-element placed DPS.
     outroBuffs: [{ stat: 'elemDmg', value: 23, target: 'next', duration: 14, condition: 'Havoc DMG Amp' }],
@@ -3264,15 +3264,15 @@ const CHAR_BUFF_TABLE = {
     note: 'Outro: 23% Havoc DMG Amp to next. Overflow (+30% Heavy ATK DMG/5s after Sanguine Pulse) directly buffs Chaoscleave, her real rotation\'s Heavy-ATK-categorized Forte finisher.',
   },
   'Baizhi': {
-    outroBuffs: [{ stat: 'deepen', value: 15, target: 'next', duration: 6 }],
+    outroBuffs: [{ stat: 'amplify', value: 15, target: 'next', duration: 6 }],
     libBuffs: [{ stat: 'atkPct', value: 15, target: 'team', duration: 20 }],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 15% Deepen (6s per tick, refreshes on heal). Inherent: 15% ATK teamwide (20s on Euphonia pickup). Heal.',
+    note: 'Outro: 15% Amplify (6s per tick, refreshes on heal). Inherent: 15% ATK teamwide (20s on Euphonia pickup). Heal.',
   },
   // corrected 2026-08-18: the wiki's Taoqi/Combat Forte Details table names her Outro Skill "Iron Will":
   // "The incoming Resonator has their Resonance Skill DMG Amplified by 38% for 14s or until they are
-  // switched out." Was wrongly modeled as a generic 15% `deepen` outro (a value/stat that belongs to no
+  // switched out." Was wrongly modeled as a generic 15% `amplify` outro (a value/stat that belongs to no
   // sourced Taoqi effect) plus a fabricated 12% DEF Shred debuff with no basis anywhere on the Combat
   // page (Resonance Chain/Forte/Inherent Skill text) — removed. Her actual kit is Resonance Skill
   // Fortified Defense granting 3 stacks of Rocksteady Shield (each absorbing one hit, 15% DMG reduction
@@ -3288,7 +3288,7 @@ const CHAR_BUFF_TABLE = {
   // corrected 2026-08-18: the wiki's Yuanwu/Combat Forte Details table for Outro Skill "Lightning
   // Manipulation" text is "Yuanwu unleashes thunderbolts in an area centered around the skill target,
   // greatly reducing the Vibration Strength of enemies upon impact" — no DMG buff of any kind, so the
-  // unsourced 15% `deepen` outroBuff (no basis anywhere on the Combat page) is removed. His actual
+  // unsourced 15% `amplify` outroBuff (no basis anywhere on the Combat page) is removed. His actual
   // team-facing effect is Resonance Liberation Blazing Might granting Forte Circuit Lightning Infused
   // (Interruption Resistance) to all nearby team members for 10s — a status effect with no DMG/stat
   // equivalent in this schema, so it's not modeled as a libBuff, only noted below. Shield only exists
@@ -3312,10 +3312,10 @@ const CHAR_BUFF_TABLE = {
     debuffs: [],
     note: 'Outro (Whispering Breeze) funnels 4 Energy/s for 5s to the incoming character — no direct DMG buff at S0. Minimal personal DMG contribution; value comes from Energy generation and quickswap-friendliness (buffs unlocked at higher Sequences).',
   },
-  // corrected 2026-08-18: outroBuffs was a fabricated '15% Deepen (14s)' — the wiki's Buling/Combat Forte
+  // corrected 2026-08-18: outroBuffs was a fabricated '15% Amplify (14s)' — the wiki's Buling/Combat Forte
   // Details table gives her Outro (Exorcism Spell) as "Heal the active Resonator by 18% of Buling's ATK
   // per second for 16s. All nearby Resonators in the team have their DMG Amplified by 15% for 30s" — a
-  // general (non-elemental) team DMG Amp with no swap-out expiry, not a Deepen effect on the next
+  // general (non-elemental) team DMG Amp with no swap-out expiry, not a Amplify effect on the next
   // character; modeled as 'allDmg' target 'team' for 30s. libBuffs added — her Forte Circuit (enhanced
   // Liberation, entered via Yin-Yang Balance) deploys the Five Thunders Spell Array; while it's active,
   // each ally Intro Skill cast ramps team Resonance Skill DMG Bonus from 0%→10%→25% (confirmed exact,
@@ -3400,7 +3400,7 @@ const CHAR_BUFF_TABLE = {
     // any other weapon equipped.
     selfBuffs: [
       { stat: 'critDmg', value: 60, target: 'self', duration: 99, condition: 'Inherent Skill Between the Stars: Tune Rupture mode 20% per Resonator ×3 stacks, or Fusion Burst mode 30% per Resonator ×2 stacks (both max 60%, resets on team change/mode switch)' },
-      { stat: 'deepen', value: 25, target: 'self', duration: 99, condition: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25%' },
+      { stat: 'amplify', value: 25, target: 'self', duration: 99, condition: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25%' },
     ],
     // debuffs.fusionBurst corrected 2026-09-02 (the engine-architecture history (git log) item 9): this entry's ONLY real
     // functional effect anywhere in the codebase is marking her as a "Fusion Burst applier" for the
@@ -3529,7 +3529,7 @@ const CHAR_BUFF_TABLE = {
   },
   'Augusta': {
     // stat corrected 2026-09-01 (found via a recommendation-scoring audit): this row's own field was
-    // still 'elemDmg' even though the note below already said "Outro was mislabeled as deepen instead
+    // still 'elemDmg' even though the note below already said "Outro was mislabeled as amplify instead
     // of allDmg" back on 2026-08-16 — that earlier fix corrected the NOTE text but never actually
     // changed this field. Her real Outro (Battlesong of the Unyielding) grants "+15% All-Attribute DMG
     // Amp" per CHARACTER_DATA.Augusta's own desc — genuinely universal, not element-locked — but as
@@ -3543,7 +3543,7 @@ const CHAR_BUFF_TABLE = {
       { stat: 'elemDmg', value: 15, target: 'self', duration: 99, condition: 'Crown of Wills: +15% Electro DMG Bonus per stack, max 1 stack at base kit (S0)' },
     ],
     debuffs: [],
-    note: 'Heavy ATK AoE DPS with built-in self shields (Glory\'s Favor) and a Crown of Wills self-buff. Outro: +15% All DMG Amp to next Resonator (14s, ends immediately on swap-out), not a "Deepen" multiplier. Liberation\'s Ruler\'s Realm grants teammates a shield on Intro cast — no direct DPS stat. Majesty/Crown-of-Wills Outro payoff is CONDITIONAL, not automatic: Augusta only gains the stack if the buffed Resonator Outros back to her before a third swap (see CHARACTER_ROTATIONS Outro note and RESONANCE_CHAIN_DATA comment for the full mechanic) — not modeled as an unconditional self-buff here since it depends on partner behavior, out of scope for this schema until Phase 2 wiring. (Corrected 2026-08-16: Outro was mislabeled as deepen instead of allDmg; added missing Crown of Wills self-buff. Conditional Outro-back mechanic documented 2026-08-31.)',
+    note: 'Heavy ATK AoE DPS with built-in self shields (Glory\'s Favor) and a Crown of Wills self-buff. Outro: +15% All DMG Amp to next Resonator (14s, ends immediately on swap-out), not an "Amplify" multiplier. Liberation\'s Ruler\'s Realm grants teammates a shield on Intro cast — no direct DPS stat. Majesty/Crown-of-Wills Outro payoff is CONDITIONAL, not automatic: Augusta only gains the stack if the buffed Resonator Outros back to her before a third swap (see CHARACTER_ROTATIONS Outro note and RESONANCE_CHAIN_DATA comment for the full mechanic) — not modeled as an unconditional self-buff here since it depends on partner behavior, out of scope for this schema until Phase 2 wiring. (Corrected 2026-08-16: Outro was mislabeled as amplify instead of allDmg; added missing Crown of Wills self-buff. Conditional Outro-back mechanic documented 2026-08-31.)',
   },
   'Galbrena': {
     outroBuffs: [],
@@ -3552,7 +3552,7 @@ const CHAR_BUFF_TABLE = {
       { stat: 'allDmg', value: 85, target: 'self', duration: 14, condition: 'Liberation cast: +85% DMG Mult to Demon Hypostasis attacks' },
       { stat: 'atkPct', value: 20, target: 'self', duration: 4, condition: 'Burning Drive: +20% ATK on certain casts' },
     ],
-    debuffs: [{ stat: 'deepen', value: 60, target: 'enemy', duration: 0, condition: "Afterflame: each of up to 40 stacks (gained from any team Resonator's Echo Skill cast, capped once per Echo name) grants +1.5% DMG Taken on the target while Galbrena is in Demon Hypostasis, up to 60% — cleared when she exits the state" }],
+    debuffs: [{ stat: 'amplify', value: 60, target: 'enemy', duration: 0, condition: "Afterflame: each of up to 40 stacks (gained from any team Resonator's Echo Skill cast, capped once per Echo name) grants +1.5% DMG Taken on the target while Galbrena is in Demon Hypostasis, up to 60% — cleared when she exits the state" }],
     note: 'Echo Skill + Heavy ATK Fusion DPS. Outro (Ashen Pursuit) is pure damage, no team buff — free to quickswap. Self-buffs via Liberation and Burning Drive, no team support kit. Afterflame is a DMG Taken debuff on the enemy (not a self-buff), replenished by any teammate\'s Echo Skill casts — realistically 36% without Phrolova, 48% with her (rarely maxed at 60%).',
   },
   // corrected 2026-08-18: removed all three "Weapon:" selfBuffs — they exactly duplicated his signature
@@ -3682,7 +3682,7 @@ const CHAR_BUFF_TABLE = {
 // descriptions rather than verified data; those two filter options remain non-matching until someone
 // sources them properly, which is an honest gap rather than a silent wrong answer.
 const BUFF_STAT_TAGS = {
-  deepen: 'DMG Buff', allDmg: 'DMG Buff', elemDmg: 'DMG Buff', basicDmg: 'DMG Buff',
+  amplify: 'DMG Buff', allDmg: 'DMG Buff', elemDmg: 'DMG Buff', basicDmg: 'DMG Buff',
   heavyDmg: 'DMG Buff', skillDmg: 'DMG Buff', libDmg: 'DMG Buff', echoDmg: 'DMG Buff', coordDmg: 'DMG Buff',
   critRate: 'Crit', critDmg: 'Crit',
   atkPct: 'ATK Buff',
@@ -4800,7 +4800,7 @@ const SKILL_MULTIPLIERS = {
     ['Forte', 'Heavy/Mid-air Attack: Starflower Blooms', '64.95%+97.42% (Heavy) · 67.64%+63.82%+30.50%×3 (Mid-air)', 'Consumes 1 Photosynthesis Energy (cap 4) per cast to heal the team (1188 + 29.75% ATK at Lv.10) and restore 12 Concerto Energy.'],
     ['Liberation', 'Arboreal Flourish', '198.81%', '175 Energy, 25s cooldown. Heals the team (950 + 23.80% ATK at Lv.10) and applies a 12s Photosynthesis Mark; marked-target hits trigger a healing Coordinated Attack (9.95% ATK DMG, 428 + 10.71% ATK heal), capped 1/s.'],
     ['Intro', 'Verdant Growth', '99.41%'],
-    ['Outro', 'Blossom', 'All-Type DMG Deepen +15% (30s) + heal', 'Heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All-Type DMG Deepen +15% (30s). Corrected 2026-09-02 against a fresh, user-pasted the source text (priority source) — was wrongly noted as "Amplified" (a prior session\'s claim); the kit text explicitly says "Deepen", matching this file\'s own dmgFocus buff-tag entry.'],
+    ['Outro', 'Blossom', 'All-Type DMG Amplify +15% (30s) + heal', 'Heals the incoming Resonator 19% ATK/s for 6s and grants the whole nearby team All-Type DMG Amplify +15% (30s). Corrected 2026-09-02 against a fresh, user-pasted the source text (priority source) — was wrongly noted as "Amplified" (a prior session\'s claim); the kit text explicitly says "Amplify", matching this file\'s own dmgFocus buff-tag entry.'],
   ],
   // Full audit 2026-09-01. Base rows (Probe/Standard/Plunging/Deduction→Decipher/Cogitation
   // Model/Principle/Chain Rule) re-verified verbatim against wuwa.build's character #1305 sheet
@@ -5002,7 +5002,7 @@ const SKILL_MULTIPLIERS = {
   // Replaced with real Lv.10 values and exact move names from each character's the wiki Combat page.
   // Full audit 2026-09-01 against the wiki/Danjin/Combat, cross-checked against
   // the source/character/1602 (both agree exactly) — every damage value was already correct. Corrected
-  // the Outro's mechanic label from "Deepen" to "Amp" (see CHARACTER_DATA.Danjin's comment above) and
+  // the Outro's mechanic label from "Amplify" to "Amp" (see CHARACTER_DATA.Danjin's comment above) and
   // added the two entirely missing rows (Mid-air Attack, Dodge Counter).
   'Danjin': [
     ['Basic ATK', 'Execution Stage 1-3', '57.26% → 58.85% → 79.53%', 'Up to 3 consecutive Havoc strikes.'],
@@ -5349,7 +5349,7 @@ const CHARACTER_ROTATIONS = {
     { type: 'Skill', skill: 'Botany Experiment', note: 'Press Skill, then immediately cancel it with the Liberation below to save time — this skips the hit and its Resonance Energy gain, but Concerto Energy is still gained. Also grants 1 Photosynthesis Energy on cast.' },
     { type: 'Liberation', skill: 'Arboreal Flourish', note: 'Press Liberation right after Botany Experiment to cancel it — 175 Energy, 25s cooldown. Heals the team (950 + 23.80% ATK at Lv.10) and applies a 12s Photosynthesis Mark for Coordinated-Attack healing.' },
     { type: 'Forte', skill: 'Mid-air Attack: Starflower Blooms', note: 'Jump, then tap Basic Attack up to 3 times to spend all 4 Photosynthesis Energy stacks (1 per cast, cap 4) on Starflower Blooms — each cast heals the team (1188 + 29.75% ATK at Lv.10) and refills 12 Concerto Energy. A Concerto-generating weapon (Variation/Stellar Symphony) lets the last cast be skipped.' },
-    { type: 'Outro', skill: 'Blossom', note: 'Swap out to trigger this automatically — heals the incoming Resonator for 19% ATK/s over 6s and grants the whole nearby team +15% All-Type DMG Deepen for 30s.' },
+    { type: 'Outro', skill: 'Blossom', note: 'Swap out to trigger this automatically — heals the incoming Resonator for 19% ATK/s over 6s and grants the whole nearby team +15% All-Type DMG Amplify for 30s.' },
   ],
   // Standard Rotation — re-verified verbatim 2026-08-31 against the wiki/Jinhsi/Combat
   // (Chrome/Windows UA + google.com referer + jsRender, load+9s wait to clear Cloudflare). This is the
@@ -5473,7 +5473,7 @@ const CHARACTER_ROTATIONS = {
     { type: 'Basic ATK', skill: "Zapstring's Dance Stage 1", note: 'Tap Basic Attack ONCE — restores Judgment Points toward the 100 cap.' },
     { type: 'Forte', skill: 'Chameleon Cipher', note: 'Once Judgment Points hit 100/100, her Heavy Attack is replaced by this automatically — press Heavy Attack to consume all 100 for a big hit that upgrades any Sinner\'s Mark on the target to Punishment Mark for 18s (triggers an automatic Judgement Strike on that target once per second while it takes damage).' },
     { type: 'Echo', skill: 'Swap Cancel', note: 'Use your equipped Echo\'s skill (Impermanence Heron recommended) right after Chameleon Cipher, then immediately swap out to cancel its animation without losing the effect.' },
-    { type: 'Outro', skill: 'Strategist', duration: 14, note: 'Triggers automatically on swap-out. Grants the incoming Resonator +20% Electro DMG Deepen and +25% Resonance Liberation DMG Deepen for 14s.' },
+    { type: 'Outro', skill: 'Strategist', duration: 14, note: 'Triggers automatically on swap-out. Grants the incoming Resonator +20% Electro DMG Amplify and +25% Resonance Liberation DMG Amplify for 14s.' },
   ],
   // Standard "Burst Combo" Rotation — sourced from the source's "Gameplay and teams" tab for Jiyan
   // (re-fetched 2026-08-18, Chrome UA + google.com referer + jsRender). Omits the harder "Double Dragon
@@ -6204,7 +6204,7 @@ const CHARACTER_ROTATIONS = {
 // [SECTION:RESONANCE_CHAINS] — Per-character S1-S6 stat contributions for damage calculator
 // Format: { s1-s6: { stat: value } } — each level adds ON TOP of previous
 // Stat types must match damage formula: atkPct, critRate, critDmg, elemDmg, skillDmg,
-// basicDmg, heavyDmg, libDmg, echoDmg, deepen, defIgnore, defShred, resShred, totalMult, allDmg, coordDmg
+// basicDmg, heavyDmg, libDmg, echoDmg, amplify, defIgnore, defShred, resShred, totalMult, allDmg, coordDmg
 // totalMult = rotation-averaged DPS contribution for utility/multiplier nodes
 // Sources: the source sequence nodes, the source, wutheringlab, cross-verified Apr 2026
 const RESONANCE_CHAIN_DATA = {
@@ -6235,11 +6235,11 @@ const RESONANCE_CHAIN_DATA = {
   // Qingxiao S2: Heavy ATK mult+40% (confirmed). S3: Liberation Crit DMG+100% (confirmed). S4: ATK+20% on team Tune Strain trigger. S5: Skill mult+100% (confirmed)
   // Re-audited 2026-09-01 against the wiki/Qingxiao/Combat, cross-checked against
   // the source/character/1413 (both agree exactly) — every node already correct, no changes needed.
-  // S6's deepen: 40 is scoped narrower than a universal vulnerability in the real text (only applies to
+  // S6's amplify: 40 is scoped narrower than a universal vulnerability in the real text (only applies to
   // Heavy Attack - Stringblade, Heaven's Reckoning: Ephemeral Transcendence, Billows Beneath Heaven, and
-  // Juque Perdition, not her full kit), but 'deepen' is the closest available category and the value is
+  // Juque Perdition, not her full kit), but 'amplify' is the closest available category and the value is
   // exact, so kept as-is.
-  'Qingxiao':     { s1: { critRate: 16 }, s2: { heavyDmg: 40 }, s3: { critDmg: 100 }, s4: { atkPct: 20 }, s5: { skillDmg: 100 }, s6: { deepen: 40 } },
+  'Qingxiao':     { s1: { critRate: 16 }, s2: { heavyDmg: 40 }, s3: { critDmg: 100 }, s4: { atkPct: 20 }, s5: { skillDmg: 100 }, s6: { amplify: 40 } },
   // Jingran S1: Skill mult+80% (confirmed). S2: Heavy ATK mult+46% (confirmed). S6: Heavy ATK DMG taken+40% (confirmed)
   'Jingran':      { s1: { skillDmg: 80 }, s2: { heavyDmg: 46 }, s3: { atkPct: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
   // Yangyang: Xuanling S2: Heavy/Mid-air/Havoc-in-Bloom DMG+100% (confirmed exact). S3: Hush of a Thousand Voices
@@ -6620,8 +6620,8 @@ const RESONANCE_CHAIN_DATA = {
   //   modeled as libDmg:225); in Confession instead +90% DMG Mult and max-stack Frazzle application.
   // S2 A Boat Adrift in Tears: in Absolution, Outro DMG to Frazzle-afflicted targets +120% Amp; in
   //   Confession, Silent Prayer's Frazzle DMG Amp is itself increased by another 120%. Both are Frazzle-
-  //   DMG-Amp effects (same stat category as Attentive Heart's own Confession 100% deepen buff), modeled
-  //   as deepen:120 (was skillDmg:25 — wrong category, Phoebe's S2 never touches Skill DMG at all).
+  //   DMG-Amp effects (same stat category as Attentive Heart's own Confession 100% amplify buff), modeled
+  //   as amplify:120 (was skillDmg:25 — wrong category, Phoebe's S2 never touches Skill DMG at all).
   // S3 Daisy Wreaths and Dreams: Starflash DMG Mult +91% in Absolution / +249% in Confession (was
   //   heavyDmg:40 — magnitude wrong, real Absolution number is more than double that).
   // S4 Ringing Bells on Wings Aloft: Basic ATK/Chamuel's Star/Dodge Counter/Chamuel's Star: Dodge Counter
@@ -6637,7 +6637,7 @@ const RESONANCE_CHAIN_DATA = {
   //   portion. TODO: needs Phase 2 schema — the free bonus Starflash proc (a real extra damage instance)
   //   and the node's non-DPS extended-stagnation utility (+2s stagnation, all-target application) can't be
   //   represented by this flat {stat:value} schema and are left out rather than force-fit into atkPct.
-  'Phoebe':       { s1: { libDmg: 225 }, s2: { deepen: 120 }, s3: { heavyDmg: 91 }, s4: { resShred: 10 }, s5: { elemDmg: 12 }, s6: { atkPct: 10 } },
+  'Phoebe':       { s1: { libDmg: 225 }, s2: { amplify: 120 }, s3: { heavyDmg: 91 }, s4: { resShred: 10 }, s5: { elemDmg: 12 }, s6: { atkPct: 10 } },
   // Phrolova R-chain re-verified 2026-08-31 verbatim against the wiki/Phrolova/Combat
   // (Resonance Chain section), cross-checked the source/character/1608. Every node checked individually,
   // per the Changli lesson that existing values can be wrong in stat category, not just magnitude:
@@ -6711,7 +6711,7 @@ const RESONANCE_CHAIN_DATA = {
   //   Basic ATK DMG, i.e. basicDmg, not a total-damage multiplier. Corrected category.
   // s6 "All the World's a Captain's Carnevale": Mid-air Attack's DMG Multiplier +30%, PLUS Returned from
   //   Ashes triggers a secondary blast for 30% of its own DMG (Basic ATK DMG type) — was stored as
-  //   deepen:40, a stat/number combination with no basis anywhere in this node's text (no "deepen"
+  //   amplify:40, a stat/number combination with no basis anywhere in this node's text (no "amplify"
   //   mechanic exists on this node at all). Corrected the headline stat to totalMult:30 (the Mid-air
   //   multiplier increase); the secondary 30%-of-Forte-damage echo is a separate conditional component
   //   this flat schema can't also carry — TODO: needs Phase 2 schema (percent-of-another-hit's-damage
@@ -6859,8 +6859,8 @@ const RESONANCE_CHAIN_DATA = {
   // categorized hit never actually applies. Corrected libDmg -> echoDmg. S6 "Targets take 30% more DMG
   // from Sigrika" was stored as defIgnore:15 with no sourcing comment at all — real primary effect is a
   // flat +30% DMG-taken debuff (the Innate Gift? DEF Ignore enhancement is a separate, smaller +7.5%/
-  // stack up to 30% conditional bonus, not this). Corrected defIgnore:15 -> deepen:30, matching the
-  // same 'deepen' convention already used for Qingxiao's identically-worded S6 effect.
+  // stack up to 30% conditional bonus, not this). Corrected defIgnore:15 -> amplify:30, matching the
+  // same 'amplify' convention already used for Qingxiao's identically-worded S6 effect.
   // S3 corrected 2026-09-02 against the existing the source dump: was totalMult:15, mislabeled as an
   // "approximated" value in the same style as S1's genuine +70% multiplier approximation — but S3's
   // real effect ("Innate Gift? cap raised to 4, no longer removed by Learn My True Name cast or
@@ -6875,7 +6875,7 @@ const RESONANCE_CHAIN_DATA = {
   // class recurring across Jiyan/Phrolova/Qingxiao/Qiuyuan/Roccia. Now that all 4 named moves have
   // their own damage blocks (2 were previously missing entirely, see sigrika.blocks.js), the node is
   // correctly scoped via scopedToBlockId to just those 4 blocks at its real, un-averaged 70% value.
-  'Sigrika':      { s1: { totalMult: 70 }, s2: { echoDmg: 120 }, s3: {}, s4: { atkPct: 20 }, s5: { echoDmg: 30 }, s6: { deepen: 30 } },
+  'Sigrika':      { s1: { totalMult: 70 }, s2: { echoDmg: 120 }, s3: {}, s4: { atkPct: 20 }, s5: { echoDmg: 30 }, s6: { amplify: 30 } },
   // Luuk Herssen (confirmed via the source 2026-08-16 cross-check). S1: +150% Mid-air ATK DMG, simplified as basicDmg
   // ~15 DPS impact (documented approximation, kept). S2: Rewritten in Winter's Margins DMG Mult+60% — was totalMult:40, no basis.
   // S3: Aureole of Execution forms +136% in Aureate Judge (conditional, no flat unconditional %) — was critDmg:25 with no
@@ -6997,7 +6997,7 @@ const RESONANCE_CHAIN_DATA = {
   // condition changes, no flat % (was allDmg:15, no basis) — like S4 below, this was left at a stale
   // totalMult:15 placeholder despite this comment already describing it as having no flat DPS %; zeroed
   // 2026-09-03 (found via a systematic block-coverage audit). S2: team Crit DMG+32% max vs Interfered
-  // Marker targets (was deepen:10, wrong stat+value). S3 corrected 2026-09-02 (fresh the source dump cross-check,
+  // Marker targets (was amplify:10, wrong stat+value). S3 corrected 2026-09-02 (fresh the source dump cross-check,
   // missed by the above audit pass — same gap class as Chisa's own missed S3): was totalMult:10, an
   // unexplained placeholder — real effect is "casting Distributed Array additionally restores 25 Concerto
   // Energy and 100 Relative Momentum, once every 25s", pure resource restoration with zero DPS component,
@@ -7005,7 +7005,7 @@ const RESONANCE_CHAIN_DATA = {
   // S4: High Syntony Field healing+30%, not a DPS stat (was atkPct:10, no basis) — same stale-placeholder
   // bug as S1: still had totalMult:10 despite this comment already saying it's not a DPS stat; zeroed
   // 2026-09-03. S5: Critical Protocol Liberation DMG Mult+40% (was totalMult:10, no basis). S6: Critical
-  // Protocol DMG Mult+400% (was deepen:15, no basis)
+  // Protocol DMG Mult+400% (was amplify:15, no basis)
   // S5 re-audited 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the dump's S5 node text is actually
   // TWO separate DMG multipliers — "Critical Protocol DMG Multiplier +40%. Tune Rupture Response -
   // Particle Jet DMG Multiplier +160%." — libDmg:40 only captures the first half; the +160% Particle
@@ -7060,7 +7060,7 @@ const RESONANCE_CHAIN_DATA = {
   // totalMult weighted average (was atkPct:10, no basis). S5 Ice Burst Crit DMG+100% (only on the Forte
   // Detonate hit) plus unconditional Ice Creation auto-explode -> critDmg weighted average (was
   // basicDmg:10, no basis). S6 team ATK+10%/stack up to 2 (=20% max) for 20s after detonating an Ice
-  // Prism/Glacier, not a DMG Deepen -> atkPct (was deepen:15, wrong stat).
+  // Prism/Glacier, not a DMG Amplify -> atkPct (was amplify:15, wrong stat).
   // Re-verified 2026-08-18 against the wiki's Chain Node pages (Solitude's Embrace/Snowy Clarity/Anomalous
   // Vision/Blade Mastery/Unraveling Fate/Daybreak Radiance wikitext, matches the source's Kit tab wording):
   // S1 critRate:15 confirmed exact (Basic Attack V, +15% Crit Rate for 10s), unchanged. S2 STA cost
@@ -7139,7 +7139,7 @@ const RESONANCE_CHAIN_DATA = {
   // modeled. S6 team ATK+20% for 20s on full-power Chaoscleave (confirmed exact, unchanged).
   'Danjin':       { s1: { atkPct: 30 }, s2: { totalMult: 20 }, s3: { libDmg: 30 }, s4: { critRate: 15 }, s5: { elemDmg: 15 }, s6: { atkPct: 20 } },
   // Chisa S1: ATK+30% on Unseen Snare (not defShred, confirmed exact). S2: team +50% All-Attr DMG for allies with
-  // Thread of Bane (was deepen:10, wrong stat+value — real 10% Havoc RES ignore is the smaller of two S2 effects).
+  // Thread of Bane (was amplify:10, wrong stat+value — real 10% Havoc RES ignore is the smaller of two S2 effects).
   // S3 corrected 2026-09-02 (fresh the source dump cross-check, missed by the earlier S1/S2/S4/S5/S6 audit pass
   // noted above): was totalMult:10, an unexplained placeholder — real effect is Sawring-Blitz/Chainsaw Mode
   // Dodge Counter/Sawring-Eradication DMG Multiplier +120% (a 2nd, separate copy of Woven Myriad-Convergence's
@@ -7152,8 +7152,8 @@ const RESONANCE_CHAIN_DATA = {
   // 2026-09-03 (found via a systematic block-coverage audit) to actually match this comment's own
   // description, same "no real DPS component" pattern as Lynae's S6/Shorekeeper's S1/S3/S4/S5. S5:
   // Moment of Nihility Liberation DMG Mult+100% (was totalMult:10, no basis). S6: Unseen Snare-Finality:
-  // targets take 30% more Negative Status DMG (was deepen:15, wrong value)
-  'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { libDmg: 120 }, s4: {}, s5: { libDmg: 100 }, s6: { deepen: 30 } },
+  // targets take 30% more Negative Status DMG (was amplify:15, wrong value)
+  'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { libDmg: 120 }, s4: {}, s5: { libDmg: 100 }, s6: { amplify: 30 } },
   // Ciaccona S1: ATK+35% after Basic ATK (conditional)
   // Full re-audit 2026-09-01 against the wiki/Ciaccona/Combat, cross-checked
   // against the source/character/1407 (both agree on every node's exact wording):
@@ -7186,10 +7186,10 @@ const RESONANCE_CHAIN_DATA = {
   // S2 "Surrender to the Illusive Reverie" — Flowing Suffocation now also inflicts Hazy Dream (utility, not
   //   modeled); Jolt DMG Multiplier +245% (Jolt is a proc-only Basic ATK-DMG instance, not an always-on Basic
   //   ATK buff, so basicDmg would over-apply it — kept as totalMult). Was totalMult:10 with a wrong-category
-  //   deepen mixed in elsewhere in this file's history — corrected to totalMult:245.
+  //   amplify mixed in elsewhere in this file's history — corrected to totalMult:245.
   // S3 "Gaze into the Abyss" — Flowing Suffocation's own DMG Multiplier +370% (this buffs the Liberation
   //   ability's self-multiplier directly, matching this table's libDmg convention e.g. Chisa S5); also causes
-  //   Flowing Suffocation to enter Mirage on cast (utility/cast-order change, not modeled). Was deepen:8, wrong
+  //   Flowing Suffocation to enter Mirage on cast (utility/cast-order change, not modeled). Was amplify:8, wrong
   //   category and wrong magnitude — corrected to libDmg:370.
   // S4 "Behold Your Own Soul" — Healing Bonus +25% while in Mirage. Zero DPS component (healing-only, and this
   //   schema has no healingBonus stat key) — was coordDmg:10, a fabricated DPS number with no basis in the real
@@ -7201,7 +7201,7 @@ const RESONANCE_CHAIN_DATA = {
   // TODO: needs Phase 2 schema — S5's +5 max Dreamweaver cap (21→26) needs a hit-count-cap stat, not a %.
   // S6 "Fall, Fall... and Fall Deeper into the Dream" — Basic Attack Phantom Sting DMG Multiplier +80%
   //   (Phantom Sting is the Mirage-state Basic ATK combo, so basicDmg fits, confirmed exact); + DEF Ignore 30%
-  //   for 10s after casting Flowing Suffocation (confirmed exact -> defIgnore). Was deepen:15, wrong category
+  //   for 10s after casting Flowing Suffocation (confirmed exact -> defIgnore). Was amplify:15, wrong category
   //   and wrong magnitude on both counts — corrected to basicDmg:80, defIgnore:30.
   // s3 stat fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was libDmg:370, matching the
   // pre-fix (wrong) libDmg category on cantarella.blocks.js's Flowing Suffocation damage block. Kit
@@ -7256,7 +7256,7 @@ const RESONANCE_CHAIN_DATA = {
   // S5 Sacrificed Gains: Flaming Sacrifice (Forte Heavy ATK) Multiplier +50% and DMG dealt +50% — was
   //   totalMult:10, no basis; modeled as heavyDmg since Flaming Sacrifice is a Heavy ATK-type cast.
   // S6 Realized Plans: Tripartite Flames, Flaming Sacrifice, and Radiance of Fealty ignore an additional
-  //   40% of target DEF — was deepen:40 (wrong category, deepen != DEF ignore); value happened to already
+  //   40% of target DEF — was amplify:40 (wrong category, amplify != DEF ignore); value happened to already
   //   be numerically correct.
   // s5 corrected 2026-09-03 against a fresh the source dump: was s5:{heavyDmg:50}, dropping half the node's
   // real effect. Source text: "Heavy Attack Flaming Sacrifice's Multiplier is increased by 50% AND its
@@ -7387,8 +7387,8 @@ const RESONANCE_CHAIN_DATA = {
   // unmodeled) is added as heavyDmg: 50 alongside the existing critRate: 8 — both are real, simultaneous
   // components of the same node.
   'Aalto':        { s1: {}, s2: { atkPct: 15 }, s3: {}, s4: { skillDmg: 30 }, s5: { elemDmg: 25 }, s6: { critRate: 8, heavyDmg: 50 } },
-  // corrected 2026-08-18: prior values (all totalMult:5, s6 deepen:10) were unsourced placeholders — Baizhi's real
-  // chain (the wiki Combat page) is mostly healing/utility with no "deepen" (enemy DMG-taken debuff) node at all. S1
+  // corrected 2026-08-18: prior values (all totalMult:5, s6 amplify:10) were unsourced placeholders — Baizhi's real
+  // chain (the wiki Combat page) is mostly healing/utility with no "amplify" (enemy DMG-taken debuff) node at all. S1
   // Emergency Plan +2.5 Resonance Energy per Concentration (utility, not modeled). S2 Emergency Plan (at 4
   // Concentration) grants Glacio DMG Bonus+15% and Healing+15% for 12s (elemDmg, confirmed exact — healing half not
   // modeled). S3 Intro Skill grants Max HP+12% for 10s (no HP% stat in schema, kept as small utility totalMult). S4
@@ -7409,9 +7409,9 @@ const RESONANCE_CHAIN_DATA = {
   // TODO: needs Phase 2 schema — S3/S4's HP%-scaling effects and S1/S5's utility effects have no home in
   // this DPS-focused flat-{stat: value} schema.
   'Baizhi':       { s1: {}, s2: { elemDmg: 15 }, s3: {}, s4: {}, s5: {}, s6: { elemDmg: 12 } },
-  // corrected 2026-08-18: prior values (atkPct/deepen on every node) had no basis in Buling's real
+  // corrected 2026-08-18: prior values (atkPct/amplify on every node) had no basis in Buling's real
   // chain kit (the wiki Combat page, rendered Resonance Chain table, cross-checked against the source's own
-  // Kit tab) — she has no ATK% node and no DMG Deepen node at all. Real effects: S1 Exorcist Gadgets,
+  // Kit tab) — she has no ATK% node and no DMG Amplify node at all. Real effects: S1 Exorcist Gadgets,
   // Lend Me Your Power — enhanced Liberation (Flashing Thunder Spell: Harmony) Crit Rate+20% upon
   // dealing DMG (confirmed exact -> critRate). S2 Talisman Burns, Spirits Turn — restores 25 Resonance
   // Energy on entering Yin-Yang Balance, once per 24s (Energy-regen utility, no matching stat in this
@@ -7474,8 +7474,8 @@ const RESONANCE_CHAIN_DATA = {
   // final steps drain Spark to 0 via Energized Pounce right before Outro, so assuming max Spark banked
   // would contradict the rotation's own real cast order. Zeroed to `{}`, matching S1's precedent.
   'Lumi':         { s1: {}, s2: { defIgnore: 20 }, s3: { libDmg: 30 }, s4: { basicDmg: 30 }, s5: {}, s6: { atkPct: 20 } },
-  // corrected 2026-08-18: prior values (defShred/deepen on every node) had no basis in Taoqi's real
-  // chain kit (the wiki Combat page, Resonance Chain table) — she has no DEF Shred or DMG Deepen node at
+  // corrected 2026-08-18: prior values (defShred/amplify on every node) had no basis in Taoqi's real
+  // chain kit (the wiki Combat page, Resonance Chain table) — she has no DEF Shred or DMG Amplify node at
   // all. Real effects: S1 Essense of Tranquility — Forte Circuit Power Shift's Shield +40% (utility,
   // no shield-% stat in schema, kept as small totalMult). S2 Silent Strength — Liberation Unmovable
   // Crit Rate+20% AND Crit DMG+20% (both confirmed exact; only critRate modeled, single-stat schema).
@@ -7518,12 +7518,12 @@ const RESONANCE_CHAIN_DATA = {
   // no matching flat-schema category (it's cast via Mid-air Attack, and only its landing hit — not the
   // main diving strikes — is separately "considered Basic Attack DMG"); value confirmed exact, kept as-is.
   'Yangyang':     { s1: { elemDmg: 15 }, s2: {}, s3: { skillDmg: 40 }, s4: { totalMult: 95 }, s5: { libDmg: 85 }, s6: { atkPct: 20 } },
-  // Removed 2026-08-18: this was a stale unsourced 'Youhu' duplicate key (atkPct/deepen on every node,
+  // Removed 2026-08-18: this was a stale unsourced 'Youhu' duplicate key (atkPct/amplify on every node,
   // no basis in her real kit) that silently overrode the correctly-audited 'Youhu' entry earlier in this
   // object (see the real, sourced values a few lines up) — JS object literals let the later duplicate
   // key win, so this dead entry was masking the real data at runtime despite the audit looking complete.
-  // corrected 2026-08-18: prior values (atkPct/deepen on every node) had no basis in Yuanwu's real
-  // chain kit (the wiki Combat page, rendered Resonance Chain table) — he has no ATK% or DMG Deepen node
+  // corrected 2026-08-18: prior values (atkPct/amplify on every node) had no basis in Yuanwu's real
+  // chain kit (the wiki Combat page, rendered Resonance Chain table) — he has no ATK% or DMG Amplify node
   // at all. Real effects: S1 Steaming Cup of Justice — Lightning Infused Basic/Heavy Attack Speed+20%
   // each (utility, no attack-speed stat in schema, kept as small totalMult). S2 Fierce Heart, Serene
   // Mind — Intro Thunder Bombardment recovers +15 Resonance Energy (utility, not modeled). S3 Upholder

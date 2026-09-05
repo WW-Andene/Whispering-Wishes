@@ -89,7 +89,7 @@
 
 /**
  * @typedef {Object} BuffEntry
- * @property {string} stat - Stat affected (atkPct, elemDmg, deepen, critRate, critDmg, etc.)
+ * @property {string} stat - Stat affected (atkPct, elemDmg, amplify, critRate, critDmg, etc.)
  * @property {number} value - Buff value (percentage)
  * @property {'next'|'team'|'enemy'|'self'} target - Who receives the buff
  * @property {number} [duration] - Duration in seconds
@@ -113,7 +113,7 @@
  * @property {number} [atkPct] @property {number} [critRate] @property {number} [critDmg]
  * @property {number} [elemDmg] @property {number} [skillDmg] @property {number} [basicDmg]
  * @property {number} [heavyDmg] @property {number} [libDmg] @property {number} [echoDmg]
- * @property {number} [deepen] @property {number} [defIgnore] @property {number} [defShred]
+ * @property {number} [amplify] @property {number} [defIgnore] @property {number} [defShred]
  * @property {number} [resShred] @property {number} [totalMult] @property {number} [coordDmg]
  * @property {number} [allDmg]
  */
@@ -174,7 +174,7 @@
  * @property {number} critDmg - Total crit DMG %
  * @property {number} elemDmg - Total elemental DMG %
  * @property {number} skillDmg - Total skill DMG %
- * @property {number} deepen - Total deepen/amplify %
+ * @property {number} amplify - Total amplify %
  * @property {number} avgCrit - Average crit multiplier
  * @property {number} defMult - DEF multiplier (0-2)
  * @property {number} resMult - RES multiplier

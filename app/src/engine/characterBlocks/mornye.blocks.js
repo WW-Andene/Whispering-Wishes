@@ -106,7 +106,7 @@ export const MORNYE_BLOCKS = [
     timing: { duration: 30 }, // matches Observation Marker's own 30s duration, since this scales off targets carrying it
     target: { scope: 'whole-team' },
     effects: [{ stat: 'critDmg', value: 32, source: 'self-kit' }],
-    note: 'Team Crit DMG +32% max vs Interfered Marker targets (confirmed exact value, corrected from a wrong deepen category) — Interfered Marker itself is upgraded from Observation Marker by an ALLY\'s Tune Break hit (a cross-character trigger this schema has no clean anchor for), modeled anchored to the Inversion cast that applies the base Observation Marker instead.',
+    note: 'Team Crit DMG +32% max vs Interfered Marker targets (confirmed exact value, corrected from a wrong amplify category) — Interfered Marker itself is upgraded from Observation Marker by an ALLY\'s Tune Break hit (a cross-character trigger this schema has no clean anchor for), modeled anchored to the Inversion cast that applies the base Observation Marker instead.',
   },
   // S3 correctly has NO block — corrected 2026-09-02 against a fresh the source dump: real effect is
   // "casting Distributed Array additionally restores 25 Concerto Energy and 100 Relative Momentum,
@@ -135,6 +135,6 @@ export const MORNYE_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Critical Protocol' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'libDmg', value: 400, source: 'self-kit' }],
-    note: 'Critical Protocol DMG Multiplier +400% (confirmed exact, corrected from an unsourced deepen:15) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo\'s S5.',
+    note: 'Critical Protocol DMG Multiplier +400% (confirmed exact, corrected from an unsourced amplify:15) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo\'s S5.',
   },
 ];

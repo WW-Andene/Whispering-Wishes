@@ -15,7 +15,7 @@ describe('triggerEngine parity — Chisa', () => {
     expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s1').effects[0].value).toBe(rc.s1.atkPct);
     expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
     expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
-    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s6').effects[0].value).toBe(rc.s6.deepen);
+    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s6').effects[0].value).toBe(rc.s6.amplify);
   });
 
   it('S2 is split into its two real effects — allDmg matches RESONANCE_CHAIN_DATA, resShred is sourced beyond it', () => {

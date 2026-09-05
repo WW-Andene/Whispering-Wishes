@@ -32,7 +32,7 @@ describe('triggerEngine parity — Danjin', () => {
     expect(s6.timing.duration).toBe(20);
   });
 
-  it('outro matches CHAR_BUFF_TABLE — correctly elemDmg, not deepen', () => {
+  it('outro matches CHAR_BUFF_TABLE — correctly elemDmg, not amplify', () => {
     const legacy = CHAR_BUFF_TABLE['Danjin'];
     const outro = DANJIN_BLOCKS.find(b => b.id === 'danjin.outro.duality');
     expect(outro.effects[0].stat).toBe('elemDmg');

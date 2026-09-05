@@ -92,11 +92,11 @@ describe('triggerEngine parity — Cartethyia', () => {
     expect(CHARACTER_DATA['Cartethyia'].dmgFocus).toEqual(expect.arrayContaining(['Basic ATK', 'Liberation']));
   });
 
-  it('Mandate of Divinity grants +50% Aero Erosion DMG Amp (deepen, element-scoped) on the Sword Shadow recall', () => {
+  it('Mandate of Divinity grants +50% Aero Erosion DMG Amp (amplify, element-scoped) on the Sword Shadow recall', () => {
     const block = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.manifest.mandate-of-divinity');
     expect(block.trigger).toEqual({ type: 'cast', on: 'Mid-air:Cartethyia Plunging Attack' });
     expect(block.condition.element).toBe('aero');
-    expect(block.effects[0]).toEqual({ stat: 'deepen', value: 50, source: 'self-kit' });
+    expect(block.effects[0]).toEqual({ stat: 'amplify', value: 50, source: 'self-kit' });
   });
 
   // Found 2026-09-03 via a systematic block-coverage audit: her kit text applies real Erosion stacks

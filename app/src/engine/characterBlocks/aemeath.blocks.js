@@ -306,7 +306,7 @@ export const AEMEATH_BLOCKS = [
     source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'resource-threshold', resource: 'Resonance Rate', threshold: 4 },
     timing: { duration: 54 }, target: { scope: 'self' },
-    effects: [{ stat: 'deepen', value: 200, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }],
+    effects: [{ stat: 'amplify', value: 200, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }],
     note: 'Inherent Skill Before All Sounds: in Instant Response, Heavy ATK (either form) gains +200% DMG Amplification — scoped to her one real Heavy ATK block, gated on a genuinely derived Instant Response window (see block-level comment above), not a trusted condition.',
   },
   {
@@ -325,8 +325,8 @@ export const AEMEATH_BLOCKS = [
     timing: { duration: 99 }, // same sentinel convention as above
     target: { scope: 'self' },
     condition: { requiresStance: 'Max Between the Stars stacks' },
-    effects: [{ stat: 'deepen', value: 25, scopedToBlockId: 'aemeath.liberation.heavenfall-edict-finale', source: 'self-kit' }],
-    note: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25% — scoped 2026-09-02 (the engine-merge history (git log) Phase 0.5 gap #3, new scopedToBlockId field) to only her Finale hit, not general "deepen" across her whole kit as previously modeled. Only enforced by the hit-composed resolvers; the legacy time-averaged path still applies it at the broader scope (see the field\'s own schema doc).',
+    effects: [{ stat: 'amplify', value: 25, scopedToBlockId: 'aemeath.liberation.heavenfall-edict-finale', source: 'self-kit' }],
+    note: 'At max Between the Stars stacks, Heavenfall Edict: Finale DMG Amplified +25% — scoped 2026-09-02 (the engine-merge history (git log) Phase 0.5 gap #3, new scopedToBlockId field) to only her Finale hit, not general "amplify" across her whole kit as previously modeled. Only enforced by the hit-composed resolvers; the legacy time-averaged path still applies it at the broader scope (see the field\'s own schema doc).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each

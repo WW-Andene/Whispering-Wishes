@@ -52,7 +52,7 @@ describe('tiers wired into the hit-composed resolvers', () => {
     trigger: { type: 'cast', on: 'Buff:Stack' },
     timing: { duration: 30 },
     target: { scope: 'self' },
-    effects: [{ stat: 'deepen', value: 0, tiers: MINDLOCK_TIERS, stacking: 'stacking', maxStacks: 15 }],
+    effects: [{ stat: 'amplify', value: 0, tiers: MINDLOCK_TIERS, stacking: 'stacking', maxStacks: 15 }],
   });
 
   it('resolveHitComposedDps applies the real tiered value, not value×count', () => {
@@ -65,7 +65,7 @@ describe('tiers wired into the hit-composed resolvers', () => {
     const enemyContext = { enemyDef: 0, enemyRes: 0 };
     const without = resolveHitComposedDps([damageBlock], steps, enemyContext, { atk: 1000 });
     const withTiered = resolveHitComposedDps([damageBlock, makeStackingBuff()], steps, enemyContext, { atk: 1000 });
-    // 3 stacks of Mindlock-shaped tiers -> +21% deepen -> calcDmgBonus applies (1 + deepen/100).
+    // 3 stacks of Mindlock-shaped tiers -> +21% amplify -> calcDmgBonus applies (1 + amplify/100).
     expect(withTiered.totalDamage).toBeCloseTo(without.totalDamage * 1.21, 3);
   });
 

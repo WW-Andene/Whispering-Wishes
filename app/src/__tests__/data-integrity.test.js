@@ -348,7 +348,7 @@ describe('RESONANCE_CHAIN_DATA integrity', () => {
   });
 
   it('chains have s1-s6 with valid stats', () => {
-    const validStats = new Set(['atkPct', 'critRate', 'critDmg', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'deepen', 'defIgnore', 'defShred', 'resShred', 'totalMult', 'coordDmg', 'allDmg']);
+    const validStats = new Set(['atkPct', 'critRate', 'critDmg', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'amplify', 'defIgnore', 'defShred', 'resShred', 'totalMult', 'coordDmg', 'allDmg']);
     Object.entries(RESONANCE_CHAIN_DATA).forEach(([name, chain]) => {
       for (let s = 1; s <= 6; s++) {
         const lvl = chain['s' + s];

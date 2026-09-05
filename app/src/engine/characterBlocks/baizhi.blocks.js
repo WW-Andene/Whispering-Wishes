@@ -58,8 +58,8 @@ export const BAIZHI_BLOCKS = [
     trigger: { type: 'swap-out' },
     timing: { duration: 6 },
     target: { scope: 'next-on-field' },
-    effects: [{ stat: 'deepen', value: 15, stacking: 'refresh', source: 'teammate-ally-action' }],
-    note: 'Row also lists a 30s/3s-tick heal, not modeled. The 15% Deepen ticks/refreshes on heal per CHAR_BUFF_TABLE\'s own note — modeled as a flat 6s duration, refresh stacking, since the refresh-condition ("on heal") isn\'t a trigger this schema can key off yet.',
+    effects: [{ stat: 'amplify', value: 15, stacking: 'refresh', source: 'teammate-ally-action' }],
+    note: 'Row also lists a 30s/3s-tick heal, not modeled. The 15% Amplify ticks/refreshes on heal per CHAR_BUFF_TABLE\'s own note — modeled as a flat 6s duration, refresh stacking, since the refresh-condition ("on heal") isn\'t a trigger this schema can key off yet.',
   },
   {
     id: 'baizhi.libbuff.euphonia-atk',

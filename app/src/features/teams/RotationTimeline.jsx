@@ -14,7 +14,7 @@ const ELEMENT_COLORS = {
 // Terse — for the Gantt timeline bars below, which are genuinely too narrow (some under 40px wide) for
 // full words. Kept short on purpose, only used in this one tight-space context.
 export const STAT_LABELS = {
-  atkPct: 'ATK', allDmg: 'All DMG', elemDmg: 'Elem DMG', deepen: 'Deepen',
+  atkPct: 'ATK', allDmg: 'All DMG', elemDmg: 'Elem DMG', amplify: 'Amplify',
   basicDmg: 'Basic', heavyDmg: 'Heavy', libDmg: 'Lib', echoDmg: 'Echo',
   skillDmg: 'Skill', critRate: 'CR', critDmg: 'CD', resShred: 'RES↓', defShred: 'DEF↓',
   coordDmg: 'Coord', glacioDmg: 'Glacio', fusionDmg: 'Fusion', electroDmg: 'Electro',
@@ -25,7 +25,7 @@ export const STAT_LABELS = {
 // things out and are exactly the kind of "help text" a player shouldn't have to decode abbreviations
 // for ("CR"/"CD"/"RES↓" reads as internal shorthand, not an explanation).
 export const STAT_LABELS_FULL = {
-  atkPct: 'ATK', allDmg: 'All DMG', elemDmg: 'Elemental DMG', deepen: 'DMG Deepen',
+  atkPct: 'ATK', allDmg: 'All DMG', elemDmg: 'Elemental DMG', amplify: 'DMG Amplify',
   basicDmg: 'Basic Attack DMG', heavyDmg: 'Heavy Attack DMG', libDmg: 'Liberation DMG', echoDmg: 'Echo Skill DMG',
   skillDmg: 'Resonance Skill DMG', critRate: 'Crit Rate', critDmg: 'Crit DMG', resShred: 'RES Shred', defShred: 'DEF Shred',
   coordDmg: 'Coordinated ATK DMG', glacioDmg: 'Glacio DMG', fusionDmg: 'Fusion DMG', electroDmg: 'Electro DMG',

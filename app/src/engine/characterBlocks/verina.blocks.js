@@ -51,8 +51,8 @@ export const VERINA_BLOCKS = [
     source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 30 }, target: { scope: 'whole-team' },
-    effects: [{ stat: 'deepen', value: 15, stacking: 'refresh', source: 'teammate-ally-action' }],
-    note: 'Also heals the incoming Resonator 19% ATK/s for 6s, not modeled (no DPS component). Corrected 2026-09-02 against a fresh, user-pasted the source text (priority source): the kit text explicitly says "15% all-Type DMG Deepen for 30s" — was wrongly stat:\'allDmg\' (a prior session\'s note claimed "confirmed Amplified, not Deepen," but this file\'s own dmgFocus buff-tag entry (characters.js, structured combat-data table) already said [\'ATK Buff\', \'DMG Deepen\', \'Heal\'] — an internal contradiction the prior check missed). Fixed to deepen.',
+    effects: [{ stat: 'amplify', value: 15, stacking: 'refresh', source: 'teammate-ally-action' }],
+    note: 'Also heals the incoming Resonator 19% ATK/s for 6s, not modeled (no DPS component). Corrected 2026-09-02 against a fresh, user-pasted the source text (priority source): the kit text explicitly says "15% all-Type DMG Amplify for 30s" — was wrongly stat:\'allDmg\' (a prior session\'s note claimed "confirmed Amplified, not Amplify," but this file\'s own dmgFocus buff-tag entry (characters.js, structured combat-data table) already said [\'ATK Buff\', \'DMG Amplify\', \'Heal\'] — an internal contradiction the prior check missed). Fixed to amplify.',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──

@@ -51,8 +51,8 @@ function WIKI_calcResMult(baseResPct, shredPct) {
   if (res < 0.8) return 1 - res;
   return 1 / (1 + 5 * res);
 }
-function WIKI_calcDmgBonus(elemDmgPct, skillDmgPct, amplifyPct, deepenPct) {
-  return (1 + (elemDmgPct + skillDmgPct) / 100) * (1 + amplifyPct / 100) * (1 + deepenPct / 100);
+function WIKI_calcDmgBonus(elemDmgPct, skillDmgPct, amplifyPct) {
+  return (1 + (elemDmgPct + skillDmgPct) / 100) * (1 + amplifyPct / 100);
 }
 function WIKI_calcAvgCrit(crPct, cdPct) {
   const cr = Math.min(crPct, 100) / 100;
@@ -107,11 +107,10 @@ describe('Veracity: calcDmgBonus and calcAvgCrit match wiki reference across 80 
   for (let i = 0; i < 80; i++) {
     const elemDmg = rng() * 80;      // 0-80%
     const skillDmg = rng() * 60;     // 0-60%
-    const amplify = rng() * 40;      // 0-40%
-    const deepen = rng() * 30;       // 0-30%
-    it(`[${i}] elemDmg=${elemDmg.toFixed(1)} skillDmg=${skillDmg.toFixed(1)} amplify=${amplify.toFixed(1)} deepen=${deepen.toFixed(1)}`, () => {
-      const real = calcDmgBonus(elemDmg, skillDmg, amplify, deepen);
-      const expected = WIKI_calcDmgBonus(elemDmg, skillDmg, amplify, deepen);
+    const amplify = rng() * 40 + rng() * 30; // 0-70% (was two separate layers: amplify 0-40, deepen 0-30 — merged)
+    it(`[${i}] elemDmg=${elemDmg.toFixed(1)} skillDmg=${skillDmg.toFixed(1)} amplify=${amplify.toFixed(1)}`, () => {
+      const real = calcDmgBonus(elemDmg, skillDmg, amplify);
+      const expected = WIKI_calcDmgBonus(elemDmg, skillDmg, amplify);
       expect(real).toBeCloseTo(expected, 9);
     });
   }
@@ -156,11 +155,11 @@ describe('Veracity: full weapon+resonance+routing pipeline output matches an ind
       // cross-check, not a tautology (this would fail if calcDmgBonus/calcAvgCrit/calcDefMult were
       // subtly wrong even though the stat-accumulation upstream is right).
       const enemyStats = getEnemyStatsAtLevel(enemy, level);
-      const expectedDmgBonus = WIKI_calcDmgBonus(stats.elemDmg, stats.skillDmg, stats.amplify, stats.deepen);
+      const expectedDmgBonus = WIKI_calcDmgBonus(stats.elemDmg, stats.skillDmg, stats.amplify);
       const expectedAvgCrit = WIKI_calcAvgCrit(stats.cr, stats.cd);
       const expectedDefMult = WIKI_calcDefMult(ATTACKER_FACTOR, enemyStats.def, stats.defShred, stats.defIgnore);
 
-      const realDmgBonus = calcDmgBonus(stats.elemDmg, stats.skillDmg, stats.amplify, stats.deepen);
+      const realDmgBonus = calcDmgBonus(stats.elemDmg, stats.skillDmg, stats.amplify);
       const realAvgCrit = calcAvgCrit(stats.cr, stats.cd);
       const realDefMult = calcDefMult(enemyStats.def, stats.defShred, stats.defIgnore);
 

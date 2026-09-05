@@ -161,7 +161,7 @@ export function createStats() {
     atkPct: 0, cr: BASE_CRIT_RATE, cd: BASE_CRIT_DMG,
     elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0,
     libDmg: 0, echoDmg: 0, coordDmg: 0, outroDmg: 0,
-    deepen: 0, amplify: 0,
+    amplify: 0,
     defShred: 0, resShred: 0, defIgnore: 0,
     // hpPct/defPct (added 2026-09-05, engine-readiness pass): real kit buffs to Max HP%/DEF% —
     // e.g. Baizhi's Forte "Max HP+12% for 10s" — previously had no stat case at all, silently
@@ -381,15 +381,19 @@ export function applyEchoStats(stats, echoes, element, scaling, baseStats) {
 // Which dmgFocus tag gates each type-specific stat — same mapping routeTypeBonuses/scoreTeamComposition
 // already use, kept here too so applyBuff can enforce it itself instead of requiring every call site to
 // remember to check first (that's exactly how calcTeamStats.js ended up with 8 near-identical chains
-// that individually needed the same deepen/allDmg/elemDmg gating fix applied by hand).
+// that individually needed the same amplify/allDmg/elemDmg gating fix applied by hand).
 const TYPE_FOCUS_MAP = { basicDmg: 'Basic ATK', heavyDmg: 'Heavy ATK', libDmg: 'Liberation', echoDmg: 'Echo', coordDmg: 'Coordinated ATK' };
 
 // ── Apply buff to stat accumulator (replaces 8 identical if-else chains) ──
 // options.condition + options.dpsFocus/dpsElLower let this enforce the exact same gates
 // scoreTeamComposition uses (type-focus match for basicDmg/heavyDmg/libDmg/echoDmg/coordDmg; strict
-// element match for elemDmg; off-element-mismatch-only for deepen/offTune/allDmg) in ONE place instead
-// of at every call site. Passing neither dpsFocus nor dpsElLower skips gating entirely (e.g. a
-// character's own selfBuffs, which are inherently about their own damage and need no target-matching).
+// element match for elemDmg; off-element-mismatch-only for amplify/offTune/allDmg) in ONE place
+// instead of at every call site. Passing neither dpsFocus nor dpsElLower skips gating entirely
+// (e.g. a character's own selfBuffs, which are inherently about their own damage and need no
+// target-matching).
+// 'deepen' was merged into 'amplify' (2026-09-05, direct user correction) — the same real buff
+// under an older/alternate term, not a distinct third multiplicative layer; see
+// engine/math/damageFormula.js's calcDmgBonus for the merged formula.
 export function applyBuff(stats, buff, value, options = {}) {
   const { isAmplify = false, condition, dpsFocus, dpsElLower, dpsName } = options;
   if (dpsFocus && TYPE_FOCUS_MAP[buff] && !dpsFocus.includes(TYPE_FOCUS_MAP[buff])) return;
@@ -397,7 +401,7 @@ export function applyBuff(stats, buff, value, options = {}) {
     if (buff === 'elemDmg') {
       const cond = (condition || '').toLowerCase();
       if (cond && !cond.includes(dpsElLower) && !cond.includes('all')) return;
-    } else if (buff === 'deepen' || buff === 'offTune' || buff === 'allDmg') {
+    } else if (buff === 'amplify' || buff === 'offTune' || buff === 'allDmg') {
       if (!universalStatApplies(condition, dpsElLower, dpsName)) return;
     }
   }
@@ -409,8 +413,8 @@ export function applyBuff(stats, buff, value, options = {}) {
     case 'healBonusPct': stats.healBonusPct += value; break;
     case 'allDmg':    stats[target || 'elemDmg'] += value; break;
     case 'elemDmg':   stats[target || 'elemDmg'] += value; break;
-    case 'deepen':    stats.deepen += value; break;
-    case 'offTune':   stats.deepen += value; break;
+    case 'amplify':   stats.amplify += value; break;
+    case 'offTune':   stats.amplify += value; break;
     case 'basicDmg':  stats[target || 'basicDmg'] += value; break;
     case 'heavyDmg':  stats[target || 'heavyDmg'] += value; break;
     case 'libDmg':    stats[target || 'libDmg'] += value; break;
@@ -513,14 +517,14 @@ export function applyResonanceChain(stats, charName, seqLevel, isMainDps) {
       // branch for it, so any Resonance Chain node using coordDmg was silently dropped for a main-DPS
       // character.
       if (lvl.coordDmg) stats.coordDmg += lvl.coordDmg;
-      if (lvl.deepen) stats.deepen += lvl.deepen;
+      if (lvl.amplify) stats.amplify += lvl.amplify;
       if (lvl.defIgnore) stats.defIgnore += lvl.defIgnore;
       if (lvl.defShred) stats.defShred += lvl.defShred;
       if (lvl.resShred) stats.resShred += lvl.resShred;
       if (lvl.totalMult) totalMultBonus += lvl.totalMult;
     } else {
       if (lvl.allDmg) stats.elemDmg += lvl.allDmg;
-      if (lvl.deepen) stats.deepen += lvl.deepen;
+      if (lvl.amplify) stats.amplify += lvl.amplify;
       if (lvl.defShred) stats.defShred += lvl.defShred;
       if (lvl.resShred) stats.resShred += lvl.resShred;
       if (lvl.atkPct) stats.atkPct += lvl.atkPct;
@@ -533,17 +537,17 @@ export function applyResonanceChain(stats, charName, seqLevel, isMainDps) {
   return totalMultBonus;
 }
 
-// A deepen/offTune/allDmg buff or debuff is universal by convention UNLESS its free-text `condition`
+// An amplify/offTune/allDmg buff or debuff is universal by convention UNLESS its free-text `condition`
 // explicitly names a DIFFERENT element than the target's own (e.g. Ciaccona's outro: "Aero Erosion DMG
 // Amp only"; Phoebe's outro: "Spectro Frazzle DMG Amp (Confession)") — a condition naming no element at
 // all (the common case: pure activation-trigger text) stays universal. Shared by scoreTeamComposition
 // (recommendation ranking) and calcTeamStats.js (the real damage calculator) so this rule can only ever
-// be defined in one place — calcTeamStats.js previously summed every deepen contribution completely
-// unconditionally with no equivalent check at all, so Ciaccona/Phoebe-style element-locked deepen amps
+// be defined in one place — calcTeamStats.js previously summed every amplify contribution completely
+// unconditionally with no equivalent check at all, so Ciaccona/Phoebe-style element-locked amplify amps
 // were silently applied in full to the actual displayed DPS number for ANY paired main/sub DPS,
 // regardless of element match.
 const ELEMENT_NAMES = ['fusion', 'spectro', 'aero', 'glacio', 'electro', 'havoc'];
-// A deepen buff can also be locked to a specific DAMAGE MECHANIC rather than (or in addition to) an
+// An amplify buff can also be locked to a specific DAMAGE MECHANIC rather than (or in addition to) an
 // element — e.g. Phoebe's outro is "Spectro Frazzle DMG Amp", which only amplifies Frazzle-type
 // damage, not a Spectro DPS's general output. Found via a real recommendation audit (Jinhsi+Zhezhi):
 // the buff's condition mentions "spectro" (Jinhsi's own element), so the element-only check above let
@@ -685,7 +689,7 @@ function typeShareMultiplier(stat, dpsName) {
   return Math.min(shares[focus] * Object.keys(shares).length, 1.3);
 }
 
-// ── Mechanic-grounded synergy uplift: replaces flat "+8 points for a deepen buff, +6 for elemDmg"
+// ── Mechanic-grounded synergy uplift: replaces flat "+8 points for an amplify buff, +6 for elemDmg"
 // pattern-matching with an estimate of what each buff/debuff actually contributes to DPS output,
 // using the same multiplicative bracket structure calcDmgBonus/calcAvgCrit already model. This is
 // what makes scoreTeamComposition reason about ANY buffer's kit generically (every character's real
@@ -693,14 +697,14 @@ function typeShareMultiplier(stat, dpsName) {
 // of only recognizing synergy patterns someone thought to hardcode. SYNERGY_BASELINE is a plausible
 // endgame-geared solo Main DPS snapshot (roughly BiS-adjacent echo/weapon investment) used ONLY to
 // measure each buff type's *relative marginal* value against the game's real formula shape — e.g. a
-// deepen buff is genuinely worth more than an equal-% elemDmg buff because deepen is its own
+// amplify buff is genuinely worth more than an equal-% elemDmg buff because amplify is its own
 // multiplicative bracket rather than diluted into the already-large elemDmg+skillDmg additive one,
-// same reason real theorycrafting prizes deepen buffers (Zhezhi/Roccia/Galbrena-style kits) — this
+// same reason real theorycrafting prizes amplify buffers (Zhezhi/Roccia/Galbrena-style kits) — this
 // derives that from the formula instead of hardcoding the conclusion. Never used for actual damage
 // numbers, only for ranking hypothetical teams relative to each other.
-const SYNERGY_BASELINE = { atkPct: 220, cr: 65, cd: 220, elemDmg: 40, skillDmg: 0, amplify: 0, deepen: 0 };
+const SYNERGY_BASELINE = { atkPct: 220, cr: 65, cd: 220, elemDmg: 40, skillDmg: 0, amplify: 0 };
 function synergyDmgIndex(s) {
-  return (1 + s.atkPct / 100) * calcAvgCrit(s.cr, s.cd) * calcDmgBonus(s.elemDmg, s.skillDmg, s.amplify, s.deepen);
+  return (1 + s.atkPct / 100) * calcAvgCrit(s.cr, s.cd) * calcDmgBonus(s.elemDmg, s.skillDmg, s.amplify);
 }
 const SYNERGY_BASE_INDEX = synergyDmgIndex(SYNERGY_BASELINE);
 // Returns the % DPS uplift a single buff of this stat/value contributes on top of SYNERGY_BASELINE.
@@ -726,7 +730,7 @@ export function estimateBuffUplift(stat, value) {
     case 'elemDmg': case 'allDmg': s.elemDmg += value; break;
     case 'skillDmg': case 'basicDmg': case 'heavyDmg': case 'libDmg': case 'echoDmg': case 'coordDmg':
       s.skillDmg += value; break; // once type-matched to the DPS's dmgFocus, these all route into skillDmg's bracket
-    case 'deepen': case 'offTune': s.deepen += value; break;
+    case 'amplify': case 'offTune': s.amplify += value; break;
     default: return 0;
   }
   return (synergyDmgIndex(s) / SYNERGY_BASE_INDEX - 1) * 100;
@@ -911,7 +915,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // An elemDmg buff only helps this DPS if its condition (when present) actually names their
     // element or "all" — otherwise it's a buff for a different attribute that does nothing here.
     const elemBuffApplies = (b) => { const cond = (b.condition || '').toLowerCase(); return !cond || cond.includes(dpsEl) || cond.includes('all'); };
-    // deepen/offTune/allDmg were previously treated as always-universal (no gate at all), but several
+    // amplify/offTune/allDmg were previously treated as always-universal (no gate at all), but several
     // kits' amps are explicitly locked to their OWN element/mechanic in free-text condition (e.g.
     // Ciaccona's outro: "Aero Erosion DMG Amp only"; Phoebe's outro: "Spectro Frazzle DMG Amp
     // (Confession)") — those did nothing for an off-element DPS but still scored full uplift, which is
@@ -921,7 +925,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // this only rejects when the condition explicitly names a DIFFERENT element than the DPS's own. A
     // condition with no element mentioned at all (most of them: pure activation-trigger text, e.g.
     // Denia's "Tune Strain mode..." allDmg outro) stays universal, exactly as its stat name promises.
-    const deepenBuffApplies = (b) => universalStatApplies(b.condition, dpsEl, mainDps);
+    const amplifyBuffApplies = (b) => universalStatApplies(b.condition, dpsEl, mainDps);
     // A type-specific buff (basicDmg/heavyDmg/echoDmg/skillDmg/coordDmg) only routes into the DPS's
     // damage at all if their dmgFocus actually includes that attack type — routeTypeBonuses in this
     // same file enforces the identical gate for the real damage calc, so scoring has to match it or
@@ -938,8 +942,8 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       // unrelated activation trigger (Denia's "Tune Strain mode..." outro, Suisui's "400+ Floral
       // Epistle consumed..." outro — neither mentions any element or the word "all", so both scored
       // zero synergy for every DPS, including a perfectly-matched one). Same off-element-mismatch-only
-      // gate as deepen/offTune below is the correct check here.
-      if (b.stat === 'allDmg' || b.stat === 'deepen' || b.stat === 'offTune') return deepenBuffApplies(b);
+      // gate as amplify/offTune below is the correct check here.
+      if (b.stat === 'allDmg' || b.stat === 'amplify' || b.stat === 'offTune') return amplifyBuffApplies(b);
       return true; // atkPct/critRate/critDmg are universal, no gate needed
     };
     // Score any buff generically via real formula-derived uplift — this is what lets a completely
@@ -952,7 +956,7 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
       return uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
     };
     const applyBuffTag = (b) => {
-      if (b.stat === 'deepen' || b.stat === 'offTune') tags.push('Deepen');
+      if (b.stat === 'amplify' || b.stat === 'offTune') tags.push('Amplify');
       else if (b.stat === 'basicDmg') tags.push('ATK Amp');
       else if (b.stat === 'heavyDmg') tags.push('Heavy Amp');
       else if (b.stat === 'echoDmg') tags.push('Echo Amp');
@@ -1045,8 +1049,8 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
           }
           if (db.stat === 'frazzle') { score += 5; tags.push('Frazzle'); }
           if (db.stat === 'erosion') { score += 5; tags.push('Erosion'); }
-          // 'deepen'/'offTune' as a debuff stat (enemy DMG Taken, e.g. Galbrena's Afterflame) is a
-          // damage multiplier just like the buff-side 'deepen' — same off-element gate applies (a
+          // 'amplify'/'offTune' as a debuff stat (enemy DMG Taken, e.g. Galbrena's Afterflame) is a
+          // damage multiplier just like the buff-side 'amplify' — same off-element gate applies (a
           // debuff condition can name a specific element/mechanic just as easily as a buff's can).
           // Unlike outroBuffs/libBuffs above, this was given zero uptime/reliability discount at
           // all — Galbrena's Afterflame ("+1.5%/stack DMG Taken... while Galbrena is in Demon
@@ -1059,10 +1063,10 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
           // Same self-state-dependency logic as the ER-uptime/echo-set-potential discounts already
           // established elsewhere in this function: discount a second Main DPS's own state-gated
           // debuff, since a benched, non-headline Main DPS's on-field time can't be assumed.
-          if (db.stat === 'deepen' || db.stat === 'offTune') {
-            if (deepenBuffApplies(db)) {
+          if (db.stat === 'amplify' || db.stat === 'offTune') {
+            if (amplifyBuffApplies(db)) {
               const selfStateDiscount = (CHARACTER_DATA[m]?.role === 'Main DPS' && m !== mainDps) ? 0.35 : 1;
-              const u = estimateBuffUplift('deepen', db.value) * selfStateDiscount;
+              const u = estimateBuffUplift('amplify', db.value) * selfStateDiscount;
               if (u > 0) score += u * UPLIFT_TO_SCORE;
             }
           }

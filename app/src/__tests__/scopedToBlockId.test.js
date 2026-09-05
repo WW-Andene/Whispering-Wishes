@@ -12,7 +12,7 @@ describe('scopedToBlockId (the engine-merge history (git log) Phase 0.5 gap #3)'
       id: 'test.scoped-buff', source: 'Test', kind: 'buff',
       trigger: { type: 'passive' },
       timing: {}, target: { scope: 'self' },
-      effects: [{ stat: 'deepen', value: 100, scopedToBlockId: 'test.hit-a' }],
+      effects: [{ stat: 'amplify', value: 100, scopedToBlockId: 'test.hit-a' }],
     };
     const hitA = {
       id: 'test.hit-a', source: 'Test', kind: 'damage',
@@ -33,7 +33,7 @@ describe('scopedToBlockId (the engine-merge history (git log) Phase 0.5 gap #3)'
     const enemyContext = { enemyDef: 0, enemyRes: 0 };
     const withoutBuff = resolveHitComposedDps([hitA, hitB], steps, enemyContext, { atk: 1000 });
     const withBuff = resolveHitComposedDps([hitA, hitB, scopedBuff], steps, enemyContext, { atk: 1000 });
-    // hitA gets 2x (deepen+100%), hitB unaffected -> total should be exactly 1.5x the unscoped total
+    // hitA gets 2x (amplify+100%), hitB unaffected -> total should be exactly 1.5x the unscoped total
     // (since hitA and hitB deal identical base damage: 2x + 1x = 3x vs 1x + 1x = 2x -> 1.5x ratio).
     expect(withBuff.totalDamage).toBeCloseTo(withoutBuff.totalDamage * 1.5, 3);
   });
@@ -43,7 +43,7 @@ describe('scopedToBlockId (the engine-merge history (git log) Phase 0.5 gap #3)'
     expect(s1.effects[0].scopedToBlockId).toBe('aemeath.heavy.mech-charged-ii');
   });
 
-  it("Aemeath's Between the Stars Finale-amp deepen is scoped to her Finale block, not her other libDmg block", () => {
+  it("Aemeath's Between the Stars Finale-amp is scoped to her Finale block, not her other libDmg block", () => {
     const buff = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.selfbuff.between-the-stars-finale-amp');
     expect(buff.effects[0].scopedToBlockId).toBe('aemeath.liberation.heavenfall-edict-finale');
     // Confirm the OTHER libDmg-categorized block exists and is a different id (the real over-credit

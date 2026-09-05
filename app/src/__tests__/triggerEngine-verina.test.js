@@ -57,12 +57,12 @@ describe('triggerEngine parity — Verina', () => {
   });
 
   // Fixed 2026-09-02 against a fresh, user-pasted the source text: her Outro was wrongly stat:'allDmg'
-  // ("Amplified") when the kit text explicitly says "Deepen" — a prior session's own note claimed this
-  // was confirmed, but this file's own dmgFocus buff-tag entry already said 'DMG Deepen', an internal
+  // ("Amplified") when the kit text explicitly says "Amplify" — a prior session's own note claimed this
+  // was confirmed, but this file's own dmgFocus buff-tag entry already said 'DMG Amplify', an internal
   // contradiction that check missed.
-  it("Outro (Blossom) is deepen, not allDmg", () => {
+  it("Outro (Blossom) is amplify, not allDmg", () => {
     const outro = VERINA_BLOCKS.find(b => b.id === 'verina.outro.blossom');
-    expect(outro.effects[0].stat).toBe('deepen');
+    expect(outro.effects[0].stat).toBe('amplify');
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {

@@ -44,10 +44,13 @@ function WIKI_calcResMult(baseResPct, shredPct) {
 }
 
 // "%DMG Bonus = 1 + All DMG Bonus" combined with "DMG Amplify_Total = 1 + (Amplify_target + Amplify_attacker)"
-// as independent multiplicative layers (elemDmg+skillDmg additive within the DMG Bonus bucket, deepen
-// as its own DMG-Taken-style multiplier stacking with DMG Bonus — matches calcEngine.js's `deepen`).
-function WIKI_calcDmgBonus(elemDmgPct, skillDmgPct, amplifyPct, deepenPct) {
-  return (1 + (elemDmgPct + skillDmgPct) / 100) * (1 + amplifyPct / 100) * (1 + deepenPct / 100);
+// as independent multiplicative layers (elemDmg+skillDmg additive within the DMG Bonus bucket, Amplify
+// as its own DMG-Taken-style multiplier stacking with DMG Bonus — matches calcEngine.js's `amplify`).
+// "Deepen" was the same real buff as Amplify under an older/alternate term, not a distinct third
+// layer — merged into one `amplify` accumulator (2026-09-05, direct user correction) rather than
+// double-counting the same buff as two independent multiplicative layers.
+function WIKI_calcDmgBonus(elemDmgPct, skillDmgPct, amplifyPct) {
+  return (1 + (elemDmgPct + skillDmgPct) / 100) * (1 + amplifyPct / 100);
 }
 
 // Crit DMG in WuWa's own UI already includes the "no crit" baseline (150% = 1.5x on a crit hit), so
@@ -173,26 +176,26 @@ describe('calcResMult (real export) vs. wiki reference (3-tier piecewise)', () =
 
 describe('calcDmgBonus (real export) vs. wiki reference', () => {
   it('elemental + skill type DMG are additive within one bucket, not multiplicative', () => {
-    const real = calcDmgBonus(60, 50, 0, 15);
-    const wiki = WIKI_calcDmgBonus(60, 50, 0, 15);
+    const real = calcDmgBonus(60, 50, 15);
+    const wiki = WIKI_calcDmgBonus(60, 50, 15);
     const wrongMultiplicative = (1 + 60 / 100) * (1 + 50 / 100) * (1 + 15 / 100);
     expect(real).toBeCloseTo(wiki, 9);
     expect(real).toBeLessThan(wrongMultiplicative);
   });
 
   it('amplify is its own multiplicative layer, independent of DMG Bonus', () => {
-    const withAmplify = calcDmgBonus(60, 50, 25, 0);
-    const withoutAmplify = calcDmgBonus(60, 50, 0, 0);
+    const withAmplify = calcDmgBonus(60, 50, 25);
+    const withoutAmplify = calcDmgBonus(60, 50, 0);
     expect(withAmplify).toBeCloseTo(withoutAmplify * 1.25, 9);
-    expect(withAmplify).toBeCloseTo(WIKI_calcDmgBonus(60, 50, 25, 0), 9);
+    expect(withAmplify).toBeCloseTo(WIKI_calcDmgBonus(60, 50, 25), 9);
   });
 
   it('random sampled inputs match the wiki reference exactly', () => {
     const samples = [
-      [0, 0, 0, 0], [60, 50, 0, 15], [12, 0, 0, 0], [40, 40, 20, 20], [100, 0, 0, 30],
+      [0, 0, 0], [60, 50, 15], [12, 0, 0], [40, 40, 40], [100, 0, 30],
     ];
-    for (const [elem, skill, amp, deep] of samples) {
-      expect(calcDmgBonus(elem, skill, amp, deep)).toBeCloseTo(WIKI_calcDmgBonus(elem, skill, amp, deep), 9);
+    for (const [elem, skill, amp] of samples) {
+      expect(calcDmgBonus(elem, skill, amp)).toBeCloseTo(WIKI_calcDmgBonus(elem, skill, amp), 9);
     }
   });
 });
@@ -233,7 +236,7 @@ describe('Full damage formula integration (real exports chained together)', () =
     const effAtk = baseStat * (1 + atkPct / 100);
 
     const avgCrit = calcAvgCrit(55, 220);
-    const dmgBonus = calcDmgBonus(40, 25, 0, 15);
+    const dmgBonus = calcDmgBonus(40, 25, 15);
     const defMult = calcDefMult(1512, 0, 0);
     const resMult = calcResMult(10, 0);
 

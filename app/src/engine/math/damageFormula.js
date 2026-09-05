@@ -55,14 +55,18 @@ export function calcAvgCrit(cr, cd) {
 }
 
 /**
- * [FORMULA · DMG-BONUS] WuWa's 3-layer %DMG bonus stack: (elemental + move-type bonuses)
- * add together in layer 1, then Amplify and Deepen each multiply as their own separate layer.
+ * [FORMULA · DMG-BONUS] WuWa's 2-layer %DMG bonus stack: (elemental + move-type bonuses) add
+ * together in layer 1, then Amplify multiplies as its own separate layer. "Deepen" was the same
+ * real buff as Amplify under an older/alternate term, not a distinct third layer — merged into one
+ * `amplify` accumulator (2026-09-05, direct user correction) rather than double-counting the same
+ * buff as two independent multiplicative layers whenever a kit used one label and another buff on
+ * the same hit used the other.
  * @param {number} elemDmg   Elemental DMG Bonus % (e.g. Aero DMG Bonus).
  * @param {number} skillDmg  Move-type DMG Bonus %, already collapsed onto one bucket
  *                           (see moveTypeRouting.js's collapseDmgTypeBuckets).
- * @param {number} amplify   Amplify DMG % (layer 2 — reaction amplification).
- * @param {number} deepen    Deepen DMG % (layer 3 — reaction deepening).
+ * @param {number} amplify   Amplify DMG % (layer 2 — reaction amplification; includes what used
+ *                           to be tracked separately as "Deepen").
  */
-export function calcDmgBonus(elemDmg, skillDmg, amplify, deepen) {
-  return (1 + (elemDmg + skillDmg) / 100) * (1 + amplify / 100) * (1 + deepen / 100);
+export function calcDmgBonus(elemDmg, skillDmg, amplify) {
+  return (1 + (elemDmg + skillDmg) / 100) * (1 + amplify / 100);
 }

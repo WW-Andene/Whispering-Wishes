@@ -24,7 +24,7 @@ describe('triggerEngine parity — Qingxiao', () => {
     expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.chain.s3').effects[0].value).toBe(rc.s3.critDmg);
     expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.chain.s4').effects[0].value).toBe(rc.s4.atkPct);
     expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.chain.s5').effects[0].value).toBe(rc.s5.skillDmg);
-    expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.chain.s6').effects[0].value).toBe(rc.s6.deepen);
+    expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.chain.s6').effects[0].value).toBe(rc.s6.amplify);
   });
 
   it('S6 is correctly a debuff on enemies, matching the narrow-scope note', () => {
@@ -50,12 +50,12 @@ describe('triggerEngine parity — Qingxiao', () => {
     expect(QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.outro.lingering-song').damage.category).toBe('outroDmg');
   });
 
-  // Added 2026-09-04: qingxiao.debuff.mindlock and qingxiao.chain.s6 were both unscoped deepen effects
+  // Added 2026-09-04: qingxiao.debuff.mindlock and qingxiao.chain.s6 were both unscoped amplify effects
   // on target:'all-enemies', which resolveHitComposedDps.js applies to EVERY damage block a character
   // has — but the dump's own exact text names a narrow move list for both (5 moves for Mindlock, 3 for
   // S6), explicitly excluding Basic Attack - Stringblade (ground), Mid-air Attack, Severing Note, Intro,
   // and Outro. Unscoped, both were silently over-crediting those excluded blocks too.
-  it('Mindlock and S6 deepen effects are scoped to only their real named moves, not the whole kit', () => {
+  it('Mindlock and S6 amplify effects are scoped to only their real named moves, not the whole kit', () => {
     const mindlock = QINGXIAO_BLOCKS.find(b => b.id === 'qingxiao.debuff.mindlock');
     const mindlockScopes = mindlock.effects.map(e => e.scopedToBlockId);
     expect(mindlockScopes).toEqual(expect.arrayContaining([

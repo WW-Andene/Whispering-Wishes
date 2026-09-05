@@ -148,7 +148,7 @@ function TeamsTab({
     for (const dps of ownedDps) {
       // Candidate pre-filtering used to run its own hand-rolled "fit" heuristic here — a second,
       // independently-maintained copy of what scoreTeamComposition already does, and one that never
-      // received any of that shared engine's fixes (deepen/allDmg off-element gating, echo-set
+      // received any of that shared engine's fixes (amplify/allDmg off-element gating, echo-set
       // potential, etc.) as they landed. It could pre-select an off-element phantom-synergy candidate
       // into the top-3/top-2 pool ahead of a genuinely better one, even though the FINAL assembled
       // team's score (below, via scoreTeam) was always correct — the bug was in which candidates ever

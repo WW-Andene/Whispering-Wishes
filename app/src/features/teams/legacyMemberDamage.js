@@ -111,7 +111,7 @@ export function computeLegacyMemberDamage(ctx) {
       const sEq = teamEquipment[sEqKey];
       const sEchoes = sEq?.echoes || [];
       const sStatKey = m.scaling === 'HP' ? 'HP%' : m.scaling === 'DEF' ? 'DEF%' : 'ATK%';
-      let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sDeepen = 0, sAmplify = 0;
+      let sAtkPct = 0, sCr = 5, sCd = 150, sElem = 0, sSkillDmg = 0, sAmplify = 0;
       let sBasicDmg = 0, sHeavyDmg = 0, sLibDmg = 0, sEchoDmg = 0, sCoordDmg = 0, sDefIgnore = 0;
       let sDefShred = 0, sResShred = 0;
       const sSeg = rotSegByName[m.name] || null;
@@ -133,10 +133,10 @@ export function computeLegacyMemberDamage(ctx) {
       // deliberately does NOT pass dpsFocus to the outroBuffs applyBuff calls below: unlike the main
       // DPS tier, this sub-DPS path never gated basicDmg/heavyDmg/libDmg/echoDmg/skillDmg by dmgFocus
       // here (they all route into sAmplify unconditionally) -- preserved as-is as a pure dedup, not
-      // changed, since that's a separate question from the deepen/allDmg/elemDmg bug this migration
+      // changed, since that's a separate question from the amplify/allDmg/elemDmg bug this migration
       // targets.
       const subElLower = (m.d.element || '').toLowerCase();
-      const sStats = { atkPct: sAtkPct, cr: sCr, cd: sCd, elemDmg: sElem, deepen: sDeepen, amplify: sAmplify, echoDmg: sEchoDmg, defShred: sDefShred, resShred: sResShred, defIgnore: sDefIgnore };
+      const sStats = { atkPct: sAtkPct, cr: sCr, cd: sCd, elemDmg: sElem, amplify: sAmplify, echoDmg: sEchoDmg, defShred: sDefShred, resShred: sResShred, defIgnore: sDefIgnore };
       mems.forEach(other => {
         if (other.name === m.name) return;
         const obt = CHAR_BUFF_TABLE[other.name];
@@ -159,8 +159,8 @@ export function computeLegacyMemberDamage(ctx) {
               // Echo Amp, etc., 14 characters carry one) applied its full value to ANY sub-DPS
               // regardless of whether that sub-DPS's own dmgFocus includes that attack type at all.
               applyBuff(sStats, b.stat, val, { isAmplify: true, condition: b.condition, dpsFocus: focus, dpsElLower: subElLower, dpsName: m.name });
-            } else if (b.stat === 'deepen') {
-              applyBuff(sStats, 'deepen', val, { condition: b.condition, dpsElLower: subElLower, dpsName: m.name });
+            } else if (b.stat === 'amplify') {
+              applyBuff(sStats, 'amplify', val, { condition: b.condition, dpsElLower: subElLower, dpsName: m.name });
             } else if (b.stat === 'critRate' || b.stat === 'critDmg' || b.stat === 'resShred' || b.stat === 'defShred') {
               applyBuff(sStats, b.stat, val);
             }
@@ -198,13 +198,13 @@ export function computeLegacyMemberDamage(ctx) {
         (mbt.selfBuffs || []).forEach(b => {
           const val = resolveBuffValue(b, subTotalER);
           // Own kit's self-target buffs — no target-matching gate needed, same as the main tier.
-          if (['atkPct', 'elemDmg', 'critRate', 'critDmg', 'defIgnore', 'deepen', 'echoDmg'].includes(b.stat)) applyBuff(sStats, b.stat, val);
+          if (['atkPct', 'elemDmg', 'critRate', 'critDmg', 'defIgnore', 'amplify', 'echoDmg'].includes(b.stat)) applyBuff(sStats, b.stat, val);
         });
         (mbt.debuffs || []).forEach(db => {
           applyBuff(sStats, db.stat, db.value, { condition: db.condition, dpsElLower: subElLower, dpsName: m.name });
         });
       }
-      ({ atkPct: sAtkPct, cr: sCr, cd: sCd, elemDmg: sElem, deepen: sDeepen, amplify: sAmplify, echoDmg: sEchoDmg, defShred: sDefShred, resShred: sResShred, defIgnore: sDefIgnore } = sStats);
+      ({ atkPct: sAtkPct, cr: sCr, cd: sCd, elemDmg: sElem, amplify: sAmplify, echoDmg: sEchoDmg, defShred: sDefShred, resShred: sResShred, defIgnore: sDefIgnore } = sStats);
       if (m.weapon) {
         const subRefLevel = sEq?.refinement || 1;
         const subRefScale = WEAPON_REFINE_SCALE ? WEAPON_REFINE_SCALE[subRefLevel - 1] || 1 : 1;
@@ -250,7 +250,7 @@ export function computeLegacyMemberDamage(ctx) {
       if (sFocus.includes('Liberation')) sTypeDmg += sLibDmg;
       if (sFocus.includes('Echo')) sTypeDmg += sEchoDmg;
       if (sFocus.includes('Coordinated ATK')) sTypeDmg += sCoordDmg;
-      const sDmgBonus = (1 + (sElem + sTypeDmg) / 100) * (1 + sAmplify / 100) * (1 + sDeepen / 100);
+      const sDmgBonus = (1 + (sElem + sTypeDmg) / 100) * (1 + sAmplify / 100);
       const sReducedDef = enemyDef90 * Math.max(0, 1 - sDefShred / 100);
       const sEffDef = sReducedDef * Math.max(0, 1 - sDefIgnore / 100);
       const sDefMult = Math.min(2, ATTACKER_FACTOR / (ATTACKER_FACTOR + sEffDef));

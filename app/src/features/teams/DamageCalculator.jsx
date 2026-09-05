@@ -184,7 +184,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       {enemyTargetModal}
     </>
   );
-  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline, rotTime } = stats;
+  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, atkPct, defShred, resShred, defIgnore, avgCrit, score, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline, rotTime } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
   return (
@@ -684,7 +684,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         </span>
                         {skillDmg > 0 && <span className="kuro-badge kuro-badge-amber">Skill +{skillDmg.toFixed(0)}%</span>}
                         {atkPct > 0 && <span className="kuro-badge kuro-badge-emerald">ATK% +{atkPct.toFixed(0)}%</span>}
-                        {deepen > 0 && <span className="kuro-badge kuro-badge-purple">Deepen +{deepen.toFixed(0)}%</span>}
+                        {amplify > 0 && <span className="kuro-badge kuro-badge-purple">Amplify +{amplify.toFixed(0)}%</span>}
                         {defShred > 0 && <span className="kuro-badge kuro-badge-red">DEF Shred {Math.round(defShred)}%</span>}
                         {resShred > 0 && <span className="kuro-badge kuro-badge-red">RES Shred {Math.round(resShred)}%</span>}
                         {defIgnore > 0 && <span className="kuro-badge kuro-badge-red">DEF Ignore {defIgnore}%</span>}
@@ -709,7 +709,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   {atkPct > 0 && <span className="kuro-badge kuro-badge-emerald">+{atkPct.toFixed(1)}% ATK</span>}
                   {elemDmg > 0 && <span className="kuro-badge kuro-badge-yellow">+{elemDmg.toFixed(1)}% Elem DMG</span>}
                   {skillDmg > 0 && <span className="kuro-badge kuro-badge-amber">+{skillDmg.toFixed(1)}% Skill DMG</span>}
-                  {deepen > 0 && <span className="kuro-badge kuro-badge-purple">+{deepen.toFixed(1)}% Deepen</span>}
                   {amplify > 0 && <span className="kuro-badge kuro-badge-pink">+{amplify.toFixed(1)}% Amplify</span>}
                   {cr > 5 && <span className="kuro-badge kuro-badge-cyan">{cr.toFixed(1)}% Crit Rate</span>}
                   {cd > 150 && <span className="kuro-badge kuro-badge-cyan">{cd.toFixed(1)}% Crit DMG</span>}

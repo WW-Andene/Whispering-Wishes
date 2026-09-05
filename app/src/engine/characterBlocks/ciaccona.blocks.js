@@ -121,7 +121,7 @@ export const CIACCONA_BLOCKS = [
     timing: { duration: 30 },
     target: { scope: 'next-on-field' },
     condition: { element: 'aero' },
-    effects: [{ stat: 'deepen', value: 100, stacking: 'refresh', source: 'teammate-ally-action' }],
+    effects: [{ stat: 'amplify', value: 100, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Aero Erosion DMG Amp only — not a general DMG Amp.',
   },
   {

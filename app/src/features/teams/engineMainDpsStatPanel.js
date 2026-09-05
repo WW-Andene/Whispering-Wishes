@@ -14,7 +14,7 @@
 import { resolveSimulatedTeamRotation } from '../../engine/resolver/dps/resolveSimulatedTeamRotation.js';
 import { projectMainDpsStatPanel } from '../../engine/resolver/projection/statPanelProjection.js';
 
-const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'deepen', 'amplify', 'defShred', 'resShred', 'defIgnore'];
+const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicDmg', 'heavyDmg', 'libDmg', 'echoDmg', 'coordDmg', 'amplify', 'defShred', 'resShred', 'defIgnore'];
 
 /**
  * [LOGIC · ENGINE-MAIN-DPS-STAT-PANEL] The main DPS's real, engine-composed time-averaged received
@@ -29,7 +29,7 @@ const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicD
  * @param {number} enemyDef90
  * @param {number} mainBaseRes  getEnemyRes(mainDps.d.element).
  * @returns {{atkPct:number, cr:number, cd:number, elemDmg:number, skillDmg:number, amplify:number,
- *   deepen:number, defShred:number, resShred:number, defIgnore:number, effAtk:number, avgCrit:number,
+ *   defShred:number, resShred:number, defIgnore:number, effAtk:number, avgCrit:number,
  *   dmgBonus:number, defMult:number, resMult:number, score:number}}
  */
 export function computeEngineMainDpsStatPanel(engineChosenOrder, mainDps, mems, gearDeltaByName, enemyDef90, mainBaseRes) {
@@ -54,7 +54,7 @@ export function computeEngineMainDpsStatPanel(engineChosenOrder, mainDps, mems, 
 
   return {
     atkPct: finalStats.atkPct, cr: finalStats.cr, cd: finalStats.cd, elemDmg: finalStats.elemDmg,
-    skillDmg: finalStats.skillDmg, amplify: finalStats.amplify, deepen: finalStats.deepen,
+    skillDmg: finalStats.skillDmg, amplify: finalStats.amplify,
     defShred: finalStats.defShred, resShred: finalStats.resShred, defIgnore: finalStats.defIgnore,
     effAtk: panel.effAtk, avgCrit: panel.avgCrit, dmgBonus: panel.dmgBonus,
     defMult: panel.defMult, resMult: panel.resMult, score: panel.score,

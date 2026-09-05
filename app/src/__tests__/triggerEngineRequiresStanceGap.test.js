@@ -53,7 +53,7 @@ describe('conditionHolds — assumedInactive is now enforced', () => {
   it('Phoebe\'s Confession blocks now resolve to zero effect, matching their own long-standing note', () => {
     const confessionBlocks = PHOEBE_BLOCKS.filter(b => b.id.includes('confession'));
     const stats = resolveElemDmgFor(confessionBlocks, 'spectro');
-    expect(stats.deepen).toBe(0);
+    expect(stats.amplify).toBe(0);
     expect(stats.resShred).toBe(0);
   });
 });

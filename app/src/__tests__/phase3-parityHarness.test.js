@@ -57,7 +57,7 @@ function rawTierGearStats(name, weaponName, echoSetName, echoSet2Name) {
   cr += (wp.critRate || 0); cd += (wp.critDmg || 0);
   basicDmg += (wp.basicDmg || 0); heavyDmg += (wp.heavyDmg || 0);
   libDmg += (wp.libDmg || 0); echoDmg += (wp.echoDmg || 0);
-  const rStats = { atkPct, cr, cd, elemDmg, skillDmg, basicDmg, heavyDmg, libDmg, echoDmg, deepen: 0, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
+  const rStats = { atkPct, cr, cd, elemDmg, skillDmg, basicDmg, heavyDmg, libDmg, echoDmg, amplify: 0, defShred: 0, resShred: 0, defIgnore: 0 };
   const echoSet = echoSetName ? ECHO_SETS[echoSetName] : null;
   const echoSet2 = echoSet2Name ? ECHO_SETS[echoSet2Name] : null;
   applyFullEchoSet(rStats, echoSet, echoSet2, d.element, scaling);

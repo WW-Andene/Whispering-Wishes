@@ -164,7 +164,7 @@ function CollectionTab({
             if (b.stat === 'echoDmg') tags.push('echo');
             if (b.stat === 'skillDmg') tags.push('skill');
             if (b.stat === 'coordDmg') tags.push('coordinated');
-            if (b.stat === 'deepen') tags.push('deepen', 'buff');
+            if (b.stat === 'amplify') tags.push('amplify', 'buff');
             if (b.stat === 'atkPct') tags.push('atk', 'buff');
             if (b.stat === 'critRate' || b.stat === 'critDmg') tags.push('crit', 'buff');
             if (b.stat === 'resShred' || b.stat === 'defShred') tags.push('shred', 'debuff');

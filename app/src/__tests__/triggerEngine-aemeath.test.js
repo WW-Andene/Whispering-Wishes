@@ -42,13 +42,13 @@ describe('triggerEngine parity — Aemeath', () => {
     expect(block.effects[0].value).toBe(RESONANCE_CHAIN_DATA['Aemeath'].s1.critDmg);
   });
 
-  it('both real selfBuffs from CHAR_BUFF_TABLE are modeled (critDmg 60 AND deepen 25), not just the first', () => {
+  it('both real selfBuffs from CHAR_BUFF_TABLE are modeled (critDmg 60 AND amplify 25), not just the first', () => {
     const legacy = CHAR_BUFF_TABLE['Aemeath'].selfBuffs;
     expect(legacy).toHaveLength(2);
     const critBlock = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.selfbuff.between-the-stars-critdmg');
-    const deepenBlock = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.selfbuff.between-the-stars-finale-amp');
+    const amplifyBlock = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.selfbuff.between-the-stars-finale-amp');
     expect(critBlock.effects[0].value).toBe(legacy[0].value);
-    expect(deepenBlock.effects[0].value).toBe(legacy[1].value);
+    expect(amplifyBlock.effects[0].value).toBe(legacy[1].value);
   });
 
   it('Silent Protection outro buff matches CHAR_BUFF_TABLE.outroBuffs', () => {
@@ -86,7 +86,7 @@ describe('triggerEngine parity — Aemeath', () => {
     const block = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.inherent.before-all-sounds');
     expect(block.trigger).toEqual({ type: 'resource-threshold', resource: 'Resonance Rate', threshold: 4 });
     expect(block.timing.duration).toBe(54);
-    expect(block.effects).toEqual([{ stat: 'deepen', value: 200, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }]);
+    expect(block.effects).toEqual([{ stat: 'amplify', value: 200, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }]);
   });
 
   it("Resonance Rate genuinely reaches the real 4/4 cap through the real rotation (Overdrive+2, Encore+1, Overture+1), deriving a real 'resource-threshold:Resonance Rate:4' firing — not a trusted condition", () => {

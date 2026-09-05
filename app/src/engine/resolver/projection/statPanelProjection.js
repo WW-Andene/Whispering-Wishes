@@ -38,14 +38,14 @@ import { collapseDmgTypeBuckets } from '../../math/moveTypeRouting.js';
  * @returns {{ effAtk: number, avgCrit: number, dmgBonus: number, defMult: number, resMult: number,
  *   score: number, stats: object }} `stats` is the same (now-collapsed) object passed in, returned
  *   so the caller can destructure the individual fields it still tracks separately (atkPct/cr/cd/
- *   elemDmg/skillDmg/amplify/deepen/defShred/resShred/defIgnore) exactly as before.
+ *   elemDmg/skillDmg/amplify/defShred/resShred/defIgnore) exactly as before.
  */
 export function projectMainDpsStatPanel(finalStats, mainDpsMember, enemyContext, dpsFocus, totalMultBonus = 0) {
   collapseDmgTypeBuckets(finalStats, dpsFocus);
 
   const effAtk = Math.round(mainDpsMember.baseStat * (1 + finalStats.atkPct / 100));
   const avgCrit = calcAvgCrit(finalStats.cr, finalStats.cd);
-  const dmgBonus = calcDmgBonus(finalStats.elemDmg, finalStats.skillDmg, finalStats.amplify, finalStats.deepen);
+  const dmgBonus = calcDmgBonus(finalStats.elemDmg, finalStats.skillDmg, finalStats.amplify);
   const defMult = calcDefMult(enemyContext.enemyDef90, finalStats.defShred, finalStats.defIgnore);
   const resMult = calcResMult(enemyContext.baseRes, finalStats.resShred);
   const score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult * (1 + (totalMultBonus || 0) / 100));

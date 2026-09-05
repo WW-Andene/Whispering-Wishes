@@ -153,7 +153,7 @@ export function winningStanceForOwner(blocks, owner, forcedStance = null) {
   if (!ownerModeBlocks.length) return null;
   // confirmedWinningStance (added 2026-09-02, Lynae's case): an explicit, sourced pointer for when the
   // real per-mode difference genuinely can't be reduced to a comparable `effects[].value` (Lynae's own
-  // Rupture-mode bonus is a flat DOT-engine proc, her Strain-mode bonus a %-deepen multiplier — not the
+  // Rupture-mode bonus is a flat DOT-engine proc, her Strain-mode bonus a %-amplify multiplier — not the
   // same unit, and this function has no ATK/team context to convert between them honestly). Set ONLY
   // on the block matching a verdict independently verified by actually RUNNING calcTeamStats.js's own
   // now-fixed calcTuneBreakDmg mode-exclusivity resolution (real numbers, not a guess) — never a

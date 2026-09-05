@@ -149,7 +149,7 @@ export const PHOEBE_BLOCKS = [
     timing: { duration: 30 },
     target: { scope: 'next-on-field' },
     condition: { requiresStance: 'Confession mode', assumedInactive: true },
-    effects: [{ stat: 'deepen', value: 100, stacking: 'refresh', source: 'teammate-ally-action' }],
+    effects: [{ stat: 'amplify', value: 100, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Confession mode only: grants the on-field ally Silent Prayer (+100% Spectro Frazzle DMG Amp, plus -10% target Spectro RES and 50% longer Frazzle interval, neither modeled) — her real rotation stays in Absolution mode, so this block does not fire. The 18-Frazzle-stack debuff (frazzle stat, Level-scaling DOT) has no matching stat key in this schema, not modeled.',
   },
 
@@ -170,7 +170,7 @@ export const PHOEBE_BLOCKS = [
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'deepen', value: 120, scopedToBlockId: 'phoebe.outro.attentive-heart', source: 'self-kit' }],
+    effects: [{ stat: 'amplify', value: 120, scopedToBlockId: 'phoebe.outro.attentive-heart', source: 'self-kit' }],
     note: 'In Absolution, Outro DMG to Frazzle-afflicted targets +120% Amp (in Confession instead increases Silent Prayer\'s own Frazzle DMG Amp by another 120%, not modeled) — scoped to the Outro (not category-gated, so scopedToBlockId is required to avoid over-crediting her whole kit).',
   },
   {

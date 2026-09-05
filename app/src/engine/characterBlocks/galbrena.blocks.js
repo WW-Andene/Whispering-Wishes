@@ -131,7 +131,7 @@ export const GALBRENA_BLOCKS = [
     source: SOURCE, kind: 'debuff', section: 'Buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'all-enemies' },
-    effects: [{ stat: 'deepen', value: 1.5, stacking: 'stacking', maxStacks: 40 }],
+    effects: [{ stat: 'amplify', value: 1.5, stacking: 'stacking', maxStacks: 40 }],
     note: 'Afterflame: DMG Taken +1.5% per stack (up to 40 stacks, 60% cap) while Galbrena is in Demon Hypostasis, cleared when she exits — gained from ANY team Resonator\'s Echo Skill cast (capped once per Echo name), not her own casts, so no CHARACTER_ROTATIONS step of hers anchors the stacking trigger; modeled passive as an approximation. Realistically ~36% without Phrolova, ~48% with her, per the source note (rarely maxed at 60%).',
   },
 

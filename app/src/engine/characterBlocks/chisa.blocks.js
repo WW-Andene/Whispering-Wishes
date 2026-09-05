@@ -235,9 +235,9 @@ export const CHISA_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Serrated Loop' },
     timing: { duration: 99 }, // sentinel: conditional on Unseen Snare-Finality state, no natural decay sourced
     target: { scope: 'all-enemies' },
-    effects: [{ stat: 'deepen', value: 30 }],
+    effects: [{ stat: 'amplify', value: 30 }],
     // trigger retargeted Phase A audit 2026-09-04 (bug class c) — see chisa.debuff.thread-of-bane's
     // note for why 'Skill:Eye of Unraveling' never fired in the modeled Loop Rotation.
-    note: 'Unseen Snare-Finality: targets take 30% more Negative Status DMG (was deepen:15, wrong value, corrected) — an enemy-side debuff, modeled as triggered by the Unseen Snare-applying cast.',
+    note: 'Unseen Snare-Finality: targets take 30% more Negative Status DMG (was amplify:15, wrong value, corrected) — an enemy-side debuff, modeled as triggered by the Unseen Snare-applying cast.',
   },
 ];
