@@ -45,8 +45,6 @@ Game
 │       │   ├── Forte Circuit
 │       │   ├── Intro
 │       │   └── Outro
-│       ├── Inherent Skills → (each: ref Block)
-│       ├── Minor Fortes
 │       ├── Resonance Chain → (each node: ref Block)
 │       │   ├── S1
 │       │   ├── S2
