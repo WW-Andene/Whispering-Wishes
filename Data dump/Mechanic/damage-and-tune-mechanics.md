@@ -209,21 +209,43 @@ percent-per-point constant (0.12). Same numeric result. Treated as corroborating
 as a new source on its own — `strainDmgPerStack` is still read per-character from
 `CHAR_BUFF_TABLE`, never hardcoded to 0.12 blindly.
 
-### 2d. Tune Rupture bonus DMG — confirmed formula shape, but a real open question
+### 2d. Tune Rupture bonus DMG — CONFIRMED, boost-scaling gap closed (2026-09-06)
 
-Currently implemented as a **flat, per-character sourced value** (`ruptureDmgMult`, read
-directly from `CHAR_BUFF_TABLE[name].tuneBreak`), added as its own damage term — NOT scaled by
-team Tune Break Boost:
+Resolved 2026-09-06 via user-provided French text citing r/WutheringWaves, the Fandom Tune
+Rupture/Tune Rupture-Shifting/Tune Rupture-Interfered pages, and two YouTube sources. Real
+mechanic, full state machine:
 
-```
-dmg += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (ruptureDmgMult / 100) * breaksPerRot * defMult * resMult
-```
+1. **Tune Rupture - Shifting**: a mark, not damage on its own. Certain resonators (Lynae,
+   Aemeath, ...) apply it via their own attacks (see §2e). Lasts 25s. An enemy cannot carry both
+   Rupture-Shifting and Strain-Shifting at once (mutually exclusive per-enemy state).
+2. **Tune Break** (the detonation): once the enemy's Off-Tune gauge is full, ANY character can
+   trigger it.
+3. **Tune Rupture - Interfered**: the instant a Tune Break lands on a Shifting-marked enemy, the
+   mark is consumed and becomes Interfered for 8s — this transition is what fires the Tune
+   Rupture Response (the burst/nuke).
+4. **Damage attribution**: credited to whichever character's own kit provided the Shifting
+   debuff, NOT whoever pressed the Tune Break button.
+5. **Formula** (real, confirmed):
+   ```
+   Tune Rupture Response DMG = resonator's own Tune AMP % (their kit's own fixed Forte Circuit
+                                value) × (1 + Tune Break Boost)
+   ```
+   - Tune AMP is the SAME value already implemented as `ruptureDmgMult` (per-character, read from
+     `CHAR_BUFF_TABLE[name].tuneBreak`) — e.g. Lynae 1880.75%, Aemeath 596.43% (both already
+     correctly on file, independently confirmed by the user's own citation matching Aemeath's
+     dump value exactly).
+   - Tune Break Boost is the SAME value already tracked as `totalBoost` in `calcTuneBreakDmg`
+     (`baseTuneBreakBoost` + `boostToTeam`, summed across every Tune-Break-flagged team member) —
+     previously only applied to the BASE Tune Break DMG term and to Tune Strain's own term, never
+     to Rupture's. **This was the exact gap this section previously flagged as `NEEDS SOURCE`.**
+   - No in-combat accumulation: the burst is identical every Tune Break as long as the
+     resonator's own stats and the team's total Boost don't change (unlike Strain, which stacks
+     over the fight).
 
-The same external description above claims Rupture *also* scales with team Boost:
-`Base × (1 + team Boost multiplier)`. **Not yet reconciled** — it's unclear whether
-`ruptureDmgMult` already IS a pre-computed value that folds in a boost assumption for the
-specific characters currently using it, or whether a real boost-scaling term is missing
-entirely. `NEEDS SOURCE` before either changing the formula or declaring it correct as-is.
+Fixed in `engine/resolver/dot/dotFormulas.js`'s `calcTuneBreakDmg()`: both the shared-members
+Rupture term and each mode-exclusive candidate's own `ruptureDmgDelta` now multiply by
+`(1 + totalBoost * 0.01)`, matching the base-DMG term's existing `* 0.01` convention (totalBoost
+stored as whole points, e.g. `40` for "+40 Tune Break Boost", not a pre-divided fraction).
 
 ### 2e. Tune Rupture-Shifting application — not modeled at all, engine-wide
 

@@ -167,7 +167,16 @@ export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycle
   sharedMembers.forEach(m => {
     const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
     if (tb.ruptureDmgMult) {
-      dmg += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100) * breaksPerRot * defMult * resMult;
+      // (1 + totalBoost * 0.01) added 2026-09-06 — real, sourced formula (user-provided, matching
+      // the Mechanic doc's own §2d "NEEDS SOURCE" flag): "degat de rupture = multiplicateur du
+      // resonator (Tune AMP) x (1 + Tune Break Boost)". `ruptureDmgMult` IS the resonator's own Tune
+      // AMP (e.g. Aemeath's 596.43%, sourced from her kit's Tune Rupture Response text); totalBoost
+      // (already computed above from real baseTuneBreakBoost/boostToTeam data) was previously only
+      // applied to the base Tune Break DMG term and to Strain's own term, never to Rupture's — this
+      // was the exact open discrepancy the Mechanic doc flagged, now closed. Same 0.01 scaling
+      // convention the base-DMG term above already uses (totalBoost stored as whole points, e.g. 40
+      // for "+40 Tune Break Boost", not a pre-divided fraction).
+      dmg += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100) * (1 + totalBoost * 0.01) * breaksPerRot * defMult * resMult;
     }
   });
 
@@ -200,8 +209,10 @@ export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycle
   const exclusiveMembers = tbMembers.filter(m => CHAR_BUFF_TABLE[m.name].tuneBreak.modeExclusive);
   const exclusiveCandidates = exclusiveMembers.map(m => {
     const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
+    // (1 + totalBoost * 0.01) — see the shared-members loop's own comment above for the full
+    // rationale; same real formula applies to a mode-exclusive candidate's own Rupture delta.
     const ruptureDmgDelta = tb.ruptureDmgMult
-      ? DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100) * breaksPerRot * defMult * resMult
+      ? DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100) * (1 + totalBoost * 0.01) * breaksPerRot * defMult * resMult
       : 0;
     const strainDeepenDelta = (tb.maxStrainStacks && tb.strainDmgPerStack && totalBoost > 0)
       ? (tb.maxStrainStacks * totalBoost * tb.strainDmgPerStack / 100) * uptimeFactor
