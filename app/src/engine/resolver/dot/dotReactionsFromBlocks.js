@@ -25,6 +25,7 @@ import {
   FLARE_TICK_INTERVAL, FLARE_STACK_MULT,
 } from './dotFormulas.js';
 import { winningStanceForOwner } from '../gating/sequenceGating.js';
+import { resolveFusionBurstDetonations } from './resolveFusionBurstStacks.js';
 
 function lookupStackMult(table, stacks) {
   const idx = Math.max(0, Math.min(table.length - 1, Math.round(stacks)));
@@ -99,14 +100,23 @@ export function resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, resMul
 }
 
 /**
- * Fusion Burst — the engine-merge history (git log) 1.3. Pure boolean "does anyone apply it" gate, doesn't scale by
- * applier count or their own value at all (matches calcFusionBurstDmg exactly). `excludeNames` kept
- * for parity with the legacy function's own 2026-09-02 addition (Aemeath's mode-exclusivity fix).
+ * Fusion Burst — the engine-merge history (git log) 1.3. `excludeNames` kept for parity with the
+ * legacy function's own 2026-09-02 addition (Aemeath's mode-exclusivity fix).
+ *
+ * `explosions` (real, 2026-09-06 — see resolveFusionBurstStacks.js's own header for the full
+ * mechanic/sourcing): when `rotationsByOwner` is supplied, this is the real detonation count/rate
+ * derived from each real dotApplier's own sourced stack value (Aemeath +1/hit, Denia +1 or +2
+ * depending on move) crossing the real threshold (10 generically, 5 once Aemeath's own kit override
+ * applies) plus her own Duet-forced detonations — replacing the old flat "explosions =
+ * floor(rotTime/10)" guess. Falls back to that old heuristic when rotationsByOwner isn't supplied
+ * (every existing caller without the new param behaves byte-identically to before).
  */
-export function resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, resMult, excludeNames = [], stanceOverrides = null) {
+export function resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, resMult, excludeNames = [], stanceOverrides = null, rotationsByOwner = null) {
   const appliers = collectAppliers(blocksByOwner, 'fusionBurst', stanceOverrides).filter(b => !excludeNames.includes(b.source));
   if (!appliers.length) return { dmg: 0, active: false };
-  const explosions = Math.max(1, Math.floor(rotTime / Math.max(FUSION_BURST_THRESHOLD, 8)));
+  const explosions = rotationsByOwner
+    ? resolveFusionBurstDetonations(blocksByOwner, rotationsByOwner, stanceOverrides).totalDetonations
+    : Math.max(1, Math.floor(rotTime / Math.max(FUSION_BURST_THRESHOLD, 8)));
   const dmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (FUSION_BURST_THRESHOLD * 0.5) * FUSION_TRAIL_MULT;
   return { dmg: dmg * explosions * defMult * resMult, active: true };
 }

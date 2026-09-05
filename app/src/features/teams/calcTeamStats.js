@@ -762,7 +762,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // calcEngine.js functions, same rotTime/defMult/resShred inputs, byte-identical output; the actual
     // engine-vs-legacy `rotTime` reconciliation stays step 4's job (rotationTimeline itself), not this
     // one — DOT keeps using the same shared `rotTime` every other FULL-tier total already does.
-    const dotResult = resolveDotReactionDps(mems, rotTime, defMult, resShred, getEnemyRes, resMult, energyCycleFactors, engineChosenOrder?.blocksByOwner || null, resonanceModeByOwner);
+    const dotResult = resolveDotReactionDps(mems, rotTime, defMult, resShred, getEnemyRes, resMult, energyCycleFactors, engineChosenOrder?.blocksByOwner || null, resonanceModeByOwner, CHARACTER_ROTATIONS);
     let dotDmgPerRotation = dotResult.totalDmg;
     const hasFrazzle = dotResult.breakdown.frazzle.active;
     const hasErosion = dotResult.breakdown.erosion.active;
@@ -955,7 +955,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
             stanceOverrides[c.name] = combo[i] === 'fusion' ? 'Fusion Burst mode' : '__not-fusion-this-combo__';
           });
           const fusionDmg = fusionCompetingInCombo.length
-            ? recomputeFusionBurstDmg(mems, rotTime, defMult, dotResult.fusionBurstResMult, excludeNames, blocksByOwnerForFusion, stanceOverrides).dmg
+            ? recomputeFusionBurstDmg(mems, rotTime, defMult, dotResult.fusionBurstResMult, excludeNames, blocksByOwnerForFusion, stanceOverrides, CHARACTER_ROTATIONS).dmg
             : dotResult.breakdown.fusionBurst.dmg;
           let dmgAdj = fusionDmg, multAdj = 1;
           candidates.forEach((c, i) => {

@@ -74,7 +74,9 @@ export const DENIA_BLOCKS = [
     // Fusion Burst DOT reaction total (dotReactionsFromBlocks.js) instead of CHAR_BUFF_TABLE's
     // debuffs.fusionBurst flag. Reuses the identical winningStanceForOwner() resolution as appliesTags
     // — one mode decision, two consumers, not two independent mode mechanisms.
-    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // value:1 added 2026-09-06 — real, sourced: "Basic Stage 3/4 (both forms)/Mid-air Stage 3/4
+    // inflict 1 stack" (Denia dump line 92) — this block is her Breakdown-form Basic ATK combo.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 1 },
     note: 'Builds Conformal Charge toward 100, each hit inflicting Fusion Burst or Tune Strain - Shifting depending on Resonance Mode.',
   },
   {
@@ -134,7 +136,9 @@ export const DENIA_BLOCKS = [
     ],
     // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — same rationale as
     // denia.basic.breakdown-stage1-4 above.
-    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // value:2 added 2026-09-06 — real, sourced: "Intro/Final Act (both forms)/Erosion Field inflict 2
+    // stacks of Fusion Burst" (Denia dump line 92) — this block IS Erosion Field.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 2 },
     note: 'Off-field zone left by Final Act - Breakdown Form; pulls in and hits nearby targets every 4s for 30s, applying Fusion Burst/Tune Strain even after Denia swaps out. Modeled as one representative tick, not the full sustained-duration mechanic.',
   },
 

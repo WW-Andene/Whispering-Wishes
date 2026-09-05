@@ -81,7 +81,10 @@ export const AEMEATH_BLOCKS = [
     // "applies Tune Rupture/Fusion Burst depending on her Resonance Mode." Fusion-Burst-mode-only per
     // her kit text; gated the same way her tuneBreak.competesWithFusionBurstReaction resolution already
     // is (winningStanceForOwner), not a second mode mechanism.
-    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // value:1 added 2026-09-06 — real, sourced stack count: "team inflicting Fusion Burst adds 1
+    // Fusion Trail stack (30s, cap 30)" (dump line 83), consumed by resolveFusionBurstStacks.js's
+    // real team-wide detonation-timing simulation (see that file's own header for the full mechanic).
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 1 },
     // appliesTags added 2026-09-05, per the dump's own line 84 text ("Both modes: Basic Stage 3/4
     // (either form), Sync Strikes, and both Intro skills inflict Tune Rupture-Shifting / Fusion Burst
     // on hit") — the Tune Rupture-mode HALF of this same real trigger was previously entirely
@@ -128,7 +131,10 @@ export const AEMEATH_BLOCKS = [
     // dotApplier added 2026-09-02 — Basic Stage 3/4 inflicts Fusion Burst per her kit text (Forte
     // Circuit "To Sculpt the Silence": Basic Stage 3/4, Sync Strikes, both Intro skills), Fusion-Burst-
     // mode only.
-    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // value:1 added 2026-09-06 — real, sourced stack count: "team inflicting Fusion Burst adds 1
+    // Fusion Trail stack (30s, cap 30)" (dump line 83), consumed by resolveFusionBurstStacks.js's
+    // real team-wide detonation-timing simulation (see that file's own header for the full mechanic).
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 1 },
     // appliesTags added 2026-09-05 — see aemeath.intro.debut-of-meteoric-radiance's own comment for
     // the full rationale (same real dump line 84 trigger, Tune Rupture-mode half).
     appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
@@ -166,7 +172,10 @@ export const AEMEATH_BLOCKS = [
     note: '3 taps (per step note) = stages 2+3+4 of the 4-stage Mech Form combo.',
     // dotApplier added 2026-09-02 — bundles Stage 3/4 (her kit's real Fusion Burst trigger) alongside
     // Stage 2, same combo-bundling approximation this block already makes for its own damage.
-    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // value:1 added 2026-09-06 — real, sourced stack count: "team inflicting Fusion Burst adds 1
+    // Fusion Trail stack (30s, cap 30)" (dump line 83), consumed by resolveFusionBurstStacks.js's
+    // real team-wide detonation-timing simulation (see that file's own header for the full mechanic).
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 1 },
     // appliesTags added 2026-09-05 — see aemeath.intro.debut-of-meteoric-radiance's own comment for
     // the full rationale (same real dump line 84 trigger, Tune Rupture-mode half).
     appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
@@ -198,7 +207,10 @@ export const AEMEATH_BLOCKS = [
     note: '3 taps (per step note) = stages 2+3+4 of the 4-stage Aemeath Form combo.',
     // dotApplier added 2026-09-02 — same real Basic Stage 3/4 trigger as her Mech-form combos above,
     // in base Aemeath Form instead.
-    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // value:1 added 2026-09-06 — real, sourced stack count: "team inflicting Fusion Burst adds 1
+    // Fusion Trail stack (30s, cap 30)" (dump line 83), consumed by resolveFusionBurstStacks.js's
+    // real team-wide detonation-timing simulation (see that file's own header for the full mechanic).
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 1 },
     // appliesTags added 2026-09-05 — see aemeath.intro.debut-of-meteoric-radiance's own comment for
     // the full rationale (same real dump line 84 trigger, Tune Rupture-mode half).
     appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
