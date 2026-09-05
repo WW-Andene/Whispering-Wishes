@@ -184,7 +184,7 @@ instantly. Not currently representable in this engine (no boss-animation-state t
 anywhere), and not needed unless a specific boss fight is being modeled rather than a
 generic enemyDef/enemyRes target the way this engine currently treats every enemy.
 
-### 2b. Tune Break damage — formula confirmed, but WRONGLY GATED to specialist characters (real bug, logged 2026-09-06, not yet fixed)
+### 2b. Tune Break damage — CONFIRMED, universal-gate bug fixed (2026-09-06)
 
 `engine/resolver/dot/dotFormulas.js`'s `calcTuneBreakDmg()`:
 
@@ -205,23 +205,26 @@ team gets, structurally identical to Frazzle/Erosion (any real hit contributes, 
 specific gate). Only the FLAVOR (Rupture vs Strain — mutually exclusive, overwrite each other) and
 the bonus Response damage on top require a specific character's own kit.
 
-The current code gets this backwards:
+The code previously got this backwards:
 ```js
 const tbMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
 if (!tbMembers.length) return { dmg: 0, deepenMult: 1, exclusiveCandidates: [] };
 ```
 Any team with ZERO `tuneBreak`-flagged characters (the ~9 Rupture/Strain specialists — Lynae,
-Aemeath, Denia, Rebecca, Lucy, Mornye, Luuk Herssen, +2 more) currently gets **zero** Tune Break
-damage — a real, roster-wide gap affecting the large majority of possible team compositions, not
-specific to any one character. The base burst should fire for ANY team using the same real, already-
-built machinery: `resolveOffTuneGenerated()`'s per-character Off-Tune totals (§2a), summed
-team-wide, crossing the real enemy gauge (§2a's own `ENEMY_OFF_TUNE_GAUGE`) — exactly the shared-
-gauge/detonation-event infrastructure built in `RotationSimulator` the same day (see the git log
-entry "Real per-event Fusion Burst / Tune Break detonation timing"). The Rupture/Strain BONUS layer
-(`ruptureDmgMult`/`strainDmgPerStack`, already correct) should stay gated on a real specialist being
-present — only the BASE burst needs to stop being gated at all.
+Aemeath, Denia, Rebecca, Lucy, Mornye, Luuk Herssen, +2 more) got **zero** Tune Break damage — a
+real, roster-wide gap affecting the large majority of possible team compositions, not specific to
+any one character.
 
-**Status**: logged, not yet built. See §5 below for the full punch list this session ended on.
+**Fixed same day**: `breaksPerRot` now sums EVERY team member's own `resolveOffTuneGenerated()`
+total (§2a), not just `tbMembers`, crossing the real enemy gauge (`ENEMY_OFF_TUNE_GAUGE`) — the
+same real machinery already built for the timed-event infrastructure. The early `{dmg:0}` return
+only fires when there's genuinely nothing to compute from (no real blocks AND no specialist to fall
+back to the old flat heuristic for). The Rupture/Strain BONUS layer
+(`ruptureDmgMult`/`strainDmgPerStack`, Mornye's `interferedDmgAmp`, `exclusiveCandidates`) stays
+correctly gated on `tbMembers` — that part genuinely is character-specific, unchanged. Verified
+sane: a non-specialist team gets a real but modest universal burst (~2% of team DPS); a specialist
+still gets a much larger contribution (base + their own bonus stacked on top). Test coverage:
+`tuneBreakUniversalGate.test.js`.
 
 ### 2c. Tune Strain bonus DMG — confirmed, cross-checked
 
@@ -385,32 +388,29 @@ scattered across commit messages.
   (real character name) broke every "is this Aemeath" check that assumed the key was her name.
 - Added her real, previously-unmodeled Forte "Unlanded Melody" (fires off the real gauge-crossing
   event, no fabricated damage value).
+- **Tune Break's universal gate bug** (§2b above) — the biggest fix this session, roster-wide:
+  `calcTuneBreakDmg()` no longer returns zero damage entirely for a team with no Rupture/Strain
+  specialist; the base burst now derives from any team's real summed Off-Tune generation.
 
 ### Still open, in priority order this session ended on
-1. **Tune Break is universal, wrongly gated to specialists** (§2b above) — the single biggest
-   remaining gap, affecting most team compositions in the app, not just Aemeath. Real fix: stop
-   gating the BASE burst on `CHAR_BUFF_TABLE[name]?.tuneBreak`; derive it from any team's real
-   summed Off-Tune generation crossing the real enemy gauge, reusing the shared-gauge
-   infrastructure already built. Keep the Rupture/Strain bonus layer gated on a real specialist,
-   unchanged.
-2. **chain.s2's Tune-Rupture-mode stacking bonus** (the original motivating goal for building the
+1. **chain.s2's Tune-Rupture-mode stacking bonus** (the original motivating goal for building the
    real timeline) — infrastructure (`tune-break-detonation` tag) is ready; the block itself isn't
    built. Currently inert even if built: in Aemeath's own modeled Standard Rotation, the real
    detonation lands during Finale, not on a Duet cast, so "Duet-triggered" wouldn't fire. Revisit
-   once/if the Advanced (Quickswap) rotation is modeled (item 4) — the timing may line up there.
-3. **chain.s2's Fusion Burst-mode extensions** (+400% Duet mult in Stardust Resonance, +15%/stack
+   once/if the Advanced (Quickswap) rotation is modeled (item 3) — the timing may line up there.
+2. **chain.s2's Fusion Burst-mode extensions** (+400% Duet mult in Stardust Resonance, +15%/stack
    on Fusion Trail removal) — all real numbers are sourced (see §2d/2e-adjacent kit text), just not
    yet wired into a block.
-4. **Only Aemeath's Standard Rotation is modeled.** The Advanced (Quickswap) and S1+ Opener
+3. **Only Aemeath's Standard Rotation is modeled.** The Advanced (Quickswap) and S1+ Opener
    rotations the user provided (real, sourced, from a guide) aren't in `CHARACTER_ROTATIONS` at
    all — a real gap independent of anything else here.
-5. Outro's 10%→20% inflictor-specific scaling — still blocked on a missing per-recipient-action
+4. Outro's 10%→20% inflictor-specific scaling — still blocked on a missing per-recipient-action
    gating mechanism, unrelated to anything fixed this session.
-6. Vibration Strength (Poise/Stagger, §3) — still gated on stronger sourcing per the user's own
+5. Vibration Strength (Poise/Stagger, §3) — still gated on stronger sourcing per the user's own
    caution; not touched this session.
-7. Tune Rupture-Shifting's own damage-reaction consumer (§2e) — still no live consumer anywhere in
+6. Tune Rupture-Shifting's own damage-reaction consumer (§2e) — still no live consumer anywhere in
    the engine (the `appliesTags` marker exists on Aemeath's blocks, nothing reacts to it yet).
-8. Roster-wide: only Aalto and Aemeath have had a full individual-character verification pass; the
+7. Roster-wide: only Aalto and Aemeath have had a full individual-character verification pass; the
    other 55 released characters haven't been checked the same way (the standing, pre-existing
    directive — not new this session).
 
