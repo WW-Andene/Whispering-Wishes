@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Search, Star, Users, X, Heart, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
+import { Search, Star, Users, X, Heart, Music2, ShieldAlert } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { getElementColor, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon, getStatIcon, COMBAT_ROLE_ICONS } from '../../shared/utils/elementVisuals.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -204,12 +204,14 @@ export default function TeamSelector({
                                   value: val,
                                   label: <span className="inline-flex items-center gap-1.5"><img src={getElementIcon(element)} alt="" width={14} height={14} className="shrink-0" /> {val}</span>,
                                 })),
-                                ...[
-                                  ['Off-Tune', Music2], ['DEF Shred', ShieldOff], ['RES Shred', ShieldAlert],
-                                ].map(([val, Icon]) => ({
-                                  value: val,
-                                  label: <span className="inline-flex items-center gap-1.5"><Icon size={14} className="shrink-0" /> {val}</span>,
-                                })),
+                                // DEF Shred gets the official DEF stat icon (STAT_ICONS['DEF']) — there's
+                                // no equivalent official RES icon (only Crit Rate/DMG, Energy Regen, ATK,
+                                // HP, DEF exist in STAT_ICONS), so RES Shred keeps its lucide fallback, and
+                                // Off-Tune has no matching official asset either (COMBAT_ROLE_ICONS only has
+                                // the narrower 'Off-Tune Buildup Efficiency' tag, a different thing).
+                                { value: 'DEF Shred', label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon('DEF')} alt="" width={14} height={14} className="shrink-0" /> DEF Shred</span> },
+                                { value: 'Off-Tune', label: <span className="inline-flex items-center gap-1.5"><Music2 size={14} className="shrink-0" /> Off-Tune</span> },
+                                { value: 'RES Shred', label: <span className="inline-flex items-center gap-1.5"><ShieldAlert size={14} className="shrink-0" /> RES Shred</span> },
                               ]}
                               ariaLabel="Filter by debuff type"
                               small
