@@ -16,7 +16,11 @@ describe('triggerEngine parity — Aalto', () => {
     const legacyStats = createStats();
     applyResonanceChain(legacyStats, 'Aalto', 6, true);
     const blockStats = createStats();
-    resolveTriggerBlocks(AALTO_BLOCKS, { firedTriggers: new Set(['passive']), targetElementLower: 'aero', targetRole: 'Sub DPS' }, blockStats);
+    // Scoped to chain.* blocks only — resolveTriggerBlocks has no concept of "just the chain", and
+    // AALTO_BLOCKS now also carries a real, unrelated passive (aalto.buff.minor-fortes, added in the
+    // 2026-09-05 dump completeness pass) that would otherwise leak into this chain-specific comparison.
+    const chainBlocks = AALTO_BLOCKS.filter(b => b.id.startsWith('aalto.chain.'));
+    resolveTriggerBlocks(chainBlocks, { firedTriggers: new Set(['passive']), targetElementLower: 'aero', targetRole: 'Sub DPS' }, blockStats);
     expect(blockStats.atkPct).toBe(legacyStats.atkPct);
     expect(blockStats.skillDmg).toBe(legacyStats.skillDmg);
     expect(blockStats.elemDmg).toBe(legacyStats.elemDmg);
@@ -49,5 +53,20 @@ describe('triggerEngine parity — Aalto', () => {
 
   it("dmgFocus is ['Basic ATK', 'Skill', 'Liberation'] — was ['Coordinated ATK'], fabricated: Aalto has no Coordinated Attack mechanic anywhere in his kit", () => {
     expect(CHARACTER_DATA['Aalto'].dmgFocus).toEqual(['Basic ATK', 'Skill', 'Liberation']);
+  });
+
+  it('Mid-air Attack, Dodge Counter, Heavy ATK (Aimed Shot), and Minor Fortes exist — added 2026-09-05 against Characters data dump/Aalto/Aalto.md, previously absent entirely', () => {
+    const midair = AALTO_BLOCKS.find(b => b.id === 'aalto.midair.attack');
+    const dodge = AALTO_BLOCKS.find(b => b.id === 'aalto.basic.dodge-counter');
+    const heavy = AALTO_BLOCKS.find(b => b.id === 'aalto.heavy.aimed-shot');
+    const minorFortes = AALTO_BLOCKS.find(b => b.id === 'aalto.buff.minor-fortes');
+    expect(midair.damage.category).toBe('basicDmg');
+    expect(dodge.damage.category).toBe('basicDmg');
+    expect(heavy.section).toBe('HeavyATK');
+    expect(heavy.damage.category).toBe('heavyDmg');
+    expect(minorFortes.effects).toEqual([
+      { stat: 'elemDmg', value: 12, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ]);
   });
 });

@@ -6,6 +6,18 @@
 // ['Aalto'], SKILL_MULTIPLIERS['Aalto'], and CHARACTER_ROTATIONS['Aalto'] — no new
 // numbers invented. Simple kit: every trigger is 'cast' or 'passive', no
 // conditional/cast-order mechanics found.
+//
+// Completeness pass 2026-09-05, verified directly against `Characters data dump/
+// Aalto/Aalto.md` (the real prydwen.gg snapshot, not a derived table): three real,
+// sourced kit moves (Heavy ATK, Mid-air Attack, Dodge Counter) and his Minor Fortes
+// passive (Aero DMG+12%, ATK%+12%) existed in the dump and in SKILL_MULTIPLIERS['
+// Aalto'] but had no block at all — his computed DPS was silently missing them.
+// Added below. None of the three moves appear in CHARACTER_ROTATIONS['Aalto'] (the
+// dump's own "Rotation" section confirms his real optimal rotation never uses them
+// either — Basic ATK/Skill/Liberation/Forte/Intro/Outro only), so these blocks are
+// present and real but don't fire in the standard modeled rotation, same "sourced
+// but currently inert" status as chain.s1/s3 below — not a fabrication, a documented
+// gap between "real move that exists" and "used in his optimal play pattern."
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -40,6 +52,42 @@ export const AALTO_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('31.81% → 53.02% → 47.72%×2 → 50.37%×2 → 179.73%'), category: 'basicDmg', basis: 'ATK' },
   },
+  // Added 2026-09-05 (dump completeness pass): "Mid-air Attack: consumes STA, consecutive mid-air
+  // shots, Aero DMG" — a real move with its own multiplier row, previously entirely absent. Section/
+  // category kept BasicATK/basicDmg per this schema's established convention for mid-air attacks with
+  // no explicit "counted as Heavy Attack DMG" override text (the dump doesn't say Heavy here, unlike
+  // characters where it explicitly does) — same precedent as Lupa's/Luuk Herssen's mid-air blocks.
+  {
+    id: 'aalto.midair.attack',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('59.65%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Not in CHARACTER_ROTATIONS — real move, but his real optimal rotation (per the dump\'s own Rotation section) never uses it.',
+  },
+  // Added 2026-09-05 (dump completeness pass): "Dodge Counter: Basic Attack after successful Dodge,
+  // Aero DMG" — the dump's own text calls it a Basic Attack variant explicitly, hence basicDmg.
+  {
+    id: 'aalto.basic.dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('214.12%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Not in CHARACTER_ROTATIONS — real move, but his real optimal rotation never uses it.',
+  },
+  // Added 2026-09-05 (dump completeness pass): "Heavy Attack: aiming state, Aero DMG" — dump gives
+  // both an uncharged (35.79%) and fully-charged (80.52%) value for the same Aimed Shot; the charged
+  // value is modeled here as the real, intentional-use figure (same "model the deliberate cast, not
+  // the interrupted one" convention as every other charged/held move in this codebase) — the 35.79%
+  // uncharged tap is real but not separately modeled, documented here rather than silently dropped.
+  {
+    id: 'aalto.heavy.aimed-shot',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Aimed Shot' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('80.52%'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Fully-charged Aimed Shot (80.52%) — an uncharged tap deals 35.79% instead, real but not separately modeled. Not in CHARACTER_ROTATIONS — real move, but his real optimal rotation never uses it.',
+  },
   {
     id: 'aalto.liberation.flower-in-the-mist',
     source: SOURCE, kind: 'damage', section: 'Liberation',
@@ -70,6 +118,22 @@ export const AALTO_BLOCKS = [
     condition: { element: 'aero' },
     effects: [{ stat: 'elemDmg', value: 23, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Incoming Resonator gets +23% Aero DMG Amp for 14s.',
+  },
+  // Added 2026-09-05 (dump completeness pass): "Minor Fortes: Aero DMG+12%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus unlocked via Forte-tree ascension, entirely separate from Inherent
+  // Skills/weapon passives. Previously had no block anywhere in this file. section:'Buff' since it's
+  // not anchored to any one move — a flat kit-wide passive, same convention as Luuk Herssen's/Sanhua's
+  // Inherent-Skill-shaped self-buffs.
+  {
+    id: 'aalto.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'elemDmg', value: 12, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Aero DMG+12%, ATK%+12% (Characters data dump/Aalto/Aalto.md line 89-90). Unconditional, always active.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA) ──
