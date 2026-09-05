@@ -127,7 +127,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const electroFlare = blocksByOwner
     ? resolveElectroFlareFromBlocks(blocksByOwner, rotTime, defMult, electroFlareResMult)
     : calcElectroFlareDmg(members, rotTime, defMult, electroFlareResMult);
-  const tuneBreak = calcTuneBreakDmg(members, rotTime, defMult, mainResMult, energyCycleFactors);
+  const tuneBreak = calcTuneBreakDmg(members, rotTime, defMult, mainResMult, energyCycleFactors, blocksByOwner);
 
   // the engine-architecture history (git log) item 9 (Aemeath's mode-exclusivity fix): flag which exclusive candidates
   // compete with the shared fusionBurst reaction above — calcTeamStats.js needs this to run its own

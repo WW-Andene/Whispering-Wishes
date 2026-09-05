@@ -21,7 +21,9 @@
 // five rotation-aggregate DOT mechanics have one shared home rather than being split arbitrarily.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { CHAR_BUFF_TABLE } from '../../../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS } from '../../../data/characters.js';
+import { resolveOffTuneGenerated } from '../dps/resolveOffTune.js';
+import { ENEMY_OFF_TUNE_GAUGE } from '../../math/offTuneFormula.js';
 
 // ── Constants (named, not magic) ──
 export const DOT_LEVEL_MULT = 3674;   // Level 90 character level multiplier
@@ -150,7 +152,7 @@ export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
 // calcTeamStats.js:1118-1124), so every converted character's Tune Break contribution already comes
 // from the SAME code whether or not their own kit is otherwise legacy- or modern-computed — this
 // relocation just moves that shared code out of the legacy file it used to live in.
-export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycleFactors) {
+export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycleFactors, blocksByOwner = null) {
   const tbMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
   if (!tbMembers.length) return { dmg: 0, deepenMult: 1, exclusiveCandidates: [] };
   let totalBoost = 0;
@@ -158,8 +160,41 @@ export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycle
     const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
     totalBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
   });
-  const hasAccel = tbMembers.some(m => CHAR_BUFF_TABLE[m.name].tuneBreak.boostToTeam > 20);
-  const breaksPerRot = hasAccel ? Math.min(2, Math.max(1, Math.floor(rotTime / 12))) : 1;
+  // breaksPerRot (real, 2026-09-06): how many times the enemy's own Off-Tune gauge actually fills
+  // within this rotation — direct user instruction: "when it's automatic, trigger when gauge is
+  // full, when it's not automatic trigger on the rotation optimal window/character... in the end
+  // it's a DPS question as always." This calculator already assumes optimal play everywhere else
+  // (perfect timing, perfect uptime), so the automatic-vs-manual-F-press distinction converges to
+  // the SAME math either way: an optimal player presses F the instant the gauge is full, same as
+  // an automatic mob's instant break. Every enemy selectable in this app (`enemyEcho`) is boss/
+  // Overlord-tier anyway — echoes only drop from that tier — so `ENEMY_OFF_TUNE_GAUGE.boss` (200,
+  // the sourced fixed total, see offTuneFormula.js) is the correct gauge size unconditionally, no
+  // per-target classification needed.
+  //
+  // Real total = every team member's own Off-Tune contribution over their own real rotation
+  // (resolveOffTuneGenerated, built earlier this session — previously computed but never wired
+  // into this formula, which still used a flat "assume ~1, or up to 2 if someone has an
+  // acceleration buff" guess). A steady-state RATE (can be fractional, e.g. 1.5), not an integer
+  // count — same "fraction of a cooldown actually sustainable" convention already used elsewhere
+  // in this engine (resolveHitComposedDps.js's own cooldownSteadyState gate) rather than an
+  // artificial floor/cap.
+  //
+  // Falls back to the old flat heuristic only when blocksByOwner isn't supplied (a caller that
+  // genuinely can't provide real blocks — e.g. a mixed/legacy-only team, or this file's own older
+  // tests) — every existing caller without this new param behaves byte-identically to before.
+  let breaksPerRot;
+  if (blocksByOwner) {
+    const totalOffTunePerRot = tbMembers.reduce((sum, m) => {
+      const blocks = blocksByOwner[m.name];
+      const rotation = CHARACTER_ROTATIONS[m.name];
+      if (!blocks || !rotation) return sum;
+      return sum + resolveOffTuneGenerated(blocks, rotation).total;
+    }, 0);
+    breaksPerRot = totalOffTunePerRot / ENEMY_OFF_TUNE_GAUGE.boss.max;
+  } else {
+    const hasAccel = tbMembers.some(m => CHAR_BUFF_TABLE[m.name].tuneBreak.boostToTeam > 20);
+    breaksPerRot = hasAccel ? Math.min(2, Math.max(1, Math.floor(rotTime / 12))) : 1;
+  }
   const uptimeFactor = rotTime > 0 ? Math.min(1, (8 * breaksPerRot) / rotTime) : 0;
   let dmg = TUNE_BREAK_BASE_DMG * (1 + totalBoost * 0.01) * breaksPerRot * defMult;
 
