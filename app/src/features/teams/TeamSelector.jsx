@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
-import { Search, Star, Users, X, Heart, Swords, TrendingUp, Target, Flame, Droplets, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
+import { Search, Star, Users, X, Heart, Swords, TrendingUp, Target, Flame, Music2, ShieldOff, ShieldAlert } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { getElementColor, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon } from '../../shared/utils/elementVisuals.js';
+import { getElementColor, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon, COMBAT_ROLE_ICONS } from '../../shared/utils/elementVisuals.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -39,10 +39,14 @@ export default function TeamSelector({
   state,
 }) {
   const { getImageFraming } = useImageFramingContext();
+  // COMBAT_ROLE_ICONS's own key order IS the wiki's fixed, game-wide Combat Role ordering (see its
+  // comment in elementVisuals.js) — sorting by that index instead of alphabetically is what makes
+  // this list read as a coherent, curated ordering rather than a shuffled A-Z one.
+  const COMBAT_ROLE_ORDER_INDEX = new Map(Object.keys(COMBAT_ROLE_ICONS).map((tag, i) => [tag, i]));
   const allCombatRoleTags = useMemo(() => {
     const tags = new Set();
     Object.values(CHARACTER_DATA).forEach(d => d.combatRoles?.forEach(t => tags.add(t)));
-    return [...tags].sort();
+    return [...tags].sort((a, b) => (COMBAT_ROLE_ORDER_INDEX.get(a) ?? 999) - (COMBAT_ROLE_ORDER_INDEX.get(b) ?? 999));
   }, []);
   return (
                   <FocusTrapModal isOpen={teamSelectorOpen} onClose={() => setTeamSelectorOpen(false)} className="" onClick={() => setTeamSelectorOpen(false)} centered padding="p-3">
@@ -180,9 +184,21 @@ export default function TeamSelector({
                               onChange={setTeamDebuffFilter}
                               options={[
                                 { value: 'all', label: t('teams.selector.allDebuffs') },
+                                // The 6 elemental debuffs (one per element — Frazzle/Erosion/Chafe/Flare/
+                                // Burst/Bane) use their matching ELEMENT_ICONS instead of a generic lucide
+                                // icon, both for visual consistency with every other element-tagged filter
+                                // in the app and because a plain Flame/Droplets pairing doesn't actually
+                                // track each debuff's real element (this list used to only carry Frazzle
+                                // and Erosion, silently dropping the other 4 element debuffs entirely).
                                 ...[
-                                  ['Frazzle', Flame], ['Erosion', Droplets], ['Off-Tune', Music2],
-                                  ['DEF Shred', ShieldOff], ['RES Shred', ShieldAlert],
+                                  ['Frazzle', 'Spectro'], ['Erosion', 'Aero'], ['Glacio Chafe', 'Glacio'],
+                                  ['Electro Flare', 'Electro'], ['Fusion Burst', 'Fusion'], ['Havoc Bane', 'Havoc'],
+                                ].map(([val, element]) => ({
+                                  value: val,
+                                  label: <span className="inline-flex items-center gap-1.5"><img src={getElementIcon(element)} alt="" width={14} height={14} className="shrink-0" /> {val}</span>,
+                                })),
+                                ...[
+                                  ['Off-Tune', Music2], ['DEF Shred', ShieldOff], ['RES Shred', ShieldAlert],
                                 ].map(([val, Icon]) => ({
                                   value: val,
                                   label: <span className="inline-flex items-center gap-1.5"><Icon size={14} className="shrink-0" /> {val}</span>,

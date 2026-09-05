@@ -120,7 +120,11 @@ const KuroSelect = memo(({ value, onChange, options, className = '', ariaLabel, 
         aria-expanded={open}
         aria-haspopup="listbox"
       >
-        <span className="truncate">{selected?.label ?? value}</span>
+        {/* min-w-0 is required for truncate to work inside a flex row — without it a flex item
+            refuses to shrink below its content's natural width, so a long label (e.g. "Resonance
+            Liberation DMG Amplification") just overflows and gets hard-clipped by the button/card's
+            own overflow instead of ellipsing gracefully. */}
+        <span className="truncate min-w-0">{selected?.label ?? value}</span>
         <ChevronDown size={12} className={`flex-shrink-0 text-gray-500 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && pos && createPortal(
