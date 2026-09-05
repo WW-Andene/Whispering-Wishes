@@ -70,16 +70,13 @@ ever seeing 1a's source, which is strong corroborating evidence both are the rea
 - **%Special DMG** — 1a confirms it's unused game-wide, matching this engine correctly having
   no stat or formula term for it at all.
 
-**One real, unresolved discrepancy — flagged, not silently fixed:** 1a's `Bonuses` treats DMG
-Amplify as ONE additive term: `1 + (Amplify_Target + Amplify_Attacker)`. This engine's
-`calcDmgBonus()` instead applies `amplify` and `deepen` as TWO SEPARATE MULTIPLICATIVE layers:
-`(1 + amplify/100) × (1 + deepen/100)`. These are not mathematically equivalent whenever both
-are nonzero on the same hit (multiplicative compounding vs. one additive sum). Unresolved
-whether this engine's `deepen` corresponds to 1a's `Amplify_Attacker` (in which case the current
-multiplicative treatment may be overcrediting any hit with both amplify AND deepen active) or
-represents a distinct real mechanic 1a's source doesn't cover at all. `NEEDS SOURCE` before
-changing `calcDmgBonus()` — this touches every converted character's golden fixture, so it is
-NOT a small change and should not be made on inference alone.
+**Resolved 2026-09-05 (direct user correction):** "Deepen" and "Amplify" are the same real buff
+under two different terms, not two independent mechanics — confirmed by the user as the source.
+`calcDmgBonus()` previously applied `amplify` and `deepen` as TWO SEPARATE MULTIPLICATIVE layers:
+`(1 + amplify/100) × (1 + deepen/100)`, double-counting the same buff whenever a character's kit
+used one label and another buff on the same hit used the other. Merged into a single `amplify`
+accumulator everywhere (every `stat: 'deepen'` tag renamed to `'amplify'`); `calcDmgBonus()` is now
+`(1 + (elemDmg+skillDmg)/100) × (1 + amplify/100)`, matching 1a's real single additive Amplify term.
 
 ### 1c. This engine's actual resolved chain
 
