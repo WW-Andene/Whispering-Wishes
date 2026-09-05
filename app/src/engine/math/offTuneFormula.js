@@ -14,20 +14,19 @@
 // compute a real number — an explicit, documented approximation (never claim this is
 // as precise as a real per-move-per-hit value).
 //
-// Fixed 2026-09-06 (direct user correction): applied PER REAL HIT for EVERY section, not
-// just Basic ATK. The original version only multiplied Basic ATK by its real hit count
-// (`damage.hits.length`) and treated every other section as "once per cast regardless of
-// hit count" — an inconsistency, not a real rule: "action does X > fills gauge > gauge
-// full > break" is universal and per-hit, the same way real %ATK damage is already
-// tracked per real hit (`damage.hits`, sourced via parseSkillMultiplierHits), not per
-// cast. A rotation's real hit counts are already fixed, sourced kit facts (same
-// discipline as damage numbers) — not something a caller can inflate by "spamming," so
-// there's no risk of a high-hit-count move artificially dominating Off-Tune generation
-// the way it would if hit count were an unconstrained free variable.
+// 2026-09-06: briefly "fixed" to apply per real damage-sub-hit for EVERY section, then
+// corrected back by a direct user clarification: the "hit" the source's own chart means
+// is the real ACTION/cast itself (one Liberation button-press = one Off-Tune tick), NOT
+// however many %ATK sub-segments that one cast's own damage formula happens to split
+// into for damage-calculation purposes (e.g. a Liberation written as "50%×4+30%" for
+// damage math is still ONE real action worth ONE base value, not 4). Basic Attack is the
+// one real exception — its own combo genuinely consists of separate real swings, matching
+// the source's own explicit "per hit in a combo" wording for that category specifically,
+// no other category gets that same qualifier. So: BasicATK scales by its real combo hit
+// count; every other section fires ONCE per cast, regardless of its own internal %ATK
+// segment count.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Every range below is a PER-HIT value now (see file header) — the same sourced numbers as
-// before, just applied consistently instead of only for BasicATK.
 export const SECTION_OFF_TUNE_RANGES = {
   Liberation: { min: 40, max: 50 },
   Intro: { min: 15, max: 20 },
@@ -55,9 +54,10 @@ export const ENEMY_OFF_TUNE_GAUGE = {
 
 /**
  * [FORMULA · OFF-TUNE] Real Off-Tune points a single block contributes when it fires, per the
- * sourced section-range midpoints — applied PER REAL HIT (`damage.hits.length`), uniformly
- * across every section (fixed 2026-09-06 — previously only BasicATK was per-hit; every other
- * section was wrongly treated as "once per cast" regardless of its own real hit count).
+ * sourced section-range midpoints. BasicATK is applied PER REAL HIT (`damage.hits.length` — the
+ * source's own "per hit in a combo" qualifier, unique to that category); every other section
+ * fires ONCE per cast, regardless of its own internal %ATK sub-hit count (corrected 2026-09-06 —
+ * see file header for the direct user correction this reverts a brief over-generalization of).
  * `damage.category === 'coordDmg'` (Coordinated Attack) always contributes 0 regardless of
  * section, per the source's own "most Coordinated Attacks: 0" rule.
  * @param {import('../schema/block.schema.js').TriggerBlock} block
@@ -65,8 +65,10 @@ export const ENEMY_OFF_TUNE_GAUGE = {
  */
 export function offTuneValueForBlock(block) {
   if (block.damage?.category === 'coordDmg') return 0;
-  const perHitValue = OFF_TUNE_VALUE_BY_SECTION[block.section];
-  if (perHitValue == null) return 0; // Outro/Chain/Buff/utility — not a real in-combat cast
-  const hitCount = block.damage?.hits?.length || 1;
-  return perHitValue * hitCount;
+  const perCastValue = OFF_TUNE_VALUE_BY_SECTION[block.section];
+  if (perCastValue == null) return 0; // Outro/Chain/Buff/utility — not a real in-combat cast
+  if (block.section === 'BasicATK' && block.damage?.hits?.length) {
+    return perCastValue * block.damage.hits.length; // "per hit in a combo" — real exception
+  }
+  return perCastValue;
 }

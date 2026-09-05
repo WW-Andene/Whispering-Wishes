@@ -20,12 +20,12 @@ describe('aemeath.forte.unlanded-melody', () => {
     expect(block.trigger).toEqual({ type: 'ally-action', action: 'tune-break-detonation' });
   });
 
-  it('genuinely fires at the exact real step where the shared Off-Tune gauge crosses the enemy total (Overdrive, per the per-hit Off-Tune fix)', () => {
+  it('genuinely fires at the exact real step where the shared Off-Tune gauge crosses the enemy total (Finale, per the corrected windowed-cast fix)', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Aemeath'], AEMEATH_BLOCKS);
     const results = simulateRotation(AEMEATH_BLOCKS, steps, 'Fusion Burst mode');
     const firingStep = results.find(r => r.actionTags.has('tune-break-detonation'));
     expect(firingStep).toBeTruthy();
-    expect(firingStep.step.skill).toBe('Heavenfall Edict: Overdrive');
+    expect(firingStep.step.skill).toBe('Heavenfall Edict: Finale');
     // Same real actionTags-matching logic resolveSimulatedTeamRotation.js/resolveHitComposedTeamDps.js
     // already use for every 'ally-action' block — this block's own `trigger.action` is genuinely
     // present in the real step's actionTags, not just declared.

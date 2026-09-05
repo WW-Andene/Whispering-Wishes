@@ -139,7 +139,7 @@ gauge total 100 points:**
 | Forte Circuit attack (nuke / full-gauge move) | 15–25 | High |
 | Resonance Skill | 8–12 | Moderate |
 | Heavy Attack / Perfect Dodge | 4–6 | Low |
-| Basic Attack | 1–3 | Very low |
+| Basic Attack (per hit in a combo) | 1–3 | Very low |
 | Echo Skill, DOT, most Coordinated Attacks | 0 | None |
 
 **What's still missing, precisely:** these are GENERIC, per-action-TYPE ranges (explicitly
@@ -150,17 +150,17 @@ midpoint), which is a modeling approximation, not a sourced exact number — doc
 as "approximated within the sourced range," never presented as if it were an exact Lv.10 value
 the way `damage.hits` numbers are.
 
-**Applied PER REAL HIT, for every action type (fixed 2026-09-06, direct user correction)**: "there
-is literally a per hit value for each skill, attack, intro/outro or whatever in every character's
-kit" — "action does X, fills gauge, gauge full, break" is universal and per-hit, the same way real
-damage is already tracked per real hit (`damage.hits`), not per cast. The engine previously only
-applied this per real hit for Basic Attacks and treated every other action type as "once per cast
-regardless of real hit count" — an inconsistency, now fixed (`engine/math/offTuneFormula.js`'s
-`offTuneValueForBlock()`): a real hit count is already a sourced kit fact for every move (same
-data `damage.hits.length` already provides for damage), so this isn't a new sourcing burden, just
-consistent application of what was already on file. No risk of an unbalanced "spam a high-hit-
-count move to dominate Off-Tune" exploit — a rotation's real hit counts are fixed, sourced kit
-facts, not a free variable a caller can inflate.
+**Applied per real ACTION, not per %ATK sub-hit (corrected 2026-09-06)**: the "hit" this mechanic
+counts is the real player action/cast itself — one Liberation button-press is one Off-Tune tick,
+even if that Liberation's own damage formula is written as several %ATK sub-hits for damage-
+calculation purposes (e.g. "50%×4+30%"). A brief same-day attempt to apply the base value per real
+%ATK sub-hit for every section was corrected by direct user clarification: that conflates how
+damage is CALCULATED (summed sub-hits) with how the Off-Tune mechanic actually counts (per cast).
+**Basic Attack is the one real exception** — the source's own chart explicitly qualifies it "per
+hit in a combo," since a Basic Attack combo genuinely consists of separate real swings, unlike a
+Liberation/Skill/Forte/Intro's own %ATK breakdown. So: BasicATK scales by its real combo hit count
+(`damage.hits.length`); every other section fires once per cast regardless of its own internal
+%ATK segment count (`engine/math/offTuneFormula.js`'s `offTuneValueForBlock()`).
 
 **Worked example of the formula (user-provided, 2026-09-05, same source), confirms the
 Accumulation Rate term is the same real stat as "Tune Break Boost":** a Liberation with Base

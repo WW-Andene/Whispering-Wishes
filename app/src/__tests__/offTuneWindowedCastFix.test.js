@@ -7,10 +7,11 @@
  * `trigger.type === 'cast'` + `trigger.on`, silently excluding every windowed-cast block — for
  * Aemeath specifically, this dropped BOTH her real Duet casts from her own Off-Tune total entirely.
  *
- * Numbers updated again same day after a SECOND real fix (direct user correction: every section
- * must scale by its own real hit count, not just Basic ATK — see offTuneFormula.js's own header).
- * Encore has 8 real hits (17.90%x4+35.79%x3+178.93% -> 4+3+1), Overture has 13 (per her own real
- * damage.hits) — both `section: 'Skill'` (10/hit) — so 80 and 130 respectively, not a flat 10 each.
+ * (A brief follow-up "fix" made this per-real-%ATK-sub-hit for every section, then got reverted
+ * the same day by a direct user correction: the real "hit" this mechanic counts is the ACTION
+ * itself — a Liberation with 4 %ATK sub-hits in its own damage formula is still ONE real cast, not
+ * 4. Only Basic ATK's own combo genuinely consists of separate real swings. So Encore/Overture,
+ * both `section: 'Skill'`, are back to a flat 10 each — one real cast apiece.)
  */
 import { describe, it, expect } from 'vitest';
 import { resolveOffTuneGenerated } from '../engine/resolver/dps/resolveOffTune.js';
@@ -19,23 +20,23 @@ import { AEMEATH_BLOCKS } from '../engine/characterBlocks/aemeath.blocks.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
 
 describe('resolveOffTuneGenerated — includes windowed-cast blocks (Aemeath Duet fix)', () => {
-  it("both real Duet casts (Encore, Overture) genuinely contribute — no longer silently dropped, and correctly scaled by their own real hit counts", () => {
+  it("both real Duet casts (Encore, Overture) genuinely contribute their real 10 Off-Tune points (section: 'Skill') — no longer silently dropped", () => {
     const { perStep, total } = resolveOffTuneGenerated(AEMEATH_BLOCKS, CHARACTER_ROTATIONS['Aemeath']);
     const encore = perStep.find(s => s.skill === 'Seraphic Duet: Encore');
     const overture = perStep.find(s => s.skill === 'Seraphic Duet: Overture');
-    expect(encore?.gain).toBe(80);   // 8 real hits x 10 (section: Skill)
-    expect(overture?.gain).toBe(130); // 13 real hits x 10 (section: Skill)
-    expect(total).toBe(607);
+    expect(encore?.gain).toBe(10);
+    expect(overture?.gain).toBe(10);
+    expect(total).toBe(224.5);
   });
 });
 
 describe('RotationSimulator — real Tune Break detonation timing now includes Duet\'s own Off-Tune contribution', () => {
-  it('the real detonation fires at Overdrive (t=6) once every section is correctly scaled by its own real hit count', () => {
+  it('the real detonation fires at Finale (t=15), not one step later at the pre-Outro Form Switch', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Aemeath'], AEMEATH_BLOCKS);
     const results = simulateRotation(AEMEATH_BLOCKS, steps, 'Fusion Burst mode');
     const detonation = results.find(r => r.actionTags.has('tune-break-detonation'));
     expect(detonation).toBeTruthy();
-    expect(detonation.step.skill).toBe('Heavenfall Edict: Overdrive');
-    expect(detonation.time).toBe(6);
+    expect(detonation.step.skill).toBe('Heavenfall Edict: Finale');
+    expect(detonation.time).toBe(15);
   });
 });
