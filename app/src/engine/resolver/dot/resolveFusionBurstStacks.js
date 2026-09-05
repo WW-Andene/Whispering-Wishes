@@ -61,7 +61,10 @@ export function resolveFusionBurstDetonations(blocksByOwner, rotationsByOwner, s
 
     const fusionBlocks = blocks.filter(b => b.dotApplier?.mechanic === 'fusionBurst' && b.dotApplier.value);
     if (fusionBlocks.length) {
-      const byLabel = new Map(fusionBlocks.map(b => [b.trigger.on, b]));
+      // b.trigger.on ?? b.trigger.attemptOn — same real bug fixed in resolveOffTune.js: a
+      // `windowed-cast` block's match label lives in `attemptOn`, not `on`. No current
+      // Fusion-Burst-tagged block is windowed-cast, but this stays correct if one ever is.
+      const byLabel = new Map(fusionBlocks.map(b => [b.trigger.on ?? b.trigger.attemptOn, b]));
       for (const step of rotation) {
         if (!step.type || !step.skill) continue;
         const block = byLabel.get(`${step.type}:${step.skill}`);

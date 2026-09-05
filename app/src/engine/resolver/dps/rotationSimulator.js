@@ -398,8 +398,11 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
       // tagged event stream any OTHER team member's 'ally-action' trigger can scan across every
       // owner's results, not just its own (see buildBlockWindows.js's own doc for how consumers read
       // this cross-character, unlike every other trigger type which is intentionally owner-scoped).
+      // (b.trigger.on ?? b.trigger.attemptOn) — same real bug fixed below for the Off-Tune/Fusion
+      // Burst gauge loop: a `windowed-cast` block's match label lives in `attemptOn`. No current
+      // appliesTags-bearing block is windowed-cast, but this stays correct if one ever is.
       for (const b of blocks) {
-        if (b.trigger.type !== 'cast' || b.trigger.on !== label || !b.appliesTags?.length) continue;
+        if ((b.trigger.on ?? b.trigger.attemptOn) !== label || !b.appliesTags?.length) continue;
         if (ineligibleBlockIds.has(b.id)) continue;
         for (const entry of b.appliesTags) {
           // Bare-string entries (Qingxiao's shape) are unconditional, as before. Object entries
@@ -425,8 +428,15 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
       // by any 'ally-action' trigger (e.g. Aemeath's chain.s2 stacking bonus) the exact same way
       // appliesTags-driven statuses already are, just sourced from a real running gauge instead of
       // a static per-block tag.
+      // Fixed 2026-09-06 (real bug, caught cross-checking Aemeath's Off-Tune total by hand against
+      // her real Standard Rotation): a `windowed-cast`-triggered block (her own Seraphic Duet
+      // Encore/Overture) has no `trigger.on` — its match label lives in `trigger.attemptOn` instead.
+      // The original `b.trigger.type !== 'cast'` guard silently excluded BOTH her real Duet casts
+      // from Off-Tune generation entirely (10 each, `section: 'Skill'` — 20 real points missing),
+      // shifting exactly when her real Tune Break detonation fires. Matches `b.trigger.on ??
+      // b.trigger.attemptOn` instead of gating on the trigger TYPE at all.
       for (const b of blocks) {
-        if (b.trigger.type !== 'cast' || b.trigger.on !== label || ineligibleBlockIds.has(b.id)) continue;
+        if ((b.trigger.on ?? b.trigger.attemptOn) !== label || ineligibleBlockIds.has(b.id)) continue;
         if (b.dotApplier?.mechanic === 'fusionBurst' && b.dotApplier.value) {
           const req = b.dotApplier.requiresStance;
           if (req == null || stanceForOwner(owner) === req) {

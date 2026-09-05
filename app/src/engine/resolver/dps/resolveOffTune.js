@@ -22,13 +22,20 @@ import { offTuneValueForBlock } from '../../math/offTuneFormula.js';
  * @returns {{ total: number, perStep: {type: string, skill: string, gain: number}[] }}
  */
 export function resolveOffTuneGenerated(blocks, rotation) {
-  const castBlocks = blocks.filter(b => b.trigger.type === 'cast' && b.trigger.on);
+  // Fixed 2026-09-06 (real bug, caught cross-checking Aemeath's Off-Tune total against a real
+  // rotation by hand): a `windowed-cast`-triggered block (e.g. Aemeath's own Seraphic Duet Encore/
+  // Overture — real Seraphic Duo window gating built earlier this session) has no `trigger.on`, its
+  // match label lives in `trigger.attemptOn` instead. The old `trigger.type === 'cast' && trigger.on`
+  // filter silently excluded every such block — for Aemeath specifically, this dropped BOTH her real
+  // Duet casts (10 Off-Tune each, `section: 'Skill'`) from her own total entirely, understating it
+  // by 20 and shifting exactly when her real Tune Break detonation fires.
+  const castBlocks = blocks.filter(b => (b.trigger.type === 'cast' || b.trigger.type === 'windowed-cast') && (b.trigger.on ?? b.trigger.attemptOn));
   const perStep = [];
   let total = 0;
   for (const step of rotation || []) {
     if (!step.type || !step.skill) continue;
     const label = `${step.type}:${step.skill}`;
-    const matches = castBlocks.filter(b => b.trigger.on === label);
+    const matches = castBlocks.filter(b => (b.trigger.on ?? b.trigger.attemptOn) === label);
     if (!matches.length) continue;
     // ONE real cast = ONE Off-Tune contribution, regardless of how many separate TriggerBlocks
     // this schema splits that single cast into (e.g. a damage block plus a same-cast-triggered
