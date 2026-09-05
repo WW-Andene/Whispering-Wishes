@@ -7,6 +7,7 @@ import { deriveStepsFromRotation, simulateRotation } from '../engine/resolver/dp
 import { AEMEATH_BLOCKS } from '../engine/characterBlocks/aemeath.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
 import { resolveConcertoEnergyGenerated } from '../engine/resolver/dps/resolveConcertoEnergy.js';
+import { resolveResourceGenerated } from '../engine/resolver/dps/resolveResourceGenerated.js';
 
 describe('triggerEngine parity — Aemeath', () => {
   it('every block matches the canonical schema (Layer 4 migration)', () => {
@@ -125,5 +126,22 @@ describe('triggerEngine parity — Aemeath', () => {
     expect(perStep.find(s => s.skill === 'Debut of Meteoric Radiance')?.gain).toBe(10);
     expect(perStep.find(s => s.skill === 'Heavenfall Edict: Overdrive')?.gain).toBe(20);
     expect(perStep.find(s => s.skill === 'Heavenfall Edict: Finale')?.gain).toBe(20);
+  });
+
+  it("Resonance Rate generated over her real rotation includes Overdrive+2 (Duet casts don't carry Resonance Rate contributions of their own beyond what's on Overdrive/S1)", () => {
+    const { perStep } = resolveResourceGenerated(AEMEATH_BLOCKS, CHARACTER_ROTATIONS['Aemeath'], 'Resonance Rate');
+    expect(perStep.find(s => s.skill === 'Heavenfall Edict: Overdrive')?.gain).toBe(2);
+  });
+
+  it("Synchronization Rate — partial, sourced-only tracking (2026-09-05 correction, per the dump's own 'it's literally in the data dump' contributors), NOT the full 200-cap gauge: real numbers exist only for Intro+40, Overdrive+30, and Charged II's conditional full refill+200 — Basic/Mid-air/Dodge Counter/Sync Strike contributions have no sourced number and are honestly left unmodeled", () => {
+    const { total, perStep } = resolveResourceGenerated(AEMEATH_BLOCKS, CHARACTER_ROTATIONS['Aemeath'], 'Synchronization Rate');
+    expect(perStep.find(s => s.skill === 'Debut of Meteoric Radiance')?.gain).toBe(40);
+    expect(perStep.find(s => s.skill === 'Heavenfall Edict: Overdrive')?.gain).toBe(30);
+    expect(perStep.find(s => s.skill === 'Heavy Attack - Mech: Charged II')?.gain).toBe(200);
+    // 40 + 30 + 200 = 270 — NOT capped at the real game's 200 max here (this simple accumulator doesn't
+    // model the real gauge's spend/cap mechanics, e.g. each Duet cast spending 100 Synchronization Rate
+    // per the dump's own Forte Circuit text) — a known, documented simplification, not a claim that
+    // Aemeath's real gauge ever exceeds 200 in play.
+    expect(total).toBe(270);
   });
 });

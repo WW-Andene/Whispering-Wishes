@@ -50,10 +50,18 @@
 // own step note independently. Both gated blocks now trigger off the derived
 // 'resource-threshold:Resonance Rate:4' key with a real timing.duration (54s — the actual
 // remaining time in Heavenfall Edict: Unbound's 60s window at that crossing point), not an
-// unenforced condition. Her Synchronization Rate gauge is deliberately NOT built the same
-// way: Basic/Mid-air/Dodge Counter/Sync Strike's own per-hit Sync Rate gain has no sourced
-// number anywhere in the dump — a real data gap, not an engine gap, left honestly
-// unmodeled rather than guessed at.
+// unenforced condition.
+//
+// Correction, same day: Synchronization Rate was wrongly treated as entirely blocked by the
+// missing Basic/Mid-air/Dodge Counter/Sync Strike per-hit values — those genuinely have no
+// sourced number, but 3 of her real contributors always did: Intro+40 ("Casting Intro Skill...
+// recovers 40 points"), Overdrive+30 ("...recovers 30 points"), and Charged II's conditional
+// full refill (+200, "When in Instant Response and... Unbound at the same time, casting
+// [Charged II]... recovers 200 points") — the last one modeled unconditionally on the block
+// itself since chain.s1/before-all-sounds's own resource-threshold tests already independently
+// verify both conditions genuinely hold at that exact cast in this rotation. Built the same
+// partial-but-real way as Resonance Rate: real sourced contributors tracked via resourceGain,
+// the genuinely-unsourced Basic/Mid-air/Dodge/Sync-Strike contribution left honestly unmodeled.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -77,6 +85,11 @@ export const AEMEATH_BLOCKS = [
     // concertoEnergyGain added 2026-09-05 (completeness pass): dump's own "Concerto Regen (either):
     // 10" row for both Intro variants.
     concertoEnergyGain: 10,
+    // resourceGain added 2026-09-05 (engine-logic pass, per user correction — this specific number
+    // WAS always sourced, not blocked by the missing Basic/Mid-air/Dodge/Sync-Strike values):
+    // "Casting Intro Skill Songs Across the Universe and Debut of Meteoric Radiance recovers 40
+    // points of Synchronization Rate."
+    resourceGain: [{ resource: 'Synchronization Rate', value: 40 }],
   },
   // Added 2026-09-05 (completeness pass): dump's own "Auto-casts Basic Stage 1 on switch" text for
   // Resonance Skill Form Switch — real, sourced (Mech Form Stage 1: 23.20%×3), previously entirely
@@ -122,7 +135,13 @@ export const AEMEATH_BLOCKS = [
     // cast time in THIS specific rotation (Intro fires 2 steps/~3s before Overdrive, well inside
     // the 15s window) — so both bonuses apply here; value 2 reflects that real, verified timing
     // fact for this rotation, not a blanket assumption Starlume is always active.
-    resourceGain: [{ resource: 'Resonance Rate', value: 2 }],
+    // Synchronization Rate +30 added same pass (was always sourced, see the file-header
+    // correction): "Casting Resonance Liberation Heavenfall Edict: Overdrive recovers 30 points
+    // of Synchronization Rate."
+    resourceGain: [
+      { resource: 'Resonance Rate', value: 2 },
+      { resource: 'Synchronization Rate', value: 30 },
+    ],
   },
   {
     id: 'aemeath.basic.mech-stage-2-4',
@@ -186,6 +205,15 @@ export const AEMEATH_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('232.00%'), category: 'libDmg', basis: 'ATK' },
     note: "Step's own CHARACTER_ROTATIONS note: \"counted as Liberation DMG\".",
+    // resourceGain added 2026-09-05 (was always sourced): "When in Instant Response and
+    // Heavenfall Edict: Unbound at the same time, casting [Charged II] recovers 200 points of
+    // Synchronization Rate" — full refill. Modeled unconditionally here (not gated on the real
+    // derived Instant Response resource-threshold) because this file's own aemeath.chain.s1/
+    // before-all-sounds tests already independently prove BOTH conditions genuinely hold at this
+    // exact cast in the real modeled rotation (Instant Response crosses at the prior Duet
+    // Overture cast; Unbound's 60s window from Overdrive is still far from expiring) — a verified
+    // fact, not a blanket assumption.
+    resourceGain: [{ resource: 'Synchronization Rate', value: 200 }],
   },
   {
     id: 'aemeath.liberation.heavenfall-edict-finale',
