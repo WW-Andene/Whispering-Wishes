@@ -1,17 +1,25 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — engine/characterBlocks/index.js
-// PHASE3_PLAN.md Stage 4, step 1: calcTeamStats.js needs a name -> TriggerBlock[] lookup to call the
-// engine per-member — this didn't exist in production code before (only
-// phase3-parityHarness.test.js's own hardcoded `BLOCK_FILES` array, test-only). Statically imports
-// every converted character's `.blocks.js` file (same 57-character list the harness already
-// maintains) and maps it by the exact name CHARACTER_DATA/CHARACTER_ROTATIONS use as their own key,
-// so callers can do `BLOCKS_BY_CHARACTER[name]` directly.
+// The name -> TriggerBlock[] lookup calcTeamStats.js calls the engine per-member with.
+// Statically imports every converted character's `.blocks.js` file and maps it by the
+// exact name CHARACTER_DATA/CHARACTER_ROTATIONS use as their own key, so callers can do
+// `BLOCKS_BY_CHARACTER[name]` directly.
 //
 // A name absent from this map (not yet converted — currently just Jingran, unreleased with no
 // CHARACTER_ROTATIONS to derive engine steps from either) is a real, expected case every caller must
 // handle, not an error: `BLOCKS_BY_CHARACTER[name]` is simply `undefined` for them, same as any other
 // plain-object lookup miss.
+//
+// Every character's block array is schema-validated HERE, at module load — see
+// engine/schema/validate.js and engine/characterBlocks/CONTRIBUTING.md. This means a future edit to
+// any one character's file (remaking their kit, fixing a value, adding a block) that breaks the
+// canonical shape throws immediately on import, in every test and in the running app, rather than
+// silently shipping a malformed block that some resolver path quietly no-ops on. Layer 4 of the
+// engine rewrite deliberately left this unwired until all 57 characters passed validation — now
+// that they do, the schema is a real, enforced contract for every character touched from here on.
 // ═══════════════════════════════════════════════════════════════════════════════
+
+import { expectValidBlockFile } from '../schema/validate.js';
 
 import { AALTO_BLOCKS } from './aalto.blocks.js';
 import { AEMEATH_BLOCKS } from './aemeath.blocks.js';
@@ -71,7 +79,7 @@ import { YUANWU_BLOCKS } from './yuanwu.blocks.js';
 import { ZANI_BLOCKS } from './zani.blocks.js';
 import { ZHEZHI_BLOCKS } from './zhezhi.blocks.js';
 
-/** @type {Object<string, import('../triggerBlocks.schema.js').TriggerBlock[]>} */
+/** @type {Object<string, import('../schema/block.schema.js').TriggerBlock[]>} */
 export const BLOCKS_BY_CHARACTER = {
   'Aalto': AALTO_BLOCKS,
   'Aemeath': AEMEATH_BLOCKS,
@@ -131,3 +139,8 @@ export const BLOCKS_BY_CHARACTER = {
   'Zani': ZANI_BLOCKS,
   'Zhezhi': ZHEZHI_BLOCKS,
 };
+
+// Enforced at load time — see this file's own header comment above for why.
+for (const [name, blocks] of Object.entries(BLOCKS_BY_CHARACTER)) {
+  expectValidBlockFile(blocks, name);
+}
