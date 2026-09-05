@@ -8,6 +8,7 @@ import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA } from '../../data/echoes.js';
 import { isHealerRole, isSupportRole, scoreTeamComposition } from './calcEngine.js';
 import { calcTeamStats } from './calcTeamStats.js';
+import { RESONANCE_MODE_OPTIONS } from '../../data/resonanceModes.js';
 
 // Extracted from the per-character "Auto Equip" button's onClick so both that button and the
 // team-wide "Full Auto Build" button (which needs to run this for every member in one pass, with
@@ -269,13 +270,38 @@ function computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamInde
 // DPS and Healer/Support members skip straight to the normal single build, since re-deriving an
 // already-unambiguous choice would just waste calcTeamStats calls for the same answer every time.
 const CANDIDATE_PRESETS = ['default', 'er', 'support'];
+// Real, manual Resonance Mode toggle (2026-09-05) — the player's own build-panel choice always wins
+// for a normal build (see calcTeamStats.js's own default-to-index-0 fallback). Auto-build/auto-team
+// is the one context where the ENGINE itself should pick, per direct user instruction: "if the user
+// did use the auto build and/or auto team, the app choose by itself depending which do the most
+// damage" — same search-not-guess discipline CANDIDATE_PRESETS above already established (measure
+// the real engine result for each real option, keep the winner, never assume). Only runs here (the
+// `Optimized`/search-based entry point actually used by Full Auto Build and Auto Team), never for
+// the plain single-character "Auto Equip" button's direct computeAutoEquipEntry() call, which keeps
+// respecting whatever the player already has (or the character's own default) unchanged.
+function searchBestResonanceMode(memberName, result, teamEquipmentSnapshot, activeTeamIndex, mainDpsOverrideName, slots, enemyEcho, enemyLevel) {
+  const modes = RESONANCE_MODE_OPTIONS[memberName];
+  if (!result || !slots || !modes) return result;
+  let bestEntry = result.entry, bestDps = -Infinity;
+  for (const mode of modes) {
+    const candidateEntry = { ...result.entry, resonanceMode: mode };
+    const trialTeamEquipment = { ...teamEquipmentSnapshot, [result.aeqKey]: candidateEntry };
+    let teamDps = 0;
+    try {
+      teamDps = calcTeamStats(slots, activeTeamIndex, mainDpsOverrideName, trialTeamEquipment, enemyEcho, enemyLevel)?.teamDps || 0;
+    } catch { teamDps = 0; }
+    if (teamDps > bestDps) { bestDps = teamDps; bestEntry = candidateEntry; }
+  }
+  return { ...result, entry: bestEntry };
+}
 function computeAutoEquipEntryOptimized(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName, slots, enemyEcho, enemyLevel) {
   const d = CHARACTER_DATA[memberName];
   if (!d) return null;
   const isTeamMainDps = mainDpsOverrideName === memberName;
   const hasUnambiguousPreset = isTeamMainDps || isHealerRole(d.role) || isSupportRole(d.role);
   if (hasUnambiguousPreset || !slots) {
-    return computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName);
+    const result = computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName);
+    return searchBestResonanceMode(memberName, result, teamEquipmentSnapshot, activeTeamIndex, mainDpsOverrideName, slots, enemyEcho, enemyLevel);
   }
   const aeqKey = activeTeamIndex + ':' + memberName;
   let best = null, bestDps = -Infinity;
@@ -290,7 +316,8 @@ function computeAutoEquipEntryOptimized(memberName, teamEquipmentSnapshot, activ
     } catch { teamDps = 0; }
     if (teamDps > bestDps) { bestDps = teamDps; best = result; }
   }
-  return best || computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName);
+  const chosen = best || computeAutoEquipEntry(memberName, teamEquipmentSnapshot, activeTeamIndex, allMemberNames, mainDpsOverrideName);
+  return searchBestResonanceMode(memberName, chosen, teamEquipmentSnapshot, activeTeamIndex, mainDpsOverrideName, slots, enemyEcho, enemyLevel);
 }
 
 // ── Enemy-aware "Auto Team" ──
