@@ -61,6 +61,17 @@ export function validateBlock(block, expectedSource) {
     }
   }
 
+  if (block.kind === 'heal') {
+    if (!block.heal || typeof block.heal !== 'object') {
+      errors.push(`heal block missing heal payload (block id: ${id})`);
+    } else {
+      if (!block.heal.basis) errors.push(`heal block missing heal.basis (block id: ${id})`);
+      if (!Array.isArray(block.heal.hits) || !block.heal.hits.length) {
+        errors.push(`heal block missing heal.hits (block id: ${id})`);
+      }
+    }
+  }
+
   if (block.concertoEnergyGain != null && typeof block.concertoEnergyGain !== 'number') {
     errors.push(`concertoEnergyGain must be a number when present (block id: ${id})`);
   }

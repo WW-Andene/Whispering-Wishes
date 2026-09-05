@@ -200,7 +200,12 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
       // scaler only gets partial/no credit from an ATK% buff, since it's not their scaling stat; this
       // prototype doesn't track a separate hpPct/defPct accumulator at all yet, so an HP/DEF-basis
       // hit correctly gets none of `atkPct`'s contribution rather than the wrong full credit).
-      const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
+      // hpPct/defPct wired in 2026-09-05 (engine-readiness pass) — previously an HP/DEF-basis move
+      // (Cartethyia/Shorekeeper/Suisui) got NO credit from any HP%/DEF% buff at all, since neither
+      // stat existed on the accumulator; see calcEngine.js's createStats() for the same fix's other
+      // half.
+      const scalingPct = basis === 'ATK' ? stats.atkPct : basis === 'HP' ? stats.hpPct : basis === 'DEF' ? stats.defPct : 0;
+      const effBase = base[baseStatKey] * (1 + scalingPct / 100);
 
       // Only Liberation-sourced hits (category === 'libDmg') are subject to the energy-cycle gate —
       // everything else ignores libUptime entirely, whether it's null or a real 0-1 value.

@@ -59,10 +59,28 @@
  *                                   'Outro' step, not derived from this value crossing a
  *                                   threshold (a larger, cross-character resolver change, not
  *                                   done as part of adding this field).
+ * @property {Heal} [heal]          Required for `kind: 'heal'`: the real per-cast heal amount,
+ *                                   parsed the same way as `damage.hits` — no new numbers invented.
  * @property {string} [note]        Human-readable sourcing/mechanic note — every non-obvious
  *                                   value must cite where it came from (kit text, wiki page,
  *                                   specific audit). Required in practice for anything not
  *                                   self-evident from the id/effects alone.
+ */
+
+/**
+ * @typedef {Object} Heal
+ * @property {{pct: number, flat?: number}[]} hits  One entry per individual heal instance — same
+ *                                        `×N`-expands-to-N-entries convention as DamageHits.hits.
+ *                                        `pct` scales `basis`, not always ATK (unlike damage hits,
+ *                                        a heal's kit text usually gives %HP or %ATK, occasionally
+ *                                        a flat amount with no basis at all — see `basis: 'flat'`).
+ * @property {string} basis             REQUIRED. Which base stat these hits scale off: 'HP' (the
+ *                                        common case — most heals are %Max-HP) | 'ATK' | 'flat'
+ *                                        (a fixed amount with no scaling stat at all) — never
+ *                                        assumed silently.
+ * @property {string} [target]           Who receives this heal, when different from the block's
+ *                                        own `target.scope` needs to say more specifically (e.g.
+ *                                        'lowest-hp-ally') — omit to just use `target.scope`.
  */
 
 /**
@@ -139,6 +157,19 @@
  * @property {boolean} [assumedInactive] True marks a block whose stance is CONFIRMED (via this
  *                            character's own real rotation/kit text) to never occur.
  * @property {boolean} [teamWide]      True if this affects the whole team, not just target.
+ * @property {{below?: number, above?: number}} [casterHpPct]  Gates on the BLOCK OWNER's own HP%
+ *                            at cast time (e.g. Cartethyia's Liberation "free if already below
+ *                            50% HP", Encore's Inherent Skill "+10% DMG while above 70% HP"). This
+ *                            engine does not simulate live HP over a rotation, so this is only
+ *                            ever evaluated against a caller-SUPPLIED assumption
+ *                            (`ctx.casterHpPctAssumed`) for that character's own modeled rotation —
+ *                            same "the modeled rotation always has X true" convention as
+ *                            Yinlin's Sinner's-Mark-gated blocks. If the condition is present but
+ *                            no assumption was supplied, it does NOT hold (conservative: never
+ *                            credit an unverified threshold) — the opposite default from
+ *                            element/role, which skip the check entirely when absent, because
+ *                            those are always determinable from context while this one usually
+ *                            isn't.
  */
 
 /**
@@ -161,9 +192,10 @@
 
 /**
  * @typedef {Object} Effect
- * @property {string} stat     Matches the engine's stat vocabulary (atkPct, elemDmg, skillDmg,
- *                               basicDmg, heavyDmg, libDmg, echoDmg, coordDmg, deepen, critRate,
- *                               critDmg, defShred, resShred, defIgnore, totalMult).
+ * @property {string} stat     Matches the engine's stat vocabulary (atkPct, hpPct, defPct, elemDmg,
+ *                               skillDmg, basicDmg, heavyDmg, libDmg, echoDmg, coordDmg, deepen,
+ *                               critRate, critDmg, defShred, resShred, defIgnore, healBonusPct,
+ *                               totalMult).
  * @property {number} value    The numeric contribution (%, unless stat is a flat multiplier).
  * @property {string} source   REQUIRED for a `kind:'buff'` block's effects. Where the buff comes
  *                               from (see buffSource.js) — distinct from `target` (who receives it).

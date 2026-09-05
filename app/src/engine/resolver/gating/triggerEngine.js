@@ -91,7 +91,7 @@ function triggerFired(trigger, firedTriggers) {
   return firedTriggers.has(triggerKey(trigger));
 }
 
-function conditionHolds(condition, targetElementLower, targetRole) {
+function conditionHolds(condition, targetElementLower, targetRole, casterHpPctAssumed = null) {
   if (!condition) return true;
   // A block explicitly confirmed (via this character's own real CHARACTER_ROTATIONS/desc — see
   // triggerBlocks.schema.js's Condition.assumedInactive doc) to never actually occur never fires.
@@ -101,6 +101,14 @@ function conditionHolds(condition, targetElementLower, targetRole) {
   if (condition.assumedInactive) return false;
   if (condition.element && condition.element.toLowerCase() !== targetElementLower) return false;
   if (condition.requiresRole && condition.requiresRole.length && !condition.requiresRole.includes(targetRole)) return false;
+  // casterHpPct (added 2026-09-05, engine-readiness pass): opposite default from element/role —
+  // this engine never simulates live HP, so an unsupplied assumption means the threshold is
+  // UNVERIFIED, not "no restriction." See block.schema.js's Condition.casterHpPct doc.
+  if (condition.casterHpPct) {
+    if (casterHpPctAssumed == null) return false;
+    if (condition.casterHpPct.below != null && !(casterHpPctAssumed < condition.casterHpPct.below)) return false;
+    if (condition.casterHpPct.above != null && !(casterHpPctAssumed > condition.casterHpPct.above)) return false;
+  }
   // condition.requiresStance is otherwise still purely descriptive here — see its schema doc for why
   // (no state machine tracks which stance is active) and for the two enforced exceptions
   // (assumedInactive, just above; mutually-exclusive "mode" sibling groups, handled upstream by

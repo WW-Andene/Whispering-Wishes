@@ -44,3 +44,23 @@ export function parseSkillMultiplierHits(str, flat) {
 export function sumHitsAtkPct(hits) {
   return hits.reduce((s, h) => s + h.atkPct, 0);
 }
+
+/**
+ * [LOGIC · PARSE-HEAL-HITS] Same expansion as parseSkillMultiplierHits, for a `kind:'heal'`
+ * block's `heal.hits` — a separate function (not a reused import) purely so the field is named
+ * `pct` rather than `atkPct`, since a heal's real basis is usually HP, not ATK (see
+ * block.schema.js's Heal typedef for why the field name matters here).
+ * @param {string} str  A kit-text-style percent string, e.g. '2.4%×3'.
+ * @param {number} [flat]  A flat, non-%-scaling heal component alongside the % term.
+ * @returns {{pct: number, flat?: number}[]}
+ */
+export function parseHealHits(str, flat) {
+  const hits = [];
+  for (const m of str.matchAll(HIT_TOKEN_PATTERN)) {
+    const pct = parseFloat(m[1]);
+    const count = m[2] ? parseInt(m[2], 10) : 1;
+    for (let i = 0; i < count; i++) hits.push({ pct });
+  }
+  if (flat != null && hits.length > 0) hits[0].flat = flat;
+  return hits;
+}

@@ -162,7 +162,10 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
     if (base[baseStatKey] == null) {
       throw new Error(`resolveHitComposedTeamDps: block '${db.id}' needs baseStats.${baseStatKey} (damage.basis: '${basis}'), but it wasn't provided.`);
     }
-    const effBase = basis === 'ATK' ? base[baseStatKey] * (1 + stats.atkPct / 100) : base[baseStatKey];
+    // hpPct/defPct wired in 2026-09-05 (engine-readiness pass) — see resolveHitComposedDps.js's
+    // identical fix/comment.
+    const scalingPct = basis === 'ATK' ? stats.atkPct : basis === 'HP' ? stats.hpPct : basis === 'DEF' ? stats.defPct : 0;
+    const effBase = base[baseStatKey] * (1 + scalingPct / 100);
 
     const libGate = (libUptime != null && category === 'libDmg') ? libUptime : 1;
     const fieldDuration = targetSegment.end - targetSegment.start;

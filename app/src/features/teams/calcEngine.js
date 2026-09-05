@@ -161,6 +161,12 @@ export function createStats() {
     libDmg: 0, echoDmg: 0, coordDmg: 0, outroDmg: 0,
     deepen: 0, amplify: 0,
     defShred: 0, resShred: 0, defIgnore: 0,
+    // hpPct/defPct (added 2026-09-05, engine-readiness pass): real kit buffs to Max HP%/DEF% —
+    // e.g. Baizhi's Forte "Max HP+12% for 10s" — previously had no stat case at all, silently
+    // falling through applyBuff()'s switch to a no-op. healBonusPct: a %-increase to a heal-kind
+    // block's own computed amount (resolveHealComposed.js), the heal-side equivalent of skillDmg/
+    // basicDmg/etc. for damage.
+    hpPct: 0, defPct: 0, healBonusPct: 0,
     // totalMult (added 2026-09-02, the engine-merge history (git log) totalMult architecture-bug fix): a flat
     // fallback multiplier for real kit bonuses that don't map to a dedicated category stat — was
     // previously accepted by `applyBuff()`'s switch as a real case in NEITHER `resolveHitComposedDps.js`
@@ -396,6 +402,9 @@ export function applyBuff(stats, buff, value, options = {}) {
   const target = isAmplify ? 'amplify' : null;
   switch (buff) {
     case 'atkPct':    stats.atkPct += value; break;
+    case 'hpPct':     stats.hpPct += value; break;
+    case 'defPct':    stats.defPct += value; break;
+    case 'healBonusPct': stats.healBonusPct += value; break;
     case 'allDmg':    stats[target || 'elemDmg'] += value; break;
     case 'elemDmg':   stats[target || 'elemDmg'] += value; break;
     case 'deepen':    stats.deepen += value; break;
