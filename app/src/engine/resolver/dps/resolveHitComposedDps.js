@@ -141,6 +141,18 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
     const stats = createStats();
     if (externalStats) {
       for (const k of EXTERNAL_STAT_KEYS) { if (externalStats[k]) stats[k] += externalStats[k]; }
+      // scopedEffects (added 2026-09-05, Aemeath's Between the Stars fix): a real, TEAM-composition-
+      // dependent value (computed by the caller — e.g. calcTeamStats.js, which has blocksByOwner and
+      // every teammate's resolved mode — neither of which a static per-character TriggerBlock file
+      // can see) that still needs the SAME `scopedToBlockId` narrowing a block-native effect gets
+      // (e.g. "+25% Finale-only DMG Amplified at max Between the Stars stacks" must NOT apply to her
+      // other damage). Same {stat, value, scopedToBlockId} shape as a block's own Effect entries;
+      // applied through the exact same applyBuff() call, just sourced externally instead of from
+      // `block.effects`. Omit (undefined) for every existing caller — behavior unchanged for them.
+      for (const se of externalStats.scopedEffects || []) {
+        if (se.scopedToBlockId && se.scopedToBlockId !== hitBlockId) continue;
+        applyBuff(stats, se.stat, se.value, { isAmplify: !!se.isAmplify });
+      }
     }
     for (const pb of passiveBlocks) {
       if (!conditionHolds(pb.condition, targetElementLower, targetRole)) continue;

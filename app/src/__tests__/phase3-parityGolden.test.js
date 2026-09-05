@@ -70,7 +70,20 @@ const EXPECTED_DIVERGENCES = {
   // real base cooldown activates an already-existing, legacy-tier-only gate" class as Aalto's Shift
   // Trick fix — that one stayed inside the 1% band, this one (two 25s-cooldown Liberation casts
   // instead of one 10s-cooldown Skill cast) does not.
-  Aemeath: { min: 1.10, max: 1.20 },
+  //
+  // Widened again 2026-09-05 (Between the Stars real stack count, item unblocked by the Resonance
+  // Mode toggle): this test's own "legacy" call runs calcTeamStats() on a SOLO ['Aemeath'] team, so
+  // resolveBetweenTheStarsStacks() correctly finds zero other teammates to contribute a stack — the
+  // real mechanic requires them ("team inflicting Tune Rupture-Shifting/Fusion Burst grants Aemeath
+  // +X% Crit DMG, once per resonator"). The old flat "modeled at max value" approximation (+60% Crit
+  // DMG unconditionally) is gone from the legacy-parity path; this test's own separate "engine"
+  // computation calls resolveHitComposedDps() directly with ITS OWN locally-built gearDelta (bypassing
+  // calcTeamStats.js entirely, see this file's own toExternalStatsDelta/rawTierGearStats helpers), so
+  // it never picks up this fix and stays at the old (now legacy-only) flat value — widening the real
+  // divergence between the two numbers for this one comparison. Not a real team's actual DPS
+  // divergence (a real Aemeath team has real teammates contributing real stacks on both paths); a
+  // side effect of this specific test's own "engine" number not being sourced through calcTeamStats().
+  Aemeath: { min: 1.10, max: 1.50 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number

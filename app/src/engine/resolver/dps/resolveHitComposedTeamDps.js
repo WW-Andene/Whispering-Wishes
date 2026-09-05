@@ -124,6 +124,12 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
     const stats = createStats();
     if (externalStats) {
       for (const k of EXTERNAL_STAT_KEYS) { if (externalStats[k]) stats[k] += externalStats[k]; }
+      // scopedEffects — see resolveHitComposedDps.js's identical comment (Aemeath's Between the
+      // Stars fix, 2026-09-05) for the full rationale.
+      for (const se of externalStats.scopedEffects || []) {
+        if (se.scopedToBlockId && se.scopedToBlockId !== hitBlockId) continue;
+        applyBuff(stats, se.stat, se.value, { isAmplify: !!se.isAmplify });
+      }
     }
     for (const pb of passiveRelevant) {
       if (!conditionHolds(pb.condition, targetElementLower, targetRole)) continue;

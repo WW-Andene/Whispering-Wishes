@@ -38,6 +38,7 @@ import { chooseOnFieldOrder } from '../../engine/resolver/rotationOrder/rotation
 import { coordinatedMultShare } from '../../engine/resolver/gating/coordinatedAtk.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/resolver/gating/sequenceGating.js';
 import { defaultResonanceMode } from '../../data/resonanceModes.js';
+import { resolveBetweenTheStarsStacks } from '../../engine/resolver/dot/resolveBetweenTheStars.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
 // Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
@@ -640,6 +641,28 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const rotation = CHARACTER_ROTATIONS[m.name];
       if (blocks && rotation) {
         const gearDelta = { ...rStats, cr: rStats.cr - BASE_CRIT_RATE, cd: rStats.cd - BASE_CRIT_DMG };
+        // Between the Stars real stack count (2026-09-05, item unblocked by the Resonance Mode
+        // toggle — see resolveBetweenTheStars.js's own header for the full mechanic). The static
+        // aemeath.selfbuff.between-the-stars-critdmg block always fires a flat +60 Crit DMG (the old
+        // "modeled at max value" approximation, deliberately kept for legacy-parity comparison —
+        // see that block's own note) — corrected here to the real, team-composition-derived value
+        // instead of touching the block itself. The Finale-only +25% DMG Amp at max stacks (the
+        // second static block, `aemeath.selfbuff.between-the-stars-finale-amp`, whose own
+        // `condition.requiresStance: 'Max Between the Stars stacks'` conditionHolds() never actually
+        // recognizes — it was silently dead on every path) is now genuinely applied via a scoped
+        // external effect when real stacks are maxed, through the same scopedToBlockId narrowing a
+        // block-native effect gets (see resolveHitComposedDps.js's own scopedEffects comment).
+        if (m.name === 'Aemeath' && engineChosenOrder?.blocksByOwner) {
+          const aemeathMode = resonanceModeByOwner['Aemeath'];
+          const bts = resolveBetweenTheStarsStacks(engineChosenOrder.blocksByOwner, aemeathMode, resonanceModeByOwner);
+          gearDelta.cd = (gearDelta.cd || 0) + (bts.critDmg - 60);
+          if (bts.maxStacks) {
+            gearDelta.scopedEffects = [
+              ...(gearDelta.scopedEffects || []),
+              { stat: 'deepen', value: 25, scopedToBlockId: 'aemeath.liberation.heavenfall-edict-finale' },
+            ];
+          }
+        }
         gearDeltaByName[m.name] = gearDelta;
         const baseStats = { atk: m.totalBaseAtk, hp: m.d.baseHp || 0, def: m.d.baseDef || 0 };
         const steps = deriveStepsFromRotation(rotation, blocks);
