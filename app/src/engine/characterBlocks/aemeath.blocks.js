@@ -24,6 +24,19 @@
 // CHARACTER_DATA['Aemeath'].dmgFocus (was wrongly including 'Skill' — her real damage-
 // output simulation shows a genuine 0% Skill share, matching her kit text: both Seraphic
 // Duet casts are "considered Resonance Liberation DMG").
+//
+// Completeness pass 2026-09-05 (next character after Aalto, alphabetically, same "verify
+// against the real dump" discipline): against `Characters data dump/Aemeath/Aemeath.md`,
+// found and fixed 4 real gaps of the same class as Aalto's — Basic Stage 1 (both forms,
+// auto-cast on Form Switch) had NO block at all; Minor Fortes (Crit Rate+8%, ATK%+12%)
+// had no block at all; Concerto Energy (Overdrive+20, Finale+20, Intro+10) and real
+// cooldowns (Overdrive/Finale 25s, Form Switch 1s) were entirely uncaptured; Inherent
+// Skill "Before All Sounds" (+200% DMG Amp on Heavy ATK in Instant Response) had no block.
+// Also resolved chain.s2's own already-flagged open item (see RESONANCE_CHAIN_DATA's audit
+// comment in characters.js: "needs its own dedicated verification pass") — the real
+// mechanic ("Seraphic Duet Overture/Encore DMG Multipliers both +100%") is now modeled
+// precisely via scopedToBlockId to each of the two real Duet blocks instead of the
+// previous, admittedly-unjustified totalMult:25.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -44,6 +57,25 @@ export const AEMEATH_BLOCKS = [
     // her kit text; gated the same way her tuneBreak.competesWithFusionBurstReaction resolution already
     // is (winningStanceForOwner), not a second mode mechanism.
     dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // concertoEnergyGain added 2026-09-05 (completeness pass): dump's own "Concerto Regen (either):
+    // 10" row for both Intro variants.
+    concertoEnergyGain: 10,
+  },
+  // Added 2026-09-05 (completeness pass): dump's own "Auto-casts Basic Stage 1 on switch" text for
+  // Resonance Skill Form Switch — real, sourced (Mech Form Stage 1: 23.20%×3), previously entirely
+  // absent (no block anywhere referenced Basic Stage 1 in either form). Both real 'Skill:Form
+  // Switch' casts in CHARACTER_ROTATIONS['Aemeath'] switch INTO Mech form (opener, and the pre-Outro
+  // closer) — never into base Aemeath form — so only the Mech-form value is modeled here, matching
+  // what actually fires in the real modeled rotation, not a blanket "either form" guess. Not tagged
+  // with a fusionBurst/tuneRupture dotApplier: the kit text's own trigger list for that ("Basic Stage
+  // 3/4, Sync Strikes, both Intro skills") does not include Stage 1.
+  {
+    id: 'aemeath.skill.form-switch-basic-1',
+    source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Form Switch' },
+    timing: { cooldown: 1 }, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('23.20%×3'), category: 'basicDmg', basis: 'ATK' },
+    note: "Mech Form Basic Stage 1 (23.20%×3), auto-cast on Form Switch — real cooldown 1s per the dump's own 'Form Switch cooldown: 1s' row. Aemeath-form Stage 1 (46.35%) exists too but never fires in this rotation (both real switches go into Mech form), so it's not modeled as a separate block.",
   },
   {
     id: 'aemeath.basic.mech-stage-3-4',
@@ -61,8 +93,11 @@ export const AEMEATH_BLOCKS = [
     id: 'aemeath.liberation.heavenfall-edict-overdrive',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Heavenfall Edict: Overdrive' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown/concertoEnergyGain added 2026-09-05: dump's own "Overdrive cooldown: 25s" and
+    // "Overdrive Concerto Regen: 20" rows.
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('186.72%+248.96%×3'), category: 'libDmg', basis: 'ATK' },
+    concertoEnergyGain: 20,
   },
   {
     id: 'aemeath.basic.mech-stage-2-4',
@@ -114,8 +149,11 @@ export const AEMEATH_BLOCKS = [
     id: 'aemeath.liberation.heavenfall-edict-finale',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Heavenfall Edict: Finale' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown/concertoEnergyGain added 2026-09-05: dump's own "Finale cooldown: 25s" and "Finale
+    // Concerto Regen: 20" rows.
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('1663.83%'), category: 'libDmg', basis: 'ATK' },
+    concertoEnergyGain: 20,
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
@@ -127,6 +165,31 @@ export const AEMEATH_BLOCKS = [
     target: { scope: 'whole-team' },
     effects: [{ stat: 'allDmg', value: 10, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Guaranteed 10% All-DMG Amp floor to the team (excl. self); rises to 20% for Tune Rupture/Fusion Burst inflictors specifically, which this engine\'s condition field can\'t gate on yet — same simplification the flat table already carries.',
+  },
+  // Added 2026-09-05 (completeness pass): dump's own "Minor Fortes: Crit Rate+8%, ATK%+12%" —
+  // previously had no block at all, same class of gap as Aalto's own missing Minor Fortes.
+  {
+    id: 'aemeath.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Characters data dump/Aemeath/Aemeath.md line 140). Unconditional, always active.',
+  },
+  // Added 2026-09-05 (completeness pass): Inherent Skill "Before All Sounds" — previously had no
+  // block at all. Scoped via scopedToBlockId to her one real Heavy ATK block, same pattern already
+  // used for chain.s1's Instant-Response Heavy ATK Crit DMG bonus.
+  {
+    id: 'aemeath.inherent.before-all-sounds',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    condition: { requiresStance: 'Instant Response' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'deepen', value: 200, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }],
+    note: 'Inherent Skill Before All Sounds: in Instant Response, Heavy ATK (either form) gains +200% DMG Amplification — scoped to her one real Heavy ATK block. Only enforced by the hit-composed resolvers (see scopedToBlockId\'s own schema doc).',
   },
   {
     id: 'aemeath.selfbuff.between-the-stars-critdmg',
@@ -159,7 +222,21 @@ export const AEMEATH_BLOCKS = [
     effects: [{ stat: 'critDmg', value: 300, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }],
     note: '+300% Crit DMG for Heavy ATK specifically, while in Instant Response — scoped 2026-09-02 (Phase 0.5 gap #3) to her one real Heavy ATK block (aemeath.heavy.mech-charged-ii), not general critDmg across her whole kit as previously modeled; the STANCE condition (requiresStance) still gates whether it\'s active at all. Only enforced by the hit-composed resolvers, see the field\'s own schema doc.',
   },
-  { id: 'aemeath.chain.s2', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'totalMult', value: 25, source: 'self-kit' }] },
+  // Fixed 2026-09-05 (completeness pass, resolving RESONANCE_CHAIN_DATA's own "needs its own
+  // dedicated verification pass" flag on this node): was `totalMult:25`, unjustified — real S2 text
+  // is "Seraphic Duet: Overture and Encore DMG Multipliers both +100%," a move-specific bonus, not
+  // a flat kit-wide multiplier. Modeled via scopedToBlockId to each real Duet block, matching its
+  // own damage.category (Overture is skillDmg-categorized, Encore is libDmg — "counted as
+  // Liberation DMG" per its own kit text) — this does NOT double up against chain.s3's
+  // Finale-scoped libDmg+100 since that's scoped to a DIFFERENT block id (heavenfall-edict-finale,
+  // not seraphic-duet-encore).
+  {
+    id: 'aemeath.chain.s2', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'skillDmg', value: 100, scopedToBlockId: 'aemeath.skill.seraphic-duet-overture', source: 'self-kit' },
+      { stat: 'libDmg', value: 100, scopedToBlockId: 'aemeath.skill.seraphic-duet-encore', source: 'self-kit' },
+    ],
+  },
   { id: 'aemeath.chain.s3', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'libDmg', value: 100, scopedToBlockId: 'aemeath.liberation.heavenfall-edict-finale', source: 'self-kit' }, { stat: 'critDmg', value: 60, source: 'self-kit' }], note: "libDmg:100 = Heavenfall Edict: Finale's own DMG Mult +100% (not general Liberation DMG) — scoped 2026-09-02 (Phase 0.5 gap #3) to only that hit, since her other libDmg-categorized block (aemeath.heavy.mech-charged-ii) previously also wrongly received it; critDmg:60 = a further extension of Between the Stars, on top of the two selfbuff blocks above (correctly general, not move-scoped)." },
   {
     id: 'aemeath.chain.s4',

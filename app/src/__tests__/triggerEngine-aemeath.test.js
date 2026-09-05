@@ -6,6 +6,7 @@ import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposed
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { AEMEATH_BLOCKS } from '../engine/characterBlocks/aemeath.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
+import { resolveConcertoEnergyGenerated } from '../engine/resolver/dps/resolveConcertoEnergy.js';
 
 describe('triggerEngine parity — Aemeath', () => {
   it('every block matches the canonical schema (Layer 4 migration)', () => {
@@ -67,5 +68,37 @@ describe('triggerEngine parity — Aemeath', () => {
     expect(fired.has('aemeath.basic.mech-stage-3-4')).toBe(true);
     expect(fired.has('aemeath.basic.mech-stage-2-4')).toBe(true);
     expect(fired.has('aemeath.basic.aemeath-stage-2-4')).toBe(true);
+  });
+
+  it("Basic Stage 1 (Mech form, auto-cast on Form Switch) and Minor Fortes exist — added 2026-09-05 against Characters data dump/Aemeath/Aemeath.md, previously absent entirely", () => {
+    const stage1 = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.skill.form-switch-basic-1');
+    const minorFortes = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.buff.minor-fortes');
+    expect(stage1.damage.hits.map(h => h.atkPct)).toEqual([23.20, 23.20, 23.20]);
+    expect(stage1.timing.cooldown).toBe(1);
+    expect(minorFortes.effects).toEqual([
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ]);
+  });
+
+  it('Inherent Skill Before All Sounds (Heavy ATK +200% DMG Amp in Instant Response) exists, scoped to her one real Heavy ATK block', () => {
+    const block = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.inherent.before-all-sounds');
+    expect(block.condition.requiresStance).toBe('Instant Response');
+    expect(block.effects).toEqual([{ stat: 'deepen', value: 200, scopedToBlockId: 'aemeath.heavy.mech-charged-ii', source: 'self-kit' }]);
+  });
+
+  it('chain.s2 real mechanic (Duet Overture/Encore DMG Mult +100% each) is scoped precisely, not a flat totalMult', () => {
+    const block = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.chain.s2');
+    expect(block.effects).toEqual([
+      { stat: 'skillDmg', value: 100, scopedToBlockId: 'aemeath.skill.seraphic-duet-overture', source: 'self-kit' },
+      { stat: 'libDmg', value: 100, scopedToBlockId: 'aemeath.skill.seraphic-duet-encore', source: 'self-kit' },
+    ]);
+  });
+
+  it('Concerto Energy generated over her real rotation includes Intro+10, Overdrive+20, Finale+20', () => {
+    const { perStep } = resolveConcertoEnergyGenerated(AEMEATH_BLOCKS, CHARACTER_ROTATIONS['Aemeath']);
+    expect(perStep.find(s => s.skill === 'Debut of Meteoric Radiance')?.gain).toBe(10);
+    expect(perStep.find(s => s.skill === 'Heavenfall Edict: Overdrive')?.gain).toBe(20);
+    expect(perStep.find(s => s.skill === 'Heavenfall Edict: Finale')?.gain).toBe(20);
   });
 });

@@ -62,6 +62,15 @@ const EXPECTED_DIVERGENCES = {
   // above, but outside the 1% parity band so listed explicitly rather than silently passing.
   Shorekeeper: { min: 1.00, max: 1.03 },
   Yinlin: { min: 1.00, max: 1.05 },
+  // Added 2026-09-05 (Aemeath completeness pass): her Heavenfall Edict Overdrive/Finale each got a
+  // real, sourced 25s cooldown (previously missing entirely) — her real rotation time (~11.7s) is
+  // shorter than that cooldown, so the legacy RAW tier's cooldownSteadyState gate (which the engine
+  // tier's own comparison in this file does NOT pass) correctly derates both casts to
+  // min(1, rotTime/25) ~= 47% there, while the engine number stays at full value. Same "adding a
+  // real base cooldown activates an already-existing, legacy-tier-only gate" class as Aalto's Shift
+  // Trick fix — that one stayed inside the 1% band, this one (two 25s-cooldown Liberation casts
+  // instead of one 10s-cooldown Skill cast) does not.
+  Aemeath: { min: 1.10, max: 1.20 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number

@@ -6573,13 +6573,15 @@ const RESONANCE_CHAIN_DATA = {
   // Real S5 effect ("On kill, reset Starflux to 100%; on fatal damage, revive with a team shield
   // instead of dying, once per 10 min") is purely survivability/utility, zero DPS component — confirmed
   // via the source's own damage-output simulation, where S4 and S5 produce byte-identical DMG/DPS.
-  // S2 note: also never covered by the audit comment above — "Seraphic Duet Overture/Encore DMG
-  // Multiplier +100% each" is the real S2 effect, currently modeled as totalMult:25 with no derivation
-  // shown anywhere. Left AS-IS (not touched in this pass) — flagging rather than guessing a
-  // replacement, since unlike S5 there's no independent confirmation (e.g. an S1==S2 DPS match) proving
-  // the current value wrong, and Duet's damage is itself libDmg-categorized (same bucket S3's Finale
-  // buff already uses), so blindly reassigning this to libDmg could double up against S3 instead of
-  // fixing anything. Needs its own dedicated verification pass.
+  // S2 note (resolved 2026-09-05, the flagged "needs its own dedicated verification pass" item):
+  // real S2 effect is "Seraphic Duet Overture/Encore DMG Multipliers both +100%" — now modeled
+  // PRECISELY in aemeath.blocks.js's own chain.s2 block via scopedToBlockId to each real Duet block
+  // (Overture is skillDmg-categorized, Encore is libDmg — no double-up against S3's Finale-scoped
+  // libDmg+100, since that's a different block id). This flat table's own `totalMult:25` below is
+  // left as a deliberate, documented legacy-fallback approximation — a single flat number
+  // structurally cannot represent two different move-scoped +100% bonuses, and this table is only
+  // read by the pre-conversion fallback path (Aemeath herself is fully converted; her real computed
+  // numbers come from the block, not this row).
   'Aemeath':      { s1: { critDmg: 300 }, s2: { totalMult: 25 }, s3: { libDmg: 100, critDmg: 60 }, s4: { allDmg: 20 }, s5: {}, s6: { libDmg: 40 } },
   // Zani S1: +50% Spectro DMG (confirmed exact). S2: CR+20% + mult boost. S4: team ATK+20%
   'Zani':         { s1: { elemDmg: 50 }, s2: { critRate: 20, skillDmg: 80 }, s3: { libDmg: 200 }, s4: { atkPct: 20 }, s5: { libDmg: 120 }, s6: { heavyDmg: 40 } },
