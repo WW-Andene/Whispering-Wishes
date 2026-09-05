@@ -78,4 +78,21 @@ describe('triggerEngine parity — Aalto', () => {
     expect(perStep.find(s => s.skill === 'Shift Trick')?.gain).toBe(15);
     expect(perStep.find(s => s.skill === 'Flower in the Mist')?.gain).toBe(20);
   });
+
+  it("Gate of Quandary ATK+10% buff exists, scoped to the two Mist Bullet blocks — added 2026-09-05 category-C pass, dump's own 'Gate of Quandary ATK Increase: 10.00%' row was entirely untagged before", () => {
+    const gateBuff = AALTO_BLOCKS.find(b => b.id === 'aalto.liberation.gate-atk-buff');
+    expect(gateBuff.trigger).toEqual({ type: 'cast', on: 'Liberation:Flower in the Mist' });
+    expect(gateBuff.timing.duration).toBe(10);
+    expect(gateBuff.effects).toEqual([
+      { stat: 'atkPct', value: 10, source: 'self-kit', scopedToBlockId: 'aalto.skill.shift-trick' },
+      { stat: 'atkPct', value: 10, source: 'self-kit', scopedToBlockId: 'aalto.forte.misty-cover' },
+    ]);
+  });
+
+  it('Inherent Skills (Perfect Performance, Mid-game Break) exist as documented inert blocks — added 2026-09-05 category-C pass, previously absent entirely', () => {
+    const perfectPerformance = AALTO_BLOCKS.find(b => b.id === 'aalto.inherent.perfect-performance');
+    const midGameBreak = AALTO_BLOCKS.find(b => b.id === 'aalto.inherent.mid-game-break');
+    expect(perfectPerformance.kind).toBe('utility');
+    expect(midGameBreak.kind).toBe('utility');
+  });
 });

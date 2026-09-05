@@ -27,6 +27,16 @@
 // making Outro actually threshold-derived is a larger, cross-character resolver
 // change, out of scope for an Aalto-only pass), but a real computed number instead
 // of documentation-only text with nothing reading it.
+//
+// Category-C completeness pass, same day: fixed every remaining "real, sourced, but
+// entirely untagged" gap found in a line-by-line dump audit — Liberation's Gate of
+// Quandary ATK+10%/10s (new buff block, scoped via scopedToBlockId to the two real
+// Mist Bullet/Mist Missile blocks), the 2 Inherent Skills (new inert utility blocks,
+// Perfect Performance/Mid-game Break), and corrected notes on chain.s1/s2/s6 and the
+// Basic ATK block documenting real mechanics (Skill CD reduction, Mist-Avatar-taunted
+// targeting, Gate-of-Quandary Heavy ATK scoping, stage-4 Mist-spread) that have no
+// representable stat/condition/tagging granularity in this schema — not silently
+// dropped, honestly noted as unmodeled.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -67,6 +77,7 @@ export const AALTO_BLOCKS = [
     trigger: { type: 'cast', on: 'Basic ATK:Half Truths Stage 1-5' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('31.81% → 53.02% → 47.72%×2 → 50.37%×2 → 179.73%'), category: 'basicDmg', basis: 'ATK' },
+    note: "Real text: Basic Attack 4 (the 50.37%x2 pair above) spreads 'Mist' forward for 1.5s — the field-creation trigger Forte/Mistcloak Dash and chain S3's bonus bullets depend on. Not separately tagged: this block covers the whole 5-stage combo as one cast, so a stage-4-specific appliesTags entry isn't representable at this granularity without fabricating a split this schema's single-block-per-combo convention doesn't make.",
   },
   // Added 2026-09-05 (dump completeness pass): "Mid-air Attack: consumes STA, consecutive mid-air
   // shots, Aero DMG" — a real move with its own multiplier row, previously entirely absent. Section/
@@ -127,6 +138,27 @@ export const AALTO_BLOCKS = [
     note: '59.65% per Mist Bullet, same base-count caveat as Shift Trick.',
   },
 
+  // Added 2026-09-05 (category-C completeness pass): dump's own "Gate of Quandary ATK Increase:
+  // 10.00%, lasts 10s" row for Liberation — was entirely untagged before (Liberation's own block
+  // above carries only its damage, no effects). Scoped via scopedToBlockId to the two real
+  // "Mist Bullet"/"Mist Missile" blocks (Shift Trick, Misty Cover) rather than a blanket self
+  // atkPct — the dump's own text says "Bullets passing through the Gate get an ATK increase," and
+  // those two are the only blocks whose kit text names them bullets/missiles fired through Mist;
+  // Basic ATK/Heavy ATK/Dodge Counter are melee/aimed-shot moves, not bullets, so excluding them is
+  // a sourced judgment call, not a guess with no basis (same discipline as the skillDmg-category
+  // inference on Misty Cover above).
+  {
+    id: 'aalto.liberation.gate-atk-buff',
+    source: SOURCE, kind: 'buff', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Flower in the Mist' },
+    timing: { duration: 10 }, target: { scope: 'self' },
+    effects: [
+      { stat: 'atkPct', value: 10, source: 'self-kit', scopedToBlockId: 'aalto.skill.shift-trick' },
+      { stat: 'atkPct', value: 10, source: 'self-kit', scopedToBlockId: 'aalto.forte.misty-cover' },
+    ],
+    note: "Gate of Quandary ATK+10% for 10s, real text: 'Bullets passing through the Gate get an ATK increase' — scoped to the two Mist Bullet/Mist Missile blocks, not a blanket self buff. Same caveat as Aemeath's own scopedToBlockId blocks: only the hit-composed resolvers (resolveHitComposedDps/TeamDps) enforce the per-block scope; the legacy flat stat-panel path (resolveTriggerBlocks -> applyBuff) has no concept of scopedToBlockId and applies both +10 entries broadly (+20% flat atkPct) — a known, pre-existing architectural limitation, not something this block introduces.",
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'aalto.outro.dissolving-mist',
@@ -155,6 +187,22 @@ export const AALTO_BLOCKS = [
     note: 'Minor Fortes: Aero DMG+12%, ATK%+12% (Characters data dump/Aalto/Aalto.md line 89-90). Unconditional, always active.',
   },
 
+  // Added 2026-09-05 (category-C completeness pass): Aalto's 2 Inherent Skills, previously not
+  // referenced anywhere in this file — real, sourced, kind:'utility' with effects:[] since neither
+  // has a representable DPS stat, same pattern as chain.s1/s3 above.
+  {
+    id: 'aalto.inherent.perfect-performance',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: "Perfect Performance — Heavy Attack always crits, once every 30s. Real mechanic, not modeled: aalto.heavy.aimed-shot never fires in CHARACTER_ROTATIONS['Aalto'] (moot for DPS either way), and the '30s interval' gating has the same cooldown-representability gap as chain.s1's Shift Trick CD reduction — no repeat-cast-per-cooldown simulation for it to gate.",
+  },
+  {
+    id: 'aalto.inherent.mid-game-break',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Mid-game Break — continuously restores Stamina while in Mistcloak Dash. Pure resource-management utility, no DPS component in the real kit text to model.',
+  },
+
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA) ──
   // Comment corrected 2026-09-05 (same class of fix as chain.s3's 2026-09-03 correction): the prior
   // "no DPS component sourced yet" was wrong — the dump is explicit S1 reduces Shift Trick's own
@@ -163,7 +211,11 @@ export const AALTO_BLOCKS = [
   // rotation loop, with no cooldown-reduction stat or repeat-cast-per-cooldown simulation for a CD
   // value to multiply against — real, sourced, genuinely not representable, not a gap to guess at.
   { id: 'aalto.chain.s1', source: SOURCE, kind: 'utility', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [], note: "Trickster's Opening Show — Shift Trick Cooldown 10s -> 6s, real mechanic with no representable DPS stat in this schema." },
-  { id: 'aalto.chain.s2', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'atkPct', value: 15, source: 'self-kit' }] },
+  // Note added 2026-09-05 (category-C completeness pass): the dump's real S2 text is conditional —
+  // "attacking Mist-Avatar-taunted targets grants ATK+15%" — but this engine has no
+  // enemy-side-tag/target-state condition type (Condition only covers element/role/stance/
+  // teamWide), so the +15% is modeled unconditionally, a real generalization not a fabrication.
+  { id: 'aalto.chain.s2', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'atkPct', value: 15, source: 'self-kit' }], note: 'Real text: ATK+15% only vs Mist-Avatar-taunted targets — modeled unconditionally, no target-tag condition type exists.' },
   // Comment corrected 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): the prior "no DPS component
   // sourced yet" note was false — the dump is explicit S3 has a real DPS component ("Basic/Mid-air
   // Attack through the Gate of Quandary generates 2 more bullets at 50% of that attack's DMG"). Left
@@ -174,5 +226,10 @@ export const AALTO_BLOCKS = [
   { id: 'aalto.chain.s3', source: SOURCE, kind: 'utility', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [], note: "Hazey Transition — real mechanic (2 bonus bullets at 50% of the triggering Basic/Mid-air Attack's own DMG through the Gate of Quandary) not modeled: ambiguous whether it's per full combo-cast or per individual sub-hit." },
   { id: 'aalto.chain.s4', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'skillDmg', value: 30, source: 'self-kit' }] },
   { id: 'aalto.chain.s5', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'elemDmg', value: 25, source: 'self-kit' }] },
-  { id: 'aalto.chain.s6', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'critRate', value: 8, source: 'self-kit' }, { stat: 'heavyDmg', value: 50, source: 'self-kit' }] },
+  // Note added 2026-09-05 (category-C completeness pass): real S6 text scopes the +50% to "Heavy
+  // Attack through the Gate of Quandary" specifically, not every Heavy Attack — but this is
+  // currently moot for computed DPS since aalto.heavy.aimed-shot never fires in
+  // CHARACTER_ROTATIONS['Aalto'] at all (see that block's own note), and there is no temporal/
+  // spatial "currently inside the Gate" condition type to model the real scoping if it ever did.
+  { id: 'aalto.chain.s6', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'critRate', value: 8, source: 'self-kit' }, { stat: 'heavyDmg', value: 50, source: 'self-kit' }], note: 'Real text scopes heavyDmg+50 to Heavy Attack through the Gate of Quandary only, not all Heavy Attacks — currently moot, Heavy ATK never fires in the modeled rotation.' },
 ];
