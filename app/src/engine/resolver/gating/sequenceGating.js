@@ -89,8 +89,15 @@ function blockMagnitude(block) {
  * comment above) from a single character's own block list. Blocks with no mode rivalry pass through
  * unchanged, same array reference when nothing needed filtering.
  * @param {import('./triggerBlocks.schema.js').TriggerBlock[]} blocks
+ * @param {string|null} [forcedStance]  Added 2026-09-05 — the real in-game mode toggle (see
+ *   winningStanceForOwner's own doc for the full rationale): Resonance Mode is a player-set switch
+ *   in the character's own build panel, NOT something the game derives from magnitude. When a group
+ *   has a stance matching `forcedStance`, that stance wins outright, no magnitude comparison —
+ *   exactly mirroring what a player would see in-game if they flipped the toggle. A group whose
+ *   rival stances DON'T include `forcedStance` (e.g. this group belongs to a different rivalry than
+ *   the one being forced) falls back to the existing magnitude heuristic, unaffected.
  */
-export function filterExclusiveModeBlocks(blocks) {
+export function filterExclusiveModeBlocks(blocks, forcedStance = null) {
   const groups = new Map(); // groupKey -> Map<stanceText, TriggerBlock[]>
   blocks.forEach(b => {
     const key = modeGroupKey(b);
@@ -105,11 +112,15 @@ export function filterExclusiveModeBlocks(blocks) {
   groups.forEach(byStance => {
     if (byStance.size < 2) return; // no rival stance value present — leave untouched
     let winnerStance = null;
-    let winnerValue = -Infinity;
-    byStance.forEach((group, stance) => {
-      const value = Math.max(...group.map(blockMagnitude));
-      if (value > winnerValue) { winnerValue = value; winnerStance = stance; }
-    });
+    if (forcedStance != null && byStance.has(forcedStance)) {
+      winnerStance = forcedStance;
+    } else {
+      let winnerValue = -Infinity;
+      byStance.forEach((group, stance) => {
+        const value = Math.max(...group.map(blockMagnitude));
+        if (value > winnerValue) { winnerValue = value; winnerStance = stance; }
+      });
+    }
     byStance.forEach((group, stance) => {
       if (stance !== winnerStance) group.forEach(b => losers.add(b.id));
     });
@@ -128,7 +139,16 @@ export function filterExclusiveModeBlocks(blocks) {
 // — aggregated across every one of that owner's mode-tagged blocks (not just one trigger group), so a
 // character with several small per-group rivalries still resolves to one single assumed mode, matching
 // the user's own framing: "pick whichever mode gives the most damage for this composition."
-export function winningStanceForOwner(blocks, owner) {
+export function winningStanceForOwner(blocks, owner, forcedStance = null) {
+  // Added 2026-09-05, per direct user correction: Resonance Mode is NOT something the game derives
+  // automatically (this function's own magnitude heuristic was always a stand-in, never a claim about
+  // real game behavior) — in the real game it's a manual toggle in the character's own build panel,
+  // available only outside combat. A caller-supplied forcedStance IS that real toggle's chosen value
+  // and wins outright, even higher priority than `confirmedWinningStance` below (that flag answers a
+  // narrower question — "which stance wins when nothing else says otherwise" — the player's own
+  // explicit choice always overrides it). Only characters with a real second mode ever pass this;
+  // every other caller keeps passing null, so the pre-existing heuristic is unchanged for them.
+  if (forcedStance != null) return forcedStance;
   const ownerModeBlocks = blocks.filter(b => b.source === owner && modeGroupKey(b));
   if (!ownerModeBlocks.length) return null;
   // confirmedWinningStance (added 2026-09-02, Lynae's case): an explicit, sourced pointer for when the

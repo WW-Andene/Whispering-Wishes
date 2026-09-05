@@ -70,11 +70,11 @@ import { COORD_SNAPSHOT_DISCOUNT } from '../gating/coordinatedAtk.js';
  * }}
  */
 export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName, enemyContext, baseStats, opts = {}) {
-  const { targetElementLower = null, targetRole = null, libUptime = null, coordSnapshotDiscount = false, cooldownSteadyState = false, externalStats = null } = opts;
+  const { targetElementLower = null, targetRole = null, libUptime = null, coordSnapshotDiscount = false, cooldownSteadyState = false, externalStats = null, stanceOverrides = null } = opts;
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
   const { enemyDef, enemyRes } = enemyContext;
 
-  const results = simulateTeamRotation(ownedSteps, blocksByOwner);
+  const results = simulateTeamRotation(ownedSteps, blocksByOwner, stanceOverrides);
   const order = [...new Set(ownedSteps.map(s => s.owner))];
 
   const segments = {};

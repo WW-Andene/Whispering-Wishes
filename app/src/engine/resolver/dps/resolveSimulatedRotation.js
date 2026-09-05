@@ -71,8 +71,8 @@ import { cumulativeTieredValue } from '../gating/tieredStacking.js';
  * }}
  */
 export function resolveSimulatedRotation(blocks, steps, opts = {}) {
-  const { targetElementLower = null, targetRole = null } = opts;
-  const results = simulateRotation(blocks, steps);
+  const { targetElementLower = null, targetRole = null, forcedStance = null } = opts;
+  const results = simulateRotation(blocks, steps, forcedStance);
   const totalTime = results.length ? results[results.length - 1].time : 0;
 
   const stats = createStats();

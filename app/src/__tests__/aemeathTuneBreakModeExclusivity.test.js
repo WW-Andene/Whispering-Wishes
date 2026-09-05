@@ -34,13 +34,20 @@ describe('Aemeath Tune Break / Fusion Burst mode-exclusivity fix', () => {
     expect(result.exclusiveCandidates[0].ruptureDmgDelta).toBeGreaterThan(0);
   });
 
-  it('calcTeamStats resolves Aemeath to Fusion Burst mode, both solo and in a real composition — matching the real meta verdict, not a text-only guess', () => {
-    const solo = calcTeamStats(['Aemeath'], 0, 'Aemeath', {}, '', 90);
+  // Updated 2026-09-05, direct user correction: Resonance Mode is a real manual toggle, not something
+  // calcTeamStats auto-derives — see aemeathDeniaLynaeModeResolution.test.js's own updated header for
+  // the full rationale. Fusion Burst really is the real meta verdict for Aemeath (still true, per the
+  // dump: "Fusion Burst is the strongest overall pick"), but the test must now say so explicitly via
+  // teamEquipment rather than relying on an auto-search to rediscover it.
+  it('calcTeamStats resolves Aemeath to Fusion Burst mode when the build explicitly sets it, both solo and in a real composition', () => {
+    const aemeathFusion = { '0:Aemeath': { resonanceMode: 'Fusion Burst mode' } };
+    const solo = calcTeamStats(['Aemeath'], 0, 'Aemeath', aemeathFusion, '', 90);
     const soloStance = solo.tuneBreakResolvedStances.find(s => s.name === 'Aemeath');
     expect(soloStance).toBeDefined();
     expect(soloStance.stance).toBe('Fusion Burst mode');
 
-    const team = calcTeamStats(['Aemeath', 'Denia', 'Lynae'], 0, 'Aemeath', {}, '', 90);
+    const teamEquipment = { ...aemeathFusion, '0:Lynae': { resonanceMode: 'Tune Rupture mode' } };
+    const team = calcTeamStats(['Aemeath', 'Denia', 'Lynae'], 0, 'Aemeath', teamEquipment, '', 90);
     const teamStance = team.tuneBreakResolvedStances.find(s => s.name === 'Aemeath');
     expect(teamStance).toBeDefined();
     expect(teamStance.stance).toBe('Fusion Burst mode');

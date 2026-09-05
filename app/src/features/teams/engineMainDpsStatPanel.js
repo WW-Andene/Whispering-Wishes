@@ -34,10 +34,13 @@ const EXTERNAL_STAT_KEYS = ['atkPct', 'cr', 'cd', 'elemDmg', 'skillDmg', 'basicD
  */
 export function computeEngineMainDpsStatPanel(engineChosenOrder, mainDps, mems, gearDeltaByName, enemyDef90, mainBaseRes) {
   const { ownedSteps, blocksByOwner } = engineChosenOrder;
+  const stanceOverrides = {};
+  mems.forEach(m => { if (m.resonanceMode) stanceOverrides[m.name] = m.resonanceMode; });
   const { stats: mainReceived, totalMultBonus: mainTotalMultBonus } = resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, mainDps.name, {
     targetElementLower: (mainDps.d.element || '').toLowerCase(),
     targetRole: mainDps.d.role,
     sequenceByOwner: Object.fromEntries(mems.map(m => [m.name, m.seqLevel])),
+    stanceOverrides,
   });
   const mainGearDelta = gearDeltaByName[mainDps.name] || {};
   const finalStats = { ...mainReceived };

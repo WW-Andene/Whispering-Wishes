@@ -82,6 +82,17 @@ export const AEMEATH_BLOCKS = [
     // her kit text; gated the same way her tuneBreak.competesWithFusionBurstReaction resolution already
     // is (winningStanceForOwner), not a second mode mechanism.
     dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // appliesTags added 2026-09-05, per the dump's own line 84 text ("Both modes: Basic Stage 3/4
+    // (either form), Sync Strikes, and both Intro skills inflict Tune Rupture-Shifting / Fusion Burst
+    // on hit") — the Tune Rupture-mode HALF of this same real trigger was previously entirely
+    // untagged (only the Fusion Burst dotApplier above existed), leaving her toggle non-functional in
+    // Tune Rupture mode. Same tag name ('tune-rupture-shifting') and shape Lynae's own blocks already
+    // use for the identical status. No new DOT_MECHANICS entry/resolver needed — this is a pure
+    // ally-action marker (lets ANOTHER character's own trigger react to it, e.g. Mornye's), same as
+    // Lynae/Denia's existing appliesTags; it does not itself compute any Tune Rupture-Shifting damage
+    // (that reaction has no engine consumer anywhere yet — a real, separate, larger gap, not built
+    // here).
+    appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
     // concertoEnergyGain added 2026-09-05 (completeness pass): dump's own "Concerto Regen (either):
     // 10" row for both Intro variants.
     concertoEnergyGain: 10,
@@ -118,6 +129,9 @@ export const AEMEATH_BLOCKS = [
     // Circuit "To Sculpt the Silence": Basic Stage 3/4, Sync Strikes, both Intro skills), Fusion-Burst-
     // mode only.
     dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // appliesTags added 2026-09-05 — see aemeath.intro.debut-of-meteoric-radiance's own comment for
+    // the full rationale (same real dump line 84 trigger, Tune Rupture-mode half).
+    appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
   },
   {
     id: 'aemeath.liberation.heavenfall-edict-overdrive',
@@ -153,6 +167,9 @@ export const AEMEATH_BLOCKS = [
     // dotApplier added 2026-09-02 — bundles Stage 3/4 (her kit's real Fusion Burst trigger) alongside
     // Stage 2, same combo-bundling approximation this block already makes for its own damage.
     dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // appliesTags added 2026-09-05 — see aemeath.intro.debut-of-meteoric-radiance's own comment for
+    // the full rationale (same real dump line 84 trigger, Tune Rupture-mode half).
+    appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
   },
   {
     id: 'aemeath.skill.seraphic-duet-encore',
@@ -182,6 +199,9 @@ export const AEMEATH_BLOCKS = [
     // dotApplier added 2026-09-02 — same real Basic Stage 3/4 trigger as her Mech-form combos above,
     // in base Aemeath Form instead.
     dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode' },
+    // appliesTags added 2026-09-05 — see aemeath.intro.debut-of-meteoric-radiance's own comment for
+    // the full rationale (same real dump line 84 trigger, Tune Rupture-mode half).
+    appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
   },
   {
     id: 'aemeath.skill.seraphic-duet-overture',

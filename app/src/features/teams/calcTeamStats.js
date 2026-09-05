@@ -37,6 +37,7 @@ import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/res
 import { chooseOnFieldOrder } from '../../engine/resolver/rotationOrder/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/resolver/gating/coordinatedAtk.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/resolver/gating/sequenceGating.js';
+import { defaultResonanceMode } from '../../data/resonanceModes.js';
 
 // A selfBuff/outroBuff/libBuff whose real value scales with the character's own equipped Energy
 // Regen (e.g. Sigrika's "+2% Echo Skill DMG per 1% ER above 125%, up to 50%", Mornye's Tune Break
@@ -72,6 +73,12 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const charAtk = d.baseAtk || 0;
       const weapAtk = weapon ? weapon.baseAtk : 0;
       const seqLevel = eq?.sequence || 0;
+      // Real, manual per-character Resonance Mode toggle (2026-09-05, direct user correction — see
+      // data/resonanceModes.js's own header) — `eq?.resonanceMode` is the player's own build-panel
+      // choice; falls back to that character's real default (index 0 of her own mode list) whenever
+      // she has one and the build hasn't explicitly overridden it yet, so a fresh build never sits in
+      // an ambiguous "no mode chosen" state. `null` for every character with no real second mode.
+      const resonanceMode = eq?.resonanceMode || defaultResonanceMode(name);
       const equippedEchoes = eq?.echoes || [];
       const hasAnyEcho = equippedEchoes.some(e => e && typeof e === 'object' && e.name);
       // Real equipped-echo set counts — the set bonus must never apply based on a stale/manual
@@ -114,9 +121,15 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       const scaling = d.statScaling || 'ATK';
       const baseStat = scaling === 'HP' ? (d.baseHp || 0) : scaling === 'DEF' ? (d.baseDef || 0) : charAtk + weapAtk;
       const mainEchoName = eq?.echoes?.[0]?.name || '';
-      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, scaling, baseStat, echoSetName: (echoSetName && ECHO_SETS[echoSetName]) ? echoSetName : '', echoSet: (echoSetName && ECHO_SETS[echoSetName]) ? ECHO_SETS[echoSetName] : null, echoSet2Name: (echoSet2Name && ECHO_SETS[echoSet2Name]) ? echoSet2Name : '', echoSet2: (echoSet2Name && ECHO_SETS[echoSet2Name]) ? ECHO_SETS[echoSet2Name] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel, mainEchoName };
+      return { name, d, weapon, weapName, charAtk, weapAtk, totalBaseAtk: charAtk + weapAtk, scaling, baseStat, echoSetName: (echoSetName && ECHO_SETS[echoSetName]) ? echoSetName : '', echoSet: (echoSetName && ECHO_SETS[echoSetName]) ? ECHO_SETS[echoSetName] : null, echoSet2Name: (echoSet2Name && ECHO_SETS[echoSet2Name]) ? echoSet2Name : '', echoSet2: (echoSet2Name && ECHO_SETS[echoSet2Name]) ? ECHO_SETS[echoSet2Name] : null, weapSubstat: weapon?.stat || '', weapSubVal: weapon?.subStatValue || '', seqLevel, resonanceMode, mainEchoName };
     }).filter(Boolean);
     if (!mems.length) return null;
+    // Real, manual Resonance Mode choices for this team, keyed by owner name — only members with a
+    // real second mode are present (see data/resonanceModes.js). Threaded through every engine call
+    // below that used to guess a dual-mode character's stance from her own block magnitudes
+    // (filterExclusiveModeBlocks/winningStanceForOwner) so a manual toggle wins outright instead.
+    const resonanceModeByOwner = {};
+    mems.forEach(m => { if (m.resonanceMode) resonanceModeByOwner[m.name] = m.resonanceMode; });
     const allBuffs = [], allDebuffs = [];
     mems.forEach(m => { (m.d.buffs || []).forEach(b => allBuffs.push({ source: m.name, buff: b })); (m.d.debuffs || []).forEach(b => allDebuffs.push({ source: m.name, debuff: b })); });
     // DPS selection: an explicit mainDpsOverride wins — needed both for dual-Main-DPS-role team comps
@@ -174,7 +187,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // "counted as if R6" bug Stage 3 item 1 already fixed for the RAW/solo tier, silently reintroduced
     // here since this tier never threaded m.seqLevel through at all.
     const engineChosenOrder = allMembersConverted
-      ? chooseOnFieldOrder(mems.map(m => ({ name: m.name, blocks: filterExclusiveModeBlocks(gateBlocksBySequence(BLOCKS_BY_CHARACTER[m.name], m.seqLevel)), rotation: CHARACTER_ROTATIONS[m.name] })), mainDps.name)
+      ? chooseOnFieldOrder(mems.map(m => ({ name: m.name, blocks: filterExclusiveModeBlocks(gateBlocksBySequence(BLOCKS_BY_CHARACTER[m.name], m.seqLevel), m.resonanceMode), rotation: CHARACTER_ROTATIONS[m.name] })), mainDps.name)
       : null;
 
     const rotationTimeline = (() => {
@@ -634,6 +647,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         const { totalDamage, totalTime } = resolveHitComposedDps(
           blocks, steps, enemyContext, baseStats, (m.d.element || '').toLowerCase(), m.d.role,
           gearDelta, m.seqLevel, null, true, // sequence: m.seqLevel, libUptime: none at RAW tier (matches legacy, which never gates RAW), cooldownSteadyState: true
+          m.resonanceMode, // forcedStance: the real manual Resonance Mode toggle, see resonanceModeByOwner's own comment
         );
         const memberDps = totalTime > 0 ? totalDamage / totalTime : 0;
         // fieldMultFactor (0-1, computed above) applies the same field-time/coord discount as the
@@ -725,7 +739,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // calcEngine.js functions, same rotTime/defMult/resShred inputs, byte-identical output; the actual
     // engine-vs-legacy `rotTime` reconciliation stays step 4's job (rotationTimeline itself), not this
     // one — DOT keeps using the same shared `rotTime` every other FULL-tier total already does.
-    const dotResult = resolveDotReactionDps(mems, rotTime, defMult, resShred, getEnemyRes, resMult, energyCycleFactors, engineChosenOrder?.blocksByOwner || null);
+    const dotResult = resolveDotReactionDps(mems, rotTime, defMult, resShred, getEnemyRes, resMult, energyCycleFactors, engineChosenOrder?.blocksByOwner || null, resonanceModeByOwner);
     let dotDmgPerRotation = dotResult.totalDmg;
     const hasFrazzle = dotResult.breakdown.frazzle.active;
     const hasErosion = dotResult.breakdown.erosion.active;
@@ -875,7 +889,19 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
         const baseDotDmg = dotDmgPerRotation - dotResult.breakdown.fusionBurst.dmg;
         const baseGrandTotal = totalRotDmg + echoActiveDmg + baseDotDmg;
 
-        const optionsFor = (c) => c.competesWithFusionBurstReaction ? ['fusion', 'rupture', 'strain'] : ['rupture', 'strain'];
+        // Real, manual Resonance Mode toggle (2026-09-05): a candidate with a real player-set mode
+        // (resonanceModeByOwner) is locked to exactly that ONE option here, not enumerated — this
+        // combinatorial search's own "try every option, keep whichever wins the most damage" behavior
+        // is now reserved for auto-build/auto-team (not yet built — see data/resonanceModes.js's own
+        // header on the default-mode fallback), never silently overriding what the player picked.
+        const STANCE_TO_TOKEN = { 'Fusion Burst mode': 'fusion', 'Tune Rupture mode': 'rupture', 'Tune Strain mode': 'strain' };
+        const optionsFor = (c) => {
+          const manualStance = resonanceModeByOwner[c.name];
+          const manualToken = manualStance ? STANCE_TO_TOKEN[manualStance] : null;
+          const allOptions = c.competesWithFusionBurstReaction ? ['fusion', 'rupture', 'strain'] : ['rupture', 'strain'];
+          if (manualToken && allOptions.includes(manualToken)) return [manualToken];
+          return allOptions;
+        };
         // Cartesian product of every candidate's own option list — e.g. Aemeath{fusion,rupture,strain}
         // × Denia{fusion,rupture,strain} × Lynae{rupture,strain} = 18 combinations, trivial to evaluate.
         let combos = [[]];

@@ -73,8 +73,8 @@ import { COORD_SNAPSHOT_DISCOUNT } from '../gating/coordinatedAtk.js';
  * }}
  */
 export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetName, opts = {}) {
-  const { targetElementLower = null, targetRole = null, sequenceByOwner = null, coordSnapshotDiscount = false } = opts;
-  const results = simulateTeamRotation(ownedSteps, blocksByOwner);
+  const { targetElementLower = null, targetRole = null, sequenceByOwner = null, coordSnapshotDiscount = false, stanceOverrides = null } = opts;
+  const results = simulateTeamRotation(ownedSteps, blocksByOwner, stanceOverrides);
   const order = [...new Set(ownedSteps.map(s => s.owner))];
 
   // Each member's own real on-field segment, derived from the raw step list the same way

@@ -103,10 +103,10 @@ import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../gating/seque
  *   hitLog: {time: number, blockId: string, atkPct: number, damage: number, category: string}[],
  * }}
  */
-export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null, externalStats = null, sequence = null, libUptime = null, cooldownSteadyState = false) {
+export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, targetElementLower = null, targetRole = null, externalStats = null, sequence = null, libUptime = null, cooldownSteadyState = false, forcedStance = null) {
   const base = typeof baseStats === 'number' ? { atk: baseStats } : baseStats;
-  blocks = filterExclusiveModeBlocks(gateBlocksBySequence(blocks, sequence));
-  const results = simulateRotation(blocks, steps);
+  blocks = filterExclusiveModeBlocks(gateBlocksBySequence(blocks, sequence), forcedStance);
+  const results = simulateRotation(blocks, steps, forcedStance);
   const totalTime = results.length ? results[results.length - 1].time : 0;
   const { enemyDef, enemyRes } = enemyContext;
 

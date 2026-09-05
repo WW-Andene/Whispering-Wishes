@@ -90,6 +90,8 @@
     "sequenceAria": "Niveau de chaîne de résonance de {{name}}",
     "refinement": "Perfectionnement",
     "refinementAria": "Niveau de perfectionnement de l'arme de {{name}}",
+    "resonanceMode": "Mode de Résonance",
+    "resonanceModeAria": "Mode de résonance de {{name}}",
     "damageFocus": "Focus de dégâts",
     "scaling": "Scaling {{stat}}",
     "buffs": "Buffs",

@@ -223,8 +223,8 @@ export class RotationSimulator {
  *   effect actually lands) — used by resolveSimulatedRotation.js to place each activation on a real
  *   timeline instead of only knowing relative step order.
  */
-export function simulateRotation(blocks, steps) {
-  return simulateStepsCore(new RotationSimulator(), steps.map(s => ({ ...s, owner: '' })), { '': blocks });
+export function simulateRotation(blocks, steps, forcedStance = null) {
+  return simulateStepsCore(new RotationSimulator(), steps.map(s => ({ ...s, owner: '' })), { '': blocks }, forcedStance != null ? { '': forcedStance } : null);
 }
 
 // The real shared implementation behind both simulateRotation() (single character) and
@@ -235,15 +235,18 @@ export function simulateRotation(blocks, steps) {
 // namespace as a parameter (see RotationSimulator's own #ns doc comment for why `_outroWindows`/
 // registerSwap() deliberately have NO owner param: partner-outro-return and the swap clock are
 // inherently cross-character/global, not per-owner).
-function simulateStepsCore(sim, ownedSteps, blocksByOwner) {
+function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = null) {
   const allBlocks = Object.values(blocksByOwner).flat();
   // the engine-architecture history (git log) item 9 (Denia/Lynae mode-conditional appliesTags gap): resolved once per
   // owner up front, not per step — the "assumed active mode" for a dual-mode character doesn't
   // change mid-rotation in this theoretical-optimizer reading (see winningStanceForOwner's own
   // comment), and every tag-entry check below just reads this cache.
+  // stanceOverrides (added 2026-09-05, the real per-character manual mode toggle — see
+  // winningStanceForOwner's own doc): when set for an owner, wins outright over the magnitude
+  // heuristic below, same as it does for filterExclusiveModeBlocks's own pre-filtering pass.
   const ownerStances = new Map();
   const stanceForOwner = (owner) => {
-    if (!ownerStances.has(owner)) ownerStances.set(owner, winningStanceForOwner(allBlocks, owner));
+    if (!ownerStances.has(owner)) ownerStances.set(owner, winningStanceForOwner(allBlocks, owner, stanceOverrides?.[owner] ?? null));
     return ownerStances.get(owner);
   };
   // partnerBlocks is intentionally NOT scoped per-owner: a 'partner-outro-return' block can belong
@@ -539,8 +542,8 @@ export function deriveStepsFromRotation(rotation, blocks, stepSeconds = DEFAULT_
  * @returns Same shape as simulateRotation()'s return, with `owner` populated per result instead of
  *   always ''.
  */
-export function simulateTeamRotation(ownedSteps, blocksByOwner) {
-  return simulateStepsCore(new RotationSimulator(), ownedSteps, blocksByOwner);
+export function simulateTeamRotation(ownedSteps, blocksByOwner, stanceOverrides = null) {
+  return simulateStepsCore(new RotationSimulator(), ownedSteps, blocksByOwner, stanceOverrides);
 }
 
 /**

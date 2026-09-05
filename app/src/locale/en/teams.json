@@ -90,6 +90,8 @@
     "sequenceAria": "{{name}} resonance sequence level",
     "refinement": "Refinement",
     "refinementAria": "{{name}} weapon refinement level",
+    "resonanceMode": "Resonance Mode",
+    "resonanceModeAria": "{{name}} resonance mode",
     "damageFocus": "Damage Focus",
     "scaling": "{{stat}} Scaling",
     "buffs": "Buffs",

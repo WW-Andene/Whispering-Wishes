@@ -69,7 +69,7 @@ export function rotTimeFromSteps(ownedSteps) {
  *   breakdown: {frazzle: Object, erosion: Object, fusionBurst: Object, electroFlare: Object, tuneBreak: Object},
  * }}
  */
-export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEnemyRes, mainResMult, energyCycleFactors = null, blocksByOwner = null) {
+export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEnemyRes, mainResMult, energyCycleFactors = null, blocksByOwner = null, stanceOverrides = null) {
   const frazzleResMult = calcResMult(getEnemyRes('Spectro'), resShred);
   const erosionResMult = calcResMult(getEnemyRes('Havoc'), resShred);
   const fusionBurstResMult = calcResMult(getEnemyRes('Fusion'), resShred);
@@ -112,7 +112,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   // Their legacy `debuffs.fusionBurst` flags stay in place for `dotContributors` attribution, same
   // reasoning as Buling's kept `electroFlare` flag below.
   const fusionBurst = blocksByOwner
-    ? resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, fusionBurstResMult)
+    ? resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, fusionBurstResMult, [], stanceOverrides)
     : calcFusionBurstDmg(members, rotTime, defMult, fusionBurstResMult);
   // Electro Flare (the engine-merge history (git log) Phase 2, first migrated mechanic): prefer the TriggerBlock-
   // native resolver when blocksByOwner is available (real production callers always have it by the

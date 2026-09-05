@@ -31,6 +31,8 @@ import { resolveHitComposedTeamDps } from '../../engine/resolver/dps/resolveHitC
 export function computeEngineComposedTeamDamage(chosenOrder, mems, mainDpsName, energyCycleFactors, gearDeltaByName, enemyDef90, getEnemyRes, rotTime) {
   if (!chosenOrder) return null;
   const { ownedSteps, blocksByOwner } = chosenOrder;
+  const stanceOverrides = {};
+  mems.forEach(m => { if (m.resonanceMode) stanceOverrides[m.name] = m.resonanceMode; });
   let totalRotDmg = 0;
   const memberDmgArr = [];
   mems.forEach(m => {
@@ -47,6 +49,7 @@ export function computeEngineComposedTeamDamage(chosenOrder, mems, mainDpsName, 
       coordSnapshotDiscount: isOffFieldCoord,
       cooldownSteadyState: true,
       externalStats: gearDeltaByName[m.name],
+      stanceOverrides,
     });
     const dmg = memberEngineDps * rotTime;
     totalRotDmg += dmg;
