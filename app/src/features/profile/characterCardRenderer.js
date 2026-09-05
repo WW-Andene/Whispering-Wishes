@@ -1,9 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// WHISPERING WISHES — characterCardRenderer.js
-// Single-character "build card" canvas renderer for the Teams tab — parallel to
-// features/profile/idCardRenderer.js, reusing the exact same drawing primitives
-// (rr/drawPanel/drawShell/drawStat/gold accent bar) and native-vs-web save logic
-// for visual/behavioral consistency with the existing Resonator ID card export.
+// WHISPERING WISHES — features/profile/characterCardRenderer.js
+// Single-character "build card" canvas renderer, used by the Teams tab's Damage
+// Calculator — relocated here (Layer 6 of the engine rewrite) alongside its sibling
+// idCardRenderer.js, reusing the exact same drawing primitives (rr/drawPanel/
+// drawShell/drawStat/gold accent bar) and native-vs-web save logic for visual/
+// behavioral consistency with the existing Resonator ID card export. This is a
+// rendering/export utility, not calculation logic — it only reads calcEngine.js's
+// primitives to compute the numbers it displays, so it was never really part of
+// the engine proper despite previously sitting in features/teams/.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { CHARACTER_THEMES } from '../../data/banners.js';
@@ -15,7 +19,7 @@ import {
   ECHO_MAIN_STAT_VALUES,
   createStats, parsePassive, applyFullEchoSet, applyEchoStats,
   calcEnergyCycles, getSubstatGradeValue, getSubstatTier,
-} from './calcEngine.js';
+} from '../teams/calcEngine.js';
 
 // Real Android launcher icon (same source as idCardRenderer.js's APP_ICON) used as a small
 // brand watermark in this card's header — not the PWA icon or the currency icon.
