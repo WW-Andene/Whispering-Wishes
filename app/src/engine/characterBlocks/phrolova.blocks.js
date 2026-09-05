@@ -10,7 +10,7 @@
 // Resolving Chord, enters Maestro) — treated as the same move, sourced from Curtain
 // Call's value.
 //
-// Corrected 2026-09-02 against a fresh the source dump (`Characters data dump/Phrolova/
+// Corrected 2026-09-02 against a fresh the source dump (`Data dump/Phrolova/
 // Phrolova.md`): her two Forte follow-ups (Movement of Fate and Finality / Murmurs
 // in a Haunting Dream — 3 real CHARACTER_ROTATIONS steps) previously had no matching
 // SKILL_MULTIPLIERS row at all, leaving S1's own +80% totalMult bonus permanently

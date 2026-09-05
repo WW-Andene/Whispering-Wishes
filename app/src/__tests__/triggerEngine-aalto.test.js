@@ -56,7 +56,7 @@ describe('triggerEngine parity — Aalto', () => {
     expect(CHARACTER_DATA['Aalto'].dmgFocus).toEqual(['Basic ATK', 'Skill', 'Liberation']);
   });
 
-  it('Mid-air Attack, Dodge Counter, Heavy ATK (Aimed Shot), and Minor Fortes exist — added 2026-09-05 against Characters data dump/Aalto/Aalto.md, previously absent entirely', () => {
+  it('Mid-air Attack, Dodge Counter, Heavy ATK (Aimed Shot), and Minor Fortes exist — added 2026-09-05 against Data dump/Aalto/Aalto.md, previously absent entirely', () => {
     const midair = AALTO_BLOCKS.find(b => b.id === 'aalto.midair.attack');
     const dodge = AALTO_BLOCKS.find(b => b.id === 'aalto.basic.dodge-counter');
     const heavy = AALTO_BLOCKS.find(b => b.id === 'aalto.heavy.aimed-shot');

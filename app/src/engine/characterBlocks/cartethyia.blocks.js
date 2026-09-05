@@ -12,7 +12,7 @@
 // per her declared base stat, documented as an approximation rather than split
 // across two bases (which this schema's single-basis-per-block shape can't do).
 // Mid-air:Cartethyia Plunging Attack's real DMG is now sourced and modeled (2026-09-02, against a
-// fresh the source dump — Characters data dump/Cartethyia/Cartethyia.md — which the prior source page
+// fresh the source dump — Data dump/Cartethyia/Cartethyia.md — which the prior source page
 // this file was built from was simply missing). The "which Sword Shadow grants which buff" question
 // (2026-09-03) turns out to be moot: her real modeled rotation always holds all 3 shadow types by the
 // time she recalls them, so all 3 buffs always apply together — Mandate of Divinity's real +50% Aero

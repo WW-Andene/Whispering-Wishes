@@ -660,7 +660,7 @@ const CHARACTER_DATA = {
   // and Lux & Umbra (83.0%), the source's #2/#3 non-signature 5-stars; alt4 uses Romance in Farewell (69.9%,
   // the source's named best 4★/F2P no-gacha pick) and Solar Flame; alt3 uses the standard starter Pistols
   // of Night.
-  // Phase A audit 2026-09-04 against a fresh source dump (`Characters data dump/Ciaccona/Ciaccona.md`):
+  // Phase A audit 2026-09-04 against a fresh source dump (`Data dump/Ciaccona/Ciaccona.md`):
   // 2 bugs fixed here. (1) bestEchoes main-slot echo was 'Reminiscence: Fleurdelys' — the dump's own
   // Best Echo Sets section explicitly names Nightmare: Kelpie as "best main-slot pick by a small margin
   // over Reminiscence: Fleurdelys (use Fleurdelys instead if running Lux & Umbra)"; her stored
@@ -7117,7 +7117,7 @@ const RESONANCE_CHAIN_DATA = {
   // (totalMult: 3) was undocumented — real effect is a 20% chance for Scroll Divination to skip its
   // cooldown, a proc-based effective-cooldown-reduction with no flat DMG% equivalent. Zeroed to {}.
   // S1/S4 still need Phase 2 schema (defensive proc, proc-based cooldown reduction respectively).
-  // S2 re-investigated 2026-09-03: `Characters data dump/Youhu/Youhu.md` now exists and sources all
+  // S2 re-investigated 2026-09-03: `Data dump/Youhu/Youhu.md` now exists and sources all
   // 3 base values it doubles (Antithesis +70%, Triplet +175%, Perfect Rhyme all three at once) — the
   // "missing data" blocker is gone. But CHARACTER_ROTATIONS['Youhu'] (below) never actually casts
   // Poetic Essence at all: her real modeled loop spends each drawn Antique immediately via Ruyi

@@ -7,7 +7,7 @@
 // numbers invented. Simple kit: every trigger is 'cast' or 'passive', no
 // conditional/cast-order mechanics found.
 //
-// Completeness pass 2026-09-05, verified directly against `Characters data dump/
+// Completeness pass 2026-09-05, verified directly against `Data dump/
 // Aalto/Aalto.md` (the real prydwen.gg snapshot, not a derived table): three real,
 // sourced kit moves (Heavy ATK, Mid-air Attack, Dodge Counter) and his Minor Fortes
 // passive (Aero DMG+12%, ATK%+12%) existed in the dump and in SKILL_MULTIPLIERS['
@@ -184,7 +184,7 @@ export const AALTO_BLOCKS = [
       { stat: 'elemDmg', value: 12, source: 'self-kit' },
       { stat: 'atkPct', value: 12, source: 'self-kit' },
     ],
-    note: 'Minor Fortes: Aero DMG+12%, ATK%+12% (Characters data dump/Aalto/Aalto.md line 89-90). Unconditional, always active.',
+    note: 'Minor Fortes: Aero DMG+12%, ATK%+12% (Data dump/Aalto/Aalto.md line 89-90). Unconditional, always active.',
   },
 
   // Added 2026-09-05 (category-C completeness pass): Aalto's 2 Inherent Skills, previously not

@@ -2,7 +2,7 @@
 // WHISPERING WISHES — engine/characterBlocks/changli.blocks.js
 // Changli converted to TriggerBlocks. Sourced from characters.js's already-audited
 // CHAR_BUFF_TABLE['Changli'], RESONANCE_CHAIN_DATA['Changli'], SKILL_MULTIPLIERS['Changli'],
-// CHARACTER_ROTATIONS['Changli'], and "Characters data dump/Changli/Changli.md"'s own detailed
+// CHARACTER_ROTATIONS['Changli'], and "Data dump/Changli/Changli.md"'s own detailed
 // Standard Rotation prose (the only place the real cast order/count lives — CHARACTER_ROTATIONS
 // itself is a 6-step abstraction of it). No new numbers invented anywhere in this file.
 //

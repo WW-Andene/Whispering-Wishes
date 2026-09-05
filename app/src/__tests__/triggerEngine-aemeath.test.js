@@ -70,7 +70,7 @@ describe('triggerEngine parity — Aemeath', () => {
     expect(fired.has('aemeath.basic.aemeath-stage-2-4')).toBe(true);
   });
 
-  it("Basic Stage 1 (Mech form, auto-cast on Form Switch) and Minor Fortes exist — added 2026-09-05 against Characters data dump/Aemeath/Aemeath.md, previously absent entirely", () => {
+  it("Basic Stage 1 (Mech form, auto-cast on Form Switch) and Minor Fortes exist — added 2026-09-05 against Data dump/Aemeath/Aemeath.md, previously absent entirely", () => {
     const stage1 = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.skill.form-switch-basic-1');
     const minorFortes = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.buff.minor-fortes');
     expect(stage1.damage.hits.map(h => h.atkPct)).toEqual([23.20, 23.20, 23.20]);

@@ -26,7 +26,7 @@
 // Duet casts are "considered Resonance Liberation DMG").
 //
 // Completeness pass 2026-09-05 (next character after Aalto, alphabetically, same "verify
-// against the real dump" discipline): against `Characters data dump/Aemeath/Aemeath.md`,
+// against the real dump" discipline): against `Data dump/Aemeath/Aemeath.md`,
 // found and fixed 4 real gaps of the same class as Aalto's — Basic Stage 1 (both forms,
 // auto-cast on Form Switch) had NO block at all; Minor Fortes (Crit Rate+8%, ATK%+12%)
 // had no block at all; Concerto Energy (Overdrive+20, Finale+20, Intro+10) and real
@@ -219,7 +219,7 @@ export const AEMEATH_BLOCKS = [
       { stat: 'critRate', value: 8, source: 'self-kit' },
       { stat: 'atkPct', value: 12, source: 'self-kit' },
     ],
-    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Characters data dump/Aemeath/Aemeath.md line 140). Unconditional, always active.',
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Aemeath/Aemeath.md line 140). Unconditional, always active.',
   },
   // Added 2026-09-05 (completeness pass); GATING rebuilt same day (engine-logic pass, per user
   // direction: "if you have actual value and mechanic interaction and logic, build it" — not just

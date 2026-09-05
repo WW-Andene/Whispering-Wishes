@@ -169,7 +169,7 @@ export const QINGXIAO_BLOCKS = [
 
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE, base-kit Mindlock mechanic) ──
   // qingxiao.selfbuff.mindlock REMOVED 2026-09-02: it duplicated the SAME real mechanic as
-  // qingxiao.debuff.mindlock below (confirmed against the raw dump — Characters data dump/Qingxiao/
+  // qingxiao.debuff.mindlock below (confirmed against the raw dump — Data dump/Qingxiao/
   // Qingxiao.md lines 41 and 60, both describing ONE enemy-side "DMG taken" amplification, not a
   // separate self-buff) — modeled twice via two different stat channels (self totalMult AND enemy
   // deepen). This was invisible while `stat:'totalMult'` was a dead no-op everywhere in the engine
@@ -210,7 +210,7 @@ export const QINGXIAO_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'critRate', value: 16, source: 'self-kit' }],
-    note: "Corrected 2026-09-02 against the raw dump (Characters data dump/Qingxiao/Qingxiao.md line 69): Crit Rate +16% is real and confirmed, but the stack-cap raise this note previously attributed to S1 actually belongs to S2 (see that node's own note) — S1's OWN real additional mechanic is a separate, currently entirely UNMODELED proc: Swordlight Ward cap +1 (to 2), 25 Exorcising Seal on combat entry, and \"after a Basic Attack/Mid-air/Ephemeral Transcendence Basic hit lands, if she has Exorcising Seal, consumes it to trigger Juque Perdition — Aero DMG = 400% ATK, considered Basic Attack DMG (once per second)\" (Exorcising Seal caps at 25). A real, sourced DPS-contributing proc, not yet built — logged as a new Phase A finding, not modeled here (needs a windowed-proc-style block with a real per-second ICD and a 25-charge consumable resource, more than a quick addition).",
+    note: "Corrected 2026-09-02 against the raw dump (Data dump/Qingxiao/Qingxiao.md line 69): Crit Rate +16% is real and confirmed, but the stack-cap raise this note previously attributed to S1 actually belongs to S2 (see that node's own note) — S1's OWN real additional mechanic is a separate, currently entirely UNMODELED proc: Swordlight Ward cap +1 (to 2), 25 Exorcising Seal on combat entry, and \"after a Basic Attack/Mid-air/Ephemeral Transcendence Basic hit lands, if she has Exorcising Seal, consumes it to trigger Juque Perdition — Aero DMG = 400% ATK, considered Basic Attack DMG (once per second)\" (Exorcising Seal caps at 25). A real, sourced DPS-contributing proc, not yet built — logged as a new Phase A finding, not modeled here (needs a windowed-proc-style block with a real per-second ICD and a 25-charge consumable resource, more than a quick addition).",
   },
   {
     id: 'qingxiao.chain.s2',
