@@ -19,8 +19,16 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from './CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon, getCombatRoleIcon } from '../../shared/utils/elementVisuals.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon, getCombatRoleIcon, COMBAT_ROLE_ICONS } from '../../shared/utils/elementVisuals.js';
 import { t, getLocale } from '../../utils/i18n.js';
+
+// ECHO_SETS is declared oldest-first (each block of sets is commented with its game version, e.g.
+// "v3.5 — Land of Xuanfang") — reversed so the newest sonata sets sort first, matching the same
+// newest-first convention already applied to the Team tab's own set filters.
+const SET_RELEASE_ORDER_INDEX = new Map([...Object.keys(ECHO_SETS)].reverse().map((name, i) => [name, i]));
+const SORTED_ECHO_SONATA_SETS = [...ALL_ECHO_SONATA_SETS].sort((a, b) =>
+  (SET_RELEASE_ORDER_INDEX.get(a) ?? 999) - (SET_RELEASE_ORDER_INDEX.get(b) ?? 999)
+);
 
 function CollectionTab({
   state,
@@ -130,11 +138,16 @@ function CollectionTab({
 
   // Combat Role filter options — only tags actually used by at least one character (not the full
   // ~38-tag COMBAT_ROLE_ICONS set, which includes tags no current resonator has).
+  // COMBAT_ROLE_ICONS's own key order IS the wiki's fixed, game-wide Combat Role ordering (see its
+  // comment in elementVisuals.js) — sorting by that index instead of alphabetically is what makes
+  // this list read as a coherent, curated ordering rather than a shuffled A-Z one (same fix already
+  // applied to the Team Selector's own Combat Role filter).
+  const COMBAT_ROLE_ORDER_INDEX = useMemo(() => new Map(Object.keys(COMBAT_ROLE_ICONS).map((tag, i) => [tag, i])), []);
   const allCombatRoleTags = useMemo(() => {
     const tags = new Set();
     Object.values(CHARACTER_DATA).forEach(d => d.combatRoles?.forEach(t => tags.add(t)));
-    return [...tags].sort();
-  }, []);
+    return [...tags].sort((a, b) => (COMBAT_ROLE_ORDER_INDEX.get(a) ?? 999) - (COMBAT_ROLE_ORDER_INDEX.get(b) ?? 999));
+  }, [COMBAT_ROLE_ORDER_INDEX]);
 
   // Keyword tags for search matching
   const getSearchTags = useCallback((name, isCharacter) => {
@@ -533,10 +546,14 @@ function CollectionTab({
                     onChange={setCollectionRoleFilter}
                     options={[
                       { value: 'all', label: t('collection.filters.allRoles') },
-                      { value: 'Main DPS', label: t('collection.filters.mainDps') },
+                      // 'Main Damage Dealer'/'Support and Healer' are real Combat Role icons
+                      // (COMBAT_ROLE_ICONS) lining up exactly with Main DPS/Support/Healer — no
+                      // equivalent exists for Sub DPS, left icon-less rather than guessing one
+                      // (same treatment already applied to the Team Selector's Role filter).
+                      { value: 'Main DPS', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Main Damage Dealer')} alt="" width={14} height={14} className="shrink-0" /> {t('collection.filters.mainDps')}</span> },
                       { value: 'Sub DPS', label: t('collection.filters.subDps') },
-                      { value: 'Support', label: t('collection.filters.support') },
-                      { value: 'Healer', label: t('collection.filters.healer') },
+                      { value: 'Support', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Support and Healer')} alt="" width={14} height={14} className="shrink-0" /> {t('collection.filters.support')}</span> },
+                      { value: 'Healer', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Support and Healer')} alt="" width={14} height={14} className="shrink-0" /> {t('collection.filters.healer')}</span> },
                     ]}
                     ariaLabel={t('collection.filters.byRole')}
                   />
@@ -632,7 +649,7 @@ function CollectionTab({
                     onChange={setCollectionEchoSetFilter}
                     options={[
                       { value: 'all', label: t('collection.filters.allSets') },
-                      ...ALL_ECHO_SONATA_SETS.map(s => ({
+                      ...SORTED_ECHO_SONATA_SETS.map(s => ({
                         value: s,
                         label: <span className="inline-flex items-center gap-1.5"><img src={getSetIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
                       })),
