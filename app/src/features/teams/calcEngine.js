@@ -27,19 +27,21 @@ export {
 // Legacy name, kept as an alias so calcTeamStats.js's existing call sites need no change in this
 // pass — see engine/math/moveTypeRouting.js's header for why the function was renamed.
 export const routeTypeBonuses = collapseDmgTypeBuckets;
-// Engine-merge Stage 1 (2026-09-04): the DOT/Tune-Break rotation-aggregate primitives
-// (calcFrazzleDmg/calcErosionDmg/calcFusionBurstDmg/calcElectroFlareDmg/calcTuneBreakDmg and their
+// Engine-merge Stage 1 (2026-09-04): the DOT rotation-aggregate primitives
+// (calcFrazzleDmg/calcErosionDmg/calcFusionBurstDmg/calcElectroFlareDmg and their
 // constants) moved to ../../engine/resolver/dot/dotFormulas.js — they were never legacy-only math (see
 // engine/resolver/dot/dotReactions.js, which already applies their output on top of BOTH the legacy RAW total
 // and the modern resolveHitComposedTeamDps FULL total). Re-exported here, byte-identical, so every
 // existing caller of this file keeps working unchanged; see dotFormulas.js for the real definitions.
+// calcTuneBreakDmg/TUNE_BREAK_BASE_DMG were removed entirely (2026-09-05, direct user instruction) —
+// see dotFormulas.js's own note for why (real buffs, but scaled by a fabricated detonation frequency).
 export {
   DOT_LEVEL_MULT, DOT_BASE_FACTOR,
   FRAZZLE_TICK_INTERVAL, FRAZZLE_ICD_PER_SOURCE, EROSION_TICK_INTERVAL, EROSION_DURATION,
   FRAZZLE_STACK_TABLE, EROSION_STACK_TABLE,
   FUSION_BURST_THRESHOLD, FUSION_BURST_APP_ICD, FUSION_TRAIL_MULT,
-  FLARE_TICK_INTERVAL, FLARE_STACK_MULT, TUNE_BREAK_BASE_DMG,
-  calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
+  FLARE_TICK_INTERVAL, FLARE_STACK_MULT,
+  calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg,
 } from '../../engine/resolver/dot/dotFormulas.js';
 // ER breakpoints — how much Energy Regen a character actually needs for full Liberation uptime.
 // Community consensus (endgame ER-breakpoint guides, corroborated across multiple independent

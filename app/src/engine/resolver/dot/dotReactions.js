@@ -16,7 +16,7 @@
 
 import { calcResMult } from '../../../features/teams/calcEngine.js';
 import {
-  calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
+  calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg,
 } from './dotFormulas.js';
 import { CHAR_BUFF_TABLE } from '../../../data/characters.js';
 import { resolveElectroFlareFromBlocks, resolveFusionBurstFromBlocks, resolveErosionFromBlocks, resolveFrazzleFromBlocks } from './dotReactionsFromBlocks.js';
@@ -37,12 +37,15 @@ export function rotTimeFromSteps(ownedSteps) {
 }
 
 /**
- * Composes calcEngine.js's five DOT-reaction functions around engine-derived inputs, matching
+ * Composes calcEngine.js's four DOT-reaction functions around engine-derived inputs, matching
  * calcTeamStats.js's own per-reaction element routing exactly: each reaction's RES comes from the
  * enemy's RES to THAT reaction's fixed element (Frazzle=Spectro, Erosion=Havoc, Fusion Burst=Fusion,
- * Electro Flare=Electro), not the main damager's own element — Tune Break has no single canonical
- * element (bespoke per-character mechanic) and keeps using the caller's own `mainResMult`, same as
- * calcTeamStats.js's `resMult` param to calcTuneBreakDmg.
+ * Electro Flare=Electro), not the main damager's own element. Tune Break/Off-Tune (a fifth reaction
+ * that used to be composed here too, using the caller's own `mainResMult` as its fallback since it
+ * had no single canonical element) was removed entirely (2026-09-05, direct user instruction) — see
+ * dotFormulas.js's own note for why. `mainResMult`/`energyCycleFactors` are kept as accepted-but-
+ * unused params rather than reworking every call site's positional arguments for a param that may
+ * be needed again by a future non-Tune-Break mechanic.
  *
  * @param {Object[]} members  Same `mems` shape calcTeamStats.js passes to calcFrazzleDmg etc.
  * @param {number} rotTime  Rotation time to average against — pass rotTimeFromSteps(ownedSteps) for
@@ -53,9 +56,8 @@ export function rotTimeFromSteps(ownedSteps) {
  * @param {number} resShred
  * @param {(element: string) => number} getEnemyRes  Same enemy-RES lookup calcTeamStats.js uses
  *   (keyed by element name, e.g. 'Spectro'/'Havoc'/'Fusion'/'Electro').
- * @param {number} mainResMult  The main damager's own resMult — Tune Break's fallback per Stage 0.
- * @param {Object|null} [energyCycleFactors]  calcEnergyCycles() output, keyed by character name —
- *   only Tune Break's Mornye-specific ER-scaled amp reads this (see calcTuneBreakDmg's own comment).
+ * @param {number} mainResMult  Unused (see module doc above) — kept for call-site stability.
+ * @param {Object|null} [energyCycleFactors]  Unused (see module doc above) — kept for call-site stability.
  * @param {Object<string, import('./triggerBlocks.schema.js').TriggerBlock[]>|null} [blocksByOwner]
  *   the engine-merge history (git log) Phase 2: each team member's own real TriggerBlocks, keyed by name — when
  *   supplied, migrated mechanics (Electro Flare so far) are resolved from real `dotApplier`-tagged
@@ -64,9 +66,7 @@ export function rotTimeFromSteps(ownedSteps) {
  * @returns {{
  *   totalDmg: number,
  *   dps: number,
- *   tuneBreakDeepenMult: number,
- *   tuneBreakExclusiveCandidates: Object[],
- *   breakdown: {frazzle: Object, erosion: Object, fusionBurst: Object, electroFlare: Object, tuneBreak: Object},
+ *   breakdown: {frazzle: Object, erosion: Object, fusionBurst: Object, electroFlare: Object},
  * }}
  */
 export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEnemyRes, mainResMult, energyCycleFactors = null, blocksByOwner = null, stanceOverrides = null, rotationsByOwner = null) {
@@ -127,31 +127,16 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const electroFlare = blocksByOwner
     ? resolveElectroFlareFromBlocks(blocksByOwner, rotTime, defMult, electroFlareResMult)
     : calcElectroFlareDmg(members, rotTime, defMult, electroFlareResMult);
-  const tuneBreak = calcTuneBreakDmg(members, rotTime, defMult, mainResMult, energyCycleFactors, blocksByOwner);
-
-  // the engine-architecture history (git log) item 9 (Aemeath's mode-exclusivity fix): flag which exclusive candidates
-  // compete with the shared fusionBurst reaction above — calcTeamStats.js needs this to run its own
-  // proper combinatorial resolution (see its own comment for why a single marginal "delta if excluded"
-  // number, tried first, was NOT sound once a SECOND competing member — Denia — existed: excluding one
-  // of two co-appliers from a reaction that only needs ONE of them to stay active reads as zero
-  // marginal cost, which is a real artifact of the boolean gate, not a meaningful signal on its own).
-  const tuneBreakExclusiveCandidates = (tuneBreak.exclusiveCandidates || []).map(candidate => ({
-    ...candidate,
-    competesWithFusionBurstReaction: !!CHAR_BUFF_TABLE[candidate.name]?.tuneBreak?.competesWithFusionBurstReaction,
-  }));
-
-  const totalDmg = frazzle.dmg + erosion.dmg + fusionBurst.dmg + electroFlare.dmg + tuneBreak.dmg;
+  const totalDmg = frazzle.dmg + erosion.dmg + fusionBurst.dmg + electroFlare.dmg;
 
   return {
     totalDmg,
     dps: rotTime > 0 ? totalDmg / rotTime : 0,
-    tuneBreakDeepenMult: tuneBreak.deepenMult,
-    tuneBreakExclusiveCandidates,
     // fusionBurstResMult exposed so calcTeamStats.js's own combinatorial mode-exclusivity resolution
     // (see its own comment) can recompute calcFusionBurstDmg for an arbitrary exclude-set without
     // re-deriving this RES lookup itself or importing calcEngine.js's calcResMult directly.
     fusionBurstResMult,
-    breakdown: { frazzle, erosion, fusionBurst, electroFlare, tuneBreak },
+    breakdown: { frazzle, erosion, fusionBurst, electroFlare },
   };
 }
 

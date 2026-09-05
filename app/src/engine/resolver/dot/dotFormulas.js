@@ -1,6 +1,8 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — engine/resolver/dot/dotFormulas.js
-// [RESOLVER · DOT] Pure DOT-reaction formulas (Frazzle/Erosion/Fusion Burst/Electro Flare/Tune Break).
+// [RESOLVER · DOT] Pure DOT-reaction formulas (Frazzle/Erosion/Fusion Burst/Electro Flare).
+// Tune Break/Off-Tune was removed from the calculator (2026-09-05) — see the note below
+// calcElectroFlareDmg for why.
 //
 // Engine-merge Stage 1 (2026-09-04, see ENGINE_MERGE_INVESTIGATION.md §2a/§5#1/§6 Stage 2):
 // relocates the rotation-aggregate DOT/Tune-Break primitives OUT of the legacy
@@ -21,9 +23,7 @@
 // five rotation-aggregate DOT mechanics have one shared home rather than being split arbitrarily.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS } from '../../../data/characters.js';
-import { resolveOffTuneGenerated } from '../dps/resolveOffTune.js';
-import { ENEMY_OFF_TUNE_GAUGE } from '../../math/offTuneFormula.js';
+import { CHAR_BUFF_TABLE } from '../../../data/characters.js';
 
 // ── Constants (named, not magic) ──
 export const DOT_LEVEL_MULT = 3674;   // Level 90 character level multiplier
@@ -53,7 +53,6 @@ export const FUSION_BURST_APP_ICD = 1;     // Application ICD (seconds)
 export const FUSION_TRAIL_MULT = 3.0;      // Fusion Trail damage multiplier
 export const FLARE_TICK_INTERVAL = 4;      // Electro Flare tick interval (seconds)
 export const FLARE_STACK_MULT = 0.12;      // DMG multiplier per Flare stack
-export const TUNE_BREAK_BASE_DMG = 5000;   // Base Tune Break damage
 
 // ── DOT damage calculations (ICD-aware) ──
 export function calcFrazzleDmg(members, rotTime, defMult, resMult) {
@@ -121,153 +120,10 @@ export function calcElectroFlareDmg(members, rotTime, defMult, resMult) {
   return { dmg: total * defMult * resMult, active: true };
 }
 
-// Tune Break is a bespoke per-character mechanic (Off-Tune Level/Mistune, unique Tune Strain/Tune
-// Rupture/Hack response skills per wiki) with no generic formula published — this stays a generic
-// stack/boost approximation driven entirely by CHAR_BUFF_TABLE[name].tuneBreak fields; accuracy
-// depends on those per-character values being filled in correctly (tracked separately).
-//
-// modeExclusive (added 2026-09-02, the engine-architecture history (git log) item 9): a real bug found while auditing
-// Lynae's dual-mode tagging — her OWN tuneBreak object carries BOTH ruptureDmgMult (Tune Rupture
-// Response - Spectral Analysis, her Rupture-mode-only proc) AND strainDmgPerStack/maxStrainStacks
-// (her Strain-mode-only per-stack response), but her real Resonance Mode is mutually exclusive — she
-// can never have both active on the same run. Every OTHER tbMember with strain/rupture fields
-// (currently only Mornye) is a genuine generic RESPONDER, not a mode-locked applier: her own
-// ruptureDmgMult/strainDmgPerStack fire off whichever Interfered TYPE the team's actual appliers
-// produce, so both CAN legitimately coexist for her (e.g. a team with both a Rupture and a Strain
-// applier) — nothing to fix there. `modeExclusive: true` marks a character whose OWN rupture/strain
-// contributions must be resolved to exactly one, and this function no longer folds their contribution
-// into the unconditional `dmg`/`deepenMult` totals — instead it's returned as `exclusiveCandidates`
-// for the caller to resolve by comparing REAL final totals (see calcTeamStats.js's own resolution
-// right after `grandTotal` is known), not a fabricated unit conversion between flat DOT damage and a
-// multiplicative deepen (the two are not comparable in isolation — see this session's own
-// investigation into why a context-free comparator can't do this honestly).
-//
-// This is the engine's rotation-aggregate-rate DOT model for Tune Break/Hack Response (Rebecca's
-// Meltdown, Lynae's Spectral Analysis, Lucy's Data Crash, Aemeath's Starburst, Denia, Mornye, Luuk
-// Herssen, plus base Tune Break application itself — ~9 characters, see ENGINE_MERGE_INVESTIGATION.md
-// §2a). It has no per-hit trigger anchor (unlike Frazzle/Erosion/Fusion Burst/Electro Flare, each of
-// which has a real dotApplier-tagged block a per-hit engine could hang a trigger on) — it's a
-// rotation-average heuristic by design, not an event. engine/dot/dotReactions.js folds its output into
-// BOTH the legacy RAW total and the modern resolveHitComposedTeamDps FULL total identically (see
-// calcTeamStats.js:1118-1124), so every converted character's Tune Break contribution already comes
-// from the SAME code whether or not their own kit is otherwise legacy- or modern-computed — this
-// relocation just moves that shared code out of the legacy file it used to live in.
-export function calcTuneBreakDmg(members, rotTime, defMult, resMult, energyCycleFactors, blocksByOwner = null) {
-  const tbMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.tuneBreak);
-
-  // breaksPerRot (real, 2026-09-06): how many times the enemy's own Off-Tune gauge actually fills
-  // within this rotation — direct user instruction: "when it's automatic, trigger when gauge is
-  // full, when it's not automatic trigger on the rotation optimal window/character... in the end
-  // it's a DPS question as always." This calculator already assumes optimal play everywhere else
-  // (perfect timing, perfect uptime), so the automatic-vs-manual-F-press distinction converges to
-  // the SAME math either way: an optimal player presses F the instant the gauge is full, same as
-  // an automatic mob's instant break. Every enemy selectable in this app (`enemyEcho`) is boss/
-  // Overlord-tier anyway — echoes only drop from that tier — so `ENEMY_OFF_TUNE_GAUGE.boss` (200,
-  // the sourced fixed total, see offTuneFormula.js) is the correct gauge size unconditionally, no
-  // per-target classification needed.
-  //
-  // UNIVERSAL GATE FIX (real bug, direct user correction, 2026-09-06): "tune break is universal
-  // (when off tune gauge is full and you break it). what is not universal is Tune Rupture and Tune
-  // Strain." The base Tune Break burst below is NOT restricted to `tuneBreak`-flagged specialist
-  // characters — ANY team's real hits fill the shared Off-Tune gauge and eventually break it, the
-  // exact same way Frazzle/Erosion apply for any team with a real applier, no character-specific
-  // gate. The previous version returned `{dmg:0}` outright whenever `tbMembers` was empty — a real,
-  // roster-wide gap: any team without one of the ~9 Rupture/Strain specialists got ZERO Tune Break
-  // damage, when it should have gotten the universal base burst regardless. Real total is now
-  // summed over EVERY team member (not just tbMembers) — every character's own real hits
-  // contribute to the SAME shared gauge (resolveOffTuneGenerated, built earlier this session). Only
-  // the Rupture/Strain BONUS layer below (ruptureDmgMult/strainDmgPerStack) stays gated on a real
-  // specialist being present — that part genuinely is character-specific.
-  //
-  // A steady-state RATE (can be fractional, e.g. 1.5), not an integer count — same "fraction of a
-  // cooldown actually sustainable" convention already used elsewhere in this engine
-  // (resolveHitComposedDps.js's own cooldownSteadyState gate) rather than an artificial floor/cap.
-  //
-  // Falls back to the old flat heuristic (still specialist-gated — there's no real data to derive a
-  // universal rate from) only when blocksByOwner isn't supplied at all (a caller that genuinely
-  // can't provide real blocks — e.g. a mixed/legacy-only team, or this file's own older tests).
-  let breaksPerRot;
-  if (blocksByOwner) {
-    const totalOffTunePerRot = members.reduce((sum, m) => {
-      const blocks = blocksByOwner[m.name];
-      const rotation = CHARACTER_ROTATIONS[m.name];
-      if (!blocks || !rotation) return sum;
-      return sum + resolveOffTuneGenerated(blocks, rotation).total;
-    }, 0);
-    breaksPerRot = totalOffTunePerRot / ENEMY_OFF_TUNE_GAUGE.boss.max;
-  } else if (tbMembers.length) {
-    const hasAccel = tbMembers.some(m => CHAR_BUFF_TABLE[m.name].tuneBreak.boostToTeam > 20);
-    breaksPerRot = hasAccel ? Math.min(2, Math.max(1, Math.floor(rotTime / 12))) : 1;
-  } else {
-    return { dmg: 0, deepenMult: 1, exclusiveCandidates: [] };
-  }
-  if (breaksPerRot <= 0) return { dmg: 0, deepenMult: 1, exclusiveCandidates: [] };
-
-  let totalBoost = 0;
-  tbMembers.forEach(m => {
-    const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
-    totalBoost += (tb.baseTuneBreakBoost || 0) + (tb.boostToTeam || 0);
-  });
-
-  const uptimeFactor = rotTime > 0 ? Math.min(1, (8 * breaksPerRot) / rotTime) : 0;
-  let dmg = TUNE_BREAK_BASE_DMG * (1 + totalBoost * 0.01) * breaksPerRot * defMult;
-
-  const sharedMembers = tbMembers.filter(m => !CHAR_BUFF_TABLE[m.name].tuneBreak.modeExclusive);
-  sharedMembers.forEach(m => {
-    const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
-    if (tb.ruptureDmgMult) {
-      // (1 + totalBoost * 0.01) added 2026-09-06 — real, sourced formula (user-provided, matching
-      // the Mechanic doc's own §2d "NEEDS SOURCE" flag): "degat de rupture = multiplicateur du
-      // resonator (Tune AMP) x (1 + Tune Break Boost)". `ruptureDmgMult` IS the resonator's own Tune
-      // AMP (e.g. Aemeath's 596.43%, sourced from her kit's Tune Rupture Response text); totalBoost
-      // (already computed above from real baseTuneBreakBoost/boostToTeam data) was previously only
-      // applied to the base Tune Break DMG term and to Strain's own term, never to Rupture's — this
-      // was the exact open discrepancy the Mechanic doc flagged, now closed. Same 0.01 scaling
-      // convention the base-DMG term above already uses (totalBoost stored as whole points, e.g. 40
-      // for "+40 Tune Break Boost", not a pre-divided fraction).
-      dmg += DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100) * (1 + totalBoost * 0.01) * breaksPerRot * defMult * resMult;
-    }
-  });
-
-  let deepenMult = 1;
-  const mornyeMem = tbMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.interferedDmgAmp);
-  if (mornyeMem) {
-    // interferedDmgAmp is the CAP (e.g. Mornye: up to 40% at 260%+ ER), not a flat value — the wiki-
-    // documented rate is 0.25% amp per 1% Energy Regen over 100%. Scale by her real equipped ER
-    // (from calcEnergyCycles) instead of always applying the max, which overstated DPS for any
-    // non-ER-built Mornye.
-    const ampCap = CHAR_BUFF_TABLE[mornyeMem.name].tuneBreak.interferedDmgAmp;
-    const totalER = energyCycleFactors?.[mornyeMem.name]?.totalER ?? (100 + ampCap / 0.25);
-    const amp = Math.min(ampCap, Math.max(0, totalER - 100) * 0.25);
-    deepenMult *= 1 + (amp / 100) * uptimeFactor;
-  }
-  const sharedMaxStrain = Math.max(0, ...sharedMembers.map(m => CHAR_BUFF_TABLE[m.name].tuneBreak.maxStrainStacks || 0));
-  if (sharedMaxStrain > 0 && totalBoost > 0) {
-    // Read each character's own strainDmgPerStack rather than assuming the 0.12 every current
-    // Tune Strain character happens to share — a future character with a different rate would
-    // otherwise silently get the wrong value.
-    const strainRateMember = sharedMembers.find(m => CHAR_BUFF_TABLE[m.name].tuneBreak.strainDmgPerStack != null);
-    const strainDmgPerStack = strainRateMember ? CHAR_BUFF_TABLE[strainRateMember.name].tuneBreak.strainDmgPerStack : 0.12;
-    const strainPct = sharedMaxStrain * totalBoost * strainDmgPerStack;
-    deepenMult *= 1 + (strainPct / 100) * uptimeFactor;
-  }
-
-  // Mode-exclusive members: compute each one's OWN Rupture-only and Strain-only deltas in isolation
-  // (their own contribution alone, on top of the shared/generic totalBoost every tbMember feeds),
-  // for the caller to pick between using real final totals.
-  const exclusiveMembers = tbMembers.filter(m => CHAR_BUFF_TABLE[m.name].tuneBreak.modeExclusive);
-  const exclusiveCandidates = exclusiveMembers.map(m => {
-    const tb = CHAR_BUFF_TABLE[m.name].tuneBreak;
-    // (1 + totalBoost * 0.01) — see the shared-members loop's own comment above for the full
-    // rationale; same real formula applies to a mode-exclusive candidate's own Rupture delta.
-    const ruptureDmgDelta = tb.ruptureDmgMult
-      ? DOT_LEVEL_MULT * DOT_BASE_FACTOR * (tb.ruptureDmgMult / 100) * (1 + totalBoost * 0.01) * breaksPerRot * defMult * resMult
-      : 0;
-    const strainDeepenDelta = (tb.maxStrainStacks && tb.strainDmgPerStack && totalBoost > 0)
-      ? (tb.maxStrainStacks * totalBoost * tb.strainDmgPerStack / 100) * uptimeFactor
-      : 0;
-    return { name: m.name, ruptureDmgDelta, strainDeepenDelta };
-  });
-
-  return { dmg, deepenMult, exclusiveCandidates };
-}
+// Tune Break/Off-Tune removed from the calculator (2026-09-05, direct user instruction): its
+// buffs (Tune Rupture/Tune Strain multipliers) are real, sourced kit values, but they only ever
+// fire by first assuming a Tune Break detonation FREQUENCY — how many times per rotation the
+// enemy's Off-Tune gauge fills and breaks — which has no sourced number behind it anywhere. That
+// fabricated frequency was scaling even the real buffs, making the whole mechanic uncalculable.
+// Fusion Burst (calcFusionBurstDmg above) is unaffected — its trigger is a concrete, sourced
+// stack/threshold system (cap, break threshold, per-target ICD), not a guessed fill rate.

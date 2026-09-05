@@ -33,7 +33,7 @@ import { computeEngineComposedTeamDamage } from './engineTeamDamage.js';
 import { computeEngineMainDpsStatPanel } from './engineMainDpsStatPanel.js';
 import { computeLegacyMemberDamage } from './legacyMemberDamage.js';
 import { computeLegacyMainDpsStats } from './legacyMainDpsStats.js';
-import { resolveDotReactionDps, recomputeFusionBurstDmg } from '../../engine/resolver/dot/dotReactions.js';
+import { resolveDotReactionDps } from '../../engine/resolver/dot/dotReactions.js';
 import { chooseOnFieldOrder } from '../../engine/resolver/rotationOrder/rotationOrderSearch.js';
 import { coordinatedMultShare } from '../../engine/resolver/gating/coordinatedAtk.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/resolver/gating/sequenceGating.js';
@@ -768,11 +768,6 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     const hasErosion = dotResult.breakdown.erosion.active;
     const hasFusionBurst = dotResult.breakdown.fusionBurst.active;
     const hasElectroFlare = dotResult.breakdown.electroFlare.active;
-    let tuneBreakDeepenMult = dotResult.tuneBreakDeepenMult;
-    // Resolved once grandTotal is known below (the engine-architecture history (git log) item 9's mode-exclusivity fix) —
-    // exposed on the return value mainly so tests/other consumers can see which mode(s) were assumed.
-    let tuneBreakResolvedStances = [];
-
     let totalRotDmg = 0;
     const memberDmgArr = [];
     // PHASE3_PLAN.md Stage 4 step 6 cleanup: this whole legacy per-member damage loop (flat
@@ -884,101 +879,10 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
     });
 
-    // Mode-exclusive Tune Break candidates (the engine-architecture history (git log) item 9): resolve each mode-locked
-    // character's own Rupture-vs-Strain contribution to whichever ACTUALLY yields more total damage
-    // for this real composition — comparing real final totals (not a fabricated unit conversion
-    // between flat DOT damage and a multiplicative deepen, which aren't comparable in isolation; see
-    // calcTuneBreakDmg's own comment for why this needs `totalRotDmg`/`echoActiveDmg` already final.
-    // Resolved BEFORE the DOT-distribution loop below so a Rupture win's added dmg is actually
-    // reflected in the member breakdown it feeds, not just the aggregate grandTotal.
-    {
-      const candidates = dotResult.tuneBreakExclusiveCandidates;
-      if (candidates.length) {
-        // Full combinatorial resolution (the engine-architecture history (git log) item 9) — replaced an earlier
-        // marginal-"delta if this one member is excluded" approach after it produced a real wrong
-        // answer once TWO members (Aemeath, Denia) both competed for the SAME shared boolean-gated
-        // Fusion Burst reaction: excluding just one of two co-appliers reads as zero marginal cost
-        // (the OTHER one alone keeps the reaction active), which made that member's own mode choice
-        // look free when it wasn't actually independent of the other's. A full enumeration over every
-        // candidate's own valid options — cheap, since real teams have at most a couple of mode-locked
-        // members — has no such blind spot: each combination's real final total is computed directly,
-        // including a fresh calcFusionBurstDmg() call for whichever subset of fusion-competing
-        // candidates opted in for that specific combination.
-        //
-        // Clean baseline: strip the shared Fusion Burst reaction's dmg out of dotDmgPerRotation (its
-        // real value depends on which candidates opt in, enumerated below) — the exclusive candidates'
-        // OWN tuneBreak rupture/strain contributions are already excluded by calcTuneBreakDmg itself,
-        // only the fusion reaction needs stripping here.
-        const baseDotDmg = dotDmgPerRotation - dotResult.breakdown.fusionBurst.dmg;
-        const baseGrandTotal = totalRotDmg + echoActiveDmg + baseDotDmg;
-
-        // Real, manual Resonance Mode toggle (2026-09-05): a candidate with a real player-set mode
-        // (resonanceModeByOwner) is locked to exactly that ONE option here, not enumerated — this
-        // combinatorial search's own "try every option, keep whichever wins the most damage" behavior
-        // is now reserved for auto-build/auto-team (not yet built — see data/resonanceModes.js's own
-        // header on the default-mode fallback), never silently overriding what the player picked.
-        const STANCE_TO_TOKEN = { 'Fusion Burst mode': 'fusion', 'Tune Rupture mode': 'rupture', 'Tune Strain mode': 'strain' };
-        const optionsFor = (c) => {
-          const manualStance = resonanceModeByOwner[c.name];
-          const manualToken = manualStance ? STANCE_TO_TOKEN[manualStance] : null;
-          const allOptions = c.competesWithFusionBurstReaction ? ['fusion', 'rupture', 'strain'] : ['rupture', 'strain'];
-          if (manualToken && allOptions.includes(manualToken)) return [manualToken];
-          return allOptions;
-        };
-        // Cartesian product of every candidate's own option list — e.g. Aemeath{fusion,rupture,strain}
-        // × Denia{fusion,rupture,strain} × Lynae{rupture,strain} = 18 combinations, trivial to evaluate.
-        let combos = [[]];
-        for (const c of candidates) {
-          const opts = optionsFor(c);
-          combos = combos.flatMap(prefix => opts.map(opt => [...prefix, opt]));
-        }
-
-        // Real hypothesis per combo, not a "reuse the baseline when nothing's excluded" shortcut
-        // (the engine-merge history (git log) Phase 2 — Denia/Aemeath's Fusion Burst migration): the baseline
-        // `dotResult.breakdown.fusionBurst.dmg` reflects whatever `winningStanceForOwner()` naturally
-        // resolves for a BLOCK-migrated candidate, which is a DIFFERENT question than "what if this
-        // combo's own hypothesis holds" — reusing it as a shortcut would silently reintroduce the exact
-        // stale-baseline class of bug this resolver was built to eliminate. Always pass an explicit
-        // stanceOverrides entry for every fusion-competing candidate in the combo (both `excludeNames`
-        // for any still-legacy/unmigrated candidate and `stanceOverrides` for block-migrated ones are
-        // populated together — a candidate might be either shape).
-        const blocksByOwnerForFusion = engineChosenOrder?.blocksByOwner || null;
-        let best = null;
-        for (const combo of combos) {
-          const fusionCompetingInCombo = candidates.filter((c, i) => c.competesWithFusionBurstReaction);
-          const excludeNames = candidates
-            .filter((c, i) => c.competesWithFusionBurstReaction && combo[i] !== 'fusion')
-            .map(c => c.name);
-          const stanceOverrides = {};
-          candidates.forEach((c, i) => {
-            if (!c.competesWithFusionBurstReaction) return;
-            stanceOverrides[c.name] = combo[i] === 'fusion' ? 'Fusion Burst mode' : '__not-fusion-this-combo__';
-          });
-          const fusionDmg = fusionCompetingInCombo.length
-            ? recomputeFusionBurstDmg(mems, rotTime, defMult, dotResult.fusionBurstResMult, excludeNames, blocksByOwnerForFusion, stanceOverrides, CHARACTER_ROTATIONS).dmg
-            : dotResult.breakdown.fusionBurst.dmg;
-          let dmgAdj = fusionDmg, multAdj = 1;
-          candidates.forEach((c, i) => {
-            if (combo[i] === 'rupture') dmgAdj += c.ruptureDmgDelta;
-            else if (combo[i] === 'strain') multAdj *= (1 + c.strainDeepenDelta);
-          });
-          const total = (baseGrandTotal + dmgAdj) * (tuneBreakDeepenMult * multAdj);
-          if (!best || total > best.total) best = { total, dmgAdj, multAdj, combo };
-        }
-
-        dotDmgPerRotation = baseDotDmg + best.dmgAdj;
-        tuneBreakDeepenMult = tuneBreakDeepenMult * best.multAdj;
-        candidates.forEach((c, i) => {
-          const stance = best.combo[i] === 'fusion' ? 'Fusion Burst mode' : best.combo[i] === 'rupture' ? 'Tune Rupture mode' : 'Tune Strain mode';
-          tuneBreakResolvedStances.push({ name: c.name, stance });
-        });
-      }
-    }
-
     // Distribute DOT damage proportionally to members who enable it
     const dotContributors = mems.filter(m => {
       const bt = CHAR_BUFF_TABLE[m.name];
-      return bt?.debuffs?.some(db => ['frazzle', 'erosion', 'fusionBurst'].includes(db.stat)) || bt?.electroFlare || bt?.tuneBreak;
+      return bt?.debuffs?.some(db => ['frazzle', 'erosion', 'fusionBurst'].includes(db.stat)) || bt?.electroFlare;
     });
     if (dotContributors.length > 0 && dotDmgPerRotation > 0) {
       const share = dotDmgPerRotation / dotContributors.length;
@@ -988,18 +892,16 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       });
     }
 
-    // ── TEAM DPS: Single authoritative number (skills + echoes + DOTs + Tune Break) ──
+    // ── TEAM DPS: Single authoritative number (skills + echoes + DOTs) ──
     const grandTotal = totalRotDmg + echoActiveDmg + dotDmgPerRotation;
-    const teamDps = Math.round(grandTotal * tuneBreakDeepenMult / rotTime);
+    const teamDps = Math.round(grandTotal / rotTime);
 
     // ── Member DPS with full breakdown ──
     const memberDps = memberDmg.map(m => {
-      const adjustedTotal = m.total * tuneBreakDeepenMult;
-      const grandTotalAdj = grandTotal * tuneBreakDeepenMult;
-      const pct = grandTotalAdj > 0 ? Math.round(adjustedTotal / grandTotalAdj * 100) : 0;
+      const pct = grandTotal > 0 ? Math.round(m.total / grandTotal * 100) : 0;
       return {
         name: m.name,
-        dmg: adjustedTotal,
+        dmg: m.total,
         pct,
         // Damage source tags for distribution display
         onField: m.isOnField,
@@ -1105,7 +1007,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
     });
 
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, energyCycleFactors, warnings, memberDps, rotationTimeline, rotTime, tuneBreakResolvedStances,
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, deepen, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, energyCycleFactors, warnings, memberDps, rotationTimeline, rotTime,
       // Legacy aliases for DPSComparisonCard compatibility
       rawDps: soloDps, realDps: teamDps, perfectDps: teamDps, synergy: Math.min(100, Math.max(0, synergyUplift)) };
 }

@@ -66,13 +66,15 @@ describe("Aemeath's own Tune Rupture-Shifting tag — the 2026-09-05 fix (previo
 });
 
 describe('calcTeamStats — end-to-end: a manual Aemeath mode choice actually changes what the engine resolves', () => {
-  it('resolves Aemeath to Tune Rupture mode by default (index 0), and to Fusion Burst mode when the build explicitly picks it', () => {
+  it('does not report Fusion Burst active by default (index 0 is Tune Rupture mode), but does when the build explicitly picks Fusion Burst mode', () => {
+    // Tune Break/Off-Tune (which used to resolve/report a Rupture-vs-Strain-vs-Fusion "winning
+    // stance" for damage purposes) was removed entirely (2026-09-05, direct user instruction) —
+    // Fusion Burst's own real, sourced damage is the remaining signal that a manual mode choice
+    // actually changes what the engine resolves.
     const defaultTeam = calcTeamStats(['Aemeath'], 0, 'Aemeath', {}, '', 90);
-    const defaultStance = defaultTeam.tuneBreakResolvedStances.find(s => s.name === 'Aemeath');
-    expect(defaultStance.stance).toBe('Tune Rupture mode');
+    expect(defaultTeam.hasFusionBurst).toBe(false);
 
     const fusionTeam = calcTeamStats(['Aemeath'], 0, 'Aemeath', { '0:Aemeath': { resonanceMode: 'Fusion Burst mode' } }, '', 90);
-    const fusionStance = fusionTeam.tuneBreakResolvedStances.find(s => s.name === 'Aemeath');
-    expect(fusionStance.stance).toBe('Fusion Burst mode');
+    expect(fusionTeam.hasFusionBurst).toBe(true);
   });
 });

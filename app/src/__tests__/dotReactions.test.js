@@ -1,10 +1,12 @@
 // PHASE3_PLAN.md Stage 3, item 2/5: engine/resolver/dot/dotReactions.js composes calcEngine.js's already-correct
 // DOT-reaction functions around engine-derived inputs. These tests prove the composition is exact
-// (byte-identical to calling the five calcEngine.js functions directly the way calcTeamStats.js does)
+// (byte-identical to calling the four calcEngine.js functions directly the way calcTeamStats.js does)
 // and that rotTimeFromSteps() matches the sum-of-stepSeconds convention every other engine file uses.
+// Tune Break was a fifth such function until it was removed entirely (2026-09-05, direct user
+// instruction) along with the rest of the Off-Tune mechanic — see dotFormulas.js's own note.
 import { describe, it, expect } from 'vitest';
 import {
-  calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg, calcTuneBreakDmg,
+  calcFrazzleDmg, calcErosionDmg, calcFusionBurstDmg, calcElectroFlareDmg,
   calcResMult, calcDefMult,
 } from '../features/teams/calcEngine.js';
 import { resolveDotReactionDps, rotTimeFromSteps } from '../engine/resolver/dot/dotReactions.js';
@@ -28,21 +30,19 @@ describe('resolveDotReactionDps', () => {
   const resShred = 0;
   const mainResMult = calcResMult(10, resShred);
 
-  it('matches calling the five calcEngine.js DOT functions directly, per-element RES routed like calcTeamStats.js', () => {
+  it('matches calling the four calcEngine.js DOT functions directly, per-element RES routed like calcTeamStats.js', () => {
     const members = [{ name: 'Phoebe' }, { name: 'Buling' }];
 
     const expectedFrazzle = calcFrazzleDmg(members, rotTime, defMult, calcResMult(getEnemyRes('Spectro'), resShred));
     const expectedErosion = calcErosionDmg(members, rotTime, defMult, calcResMult(getEnemyRes('Havoc'), resShred));
     const expectedFusionBurst = calcFusionBurstDmg(members, rotTime, defMult, calcResMult(getEnemyRes('Fusion'), resShred));
     const expectedElectroFlare = calcElectroFlareDmg(members, rotTime, defMult, calcResMult(getEnemyRes('Electro'), resShred));
-    const expectedTuneBreak = calcTuneBreakDmg(members, rotTime, defMult, mainResMult, null);
-    const expectedTotal = expectedFrazzle.dmg + expectedErosion.dmg + expectedFusionBurst.dmg + expectedElectroFlare.dmg + expectedTuneBreak.dmg;
+    const expectedTotal = expectedFrazzle.dmg + expectedErosion.dmg + expectedFusionBurst.dmg + expectedElectroFlare.dmg;
 
     const result = resolveDotReactionDps(members, rotTime, defMult, resShred, getEnemyRes, mainResMult, null);
 
     expect(result.totalDmg).toBeCloseTo(expectedTotal, 6);
     expect(result.dps).toBeCloseTo(expectedTotal / rotTime, 6);
-    expect(result.tuneBreakDeepenMult).toBe(expectedTuneBreak.deepenMult);
     expect(result.breakdown.frazzle.dmg).toBeCloseTo(expectedFrazzle.dmg, 6);
     expect(result.breakdown.erosion.dmg).toBeCloseTo(expectedErosion.dmg, 6);
   });
