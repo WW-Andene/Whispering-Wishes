@@ -494,4 +494,57 @@ final class WidgetPullSimulator {
         String video = bestRarity >= 5 ? "5star" : bestRarity == 4 ? "4star" : "common";
         return new PullSimResult(results, video);
     }
+
+    // Standard's own "Both" — merges the Standard-Character and Standard-Weapon pools into ONE
+    // pool sharing ONE pity track, unlike rollMerged() above (Standard has no featured/50-50
+    // mechanic to touch — this is simpler: just a flat uniform pick, but across the UNION of
+    // both pools instead of one). Own dedicated pity key, not either single-category Standard
+    // pity: merging the two pools is mechanically a third, distinct pool, not "sometimes
+    // character, sometimes weapon" using either existing counter.
+    static PullSimResult rollStandardMerged(Context context, int count) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        List<NameType> pool5 = new ArrayList<>();
+        for (String n : readJsonArray(prefs, "widget_pull_pool_standard5")) pool5.add(new NameType(n, "character"));
+        for (String n : readJsonArray(prefs, "widget_pull_pool_standard_weapons")) pool5.add(new NameType(n, "weapon"));
+        List<NameType> pool4 = new ArrayList<>();
+        for (String n : readJsonArray(prefs, "widget_pull_pool_4star_chars")) pool4.add(new NameType(n, "character"));
+        for (String n : readJsonArray(prefs, "widget_pull_pool_4star_weapons")) pool4.add(new NameType(n, "weapon"));
+        List<String> threeStarWeapons = readJsonArray(prefs, "widget_pull_pool_3star_weapons");
+
+        String pityKeyPrefix = "widget_pull_standard_merged_";
+        int pity5 = prefs.getInt(pityKeyPrefix + "pity5", 0);
+        int pity4 = prefs.getInt(pityKeyPrefix + "pity4", 0);
+
+        Random rand = new Random();
+        List<PullResult> results = new ArrayList<>();
+        int bestRarity = 3;
+
+        for (int i = 0; i < count; i++) {
+            pity5++;
+            pity4++;
+            if (rand.nextDouble() < pullRate5(pity5)) {
+                NameType t = pool5.isEmpty() ? null : pick(pool5, rand);
+                results.add(new PullResult(t != null ? t.name : null, 5, t != null ? t.type : "character", true));
+                bestRarity = 5;
+                pity5 = 0;
+                pity4 = 0;
+            } else if (pity4 >= HARD_PITY_4STAR || rand.nextDouble() < FLAT_4STAR_RATE) {
+                NameType t = pool4.isEmpty() ? null : pick(pool4, rand);
+                results.add(new PullResult(t != null ? t.name : null, 4, t != null ? t.type : "character", false));
+                if (bestRarity < 4) bestRarity = 4;
+                pity4 = 0;
+            } else {
+                String name = threeStarWeapons.isEmpty() ? null : pick(threeStarWeapons, rand);
+                results.add(new PullResult(name, 3, "weapon", false));
+            }
+        }
+
+        prefs.edit()
+                .putInt(pityKeyPrefix + "pity5", pity5)
+                .putInt(pityKeyPrefix + "pity4", pity4)
+                .apply();
+
+        String video = bestRarity >= 5 ? "5star" : bestRarity == 4 ? "4star" : "common";
+        return new PullSimResult(results, video);
+    }
 }

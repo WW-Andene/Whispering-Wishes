@@ -443,7 +443,7 @@ public class PullBubbleService extends Service {
         addSubBubble(null, resonatorIcon, 0, angles[0], charLabel, () -> pinBanner(charPin), null);
         addSubBubble(null, weaponIcon, 0, angles[1], weapLabel, () -> pinBanner(weapPin), null);
         addSubBubble(getString(R.string.pull_bubble_both), null, 0, angles[2],
-                getString(R.string.pull_bubble_both_aria), () -> pinExact(charPin, weapPin), null);
+                getString(R.string.pull_bubble_both_aria), this::pinStandardBoth, null);
         addHideButton();
     }
 
@@ -502,12 +502,14 @@ public class PullBubbleService extends Service {
         enterMode(ArcMode.ROLL);
     }
 
-    // "Both" on the Standard arc — the two fixed Standard pools are always exactly these two
-    // Pins, unlike pinBoth's dynamic per-category banner list above.
-    private void pinExact(Pin a, Pin b) {
+    // "Both" on the Standard arc — a merged roll over the UNION of the Standard-Character and
+    // Standard-Weapon pools (WidgetPullSimulator.rollStandardMerged), sharing one pity track.
+    // Standard has no featured/50-50 mechanic to preserve like rollMerged() does for limited
+    // banners — this is just "one flat uniform pick, but across both pools at once" — so the
+    // "standard-both" category sentinel is all rollAndPlay needs to route to it.
+    private void pinStandardBoth() {
         pinnedTargets.clear();
-        pinnedTargets.add(a);
-        pinnedTargets.add(b);
+        pinnedTargets.add(new Pin("standard-both", null, getString(R.string.pull_bubble_both)));
         updateMainBubbleIcon();
         Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, getString(R.string.pull_bubble_both)), Toast.LENGTH_SHORT).show();
         enterMode(ArcMode.ROLL);
@@ -841,6 +843,10 @@ public class PullBubbleService extends Service {
                     // ones. See rollMerged's own header for why this differs from long-press
                     // multi-select, which stays independent on purpose.
                     parts.add(WidgetPullSimulator.rollMerged(this, pin.category, pin.mergedNames, share));
+                } else if ("standard-both".equals(pin.category)) {
+                    // Standard's own "Both" — merged pool over Standard-Character + Standard-
+                    // Weapon, sharing one pity track (see rollStandardMerged's own header).
+                    parts.add(WidgetPullSimulator.rollStandardMerged(this, share));
                 } else if (pin.category.startsWith("standard")) {
                     String subCategory = "standard-weapon".equals(pin.category) ? "weapon" : "character";
                     parts.add(WidgetPullSimulator.rollStandard(this, subCategory, share));
