@@ -1,13 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
+import { simulateRotation, deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { BULING_BLOCKS } from '../engine/characterBlocks/buling.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Buling', () => {
   it('every block matches the canonical schema (Layer 4 migration)', () => {
     expectValidBlockFile(BULING_BLOCKS, 'Buling');
+  });
+
+  it("Mountain Over Thunder's resource-threshold trigger (Trigram-Mountain gate) fires exactly once per rotation — regression test for a real double-fire bug (2026-09-06): pairing a resourceStepOn-anchored trigger with a resourceGain on the SAME resource name makes it fire twice (once dynamically the instant the gain crosses threshold, again at the anchored step). No block in this file may declare `resourceGain` for 'Trigram-Mountain' or 'Trigram-Thunder' — see buling.heavy.mountain-over-thunder's own note.", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Buling'], BULING_BLOCKS);
+    const results = simulateRotation(BULING_BLOCKS, steps);
+    const firings = results.filter(r => r.firedTriggers.has('resource-threshold:Trigram-Mountain:1'));
+    expect(firings.length).toBe(1);
+    expect(BULING_BLOCKS.some(b => b.resourceGain?.some(rg => rg.resource === 'Trigram-Mountain' || rg.resource === 'Trigram-Thunder'))).toBe(false);
   });
 
   it("dmgFocus is ['Basic ATK', 'Skill', 'Liberation'] — was ['Liberation'] only despite 5 real basicDmg blocks and 1 real skillDmg block firing every real rotation loop", () => {
