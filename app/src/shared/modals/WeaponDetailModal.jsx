@@ -4,11 +4,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
-import { Swords, Star, TrendingUp, X, Play, User, Users } from 'lucide-react';
+import { Swords, Star, TrendingUp, X, Play, User, Users, LayoutGrid } from 'lucide-react';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
-import { getConveneAnimation, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
+import { getConveneAnimation, getWeaponBannerArt, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { ConveneVideo } from '../components/ConveneVideoLayer.jsx';
 import { getWeaponTypeIcon, getStatIcon } from '../utils/elementVisuals.js';
@@ -24,12 +24,19 @@ const WEAPON_RARITY_COLORS = {
   2: { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/50' },
   1: { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/50' },
 };
-const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionData }) => {
+const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionData, visualSettings }) => {
   const { framingMode, editingImage, setEditingImage, getImageFraming } = useImageFramingContext();
   const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
+  const [assetBannerVideoPlaying, setAssetBannerVideoPlaying] = useState(false);
   const data = getLocalizedWeaponData(getLocale())[name] || WEAPON_DATA[name];
   if (!data) return null;
   const conveneVideoUrl = getConveneAnimation(name);
+  // Real gacha banner art when this weapon has one on file; falls back to the collection
+  // thumbnail so the Assets tile below (and its convene video, when one exists) isn't hidden
+  // just because no dedicated banner splash has been sourced for this specific weapon yet —
+  // same gap CharacterDetailModal's own tile had (a convene video existing but its banner-art
+  // tile staying hidden because bannerArtUrl alone gated visibility).
+  const bannerArtUrl = getWeaponBannerArt(name) || DEFAULT_COLLECTION_IMAGES[name] || null;
 
   const ownsChar = (n) => {
     if (!collectionData) return true;
@@ -250,6 +257,37 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
               ))}
             </div>
           </div>
+
+          {/* 8. Assets — Banner Art, with its convene video (when one exists) playable inline
+              over it, same tile pattern as CharacterDetailModal's own Assets section. */}
+          {bannerArtUrl && (
+            <div>
+              <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
+                <LayoutGrid size={14} className="text-gray-300" /> {t('modals.weaponDetail.assetsSection')}
+              </h3>
+              <div className="relative rounded-lg overflow-hidden border border-[var(--border-medium)] aspect-video">
+                {assetBannerVideoPlaying ? (
+                  <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setAssetBannerVideoPlaying(false)} className="absolute inset-0" visualSettings={visualSettings} />
+                ) : (
+                  <img src={bannerArtUrl} alt="" className="w-full h-full object-cover" onError={hideOnError} />
+                )}
+                {conveneVideoUrl && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setAssetBannerVideoPlaying(p => !p); }}
+                    className="absolute inset-0 flex items-center justify-center"
+                    aria-label={assetBannerVideoPlaying ? t('modals.weaponDetail.closeConveneVideoAria') : t('modals.weaponDetail.viewConveneVideoAria', { name: displayName })}
+                  >
+                    {!assetBannerVideoPlaying && (
+                      <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+                        <Play size={12} className="fill-current text-white ml-0.5" />
+                      </div>
+                    )}
+                  </button>
+                )}
+                {!assetBannerVideoPlaying && <span className="absolute bottom-1 left-1.5 text-white text-sm font-medium drop-shadow-lg pointer-events-none">{t('modals.weaponDetail.assetBanner')}</span>}
+              </div>
+            </div>
+          )}
         </div>
        </div>
       </div>

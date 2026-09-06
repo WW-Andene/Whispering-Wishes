@@ -98,7 +98,11 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
   const data = CHARACTER_DATA[name];
   if (!data) return null;
   const conveneVideoUrl = getConveneAnimation(name);
-  const bannerArtUrl = getCharacterBannerArt(name);
+  // Falls back to the collection thumbnail when this character has no dedicated banner splash
+  // on file — without this, a character WITH a convene video but no bannerArt entry (e.g. one
+  // that's aged off the currently-tracked CHARACTER_THEMES roster) lost the whole Assets tile
+  // and its video became unreachable, even though the video itself still exists.
+  const bannerArtUrl = getCharacterBannerArt(name) || DEFAULT_COLLECTION_IMAGES[name] || null;
 
   const colors = DETAIL_ELEMENT_COLORS[data.element] || DETAIL_ELEMENT_COLORS.Spectro;
   const bestWeapon = data.bestWeapon || null;
