@@ -159,6 +159,14 @@ const EXPECTED_DIVERGENCES = {
   // apply that gate, so it stays at the un-derated value. Measured ratio ~1.146 (engine/legacy) —
   // real, expected, not a regression.
   Cantarella: { min: 1.05, max: 1.20 },
+  // Added 2026-09-06 (Carlotta completeness pass): same class as the prior 8 characters above. Art
+  // of Violence (Skill) and Era of New Wave (Liberation) both got real, sourced cooldowns added
+  // (Data dump/Carlotta/Carlotta.md's own Cooldown rows) — her modeled rotation recasts both faster
+  // than those cooldowns allow, so calcTeamStats()'s cooldownSteadyState gate correctly derates the
+  // legacy RAW number (4877 -> 4692); this test's own standalone engine call doesn't apply that
+  // gate, so it stays at the un-derated value. Measured ratio ~1.039 (engine/legacy) — real,
+  // expected, not a regression.
+  Carlotta: { min: 1.02, max: 1.10 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number

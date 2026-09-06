@@ -7,6 +7,15 @@
 // invented. S3's Kaleidoscope Sparks extra Outro strike is modeled directly (added
 // 2026-09-03, see carlotta.chain.s3-kaleidoscope-sparks). S1's Substance resource-
 // economy effect has no DPS component and has no home in this schema.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Carlotta/
+// Carlotta.md's own Cooldown/Concerto Regen rows (Art of Violence, Chromatic Splendor, Era of New
+// Wave, Death Knell, Fatal Finale). Two blocks in this file already fold multiple real casts into
+// one combined block (Death Knell ×4, the repeat Art of Violence -> Chromatic Splendor pass) — their
+// concertoEnergyGain is the SUMMED total across those real casts, not the single-cast value, to stay
+// consistent with how their own damage.hits already combine multiple real casts. Imminent
+// Oblivion/Wintertime Aria have no sourced Concerto Regen value anywhere in the dump — left as-is.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -27,8 +36,14 @@ export const CARLOTTA_BLOCKS = [
     id: 'carlotta.skill.art-of-violence',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Art of Violence' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Carlotta/Carlotta.md's own
+    // "Cooldown: 14s" row for Resonance Skill Art of Violence (Chromatic Splendor is a same-slot
+    // follow-up press, not a separately-costed ability — see that block's own note).
+    timing: { cooldown: 14 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('144.11%×2'), category: 'skillDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Carlotta/Carlotta.md's own
+    // "Concerto Regen: 5 (Skill)" row.
+    concertoEnergyGain: 5,
   },
   {
     id: 'carlotta.skill.chromatic-splendor',
@@ -36,6 +51,11 @@ export const CARLOTTA_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Chromatic Splendor' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('112.73%×2 + 338.18%'), category: 'skillDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Carlotta/Carlotta.md's own
+    // "Concerto Regen: ... 5 (Chromatic Splendor)" row. No separate cooldown: the dump's own kit
+    // text is explicit this is a same-ability-slot follow-up press to Art of Violence ("Skill falls
+    // off cooldown if Chromatic Splendor isn't cast"), not an independently-cooldown-gated move.
+    concertoEnergyGain: 5,
   },
   {
     id: 'carlotta.forte.imminent-oblivion',
@@ -49,9 +69,16 @@ export const CARLOTTA_BLOCKS = [
     id: 'carlotta.liberation.era-of-new-wave',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Era of New Wave' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Carlotta/Carlotta.md's own
+    // "Skill Cooldown: 25s" row (listed under the Liberation section, the real ability-slot cooldown).
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('402.71%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Counted as Resonance Skill DMG per its own kit text, despite being a Liberation-button cast. Activates 10s Twilight Tango, forcing the next 5 Basic ATK/Liberation presses into Death Knell x4 -> Fatal Finale.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Carlotta/Carlotta.md's own
+    // "Concerto Regen: 20 (Era of New Wave)" row. Its "Resonance Cost: 125" row is a
+    // Liberation-gauge cost, not a gain — no matching schema field, not modeled, same treatment as
+    // every other character's own Liberation resource cost.
+    concertoEnergyGain: 20,
   },
   {
     id: 'carlotta.liberation.death-knell-x4',
@@ -62,6 +89,12 @@ export const CARLOTTA_BLOCKS = [
     // Twilight Tango, so the per-shot hit-set is repeated 4x to match the real 4-press mechanic.
     damage: { hits: [0, 1, 2, 3].flatMap(() => parseSkillMultiplierHits('183.64% + 14.50%×4')), category: 'skillDmg' , basis: 'ATK' },
     note: 'Counted as Resonance Skill DMG per its own kit text. Builds 1 Meta Vector per hit (cap 4), consumed by Fatal Finale.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Carlotta/Carlotta.md's own
+    // "Concerto Regen: ... 7 (Death Knell)" row is PER SHOT — since this one block already folds all
+    // 4 real forced presses into its own hit-list (see the note above), the real total Concerto
+    // contribution across those 4 presses is 7×4 = 28, not the single-press value, to stay
+    // consistent with the same "already-combined 4 real casts" treatment its damage.hits already get.
+    concertoEnergyGain: 28,
   },
   {
     id: 'carlotta.liberation.fatal-finale',
@@ -70,6 +103,9 @@ export const CARLOTTA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('644.33%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Counted as Resonance Skill DMG per its own kit text. Ends Twilight Tango and wipes Substance to 0.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Carlotta/Carlotta.md's own
+    // "Concerto Regen: ... 10 (Fatal Finale)" row.
+    concertoEnergyGain: 10,
   },
   {
     id: 'carlotta.skill.art-of-violence-chromatic-splendor-2',
@@ -79,6 +115,11 @@ export const CARLOTTA_BLOCKS = [
     // Second Skill-combo cast of the rotation (post-Twilight Tango) — both presses combined into
     // one CHARACTER_ROTATIONS step, so both skills' hit-sets are combined here to match.
     damage: { hits: [...parseSkillMultiplierHits('144.11%×2'), ...parseSkillMultiplierHits('112.73%×2 + 338.18%')], category: 'skillDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): both presses' own Concerto Regen
+    // summed (5 + 5 = 10), same "combined block, combined resource total" treatment as
+    // carlotta.liberation.death-knell-x4 above, matching how this block's own damage.hits already
+    // combine both real casts.
+    concertoEnergyGain: 10,
   },
   {
     id: 'carlotta.outro.closing-remark',
