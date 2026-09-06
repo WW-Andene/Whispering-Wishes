@@ -7,6 +7,15 @@
 // invented. S4's proc-frequency buff (Erosion Field tick interval 4s->3s) has no
 // frequency-based stat in this schema and is kept as an approximated totalMult
 // per the source audit's own documented uncertainty, not corrected further here.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Denia/
+// Denia.md's own Cooldown/Concerto Regen rows (Phantom Bubble, Banish Stage 1/2 sharing one 4s
+// cooldown, Final Act Stagecraft/Breakdown, Intro). The Resonance Skill section gives no Concerto
+// Regen value at all (unlike Intro/Liberation), so none is added there rather than guessed. The
+// per-Dark-Core proportional scalar block (banish-breakdown-stage2-dark-core-scalar) got the SAME
+// cooldown as its base hit, since both fire on one real cast and need matching derating for their
+// documented proportional relationship to stay correct.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -26,6 +35,9 @@ export const DENIA_BLOCKS = [
     // as Aalto/Calcharo/Encore/Jianxin/Danjin's own Intro blocks.
     damage: { hits: parseSkillMultiplierHits('104.62%'), basis: 'ATK' },
     note: 'Stagecraft-Form opener; grants 25 Void Particle and 1 Dark Core.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Denia/Denia.md's own
+    // "Concerto Regen: 10 each" row for the Intro Skill (It's Been A While!/Knock Knock).
+    concertoEnergyGain: 10,
   },
   {
     id: 'denia.basic.stagecraft-stage1',
@@ -41,7 +53,10 @@ export const DENIA_BLOCKS = [
     id: 'denia.skill.phantom-bubble-stagecraft',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Phantom Bubble - Stagecraft Form' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Denia/Denia.md's own "Cooldowns:
+    // Phantom Bubble 20s" row. No concertoEnergyGain: the dump gives no Concerto Regen row at all
+    // for the Resonance Skill section (unlike Intro/Liberation), so none is added rather than guessed.
+    timing: { cooldown: 20 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('17.42%×3+52.25%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Pulls in nearby targets, grants 25 more Void Particle.',
   },
@@ -49,9 +64,16 @@ export const DENIA_BLOCKS = [
     id: 'denia.liberation.final-act-stagecraft',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Final Act: Stagecraft Form' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Denia/Denia.md's own "Cooldown: 25s
+    // each" row (both Final Act variants).
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('397.62%'), category: 'libDmg', basis: 'ATK' },
     note: 'Grants Entropy Shift: Breakdown Form (+30% ATK, 12s), then switches to Breakdown Form.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Concerto Regen: 20 each".
+    // Its "costs 125 Resonance Energy" is a Liberation-gauge cost (Stagecraft variant only), not a
+    // gain — no matching schema field, not modeled, same treatment as every other character's own
+    // Liberation resource cost.
+    concertoEnergyGain: 20,
   },
   {
     id: 'denia.basic.breakdown-stage1-4',
@@ -83,7 +105,9 @@ export const DENIA_BLOCKS = [
     id: 'denia.skill.banish-breakdown-stage1',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Banish - Breakdown Form Stage 1' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Denia/Denia.md's own "Cooldowns: ...
+    // Beckon/Banish 4s (shared)" row. No concertoEnergyGain sourced (same gap as Phantom Bubble above).
+    timing: { cooldown: 4 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('34.68%×3'), category: 'skillDmg', basis: 'ATK' },
     note: 'Replaces Beckon while holding a Dark Core, pulls in targets.',
   },
@@ -91,7 +115,9 @@ export const DENIA_BLOCKS = [
     id: 'denia.liberation.banish-breakdown-stage2',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Banish - Breakdown Form Stage 2' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // Same shared 4s cooldown as Stage 1 above (same ability slot — Stage 2 is a same-cast follow-up
+    // press, not an independently-gated cooldown).
+    timing: { cooldown: 4 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('112.01%'), category: 'libDmg', basis: 'ATK' },
     note: 'Counted as Resonance Liberation DMG despite the Skill input. Real DMG also gets +150% Multiplier per Dark Core consumed (all held Dark Cores spent on cast) — the per-Dark-Core scalar itself is now modeled as denia.liberation.banish-breakdown-stage2-dark-core-scalar below (Phase 0.5 gap #7, fixed 2026-09-02), at the documented base-kit cap of 3 Dark Cores.',
   },
@@ -99,7 +125,11 @@ export const DENIA_BLOCKS = [
     id: 'denia.liberation.banish-breakdown-stage2-dark-core-scalar',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Banish - Breakdown Form Stage 2' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): same real 4s cooldown as the base hit above —
+    // both blocks fire on the exact same cast, so both need the same cooldownSteadyState derating
+    // factor applied for the proportional-hit relationship between them to stay correct (a derated
+    // base hit paired with an un-derated scalar would break the documented 4.5x proportion).
+    timing: { cooldown: 4 }, target: { scope: 'self' }, effects: [],
     // the engine-merge history (git log) Phase 0.5 gap #7, fixed 2026-09-02: "+150% DMG Multiplier per Dark Core
     // consumed" is a per-resource-unit scalar on the SAME hit as denia.liberation.banish-breakdown-stage2
     // — modeled the same proportional-second-hit way gap #6 (Brant's S6 secondary blast) established:
@@ -117,9 +147,13 @@ export const DENIA_BLOCKS = [
     id: 'denia.liberation.final-act-breakdown',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Final Act: Breakdown Form' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Denia/Denia.md's own "Cooldown: 25s
+    // each" row (both Final Act variants).
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('198.81%×4'), category: 'libDmg', basis: 'ATK' },
     note: 'Consumes full Conformal Charge + Void Particle, grants Entropy Shift: Stagecraft Form (30s), leaves an Erosion Field, switches back to Stagecraft Form.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Concerto Regen: 20 each".
+    concertoEnergyGain: 20,
   },
   {
     id: 'denia.liberation.erosion-field',

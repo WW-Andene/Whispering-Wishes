@@ -212,6 +212,14 @@ const EXPECTED_DIVERGENCES = {
   // (1354 -> 1182); this test's own standalone engine call doesn't apply that gate, so it stays at
   // the un-derated value. Measured ratio ~1.145 (engine/legacy) — real, expected, not a regression.
   Danjin: { min: 1.05, max: 1.20 },
+  // Added 2026-09-06 (Denia completeness pass): same class as the prior 15 characters above. Banish
+  // Stage 1/2 (Skill/Liberation) and Final Act Breakdown (Liberation) all got real, sourced
+  // cooldowns added (Data dump/Denia/Denia.md's own Cooldown rows) — her modeled rotation recasts
+  // them faster than those cooldowns allow, so calcTeamStats()'s cooldownSteadyState gate correctly
+  // derates the legacy RAW number (1527 -> 1267); this test's own standalone engine call doesn't
+  // apply that gate, so it stays at the un-derated value. Measured ratio ~1.205 (engine/legacy) —
+  // real, expected, not a regression.
+  Denia: { min: 1.10, max: 1.30 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number
