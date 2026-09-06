@@ -79,9 +79,9 @@ public class PullBubbleService extends Service {
 
     public static final String ACTION_TOGGLE = "cc.andene.whisperingwishes.action.TOGGLE_PULL_BUBBLE";
 
-    // Package-private, read by PulseBannerWidget's render to label/icon the toggle button
-    // correctly — a plain static flag is enough here since there is only ever one bubble
-    // instance system-wide (unlike PulseBannerWidget, which supports many placed instances).
+    // Package-private, read by PullBubbleCard (ProfileTab) via PullBubblePlugin to label/icon
+    // its toggle button correctly — a plain static flag is enough here since there is only
+    // ever one bubble instance system-wide.
     private static volatile boolean running = false;
     static boolean isRunning() { return running; }
 
