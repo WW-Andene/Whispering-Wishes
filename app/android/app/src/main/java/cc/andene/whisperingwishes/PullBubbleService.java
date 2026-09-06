@@ -549,6 +549,12 @@ public class PullBubbleService extends Service {
         addSubBubble(label, icon, iconRes, 8f, iconRotationDeg, angleDeg, aria, onTap, null);
     }
 
+    // Plain textSizeSp+iconRotationDeg variant, no long-press — used by the ×1/×10/×80
+    // sub-bubbles (bigger 12sp label text, no icon rotation).
+    private void addSubBubble(String label, Bitmap icon, int iconRes, float textSizeSp, float iconRotationDeg, double angleDeg, String aria, Runnable onTap) {
+        addSubBubble(label, icon, iconRes, textSizeSp, iconRotationDeg, angleDeg, aria, onTap, null);
+    }
+
     // textSizeSp only applies to the plain-label (no icon) branch — ×1/×10/×80 want a bigger
     // 12sp than every other text sub-bubble (category names, banner-list labels). `onLongTap`
     // is null for every sub-bubble except the Characters/Weapon banner-list options above.
