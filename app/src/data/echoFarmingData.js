@@ -92,9 +92,20 @@ export const TACET_FIELD_ENDGAME_YIELD = {
   avgShellCreditPerRun: 5250,
 };
 
-// Endgame Weekly/World Boss average yield — bosses do not cost Waveplate (user-confirmed).
-// From Drop Rates.md's own largest-sample rows (UL60/SOL7 for Weekly Boss at 291 runs, UL70/
-// SOL8 for World Boss at 335 runs — picked for sample size over raw recency since both are
-// within one tier of endgame).
-export const WEEKLY_BOSS_ENDGAME_YIELD = { runsSampled: 291, avgEchoesPerRun: 10.14, avgShellCreditPerRun: 54000 };
-export const WORLD_BOSS_ENDGAME_YIELD = { runsSampled: 335, avgEchoesPerRun: 3.62, avgShellCreditPerRun: 10000 };
+// ── Echo Leveling — Data dump/Echoes/Echo Leveling.md (wiki's "Echo Leveling Table",
+// Refunding section excluded per request). Cumulative EXP needed to reach each level from 0,
+// per rarity — max level differs by rarity (2★→10, 3★→15, 4★→20, 5★→25, matching Data
+// Bank.md's own rarity/max-level table). Index = level, value = cumulative EXP; undefined
+// past a rarity's own max level.
+export const ECHO_LEVEL_CUMULATIVE_EXP = {
+  5: [0, 400, 1000, 1900, 3000, 4400, 6100, 8100, 10500, 13300, 16500, 20100, 24200, 28800, 33900, 39600, 46000, 53100, 60900, 69600, 79100, 89600, 101100, 113700, 127500, 142600],
+  4: [0, 320, 800, 1520, 2400, 3520, 4880, 6480, 8400, 10640, 13200, 16080, 19360, 23040, 27120, 31680, 36800, 42480, 48720, 55680, 63380],
+  3: [0, 160, 400, 760, 1200, 1760, 2440, 3240, 4200, 5320, 6600, 8040, 9680, 11520, 13560, 15840],
+  2: [0, 100, 250, 475, 750, 1100, 1525, 2025, 2625, 3325, 4125],
+};
+export const ECHO_MAX_LEVEL_BY_RARITY = { 2: 10, 3: 15, 4: 20, 5: 25 };
+// Shell Credit conversion — wiki's own disclosed rate, same source as the EXP table above.
+export const SHELL_CREDIT_PER_ECHO_EXP = 0.1;
+export const SHELL_CREDIT_PER_TUNE_ATTEMPT = 2000;
+// EXP granted per Sealed Tube tier (Echo Development Material) — same source.
+export const SEALED_TUBE_EXP = { Basic: 500, Medium: 1000, Advanced: 2000, Premium: 5000 };

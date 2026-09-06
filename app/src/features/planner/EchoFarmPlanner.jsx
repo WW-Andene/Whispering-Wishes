@@ -2,12 +2,13 @@
 // WHISPERING WISHES — features/planner/EchoFarmPlanner.jsx
 // Echo Farming Calculator — Planner tab. Pick a specific target Echo (not just a
 // Sonata Set — some Echoes carry two sets at once, which a set-only picker can't
-// represent), main/secondary stat, 5 substat slots with a minimum plateau each, and
-// the real farming source for that Echo's cost tier (4-cost Echoes only ever drop
-// from bosses, never Tacet Fields — 1/3-cost Echoes drop from both Tacet Fields and
-// bosses). See the real probability of each condition and the combined odds, plus the estimated Waveplate/
-// Shell Credit/Tuner cost to get there. Every number traces to Data dump/Echoes/
-// (see echoFarmingData.js).
+// represent), main/secondary stat, 5 substat slots with a minimum plateau each, its
+// rarity/level, and whether you're farming it via Tacet Field (4-cost Echoes never
+// drop from Tacet Fields — bosses only; 1/3-cost drop from both, so that toggle is
+// only disabled for cost 4, never forced either way otherwise). See the real
+// probability of each condition and the combined odds, plus the estimated Waveplate/
+// Shell Credit/Tuner/leveling cost to get there. Every number traces to
+// Data dump/Echoes/ (see echoFarmingData.js).
 //
 // Structure (2026-09-06 revision): every stat-picking row (Main/Secondary/5x Substat)
 // used to dump its full option list inline — with the 13-entry substat pool repeated
@@ -28,7 +29,7 @@ import { getSetIcon, getElementIcon, getStatIcon, getCombatRoleIcon } from '../.
 import {
   ECHO_MAIN_STAT_CHANCE, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
   PLATEAU_TIERS, getPlateauChance, TACET_FIELD_WAVEPLATE_COST, TACET_FIELD_ENDGAME_YIELD,
-  WEEKLY_BOSS_ENDGAME_YIELD, WORLD_BOSS_ENDGAME_YIELD,
+  ECHO_LEVEL_CUMULATIVE_EXP, ECHO_MAX_LEVEL_BY_RARITY, SHELL_CREDIT_PER_ECHO_EXP, SHELL_CREDIT_PER_TUNE_ATTEMPT,
 } from '../../data/echoFarmingData.js';
 import { t } from '../../utils/i18n.js';
 
@@ -69,21 +70,23 @@ function StatIcon({ stat, size = 14 }) {
   return <img src={src} alt="" width={size} height={size} className="shrink-0" onError={hideOnError} />;
 }
 
-// Max Echo level is 25, not 90 — that's a character level. Each of the 5 substat slots
-// unlocks one at a time, every 5 levels (5/10/15/20/25), a real verified mechanic (WuWa
-// Wiki). Below the slot's unlock level it can't be rolled yet, so its row is disabled
-// rather than counted toward the combined odds.
-const MAX_ECHO_LEVEL = 25;
+// Max Echo level is 25, not 90 — that's a character level — and depends on rarity (2★→10,
+// 3★→15, 4★→20, 5★→25, per Data Bank.md). Each of the 5 substat slots unlocks one at a time,
+// every 5 levels (5/10/15/20/25), a real verified mechanic (Echo Leveling.md). Below the
+// slot's unlock level it can't be rolled yet, so its row is disabled rather than counted
+// toward the combined odds.
 const substatUnlockLevel = (slotIdx) => (slotIdx + 1) * 5;
+const RARITIES = [2, 3, 4, 5];
 
 const DEFAULT_STATE = {
   cost: 4,
   echoName: '',
-  level: MAX_ECHO_LEVEL,
+  rarity: 5,
+  level: 25,
   mainStats: [],
   secondaryStats: [],
   substats: [0, 1, 2, 3, 4].map(() => ({ stats: [], minTier: 0 })),
-  farmSource: 'weeklyBoss', // 'tacetField' | 'weeklyBoss' | 'worldBoss'
+  tacetField: false, // disabled/false-forced only when cost === 4
 };
 
 export default function EchoFarmPlanner() {
@@ -106,11 +109,14 @@ export default function EchoFarmPlanner() {
 
   // 4-cost (Overlord/Calamity) Echoes never drop from Tacet Fields (bosses only) — that's the
   // one sourced constraint (Data dump/Echoes/Data Bank.md). 1/3-cost Echoes drop from BOTH
-  // Tacet Fields and bosses, so nothing about farmSource is forced for them.
+  // Tacet Fields and bosses, so the toggle is never forced one way or the other for them.
   const setCost = (cost) => setCfg(p => ({
     ...p, cost, echoName: '', mainStats: [], secondaryStats: [],
-    farmSource: cost === 4 && p.farmSource === 'tacetField' ? 'weeklyBoss' : p.farmSource,
+    tacetField: cost === 4 ? false : p.tacetField,
   }));
+
+  const maxLevel = ECHO_MAX_LEVEL_BY_RARITY[cfg.rarity];
+  const setRarity = (rarity) => setCfg(p => ({ ...p, rarity, level: Math.min(p.level, ECHO_MAX_LEVEL_BY_RARITY[rarity]) }));
 
   const toggleStat = (list, stat) => list.includes(stat) ? list.filter(s => s !== stat) : [...list, stat];
 
@@ -134,17 +140,26 @@ export default function EchoFarmPlanner() {
   const expectedInstances = unifiedChance > 0 ? Math.ceil(1 / unifiedChance) : null;
 
   // ── Resource estimates ──
-  const yieldSource = cfg.farmSource === 'tacetField' ? TACET_FIELD_ENDGAME_YIELD
-    : cfg.farmSource === 'worldBoss' ? WORLD_BOSS_ENDGAME_YIELD : WEEKLY_BOSS_ENDGAME_YIELD;
-  const runsNeeded = expectedInstances != null ? Math.ceil(expectedInstances / yieldSource.avgEchoesPerRun) : null;
-  const waveplateNeeded = cfg.farmSource === 'tacetField' && runsNeeded != null ? runsNeeded * TACET_FIELD_WAVEPLATE_COST : 0;
-  const shellNeeded = runsNeeded != null ? runsNeeded * yieldSource.avgShellCreditPerRun : null;
+  // Waveplate only applies via Tacet Field (cost 4 never uses it — bosses cost no Waveplate at
+  // all, and this calculator doesn't model a specific boss's other resource costs since Drop
+  // Rates.md's boss tables aren't broken down by target Echo/set either).
+  const runsNeeded = cfg.tacetField && expectedInstances != null ? Math.ceil(expectedInstances / TACET_FIELD_ENDGAME_YIELD.avgEchoesPerRun) : null;
+  const waveplateNeeded = runsNeeded != null ? runsNeeded * TACET_FIELD_WAVEPLATE_COST : 0;
+  const dropShellNeeded = runsNeeded != null ? runsNeeded * TACET_FIELD_ENDGAME_YIELD.avgShellCreditPerRun : 0;
   const tunersPerSlot = cfg.substats.map((slot, i) => {
     if (!isSubstatUnlocked(i) || !slot.stats.length) return 0;
     const avgChance = slot.stats.reduce((s, stat) => s + getPlateauChance(stat, slot.minTier) / 100, 0) / slot.stats.length;
     return avgChance > 0 ? Math.ceil(1 / avgChance) : 0;
   });
   const totalTuners = tunersPerSlot.reduce((a, b) => a + b, 0);
+  const tuneShellCost = totalTuners * SHELL_CREDIT_PER_TUNE_ATTEMPT;
+
+  // ── Leveling cost — cumulative EXP to reach the chosen level from 0, at this rarity, and
+  // its Shell Credit equivalent (Echo Leveling.md's own disclosed 0.1 Shell/EXP rate). ──
+  const levelingExp = ECHO_LEVEL_CUMULATIVE_EXP[cfg.rarity]?.[cfg.level] ?? 0;
+  const levelingShell = Math.round(levelingExp * SHELL_CREDIT_PER_ECHO_EXP);
+
+  const totalShellNeeded = dropShellNeeded + tuneShellCost + levelingShell;
 
   const rowLabel = (chance) => `${(chance * 100).toFixed(chance * 100 < 1 ? 2 : 1)}%`;
 
@@ -181,6 +196,17 @@ export default function EchoFarmPlanner() {
             ))}
           </div>
 
+          {/* Rarity — independent of cost (the wiki explicitly notes they don't correlate);
+              determines the Echo's own max level per Data Bank.md. */}
+          <div className="flex gap-1.5">
+            {RARITIES.map(r => (
+              <button key={r} onClick={() => setRarity(r)}
+                className={`kuro-btn flex-1 text-sm ${cfg.rarity === r ? 'active-gold' : ''}`} style={{ padding: '8px' }}>
+                {'★'.repeat(r)}
+              </button>
+            ))}
+          </div>
+
           {/* Target Echo — real portrait, rank, and its actual Sonata Set(s), derived rather
               than freely chosen, so a dual-set Echo is represented correctly instead of forcing
               a single-set guess. */}
@@ -207,21 +233,20 @@ export default function EchoFarmPlanner() {
             <ChevronRight size={14} className="text-gray-500 shrink-0" />
           </button>
 
-          {/* Echo level — real max is 25, not 90 (that's a character level). Each substat slot
-              unlocks one at a time every 5 levels; ticks mark those unlock points. Per-level
-              EXP/Shell Credit/Sealed Tube costs aren't sourced yet (asked for that table
-              separately) — this slider only gates which substat slots are actually rollable
-              at the chosen level, it doesn't add a resource cost of its own yet. */}
+          {/* Echo level — real max is 25, not 90 (that's a character level), and depends on the
+              chosen rarity above. Each substat slot unlocks one at a time every 5 levels; ticks
+              mark those unlock points. Also drives the Leveling Cost tile below, sourced from
+              Data dump/Echoes/Echo Leveling.md's cumulative EXP table. */}
           <div className="space-y-1">
             <div className="flex items-center justify-between">
               <span className="kuro-section-label">{t('planner.echoFarm.echoLevel')}</span>
-              <span className="text-sm font-bold text-white kuro-number">Lv. {cfg.level}</span>
+              <span className="text-sm font-bold text-white kuro-number">Lv. {cfg.level} / {maxLevel}</span>
             </div>
-            <input type="range" min={1} max={MAX_ECHO_LEVEL} step={1} value={cfg.level}
+            <input type="range" min={0} max={maxLevel} step={1} value={cfg.level}
               onChange={e => setCfg(p => ({ ...p, level: Number(e.target.value) }))}
               className="w-full accent-yellow-500" aria-label={t('planner.echoFarm.echoLevel')} />
             <div className="flex justify-between text-2xs text-gray-500 px-0.5">
-              {[5, 10, 15, 20, 25].map(lvl => <span key={lvl}>{lvl}</span>)}
+              {[5, 10, 15, 20, 25].filter(lvl => lvl <= maxLevel).map(lvl => <span key={lvl}>{lvl}</span>)}
             </div>
           </div>
 
@@ -260,28 +285,15 @@ export default function EchoFarmPlanner() {
             })}
           </div>
 
-          {/* Farming source — all 3 sources are real options for 1/3-cost Echoes (both Tacet
-              Fields and bosses drop them); Tacet Field is disabled only for 4-cost, since that's
-              the one sourced constraint (Overlord/Calamity Echoes only drop from bosses). */}
-          <div className="space-y-1">
-            <div className="kuro-section-label">{t('planner.echoFarm.farmSource')}</div>
-            <div className="flex gap-1.5">
-              {[
-                ['tacetField', t('planner.echoFarm.tacetField')],
-                ['weeklyBoss', t('planner.echoFarm.weeklyBoss')],
-                ['worldBoss', t('planner.echoFarm.worldBoss')],
-              ].map(([key, label]) => {
-                const disabled = key === 'tacetField' && cfg.cost === 4;
-                return (
-                  <button key={key} disabled={disabled} onClick={() => setCfg(p => ({ ...p, farmSource: key }))}
-                    className={`kuro-btn flex-1 text-sm ${cfg.farmSource === key ? 'active-emerald' : ''} ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`} style={{ padding: '8px' }}>
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-            {cfg.cost === 4 && <div className="text-2xs text-gray-500">{t('planner.echoFarm.cost4NoTacet')}</div>}
-          </div>
+          {/* Farming via Tacet Field — the only sourced constraint is that 4-cost Echoes never
+              drop from Tacet Fields (bosses only, no Waveplate cost either way), so the toggle
+              is disabled (and forced off) only for cost 4; 1/3-cost Echoes drop from both Tacet
+              Fields and bosses, so it's freely toggleable there, not forced to either state. */}
+          <button onClick={() => cfg.cost !== 4 && setCfg(p => ({ ...p, tacetField: !p.tacetField }))} disabled={cfg.cost === 4}
+            className={`kuro-btn w-full text-sm ${cfg.tacetField ? 'active-emerald' : ''} ${cfg.cost === 4 ? 'opacity-40 cursor-not-allowed' : ''}`} style={{ padding: '8px' }}>
+            {cfg.tacetField ? '✓ ' : ''}{t('planner.echoFarm.tacetFieldToggle')}
+          </button>
+          {cfg.cost === 4 && <div className="text-2xs text-gray-500">{t('planner.echoFarm.cost4NoTacet')}</div>}
 
           {/* Unified statistics */}
           <div className="p-3 rounded-lg space-y-2" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
@@ -295,13 +307,14 @@ export default function EchoFarmPlanner() {
               <span className="text-base font-bold text-white kuro-number">{expectedInstances != null ? expectedInstances : '—'}</span>
             </div>
             <div className="grid grid-cols-3 gap-1.5 pt-1">
-              <ResourceTile icon={<Zap size={14} className="text-cyan-400" />} label={t('planner.echoFarm.waveplate')} value={cfg.farmSource === 'tacetField' ? waveplateNeeded : t('planner.echoFarm.notApplicable')} color="text-cyan-400" />
-              <ResourceTile icon={<Coins size={14} className="text-yellow-400" />} label={t('planner.shellCredit')} value={shellNeeded} color="text-yellow-400" />
+              <ResourceTile icon={<Zap size={14} className="text-cyan-400" />} label={t('planner.echoFarm.waveplate')} value={cfg.tacetField ? waveplateNeeded : t('planner.echoFarm.notApplicable')} color="text-cyan-400" />
+              <ResourceTile icon={<Coins size={14} className="text-yellow-400" />} label={t('planner.shellCredit')} value={totalShellNeeded} color="text-yellow-400" />
               <ResourceTile icon={<Wrench size={14} className="text-orange-400" />} label={t('planner.echoFarm.tuners')} value={totalTuners} color="text-orange-400" />
             </div>
-            {cfg.farmSource !== 'tacetField' && (
-              <div className="text-2xs text-gray-500">{t('planner.echoFarm.bossRunsNote', { runs: runsNeeded ?? '—' })}</div>
-            )}
+            <div className="text-2xs text-gray-500 space-y-0.5">
+              {!cfg.tacetField && <div>{t('planner.echoFarm.noTacetNote')}</div>}
+              <div>{t('planner.echoFarm.levelingCostNote', { exp: levelingExp.toLocaleString(), shell: levelingShell.toLocaleString() })}</div>
+            </div>
           </div>
         </CardBody>
       )}

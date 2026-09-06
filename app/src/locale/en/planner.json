@@ -123,18 +123,16 @@
     "plateauMedium": "Medium",
     "plateauHigh": "High",
     "plateauMax": "Max",
-    "farmSource": "Farming Source",
-    "tacetField": "Tacet Field",
-    "weeklyBoss": "Weekly Boss",
-    "worldBoss": "World Boss",
-    "cost4NoTacet": "4-cost Echoes (Overlord/Calamity) only drop from bosses, never Tacet Fields.",
+    "tacetFieldToggle": "Farming via Tacet Field",
+    "cost4NoTacet": "4-cost Echoes (Overlord/Calamity) only drop from bosses, never Tacet Fields — and bosses don't cost Waveplate either way.",
     "unifiedStats": "Combined Target Odds",
     "overallChance": "Chance per Echo instance",
     "instancesNeeded": "Expected instances needed",
     "waveplate": "Waveplate",
     "tuners": "Tuners",
     "notApplicable": "N/A",
-    "bossRunsNote": "Estimated {{runs}} boss runs — bosses don't cost Waveplate."
+    "noTacetNote": "Farming outside Tacet Field doesn't cost Waveplate.",
+    "levelingCostNote": "Leveling to this level costs {{exp}} EXP (≈{{shell}} Shell Credit)."
   },
 
   "calendar": {

@@ -123,18 +123,16 @@
     "plateauMedium": "Moyen",
     "plateauHigh": "Haut",
     "plateauMax": "Max",
-    "farmSource": "Source de Farm",
-    "tacetField": "Champ Tacite",
-    "weeklyBoss": "Boss Hebdomadaire",
-    "worldBoss": "Boss du Monde",
-    "cost4NoTacet": "Les Échos coût 4 (Overlord/Calamity) ne dropent que des boss, jamais des Champs Tacites.",
+    "tacetFieldToggle": "Farm via Champ Tacite",
+    "cost4NoTacet": "Les Échos coût 4 (Overlord/Calamity) ne dropent que des boss, jamais des Champs Tacites — et les boss ne coûtent de toute façon pas de Points d'Onde.",
     "unifiedStats": "Probabilité Combinée",
     "overallChance": "Chance par Écho obtenu",
     "instancesNeeded": "Nombre d'Échos nécessaires (estimé)",
     "waveplate": "Points d'Onde",
     "tuners": "Régleurs",
     "notApplicable": "N/A",
-    "bossRunsNote": "Environ {{runs}} combats de boss estimés — les boss ne coûtent pas de Points d'Onde."
+    "noTacetNote": "Farmer hors Champ Tacite ne coûte pas de Points d'Onde.",
+    "levelingCostNote": "Monter à ce niveau coûte {{exp}} EXP (≈{{shell}} Crédits Coquille)."
   },
 
   "calendar": {
