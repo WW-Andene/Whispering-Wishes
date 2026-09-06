@@ -1,0 +1,60 @@
+name: Sync assets to R2 (jsDelivr fallback)
+
+# Keeps a Cloudflare R2 bucket mirrored with the same "excluded from the native
+# APK, served remotely instead" asset folders that jsDelivr already serves live
+# (see capacitor-build/build.mjs's EXCLUDED_DIRS and public/sw.js's
+# JSDELIVR_ASSET_BASE) — a standby copy to switch to if jsDelivr ever throttles
+# or goes down, not the live source today. Nothing in the app actually points
+# at R2 yet; this workflow only keeps the bucket's contents in sync with
+# main so it's ready the moment someone flips the base URL over.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/public/convene-animations/**'
+      - 'app/public/portraits/**'
+      - 'app/public/spine/**'
+      - 'app/public/animated-bg/**'
+      - 'app/public/audio/**'
+      - '.github/workflows/sync-r2.yml'
+  workflow_dispatch:
+
+jobs:
+  sync-r2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      R2_ENDPOINT: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      R2_BUCKET: ${{ secrets.R2_BUCKET_NAME }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --delete mirrors deletions too (a removed/renamed clip in the repo gets
+      # removed from R2 on the next sync, not left behind as a stale orphan).
+      # Each folder syncs to the same relative path it has under app/public/,
+      # matching jsDelivr's own URL shape (<base>/<folder>/<file>) — so if this
+      # bucket is ever pointed to directly, only the base URL constant needs
+      # to change, nothing about the path structure.
+      - name: Sync convene-animations/
+        if: hashFiles('app/public/convene-animations/**') != ''
+        run: aws s3 sync app/public/convene-animations "s3://$R2_BUCKET/convene-animations" --endpoint-url "$R2_ENDPOINT" --delete
+
+      - name: Sync portraits/
+        if: hashFiles('app/public/portraits/**') != ''
+        run: aws s3 sync app/public/portraits "s3://$R2_BUCKET/portraits" --endpoint-url "$R2_ENDPOINT" --delete
+
+      - name: Sync spine/
+        if: hashFiles('app/public/spine/**') != ''
+        run: aws s3 sync app/public/spine "s3://$R2_BUCKET/spine" --endpoint-url "$R2_ENDPOINT" --delete
+
+      - name: Sync animated-bg/
+        if: hashFiles('app/public/animated-bg/**') != ''
+        run: aws s3 sync app/public/animated-bg "s3://$R2_BUCKET/animated-bg" --endpoint-url "$R2_ENDPOINT" --delete
+
+      - name: Sync audio/
+        if: hashFiles('app/public/audio/**') != ''
+        run: aws s3 sync app/public/audio "s3://$R2_BUCKET/audio" --endpoint-url "$R2_ENDPOINT" --delete
