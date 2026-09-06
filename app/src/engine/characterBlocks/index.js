@@ -43,6 +43,7 @@ import { GALBRENA_BLOCKS } from './galbrena.blocks.js';
 import { HIYUKI_BLOCKS } from './hiyuki.blocks.js';
 import { IUNO_BLOCKS } from './iuno.blocks.js';
 import { JIANXIN_BLOCKS } from './jianxin.blocks.js';
+import { JINGRAN_BLOCKS } from './jingran.blocks.js';
 import { JINHSI_BLOCKS } from './jinhsi.blocks.js';
 import { JIYAN_BLOCKS } from './jiyan.blocks.js';
 import { LINGYANG_BLOCKS } from './lingyang.blocks.js';
@@ -103,6 +104,14 @@ export const BLOCKS_BY_CHARACTER = {
   'Hiyuki': HIYUKI_BLOCKS,
   'Iuno': IUNO_BLOCKS,
   'Jianxin': JIANXIN_BLOCKS,
+  // 'Jingran' deliberately NOT keyed here — see jingran.blocks.js's own header comment. He has a
+  // real blocks file (JINGRAN_BLOCKS, imported above) but no CHARACTER_ROTATIONS entry yet
+  // (unreleased, no sourced rotation), and calcTeamStats.js's allMembersConverted gate requires
+  // both. Adding him to this map with no matching CHARACTER_ROTATIONS entry would make
+  // BLOCKS_BY_CHARACTER['Jingran'] truthy while chooseOnFieldOrder/buildTeamSteps (which read
+  // CHARACTER_ROTATIONS[m.name] unconditionally once a member passes the blocks-only half of that
+  // check) crash on the missing rotation — worse than the current, correct "stays on the legacy
+  // per-member RAW path" behavior. Re-key him here once his real CHARACTER_ROTATIONS is sourced.
   'Jinhsi': JINHSI_BLOCKS,
   'Jiyan': JIYAN_BLOCKS,
   'Lingyang': LINGYANG_BLOCKS,
@@ -144,3 +153,10 @@ export const BLOCKS_BY_CHARACTER = {
 for (const [name, blocks] of Object.entries(BLOCKS_BY_CHARACTER)) {
   expectValidBlockFile(blocks, name);
 }
+
+// Jingran validated here too, same hard-failure contract as every BLOCKS_BY_CHARACTER entry —
+// just not keyed into that map (see the 'Jianxin'/'Jinhsi' gap comment above for why). Re-exported
+// so a caller that genuinely wants his real-but-incomplete blocks (e.g. a future rotation-derived
+// path once CHARACTER_ROTATIONS['Jingran'] exists) doesn't need a second import path.
+export { JINGRAN_BLOCKS };
+expectValidBlockFile(JINGRAN_BLOCKS, 'Jingran');
