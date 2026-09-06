@@ -37,7 +37,7 @@ This project defines six skills under `claude_skill/`, each scoped to a distinct
 | `app-audit` | `claude_skill/app-audit-SKILL.md` | A broad, cross-cutting review is called for — security, performance, UX, accessibility, i18n, architecture, "review before launch," "my app feels incoherent," or any request to evaluate the app as a whole rather than one change. |
 | `code-audit` | `claude_skill/code-audit-SKILL.md` | Code-level quality is the concern specifically — naming, dead code, duplication, architecture, logic correctness, state management, error handling, async patterns, type safety. This is the skill the §4.9 maintenance cadence's "code-audit pass" refers to; name it explicitly rather than performing an ad hoc, unscoped review. |
 | `app-restructuring` | `claude_skill/app-restructuring-SKILL.md` | The work is actual structural change — file/folder reorganization, module-boundary redefinition, splitting a god file (§4.5), consolidating shared code, or anything else in §4 that goes beyond auditing into rearranging. |
-| `design-aesthetic-audit` | `claude_skill/design-aesthetic-audit-SKILL.md` | The concern is visual/aesthetic quality specifically — color, typography, motion, visual hierarchy, "make it feel premium," matching a named reference aesthetic — as distinct from the numeric design-token compliance in §6, which is mechanical rather than aesthetic judgment. |
+| `design-aesthetic-audit` | `claude_skill/design-aesthetic-audit-SKILL.md` | The concern is visual/aesthetic quality specifically — color, typography, motion, visual hierarchy, "make it feel premium," matching a named reference aesthetic — as distinct from the numeric design-token compliance in §7, which is mechanical rather than aesthetic judgment. |
 | `art-direction-engine` | `claude_skill/art-direction-engine-SKILL.md` | A new UI, component, or visual theme is being built from scratch and needs an original, distinctive look rather than a default pattern — not for auditing existing UI (that's `design-aesthetic-audit`). |
 | `scope-context` | `claude_skill/scope-context-SKILL.md` | A request targets multiple instances across files ("all X," "every Y," "standardize Z") or is spatially/referentially ambiguous ("the box," "make it bigger") — before guessing at scope or referent, run this skill's disambiguation process instead. |
 
@@ -206,7 +206,49 @@ Discipline: **change management** — keeping each change unit minimal, reviewab
 
 ---
 
-## 6. Design System — design-token governance (PerfectSuite numeric scale)
+## 6. App & Feature Development — functional completeness
+
+Discipline: **requirements engineering and interaction design** — specifically the *completeness* criterion for a well-formed requirement (ISO/IEC/IEEE 29148: a requirement set is incomplete if it omits functionality the user needs but didn't think to state explicitly), combined with the standard interaction-design practice of matching a UI request to its recognized **component archetype** rather than only its literal wording, and with Nielsen's usability heuristics — in particular *user control and freedom* and *consistency and standards*, which are exactly what's missing when a feature is built with no way to operate it fully.
+
+This section exists because a request named after a familiar kind of feature ("a color selector," "a music player," "a settings panel") carries an implicit spec far larger than its literal words: real-world convention already defines what that archetype minimally includes. Implementing only the literally-named mechanic and skipping the rest is an **incompleteness defect** — a feature is not done because it compiles and shows something; it is done when it satisfies the implicit requirements of the archetype the user actually asked for, per Definition of Done (§1.1) and §2 (verification against real execution) — not just its most literal reading.
+
+### 6.1 Resolve the request to its component archetype before building
+
+Before writing any code for a named feature, identify what that request actually names: a recognized class of UI/interaction pattern with well-established conventions, not just the single mechanic that makes it distinctive. Two features can share a name and still differ in exact needs, but the baseline set below is what makes something recognizable as that archetype at all — omitting from it isn't a smaller version of the feature, it's a different, broken thing wearing its name.
+
+Representative examples (non-exhaustive — apply the same reasoning to any archetype not listed):
+
+| Requested feature | The literal, distinctive mechanic | The implicit baseline the archetype also requires |
+|---|---|---|
+| "A color selector/picker" | A way to choose a color value | A trigger to open it, a way to confirm/apply the choice, a visible current-value indicator, and a wired destination that actually receives the chosen value |
+| "A music/audio player" | Play/pause of a track | Volume control, a way to mute, a progress/seek indicator, and the actual audio source wired in — a player with nothing to play is not a player |
+| "A settings panel" | The individual settings/toggles | A way to open/close or navigate to it, persistence of the choices made, and each setting actually wired to the behavior it claims to control |
+| "A form" | The input fields | Validation feedback, a submit action, a cancel/dismiss path, and a wired destination for the submitted data |
+| "A modal/dialog" | The content inside it | An open trigger, a close affordance (explicit control, not just an assumed outside-click), and a defined return path for whatever the modal was for |
+
+### 6.2 Verify data flow end-to-end, not just the presence of a control
+
+A control that exists but does nothing, or a value that is produced but never consumed, is exactly the same class of defect as a missing control — both leave the feature functionally incomplete. Before calling a feature done:
+1. Trace the full path from user input to observable effect (a color chosen is applied and/or stored somewhere real; a volume slider actually changes the audio output level; a submitted form actually reaches its destination).
+2. Confirm there is no dangling half: no UI control with no wired effect, and no wired capability with no UI control to reach it.
+3. This is the feature-level instance of §2.1/§2.5 (verify against real execution; a passing build is not evidence the feature works) — exercise the actual interaction, don't infer wiring from the code looking plausible.
+
+### 6.3 This is not a license for scope creep — reconcile with §5
+
+§5.2 ("no speculative generality... build for the requirement in front of you") and this section are not in tension, and neither overrides the other:
+
+- **§5.2 forbids building for hypothetical future requirements** — options, hooks, or abstractions nothing currently asks for.
+- **§6 requires building the actual current requirement completely** — the baseline parts in §6.1 are not hypothetical or future; they are already implied by the feature the user named, whether or not they said each part out loud. Skipping them isn't restraint, it's under-delivery against what was actually asked.
+
+The line between the two: if a real-world instance of the named archetype would be considered broken or unusable without a part, that part is in scope now, per §6.1 — not a speculative extra.
+
+### 6.4 When the archetype's baseline is genuinely ambiguous or intentionally reduced
+
+If a request explicitly scopes a feature down ("just the color swatches, no picker UI yet") or the right baseline for an unfamiliar/novel archetype isn't obvious, don't guess silently in either direction — per §1.6, ask, and state explicitly which parts of the usual baseline are being deliberately deferred and why, so the gap is a documented decision rather than an unnoticed omission.
+
+---
+
+## 7. Design System — design-token governance (PerfectSuite numeric scale)
 
 Discipline: **design-token systems**, the standard mechanism (used across major design systems, e.g. Material Design, Salesforce Lightning) for enforcing a single source of truth for spacing, sizing, and typography scales, ensuring pixel-accurate consistency across a UI.
 
@@ -235,7 +277,7 @@ No other number is permitted. This applies to existing code as well as new code 
 - If a token (`--font-*`, `--size-*`, `--space-*`, etc.) already resolves to a PerfectSuite value, use it — this is the token layer doing its job.
 - If the nearest existing token is off-scale, either correct the token (when the change should propagate to every usage) or apply an explicit, scoped arbitrary-value override, e.g. `text-[12px]` / `w-[48px]` (when the change is local only).
 
-### 6.1 Rounding priority (tie-breaking)
+### 7.1 Rounding priority (tie-breaking)
 
 When correcting an off-scale value, round to the mathematically nearest PerfectSuite value. When two candidates are **equidistant**, resolve the tie by this priority order — **Nearest beats Primary beats Secondary beats Tertiary**:
 
@@ -252,35 +294,35 @@ Worked examples:
 
 This can and will collapse previously-distinct values onto the same PerfectSuite number (e.g. two font sizes both rounding to `12`) — that is an accepted outcome of strict scale compliance, not a bug to work around by picking a different rounding.
 
-### 6.2 Exception — values above 16px
+### 7.2 Exception — values above 16px
 
 For a value greater than `16`, do not snap to the single nearest suite number. Instead: take the nearest `[Primary]` at or below the value, then add another `[Primary]` on top to close the remaining gap as tightly as possible.
 
 - Example: `150` → nearest primary at/below is `128`; `128 + 16 = 144` is the closest reachable primary+primary sum → **144**.
 
-### 6.3 Corner radius
+### 7.3 Corner radius
 
-`radius = 0.24 × the element's height`, rounded to the nearest PerfectSuite value (apply the tie-break priority in §6.1).
+`radius = 0.24 × the element's height`, rounded to the nearest PerfectSuite value (apply the tie-break priority in §7.1).
 
-### 6.4 Aspect ratios — preferred, not mandatory
+### 7.4 Aspect ratios — preferred, not mandatory
 
 Unlike the PerfectSuite scale, these ratios are a **priority list to reach for**, not a hard constraint — apply engineering judgment rather than forcing a mismatch:
 
 `3:2`, `4:3`, `5:4`, `3:1` (the last reserved for wide/short bars — header, navbar, and similar).
 
-### 6.5 Design objectives behind the design-token system
+### 7.5 Design objectives behind the design-token system
 
 Standardization · coherency · consistency · pixel-accurate precision · symmetry · disciplined aesthetic proportion · deliberate, documented art-direction decisions — never a default or "close enough" value.
 
 ---
 
-## 7. Project-Specific Standards *(Whispering-Wishes-specific)*
+## 8. Project-Specific Standards *(Whispering-Wishes-specific)*
 
-### 7.1 Header / Navbar
+### 8.1 Header / Navbar
 
 Visually 192px wide × 64px tall (both PerfectSuite values), even though the actual implementation is responsive/fluid rather than hard-coded — treat 192×64 as the reference proportions when sizing anything meant to align with the header/nav.
 
-### 7.2 Precedent already in the codebase
+### 8.2 Precedent already in the codebase
 
 - Nav icons: `w-4 h-4` (16px), `w-6 h-6` (24px) — still compliant under the updated suite.
 - Nav profile button: `w-[48px] h-[48px]` — still compliant.
