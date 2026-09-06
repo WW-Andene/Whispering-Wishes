@@ -142,7 +142,7 @@ export default function EchoFarmPlanner() {
   // (e.g. 4★ peaks at 80% around level 19-20, then falls to 0% at endgame once the pool becomes
   // 100% 5★), so this is a required, user-set factor, not a constant. 0% means the chosen
   // rarity simply isn't obtainable at this level at all (still in the pool, or aged out of it).
-  const dbLevelRow = DATA_BANK_LEVELS[Math.min(cfg.dataBankLevel, MAX_DATA_BANK_LEVEL)];
+  const dbLevelRow = DATA_BANK_LEVELS.find(row => row.level === cfg.dataBankLevel) || DATA_BANK_LEVELS[DATA_BANK_LEVELS.length - 1];
   const rarityChance = (dbLevelRow.rarity[cfg.rarity] || 0) / 100;
 
   const unifiedChance = [mainChance, secondaryChance, rarityChance, ...substatChances].reduce((a, b) => a * b, 1);
@@ -241,7 +241,7 @@ export default function EchoFarmPlanner() {
           {/* Target Echo — real portrait, rank, and its actual Sonata Set(s), derived rather
               than freely chosen, so a dual-set Echo is represented correctly instead of forcing
               a single-set guess. */}
-          <button onClick={() => setOpenPicker('echo')} className="kuro-btn w-full text-left flex items-center gap-2.5" style={{ padding: '8px 10px' }}>
+          <button onClick={() => setOpenPicker('echo')} className="kuro-btn w-full text-left flex items-center gap-2" style={{ padding: '8px 10px' }}>
             {echoData ? (
               <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-yellow-500/30 bg-yellow-500/8">
                 <img src={echoData.iconUrl || echoData.monsterIconUrl} alt={cfg.echoName} className="w-full h-full object-cover" onError={hideOnError} />
@@ -308,7 +308,11 @@ export default function EchoFarmPlanner() {
                   chance={substatChances[i]}
                   rowLabel={rowLabel}
                   tierLabel={unlocked && slot.stats.length ? t(`planner.echoFarm.plateau${PLATEAU_TIERS[slot.minTier]}`) : null}
-                  note={!unlocked ? t('planner.echoFarm.locksUntil', { level: substatUnlockLevel(i) }) : undefined}
+                  note={!unlocked
+                    ? (substatUnlockLevel(i) > maxLevel
+                      ? t('planner.echoFarm.impossibleAtRarity', { level: substatUnlockLevel(i) })
+                      : t('planner.echoFarm.locksUntil', { level: substatUnlockLevel(i) }))
+                    : undefined}
                   disabled={!unlocked}
                   onClick={() => unlocked && setOpenPicker(i)}
                 />
@@ -373,7 +377,7 @@ export default function EchoFarmPlanner() {
                   const selected = cfg.echoName === name;
                   return (
                     <button key={name} onClick={() => { setCfg(p => ({ ...p, echoName: name })); setOpenPicker(null); setEchoSearch(''); }}
-                      className={`kuro-card text-left w-full flex items-center gap-2.5 p-2 transition-all hover:scale-[1.01] ${selected ? 'border-2 border-yellow-400/60 bg-yellow-500/10' : ''}`}>
+                      className={`kuro-card text-left w-full flex items-center gap-2 p-2 transition-all hover:scale-[1.01] ${selected ? 'border-2 border-yellow-400/60 bg-yellow-500/10' : ''}`}>
                       <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-red-500/30 bg-red-500/8">
                         <img src={ed.iconUrl || ed.monsterIconUrl} alt="" className="w-full h-full object-cover" onError={hideOnError} />
                       </div>
@@ -382,7 +386,7 @@ export default function EchoFarmPlanner() {
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           {(ed.sets || []).map(setName => (
                             <span key={setName} className="inline-flex items-center gap-1 text-2xs text-gray-400">
-                              {getSetIcon(setName) && <img src={getSetIcon(setName)} alt="" width={11} height={11} className="shrink-0" onError={hideOnError} />} {setName}
+                              {getSetIcon(setName) && <img src={getSetIcon(setName)} alt="" width={12} height={12} className="shrink-0" onError={hideOnError} />} {setName}
                             </span>
                           ))}
                         </div>
@@ -440,7 +444,7 @@ function StatSummaryRow({ title, selected, chance, rowLabel, tierLabel, note, on
             <span className="text-2xs text-gray-500">{note || t('planner.echoFarm.anyStat')}</span>
           ) : selected.map(stat => (
             <span key={stat} className="inline-flex items-center gap-1 text-2xs text-gray-300">
-              <StatIcon stat={stat} size={11} /> {stat}
+              <StatIcon stat={stat} size={12} /> {stat}
             </span>
           ))}
         </div>

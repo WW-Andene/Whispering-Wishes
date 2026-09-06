@@ -27,10 +27,10 @@ export const ECHO_MAIN_STAT_CHANCE = {
 // The wiki describes Echoes as having a "Primary" (random) and a "Secondary" (predetermined,
 // i.e. fixed per specific Echo — not re-rolled per drop) main stat. This app has no real
 // per-Echo secondary-mainstat table (that would require sourcing ~100 individual Echoes'
-// fixed second stat, which nothing in Data dump/ currently covers), so the calculator below
-// treats "Secondary Stat" as an independent roll from this SAME distribution as an explicit,
-// labeled approximation — never claim it's the real per-Echo mechanic.
-export const ECHO_SECONDARY_STAT_IS_APPROXIMATED = true;
+// fixed second stat, which nothing in Data dump/ currently covers), so the calculator treats
+// "Secondary Stat" as an independent roll from this SAME distribution as an explicit, labeled
+// approximation (see EchoFarmPlanner.jsx's own `secondaryApprox` UI copy) — never claim it's
+// the real per-Echo mechanic.
 
 // Substat TYPE pick chance — officially disclosed by Kuro (KR gaming-disclosure law). Uniform
 // across the 13-substat pool, shrinking as substats already on the Echo are removed from it.
@@ -148,5 +148,3 @@ export const ECHO_MAX_LEVEL_BY_RARITY = { 2: 10, 3: 15, 4: 20, 5: 25 };
 // Shell Credit conversion — wiki's own disclosed rate, same source as the EXP table above.
 export const SHELL_CREDIT_PER_ECHO_EXP = 0.1;
 export const SHELL_CREDIT_PER_TUNE_ATTEMPT = 2000;
-// EXP granted per Sealed Tube tier (Echo Development Material) — same source.
-export const SEALED_TUBE_EXP = { Basic: 500, Medium: 1000, Advanced: 2000, Premium: 5000 };

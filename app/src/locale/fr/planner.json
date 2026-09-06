@@ -120,6 +120,7 @@
     "anyStat": "N'importe laquelle",
     "noOptionsLeft": "Plus aucune option.",
     "locksUntil": "Débloqué au niveau {{level}}",
+    "impossibleAtRarity": "Jamais obtenable à cette rareté (nécessite le niveau {{level}}, au-delà du maximum de cette rareté)",
     "minPlateau": "Palier Minimum",
     "substatSlot": "Sous-stat {{n}}",
     "plateauLow": "Bas",

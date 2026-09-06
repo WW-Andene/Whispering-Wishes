@@ -120,6 +120,7 @@
     "anyStat": "Any",
     "noOptionsLeft": "No options left.",
     "locksUntil": "Locks until Level {{level}}",
+    "impossibleAtRarity": "Never rolls at this rarity (needs Level {{level}}, past this rarity's max)",
     "minPlateau": "Minimum Plateau",
     "substatSlot": "Substat {{n}}",
     "plateauLow": "Low",
