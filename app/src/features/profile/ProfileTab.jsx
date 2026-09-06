@@ -32,6 +32,7 @@ import OfflineAssetsCard from './OfflineAssetsCard.jsx';
 import AppUpdateCard from './AppUpdateCard.jsx';
 import PullBubbleCard from './PullBubbleCard.jsx';
 import PushNotificationsCard from './PushNotificationsCard.jsx';
+import ReminderLeadTimeCard from './ReminderLeadTimeCard.jsx';
 import { openSoundSettings, isNativePlatform as isNativePlatformForSettings } from '../../utils/systemSettings.js';
 import { setWallpaper, setAnimatedWallpaper } from '../../utils/wallpaper.js';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
@@ -1328,6 +1329,7 @@ function ProfileTab({
             <AppUpdateCard toast={toast} />
             <PullBubbleCard toast={toast} />
             <PushNotificationsCard toast={toast} />
+            <ReminderLeadTimeCard />
             {isNativePlatformForSettings() && <OfflineAssetsCard toast={toast} />}
 
             {/* ── Cloud Backup ──────────────────────────────────── */}

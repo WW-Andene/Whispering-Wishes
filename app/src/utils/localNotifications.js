@@ -15,6 +15,21 @@
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { isNativePlatform } from './pushNotifications.js';
 
+// Global lead-time setting (Profile → ReminderLeadTimeCard) for how long before an event's
+// end date its reminder fires. Read directly from localStorage (rather than via
+// usePersistedState) since this module is used from plain functions, not components.
+export const REMINDER_LEAD_HOURS_KEY = 'ww-reminder-lead-hours';
+export const REMINDER_LEAD_HOURS_OPTIONS = [3, 6, 12, 24];
+export const DEFAULT_REMINDER_LEAD_HOURS = 24;
+
+export function getReminderLeadHours() {
+  try {
+    const raw = localStorage.getItem(REMINDER_LEAD_HOURS_KEY);
+    const hours = raw !== null ? JSON.parse(raw) : DEFAULT_REMINDER_LEAD_HOURS;
+    return REMINDER_LEAD_HOURS_OPTIONS.includes(hours) ? hours : DEFAULT_REMINDER_LEAD_HOURS;
+  } catch { return DEFAULT_REMINDER_LEAD_HOURS; }
+}
+
 // Deterministic string -> positive 31-bit int (Capacitor notification ids must fit
 // a Java int). Collisions are astronomically unlikely for this app's small event
 // key space and harmless anyway (worst case: two reminders overwrite each other).
@@ -36,12 +51,16 @@ export async function requestLocalNotificationPermission() {
   catch { return false; }
 }
 
-// Schedules a one-off reminder at `at` (a Date, must be in the future) for the
-// event identified by `key`. Re-scheduling the same key replaces any prior
-// reminder under it (Capacitor overwrites on matching id). Returns false if
-// permission isn't granted/grantable or `at` has already passed.
-export async function scheduleEventReminder({ key, title, body, at }) {
-  if (!isNativePlatform() || !key || !at || at.getTime() <= Date.now()) return false;
+// Schedules a one-off reminder for the event identified by `key`, firing
+// getReminderLeadHours() hours before `endDate` (the event's real end date/time).
+// Re-scheduling the same key replaces any prior reminder under it (Capacitor
+// overwrites on matching id). Returns false if permission isn't granted/grantable
+// or the computed fire time has already passed.
+export async function scheduleEventReminder({ key, title, body, endDate }) {
+  if (!isNativePlatform() || !key || !endDate) return false;
+  const leadHours = getReminderLeadHours();
+  const at = new Date(endDate.getTime() - leadHours * 3600000);
+  if (at.getTime() <= Date.now()) return false;
   const granted = await hasLocalNotificationPermission() || await requestLocalNotificationPermission();
   if (!granted) return false;
   try {
