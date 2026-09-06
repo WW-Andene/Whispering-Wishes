@@ -36,6 +36,14 @@
 // step label) had no SKILL_MULTIPLIERS row and no hit data anywhere — silently dropped from every
 // rotation pass despite this file's own prior note incorrectly claiming it was "not sourced
 // anywhere." Added the row (characters.js) and its hits here.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Chisa/
+// Chisa.md's own Cooldown/Concerto Regen rows (Reverberance - Return, Moment of Nihility, Sawring -
+// Eradication). Her real base Resonance Skill, Eye of Unraveling, has a sourced 12s cooldown too,
+// but CHARACTER_ROTATIONS['Chisa'] never casts it (only Serrated Loop — the same bug class d/c fix
+// already documented above for why the Unseen-Snare-application blocks were retargeted off it) —
+// correctly has no block at all, so there's no block to attach that cooldown to.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -54,6 +62,9 @@ export const CHISA_BLOCKS = [
     // DMG Bonus — the dump's own Intro multiplier table literally labels this row "Skill DMG", same
     // generic-labeling convention already fixed for Aalto/Calcharo/Buling's own Intro rows.
     damage: { hits: parseSkillMultiplierHits('95.43%'), category: 'skillDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Chisa/Chisa.md's own
+    // "Concerto Regen 10" row for Intro Skill Reverberance - Return.
+    concertoEnergyGain: 10,
   },
   {
     id: 'chisa.basic.stage2-rending-lunge',
@@ -81,9 +92,15 @@ export const CHISA_BLOCKS = [
     id: 'chisa.liberation.moment-of-nihility',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Moment of Nihility' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Chisa/Chisa.md's own "Cooldown: 25s"
+    // row.
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('954.29%'), category: 'libDmg' , basis: 'ATK' },
     note: 'Also heals the team for 117.60% ATK and enters Woven Myriad - Convergence, neither modeled (no DPS component).',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Concerto Regen: 20". Its
+    // "Resonance Energy cost: 125" row is a Liberation-gauge cost, not a gain — no matching schema
+    // field, not modeled, same treatment as every other character's own Liberation resource cost.
+    concertoEnergyGain: 20,
   },
   {
     id: 'chisa.skill.serrated-loop',
@@ -119,6 +136,10 @@ export const CHISA_BLOCKS = [
     // rejecting real teammate Liberation DMG Bonus on her single biggest Forte hit.
     damage: { hits: parseSkillMultiplierHits('51.54% + 206.13%'), category: 'libDmg' , basis: 'ATK' },
     note: 'Real DMG also scales +2.59% per Ring of Chainsaw consumed, up to 100 — the per-Ring scalar is now modeled as chisa.forte.sawring-eradication-ring-scalar below (Phase 0.5 gap #7, fixed 2026-09-02), at the documented cap. Also grants the team a Shield, not modeled (no DPS component).',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Chisa/Chisa.md's own
+    // "Sawring - Eradication Concerto Regen: 45" row. No cooldown: this is a Ring-of-Chainsaw-
+    // consumption-gauge trigger ("cast after ... consuming all Ring of Chainsaw"), not timer-gated.
+    concertoEnergyGain: 45,
   },
   {
     id: 'chisa.forte.sawring-eradication-ring-scalar',
