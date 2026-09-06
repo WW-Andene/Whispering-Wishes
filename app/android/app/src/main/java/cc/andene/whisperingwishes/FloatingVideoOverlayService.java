@@ -19,6 +19,8 @@ import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.WindowManager;
 
+import android.widget.Toast;
+
 import java.util.ArrayList;
 
 // Plays convene-animation clip(s) in a small floating, rounded window over the home
@@ -268,13 +270,28 @@ public class FloatingVideoOverlayService extends Service {
                 mp.start();
             });
             mediaPlayer.setOnCompletionListener(mp -> playAt(queueIndex + 1));
+            String failingUrl = queue.get(queueIndex);
             mediaPlayer.setOnErrorListener((mp, what, extra) -> {
+                // Diagnostic only — helps pin down exactly which URL/error a remote (network)
+                // convene clip failed with, rather than the reveal sequence just silently
+                // moving on with no clue why. Local bundled asset clips (file:// URIs) almost
+                // never hit this; a remote clip (http/https) failing here means the request
+                // itself failed — wrong host, network error, or the server didn't serve a
+                // playable video (auth wall, 404, wrong content-type) — not a codec/UI issue.
+                Log.w(TAG, "MediaPlayer error what=" + what + " extra=" + extra + " url=" + failingUrl);
+                if (failingUrl != null && failingUrl.startsWith("http")) {
+                    Toast.makeText(getApplicationContext(), "Convene clip failed (" + what + "/" + extra + "): " + failingUrl, Toast.LENGTH_LONG).show();
+                }
                 removeOverlay();
                 finish();
                 return true;
             });
             mediaPlayer.prepareAsync();
         } catch (Exception e) {
+            Log.w(TAG, "MediaPlayer setup failed for url=" + queue.get(queueIndex), e);
+            if (queue.get(queueIndex) != null && queue.get(queueIndex).startsWith("http")) {
+                Toast.makeText(getApplicationContext(), "Convene clip setup failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
             removeOverlay();
             finish();
         }

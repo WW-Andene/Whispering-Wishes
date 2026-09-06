@@ -932,7 +932,20 @@ public class PullBubbleService extends Service {
             // side (widgetSync.js's syncConveneRoster) had actually written one for it.
             ConveneRoster.Entry entry = ConveneRoster.findEntry(
                     getSharedPreferences(PREFS_NAME, MODE_PRIVATE), result.name);
-            if (entry != null && entry.conveneUrl != null) videos.add(entry.conveneUrl);
+            if (entry != null && entry.conveneUrl != null) {
+                // Diagnostic: shows the exact resolved URL being attempted, whether or not it
+                // ends up playing successfully (FloatingVideoOverlayService's own onError logs/
+                // toasts the failure separately if the request itself fails) — a Toast (not just
+                // Log) since this is meant to be checkable straight off the installed APK, no
+                // adb/logcat needed. Lets "the clip doesn't play" be checked directly (open the
+                // shown URL in a browser) instead of guessed at blind.
+                Log.i(TAG, "Attempting convene clip for " + result.name + ": " + entry.conveneUrl);
+                Toast.makeText(this, "Convene clip: " + entry.conveneUrl, Toast.LENGTH_LONG).show();
+                videos.add(entry.conveneUrl);
+            } else {
+                Log.i(TAG, "No convene roster entry for " + result.name + " (rarity " + result.rarity + ")");
+                Toast.makeText(this, "No convene roster entry for " + result.name, Toast.LENGTH_LONG).show();
+            }
         }
 
         Runnable reveal = () -> {
