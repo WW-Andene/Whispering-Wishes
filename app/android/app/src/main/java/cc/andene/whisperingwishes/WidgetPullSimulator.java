@@ -75,6 +75,26 @@ final class WidgetPullSimulator {
         }
     }
 
+    // Combines several independent roll()/rollStandard() calls into one displayable result —
+    // backs PullBubbleService's "Both" picks and long-press multi-select (rolling `count`
+    // against every pinned target rather than just one). Each part already advanced its own
+    // pity state correctly on its own (roll() keys pity by category, rollStandard() by
+    // "standard-"+category, so two parts sharing a category legitimately share pity, exactly
+    // matching the real game's own shared-pity-within-category behavior — see this file's own
+    // header comment) — this only concatenates the display results and picks the single
+    // biggest-rarity video to play, in call order when two parts tie on rarity.
+    static PullSimResult merge(List<PullSimResult> parts) {
+        List<PullResult> all = new ArrayList<>();
+        String video = "common";
+        int bestRarity = 0;
+        for (PullSimResult part : parts) {
+            all.addAll(part.results);
+            int rarity = "5star".equals(part.video) ? 5 : "4star".equals(part.video) ? 4 : 3;
+            if (rarity > bestRarity) { bestRarity = rarity; video = part.video; }
+        }
+        return new PullSimResult(all, video);
+    }
+
     private static final class NameType {
         final String name;
         final String type;

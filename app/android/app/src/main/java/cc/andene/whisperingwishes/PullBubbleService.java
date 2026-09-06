@@ -102,15 +102,25 @@ public class PullBubbleService extends Service {
     private enum ArcMode { ROLL, CATEGORY, LIST_CHARACTER, LIST_WEAPON, LIST_STANDARD }
     private ArcMode arcMode = ArcMode.ROLL;
 
-    // The current pin — null category = default (first active character banner, the same
-    // behavior a pre-picker roll always had). "character"/"weapon" + a specific pinName rolls
-    // WidgetPullSimulator.roll() against that exact active banner; "standard-character"/
-    // "standard-weapon" (pinName always null then) rolls rollStandard() instead — genuinely
-    // different math, not just another pinned name (see rollStandard's own comment). Only ONE
-    // of these is ever active, by construction (plain fields, not a set) — picking a new one
-    // always replaces whatever was pinned before.
-    private String pinnedCategory;
-    private String pinnedName;
+    // The current pin set — empty = default (first active character banner, the same behavior
+    // a pre-picker roll always had). Each Pin is "character"/"weapon" + a specific pinName
+    // (rolls WidgetPullSimulator.roll() against that exact active banner) or "standard-
+    // character"/"standard-weapon" with name always null (rolls rollStandard() instead —
+    // genuinely different math, see rollStandard's own comment). A normal tap on any option
+    // REPLACES the whole set with just that one pin (the original single-select behavior,
+    // preserved); the per-category "Both" option replaces it with exactly the two pins it
+    // represents; long-pressing an option in a Characters/Weapon banner list instead TOGGLES
+    // that one pin into/out of the existing set, which is what lets a Character banner and a
+    // Weapon banner (or more) be selected together across categories. rollAndPlay() rolls
+    // `count` against every pin in the set and merges the results (WidgetPullSimulator.merge).
+    private static final class Pin {
+        final String category, name, label;
+        Pin(String category, String name, String label) { this.category = category; this.name = name; this.label = label; }
+        // Two pins are "the same slot" if they share category+name — used to toggle a
+        // long-pressed option back off rather than adding a duplicate.
+        boolean sameSlot(Pin o) { return category.equals(o.category) && (name == null ? o.name == null : name.equals(o.name)); }
+    }
+    private final List<Pin> pinnedTargets = new ArrayList<>();
 
     // Drag-tracking state for the main bubble's own touch listener.
     private float touchDownRawX, touchDownRawY;
@@ -234,7 +244,11 @@ public class PullBubbleService extends Service {
     // own currency icons for exactly this distinction, not a generic placeholder.
     private void updateMainBubbleIcon() {
         if (mainBubbleIcon == null) return;
-        boolean standard = pinnedCategory != null && pinnedCategory.startsWith("standard");
+        // Any standard pin in the set flips to the Lustrous Tide icon — a mixed set (one
+        // standard pin + one limited pin) is an edge case with no single "correct" icon, so
+        // this just needs to be a deterministic, reasonable choice rather than a precise one.
+        boolean standard = false;
+        for (Pin p : pinnedTargets) if (p.category.startsWith("standard")) { standard = true; break; }
         String asset = standard ? "ui-icons/Currency-Lustrous-Tide.webp" : "ui-icons/Currency-Radiant-Tide.webp";
         Bitmap icon = WidgetAssetUtils.decodeAsset(this, asset, mainBubbleParams.width);
         if (icon != null) mainBubbleIcon.setImageBitmap(icon);
@@ -369,15 +383,29 @@ public class PullBubbleService extends Service {
             float density = getResources().getDisplayMetrics().density;
             int iconPx = (int) (SUB_BUBBLE_SIZE_DP * density * 0.85f);
             boolean framed = "character".equals(category);
-            double[] angles = midAngles(options.size());
+            // +1 slot for "Both" when there's more than one currently-active banner in this
+            // category to combine — a single-banner category has nothing for "Both" to mean.
+            boolean showBoth = options.size() > 1;
+            int slotCount = options.size() + (showBoth ? 1 : 0);
+            double[] angles = midAngles(slotCount);
             for (int i = 0; i < options.size(); i++) {
                 WidgetPullSimulator.BannerOption opt = options.get(i);
                 Bitmap icon = opt.artAsset == null ? null
                         : framed ? WidgetAssetUtils.decodeFramedIcon(this, opt.artAsset, iconPx, opt.framingZoom, opt.framingX, opt.framingY)
                                  : WidgetAssetUtils.decodeAsset(this, opt.artAsset, iconPx);
+                Pin pin = new Pin(category, opt.pinName, opt.label);
+                // Tap replaces the whole pin set with just this one (original single-select
+                // behavior); long-press toggles it into/out of the existing set instead, which
+                // is how a Character banner and a Weapon banner end up pinned together.
                 addSubBubble(opt.label, icon, 0, angles[i],
                         getString(R.string.pull_bubble_pin_aria, opt.label),
-                        () -> pinBanner(category, opt.pinName, opt.label));
+                        () -> pinBanner(pin),
+                        () -> toggleMultiPin(pin));
+            }
+            if (showBoth) {
+                addSubBubble(getString(R.string.pull_bubble_both), null, 0, angles[options.size()],
+                        getString(R.string.pull_bubble_both_aria),
+                        () -> pinBoth(category, options), null);
             }
         }
         addHideButton();
@@ -389,7 +417,7 @@ public class PullBubbleService extends Service {
     // directly — there's no further fourth level.
     private void showStandardArc() {
         addBackButton(() -> enterMode(ArcMode.CATEGORY));
-        double[] angles = midAngles(2);
+        double[] angles = midAngles(3);
         float density = getResources().getDisplayMetrics().density;
         // 16dp — same one-step-down PerfectSuite reduction as showRollArc()'s resonator icon.
         int iconPx = (int) (16 * density);
@@ -397,8 +425,12 @@ public class PullBubbleService extends Service {
         Bitmap weaponIcon = WidgetAssetUtils.decodeAsset(this, "navicon/Icon_Weapons.webp", iconPx);
         String charLabel = getString(R.string.pull_bubble_category_character);
         String weapLabel = getString(R.string.pull_bubble_category_weapon);
-        addSubBubble(null, resonatorIcon, 0, angles[0], charLabel, () -> pinBanner("standard-character", null, charLabel));
-        addSubBubble(null, weaponIcon, 0, angles[1], weapLabel, () -> pinBanner("standard-weapon", null, weapLabel));
+        Pin charPin = new Pin("standard-character", null, charLabel);
+        Pin weapPin = new Pin("standard-weapon", null, weapLabel);
+        addSubBubble(null, resonatorIcon, 0, angles[0], charLabel, () -> pinBanner(charPin), null);
+        addSubBubble(null, weaponIcon, 0, angles[1], weapLabel, () -> pinBanner(weapPin), null);
+        addSubBubble(getString(R.string.pull_bubble_both), null, 0, angles[2],
+                getString(R.string.pull_bubble_both_aria), () -> pinExact(charPin, weapPin), null);
         addHideButton();
     }
 
@@ -432,15 +464,58 @@ public class PullBubbleService extends Service {
         return centerX >= dm.widthPixels / 2;
     }
 
-    // Commits a pin (specific banner, or a whole Standard pool) and returns to the normal roll
-    // arc so the user can immediately tap ×1/×10/×80 against it — only one pin is ever active,
-    // by construction (plain fields get overwritten, never added to a set).
-    private void pinBanner(String category, String name, String label) {
-        pinnedCategory = category;
-        pinnedName = name;
+    // Commits a single pin (specific banner, or a whole Standard pool), REPLACING the whole pin
+    // set, and returns to the normal roll arc so the user can immediately tap ×1/×10/×80
+    // against it — the original single-select behavior, now expressed as a one-element set.
+    private void pinBanner(Pin pin) {
+        pinnedTargets.clear();
+        pinnedTargets.add(pin);
         updateMainBubbleIcon();
-        Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, label), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, pin.label), Toast.LENGTH_SHORT).show();
         enterMode(ArcMode.ROLL);
+    }
+
+    // "Both" within a Characters/Weapon banner list — replaces the pin set with one Pin per
+    // currently-active banner in that category, so a roll fires `count` against each of them
+    // and shows the combined results (see WidgetPullSimulator.merge's own comment on why
+    // sharing that category's pity between them is correct, not a bug).
+    private void pinBoth(String category, List<WidgetPullSimulator.BannerOption> options) {
+        pinnedTargets.clear();
+        for (WidgetPullSimulator.BannerOption opt : options) pinnedTargets.add(new Pin(category, opt.pinName, opt.label));
+        updateMainBubbleIcon();
+        Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, getString(R.string.pull_bubble_both)), Toast.LENGTH_SHORT).show();
+        enterMode(ArcMode.ROLL);
+    }
+
+    // "Both" on the Standard arc — the two fixed Standard pools are always exactly these two
+    // Pins, unlike pinBoth's dynamic per-category banner list above.
+    private void pinExact(Pin a, Pin b) {
+        pinnedTargets.clear();
+        pinnedTargets.add(a);
+        pinnedTargets.add(b);
+        updateMainBubbleIcon();
+        Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, getString(R.string.pull_bubble_both)), Toast.LENGTH_SHORT).show();
+        enterMode(ArcMode.ROLL);
+    }
+
+    // Long-press on a Characters/Weapon banner-list option: ADDS it to (or removes it from) the
+    // existing pin set instead of replacing it — this is what lets a Character banner and a
+    // Weapon banner end up pinned together for one combined roll. Stays on the same arc (no
+    // enterMode/collapse) so the user can keep long-pressing more options across categories by
+    // navigating back and into another category without losing what's already pinned.
+    private void toggleMultiPin(Pin pin) {
+        Pin existing = null;
+        for (Pin p : pinnedTargets) if (p.sameSlot(pin)) { existing = p; break; }
+        boolean added;
+        if (existing != null) {
+            pinnedTargets.remove(existing);
+            added = false;
+        } else {
+            pinnedTargets.add(pin);
+            added = true;
+        }
+        updateMainBubbleIcon();
+        Toast.makeText(this, getString(added ? R.string.pull_bubble_multi_pin_added : R.string.pull_bubble_multi_pin_removed, pin.label), Toast.LENGTH_SHORT).show();
     }
 
     // Collapses the arc and rolls — shared by the ×1/×10/×80 sub-bubbles, split out of their
@@ -456,7 +531,14 @@ public class PullBubbleService extends Service {
     // 0 = none) should be given; checked in that priority order. Passing null for `aria` is
     // fine too — content descriptions are optional.
     private void addSubBubble(String label, Bitmap icon, int iconRes, double angleDeg, String aria, Runnable onTap) {
-        addSubBubble(label, icon, iconRes, 8f, 0f, angleDeg, aria, onTap);
+        addSubBubble(label, icon, iconRes, 8f, 0f, angleDeg, aria, onTap, null);
+    }
+
+    // Long-press variant — used by the Characters/Weapon banner-list arc (long-press toggles a
+    // banner into/out of the existing multi-pin set instead of replacing it) and the "Both"
+    // sub-bubbles (no long-press of their own, so callers pass null there).
+    private void addSubBubble(String label, Bitmap icon, int iconRes, double angleDeg, String aria, Runnable onTap, Runnable onLongTap) {
+        addSubBubble(label, icon, iconRes, 8f, 0f, angleDeg, aria, onTap, onLongTap);
     }
 
     // iconRotationDeg only applies to the iconRes (vector drawable) branch — used to point a
@@ -464,12 +546,13 @@ public class PullBubbleService extends Service {
     // restore tab, see addHideButton/showHiddenTab) instead of needing a separate drawable per
     // direction.
     private void addSubBubble(String label, Bitmap icon, int iconRes, float iconRotationDeg, double angleDeg, String aria, Runnable onTap) {
-        addSubBubble(label, icon, iconRes, 8f, iconRotationDeg, angleDeg, aria, onTap);
+        addSubBubble(label, icon, iconRes, 8f, iconRotationDeg, angleDeg, aria, onTap, null);
     }
 
     // textSizeSp only applies to the plain-label (no icon) branch — ×1/×10/×80 want a bigger
-    // 12sp than every other text sub-bubble (category names, banner-list labels).
-    private void addSubBubble(String label, Bitmap icon, int iconRes, float textSizeSp, float iconRotationDeg, double angleDeg, String aria, Runnable onTap) {
+    // 12sp than every other text sub-bubble (category names, banner-list labels). `onLongTap`
+    // is null for every sub-bubble except the Characters/Weapon banner-list options above.
+    private void addSubBubble(String label, Bitmap icon, int iconRes, float textSizeSp, float iconRotationDeg, double angleDeg, String aria, Runnable onTap, Runnable onLongTap) {
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (SUB_BUBBLE_SIZE_DP * density);
 
@@ -521,6 +604,9 @@ public class PullBubbleService extends Service {
 
         root.setTag(new SubBubbleTag(params, angleDeg));
         root.setOnClickListener(v -> onTap.run());
+        if (onLongTap != null) {
+            root.setOnLongClickListener(v -> { onLongTap.run(); return true; });
+        }
 
         windowManager.addView(root, params);
         subBubbles.add(root);
@@ -707,18 +793,28 @@ public class PullBubbleService extends Service {
         // pending auto-archive timer from the PREVIOUS roll so rapid re-rolls don't stack
         // multiple timers that all fire later.
         handler.removeCallbacks(autoArchiveRunnable);
+        // An empty pin set (never pinned yet this session) rolls the same single default
+        // character-category roll a pre-picker roll always did — everything else rolls `count`
+        // against EVERY pinned target and merges the results (WidgetPullSimulator.merge).
+        List<Pin> targets = pinnedTargets.isEmpty()
+                ? java.util.Collections.singletonList(new Pin("character", null, null))
+                : pinnedTargets;
         WidgetPullSimulator.PullSimResult sim;
         try {
-            if (pinnedCategory != null && pinnedCategory.startsWith("standard")) {
-                String subCategory = "standard-weapon".equals(pinnedCategory) ? "weapon" : "character";
-                sim = WidgetPullSimulator.rollStandard(this, subCategory, count);
-            } else {
-                // "weapon" pin rolls that category's pinned banner; anything else (null =
-                // default, or "character") rolls the character category — pinnedName is null
-                // for the default case, matching the pre-picker behavior exactly.
-                String category = "weapon".equals(pinnedCategory) ? "weapon" : "character";
-                sim = WidgetPullSimulator.roll(this, category, pinnedName, count);
+            List<WidgetPullSimulator.PullSimResult> parts = new ArrayList<>();
+            for (Pin pin : targets) {
+                if (pin.category.startsWith("standard")) {
+                    String subCategory = "standard-weapon".equals(pin.category) ? "weapon" : "character";
+                    parts.add(WidgetPullSimulator.rollStandard(this, subCategory, count));
+                } else {
+                    // "weapon" pin rolls that category's pinned banner; anything else (null =
+                    // default, or "character") rolls the character category — pin.name is null
+                    // for the default case, matching the pre-picker behavior exactly.
+                    String category = "weapon".equals(pin.category) ? "weapon" : "character";
+                    parts.add(WidgetPullSimulator.roll(this, category, pin.name, count));
+                }
             }
+            sim = WidgetPullSimulator.merge(parts);
         } catch (Throwable t) {
             Log.w(TAG, "Pull roll failed", t);
             return;

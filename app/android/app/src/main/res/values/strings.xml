@@ -77,6 +77,10 @@
     <string name="pull_bubble_category_standard">Standard</string>
     <string name="pull_bubble_pin_aria">Pull from %1$s\'s banner</string>
     <string name="pull_bubble_pinned_toast">Pinned to %1$s</string>
+    <string name="pull_bubble_both">Both</string>
+    <string name="pull_bubble_both_aria">Pull from both at once</string>
+    <string name="pull_bubble_multi_pin_added">Added %1$s — will roll alongside your other pins</string>
+    <string name="pull_bubble_multi_pin_removed">Removed %1$s from your pins</string>
     <string name="pull_bubble_back_aria">Back</string>
     <string name="pull_bubble_hide_aria">Hide Pocket Convene (tap the small tab to bring it back)</string>
     <string name="pull_bubble_restore_aria">Show Pocket Convene</string>
