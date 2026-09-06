@@ -79,6 +79,47 @@ export function getPlateauChance(stat, minTierIdx) {
 // See Data dump/Echoes/Data Bank.md.
 export const TACET_FIELD_WAVEPLATE_COST = 60;
 
+// ── Data Bank Level table (Data dump/Echoes/Data Bank.md) — rarity split changes drastically
+// by level and swings back down for lower rarities as they age out of the pool (e.g. 4★ peaks
+// at 80% around level 19-20, then drops to 0% at endgame once the pool becomes 100% 5★), so a
+// target's real rarity chance genuinely depends on which level the player is farming at — it
+// must be an input, never assumed. rarity: { 2, 3, 4, 5 } percentages sum to 100 at each level
+// (blank cells in the source table are 0 — that rarity isn't in the pool yet/anymore).
+export const DATA_BANK_LEVELS = [
+  { level: 0, baseDropRate: 6, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 1, baseDropRate: 10, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 2, baseDropRate: 10, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 3, baseDropRate: 10, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 4, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 5, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 70, 3: 30, 4: 0, 5: 0 } },
+  { level: 6, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 50, 3: 50, 4: 0, 5: 0 } },
+  { level: 7, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 20, 3: 80, 4: 0, 5: 0 } },
+  { level: 8, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
+  { level: 9, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
+  { level: 10, baseDropRate: 20, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
+  { level: 11, baseDropRate: 20, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 50, 4: 50, 5: 0 } },
+  { level: 12, baseDropRate: 20, cost4Enhanced: 50, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 50, 4: 50, 5: 0 } },
+  { level: 13, baseDropRate: 20, cost4Enhanced: 50, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 25, 4: 75, 5: 0 } },
+  { level: 14, baseDropRate: 20, cost4Enhanced: 60, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 25, 4: 75, 5: 0 } },
+  { level: 15, baseDropRate: 20, cost4Enhanced: 60, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 70, 5: 30 } },
+  { level: 16, baseDropRate: 20, cost4Enhanced: 80, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 70, 5: 30 } },
+  { level: 17, baseDropRate: 20, cost4Enhanced: 80, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 50, 5: 50 } },
+  { level: 18, baseDropRate: 20, cost4Enhanced: 90, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 50, 5: 50 } },
+  { level: 19, baseDropRate: 20, cost4Enhanced: 90, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 20, 5: 80 } },
+  { level: 20, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 20, 5: 80 } },
+  { level: 21, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 22, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 23, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 24, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 25, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 26, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 27, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 28, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 29, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 30, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+];
+export const MAX_DATA_BANK_LEVEL = 30;
+
 // Endgame (max Data Bank level / Union Level 70, SOL3 Phase 8) average yield per Tacet Field
 // run — the community-sampled row with by far the largest sample size (1697 runs) in
 // Data dump/Echoes/Drop Rates.md's Tacet Field table. Used as the default farming-rate

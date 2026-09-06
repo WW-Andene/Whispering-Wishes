@@ -30,6 +30,7 @@ import {
   ECHO_MAIN_STAT_CHANCE, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
   PLATEAU_TIERS, getPlateauChance, TACET_FIELD_WAVEPLATE_COST, TACET_FIELD_ENDGAME_YIELD,
   ECHO_LEVEL_CUMULATIVE_EXP, ECHO_MAX_LEVEL_BY_RARITY, SHELL_CREDIT_PER_ECHO_EXP, SHELL_CREDIT_PER_TUNE_ATTEMPT,
+  DATA_BANK_LEVELS, MAX_DATA_BANK_LEVEL,
 } from '../../data/echoFarmingData.js';
 import { t } from '../../utils/i18n.js';
 
@@ -83,6 +84,7 @@ const DEFAULT_STATE = {
   echoName: '',
   rarity: 5,
   level: 25,
+  dataBankLevel: MAX_DATA_BANK_LEVEL,
   mainStats: [],
   secondaryStats: [],
   substats: [0, 1, 2, 3, 4].map(() => ({ stats: [], minTier: 0 })),
@@ -136,13 +138,22 @@ export default function EchoFarmPlanner() {
   };
   const substatChances = cfg.substats.map((slot, i) => substatRowChance(i, slot));
 
-  const unifiedChance = [mainChance, secondaryChance, ...substatChances].reduce((a, b) => a * b, 1);
+  // Rarity chance — real Data Bank Level input, not assumed. Rarity split swings hard by level
+  // (e.g. 4★ peaks at 80% around level 19-20, then falls to 0% at endgame once the pool becomes
+  // 100% 5★), so this is a required, user-set factor, not a constant. 0% means the chosen
+  // rarity simply isn't obtainable at this level at all (still in the pool, or aged out of it).
+  const dbLevelRow = DATA_BANK_LEVELS[Math.min(cfg.dataBankLevel, MAX_DATA_BANK_LEVEL)];
+  const rarityChance = (dbLevelRow.rarity[cfg.rarity] || 0) / 100;
+
+  const unifiedChance = [mainChance, secondaryChance, rarityChance, ...substatChances].reduce((a, b) => a * b, 1);
   const expectedInstances = unifiedChance > 0 ? Math.ceil(1 / unifiedChance) : null;
 
   // ── Resource estimates ──
   // Waveplate only applies via Tacet Field (cost 4 never uses it — bosses cost no Waveplate at
   // all, and this calculator doesn't model a specific boss's other resource costs since Drop
-  // Rates.md's boss tables aren't broken down by target Echo/set either).
+  // Rates.md's boss tables aren't broken down by target Echo/set either). TACET_FIELD_ENDGAME_
+  // YIELD's avgEchoesPerRun is already "echoes of any rarity" — rarityChance above narrows the
+  // unifiedChance to the target rarity specifically, so this doesn't double-count it.
   const runsNeeded = cfg.tacetField && expectedInstances != null ? Math.ceil(expectedInstances / TACET_FIELD_ENDGAME_YIELD.avgEchoesPerRun) : null;
   const waveplateNeeded = runsNeeded != null ? runsNeeded * TACET_FIELD_WAVEPLATE_COST : 0;
   const dropShellNeeded = runsNeeded != null ? runsNeeded * TACET_FIELD_ENDGAME_YIELD.avgShellCreditPerRun : 0;
@@ -205,6 +216,26 @@ export default function EchoFarmPlanner() {
                 {'★'.repeat(r)}
               </button>
             ))}
+          </div>
+
+          {/* Data Bank Level — a real input, never assumed: the rarity split changes drastically
+              by level (Data dump/Echoes/Data Bank.md), so the chance of a given rarity dropping
+              at all depends entirely on this. rarityChance below shows exactly what the chosen
+              Rarity+Level combo yields, including 0% when that rarity has aged out of the pool
+              (e.g. targeting 2★-4★ at endgame level, where the pool is 100% 5★). */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="kuro-section-label">{t('planner.echoFarm.dataBankLevel')}</span>
+              <span className="text-sm font-bold text-white kuro-number">{cfg.dataBankLevel}</span>
+            </div>
+            <input type="range" min={0} max={MAX_DATA_BANK_LEVEL} step={1} value={cfg.dataBankLevel}
+              onChange={e => setCfg(p => ({ ...p, dataBankLevel: Number(e.target.value) }))}
+              className="w-full accent-yellow-500" aria-label={t('planner.echoFarm.dataBankLevel')} />
+            <div className="flex items-center justify-between text-2xs">
+              <span className="text-gray-500">{t('planner.echoFarm.rarityChanceAtLevel', { rarity: cfg.rarity })}</span>
+              <span className={rarityChance > 0 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold'}>{(rarityChance * 100).toFixed(0)}%</span>
+            </div>
+            {rarityChance === 0 && <div className="text-2xs text-red-400">{t('planner.echoFarm.rarityNotObtainable')}</div>}
           </div>
 
           {/* Target Echo — real portrait, rank, and its actual Sonata Set(s), derived rather
