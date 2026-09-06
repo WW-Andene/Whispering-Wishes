@@ -391,8 +391,12 @@ public class PullBubbleService extends Service {
     // or the app simply hasn't been opened since one went live.
     // Extra radius (beyond the standard arc gap) the Character list's "Both" bubble floats out
     // by, so it visibly sits ABOVE the first two banner bubbles (a pyramid apex) rather than
-    // overlapping them — one PerfectSuite primary step.
-    private static final int BOTH_PYRAMID_EXTRA_RADIUS_DP = 32;
+    // overlapping them. At the previous value (32dp) the apex bubble's center-to-center distance
+    // to each of banner1/banner2 (~43.2dp) was actually LESS than the sum of their radii (44dp,
+    // both bubbles being SUB_BUBBLE_SIZE_DP) — a real, measured overlap, not just a visual
+    // near-miss. 48dp (PerfectSuite secondary step) puts that distance at ~57.4dp, ~13dp of
+    // clear edge-to-edge padding.
+    private static final int BOTH_PYRAMID_EXTRA_RADIUS_DP = 48;
 
     private void showBannerListArc(String category) {
         addBackButton(() -> enterMode(ArcMode.CATEGORY));
