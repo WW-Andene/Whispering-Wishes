@@ -30,7 +30,7 @@ import {
   ECHO_MAIN_STAT_CHANCE, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
   PLATEAU_TIERS, getPlateauChance, TACET_FIELD_WAVEPLATE_COST, TACET_FIELD_ENDGAME_YIELD,
   ECHO_LEVEL_CUMULATIVE_EXP, ECHO_MAX_LEVEL_BY_RARITY, SHELL_CREDIT_PER_ECHO_EXP, SHELL_CREDIT_PER_TUNE_ATTEMPT,
-  DATA_BANK_LEVELS, MAX_DATA_BANK_LEVEL,
+  DATA_BANK_LEVELS, MAX_DATA_BANK_LEVEL, getSealedTubeBreakdown,
 } from '../../data/echoFarmingData.js';
 import { t, getPluralForm } from '../../utils/i18n.js';
 
@@ -169,6 +169,7 @@ export default function EchoFarmPlanner() {
   // its Shell Credit equivalent (Echo Leveling.md's own disclosed 0.1 Shell/EXP rate). ──
   const levelingExp = ECHO_LEVEL_CUMULATIVE_EXP[cfg.rarity]?.[cfg.level] ?? 0;
   const levelingShell = Math.round(levelingExp * SHELL_CREDIT_PER_ECHO_EXP);
+  const tubeBreakdown = getSealedTubeBreakdown(levelingExp);
 
   const totalShellNeeded = dropShellNeeded + tuneShellCost + levelingShell;
 
@@ -348,6 +349,11 @@ export default function EchoFarmPlanner() {
             <div className="text-2xs text-gray-500 space-y-0.5">
               {!cfg.tacetField && <div>{t('planner.echoFarm.noTacetNote')}</div>}
               <div>{t('planner.echoFarm.levelingCostNote', { exp: levelingExp.toLocaleString(), shell: levelingShell.toLocaleString() })}</div>
+              {tubeBreakdown.length > 0 && (
+                <div>{t('planner.echoFarm.tubeBreakdown', {
+                  tubes: tubeBreakdown.map(({ tier, count }) => t('planner.echoFarm.tubeCount', { count, tier: t(`planner.echoFarm.tube${tier}`) })).join(' + '),
+                })}</div>
+              )}
             </div>
           </div>
         </CardBody>

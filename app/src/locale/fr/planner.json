@@ -139,7 +139,13 @@
     "tuners": "Régleurs",
     "notApplicable": "N/A",
     "noTacetNote": "Farmer hors Champ Tacite ne coûte pas de Points d'Onde.",
-    "levelingCostNote": "Monter à ce niveau coûte {{exp}} EXP (≈{{shell}} Crédits Coquille)."
+    "levelingCostNote": "Monter à ce niveau coûte {{exp}} EXP (≈{{shell}} Crédits Coquille).",
+    "tubeBreakdown": "≈ {{tubes}}",
+    "tubeCount": "{{count}}× {{tier}}",
+    "tubePremium": "Tube Scellé Premium",
+    "tubeAdvanced": "Tube Scellé Avancé",
+    "tubeMedium": "Tube Scellé Moyen",
+    "tubeBasic": "Tube Scellé Basique"
   },
 
   "calendar": {

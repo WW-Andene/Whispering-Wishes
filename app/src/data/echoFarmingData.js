@@ -148,3 +148,23 @@ export const ECHO_MAX_LEVEL_BY_RARITY = { 2: 10, 3: 15, 4: 20, 5: 25 };
 // Shell Credit conversion — wiki's own disclosed rate, same source as the EXP table above.
 export const SHELL_CREDIT_PER_ECHO_EXP = 0.1;
 export const SHELL_CREDIT_PER_TUNE_ATTEMPT = 2000;
+// EXP granted per Sealed Tube tier (Echo Development Material) — same source as the leveling
+// table above. Highest-value tier first: greedy tube-count breakdowns (see
+// getSealedTubeBreakdown below) walk this order so they favor fewer, bigger tubes.
+export const SEALED_TUBE_EXP = { Premium: 5000, Advanced: 2000, Medium: 1000, Basic: 500 };
+
+// Greedy Premium→Basic breakdown of how many of each Sealed Tube tier covers a given amount of
+// EXP — shown alongside the raw EXP/Shell Credit numbers so leveling cost reads as something
+// you can actually go buy/farm, not just an abstract point total. Real inventories won't split
+// a tube, so any leftover remainder rounds up into one more of the smallest tier used.
+export function getSealedTubeBreakdown(exp) {
+  const tiers = Object.entries(SEALED_TUBE_EXP);
+  let remaining = exp;
+  const counts = tiers.map(([tier, value], i) => {
+    const isLast = i === tiers.length - 1;
+    const count = isLast ? Math.ceil(remaining / value) : Math.floor(remaining / value);
+    remaining -= count * value;
+    return { tier, count };
+  });
+  return counts.filter(({ count }) => count > 0);
+}
