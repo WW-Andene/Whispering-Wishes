@@ -140,7 +140,6 @@
     "notApplicable": "N/A",
     "noTacetNote": "Farming outside Tacet Field doesn't cost Waveplate.",
     "levelingCostNote": "Leveling to this level costs {{exp}} EXP (≈{{shell}} Shell Credit).",
-    "tubeBreakdown": "≈ {{tubes}}",
     "tubeCount": "{{count}}× {{tier}}",
     "tubePremium": "Premium Sealed Tube",
     "tubeAdvanced": "Advanced Sealed Tube",

@@ -201,6 +201,17 @@ const MATERIAL_IMAGES = {
   'Skyward Glazed Heart': './materials/forgery/FLn7WRQ2-Skyward-Glazed-Heart.webp',
   "Solidarity's Loneflame": './materials/forgery/YBhv4RYk-Solidaritys-Loneflame.webp',
   'We Who Question': './materials/forgery/G3Jd0prs-We-Who-Question.webp',
+  // === Echo Leveling Materials (Sealed Tubes — EXP — and Tuners — substat unlocks) ===
+  // See Data dump/Echoes/Echo Leveling.md for the EXP-per-tier table these back
+  // (EchoFarmPlanner.jsx's Sealed Tube breakdown). No "Basic Tuner" tier exists in-game
+  // (unlike Sealed Tubes, which run Basic through Premium) — only Medium/Advanced/Premium.
+  'Basic Sealed Tube': './materials/echo-leveling/Icon-Basic-Sealed-Tube.webp',
+  'Medium Sealed Tube': './materials/echo-leveling/Icon-Medium-Sealed-Tube.webp',
+  'Advanced Sealed Tube': './materials/echo-leveling/Icon-Advanced-Sealed-Tube.webp',
+  'Premium Sealed Tube': './materials/echo-leveling/Icon-Premium-Sealed-Tube.webp',
+  'Medium Tuner': './materials/echo-leveling/Icon-Medium-Tuner.webp',
+  'Advanced Tuner': './materials/echo-leveling/Icon-Advanced-Tuner.webp',
+  'Premium Tuner': './materials/echo-leveling/Icon-Premium-Tuner.webp',
 };
 
 // [SECTION:COMMON_MAT_TIERS] — Maps common material family name → [tier1, tier2, tier3, tier4] names
