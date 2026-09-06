@@ -356,18 +356,18 @@ public class PullBubbleService extends Service {
         showSubBubbles();
     }
 
-    // Second level: Characters / Weapon / Standard / All, replacing ×1/×10/×80 in the same
-    // middle slots — banner-picker's own top slot becomes a back arrow instead of the resonator
-    // icon while navigating any sub-level, hide stays put at the bottom regardless of level.
-    // "All" pins directly (no further sub-level, same as Standard's two fixed picks) since it's
-    // not tied to any specific active banner — it's the whole historical character roster.
+    // Second level: Characters / Weapon / Standard, replacing ×1/×10/×80 in the same middle
+    // slots — banner-picker's own top slot becomes a back arrow instead of the resonator icon
+    // while navigating any sub-level, hide stays put at the bottom regardless of level. "All"
+    // lives inside the Characters list itself (showBannerListArc), not here — it's the whole
+    // historical character roster, not tied to any active banner, but still a character-only
+    // concept with no weapon/standard equivalent.
     private void showCategoryArc() {
         addBackButton(() -> enterMode(ArcMode.ROLL));
-        double[] angles = midAngles(4);
+        double[] angles = midAngles(3);
         addSubBubble(getString(R.string.pull_bubble_category_character), null, 0, angles[0], null, () -> enterMode(ArcMode.LIST_CHARACTER));
         addSubBubble(getString(R.string.pull_bubble_category_weapon), null, 0, angles[1], null, () -> enterMode(ArcMode.LIST_WEAPON));
         addSubBubble(getString(R.string.pull_bubble_category_standard), null, 0, angles[2], null, () -> enterMode(ArcMode.LIST_STANDARD));
-        addSubBubble(getString(R.string.pull_bubble_category_all), null, 0, angles[3], null, this::pinAllCharacters);
         addHideButton();
     }
 
@@ -389,6 +389,11 @@ public class PullBubbleService extends Service {
     // this floating bubble, running with no app process backing it, to pull fresher banner data
     // on its own. An empty list here means either no active banner in this category right now,
     // or the app simply hasn't been opened since one went live.
+    // Extra radius (beyond the standard arc gap) the Character list's "Both" bubble floats out
+    // by, so it visibly sits ABOVE the first two banner bubbles (a pyramid apex) rather than
+    // overlapping them — one PerfectSuite primary step.
+    private static final int BOTH_PYRAMID_EXTRA_RADIUS_DP = 32;
+
     private void showBannerListArc(String category) {
         addBackButton(() -> enterMode(ArcMode.CATEGORY));
         List<WidgetPullSimulator.BannerOption> options = WidgetPullSimulator.listBannerOptions(
@@ -398,17 +403,20 @@ public class PullBubbleService extends Service {
         } else {
             float density = getResources().getDisplayMetrics().density;
             int iconPx = (int) (SUB_BUBBLE_SIZE_DP * density * 0.85f);
-            boolean framed = "character".equals(category);
-            // +1 slot for "Both" when there's more than one currently-active banner in this
-            // category to combine — a single-banner category has nothing for "Both" to mean.
+            boolean isCharacter = "character".equals(category);
             boolean showBoth = options.size() > 1;
-            int slotCount = options.size() + (showBoth ? 1 : 0);
+            // Characters: the last inline slot is "All" (every character ever, no 50-50) instead
+            // of "Both" — "Both" instead floats above/between the first two banner bubbles as a
+            // separate, elevated pyramid-apex bubble (see BOTH_PYRAMID_EXTRA_RADIUS_DP). Weapon
+            // keeps the original layout unchanged: "Both" stays inline, no "All" at all — "All"
+            // is specifically the full historical CHARACTER roster, it has no weapon equivalent.
+            int slotCount = options.size() + (isCharacter ? 1 : (showBoth ? 1 : 0));
             double[] angles = midAngles(slotCount);
             for (int i = 0; i < options.size(); i++) {
                 WidgetPullSimulator.BannerOption opt = options.get(i);
                 Bitmap icon = opt.artAsset == null ? null
-                        : framed ? WidgetAssetUtils.decodeFramedIcon(this, opt.artAsset, iconPx, opt.framingZoom, opt.framingX, opt.framingY)
-                                 : WidgetAssetUtils.decodeAsset(this, opt.artAsset, iconPx);
+                        : isCharacter ? WidgetAssetUtils.decodeFramedIcon(this, opt.artAsset, iconPx, opt.framingZoom, opt.framingX, opt.framingY)
+                                      : WidgetAssetUtils.decodeAsset(this, opt.artAsset, iconPx);
                 Pin pin = new Pin(category, opt.pinName, opt.label);
                 // Tap replaces the whole pin set with just this one (original single-select
                 // behavior); long-press toggles it into/out of the existing set instead, which
@@ -418,7 +426,19 @@ public class PullBubbleService extends Service {
                         () -> pinBanner(pin),
                         () -> toggleMultiPin(pin));
             }
-            if (showBoth) {
+            if (isCharacter) {
+                addSubBubble(getString(R.string.pull_bubble_category_all), null, 0, angles[options.size()],
+                        null, this::pinAllCharacters, null);
+                if (showBoth) {
+                    // Pyramid apex — angularly centered between the first two banner bubbles
+                    // (angles[0]/angles[1]), floated out by the extra radius so it visibly reads
+                    // as a second row above them rather than a third bubble in the same row.
+                    double apexAngle = (angles[0] + angles[1]) / 2.0;
+                    int extraRadiusPx = (int) (BOTH_PYRAMID_EXTRA_RADIUS_DP * density);
+                    addSubBubble(getString(R.string.pull_bubble_both), null, 0, apexAngle, extraRadiusPx,
+                            getString(R.string.pull_bubble_both_aria), () -> pinBoth(category, options));
+                }
+            } else if (showBoth) {
                 addSubBubble(getString(R.string.pull_bubble_both), null, 0, angles[options.size()],
                         getString(R.string.pull_bubble_both_aria),
                         () -> pinBoth(category, options), null);
@@ -570,7 +590,14 @@ public class PullBubbleService extends Service {
     // banner into/out of the existing multi-pin set instead of replacing it) and the "Both"
     // sub-bubbles (no long-press of their own, so callers pass null there).
     private void addSubBubble(String label, Bitmap icon, int iconRes, double angleDeg, String aria, Runnable onTap, Runnable onLongTap) {
-        addSubBubble(label, icon, iconRes, 8f, 0f, angleDeg, aria, onTap, onLongTap);
+        addSubBubble(label, icon, iconRes, 8f, 0f, angleDeg, 0, aria, onTap, onLongTap);
+    }
+
+    // Elevated variant (extraRadiusPx > 0) — the Character banner list's "Both" bubble, floated
+    // further out than the standard arc radius so it sits above/between the first two banner
+    // bubbles like a pyramid apex (see SubBubbleTag's own header).
+    private void addSubBubble(String label, Bitmap icon, int iconRes, double angleDeg, int extraRadiusPx, String aria, Runnable onTap) {
+        addSubBubble(label, icon, iconRes, 8f, 0f, angleDeg, extraRadiusPx, aria, onTap, null);
     }
 
     // iconRotationDeg only applies to the iconRes (vector drawable) branch — used to point a
@@ -591,6 +618,14 @@ public class PullBubbleService extends Service {
     // 12sp than every other text sub-bubble (category names, banner-list labels). `onLongTap`
     // is null for every sub-bubble except the Characters/Weapon banner-list options above.
     private void addSubBubble(String label, Bitmap icon, int iconRes, float textSizeSp, float iconRotationDeg, double angleDeg, String aria, Runnable onTap, Runnable onLongTap) {
+        addSubBubble(label, icon, iconRes, textSizeSp, iconRotationDeg, angleDeg, 0, aria, onTap, onLongTap);
+    }
+
+    // Full impl with extraRadiusPx — floats a bubble further out than the standard arc radius
+    // (see SubBubbleTag's own header for why: the Character banner list's "Both" bubble sits
+    // above/between the first two banner bubbles, pyramid-apex style, instead of inline with
+    // them in the normal single-arc sequence).
+    private void addSubBubble(String label, Bitmap icon, int iconRes, float textSizeSp, float iconRotationDeg, double angleDeg, int extraRadiusPx, String aria, Runnable onTap, Runnable onLongTap) {
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (SUB_BUBBLE_SIZE_DP * density);
 
@@ -638,9 +673,9 @@ public class PullBubbleService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
-        positionSubBubbleArc(params, angleDeg, mainBubbleParams.width, sizePx);
+        positionSubBubbleArc(params, angleDeg, mainBubbleParams.width, sizePx, extraRadiusPx);
 
-        root.setTag(new SubBubbleTag(params, angleDeg));
+        root.setTag(new SubBubbleTag(params, angleDeg, extraRadiusPx));
         root.setOnClickListener(v -> onTap.run());
         if (onLongTap != null) {
             root.setOnLongClickListener(v -> { onLongTap.run(); return true; });
@@ -652,21 +687,32 @@ public class PullBubbleService extends Service {
 
     // Bundles a sub-bubble's own LayoutParams with the angle it's arc-positioned at, so
     // repositionSubBubbles() (fired on every drag frame) can recompute around the main
-    // bubble's new location without needing a second parallel list.
+    // bubble's new location without needing a second parallel list. extraRadiusPx (default 0)
+    // pushes a bubble further out than the standard single-arc radius — used for the Character
+    // banner list's "Both" bubble, floated above/between the first two banner bubbles like a
+    // pyramid apex instead of sitting inline in the normal arc sequence with them.
     private static final class SubBubbleTag {
         final WindowManager.LayoutParams params;
         final double angleDeg;
-        SubBubbleTag(WindowManager.LayoutParams params, double angleDeg) { this.params = params; this.angleDeg = angleDeg; }
+        final int extraRadiusPx;
+        SubBubbleTag(WindowManager.LayoutParams params, double angleDeg) { this(params, angleDeg, 0); }
+        SubBubbleTag(WindowManager.LayoutParams params, double angleDeg, int extraRadiusPx) {
+            this.params = params; this.angleDeg = angleDeg; this.extraRadiusPx = extraRadiusPx;
+        }
     }
 
     // Places a sub-bubble on the arc around the main bubble at angleDeg (standard math
     // convention: 0° = right, 90° = up, increasing counterclockwise) — radius is just far
     // enough that the two bubbles' edges sit a small gap apart, same spacing the old straight
-    // stack used.
+    // stack used, plus extraRadiusPx for a bubble floated further out (see SubBubbleTag above).
     private void positionSubBubbleArc(WindowManager.LayoutParams params, double angleDeg, int mainSizePx, int subSizePx) {
+        positionSubBubbleArc(params, angleDeg, mainSizePx, subSizePx, 0);
+    }
+
+    private void positionSubBubbleArc(WindowManager.LayoutParams params, double angleDeg, int mainSizePx, int subSizePx, int extraRadiusPx) {
         float density = getResources().getDisplayMetrics().density;
         int gap = (int) (10 * density);
-        int radius = mainSizePx / 2 + gap + subSizePx / 2;
+        int radius = mainSizePx / 2 + gap + subSizePx / 2 + extraRadiusPx;
         double rad = Math.toRadians(angleDeg);
         int dx = (int) Math.round(radius * Math.cos(rad));
         int dy = (int) Math.round(-radius * Math.sin(rad)); // screen Y grows downward — "up" is negative dy
@@ -677,7 +723,7 @@ public class PullBubbleService extends Service {
     private void repositionSubBubbles() {
         for (View v : subBubbles) {
             SubBubbleTag tag = (SubBubbleTag) v.getTag();
-            positionSubBubbleArc(tag.params, tag.angleDeg, mainBubbleParams.width, tag.params.width);
+            positionSubBubbleArc(tag.params, tag.angleDeg, mainBubbleParams.width, tag.params.width, tag.extraRadiusPx);
             windowManager.updateViewLayout(v, tag.params);
         }
     }
@@ -1162,6 +1208,9 @@ public class PullBubbleService extends Service {
         pocketBadge.setBackground(circleDrawable("#FFEF4444", "#FFFFFFFF"));
         FrameLayout.LayoutParams badgeParams = new FrameLayout.LayoutParams(badgeSizePx, badgeSizePx);
         badgeParams.gravity = Gravity.TOP | Gravity.END;
+        int badgeMarginPx = (int) (4 * density);
+        badgeParams.topMargin = badgeMarginPx;
+        badgeParams.rightMargin = badgeMarginPx;
         root.addView(pocketBadge, badgeParams);
         root.setContentDescription(getString(R.string.pull_bubble_pocket_aria));
 
@@ -1482,6 +1531,16 @@ public class PullBubbleService extends Service {
         pocketPanel = null;
     }
 
+    // One same-named group of pulls in the pocket panel — see showPocketPanel's own grouping
+    // comment for why (avoids one tile per pull for a stacked item).
+    private static final class PocketGroup {
+        final WidgetPullSimulator.PullResult representative;
+        int count;
+        PocketGroup(WidgetPullSimulator.PullResult representative, int count) {
+            this.representative = representative; this.count = count;
+        }
+    }
+
     // A small scrollable card listing EVERY pull this session (allPulledResults, not just the
     // still-visible individual tiles) — small rarity-ringed thumbnails in a wrapped grid, tap
     // the ✕ or the pocket again to dismiss.
@@ -1524,8 +1583,21 @@ public class PullBubbleService extends Service {
         int perRow = 6;
         int tileSizePx = (int) (32 * density);
         int tileGap = (int) (4 * density);
+        // Groups every pull of the SAME named item into one tile with an "x{count}" badge
+        // instead of one tile per pull — a long session (many ×80 rolls) could otherwise mean
+        // hundreds of duplicate tiles in this panel alone, on top of the already-capped floating
+        // tiles (MAX_TOTAL_TILE_WINDOWS above). A null-name result (rare — only when a sourced
+        // pool was empty) can't be meaningfully grouped, so it stays its own ungrouped entry.
+        List<PocketGroup> groups = new ArrayList<>();
+        Map<String, PocketGroup> byName = new HashMap<>();
+        for (WidgetPullSimulator.PullResult r : allPulledResults) {
+            if (r.name == null) { groups.add(new PocketGroup(r, 1)); continue; }
+            PocketGroup existing = byName.get(r.name);
+            if (existing != null) existing.count++;
+            else { PocketGroup g = new PocketGroup(r, 1); byName.put(r.name, g); groups.add(g); }
+        }
         LinearLayout row = null;
-        for (int i = 0; i < allPulledResults.size(); i++) {
+        for (int i = 0; i < groups.size(); i++) {
             if (i % perRow == 0) {
                 row = new LinearLayout(this);
                 row.setOrientation(LinearLayout.HORIZONTAL);
@@ -1533,7 +1605,8 @@ public class PullBubbleService extends Service {
                 rowLp.topMargin = tileGap;
                 grid.addView(row, rowLp);
             }
-            WidgetPullSimulator.PullResult r = allPulledResults.get(i);
+            PocketGroup group = groups.get(i);
+            WidgetPullSimulator.PullResult r = group.representative;
             FrameLayout tile = new FrameLayout(this);
             tile.setBackground(circleDrawable("#40000000", rarityHex(r.rarity)));
             clipToCircle(tile);
@@ -1544,6 +1617,20 @@ public class PullBubbleService extends Service {
                 img.setImageBitmap(bmp);
                 img.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 tile.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+            }
+            if (group.count > 1) {
+                TextView countBadge = new TextView(this);
+                // Capped display at 99 — a 3-digit label would overflow this small a badge on
+                // this small a tile; "99+" still communicates "a lot" without needing more room.
+                countBadge.setText(group.count > 99 ? "99+" : "x" + group.count);
+                countBadge.setTextColor(Color.WHITE);
+                countBadge.setTextSize(7);
+                countBadge.setTypeface(null, android.graphics.Typeface.BOLD);
+                countBadge.setGravity(Gravity.CENTER);
+                countBadge.setBackground(circleDrawable("#CC000000", "#00000000"));
+                int badgeSizePx = (int) (14 * density);
+                FrameLayout.LayoutParams badgeLp = new FrameLayout.LayoutParams(badgeSizePx, badgeSizePx, Gravity.BOTTOM | Gravity.END);
+                tile.addView(countBadge, badgeLp);
             }
             LinearLayout.LayoutParams tileLp = new LinearLayout.LayoutParams(tileSizePx, tileSizePx);
             tileLp.leftMargin = tileGap;
