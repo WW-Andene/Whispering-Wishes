@@ -6,6 +6,14 @@
 // SKILL_MULTIPLIERS['Chixia'], and CHARACTER_ROTATIONS['Chixia']. No new numbers
 // invented. S1/S2/S4 correctly have NO block — all 3 are confirmed pure
 // resource/utility effects with zero DPS component per the audit's own re-zeroing.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Chixia/
+// Chixia.md's own Cooldown/Concerto Regen rows (Grand Entrance, Whizzing Fight Spirit, DAKA DAKA!,
+// Blazing Flames). Whizzing Fight Spirit has 2 real charges (same class of mechanic as Changli's
+// True Sight: Capture), but her modeled rotation only casts it once, so — unlike Changli's case —
+// adding its real cooldown here doesn't risk misrepresenting a legitimate banked-charge double-use;
+// safe to model directly.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -25,14 +33,24 @@ export const CHIXIA_BLOCKS = [
     // Jianxin/Lingyang/Aalto/Baizhi.
     damage: { hits: parseSkillMultiplierHits('49.21%×2 + 24.61%×4'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Builds Thermobaric Bullets.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Chixia/Chixia.md's own
+    // "Con. Energy Regen 10" row for Intro Skill Grand Entrance.
+    concertoEnergyGain: 10,
   },
   {
     id: 'chixia.skill.whizzing-fight-spirit',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Whizzing Fight Spirit' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Chixia/Chixia.md's own "Cooldown: 9s"
+    // row. Unlike Changli's True Sight: Capture, her modeled rotation only casts this ONCE
+    // (CHARACTER_ROTATIONS['Chixia'] has a single 'Skill' step) despite the kit having 2 charges —
+    // no charge-banking double-use to misrepresent here, so a real cooldown value is safe to model.
+    timing: { cooldown: 9 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('31.81%×8'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Held to enter DAKA DAKA! (2 initial charges).',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Chixia/Chixia.md's own
+    // "Con. Energy Regen 10" row for Whizzing Fight Spirit.
+    concertoEnergyGain: 10,
   },
   {
     id: 'chixia.forte.daka-daka',
@@ -48,6 +66,12 @@ export const CHIXIA_BLOCKS = [
     // Thermobaric Bullets to attack (Resonance Skill DMG)."
     damage: { hits: Array.from({ length: 30 }, () => ({ atkPct: 19.89 })), category: 'skillDmg', basis: 'ATK' },
     note: 'Continuous-fire state; spending all 30 Thermobaric Bullets in one DAKA DAKA! auto-triggers Boom Boom.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Chixia/Chixia.md's own two
+    // separate rows — "DAKA DAKA! Con. Energy Regen: 10" (entering/using the state) and "Thermobaric
+    // Bullet Con. Energy Regen: 0.5" (per bullet consumed while firing) — summed as 10 + 30×0.5 = 25,
+    // matching how this block's own damage.hits already combine all 30 real bullet-consumption hits
+    // into one block rather than 30 separate ones.
+    concertoEnergyGain: 25,
   },
   {
     id: 'chixia.forte.boom-boom',
@@ -67,8 +91,14 @@ export const CHIXIA_BLOCKS = [
     id: 'chixia.liberation.blazing-flames',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Blazing Flames' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Chixia/Chixia.md's own
+    // "Cooldown: 20s" row.
+    timing: { cooldown: 20 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('954.29% + 57.84%×11'), category: 'libDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Con. Energy Regen 20".
+    // Its "Res. Energy Cost: 150" row is a Liberation-gauge cost, not a gain — no matching schema
+    // field, not modeled, same treatment as every other character's own Liberation resource cost.
+    concertoEnergyGain: 20,
   },
   {
     id: 'chixia.outro.leaping-flames',

@@ -189,6 +189,14 @@ const EXPECTED_DIVERGENCES = {
   // (3314 -> 2657); this test's own standalone engine call doesn't apply that gate, so it stays at
   // the un-derated value. Measured ratio ~1.247 (engine/legacy) — real, expected, not a regression.
   Chisa: { min: 1.15, max: 1.35 },
+  // Added 2026-09-06 (Chixia completeness pass): same class as the prior 12 characters above.
+  // Whizzing Fight Spirit (Skill) and Blazing Flames (Liberation) both got real, sourced cooldowns
+  // added (Data dump/Chixia/Chixia.md's own Cooldown rows) — her modeled rotation recasts both
+  // faster than those cooldowns allow, so calcTeamStats()'s cooldownSteadyState gate correctly
+  // derates the legacy RAW number (2940 -> 2309); this test's own standalone engine call doesn't
+  // apply that gate, so it stays at the un-derated value. Measured ratio ~1.273 (engine/legacy) —
+  // real, expected, not a regression.
+  Chixia: { min: 1.15, max: 1.35 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number
