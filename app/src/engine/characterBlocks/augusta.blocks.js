@@ -21,6 +21,24 @@
 // for Camellya/Carlotta/Roccia/Phoebe/Brant, just missed for Augusta until now.
 // Retightened every hit to the source's exact Lv.10 figures — a real, live-DPS-
 // relevant fix, not cosmetic: this engine file feeds the actual damage calculator.
+//
+// Completeness pass 2026-09-06 (next character after Aemeath, alphabetically, same
+// "verify against the real dump" discipline as Aalto/Aemeath): against `Data dump/
+// Augusta/Augusta.md`, found and fixed the same class of gaps — Minor Fortes (Crit
+// Rate+8%, ATK%+12%) had no block at all; concertoEnergyGain (Intro+10, Skill+10,
+// Liberation+20, Undying Sunlight: Plunge+7) and real cooldowns (Warrior's Blade
+// 15s, Sword of Eternal Oath 25s, Everbright Protector 3s) were entirely
+// uncaptured; both Inherent Skills (Glory's Favor, Blazing Valor) had no block.
+// Also added every real, sourced move from her base-kit combo string and Dodge
+// Counter/Mid-air variants that SKILL_MULTIPLIERS['Augusta'] carries but had no
+// block anywhere in this file (Hunter's Path 4-stage Basic combo, base Heavy ATK:
+// Steelclash, Thunderoar: Uppercut, base Dodge Counter, Mid-air Attack, Mid-air
+// Dodge Counter, Dodge Counter-Steelclash, Dodge Counter-Thunderoar: Backstep,
+// Dodge Counter-Undying Sunlight: Strike) — none of these appear in
+// CHARACTER_ROTATIONS['Augusta'] (her real optimal rotation never uses them, per
+// the dump's own "confirmed unused in her real rotation" notes and Core Rotation
+// text), so like Aalto's own inert-but-real blocks, these are present and
+// sourced but don't fire in the standard modeled rotation.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -41,6 +59,9 @@ export const AUGUSTA_BLOCKS = [
     // Resonance Skill DMG.
     damage: { hits: parseSkillMultiplierHits('99.41%×2') , category: 'skillDmg', basis: 'ATK' },
     note: 'Fully restores Prowess and 20% Ascendancy.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): dump's own "Concerto Regen: 10" row
+    // for Stride of Goldenflare.
+    concertoEnergyGain: 10,
   },
   {
     id: 'augusta.heavy.thunderoar-backstep',
@@ -63,9 +84,12 @@ export const AUGUSTA_BLOCKS = [
     id: 'augusta.skill.warriors-blade',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: "Skill:Warrior's Blade" },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): dump's own "Cooldown: 15s" row.
+    timing: { cooldown: 15 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('218.70%×3'), category: 'skillDmg' , basis: 'ATK' },
     note: 'A dash-slam hit with a brief time-stop on cast, restores 10% Ascendancy.',
+    // concertoEnergyGain added 2026-09-06: dump's own "Concerto Regen: 10" row for Warrior's Blade.
+    concertoEnergyGain: 10,
   },
   {
     id: 'augusta.heavy.thunderoar-backstep-spinslash-repeat',
@@ -81,9 +105,13 @@ export const AUGUSTA_BLOCKS = [
     id: 'augusta.liberation.sword-of-eternal-oath',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Sword of Eternal Oath' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): dump's own "Cooldown: 25s" row (also carries a
+    // Resonance Cost of 125, which this schema has no field for — not modeled, same as elsewhere).
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('32.99%×2 + 131.94%×3 + 32.99%×2 + 571.7%'), category: 'heavyDmg' , basis: 'ATK' },
     note: 'Counted as Heavy ATK DMG despite the Liberation slot. Restores the last 40% Ascendancy, capping it at 100%.',
+    // concertoEnergyGain added 2026-09-06: dump's own "Concerto Regen: 20" row for Sword of Eternal Oath.
+    concertoEnergyGain: 20,
   },
   {
     id: 'augusta.skill.undying-sunlight-strike',
@@ -108,6 +136,8 @@ export const AUGUSTA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('86.59%+779.24%'), category: 'heavyDmg' , basis: 'ATK' },
     note: 'Counted as Heavy ATK DMG. Consumes all Ascendancy, grants 1 Majesty stack.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): dump's own "Concerto Regen: 7" row.
+    concertoEnergyGain: 7,
   },
   {
     id: 'augusta.liberation.sunborne',
@@ -128,10 +158,105 @@ export const AUGUSTA_BLOCKS = [
     id: 'augusta.liberation.everbright-protector',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Sublime is the Sun: Everbright Protector' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): dump's own "Cooldown: 3s" row.
+    timing: { cooldown: 3 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('238.58% + 894.65% + 5.97%×10'), category: 'heavyDmg' , basis: 'ATK' },
     note: 'Ends Sworn Allegiance, consumes all Crown of Wills stacks, deploys Ruler\'s Realm.',
   },
+
+  // Added 2026-09-06 (completeness pass): her base-kit Basic Attack combo string — a real, sourced
+  // move with its own 4-stage multiplier row in SKILL_MULTIPLIERS['Augusta'], previously had no block
+  // at all anywhere in this file. Not in CHARACTER_ROTATIONS['Augusta'] (her real optimal rotation
+  // opens straight into the Thunderoar/Backstep combo, never a plain Basic ATK combo — matching the
+  // dump's own Damage profile, which shows a genuine 0% Basic ATK share), so present and sourced but
+  // inert, same "documented gap" status as Aalto's own inert blocks.
+  {
+    id: 'augusta.basic.hunters-path',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: "Basic ATK:Hunter's Path" },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('57.46% + 67.00%×2 + 65.61%×3 + 64.63%×3'), category: 'basicDmg', basis: 'ATK' },
+    note: "Standard 4-stage combo string, builds toward Prowess/Ascendancy. Not in CHARACTER_ROTATIONS — real move, but her real optimal rotation never uses it (matches the dump's own 0% Basic ATK damage share).",
+  },
+  // Added 2026-09-06: base (non-Prowess-capped) Heavy Attack — replaced by the Thunderoar: Backstep
+  // combo once Prowess caps, which is what actually fires in her modeled rotation instead.
+  {
+    id: 'augusta.heavy.steelclash',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Steelclash' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('46.39%×3'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Base charged Heavy Attack combo, replaced by Thunderoar: Backstep once Prowess is capped. Not in CHARACTER_ROTATIONS — real move, but her real optimal rotation never uses it.',
+  },
+  // Added 2026-09-06: the dump's own Review text explicitly says her real combo goes Backstep into
+  // Spinslash "NEVER Uppercut, which launches her airborne, undesirable since she wants to stay
+  // grounded" — a sourced reason this specific Thunderoar variant is deliberately excluded from her
+  // modeled rotation, not an oversight.
+  {
+    id: 'augusta.heavy.thunderoar-uppercut',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Thunderoar: Uppercut' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('178.93%×2'), category: 'heavyDmg', basis: 'ATK' },
+    note: "Launches her airborne — the dump's own Review explicitly says her real rotation goes Backstep into Spinslash and NEVER Uppercut, since she wants to stay grounded. Deliberately excluded from CHARACTER_ROTATIONS for that sourced reason, not an oversight.",
+  },
+  // Added 2026-09-06: base Dodge Counter and its Mid-air Attack/Dodge Counter siblings — all three
+  // share the same real multiplier rows in SKILL_MULTIPLIERS['Augusta'] and all three carry the
+  // dump's own "confirmed unused in her real rotation" note.
+  {
+    id: 'augusta.basic.dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Dodge Counter' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('67.00%×2'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Post-Dodge Normal Attack. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation per the dump.',
+  },
+  {
+    id: 'augusta.basic.midair-attack',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Mid-air Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('59.65%×2'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Plunging Attack. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation per the dump.',
+  },
+  {
+    id: 'augusta.basic.midair-dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Mid-air Dodge Counter' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('59.65%×2'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Post-mid-air-Dodge Plunging Attack. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation per the dump.',
+  },
+  // Added 2026-09-06: Dodge Counter variants of Steelclash/Thunderoar: Backstep — the dump's own kit
+  // text says both are "considered Heavy Attack DMG" despite firing off a Dodge Counter input.
+  {
+    id: 'augusta.heavy.dodge-counter-steelclash',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Dodge Counter - Steelclash' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('46.39%×3'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Replaces Dodge Counter at full Prowess, considered Heavy Attack DMG. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation per the dump.',
+  },
+  {
+    id: 'augusta.heavy.dodge-counter-thunderoar-backstep',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Dodge Counter - Thunderoar: Backstep' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('53.68%'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Replaces Dodge Counter and its Steelclash variant at full Ascendancy, considered Heavy Attack DMG, same Spinslash-chain window as base Backstep. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation per the dump.',
+  },
+  // Added 2026-09-06: Dodge Counter variant of Undying Sunlight: Strike — the dump's own kit text
+  // says it's "considered Resonance Skill DMG" (not Heavy ATK, despite the Dodge Counter input),
+  // matching base Strike's own skillDmg categorization above.
+  {
+    id: 'augusta.forte.dodge-counter-undying-sunlight-strike',
+    source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Forte:Dodge Counter - Undying Sunlight: Strike' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('139.17%×2'), category: 'skillDmg', basis: 'ATK' },
+    note: 'Grounded/mid-air Dodge Counter variant at full Ascendancy, considered Resonance Skill DMG, same Leap-chain rule as base Strike. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation per the dump.',
+  },
+
   {
     id: 'augusta.outro.battlesong',
     source: SOURCE, kind: 'buff', section: 'Outro',
@@ -165,6 +290,36 @@ export const AUGUSTA_BLOCKS = [
     target: { scope: 'self' },
     effects: [{ stat: 'elemDmg', value: 15, source: 'self-kit' }],
     note: 'Crown of Wills: +15% Electro DMG Bonus per stack, max 1 stack at base kit (S0).',
+  },
+  // Added 2026-09-06 (completeness pass): "Minor Fortes: Crit Rate+8%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus unlocked via Forte-tree ascension, entirely separate from Crown of
+  // Wills/Inherent Skills. Previously had no block anywhere in this file.
+  {
+    id: 'augusta.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Augusta/Augusta.md). Unconditional, always active.',
+  },
+
+  // Added 2026-09-06 (completeness pass): her 2 Inherent Skills, previously not referenced anywhere
+  // in this file — real, sourced, kind:'utility' with effects:[] since neither has a representable
+  // DPS stat, same pattern as Aalto's/Aemeath's own inert Inherent Skill blocks.
+  {
+    id: 'augusta.inherent.glorys-favor',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: "Glory's Favor — dealing damage grants a Shield = 350 + 2.5% Max HP for 5s (0.5s ICD, non-stackable, doesn't pass to an incoming Resonator). Purely defensive, no DPS component to model. S5 raises this shield's strength by 50% — see augusta.chain.s5's own note.",
+  },
+  {
+    id: 'augusta.inherent.blazing-valor',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Blazing Valor — after 4s+ out of combat, gains (once per 4s): if Majesty < 1 stack, restore 1; fully restore Crown of Wills. Pure resource-management/opener-safety utility (the reason she starts every fight with 1 free Majesty stack, per the dump\'s own Review), no DPS component to model.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for
