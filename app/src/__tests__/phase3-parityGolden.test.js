@@ -46,7 +46,12 @@ const EXPECTED_DIVERGENCES = {
   // investigation's audited-and-fixed list (§2b, §6 item 6) as a chain node whose legacy flat
   // totalMult was over-applied outside its real scoped moves; the modern engine's scopedToBlockId
   // is the corrected representation, so a real (not spurious) divergence is expected here.
-  Camellya: { min: 1.10, max: 1.20 },
+  // Widened 2026-09-06 (completeness pass): Crimson Blossom and Fervor Efflorescent both got real,
+  // sourced cooldowns added (Data dump/Camellya/Camellya.md's own Cooldown rows) — her modeled
+  // rotation recasts both faster than those cooldowns allow, so calcTeamStats()'s
+  // cooldownSteadyState gate correctly derates the legacy RAW number further (3975 -> 3569) on top
+  // of the pre-existing §2b divergence documented below. New measured ratio ~1.280 (engine/legacy).
+  Camellya: { min: 1.10, max: 1.35 },
   // §5#5: Opener-vs-Loop rotation modeling gap, called out BY NAME for Jinhsi — her Loop casts Intro
   // every cycle (a real ~3.12% S0-total damage source per the investigation), which the engine's
   // per-hit Loop composition captures and the legacy flat-table RAW tier structurally cannot. Known,

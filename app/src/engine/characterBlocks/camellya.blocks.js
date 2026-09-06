@@ -30,6 +30,22 @@
 // Verified for parity against the legacy flat-table path by
 // __tests__/triggerEngine-camellya.test.js, and end-to-end (real evaluation, not
 // hand-fed) by __tests__/rotationSimulator.test.js.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Camellya/
+// Camellya.md's own Cooldown/Concerto Regen rows (Crimson Blossom, Floral Ravage, Fervor
+// Efflorescent, Everblooming). Ephemeral already carried its real cooldown (25s) before this pass.
+// Vining Waltz/Blazing Waltz's own Concerto contribution is NOT a flat per-cast number — the dump's
+// own Forte Circuit text describes a variable-rate conversion ("every 10 Crimson Pistils consumed
+// recovers 4 Concerto Energy"), a genuinely different mechanic shape (gauge-to-gauge conversion,
+// not a fixed per-cast gain) this schema's `concertoEnergyGain` field isn't built to represent —
+// left unmodeled rather than fabricating a flat number the source doesn't give. Confirmed safe to
+// add `concertoEnergyGain` anywhere in this file despite Ephemeral/S6-Perennial's own
+// `resource-threshold` trigger sharing the resource name 'Concerto Energy': `concertoEnergyGain` is
+// resolved by a completely separate mechanism (resolveConcertoEnergy.js) that never feeds
+// rotationSimulator.js's `resourceGain`/`resourceAtLeast` gauge simulation — the two systems don't
+// interact, unlike the real collision found and fixed in Buling's Trigram gauge (see that file's own
+// note) where `resourceGain` and `resourceStepOn` DID target the same simulated resource.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -62,11 +78,17 @@ export const CAMELLYA_BLOCKS = [
     source: SOURCE,
     kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Crimson Blossom' },
-    timing: {},
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Camellya/Camellya.md's own
+    // "Cooldown: 4s" row for Resonance Skill Valse of Bloom and Blight (Crimson Blossom's own cast,
+    // the entry point of that ability slot).
+    timing: { cooldown: 4 },
     target: { scope: 'self' },
     effects: [],
     damage: { hits: parseSkillMultiplierHits('113.62%×2'), category: 'basicDmg' , basis: 'ATK' },
     note: 'Basic-ATK-type Havoc DMG (considered Basic Attack DMG per its own kit text); enters Blossom Mode (mid-air castable), replacing Basic/Heavy/Dodge-Counter/Skill. Fixed 2026-09-04 (Phase A audit): was previously miscategorized skillDmg, matching the dump\'s 0% Skill / 67.1% Basic Damage Profile split.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Camellya/Camellya.md's own
+    // "Crimson Blossom Concerto Regen: 7" row.
+    concertoEnergyGain: 7,
   },
   {
     id: 'camellya.skill.vining-waltz-combo',
@@ -125,10 +147,17 @@ export const CAMELLYA_BLOCKS = [
     source: SOURCE,
     kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Fervor Efflorescent' },
-    timing: {},
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Camellya/Camellya.md's own
+    // "Cooldown: 25s" row for Fervor Efflorescent.
+    timing: { cooldown: 25 },
     target: { scope: 'self' },
     effects: [],
     damage: { hits: parseSkillMultiplierHits('1202.81%'), category: 'libDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Camellya/Camellya.md's own
+    // "Concerto Regen: 20" row for the same Liberation. Its "Resonance Energy Cost: 125" row is a
+    // Liberation-gauge cost, not a gain — no matching schema field, not modeled, same treatment as
+    // every other character's own Liberation resource cost.
+    concertoEnergyGain: 20,
   },
   {
     id: 'camellya.intro.everblooming',
@@ -141,6 +170,9 @@ export const CAMELLYA_BLOCKS = [
     // No `category` — Intro/Outro excluded from calcEngine.js's dmgFocus-routing buckets, same as
     // every other converted character's Intro/Outro damage block.
     damage: { hits: parseSkillMultiplierHits('198.81%'), basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Camellya/Camellya.md's own
+    // "Concerto Regen: 10" row for Intro Skill Everblooming.
+    concertoEnergyGain: 10,
   },
   {
     // Added 2026-09-03: SKILL_MULTIPLIERS['Camellya'] was missing a 'Skill, Floral Ravage' row entirely
@@ -156,6 +188,14 @@ export const CAMELLYA_BLOCKS = [
     effects: [],
     damage: { hits: parseSkillMultiplierHits('52.61%×5'), category: 'basicDmg' , basis: 'ATK' },
     note: 'Ends Blossom Mode. Considered Basic Attack DMG per kit text — fixed 2026-09-04 (Phase A audit): was previously miscategorized skillDmg (the original 2026-09-03 note that introduced this block mistakenly matched it to the Vining Waltz combo blocks\' then-also-wrong skillDmg category instead of the kit text\'s own override); confirmed against the dump\'s 0% Skill / 67.1% Basic Damage Profile split.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Camellya/Camellya.md's own
+    // "Floral Ravage Concerto Regen: 7" row. No cooldown added: the dump's own "Cooldown: 4s" row
+    // sits in the same Resonance Skill section as Crimson Blossom's (the ability slot's entry
+    // point, already carrying that cooldown on camellya.skill.crimson-blossom above) — whether that
+    // one shared-slot cooldown ALSO independently gates this in-Blossom-Mode exit cast, or whether
+    // Floral Ravage (a mode-transition move, not a fresh Skill-button press from neutral) bypasses
+    // it, isn't stated explicitly enough to apply here without guessing; left off rather than assume.
+    concertoEnergyGain: 7,
   },
   {
     id: 'camellya.outro.twining-base',
