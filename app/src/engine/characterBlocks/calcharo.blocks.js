@@ -14,6 +14,25 @@
 //      (calcharo.chain.s6-phantoms) rather than the flat totalMult:200 approximation
 //      RESONANCE_CHAIN_DATA itself falls back to — the real per-hit numbers are
 //      sourced, so they're used directly instead of the lossier flat-schema stand-in.
+//
+// This file's Killing Intent gauge (Forte:"Death Messenger", gated at 5 stacks by Hounds Roar hits)
+// was ALREADY correctly modeled with a real `resource-threshold`/`resourceStepOn` trigger before this
+// pass touched it — no `resourceGain` anywhere in this file, avoiding the exact double-fire collision
+// found and fixed in Buling's Trigram gauge (see buling.blocks.js's own note on that bug class); this
+// file is the reference precedent that fix generalizes from. His real Resonance Skill (Extermination
+// Order, sourced cooldown/energy in Data dump/Calcharo/Calcharo.md) and Heavy Attack "Mercy"
+// (Cruelty-gauge gated, outside Deathblade Gear) both correctly have no block at all — neither is
+// cast in CHARACTER_ROTATIONS['Calcharo']'s own modeled "Optimized Burst Combo" (a Warm-Up-only move
+// for Mercy; Extermination Order isn't in the canonical rotation either), same "no block for an
+// unused real move" treatment as Brant's own Anchors Aweigh!.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the Aalto/Aemeath/Augusta/Baizhi/Brant/Buling passes)
+// — sourced from Data dump/Calcharo/Calcharo.md's own Cooldown/Concerto Regen rows (Wanted Outlaw,
+// Phantom Etching, Death Messenger). Real Resonance-Energy-gauge costs/regens (Liberation's 125 cost,
+// Death Messenger's 5 regen) have no matching schema field (only Concerto Energy is tracked) — left
+// unmodeled rather than fabricated onto an unrelated field, same treatment as Brant's/Buling's own
+// Liberation resource costs.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -34,14 +53,24 @@ export const CALCHARO_BLOCKS = [
     // the same convention already confirmed on Augusta's Stride of Goldenflare/Lupa's Try Focusing, Eh?
     // — a generic "Skill Damage" label means plain Resonance Skill DMG.
     damage: { hits: parseSkillMultiplierHits('39.77%×2+59.65%×2'), category: 'skillDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Calcharo/Calcharo.md's own
+    // "Con. Energy Regen: 10" row for Intro Skill Wanted Outlaw.
+    concertoEnergyGain: 10,
   },
   {
     id: 'calcharo.liberation.phantom-etching',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Phantom Etching' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Calcharo/Calcharo.md's own
+    // "Cooldown: 20s" row for Resonance Liberation Phantom Etching.
+    timing: { cooldown: 20 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('596.43%'), category: 'libDmg' , basis: 'ATK' },
     note: 'Enters 11s Deathblade Gear: Basic ATK -> Hounds Roar (own block below), Heavy ATK/Dodge Counter deal boosted Liberation DMG (not separately modeled — no CHARACTER_ROTATIONS step uses them).',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Calcharo/Calcharo.md's own
+    // "Con. Energy Regen: 20" row for the same Liberation. Its "Res. Energy Cost: 125" row is a
+    // Liberation-gauge cost, not a gain — no matching schema field, not modeled (no fabricated cost
+    // mechanic), same treatment as Brant's/Buling's own Liberation resource costs.
+    concertoEnergyGain: 20,
   },
   {
     id: 'calcharo.basic.hounds-roar',
@@ -58,6 +87,12 @@ export const CALCHARO_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('97.77%×8+195.53%'), category: 'libDmg' , basis: 'ATK' },
     note: 'Counted as Resonance Liberation DMG per its own kit text. Fires 3x in her real rotation (real, repeated resource-threshold events, not a bug).',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Calcharo/Calcharo.md's own
+    // "Death Messenger Con. Energy Regen: 10" row. Its "Death Messenger Res. Energy Regen: 5" row is
+    // a separate Resonance-Energy-gauge restore with no matching schema field (this file's
+    // `concertoEnergyGain` only represents Concerto Energy) — not modeled, same "no fabricated
+    // mechanic for a resource this schema doesn't track" treatment as the Liberation cost above.
+    concertoEnergyGain: 10,
   },
   {
     id: 'calcharo.chain.s6-phantoms',

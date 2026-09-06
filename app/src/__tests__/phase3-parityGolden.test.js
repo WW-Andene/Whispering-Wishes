@@ -123,6 +123,14 @@ const EXPECTED_DIVERGENCES = {
   // doesn't apply that gate, so it stays at the un-derated value. Measured ratio ~1.204
   // (engine/legacy) — real, expected, not a regression.
   Buling: { min: 1.10, max: 1.30 },
+  // Added 2026-09-06 (Calcharo completeness pass): same class as Aalto/Aemeath/Augusta/Baizhi/Brant/
+  // Buling above. Phantom Etching (Liberation) got a real, sourced 20s cooldown added (Data dump/
+  // Calcharo/Calcharo.md's own Cooldown row). His modeled rotation (~13.4s per the dump's own Damage
+  // Profile) recasts it faster than that cooldown allows, so calcTeamStats()'s cooldownSteadyState
+  // gate correctly derates the legacy RAW number (4803 -> 4644); this test's own standalone engine
+  // call doesn't apply that gate, so it stays at the un-derated value. Measured ratio ~1.034
+  // (engine/legacy) — real, expected, not a regression.
+  Calcharo: { min: 1.02, max: 1.10 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number
