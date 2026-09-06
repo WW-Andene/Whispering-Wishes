@@ -5,12 +5,20 @@
 // you're farming it via Tacet Field), see the real probability of each condition and
 // the combined odds, and the estimated Waveplate/Shell Credit/Tuner cost to get there.
 // Every probability number traces back to Data dump/Echoes/ (see echoFarmingData.js).
+//
+// Structure (2026-09-06 revision): every stat-picking row (Main/Secondary/5×Substat)
+// used to dump its full option list inline — with the 13-entry substat pool repeated
+// 5 times that was an unreadable wall of buttons. Each row is now a single compact
+// summary button (icon strip + chance) that opens one shared StatPickerModal, the same
+// "Kuro panel" pattern (FocusTrapModal + kuro-card) already used by EchoSelector/
+// WeaponSelector/TeamSelector's own pickers — one picker component, seven call sites.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React from 'react';
-import { ChevronDown, Zap, Coins, Wrench, Info } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronDown, Zap, Coins, Wrench, Info, X, ChevronRight } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { ECHO_SETS } from '../../data/echoes.js';
@@ -18,12 +26,11 @@ import { getSetIcon, getElementIcon, getStatIcon } from '../../shared/utils/elem
 import {
   ECHO_MAIN_STAT_CHANCE, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
   PLATEAU_TIERS, getPlateauChance, TACET_FIELD_WAVEPLATE_COST, TACET_FIELD_ENDGAME_YIELD,
-  WEEKLY_BOSS_ENDGAME_YIELD, WORLD_BOSS_ENDGAME_YIELD,
+  WEEKLY_BOSS_ENDGAME_YIELD,
 } from '../../data/echoFarmingData.js';
 import { t } from '../../utils/i18n.js';
 
 const COST_TIERS = [1, 3, 4];
-const SUBSTAT_SLOTS = [0, 1, 2, 3, 4];
 
 // Renders a stat's icon — element icon for "<Element> DMG" main-stat entries, the shared
 // STAT_ICONS lookup (already strips a trailing %) for everything else, no icon at all if
@@ -40,13 +47,15 @@ const DEFAULT_STATE = {
   set: '',
   mainStats: [],
   secondaryStats: [],
-  substats: SUBSTAT_SLOTS.map(() => ({ stats: [], minTier: 0 })),
+  substats: [0, 1, 2, 3, 4].map(() => ({ stats: [], minTier: 0 })),
   tacetField: true,
 };
 
 export default function EchoFarmPlanner() {
   const [collapsed, setCollapsed] = usePersistedState('ww-echo-farm-collapsed', false);
   const [cfg, setCfg] = usePersistedState('ww-echo-farm-config', DEFAULT_STATE);
+  // Which picker popup is open: null, 'main', 'secondary', or a substat slot index.
+  const [openPicker, setOpenPicker] = useState(null);
 
   const setCount = ECHO_SETS ? Object.keys(ECHO_SETS).length : 0;
   const mainStatPool = ECHO_MAIN_STAT_CHANCE[cfg.cost] || {};
@@ -94,6 +103,15 @@ export default function EchoFarmPlanner() {
 
   const rowLabel = (chance) => `${(chance * 100).toFixed(chance * 100 < 1 ? 2 : 1)}%`;
 
+  const updateMain = (stat) => setCfg(p => ({ ...p, mainStats: toggleStat(p.mainStats, stat) }));
+  const updateSecondary = (stat) => setCfg(p => ({ ...p, secondaryStats: toggleStat(p.secondaryStats, stat) }));
+  const updateSubstat = (slotIdx, stat) => setCfg(p => ({
+    ...p, substats: p.substats.map((s, j) => j === slotIdx ? { ...s, stats: toggleStat(s.stats, stat) } : s),
+  }));
+  const setSubstatTier = (slotIdx, tierIdx) => setCfg(p => ({
+    ...p, substats: p.substats.map((s, j) => j === slotIdx ? { ...s, minTier: tierIdx } : s),
+  }));
+
   return (
     <Card>
       <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => setCollapsed(p => !p)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setCollapsed(p => !p); } }} aria-expanded={!collapsed}>
@@ -108,71 +126,62 @@ export default function EchoFarmPlanner() {
             <span>{t('planner.echoFarm.disclaimer')}</span>
           </div>
 
-          {/* Cost tier */}
-          <div className="flex gap-1.5">
-            {COST_TIERS.map(cost => (
-              <button key={cost} onClick={() => setCfg(p => ({ ...p, cost, mainStats: [], secondaryStats: [] }))}
-                className={`kuro-btn flex-1 text-sm ${cfg.cost === cost ? 'active-gold' : ''}`} style={{ padding: '8px' }}>
-                {cost}-{t('planner.echoFarm.cost')}
-              </button>
-            ))}
+          {/* ── Target Echo — cost + set ── */}
+          <div className="space-y-1.5">
+            <div className="kuro-section-label">{t('planner.echoFarm.targetEcho')}</div>
+            <div className="flex gap-1.5">
+              {COST_TIERS.map(cost => (
+                <button key={cost} onClick={() => setCfg(p => ({ ...p, cost, mainStats: [], secondaryStats: [] }))}
+                  className={`kuro-btn flex-1 text-sm ${cfg.cost === cost ? 'active-gold' : ''}`} style={{ padding: '8px' }}>
+                  {cost}-{t('planner.echoFarm.cost')}
+                </button>
+              ))}
+            </div>
+            <KuroSelect
+              value={cfg.set}
+              onChange={set => setCfg(p => ({ ...p, set }))}
+              options={[
+                { value: '', label: t('planner.echoFarm.anySet') },
+                ...(setCount > 0 ? Object.keys(ECHO_SETS).map(name => ({
+                  value: name,
+                  label: <span className="inline-flex items-center gap-1.5">{getSetIcon(name) && <img src={getSetIcon(name)} alt="" width={14} height={14} className="shrink-0" onError={hideOnError} />} {name}</span>,
+                })) : []),
+              ]}
+              className="w-full"
+              ariaLabel={t('planner.echoFarm.chooseSetAria')}
+              small
+            />
           </div>
 
-          {/* Sonata Set */}
-          <KuroSelect
-            value={cfg.set}
-            onChange={set => setCfg(p => ({ ...p, set }))}
-            options={[
-              { value: '', label: t('planner.echoFarm.anySet') },
-              ...(setCount > 0 ? Object.keys(ECHO_SETS).map(name => ({
-                value: name,
-                label: <span className="inline-flex items-center gap-1.5">{getSetIcon(name) && <img src={getSetIcon(name)} alt="" width={14} height={14} className="shrink-0" onError={hideOnError} />} {name}</span>,
-              })) : []),
-            ]}
-            className="w-full"
-            ariaLabel={t('planner.echoFarm.chooseSetAria')}
-            small
-          />
-
-          {/* Main Stat */}
-          <StatRow
-            title={t('planner.echoFarm.mainStat')}
-            options={mainStatOptions}
-            pool={mainStatPool}
-            selected={cfg.mainStats}
-            onToggle={stat => setCfg(p => ({ ...p, mainStats: toggleStat(p.mainStats, stat) }))}
-            chance={mainChance}
-            rowLabel={rowLabel}
-          />
-
-          {/* Secondary Stat */}
-          <StatRow
-            title={t('planner.echoFarm.secondaryStat')}
-            options={mainStatOptions}
-            pool={mainStatPool}
-            selected={cfg.secondaryStats}
-            onToggle={stat => setCfg(p => ({ ...p, secondaryStats: toggleStat(p.secondaryStats, stat) }))}
-            chance={secondaryChance}
-            rowLabel={rowLabel}
-            note={t('planner.echoFarm.secondaryApprox')}
-          />
-
-          {/* 5 Substat slots */}
-          {cfg.substats.map((slot, i) => (
-            <SubstatRow
-              key={i}
-              index={i}
-              slot={slot}
-              chance={substatChances[i]}
+          {/* ── Stat rows — compact summaries, each opens the shared picker popup ── */}
+          <div className="space-y-1.5">
+            <StatSummaryRow
+              title={t('planner.echoFarm.mainStat')}
+              selected={cfg.mainStats}
+              chance={mainChance}
               rowLabel={rowLabel}
-              onToggleStat={stat => setCfg(p => ({
-                ...p, substats: p.substats.map((s, j) => j === i ? { ...s, stats: toggleStat(s.stats, stat) } : s),
-              }))}
-              onSetTier={tierIdx => setCfg(p => ({
-                ...p, substats: p.substats.map((s, j) => j === i ? { ...s, minTier: tierIdx } : s),
-              }))}
+              onClick={() => setOpenPicker('main')}
             />
-          ))}
+            <StatSummaryRow
+              title={t('planner.echoFarm.secondaryStat')}
+              selected={cfg.secondaryStats}
+              chance={secondaryChance}
+              rowLabel={rowLabel}
+              note={t('planner.echoFarm.secondaryApprox')}
+              onClick={() => setOpenPicker('secondary')}
+            />
+            {cfg.substats.map((slot, i) => (
+              <StatSummaryRow
+                key={i}
+                title={t('planner.echoFarm.substatSlot', { n: i + 1 })}
+                selected={slot.stats}
+                chance={substatChances[i]}
+                rowLabel={rowLabel}
+                tierLabel={slot.stats.length ? t(`planner.echoFarm.plateau${PLATEAU_TIERS[slot.minTier]}`) : null}
+                onClick={() => setOpenPicker(i)}
+              />
+            ))}
+          </div>
 
           {/* Tacet Field toggle */}
           <button onClick={() => setCfg(p => ({ ...p, tacetField: !p.tacetField }))} className={`kuro-btn w-full text-sm ${cfg.tacetField ? 'active-emerald' : ''}`} style={{ padding: '8px' }}>
@@ -201,60 +210,106 @@ export default function EchoFarmPlanner() {
           </div>
         </CardBody>
       )}
+
+      {/* ── Shared picker popup — Main/Secondary Stat or one Substat slot ── */}
+      {openPicker !== null && (
+        <StatPickerModal
+          title={
+            openPicker === 'main' ? t('planner.echoFarm.mainStat')
+            : openPicker === 'secondary' ? t('planner.echoFarm.secondaryStat')
+            : t('planner.echoFarm.substatSlot', { n: openPicker + 1 })
+          }
+          options={openPicker === 'main' || openPicker === 'secondary' ? mainStatOptions : ALL_ECHO_SUBSTATS}
+          pool={openPicker === 'main' || openPicker === 'secondary' ? mainStatPool : null}
+          selected={
+            openPicker === 'main' ? cfg.mainStats
+            : openPicker === 'secondary' ? cfg.secondaryStats
+            : cfg.substats[openPicker].stats
+          }
+          onToggle={
+            openPicker === 'main' ? updateMain
+            : openPicker === 'secondary' ? updateSecondary
+            : (stat) => updateSubstat(openPicker, stat)
+          }
+          tierValue={typeof openPicker === 'number' ? cfg.substats[openPicker].minTier : null}
+          onSetTier={typeof openPicker === 'number' ? (tierIdx) => setSubstatTier(openPicker, tierIdx) : null}
+          onClose={() => setOpenPicker(null)}
+        />
+      )}
     </Card>
   );
 }
 
-function StatRow({ title, options, pool, selected, onToggle, chance, rowLabel, note }) {
+// Compact summary — icon strip of what's selected (or "Any"), the row's own chance, and (for
+// substat slots) the chosen plateau tier. Tapping anywhere opens the shared picker popup.
+function StatSummaryRow({ title, selected, chance, rowLabel, tierLabel, note, onClick }) {
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <span className="kuro-section-label">{title}</span>
+    <button onClick={onClick} className="kuro-btn w-full text-left flex items-center justify-between gap-2" style={{ padding: '8px 10px' }}>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm text-white font-medium">{title}</span>
+          {tierLabel && <span className="kuro-badge kuro-badge-gray text-2xs">{tierLabel}</span>}
+        </div>
+        <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+          {selected.length === 0 ? (
+            <span className="text-2xs text-gray-500">{note || t('planner.echoFarm.anyStat')}</span>
+          ) : selected.map(stat => (
+            <span key={stat} className="inline-flex items-center gap-1 text-2xs text-gray-300">
+              <StatIcon stat={stat} size={11} /> {stat}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center gap-1 shrink-0">
         <span className="text-sm font-bold text-emerald-400 kuro-number">{rowLabel(chance)}</span>
+        <ChevronRight size={14} className="text-gray-500" />
       </div>
-      {note && <div className="text-2xs text-gray-500">{note}</div>}
-      <div className="flex flex-wrap gap-1.5">
-        {options.map(stat => {
-          const active = selected.includes(stat);
-          return (
-            <button key={stat} onClick={() => onToggle(stat)}
-              className={`kuro-btn text-2xs inline-flex items-center gap-1 ${active ? 'active-gold' : ''}`} style={{ padding: '6px 8px' }}>
-              <StatIcon stat={stat} size={12} /> {stat} <span className="text-gray-500">{(pool[stat] || 0).toFixed(1)}%</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
+    </button>
   );
 }
 
-function SubstatRow({ index, slot, chance, rowLabel, onToggleStat, onSetTier }) {
+// Shared "Kuro panel" popup — same FocusTrapModal + kuro-card shell used by EchoSelector/
+// WeaponSelector/TeamSelector's own pickers, so this reads as the same app-wide pattern
+// instead of a one-off. `pool` (main-stat % per option) is null for substat pickers, which
+// show a plateau-tier row at the bottom instead.
+function StatPickerModal({ title, options, pool, selected, onToggle, tierValue, onSetTier, onClose }) {
   return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <span className="kuro-section-label">{t('planner.echoFarm.substatSlot', { n: index + 1 })}</span>
-        <span className="text-sm font-bold text-emerald-400 kuro-number">{rowLabel(chance)}</span>
+    <FocusTrapModal isOpen onClose={onClose} className="" onClick={onClose} centered padding="p-3" ariaLabel={title}>
+      <div className="kuro-card w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]">
+          <h3 className="text-white text-xl font-semibold">{title}</h3>
+          <button onClick={onClose} className="p-3 min-w-[48px] min-h-[48px] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('planner.closeLabel')}><X size={16} /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="grid grid-cols-2 gap-1.5">
+            {options.map(stat => {
+              const active = selected.includes(stat);
+              return (
+                <button key={stat} onClick={() => onToggle(stat)}
+                  className={`kuro-btn text-sm inline-flex items-center gap-1.5 justify-start ${active ? 'active-gold' : ''}`} style={{ padding: '8px' }}>
+                  <StatIcon stat={stat} size={14} />
+                  <span className="truncate">{stat}</span>
+                  {pool && <span className="text-2xs text-gray-500 ml-auto shrink-0">{(pool[stat] || 0).toFixed(1)}%</span>}
+                </button>
+              );
+            })}
+          </div>
+          {onSetTier && (
+            <div className="space-y-1">
+              <div className="kuro-section-label">{t('planner.echoFarm.minPlateau')}</div>
+              <div className="flex gap-1.5">
+                {PLATEAU_TIERS.map((tier, i) => (
+                  <button key={tier} onClick={() => onSetTier(i)}
+                    className={`kuro-btn flex-1 text-sm ${tierValue === i ? 'active-emerald' : ''}`} style={{ padding: '8px' }}>
+                    {t(`planner.echoFarm.plateau${tier}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        {ALL_ECHO_SUBSTATS.map(stat => {
-          const active = slot.stats.includes(stat);
-          return (
-            <button key={stat} onClick={() => onToggleStat(stat)}
-              className={`kuro-btn text-2xs inline-flex items-center gap-1 ${active ? 'active-gold' : ''}`} style={{ padding: '6px 8px' }}>
-              <StatIcon stat={stat} size={12} /> {stat}
-            </button>
-          );
-        })}
-      </div>
-      <div className="flex gap-1.5">
-        {PLATEAU_TIERS.map((tier, i) => (
-          <button key={tier} onClick={() => onSetTier(i)}
-            className={`kuro-btn flex-1 text-2xs ${slot.minTier === i ? 'active-emerald' : ''}`} style={{ padding: '6px' }}>
-            {t(`planner.echoFarm.plateau${tier}`)}
-          </button>
-        ))}
-      </div>
-    </div>
+    </FocusTrapModal>
   );
 }
 
