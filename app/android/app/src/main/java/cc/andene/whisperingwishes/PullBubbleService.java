@@ -800,24 +800,35 @@ public class PullBubbleService extends Service {
         // multiple timers that all fire later.
         handler.removeCallbacks(autoArchiveRunnable);
         // An empty pin set (never pinned yet this session) rolls the same single default
-        // character-category roll a pre-picker roll always did — everything else rolls `count`
-        // against EVERY pinned target and merges the results (WidgetPullSimulator.merge).
+        // character-category roll a pre-picker roll always did — everything else SPLITS `count`
+        // across every pinned target (so ×10 with "Both" pinned still simulates exactly 10
+        // pulls total, not 10 against each — tapping ×10 must always mean 10, regardless of how
+        // many targets are selected) and merges the results (WidgetPullSimulator.merge). Each
+        // target's own pity/rate math stays fully correct at whatever share it gets — splitting
+        // the count doesn't change the ODDS of any single pull, only how many of the `count`
+        // pulls land on each target. Extra pulls (when count doesn't divide evenly) go to the
+        // first targets so the total always still adds up to exactly `count`.
         List<Pin> targets = pinnedTargets.isEmpty()
                 ? java.util.Collections.singletonList(new Pin("character", null, null))
                 : pinnedTargets;
         WidgetPullSimulator.PullSimResult sim;
         try {
             List<WidgetPullSimulator.PullSimResult> parts = new ArrayList<>();
-            for (Pin pin : targets) {
+            int baseShare = count / targets.size();
+            int remainder = count % targets.size();
+            for (int t = 0; t < targets.size(); t++) {
+                Pin pin = targets.get(t);
+                int share = baseShare + (t < remainder ? 1 : 0);
+                if (share <= 0) continue;
                 if (pin.category.startsWith("standard")) {
                     String subCategory = "standard-weapon".equals(pin.category) ? "weapon" : "character";
-                    parts.add(WidgetPullSimulator.rollStandard(this, subCategory, count));
+                    parts.add(WidgetPullSimulator.rollStandard(this, subCategory, share));
                 } else {
                     // "weapon" pin rolls that category's pinned banner; anything else (null =
                     // default, or "character") rolls the character category — pin.name is null
                     // for the default case, matching the pre-picker behavior exactly.
                     String category = "weapon".equals(pin.category) ? "weapon" : "character";
-                    parts.add(WidgetPullSimulator.roll(this, category, pin.name, count));
+                    parts.add(WidgetPullSimulator.roll(this, category, pin.name, share));
                 }
             }
             sim = WidgetPullSimulator.merge(parts);

@@ -19,13 +19,14 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
-import { ChevronDown, Zap, Coins, Wrench, Info, X, ChevronRight, Search, Heart } from 'lucide-react';
+import { ChevronDown, Info, X, ChevronRight, Search, Heart } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { ECHO_DATA, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES } from '../../data/echoes.js';
-import { getSetIcon, getElementIcon, getStatIcon, getCombatRoleIcon } from '../../shared/utils/elementVisuals.js';
+import { getSetIcon, getElementIcon, getStatIcon, getCombatRoleIcon, getCurrencyIcon } from '../../shared/utils/elementVisuals.js';
+import { MATERIAL_IMAGES } from '../../data/materialData.js';
 import {
   ECHO_MAIN_STAT_CHANCE, SECONDARY_STAT_BY_COST, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
   PLATEAU_TIERS, getPlateauChance, TACET_FIELD_WAVEPLATE_COST, getTacetFieldYield,
@@ -345,17 +346,25 @@ export default function EchoFarmPlanner() {
               </span>
             </div>
             <div className="grid grid-cols-3 gap-1.5 pt-1">
-              <ResourceTile icon={<Zap size={14} className="text-cyan-400" />} label={t('planner.echoFarm.waveplate')} value={cfg.tacetField ? waveplateNeeded : t('planner.echoFarm.notApplicable')} color="text-cyan-400" />
-              <ResourceTile icon={<Coins size={14} className="text-yellow-400" />} label={t('planner.shellCredit')} value={totalShellNeeded} color="text-yellow-400" />
-              <ResourceTile icon={<Wrench size={14} className="text-orange-400" />} label={t('planner.echoFarm.tuners')} value={totalTuners} color="text-orange-400" />
+              <ResourceTile icon={<img src={getCurrencyIcon('Waveplate')} alt="" width={14} height={14} onError={hideOnError} />} label={t('planner.echoFarm.waveplate')} value={cfg.tacetField ? waveplateNeeded : t('planner.echoFarm.notApplicable')} color="text-cyan-400" />
+              <ResourceTile icon={<img src={getCurrencyIcon('Shell Credit')} alt="" width={14} height={14} onError={hideOnError} />} label={t('planner.shellCredit')} value={totalShellNeeded} color="text-yellow-400" />
+              {/* No sourced per-tier Tuner cost breakdown (unlike Sealed Tubes, which have a real
+                  disclosed EXP table) — Advanced Tuner used as the representative icon for this
+                  single undifferentiated count, same as the game's own mid-tier default. */}
+              <ResourceTile icon={<img src={MATERIAL_IMAGES['Advanced Tuner']} alt="" width={14} height={14} onError={hideOnError} />} label={t('planner.echoFarm.tuners')} value={totalTuners} color="text-orange-400" />
             </div>
             <div className="text-2xs text-gray-500 space-y-0.5">
               {!cfg.tacetField && <div>{t('planner.echoFarm.noTacetNote')}</div>}
               <div>{t('planner.echoFarm.levelingCostNote', { exp: levelingExp.toLocaleString(), shell: levelingShell.toLocaleString() })}</div>
               {tubeBreakdown.length > 0 && (
-                <div>{t('planner.echoFarm.tubeBreakdown', {
-                  tubes: tubeBreakdown.map(({ tier, count }) => t('planner.echoFarm.tubeCount', { count, tier: t(`planner.echoFarm.tube${tier}`) })).join(' + '),
-                })}</div>
+                <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                  {tubeBreakdown.map(({ tier, count }) => (
+                    <span key={tier} className="inline-flex items-center gap-1">
+                      <img src={MATERIAL_IMAGES[`${tier} Sealed Tube`]} alt="" width={14} height={14} onError={hideOnError} />
+                      {t('planner.echoFarm.tubeCount', { count, tier: t(`planner.echoFarm.tube${tier}`) })}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
           </div>

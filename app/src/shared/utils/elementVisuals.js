@@ -241,6 +241,10 @@ const CURRENCY_ICONS = {
   'Radiant Tide':   './ui-icons/Currency-Radiant-Tide.webp',
   'Forging Tide':   './ui-icons/Currency-Forging-Tide.webp',
   'Lustrous Tide':  './ui-icons/Currency-Lustrous-Tide.webp',
+  // Non-gacha resource icons — user-supplied assets, filed 2026-09-06 (EchoFarmPlanner's
+  // Waveplate/Shell Credit resource tiles previously fell back to generic lucide icons).
+  Waveplate:    './ui-icons/Currency-Waveplate.webp',
+  'Shell Credit':   './ui-icons/Currency-Shell-Credit.webp',
 };
 const getCurrencyIcon = (currency) => CURRENCY_ICONS[currency] || null;
 
