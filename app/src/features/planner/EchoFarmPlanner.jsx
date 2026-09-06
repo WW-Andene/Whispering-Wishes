@@ -27,7 +27,7 @@ import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { ECHO_DATA, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES } from '../../data/echoes.js';
 import { getSetIcon, getElementIcon, getStatIcon, getCombatRoleIcon } from '../../shared/utils/elementVisuals.js';
 import {
-  ECHO_MAIN_STAT_CHANCE, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
+  ECHO_MAIN_STAT_CHANCE, SECONDARY_STAT_BY_COST, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
   PLATEAU_TIERS, getPlateauChance, TACET_FIELD_WAVEPLATE_COST, TACET_FIELD_ENDGAME_YIELD,
   ECHO_LEVEL_CUMULATIVE_EXP, ECHO_MAX_LEVEL_BY_RARITY, SHELL_CREDIT_PER_ECHO_EXP, SHELL_CREDIT_PER_TUNE_ATTEMPT,
   DATA_BANK_LEVELS, MAX_DATA_BANK_LEVEL, getSealedTubeBreakdown,
@@ -86,25 +86,22 @@ const DEFAULT_STATE = {
   level: 25,
   dataBankLevel: MAX_DATA_BANK_LEVEL,
   mainStats: [],
-  secondaryStats: [],
   substats: [0, 1, 2, 3, 4].map(() => ({ stats: [], minTier: 0 })),
   tacetField: false, // disabled/false-forced only when cost === 4
 };
 
 export default function EchoFarmPlanner() {
   const [collapsed, setCollapsed] = usePersistedState('ww-echo-farm-collapsed', false);
-  const [cfg, setCfg] = usePersistedState('ww-echo-farm-config-v2', DEFAULT_STATE);
+  const [cfg, setCfg] = usePersistedState('ww-echo-farm-config-v3', DEFAULT_STATE);
   // Which popup is open: null, 'echo', 'main', 'secondary', or a substat slot index.
   const [openPicker, setOpenPicker] = useState(null);
   const [echoSearch, setEchoSearch] = useState('');
 
   const mainStatPool = ECHO_MAIN_STAT_CHANCE[cfg.cost] || {};
   const mainStatOptions = Object.keys(mainStatPool);
-  // Secondary Stat draws from the same defined per-cost pool as Main Stat (Data dump/Echoes/
-  // Probability.md's "Mainstats" table doesn't distinguish a separate primary-only vs.
-  // secondary-only pool — both slots pick from the same per-cost stat list). No exclusion here:
-  // there's no sourced rule that a specific Echo's two main stats can't repeat a category.
-  const secondaryStatOptions = mainStatOptions;
+  // Secondary Stat is fixed per cost tier (flat HP for 1-Cost, flat ATK for 3/4-Cost) — a real,
+  // sourced fact (see SECONDARY_STAT_BY_COST's own comment), not a probability. Always 100%.
+  const secondaryStat = SECONDARY_STAT_BY_COST[cfg.cost];
 
   const echoData = cfg.echoName ? ECHO_DATA[cfg.echoName] : null;
   const echoSets = echoData?.sets || [];
@@ -113,7 +110,7 @@ export default function EchoFarmPlanner() {
   // one sourced constraint (Data dump/Echoes/Data Bank.md). 1/3-cost Echoes drop from BOTH
   // Tacet Fields and bosses, so the toggle is never forced one way or the other for them.
   const setCost = (cost) => setCfg(p => ({
-    ...p, cost, echoName: '', mainStats: [], secondaryStats: [],
+    ...p, cost, echoName: '', mainStats: [],
     tacetField: cost === 4 ? false : p.tacetField,
   }));
 
@@ -125,7 +122,6 @@ export default function EchoFarmPlanner() {
   // ── Row-level probabilities ──
   const rowChance = (selected) => selected.reduce((s, stat) => s + (mainStatPool[stat] || 0), 0) / 100;
   const mainChance = cfg.mainStats.length ? rowChance(cfg.mainStats) : 1;
-  const secondaryChance = cfg.secondaryStats.length ? rowChance(cfg.secondaryStats) : 1;
 
   const isSubstatUnlocked = (slotIdx) => cfg.level >= substatUnlockLevel(slotIdx);
 
@@ -145,7 +141,7 @@ export default function EchoFarmPlanner() {
   const dbLevelRow = DATA_BANK_LEVELS.find(row => row.level === cfg.dataBankLevel) || DATA_BANK_LEVELS[DATA_BANK_LEVELS.length - 1];
   const rarityChance = (dbLevelRow.rarity[cfg.rarity] || 0) / 100;
 
-  const unifiedChance = [mainChance, secondaryChance, rarityChance, ...substatChances].reduce((a, b) => a * b, 1);
+  const unifiedChance = [mainChance, rarityChance, ...substatChances].reduce((a, b) => a * b, 1);
   const expectedInstances = unifiedChance > 0 ? Math.ceil(1 / unifiedChance) : null;
 
   // ── Resource estimates ──
@@ -176,7 +172,6 @@ export default function EchoFarmPlanner() {
   const rowLabel = (chance) => `${(chance * 100).toFixed(chance * 100 < 1 ? 2 : 1)}%`;
 
   const updateMain = (stat) => setCfg(p => ({ ...p, mainStats: toggleStat(p.mainStats, stat) }));
-  const updateSecondary = (stat) => setCfg(p => ({ ...p, secondaryStats: toggleStat(p.secondaryStats, stat) }));
   const updateSubstat = (slotIdx, stat) => setCfg(p => ({
     ...p, substats: p.substats.map((s, j) => j === slotIdx ? { ...s, stats: toggleStat(s.stats, stat) } : s),
   }));
@@ -291,14 +286,18 @@ export default function EchoFarmPlanner() {
               rowLabel={rowLabel}
               onClick={() => setOpenPicker('main')}
             />
-            <StatSummaryRow
-              title={t('planner.echoFarm.secondaryStat')}
-              selected={cfg.secondaryStats}
-              chance={secondaryChance}
-              rowLabel={rowLabel}
-              note={t('planner.echoFarm.secondaryApprox')}
-              onClick={() => setOpenPicker('secondary')}
-            />
+            <div className="kuro-btn w-full text-left flex items-center justify-between gap-2" style={{ padding: '8px 10px' }}>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm text-white font-medium">{t('planner.echoFarm.secondaryStat')}</div>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="inline-flex items-center gap-1 text-2xs text-gray-300">
+                    <StatIcon stat={secondaryStat} size={12} /> {secondaryStat}
+                  </span>
+                  <span className="text-2xs text-gray-500">— {t('planner.echoFarm.secondaryFixed')}</span>
+                </div>
+              </div>
+              <span className="text-sm font-bold text-emerald-400 kuro-number shrink-0">{rowLabel(1)}</span>
+            </div>
             {cfg.substats.map((slot, i) => {
               const unlocked = isSubstatUnlocked(i);
               return (
@@ -406,24 +405,22 @@ export default function EchoFarmPlanner() {
         </FocusTrapModal>
       )}
 
-      {/* ── Shared picker popup — Main/Secondary Stat or one Substat slot ── */}
-      {(openPicker === 'main' || openPicker === 'secondary' || typeof openPicker === 'number') && (
+      {/* ── Shared picker popup — Main Stat or one Substat slot (Secondary Stat is fixed per
+          cost tier, not a pickable/probabilistic row — see secondaryStat above) ── */}
+      {(openPicker === 'main' || typeof openPicker === 'number') && (
         <StatPickerModal
           title={
             openPicker === 'main' ? t('planner.echoFarm.mainStat')
-            : openPicker === 'secondary' ? t('planner.echoFarm.secondaryStat')
             : t('planner.echoFarm.substatSlot', { n: openPicker + 1 })
           }
-          options={openPicker === 'main' ? mainStatOptions : openPicker === 'secondary' ? secondaryStatOptions : ALL_ECHO_SUBSTATS}
-          pool={openPicker === 'main' || openPicker === 'secondary' ? mainStatPool : null}
+          options={openPicker === 'main' ? mainStatOptions : ALL_ECHO_SUBSTATS}
+          pool={openPicker === 'main' ? mainStatPool : null}
           selected={
             openPicker === 'main' ? cfg.mainStats
-            : openPicker === 'secondary' ? cfg.secondaryStats
             : cfg.substats[openPicker].stats
           }
           onToggle={
             openPicker === 'main' ? updateMain
-            : openPicker === 'secondary' ? updateSecondary
             : (stat) => updateSubstat(openPicker, stat)
           }
           tierValue={typeof openPicker === 'number' ? cfg.substats[openPicker].minTier : null}

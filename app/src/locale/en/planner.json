@@ -116,7 +116,7 @@
     "rarityNotObtainable": "Not obtainable at this Data Bank level — try a different level or rarity.",
     "mainStat": "Main Stat",
     "secondaryStat": "Secondary Stat",
-    "secondaryApprox": "Draws from the same defined per-cost stat pool as Main Stat — approximated as an independent roll, since the real secondary stat is fixed per specific Echo, not randomized per drop.",
+    "secondaryFixed": "always fixed for this cost tier, never random",
     "anyStat": "Any",
     "noOptionsLeft": "No options left.",
     "locksUntil": "Locks until Level {{level}}",

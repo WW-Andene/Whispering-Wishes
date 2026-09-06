@@ -24,13 +24,14 @@ export const ECHO_MAIN_STAT_CHANCE = {
   },
 };
 
-// The wiki describes Echoes as having a "Primary" (random) and a "Secondary" (predetermined,
-// i.e. fixed per specific Echo — not re-rolled per drop) main stat. This app has no real
-// per-Echo secondary-mainstat table (that would require sourcing ~100 individual Echoes'
-// fixed second stat, which nothing in Data dump/ currently covers), so the calculator treats
-// "Secondary Stat" as an independent roll from this SAME distribution as an explicit, labeled
-// approximation (see EchoFarmPlanner.jsx's own `secondaryApprox` UI copy) — never claim it's
-// the real per-Echo mechanic.
+// The wiki describes Echoes as having a "Primary" (random) and a "Secondary" (predetermined —
+// fixed per cost tier, not re-rolled per drop, and never the same stat as the Primary) main
+// stat. Cross-referencing Probability.md's own "Mainstats" pool per cost against its "Detailed
+// mainstat values distribution" Primary-roll sample shows exactly one flat stat missing from
+// each cost tier's Primary sample — that's the fixed Secondary for that tier, not a coincidence:
+// 1-Cost never rolls flat HP as Primary, 3-Cost and 4-Cost never roll flat ATK as Primary. So
+// Secondary Stat is a deterministic fact per cost, not a probability at all.
+export const SECONDARY_STAT_BY_COST = { 1: 'HP', 3: 'ATK', 4: 'ATK' };
 
 // Substat TYPE pick chance — officially disclosed by Kuro (KR gaming-disclosure law). Uniform
 // across the 13-substat pool, shrinking as substats already on the Echo are removed from it.

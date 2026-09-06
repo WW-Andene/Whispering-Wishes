@@ -116,7 +116,7 @@
     "rarityNotObtainable": "Non obtenable à ce niveau de Banque de Données — essayez un autre niveau ou une autre rareté.",
     "mainStat": "Stat Principale",
     "secondaryStat": "Stat Secondaire",
-    "secondaryApprox": "Provient du même pool de stats défini par palier de coût que la Stat Principale — approximée comme un tirage indépendant, car la vraie stat secondaire est fixe par Écho spécifique, pas aléatoire à chaque drop.",
+    "secondaryFixed": "toujours fixe pour ce palier de coût, jamais aléatoire",
     "anyStat": "N'importe laquelle",
     "noOptionsLeft": "Plus aucune option.",
     "locksUntil": "Débloqué au niveau {{level}}",
