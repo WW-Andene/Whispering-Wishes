@@ -175,6 +175,13 @@ const EXPECTED_DIVERGENCES = {
   // apply that gate, so it stays at the un-derated value. Measured ratio ~1.070 (engine/legacy) —
   // real, expected, not a regression.
   Cartethyia: { min: 1.02, max: 1.15 },
+  // Added 2026-09-06 (Changli completeness pass): same class as the prior 10 characters above.
+  // Radiance of Fealty (Liberation) got a real, sourced 20s cooldown added (Data dump/Changli/
+  // Changli.md's own Cooldown row) — her modeled rotation recasts it faster than that cooldown
+  // allows, so calcTeamStats()'s cooldownSteadyState gate correctly derates the legacy RAW number
+  // (5999 -> 5241); this test's own standalone engine call doesn't apply that gate, so it stays at
+  // the un-derated value. Measured ratio ~1.145 (engine/legacy) — real, expected, not a regression.
+  Changli: { min: 1.05, max: 1.20 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number

@@ -35,6 +35,16 @@
 // exists anywhere to correct that. The engine already fires every block matching a trigger, not
 // just one (confirmed in resolveHitComposedDps.js), so this is a safe, real-numbers-only technique —
 // same one already used for Mortefi's chain S1/S5 bonus-Marcato blocks riding his Liberation cast.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Changli/
+// Changli.md's own Cooldown/Concerto Regen rows (Obedience of Rules, True Sight Capture/Charge/
+// Conquest, Radiance of Fealty, Flaming Sacrifice). True Sight: Capture deliberately did NOT get a
+// `timing.cooldown` despite a real sourced value existing — it's a 2-charge system ("2 initial
+// attempts, +1 charge every 12s, up to 2 usable at once"), and cooldownSteadyState's flat
+// min(1, totalTime/cooldown) model assumes one use per cooldown period, which would incorrectly
+// derate both of her real, legitimately pre-banked-charge casts in one rotation — see that block's
+// own note. Radiance of Fealty's cooldown IS a simple fixed timer, so it's modeled directly.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -67,14 +77,28 @@ export const CHANGLI_BLOCKS = [
     // convention applied project-wide.
     damage: { hits: parseSkillMultiplierHits('44.50%+25.96%×4'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Also opens a 12s True Sight window.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Changli/Changli.md's own
+    // "Concerto Regen 10" row for Intro Skill Obedience of Rules.
+    concertoEnergyGain: 10,
   },
   {
     id: 'changli.skill.true-sight-capture',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:True Sight: Capture' },
+    // No timing.cooldown added in the 2026-09-06 completeness pass, despite a real, sourced value
+    // existing ("2 initial attempts (charges), +1 charge every 12s, up to 2 usable at once" — Data
+    // dump/Changli/Changli.md): this is a CHARGE system, not a simple recharge-then-recast cooldown.
+    // cooldownSteadyState's own model (min(1, totalTime/cooldown)) assumes one use per cooldown
+    // period, which would WRONGLY derate both of her real, legitimately-banked-charge Capture casts
+    // in this same rotation (she starts with 2 charges pre-loaded and spends both, not one every
+    // 12s) — applying it here would produce a less accurate number, not a more accurate one, so it's
+    // deliberately left off rather than fabricating a misleading cooldown gate.
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('81.88%×3+163.76%'), category: 'skillDmg' , basis: 'ATK' },
     note: "1st of 2 real True Sight: Capture casts per rotation (2 charges, both used) — see changli.skill.true-sight-capture-2 for the 2nd. Row 'True Sight: Capture / Conquest / Charge' has 3 arrow-separated segments — only Capture's own segment used here; see changli.skill.true-sight-conquest-1/changli.skill.true-sight-charge-1/2/3 below for the other two.",
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Changli/Changli.md's own
+    // "Capture Concerto Regen 14" row.
+    concertoEnergyGain: 14,
   },
   {
     // Added 2026-09-04 (full re-segmentation pass): the real Standard Rotation casts Skill (True
@@ -87,6 +111,9 @@ export const CHANGLI_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('81.88%×3+163.76%'), category: 'skillDmg' , basis: 'ATK' },
     note: '2nd of 2 real True Sight: Capture casts per rotation.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same "Capture Concerto Regen 14" row —
+    // this block represents the 2nd real cast, which grants the same per-cast value as the 1st.
+    concertoEnergyGain: 14,
   },
   {
     id: 'changli.heavy.standard',
@@ -117,9 +144,16 @@ export const CHANGLI_BLOCKS = [
     id: 'changli.liberation.radiance-of-fealty',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Radiance of Fealty' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Changli/Changli.md's own
+    // "Cooldown: 20s" row for Radiance of Fealty — a real fixed cooldown (unlike True Sight:
+    // Capture's charge system above), safe to model directly.
+    timing: { cooldown: 20 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('1212.75%'), category: 'libDmg' , basis: 'ATK' },
     note: 'Grants 4 Enflamement (caps, does not stack past 4) and Fiery Feather (self +25% ATK on the 2nd, post-Ultimate Forte Heavy ATK within 10s — see changli.selfbuff.fiery-feather).',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Concerto Regen 20". Its
+    // "Resonance Cost: 125" row is a Liberation-gauge cost, not a gain — no matching schema field,
+    // not modeled, same treatment as every other character's own Liberation resource cost.
+    concertoEnergyGain: 20,
   },
   {
     id: 'changli.forte.flaming-sacrifice',
@@ -128,6 +162,10 @@ export const CHANGLI_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('39.25%×5+457.85%'), category: 'heavyDmg' , basis: 'ATK' },
     note: "1st of 2 real Flaming Sacrifice casts per rotation (the one BEFORE Ultimate, consuming the 4 Enflamement built via True Sight follow-ups) — see changli.forte.flaming-sacrifice-2 for the 2nd (post-Ultimate) cast. 40% DMG reduction while casting, not modeled (no DPS component).",
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Changli/Changli.md's own
+    // "Concerto Regen 10" row for Flaming Sacrifice. No cooldown: this is a 4-Enflamement-gauge
+    // trigger, not timer-gated, matching this file's own existing convention.
+    concertoEnergyGain: 10,
   },
   {
     // Added 2026-09-04 (full re-segmentation pass): the real Standard Rotation casts Flaming
@@ -141,6 +179,9 @@ export const CHANGLI_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('39.25%×5+457.85%'), category: 'heavyDmg' , basis: 'ATK' },
     note: '2nd of 2 real Flaming Sacrifice casts per rotation — the post-Ultimate cast Fiery Feather (self ATK +25%) actually buffs.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same "Concerto Regen 10" row as the
+    // 1st cast above.
+    concertoEnergyGain: 10,
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
@@ -314,6 +355,9 @@ export const CHANGLI_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' , basis: 'ATK' },
     note: '1st of 3 real True Sight: Charge casts per rotation — cast while holding 0 Enflamement, so Secret Strategist contributes nothing here.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Changli/Changli.md's own
+    // Concerto Regen row for this move.
+    concertoEnergyGain: 6,
   },
   {
     id: 'changli.skill.true-sight-charge-2',
@@ -322,6 +366,9 @@ export const CHANGLI_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' , basis: 'ATK' },
     note: '2nd of 3 real True Sight: Charge casts per rotation — cast while holding 1 Enflamement stack; see changli.inherent.secret-strategist-charge-2 for its scoped +5% Fusion DMG bonus.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Changli/Changli.md's own
+    // Concerto Regen row for this move.
+    concertoEnergyGain: 6,
   },
   {
     id: 'changli.skill.true-sight-charge-3',
@@ -330,6 +377,9 @@ export const CHANGLI_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('72.68%+109.02%'), category: 'skillDmg' , basis: 'ATK' },
     note: '3rd of 3 real True Sight: Charge casts per rotation — cast while holding 2 Enflamement stacks; see changli.inherent.secret-strategist-charge-3 for its scoped +10% Fusion DMG bonus.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Changli/Changli.md's own
+    // Concerto Regen row for this move.
+    concertoEnergyGain: 6,
   },
   {
     id: 'changli.skill.true-sight-conquest-1',
@@ -338,6 +388,9 @@ export const CHANGLI_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('58.95%×2+82.52%+94.31%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'The 1 real True Sight: Conquest cast per rotation (the 4th and final Enflamement-granting follow-up, landing right before the 1st Forte Heavy) — cast while holding 3 Enflamement stacks (the cap); see changli.inherent.secret-strategist-conquest-1 for its scoped +15% Fusion DMG bonus.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Changli/Changli.md's own
+    // Concerto Regen row for this move.
+    concertoEnergyGain: 7,
   },
   {
     id: 'changli.inherent.secret-strategist-charge-2',
