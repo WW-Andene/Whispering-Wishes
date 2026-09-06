@@ -106,9 +106,62 @@ This is the rule that exists specifically to stop notes, logs, and one-off summa
 - Leaving a diagnostic-only script or test in the tree after it has served its verification purpose (see §2.4). A temporary diagnostic test, a debug-only trace, or a hand-rolled reproduction script is deleted before the task is considered done — it does not get committed "just in case," and it is never a substitute for one of the four permanent homes above.
 - Writing the same finding into more than one of the above without reason — pick the one destination that fits, rather than a code comment *and* a new doc *and* a chat explanation of the same fact.
 
-### 4.4 New top-level files and directories
+### 4.4 Module boundaries — allowed dependency directions
+
+A directory taxonomy only holds if files placed correctly are also only *importing* from directories they're allowed to depend on. Without this, a low-level module can end up importing from a feature, two features can couple to each other directly, and the whole taxonomy in §4.1 becomes decorative. Define an explicit, layered dependency graph for this project, bottom-up — for example:
+
+```
+utils/  →  (depends on nothing else in the source tree)
+core/, data/  →  utils/
+hooks/, providers/  →  core/, data/, utils/
+shared/  →  hooks/, providers/, core/, data/, utils/
+features/<feature>/  →  shared/, hooks/, providers/, core/, data/, utils/
+```
+
+Concretely:
+- **A lower layer never imports from a higher one.** If a lower-layer module seems to need something from a higher layer, that's a sign the shared piece belongs in the lower layer instead — move it down, don't import up.
+- **The cross-feature-reuse layer (`shared/` or equivalent) never imports from a specific feature.** The moment it depends on one feature, it is no longer shared — either the code isn't actually generic and belongs in that feature, or the feature-specific part must be extracted out first.
+- **One feature never imports another feature's internals directly.** Cross-feature reuse goes through the shared layer, promoting the reused piece there first.
+- **A subsystem's internals stay internal to it.** Code outside a subsystem interacts with it through its published entry points (e.g. a barrel/index file), not by reaching into files it doesn't own.
+
+When in doubt about which layer a file belongs to, its allowed imports are the answer: a module that needs to import from a feature cannot live in a lower layer, no matter how "core" its purpose feels.
+
+### 4.5 File decomposition — when a file must be split
+
+A file is a unit of hygiene, not just of code. Split a file once any of these thresholds is crossed, rather than letting it grow indefinitely:
+
+- **It serves more than one responsibility.** If describing the file's purpose in one sentence requires "and," the responsibilities are separable — split along that seam.
+- **Its tests need multiple, unrelated top-level test groups** to cover genuinely different concerns rather than different cases of the same concern. That's a proxy for the file itself covering more than one concern.
+- **A change to one part of the file routinely has no effect on, and no relation to, another part of the same file.** Unrelated change-reasons are a decomposition signal (the same principle behind the Single Responsibility Principle).
+- **It has grown large enough that a reader must scroll past unrelated code to find the part relevant to their task.** This is a readability failure, not a badge of thoroughness.
+
+When splitting, keep the resulting files inside the same directory (per §4.1) unless the split reveals a genuinely new purpose category, and preserve the naming convention in §4.2 for each resulting file — a split is not an excuse for an ad hoc name.
+
+### 4.6 Generated files and barrel/index files
+
+- **Generated output is never hand-edited.** Anything under a directory explicitly designated for build output is produced by an explicit generation step. If it needs to change, change the generator and regenerate — editing the output directly creates silent drift the next time it's regenerated, and is treated as a hygiene violation, not a shortcut.
+- **Barrel/index files re-export; they do not implement.** Where this project uses aggregation files, they collect and re-export the real modules in that directory. New logic never gets written directly into a barrel file; it goes into a properly named module that the barrel then re-exports.
+
+### 4.7 Deprecation and deletion — retiring a file or dead code correctly
+
+Removing code is as much a structural act as adding it, and gets the same rigor rather than being treated as a free action:
+
+1. **Confirm zero remaining references** before deleting a file or export — search the codebase, don't rely on memory of what you think still uses it (per §1.2, corroborate before acting).
+2. **Migrate consumers first, delete second**, in that order within the same piece of work — never leave a codebase in a state where both the old and new paths are live "just in case" beyond the migration itself.
+3. **No commented-out code as a soft delete.** Dead code is removed outright; version control, not a comment block, is the record of what used to be there. A comment explaining *why* something was removed is fine; the removed code left in place as a comment is not.
+4. **A deletion that removes an entire file's worth of exports is its own reviewable change** (see §5, Change Scope Discipline) unless it's the direct, necessary conclusion of the migration it follows.
+
+### 4.8 New top-level files and directories
 
 The repository root and the top level of the source tree are reserved for canonical, whole-project artifacts (a README, this rules file, and the top-level source directories in §4.1). Adding anything new at either level — a new root document, a new top-level source directory — is a structural decision on the same footing as changing the taxonomy itself: flag it and get confirmation before creating it, don't add it as a side effect of an unrelated task.
+
+### 4.9 Enforcement — structural rules should be checkable, not just followed
+
+Prose discipline alone is a weaker guarantee than a rule a tool can actually verify. Where practical, back the rules above with something mechanical rather than relying solely on manual compliance:
+
+- A lint rule or dependency-boundary checker (e.g. an import-boundary ESLint configuration, or a dependency-graph tool) to catch a §4.4 layering violation automatically.
+- A naming-convention check extended to cover each artifact type from §4.2 as it's introduced.
+- Treating the absence of such tooling as a gap to close during the maintenance cadence below, not a permanent excuse to fall back on discipline alone.
 
 **Maintenance cadence (lifecycle management):** run a project restructuring/audit skill (if one exists) and a code-audit pass on a regular cadence — as a floor, every ~50 commits — to prevent structural drift from accumulating. This is scheduled maintenance, analogous to a records-retention review, not something to defer until requested.
 
