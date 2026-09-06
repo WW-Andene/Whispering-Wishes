@@ -130,7 +130,10 @@
     "cost4NoTacet": "Les Échos coût 4 (Overlord/Calamity) ne dropent que des boss, jamais des Champs Tacites — et les boss ne coûtent de toute façon pas de Points d'Onde.",
     "unifiedStats": "Probabilité Combinée",
     "overallChance": "Chance par Écho obtenu",
-    "instancesNeeded": "Nombre d'Échos nécessaires (estimé)",
+    "echoesCount": {
+      "one": "{{count}} écho",
+      "other": "{{count}} échos"
+    },
     "waveplate": "Points d'Onde",
     "tuners": "Régleurs",
     "notApplicable": "N/A",

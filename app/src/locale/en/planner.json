@@ -130,7 +130,10 @@
     "cost4NoTacet": "4-cost Echoes (Overlord/Calamity) only drop from bosses, never Tacet Fields — and bosses don't cost Waveplate either way.",
     "unifiedStats": "Combined Target Odds",
     "overallChance": "Chance per Echo instance",
-    "instancesNeeded": "Expected instances needed",
+    "echoesCount": {
+      "one": "{{count}} echo",
+      "other": "{{count}} echoes"
+    },
     "waveplate": "Waveplate",
     "tuners": "Tuners",
     "notApplicable": "N/A",

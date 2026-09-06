@@ -32,7 +32,7 @@ import {
   ECHO_LEVEL_CUMULATIVE_EXP, ECHO_MAX_LEVEL_BY_RARITY, SHELL_CREDIT_PER_ECHO_EXP, SHELL_CREDIT_PER_TUNE_ATTEMPT,
   DATA_BANK_LEVELS, MAX_DATA_BANK_LEVEL,
 } from '../../data/echoFarmingData.js';
-import { t } from '../../utils/i18n.js';
+import { t, getPluralForm } from '../../utils/i18n.js';
 
 // ECHO_LISTS (echoes.js) are declared newest-first per cost tier already — reused as-is here
 // so the Target Echo picker sorts the same way every other "All Sets"/echo-list filter in the
@@ -331,11 +331,10 @@ export default function EchoFarmPlanner() {
             <div className="kuro-section-label">{t('planner.echoFarm.unifiedStats')}</div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-400">{t('planner.echoFarm.overallChance')}</span>
-              <span className="text-base font-bold text-emerald-400 kuro-number">{rowLabel(unifiedChance)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-400">{t('planner.echoFarm.instancesNeeded')}</span>
-              <span className="text-base font-bold text-white kuro-number">{expectedInstances != null ? expectedInstances : '—'}</span>
+              <span className="text-base font-bold text-emerald-400 kuro-number">
+                {rowLabel(unifiedChance)}
+                {expectedInstances != null && <span className="text-gray-400 font-normal"> ({t(`planner.echoFarm.echoesCount.${getPluralForm(expectedInstances)}`, { count: expectedInstances })})</span>}
+              </span>
             </div>
             <div className="grid grid-cols-3 gap-1.5 pt-1">
               <ResourceTile icon={<Zap size={14} className="text-cyan-400" />} label={t('planner.echoFarm.waveplate')} value={cfg.tacetField ? waveplateNeeded : t('planner.echoFarm.notApplicable')} color="text-cyan-400" />
