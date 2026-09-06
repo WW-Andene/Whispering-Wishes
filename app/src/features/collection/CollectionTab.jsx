@@ -530,13 +530,21 @@ function CollectionTab({
                     onChange={setCollectionDamageFilter}
                     options={[
                       { value: 'all', label: t('collection.filters.allDamage') },
+                      // fixed 2026-09-06: getCombatRoleIcon(val) was called with the raw dmgFocus values
+                      // ('Basic ATK', 'Skill', etc.), but COMBAT_ROLE_ICONS keys are the full official
+                      // names ('Basic Attack Damage', 'Resonance Skill Damage', ...) — none of the 6
+                      // matched, so every icon silently resolved to null (a broken-image placeholder for
+                      // all six, not a real icon). Mapped each value to its real official role name.
                       ...[
-                        ['Basic ATK', t('collection.damage.basicAtk')], ['Heavy ATK', t('collection.damage.heavyAtk')],
-                        ['Skill', t('collection.damage.skill')], ['Liberation', t('collection.damage.liberation')],
-                        ['Echo', t('collection.damage.echo')], ['Coordinated', t('collection.damage.coordinated')],
-                      ].map(([val, tag]) => ({
+                        ['Basic ATK', 'Basic Attack Damage', t('collection.damage.basicAtk')],
+                        ['Heavy ATK', 'Heavy Attack Damage', t('collection.damage.heavyAtk')],
+                        ['Skill', 'Resonance Skill Damage', t('collection.damage.skill')],
+                        ['Liberation', 'Resonance Liberation Damage', t('collection.damage.liberation')],
+                        ['Echo', 'Echo Skill Damage', t('collection.damage.echo')],
+                        ['Coordinated', 'Coordinated Attack', t('collection.damage.coordinated')],
+                      ].map(([val, roleName, tag]) => ({
                         value: val,
-                        label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon(val)} alt="" width={14} height={14} className="shrink-0" /> {tag}</span>,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon(roleName)} alt="" width={14} height={14} className="shrink-0" /> {tag}</span>,
                       })),
                     ]}
                     ariaLabel={t('collection.filters.byDamageType')}
