@@ -264,12 +264,17 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           (bt.outroBuffs || []).forEach(b => {
             if (b.target === 'next' || b.target === 'enemy' || b.target === 'ally') {
               const dur = b.duration || 14;
-              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t + onField, duration: dur });
+              // triggerStep (2026-09-06, rotation timeline sync): lets RotationTimeline.jsx snap this
+              // buff bar to the actual Outro action chip in the owner's action strip instead of always
+              // starting it at the segment's raw end time — the two usually coincide since Outro is
+              // typically the last skillSequence step, but this makes the link explicit rather than
+              // coincidental.
+              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t + onField, duration: dur, triggerStep: 'Outro' });
             }
           });
           (bt.libBuffs || []).forEach(b => {
             if (b.target === 'team') {
-              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25 });
+              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25, triggerStep: 'Liberation' });
             }
           });
           // CHAR_BUFF_TABLE uses duration: 99 or 999 as sentinels for "conditional passive, no
@@ -337,19 +342,19 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
           if (p5.includes('Outro')) {
             Object.entries(p5v).forEach(([stat, val]) => {
               if (stat === 'outroDmg') return; // raw damage, not a buff
-              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t + onField, duration: 14 });
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t + onField, duration: 14, triggerStep: 'Outro' });
             });
           }
           // Intro-triggered echo set buffs (fire when character swaps in)
           else if (p5.includes('Intro')) {
             Object.entries(p5v).forEach(([stat, val]) => {
-              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField });
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: onField, triggerStep: 'Intro' });
             });
           }
           // Liberation-triggered echo set buffs
           else if (p5.includes('Liberation') || p5.includes('Lib')) {
             Object.entries(p5v).forEach(([stat, val]) => {
-              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: 35 });
+              buffs.push({ source: `${setName}`, owner: m.name, stat, value: val, start: t, duration: 35, triggerStep: 'Liberation' });
             });
           }
           // Heal-triggered team buffs
@@ -394,7 +399,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
               // Outro-triggered echo buff → fires when character swaps out, applies to next
               esb.buffs.forEach(b => {
                 if (esb.condition && !m.name.includes(esb.condition)) return;
-                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t + onField, duration: esb.duration || 15, type: 'echo' });
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t + onField, duration: esb.duration || 15, type: 'echo', triggerStep: 'Outro' });
               });
             } else if (target === 'team') {
               // Team-wide buff → active during field time, persists for duration
@@ -409,10 +414,11 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
                 buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: onField, type: 'echo' });
               });
             } else {
-              // Standard active skill buff → used during field time
+              // Standard active skill buff → used during field time, triggered by casting the Echo
+              // Skill itself — synced to the 'Echo' action chip below rather than the segment start.
               esb.buffs.forEach(b => {
                 if (esb.condition && !m.name.includes(esb.condition)) return;
-                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: Math.min(esb.duration || 15, onField + 5), type: 'echo' });
+                buffs.push({ source: echoLabel, owner: m.name, stat: b.stat, value: b.value, start: t, duration: Math.min(esb.duration || 15, onField + 5), type: 'echo', triggerStep: 'Echo' });
               });
             }
           }
