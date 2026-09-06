@@ -27,8 +27,15 @@ function useLongPress(onLongPress, onClick, { delay = 500 } = {}) {
       onLongPress?.(eventRef.current);
     }, delay);
   }, [onLongPress, delay]);
-  const onPointerUp = useCallback(() => {
+  const onPointerUp = useCallback((e) => {
     clearTimeout(timerRef.current);
+    // Suppress the browser's compatibility "click" that follows a touch pointerup on this
+    // <button> — onClick above already fires the real action here. Without this, that
+    // trailing click can be hit-tested against whatever DOM now sits at the same screen
+    // coordinates (e.g. a modal that just opened in response to this very tap), landing on
+    // an unrelated element like the detail modal's "View in Team Builder" button instead of
+    // doing nothing.
+    if (e.pointerType === 'touch') e.preventDefault();
     if (!firedRef.current) onClick?.();
   }, [onClick]);
   const onPointerLeave = useCallback(() => { clearTimeout(timerRef.current); }, []);
