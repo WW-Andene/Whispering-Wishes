@@ -51,6 +51,21 @@ const EXPECTED_DIVERGENCES = {
   // rotation recasts both faster than those cooldowns allow, so calcTeamStats()'s
   // cooldownSteadyState gate correctly derates the legacy RAW number further (3975 -> 3569) on top
   // of the pre-existing §2b divergence documented below. New measured ratio ~1.280 (engine/legacy).
+  //
+  // Investigated 2026-09-06 (direct user question: "did you fix it?") whether the underlying §2b
+  // scoping bug itself — not just this test's tolerance band — could be fixed instead of merely
+  // documented. Finding: it can't be fixed as a Camellya-specific patch. `applyResonanceChain()`
+  // (calcEngine.js) sums EVERY RESONANCE_CHAIN_DATA[...].sN.totalMult value into one flat
+  // `totalMultBonus` applied to a character's WHOLE kit — there is no move-scoping concept
+  // anywhere in the legacy engine, for any character, not just her. Camellya exposes it worst
+  // because she has 4 different chain nodes real-scoped to 4 different specific moves (Ephemeral
+  // +120%, Fervor Efflorescent +50%, Everblooming +303%, Budding-Mode moves +150% —
+  // characters.js:6359), which the legacy path incorrectly sums into one 623%-of-everything bonus
+  // at S6. A real fix would mean building move-scoping into the shared legacy chain-bonus code
+  // path used by every character — a nontrivial, roster-wide-risk change to the same code already
+  // confirmed dead for every real team except a still-unreleased Jingran (see
+  // CALC_TEAM_STATS_DEPENDENCY_MAP.md) — not attempted here; the cost doesn't fit the payoff for a
+  // path already headed for deletion. Left as a documented divergence, not a "fixed" one.
   Camellya: { min: 1.10, max: 1.35 },
   // §5#5: Opener-vs-Loop rotation modeling gap, called out BY NAME for Jinhsi — her Loop casts Intro
   // every cycle (a real ~3.12% S0-total damage source per the investigation), which the engine's
