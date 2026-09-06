@@ -26,7 +26,26 @@ A task is not complete until all of the following hold — treat this as the exi
 - The full relevant test suite passes — not just the test for the immediate change; a regression elsewhere is still a regression.
 - Any newly-introduced non-obvious behavior, tradeoff, or known limitation is documented **in the code or commit message**, not only explained conversationally. If asked "did you document it?", the answer should already be yes.
 - The diff is reviewed for scope: no unrelated cleanup, no drive-by refactors, no speculative abstractions bundled into the same change (see §5).
-- Naming and structure of anything touched or added conform to §3.
+- Naming and structure of anything touched or added conform to §4.
+
+### 1.7 Skill or playbook usage — invoke the right one proactively, don't wait to be asked
+
+If this project defines reusable skills, playbooks, or checklists for recurring kinds of work (an audit procedure, a restructuring procedure, a design-review procedure, a scope-disambiguation procedure), recognizing which situation calls for which one — and invoking it without waiting for the user to name it — is itself part of doing the work well. Treating them as optional extras that only run when explicitly requested is how audits get skipped and drift accumulates.
+
+List each such skill/playbook here with the file or command that invokes it and the concrete trigger conditions for using it, in a table like:
+
+| Skill/playbook | Location | Invoke when |
+|---|---|---|
+| *(e.g. a broad app-wide audit)* | *(its file/command)* | *(the trigger conditions that should call it, stated concretely enough that "I should have run this" is checkable after the fact)* |
+| *(e.g. a code-quality-specific audit)* | | |
+| *(e.g. a structural-reorganization procedure)* | | |
+| *(e.g. a visual/aesthetic-specific audit)* | | |
+| *(e.g. a scope/ambiguity-resolution procedure)* | | |
+
+**How this interacts with the rest of this document:**
+- Any maintenance cadence defined elsewhere in this document (e.g. §4's "every ~50 commits") is a *floor*, not the only trigger — a listed skill should run sooner whenever its specific trigger condition is hit mid-task.
+- Running an overly broad skill when a narrower one actually fits wastes the same effort §5 (Change Scope Discipline) warns against — match the skill to the actual scope of concern, not the biggest hammer available.
+- These skills are companions to, not substitutes for, §1.6 (ask rather than assume): a skill's own verification gates do not remove the obligation to flag a genuinely ambiguous or high-stakes call to the project owner.
 
 ---
 

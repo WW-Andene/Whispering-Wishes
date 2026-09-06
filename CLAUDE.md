@@ -26,7 +26,25 @@ A task is not complete until all of the following hold — treat this as the exi
 - The full relevant test suite passes — not just the test for the immediate change; a regression elsewhere is still a regression.
 - Any newly-introduced non-obvious behavior, tradeoff, or known limitation is documented **in the code or commit message**, not only explained conversationally. If asked "did you document it?", the answer should already be yes.
 - The diff is reviewed for scope: no unrelated cleanup, no drive-by refactors, no speculative abstractions bundled into the same change (see §5).
-- Naming and structure of anything touched or added conform to §3.
+- Naming and structure of anything touched or added conform to §4.
+
+### 1.7 Skill usage — invoke the right skill proactively, don't wait to be asked
+
+This project defines six skills under `claude_skill/`, each scoped to a distinct kind of work. Recognizing which situation calls for which skill — and invoking it without waiting for the user to name it — is itself part of doing the work well; treating them as optional extras that only run when explicitly requested is how audits get skipped and drift accumulates.
+
+| Skill | File | Invoke when |
+|---|---|---|
+| `app-audit` | `claude_skill/app-audit-SKILL.md` | A broad, cross-cutting review is called for — security, performance, UX, accessibility, i18n, architecture, "review before launch," "my app feels incoherent," or any request to evaluate the app as a whole rather than one change. |
+| `code-audit` | `claude_skill/code-audit-SKILL.md` | Code-level quality is the concern specifically — naming, dead code, duplication, architecture, logic correctness, state management, error handling, async patterns, type safety. This is the skill the §4.9 maintenance cadence's "code-audit pass" refers to; name it explicitly rather than performing an ad hoc, unscoped review. |
+| `app-restructuring` | `claude_skill/app-restructuring-SKILL.md` | The work is actual structural change — file/folder reorganization, module-boundary redefinition, splitting a god file (§4.5), consolidating shared code, or anything else in §4 that goes beyond auditing into rearranging. |
+| `design-aesthetic-audit` | `claude_skill/design-aesthetic-audit-SKILL.md` | The concern is visual/aesthetic quality specifically — color, typography, motion, visual hierarchy, "make it feel premium," matching a named reference aesthetic — as distinct from the numeric design-token compliance in §6, which is mechanical rather than aesthetic judgment. |
+| `art-direction-engine` | `claude_skill/art-direction-engine-SKILL.md` | A new UI, component, or visual theme is being built from scratch and needs an original, distinctive look rather than a default pattern — not for auditing existing UI (that's `design-aesthetic-audit`). |
+| `scope-context` | `claude_skill/scope-context-SKILL.md` | A request targets multiple instances across files ("all X," "every Y," "standardize Z") or is spatially/referentially ambiguous ("the box," "make it bigger") — before guessing at scope or referent, run this skill's disambiguation process instead. |
+
+**How this interacts with the rest of this document:**
+- The §4.9 maintenance cadence ("every ~50 commits") is the *floor* for `app-restructuring` and `code-audit` — either can and should run sooner when a specific trigger above is hit mid-task, not only on the fixed cadence.
+- Running the wrong skill (e.g. a broad `app-audit` when the actual concern is narrowly a naming/dead-code pass better served by `code-audit`) wastes the same effort §5 (Change Scope Discipline) warns against — match the skill to the actual scope of concern, not the biggest hammer available.
+- These skills are companions to, not substitutes for, §1.6 (ask rather than assume): a skill's own verification gates do not remove the obligation to flag a genuinely ambiguous or high-stakes call to the user.
 
 ---
 
