@@ -58,6 +58,64 @@ Structuring, organizing, segmenting, naming, and classifying files, folders, and
 
 Hygiene, ownership clarity, coherence, and — above all — **consistency** (of naming, of structure, and of process) are a standing priority that no task, deadline, or request implicitly waives. If a request would require violating this, flag the conflict before proceeding rather than complying silently.
 
+The rest of this section makes that mandate concrete: where a new file or folder goes, what it must be named, and what is and isn't allowed to exist as a standalone file — rather than leaving "structure it properly" as an unstructured instruction.
+
+### 4.1 Directory taxonomy — where a new file goes
+
+The codebase is already organized by **purpose**, not by file type. Before creating anything, classify what you're building against this table and place it in the matching existing directory — do not guess, and do not default to wherever feels adjacent to the thing you're already touching.
+
+| Purpose | Location | Example |
+|---|---|---|
+| Per-character damage-engine logic (TriggerBlocks) | `app/src/engine/characterBlocks/` | `aalto.blocks.js` |
+| Engine math, schema, and resolution logic shared across all characters | `app/src/engine/{math,schema,resolver}/` | `damageFormula.js`, `block.schema.js` |
+| Static/reference data tables (characters, weapons, echoes, banners) | `app/src/data/` | `characters.js`, plus a `.fr.js` sibling for the French localization of the same table |
+| Sourced raw reference material for a character (patch notes, kit text, drop rates) — not code | `Data dump/<Character>/<Character>.md` | `Data dump/Aalto/Aalto.md` |
+| App-wide singleton services with no UI (storage, reducer, time, feature flags) | `app/src/core/` | `storage.js`, `reducer.js` |
+| A self-contained product feature's components and feature-local logic | `app/src/features/<feature>/` | `features/teams/TeamsTab.jsx`, `features/teams/calcEngine.js` |
+| Reusable React hooks (state/effect logic used by more than one place) | `app/src/hooks/` | `useTabNavigation.js` |
+| React context providers | `app/src/providers/` | `ToastProvider.jsx` |
+| UI components, constants, or utilities reused **across more than one feature** | `app/src/shared/` | `shared/components/`, `shared/constants/` |
+| Generic, framework-agnostic utility functions (no React, no app state) | `app/src/utils/` | `generateId.js` |
+| Global stylesheets | `app/src/styles/` | `kuro.css` |
+| Every automated test, regardless of what it tests | `app/src/__tests__/` (colocated centrally — this repo does not colocate tests next to source) | `triggerEngine-aalto.test.js` |
+| Golden/reference fixtures a test compares against | `app/src/__tests__/__fixtures__/` | `phase3-parity-golden.json` |
+
+**Decision procedure, in order:**
+1. Does an existing directory already match this artifact's purpose by the table above? Use it.
+2. Is it a genuinely new *kind* of purpose the table doesn't cover (not just a new instance of an existing kind, like a new character or a new feature)? Then creating a new top-level directory is itself a structural decision — flag it and get confirmation before creating it (per the general hygiene mandate above), rather than deciding unilaterally.
+3. Never create a "misc," "helpers," "common," or "stuff" catch-all directory. If something doesn't fit the existing taxonomy, that is a signal to ask, not to invent a dumping ground.
+
+### 4.2 Naming conventions — how a new file is named
+
+Naming is not a stylistic afterthought; a misleading or inconsistent name is a hygiene violation on the same footing as a misplaced file.
+
+- **React components:** `PascalCase.jsx`, named after the component they export (`TeamsTab.jsx` exports `TeamsTab`).
+- **Hooks:** `useCamelCase.js`, always prefixed `use`, named after what state/behavior they encapsulate (`useTabNavigation.js`).
+- **Plain modules (utils, core services, engine logic):** `camelCase.js`, named after the single responsibility of the module, not after the ticket, task, or person that produced it.
+- **Per-character engine blocks:** the character's identifier in lowercase, exactly matching its existing id elsewhere in the data layer, suffixed `.blocks.js` (`cartethyia.blocks.js`). Never introduce a second spelling or casing for the same character.
+- **Tests:** `<subjectCamelCase>.test.js` for a unit/integration test of a specific module (`rotationSimulator.test.js`); the established `triggerEngine-<lowercasecharname>.test.js` pattern for a character's trigger-block regression test. A new test's name must make its subject identifiable without opening the file.
+- **Fixtures:** `<subject>-golden.json`, living in `__fixtures__/`, never inline-duplicated elsewhere.
+- **Localized data:** a `.fr.js` (or other locale) suffix on the exact same base name as the source-language file, in the same directory — never a separately-organized locale tree for `data/`.
+
+### 4.3 Persistent documentation — where it lives, and what "persistent" means
+
+This is the rule that exists specifically to stop notes, logs, and one-off summaries from accumulating across the repo over time.
+
+**A finding, decision, or piece of reasoning that must survive the current task belongs in exactly one of these, and nowhere else:**
+1. **A code comment**, at the exact line the reasoning concerns, when the point is "why this specific line is the way it is" (e.g. the Camellya chain-scoping investigation documented inline in `phase3-parityGolden.test.js`'s `EXPECTED_DIVERGENCES` entry).
+2. **The commit message**, when the point is "why this change was made" and doesn't need to be visible to someone just reading the code later.
+3. **An existing, purpose-named reference document already living beside the code it documents** — the established pattern in this repo is a doc named after its exact subject, colocated with what it describes (`engine/characterBlocks/CONTRIBUTING.md` for block-authoring conventions, `features/teams/CALC_TEAM_STATS_DEPENDENCY_MAP.md` for that module's dependency graph). Extend one of these when the new information belongs to its existing subject.
+4. **A new reference document**, only when the information is a genuine, reusable deliverable with a clear subject and no existing home for it — named after that subject (not "notes" or "log"), placed beside the code it documents (following the pattern in point 3), and only after flagging its creation to the user, since a new standalone doc is a structural addition, not an incidental byproduct of the task at hand.
+
+**What must never happen, because this is the specific failure mode this rule exists to prevent:**
+- Creating files like `NOTES.md`, `TODO.md`, `progress.md`, `fix-log.md`, `investigation.md`, `summary.md`, or any other generically-named scratch or status file inside the repository, at any location, for any reason. If you want to remember something across steps of the same task, use the session's own scratchpad directory (outside the repository) — never a tracked file.
+- Leaving a diagnostic-only script or test in the tree after it has served its verification purpose (see §2.4). A temporary `zzz-diag-*.test.js`, a debug-only `throw`, or a hand-rolled reproduction script is deleted before the task is considered done — it does not get committed "just in case," and it is never a substitute for one of the four permanent homes above.
+- Writing the same finding into more than one of the above without reason — pick the one destination that fits, rather than a code comment *and* a new doc *and* a chat explanation of the same fact.
+
+### 4.4 New top-level files and directories
+
+The repository root and `app/src/` top level are reserved for canonical, whole-project artifacts (e.g. `README.md`, `IDENTITY.md`, `GAME_TAXONOMY.md`, `CLAUDE.md`, and the top-level source directories in §4.1). Adding anything new at either level — a new root `.md` file, a new top-level `src` directory — is a structural decision on the same footing as changing the taxonomy itself: flag it and get confirmation before creating it, don't add it as a side effect of an unrelated task.
+
 **Maintenance cadence (lifecycle management):** run the `app-restructuring` skill (`claude_skill/app-restructuring-SKILL.md`) and a code-audit pass on a regular cadence — as a floor, every ~50 commits — to prevent structural drift from accumulating. This is scheduled maintenance, analogous to a records-retention review, not something to defer until requested.
 
 ### Standing exception — MapTab *(Whispering-Wishes-specific)*

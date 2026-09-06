@@ -58,6 +58,58 @@ Structuring, organizing, segmenting, naming, and classifying files, folders, and
 
 Hygiene, ownership clarity, coherence, and — above all — **consistency** (of naming, of structure, and of process) are a standing priority that no task, deadline, or request implicitly waives. If a request would require violating this, flag the conflict before proceeding rather than complying silently.
 
+The rest of this section makes that mandate concrete: where a new file or folder goes, what it must be named, and what is and isn't allowed to exist as a standalone file — rather than leaving "structure it properly" as an unstructured instruction. Populate the tables and examples below with this project's own conventions the first time this template is adopted; keep the structure (taxonomy → naming → persistent-documentation homes → new-top-level-entry gate) intact.
+
+### 4.1 Directory taxonomy — where a new file goes
+
+Every codebase should be organized by **purpose**, not by file type. Before creating anything, classify what you're building against a table like this one and place it in the matching existing directory — never guess, and never default to wherever feels adjacent to the thing you're already touching. Fill in the left column with this project's actual purpose categories and the right column with its actual directories; keep the row for tests and fixtures, which almost every project needs:
+
+| Purpose | Location |
+|---|---|
+| *(e.g. app-wide singleton services with no UI)* | *(e.g. `src/core/`)* |
+| *(e.g. a self-contained product feature's components and logic)* | *(e.g. `src/features/<feature>/`)* |
+| *(e.g. reusable hooks/composables)* | *(e.g. `src/hooks/`)* |
+| *(e.g. UI/constants/utilities reused across more than one feature)* | *(e.g. `src/shared/`)* |
+| *(e.g. generic, framework-agnostic utility functions)* | *(e.g. `src/utils/`)* |
+| Every automated test | Wherever this project's testing convention places them (colocated with source, or centralized — pick one and apply it everywhere) |
+| Golden/reference fixtures a test compares against | A dedicated fixtures directory beside the tests |
+
+**Decision procedure, in order:**
+1. Does an existing directory already match this artifact's purpose by the table above? Use it.
+2. Is it a genuinely new *kind* of purpose the table doesn't cover (not just a new instance of an existing kind)? Then creating a new top-level directory is itself a structural decision — flag it and get confirmation before creating it (per the general hygiene mandate above), rather than deciding unilaterally.
+3. Never create a "misc," "helpers," "common," or "stuff" catch-all directory. If something doesn't fit the existing taxonomy, that is a signal to ask, not to invent a dumping ground.
+
+### 4.2 Naming conventions — how a new file is named
+
+Naming is not a stylistic afterthought; a misleading or inconsistent name is a hygiene violation on the same footing as a misplaced file. Define, and then hold to, an explicit convention per artifact type this project has — for example:
+
+- **UI components:** a consistent casing convention, named after the component/export itself.
+- **Hooks/composables:** a consistent prefix (`use`, or the framework's equivalent), named after the state/behavior they encapsulate.
+- **Plain modules:** named after the single responsibility of the module, not after the ticket, task, or person that produced it.
+- **Domain entities with a stable identifier** (e.g. per-item configuration files keyed to a real-world id): the identifier's canonical spelling and casing, used identically everywhere it appears — never a second spelling for the same entity.
+- **Tests:** a name that makes the test's subject identifiable without opening the file.
+- **Fixtures:** named after their subject, living beside/under the tests that use them, never inline-duplicated elsewhere.
+- **Localized variants of the same data:** the exact same base name as the source-language file, distinguished only by a locale suffix, in the same directory.
+
+### 4.3 Persistent documentation — where it lives, and what "persistent" means
+
+This is the rule that exists specifically to stop notes, logs, and one-off summaries from accumulating across the repo over time.
+
+**A finding, decision, or piece of reasoning that must survive the current task belongs in exactly one of these, and nowhere else:**
+1. **A code comment**, at the exact line the reasoning concerns, when the point is "why this specific line is the way it is."
+2. **The commit message**, when the point is "why this change was made" and doesn't need to be visible to someone just reading the code later.
+3. **An existing, purpose-named reference document already living beside the code it documents.** Extend one of these when the new information belongs to its existing subject, rather than starting a new file.
+4. **A new reference document**, only when the information is a genuine, reusable deliverable with a clear subject and no existing home for it — named after that subject (not "notes" or "log"), placed beside the code it documents, and only after flagging its creation to the project owner, since a new standalone doc is a structural addition, not an incidental byproduct of the task at hand.
+
+**What must never happen, because this is the specific failure mode this rule exists to prevent:**
+- Creating files like `NOTES.md`, `TODO.md`, `progress.md`, `fix-log.md`, `investigation.md`, `summary.md`, or any other generically-named scratch or status file inside the repository, at any location, for any reason. If you want to remember something across steps of the same task, use an out-of-repository scratch location — never a tracked file.
+- Leaving a diagnostic-only script or test in the tree after it has served its verification purpose (see §2.4). A temporary diagnostic test, a debug-only trace, or a hand-rolled reproduction script is deleted before the task is considered done — it does not get committed "just in case," and it is never a substitute for one of the four permanent homes above.
+- Writing the same finding into more than one of the above without reason — pick the one destination that fits, rather than a code comment *and* a new doc *and* a chat explanation of the same fact.
+
+### 4.4 New top-level files and directories
+
+The repository root and the top level of the source tree are reserved for canonical, whole-project artifacts (a README, this rules file, and the top-level source directories in §4.1). Adding anything new at either level — a new root document, a new top-level source directory — is a structural decision on the same footing as changing the taxonomy itself: flag it and get confirmation before creating it, don't add it as a side effect of an unrelated task.
+
 **Maintenance cadence (lifecycle management):** run a project restructuring/audit skill (if one exists) and a code-audit pass on a regular cadence — as a floor, every ~50 commits — to prevent structural drift from accumulating. This is scheduled maintenance, analogous to a records-retention review, not something to defer until requested.
 
 **Standing exceptions:** any file or module the project owner designates off-limits should be listed here explicitly (path, scope of what's covered, and the exact condition under which it may be touched). Do not touch such files outside that condition, even for this maintenance cadence, an unrelated defect fix, or an adjacent "quick" change.
