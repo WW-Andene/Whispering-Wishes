@@ -106,6 +106,14 @@ const EXPECTED_DIVERGENCES = {
   // number (79 -> 69); this test's own standalone engine call doesn't apply that gate, so it stays
   // at the un-derated value. Measured ratio ~1.139 (engine/legacy) — real, expected, not a regression.
   Baizhi: { min: 1.05, max: 1.20 },
+  // Added 2026-09-06 (Brant completeness pass): same class as Aalto/Aemeath/Augusta/Baizhi above.
+  // To the Horizon (Liberation) got a real, sourced 24s cooldown added (Data dump/Brant/Brant.md's
+  // own Cooldown row) — his modeled rotation (~8.2s per the dump's own Damage Profile) recasts it
+  // more often than that cooldown allows, so calcTeamStats()'s cooldownSteadyState gate correctly
+  // derates the legacy RAW number (3468 -> 3074); this test's own standalone engine call doesn't
+  // apply that gate, so it stays at the un-derated value. Measured ratio ~1.128 (engine/legacy) —
+  // real, expected, not a regression.
+  Brant: { min: 1.05, max: 1.20 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number

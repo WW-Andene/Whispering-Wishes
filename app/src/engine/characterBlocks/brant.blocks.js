@@ -4,6 +4,15 @@
 // CHAR_BUFF_TABLE['Brant'], RESONANCE_CHAIN_DATA['Brant'] (+ its own detailed audit
 // comment, read directly for each node's real mechanic/trigger/stacking),
 // SKILL_MULTIPLIERS['Brant'], and CHARACTER_ROTATIONS['Brant']. No new numbers invented.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the Aalto/Aemeath/Augusta/Baizhi passes) — sourced
+// from Data dump/Brant/Brant.md's own Cooldown/Concerto Regen rows (To the Horizon/Returned from
+// Ashes). Resonance Skill "Anchors Aweigh!" is real and has a sourced 4s cooldown/10 Concerto Regen
+// in the dump, but CHARACTER_ROTATIONS['Brant'] never casts it (the dump's own "Standard Rotation"
+// treats it as optional/cancelled pre-rotation) — correctly has no damage block at all, so there is
+// no block to attach that cooldown/energy data to; left as an honest gap, not fabricated onto an
+// unrelated block.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -29,8 +38,13 @@ export const BRANT_BLOCKS = [
     id: 'brant.liberation.to-the-horizon',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:To the Horizon' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Brant/Brant.md's own "Cooldown: 24s" row.
+    timing: { cooldown: 24 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('85.1%×4 + 340.2%'), category: 'libDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Brant/Brant.md's own
+    // "Concerto Regen: 20" row for To the Horizon. Its "Resonance Cost: 175" row is a Liberation-gauge
+    // cost, not a gain — no matching schema field, not modeled (no fabricated cost mechanic).
+    concertoEnergyGain: 20,
   },
   {
     id: 'brant.midair.stage-2-3-charged-flip',
@@ -54,6 +68,12 @@ export const BRANT_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('47.2%×2 + 94.4% + 188.9%×2 + 1322.1%'), category: 'basicDmg' , basis: 'ATK' },
     note: "Counted as Basic ATK DMG per its own CHARACTER_ROTATIONS note. Also grants the team a 30s shield, not modeled (no DPS component).",
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Brant/Brant.md's own
+    // "Returned from Ashes Concerto Regen: 20" row (Forte Circuit table). No cooldown: this is a
+    // 100-Bravo-gauge-triggered cast, not a timer-gated one — Bravo isn't a schema-representable
+    // resource threshold (same category of gap as other gauge-triggered casts elsewhere in the
+    // roster, e.g. Baizhi's Forte), left unmodeled rather than fabricated as a fixed cooldown.
+    concertoEnergyGain: 20,
   },
   {
     id: 'brant.chain.s6-secondary-blast',
