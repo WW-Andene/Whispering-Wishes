@@ -4,11 +4,13 @@
 // timeline bars, and per-day notes.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, GanttChart, X } from 'lucide-react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, GanttChart, X, Bell, BellOff } from 'lucide-react';
 import { ASTRITE_PER_PULL } from '../../data/constants.js';
 import { getLocalizedEvents, BANNER_HISTORY, PIONEER_PODCAST_HISTORY, DOUBLED_PAWNS_MATRIX_HISTORY, TACTICAL_HOLOGRAM_HISTORY, VERSION_DATES } from '../../data/banners.js';
 import { t, formatNumber, formatDate, getLocale } from '../../utils/i18n.js';
+import { isNativePlatform } from '../../utils/pushNotifications.js';
+import { scheduleEventReminder, cancelEventReminder, isEventReminderScheduled, getReminderLeadHours } from '../../utils/localNotifications.js';
 
 const EVENTS = getLocalizedEvents(getLocale());
 
@@ -104,7 +106,7 @@ const getActiveEvents = (date) => {
   return result;
 };
 
-function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote }) {
+function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote, toast }) {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
   const [noteInput, setNoteInput] = useState('');
@@ -197,6 +199,35 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
   // ── Chronology bars ──────────────────────────────────────────────────────
   const [selectedBar, setSelectedBar] = useState(null);
+  // ── End-of-event reminders — on-device only (see localNotifications.js header for why
+  // this is a local schedule rather than another server-broadcast push). Only offered for
+  // bars with a real single end date (not weekly resets, which recur with no one "end").
+  const nativeSupported = useMemo(() => isNativePlatform(), []);
+  const [reminderScheduled, setReminderScheduled] = useState(false);
+  useEffect(() => {
+    if (!nativeSupported || !selectedBar?.endDate || selectedBar.ended) { setReminderScheduled(false); return; }
+    let cancelled = false;
+    isEventReminderScheduled(selectedBar.key).then(v => { if (!cancelled) setReminderScheduled(v); });
+    return () => { cancelled = true; };
+  }, [nativeSupported, selectedBar]);
+  const toggleReminder = useCallback(async () => {
+    if (!selectedBar?.endDate) return;
+    if (reminderScheduled) {
+      await cancelEventReminder(selectedBar.key);
+      setReminderScheduled(false);
+      toast?.addToast?.(t('planner.calendar.reminderCancelled', { name: selectedBar.label }), 'success');
+    } else {
+      const leadHours = getReminderLeadHours();
+      const ok = await scheduleEventReminder({
+        key: selectedBar.key,
+        title: t('planner.calendar.reminderTitle', { name: selectedBar.label }),
+        body: t('planner.calendar.reminderBody', { name: selectedBar.label, hours: leadHours }),
+        endDate: selectedBar.endDate,
+      });
+      setReminderScheduled(ok);
+      toast?.addToast?.(t(ok ? 'planner.calendar.reminderSet' : 'planner.calendar.reminderFailed', { name: selectedBar.label, hours: leadHours }), ok ? 'success' : 'warning');
+    }
+  }, [selectedBar, reminderScheduled, toast]);
   const chronoBars = useMemo(() => {
     const monthStart = new Date(cal.year, cal.month, 1);
     const monthEnd = new Date(cal.year, cal.month + 1, 0); monthEnd.setHours(23, 59, 59, 999);
@@ -216,7 +247,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const daysLeft = Math.max(0, Math.ceil((bannerEnd - today) / 86400000));
         const endLabel = formatDate(bannerEnd, { month: 'short', day: 'numeric' });
         const startLabel = formatDate(bannerStart, { month: 'short', day: 'numeric' });
-        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel, startLabel, legendGroup: 'banner', description: t('planner.calendar.currentBannerPhase', { version: activeBanners?.version || '?', phase: activeBanners?.phase || '?' }) });
+        bars.push({ key: 'banner', label: `v${activeBanners?.version || '?'} P${activeBanners?.phase || '?'}`, color: BANNER_COLOR, start: bStart, end: bEnd, astrite: 0, daysLeft, endLabel, startLabel, endDate: bannerEnd, legendGroup: 'banner', description: t('planner.calendar.currentBannerPhase', { version: activeBanners?.version || '?', phase: activeBanners?.phase || '?' }) });
       }
     }
 
@@ -251,7 +282,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
         const endLabel = formatDate(cEnd, { month: 'short', day: 'numeric' });
         const startLabel = formatDate(clampedStart, { month: 'short', day: 'numeric' });
         const daysLeft = ended ? undefined : Math.max(0, Math.ceil((cEnd - today) / 86400000));
-        bars.push({ key, label, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft, ...extra });
+        bars.push({ key, label, color, start: eStart, end: eEnd, astrite, ended, endLabel, startLabel, daysLeft, endDate: cEnd, ...extra });
       }
     };
 
@@ -566,16 +597,24 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
 
           {/* Bar detail popup */}
           {selectedBar && (
-            <div onClick={() => setSelectedBar(null)} style={{ marginTop: '4px', padding: '8px 12px', borderRadius: 'var(--radius-md)', background: `${selectedBar.color}15`, border: `1px solid ${selectedBar.color}40`, cursor: 'pointer' }}>
-              <div style={{ fontSize: 'var(--font-base)', fontWeight: 600, color: selectedBar.color }}>{selectedBar.label}</div>
-              {selectedBar.description && <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>{selectedBar.description}</div>}
-              <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', marginTop: '4px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                {selectedBar.startLabel && <span>{selectedBar.startLabel} → {selectedBar.endLabel}</span>}
-                {selectedBar.astrite > 0 && <span className="text-yellow-400">{t('planner.astriteSuffix', { n: `+${selectedBar.astrite}` })}</span>}
-                {selectedBar.daysLeft != null && <span>{t('planner.calendar.daysLeftSuffix', { n: selectedBar.daysLeft })}</span>}
-                {selectedBar.ended && <span>{t('planner.calendar.endedLabel')}</span>}
-                {selectedBar.weekly && <span>{t('planner.calendar.resetsWeekly')}</span>}
+            <div style={{ marginTop: '4px', padding: '8px 12px', borderRadius: 'var(--radius-md)', background: `${selectedBar.color}15`, border: `1px solid ${selectedBar.color}40` }}>
+              <div onClick={() => setSelectedBar(null)} style={{ cursor: 'pointer' }}>
+                <div style={{ fontSize: 'var(--font-base)', fontWeight: 600, color: selectedBar.color }}>{selectedBar.label}</div>
+                {selectedBar.description && <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-secondary)', marginTop: '2px' }}>{selectedBar.description}</div>}
+                <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-disabled)', marginTop: '4px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  {selectedBar.startLabel && <span>{selectedBar.startLabel} → {selectedBar.endLabel}</span>}
+                  {selectedBar.astrite > 0 && <span className="text-yellow-400">{t('planner.astriteSuffix', { n: `+${selectedBar.astrite}` })}</span>}
+                  {selectedBar.daysLeft != null && <span>{t('planner.calendar.daysLeftSuffix', { n: selectedBar.daysLeft })}</span>}
+                  {selectedBar.ended && <span>{t('planner.calendar.endedLabel')}</span>}
+                  {selectedBar.weekly && <span>{t('planner.calendar.resetsWeekly')}</span>}
+                </div>
               </div>
+              {nativeSupported && selectedBar.endDate && !selectedBar.ended && (
+                <button onClick={toggleReminder} className={`kuro-btn kuro-btn-sm w-full flex items-center justify-center gap-1 ${reminderScheduled ? 'active-cyan' : ''}`} style={{ marginTop: '8px' }}>
+                  {reminderScheduled ? <Bell size={12} /> : <BellOff size={12} />}
+                  {reminderScheduled ? t('planner.calendar.reminderOn') : t('planner.calendar.reminderOff')}
+                </button>
+              )}
             </div>
           )}
 

@@ -157,7 +157,9 @@
     "refinementScaling": "Refinement Scaling",
     "ascensionMaterials": "Ascension Materials",
     "expMaterials": "EXP Materials",
-    "recommendedFor": "Recommended For"
+    "recommendedFor": "Recommended For",
+    "assetsSection": "Assets",
+    "assetBanner": "Banner"
   },
   "echoDetail": {
     "echoDetailsAria": "{{name}} echo details",

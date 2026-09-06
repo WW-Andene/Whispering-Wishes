@@ -32,6 +32,12 @@
     "copyToken": "Copy Device Token",
     "tokenCopied": "Device token copied."
   },
+  "reminderLeadTime": {
+    "title": "Event Reminders",
+    "description": "How far ahead of an event's end date the \"Notify me when this ends\" Calendar reminder should fire.",
+    "hoursLabel": "{{hours}}h",
+    "existingNote": "Only applies to reminders you set after changing this — existing ones keep their original time."
+  },
   "importFlow": {
     "title": "Import Convene History",
     "subtitle": "Import your Convene history directly from the game.",

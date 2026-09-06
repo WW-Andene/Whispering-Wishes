@@ -157,7 +157,9 @@
     "refinementScaling": "Scaling du raffinement",
     "ascensionMaterials": "Matériaux d'ascension",
     "expMaterials": "Matériaux d'XP",
-    "recommendedFor": "Recommandé pour"
+    "recommendedFor": "Recommandé pour",
+    "assetsSection": "Ressources",
+    "assetBanner": "Bannière"
   },
   "echoDetail": {
     "echoDetailsAria": "Détails de l'Écho {{name}}",

@@ -32,6 +32,12 @@
     "copyToken": "Copier le jeton de l'appareil",
     "tokenCopied": "Jeton de l'appareil copié."
   },
+  "reminderLeadTime": {
+    "title": "Rappels d'événements",
+    "description": "Combien de temps avant la fin d'un événement le rappel « Me prévenir à la fin » du Calendrier doit se déclencher.",
+    "hoursLabel": "{{hours}}h",
+    "existingNote": "S'applique uniquement aux rappels activés après ce changement — les rappels déjà activés gardent leur horaire d'origine."
+  },
   "importFlow": {
     "title": "Importer l'historique des convocations",
     "subtitle": "Importez votre historique de convocations directement depuis le jeu.",

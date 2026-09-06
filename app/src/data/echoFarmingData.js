@@ -24,13 +24,14 @@ export const ECHO_MAIN_STAT_CHANCE = {
   },
 };
 
-// The wiki describes Echoes as having a "Primary" (random) and a "Secondary" (predetermined,
-// i.e. fixed per specific Echo — not re-rolled per drop) main stat. This app has no real
-// per-Echo secondary-mainstat table (that would require sourcing ~100 individual Echoes'
-// fixed second stat, which nothing in Data dump/ currently covers), so the calculator below
-// treats "Secondary Stat" as an independent roll from this SAME distribution as an explicit,
-// labeled approximation — never claim it's the real per-Echo mechanic.
-export const ECHO_SECONDARY_STAT_IS_APPROXIMATED = true;
+// The wiki describes Echoes as having a "Primary" (random) and a "Secondary" (predetermined —
+// fixed per cost tier, not re-rolled per drop, and never the same stat as the Primary) main
+// stat. Cross-referencing Probability.md's own "Mainstats" pool per cost against its "Detailed
+// mainstat values distribution" Primary-roll sample shows exactly one flat stat missing from
+// each cost tier's Primary sample — that's the fixed Secondary for that tier, not a coincidence:
+// 1-Cost never rolls flat HP as Primary, 3-Cost and 4-Cost never roll flat ATK as Primary. So
+// Secondary Stat is a deterministic fact per cost, not a probability at all.
+export const SECONDARY_STAT_BY_COST = { 1: 'HP', 3: 'ATK', 4: 'ATK' };
 
 // Substat TYPE pick chance — officially disclosed by Kuro (KR gaming-disclosure law). Uniform
 // across the 13-substat pool, shrinking as substats already on the Echo are removed from it.
@@ -79,22 +80,106 @@ export function getPlateauChance(stat, minTierIdx) {
 // See Data dump/Echoes/Data Bank.md.
 export const TACET_FIELD_WAVEPLATE_COST = 60;
 
-// Endgame (max Data Bank level / Union Level 70, SOL3 Phase 8) average yield per Tacet Field
-// run — the community-sampled row with by far the largest sample size (1697 runs) in
-// Data dump/Echoes/Drop Rates.md's Tacet Field table. Used as the default farming-rate
-// assumption; there is no published breakdown of drop rate BY SONATA SET or BY COST TIER
-// (only by star Rarity, which the wiki notes is independent of cost) — so this treats any
-// Echo the run drops as a candidate instance, which is optimistic if the target set/cost is
-// actually rarer than average. Flagged in the calculator's own UI, not hidden.
-export const TACET_FIELD_ENDGAME_YIELD = {
-  runsSampled: 1697,
-  avgEchoesPerRun: 4.30,
-  avgShellCreditPerRun: 5250,
-};
+// ── Data Bank Level table (Data dump/Echoes/Data Bank.md) — rarity split changes drastically
+// by level and swings back down for lower rarities as they age out of the pool (e.g. 4★ peaks
+// at 80% around level 19-20, then drops to 0% at endgame once the pool becomes 100% 5★), so a
+// target's real rarity chance genuinely depends on which level the player is farming at — it
+// must be an input, never assumed. rarity: { 2, 3, 4, 5 } percentages sum to 100 at each level
+// (blank cells in the source table are 0 — that rarity isn't in the pool yet/anymore).
+export const DATA_BANK_LEVELS = [
+  { level: 0, sol3Phase: 1, baseDropRate: 6, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 1, sol3Phase: 1, baseDropRate: 10, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 2, sol3Phase: 1, baseDropRate: 10, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 3, sol3Phase: 1, baseDropRate: 10, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 4, sol3Phase: 1, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 5, sol3Phase: 1, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 70, 3: 30, 4: 0, 5: 0 } },
+  { level: 6, sol3Phase: 1, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 50, 3: 50, 4: 0, 5: 0 } },
+  { level: 7, sol3Phase: 1, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 20, 3: 80, 4: 0, 5: 0 } },
+  { level: 8, sol3Phase: 3, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
+  { level: 9, sol3Phase: 3, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
+  { level: 10, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
+  { level: 11, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 50, 4: 50, 5: 0 } },
+  { level: 12, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 50, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 50, 4: 50, 5: 0 } },
+  { level: 13, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 50, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 25, 4: 75, 5: 0 } },
+  { level: 14, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 60, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 25, 4: 75, 5: 0 } },
+  { level: 15, sol3Phase: 4, baseDropRate: 20, cost4Enhanced: 60, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 70, 5: 30 } },
+  { level: 16, sol3Phase: 4, baseDropRate: 20, cost4Enhanced: 80, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 70, 5: 30 } },
+  { level: 17, sol3Phase: 4, baseDropRate: 20, cost4Enhanced: 80, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 50, 5: 50 } },
+  { level: 18, sol3Phase: 4, baseDropRate: 20, cost4Enhanced: 90, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 50, 5: 50 } },
+  { level: 19, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 90, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 20, 5: 80 } },
+  { level: 20, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 20, 5: 80 } },
+  { level: 21, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 22, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 23, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 24, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 25, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 26, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 27, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 28, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 29, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 30, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+];
+export const MAX_DATA_BANK_LEVEL = 30;
 
-// Endgame Weekly/World Boss average yield — bosses do not cost Waveplate (user-confirmed).
-// From Drop Rates.md's own largest-sample rows (UL60/SOL7 for Weekly Boss at 291 runs, UL70/
-// SOL8 for World Boss at 335 runs — picked for sample size over raw recency since both are
-// within one tier of endgame).
-export const WEEKLY_BOSS_ENDGAME_YIELD = { runsSampled: 291, avgEchoesPerRun: 10.14, avgShellCreditPerRun: 54000 };
-export const WORLD_BOSS_ENDGAME_YIELD = { runsSampled: 335, avgEchoesPerRun: 3.62, avgShellCreditPerRun: 10000 };
+// Tacet Field average yield per run, keyed by SOL3 Phase (1-8) — Data dump/Echoes/Drop
+// Rates.md's Tacet Field table breaks its sample down by SOL3 Phase already (UL19 Phase1/2,
+// UL20 Phase3, UL30 Phase4, UL40 Phase5, UL50 Phase6, UL60 Phase7, UL70 Phase8), and that
+// file's own note says "Rarity distribution of Echoes is based on your Data Bank level" — so
+// it's not just an endgame number, it genuinely varies with progression the same way rarity
+// does. Data Bank.md's own level table gives the SOL3 Phase required per Data Bank Level
+// (see `sol3Phase` on DATA_BANK_LEVELS above), which is how getTacetFieldYield below picks the
+// right row instead of always assuming endgame. There is still no published breakdown of drop
+// rate BY SONATA SET or BY COST TIER (only by star Rarity) — so this still treats any Echo the
+// run drops as a candidate instance, optimistic if the target set/cost is rarer than average.
+// Flagged in the calculator's own UI, not hidden.
+export const TACET_FIELD_YIELD_BY_SOL3_PHASE = {
+  1: { runsSampled: 33, avgEchoesPerRun: 2.61, avgShellCreditPerRun: 2500 },
+  2: { runsSampled: 17, avgEchoesPerRun: 2.41, avgShellCreditPerRun: 2500 },
+  3: { runsSampled: 79, avgEchoesPerRun: 2.92, avgShellCreditPerRun: 3500 },
+  4: { runsSampled: 115, avgEchoesPerRun: 4.13, avgShellCreditPerRun: 4500 },
+  5: { runsSampled: 102, avgEchoesPerRun: 4.24, avgShellCreditPerRun: 4750 },
+  6: { runsSampled: 214, avgEchoesPerRun: 4.25, avgShellCreditPerRun: 5000 },
+  7: { runsSampled: 269, avgEchoesPerRun: 4.33, avgShellCreditPerRun: 5125 },
+  8: { runsSampled: 1697, avgEchoesPerRun: 4.30, avgShellCreditPerRun: 5250 },
+};
+// Given a Data Bank Level, returns the Tacet Field yield for the SOL3 Phase it requires.
+export function getTacetFieldYield(dataBankLevel) {
+  const row = DATA_BANK_LEVELS.find(r => r.level === dataBankLevel) || DATA_BANK_LEVELS[DATA_BANK_LEVELS.length - 1];
+  return TACET_FIELD_YIELD_BY_SOL3_PHASE[row.sol3Phase] || TACET_FIELD_YIELD_BY_SOL3_PHASE[8];
+}
+
+// ── Echo Leveling — Data dump/Echoes/Echo Leveling.md (wiki's "Echo Leveling Table",
+// Refunding section excluded per request). Cumulative EXP needed to reach each level from 0,
+// per rarity — max level differs by rarity (2★→10, 3★→15, 4★→20, 5★→25, matching Data
+// Bank.md's own rarity/max-level table). Index = level, value = cumulative EXP; undefined
+// past a rarity's own max level.
+export const ECHO_LEVEL_CUMULATIVE_EXP = {
+  5: [0, 400, 1000, 1900, 3000, 4400, 6100, 8100, 10500, 13300, 16500, 20100, 24200, 28800, 33900, 39600, 46000, 53100, 60900, 69600, 79100, 89600, 101100, 113700, 127500, 142600],
+  4: [0, 320, 800, 1520, 2400, 3520, 4880, 6480, 8400, 10640, 13200, 16080, 19360, 23040, 27120, 31680, 36800, 42480, 48720, 55680, 63380],
+  3: [0, 160, 400, 760, 1200, 1760, 2440, 3240, 4200, 5320, 6600, 8040, 9680, 11520, 13560, 15840],
+  2: [0, 100, 250, 475, 750, 1100, 1525, 2025, 2625, 3325, 4125],
+};
+export const ECHO_MAX_LEVEL_BY_RARITY = { 2: 10, 3: 15, 4: 20, 5: 25 };
+// Shell Credit conversion — wiki's own disclosed rate, same source as the EXP table above.
+export const SHELL_CREDIT_PER_ECHO_EXP = 0.1;
+export const SHELL_CREDIT_PER_TUNE_ATTEMPT = 2000;
+// EXP granted per Sealed Tube tier (Echo Development Material) — same source as the leveling
+// table above. Highest-value tier first: greedy tube-count breakdowns (see
+// getSealedTubeBreakdown below) walk this order so they favor fewer, bigger tubes.
+export const SEALED_TUBE_EXP = { Premium: 5000, Advanced: 2000, Medium: 1000, Basic: 500 };
+
+// Greedy Premium→Basic breakdown of how many of each Sealed Tube tier covers a given amount of
+// EXP — shown alongside the raw EXP/Shell Credit numbers so leveling cost reads as something
+// you can actually go buy/farm, not just an abstract point total. Real inventories won't split
+// a tube, so any leftover remainder rounds up into one more of the smallest tier used.
+export function getSealedTubeBreakdown(exp) {
+  const tiers = Object.entries(SEALED_TUBE_EXP);
+  let remaining = exp;
+  const counts = tiers.map(([tier, value], i) => {
+    const isLast = i === tiers.length - 1;
+    const count = isLast ? Math.ceil(remaining / value) : Math.floor(remaining / value);
+    remaining -= count * value;
+    return { tier, count };
+  });
+  return counts.filter(({ count }) => count > 0);
+}

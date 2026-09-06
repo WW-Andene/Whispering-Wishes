@@ -206,7 +206,7 @@ function PlannerTab({
         </div>
         {!collapsed.calendar && (
           <CardBody className="space-y-3">
-            <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} />
+            <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} toast={toast} />
           </CardBody>
         )}
       </Card>
