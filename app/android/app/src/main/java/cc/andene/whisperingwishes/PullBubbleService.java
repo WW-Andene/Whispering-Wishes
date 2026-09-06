@@ -79,9 +79,9 @@ public class PullBubbleService extends Service {
 
     public static final String ACTION_TOGGLE = "cc.andene.whisperingwishes.action.TOGGLE_PULL_BUBBLE";
 
-    // Package-private, read by PulseBannerWidget's render to label/icon the toggle button
-    // correctly — a plain static flag is enough here since there is only ever one bubble
-    // instance system-wide (unlike PulseBannerWidget, which supports many placed instances).
+    // Package-private, read by PullBubbleCard (ProfileTab) via PullBubblePlugin to label/icon
+    // its toggle button correctly — a plain static flag is enough here since there is only
+    // ever one bubble instance system-wide.
     private static volatile boolean running = false;
     static boolean isRunning() { return running; }
 
@@ -106,18 +106,31 @@ public class PullBubbleService extends Service {
     // a pre-picker roll always had). Each Pin is "character"/"weapon" + a specific pinName
     // (rolls WidgetPullSimulator.roll() against that exact active banner) or "standard-
     // character"/"standard-weapon" with name always null (rolls rollStandard() instead —
-    // genuinely different math, see rollStandard's own comment). A normal tap on any option
+    // genuinely different math, see rollStandard's own comment) or — ONLY when it came from the
+    // "Both" button on a Characters/Weapon banner list, never from long-press — a merged pin
+    // with `mergedNames` set, rolling WidgetPullSimulator.rollMerged() against all of them as
+    // ONE true combined banner (same shared 5★ rate/pity/50-50, featured NAME picked uniformly
+    // among mergedNames — see rollMerged's own header for why). A normal tap on any option
     // REPLACES the whole set with just that one pin (the original single-select behavior,
-    // preserved); the per-category "Both" option replaces it with exactly the two pins it
-    // represents; long-pressing an option in a Characters/Weapon banner list instead TOGGLES
-    // that one pin into/out of the existing set, which is what lets a Character banner and a
-    // Weapon banner (or more) be selected together across categories. rollAndPlay() rolls
-    // `count` against every pin in the set and merges the results (WidgetPullSimulator.merge).
+    // preserved); "Both" replaces it with exactly one merged pin; long-pressing an option in a
+    // Characters/Weapon banner list instead TOGGLES that one plain (non-merged) pin into/out of
+    // the existing set, which is what lets a Character banner and a Weapon banner (or more) be
+    // selected together across categories — long-press multi-select stays independent rolls,
+    // deliberately never merged, since merging only makes sense within one real banner category
+    // sharing one real pity track, not across unrelated categories. rollAndPlay() rolls `count`
+    // (split across however many pins are in the set) against each pin and merges the DISPLAY
+    // results (WidgetPullSimulator.merge) — a merged pin still only counts as one slot in that
+    // split, same as any other pin.
     private static final class Pin {
         final String category, name, label;
-        Pin(String category, String name, String label) { this.category = category; this.name = name; this.label = label; }
+        final List<String> mergedNames; // null = normal pin; non-null = "Both"'s true merged roll
+        Pin(String category, String name, String label) { this(category, name, label, null); }
+        Pin(String category, String name, String label, List<String> mergedNames) {
+            this.category = category; this.name = name; this.label = label; this.mergedNames = mergedNames;
+        }
         // Two pins are "the same slot" if they share category+name — used to toggle a
-        // long-pressed option back off rather than adding a duplicate.
+        // long-pressed option back off rather than adding a duplicate. Merged pins are never
+        // compared here (long-press never touches them; "Both" always replaces the whole set).
         boolean sameSlot(Pin o) { return category.equals(o.category) && (name == null ? o.name == null : name.equals(o.name)); }
     }
     private final List<Pin> pinnedTargets = new ArrayList<>();
@@ -343,15 +356,18 @@ public class PullBubbleService extends Service {
         showSubBubbles();
     }
 
-    // Second level: Characters / Weapon / Standard, replacing ×1/×10/×80 in the same 3 middle
-    // slots — banner-picker's own top slot becomes a back arrow instead of the resonator icon
-    // while navigating any sub-level, hide stays put at the bottom regardless of level.
+    // Second level: Characters / Weapon / Standard / All, replacing ×1/×10/×80 in the same
+    // middle slots — banner-picker's own top slot becomes a back arrow instead of the resonator
+    // icon while navigating any sub-level, hide stays put at the bottom regardless of level.
+    // "All" pins directly (no further sub-level, same as Standard's two fixed picks) since it's
+    // not tied to any specific active banner — it's the whole historical character roster.
     private void showCategoryArc() {
         addBackButton(() -> enterMode(ArcMode.ROLL));
-        double[] angles = midAngles(3);
+        double[] angles = midAngles(4);
         addSubBubble(getString(R.string.pull_bubble_category_character), null, 0, angles[0], null, () -> enterMode(ArcMode.LIST_CHARACTER));
         addSubBubble(getString(R.string.pull_bubble_category_weapon), null, 0, angles[1], null, () -> enterMode(ArcMode.LIST_WEAPON));
         addSubBubble(getString(R.string.pull_bubble_category_standard), null, 0, angles[2], null, () -> enterMode(ArcMode.LIST_STANDARD));
+        addSubBubble(getString(R.string.pull_bubble_category_all), null, 0, angles[3], null, this::pinAllCharacters);
         addHideButton();
     }
 
@@ -430,7 +446,7 @@ public class PullBubbleService extends Service {
         addSubBubble(null, resonatorIcon, 0, angles[0], charLabel, () -> pinBanner(charPin), null);
         addSubBubble(null, weaponIcon, 0, angles[1], weapLabel, () -> pinBanner(weapPin), null);
         addSubBubble(getString(R.string.pull_bubble_both), null, 0, angles[2],
-                getString(R.string.pull_bubble_both_aria), () -> pinExact(charPin, weapPin), null);
+                getString(R.string.pull_bubble_both_aria), this::pinStandardBoth, null);
         addHideButton();
     }
 
@@ -475,26 +491,42 @@ public class PullBubbleService extends Service {
         enterMode(ArcMode.ROLL);
     }
 
-    // "Both" within a Characters/Weapon banner list — replaces the pin set with one Pin per
-    // currently-active banner in that category, so a roll fires `count` against each of them
-    // and shows the combined results (see WidgetPullSimulator.merge's own comment on why
-    // sharing that category's pity between them is correct, not a bug).
+    // "Both" within a Characters/Weapon banner list — replaces the pin set with ONE merged Pin
+    // covering every currently-active banner in that category, so a roll is a true combined
+    // banner (WidgetPullSimulator.rollMerged: one shared 5★ rate/pity/50-50, featured name
+    // picked uniformly among all of them) rather than several independent rolls glued together.
     private void pinBoth(String category, List<WidgetPullSimulator.BannerOption> options) {
         pinnedTargets.clear();
-        for (WidgetPullSimulator.BannerOption opt : options) pinnedTargets.add(new Pin(category, opt.pinName, opt.label));
+        List<String> names = new ArrayList<>();
+        for (WidgetPullSimulator.BannerOption opt : options) names.add(opt.pinName);
+        pinnedTargets.add(new Pin(category, null, getString(R.string.pull_bubble_both), names));
         updateMainBubbleIcon();
         Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, getString(R.string.pull_bubble_both)), Toast.LENGTH_SHORT).show();
         enterMode(ArcMode.ROLL);
     }
 
-    // "Both" on the Standard arc — the two fixed Standard pools are always exactly these two
-    // Pins, unlike pinBoth's dynamic per-category banner list above.
-    private void pinExact(Pin a, Pin b) {
+    // "Both" on the Standard arc — a merged roll over the UNION of the Standard-Character and
+    // Standard-Weapon pools (WidgetPullSimulator.rollStandardMerged), sharing one pity track.
+    // Standard has no featured/50-50 mechanic to preserve like rollMerged() does for limited
+    // banners — this is just "one flat uniform pick, but across both pools at once" — so the
+    // "standard-both" category sentinel is all rollAndPlay needs to route to it.
+    private void pinStandardBoth() {
         pinnedTargets.clear();
-        pinnedTargets.add(a);
-        pinnedTargets.add(b);
+        pinnedTargets.add(new Pin("standard-both", null, getString(R.string.pull_bubble_both)));
         updateMainBubbleIcon();
         Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, getString(R.string.pull_bubble_both)), Toast.LENGTH_SHORT).show();
+        enterMode(ArcMode.ROLL);
+    }
+
+    // "All" category — every character ever released pooled uniformly, no featured/50-50
+    // (WidgetPullSimulator.rollAllCharacters — see its own header for why). Pins directly like
+    // Standard's two fixed picks, no banner-list sub-level, since it isn't tied to any specific
+    // active banner at all.
+    private void pinAllCharacters() {
+        pinnedTargets.clear();
+        pinnedTargets.add(new Pin("all-characters", null, getString(R.string.pull_bubble_category_all)));
+        updateMainBubbleIcon();
+        Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, getString(R.string.pull_bubble_category_all)), Toast.LENGTH_SHORT).show();
         enterMode(ArcMode.ROLL);
     }
 
@@ -820,7 +852,21 @@ public class PullBubbleService extends Service {
                 Pin pin = targets.get(t);
                 int share = baseShare + (t < remainder ? 1 : 0);
                 if (share <= 0) continue;
-                if (pin.category.startsWith("standard")) {
+                if (pin.mergedNames != null) {
+                    // "Both" pin — one true merged roll (shared 5★ rate/pity/50-50, featured
+                    // name picked uniformly among pin.mergedNames), not several independent
+                    // ones. See rollMerged's own header for why this differs from long-press
+                    // multi-select, which stays independent on purpose.
+                    parts.add(WidgetPullSimulator.rollMerged(this, pin.category, pin.mergedNames, share));
+                } else if ("standard-both".equals(pin.category)) {
+                    // Standard's own "Both" — merged pool over Standard-Character + Standard-
+                    // Weapon, sharing one pity track (see rollStandardMerged's own header).
+                    parts.add(WidgetPullSimulator.rollStandardMerged(this, share));
+                } else if ("all-characters".equals(pin.category)) {
+                    // "All" — every character ever released, no featured/50-50 (see
+                    // rollAllCharacters' own header).
+                    parts.add(WidgetPullSimulator.rollAllCharacters(this, share));
+                } else if (pin.category.startsWith("standard")) {
                     String subCategory = "standard-weapon".equals(pin.category) ? "weapon" : "character";
                     parts.add(WidgetPullSimulator.rollStandard(this, subCategory, share));
                 } else {

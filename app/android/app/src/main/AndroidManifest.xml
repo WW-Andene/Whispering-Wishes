@@ -45,8 +45,8 @@
 
         <!-- Pure trampoline target for the App Shortcut above — see its own file header.
              exported="true" is required: App Shortcuts are launched by the launcher app (a
-             separate process), the same cross-app-caller reasoning as
-             BannerWidgetConfigureActivity below. -->
+             separate process), the same cross-app-caller reasoning as any Activity a launcher
+             invokes directly. -->
         <activity
             android:name=".PullBubbleShortcutActivity"
             android:theme="@style/AppTheme.Trampoline"
@@ -70,26 +70,6 @@
             android:theme="@style/AppTheme.Trampoline"
             android:excludeFromRecents="true"
             android:exported="true" />
-
-        <!-- Must be exported="true" — the system server (AppWidgetManager, a
-             different process/app) is what sends APPWIDGET_UPDATE broadcasts
-             to this receiver; that's a cross-app caller like the configure
-             Activity below, not something our own app broadcasts to itself.
-             With exported="false" the system's broadcasts are silently
-             dropped: the widget never receives its first update, never
-             renders, and never refreshes — this was very likely the real
-             "doesn't work at all" root cause, more fundamental than the
-             configure-Activity exported fix already applied below. -->
-        <receiver
-            android:name=".PulseBannerWidget"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/banner_widget_info" />
-        </receiver>
 
         <!-- Single adaptive Calculator widget — one AppWidgetProvider whose displayed
              sections react to its current placed size (width for row 1's currency-column
@@ -160,9 +140,9 @@
              a fullscreen Activity. Needs android.permission.SYSTEM_ALERT_WINDOW (declared
              below); falls back to ConveneAnimationActivity when that isn't granted or
              overlay playback fails for any reason — see the service's own file header.
-             Started via PendingIntent.getService() from PulseBannerWidget's own ▶️ buttons
-             and PullBubbleService's own sub-bubbles (our own app, so exported="false" is
-             correct). Deliberately a PLAIN service, not a foreground one: the whole job is
+             Started via PendingIntent.getService() from PullBubbleService's own sub-bubbles
+             (our own app, so exported="false" is correct). Deliberately a PLAIN service, not
+             a foreground one: the whole job is
              a few seconds of playback triggered directly by a user tap, which gets
              Android's short temporary background-execution allowance regardless of
              Doze/App-Standby. -->
@@ -170,9 +150,9 @@
             android:name=".FloatingVideoOverlayService"
             android:exported="false" />
 
-        <!-- Chat-heads-style persistent floating pull bubble — replaces PulseBannerWidget's
-             old ×1/×10 pull-sim pills entirely (see PullBubbleService's own file header for
-             the full roll → sub-bubbles → floating video → dismissible result-icon flow).
+        <!-- Chat-heads-style persistent floating pull bubble (see PullBubbleService's own file
+             header for the full roll → sub-bubbles → floating video → dismissible result-icon
+             flow).
              UNLIKE every other Service in this file, this one is a genuine, always-on
              FOREGROUND service (declared foregroundServiceType="specialUse" — a floating
              chat-heads-style bubble doesn't cleanly fit any of Android's other standard FGS
@@ -181,7 +161,7 @@
              for a few seconds after a tap. Needs android.permission.SYSTEM_ALERT_WINDOW
              (shared with FloatingVideoOverlayService above) plus FOREGROUND_SERVICE and (API
              34+) FOREGROUND_SERVICE_SPECIAL_USE, both declared below. Toggled on/off via
-             PendingIntent.getService() from PulseBannerWidget's bubble-toggle button
+             PendingIntent.getService() from ProfileTab's own PullBubbleCard toggle
              (ACTION_TOGGLE), so exported="false" is correct — nothing outside this app ever
              starts it directly. -->
         <service
@@ -192,27 +172,6 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Persistent floating bubble the user explicitly enables to roll gacha pulls and play the result animation without switching apps; the user disables it by dragging it onto its own on-screen dismiss target." />
         </service>
-
-        <!-- exported="true" is required here, unlike every other Activity in
-             this file — this one is launched directly by the LAUNCHER app
-             (a separate process/app, e.g. Pixel Launcher) via
-             ACTION_APPWIDGET_CONFIGURE the moment the widget is placed, not
-             via a PendingIntent our own app created (PendingIntents run
-             with their creating app's identity regardless of exported, which
-             is why ConveneAnimationActivity above (and the other plain
-             Services in this file) are correctly exported="false" — they're only ever started that
-             way). A cross-app Intent naming this component directly needs
-             exported="true", or Android silently refuses to start it and
-             the whole widget-placement flow fails — this was very likely
-             why the widget "didn't work at all". -->
-        <activity
-            android:name=".BannerWidgetConfigureActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
-        </activity>
 
         <!-- Real Android Live Wallpaper — renders a looping video onto the wallpaper surface
              via MediaPlayer (LiveVideoWallpaperService.Engine), unlike WallpaperPlugin's static

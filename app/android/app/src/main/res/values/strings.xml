@@ -4,7 +4,6 @@
     <string name="title_activity_main">Whispering Wishes</string>
     <string name="package_name">cc.andene.whisperingwishes</string>
     <string name="custom_url_scheme">cc.andene.whisperingwishes</string>
-    <string name="banner_widget_description">Shows the featured gacha banner — art, Featured 4★s, and a button to play the convene animation</string>
     <string name="calculator_widget_description">Calculator widget — resize it to reveal currency counts, a goal gauge, pull target, and a tappable copy target</string>
     <string name="soundtrack_widget_description">Soundtrack widget — play the app\'s own ambient Log Screen music, tap the track name to switch tracks</string>
     <string name="widget_soundtrack_track1">1.0 Login Screen</string>
@@ -62,7 +61,6 @@
     <string name="widget_configure_title">Choose a banner</string>
     <string name="widget_configure_unavailable">No active banners right now</string>
     <string name="widget_configure_confirm">Add Widget</string>
-    <string name="banner_widget_play_aria">Play convene animation</string>
     <string name="convene_widget_playback_error">Couldn\'t play the convene animation — check your connection</string>
     <!-- ×1/×10 sub-bubble labels — PullBubbleService builds those bubbles' text views in
          Java, not from a layout resource, but keeps these as the single source of the
@@ -75,6 +73,7 @@
     <string name="pull_bubble_category_character">Characters</string>
     <string name="pull_bubble_category_weapon">Weapon</string>
     <string name="pull_bubble_category_standard">Standard</string>
+    <string name="pull_bubble_category_all">All</string>
     <string name="pull_bubble_pin_aria">Pull from %1$s\'s banner</string>
     <string name="pull_bubble_pinned_toast">Pinned to %1$s</string>
     <string name="pull_bubble_both">Both</string>
