@@ -19,6 +19,14 @@
 // Erosion DMG Amp is modeled (cartethyia.manifest.mandate-of-divinity); Heart of Virtue/Power of
 // Discord are genuine CC/utility with no DPS stat. The weapon-specific debuff (Sig weapon Defier's
 // Thorn) is intentionally NOT modeled — hardcoding a weapon's own passive here would double-count it.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Cartethyia/
+// Cartethyia.md's own Cooldown/Concerto Regen rows (Base Form Skill, Fleurdelys 1/2, Blade of
+// Howling Squall). Also added cartethyia.liberation.a-knights-heartfelt-prayers, a new utility-only
+// block for the Manifest-transform Liberation cast — a real, always-cast rotation step with real,
+// sourced Concerto Energy/cooldown numbers that had no block anywhere to hold them (correctly no
+// damage: the transform itself has no published direct-damage value, only an HP cost).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -62,19 +70,30 @@ export const CARTETHYIA_BLOCKS = [
     id: 'cartethyia.skill.base-form',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Base Form' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Cartethyia/Cartethyia.md's own
+    // "Resonance Skill cooldown 14s" row (base-form Resonance Skill multipliers section).
+    timing: { cooldown: 14 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('6.89%×3 + 8.86%'), category: 'skillDmg', basis: 'HP' },
     note: "Applies 2 stacks of Aero Erosion, summons Sword of Virtue's Shadow (max 1, 20s).",
     dotApplier: { mechanic: 'erosion', value: 3, requiresTeammate: 'Rover: Aero', valueWithTeammate: 6 },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Cartethyia/Cartethyia.md's
+    // own "Concerto Regen 10" row for the base-form Resonance Skill.
+    concertoEnergyGain: 10,
   },
   {
     id: 'cartethyia.skill.fleurdelys-1',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Fleurdelys 1' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Cartethyia/Cartethyia.md's own
+    // "Resonance Skill cooldown 14s" row (Forte Circuit multipliers section, the Fleurdelys-form
+    // Resonance Skill — same ability slot as base-form's, real value restated there).
+    timing: { cooldown: 14 }, target: { scope: 'self' }, effects: [],
     // Row 'Fleurdelys 1-2' lists both variants' values as '24.8%HP / 24.8%HP' — the first matches this step.
     damage: { hits: parseSkillMultiplierHits('24.8%'), category: 'skillDmg', basis: 'HP' },
     note: "Sword to Answer Waves' Call — restores Conviction on hit.",
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Cartethyia/Cartethyia.md's
+    // own "Sword to Answer Waves' Call: ... Concerto Regen 10" row.
+    concertoEnergyGain: 10,
   },
   {
     id: 'cartethyia.basic.fleurdelys-1-5',
@@ -91,6 +110,11 @@ export const CARTETHYIA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('24.8%'), category: 'skillDmg', basis: 'HP' },
     note: "May Tempest Break the Tides — must follow Fleurdelys 1 within a short (unpublished-exact) follow-up window or falls back to Skill's normal cooldown, forfeiting this cast for the Manifest window.",
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Cartethyia/Cartethyia.md's
+    // own "May Tempest Break the Tides: ... Concerto Regen 10" row. No separate cooldown: this is a
+    // same-ability-slot follow-up press to Fleurdelys 1 (Sword to Answer Waves' Call), not an
+    // independently-cooldown-gated move — same treatment as Carlotta's Chromatic Splendor.
+    concertoEnergyGain: 10,
   },
   {
     id: 'cartethyia.midair.cartethyia-plunging-attack',
@@ -144,9 +168,30 @@ export const CARTETHYIA_BLOCKS = [
     id: 'cartethyia.liberation.blade-of-howling-squall',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Blade of Howling Squall' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Cartethyia/Cartethyia.md's own
+    // "Blade of Howling Squall: cooldown 25s, Concerto Regen 20" row.
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('13.12%×7'), category: 'libDmg', basis: 'HP' },
     note: 'Available only at exactly 120 Conviction; removes all Conviction, ends Manifest, restores 50% Max HP, strips all stacked Aero Erosion from the target (each stack removed Amplifies DMG taken +20%, capped at 5 stacks = +100%, not modeled).',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same row's own "Concerto Regen 20".
+    concertoEnergyGain: 20,
+  },
+  {
+    // Added 2026-09-06 (completeness pass): "A Knight's Heartfelt Prayers" (the Liberation cast that
+    // transforms Cartethyia into Fleurdelys) was previously entirely absent from this file — a real,
+    // always-cast CHARACTER_ROTATIONS step (transforms her, no direct damage value published anywhere
+    // for the transform itself, correctly not modeled as a damage block) that nonetheless has real,
+    // sourced Concerto Energy/cooldown numbers (Data dump/Cartethyia/Cartethyia.md's own "A Knight's
+    // Heartfelt Prayers: cost 125, cooldown 25s, Concerto Regen 20" row) with no block anywhere to
+    // hold them — a silent gap in Concerto Energy accounting, not a damage gap. Added as a
+    // kind:'utility' block (no damage, no effects) purely to carry the real, sourced resource numbers,
+    // same convention as other utility-only nodes elsewhere in this roster (e.g. Aalto's chain.s1/s3).
+    id: 'cartethyia.liberation.a-knights-heartfelt-prayers',
+    source: SOURCE, kind: 'utility', section: 'Liberation',
+    trigger: { type: 'cast', on: "Liberation:A Knight's Heartfelt Prayers" },
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
+    concertoEnergyGain: 20,
+    note: "Transforms Cartethyia into Fleurdelys (Manifest, 12s), costing 50% Max HP (25% at S5, free below 50% HP already) and 125 Resonance Energy — neither the HP cost nor the transform itself has a DPS component or a published direct-damage value; this block exists only to carry the real, sourced cooldown/Concerto Energy Regen numbers.",
   },
   {
     id: 'cartethyia.outro.winds-divine-blessing',

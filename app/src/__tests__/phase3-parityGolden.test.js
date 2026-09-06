@@ -167,6 +167,14 @@ const EXPECTED_DIVERGENCES = {
   // gate, so it stays at the un-derated value. Measured ratio ~1.039 (engine/legacy) — real,
   // expected, not a regression.
   Carlotta: { min: 1.02, max: 1.10 },
+  // Added 2026-09-06 (Cartethyia completeness pass): same class as the prior 9 characters above.
+  // Base Form Skill, Fleurdelys 1, and Blade of Howling Squall all got real, sourced cooldowns added
+  // (Data dump/Cartethyia/Cartethyia.md's own Cooldown rows) — her modeled rotation recasts them
+  // faster than those cooldowns allow, so calcTeamStats()'s cooldownSteadyState gate correctly
+  // derates the legacy RAW number (4675 -> 4368); this test's own standalone engine call doesn't
+  // apply that gate, so it stays at the un-derated value. Measured ratio ~1.070 (engine/legacy) —
+  // real, expected, not a regression.
+  Cartethyia: { min: 1.02, max: 1.15 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number
