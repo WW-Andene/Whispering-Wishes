@@ -75,6 +75,109 @@ final class WidgetPullSimulator {
         }
     }
 
+    // "Both" on a Characters/Weapon banner-list arc (PullBubbleService.pinBoth) — a TRUE merged
+    // roll, not several independent ones: same base 5★ rate, same soft/hard pity curve, same
+    // 50/50-vs-standard split as a normal roll() against one banner, and the SAME shared
+    // category-wide pity counter a normal single-pin roll on this category already uses (pity
+    // is real-game shared-across-whichever-banner, so a merged "Both" roll continuing that same
+    // counter is correct, not a compromise). The ONLY thing that changes from a normal roll():
+    // when the featured branch resolves, the featured NAME is a uniform pick among
+    // `featuredNames` instead of always being one fixed name — e.g. 2 active character banners
+    // means a featured hit is 50/50 between them, so each is really half of the 50% featured
+    // slot (25% each) rather than the 5★ rate itself being touched at all. featured4 (the 4★
+    // rate-up list) is the UNION of every merged banner's own featured4Full — that mechanic
+    // already supported multiple names sharing one rate-up chance, this just feeds it more.
+    static PullSimResult rollMerged(Context context, String category, List<String> featuredNames, int count) {
+        boolean isWeapon = "weapon".equals(category);
+        String featuredType = isWeapon ? "weapon" : "character";
+
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        List<String> featured4List = new ArrayList<>();
+        for (String n : featuredNames) {
+            for (String f : readJsonArrayField(findBannerEntry(prefs, category, n), "featured4Full")) {
+                if (!featured4List.contains(f)) featured4List.add(f);
+            }
+        }
+        List<String> standard5 = readJsonArray(prefs, "widget_pull_pool_standard5");
+        List<String> fourStarChars = readJsonArray(prefs, "widget_pull_pool_4star_chars");
+        List<String> fourStarWeapons = readJsonArray(prefs, "widget_pull_pool_4star_weapons");
+        List<String> threeStarWeapons = readJsonArray(prefs, "widget_pull_pool_3star_weapons");
+
+        List<NameType> pool4Rest = new ArrayList<>();
+        for (String n : fourStarChars) if (!featured4List.contains(n)) pool4Rest.add(new NameType(n, "character"));
+        for (String n : fourStarWeapons) if (!featured4List.contains(n)) pool4Rest.add(new NameType(n, "weapon"));
+
+        // Same pityKeyPrefix as roll() (category-only, not per-banner) — a merged "Both" roll
+        // and a normal single-pin roll on the same category are meant to share one continuous
+        // pity counter, exactly like two real banners in the same category always have.
+        String pityKeyPrefix = "widget_pull_" + category + "_";
+        int pity5 = prefs.getInt(pityKeyPrefix + "pity5", 0);
+        int pity4 = prefs.getInt(pityKeyPrefix + "pity4", 0);
+        boolean guaranteed = prefs.getBoolean(pityKeyPrefix + "guaranteed", false);
+        boolean guaranteed4 = prefs.getBoolean(pityKeyPrefix + "guaranteed4", false);
+
+        Random rand = new Random();
+        List<PullResult> results = new ArrayList<>();
+        int bestRarity = 3;
+
+        for (int i = 0; i < count; i++) {
+            pity5++;
+            pity4++;
+            if (rand.nextDouble() < pullRate5(pity5)) {
+                String name;
+                boolean isFeatured;
+                if (isWeapon) {
+                    name = pick(featuredNames, rand);
+                    isFeatured = true;
+                } else if (guaranteed) {
+                    name = pick(featuredNames, rand);
+                    isFeatured = true;
+                    guaranteed = false;
+                } else if (rand.nextDouble() < 0.5) {
+                    name = pick(featuredNames, rand);
+                    isFeatured = true;
+                } else {
+                    name = standard5.isEmpty() ? pick(featuredNames, rand) : pick(standard5, rand);
+                    isFeatured = false;
+                    guaranteed = true;
+                }
+                results.add(new PullResult(name, 5, featuredType, isFeatured));
+                bestRarity = 5;
+                pity5 = 0;
+                pity4 = 0;
+            } else if (pity4 >= HARD_PITY_4STAR || rand.nextDouble() < FLAT_4STAR_RATE) {
+                if (featured4List.isEmpty()) {
+                    NameType off = pool4Rest.isEmpty() ? new NameType(pick(featuredNames, rand), featuredType) : pick(pool4Rest, rand);
+                    results.add(new PullResult(off.name, 4, off.type, false));
+                } else {
+                    boolean rateUp = guaranteed4 || rand.nextDouble() < FOUR_STAR_RATEUP_CHANCE;
+                    guaranteed4 = !rateUp;
+                    if (rateUp) {
+                        results.add(new PullResult(pick(featured4List, rand), 4, featuredType, true));
+                    } else {
+                        NameType off = pool4Rest.isEmpty() ? new NameType(pick(featured4List, rand), featuredType) : pick(pool4Rest, rand);
+                        results.add(new PullResult(off.name, 4, off.type, false));
+                    }
+                }
+                if (bestRarity < 4) bestRarity = 4;
+                pity4 = 0;
+            } else {
+                String name = threeStarWeapons.isEmpty() ? null : pick(threeStarWeapons, rand);
+                results.add(new PullResult(name, 3, "weapon", false));
+            }
+        }
+
+        prefs.edit()
+                .putInt(pityKeyPrefix + "pity5", pity5)
+                .putInt(pityKeyPrefix + "pity4", pity4)
+                .putBoolean(pityKeyPrefix + "guaranteed", guaranteed)
+                .putBoolean(pityKeyPrefix + "guaranteed4", guaranteed4)
+                .apply();
+
+        String video = bestRarity >= 5 ? "5star" : bestRarity == 4 ? "4star" : "common";
+        return new PullSimResult(results, video);
+    }
+
     // Combines several independent roll()/rollStandard() calls into one displayable result —
     // backs PullBubbleService's "Both" picks and long-press multi-select (rolling `count`
     // against every pinned target rather than just one). Each part already advanced its own
