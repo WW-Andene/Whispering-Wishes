@@ -4,8 +4,8 @@
 // Sonata Set — some Echoes carry two sets at once, which a set-only picker can't
 // represent), main/secondary stat, 5 substat slots with a minimum plateau each, and
 // the real farming source for that Echo's cost tier (4-cost Echoes only ever drop
-// from bosses, never Tacet Fields — 1/3-cost are Tacet Field only). See the real
-// probability of each condition and the combined odds, plus the estimated Waveplate/
+// from bosses, never Tacet Fields — 1/3-cost Echoes drop from both Tacet Fields and
+// bosses). See the real probability of each condition and the combined odds, plus the estimated Waveplate/
 // Shell Credit/Tuner cost to get there. Every number traces to Data dump/Echoes/
 // (see echoFarmingData.js).
 //
@@ -18,13 +18,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
-import { ChevronDown, Zap, Coins, Wrench, Info, X, ChevronRight, Search } from 'lucide-react';
+import { ChevronDown, Zap, Coins, Wrench, Info, X, ChevronRight, Search, Heart } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { ECHO_DATA, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES } from '../../data/echoes.js';
-import { getSetIcon, getElementIcon, getStatIcon } from '../../shared/utils/elementVisuals.js';
+import { getSetIcon, getElementIcon, getStatIcon, getCombatRoleIcon } from '../../shared/utils/elementVisuals.js';
 import {
   ECHO_MAIN_STAT_CHANCE, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
   PLATEAU_TIERS, getPlateauChance, TACET_FIELD_WAVEPLATE_COST, TACET_FIELD_ENDGAME_YIELD,
@@ -43,19 +43,43 @@ const DEFAULT_RANK_BY_COST = { 1: 'Common', 3: 'Elite', 4: 'Overlord' };
 // Same rank-badge color convention as MonsterCard.jsx (not exported from there, so mirrored here).
 const RANK_BADGE_CLASS = { Calamity: 'kuro-badge-red', Overlord: 'kuro-badge-amber', Elite: 'kuro-badge-emerald', Common: '' };
 
-// Renders a stat's icon — element icon for "<Element> DMG" main-stat entries, the shared
-// STAT_ICONS lookup (already strips a trailing %) for everything else, no icon at all if
-// neither exists (Healing Bonus, the 4 DMG-Bonus substats) rather than a fabricated one.
+// Maps the 4 "X DMG" substat names to their real official Combat Role icon — these aren't
+// covered by STAT_ICONS (which only has ATK/HP/DEF/Energy Regen/Crit Rate/Crit DMG) or the
+// element-icon regex below (they're not "<Element> DMG", they're "<Action> DMG").
+const SUBSTAT_ROLE_ICON_NAME = {
+  'Basic ATK DMG': 'Basic Attack Damage',
+  'Heavy ATK DMG': 'Heavy Attack Damage',
+  'Resonance Skill DMG': 'Resonance Skill Damage',
+  'Resonance Liberation DMG': 'Resonance Liberation Damage',
+};
+
+// Renders a stat's icon — element icon for "<Element> DMG" main-stat entries, the official
+// Combat Role icon for the 4 "X ATK/Skill/Liberation DMG" substats, the shared STAT_ICONS
+// lookup (already strips a trailing %) for everything else. Healing Bonus has no official
+// icon anywhere in this app (same gap TeamSelector's own buff filter already has), so it
+// keeps the same lucide Heart fallback that filter already established as this app's
+// precedent — never null when a reasonable fallback already exists elsewhere in the app.
 function StatIcon({ stat, size = 14 }) {
+  if (stat === 'Healing Bonus') return <Heart size={size} className="shrink-0 text-pink-400" />;
+  const roleSrc = SUBSTAT_ROLE_ICON_NAME[stat] ? getCombatRoleIcon(SUBSTAT_ROLE_ICON_NAME[stat]) : null;
+  if (roleSrc) return <img src={roleSrc} alt="" width={size} height={size} className="shrink-0" onError={hideOnError} />;
   const elMatch = stat?.match(/^(\w+) DMG$/);
   const src = elMatch ? getElementIcon(elMatch[1]) : getStatIcon(stat);
   if (!src) return null;
   return <img src={src} alt="" width={size} height={size} className="shrink-0" onError={hideOnError} />;
 }
 
+// Max Echo level is 25, not 90 — that's a character level. Each of the 5 substat slots
+// unlocks one at a time, every 5 levels (5/10/15/20/25), a real verified mechanic (WuWa
+// Wiki). Below the slot's unlock level it can't be rolled yet, so its row is disabled
+// rather than counted toward the combined odds.
+const MAX_ECHO_LEVEL = 25;
+const substatUnlockLevel = (slotIdx) => (slotIdx + 1) * 5;
+
 const DEFAULT_STATE = {
   cost: 4,
   echoName: '',
+  level: MAX_ECHO_LEVEL,
   mainStats: [],
   secondaryStats: [],
   substats: [0, 1, 2, 3, 4].map(() => ({ stats: [], minTier: 0 })),
@@ -71,16 +95,21 @@ export default function EchoFarmPlanner() {
 
   const mainStatPool = ECHO_MAIN_STAT_CHANCE[cfg.cost] || {};
   const mainStatOptions = Object.keys(mainStatPool);
-  // Secondary can't roll the same stat as Primary — "An Echo cannot have the same Primary and
-  // Secondary Mainstat" (Data dump/Echoes/Probability.md). Excludes whatever's checked in Main.
-  const secondaryStatOptions = mainStatOptions.filter(s => !cfg.mainStats.includes(s));
+  // Secondary Stat draws from the same defined per-cost pool as Main Stat (Data dump/Echoes/
+  // Probability.md's "Mainstats" table doesn't distinguish a separate primary-only vs.
+  // secondary-only pool — both slots pick from the same per-cost stat list). No exclusion here:
+  // there's no sourced rule that a specific Echo's two main stats can't repeat a category.
+  const secondaryStatOptions = mainStatOptions;
 
   const echoData = cfg.echoName ? ECHO_DATA[cfg.echoName] : null;
   const echoSets = echoData?.sets || [];
 
+  // 4-cost (Overlord/Calamity) Echoes never drop from Tacet Fields (bosses only) — that's the
+  // one sourced constraint (Data dump/Echoes/Data Bank.md). 1/3-cost Echoes drop from BOTH
+  // Tacet Fields and bosses, so nothing about farmSource is forced for them.
   const setCost = (cost) => setCfg(p => ({
     ...p, cost, echoName: '', mainStats: [], secondaryStats: [],
-    farmSource: cost === 4 ? (p.farmSource === 'tacetField' ? 'weeklyBoss' : p.farmSource) : 'tacetField',
+    farmSource: cost === 4 && p.farmSource === 'tacetField' ? 'weeklyBoss' : p.farmSource,
   }));
 
   const toggleStat = (list, stat) => list.includes(stat) ? list.filter(s => s !== stat) : [...list, stat];
@@ -90,8 +119,10 @@ export default function EchoFarmPlanner() {
   const mainChance = cfg.mainStats.length ? rowChance(cfg.mainStats) : 1;
   const secondaryChance = cfg.secondaryStats.length ? rowChance(cfg.secondaryStats) : 1;
 
+  const isSubstatUnlocked = (slotIdx) => cfg.level >= substatUnlockLevel(slotIdx);
+
   const substatRowChance = (slotIdx, slot) => {
-    if (!slot.stats.length) return 1;
+    if (!isSubstatUnlocked(slotIdx) || !slot.stats.length) return 1;
     const poolSize = ECHO_SUBSTAT_POOL_SIZE_AT_SLOT[slotIdx];
     const pickChance = slot.stats.length / poolSize;
     const avgPlateau = slot.stats.reduce((s, stat) => s + getPlateauChance(stat, slot.minTier) / 100, 0) / slot.stats.length;
@@ -108,8 +139,8 @@ export default function EchoFarmPlanner() {
   const runsNeeded = expectedInstances != null ? Math.ceil(expectedInstances / yieldSource.avgEchoesPerRun) : null;
   const waveplateNeeded = cfg.farmSource === 'tacetField' && runsNeeded != null ? runsNeeded * TACET_FIELD_WAVEPLATE_COST : 0;
   const shellNeeded = runsNeeded != null ? runsNeeded * yieldSource.avgShellCreditPerRun : null;
-  const tunersPerSlot = cfg.substats.map(slot => {
-    if (!slot.stats.length) return 0;
+  const tunersPerSlot = cfg.substats.map((slot, i) => {
+    if (!isSubstatUnlocked(i) || !slot.stats.length) return 0;
     const avgChance = slot.stats.reduce((s, stat) => s + getPlateauChance(stat, slot.minTier) / 100, 0) / slot.stats.length;
     return avgChance > 0 ? Math.ceil(1 / avgChance) : 0;
   });
@@ -176,6 +207,24 @@ export default function EchoFarmPlanner() {
             <ChevronRight size={14} className="text-gray-500 shrink-0" />
           </button>
 
+          {/* Echo level — real max is 25, not 90 (that's a character level). Each substat slot
+              unlocks one at a time every 5 levels; ticks mark those unlock points. Per-level
+              EXP/Shell Credit/Sealed Tube costs aren't sourced yet (asked for that table
+              separately) — this slider only gates which substat slots are actually rollable
+              at the chosen level, it doesn't add a resource cost of its own yet. */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="kuro-section-label">{t('planner.echoFarm.echoLevel')}</span>
+              <span className="text-sm font-bold text-white kuro-number">Lv. {cfg.level}</span>
+            </div>
+            <input type="range" min={1} max={MAX_ECHO_LEVEL} step={1} value={cfg.level}
+              onChange={e => setCfg(p => ({ ...p, level: Number(e.target.value) }))}
+              className="w-full accent-yellow-500" aria-label={t('planner.echoFarm.echoLevel')} />
+            <div className="flex justify-between text-2xs text-gray-500 px-0.5">
+              {[5, 10, 15, 20, 25].map(lvl => <span key={lvl}>{lvl}</span>)}
+            </div>
+          </div>
+
           {/* Stat rows — compact summaries, each opens the shared picker popup */}
           <div className="space-y-1.5">
             <StatSummaryRow
@@ -193,35 +242,46 @@ export default function EchoFarmPlanner() {
               note={t('planner.echoFarm.secondaryApprox')}
               onClick={() => setOpenPicker('secondary')}
             />
-            {cfg.substats.map((slot, i) => (
-              <StatSummaryRow
-                key={i}
-                title={t('planner.echoFarm.substatSlot', { n: i + 1 })}
-                selected={slot.stats}
-                chance={substatChances[i]}
-                rowLabel={rowLabel}
-                tierLabel={slot.stats.length ? t(`planner.echoFarm.plateau${PLATEAU_TIERS[slot.minTier]}`) : null}
-                onClick={() => setOpenPicker(i)}
-              />
-            ))}
+            {cfg.substats.map((slot, i) => {
+              const unlocked = isSubstatUnlocked(i);
+              return (
+                <StatSummaryRow
+                  key={i}
+                  title={t('planner.echoFarm.substatSlot', { n: i + 1 })}
+                  selected={slot.stats}
+                  chance={substatChances[i]}
+                  rowLabel={rowLabel}
+                  tierLabel={unlocked && slot.stats.length ? t(`planner.echoFarm.plateau${PLATEAU_TIERS[slot.minTier]}`) : null}
+                  note={!unlocked ? t('planner.echoFarm.locksUntil', { level: substatUnlockLevel(i) }) : undefined}
+                  disabled={!unlocked}
+                  onClick={() => unlocked && setOpenPicker(i)}
+                />
+              );
+            })}
           </div>
 
-          {/* Farming source — forced to Tacet Field for 1/3-cost, Weekly/World Boss choice for
-              4-cost (never Tacet Field: Overlord/Calamity Echoes only drop from bosses). */}
-          {cfg.cost === 4 ? (
+          {/* Farming source — all 3 sources are real options for 1/3-cost Echoes (both Tacet
+              Fields and bosses drop them); Tacet Field is disabled only for 4-cost, since that's
+              the one sourced constraint (Overlord/Calamity Echoes only drop from bosses). */}
+          <div className="space-y-1">
+            <div className="kuro-section-label">{t('planner.echoFarm.farmSource')}</div>
             <div className="flex gap-1.5">
-              {[['weeklyBoss', t('planner.echoFarm.weeklyBoss')], ['worldBoss', t('planner.echoFarm.worldBoss')]].map(([key, label]) => (
-                <button key={key} onClick={() => setCfg(p => ({ ...p, farmSource: key }))}
-                  className={`kuro-btn flex-1 text-sm ${cfg.farmSource === key ? 'active-emerald' : ''}`} style={{ padding: '8px' }}>
-                  {label}
-                </button>
-              ))}
+              {[
+                ['tacetField', t('planner.echoFarm.tacetField')],
+                ['weeklyBoss', t('planner.echoFarm.weeklyBoss')],
+                ['worldBoss', t('planner.echoFarm.worldBoss')],
+              ].map(([key, label]) => {
+                const disabled = key === 'tacetField' && cfg.cost === 4;
+                return (
+                  <button key={key} disabled={disabled} onClick={() => setCfg(p => ({ ...p, farmSource: key }))}
+                    className={`kuro-btn flex-1 text-sm ${cfg.farmSource === key ? 'active-emerald' : ''} ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`} style={{ padding: '8px' }}>
+                    {label}
+                  </button>
+                );
+              })}
             </div>
-          ) : (
-            <div className="kuro-btn w-full text-sm text-center active-emerald" style={{ padding: '8px' }}>
-              ✓ {t('planner.echoFarm.tacetFieldOnly')}
-            </div>
-          )}
+            {cfg.cost === 4 && <div className="text-2xs text-gray-500">{t('planner.echoFarm.cost4NoTacet')}</div>}
+          </div>
 
           {/* Unified statistics */}
           <div className="p-3 rounded-lg space-y-2" style={{ background: 'var(--bg-stat)', border: '1px solid var(--border-hover)' }}>
@@ -324,16 +384,16 @@ export default function EchoFarmPlanner() {
 
 // Compact summary — icon strip of what's selected (or "Any"), the row's own chance, and (for
 // substat slots) the chosen plateau tier. Tapping anywhere opens the shared picker popup.
-function StatSummaryRow({ title, selected, chance, rowLabel, tierLabel, note, onClick }) {
+function StatSummaryRow({ title, selected, chance, rowLabel, tierLabel, note, onClick, disabled }) {
   return (
-    <button onClick={onClick} className="kuro-btn w-full text-left flex items-center justify-between gap-2" style={{ padding: '8px 10px' }}>
+    <button onClick={onClick} disabled={disabled} className={`kuro-btn w-full text-left flex items-center justify-between gap-2 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`} style={{ padding: '8px 10px' }}>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <span className="text-sm text-white font-medium">{title}</span>
           {tierLabel && <span className="kuro-badge kuro-badge-gray text-2xs">{tierLabel}</span>}
         </div>
         <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-          {selected.length === 0 ? (
+          {disabled || selected.length === 0 ? (
             <span className="text-2xs text-gray-500">{note || t('planner.echoFarm.anyStat')}</span>
           ) : selected.map(stat => (
             <span key={stat} className="inline-flex items-center gap-1 text-2xs text-gray-300">
@@ -343,7 +403,7 @@ function StatSummaryRow({ title, selected, chance, rowLabel, tierLabel, note, on
         </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
-        <span className="text-sm font-bold text-emerald-400 kuro-number">{rowLabel(chance)}</span>
+        {!disabled && <span className="text-sm font-bold text-emerald-400 kuro-number">{rowLabel(chance)}</span>}
         <ChevronRight size={14} className="text-gray-500" />
       </div>
     </button>
