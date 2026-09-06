@@ -7,6 +7,13 @@
 // invented. S5's extra conditional (+15% more when HP<60%, 30% total) has no
 // distinct condition field for an HP threshold in this schema and is documented
 // rather than force-fit, matching the source audit's own scope note.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Danjin/
+// Danjin.md's own Cooldown/Concerto Regen rows (Vindication, Crimson Erosion/Sanguine Pulse's shared
+// Resonance Skill cooldown of 0s, Crimson Bloom, Chaoscleave). The 0s Skill cooldown is recorded
+// faithfully even though it's functionally inert (falsy, so resolveHitComposedDps.js's
+// cooldownGate never engages) — real data, not a placeholder.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -26,12 +33,19 @@ export const DANJIN_BLOCKS = [
     // to-skillDmg convention as Calcharo/Encore/Jianxin/Lingyang/Aalto/Baizhi/Chixia.
     damage: { hits: parseSkillMultiplierHits('49.71%×4'), category: 'skillDmg', basis: 'ATK' },
     note: 'Builds Concerto Energy, can chain into Crimson Erosion.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Danjin/Danjin.md's own
+    // "Con. Energy Regen 10" row for Intro Skill Vindication.
+    concertoEnergyGain: 10,
   },
   {
     id: 'danjin.skill.crimson-erosion',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Crimson Erosion' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // Data dump/Danjin/Danjin.md's own Resonance Skill (Crimson Fragment) row states "Cooldown: 0" —
+    // recorded faithfully (2026-09-06 completeness pass) even though a 0 cooldown is functionally
+    // inert in resolveHitComposedDps.js's own cooldownGate check (`db.timing?.cooldown &&
+    // totalTime > 0` — 0 is falsy, so the gate never engages), same as omitting it entirely.
+    timing: { cooldown: 0 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('64.42%×2 + 59.65%×2'), category: 'skillDmg', basis: 'ATK' },
     note: 'After Basic ATK 2/Dodge Counter/Intro. Applies Incinerating Will (+20% DMG taken).',
   },
@@ -39,7 +53,8 @@ export const DANJIN_BLOCKS = [
     id: 'danjin.skill.sanguine-pulse',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Sanguine Pulse' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // Same real, sourced 0s cooldown as Crimson Erosion above (same Resonance Skill ability slot).
+    timing: { cooldown: 0 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('56.07%×2 + 42.95%×3 + 64.42%×3'), category: 'skillDmg', basis: 'ATK' },
     note: 'After Basic ATK 3, up to 3 consecutive strikes. Builds Ruby Blossom stacks.',
   },
@@ -47,17 +62,27 @@ export const DANJIN_BLOCKS = [
     id: 'danjin.liberation.crimson-bloom',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Crimson Bloom' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Danjin/Danjin.md's own
+    // "Cooldown: 16s" row.
+    timing: { cooldown: 16 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('49.09%×8 + 392.65%'), category: 'libDmg', basis: 'ATK' },
     note: 'Consumes HP per hit, not modeled (no DPS component).',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Con. Energy Regen 20".
+    // Its "Res. Energy Cost: 100" row is a Liberation-gauge cost, not a gain — no matching schema
+    // field, not modeled, same treatment as every other character's own Liberation resource cost.
+    concertoEnergyGain: 20,
   },
   {
     id: 'danjin.forte.chaoscleave',
     source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Serene Vigil: Chaoscleave' },
+    // No cooldown: gated by consuming 60+ Ruby Blossom, a resource threshold, not a timer.
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('59.65%×7'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Counts as Heavy ATK per its own CHARACTER_ROTATIONS note, at 60+ Ruby Blossom. Heals Danjin, not modeled. Scatterbloom follow-up (179%, corrected 2026-09-03 from a stale 178.93%) has no own CHARACTER_ROTATIONS step, not separately modeled. The higher-tier "Full Energy" variants (120+ Ruby Blossom) belong to a different rotation (the source\'s "Damage Dealer Combo") than the one modeled here, not used.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Danjin/Danjin.md's own
+    // "Chaoscleave Con. Energy Regen 50" row.
+    concertoEnergyGain: 50,
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
