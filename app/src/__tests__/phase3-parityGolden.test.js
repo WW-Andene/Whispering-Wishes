@@ -87,6 +87,17 @@ const EXPECTED_DIVERGENCES = {
   // stacks on both paths, on top of her own); a side effect of this specific test's own "engine"
   // number not being sourced through calcTeamStats().
   Aemeath: { min: 1.10, max: 1.50 },
+  // Added 2026-09-06 (golden-fixture refresh after the Deepen->Amplify merge, 6a79491b, made the
+  // stale fixture visible): same "adding a real base cooldown activates an already-existing,
+  // legacy-tier-only gate" class as Aalto/Aemeath above, not a new bug and not caused by the
+  // Deepen/Amplify merge itself. Augusta's blocks file got real, sourced cooldowns added to Warrior's
+  // Blade (15s), Sunward Conquest (25s) and Call Me By the Sun (3s) in the same 2026-09-06
+  // completeness pass (augusta.blocks.js's own "cooldown added" comments). calcTeamStats()'s own RAW
+  // tier passes `cooldownSteadyState: true` into resolveHitComposedDps() for every converted
+  // character (calcTeamStats.js line ~678) so it derates repeated-cast damage to steady-state
+  // cooldown availability; this test's own separate "engine" call (line ~170) does not pass that flag,
+  // so it doesn't derate. Measured ratio ~1.028 (engine/legacy) — real, expected, not a regression.
+  Augusta: { min: 1.00, max: 1.05 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number
