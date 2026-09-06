@@ -6,6 +6,16 @@
 // SKILL_MULTIPLIERS['Encore'], and CHARACTER_ROTATIONS['Encore']. No new numbers
 // invented. S2 correctly has NO block — pure Energy-economy utility with zero DPS
 // component, per the audit's own zeroing.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Encore/
+// Encore.md's own Cooldown/Concerto Regen rows (Woolies Can Help!, Cosmos Rave, Cosmos: Rupture).
+// Also added encore.liberation.cosmos-rave, a new utility-only block for pressing Liberation itself
+// — a real, always-cast rotation step with real, sourced Concerto Energy/cooldown numbers that had
+// no block anywhere to hold them (correctly no damage: the cast itself deals none, per its own
+// CHARACTER_ROTATIONS note). Cosmos: Rampage's own real 4s cooldown was tested and REVERTED — see
+// that block's own note for why applying it actually broke her computed damage (a real engine
+// step-timing limitation, not a data error).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -26,10 +36,27 @@ export const ENCORE_BLOCKS = [
     // Goldenflare.
     damage: { hits: parseSkillMultiplierHits('198.81%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Restores some Mayhem.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Encore/Encore.md's own
+    // "Con. Energy Regen 10" row for Intro Skill Woolies Can Help!.
+    concertoEnergyGain: 10,
   },
   {
     id: 'encore.skill.cosmos-rampage',
     source: SOURCE, kind: 'damage', section: 'Skill',
+    // NOT given a timing.cooldown, despite a real sourced value existing (Data dump/Encore/
+    // Encore.md's own "Cosmos Rampage Cooldown: 4s" row) — a real bug found and reverted 2026-09-06
+    // while doing the completeness pass. Tested it first (per direct user instruction to verify, not
+    // assume): adding cooldown:4 dropped this rotation's total damage by ~5.3% (39445 -> 37337 in an
+    // isolated test), because `resolveHitComposedDps`'s own per-cast cooldown enforcement
+    // (`r.ineligibleBlockIds`, unconditional — NOT gated by the separate `cooldownSteadyState` flag)
+    // uses the SIMULATOR's coarse, flat 1.5s-per-step pacing to judge real-time spacing between
+    // casts, not actual move-animation durations. Her 3 real Cosmos: Rampage casts land only 1
+    // Basic-ATK-combo step apart in CHARACTER_ROTATIONS (3.0s simulated gap at 1.5s/step), less than
+    // the real 4s cooldown — so the engine wrongly rejected the 2nd/3rd casts as premature, even
+    // though the real game (with real animation timing across the 10s Cosmos Rave window) allows all
+    // 3. Same root cause as the note this file already carries for the True Sight: Capture class of
+    // gap (Changli) — the engine's coarse step model can turn a real value into a WRONG one — just a
+    // different failure mode (rejection here, vs a charge-system misread there). Left unmodeled.
     trigger: { type: 'cast', on: 'Skill:Cosmos: Rampage' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('63.32%×4'), category: 'skillDmg', basis: 'ATK' },
@@ -47,9 +74,30 @@ export const ENCORE_BLOCKS = [
     id: 'encore.forte.cosmos-rupture',
     source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy ATK: Cosmos Rupture' },
+    // No cooldown: gated by consuming full (100/100) Mayhem, a resource threshold, not a timer.
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('46.42%×6+495.21%'), category: 'libDmg', basis: 'ATK' },
     note: "Cosmos Rave's version of Cloudy Frenzy — at full Mayhem, enters a 70% DMG-reduction channel (not modeled) that survives swap-out, then unleashes this on exit, counted as Resonance Liberation DMG.",
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Encore/Encore.md's own
+    // "Cosmos: Rupture Con. Energy Regen 10" row.
+    concertoEnergyGain: 10,
+  },
+  {
+    // Added 2026-09-06 (completeness pass): "Cosmos Rave" (pressing Liberation to enter the state)
+    // was previously entirely absent from this file — a real, always-cast CHARACTER_ROTATIONS step
+    // ("Press Liberation (125 Energy) — no direct hit on cast") that correctly has no damage
+    // (confirmed by its own rotation-step note: "no direct hit on cast") but DOES carry real,
+    // sourced Concerto Energy/cooldown numbers (Data dump/Encore/Encore.md's own "Cooldown: 16s ...
+    // Con. Energy Regen: 20" row) with no block anywhere to hold them — a silent gap in Concerto
+    // Energy accounting, not a damage gap. Added as a kind:'utility' block purely to carry the real,
+    // sourced resource numbers, same convention as Cartethyia's own Manifest-transform Liberation
+    // block (a-knights-heartfelt-prayers).
+    id: 'encore.liberation.cosmos-rave',
+    source: SOURCE, kind: 'utility', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Cosmos Rave' },
+    timing: { cooldown: 16 }, target: { scope: 'self' }, effects: [],
+    concertoEnergyGain: 20,
+    note: "Enters Cosmos Rave (10s), replacing Basic/Heavy/Skill/Dodge Counter with their Cosmos-enhanced forms — costs 125 Resonance Energy (not modeled, no matching schema field). No direct-damage value: this block exists only to carry the real, sourced cooldown/Concerto Energy Regen numbers.",
   },
   {
     id: 'encore.outro.thermal-field',
