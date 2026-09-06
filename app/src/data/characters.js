@@ -1578,7 +1578,10 @@ const CHARACTER_DATA = {
   // Poem: Tonic — both bigger than 'Skill', which stayed in dmgFocus at just 9,370) — meant any
   // teammate's Heavy ATK or Liberation DMG Bonus buff was silently routed to zero for her in
   // calcTeamStats.js's routeTypeBonuses(). Same class of finding as Cartethyia's own dmgFocus fix.
-  ['Ciaccona',      ['Basic ATK', 'Heavy ATK', 'Liberation', 'Skill'], ['Aero Buff'],          ['Erosion']],
+  // buff tag normalized 2026-09-06 (filter audit): 'Aero Buff' → 'Aero DMG Buff' — every other elemental
+  // team buff in this table is named "<Element> DMG Buff" (Fusion/Glacio/Havoc); the odd-one-out naming
+  // meant this tag matched neither the 'DMG' nor any element-specific filter bucket.
+  ['Ciaccona',      ['Basic ATK', 'Heavy ATK', 'Liberation', 'Skill'], ['Aero DMG Buff'],      ['Erosion']],
   // dmgFocus corrected 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) — 'Heavy ATK' was missing despite
   // being a real, non-negligible damage share (~6.5% per the dump's own damage-profile breakdown, via
   // Wolf's Claw + Firestrike, both real steps in her modeled rotation) — above this file's established
@@ -1615,7 +1618,11 @@ const CHARACTER_DATA = {
   // literally named "Basic Attack -" in their own move text, not a Forte-exclusive category) — the
   // engine block for Visual Impact had no damage.category at all (fixed alongside this), silently
   // missing every real Basic ATK DMG buff from teammates on her single biggest hit.
-  ['Lynae',         ['Basic ATK', 'Liberation'],     ['Tune Break DMG Buff'],                 ['Off-Tune']],
+  // debuff tag corrected 2026-09-06 (filter audit): 'Off-Tune' isn't a real debuff applied to enemies —
+  // it doesn't appear anywhere in her own official Combat Role tags (COMBAT_ROLE_DATA below has no
+  // Off-Tune-related entry for her at all, unlike Mornye's genuine 'Off-Tune Buildup Efficiency' role) —
+  // removed rather than reclassified since there's no evidence it was ever a real tag for her.
+  ['Lynae',         ['Basic ATK', 'Liberation'],     ['Tune Break DMG Buff'],                 []],
   // dmg-type tag corrected 2026-08-18: Danjin's own the source kit breakdown says the Resonance Skill is
   // "the core of her kit, which all of her combo options revolve around" (Crimson Fragment/Erosion,
   // Sanguine Pulse) — 'Skill' was missing entirely. buff tag corrected: her Outro is worded "23% Havoc
@@ -1700,8 +1707,12 @@ const CHARACTER_DATA = {
   // damage, not her own kit's Echo Skill button. Intro (~5%/7,749) also got its missing skillDmg
   // category fixed this pass but stays out of dmgFocus — same ambiguous-zone exclusion as Calcharo's
   // Intro.
-  ['Jianxin',       ['Skill', 'Liberation', 'Basic ATK', 'Heavy ATK'], ['Shield', 'Grouping', 'Aero Buff'], []],
-  ['Mornye',        ['Liberation'],                  ['Heal'],                                ['Off-Tune']],
+  // buff tag normalized 2026-09-06: same 'Aero Buff' → 'Aero DMG Buff' naming fix as Ciaccona above.
+  ['Jianxin',       ['Skill', 'Liberation', 'Basic ATK', 'Heavy ATK'], ['Shield', 'Grouping', 'Aero DMG Buff'], []],
+  // debuff tag corrected 2026-09-06 (filter audit): 'Off-Tune' was miscategorized as a debuff — it's
+  // actually her real official Combat Role tag 'Off-Tune Buildup Efficiency' (see COMBAT_ROLE_DATA
+  // below), a team-buildup-rate buff she grants, not a status applied to enemies. Moved to buffs.
+  ['Mornye',        ['Liberation'],                  ['Heal', 'Off-Tune Buildup Efficiency'], []],
   // dmgFocus corrected 2026-09-02 against a fresh the source dump's own damage-profile breakdown: was
   // ['Basic ATK', 'Heavy ATK'], but her literal 'Heavy ATK' category is 0 — her real Rat-tat-tat!/
   // Bang-bang-bang! Forte Heavy Attack AND her whole Liberation sequence (Mk. 31 HMG + BOOM!
@@ -3669,48 +3680,18 @@ const CHAR_BUFF_TABLE = {
   },
 };
 
-// [SECTION:CHAR_BUFF_TAGS] — Added 2026-08-18: CHARACTER_DATA[name].buffs/.debuffs (plain human-
-// readable string arrays) were referenced by the Team Selector's Buff/Debuff filter dropdowns
-// (TeamsTab.jsx) and by DamageCalculator.jsx's per-member buff display, but were NEVER assigned
-// anywhere in this file — every character's `.buffs`/`.debuffs` was `undefined`, so selecting ANY
-// value in those two filters matched zero characters (100% non-functional), and the per-member buff
-// list in the team overview never rendered. Derived here from each character's own already-verified
-// CHAR_BUFF_TABLE entries (not hand-typed per character, to avoid re-fabricating 58 characters' worth
-// of tags) plus dmgFocus/role, mapped onto the exact category labels the filter dropdowns offer.
-// 'Shield' and 'Grouping' are NOT derived — neither has a structured numeric representation anywhere
-// in this data (shields/CC aren't part of the DPS calc), so tagging them would mean guessing from kit
-// descriptions rather than verified data; those two filter options remain non-matching until someone
-// sources them properly, which is an honest gap rather than a silent wrong answer.
-const BUFF_STAT_TAGS = {
-  amplify: 'DMG Buff', allDmg: 'DMG Buff', elemDmg: 'DMG Buff', basicDmg: 'DMG Buff',
-  heavyDmg: 'DMG Buff', skillDmg: 'DMG Buff', libDmg: 'DMG Buff', echoDmg: 'DMG Buff', coordDmg: 'DMG Buff',
-  critRate: 'Crit', critDmg: 'Crit',
-  atkPct: 'ATK Buff',
-  energyRegen: 'Energy Regen',
-};
-const DEBUFF_STAT_TAGS = {
-  defShred: 'DEF Shred', resShred: 'RES Shred', defIgnore: 'DEF Shred',
-  frazzle: 'Frazzle', erosion: 'Erosion', offTune: 'Off-Tune',
-};
-Object.entries(CHARACTER_DATA).forEach(([name, d]) => {
-  const bt = CHAR_BUFF_TABLE[name];
-  const buffTags = new Set();
-  const debuffTags = new Set();
-  if (d.role === 'Healer') buffTags.add('Heal');
-  if ((d.dmgFocus || []).includes('Coordinated ATK')) buffTags.add('Coordinated ATK');
-  if (bt) {
-    [...(bt.outroBuffs || []), ...(bt.libBuffs || []), ...(bt.selfBuffs || []), ...(bt.weaponBuffs || [])].forEach(b => {
-      const tag = BUFF_STAT_TAGS[b.stat];
-      if (tag) buffTags.add(tag);
-    });
-    (bt.debuffs || []).forEach(db => {
-      const tag = DEBUFF_STAT_TAGS[db.stat];
-      if (tag) debuffTags.add(tag);
-    });
-  }
-  d.buffs = [...buffTags];
-  d.debuffs = [...debuffTags];
-});
+// [SECTION:CHAR_BUFF_TAGS] — REMOVED 2026-09-06 (filter audit). This block used to re-derive
+// CHARACTER_DATA[name].buffs/.debuffs from CHAR_BUFF_TABLE's numeric outroBuffs/libBuffs/selfBuffs/
+// weaponBuffs/debuffs entries via a narrow BUFF_STAT_TAGS/DEBUFF_STAT_TAGS mapping (only ever producing
+// 'DMG Buff', 'Crit', 'ATK Buff', 'Energy Regen', 'Heal', 'Coordinated ATK' for buffs, and 'DEF Shred',
+// 'RES Shred', 'Frazzle', 'Erosion', 'Off-Tune' for debuffs), and it ran AFTER the real per-character
+// [name, dmgFocus, buffs, debuffs] table above (whose own .forEach already does
+// `Object.assign(CHARACTER_DATA[name], { dmgFocus, buffs, debuffs })`), silently overwriting every
+// character's specific, verified tags (Shield, Grouping, Tune Break Boost, Glacio Chafe, Havoc Bane,
+// Tune Strain - Interfered/Shifting, Hack - Shifting, Off-Tune Buildup Efficiency, etc.) with this
+// cruder generic set on every page load. The [name, dmgFocus, buffs, debuffs] table above is the real,
+// actively-maintained source of truth (58 characters, individually audited) — this block was dead
+// weight that happened to run last and clobber it.
 
 // [SECTION:SKILL_MULTIPLIERS] — Per-character skill ATK% multipliers at Lv.10 (max skill level)
 // Format: { charName: [ [type, skillName, multString], ... ] }
