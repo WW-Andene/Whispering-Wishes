@@ -547,4 +547,55 @@ final class WidgetPullSimulator {
         String video = bestRarity >= 5 ? "5star" : bestRarity == 4 ? "4star" : "common";
         return new PullSimResult(results, video);
     }
+
+    // "All" category — every character ever released, pooled uniformly. No featured item, no
+    // 50/50: those mechanics only exist because a real banner has one specific item to rate up
+    // or lose against, and "every character ever" has no single such item — every 5★ hit is a
+    // flat, equal-chance pick across widget_pull_pool_all_5star_chars (synced by widgetSync.js's
+    // syncGlobalPullPools from ALL_5STAR_RESONATORS), same for the 4★ tier. Same base 5★ rate
+    // and soft/hard pity curve as every other roll — only the featured/50-50 layer is removed,
+    // not the pity math itself. Own dedicated pity track, since this is a genuinely different
+    // pool than any single banner, Standard, or the merged-banner "Both".
+    static PullSimResult rollAllCharacters(Context context, int count) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        List<String> all5 = readJsonArray(prefs, "widget_pull_pool_all_5star_chars");
+        List<String> all4 = readJsonArray(prefs, "widget_pull_pool_4star_chars");
+        List<String> threeStarWeapons = readJsonArray(prefs, "widget_pull_pool_3star_weapons");
+
+        String pityKeyPrefix = "widget_pull_all_character_";
+        int pity5 = prefs.getInt(pityKeyPrefix + "pity5", 0);
+        int pity4 = prefs.getInt(pityKeyPrefix + "pity4", 0);
+
+        Random rand = new Random();
+        List<PullResult> results = new ArrayList<>();
+        int bestRarity = 3;
+
+        for (int i = 0; i < count; i++) {
+            pity5++;
+            pity4++;
+            if (rand.nextDouble() < pullRate5(pity5)) {
+                String name = all5.isEmpty() ? null : pick(all5, rand);
+                results.add(new PullResult(name, 5, "character", true));
+                bestRarity = 5;
+                pity5 = 0;
+                pity4 = 0;
+            } else if (pity4 >= HARD_PITY_4STAR || rand.nextDouble() < FLAT_4STAR_RATE) {
+                String name = all4.isEmpty() ? null : pick(all4, rand);
+                results.add(new PullResult(name, 4, "character", false));
+                if (bestRarity < 4) bestRarity = 4;
+                pity4 = 0;
+            } else {
+                String name = threeStarWeapons.isEmpty() ? null : pick(threeStarWeapons, rand);
+                results.add(new PullResult(name, 3, "weapon", false));
+            }
+        }
+
+        prefs.edit()
+                .putInt(pityKeyPrefix + "pity5", pity5)
+                .putInt(pityKeyPrefix + "pity4", pity4)
+                .apply();
+
+        String video = bestRarity >= 5 ? "5star" : bestRarity == 4 ? "4star" : "common";
+        return new PullSimResult(results, video);
+    }
 }

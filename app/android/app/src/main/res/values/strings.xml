@@ -75,6 +75,7 @@
     <string name="pull_bubble_category_character">Characters</string>
     <string name="pull_bubble_category_weapon">Weapon</string>
     <string name="pull_bubble_category_standard">Standard</string>
+    <string name="pull_bubble_category_all">All</string>
     <string name="pull_bubble_pin_aria">Pull from %1$s\'s banner</string>
     <string name="pull_bubble_pinned_toast">Pinned to %1$s</string>
     <string name="pull_bubble_both">Both</string>

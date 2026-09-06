@@ -40,7 +40,7 @@
 
 import { Preferences } from '@capacitor/preferences';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt, getWeaponBannerArt, CONVENE_ANIMATIONS, CURRENT_BANNERS } from '../data/banners.js';
-import { STANDARD_5STAR_CHARACTERS, ALL_4STAR_RESONATORS } from '../data/characters.js';
+import { STANDARD_5STAR_CHARACTERS, ALL_4STAR_RESONATORS, ALL_5STAR_RESONATORS } from '../data/characters.js';
 import { WEAPON_DATA } from '../data/weapons.js';
 import { DEFAULT_IMAGE_FRAMING } from '../hooks/useImageFraming.js';
 
@@ -252,6 +252,11 @@ async function syncGlobalPullPools() {
 
   await Preferences.set({ key: 'widget_pull_pool_standard5', value: JSON.stringify(standard5) });
   await Preferences.set({ key: 'widget_pull_pool_4star_chars', value: JSON.stringify(ALL_4STAR_RESONATORS) });
+  // Every 5★ character ever released (not just the small curated Standard-banner subset above)
+  // — backs PullBubbleService's "All" category (WidgetPullSimulator.rollAllCharacters), a flat
+  // uniform pick with no featured/50-50 mechanic, since there's no specific banner to rate up
+  // against when pulling from the whole historical roster.
+  await Preferences.set({ key: 'widget_pull_pool_all_5star_chars', value: JSON.stringify(ALL_5STAR_RESONATORS) });
   await Preferences.set({ key: 'widget_pull_pool_4star_weapons', value: JSON.stringify(fourStarWeapons) });
   await Preferences.set({ key: 'widget_pull_pool_3star_weapons', value: JSON.stringify(threeStarWeapons) });
   // Standard-weapon-banner equivalent of standard5 above — PullBubbleService's "Standard >

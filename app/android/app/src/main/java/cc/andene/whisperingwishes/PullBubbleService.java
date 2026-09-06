@@ -356,15 +356,18 @@ public class PullBubbleService extends Service {
         showSubBubbles();
     }
 
-    // Second level: Characters / Weapon / Standard, replacing ×1/×10/×80 in the same 3 middle
-    // slots — banner-picker's own top slot becomes a back arrow instead of the resonator icon
-    // while navigating any sub-level, hide stays put at the bottom regardless of level.
+    // Second level: Characters / Weapon / Standard / All, replacing ×1/×10/×80 in the same
+    // middle slots — banner-picker's own top slot becomes a back arrow instead of the resonator
+    // icon while navigating any sub-level, hide stays put at the bottom regardless of level.
+    // "All" pins directly (no further sub-level, same as Standard's two fixed picks) since it's
+    // not tied to any specific active banner — it's the whole historical character roster.
     private void showCategoryArc() {
         addBackButton(() -> enterMode(ArcMode.ROLL));
-        double[] angles = midAngles(3);
+        double[] angles = midAngles(4);
         addSubBubble(getString(R.string.pull_bubble_category_character), null, 0, angles[0], null, () -> enterMode(ArcMode.LIST_CHARACTER));
         addSubBubble(getString(R.string.pull_bubble_category_weapon), null, 0, angles[1], null, () -> enterMode(ArcMode.LIST_WEAPON));
         addSubBubble(getString(R.string.pull_bubble_category_standard), null, 0, angles[2], null, () -> enterMode(ArcMode.LIST_STANDARD));
+        addSubBubble(getString(R.string.pull_bubble_category_all), null, 0, angles[3], null, this::pinAllCharacters);
         addHideButton();
     }
 
@@ -512,6 +515,18 @@ public class PullBubbleService extends Service {
         pinnedTargets.add(new Pin("standard-both", null, getString(R.string.pull_bubble_both)));
         updateMainBubbleIcon();
         Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, getString(R.string.pull_bubble_both)), Toast.LENGTH_SHORT).show();
+        enterMode(ArcMode.ROLL);
+    }
+
+    // "All" category — every character ever released pooled uniformly, no featured/50-50
+    // (WidgetPullSimulator.rollAllCharacters — see its own header for why). Pins directly like
+    // Standard's two fixed picks, no banner-list sub-level, since it isn't tied to any specific
+    // active banner at all.
+    private void pinAllCharacters() {
+        pinnedTargets.clear();
+        pinnedTargets.add(new Pin("all-characters", null, getString(R.string.pull_bubble_category_all)));
+        updateMainBubbleIcon();
+        Toast.makeText(this, getString(R.string.pull_bubble_pinned_toast, getString(R.string.pull_bubble_category_all)), Toast.LENGTH_SHORT).show();
         enterMode(ArcMode.ROLL);
     }
 
@@ -847,6 +862,10 @@ public class PullBubbleService extends Service {
                     // Standard's own "Both" — merged pool over Standard-Character + Standard-
                     // Weapon, sharing one pity track (see rollStandardMerged's own header).
                     parts.add(WidgetPullSimulator.rollStandardMerged(this, share));
+                } else if ("all-characters".equals(pin.category)) {
+                    // "All" — every character ever released, no featured/50-50 (see
+                    // rollAllCharacters' own header).
+                    parts.add(WidgetPullSimulator.rollAllCharacters(this, share));
                 } else if (pin.category.startsWith("standard")) {
                     String subCategory = "standard-weapon".equals(pin.category) ? "weapon" : "character";
                     parts.add(WidgetPullSimulator.rollStandard(this, subCategory, share));
