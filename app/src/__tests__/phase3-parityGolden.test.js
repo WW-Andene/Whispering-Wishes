@@ -197,6 +197,14 @@ const EXPECTED_DIVERGENCES = {
   // apply that gate, so it stays at the un-derated value. Measured ratio ~1.273 (engine/legacy) —
   // real, expected, not a regression.
   Chixia: { min: 1.15, max: 1.35 },
+  // Added 2026-09-06 (Ciaccona completeness pass): same class as the prior 13 characters above.
+  // Harmonic Allegro (Skill) and Singer's Triple Cadenza (Liberation) both got real, sourced
+  // cooldowns added (Data dump/Ciaccona/Ciaccona.md's own Cooldown rows) — her modeled rotation
+  // recasts both faster than those cooldowns allow, so calcTeamStats()'s cooldownSteadyState gate
+  // correctly derates the legacy RAW number (1997 -> 1813); this test's own standalone engine call
+  // doesn't apply that gate, so it stays at the un-derated value. Measured ratio ~1.101
+  // (engine/legacy) — real, expected, not a regression.
+  Ciaccona: { min: 1.02, max: 1.15 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number

@@ -14,6 +14,14 @@
 // Concert, counted as Liberation DMG — doesn't fit that schema) but also never built
 // as its own gated damage block. Added `ciaccona.chain.s6` below, same pattern as
 // Phrolova's chain.s6-apparition.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Ciaccona/
+// Ciaccona.md's own Cooldown/Concerto Regen rows (Roaming with the Wind, Harmonic Allegro, Singer's
+// Triple Cadenza, Symphonic Poem: Tonic, Quadruple Downbeat). Symphonic Poem: Tonic's own Concerto
+// value (10 per successful interaction) is summed across the 20 real pulses this block already
+// combines into one hit-list, matching its existing "one representative full-duration hit-set"
+// convention rather than the single-pulse value.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -41,6 +49,9 @@ export const CIACCONA_BLOCKS = [
     // each of her 4 real Erosion-inflicting moves with the same value is correct, not redundant double
     // counting.
     dotApplier: { mechanic: 'erosion', value: 3 },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Ciaccona/Ciaccona.md's own
+    // "Concerto Regen 10" row for Intro Skill Roaming with the Wind.
+    concertoEnergyGain: 10,
   },
   {
     id: 'ciaccona.basic.stage3',
@@ -75,15 +86,20 @@ export const CIACCONA_BLOCKS = [
     id: 'ciaccona.skill.harmonic-allegro',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Harmonic Allegro' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Ciaccona/Ciaccona.md's own
+    // "Cooldown 10s" row.
+    timing: { cooldown: 10 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('40.39%×4'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Inflicts another Aero Erosion stack, restores Concerto Energy.',
     dotApplier: { mechanic: 'erosion', value: 3 },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Concerto Regen 15".
+    concertoEnergyGain: 15,
   },
   {
     id: 'ciaccona.forte.quadruple-downbeat',
     source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Quadruple Downbeat' },
+    // No cooldown: gated by consuming 3 Musical Essence segments, a resource threshold, not a timer.
     timing: {}, target: { scope: 'self' }, effects: [],
     // Fixed 2026-09-02: had NO damage.category at all — meant this block (her Heavy Attack REPLACEMENT
     // at 3 Musical Essence, no kit-text override to a different category the way Phrolova's Scarlet
@@ -95,14 +111,23 @@ export const CIACCONA_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('31.41%×10+314.03%'), category: 'heavyDmg' , basis: 'ATK' },
     note: 'Consumes all 3 stacked Musical Essence, inflicts Aero Erosion, restores 25 Concerto Energy. Replaces Heavy Attack outright — no kit-text override to a different category, so counted as heavyDmg (matches the dump\'s own damage-profile "Heavy" bucket).',
     dotApplier: { mechanic: 'erosion', value: 3 },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Ciaccona/Ciaccona.md's own
+    // "Concerto Regen 25" row for Quadruple Downbeat.
+    concertoEnergyGain: 25,
   },
   {
     id: 'ciaccona.liberation.singers-triple-cadenza',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: "Liberation:Singer's Triple Cadenza" },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Ciaccona/Ciaccona.md's own
+    // "Cooldown 20s" row.
+    timing: { cooldown: 20 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('1100.42%'), category: 'libDmg' , basis: 'ATK' },
     note: 'Enters Recital: periodic Symphonic Poem: Tonic pulses via green/yellow prompts, even off-field.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Concerto Regen 20". Its
+    // "Resonance Cost 125" is a Liberation-gauge cost, not a gain — no matching schema field, not
+    // modeled, same treatment as every other character's own Liberation resource cost.
+    concertoEnergyGain: 20,
   },
   {
     id: 'ciaccona.liberation.symphonic-poem-tonic',
@@ -111,6 +136,11 @@ export const CIACCONA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('6.12%×20'), category: 'libDmg' , basis: 'ATK' },
     note: 'Periodic pulse during Recital over the field duration, triggered by successful prompt interaction. Modeled as one representative full-duration hit-set, not the real per-pulse timing.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Ciaccona/Ciaccona.md's own
+    // "Successful Interaction Concerto Regen 10 (each)" row — since this block already represents
+    // all 20 real pulses combined into one hit-list (per its own note), the total is 10×20 = 200,
+    // matching how its own damage.hits already scale the same way.
+    concertoEnergyGain: 200,
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
