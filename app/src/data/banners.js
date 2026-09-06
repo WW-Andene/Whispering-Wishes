@@ -859,6 +859,8 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Lightcrusher': './banners/characters/lightcrusher/RpYdQddL-Lightcrusher-Icon.webp',
   'Rocksteady Guardian': './banners/characters/rocksteady-guardian/8LG9k4bn-Rocksteady-Guardian-Icon.webp',
   // Land of Xuanfang echoes (v3.5) — icons sourced from the wiki, matching echoes.js's iconUrl
+  // Calamity Effigy has no separate iconUrl in echoes.js (never confirmed), so reuse its monsterIconUrl asset
+  'Calamity Effigy': './echoes/calamity-effigy/static.nanoka.cc-assets-ww-UIResources-Common-Image-IconMonsterHead-T_IconMonsterHead_34032_UI.webp',
   'Thousand-Puppet Pavilion': './banners/characters/thousand-puppet-pavilion/23cVrFbk-Thousand-Puppet-Pavilion.webp',
   'Myriad Snare: Rustfire Chassis': './banners/characters/myriad-snare-rustfire-chassis/KzxLH0wS-Myriad-Snare-Rustfire-Chassis.webp',
   'Reminiscence: Denia': './banners/characters/reminiscence-denia/qYy1Y7Ck-Reminiscence-Denia.webp',
