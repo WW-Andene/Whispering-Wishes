@@ -11,6 +11,19 @@
 // WAS one of these (closed 2026-09-03, REMAINING_WORK.md 1a) — see
 // cantarella.liberation.diffusion-summons below, built on a new `crossCharacterHit`
 // windowed-proc variant (triggerBlocks.schema.js).
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the prior passes) — sourced from Data dump/Cantarella/
+// Cantarella.md's own Cooldown/Concerto Regen rows (Graceful Step, Flickering Reverie, Flowing
+// Suffocation, Perception Drain), cross-checked against CHARACTER_ROTATIONS['Cantarella']'s own step
+// notes (which state Graceful Step's Concerto Regen explicitly, a detail the isolated dump table
+// doesn't separately list for that move). Her real Trance/Shiver gauges (gating Delusive Dive and
+// Perception Drain) correctly stay plain `cast`-triggered rather than `resource-threshold` — unlike
+// Calcharo's Death Messenger or Camellya's Ephemeral, neither move recasts more than once in her
+// modeled rotation, so a plain cast trigger anchored to the correctly-pre-sequenced rotation step is
+// already accurate; converting to resource-threshold would add no real precision here, only risk
+// (see Buling's Trigram-gauge note for the double-fire class that conversion can introduce when done
+// without a genuine need).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -39,8 +52,15 @@ export const CANTARELLA_BLOCKS = [
     id: 'cantarella.skill.graceful-step',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Dance with Shadows' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Cantarella/Cantarella.md's own
+    // "Graceful Step Cooldown: 6s" row.
+    timing: { cooldown: 6 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('73.60%×2'), category: 'skillDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): CHARACTER_ROTATIONS['Cantarella']'s
+    // own step note for this exact cast — "grants 1 more Trance (2→3/5) and 10 Concerto Energy
+    // regen" — sourced from the rotation data itself rather than the isolated dump table, which
+    // doesn't list a Concerto Regen row for Graceful Step specifically.
+    concertoEnergyGain: 10,
   },
   {
     // category fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): kit text is explicit — "Flowing
@@ -51,9 +71,16 @@ export const CANTARELLA_BLOCKS = [
     id: 'cantarella.liberation.flowing-suffocation',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Beneath the Sea' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Cantarella/Cantarella.md's own
+    // "Flowing Suffocation Cooldown: 25s" row.
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('376.00%'), category: 'basicDmg' , basis: 'ATK' },
     note: 'Considered Basic Attack DMG per its own kit text despite being cast from the Liberation slot. Also applies Diffusion — see cantarella.liberation.diffusion-summons below for the modeled Coordinated ATK summon chain.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Cantarella/Cantarella.md's
+    // own "Flowing Suffocation Concerto Regen: 20" row. Its "Resonance Cost: 125" row is a
+    // Liberation-gauge cost, not a gain — no matching schema field, not modeled, same treatment as
+    // every other character's own Liberation resource cost.
+    concertoEnergyGain: 20,
   },
   {
     // Added 2026-09-03 (REMAINING_WORK.md 1a — the off-field summon-chain gap, closed): the numbers
@@ -95,7 +122,13 @@ export const CANTARELLA_BLOCKS = [
     id: 'cantarella.skill.flickering-reverie',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Flickering Reverie' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Cantarella/Cantarella.md's own
+    // "Flickering Reverie Cooldown: 12s" row. CHARACTER_ROTATIONS['Cantarella']'s own step note says
+    // "its cooldown is already reset" at the point this is cast (Mirage entry resets it) — the real
+    // cooldown value is still 12s, it just isn't the binding constraint in THIS modeled rotation
+    // (only cast once); recorded faithfully regardless, same as every other real cooldown in this
+    // pass, since a future multi-loop simulation would need the true value, not an inert 0.
+    timing: { cooldown: 12 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('196.23%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Mirage-state Skill replacement, considered an Echo Skill cast. Inflicts Hazy Dream, whose follow-up Jolt hit (198.81%, considered Basic ATK DMG) is a separate auto-triggered proc off the target\'s next hit taken — not anchored to its own CHARACTER_ROTATIONS step, not modeled.',
   },
@@ -111,7 +144,12 @@ export const CANTARELLA_BLOCKS = [
     id: 'cantarella.forte.perception-drain',
     source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Perception Drain' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Cantarella/Cantarella.md's own
+    // "Perception Drain Cooldown: 18s" row, also stated in CHARACTER_ROTATIONS['Cantarella']'s own
+    // step note ("18s cooldown once cast"). Real gate is Shiver reaching 3 (a resource threshold,
+    // not this cooldown) — she only casts this once in the modeled rotation, so neither gate is the
+    // binding constraint here; recorded for completeness, same as Flickering Reverie's cooldown above.
+    timing: { cooldown: 18 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('667.99%×2'), category: 'basicDmg' , basis: 'ATK' },
     note: 'Considered Basic ATK DMG per its own kit text and also counted as an Echo Skill cast. Also heals the team and re-applies Hazy Dream — not modeled (no DPS component).',
   },

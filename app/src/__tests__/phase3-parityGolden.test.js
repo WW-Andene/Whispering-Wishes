@@ -151,6 +151,14 @@ const EXPECTED_DIVERGENCES = {
   // call doesn't apply that gate, so it stays at the un-derated value. Measured ratio ~1.034
   // (engine/legacy) — real, expected, not a regression.
   Calcharo: { min: 1.02, max: 1.10 },
+  // Added 2026-09-06 (Cantarella completeness pass): same class as Aalto/Aemeath/Augusta/Baizhi/
+  // Brant/Buling/Calcharo above. Flowing Suffocation (Liberation) got a real, sourced 25s cooldown
+  // added (Data dump/Cantarella/Cantarella.md's own Cooldown row) — her modeled rotation recasts it
+  // faster than that cooldown allows, so calcTeamStats()'s cooldownSteadyState gate correctly
+  // derates the legacy RAW number (1612 -> 1406); this test's own standalone engine call doesn't
+  // apply that gate, so it stays at the un-derated value. Measured ratio ~1.146 (engine/legacy) —
+  // real, expected, not a regression.
+  Cantarella: { min: 1.05, max: 1.20 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number
