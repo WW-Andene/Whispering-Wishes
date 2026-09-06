@@ -108,7 +108,9 @@ describe('triggerEngine parity — Cartethyia', () => {
     const skill = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.skill.base-form');
     const basic4 = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.basic.base-form-1-4');
     for (const b of [intro, skill, basic4]) {
-      expect(b.dotApplier).toEqual({ mechanic: 'erosion', value: 3 });
+      // requiresTeammate/valueWithTeammate added 2026-09-06 (real Rover: Aero-doubling migration —
+      // see dotReactionsFromBlocks.js's resolveErosionFromBlocks and this file's own header note).
+      expect(b.dotApplier).toEqual({ mechanic: 'erosion', value: 3, requiresTeammate: 'Rover: Aero', valueWithTeammate: 6 });
     }
   });
 

@@ -90,15 +90,16 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const frazzle = allFrazzleMembersHaveBlocks
     ? resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, frazzleResMult, hasPhoebe)
     : calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
-  // Erosion (the engine-merge history (git log) Phase 2 — Ciaccona migrated; Cartethyia deliberately NOT migrated
-  // yet — her legacy value (6) assumes an uncounted Rover: Aero teammate raising her effective stack
-  // cap, a real conditional fact this migration won't blindly port without resolving it first). Unlike
-  // Electro Flare/Fusion Burst (where every real applier in the roster is fully migrated, so the
-  // blocks-only path is complete), Erosion is a MIXED migration state — switching wholesale to
-  // block-only would silently make Cartethyia's real, still-legacy-only Erosion contribution
-  // invisible whenever she's on a team. Only prefer blocks when every erosion-flagged member present
-  // in THIS team is actually block-tagged; otherwise fall back to the full legacy path for everyone,
-  // so a not-yet-migrated character is never silently dropped.
+  // Erosion (the engine-merge history (git log) Phase 2 — Ciaccona migrated; Cartethyia migrated
+  // 2026-09-06 — her real Rover: Aero-doubling condition, characters.js's "6 stacks with Rover (3
+  // base)", is now modeled via dotApplier.requiresTeammate/valueWithTeammate on her 3 erosion blocks
+  // and resolved by resolveErosionFromBlocks below — no longer a reason to hold her on the legacy
+  // path). Every real Erosion applier in the roster is now block-tagged, same as Electro Flare/
+  // Fusion Burst, but this per-team check is kept rather than special-cased away: it's what makes a
+  // FUTURE not-yet-migrated Erosion applier (or a mixed team missing a blocks file for unrelated
+  // reasons, e.g. Jingran) correctly fall back to the full legacy path instead of silently dropping
+  // that character's contribution — only prefer blocks when every erosion-flagged member present in
+  // THIS team is actually block-tagged.
   const erosionFlaggedMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'erosion'));
   const allErosionMembersHaveBlocks = blocksByOwner && erosionFlaggedMembers.every(m =>
     (blocksByOwner[m.name] || []).some(b => b.dotApplier?.mechanic === 'erosion'));

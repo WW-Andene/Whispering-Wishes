@@ -159,6 +159,20 @@
  *                            fusionBurst/electroFlare, boolean-gated mechanics with no per-applier
  *                            value).
  * @property {string} [requiresStance]  Only counts when the owner's resolved mode matches.
+ * @property {string} [requiresTeammate]  Names a specific teammate (a CHARACTER_DATA/
+ *                            BLOCKS_BY_CHARACTER key, e.g. 'Rover: Aero') whose presence on the
+ *                            SAME team changes this applier's real, sourced value — e.g.
+ *                            Cartethyia's Aero Erosion ("6 stacks with Rover (3 base)",
+ *                            characters.js's own CHAR_BUFF_TABLE-adjacent comment). Distinct from
+ *                            `requiresStance` (which gates the OWNER's own mode): this gates on
+ *                            another TEAM MEMBER's presence. When set, `valueWithTeammate` (not
+ *                            `value`) is used whenever that teammate is present in the team being
+ *                            resolved; `value` remains the base-case contribution otherwise.
+ * @property {number} [valueWithTeammate]  The real, sourced stack contribution to use INSTEAD of
+ *                            `value` when `requiresTeammate` is set and that teammate is present.
+ *                            Required whenever `requiresTeammate` is set — never derive this by
+ *                            assuming a fixed multiplier (e.g. "just double `value`") when the
+ *                            source gives an explicit number, as it does for Cartethyia.
  */
 
 /**

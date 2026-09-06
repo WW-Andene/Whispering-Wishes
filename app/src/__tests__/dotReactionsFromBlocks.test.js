@@ -13,6 +13,7 @@ import { resolveDotReactionDps } from '../engine/resolver/dot/dotReactions.js';
 import { BULING_BLOCKS } from '../engine/characterBlocks/buling.blocks.js';
 import { DENIA_BLOCKS } from '../engine/characterBlocks/denia.blocks.js';
 import { CIACCONA_BLOCKS } from '../engine/characterBlocks/ciaccona.blocks.js';
+import { CARTETHYIA_BLOCKS } from '../engine/characterBlocks/cartethyia.blocks.js';
 import { ROVER_SPECTRO_BLOCKS } from '../engine/characterBlocks/roverspectro.blocks.js';
 import { filterExclusiveModeBlocks, gateBlocksBySequence } from '../engine/resolver/gating/sequenceGating.js';
 
@@ -125,7 +126,7 @@ describe('dotReactionsFromBlocks — Frazzle mixed-migration safety (Rover: Spec
   });
 });
 
-describe('dotReactionsFromBlocks — Erosion mixed-migration safety (Ciaccona migrated, Cartethyia deliberately NOT — the engine-merge history (git log))', () => {
+describe('dotReactionsFromBlocks — Erosion mixed-migration safety (Ciaccona + Cartethyia both migrated 2026-09-06; generic not-yet-migrated case still safety-netted)', () => {
   const getEnemyRes = () => 10;
 
   it('Ciaccona solo (fully migrated) matches calcErosionDmg exactly via resolveDotReactionDps blocks path', () => {
@@ -135,17 +136,45 @@ describe('dotReactionsFromBlocks — Erosion mixed-migration safety (Ciaccona mi
     expect(fromDots.breakdown.erosion.dmg).toBeCloseTo(legacy.dmg, 6);
   });
 
-  it('a team with Ciaccona (migrated) AND Cartethyia (still legacy-only) does NOT silently drop Cartethyia — falls back to the full legacy calculation for both rather than only counting Ciaccona\'s blocks', () => {
-    const blocksByOwner = { Ciaccona: CIACCONA_BLOCKS, Cartethyia: [] }; // Cartethyia has no dotApplier-tagged blocks yet
-    const members = [{ name: 'Ciaccona' }, { name: 'Cartethyia' }];
+  it('Cartethyia solo (no Rover: Aero) correctly uses her real base-3 stacks — DIFFERENT from the legacy formula, which hardcoded 6 unconditionally (the exact bug this migration fixes)', () => {
+    // CHAR_BUFF_TABLE['Cartethyia'].debuffs erosion value is a flat 6 with no runtime Rover: Aero
+    // check at all (dotFormulas.js's calcErosionDmg just reads that static value) — so the legacy
+    // path has always overcounted her Erosion whenever Rover: Aero ISN'T on the team. The block
+    // path is deliberately more correct here, not just differently-shaped: it real-checks team
+    // membership via dotApplier.requiresTeammate.
+    const blocksByOwner = { Cartethyia: CARTETHYIA_BLOCKS };
+    const fromDots = resolveDotReactionDps([{ name: 'Cartethyia' }], 20, defMult, 0, getEnemyRes, resMult, null, blocksByOwner);
+    const legacy = calcErosionDmg([{ name: 'Cartethyia' }], 20, defMult, resMult);
+    expect(fromDots.breakdown.erosion.dmg).toBeLessThan(legacy.dmg);
+  });
+
+  it('Cartethyia + Rover: Aero uses her real sourced 6-stack value, matching the legacy formula\'s own (always-6) figure now that the real condition holds', () => {
+    const blocksByOwner = { Cartethyia: CARTETHYIA_BLOCKS, 'Rover: Aero': [] };
+    const members = [{ name: 'Cartethyia' }, { name: 'Rover: Aero' }];
     const fromDots = resolveDotReactionDps(members, 20, defMult, 0, getEnemyRes, resMult, null, blocksByOwner);
-    const legacyBoth = calcErosionDmg(members, 20, defMult, resMult);
-    // Must match the full legacy (both-considered) result, NOT the blocks-only (Ciaccona-only) result,
-    // proving Cartethyia's real contribution wasn't silently dropped by the migration.
-    expect(fromDots.breakdown.erosion.dmg).toBeCloseTo(legacyBoth.dmg, 6);
+    const legacy = calcErosionDmg(members, 20, defMult, resMult);
+    expect(fromDots.breakdown.erosion.dmg).toBeCloseTo(legacy.dmg, 6);
+    const solo = resolveErosionFromBlocks({ Cartethyia: CARTETHYIA_BLOCKS }, 20, defMult, resMult);
+    // The Rover: Aero-boosted result must be strictly higher than the base-3-stack solo result —
+    // proving the doubling condition actually fired, not just coincidentally matched.
+    expect(fromDots.breakdown.erosion.dmg).toBeGreaterThan(solo.dmg);
+  });
+
+  it('a real erosion-flagged member with no dotApplier-tagged block (simulated by blanking Ciaccona\'s blocks) makes resolveDotReactionDps fall back to the full legacy calculation, not silently drop her', () => {
+    // Every real roster character IS migrated as of 2026-09-06 (Ciaccona and Cartethyia both have
+    // real dotApplier blocks) — this simulates the "not yet migrated" case generically by blanking
+    // a real character's own blocks array, the same technique used for a genuinely-unmigrated
+    // character before this pass (see Frazzle/Phoebe's real version of this same test above, which
+    // still has a real not-yet-migrated character to use).
+    const blocksByOwner = { Ciaccona: [] };
+    const members = [{ name: 'Ciaccona' }];
+    const fromDots = resolveDotReactionDps(members, 20, defMult, 0, getEnemyRes, resMult, null, blocksByOwner);
+    const legacy = calcErosionDmg(members, 20, defMult, resMult);
+    // Must match the full legacy figure (not zero), proving the whole-team gate
+    // (allErosionMembersHaveBlocks in dotReactions.js) correctly fell back rather than calling
+    // resolveErosionFromBlocks directly and silently getting 0 from her now-empty block array.
+    expect(fromDots.breakdown.erosion.dmg).toBeCloseTo(legacy.dmg, 6);
     const blocksOnlyWouldGive = resolveErosionFromBlocks(blocksByOwner, 20, defMult, resMult);
-    // Cartethyia's real legacy value (6) is higher than Ciaccona's (3) -- if she'd been dropped, the
-    // blocks-only number would differ from the correct legacy-both number.
-    expect(blocksOnlyWouldGive.dmg).not.toBeCloseTo(legacyBoth.dmg, 6);
+    expect(blocksOnlyWouldGive.dmg).toBe(0);
   });
 });

@@ -87,11 +87,24 @@ export function resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, resMul
 /**
  * Erosion — the engine-merge history (git log) 1.2. `baseStacks` is the MAX across every applying block's own
  * `value` (not summed — a real, different interaction rule than Frazzle's, preserved exactly).
+ *
+ * `dotApplier.requiresTeammate`/`valueWithTeammate` (added 2026-09-06, closing the Cartethyia gap
+ * dotReactions.js's own comment used to document): when an applying block names a
+ * `requiresTeammate`, its contribution is `valueWithTeammate` instead of `value` whenever that
+ * teammate is present anywhere in `blocksByOwner` (the real, engine-derived team roster — only
+ * populated for a fully-converted team, see calcTeamStats.js's `allMembersConverted` gate), and
+ * `value` (the base case) otherwise. Both are real, sourced numbers (characters.js's own "6 stacks
+ * with Rover (3 base)") — never a computed ×2 assumption.
  */
 export function resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, resMult) {
   const appliers = collectAppliers(blocksByOwner, 'erosion');
   if (!appliers.length) return { dmg: 0, active: false };
-  const baseStacks = appliers.reduce((s, b) => Math.max(s, b.dotApplier.value || 3), 3);
+  const baseStacks = appliers.reduce((s, b) => {
+    const { requiresTeammate, value, valueWithTeammate } = b.dotApplier;
+    const hasTeammate = requiresTeammate && Object.prototype.hasOwnProperty.call(blocksByOwner, requiresTeammate);
+    const applierValue = (hasTeammate && valueWithTeammate != null) ? valueWithTeammate : (value || 3);
+    return Math.max(s, applierValue);
+  }, 3);
   const uptime = Math.min(1, EROSION_DURATION / rotTime);
   const ticks = Math.floor(EROSION_DURATION / EROSION_TICK_INTERVAL);
   let total = 0;

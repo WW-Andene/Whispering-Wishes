@@ -40,7 +40,14 @@ export const CARTETHYIA_BLOCKS = [
     // Rover: Aero present), same pattern as Ciaccona's own 4 Erosion-applying blocks (the MAX-not-
     // summed aggregation means tagging all 3 of her real applying moves with the same value is
     // correct, not double-counting).
-    dotApplier: { mechanic: 'erosion', value: 3 },
+    // requiresTeammate/valueWithTeammate added 2026-09-06 (real sourcing pass, direct user
+    // instruction — see dotReactions.js's Erosion-handling comment for the prior mixed-migration
+    // state this closes): the Rover: Aero-doubling condition characters.js line ~3521 documents
+    // ("6 stacks with Rover (3 base)") is now a real, resolved condition instead of an unmodeled
+    // gap — resolveErosionFromBlocks (dotReactionsFromBlocks.js) checks for a 'Rover: Aero' member
+    // on the same team and uses valueWithTeammate (6, the source's own explicit number, not a
+    // computed ×2) instead of value (3) when present.
+    dotApplier: { mechanic: 'erosion', value: 3, requiresTeammate: 'Rover: Aero', valueWithTeammate: 6 },
   },
   {
     id: 'cartethyia.basic.base-form-1-4',
@@ -49,7 +56,7 @@ export const CARTETHYIA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('4.78% → 13.13% → 17.12% → 15.1%'), category: 'basicDmg', basis: 'HP' },
     note: "Stage 4 inflicts 1 Aero Erosion stack, grants Sword of Divinity's Shadow (max 1, 20s).",
-    dotApplier: { mechanic: 'erosion', value: 3 },
+    dotApplier: { mechanic: 'erosion', value: 3, requiresTeammate: 'Rover: Aero', valueWithTeammate: 6 },
   },
   {
     id: 'cartethyia.skill.base-form',
@@ -58,7 +65,7 @@ export const CARTETHYIA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('6.89%×3 + 8.86%'), category: 'skillDmg', basis: 'HP' },
     note: "Applies 2 stacks of Aero Erosion, summons Sword of Virtue's Shadow (max 1, 20s).",
-    dotApplier: { mechanic: 'erosion', value: 3 },
+    dotApplier: { mechanic: 'erosion', value: 3, requiresTeammate: 'Rover: Aero', valueWithTeammate: 6 },
   },
   {
     id: 'cartethyia.skill.fleurdelys-1',
