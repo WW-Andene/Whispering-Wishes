@@ -52,12 +52,19 @@ import { DEFAULT_IMAGE_FRAMING } from '../hooks/useImageFraming.js';
 // changed meaning or disappeared.
 const WIDGET_SCHEMA_VERSION = 2;
 
-// Same VITE_API_BASE_URL used by apiBase.js/assetSW.js — needed here because
-// convene-animations/ is one of capacitor-build/build.mjs's EXCLUDED_DIRS
-// (too large to bundle into the APK), so the native side can't read it off
-// its own assets like it does the banner art/collection thumbnails below.
-// The widget instead gets an absolute, already-resolved URL.
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
+// convene-animations/ is one of capacitor-build/build.mjs's EXCLUDED_DIRS (too large to
+// bundle into the APK), so the native side can't read it off its own assets like it does the
+// banner art/collection thumbnails below — it needs an absolute, already-resolved URL instead.
+// Every other excluded-media directory (portraits/spine/animated-bg/audio) streams straight
+// from the GitHub repo via jsDelivr for exactly this reason (see build.mjs's own header and
+// public/sw.js's JSDELIVR_ASSET_BASE) — NOT from VITE_API_BASE_URL, which this file used to
+// point at instead (a leftover from before that convention existed, never updated). That
+// mismatch is why the in-app WebView video worked (its relative src goes through the service
+// worker's own jsDelivr redirect) while PullBubbleService's native MediaPlayer — no WebView,
+// no service worker involved — got handed a URL on a totally different, often-unconfigured
+// host. Uses the exact same base the service worker does, so this needs no deploy/hosting
+// setup at all: it just reads straight from whatever's committed to the repo's main branch.
+const JSDELIVR_ASSET_BASE = 'https://cdn.jsdelivr.net/gh/WW-Andene/Whispering-Wishes@main/app/public';
 
 export const isNativePlatform = () =>
   typeof window !== 'undefined' && !!window.Capacitor?.isNativePlatform?.();
@@ -107,7 +114,7 @@ function buildBannerEntry(item, bannerImage, isWeapon) {
     featured4Full: featured4Names,
     conveneUrl: (() => {
       const rel = getConveneAnimation(item.name);
-      return rel && API_BASE_URL ? `${API_BASE_URL}/${stripRelative(rel)}` : null;
+      return rel ? `${JSDELIVR_ASSET_BASE}/${stripRelative(rel)}` : null;
     })(),
   };
 }
@@ -219,8 +226,8 @@ async function syncConveneRoster() {
     // the clip is promoting, not the collection-grid artwork. Falls back to the collection
     // sprite only when no banner art is on file at all, rather than showing nothing.
     artAsset: stripRelative(getCharacterBannerArt(name) || getWeaponBannerArt(name) || DEFAULT_COLLECTION_IMAGES[name] || ''),
-    conveneUrl: API_BASE_URL ? `${API_BASE_URL}/${stripRelative(CONVENE_ANIMATIONS[name])}` : null,
-  })).filter((e) => e.conveneUrl); // no usable entry without a resolvable URL
+    conveneUrl: `${JSDELIVR_ASSET_BASE}/${stripRelative(CONVENE_ANIMATIONS[name])}`,
+  }));
 
   await Preferences.set({ key: 'widget_convene_roster', value: JSON.stringify({ v: WIDGET_SCHEMA_VERSION, roster }) });
 }
