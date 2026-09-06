@@ -87,52 +87,66 @@ export const TACET_FIELD_WAVEPLATE_COST = 60;
 // must be an input, never assumed. rarity: { 2, 3, 4, 5 } percentages sum to 100 at each level
 // (blank cells in the source table are 0 — that rarity isn't in the pool yet/anymore).
 export const DATA_BANK_LEVELS = [
-  { level: 0, baseDropRate: 6, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
-  { level: 1, baseDropRate: 10, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
-  { level: 2, baseDropRate: 10, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
-  { level: 3, baseDropRate: 10, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
-  { level: 4, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
-  { level: 5, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 70, 3: 30, 4: 0, 5: 0 } },
-  { level: 6, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 50, 3: 50, 4: 0, 5: 0 } },
-  { level: 7, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 20, 3: 80, 4: 0, 5: 0 } },
-  { level: 8, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
-  { level: 9, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
-  { level: 10, baseDropRate: 20, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
-  { level: 11, baseDropRate: 20, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 50, 4: 50, 5: 0 } },
-  { level: 12, baseDropRate: 20, cost4Enhanced: 50, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 50, 4: 50, 5: 0 } },
-  { level: 13, baseDropRate: 20, cost4Enhanced: 50, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 25, 4: 75, 5: 0 } },
-  { level: 14, baseDropRate: 20, cost4Enhanced: 60, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 25, 4: 75, 5: 0 } },
-  { level: 15, baseDropRate: 20, cost4Enhanced: 60, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 70, 5: 30 } },
-  { level: 16, baseDropRate: 20, cost4Enhanced: 80, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 70, 5: 30 } },
-  { level: 17, baseDropRate: 20, cost4Enhanced: 80, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 50, 5: 50 } },
-  { level: 18, baseDropRate: 20, cost4Enhanced: 90, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 50, 5: 50 } },
-  { level: 19, baseDropRate: 20, cost4Enhanced: 90, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 20, 5: 80 } },
-  { level: 20, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 20, 5: 80 } },
-  { level: 21, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
-  { level: 22, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
-  { level: 23, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
-  { level: 24, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
-  { level: 25, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
-  { level: 26, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
-  { level: 27, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
-  { level: 28, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
-  { level: 29, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
-  { level: 30, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 0, sol3Phase: 1, baseDropRate: 6, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 1, sol3Phase: 1, baseDropRate: 10, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 2, sol3Phase: 1, baseDropRate: 10, cost4Enhanced: 20, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 3, sol3Phase: 1, baseDropRate: 10, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 4, sol3Phase: 1, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 100, 3: 0, 4: 0, 5: 0 } },
+  { level: 5, sol3Phase: 1, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 70, 3: 30, 4: 0, 5: 0 } },
+  { level: 6, sol3Phase: 1, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 50, 3: 50, 4: 0, 5: 0 } },
+  { level: 7, sol3Phase: 1, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 20, 3: 80, 4: 0, 5: 0 } },
+  { level: 8, sol3Phase: 3, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
+  { level: 9, sol3Phase: 3, baseDropRate: 15, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
+  { level: 10, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 70, 4: 30, 5: 0 } },
+  { level: 11, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 40, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 50, 4: 50, 5: 0 } },
+  { level: 12, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 50, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 50, 4: 50, 5: 0 } },
+  { level: 13, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 50, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 25, 4: 75, 5: 0 } },
+  { level: 14, sol3Phase: 3, baseDropRate: 20, cost4Enhanced: 60, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 25, 4: 75, 5: 0 } },
+  { level: 15, sol3Phase: 4, baseDropRate: 20, cost4Enhanced: 60, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 70, 5: 30 } },
+  { level: 16, sol3Phase: 4, baseDropRate: 20, cost4Enhanced: 80, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 70, 5: 30 } },
+  { level: 17, sol3Phase: 4, baseDropRate: 20, cost4Enhanced: 80, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 50, 5: 50 } },
+  { level: 18, sol3Phase: 4, baseDropRate: 20, cost4Enhanced: 90, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 50, 5: 50 } },
+  { level: 19, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 90, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 20, 5: 80 } },
+  { level: 20, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 20, 5: 80 } },
+  { level: 21, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 22, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 23, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 24, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 25, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 26, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 0, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 27, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 28, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 29, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
+  { level: 30, sol3Phase: 5, baseDropRate: 20, cost4Enhanced: 100, cost1n3Enhanced: 100, rarity: { 2: 0, 3: 0, 4: 0, 5: 100 } },
 ];
 export const MAX_DATA_BANK_LEVEL = 30;
 
-// Endgame (max Data Bank level / Union Level 70, SOL3 Phase 8) average yield per Tacet Field
-// run — the community-sampled row with by far the largest sample size (1697 runs) in
-// Data dump/Echoes/Drop Rates.md's Tacet Field table. Used as the default farming-rate
-// assumption; there is no published breakdown of drop rate BY SONATA SET or BY COST TIER
-// (only by star Rarity, which the wiki notes is independent of cost) — so this treats any
-// Echo the run drops as a candidate instance, which is optimistic if the target set/cost is
-// actually rarer than average. Flagged in the calculator's own UI, not hidden.
-export const TACET_FIELD_ENDGAME_YIELD = {
-  runsSampled: 1697,
-  avgEchoesPerRun: 4.30,
-  avgShellCreditPerRun: 5250,
+// Tacet Field average yield per run, keyed by SOL3 Phase (1-8) — Data dump/Echoes/Drop
+// Rates.md's Tacet Field table breaks its sample down by SOL3 Phase already (UL19 Phase1/2,
+// UL20 Phase3, UL30 Phase4, UL40 Phase5, UL50 Phase6, UL60 Phase7, UL70 Phase8), and that
+// file's own note says "Rarity distribution of Echoes is based on your Data Bank level" — so
+// it's not just an endgame number, it genuinely varies with progression the same way rarity
+// does. Data Bank.md's own level table gives the SOL3 Phase required per Data Bank Level
+// (see `sol3Phase` on DATA_BANK_LEVELS above), which is how getTacetFieldYield below picks the
+// right row instead of always assuming endgame. There is still no published breakdown of drop
+// rate BY SONATA SET or BY COST TIER (only by star Rarity) — so this still treats any Echo the
+// run drops as a candidate instance, optimistic if the target set/cost is rarer than average.
+// Flagged in the calculator's own UI, not hidden.
+export const TACET_FIELD_YIELD_BY_SOL3_PHASE = {
+  1: { runsSampled: 33, avgEchoesPerRun: 2.61, avgShellCreditPerRun: 2500 },
+  2: { runsSampled: 17, avgEchoesPerRun: 2.41, avgShellCreditPerRun: 2500 },
+  3: { runsSampled: 79, avgEchoesPerRun: 2.92, avgShellCreditPerRun: 3500 },
+  4: { runsSampled: 115, avgEchoesPerRun: 4.13, avgShellCreditPerRun: 4500 },
+  5: { runsSampled: 102, avgEchoesPerRun: 4.24, avgShellCreditPerRun: 4750 },
+  6: { runsSampled: 214, avgEchoesPerRun: 4.25, avgShellCreditPerRun: 5000 },
+  7: { runsSampled: 269, avgEchoesPerRun: 4.33, avgShellCreditPerRun: 5125 },
+  8: { runsSampled: 1697, avgEchoesPerRun: 4.30, avgShellCreditPerRun: 5250 },
 };
+// Given a Data Bank Level, returns the Tacet Field yield for the SOL3 Phase it requires.
+export function getTacetFieldYield(dataBankLevel) {
+  const row = DATA_BANK_LEVELS.find(r => r.level === dataBankLevel) || DATA_BANK_LEVELS[DATA_BANK_LEVELS.length - 1];
+  return TACET_FIELD_YIELD_BY_SOL3_PHASE[row.sol3Phase] || TACET_FIELD_YIELD_BY_SOL3_PHASE[8];
+}
 
 // ── Echo Leveling — Data dump/Echoes/Echo Leveling.md (wiki's "Echo Leveling Table",
 // Refunding section excluded per request). Cumulative EXP needed to reach each level from 0,

@@ -28,7 +28,7 @@ import { ECHO_DATA, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES } from 
 import { getSetIcon, getElementIcon, getStatIcon, getCombatRoleIcon } from '../../shared/utils/elementVisuals.js';
 import {
   ECHO_MAIN_STAT_CHANCE, SECONDARY_STAT_BY_COST, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
-  PLATEAU_TIERS, getPlateauChance, TACET_FIELD_WAVEPLATE_COST, TACET_FIELD_ENDGAME_YIELD,
+  PLATEAU_TIERS, getPlateauChance, TACET_FIELD_WAVEPLATE_COST, getTacetFieldYield,
   ECHO_LEVEL_CUMULATIVE_EXP, ECHO_MAX_LEVEL_BY_RARITY, SHELL_CREDIT_PER_ECHO_EXP, SHELL_CREDIT_PER_TUNE_ATTEMPT,
   DATA_BANK_LEVELS, MAX_DATA_BANK_LEVEL, getSealedTubeBreakdown,
 } from '../../data/echoFarmingData.js';
@@ -147,12 +147,16 @@ export default function EchoFarmPlanner() {
   // ── Resource estimates ──
   // Waveplate only applies via Tacet Field (cost 4 never uses it — bosses cost no Waveplate at
   // all, and this calculator doesn't model a specific boss's other resource costs since Drop
-  // Rates.md's boss tables aren't broken down by target Echo/set either). TACET_FIELD_ENDGAME_
-  // YIELD's avgEchoesPerRun is already "echoes of any rarity" — rarityChance above narrows the
+  // Rates.md's boss tables aren't broken down by target Echo/set either). The Tacet Field yield
+  // itself is looked up by the SELECTED Data Bank Level's SOL3 Phase (getTacetFieldYield), not
+  // a fixed endgame number — Drop Rates.md's own Tacet Field table is broken down by SOL3 Phase
+  // and confirms rarity distribution tracks Data Bank Level the same way there as everywhere
+  // else. avgEchoesPerRun is already "echoes of any rarity" — rarityChance above narrows the
   // unifiedChance to the target rarity specifically, so this doesn't double-count it.
-  const runsNeeded = cfg.tacetField && expectedInstances != null ? Math.ceil(expectedInstances / TACET_FIELD_ENDGAME_YIELD.avgEchoesPerRun) : null;
+  const tacetFieldYield = getTacetFieldYield(cfg.dataBankLevel);
+  const runsNeeded = cfg.tacetField && expectedInstances != null ? Math.ceil(expectedInstances / tacetFieldYield.avgEchoesPerRun) : null;
   const waveplateNeeded = runsNeeded != null ? runsNeeded * TACET_FIELD_WAVEPLATE_COST : 0;
-  const dropShellNeeded = runsNeeded != null ? runsNeeded * TACET_FIELD_ENDGAME_YIELD.avgShellCreditPerRun : 0;
+  const dropShellNeeded = runsNeeded != null ? runsNeeded * tacetFieldYield.avgShellCreditPerRun : 0;
   const tunersPerSlot = cfg.substats.map((slot, i) => {
     if (!isSubstatUnlocked(i) || !slot.stats.length) return 0;
     const avgChance = slot.stats.reduce((s, stat) => s + getPlateauChance(stat, slot.minTier) / 100, 0) / slot.stats.length;
