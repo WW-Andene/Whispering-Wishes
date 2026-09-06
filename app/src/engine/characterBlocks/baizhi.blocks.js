@@ -6,6 +6,14 @@
 // CHARACTER_ROTATIONS['Baizhi']. No new numbers invented. A healer — most of her
 // kit is intentionally non-damage (S1/S3/S4/S5 chain nodes correctly zeroed by the
 // audit; Forte Cycle of Life is pure healing, no block).
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character
+// up to Aalto's reference standard" direction the Aalto/Aemeath/Augusta passes already used) —
+// sourced from Data dump/Baizhi/Baizhi.md's own Cooldown/Con. Energy Regen rows (Emergency
+// Plan/Momentary Union/Overflowing Frost). Forte Cycle of Life's own Concentration-gauge energy
+// regen (Heavy ATK +4, Skill +8, per the dump's Forte table) is a gauge-consumption-conditional
+// mechanic, not a per-cast gain — left unmodeled, same as the rest of that gauge (no block exists
+// for Forte at all, per the header above), not a fabricated flat add-on to the Heavy ATK/Skill blocks.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -25,22 +33,34 @@ export const BAIZHI_BLOCKS = [
     // "Skill Damage", same convention as Calcharo/Encore/Jianxin/Lingyang/Aalto.
     damage: { hits: parseSkillMultiplierHits('79.53%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Row also lists "+ heal", not modeled (no fabricated non-DPS number).',
+    // concertoEnergyGain added 2026-09-06 (completeness pass, same "consider energy regen" direction
+    // as Aalto's): Data dump/Baizhi/Baizhi.md's own "Con. Energy Regen: 10" row for Intro:Overflowing Frost.
+    concertoEnergyGain: 10,
   },
   {
     id: 'baizhi.liberation.momentary-union',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Momentary Union' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Baizhi/Baizhi.md's own "Cooldown: 25s" row.
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('4.07%×4'), category: 'libDmg' , basis: 'ATK' },
     note: "Spawns 4 Remnant Entities (4.07% each) that auto-attack and heal every 2.5s afterward — this block models one representative hit-set (the initial cast), not the sustained repeated-tick damage over the entities' full lifetime (a DOT-like mechanic beyond this schema's single-cast hit-list model). Team heal component not modeled.",
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Baizhi/Baizhi.md's own
+    // "Con. Energy Regen: 20" row for Momentary Union. Its "Res. Energy Cost: 175" row is a
+    // Liberation-gauge cost, not a gain — no matching schema field, not modeled (no fabricated cost mechanic).
+    concertoEnergyGain: 20,
   },
   {
     id: 'baizhi.skill.emergency-plan',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Emergency Plan' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Baizhi/Baizhi.md's own "Cooldown: 16s" row.
+    timing: { cooldown: 16 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('15.94%'), category: 'skillDmg' , basis: 'ATK' },
     note: 'Row also lists "+ healing", not modeled.',
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Baizhi/Baizhi.md's own
+    // "Con. Energy Regen: 10" row for Emergency Plan.
+    concertoEnergyGain: 10,
   },
   {
     id: 'baizhi.heavy.destined-promise-channel',

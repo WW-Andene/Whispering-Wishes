@@ -98,6 +98,14 @@ const EXPECTED_DIVERGENCES = {
   // cooldown availability; this test's own separate "engine" call (line ~170) does not pass that flag,
   // so it doesn't derate. Measured ratio ~1.028 (engine/legacy) — real, expected, not a regression.
   Augusta: { min: 1.00, max: 1.05 },
+  // Added 2026-09-06 (Baizhi completeness pass): same "adding a real base cooldown activates an
+  // already-existing, legacy-tier-only gate" class as Aalto/Aemeath/Augusta above. Emergency Plan
+  // (16s) and Momentary Union (25s) both got real, sourced cooldowns added (Data dump/Baizhi/
+  // Baizhi.md's own Cooldown rows) — her modeled rotation casts both more often than those
+  // cooldowns allow, so calcTeamStats()'s cooldownSteadyState gate correctly derates the legacy RAW
+  // number (79 -> 69); this test's own standalone engine call doesn't apply that gate, so it stays
+  // at the un-derated value. Measured ratio ~1.139 (engine/legacy) — real, expected, not a regression.
+  Baizhi: { min: 1.05, max: 1.20 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number
