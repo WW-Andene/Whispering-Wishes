@@ -278,7 +278,7 @@ async function syncPullAssetMap(characters, weapons) {
   const allNames = [
     ...characters.flatMap((c) => [c.name, ...(c.featured4Stars || [])]),
     ...weapons.flatMap((w) => [w.name, ...(w.featured4Stars || [])]),
-    ...standard5, ...ALL_4STAR_RESONATORS, ...fourStarWeapons, ...threeStarWeapons,
+    ...standard5, ...ALL_5STAR_RESONATORS, ...ALL_4STAR_RESONATORS, ...fourStarWeapons, ...threeStarWeapons,
   ].filter(Boolean);
 
   const assetMap = {};
