@@ -1,0 +1,23 @@
+name: Mirror main to Whispering-Wishes-2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Push main to mirror repo
+        env:
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          git remote add mirror "https://x-access-token:${MIRROR_TOKEN}@github.com/WWAndene2/Whispering-Wishes-2.git"
+          git push mirror main:main

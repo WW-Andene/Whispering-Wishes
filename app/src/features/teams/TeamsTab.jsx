@@ -400,8 +400,11 @@ function TeamsTab({
                 if (!data) return false;
                 if (teamElementFilter !== 'all' && data.element !== teamElementFilter) return false;
                 if (teamRarityFilter !== 'all' && data.rarity !== Number(teamRarityFilter)) return false;
-                if (teamBuffFilter !== 'all' && !(data.buffs || []).some(b => b.includes(teamBuffFilter))) return false;
-                if (teamDebuffFilter !== 'all' && !(data.debuffs || []).some(b => b.includes(teamDebuffFilter))) return false;
+                // case-insensitive substring match (2026-09-06 filter audit): 'Self-heal' never matched
+                // the 'Heal' filter option under a case-sensitive .includes(), silently excluding every
+                // self-healer from that filter.
+                if (teamBuffFilter !== 'all' && !(data.buffs || []).some(b => b.toLowerCase().includes(teamBuffFilter.toLowerCase()))) return false;
+                if (teamDebuffFilter !== 'all' && !(data.debuffs || []).some(b => b.toLowerCase().includes(teamDebuffFilter.toLowerCase()))) return false;
                 if (teamDmgFilter !== 'all' && !(data.dmgFocus || []).includes(teamDmgFilter)) return false;
                 if (teamRoleFilter === 'Healer' && !isHealerRole(data.role)) return false;
                 if (teamRoleFilter === 'Support' && !isSupportRole(data.role)) return false;

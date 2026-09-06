@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Search, Star, Users, X, Heart, Music2, ShieldAlert } from 'lucide-react';
+import { Search, Star, Users, X, Heart, ShieldAlert, Shield, Swords } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { getElementColor, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon, getStatIcon, COMBAT_ROLE_ICONS } from '../../shared/utils/elementVisuals.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -172,16 +172,28 @@ export default function TeamSelector({
                               onChange={setTeamBuffFilter}
                               options={[
                                 { value: 'all', label: t('teams.selector.allBuffs') },
-                                // Use the real official icon wherever one exists (Coordinated ATK ↔
-                                // COMBAT_ROLE_ICONS['Coordinated Attack'], ATK Buff ↔ STAT_ICONS['ATK'],
-                                // Crit ↔ STAT_ICONS['Crit Rate'], DMG ↔ the DMG Amplification role icon)
-                                // instead of an unrelated generic lucide icon. Heal has no dedicated
-                                // official asset in this app, so it keeps its lucide fallback.
-                                { value: 'Heal', label: <span className="inline-flex items-center gap-1.5"><Heart size={14} className="shrink-0" /> Heal</span> },
-                                { value: 'Coordinated ATK', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Coordinated Attack')} alt="" width={14} height={14} className="shrink-0" /> Coordinated ATK</span> },
+                                // Full audit 2026-09-06: this list used to carry only 5 of the 12 distinct
+                                // buff categories actually present in CHARACTER_DATA[name].buffs (Shield,
+                                // Grouping, Basic ATK, Energy Regen, Erosion Cap Buff, Tune Break Boost and
+                                // Off-Tune Buildup Efficiency were silently unfilterable). Alphabetized so
+                                // the list has a stable, predictable order instead of an arbitrary one.
+                                // Uses the real official icon wherever one exists (COMBAT_ROLE_ICONS'
+                                // Coordinated Attack/DMG Amplification/Traction/Tune Break Boost/Off-Tune
+                                // Buildup Efficiency, STAT_ICONS' ATK/Crit Rate/Energy Regen) instead of an
+                                // unrelated generic lucide icon; Heal and Shield have no dedicated official
+                                // asset in this app, so they keep lucide fallbacks.
                                 { value: 'ATK Buff', label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon('ATK')} alt="" width={14} height={14} className="shrink-0" /> ATK Buff</span> },
+                                { value: 'Basic ATK', label: <span className="inline-flex items-center gap-1.5"><Swords size={14} className="shrink-0" /> Basic ATK</span> },
+                                { value: 'Coordinated ATK', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Coordinated Attack')} alt="" width={14} height={14} className="shrink-0" /> Coordinated ATK</span> },
                                 { value: 'Crit', label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon('Crit Rate')} alt="" width={14} height={14} className="shrink-0" /> Crit</span> },
                                 { value: 'DMG', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('DMG Amplification')} alt="" width={14} height={14} className="shrink-0" /> DMG Buff</span> },
+                                { value: 'Energy Regen', label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon('Energy Regen')} alt="" width={14} height={14} className="shrink-0" /> Energy Regen</span> },
+                                { value: 'Erosion Cap Buff', label: <span className="inline-flex items-center gap-1.5"><img src={getElementIcon('Aero')} alt="" width={14} height={14} className="shrink-0" /> Erosion Cap Buff</span> },
+                                { value: 'Grouping', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Traction')} alt="" width={14} height={14} className="shrink-0" /> Grouping</span> },
+                                { value: 'Heal', label: <span className="inline-flex items-center gap-1.5"><Heart size={14} className="shrink-0" /> Heal</span> },
+                                { value: 'Off-Tune Buildup Efficiency', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Off-Tune Buildup Efficiency')} alt="" width={14} height={14} className="shrink-0" /> Off-Tune Buildup</span> },
+                                { value: 'Shield', label: <span className="inline-flex items-center gap-1.5"><Shield size={14} className="shrink-0" /> Shield</span> },
+                                { value: 'Tune Break Boost', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Tune Break Boost')} alt="" width={14} height={14} className="shrink-0" /> Tune Break Boost</span> },
                               ]}
                               ariaLabel="Filter by buff type"
                               small
@@ -191,27 +203,32 @@ export default function TeamSelector({
                               onChange={setTeamDebuffFilter}
                               options={[
                                 { value: 'all', label: t('teams.selector.allDebuffs') },
+                                // Full audit 2026-09-06: 'Off-Tune' removed — it was never a real debuff
+                                // applied to enemies (see characters.js's Lynae/Mornye fix comments); added
+                                // 'Tune Strain' (catches both 'Tune Strain - Interfered' and '- Shifting',
+                                // used by Qingxiao/Denia) and 'Hack - Shifting' (Lucy/Rebecca), neither of
+                                // which had any matching filter option before. Alphabetized for a stable,
+                                // predictable order instead of an arbitrary one.
                                 // The 6 elemental debuffs (one per element — Frazzle/Erosion/Chafe/Flare/
                                 // Burst/Bane) use their matching ELEMENT_ICONS instead of a generic lucide
                                 // icon, both for visual consistency with every other element-tagged filter
                                 // in the app and because a plain Flame/Droplets pairing doesn't actually
                                 // track each debuff's real element (this list used to only carry Frazzle
                                 // and Erosion, silently dropping the other 4 element debuffs entirely).
+                                { value: 'DEF Shred', label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon('DEF')} alt="" width={14} height={14} className="shrink-0" /> DEF Shred</span> },
                                 ...[
-                                  ['Frazzle', 'Spectro'], ['Erosion', 'Aero'], ['Glacio Chafe', 'Glacio'],
-                                  ['Electro Flare', 'Electro'], ['Fusion Burst', 'Fusion'], ['Havoc Bane', 'Havoc'],
+                                  ['Electro Flare', 'Electro'], ['Erosion', 'Aero'], ['Frazzle', 'Spectro'],
+                                  ['Fusion Burst', 'Fusion'], ['Glacio Chafe', 'Glacio'], ['Havoc Bane', 'Havoc'],
                                 ].map(([val, element]) => ({
                                   value: val,
                                   label: <span className="inline-flex items-center gap-1.5"><img src={getElementIcon(element)} alt="" width={14} height={14} className="shrink-0" /> {val}</span>,
                                 })),
-                                // DEF Shred gets the official DEF stat icon (STAT_ICONS['DEF']) — there's
-                                // no equivalent official RES icon (only Crit Rate/DMG, Energy Regen, ATK,
-                                // HP, DEF exist in STAT_ICONS), so RES Shred keeps its lucide fallback, and
-                                // Off-Tune has no matching official asset either (COMBAT_ROLE_ICONS only has
-                                // the narrower 'Off-Tune Buildup Efficiency' tag, a different thing).
-                                { value: 'DEF Shred', label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon('DEF')} alt="" width={14} height={14} className="shrink-0" /> DEF Shred</span> },
-                                { value: 'Off-Tune', label: <span className="inline-flex items-center gap-1.5"><Music2 size={14} className="shrink-0" /> Off-Tune</span> },
+                                { value: 'Hack - Shifting', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Hack Response')} alt="" width={14} height={14} className="shrink-0" /> Hack - Shifting</span> },
+                                // No equivalent official RES icon exists (only Crit Rate/DMG, Energy Regen,
+                                // ATK, HP, DEF exist in STAT_ICONS), so RES Shred keeps its lucide fallback.
+                                // Matches 'Fusion RES Shred'/'Havoc RES Shred' too via substring.
                                 { value: 'RES Shred', label: <span className="inline-flex items-center gap-1.5"><ShieldAlert size={14} className="shrink-0" /> RES Shred</span> },
+                                { value: 'Tune Strain', label: <span className="inline-flex items-center gap-1.5"><img src={getCombatRoleIcon('Tune Strain Response')} alt="" width={14} height={14} className="shrink-0" /> Tune Strain</span> },
                               ]}
                               ariaLabel="Filter by debuff type"
                               small

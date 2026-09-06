@@ -104,6 +104,33 @@
   "ownedAria": "Quantité de {{name}} déjà possédée",
   "remainingHint": "Les quantités ci-dessous sont ce qu'il reste à obtenir après déduction de ce que vous possédez déjà",
 
+  "echoFarm": {
+    "title": "Calculateur de Farm d'Échos",
+    "disclaimer": "Les probabilités de stat principale/secondaire proviennent (Data dump/Echoes/) des taux de sous-stats divulgués par Kuro et d'un large échantillon communautaire pour les stats principales. Les estimations de Points d'Onde/Crédits Coquille supposent que tout Écho obtenu pourrait être votre cible, car aucune source ne publie le taux de drop par Set Sonata ou palier de coût — à considérer comme un ordre de grandeur, pas une valeur exacte.",
+    "targetEcho": "Écho Cible",
+    "cost": "Coût",
+    "anySet": "N'importe quel Set",
+    "chooseSetAria": "Choisir le Set Sonata cible",
+    "mainStat": "Stat Principale",
+    "secondaryStat": "Stat Secondaire",
+    "secondaryApprox": "Approximée comme un tirage indépendant suivant la même distribution que la Stat Principale — la vraie stat secondaire est fixe par Écho spécifique, pas aléatoire à chaque drop.",
+    "anyStat": "N'importe laquelle",
+    "minPlateau": "Palier Minimum",
+    "substatSlot": "Sous-stat {{n}}",
+    "plateauLow": "Bas",
+    "plateauMedium": "Moyen",
+    "plateauHigh": "Haut",
+    "plateauMax": "Max",
+    "tacetFieldToggle": "Farm via Champ Tacite",
+    "unifiedStats": "Probabilité Combinée",
+    "overallChance": "Chance par Écho obtenu",
+    "instancesNeeded": "Nombre d'Échos nécessaires (estimé)",
+    "waveplate": "Points d'Onde",
+    "tuners": "Régleurs",
+    "notApplicable": "N/A",
+    "bossRunsNote": "Environ {{runs}} combats de boss estimés — les boss ne coûtent pas de Points d'Onde."
+  },
+
   "calendar": {
     "previousMonth": "Mois précédent",
     "nextMonth": "Mois suivant",

@@ -29,6 +29,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { AstriteCalendar } from './AstriteCalendar.jsx';
+import EchoFarmPlanner from './EchoFarmPlanner.jsx';
 import { t, formatNumber, formatDate, getLocale } from '../../utils/i18n.js';
 
 
@@ -768,6 +769,8 @@ function PlannerTab({
           </CardBody>
         )}
       </Card>
+      {/* ── 9. Echo Farming Calculator ───────────────────────────────────── */}
+      <EchoFarmPlanner />
     </div>
     </TabErrorBoundary>
     </div>

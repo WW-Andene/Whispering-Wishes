@@ -13,6 +13,12 @@ import { t, getLocale } from '../../utils/i18n.js';
 // into a percentage-of-card width.
 const PX_PER_SECOND = 32;
 const MIN_CHART_WIDTH = 512;
+// PerfectSuite value ((24) secondary) — floor width for one action chip. Before this, an action strip
+// just split its field segment's own pixel width evenly across every step with only a 1%-of-chart
+// floor, so a character with a long skillSequence packed into a short on-field window (a real, common
+// case) rendered as a row of sub-5px slivers with no readable label at all. PX_PER_SECOND itself is
+// bumped up (not per-row) so segment/buff alignment stays exactly proportional to time everywhere else.
+const MIN_ACTION_PX = 24;
 
 const ELEMENT_COLORS = {
   Glacio: '#06b6d4', Fusion: '#f97316', Electro: '#a855f7',
@@ -117,7 +123,24 @@ export default function RotationTimeline({ rotationTimeline }) {
     const color = ELEMENT_COLORS[segments.find(s => s.name === ownerName)?.element] || ELEMENT_COLORS[segments.find(s => s.name === buff.source)?.element] || '#6b7280';
     const isEcho = buff.type === 'echo';
     const prefix = isEcho ? '◆ ' : '';
-    if (buff.duration > 0) rows.push({ label: buff.source, owner: ownerName, start: buff.start, duration: buff.duration, color, type: 'buff', buffKind: isEcho ? 'echo' : 'char', detail: `${prefix}${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
+    // Sync to the actual triggering action (2026-09-06): calcTeamStats.js now tags Outro/Liberation/
+    // Intro/Echo-triggered buffs with `triggerStep`. Before this, every such buff bar started at its
+    // owner's raw segment start (or end, for Outro), even when the real trigger — e.g. a Liberation-
+    // triggered buff — actually fires partway through that character's action sequence. When the
+    // owner's own skillSequence has a matching step, snap the buff's displayed start to that specific
+    // action chip's equal-slice position instead, so the buff bar visually lines up with the action
+    // that caused it rather than just the nearest segment edge.
+    let start = buff.start;
+    if (buff.triggerStep) {
+      const ownerSeg = segments.find(s => s.name === ownerName);
+      const ownerActions = stepByName.get(ownerName)?.skillSequence;
+      if (ownerSeg && ownerActions?.length) {
+        const matchTypes = buff.triggerStep === 'Liberation' ? ['Liberation', 'Ultimate'] : [buff.triggerStep];
+        const idx = ownerActions.findIndex(a => matchTypes.includes(a.type));
+        if (idx >= 0) start = ownerSeg.start + (ownerSeg.duration / ownerActions.length) * idx;
+      }
+    }
+    if (buff.duration > 0) rows.push({ label: buff.source, owner: ownerName, start, duration: buff.duration, color, type: 'buff', buffKind: isEcho ? 'echo' : 'char', detail: `${prefix}${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
   });
 
   // timeScale = the rotation length itself, not the furthest end of any bar — a buff bar that
@@ -132,10 +155,13 @@ export default function RotationTimeline({ rotationTimeline }) {
   segments.forEach(seg => {
     const fieldRow = rows.find(r => r.type === 'field' && r.start === seg.start && r.label === seg.name);
     if (fieldRow) ordered.push(fieldRow);
-    const segEnd = seg.start + seg.duration;
+    // Grouped purely by ownership now (2026-09-06) — the old start-time proximity check (only within
+    // 0.5s of the segment's start or end) predates triggerStep syncing above and would silently drop
+    // any buff now positioned mid-segment (e.g. a Liberation-triggered buff on a character whose
+    // Liberation isn't their very first or last action) into the unowned/orphan bucket below. Since
+    // each character has exactly one on-field segment in this timeline, ownership alone is unambiguous.
     const myBuffs = rows.map((r, i) => ({ ...r, _idx: i }))
-      .filter(r => r.type === 'buff' && (r.owner === seg.name || r.label === seg.name) && !usedBuffIdx.has(r._idx)
-        && (Math.abs(r.start - seg.start) < 0.5 || Math.abs(r.start - segEnd) < 0.5))
+      .filter(r => r.type === 'buff' && (r.owner === seg.name || r.label === seg.name) && !usedBuffIdx.has(r._idx))
       .sort((a, b) => a.start - b.start);
     myBuffs.forEach(b => { usedBuffIdx.add(b._idx); ordered.push(b); });
   });
@@ -147,7 +173,14 @@ export default function RotationTimeline({ rotationTimeline }) {
   for (let i = 0; i <= maxEnd; i += tickInterval) ticks.push(i);
   if (ticks[ticks.length - 1] < Math.ceil(maxEnd)) ticks.push(Math.ceil(maxEnd));
 
-  const chartWidth = Math.max(maxEnd * PX_PER_SECOND, MIN_CHART_WIDTH);
+  // Scale up px/second (not per-row) so the densest action strip still clears MIN_ACTION_PX per chip —
+  // keeps every bar's position exactly proportional to real time, just at a larger overall scale.
+  const requiredPxPerSecond = segments.reduce((max, seg) => {
+    const actionCount = stepByName.get(seg.name)?.skillSequence?.length || 0;
+    if (actionCount <= 1 || seg.duration <= 0) return max;
+    return Math.max(max, (MIN_ACTION_PX * actionCount) / seg.duration);
+  }, PX_PER_SECOND);
+  const chartWidth = Math.max(maxEnd * requiredPxPerSecond, MIN_CHART_WIDTH);
 
   return (
     <Card>

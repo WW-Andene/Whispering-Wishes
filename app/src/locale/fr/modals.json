@@ -156,7 +156,8 @@
     "passive": "Passif",
     "refinementScaling": "Scaling du raffinement",
     "ascensionMaterials": "Matériaux d'ascension",
-    "expMaterials": "Matériaux d'XP"
+    "expMaterials": "Matériaux d'XP",
+    "recommendedFor": "Recommandé pour"
   },
   "echoDetail": {
     "echoDetailsAria": "Détails de l'Écho {{name}}",

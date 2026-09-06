@@ -2,6 +2,7 @@ import React from 'react';
 import { Sword, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
+import { BANNER_HISTORY } from '../../data/banners.js';
 import { haptic } from '../../utils/haptics.js';
 import { getStatIcon, getWeaponTypeIcon } from '../../shared/utils/elementVisuals.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -9,6 +10,15 @@ import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { getLocale, t } from '../../utils/i18n.js';
 
 const LOCALIZED_WEAPON_DATA = getLocalizedWeaponData(getLocale());
+// BANNER_HISTORY is declared newest-first (v3.6-p2 first, all the way back to v1.0-p1) — a weapon can
+// appear in multiple entries (its debut banner plus any later rerun banners), so its real release rank
+// is its LAST/deepest occurrence in this list, not its first — a rerun must never be mistaken for a
+// debut. Weapons with no banner appearance at all (3★/starter/permanent weapons) get no entry here and
+// sort after every dated weapon within their rarity tier, via the `?? Infinity` fallback below.
+const WEAPON_RELEASE_ORDER_INDEX = new Map();
+BANNER_HISTORY.forEach((entry, i) => {
+  (entry.weapons || []).forEach(name => { WEAPON_RELEASE_ORDER_INDEX.set(name, i); });
+});
 
 export default function WeaponSelector({
   weaponSelectorOpen,
@@ -71,7 +81,9 @@ export default function WeaponSelector({
                                   if (weaponSearch && !name.toLowerCase().includes(weaponSearch.toLowerCase())) return false;
                                   return true;
                                 })
-                                .sort((a, b) => b[1].rarity - a[1].rarity || b[1].baseAtk - a[1].baseAtk)
+                                .sort((a, b) => b[1].rarity - a[1].rarity
+                                  || (WEAPON_RELEASE_ORDER_INDEX.get(a[0]) ?? Infinity) - (WEAPON_RELEASE_ORDER_INDEX.get(b[0]) ?? Infinity)
+                                  || b[1].baseAtk - a[1].baseAtk)
                                 .map(([name, w]) => {
                                   const rarity5 = w.rarity === 5;
                                   const isBest = name === CHARACTER_DATA[weaponSelectorTarget.charName]?.bestWeapon;

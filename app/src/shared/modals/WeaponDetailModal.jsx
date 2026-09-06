@@ -4,10 +4,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
-import { Swords, Star, TrendingUp, X, Play } from 'lucide-react';
+import { Swords, Star, TrendingUp, X, Play, User, Users } from 'lucide-react';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
+import { CHARACTER_DATA } from '../../data/characters.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
-import { getConveneAnimation } from '../../data/banners.js';
+import { getConveneAnimation, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { ConveneVideo } from '../components/ConveneVideoLayer.jsx';
 import { getWeaponTypeIcon, getStatIcon } from '../utils/elementVisuals.js';
@@ -24,7 +25,7 @@ const WEAPON_RARITY_COLORS = {
   1: { bg: 'bg-gray-500/20', text: 'text-gray-400', border: 'border-gray-500/50' },
 };
 const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionData }) => {
-  const { framingMode, editingImage, setEditingImage } = useImageFramingContext();
+  const { framingMode, editingImage, setEditingImage, getImageFraming } = useImageFramingContext();
   const [conveneVideoPlaying, setConveneVideoPlaying] = useState(false);
   const data = getLocalizedWeaponData(getLocale())[name] || WEAPON_DATA[name];
   if (!data) return null;
@@ -38,6 +39,15 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
   const colors = WEAPON_RARITY_COLORS[data.rarity] ?? WEAPON_RARITY_COLORS[4];
   const f = infoFraming || { x: 0, y: 0, zoom: 100 };
   const displayName = data.displayName || name;
+  // Signature owner (2026-09-06): parsed from the same "X signature."/"Arme signature de X." desc
+  // prefix the Description section already detects below — extracted once here so the header can show
+  // just the one real owner instead of the full bestFor recommendation list (a signature weapon has
+  // exactly one owner; bestFor can list several other characters it's merely good on). Uses a non-greedy
+  // `.+?` rather than `\w+` for the English name so multi-word names (e.g. "Luuk Herssen signature.",
+  // "Yangyang: Xuanling signature.") match too — the original `\w+`-only version silently failed to
+  // detect a signature owner at all for any two-word character name.
+  const sigMatch = data.desc?.match(/^(?:(.+?) signature|Arme signature de ([^.(]+))\.\s*/);
+  const sigOwner = sigMatch ? (sigMatch[1] || sigMatch[2]).trim() : null;
 
   return (
     <FocusTrapModal isOpen={true} onClose={onClose} className="" onClick={onClose} ariaLabel={t('modals.weaponDetail.weaponDetailsAria', { name })} centered padding="p-3">
@@ -110,15 +120,19 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
               <span className="text-sm text-gray-400">{data.stat}</span>
               <span className="text-base font-bold text-white">{data.subStatValue || ''}</span>
             </div>
-            {data.bestFor && data.bestFor.length > 0 && data.bestFor.map((char, i) => {
-              const owned = ownsChar(char);
-              return <span key={i} className={`kuro-badge ${owned ? 'kuro-badge-yellow' : 'kuro-badge-gray'}`}>{char}{!owned && ' ✗'}</span>;
-            })}
+            {/* Only the signature owner belongs up here (2026-09-06) — this used to list every
+                bestFor character, but a signature weapon has exactly one real owner; the full
+                recommendation list (bestFor) now lives in its own section below Ascension Materials,
+                with portraits, matching CharacterDetailModal's Team Suggestions treatment. */}
+            {sigOwner && (() => {
+              const owned = ownsChar(sigOwner);
+              return <span className={`kuro-badge ${owned ? 'kuro-badge-yellow' : 'kuro-badge-gray'}`}>{sigOwner}{!owned && ' ✗'}</span>;
+            })()}
           </div>
 
           {/* 2. Description */}
           {data.desc && (() => {
-            const sig = data.desc.match(/^((?:\w+ signature)|(?:Arme signature de [^.(]+))\.\s*/);
+            const sig = data.desc.match(/^((?:.+? signature)|(?:Arme signature de [^.(]+))\.\s*/);
             const rest = sig ? data.desc.slice(sig[0].length) : data.desc;
             const dot = rest.indexOf('. ');
             const lore = dot > 0 ? rest.slice(0, dot + 1) : null;
@@ -190,7 +204,42 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
             );
           })()}
 
-          {/* 6. EXP Materials */}
+          {/* 6. Recommended For — added 2026-09-06: the full bestFor recommendation list used to be
+              dumped as plain text badges up in the header stats bar; moved here with portraits, same
+              avatar-card treatment as CharacterDetailModal's Team Suggestions section. */}
+          {data.bestFor && data.bestFor.length > 0 && (
+            <div>
+              <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
+                <Users size={14} className="text-emerald-400" /> {t('modals.weaponDetail.recommendedFor')}
+              </h3>
+              <div className="kuro-detail-box">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {data.bestFor.map((char, i) => {
+                    const img = DEFAULT_COLLECTION_IMAGES[char] || (char.includes('Rover') ? DEFAULT_COLLECTION_IMAGES['Rover'] : null);
+                    const cf = getImageFraming ? getImageFraming(`collection-${char}`) : { x: 0, y: 0, zoom: 100 };
+                    const is5Star = CHARACTER_DATA[char]?.rarity === 5;
+                    const owned = ownsChar(char);
+                    return (
+                      <div key={i} className={`flex flex-col items-center gap-1 w-14 ${!owned ? 'opacity-50' : ''}`}>
+                        {img ? (
+                          <div className={`w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] overflow-hidden${owned && is5Star ? ' holo-5star' : ''}`} style={{ contain: 'paint', position: 'relative', filter: owned ? 'none' : 'grayscale(100%)' }}>
+                            <img src={img} alt={char} className="absolute inset-0 w-full h-full object-cover object-top" onError={hideOnError} style={{ transform: `scale(${cf.zoom / 100}) translate(${-cf.x}%, ${-cf.y}%)` }} />
+                          </div>
+                        ) : (
+                          <div className="w-14 h-14 rounded-lg bg-neutral-800 border border-[var(--border-medium)] flex items-center justify-center">
+                            <User size={14} className="text-gray-500" />
+                          </div>
+                        )}
+                        <span className="text-sm text-gray-400 text-center leading-tight truncate w-full">{char}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 7. EXP Materials */}
           <div>
             <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
               <TrendingUp size={14} className="text-cyan-400" /> {t('modals.weaponDetail.expMaterials')}
