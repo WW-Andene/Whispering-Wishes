@@ -45,22 +45,29 @@ const ECHO_SETS = {
   'Pact of Neonlight Leap': { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Outro → next +15% ATK; per Tune Break Boost +0.3% ATK (max +15%)', p5val: { atkPct: 30 } },
   'Rite of Gilded Revelation': { element: 'Spectro', p2: '+10% Spectro DMG', p2val: { spectroDmg: 10 }, p5: 'Basic ATK → +10% Spectro DMG (max x3); 3 stacks + Lib → +40% Basic ATK DMG', p5val: { spectroDmg: 30, basicDmg: 40 } },
   'Halo of Starry Radiance': { element: 'Heal', p2: '+10% Healing',      p2val: { healBonus: 10 },   p5: 'Heal → per 1% Off-Tune Rate +0.2% ATK team (max +25%)', p5val: { teamAtk: 25 } },
+  // Both are actually v3.0 (Lahai-Roi), not v3.5 as previously assumed from their being cross-referenced
+  // in newer characters' (Denia, Hiyuki) bestEchoes lists — corrected 2026-09-06 from their real carrier
+  // echoes: Reel of Spliced Memories is carried by Flora Reindeer (paired with Rite of Gilded Revelation
+  // above) and Nameless Explorer, both Lahai-Roi echoes; Wishes of Quiet Snowfall is carried by
+  // Windlash/Frostbite Coleoid, also paired with Rite of Gilded Revelation/Halo of Starry Radiance above.
+  // Moved here (were previously appended after the v3.5 block) so ECHO_SETS' key order — which every
+  // "newest sets first" filter relies on by reversing insertion order — reflects true release order.
+  'Reel of Spliced Memories': { element: 'ATK', p2: '+10% ATK', p2val: { atkPct: 10 },
+    p5: 'Tune Rupture - Shifting or Tune Strain - Shifting → team Tune Break Boost +20 for 30s (same-name effects don\'t stack)', p5val: { atkPct: 10 } },
+  'Wishes of Quiet Snowfall': { element: 'Glacio', p2: '+10% Glacio DMG', p2val: { glacioDmg: 10 },
+    p5: 'Glacio Chafe → self +10% Glacio DMG (15s); Snowfall (25s CD): Liberation DMG → +25% Crit Rate (6s, extendable) or Outro → +25% Glacio DMG to incoming (15s)',
+    p5val: { glacioDmg: 10, critRate: 25 } },
   // v3.1 — Frostlands sets
   'Trailblazing Star':    { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Fusion Burst/Tune Rupture → +20% Crit Rate, +20% Fusion DMG for 8s', p5val: { critRate: 20, fusionDmg: 20 } },
   'Chromatic Foam':        { element: 'Fusion',  p2: '+10% Fusion DMG',  p2val: { fusionDmg: 10 },  p5: 'Fusion Burst → +10% Fusion DMG 15s; Outro → +25% Fusion DMG for next 15s', p5val: { fusionDmg: 35 } },
   'Sound of True Name':    { element: 'Aero',    p2: '+10% Aero DMG',    p2val: { aeroDmg: 10 },    p5: 'Echo Skill DMG → +20% Echo Crit Rate, +15% Aero DMG for 5s', p5val: { critRate: 20, aeroDmg: 15 } },
-  // v3.3 — Hiyuki's debut patch. Referenced by Lucilla/Hiyuki's bestEchoes but never itemized here — confirmed via the source.
-  // Moved here (was previously appended after the v3.5 block) so ECHO_SETS' key order — which every
-  // "newest sets first" filter relies on by reversing insertion order — reflects true release order.
-  'Wishes of Quiet Snowfall': { element: 'Glacio', p2: '+10% Glacio DMG', p2val: { glacioDmg: 10 },
-    p5: 'Glacio Chafe → self +10% Glacio DMG (15s); Snowfall (25s CD): Liberation DMG → +25% Crit Rate (6s, extendable) or Outro → +25% Glacio DMG to incoming (15s)',
-    p5val: { glacioDmg: 10, critRate: 25 } },
-  // v3.4-p1 — Lucy's debut patch. Referenced by Lucy's bestEchoes (as "5pc", incorrectly — it's actually
-  // a 1-piece set) but never itemized here — confirmed via the source. Moved here for the same
-  // release-order reason as Wishes of Quiet Snowfall above.
+  // v3.5 — Land of Xuanfang sets, confirmed via the source live echo pages (2026-08-14)
+  // Shadow of Shattered Dreams is also v3.5, not v3.4 as previously assumed from being cross-referenced
+  // in Lucy's bestEchoes — corrected 2026-09-06: its sole carrier echo is Reminiscence - Nightmare: Adam
+  // Smasher, which ALL_4COST_ECHOES lists inside the v3.5 Land of Xuanfang block (as the oldest entry in
+  // that block), so it belongs at the start of this block rather than before it.
   'Shadow of Shattered Dreams': { element: 'Support', p2: '1-Pc: Hack - Shifting → self +35% Basic ATK DMG, +35% Heavy ATK DMG for 15s',
     p2val: { basicDmg: 35, heavyDmg: 35 } },
-  // v3.5 — Land of Xuanfang sets, confirmed via the source live echo pages (2026-08-14)
   'Song of Feathered Trace': { element: 'Support', p2: '+10% Energy Regen', p2val: { energyRegen: 10 },
     p5: "Havoc Bane → self +20% Crit Rate, +35% Heavy ATK DMG for 15s (Xuanling's Feather); Glacio Chafe → team ATK +0.1% per 1% Energy Regen, up to +25%, for 10s (Chongming's Feather)",
     p5val: { critRate: 20, heavyDmg: 35, atkPct: 25 } },
@@ -68,9 +75,6 @@ const ECHO_SETS = {
     p5: 'Tune Strain - Shifting → +20% Crit DMG, +30% Aero DMG for 15s', p5val: { critDmg: 20, aeroDmg: 30 } },
   'Lamp of Nether Road':  { element: 'Shield', p2: '+10% HP', p2val: { hpPct: 10 },
     p5: 'Gaining a Shield → +5% Crit Rate for 5s (max x4, 0.5s CD); at max stacks → +15% Fusion DMG', p5val: { critRate: 20, fusionDmg: 15 } },
-  // Referenced by Denia's (v3.5) bestEchoes since her character entry was added, but never itemized here — confirmed via the source
-  'Reel of Spliced Memories': { element: 'ATK', p2: '+10% ATK', p2val: { atkPct: 10 },
-    p5: 'Tune Rupture - Shifting or Tune Strain - Shifting → team Tune Break Boost +20 for 30s (same-name effects don\'t stack)', p5val: { atkPct: 10 } },
 };
 
 // [SECTION:ECHO_LISTS] — All echoes grouped by cost tier (newest first)
