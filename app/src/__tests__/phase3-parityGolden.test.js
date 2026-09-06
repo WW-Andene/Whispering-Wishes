@@ -114,6 +114,15 @@ const EXPECTED_DIVERGENCES = {
   // apply that gate, so it stays at the un-derated value. Measured ratio ~1.128 (engine/legacy) —
   // real, expected, not a regression.
   Brant: { min: 1.05, max: 1.20 },
+  // Added 2026-09-06 (Buling completeness pass): same class as Aalto/Aemeath/Augusta/Baizhi/Brant
+  // above. Both Thunder Talisman (Skill, 15s CD) and Flashing Thunder Spell: Harmony (Liberation,
+  // 24s CD — inherited from the base Liberation's own listed cooldown, see that block's own note)
+  // got real, sourced cooldowns added (Data dump/Buling/Buling.md's own Cooldown rows). Her modeled
+  // rotation recasts both faster than those cooldowns allow, so calcTeamStats()'s cooldownSteadyState
+  // gate correctly derates the legacy RAW number (431 -> 358); this test's own standalone engine call
+  // doesn't apply that gate, so it stays at the un-derated value. Measured ratio ~1.204
+  // (engine/legacy) — real, expected, not a regression.
+  Buling: { min: 1.10, max: 1.30 },
 };
 
 const GOLDEN_TOLERANCE = 0.005; // 0.5% — catches any unintended change to either computed number

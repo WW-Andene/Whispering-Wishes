@@ -6,6 +6,14 @@
 // numbers invented. A healer — several Heavy ATK variants and S2-S5 chain nodes are
 // intentionally non-damage (healing/utility), correctly zeroed/unmodeled per the
 // audit comment.
+//
+// Cooldown/concertoEnergyGain added 2026-09-06 (completeness pass, same "bring every character up
+// to Aalto's reference standard" direction as the Aalto/Aemeath/Augusta/Baizhi/Brant passes) —
+// sourced from Data dump/Buling/Buling.md's own Cooldown/Concerto Regen rows (Thunder Talisman,
+// Flashing Thunder Spell/Harmony, Summon and Smite, and the shared Heavy Attack Concerto Regen
+// value). See buling.liberation.flashing-thunder-spell-harmony's own note for the one non-literal
+// step in that sourcing (Harmony inherits the base Liberation's listed cooldown/regen, since it
+// replaces that same ability slot rather than being a separately-costed move).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -25,6 +33,9 @@ export const BULING_BLOCKS = [
     // labels this row "Skill Damage" (not "Intro DMG"), same generic-labeling convention already fixed
     // for Aalto/Calcharo/Encore/Jianxin's own Intro rows.
     damage: { hits: parseSkillMultiplierHits('131.10%') , category: 'skillDmg', basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Buling/Buling.md's own
+    // "Concerto Regen: 10" row for Intro:Summon and Smite.
+    concertoEnergyGain: 10,
     // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2, first migration target): her own kit
     // text — "applies Electro Flare (Inherent Skill)" on Intro — confirmed in CHARACTER_ROTATIONS's
     // own step note. No per-character stack value sourced for Electro Flare anywhere (calcEngine.js's
@@ -57,8 +68,13 @@ export const BULING_BLOCKS = [
     id: 'buling.skill.thunder-talisman',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:In Shadow Thunder Stirs: Thunder Talisman' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown added 2026-09-06 (completeness pass): Data dump/Buling/Buling.md's own "Cooldown: 15s"
+    // row for Resonance Skill "In Shadow Thunder Stirs".
+    timing: { cooldown: 15 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('58.40%'), category: 'skillDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Buling/Buling.md's own
+    // "Concerto Regen: 23" row for the same Resonance Skill.
+    concertoEnergyGain: 23,
   },
   {
     id: 'buling.basic.stage4',
@@ -71,8 +87,17 @@ export const BULING_BLOCKS = [
     id: 'buling.heavy.mountain-over-thunder',
     source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Basic ATK:Heavy Attack - Mountain Over Thunder' },
+    // No cooldown: this Heavy ATK variant is gated by consuming a highlighted Trigram (Mountain then
+    // Thunder), a resource-threshold mechanic the schema doesn't simulate, not a timer — same
+    // "gauge-triggered, not fabricated as a cooldown" treatment as Brant's Forte above.
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('178.93%'), category: 'basicDmg' , basis: 'ATK' },
+    // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Buling/Buling.md's own
+    // "Heavy Attacks Concerto Regen (Mountain Over Thunder/Thunder Over Mountain/Twin Mountains/Twin
+    // Thunders, each): 15" row — explicitly the SAME value for all 4 Heavy ATK variants, so this one
+    // real sourced number applies here even though only this variant has a damage block (the other 3
+    // are pure-heal/utility with no damage block to attach it to, per this file's own header).
+    concertoEnergyGain: 15,
   },
   // Heavy Attack - Twin Thunders correctly has NO damage block — removed 2026-09-03 against a fresh
   // the source dump: SKILL_MULTIPLIERS['Buling']'s own row for this move ("169 flat + 18.30% ATK") is
@@ -87,8 +112,17 @@ export const BULING_BLOCKS = [
     id: 'buling.liberation.flashing-thunder-spell-harmony',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Flashing Thunder Spell: Harmony' },
-    timing: {}, target: { scope: 'self' }, effects: [],
+    // cooldown/concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Buling/Buling.md's
+    // own "Resonance Liberation — Flashing Thunder Spell" section states "Cooldown 24s... Concerto
+    // Regen 20" for the BASE Liberation. Harmony isn't a separate ability with its own listed
+    // cooldown/regen — the dump's own kit text is explicit it's the enhanced form that REPLACES the
+    // base Liberation in the same ability slot once Yin-Yang Balance is active ("Resonance Liberation
+    // is replaced by Flashing Thunder Spell: Harmony"), so the base move's cooldown/resource numbers
+    // are the real, applicable ones for this block too — not a fabricated guess, but not a directly-
+    // labeled "Harmony" row either, so flagged here for visibility.
+    timing: { cooldown: 24 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('536.79%'), category: 'libDmg' , basis: 'ATK' },
+    concertoEnergyGain: 20,
     // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — her own kit text: "enhanced
     // Liberation deploys the Five Thunders Spell Array (Electro Flare)", confirmed in
     // CHARACTER_ROTATIONS's own step note. A SECOND real Electro Flare application point (alongside
