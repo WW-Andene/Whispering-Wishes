@@ -60,7 +60,67 @@ the only remaining monolithic block — by then it can be extracted mechanically
 lower risk, since every neighboring section will already have a clean boundary to
 diff against.
 
-## Not yet started
+## 2026-09-06 update — legacy-removal task, final state
 
-No code has been moved as of this document. This is the planning deliverable the
-user asked for before any extraction begins.
+Per direct user instruction, three things were attempted in sequence:
+
+1. **Jingran blocks file** (`engine/characterBlocks/jingran.blocks.js`, new) — written from the
+   real, already-sourced data in characters.js (`SKILL_MULTIPLIERS['Jingran']`,
+   `RESONANCE_CHAIN_DATA['Jingran']`, `CHAR_BUFF_TABLE['Jingran']`, `CHARACTER_DATA['Jingran']`).
+   Deliberately incomplete (no rotation-derived damage test, several unmodeled gaps noted inline) —
+   matches the user's own "make the Jingran block even incomplete" instruction. **Not** added to
+   `BLOCKS_BY_CHARACTER` (characterBlocks/index.js) — see next point for why.
+2. **Cartethyia's Erosion migrated** — `DotApplier` extended with `requiresTeammate`/
+   `valueWithTeammate` (block.schema.js), her 3 real erosion-applying blocks tagged with the real
+   Rover: Aero-doubling condition (`value: 3` / `valueWithTeammate: 6`), and
+   `resolveErosionFromBlocks` (dotReactionsFromBlocks.js) updated to apply it based on real team
+   membership. This is a genuine bugfix, not just a migration: the legacy `CHAR_BUFF_TABLE` path
+   hardcoded `erosion: 6` with NO runtime Rover: Aero check at all, so it silently overcounted
+   Cartethyia's Erosion on any team without Rover: Aero. Every real Erosion applier in the roster is
+   now block-tagged.
+3. **Legacy removal — BLOCKED, not done.** The task's own premise was: "once (1) and (2) mean
+   `allMembersConverted` is true for every real roster character," delete the dead legacy branches.
+   Re-verifying against the live code (not assuming) found this premise doesn't hold and can't be
+   made to hold without fabricating data:
+
+   `allMembersConverted` (calcTeamStats.js line ~181) is
+   `mems.every(m => BLOCKS_BY_CHARACTER[m.name] && CHARACTER_ROTATIONS[m.name])` — it requires BOTH
+   a blocks file AND a `CHARACTER_ROTATIONS` entry for every team member. **No
+   `CHARACTER_ROTATIONS['Jingran']` entry exists**, and characters.js's own comment on his entry
+   (line ~1053) explicitly forbids adding one: "Re-checked 2026-08-31... still not fabricatable...
+   do not fill this in until his kit is actually revealed post-release." Jingran has no sourced
+   rotation because he hasn't released yet (~2026-09-10 per BANNER_HISTORY) — this is not something
+   step (1) above could have changed, and inventing a rotation order to flip the gate would be
+   exactly the fabrication this codebase's sourcing discipline forbids.
+
+   Consequently, `BLOCKS_BY_CHARACTER['Jingran']` is deliberately left unset even though
+   `JINGRAN_BLOCKS` now exists (see jingran.blocks.js's and index.js's own comments) — setting it
+   without a paired rotation would make the `blocks && rotation`-style checks partially true in a
+   way that crashes downstream (`chooseOnFieldOrder`/`buildTeamSteps` read
+   `CHARACTER_ROTATIONS[m.name]` unconditionally once the blocks half passes). This means
+   **`allMembersConverted` is still false for any team that includes Jingran**, exactly as before
+   this task — the legacy FULL-tier buff accumulation (§9), the legacy per-member damage loop
+   (§12), and the RAW-tier per-member legacy branch (`BLOCKS_BY_CHARACTER[m.name] &&
+   CHARACTER_ROTATIONS[m.name]` at the per-member level, ~line 648) all remain genuinely reachable
+   — Jingran is already selectable in the character roster today (`CHARACTER_DATA['Jingran']`
+   exists, unconditionally), so a user building a team with him hits this path right now, not
+   hypothetically. Deleting `legacyMainDpsStats.js`/`legacyMemberDamage.js` or their call sites
+   would break real team calculations for any Jingran-inclusive team.
+
+   Grepped the whole `app/src` tree (`legacyMainDpsStats|legacyMemberDamage|
+   computeLegacyMainDpsStats|computeLegacyMemberDamage`): the only caller is `calcTeamStats.js`,
+   confirming this is now a single-purpose, single-caller fallback that exists ONLY to keep Jingran
+   usable — not stale dead weight left over from an incomplete migration. **Recommendation:** leave
+   `legacyMainDpsStats.js`/`legacyMemberDamage.js` and the `!allMembersConverted`/per-member RAW-tier
+   legacy branches exactly as they are (they're already well-commented as Jingran-only, dated
+   2026-09-05/06) until `CHARACTER_ROTATIONS['Jingran']` is real, sourced data — at that point
+   `Jingran: JINGRAN_BLOCKS` can be added to `BLOCKS_BY_CHARACTER`, `allMembersConverted` becomes
+   unconditionally true, and this whole section-map's §9/§12 (and the RAW-tier legacy branch) can be
+   deleted as truly dead code in one pass, verified against `phase3-parityGolden.test.js`.
+
+   The legacy rotation-timeline IIFE (§5) and everything not gated behind Jingran-only branches was
+   NOT touched — out of scope once (3) turned out to be blocked, and unrelated to either sourcing
+   fix in (1)/(2).
+
+This document is kept (not deleted) — the section map above (§1-§18) is still an accurate read of
+the live file's structure as of this pass; only this final section is new.
