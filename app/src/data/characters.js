@@ -7594,6 +7594,7 @@ const SKILL_ICONS = {
     'Phantom Etching': './characters/calcharo/Xx7Hd3NG-Skill-Phantom-Etching.webp', // must precede 'Hounds Roar' below — the Liberation row's name is "Phantom Etching → Hounds Roar" and should resolve to this icon, not the generic weapon one
     'Hounds Roar': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Deathblade Gear's Basic ATK replacement, referenced standalone in the rotation — same generic weapon icon
     'Wanted Outlaw': './characters/calcharo/B2pH4yjS-Skill-Wanted-Outlaw.webp',
+    '"Necessary Means"': './characters/calcharo/B2pH4yjS-Skill-Wanted-Outlaw.webp', // his next Intro cast after Deathblade Gear ends is silently swapped to this move instead of Wanted Outlaw — same Intro Skill, same icon
     'Shadowy Raid': './characters/calcharo/k2vk5Fqp-Skill-Shadowy-Raid.webp',
     'Heavy Attack: "Death Messenger"': './characters/calcharo/kVd4h62C-Skill-Hunting-Mission.webp', // rotation-step phrasing ('Attack' vs 'ATK'), same icon
   },
