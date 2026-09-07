@@ -16,6 +16,15 @@
 // per-Dark-Core proportional scalar block (banish-breakdown-stage2-dark-core-scalar) got the SAME
 // cooldown as its base hit, since both fire on one real cast and need matching derating for their
 // documented proportional relationship to stay correct.
+//
+// Completeness pass 2026-09-07 (continuing the same character-by-character pass): Minor Fortes
+// (Crit DMG+16%, ATK%+12%) had no block at all. Also found a real, significant gap in her Inherent
+// Skill Etched Colors — "while in Entropy Shift, Fusion Burst mode: team +30% Fusion DMG Bonus;
+// Tune Strain mode: team +10 Tune Break Boost (scaling further with Off-Tune Buildup Rate)" — the
+// Fusion Burst half is a real, sourced team-wide elemDmg buff that had no block at all; the Tune
+// Strain half has no representable stat in this schema (Tune Break Boost isn't a %DMG category),
+// documented as unmodeled rather than guessed. Her other Inherent Skill, Vestiges of Falsehood
+// (a combat-entry resource restore), is pure utility — added as documented-inert.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -30,10 +39,13 @@ export const DENIA_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: "Intro:It's Been A While!" },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // category/basis added during Layer 4 migration: was uncategorized, silently rejecting Resonance
-    // Skill DMG Bonus. No override text names a different category, same default-to-skillDmg convention
-    // as Aalto/Calcharo/Encore/Jianxin/Danjin's own Intro blocks.
-    damage: { hits: parseSkillMultiplierHits('104.62%'), basis: 'ATK' },
+    // category fixed 2026-09-07 (completeness pass): this block's own comment claimed a skillDmg
+    // category was "added during Layer 4 migration... same default-to-skillDmg convention as Aalto/
+    // Calcharo/Encore/Jianxin/Danjin's own Intro blocks" but the actual `damage` object had no
+    // category field at all — a real comment/code mismatch, silently rejecting Resonance Skill DMG
+    // Bonus this whole time. No override text names a different category, so corrected to match its
+    // own stated (and cited) convention.
+    damage: { hits: parseSkillMultiplierHits('104.62%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Stagecraft-Form opener; grants 25 Void Particle and 1 Dark Core.',
     // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Denia/Denia.md's own
     // "Concerto Regen: 10 each" row for the Intro Skill (It's Been A While!/Knock Knock).
@@ -197,6 +209,50 @@ export const DENIA_BLOCKS = [
     condition: { element: 'fusion', requiresStance: 'Fusion Burst mode' },
     effects: [{ stat: 'elemDmg', value: 60, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Fusion Burst mode: Amplifies Fusion Burst DMG near the active Resonator by +60% for 30s — modeled as a team-wide elemDmg buff (closest existing category), mutually exclusive with the Tune Strain-mode block above.',
+  },
+
+  // ── Buff blocks (Minor Fortes, Inherent Skills) ──
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit DMG+16%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus, previously had no block anywhere in this file.
+  {
+    id: 'denia.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critDmg', value: 16, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit DMG+16%, ATK%+12% (Data dump/Denia/Denia.md). Unconditional, always active.',
+  },
+  // Added 2026-09-07 (completeness pass): Inherent Skill Etched Colors' real, sourced Fusion Burst
+  // half — "team +30% Fusion DMG Bonus while in Entropy Shift, Fusion Burst mode" — had no block at
+  // all. Entropy Shift is grantable by either Final Act cast, so gated the same way chain.s6 (the
+  // other Entropy-Shift-conditional buff in this file) is: kept passive rather than picking one
+  // specific cast anchor.
+  {
+    id: 'denia.inherent.etched-colors-fusion-burst',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: { duration: 99 }, // sentinel: conditional on Entropy Shift + Fusion Burst mode, no single cast anchor picked (matches chain.s6's own convention)
+    target: { scope: 'whole-team' },
+    condition: { element: 'fusion', requiresStance: 'Entropy Shift + Fusion Burst mode' },
+    effects: [{ stat: 'elemDmg', value: 30, source: 'self-kit' }],
+    note: "Etched Colors (Fusion Burst half): while in Entropy Shift, team +30% Fusion DMG Bonus. See denia.inherent.etched-colors-tune-strain-note below for why the Tune Strain half isn't modeled.",
+  },
+  // Added 2026-09-07 (completeness pass): the Tune Strain half of Etched Colors and her other
+  // Inherent Skill, Vestiges of Falsehood — both real, sourced, previously not referenced anywhere.
+  {
+    id: 'denia.inherent.etched-colors-tune-strain-note',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Etched Colors (Tune Strain half): while in Entropy Shift, team +10 Tune Break Boost, +8 more per 10% a Resonator\'s Off-Tune Buildup Rate exceeds 100% (up to +40 total). Tune Break Boost has no representable %DMG stat in this schema — not modeled.',
+  },
+  {
+    id: 'denia.inherent.vestiges-of-falsehood',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Vestiges of Falsehood — entering combat in Stagecraft Form restores Dark Core to 2 (if below) and Void Particle to 20 (if below), once/12s. Pure resource-economy utility, no DPS component to model.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 audit comment for
