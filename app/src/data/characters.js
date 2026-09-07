@@ -9102,6 +9102,50 @@ const CHAIN_NODE_ICONS = {
     s5: './characters/qingxiao/1t4yB6YJ-qingxiao-s5.webp',
     s6: './characters/qingxiao/cGpCS76-qingxiao-s6.webp',
   },
+  // Added 2026-09-07 — user-supplied uploads (not a wiki re-host like the entries above), moved
+  // from the repo root into their character folders and wired in here. Closes 5 of the 6
+  // "no CHAIN_NODE_ICONS entry at all" gaps flagged by the full-roster CharacterDetailModal audit
+  // (Rover: Aero's set was not supplied and is still missing).
+  'Lucy': {
+    s1: './characters/lucy/lucy-s1.webp',
+    s2: './characters/lucy/lucy-s2.webp',
+    s3: './characters/lucy/lucy-s3.webp',
+    s4: './characters/lucy/lucy-s4.webp',
+    s5: './characters/lucy/lucy-s5.webp',
+    s6: './characters/lucy/lucy-s6.webp',
+  },
+  'Rebecca': {
+    s1: './characters/rebecca/rebecca-s1.webp',
+    s2: './characters/rebecca/rebecca-s2.webp',
+    s3: './characters/rebecca/rebecca-s3.webp',
+    s4: './characters/rebecca/rebecca-s4.webp',
+    s5: './characters/rebecca/rebecca-s5.webp',
+    s6: './characters/rebecca/rebecca-s6.webp',
+  },
+  'Rover: Electro': {
+    s1: './characters/rover-electro/rover-electro-s1.webp',
+    s2: './characters/rover-electro/rover-electro-s2.webp',
+    s3: './characters/rover-electro/rover-electro-s3.webp',
+    s4: './characters/rover-electro/rover-electro-s4.webp',
+    s5: './characters/rover-electro/rover-electro-s5.webp',
+    s6: './characters/rover-electro/rover-electro-s6.webp',
+  },
+  'Rover: Havoc': {
+    s1: './characters/rover-havoc/rover-havoc-s1.webp',
+    s2: './characters/rover-havoc/rover-havoc-s2.webp',
+    s3: './characters/rover-havoc/rover-havoc-s3.webp',
+    s4: './characters/rover-havoc/rover-havoc-s4.webp',
+    s5: './characters/rover-havoc/rover-havoc-s5.webp',
+    s6: './characters/rover-havoc/rover-havoc-s6.webp',
+  },
+  'Rover: Spectro': {
+    s1: './characters/rover-spectro/rover-spectro-s1.webp',
+    s2: './characters/rover-spectro/rover-spectro-s2.webp',
+    s3: './characters/rover-spectro/rover-spectro-s3.webp',
+    s4: './characters/rover-spectro/rover-spectro-s4.webp',
+    s5: './characters/rover-spectro/rover-spectro-s5.webp',
+    s6: './characters/rover-spectro/rover-spectro-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
