@@ -105,6 +105,18 @@ function actionMatches(actionTags, action) {
   return Array.isArray(action) ? action.some(a => actionTags.has(a)) : actionTags.has(action);
 }
 
+// `scopedToBlockId` matching (2026-09-07, Hiyuki full-kit audit): a real chain-node bonus can name a
+// SET of specific moves rather than one ("Foreclaimed-Self Basic/Heavy/Mid-air/Plunge/Dodge Counter
+// DMG Multipliers +120%" — 8 distinct blocks in Hiyuki's own file, all sharing one damage category
+// with several OTHER blocks the bonus must NOT reach). Previously `scopedToBlockId` only ever held
+// one block id, forcing either an unscoped (over-crediting) effect or N duplicated effect entries
+// for the same value. Accepts an array now; a bare string (every existing scoped effect) keeps
+// working unchanged.
+function blockIdMatches(scopedToBlockId, hitBlockId) {
+  if (!scopedToBlockId) return true; // no scoping declared — same "applies broadly" default as before
+  return Array.isArray(scopedToBlockId) ? scopedToBlockId.includes(hitBlockId) : scopedToBlockId === hitBlockId;
+}
+
 function conditionHolds(condition, targetElementLower, targetRole, casterHpPctAssumed = null) {
   if (!condition) return true;
   // A block explicitly confirmed (via this character's own real CHARACTER_ROTATIONS/desc — see
@@ -134,4 +146,4 @@ function conditionHolds(condition, targetElementLower, targetRole, casterHpPctAs
 // time-integration driver — see its own file header) can determine per-step block eligibility with
 // the EXACT same logic resolveTriggerBlocks() uses, instead of re-deriving a second copy that could
 // silently drift out of sync.
-export { triggerKey, triggerFired, conditionHolds, actionMatches };
+export { triggerKey, triggerFired, conditionHolds, actionMatches, blockIdMatches };

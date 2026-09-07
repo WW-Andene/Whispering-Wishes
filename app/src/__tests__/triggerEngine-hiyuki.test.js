@@ -87,11 +87,58 @@ describe('triggerEngine parity — Hiyuki', () => {
     expect(fired.has('hiyuki.liberation.foreclaiming-blade-liberation')).toBe(true);
   });
 
-  it('S6 carries both the base +500% Crit DMG AND the further +40% at 2 Snow Rust stacks', () => {
+  // 2026-09-07 full-kit audit: with a Resonance Chain actually built (sequence >= 6, so chain.s1/
+  // s3/s6 are all active — the phase3-parityGolden.test.js S0-baseline comparison never exercises
+  // this at all, sequence: 0 there means NO chain.sN block ever fires, by design), chain.s6's own
+  // +500% Crit DMG must land ONLY on Inward Vision/Blade Liberation, not on every other hit in her
+  // kit — this is the real regression coverage for the over-crediting bug found and fixed this pass
+  // (confirmed separately via a real before/after comparison: removing the scoping fix roughly
+  // DOUBLED her total computed damage in this exact scenario).
+  it('S6\'s +500% Crit DMG lands only on the 2 named moves, not her whole kit (2026-09-07 fix)', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Hiyuki'], HIYUKI_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(HIYUKI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 1000, 'glacio', 'Main DPS', null, 6);
+    const frostedge = hitLog.find(h => h.blockId === 'hiyuki.liberation.frostedge');
+    const bladeLibBase = hitLog.find(h => h.blockId === 'hiyuki.liberation.foreclaiming-blade-liberation' && h.atkPct > 0 && h.atkPct < 200);
+    // Both scale the same %ATK-per-damage-unit EXCEPT for crit dmg — Blade Liberation (scoped +500%)
+    // must show a meaningfully higher damage-per-%ATK ratio than Frostedge (unscoped, gets only the
+    // broad +40%).
+    const frostedgeRatio = frostedge.damage / frostedge.atkPct;
+    const bladeLibRatio = bladeLibBase.damage / bladeLibBase.atkPct;
+    expect(bladeLibRatio).toBeGreaterThan(frostedgeRatio * 1.5);
+  });
+
+  it('S6 carries the base +500% Crit DMG (scoped to Inward Vision and Blade Liberation only — a 2026-09-07 fix, was a real over-crediting bug affecting her whole kit) AND the further, genuinely broad +40% at 2 Snow Rust stacks', () => {
     const s6 = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.chain.s6');
     expect(s6.effects).toEqual([
-      { stat: 'critDmg', value: 500, source: 'self-kit' },
+      { stat: 'critDmg', value: 500, scopedToBlockId: 'hiyuki.liberation.foreclaiming-inward-vision', source: 'self-kit' },
+      { stat: 'critDmg', value: 500, scopedToBlockId: 'hiyuki.liberation.foreclaiming-blade-liberation', source: 'self-kit' },
       { stat: 'critDmg', value: 40, source: 'self-kit' },
+    ]);
+  });
+
+  it('S1 is scoped to exactly the 8 Foreclaimed-Self Basic/Heavy/Mid-air/Plunge/Dodge-Counter blocks (2026-09-07 fix, was a real over-crediting bug reaching Frostedge, Frost Splinter, and both Foreclaiming: Ultimates)', () => {
+    const s1 = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.chain.s1');
+    expect(s1.effects[0].scopedToBlockId).toEqual([
+      'hiyuki.liberation.foreclaimed-self-stage1-3',
+      'hiyuki.liberation.foreclaimed-self-stage4-5',
+      'hiyuki.liberation.heavy-foreclaimed-self',
+      'hiyuki.liberation.midair-foreclaimed-self-stage1-2',
+      'hiyuki.liberation.midair-plunging-foreclaimed-self',
+      'hiyuki.liberation.dodge-counter-foreclaimed-self',
+      'hiyuki.liberation.bitterfrost-foreclaimed-self',
+      'hiyuki.liberation.iai',
+    ]);
+    expect(s1.effects[0].scopedToBlockId).not.toContain('hiyuki.liberation.frostedge');
+    expect(s1.effects[0].scopedToBlockId).not.toContain('hiyuki.liberation.frost-splinter-present-self');
+    expect(s1.effects[0].scopedToBlockId).not.toContain('hiyuki.liberation.foreclaiming-inward-vision');
+    expect(s1.effects[0].scopedToBlockId).not.toContain('hiyuki.liberation.foreclaiming-blade-liberation');
+  });
+
+  it('S3 is scoped to exactly Frost Splinter and Bitterfrost (2026-09-07 fix, was a real over-crediting bug reaching her whole libDmg kit)', () => {
+    const s3 = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.chain.s3');
+    expect(s3.effects).toEqual([
+      { stat: 'libDmg', value: 160, scopedToBlockId: 'hiyuki.liberation.frost-splinter-present-self', source: 'self-kit' },
+      { stat: 'libDmg', value: 160, scopedToBlockId: 'hiyuki.liberation.bitterfrost-foreclaimed-self', source: 'self-kit' },
     ]);
   });
 

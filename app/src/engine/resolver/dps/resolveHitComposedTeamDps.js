@@ -21,7 +21,7 @@
 
 import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../../../features/teams/calcEngine.js';
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
-import { triggerFired, conditionHolds, actionMatches } from '../gating/triggerEngine.js';
+import { triggerFired, conditionHolds, actionMatches, blockIdMatches } from '../gating/triggerEngine.js';
 import { buildBlockWindows, activeCountAt } from '../gating/blockWindows.js';
 import { cumulativeTieredValue } from '../gating/tieredStacking.js';
 import { COORD_SNAPSHOT_DISCOUNT } from '../gating/coordinatedAtk.js';
@@ -127,7 +127,7 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       // scopedEffects — see resolveHitComposedDps.js's identical comment (Aemeath's Between the
       // Stars fix, 2026-09-05) for the full rationale.
       for (const se of externalStats.scopedEffects || []) {
-        if (se.scopedToBlockId && se.scopedToBlockId !== hitBlockId) continue;
+        if (!blockIdMatches(se.scopedToBlockId, hitBlockId)) continue;
         applyBuff(stats, se.stat, se.value, { isAmplify: !!se.isAmplify });
       }
     }
@@ -272,7 +272,7 @@ function applyEffects(block, multiplier, stats, hitBlockId) {
   const isAmplify = block.trigger.type === 'swap-out';
   for (const effect of block.effects) {
     // `scopedToBlockId` (Phase 0.5 gap #3) — see resolveHitComposedDps.js's identical comment.
-    if (effect.scopedToBlockId && effect.scopedToBlockId !== hitBlockId) continue;
+    if (!blockIdMatches(effect.scopedToBlockId, hitBlockId)) continue;
     const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
     applyBuff(stats, effect.stat, value, { isAmplify });
   }

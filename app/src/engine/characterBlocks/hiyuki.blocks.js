@@ -1,62 +1,66 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — engine/characterBlocks/hiyuki.blocks.js
 // Hiyuki converted to TriggerBlocks. Sourced from characters.js's already-audited
-// CHAR_BUFF_TABLE['Hiyuki'], RESONANCE_CHAIN_DATA['Hiyuki'] (+ its own detailed
-// audit comment, read directly for each node's real mechanic), SKILL_MULTIPLIERS
-// ['Hiyuki'], and CHARACTER_ROTATIONS['Hiyuki']. No new numbers invented.
-// Foreclaiming: Blade Liberation's per-Snowforged-Blade DMG scaling (up to
-// +2385.72% max) is not modeled (no stacking-scalar field for a per-resource-unit
-// damage bonus).
+// CHAR_BUFF_TABLE['Hiyuki'], RESONANCE_CHAIN_DATA['Hiyuki'], SKILL_MULTIPLIERS['Hiyuki'],
+// CHARACTER_ROTATIONS['Hiyuki'], and Data dump/Hiyuki/Hiyuki.md directly (cited inline per
+// finding below). No new numbers invented anywhere in this file.
 //
-// Completeness pass 2026-09-07: added Minor Fortes (Crit Rate+8%/ATK%+12%,
-// Data dump/Hiyuki/Hiyuki.md line 118-119) and Inherent Skill Ephemeral Realm
-// (line 100, pure resource-restore utility, zero DPS component).
+// Also see: engine/characterBlocks/hiyuki.kitRules.js (her real decision-layer state machine —
+// Dedication/Frostharden Iai/Whiteout Bitterfrost/Snowforged Blade — registered in
+// engine/resolver/decision/kitRulesRegistry.js and actually driving her real DPS calculation via
+// calcTeamStats.js, not just this static block file).
 //
-// Glacio Bite (2026-09-07, direct user instruction to build a real mechanic rather
-// than document it as an unmodeled gap — this was her single largest itemized real
-// damage bucket after aggregate Liberation, 30.3%/438,900 dmg per her own dump's
-// Damage Profile, line 219/221): modeled as one 'cast'-triggered damage proc block
-// per real Glacio-Chafe-applying move in her CHARACTER_ROTATIONS (Frostedge, Present
-// Self Stage 3, Frost Splinter, Foreclaiming: Inward Vision, Foreclaimed Self Stage
-// 1-3, Iai, Bitterfrost — dump line 82's own "each new Glacio Bite stack triggers a
-// DMG instance" text, cross-referenced against each move's own "applies Glacio
-// Chafe" note already present in the damage blocks below), NOT via DOT_MECHANICS'
-// existing rotation-aggregate Level-Mult tick formulas (Frazzle/Erosion/Fusion
-// Burst/Electro Flare) — those are for defense-independent flat-Level-Mult status
-// ticks; Glacio Bite is explicitly an ATK%-scaling instance (Fine Snow's own "+102%
-// Glacio Bite DMG instance" text, dump line 99) that needs the real
-// crit/dmgBonus/defMult/resMult per-hit chain resolveHitComposedDps.js already
-// applies to every other 'cast' block here, so a plain damage block is the more
-// correct shape, not a new DOT-tick mechanic.
+// Foreclaiming: Blade Liberation's per-Snowforged-Blade DMG scaling (up to +795.24% across 3
+// stacks) IS modeled (2026-09-07) — see that block's own comment: it reads the real
+// `snowforgedBladeConsumed` field hiyuki.kitRules.js's blade-liberation rule attaches to that
+// specific cast (a "leveled action" via `resourceLevel`, checkable for a hypothetical level via
+// decisionEngine.js's validateSequence()), not a fabricated max-stacks assumption.
 //
-// Fine Snow's own Glacio Bite DMG Amp (+30%/+30% at 1/3 Snow Rust stacks, dump line
-// 99) and chain.s3's own Glacio Bite proc Multiplier (+488% at 2 Snow Rust stacks,
-// dump line 113) are folded directly into each proc block's own %ATK value — same
-// established "modeled at the ceiling rather than the ramp" convention this file
-// already used for the block this replaces (the old hiyuki.selfbuff.fine-snow-
-// glacio-bite elemDmg:60 buff, REMOVED: elemDmg is Glacio DMG Bonus, which per the
-// dump's own text is "a distinct multiplier from base Glacio DMG Bonus" and so does
-// NOT apply to Glacio Bite at all — that block was a real correctness bug, broadly
-// buffing Hiyuki's ENTIRE kit by +60% Glacio DMG instead of only the (previously
-// nonexistent) Glacio Bite instances). The Amp/Multiplier layers are combined
-// additively with the base 102% (100% + 60% + 488% = 648% -> ×6.48), matching this
-// engine's own calcDmgBonus() convention of summing %DMG-Bonus-shaped layers rather
-// than compounding them multiplicatively — a documented assumption, not a sourced
-// combination rule (the dump doesn't state how these two bonuses stack together).
-// Category intentionally omitted on every proc block: the dump's own Damage Profile
-// text says Glacio Bite "is a distinct proc/status damage type... not tied to a
-// specific button," so none of the standard skillDmg/libDmg/basicDmg %DMG Bonus
-// categories should apply to it.
+// Minor Fortes (Crit Rate+8%/ATK%+12%, dump line 118-119) and Inherent Skill Ephemeral Realm
+// (line 100, pure resource-restore utility, zero DPS component) added 2026-09-07.
 //
-// Still NOT modeled (real, sourced, but out of THIS single-character block file's
-// reach): chain.s6's extension of "her own Chafe procs Glacio Bite" to "ANY
-// teammate's Chafe procs Glacio Bite" at 2 Snow Rust stacks (dump line 116) needs
-// real cross-character team-roster data (which teammates are present and what they
-// apply) that a static per-character file can't see — the same category of gap as
-// Aemeath's Between the Stars needed calcTeamStats.js-level `scopedEffects` to
-// close; and chain.s6's own already-documented +25% Glacio Bite DMG TAKEN debuff at
-// 3 stacks, which has no matching stat key anywhere in this engine (see its own
-// note below).
+// Glacio Bite (2026-09-07 — her single largest itemized real damage bucket after aggregate
+// Liberation, 30.3%/438,900 dmg per the dump's own Damage Profile, line 219/221): modeled as ONE
+// real damage block, hiyuki.procdmg.glacio-bite, `trigger:{type:'ally-action', action:'glacio-
+// chafe'}` — fires off the shared 'glacio-chafe' appliesTags marker any team member's own
+// Chafe-inflicting block can carry (her own 7 blocks here, plus Lucilla's/Suisui's own tagged
+// blocks in their files), NOT via DOT_MECHANICS' rotation-aggregate Level-Mult tick formulas
+// (Frazzle/Erosion/Fusion Burst/Electro Flare — those are defense-independent flat-Level-Mult
+// status ticks; Glacio Bite is an ATK%-scaling instance per Fine Snow's own "+102% Glacio Bite DMG
+// instance" text, dump line 99, needing the real crit/dmgBonus/defMult/resMult per-hit chain a
+// plain damage block already gets). This single ally-action block IS the "extends to any
+// teammate's Chafe application" mechanic dump line 116 (chain.s6) describes — modeled
+// unconditionally (assumed always at the 2-Snow-Rust-stacks threshold, same ceiling-not-ramp
+// convention as the rest of this file), not gated on a live Snow Rust count this engine doesn't
+// track numerically.
+//
+// Fine Snow's own Glacio Bite DMG Amp (+30%/+30% at 1/3 Snow Rust stacks, dump line 99) and
+// chain.s3's own Glacio Bite proc Multiplier (+488% at 2 Snow Rust stacks, dump line 113) are
+// folded directly into hiyuki.procdmg.glacio-bite's own %ATK value (102% x [1 + 0.60 + 4.88] =
+// 660.96%, summed as one %DMG-Bonus-shaped layer per this engine's own calcDmgBonus() convention —
+// a documented assumption, not a sourced combination rule) rather than as separate buff effects,
+// since neither bonus has anywhere else to apply (Glacio Bite carries no damage.category — the
+// dump's own Damage Profile text says it "is a distinct proc/status damage type... not tied to a
+// specific button," so none of the standard skillDmg/libDmg/basicDmg categories should reach it).
+// The old hiyuki.selfbuff.fine-snow-glacio-bite (elemDmg:60) this replaced was a real correctness
+// bug: elemDmg is Glacio DMG Bonus, which the dump's own text says is "a distinct multiplier from
+// base Glacio DMG Bonus" — that block was broadly buffing Hiyuki's ENTIRE kit by +60% Glacio DMG
+// instead of the Glacio Bite instances it was meant for.
+//
+// Full-kit audit, 2026-09-07 (direct request: "take time and track everything") — 3 real
+// over-crediting bugs found and fixed in the Resonance Chain nodes (chain.s1/s3/s6, see each
+// block's own comment): each was a bare, unscoped stat effect that the dump's own text actually
+// names 1-8 SPECIFIC moves for, silently also inflating every OTHER block sharing that same
+// category (or, for chain.s6's critDmg, her entire kit — critDmg isn't category-gated at all).
+// Fixing this required `scopedToBlockId` to accept an array (previously one block id only) — see
+// triggerEngine.js's own blockIdMatches() doc.
+//
+// Still NOT modeled (real, sourced, genuinely out of this engine's current reach): chain.s6's own
+// +25% Glacio Bite DMG TAKEN debuff at 3 Snow Rust stacks — a Glacio-Bite-specific enemy-side
+// debuff with no matching stat key anywhere in this engine's vocabulary (see that block's own
+// note); Blade Liberation's tap-vs-hold input distinction (dump line 67) — not separately modeled
+// since a DPS-optimal player always holds to consume whatever's banked, same "assume optimal
+// execution" convention used everywhere else in this engine.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -314,10 +318,35 @@ export const HIYUKI_BLOCKS = [
   {
     id: 'hiyuki.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
+    // Fixed 2026-09-07 (full-kit audit): was a bare unscoped `libDmg: 120` — a real over-crediting
+    // bug. The dump's own S1 text (line 111) is explicit: "Foreclaimed-Self Basic/Heavy/Mid-air/
+    // Plunge/Dodge Counter DMG Multipliers +120%" — five NAMED categories, all Foreclaimed-Self
+    // context. Several OTHER libDmg-categorized blocks in this file are explicitly NOT in that list
+    // (Frostedge is the Intro-slot opener, cast BEFORE Foreclaimed Self; Frost Splinter is a
+    // PRESENT SELF move, its own chain.s3 node names it separately; Foreclaiming: Inward Vision and
+    // Foreclaiming: Blade Liberation are the two "Foreclaiming:" Ultimates that ENTER/END Foreclaimed
+    // Self, not "Basic/Heavy/Mid-air/Plunge/Dodge Counter" moves themselves) — an unscoped libDmg
+    // buff was silently also inflating all 4 of those. Scoped to exactly the 8 blocks whose own
+    // move name matches one of S1's 5 categories. Iai is included on a documented inference, not a
+    // literal citation: her own kit text (dump line 85) names the move "Basic Attack – Iai," and
+    // it fires as a Normal-Attack-replacement reached via a Dodge out of Foreclaimed Self — genuine
+    // uncertainty, not a confirmed fact, flagged here rather than silently assumed either way.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 120, source: 'self-kit' }],
-    note: 'Foreclaimed Self core moves DMG Multiplier +120% (confirmed exact per the audit comment) — kept passive, applies broadly to her many Foreclaimed Self Liberation-labeled blocks above rather than one specific cast.',
+    effects: [{
+      stat: 'libDmg', value: 120, source: 'self-kit',
+      scopedToBlockId: [
+        'hiyuki.liberation.foreclaimed-self-stage1-3',
+        'hiyuki.liberation.foreclaimed-self-stage4-5',
+        'hiyuki.liberation.heavy-foreclaimed-self',
+        'hiyuki.liberation.midair-foreclaimed-self-stage1-2',
+        'hiyuki.liberation.midair-plunging-foreclaimed-self',
+        'hiyuki.liberation.dodge-counter-foreclaimed-self',
+        'hiyuki.liberation.bitterfrost-foreclaimed-self',
+        'hiyuki.liberation.iai',
+      ],
+    }],
+    note: 'Foreclaimed-Self Basic/Heavy/Mid-air/Plunge/Dodge Counter DMG Multiplier +120% (confirmed exact value) — scoped to the 8 blocks matching those 5 named categories (see this effect\'s own comment for the full list and the Iai inclusion caveat), NOT the two Foreclaiming: Ultimates, Frostedge, or Frost Splinter.',
   },
   {
     id: 'hiyuki.chain.s2',
@@ -330,10 +359,19 @@ export const HIYUKI_BLOCKS = [
   {
     id: 'hiyuki.chain.s3',
     source: SOURCE, kind: 'buff', section: 'Chain',
+    // Fixed 2026-09-07 (full-kit audit): was a bare unscoped `libDmg: 160` — a real over-crediting
+    // bug of the same class as chain.s1's own fix above. The dump's own S3 text names exactly 2
+    // moves ("Frost Splinter (Present)/Bitterfrost (Foreclaimed) Heavy ATK DMG Multipliers +160%"),
+    // but an unscoped libDmg buff was silently ALSO inflating Frostedge, Foreclaiming: Inward
+    // Vision, Foreclaimed Self Stage 1-3, Iai, and Foreclaiming: Blade Liberation — every other
+    // libDmg-categorized block in this file. Scoped to exactly the 2 named blocks.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 160, source: 'self-kit' }],
-    note: 'Frost Splinter: Present Self AND Bitterfrost: Foreclaimed Self DMG Multiplier +160% (corrected from heavyDmg -> libDmg per the audit, both are "considered Resonance Liberation DMG" despite the Heavy Attack slot) — kept passive, applies to both blocks above. S3 ALSO carries "+488% Glacio Bite proc DMG Multiplier at 2 Snow Rust stacks" (dump line 113) — that portion is folded directly into the hiyuki.procdmg.glacio-bite-* blocks\' own %ATK value (see this file\'s header comment) rather than as a separate effect here, since it only ever applies to those proc instances, never to this block\'s own libDmg hits.',
+    effects: [
+      { stat: 'libDmg', value: 160, scopedToBlockId: 'hiyuki.liberation.frost-splinter-present-self', source: 'self-kit' },
+      { stat: 'libDmg', value: 160, scopedToBlockId: 'hiyuki.liberation.bitterfrost-foreclaimed-self', source: 'self-kit' },
+    ],
+    note: 'Frost Splinter: Present Self AND Bitterfrost: Foreclaimed Self DMG Multiplier +160% (corrected from heavyDmg -> libDmg per the audit, both are "considered Resonance Liberation DMG" despite the Heavy Attack slot) — scoped to exactly those 2 blocks (see this effect\'s own comment). S3 ALSO carries "+488% Glacio Bite proc DMG Multiplier at 2 Snow Rust stacks" (dump line 113) — that portion is folded directly into hiyuki.procdmg.glacio-bite\'s own %ATK value (see this file\'s header comment) rather than as a separate effect here, since it only ever applies to that proc instance, never to this block\'s own libDmg hits.',
   },
   {
     id: 'hiyuki.chain.s4',
@@ -357,17 +395,28 @@ export const HIYUKI_BLOCKS = [
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    // Fixed 2026-09-03: added the further conditional +40% Crit DMG at 2 Snow Rust stacks — same
-    // sourced stat (critDmg), so a second flat effect on the same passive block cleanly stacks it
-    // additively with the base +500%, matching this file's own "kept at ceiling" convention already
-    // used for hiyuki.chain.s2's Glacio Bite ramp. The +25% Glacio Bite DMG TAKEN at 3 stacks is a
-    // genuinely different concept (a debuff on the enemy's Glacio-Bite-specific damage taken, not a
-    // Crit DMG stat) with no matching stat key anywhere in this engine's vocabulary — real engine
-    // work (a new stat category), not a data-modeling gap, so still left undone and documented.
+    // Fixed 2026-09-07 (full-kit audit): the +500% effect was a bare unscoped `critDmg` — a real
+    // over-crediting bug, same class as chain.s1/s3's own fixes above but for a NON-category-gated
+    // stat: critDmg isn't restricted by damage.category the way libDmg/skillDmg/etc. are (it feeds
+    // avgCrit for EVERY hit regardless of category), so an unscoped critDmg effect silently boosted
+    // her ENTIRE kit's crit damage, not just the 2 moves the dump's own S6 text actually names
+    // ("Foreclaiming: Inward Vision and Blade Liberation Crit DMG +500%"). Scoped to exactly those 2
+    // blocks via scopedToBlockId — the SAME mechanism already used for a non-category stat in this
+    // exact shape elsewhere in this engine (Aemeath's own "+300% Crit DMG for Heavy ATK
+    // specifically," cited in triggerBlocks.schema.js's own Effect.scopedToBlockId doc). The
+    // separate +40% at 2 Snow Rust stacks stays UNSCOPED — the dump's own text phrases it as "her
+    // own Crit DMG +40%" (line 116), a genuinely broad bonus distinct from S3's own DMG-multiplier
+    // concept, not a move-specific one — kept at ceiling, same "modeled at the ceiling rather than
+    // the ramp" convention this file already uses for Fine Snow/Glacio Bite. The +25% Glacio Bite
+    // DMG TAKEN at 3 stacks is a genuinely different concept (a debuff on the enemy's Glacio-Bite-
+    // specific damage taken, not a Crit DMG modifier) with no matching stat key anywhere in this
+    // engine's vocabulary — real engine work (a new stat category), not a data-modeling gap, so
+    // still left undone and documented.
     effects: [
-      { stat: 'critDmg', value: 500, source: 'self-kit' },
+      { stat: 'critDmg', value: 500, scopedToBlockId: 'hiyuki.liberation.foreclaiming-inward-vision', source: 'self-kit' },
+      { stat: 'critDmg', value: 500, scopedToBlockId: 'hiyuki.liberation.foreclaiming-blade-liberation', source: 'self-kit' },
       { stat: 'critDmg', value: 40, source: 'self-kit' },
     ],
-    note: 'Foreclaiming: Inward Vision/Blade Liberation Crit DMG +500% (corrected from 100 per the audit), PLUS a further +40% Crit DMG at 2 Snow Rust stacks (kept at ceiling, same convention as hiyuki.chain.s2) — kept passive. The +25% Glacio Bite DMG TAKEN at 3 stacks has no matching stat key in this engine (a Glacio-Bite-specific enemy debuff, not a Crit DMG modifier) and is not modeled — real engine work, not a data gap.',
+    note: 'Foreclaiming: Inward Vision/Blade Liberation Crit DMG +500% (corrected from 100 per the audit) — scoped to exactly those 2 blocks (see this effect\'s own comment; was previously a real over-crediting bug applying to her entire kit). PLUS a further, genuinely broad +40% Crit DMG at 2 Snow Rust stacks (kept at ceiling, same convention as hiyuki.chain.s2). The +25% Glacio Bite DMG TAKEN at 3 stacks has no matching stat key in this engine (a Glacio-Bite-specific enemy debuff, not a Crit DMG modifier) and is not modeled — real engine work, not a data gap.',
   },
 ];

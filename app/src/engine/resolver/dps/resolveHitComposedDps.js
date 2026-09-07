@@ -34,7 +34,7 @@
 
 import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../../../features/teams/calcEngine.js';
 import { simulateRotation } from './rotationSimulator.js';
-import { triggerFired, conditionHolds, actionMatches } from '../gating/triggerEngine.js';
+import { triggerFired, conditionHolds, actionMatches, blockIdMatches } from '../gating/triggerEngine.js';
 import { buildBlockWindows, activeCountAt } from '../gating/blockWindows.js';
 import { cumulativeTieredValue } from '../gating/tieredStacking.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../gating/sequenceGating.js';
@@ -150,7 +150,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
       // applied through the exact same applyBuff() call, just sourced externally instead of from
       // `block.effects`. Omit (undefined) for every existing caller — behavior unchanged for them.
       for (const se of externalStats.scopedEffects || []) {
-        if (se.scopedToBlockId && se.scopedToBlockId !== hitBlockId) continue;
+        if (!blockIdMatches(se.scopedToBlockId, hitBlockId)) continue;
         applyBuff(stats, se.stat, se.value, { isAmplify: !!se.isAmplify });
       }
     }
@@ -284,7 +284,7 @@ function applyEffects(block, multiplier, stats, hitBlockId) {
     // `scopedToBlockId` (Phase 0.5 gap #3, added 2026-09-02): a buff narrower than a whole damage
     // category — e.g. Aemeath's "+300% Crit DMG for Heavy ATK specifically" — only contributes to the
     // ONE named block's own hits, not every hit sharing that block's broader damage category.
-    if (effect.scopedToBlockId && effect.scopedToBlockId !== hitBlockId) continue;
+    if (!blockIdMatches(effect.scopedToBlockId, hitBlockId)) continue;
     const value = effect.tiers ? cumulativeTieredValue(effect.tiers, multiplier) : effect.value * multiplier;
     applyBuff(stats, effect.stat, value, { isAmplify });
   }
