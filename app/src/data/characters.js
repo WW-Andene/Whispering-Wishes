@@ -7574,6 +7574,7 @@ const SKILL_ICONS = {
     'Wooly Attack': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Basic ATK — shared generic Rectifier icon (same asset already used for Yinlin), also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
     'Cosmos: Frolicking': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Cosmos Rave's Basic ATK replacement — same generic weapon icon
+    'Cosmos: Heavy Attack': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Cosmos Rave's Heavy Attack replacement, considered Heavy Attack DMG — same generic weapon icon
     'Flaming Woolies': './characters/encore/twHsyRRM-Skill-Flaming-Woolies.webp',
     'Cosmos Rampage': './characters/encore/twHsyRRM-Skill-Flaming-Woolies.webp', // Cosmos Rave's Resonance Skill replacement, same wiki icon as the base Skill
     'Cosmos Rave': './characters/encore/CKy2Dkf5-Skill-Cosmos-Rave.webp',
