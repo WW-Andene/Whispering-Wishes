@@ -288,23 +288,43 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   const uid = profile?.uid || '--';
   ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 34px sans-serif'; ctx.fillText(uname, bx + 18, by + 42);
   ctx.fillStyle = '#9ca3af'; ctx.font = '16px sans-serif'; ctx.fillText('UID ' + uid, bx + 18, by + 64);
-  if (elIcon) ctx.drawImage(elIcon, bx + 18, by + 76, 20, 20);
-  ctx.fillStyle = elColor; ctx.font = '600 18px sans-serif'; ctx.fillText(`${element || ''} · ${d.role || ''}`, bx + (elIcon ? 44 : 18), by + 93);
 
-  // Character name badge/plaque — bottom-center of the portrait, sitting in the bottom fade
-  // drawn above. A pill same style as the Weapon panel's refinement pill (gold-tinted fill +
-  // border) — the same neutral dark mask/border every other block on this card uses (drawBannerPanel's
+  // Character identity plaque — bottom-center of the portrait, sitting in the bottom fade drawn
+  // above. Per user request, element + combat role moved here (stacked below the character's own
+  // name) instead of living under the player's username/UID at the top: they're attributes of the
+  // character being shown, not the player, so they belong with the character's name. All three
+  // rows (name/element/role) were also enlarged from the prior single 26px name-only line. Same
+  // neutral dark mask/border every other block on this card uses (drawBannerPanel's
   // rgba(10,14,22,0.75) fill + rgba(255,255,255,0.16) border), not a gold treatment.
   {
-    ctx.font = 'bold 26px sans-serif';
-    const textW = ctx.measureText(name).width;
-    const padX = 24, plaqueH = 44;
-    const plaqueW = textW + padX * 2;
-    const plaqueX = bx + portraitW / 2 - plaqueW / 2, plaqueY = by + bh - 18 - plaqueH;
-    ctx.fillStyle = 'rgba(10,14,22,0.75)'; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(plaqueX, plaqueY, plaqueW, plaqueH, plaqueH / 2); ctx.stroke();
-    ctx.fillStyle = '#f1f5f9'; ctx.textAlign = 'center';
-    ctx.fillText(name, bx + portraitW / 2, plaqueY + plaqueH / 2 + 9);
+    const roleText = d.role || '';
+    const elemText = element || '';
+    ctx.font = 'bold 34px sans-serif'; const nameW = ctx.measureText(name).width;
+    ctx.font = '600 24px sans-serif'; const elemW = ctx.measureText(elemText).width + (elIcon ? 30 : 0);
+    ctx.font = '600 20px sans-serif'; const roleW = ctx.measureText(roleText).width;
+    const padX = 28, rowGapTop = 20, nameRowH = 40, elemRowH = 32, roleRowH = 28;
+    const plaqueW = Math.max(nameW, elemW, roleW) + padX * 2;
+    const plaqueH = rowGapTop + nameRowH + elemRowH + roleRowH;
+    const plaqueX = bx + portraitW / 2 - plaqueW / 2, plaqueY = by + bh - 16 - plaqueH;
+    ctx.fillStyle = 'rgba(10,14,22,0.8)'; rr(plaqueX, plaqueY, plaqueW, plaqueH, 24); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(plaqueX, plaqueY, plaqueW, plaqueH, 24); ctx.stroke();
+
+    let py = plaqueY + rowGapTop;
+    ctx.fillStyle = '#f1f5f9'; ctx.font = 'bold 34px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(name, bx + portraitW / 2, py + 27);
+    py += nameRowH;
+
+    ctx.font = '600 24px sans-serif';
+    const elemLabelW = ctx.measureText(elemText).width;
+    const elemRowW = elemLabelW + (elIcon ? 30 : 0);
+    let ex = bx + portraitW / 2 - elemRowW / 2;
+    if (elIcon) { ctx.drawImage(elIcon, ex, py + 3, 24, 24); ex += 30; }
+    ctx.fillStyle = elColor; ctx.textAlign = 'left';
+    ctx.fillText(elemText, ex, py + 22);
+    py += elemRowH;
+
+    ctx.fillStyle = '#9ca3af'; ctx.font = '600 20px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(roleText, bx + portraitW / 2, py + 19);
     ctx.textAlign = 'left';
   }
 
@@ -326,9 +346,13 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   const q1x = rx, q2x = rx + qw + qGap;
   const midX = rx + qw + qGap / 2;
 
-  // Left column: Stats / Skills / Sequence, split into equal thirds.
-  const leftH = Math.floor((rh - 2 * qGap) / 3);
-  const statsH = leftH, skillsH = leftH, seqH = rh - statsH - skillsH - 2 * qGap;
+  // Left column: Stats / Skills / Sequence. No longer an equal three-way split — per user
+  // request, Sequence gets more of the column's height (and, below, a raised node-size cap) so
+  // its nodes render bigger instead of being capped to the same share as the other two rows.
+  const leftTotalH = rh - 2 * qGap;
+  const statsH = Math.floor(leftTotalH * 0.30);
+  const skillsH = Math.floor(leftTotalH * 0.32);
+  const seqH = leftTotalH - statsH - skillsH; // remainder — the largest of the three
   const statsY = ry, skillsY = statsY + statsH + qGap, seqY = skillsY + skillsH + qGap;
 
   // Right column: Weapon (fixed height, just enough for its 3x-larger icon) / Echoes (the rest).
@@ -402,46 +426,91 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     });
   }
 
-  // ── Skills (new, per user's request — sits between Stats and Sequence in the left column):
-  // horizontal row of the 5 combat skill types. This app doesn't track individual skill levels
-  // anywhere in its data model (checked calcEngine.js/DamageCalculator.jsx — every skill is
-  // simply assumed maxed, same as the wuwaflex.com reference this card follows), so each shows
-  // a fixed "Lv. 10". Each badge shows that category's real move icon (skillIconImgs, resolved
-  // above from this character's own SKILL_MULTIPLIERS) when one exists, falling back to the type
-  // initial for characters/categories with no audited icon asset.
+  // ── Skills — redesigned per user request as a compact skill tree (was a flat row of 5
+  // badges), echoing the in-game Forte Circuit tree screen: one vertical column per skill
+  // category, left to right Basic Attack / Resonance Skill / Forte / Resonance Liberation /
+  // Intro, each column a chain of small "filled" pip nodes around the real move icon connected
+  // by a vertical line. This app doesn't track individual skill levels anywhere in its data model
+  // (checked calcEngine.js/DamageCalculator.jsx — every skill is simply assumed maxed, same as
+  // the wuwaflex.com reference this card otherwise follows), so the pips are decorative (all
+  // "filled") rather than reflecting real per-node unlock state — Sequence below is the section
+  // that renders genuine locked/unlocked state. Outro Skill has no tracked data anywhere in this
+  // app (no 'Outro' entry in skillTypeToCategory/SKILL_MULTIPLIERS), so per user instruction it
+  // renders as a locked placeholder hanging below the Forte column rather than being omitted.
   {
     drawBannerPanel(q1x, skillsY, qw, skillsH, 'Skills');
     const qx = q1x + PAD, qy = skillsY + PAD, qh = skillsH - 2 * PAD, cw = qw - 2 * PAD;
     const hOff = 40;
-    const skillTypes = [
-      { k: 'N', l: 'Normal' }, { k: 'S', l: 'Skill' }, { k: 'F', l: 'Forte' },
-      { k: 'L', l: 'Liberation' }, { k: 'I', l: 'Intro' },
+    const cols = [
+      { k: 'N', l: 'Basic Attack' }, { k: 'S', l: 'Resonance Skill' }, { k: 'F', l: 'Forte' },
+      { k: 'L', l: 'Resonance Liberation' }, { k: 'I', l: 'Intro' },
     ];
-    const n = skillTypes.length;
-    const badgeSz = 62; // PerfectSuite tertiary — matches the Sequence row's icon size below
-    const iGap = 16; // PerfectSuite primary
-    const totalW = n * badgeSz + (n - 1) * iGap;
-    let ix = qx + Math.max(0, (cw - totalW) / 2);
-    const iy = qy + hOff + (qh - hOff - badgeSz - 24) / 2;
-    skillTypes.forEach(s => {
-      ctx.fillStyle = 'rgba(237,175,24,0.14)';
-      ctx.beginPath(); ctx.arc(ix + badgeSz / 2, iy + badgeSz / 2, badgeSz / 2, 0, Math.PI * 2); ctx.fill();
+    const n = cols.length;
+    const mainSz = 48; // PerfectSuite tertiary-adjacent(62)->48 primary: shrunk from the old flat row's
+    // 62px badges to leave room for the pip chain above/below without the column overflowing qh.
+    const pipSz = 12; // PerfectSuite tertiary
+    const pipGap = 10;
+    const colGap = 16; // PerfectSuite primary
+    const colW = (cw - (n - 1) * colGap) / n;
+    const labelH = 22;
+    const midY = qy + hOff + (qh - hOff - labelH) * 0.40; // main nodes sit above center, leaving
+    // more room below the Forte column for its extra Outro placeholder than above it.
+    const pipStep = pipSz + pipGap;
+
+    const drawPip = (cx, cy) => {
+      ctx.fillStyle = 'rgba(237,175,24,0.85)';
+      ctx.beginPath(); ctx.arc(cx, cy, pipSz / 2, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(ix + badgeSz / 2, iy + badgeSz / 2, badgeSz / 2, 0, Math.PI * 2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, pipSz / 2, 0, Math.PI * 2); ctx.stroke();
+    };
+
+    cols.forEach((s, i) => {
+      const isForte = s.k === 'F';
+      const cx = qx + i * (colW + colGap) + colW / 2;
+      const topYs = [midY - mainSz / 2 - pipGap - pipStep, midY - mainSz / 2 - pipGap];
+      const botYs = isForte
+        ? [midY + mainSz / 2 + pipGap]
+        : [midY + mainSz / 2 + pipGap, midY + mainSz / 2 + pipGap + pipStep];
+      const outroR = mainSz * 0.42; // raised from 0.34 — too faint/small to read as its own node at the smaller size
+      const outroY = isForte ? (botYs[0] + pipStep + outroR - pipSz / 2) : null;
+
+      // Connector line drawn first so every node renders on top of it.
+      const lineTop = topYs[0];
+      const lineBottom = isForte ? outroY + outroR : botYs[botYs.length - 1];
+      ctx.strokeStyle = 'rgba(237,175,24,0.35)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx, lineTop); ctx.lineTo(cx, lineBottom); ctx.stroke();
+
+      topYs.forEach(y => drawPip(cx, y));
+      botYs.forEach(y => drawPip(cx, y));
+
+      // Main node — the real move icon, same circular badge treatment the old flat row used.
+      ctx.fillStyle = 'rgba(237,175,24,0.14)';
+      ctx.beginPath(); ctx.arc(cx, midY, mainSz / 2, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cx, midY, mainSz / 2, 0, Math.PI * 2); ctx.stroke();
       const icon = skillIconImgs[s.k];
       if (icon) {
-        const pad = 10; const iconD = badgeSz - pad * 2;
-        ctx.save(); ctx.beginPath(); ctx.arc(ix + badgeSz / 2, iy + badgeSz / 2, iconD / 2, 0, Math.PI * 2); ctx.clip();
-        ctx.drawImage(icon, ix + pad, iy + pad, iconD, iconD);
+        const iconPad = 8; const iconD = mainSz - iconPad * 2;
+        ctx.save(); ctx.beginPath(); ctx.arc(cx, midY, iconD / 2, 0, Math.PI * 2); ctx.clip();
+        ctx.drawImage(icon, cx - iconD / 2, midY - iconD / 2, iconD, iconD);
         ctx.restore();
       } else {
-        ctx.fillStyle = GOLD; ctx.font = 'bold 24px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(s.k, ix + badgeSz / 2, iy + badgeSz / 2 + 8); ctx.textAlign = 'left';
+        ctx.fillStyle = GOLD; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(s.k, cx, midY + 7); ctx.textAlign = 'left';
       }
-      ctx.fillStyle = NEUTRAL; ctx.font = '600 16px sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('Lv. 10', ix + badgeSz / 2, iy + badgeSz + 24);
+
+      if (isForte) {
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.beginPath(); ctx.arc(cx, outroY, outroR, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(cx, outroY, outroR, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = '#9ca3af'; ctx.font = '600 13px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Outro', cx, outroY + 5); ctx.textAlign = 'left';
+      }
+
+      ctx.fillStyle = NEUTRAL; ctx.font = '600 13px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(s.l, cx, qy + qh - 4);
       ctx.textAlign = 'left';
-      ix += badgeSz + iGap;
     });
   }
 
@@ -459,7 +528,7 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     const availW = cw, availH = qh - hOff;
     const cellW = (availW - (cols - 1) * iGap) / cols;
     const cellH = (availH - (rows - 1) * iGap) / rows;
-    const iconSz = Math.min(96, Math.floor(cellW), Math.floor(cellH - labelH)); // PerfectSuite primary
+    const iconSz = Math.min(128, Math.floor(cellW), Math.floor(cellH - labelH)); // PerfectSuite primary — raised from 96 per user request, now that seqH's larger share (above) leaves room for it
     const gridW = cols * iconSz + (cols - 1) * iGap, gridH = rows * (iconSz + labelH) + (rows - 1) * iGap;
     const gx0 = qx + Math.max(0, (availW - gridW) / 2), gy0 = qy + hOff + Math.max(0, (availH - gridH) / 2);
     for (let i = 0; i < 6; i++) {
