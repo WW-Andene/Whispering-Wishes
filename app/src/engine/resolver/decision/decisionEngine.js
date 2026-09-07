@@ -62,3 +62,67 @@ export function runDecisionRotation(initialState, rules, maxSteps = 200) {
 
   return { steps, firedRuleIds, finalState: state };
 }
+
+/**
+ * Validates an ARBITRARY candidate step sequence against a character's real kit rules — the
+ * missing half of runDecisionRotation() (which only ever GENERATES a sequence from her own rule
+ * set). Answers "if I swap/reorder moves, does the engine know what's actually legal and what
+ * happens" (2026-09-07, direct request): walks the given steps one at a time, and at each one asks
+ * whether ANY rule in the character's own rule set both (a) produces a step matching this one's
+ * {type, skill}, and (b) has a `condition` that holds given the REAL state as of this point in the
+ * walk (not the state a human assumed) — i.e. every prerequisite move actually happened first, in
+ * this exact candidate sequence, not some other one. This is NOT a copy of runDecisionRotation's
+ * own priority-ordering logic — a step can be legal here even if a HIGHER-priority rule was also
+ * available and would have been preferred by the generator; this only checks "was this specific
+ * move actually possible right now," not "was it what the optimal player would have done."
+ *
+ * Unlike resolveHitComposedDps()/rotationSimulator.js (which only ever enforce a block's own
+ * cooldown on an arbitrary input sequence — confirmed via a real illegal-sequence test: feeding it
+ * Bitterfrost before ever building Whiteout Bitterfrost still silently computed real damage), this
+ * function is where a character's actual resource/prerequisite legality can be checked.
+ *
+ * @param {Object} initialState
+ * @param {PriorityRule[]} rules  Same rule set runDecisionRotation() would use — does NOT need to
+ *   be priority-ordered for this function (order doesn't affect legality checking), but passing the
+ *   same array is fine and typical.
+ * @param {{type: string, skill: string}[]} candidateSteps  The sequence to check — e.g. a curated
+ *   CHARACTER_ROTATIONS array, or a hand-edited "what if I swapped these two" variant.
+ * @returns {{
+ *   results: {step: {type:string, skill:string}, legal: boolean, reason: string, ruleId: string|null}[],
+ *   allLegal: boolean,
+ *   finalState: Object,
+ * }}
+ */
+export function validateSequence(initialState, rules, candidateSteps) {
+  const state = initialState;
+  const results = [];
+  let allLegal = true;
+
+  for (const candidate of candidateSteps) {
+    // A rule "matches" this candidate step's {type, skill} regardless of whether its OWN
+    // condition currently holds — checked separately below, so a real distinction can be drawn
+    // between "not part of her kit rules at all" and "part of her kit, but not legal yet."
+    const matchingRules = rules.filter(r => {
+      const ruleStep = r.buildStep ? r.buildStep(state) : r.step;
+      return ruleStep.type === candidate.type && ruleStep.skill === candidate.skill;
+    });
+
+    if (!matchingRules.length) {
+      results.push({ step: candidate, legal: false, reason: 'no kit rule produces this move at all', ruleId: null });
+      allLegal = false;
+      continue;
+    }
+
+    const readyRule = matchingRules.find(r => r.condition(state));
+    if (!readyRule) {
+      results.push({ step: candidate, legal: false, reason: 'prerequisites not met yet at this point in the sequence', ruleId: null });
+      allLegal = false;
+      continue;
+    }
+
+    readyRule.apply(state);
+    results.push({ step: candidate, legal: true, reason: 'ok', ruleId: readyRule.id });
+  }
+
+  return { results, allLegal, finalState: state };
+}
