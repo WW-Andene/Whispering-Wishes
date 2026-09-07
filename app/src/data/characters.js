@@ -8447,6 +8447,9 @@ const SKILL_ICONS = {
     'Wingblade': './characters/rover-havoc/99BT9Qqn-Skill-Wingblade.webp', // Resonance Skill
     'Umbra Eclipse': './characters/rover-havoc/nNpvGF4L-Skill-Umbra-Eclipse.webp', // Forte Circuit
     'Devastation': './characters/rover-havoc/nNpvGF4L-Skill-Umbra-Eclipse.webp', // Forte-gated Heavy Attack that enters Dark Surge, same Forte icon
+    'Umbra: Basic Attack': './characters/rover-havoc/nNpvGF4L-Skill-Umbra-Eclipse.webp', // Dark Surge's enhanced Basic Attack combo, same Forte icon
+    'Umbra: Heavy Attack': './characters/rover-havoc/nNpvGF4L-Skill-Umbra-Eclipse.webp', // Dark Surge's enhanced Heavy Attack, same Forte icon
+    'Umbra: Thwackblade': './characters/rover-havoc/nNpvGF4L-Skill-Umbra-Eclipse.webp', // Dark Surge's Basic-after-Heavy follow-up, same Forte icon
     'Deadening Abyss': './characters/rover-havoc/bgvHXLqr-Skill-Deadening-Abyss.webp', // Resonance Liberation
     'Umbra: Lifetaker': './characters/rover-havoc/bgvHXLqr-Skill-Deadening-Abyss.webp', // Umbra-state Liberation nuke, same wiki icon
     'Instant of Annihilation': './characters/rover-havoc/chtkVHd2-Skill-Instant-of-Annihilation.webp', // Intro Skill
@@ -8483,8 +8486,10 @@ const SKILL_ICONS = {
     'Deterrence': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic ATK
     'Standard': './characters/_shared/prZWKCtm-Skill-Sword.webp',
     'Repel': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic Attack follow-up after Resonance Skill, no dedicated icon — generic weapon icon
+    'Riposte Strike': './characters/_shared/prZWKCtm-Skill-Sword.webp', // Basic ATK's parry-window follow-up (or its Crumble variant), no dedicated icon
     'Thunderclap': './characters/rover-electro/2YyS74Pn-Skill-Thunderclap.webp', // Resonance Skill
     "Myriad Omens' Mandate": './characters/rover-electro/7NKRhwQH-Skill-Myriad-Omens-Mandate.webp', // Forte Circuit
+    'Apex Resonance': './characters/rover-electro/7NKRhwQH-Skill-Myriad-Omens-Mandate.webp', // Forte Circuit's own signature combo (Thrum of All Sounds), same wiki icon
     'Overshock': './characters/rover-electro/7NKRhwQH-Skill-Myriad-Omens-Mandate.webp', // Forte Circuit's capped-Electric-Surge Skill replacement, same wiki icon
     'Ultimate Tactics': './characters/rover-electro/wNFW43BD-Skill-Ultimate-Tactics.webp', // Resonance Liberation
     'Thunderous Fury': './characters/rover-electro/Kj3cKLdS-Skill-Thunderous-Fury.webp', // Intro Skill
