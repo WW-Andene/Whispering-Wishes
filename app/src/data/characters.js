@@ -8484,16 +8484,20 @@ const SKILL_ICONS = {
 // on one of these move kinds falls back to that character's own Basic ATK icon — the real Basic
 // ATK icon that already resolves correctly for that character's actual Basic ATK rows — instead
 // of rendering with no icon.
-const isAuxComboMove = (skillName) => /mid-air|dodge counter|plunging/i.test(skillName);
+// Matches on the move's TYPE as well as its name text — a bare, undescriptive name like "Attack"
+// (Aalto/Baizhi/Chixia/Danjin/Sanhua/Yangyang's literal Mid-air row) carries none of these words
+// itself, so a name-only check missed it; the row's own declared type ('Mid-air'/'Dodge Counter')
+// catches those too.
+const isAuxComboMove = (skillName, type) => /mid-air|dodge counter|plunging/i.test(skillName) || /mid-air|dodge counter/i.test(type || '');
 
-const getSkillIcon = (name, skillName) => {
+const getSkillIcon = (name, skillName, type) => {
   const table = SKILL_ICONS[name];
   if (!table) return null;
   const key = Object.keys(table).find(k => skillName.includes(k));
   if (key) return table[key];
-  if (isAuxComboMove(skillName)) {
-    const basicRow = (SKILL_MULTIPLIERS[name] || []).find(([type, rowSkillName]) => type === 'Basic ATK' && !isAuxComboMove(rowSkillName));
-    if (basicRow) return getSkillIcon(name, basicRow[1]);
+  if (isAuxComboMove(skillName, type)) {
+    const basicRow = (SKILL_MULTIPLIERS[name] || []).find(([rowType, rowSkillName]) => rowType === 'Basic ATK' && !isAuxComboMove(rowSkillName, rowType));
+    if (basicRow) return getSkillIcon(name, basicRow[1], basicRow[0]);
   }
   return null;
 };

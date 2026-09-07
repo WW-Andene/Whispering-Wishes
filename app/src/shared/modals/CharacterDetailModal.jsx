@@ -466,7 +466,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     'Charged ATK': 'bg-orange-500/10', 'Skill': 'bg-cyan-500/10', 'Liberation': 'bg-yellow-500/10',
                     'Forte': 'bg-purple-500/10', 'Intro': 'bg-green-500/10', 'Outro': 'bg-pink-500/10',
                   };
-                  const skillIcon = getSkillIcon(name, skillName);
+                  const skillIcon = getSkillIcon(name, skillName, type);
                   return (
                     <div key={i} className={`px-2 py-1.5 rounded ${typeBg[type] || 'bg-white/5'}`}>
                       <div className="flex items-baseline gap-1.5">
@@ -592,7 +592,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   // function's own doc comment in characters.js for why.
                   const row = findSkillMultiplierRow(name, step);
                   const dmg = row?.[2];
-                  const stepIcon = getSkillIcon(name, step.skill);
+                  const stepIcon = getSkillIcon(name, step.skill, step.type);
                   // 'Echo' steps (e.g. "Use Echo", "Swap Cancel") aren't a character skill at all —
                   // they're whatever echo the player has equipped, so they can never resolve to a
                   // per-character skill icon. Show a generic echo glyph instead of leaving the row
