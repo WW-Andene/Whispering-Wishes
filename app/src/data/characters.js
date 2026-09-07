@@ -8512,6 +8512,7 @@ const SKILL_ICONS = {
     "Afterlife's Guide": './characters/jingran/S4kkG9mR-jingran-skill-C1.webp', // Resonance Skill Heavy Attack follow-up, Yang
     'Soul Raid': './characters/jingran/N2jbGWjg-jingran-skill-D1.webp', // Forte Circuit Heavy Attack
     'Stardome Meander': './characters/jingran/1Y04vgs7-jingran-skill-D2.webp', // Forte Circuit Heavy Attack (alt)
+    'Chimei Wangliang': './characters/jingran/N2jbGWjg-jingran-skill-D1.webp', // SKILL_MULTIPLIERS' bare Forte-category name — no Data dump exists yet for this unreleased character to confirm a distinct icon, so this uses the same D1 asset already sourced as "the Forte Circuit Heavy Attack" (Soul Raid) rather than a guessed URL; revisit once real source material is available.
     'Burial of Thousand Souls': './characters/jingran/Fbfhy5pV-jingran-skill-QTE.webp', // Resonance Liberation
     'Question the Tombs': './characters/jingran/WrW84w9-jingran-skill-T.webp', // Intro Skill
     'Rising Fortune and Ebbing Evil': './characters/jingran/cctRq3Yp-jingran-skill-Y.webp', // Outro Skill
