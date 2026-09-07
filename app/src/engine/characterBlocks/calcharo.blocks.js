@@ -33,6 +33,17 @@
 // Death Messenger's 5 regen) have no matching schema field (only Concerto Energy is tracked) — left
 // unmodeled rather than fabricated onto an unrelated field, same treatment as Brant's/Buling's own
 // Liberation resource costs.
+//
+// Completeness pass 2026-09-07 (continuing the same character-by-character pass, verified directly
+// against Data dump/Calcharo/Calcharo.md): Minor Fortes (Crit DMG+16%, ATK%+12%) and both Inherent
+// Skills (Bloodshed Awaken, Revenant Rush) were entirely missing — the same class of gap already
+// fixed for Aalto/Aemeath/Augusta. Bloodshed Awaken's own trigger (Heavy Attack "Mercy") and
+// Revenant Rush's DMG-taken reduction have no representable DPS stat contribution given this file's
+// existing, already-audited scope (Mercy has no block at all — never cast in CHARACTER_ROTATIONS'
+// modeled "Optimized Burst Combo", same as this file's header already documents for Extermination
+// Order), so both are added as kind:'utility' with effects:[], same convention as Aalto's own inert
+// Inherent Skill blocks (Perfect Performance/Mid-game Break) — real, sourced, honestly non-computing
+// rather than fabricated onto an unused trigger.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -112,6 +123,39 @@ export const CALCHARO_BLOCKS = [
     // this is his own direct damage ("Summons a Phantom that slashes targets"), not a team buff —
     // same outroDmg shape already fixed for Rover: Havoc's Soundweaver/Xiangli Yao's precedent.
     damage: { hits: parseSkillMultiplierHits('195.98%+391.96%') , category: 'outroDmg', basis: 'ATK' },
+  },
+
+  // ── Buff blocks (from CHAR_BUFF_TABLE — empty for Calcharo, see file header) ──
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit DMG+16%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus unlocked via Forte-tree ascension, previously had no block anywhere
+  // in this file, same class of gap as Aalto's/Aemeath's/Augusta's own missing Minor Fortes.
+  {
+    id: 'calcharo.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critDmg', value: 16, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit DMG+16%, ATK%+12% (Data dump/Calcharo/Calcharo.md line 104). Unconditional, always active.',
+  },
+
+  // Added 2026-09-07 (completeness pass): his 2 Inherent Skills, previously not referenced anywhere
+  // in this file — real, sourced, kind:'utility' with effects:[] since neither has a representable
+  // DPS-stat contribution given this file's own already-audited scope (Mercy has no block at all —
+  // same pattern as Aalto's/Aemeath's/Augusta's own inert Inherent Skill blocks).
+  {
+    id: 'calcharo.inherent.bloodshed-awaken',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Bloodshed Awaken — casting Heavy Attack "Mercy" grants Resonance Liberation DMG Bonus+10% for 15s. Real mechanic, not modeled: Heavy Attack "Mercy" has no block anywhere in this file (Cruelty-gauge gated, never cast in CHARACTER_ROTATIONS\' modeled "Optimized Burst Combo" — see file header), so this buff\'s own trigger never fires in the modeled rotation.',
+  },
+  {
+    id: 'calcharo.inherent.revenant-rush',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Revenant Rush — Heavy Attack "Death Messenger" hitting a target reduces DMG taken by Calcharo by 15% for 5s. Purely defensive (DMG-taken reduction), no DPS component to model, even though Death Messenger itself does fire in the modeled rotation (calcharo.forte.death-messenger).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each
