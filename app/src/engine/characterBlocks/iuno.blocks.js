@@ -151,6 +151,9 @@ export const IUNO_BLOCKS = [
   },
   // S4 correctly has NO block — Absolute Fullness grants a Shield = 160% of Iuno's ATK to the WHOLE
   // TEAM for 30s (not passed to the incoming Resonator on swap) — purely defensive, ZERO DPS component.
+  // Inherent Skill Waxing Ascent (Data dump/Iuno/Iuno.md line 100-101, "every Basic/Heavy/Dodge
+  // Counter/Resonance Skill/Resonance Liberation/Intro Skill cast grants 1 Shield = 32% of her ATK for
+  // 15s") also correctly has NO block, same reasoning as S4 — purely defensive, zero DPS component.
   {
     id: 'iuno.chain.s5',
     source: SOURCE, kind: 'buff', section: 'Chain',
@@ -166,5 +169,17 @@ export const IUNO_BLOCKS = [
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'libDmg', value: 1600, source: 'self-kit' }],
     note: "Absolute Fullness' own DMG Multiplier +1600% (confirmed exact value) — corrected 2026-09-02 from heavyDmg to libDmg against a fresh the source dump: Absolute Fullness is explicitly \"considered as Resonance Liberation DMG\" despite the Heavy ATK slot used to cast it (same real fact as iuno.heavy.absolute-fullness's own category fix above — a heavyDmg-stat bonus here would have applied to a damage category she has zero real hits in). Cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. On-cast re-entry into Lunar Cycle - New Moon, 100 Sentience grant, and Arc Beyond the Edge cooldown reset are NOT modeled (no home in this schema).",
+  },
+  // Added 2026-09-07 (completeness pass): Minor Fortes had no block anywhere in this file.
+  {
+    id: 'iuno.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'cr', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Iuno/Iuno.md line 128-129). Unconditional, always active.',
   },
 ];
