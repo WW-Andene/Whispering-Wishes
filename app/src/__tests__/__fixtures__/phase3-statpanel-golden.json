@@ -126,11 +126,11 @@
     "score": 1354
   },
   "Galbrena": {
-    "effAtk": 1386,
-    "avgCrit": 1.2465,
+    "effAtk": 1512,
+    "avgCrit": 1.2865,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 1688
+    "score": 1900
   },
   "Hiyuki": {
     "effAtk": 1176,

@@ -8,6 +8,19 @@
 // debuff) is gained from ANY team Resonator's Echo Skill cast, not her own —
 // a cross-character trigger this schema has no clean anchor for, documented
 // rather than force-fit to one of her own casts.
+//
+// Completeness pass 2026-09-07 (continuing the same character-by-character pass): Minor Fortes
+// (Crit DMG+16%, ATK%+12%) had no block at all. Also found both Inherent Skills entirely
+// unmodeled. Sin Feaster (STA regen on specific casts) is pure resource-economy utility, added as
+// documented-inert. Oathbound Hunt is genuinely ambiguous, not modeled: its own real text amplifies
+// "Normal Attack/Skill/Forte/Liberation/Intro/Outro DMG" — the game's standard button-press DMG
+// Bonus category names — but conspicuously does NOT list Heavy Attack or Echo Skill DMG, the two
+// categories her ENTIRE real kit is overridden into (every SKILL_MULTIPLIERS row is "considered
+// Heavy Attack DMG" or "considered Echo Skill DMG" despite the button pressed). Whether this is a
+// deliberate design choice (Oathbound Hunt genuinely doesn't buff her own damage) or an incomplete
+// enumeration in the source is not determinable from the dump alone — modeling it either way would
+// be a guess, so it's documented as an open question rather than force-fit as either a real buff or
+// a confirmed no-op.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -133,6 +146,33 @@ export const GALBRENA_BLOCKS = [
     timing: {}, target: { scope: 'all-enemies' },
     effects: [{ stat: 'amplify', value: 1.5, stacking: 'stacking', maxStacks: 40 }],
     note: 'Afterflame: DMG Taken +1.5% per stack (up to 40 stacks, 60% cap) while Galbrena is in Demon Hypostasis, cleared when she exits — gained from ANY team Resonator\'s Echo Skill cast (capped once per Echo name), not her own casts, so no CHARACTER_ROTATIONS step of hers anchors the stacking trigger; modeled passive as an approximation. Realistically ~36% without Phrolova, ~48% with her, per the source note (rarely maxed at 60%).',
+  },
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit DMG+16%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus, previously had no block anywhere in this file.
+  {
+    id: 'galbrena.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critDmg', value: 16, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit DMG+16%, ATK%+12% (Data dump/Galbrena/Galbrena.md). Unconditional, always active.',
+  },
+  // Added 2026-09-07 (completeness pass): her 2 Inherent Skills, previously not referenced anywhere
+  // in this file.
+  {
+    id: 'galbrena.inherent.sin-feaster',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Sin Feaster — casting Basic Stage 4/Seraphic Execution Stage 5/Volley of Death Stage 3/Flamewing Verdict Stage 3 recovers 10 STA. Pure resource-economy utility, no DPS component to model.',
+  },
+  {
+    id: 'galbrena.inherent.oathbound-hunt',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Oathbound Hunt — hits from most of her kit inflict 1 stack of Fated End (cap 4, 5.5s), each stack Amplifying "Normal Attack/Skill/Forte/Liberation/Intro/Outro DMG" by 5%. NOT modeled: see file header — this real text conspicuously omits Heavy Attack/Echo Skill DMG, the two categories her entire real kit is overridden into, and it\'s not determinable from the source whether that\'s deliberate (the buff genuinely doesn\'t reach her own damage) or an incomplete category list. Documented as an open question rather than guessed either way.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 re-audit comment for
