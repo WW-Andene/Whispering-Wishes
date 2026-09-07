@@ -45,6 +45,10 @@
 // min(1, totalTime/cooldown) model assumes one use per cooldown period, which would incorrectly
 // derate both of her real, legitimately pre-banked-charge casts in one rotation — see that block's
 // own note. Radiance of Fealty's cooldown IS a simple fixed timer, so it's modeled directly.
+//
+// Completeness pass 2026-09-07 (continuing the same character-by-character pass): Minor Fortes
+// (Crit Rate+8%, ATK%+12%, Data dump/Changli/Changli.md's own "Minor Fortes (Total)" section) had no
+// block at all — both her Inherent Skills were already modeled (changli.inherent.sweeping-force-*).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -213,6 +217,20 @@ export const CHANGLI_BLOCKS = [
     // expose, since nothing else landed inside that window).
     effects: [{ stat: 'atkPct', value: 25, scopedToBlockId: 'changli.forte.flaming-sacrifice-2', source: 'self-kit' }],
     note: 'Fiery Feather: self ATK +25% on the 2nd, post-Ultimate Forte Heavy ATK (Flaming Sacrifice) within 10s of Liberation — consuming it ends Fiery Feather early, not modeled (irrelevant here since it\'s now scoped to the exact real cast it buffs).',
+  },
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit Rate+8%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus unlocked via Forte-tree ascension, previously had no block anywhere
+  // in this file, same class of gap as every other converted character's own missing Minor Fortes.
+  {
+    id: 'changli.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Changli/Changli.md). Unconditional, always active.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for
