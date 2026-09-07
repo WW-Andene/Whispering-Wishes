@@ -21,4 +21,15 @@ describe('kitRulesRegistry — deriveRotationFromKitRules', () => {
     ];
     expect(derived).toEqual(expected);
   });
+
+  it('derives Lucilla\'s real rotation from her decision layer, plus the curated Echo/Outro tail her state machine does not model', () => {
+    const derived = deriveRotationFromKitRules('Lucilla', CHARACTER_ROTATIONS['Lucilla']);
+    expect(derived).not.toBeNull();
+    const curated = CHARACTER_ROTATIONS['Lucilla'];
+    const expected = [
+      ...curated.slice(0, 5).map(s => ({ type: s.type, skill: s.skill })),
+      ...curated.slice(5), // Echo/Outro tail, passed through with its real note/duration fields intact
+    ];
+    expect(derived).toEqual(expected);
+  });
 });

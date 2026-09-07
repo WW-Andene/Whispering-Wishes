@@ -22,9 +22,11 @@
 
 import { runDecisionRotation } from './decisionEngine.js';
 import { createHiyukiInitialState, HIYUKI_PRIORITY_RULES } from '../../characterBlocks/hiyuki.kitRules.js';
+import { createLucillaInitialState, LUCILLA_PRIORITY_RULES } from '../../characterBlocks/lucilla.kitRules.js';
 
 const KIT_RULES_BY_CHARACTER = {
   Hiyuki: { createInitialState: createHiyukiInitialState, rules: HIYUKI_PRIORITY_RULES },
+  Lucilla: { createInitialState: createLucillaInitialState, rules: LUCILLA_PRIORITY_RULES },
 };
 
 /**
