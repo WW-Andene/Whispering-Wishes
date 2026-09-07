@@ -60,12 +60,16 @@ describe('triggerEngine parity — Encore', () => {
     expect(fired.has('encore.basic.cosmos-frolicking')).toBe(true);
   });
 
-  it('S3\'s buff category matches a real damage block category (was heavyDmg — a dead/no-op buff, since no Encore damage block uses that category)', () => {
+  // Updated 2026-09-07 (completeness pass): heavyDmg IS now a real, used category (base Heavy ATK/
+  // Cosmos: Heavy Attack blocks were added this same pass, both genuinely unused in her modeled
+  // rotation) — the "heavyDmg has no matching block" premise no longer holds, but that's irrelevant
+  // to S3's own correctness (its cast-scoped trigger only ever fires on the Cosmos Rupture cast, an
+  // instant no other block shares), so only the libDmg-match assertion is still meaningful.
+  it("S3's buff category matches a real damage block category (libDmg, corrected from a stale heavyDmg)", () => {
     const s3 = ENCORE_BLOCKS.find(b => b.id === 'encore.chain.s3');
     expect(s3.effects[0].stat).toBe('libDmg');
     const usedCategories = new Set(ENCORE_BLOCKS.filter(b => b.kind === 'damage' && b.damage?.category).map(b => b.damage.category));
     expect(usedCategories.has(s3.effects[0].stat)).toBe(true);
-    expect(usedCategories.has('heavyDmg')).toBe(false);
   });
 
   it("Intro (Woolies Helpers) is skillDmg-categorized (was uncategorized) — no override text names a different category", () => {

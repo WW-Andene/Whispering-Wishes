@@ -16,6 +16,15 @@
 // CHARACTER_ROTATIONS note). Cosmos: Rampage's own real 4s cooldown was tested and REVERTED — see
 // that block's own note for why applying it actually broke her computed damage (a real engine
 // step-timing limitation, not a data error).
+//
+// Completeness pass 2026-09-07 (continuing the same character-by-character pass): Minor Fortes
+// (Fusion DMG+12%, ATK%+12%) had no block at all — both her Inherent Skills were already modeled.
+// Also added her whole base (non-Cosmos-Rave) kit — Wooly Attack, base Heavy ATK, Mid-air, base
+// Dodge Counter, Flaming Woolies/Energetic Welcome, Cloudy Frenzy, plus the Cosmos-Rave Heavy
+// Attack/Dodge Counter variants — all real, sourced SKILL_MULTIPLIERS rows with no block anywhere,
+// none used in CHARACTER_ROTATIONS (her modeled rotation goes straight into Cosmos Rave and stays
+// there the whole time, per its own opening step), same convention as every other converted
+// character's own unused-but-sourced blocks.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -112,6 +121,74 @@ export const ENCORE_BLOCKS = [
     note: 'AoE burn field around the Skill target, every 1.5s for 6s (4 ticks) — no team buff, pure DoT proc.',
   },
 
+  // Added 2026-09-07 (completeness pass): her whole base (non-Cosmos-Rave) kit, previously entirely
+  // absent — real, sourced SKILL_MULTIPLIERS rows, none in CHARACTER_ROTATIONS (her modeled rotation
+  // enters Cosmos Rave right after Intro and never reverts — see file header).
+  {
+    id: 'encore.basic.wooly-attack',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Wooly Attack Stage 1-4 → Wooly Strike' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('55.66% → 66.20% → 66.30%×2 → 38.27%×4 → 238.57%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base 4-stage Basic ATK combo into a timed-press Wooly Strike finisher. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'encore.heavy.standard',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('187.08%'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Base Heavy Attack. No override text — kept heavyDmg. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'encore.midair.plunging-attack',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Plunging Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('123.26%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base Mid-air Attack. No override text — kept basicDmg per this schema\'s established mid-air convention. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'encore.basic.dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('125.94%×2'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base Dodge Counter. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'encore.skill.flaming-woolies',
+    source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Flaming Woolies → Energetic Welcome' },
+    timing: { cooldown: 10 }, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('76.61%×8 + 339.16%'), category: 'skillDmg', basis: 'ATK' },
+    note: 'Base Resonance Skill, chains into Energetic Welcome if pressed again immediately. Real 10s cooldown per the dump. Not in CHARACTER_ROTATIONS — her modeled rotation always uses the Cosmos: Rampage replacement instead.',
+  },
+  {
+    id: 'encore.forte.cloudy-frenzy',
+    source: SOURCE, kind: 'damage', section: 'Forte',
+    trigger: { type: 'cast', on: 'Forte:Heavy ATK: Cloudy Frenzy' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('334.00%'), category: 'libDmg', basis: 'ATK' },
+    note: 'Base-kit version of Cosmos Rupture, same full-Mayhem/70%-DMG-reduction-channel mechanic outside Cosmos Rave, counted as Resonance Liberation DMG. Not in CHARACTER_ROTATIONS — her modeled rotation always reaches full Mayhem during Cosmos Rave instead, using encore.forte.cosmos-rupture.',
+  },
+  {
+    id: 'encore.heavy.cosmos-heavy-attack',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Cosmos: Heavy Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('217.58%'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Enhanced Heavy ATK during Cosmos Rave (replaces Standard), counted as Heavy Attack DMG per its own kit text. Not in CHARACTER_ROTATIONS — her modeled rotation always reaches full Mayhem via Skill/Basic ATK before Heavy Attack comes up, going straight to Cosmos Rupture instead.',
+  },
+  {
+    id: 'encore.basic.cosmos-dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Cosmos: Dodge Counter' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('65.99%×4'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Enhanced Dodge Counter during Cosmos Rave (replaces Standard), counted as Basic Attack DMG per its own kit text. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'encore.selfbuff.woolies-cheer-dance',
@@ -131,6 +208,19 @@ export const ENCORE_BLOCKS = [
     condition: { requiresStance: 'HP above 70%' },
     effects: [{ stat: 'allDmg', value: 10, source: 'self-kit' }],
     note: "Inherent Skill Angry Cosmos: +10% DMG dealt during Resonance Liberation Cosmos Rave while Encore's HP is above 70% — duration approximated to Cosmos Rave's own 10s window since the source gives no separate timer (same approximation already flagged in CHAR_BUFF_TABLE's own condition text).",
+  },
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Fusion DMG+12%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus, previously had no block anywhere in this file.
+  {
+    id: 'encore.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'elemDmg', value: 12, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Fusion DMG+12%, ATK%+12% (Data dump/Encore/Encore.md). Unconditional, always active.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for
