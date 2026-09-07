@@ -112,4 +112,28 @@ export const JIANXIN_BLOCKS = [
     damage: { hits: [{ atkPct: 556.67 }], category: 'heavyDmg', basis: 'ATK' },
     note: 'Truth from Within: during the Primordial Chi Spiral channel, after performing Pushing Punch, Jianxin can use an enhanced Special Chi Counter once every 5s — a discrete extra proc dealing 556.67% ATK Aero DMG (counted as Heavy Attack DMG), modeled directly with the real sourced figure instead of the flat totalMult approximation the source table itself zeroed out (same "discrete proc, not a modifier" treatment as Yinlin\'s S6 Furious Thunder). Also grants a bonus Zhoutian Progress 4 shield, not modeled.',
   },
+
+  // Added 2026-09-07 (completeness pass): Minor Fortes and Inherent Skill Formless Release had no
+  // block anywhere in this file. Inherent Skill Reflection (Primordial Chi Spiral's own shield +20%)
+  // correctly has no block — pure defensive shield-value increase, zero DPS component, same reasoning
+  // already used for jianxin.chain.s6's own "bonus shield, not modeled" note.
+  {
+    id: 'jianxin.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Jianxin/Jianxin.md line 104-105). Unconditional, always active.',
+  },
+  {
+    id: 'jianxin.inherent.formless-release',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'libDmg', value: 20, scopedToBlockId: 'jianxin.liberation.purification-force-field', source: 'self-kit' }],
+    note: "Inherent Skill Formless Release: Purification Force Field DMG+20% (Data dump/Jianxin/Jianxin.md line 81) — a real, unconditional, always-active DMG bonus that was entirely unreferenced anywhere in this file before this pass. Scoped to jianxin.liberation.purification-force-field only, since it names that one specific move rather than the whole libDmg category (same scoping discipline as jianxin.chain.s4 just above, which targets the same block).",
+  },
 ];
