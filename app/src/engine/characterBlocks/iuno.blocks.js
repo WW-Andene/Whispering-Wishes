@@ -77,6 +77,76 @@ export const IUNO_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('100%'), basis: 'ATK' },
   },
 
+  // Added 2026-09-07 (full-kit completeness re-pass): 8 real, sourced SKILL_MULTIPLIERS rows with no
+  // block anywhere in this file — none used in her modeled CHARACTER_ROTATIONS (which enters Lunar
+  // Cycle on Intro and stays there, so her pre-Cycle Basic ATK/Skill/Dodge Counter rows and the
+  // New-Moon-to-Half-Moon Flux never fire), same "add unused base kit for completeness" convention
+  // already used for Encore/Camellya/Hiyuki earlier this session.
+  {
+    id: 'iuno.basic.moonring',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Moonring 1-3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('87.68% → 46.06%×2+47.46% → 87.98%×2+90.65%'), basis: 'ATK' },
+    note: 'Standard combo before entering the Lunar Cycle; not reclassified — plain Basic ATK DMG. Unused in the modeled rotation, which enters Lunar Cycle on Intro.',
+  },
+  {
+    id: 'iuno.midair.midair-attack',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Mid-air Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('53.68%×2'), basis: 'ATK' },
+    note: 'Plunging attack, 30 STA cost. Unused in the modeled rotation.',
+  },
+  {
+    id: 'iuno.dodgecounter.moonring-dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Moonring Dodge Counter' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('82.08%×2+84.57%'), basis: 'ATK' },
+    note: 'Dodge Counter while in Half Moon (or outside Lunar Cycle). Unused in the modeled rotation.',
+  },
+  {
+    id: 'iuno.dodgecounter.moonbow-dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Moonbow Dodge Counter' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('103.39%×3'), category: 'libDmg', basis: 'ATK' },
+    note: 'Dodge Counter while in New Moon; counted as Resonance Liberation DMG. Unused in the modeled rotation.',
+  },
+  {
+    id: 'iuno.skill.pulse-of-origins',
+    source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Pulse of Origins' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('18.65%×7 + 130.52%'), category: 'skillDmg', basis: 'ATK' },
+    note: 'Base dash Skill, can transform into different follow-ups depending on her state. Unused in the modeled rotation, which enters Lunar Cycle before this base cast would be needed.',
+  },
+  {
+    id: 'iuno.skill.closing-refrain',
+    source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Closing Refrain' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('140.73%×2 + 145.00%'), category: 'skillDmg', basis: 'ATK' },
+    note: 'Skill replacement when NOT in Lunar Cycle; casting it activates Lunar Cycle. Unused in the modeled rotation, which enters Lunar Cycle via the Liberation cast instead.',
+  },
+  {
+    id: 'iuno.skill.unfinished-refrain',
+    source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Unfinished Refrain' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('140.73%×2 + 145.00%'), category: 'skillDmg', basis: 'ATK' },
+    note: "Skill replacement while in Lunar Cycle - Half Moon; shares Closing Refrain's cooldown. Unused in the modeled rotation, which stays in New Moon (Arc Beyond the Edge is the New Moon Skill replacement).",
+  },
+  {
+    id: 'iuno.heavy.flux-moonring',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Flux: Moonring' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('79.18%×4'), category: 'libDmg', basis: 'ATK' },
+    note: 'Heavy ATK replacement in New Moon (25 STA) — switches New Moon -> Half Moon; counted as Resonance Liberation DMG. Unused in the modeled rotation, which stays in New Moon throughout (only Flux: Moonbow, the reverse switch, is cast).',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'iuno.outro.gloom-to-gleam-buff',

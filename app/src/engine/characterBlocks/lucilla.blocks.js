@@ -82,6 +82,75 @@ export const LUCILLA_BLOCKS = [
     note: 'Interruption-immune AoE finisher, fully restores Concerto Energy, ends Reminiscence. Glacio Chafe mode: considered Basic Attack DMG (modeled). Echo mode: same value, considered Echo Skill DMG instead — not separately fired.',
   },
 
+  // Added 2026-09-07 (full-kit completeness re-pass): 7 real, sourced SKILL_MULTIPLIERS rows with no
+  // block anywhere in this file — none used in her modeled CHARACTER_ROTATIONS (which enters
+  // Reminiscence on the Liberation cast and never lands a pre-Reminiscence Basic ATK/Mid-air/Dodge
+  // Counter, the base (non-Spotlight) Skill release, or a Reminiscence-state Mid-air/Dodge Counter),
+  // same "add unused base kit for completeness" convention already used for Encore/Camellya/Hiyuki/
+  // Iuno earlier this session.
+  {
+    id: 'lucilla.basic.snapshot',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Snapshot Stage 1-3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // Commendable (Perfect Focus) variant used as the representative value, matching the row's own
+    // "hold for a stronger finisher" framing and this file's own precedent of using the stronger/
+    // canonical variant when a row names alternatives (see lucilla.skill.spotlight above).
+    damage: { hits: parseSkillMultiplierHits('59.29% → 26.89%+40.34% → 235.27%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Standard combo before entering Reminiscence; not reclassified — plain Basic ATK DMG. Unused in the modeled rotation, which enters Reminiscence on the Liberation cast.',
+  },
+  {
+    id: 'lucilla.midair.attack',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('86.29%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Unused in the modeled rotation.',
+  },
+  {
+    id: 'lucilla.dodgecounter.standard',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('67.83%+82.90%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Unused in the modeled rotation.',
+  },
+  {
+    id: 'lucilla.skill.phantom-frame-compensate',
+    source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Phantom Frame' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // Row 'Phantom Frame / Compensate / Spotlight' has 3 alternative values — the Compensate variant
+    // (early/missed release) is used here as the representative non-Spotlight value; Phantom Frame
+    // itself (13.26%x3) is the un-held tap-cast, folded into the row's base name.
+    damage: { hits: parseSkillMultiplierHits('249.07%'), category: 'skillDmg', basis: 'ATK' },
+    note: 'An early/missed Focus Ring release triggers Compensate (reduces Skill CD by 8s, chains into Basic Attack Stage 2) instead of the perfect-timed Spotlight (lucilla.skill.spotlight above). Unused in the modeled rotation, which always lands the perfect release.',
+  },
+  {
+    id: 'lucilla.basic.midair-reminiscence',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Mid-air Attack - Reminiscence' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('110.94%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Reminiscence-state Mid-air Attack replacement, chains into Tracing Forms Stage 2. Unused in the modeled rotation (no mid-air segment).',
+  },
+  {
+    id: 'lucilla.basic.dodge-counter-reminiscence',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Dodge Counter - Reminiscence' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('115.55%+141.22%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Reminiscence-state Dodge Counter replacement, chains into Tracing Forms Stage 3. Unused in the modeled rotation.',
+  },
+  {
+    id: 'lucilla.intro.clip-it-hard-cut',
+    source: SOURCE, kind: 'damage', section: 'Intro',
+    trigger: { type: 'cast', on: 'Intro:Clip It: Hard Cut' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('149.41%'), basis: 'ATK' },
+    note: 'Replaces Clip It while already in Reminiscence. Unused in the modeled rotation, which swaps in from neutral (Reminiscence is not yet active on Intro).',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE, plus a real Liberation self-buff sourced from
   //    CHARACTER_ROTATIONS' own note text — entirely missing from CHAR_BUFF_TABLE['Lucilla'].selfBuffs) ──
   {

@@ -150,6 +150,76 @@ export const HIYUKI_BLOCKS = [
     note: '2nd Ultimate; base value used. Real DMG also scales +795.24% additional per Snowforged Blade stack consumed (up to 3 stacks, +2385.72% max) — not modeled (no stacking-scalar field for a per-resource-unit damage bonus). Ends Foreclaimed Self.',
   },
 
+  // Added 2026-09-07 (full-kit completeness re-pass): 8 real, sourced SKILL_MULTIPLIERS rows with no
+  // block anywhere in this file — none used in her modeled CHARACTER_ROTATIONS (which never casts the
+  // base Mid-air/Dodge Counter variants, her pre-Ultimate Resonance Skill, or Foreclaimed Self's
+  // Stage 4-5/Heavy/Mid-air/Dodge Counter follow-ups), same "add unused base kit for completeness"
+  // convention already used for Encore/Camellya earlier this session.
+  {
+    id: 'hiyuki.basic.midair-present-self',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Mid-air Attack - Present Self' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('128.18%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Not reclassified — plain Basic ATK DMG. Unused in the modeled rotation.',
+  },
+  {
+    id: 'hiyuki.basic.dodge-counter-present-self',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Dodge Counter - Present Self' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('173.75%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Not reclassified — plain Basic ATK DMG. Unused in the modeled rotation.',
+  },
+  {
+    id: 'hiyuki.skill.resonance-skill-present-self',
+    source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Resonance Skill - Present Self' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('24.50%×4+97.98%'), category: 'skillDmg', basis: 'ATK' },
+    note: 'Present Self\'s Resonance Skill (pre-Foreclaimed); enhances the next Basic ATK Stage 3 to restore extra Dedication. Unused in the modeled rotation, which enters Foreclaimed Self before this would ever be cast.',
+  },
+  {
+    id: 'hiyuki.liberation.foreclaimed-self-stage4-5',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Foreclaimed Self Stage 4-5' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('29.93%×5 → 12.17%+109.47%'), category: 'libDmg', basis: 'ATK' },
+    note: 'Continuation of the Foreclaimed Self Basic ATK combo past Stage 3. Considered Resonance Liberation DMG. Unused in the modeled rotation, which cancels Stage 3\'s endlag into Skill/Dodge each time rather than continuing to Stage 4-5.',
+  },
+  {
+    id: 'hiyuki.liberation.heavy-foreclaimed-self',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Heavy Attack - Foreclaimed Self' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('107.16%'), category: 'libDmg', basis: 'ATK' },
+    note: 'Standard (non-Bitterfrost) Heavy ATK in Foreclaimed Self; considered Resonance Liberation DMG. Unused in the modeled rotation, which only ever reaches Bitterfrost (the Whiteout-Bitterfrost-consuming Heavy ATK finisher, hiyuki.liberation.bitterfrost-foreclaimed-self above).',
+  },
+  {
+    id: 'hiyuki.liberation.midair-foreclaimed-self-stage1-2',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Mid-air Attack - Foreclaimed Self Stage 1-2' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('28.83%×2+38.43% → 26.09%×4'), category: 'libDmg', basis: 'ATK' },
+    note: 'Considered Resonance Liberation DMG; Stage 2 applies Glacio Chafe. Unused in the modeled rotation (no mid-air segment).',
+  },
+  {
+    id: 'hiyuki.liberation.midair-plunging-foreclaimed-self',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Mid-air Plunging Attack - Foreclaimed Self' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('111.60%'), category: 'libDmg', basis: 'ATK' },
+    note: 'Considered Resonance Liberation DMG. Unused in the modeled rotation (no mid-air segment).',
+  },
+  {
+    id: 'hiyuki.liberation.dodge-counter-foreclaimed-self',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Dodge Counter - Foreclaimed Self' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('81.77%×2'), category: 'libDmg', basis: 'ATK' },
+    note: 'Considered Resonance Liberation DMG. Unused in the modeled rotation (her only Dodge Counter step enters Iai Stance rather than landing this attack, per CHARACTER_ROTATIONS\' own step note).',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'hiyuki.outro.snowlight-blessing',

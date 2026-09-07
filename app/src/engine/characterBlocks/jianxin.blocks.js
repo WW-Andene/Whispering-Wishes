@@ -37,6 +37,34 @@ export const JIANXIN_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('69.46% → 26.64%×2+79.90% → 41.75%×4 → 113.40%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Builds Chi toward the 120 max.',
   },
+
+  // Added 2026-09-07 (full-kit completeness re-pass): 3 real, sourced SKILL_MULTIPLIERS rows with no
+  // block anywhere in this file — none used in her modeled CHARACTER_ROTATIONS, same "add unused base
+  // kit for completeness" convention already used for Encore/Camellya/Hiyuki/Iuno/Lucilla this session.
+  {
+    id: 'jianxin.heavy.standard',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('126.07%'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Unused in the modeled rotation.',
+  },
+  {
+    id: 'jianxin.midair.plunging-kick',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Plunging Kick' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('123.27%'), basis: 'ATK' },
+    note: 'Unused in the modeled rotation.',
+  },
+  {
+    id: 'jianxin.dodgecounter.standard',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('40.83%×2+163.29%'), basis: 'ATK' },
+    note: 'Unused in the modeled rotation.',
+  },
   {
     id: 'jianxin.skill.calming-air',
     source: SOURCE, kind: 'damage', section: 'Skill',
