@@ -8464,11 +8464,26 @@ const SKILL_ICONS = {
     'Rising Fortune and Ebbing Evil': './characters/jingran/cctRq3Yp-jingran-skill-Y.webp', // Outro Skill
   },
 };
+// Mid-air Attack / Dodge Counter / Plunging Attack moves very often have no dedicated wiki icon
+// of their own across the roster (they're minor combo extensions, not a named Resonance Skill/
+// Forte/etc.) — auditing every character's SKILL_MULTIPLIERS rows against SKILL_ICONS found 138
+// such rows resolving to no icon at all. Rather than hand-adding a redundant alias key per
+// character for each of these (the same fix applies identically everywhere), a direct-match miss
+// on one of these move kinds falls back to that character's own Basic ATK icon — the real Basic
+// ATK icon that already resolves correctly for that character's actual Basic ATK rows — instead
+// of rendering with no icon.
+const isAuxComboMove = (skillName) => /mid-air|dodge counter|plunging/i.test(skillName);
+
 const getSkillIcon = (name, skillName) => {
   const table = SKILL_ICONS[name];
   if (!table) return null;
   const key = Object.keys(table).find(k => skillName.includes(k));
-  return key ? table[key] : null;
+  if (key) return table[key];
+  if (isAuxComboMove(skillName)) {
+    const basicRow = (SKILL_MULTIPLIERS[name] || []).find(([type, rowSkillName]) => type === 'Basic ATK' && !isAuxComboMove(rowSkillName));
+    if (basicRow) return getSkillIcon(name, basicRow[1]);
+  }
+  return null;
 };
 
 // [SECTION:CHAIN_NODE_ICONS] — Per-character S1-S6 Resonance Chain sequence-node icons.
