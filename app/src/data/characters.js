@@ -7948,13 +7948,19 @@ const SKILL_ICONS = {
   // (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Broadblade.webp icon.
   'Lupa': {
     'Flaming Star': './characters/lupa/RGn44dhM-skill-broadblade.webp',
+    'Stage 1': './characters/lupa/RGn44dhM-skill-broadblade.webp', // SKILL_MULTIPLIERS' individual Basic ATK combo-stage rows (Flaming Star's real name), same icon
+    'Stage 2': './characters/lupa/RGn44dhM-skill-broadblade.webp',
+    'Stage 3': './characters/lupa/RGn44dhM-skill-broadblade.webp',
+    'Stage 4': './characters/lupa/RGn44dhM-skill-broadblade.webp',
     'Standard': './characters/lupa/RGn44dhM-skill-broadblade.webp',
     'Stage 1-2': './characters/lupa/RGn44dhM-skill-broadblade.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    "Wolf's Gnawing": './characters/lupa/RGn44dhM-skill-broadblade.webp', // Heavy Attack's 50-Wolflame replacement, no dedicated icon
     'Firestrike': './characters/lupa/RGn44dhM-skill-broadblade.webp', // Mid-air Attack, no dedicated wiki icon — generic weapon icon
     "Wolf's Claw": './characters/lupa/RGn44dhM-skill-broadblade.webp', // Forte-enhanced Heavy ATK, same generic weapon icon
     'Starfall': './characters/lupa/RGn44dhM-skill-broadblade.webp',
     "Shewolf's Hunt": './characters/lupa/5WbyTxzD-skill-shewolfshunt.webp',
     'Feral Fang': './characters/lupa/5WbyTxzD-skill-shewolfshunt.webp', // same Resonance Skill's follow-up, same wiki icon
+    'Set the Arena Ablaze': './characters/lupa/5WbyTxzD-skill-shewolfshunt.webp', // "Resonance Skill slot" per the Data dump — a pseudo-Coordinated-Attack cast from the same Skill
     'Ignis Lupa': './characters/lupa/S7W3d25X-skill-ignislupa.webp',
     'Dance With the Wolf': './characters/lupa/S7W3d25X-skill-ignislupa.webp', // Forte Circuit's own upgraded Skill (and its Climax variant, matched via substring), same icon
     'Fire-Kissed Glory': './characters/lupa/mrPk9FF3-skill-firekissedglory.webp',
