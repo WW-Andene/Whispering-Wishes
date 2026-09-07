@@ -8180,12 +8180,15 @@ const SKILL_ICONS = {
   'Hiyuki': {
     'Present Self Stage': './characters/_shared/YTdT2Yxf-skill-sword.webp', // Basic ATK — generic Sword icon (the wiki's own File:Skill_Flaming_Sakura_Blade_Art.png resolves to this same asset)
     'Foreclaimed Self Stage': './characters/_shared/YTdT2Yxf-skill-sword.webp',
+    'Heavy Attack - Foreclaimed Self': './characters/_shared/YTdT2Yxf-skill-sword.webp', // base Foreclaimed-Self Heavy Attack (not Forte-gated, unlike Frost Splinter/Bitterfrost below), same generic weapon icon
     'Iai Stance': './characters/_shared/YTdT2Yxf-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo ('Iai Stance x3'), same icon
+    'Iai': './characters/_shared/YTdT2Yxf-skill-sword.webp', // SKILL_MULTIPLIERS' bare name for "Basic Attack - Iai", same generic weapon icon
     'Frost Splinter': './characters/hiyuki/9HCF6LL6-Hiyuki-skill-forte.webp', // Heavy ATK, Forte-gated — Everfrost Dominion
     'Bitterfrost': './characters/hiyuki/9HCF6LL6-Hiyuki-skill-forte.webp',
     'Glacio Bite': './characters/hiyuki/9HCF6LL6-Hiyuki-skill-forte.webp', // Forte Circuit
     'Foreclaiming': './characters/hiyuki/hJgrR7gJ-Hiyuki-skill-liberation.webp', // Resonance Liberation
     'Frostblight': './characters/hiyuki/7Jq5CD3r-Hiyuki-skill-res-Skill.webp', // Resonance Skill
+    'Resonance Skill - Present Self': './characters/hiyuki/7Jq5CD3r-Hiyuki-skill-res-Skill.webp', // SKILL_MULTIPLIERS' generic phrasing for Present Self's base Frostblight cast, same icon
     'Frostedge': './characters/hiyuki/NRt7X9T-Hiyuki-skill-intro.webp', // Intro Skill
     'Snowlight Blessing': './characters/hiyuki/Ng7S6X8j-Hiyuki-skill-outro.webp', // Outro Skill
   },
