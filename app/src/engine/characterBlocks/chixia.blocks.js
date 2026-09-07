@@ -14,6 +14,12 @@
 // True Sight: Capture), but her modeled rotation only casts it once, so — unlike Changli's case —
 // adding its real cooldown here doesn't risk misrepresenting a legitimate banked-charge double-use;
 // safe to model directly.
+//
+// Completeness pass 2026-09-07 (continuing the same character-by-character pass): Minor Fortes
+// (Fusion DMG+12%, ATK%+12%) had no block at all. Also found a real, significant gap in her
+// Inherent Skill Scorching Magazine — "Max Thermobaric Bullets +10; Boom Boom DMG +50%" — only the
+// resource-cap half is utility-only; the +50% DMG half is a real, sourced, scoped DMG Multiplier on
+// her single hardest-hitting move (chixia.forte.boom-boom, 437.39% base) that had no block at all.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -121,6 +127,42 @@ export const CHIXIA_BLOCKS = [
     target: { scope: 'self' },
     effects: [{ stat: 'atkPct', value: 1, stacking: 'stacking', maxStacks: 30, source: 'self-kit' }],
     note: 'Inherent Skill Numbingly Spicy!: ATK +1% per Thermobaric Bullet hit during DAKA DAKA!, stacking up to 30x (30% ATK at max stacks), 10s per-stack duration — modeled as per-stack stacking (matching the real mechanic) rather than a flat 30%, per this table\'s own comment convention.',
+  },
+  // Added 2026-09-07 (completeness pass): Inherent Skill Scorching Magazine's real, sourced DMG
+  // Multiplier half — "Boom Boom DMG +50%" — had no block at all despite being a significant bonus
+  // on her single hardest-hitting move. Scoped via scopedToBlockId to chixia.forte.boom-boom only.
+  {
+    id: 'chixia.inherent.scorching-magazine-mult',
+    source: SOURCE, kind: 'buff', section: 'Forte',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'totalMult', value: 50, scopedToBlockId: 'chixia.forte.boom-boom', source: 'self-kit' }],
+    note: 'Inherent Skill Scorching Magazine (DMG half): Boom Boom DMG Multiplier +50% — scoped to chixia.forte.boom-boom only. See chixia.inherent.scorching-magazine-cap for the Max Thermobaric Bullets +10 half.',
+  },
+  // Added 2026-09-07 (completeness pass): the OTHER real half of Scorching Magazine — Max
+  // Thermobaric Bullets +10 (50->60 cap) — a pure resource-cap increase, no DPS stat to hold. Boom
+  // Boom's own trigger threshold (30 bullets fired) is unaffected by the cap raise, per the dump's
+  // own text ("if 30 Thermobaric Bullets have been fired... casts Boom Boom"), so this doesn't change
+  // any already-modeled block's behavior — kept as a separate documented-inert block for completeness.
+  {
+    id: 'chixia.inherent.scorching-magazine-cap',
+    source: SOURCE, kind: 'utility', section: 'Forte',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Inherent Skill Scorching Magazine (resource half): Max Thermobaric Bullets +10 (cap 50->60). Pure resource-cap increase, no DPS component — Boom Boom\'s own 30-bullet trigger threshold is unaffected by the raised cap.',
+  },
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Fusion DMG+12%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus unlocked via Forte-tree ascension, previously had no block anywhere
+  // in this file, same class of gap as every other converted character's own missing Minor Fortes.
+  {
+    id: 'chixia.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'elemDmg', value: 12, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Fusion DMG+12%, ATK%+12% (Data dump/Chixia/Chixia.md). Unconditional, always active.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 audit comment for
