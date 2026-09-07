@@ -350,8 +350,8 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   // request, Sequence gets more of the column's height (and, below, a raised node-size cap) so
   // its nodes render bigger instead of being capped to the same share as the other two rows.
   const leftTotalH = rh - 2 * qGap;
-  const statsH = Math.floor(leftTotalH * 0.30);
-  const skillsH = Math.floor(leftTotalH * 0.32);
+  const statsH = Math.floor(leftTotalH * 0.28);
+  const skillsH = Math.floor(leftTotalH * 0.36); // raised from 0.32 to fit bigger skill-tree nodes
   const seqH = leftTotalH - statsH - skillsH; // remainder — the largest of the three
   const statsY = ry, skillsY = statsY + statsH + qGap, seqY = skillsY + skillsH + qGap;
 
@@ -446,57 +446,55 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
       { k: 'L', l: 'Resonance Liberation' }, { k: 'I', l: 'Intro' },
     ];
     const n = cols.length;
-    const mainSz = 48; // PerfectSuite tertiary-adjacent(62)->48 primary: shrunk from the old flat row's
-    // 62px badges to leave room for the pip chain above/below without the column overflowing qh.
-    const pipSz = 12; // PerfectSuite tertiary
-    const pipGap = 10;
+    // Redesigned per feedback on the first pass: that version's small main icon plus 4 decorative
+    // filled "pip" dots per column looked like fake, meaningless tree nodes. This version drops
+    // the pips entirely — every remaining node is real: the main node is the character's actual
+    // move icon (now much larger), and the only other node per column is a single dim "further
+    // nodes" ring at the top, echoing the reference art's own locked top-of-branch nodes instead
+    // of inventing filled ones that don't correspond to anything.
+    const mainSz = 84; // PerfectSuite primary-adjacent: real, prominent node — was 48 with fake pips around it
+    const capR = 15; // the single dim "more skill tree above" ring, same role the reference's locked padlock nodes play
+    const capGap = 18;
     const colGap = 16; // PerfectSuite primary
     const colW = (cw - (n - 1) * colGap) / n;
     const labelH = 22;
-    const midY = qy + hOff + (qh - hOff - labelH) * 0.40; // main nodes sit above center, leaving
-    // more room below the Forte column for its extra Outro placeholder than above it.
-    const pipStep = pipSz + pipGap;
-
-    const drawPip = (cx, cy) => {
-      ctx.fillStyle = 'rgba(237,175,24,0.85)';
-      ctx.beginPath(); ctx.arc(cx, cy, pipSz / 2, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.arc(cx, cy, pipSz / 2, 0, Math.PI * 2); ctx.stroke();
-    };
+    const midY = qy + hOff + (qh - hOff - labelH) * 0.44;
 
     cols.forEach((s, i) => {
       const isForte = s.k === 'F';
       const cx = qx + i * (colW + colGap) + colW / 2;
-      const topYs = [midY - mainSz / 2 - pipGap - pipStep, midY - mainSz / 2 - pipGap];
-      const botYs = isForte
-        ? [midY + mainSz / 2 + pipGap]
-        : [midY + mainSz / 2 + pipGap, midY + mainSz / 2 + pipGap + pipStep];
-      const outroR = mainSz * 0.42; // raised from 0.34 — too faint/small to read as its own node at the smaller size
-      const outroY = isForte ? (botYs[0] + pipStep + outroR - pipSz / 2) : null;
+      const capY = midY - mainSz / 2 - capGap - capR;
+      const outroR = mainSz * 0.32;
+      const outroY = isForte ? (midY + mainSz / 2 + capGap + outroR) : null;
 
       // Connector line drawn first so every node renders on top of it.
-      const lineTop = topYs[0];
-      const lineBottom = isForte ? outroY + outroR : botYs[botYs.length - 1];
+      const lineTop = capY - capR;
+      const lineBottom = isForte ? outroY + outroR : midY + mainSz / 2;
       ctx.strokeStyle = 'rgba(237,175,24,0.35)'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(cx, lineTop); ctx.lineTo(cx, lineBottom); ctx.stroke();
 
-      topYs.forEach(y => drawPip(cx, y));
-      botYs.forEach(y => drawPip(cx, y));
+      // Top cap — a single dim, unfilled ring (not a "filled" node): it represents the rest of
+      // this character's real skill tree that this card doesn't track, same honest treatment the
+      // Outro placeholder below gets, not a decorative stand-in pretending to be unlocked content.
+      ctx.fillStyle = 'rgba(255,255,255,0.06)';
+      ctx.beginPath(); ctx.arc(cx, capY, capR, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cx, capY, capR, 0, Math.PI * 2); ctx.stroke();
 
-      // Main node — the real move icon, same circular badge treatment the old flat row used.
+      // Main node — the real move icon, sized to actually read as the tree's real content.
       ctx.fillStyle = 'rgba(237,175,24,0.14)';
       ctx.beginPath(); ctx.arc(cx, midY, mainSz / 2, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = 'rgba(237,175,24,0.5)'; ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(237,175,24,0.6)'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(cx, midY, mainSz / 2, 0, Math.PI * 2); ctx.stroke();
       const icon = skillIconImgs[s.k];
       if (icon) {
-        const iconPad = 8; const iconD = mainSz - iconPad * 2;
+        const iconPad = 12; const iconD = mainSz - iconPad * 2;
         ctx.save(); ctx.beginPath(); ctx.arc(cx, midY, iconD / 2, 0, Math.PI * 2); ctx.clip();
         ctx.drawImage(icon, cx - iconD / 2, midY - iconD / 2, iconD, iconD);
         ctx.restore();
       } else {
-        ctx.fillStyle = GOLD; ctx.font = 'bold 20px sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(s.k, cx, midY + 7); ctx.textAlign = 'left';
+        ctx.fillStyle = GOLD; ctx.font = 'bold 30px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(s.k, cx, midY + 10); ctx.textAlign = 'left';
       }
 
       if (isForte) {
@@ -508,7 +506,7 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
         ctx.fillText('Outro', cx, outroY + 5); ctx.textAlign = 'left';
       }
 
-      ctx.fillStyle = NEUTRAL; ctx.font = '600 13px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = NEUTRAL; ctx.font = '600 14px sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(s.l, cx, qy + qh - 4);
       ctx.textAlign = 'left';
     });
