@@ -44,6 +44,16 @@
 // but CHARACTER_ROTATIONS['Chisa'] never casts it (only Serrated Loop — the same bug class d/c fix
 // already documented above for why the Unseen-Snare-application blocks were retargeted off it) —
 // correctly has no block at all, so there's no block to attach that cooldown to.
+//
+// Completeness pass 2026-09-07 (continuing the same character-by-character pass): Minor Fortes
+// (Crit Rate+8%, ATK%+12%) had no block at all. Also found a real, previously partial gap:
+// chisa.selfbuff.reverberance-return is actually her Inherent Skill "All Ends Here" ("casting Intro
+// OR Liberation grants +20% Havoc DMG/Healing Bonus for 12s" — Data dump/Chisa/Chisa.md), but was
+// only ever wired to the Intro cast (sourced back when only CHARACTER_ROTATIONS' Intro step note was
+// read, not the Inherent Skill's own full text). Liberation:Moment of Nihility is a real, always-cast
+// step in the modeled rotation too — added a 2nd instance riding that cast (stacking:'refresh' means
+// this correctly extends/restacks the same buff rather than double-counting it). Her other Inherent
+// Skill, "Inescapable Fate" (cooldown-reset utility), had no block at all — added.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -167,7 +177,28 @@ export const CHISA_BLOCKS = [
     timing: { duration: 12 },
     target: { scope: 'self' },
     effects: [{ stat: 'elemDmg', value: 20, source: 'self-kit' }],
-    note: 'Inherent Skill: Intro grants +20% Havoc DMG/Healing Bonus for 12s. Sourced from CHARACTER_ROTATIONS\' own Intro step note (only the Havoc DMG half is modeled — Healing Bonus has no stat key in this schema); was entirely absent from CHAR_BUFF_TABLE[\'Chisa\'].selfBuffs (empty array) before this read.',
+    note: 'Inherent Skill All Ends Here: Intro OR Liberation cast grants +20% Havoc DMG/Healing Bonus for 12s (only the Havoc DMG half is modeled — Healing Bonus has no stat key in this schema). See chisa.selfbuff.moment-of-nihility below for the Liberation half.',
+  },
+  // Added 2026-09-07 (completeness pass): the same Inherent Skill All Ends Here ALSO triggers on
+  // Liberation cast, per its own full kit text ("casting Intro or Liberation grants...") — previously
+  // only wired to the Intro cast. Liberation:Moment of Nihility is a real, always-cast rotation step.
+  {
+    id: 'chisa.selfbuff.moment-of-nihility',
+    source: SOURCE, kind: 'buff', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Moment of Nihility' },
+    timing: { duration: 12 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'self-kit' }],
+    note: 'Inherent Skill All Ends Here, Liberation half: +20% Havoc DMG Bonus for 12s (Healing Bonus half not modeled, same as the Intro half above). stacking:refresh means this correctly extends the same window rather than double-counting when it overlaps the Intro cast\'s own instance.',
+  },
+  // Added 2026-09-07 (completeness pass): her other Inherent Skill, Inescapable Fate, previously not
+  // referenced anywhere in this file — real, sourced, kind:'utility' with effects:[] since it's a
+  // cooldown-reset resource-economy effect with no representable DPS stat.
+  {
+    id: 'chisa.inherent.inescapable-fate',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Inescapable Fate — a team member defeating an Unseen Snare target resets Eye of Unraveling\'s cooldown (once per 3s). Pure resource-economy utility, no DPS component to model (also moot: Eye of Unraveling itself has no block, never cast in the modeled Loop Rotation — see file header).',
   },
   {
     id: 'chisa.outro.unraveling-law-zero',
@@ -199,6 +230,20 @@ export const CHISA_BLOCKS = [
     target: { scope: 'all-enemies' },
     effects: [{ stat: 'defShred', value: 2, stacking: 'stacking', maxStacks: 6 }],
     note: 'Havoc Bane: 1 stack (2% DEF Shred) per hit on an Unseen Snare target, up to 6 stacks (12% cap), refreshed every 2s — modeled as a real per-stack stacking debuff rather than the flat 12% cap total.',
+  },
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit Rate+8%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus unlocked via Forte-tree ascension, previously had no block anywhere
+  // in this file, same class of gap as every other converted character's own missing Minor Fortes.
+  {
+    id: 'chisa.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Chisa/Chisa.md). Unconditional, always active.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's
