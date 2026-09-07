@@ -118,6 +118,24 @@ export const JINHSI_BLOCKS = [
     effects: [{ stat: 'elemDmg', value: 20, source: 'self-kit' }],
     note: 'Inherent Skill Radiant Surge: Spectro DMG Bonus +20% (always active).',
   },
+  // Added 2026-09-07 (completeness pass): Minor Fortes had no block anywhere in this file.
+  // Inherent Skill Converged Flash ("DMG Multiplier of Intro Skill Loong's Halo +50%") correctly has
+  // no block — Loong's Halo isn't a step in her canonical CHARACTER_ROTATIONS sequence (no Intro cast
+  // there at all, per this file's own header comment: "No CHARACTER_ROTATIONS step in her canonical
+  // sequence casts it as a literal step"), so there is no damage block for this bonus to scope to.
+  {
+    id: 'jinhsi.buff.minor-fortes',
+    source: SOURCE,
+    kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Jinhsi/Jinhsi.md line 124-125). Unconditional, always active.',
+  },
 
   // ── The two cast-order forfeit windows (this conversion's whole point) ──
   {
