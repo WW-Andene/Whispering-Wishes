@@ -8222,6 +8222,8 @@ const SKILL_ICONS = {
   'Lucy': {
     'Locked Thread': './characters/_shared/NG3jXXG-skill-pistols.webp', // Basic ATK — generic Pistols icon (same asset already used elsewhere)
     'Thread Shredding Stage 1-4': './characters/_shared/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
+    'Heavy Attack Stage': './characters/_shared/NG3jXXG-skill-pistols.webp', // base Heavy Attack combo (Stage 1/2), part of "Active skills — Locked Thread", no dedicated icon
+    'Single Threading': './characters/_shared/NG3jXXG-skill-pistols.webp', // Algorithm Compaction's Heavy Attack replacement, no dedicated icon
     'Dual Threading': './characters/_shared/NG3jXXG-skill-pistols.webp', // Root Access's Heavy Attack replacement, same generic weapon icon
     'Payload': './characters/lucy/Z6KMgzkb-lucy-res-Skill.webp', // Resonance Skill — Protocol Breach
     'Pulse Interference': './characters/lucy/Z6KMgzkb-lucy-res-Skill.webp',
