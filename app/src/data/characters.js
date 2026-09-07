@@ -7971,10 +7971,17 @@ const SKILL_ICONS = {
   // Source: the wiki Skill_*.png assets for Augusta, re-hosted on ibb.co (2026-08-17).
   'Augusta': {
     "Hunter's Path": './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (the wiki's own File:Skill_Hunter's_Path.png resolves to this same asset)
+    'Steelclash': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // SKILL_MULTIPLIERS' bare Heavy ATK row name (no dedicated wiki icon), was NULL — the colon-suffixed 'Thunderoar: Backstep' etc. below don't match this shorter phrasing
+    'Thunderoar': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // SKILL_MULTIPLIERS' bare combined Heavy ATK row (Backstep/Spinslash/Uppercut), same fix
     'Thunderoar: Backstep': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Prowess-gated Heavy Attack variant, no dedicated wiki icon — generic weapon icon
     'Thunderoar: Spinslash': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp',
     "Warrior's Blade": './characters/augusta/Mxg3Z8k9-warriors-blade.webp',
-    'Undying Sunlight': './characters/augusta/Mxg3Z8k9-warriors-blade.webp', // Ascendancy-enhanced Resonance Skill, same wiki icon
+    // Was wrongly mapped to Warrior's Blade's (Skill) icon. Per Data dump/Augusta/Augusta.md,
+    // "Undying Sunlight: Strike/Leap/Plunge" replaces Warrior's Blade at full Ascendancy, but it's
+    // the Forte Circuit's own combo ("Forte Circuit — Call Me By the Sun") — SKILL_MULTIPLIERS'
+    // Forte row is the bare 'Undying Sunlight', which was matching this key before the more
+    // specific 'Call Me By the Sun' key further down, giving Forte the wrong (Skill) icon.
+    'Undying Sunlight': './characters/augusta/21vnPFbj-call-me-by-sun.webp',
     'Sunward Conquest': './characters/augusta/wN42DMTf-sunward-conquest.webp', // Resonance Liberation (Sword of Eternal Oath)
     'Sword of Eternal Oath': './characters/augusta/wN42DMTf-sunward-conquest.webp',
     'Sublime is the Sun': './characters/augusta/wN42DMTf-sunward-conquest.webp', // held Liberation alt-cast, same icon
