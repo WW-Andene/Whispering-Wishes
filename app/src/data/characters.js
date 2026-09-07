@@ -7847,10 +7847,21 @@ const SKILL_ICONS = {
   // Negotiation (Basic ATK) has no dedicated wiki asset, uses the shared generic Skill_Gauntlets.webp
   // icon (same as Jianxin/Xiangli Yao/Roccia's).
   'Zani': {
+    // getSkillIcon() does `skillName.includes(key)` and returns the FIRST key (in this object's
+    // insertion order) that the move name contains — so a short, generic key declared before a
+    // more specific one silently wins on any move name that happens to contain it. Two real rows
+    // in SKILL_MULTIPLIERS['Zani'] were hitting this: 'Standard Defense Protocol' (Skill) contains
+    // 'Standard', and 'Heavy Slash: Daybreak/Dawning/Nightfall/Lightsmash' (Forte) contains 'Heavy
+    // Slash' — both were resolving to the generic Basic-ATK gauntlets icon below instead of their
+    // own real icon (Skill) or no icon at all (Forte, which has no dedicated wiki asset sourced
+    // yet). Fixed by declaring the more specific alias BEFORE the generic key it would otherwise
+    // collide with, so find() reaches it first.
+    'Standard Defense Protocol': './characters/zani/Cpng0BLF-skill-restlesswatch.webp', // same move as Restless Watch below, different rotation-step phrasing
+    'Heavy Slash:': null, // Forte's real moves (Daybreak/Dawning/Nightfall/Lightsmash) all start "Heavy Slash: " — explicitly no icon rather than colliding with the unrelated generic key below, until a real Forte asset is sourced
     'Routine Negotiation': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Stage 3': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // rotation-step phrasing for the Basic ATK combo, same icon
-    'Heavy Slash': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Inferno Mode's Basic ATK replacement, same generic weapon icon
+    'Heavy Slash': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Inferno Mode's Basic ATK replacement (bare "Heavy Slash", no colon), same generic weapon icon
     'Restless Watch': './characters/zani/Cpng0BLF-skill-restlesswatch.webp',
     'Pinpoint Strike': './characters/zani/Cpng0BLF-skill-restlesswatch.webp', // same Resonance Skill's parry counter, same wiki icon
     'Targeted Action': './characters/zani/Cpng0BLF-skill-restlesswatch.webp',
