@@ -7853,11 +7853,14 @@ const SKILL_ICONS = {
     // in SKILL_MULTIPLIERS['Zani'] were hitting this: 'Standard Defense Protocol' (Skill) contains
     // 'Standard', and 'Heavy Slash: Daybreak/Dawning/Nightfall/Lightsmash' (Forte) contains 'Heavy
     // Slash' — both were resolving to the generic Basic-ATK gauntlets icon below instead of their
-    // own real icon (Skill) or no icon at all (Forte, which has no dedicated wiki asset sourced
-    // yet). Fixed by declaring the more specific alias BEFORE the generic key it would otherwise
-    // collide with, so find() reaches it first.
+    // own real icon. Fixed by declaring the more specific alias BEFORE the generic key it would
+    // otherwise collide with, so find() reaches it first.
     'Standard Defense Protocol': './characters/zani/Cpng0BLF-skill-restlesswatch.webp', // same move as Restless Watch below, different rotation-step phrasing
-    'Heavy Slash:': null, // Forte's real moves (Daybreak/Dawning/Nightfall/Lightsmash) all start "Heavy Slash: " — explicitly no icon rather than colliding with the unrelated generic key below, until a real Forte asset is sourced
+    // Data dump/Zani/Zani.md names her Forte Circuit itself "There Will Be A Light" (the section
+    // header, not any individual hit) — that's the real icon for all of Heavy Slash: Daybreak/
+    // Dawning/Nightfall/Lightsmash, already sourced below under its own literal name but never
+    // reached since none of those rotation-step names contain that phrase.
+    'Heavy Slash:': './characters/zani/0jtmQHtM-skill-therewillbealight.webp',
     'Routine Negotiation': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Stage 3': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // rotation-step phrasing for the Basic ATK combo, same icon
